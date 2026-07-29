@@ -161,9 +161,10 @@ body {
    of Linear/Stripe). Nothing bounces. Nothing loops except two ambient cues.
    ──────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
+  /* NOTE: no `html { scroll-behavior: smooth }`. It animates EVERY wheel
+     tick, which makes the page feel like it drops in notches instead of
+     tracking the hand. Smooth scrolling belongs on explicit anchor jumps
+     only (scrollIntoView), never on the document. */
 
   /* Entrance on load (above-the-fold hero elements) — big, cinematic rise. */
   .anim-rise {

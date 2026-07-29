@@ -7,7 +7,8 @@ import { Reveal } from "@/components/reveal";
 import { AudienceToggle } from "@/components/audience-toggle";
 import { PublicCounters } from "@/components/public-counters";
 import { PointerGlow } from "@/components/pointer-glow";
-import { WORKERS_I18N, workersLangOf, type WorkersLang } from "@/lib/i18n/workers";
+import { LangSwitch } from "@/components/lang-switch";
+import { WORKERS_I18N, WORKERS_LANGS, workersLangOf } from "@/lib/i18n/workers";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The worker homepage — "The Sunrise Side of the Seam". The client page is a
@@ -101,28 +102,6 @@ function PoolChip({ tag }: { tag: "open" | "you" | "claimed" | "high" }) {
   );
 }
 
-function LangSwitch({ lang }: { lang: WorkersLang }) {
-  const seg = "rounded px-1.5 py-0.5 transition-colors duration-150";
-  return (
-    <span className="flex items-center gap-0.5 font-mono text-[11px]">
-      <Link
-        href="/workers?lang=en"
-        aria-current={lang === "en" ? "true" : undefined}
-        className={`${seg} ${lang === "en" ? "bg-[#14161A] text-[#F7F6F3]" : "text-[#5B6069] hover:text-[#14161A]"}`}
-      >
-        EN
-      </Link>
-      <Link
-        href="/workers?lang=tl"
-        aria-current={lang === "tl" ? "true" : undefined}
-        className={`${seg} ${lang === "tl" ? "bg-[#14161A] text-[#F7F6F3]" : "text-[#5B6069] hover:text-[#14161A]"}`}
-      >
-        TL
-      </Link>
-    </span>
-  );
-}
-
 export default async function WorkersHome({
   searchParams,
 }: {
@@ -133,7 +112,7 @@ export default async function WorkersHome({
   const settings = await getSettings();
   const sp = await searchParams;
   const cookieStore = await cookies();
-  const lang = workersLangOf(sp.lang ?? cookieStore.get("ss-lang")?.value);
+  const lang = workersLangOf(sp.lang ?? cookieStore.get("ss-lang-worker")?.value);
   const t = WORKERS_I18N[lang];
   const ch = (n: string, label: string) => (
     <>
@@ -143,7 +122,9 @@ export default async function WorkersHome({
   );
 
   return (
-    <div className="overflow-x-clip bg-[#F7F6F3]">
+    /* lang on the subtree: the root <html> is en, and screen readers must
+       switch voice for the Tagalog copy. */
+    <div lang={lang} className="overflow-x-clip bg-[#F7F6F3]">
       {/* ── NAV — sticky, blurred, paper ──────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
         <div className="mx-auto grid h-14 w-full max-w-[1120px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
@@ -152,7 +133,7 @@ export default async function WorkersHome({
           </span>
           <AudienceToggle side="worker" tone="paper" />
           <div className="flex items-center justify-end gap-3 sm:gap-5">
-            <LangSwitch lang={lang} />
+            <LangSwitch path="/workers" current={lang} options={WORKERS_LANGS} tone="paper" />
             <Link
               href="/login"
               className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"

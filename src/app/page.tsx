@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { getSessionUser, roleHome } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { Reveal } from "@/components/reveal";
@@ -8,6 +9,8 @@ import { PublicCounters } from "@/components/public-counters";
 import { LiveTaskWindow } from "@/components/live-task-window";
 import { LiveOvernightDiff } from "@/components/live-overnight-diff";
 import { PointerGlow } from "@/components/pointer-glow";
+import { LangSwitch } from "@/components/lang-switch";
+import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The landing page is a picture, not an essay: a real file arriving broken at
@@ -18,33 +21,9 @@ import { PointerGlow } from "@/components/pointer-glow";
    ambient loops (hero glow, seam nudge) — all gated on prefers-reduced-motion.
    ───────────────────────────────────────────────────────────────────────── */
 
-/* Deliberately spread across research, writing, data, media and admin — the
-   breadth of the marketplace is proven by the spread, not by a claim.
-   Index-table discipline: mono category tag + ≤7-word title + green figure. */
-const LEDGER: [string, string, string][] = [
-  ["DATA", "4,000 duplicate CRM contacts, cleaned", "$85"],
-  ["RESEARCH", "300 dental clinics with owner emails", "$140"],
-  ["WRITING", "12 product descriptions from spec sheets", "$70"],
-  ["MEDIA", "8 hours of interviews, transcribed and tagged", "$110"],
-  ["RESEARCH", "5 competitors' pricing pages, one sheet", "$95"],
-  ["DOCS", "90-page proposal rebuilt in our template", "$75"],
-];
-
-/* The candor block: constraints stated as features. One line each. */
-const terms = (retentionDays: number): [string, string][] => [
-  ["PRICE", "One fixed price, approved before anything starts."],
-  ["REVIEW", "Every delivery is reviewed before you see it."],
-  ["IDENTITY", "You never meet the worker. That's the point."],
-  ["DATA", `Access ends with the task. Files purged after ${retentionDays} days.`],
-  ["REFUSALS", "Some tasks we turn down."],
-];
-
-const NIGHT_STEPS = [
-  ["6:41 PM", "You describe the task."],
-  ["7:15 PM", "One fixed price. You approve it."],
-  ["Overnight", "A trained assistant does the work."],
-  ["7:07 AM", "It is checked, then it is yours."],
-];
+/* Every visible string lives in src/lib/i18n/client.ts (EN/FR/ES). The rule:
+   the VOICE translates, the MACHINE (live artifacts, mono field labels,
+   clock times, filenames) stays English. */
 
 const NOISE = {
   backgroundImage:
@@ -64,13 +43,29 @@ const ORG_JSONLD = JSON.stringify({
     "Describe any task in plain English — priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
 });
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
   const user = await getSessionUser();
   if (user) redirect(roleHome(user.role));
   const settings = await getSettings();
+  const sp = await searchParams;
+  const cookieStore = await cookies();
+  const lang = clientLangOf(sp.lang ?? cookieStore.get("ss-lang-client")?.value);
+  const t = CLIENT_I18N[lang];
+  const ch = (n: string, label: string) => (
+    <>
+      {n}
+      <span className="opacity-50">/06</span> · {label}
+    </>
+  );
 
   return (
-    <div className="overflow-x-clip bg-[#0A0B0D]">
+    /* lang on the subtree: the root <html> is en, and screen readers must
+       switch voice for the translated copy. */
+    <div lang={lang} className="overflow-x-clip bg-[#0A0B0D]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: ORG_JSONLD }}
@@ -82,18 +77,19 @@ export default async function Home() {
             Second Shift
           </span>
           <AudienceToggle side="client" tone="night" />
-          <div className="flex items-center justify-end gap-5">
+          <div className="flex items-center justify-end gap-3 sm:gap-5">
+            <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
             <Link
               href="/login"
-              className="text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:text-[13px]"
+              className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
             >
-              Sign in
+              {t.nav.signIn}
             </Link>
             <Link
               href="/register"
               className="lift hidden rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] sm:block"
             >
-              Send a task
+              {t.nav.send}
             </Link>
           </div>
         </div>
@@ -117,19 +113,18 @@ export default async function Home() {
         <div className="relative mx-auto grid w-full max-w-[1120px] gap-12 px-6 pb-4 pt-20 sm:pt-28 lg:grid-cols-[1fr_420px] lg:items-center">
           <div>
             <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
-              <span className="anim-rise block text-[#767C86]">Describe any task.</span>
-              <span className="anim-rise d-1 block text-white">Get it back done by morning.</span>
+              <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>
+              <span className="anim-rise d-1 block text-white">{t.hero.line2}</span>
             </h1>
             <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
-              Research, data, writing, spreadsheets, admin — priced in{" "}
-              {settings.quoteTurnaroundHours} working hours, delivered by morning.
+              {t.hero.sub(settings.quoteTurnaroundHours)}
             </p>
             <div className="anim-rise d-3 mt-8">
               <Link
                 href="/register"
                 className="lift inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)]"
               >
-                Describe your task
+                {t.hero.cta}
               </Link>
             </div>
           </div>
@@ -154,10 +149,10 @@ export default async function Home() {
       {/* ── THE DIFF ──────────────────────────────────────────────────── */}
       <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
         <p className="anim-rise d-5 mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
-          01<span className="opacity-50">/06</span> · The overnight diff
+          {ch("01", t.ch01.label)}
         </p>
         <p className="anim-rise d-5 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
-          &ldquo;Dedupe our leads, fix the names, drop bad emails.&rdquo; — sent 6:41 PM
+          {t.ch01.caption}
         </p>
 
         <p className="sr-only">
@@ -185,7 +180,7 @@ export default async function Home() {
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
             <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
-              02<span className="opacity-50">/06</span> · One price. Approved first.
+              {ch("02", t.ch02.label)}
             </p>
             <div className="mx-auto max-w-[420px]">
               <div className="lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] transition-colors hover:border-white/20 hover:bg-[#15171B]">
@@ -209,9 +204,7 @@ export default async function Home() {
                     $68
                   </span>
                 </div>
-                <p className="mt-2 text-right text-[11px] text-[#767C86]">
-                  No subscription. No minimum. No hourly meter.
-                </p>
+                <p className="mt-2 text-right text-[11px] text-[#767C86]">{t.ch02.noMeter}</p>
                 <div className="mt-5 flex gap-2">
                   <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
                     APPROVE
@@ -223,9 +216,11 @@ export default async function Home() {
               </div>
 
               <div className="mt-6 grid gap-3 font-mono text-[12px] text-[#767C86] sm:grid-cols-3">
-                <p className="srow">Fixed. Never hourly.</p>
-                <p className="srow">You approve before work starts.</p>
-                <p className="srow">Back before your first meeting.</p>
+                {t.ch02.captions.map((c) => (
+                  <p key={c} className="srow">
+                    {c}
+                  </p>
+                ))}
               </div>
             </div>
           </Reveal>
@@ -238,13 +233,13 @@ export default async function Home() {
         <div className="relative mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              03<span className="opacity-50">/06</span> · The ledger
+              {ch("03", t.ch03.label)}
             </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-              If you can describe it, it gets done.
+              {t.ch03.h2}
             </h2>
             <div className="mt-8">
-              {LEDGER.map(([tag, task, price]) => (
+              {t.ch03.rows.map(([tag, task, price]) => (
                 <div
                   key={task}
                   className="srow group flex items-baseline gap-4 border-b border-black/8 py-[15px] transition-colors hover:bg-black/[0.02] sm:gap-6"
@@ -261,9 +256,7 @@ export default async function Home() {
                 </div>
               ))}
             </div>
-            <p className="mt-4 font-mono text-[11px] text-[#5B6069]">
-              Illustrative tasks. Every price fixed, approved first.
-            </p>
+            <p className="mt-4 font-mono text-[11px] text-[#5B6069]">{t.ch03.caption}</p>
           </Reveal>
         </div>
       </section>
@@ -274,19 +267,19 @@ export default async function Home() {
         <div className="relative mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              04<span className="opacity-50">/06</span> · The night
+              {ch("04", t.ch04.label)}
             </p>
             <h2 className="mb-2 text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-              Your night is their working day.
+              {t.ch04.h2}
             </h2>
             <p className="mb-8 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">
-              Your team stops at 5 PM. Theirs starts, twelve hours ahead.
+              {t.ch04.sub}
             </p>
             <div className="space-y-4">
               {[
-                { label: "Your working hours — New York", lit: (h: number) => h >= 8 && h <= 17 },
+                { label: t.ch04.barYours, lit: (h: number) => h >= 8 && h <= 17 },
                 {
-                  label: "Their working hours — Manila, 12 hours ahead",
+                  label: t.ch04.barTheirs,
                   // 8 AM–5 PM Manila shifted 12h onto the New York clock.
                   lit: (h: number) => h >= 20 || h <= 5,
                 },
@@ -311,7 +304,7 @@ export default async function Home() {
             </div>
 
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {NIGHT_STEPS.map(([time, text]) => (
+              {t.ch04.steps.map(([time, text]) => (
                 <div key={time} className="srow">
                   <p className="font-mono text-[11px] tabular-nums text-[#5B6069]">{time}</p>
                   <p className="mt-1 text-[15px] leading-snug text-[#14161A]">{text}</p>
@@ -327,9 +320,9 @@ export default async function Home() {
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
             <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              06<span className="opacity-50">/06</span> · The terms
+              {ch("06", t.ch06.label)}
             </p>
-            {terms(settings.retentionDays).map(([label, text]) => (
+            {t.ch06.terms(settings.retentionDays).map(([label, text]) => (
               <div
                 key={label}
                 className="srow grid gap-2 border-b border-black/8 py-5 sm:grid-cols-[140px_1fr] sm:gap-6"
@@ -350,30 +343,24 @@ export default async function Home() {
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              05<span className="opacity-50">/06</span> · The operator
+              {ch("05", t.ch05.label)}
             </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-              One professional between you and the work.
+              {t.ch05.h2}
             </h2>
             <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-[#5B6069]">
-              Run by an operator, not an algorithm. One professional prices, matches and
-              reviews every task.
+              {t.ch05.body}
             </p>
             <div className="mt-8">
               <div className="mb-2 hidden grid-cols-2 gap-6 md:grid">
                 <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#5B6069]">
-                  There
+                  {t.ch05.there}
                 </span>
                 <span className="w-fit rounded border border-[#1E7F5C]/40 bg-[#1E7F5C]/10 px-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#166049]">
-                  Here
+                  {t.ch05.here}
                 </span>
               </div>
-              {[
-                ["Post a job. Read forty proposals.", "Describe it once. One price back in hours, not days."],
-                ["Interview, hire, onboard, manage.", "Nothing to manage. The operator runs the night."],
-                ["Hourly meters running while you sleep.", "One fixed price, approved before anything starts."],
-                ["Hope it's right in the morning.", "Reviewed by a professional before you ever see it."],
-              ].map(([there, here]) => (
+              {t.ch05.pairs.map(([there, here]) => (
                 <div
                   key={there}
                   className="srow grid gap-2 border-b border-black/8 py-4 md:grid-cols-2 md:gap-6"
@@ -401,15 +388,15 @@ export default async function Home() {
               <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
               <div className="relative">
                 <h2 className="text-[30px] font-semibold tracking-[-0.02em]">
-                  <span className="block text-[#767C86]">Describe any task.</span>
-                  <span className="block text-white">Get it back done by morning.</span>
+                  <span className="block text-[#767C86]">{t.hero.line1}</span>
+                  <span className="block text-white">{t.hero.line2}</span>
                 </h2>
                 <div className="mt-7">
                   <Link
                     href="/register"
                     className="lift inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)]"
                   >
-                    Describe your task
+                    {t.hero.cta}
                   </Link>
                 </div>
               </div>
@@ -426,13 +413,13 @@ export default async function Home() {
           </span>
           <div className="flex items-center gap-6 text-[13px] text-[#5B6069]">
             <Link href="/how-it-works" className="transition-colors hover:text-[#14161A]">
-              How it works
+              {t.footer.how}
             </Link>
             <Link href="/login" className="transition-colors hover:text-[#14161A]">
-              Sign in
+              {t.footer.signIn}
             </Link>
             <Link href="/workers" className="transition-colors hover:text-[#14161A]">
-              Work with us
+              {t.footer.work}
             </Link>
           </div>
         </div>

@@ -11,6 +11,13 @@
 
 export type WorkersLang = "en" | "tl";
 
+/** "FIL" is the label — Filipino is the language's own name; `tl` is the
+    ISO code the URL and cookie carry. */
+export const WORKERS_LANGS: { code: WorkersLang; label: string }[] = [
+  { code: "en", label: "EN" },
+  { code: "tl", label: "FIL" },
+];
+
 export function workersLangOf(value: string | undefined | null): WorkersLang {
   return value === "tl" ? "tl" : "en";
 }
