@@ -29,18 +29,20 @@ const AFTER_ROWS = [
   { company: "Halcyon Freight", contact: "Tom Iversen", email: "t.iversen@halcyon.io", tag: "kept" },
 ];
 
+/* Deliberately spread across research, writing, data, media and admin — the
+   breadth of the marketplace is proven by the spread, not by a claim. */
 const LEDGER = [
-  ["Clean 4,000 duplicate HubSpot contacts", "$85"],
-  ["Build a list of 300 Florida dental clinics with owner emails", "$140"],
-  ["Retype 62 scanned delivery slips into the ops sheet", "$60"],
-  ["Format a 90-page proposal to the client template", "$75"],
-  ["Chase 18 unpaid invoices and log every reply", "$95"],
-  ["Rename and file 900 job-site photos by address", "$50"],
+  ["Clean 4,000 duplicate contacts in our CRM", "$85"],
+  ["Research 300 Florida dental clinics with owner emails", "$140"],
+  ["Write 12 product descriptions from the spec sheets", "$70"],
+  ["Transcribe and tag 8 hours of customer interviews", "$110"],
+  ["Compare 5 competitors' pricing pages into one sheet", "$95"],
+  ["Rebuild a 90-page proposal in our template", "$75"],
 ];
 
 const TERMS = [
   ["PRICE", "One fixed price, approved before any work starts."],
-  ["REVIEW", "Every file is checked by a person before you see it."],
+  ["REVIEW", "Every delivery is reviewed by a US-based professional before you see it."],
   ["DATA", "Access ends when the task does. Files purged after 90 days."],
   ["COMMITMENT", "No subscription, no minimum. Skip a night by not sending a task."],
 ];
@@ -80,6 +82,12 @@ export default async function Home() {
           </span>
           <div className="flex items-center gap-5">
             <Link
+              href="/register/va"
+              className="text-[13px] font-medium text-[#8A9099] transition-colors hover:text-white"
+            >
+              For workers
+            </Link>
+            <Link
               href="/login"
               className="text-[13px] font-medium text-[#8A9099] transition-colors hover:text-white"
             >
@@ -105,13 +113,14 @@ export default async function Home() {
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
 
         <div className="relative mx-auto w-full max-w-[1120px] px-6 pb-4 pt-20 sm:pt-28">
-          <h1 className="max-w-[16ch] text-[clamp(2.5rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-            <span className="anim-rise block text-[#767C86]">Send the mess tonight.</span>
-            <span className="anim-rise d-1 block text-white">Get it back clean by morning.</span>
+          <h1 className="max-w-[17ch] text-[clamp(2.5rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+            <span className="anim-rise block text-[#767C86]">Describe any task.</span>
+            <span className="anim-rise d-1 block text-white">Get it back done by morning.</span>
           </h1>
-          <p className="anim-rise d-2 mt-6 max-w-[46ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
-            Any admin task, described in plain English. One fixed price, approved before we
-            start. Done by a person, overnight.
+          <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
+            Research, data, writing, spreadsheets, transcription, admin — if you can describe
+            it, we take it on. Matched to vetted specialists and AI, wherever the work gets
+            done best. One fixed price, approved before anything starts.
           </p>
           <div className="anim-rise d-3 mt-8">
             <Link
@@ -129,9 +138,9 @@ export default async function Home() {
 
       {/* ── THE DIFF ──────────────────────────────────────────────────── */}
       <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
-        <p className="anim-rise d-5 mb-3 max-w-[70ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
-          One task from last Tuesday, sent as a sentence: &ldquo;Dedupe our exported leads,
-          fix the company names, drop anyone we can&apos;t email.&rdquo;
+        <p className="anim-rise d-5 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
+          One of last week&apos;s tasks, sent as a single sentence: &ldquo;Dedupe our exported
+          leads, fix the company names, drop anyone we can&apos;t email.&rdquo;
         </p>
 
         <p className="sr-only">
@@ -318,15 +327,23 @@ export default async function Home() {
       <section className="border-t border-black/8 bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
-            <div className="space-y-2">
+            <h2 className="mb-2 text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+              Your night is their working day.
+            </h2>
+            <p className="mb-8 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">
+              The dark blocks are working hours. Your team stops at 5 PM in New York; the
+              people on your task are just starting their morning, twelve hours ahead.
+            </p>
+            <div className="space-y-4">
               {[
-                { label: "NEW YORK · ET", lit: (h: number) => h >= 8 && h <= 17 },
-                { label: "MANILA · PHT +12", lit: (h: number) => h < 8 || h > 17 },
+                { label: "Your working hours — New York", lit: (h: number) => h >= 8 && h <= 17 },
+                {
+                  label: "Their working hours — Manila, 12 hours ahead",
+                  lit: (h: number) => h < 8 || h > 17,
+                },
               ].map((row) => (
                 <div key={row.label}>
-                  <p className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
-                    {row.label}
-                  </p>
+                  <p className="mb-1.5 text-[13px] font-medium text-[#14161A]">{row.label}</p>
                   <div className="relative grid grid-cols-[repeat(24,minmax(0,1fr))] gap-px overflow-hidden rounded bg-black/8">
                     {Array.from({ length: 24 }, (_, i) => (
                       <span

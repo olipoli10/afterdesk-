@@ -37,7 +37,10 @@ export const auth = betterAuth({
     emailOTP({
       otpLength: 6,
       expiresIn: 600, // 10 minutes
-      sendVerificationOnSignUp: true,
+      // OFF until a mail provider is configured — otherwise sign-up sends a
+      // code nobody receives. Set RESEND_API_KEY, flip this to true, and
+      // restore the gate in src/lib/authz.ts → requireUser to re-enable.
+      sendVerificationOnSignUp: false,
       allowedAttempts: 5,
       async sendVerificationOTP({ email, otp, type }) {
         const subject =

@@ -32,8 +32,7 @@ export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }
       setBusy(false);
       return;
     }
-    // A verification code was emailed on sign-up.
-    router.push("/verify-email");
+    router.push("/client");
     router.refresh();
   }
 
@@ -113,7 +112,7 @@ export function VaRegisterForm() {
       router.push("/login");
       return;
     }
-    router.push("/verify-email");
+    router.push("/va");
     router.refresh();
   }
 

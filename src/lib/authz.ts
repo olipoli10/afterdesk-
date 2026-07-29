@@ -31,14 +31,17 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 }
 
 /**
- * Requires a signed-in account with a verified email address. Unverified
- * accounts are held at the code-entry screen — they cannot submit tasks, claim
- * work, or reach any dashboard.
+ * Requires a signed-in account.
+ *
+ * Email verification is intentionally NOT enforced: there is no mail provider
+ * configured yet, so a gate here would lock every account out. To turn it back
+ * on once RESEND_API_KEY is set: re-add `if (!user.emailVerified)
+ * redirect("/verify-email")` here and flip `sendVerificationOnSignUp` in
+ * src/lib/auth.ts.
  */
 export async function requireUser(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  if (!user.emailVerified) redirect("/verify-email");
   return user;
 }
 

@@ -21,9 +21,6 @@ const MAX_PENDING_UPLOADS = 40;
 export async function POST(request: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  if (!user.emailVerified) {
-    return NextResponse.json({ error: "Confirm your email address first." }, { status: 403 });
-  }
   if (user.role !== "CLIENT") {
     return NextResponse.json({ error: "Only clients can upload input files." }, { status: 403 });
   }
