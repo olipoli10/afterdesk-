@@ -85,35 +85,27 @@ const THERE_HERE: [string, string][] = [
   ["Chase invoices across time zones.", "One operator releases every approved payout."],
   [
     "Client calls, scope creep, one more quick revision.",
-    "You never meet the client. One professional stands between you and them and absorbs all of it.",
+    "You never meet the client. The operator absorbs all of it.",
   ],
   [
     "Star ratings from strangers.",
-    "A rolling 1–5 score from the same reviewer. Hold it high and the high-value pool unlocks — same rules, bigger payouts.",
+    "One reviewer, one rolling score. High scores unlock bigger payouts.",
   ],
 ];
 
+/* The candor block, worker side. One or two short lines each. */
 const workerTerms = (maxClaims: number, qcRounds: number): [string, string][] => [
-  [
-    "WORK",
-    `Claim from the pool whenever you're online. Up to ${maxClaims} tasks at once. Your hours are your own.`,
-  ],
+  ["WORK", `Claim any hour. Up to ${maxClaims} tasks at once.`],
   [
     "PAYOUT",
-    "Fixed and printed on the task before you claim. Released when the operator approves your delivery. No commission off your number. Reversed only if a client dispute proves a clear worker error the review missed — rare.",
+    "Printed before you claim. Released when review passes. Nothing off the top. Reversed only for a clear missed error — rare.",
   ],
   [
     "REVIEW",
-    `One operator checks every delivery before the client sees it. Sent back with notes — up to ${qcRounds} rounds to make it right. A delivery that still fails is unpaid.`,
+    `Sent back with notes, up to ${qcRounds} rounds. A final fail is unpaid.`,
   ],
-  [
-    "IDENTITY",
-    "Clients never learn who you are. You never learn who they are. Everything crosses through the operator.",
-  ],
-  [
-    "SCORE",
-    "1 to 5, rolling, from your reviewed deliveries. Keep it high and the high-value pool opens.",
-  ],
+  ["IDENTITY", "You never learn who they are. They never learn who you are."],
+  ["SCORE", "1–5, rolling. High scores open the high-value pool."],
 ];
 
 const NOISE = {
@@ -195,10 +187,8 @@ export default async function WorkersHome() {
             <span className="anim-rise d-1 block text-[#14161A]">You wake up to paid work.</span>
           </h1>
           <p className="anim-rise d-2 mt-6 max-w-[54ch] text-[17px] leading-[1.5] text-[#5B6069]">
-            Tasks arrive while America sleeps — research, data, writing, spreadsheets,
-            transcription, admin — priced, approved, the payout printed on every one.
-            No proposals. No bidding. No clients to manage. Work that passes review is
-            paid: the number you saw is the number released.
+            Priced tasks land overnight, the payout printed on every one. Pass review,
+            get paid.
           </p>
           <div className="anim-rise d-3 mt-8">
             <Link
@@ -220,7 +210,7 @@ export default async function WorkersHome() {
       {/* ── THE POOL → YOUR LEDGER ────────────────────────────────────── */}
       <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
         <p className="anim-rise d-6 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#5B6069]">
-          One task, start to finish — claimed at sunrise, released when review passed.
+          One task&apos;s day: claimed 7:22 AM, released after review.
         </p>
 
         <p className="sr-only">
@@ -429,8 +419,7 @@ export default async function WorkersHome() {
               Your working day is their night.
             </h2>
             <p className="mb-8 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">
-              The dark blocks are working hours. Your morning starts as New York goes
-              quiet; by the time they wake, the work has already crossed back.
+              Your morning starts as New York goes quiet.
             </p>
             <div className="space-y-4">
               {[
@@ -489,13 +478,8 @@ export default async function WorkersHome() {
                 The bar is why the money is real.
               </h2>
               <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-[#9AA1AB]">
-                Every delivery is reviewed before the client ever sees it. Not right yet —
-                it comes back with notes, up to two rounds, until it is. A delivery that
-                still fails after that isn&apos;t paid. That is the whole deal, and it is
-                why the deal holds: work that reliably passes review is what lets one
-                operator charge real prices, and real prices are what fund fixed payouts
-                with nothing taken off them. If you are careful, you pass. If you pass,
-                you are paid.
+                Every delivery is reviewed before the client sees it. Real prices fund
+                real payouts — the bar is what holds the deal up.
               </p>
 
               <div className="mt-8 space-y-3">
@@ -514,8 +498,7 @@ export default async function WorkersHome() {
               </div>
 
               <p className="mt-8 border-t border-white/10 pt-4 font-mono text-[12px] leading-relaxed text-[#767C86]">
-                This is not a page for everyone. The application filters for careful
-                people — which is also why the pool is never a crowd.
+                Not a page for everyone. That&apos;s why the pool is never a crowd.
               </p>
             </Reveal>
           </div>
@@ -611,8 +594,9 @@ export default async function WorkersHome() {
             <div className="relative overflow-hidden rounded-2xl bg-[#F7F6F3] px-6 py-16 text-center">
               <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.02]" style={NOISE} />
               <div className="relative">
-                <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-[#14161A]">
-                  Claim your first task tomorrow morning.
+                <h2 className="text-[30px] font-semibold tracking-[-0.02em]">
+                  <span className="block text-[#8A9099]">America goes to sleep.</span>
+                  <span className="block text-[#14161A]">You wake up to paid work.</span>
                 </h2>
                 <div className="mt-7">
                   <Link
@@ -639,6 +623,9 @@ export default async function WorkersHome() {
             Second Shift
           </span>
           <div className="flex items-center gap-6 text-[13px] text-[#8A9099]">
+            <Link href="/how-it-works" className="transition-colors hover:text-white">
+              How it works
+            </Link>
             <Link href="/login" className="transition-colors hover:text-white">
               Sign in
             </Link>

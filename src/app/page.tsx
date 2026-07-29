@@ -33,21 +33,24 @@ const AFTER_ROWS = [
 ];
 
 /* Deliberately spread across research, writing, data, media and admin — the
-   breadth of the marketplace is proven by the spread, not by a claim. */
-const LEDGER = [
-  ["Clean 4,000 duplicate contacts in our CRM", "$85"],
-  ["Research 300 Florida dental clinics with owner emails", "$140"],
-  ["Write 12 product descriptions from the spec sheets", "$70"],
-  ["Transcribe and tag 8 hours of customer interviews", "$110"],
-  ["Compare 5 competitors' pricing pages into one sheet", "$95"],
-  ["Rebuild a 90-page proposal in our template", "$75"],
+   breadth of the marketplace is proven by the spread, not by a claim.
+   Index-table discipline: mono category tag + ≤7-word title + green figure. */
+const LEDGER: [string, string, string][] = [
+  ["DATA", "4,000 duplicate CRM contacts, cleaned", "$85"],
+  ["RESEARCH", "300 dental clinics with owner emails", "$140"],
+  ["WRITING", "12 product descriptions from spec sheets", "$70"],
+  ["MEDIA", "8 hours of interviews, transcribed and tagged", "$110"],
+  ["RESEARCH", "5 competitors' pricing pages, one sheet", "$95"],
+  ["DOCS", "90-page proposal rebuilt in our template", "$75"],
 ];
 
+/* The candor block: constraints stated as features. One line each. */
 const terms = (retentionDays: number): [string, string][] => [
-  ["PRICE", "One fixed price, approved before any work starts."],
-  ["REVIEW", "Every delivery is reviewed by a professional before you see it."],
-  ["DATA", `Access ends when the task does. Files purged after ${retentionDays} days.`],
-  ["COMMITMENT", "No subscription, no minimum. Skip a night by not sending a task."],
+  ["PRICE", "One fixed price, approved before anything starts."],
+  ["REVIEW", "Every delivery is reviewed before you see it."],
+  ["IDENTITY", "You never meet the worker. That's the point."],
+  ["DATA", `Access ends with the task. Files purged after ${retentionDays} days.`],
+  ["REFUSALS", "Some tasks we turn down."],
 ];
 
 const NIGHT_STEPS = [
@@ -134,9 +137,8 @@ export default async function Home() {
             <span className="anim-rise d-1 block text-white">Get it back done by morning.</span>
           </h1>
           <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
-            Research, data, writing, spreadsheets, transcription, admin — if you can describe
-            it, we take it on. Matched to vetted specialists working with the best tools for
-            the job. One fixed price, approved before anything starts.
+            Research, data, writing, spreadsheets, admin — priced in four hours, delivered
+            by morning.
           </p>
           <div className="anim-rise d-3 mt-8">
             <Link
@@ -146,17 +148,16 @@ export default async function Home() {
               Describe your task
             </Link>
           </div>
-          <p className="anim-rise d-4 mt-4 font-mono text-[13px] text-[#6B7280]">
-            You get a fixed price back within four hours — usually faster.
-          </p>
         </div>
+
+        {/* live counters — the proof, at the moment of the promise */}
+        <PublicCounters tone="night" variant="strip" className="anim-rise d-4 mt-12" />
       </section>
 
       {/* ── THE DIFF ──────────────────────────────────────────────────── */}
       <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
         <p className="anim-rise d-5 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
-          A task like this arrives as a single sentence: &ldquo;Dedupe our exported
-          leads, fix the company names, drop anyone we can&apos;t email.&rdquo;
+          &ldquo;Dedupe our leads, fix the names, drop bad emails.&rdquo; — sent 6:41 PM
         </p>
 
         <p className="sr-only">
@@ -293,6 +294,9 @@ export default async function Home() {
                     $68
                   </span>
                 </div>
+                <p className="mt-2 text-right text-[11px] text-[#767C86]">
+                  No subscription. No minimum. No hourly meter.
+                </p>
                 <div className="mt-5 flex gap-2">
                   <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
                     APPROVE
@@ -321,23 +325,26 @@ export default async function Home() {
               If you can describe it, it gets done.
             </h2>
             <div className="mt-8">
-              {LEDGER.map(([task, price]) => (
+              {LEDGER.map(([tag, task, price]) => (
                 <div
                   key={task}
-                  className="srow group flex items-baseline justify-between gap-6 border-b border-black/8 py-[18px] transition-colors hover:bg-black/[0.02]"
+                  className="srow group flex items-baseline gap-4 border-b border-black/8 py-[15px] transition-colors hover:bg-black/[0.02] sm:gap-6"
                 >
-                  <span className="font-mono text-[13px] text-[#5B6069] transition-colors group-hover:text-[#14161A]">
+                  <span className="w-[86px] shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-[#5B6069]">
+                    {tag}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[14px] text-[#14161A]">
                     {task}
                   </span>
-                  <span className="shrink-0 font-mono text-[12px] tabular-nums text-[#14161A]">
-                    {price} · 7:00 AM
+                  <span className="shrink-0 font-mono text-[13px] tabular-nums text-[#166049]">
+                    {price}
                   </span>
                 </div>
               ))}
             </div>
-            {/* the running total closes the ledger metaphor — same three live
-                figures the worker page shows, read off the same ledger */}
-            <PublicCounters tone="paper" variant="line" className="mt-6 pt-4" />
+            <p className="mt-4 font-mono text-[11px] text-[#5B6069]">
+              Illustrative tasks. Every price fixed, approved first.
+            </p>
           </Reveal>
         </div>
       </section>
@@ -350,8 +357,7 @@ export default async function Home() {
               Your night is their working day.
             </h2>
             <p className="mb-8 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">
-              The dark blocks are working hours. Your team stops at 5 PM in New York; the
-              people on your task are just starting their morning, twelve hours ahead.
+              Your team stops at 5 PM. Theirs starts, twelve hours ahead.
             </p>
             <div className="space-y-4">
               {[
@@ -421,11 +427,8 @@ export default async function Home() {
               One professional between you and the work.
             </h2>
             <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-[#5B6069]">
-              Second Shift is run by an operator, not an algorithm. Every price is set by
-              the operator — one professional who reads your task — every match is
-              deliberate, and every delivery is reviewed before it reaches you. Nobody in
-              the pool ever learns who you are — your files cross to them stripped of
-              anything that says it.
+              Run by an operator, not an algorithm. One professional prices, matches and
+              reviews every task.
             </p>
             <div className="mt-8">
               <div className="mb-2 hidden grid-cols-2 gap-6 md:grid">
@@ -468,8 +471,9 @@ export default async function Home() {
               />
               <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
               <div className="relative">
-                <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-white">
-                  Send your first task tonight.
+                <h2 className="text-[30px] font-semibold tracking-[-0.02em]">
+                  <span className="block text-[#767C86]">Describe any task.</span>
+                  <span className="block text-white">Get it back done by morning.</span>
                 </h2>
                 <div className="mt-7">
                   <Link
@@ -479,9 +483,6 @@ export default async function Home() {
                     Describe your task
                   </Link>
                 </div>
-                <p className="mt-4 font-mono text-[12px] text-[#767C86]">
-                  Priced within four hours. Nothing starts until you approve it.
-                </p>
               </div>
             </div>
           </Reveal>
@@ -495,6 +496,9 @@ export default async function Home() {
             Second Shift
           </span>
           <div className="flex items-center gap-6 text-[13px] text-[#5B6069]">
+            <Link href="/how-it-works" className="transition-colors hover:text-[#14161A]">
+              How it works
+            </Link>
             <Link href="/login" className="transition-colors hover:text-[#14161A]">
               Sign in
             </Link>
