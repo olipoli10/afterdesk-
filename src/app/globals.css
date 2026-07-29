@@ -42,6 +42,26 @@ html {
     rgba(27, 39, 64, 0) 72%
   );
 }
+/* The cursor's own light: lifted dusk with a pale core — present, never
+   loud (founder-tuned ~25% softer than v1). */
+.glow-cursor {
+  background: radial-gradient(
+    closest-side,
+    rgba(150, 170, 230, 0.16) 0%,
+    rgba(60, 82, 130, 0.2) 35%,
+    rgba(27, 39, 64, 0.13) 60%,
+    rgba(27, 39, 64, 0) 75%
+  );
+}
+/* Paper-side variant: a whisper of dusk on daylight. */
+.glow-cursor--paper {
+  background: radial-gradient(
+    closest-side,
+    rgba(27, 39, 64, 0.1) 0%,
+    rgba(27, 39, 64, 0.06) 45%,
+    rgba(27, 39, 64, 0) 72%
+  );
+}
 .glow-paperlight {
   background: radial-gradient(
     closest-side,
@@ -49,6 +69,33 @@ html {
     rgba(255, 255, 255, 0.25) 45%,
     rgba(255, 255, 255, 0) 72%
   );
+}
+
+/* A thread of light around the flagship artifacts. The ring IS the border:
+   a hairline base with a bright arc orbiting it (rotation gated on motion
+   preference below). The rotating element is a flat gradient moved by
+   transform only — GPU-cheap. */
+.sheen-frame {
+  position: relative;
+  border-radius: 17px;
+  padding: 1.5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+}
+.sheen-frame::before {
+  content: "";
+  position: absolute;
+  inset: -150%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 260deg,
+    rgba(30, 127, 92, 0.55) 300deg,
+    rgba(247, 246, 243, 0.95) 330deg,
+    rgba(30, 127, 92, 0.55) 350deg,
+    transparent 360deg
+  );
+  will-change: transform;
 }
 
 /* The night floor: a faint engineering grid that vanishes into the dark —
@@ -59,6 +106,30 @@ html {
     linear-gradient(90deg, rgba(247, 246, 243, 0.045) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+}
+/* Its daylight twin for the worker side: ink hairlines on paper. */
+.paper-grid {
+  background-image:
+    linear-gradient(rgba(20, 22, 26, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 22, 26, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+}
+
+/* Paper variant of the sheen ring: ink base, dusk-and-white arc. */
+.sheen-frame--paper {
+  background: rgba(20, 22, 26, 0.14);
+}
+.sheen-frame--paper::before {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 260deg,
+    rgba(27, 39, 64, 0.6) 300deg,
+    rgba(255, 255, 255, 0.98) 330deg,
+    rgba(27, 39, 64, 0.6) 350deg,
+    transparent 360deg
+  );
 }
 
 body {
@@ -127,29 +198,25 @@ body {
     }
   }
 
-  /* A thread of light traveling around the flagship artifact. The rotating
-     element is a plain gradient moved by transform only — GPU-cheap. */
-  .sheen-frame {
-    position: relative;
-    border-radius: 17px;
-    padding: 1px;
-    overflow: hidden;
-  }
+  /* The sheen orbit — motion only; the ring itself is defined outside this
+     block so reduced-motion users keep the border. */
   .sheen-frame::before {
-    content: "";
-    position: absolute;
-    inset: -150%;
-    background: conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      transparent 300deg,
-      rgba(94, 234, 176, 0.16) 330deg,
-      rgba(247, 246, 243, 0.5) 345deg,
-      rgba(94, 234, 176, 0.16) 352deg,
-      transparent 360deg
-    );
-    animation: nlx-sheen 7s linear infinite;
-    will-change: transform;
+    animation: nlx-sheen 5s linear infinite;
+  }
+
+  /* A quiet heartbeat for the one live element in a static artifact. */
+  .pulse-soft {
+    animation: nlx-pulse 2.8s ease-in-out infinite;
+  }
+  @keyframes nlx-pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.04);
+      opacity: 0.82;
+    }
   }
   @keyframes nlx-sheen {
     from {

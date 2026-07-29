@@ -1,27 +1,28 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { getSessionUser, roleHome } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { Reveal } from "@/components/reveal";
 import { AudienceToggle } from "@/components/audience-toggle";
 import { PublicCounters } from "@/components/public-counters";
+import { PointerGlow } from "@/components/pointer-glow";
+import { WORKERS_I18N, workersLangOf, type WorkersLang } from "@/lib/i18n/workers";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The worker homepage — "The Sunrise Side of the Seam". The client page is a
    file disappearing into the night and coming back at dawn; this page is the
    same building walked around from the back. Identical skeleton, palette
    flipped: daylight paper where the client had night, night as the accent.
-   The organizing image is THE POOL AT SUNRISE — priced tasks surfacing while
-   America sleeps, the payout printed on every one.
 
-   Palette law (unchanged): green #1E7F5C only for money/fixed/passed; amber
-   #D98324 only for returned-work; green text NEVER sits directly on a night
-   surface (paper text + green underline there). The paper/night cut lands at
-   THE BAR — mirroring exactly where the client page cuts night-to-paper.
+   Bilingual: English / Tagalog via ?lang= + the ss-lang cookie (set by the
+   middleware). The ARTIFACTS (pool rows, ledger, slip) stay English — real
+   tasks arrive in English, and showing that is honest signaling.
 
-   Margin-pairing rule (RULE 2 adjacent): the example tasks and amounts on
-   this page must NEVER share a task domain or an amount with the client
-   page's examples, so no visitor can pair them and compute the margin.
+   Palette law (unchanged): green #1E7F5C only money/fixed/passed; amber only
+   returned-work; green text never directly on night (paper text + green
+   underline there). Margin-pairing rule: example tasks/amounts here never
+   share a domain or amount with the client page's examples.
    ───────────────────────────────────────────────────────────────────────── */
 
 export const metadata = {
@@ -45,7 +46,7 @@ const POOL_ROWS: {
 ];
 
 /* One claimed task's day — including a send-back, because the standard is
-   recoverable craft, not a strike. */
+   recoverable craft, not a strike. Artifact: stays English. */
 const LEDGER_LINES: {
   t: string;
   label: string;
@@ -71,43 +72,6 @@ const SLIP_ZEROS: [string, string][] = [
   ["Client calls", "0"],
 ];
 
-const daySteps = (maxClaims: number): [string, string][] => [
-  ["7:15 AM", "Approved tasks land in the pool, payouts printed."],
-  ["7:22 AM", `You claim. One click, no proposal. Up to ${maxClaims} tasks at once.`],
-  ["Daylight", "You work your own hours. Nobody calls, nothing to negotiate."],
-  ["4:52 PM", "You deliver. The operator reviews it before the client's morning."],
-];
-
-const THERE_HERE: [string, string][] = [
-  ["Write proposals all evening, for free.", "See the payout. Claim. Start."],
-  ["Bid against dozens on rate.", "One fixed payout, printed first. A vetted pool, not a crowd."],
-  ["Commission comes off your rate.", "The number on the task is the number released."],
-  ["Chase invoices across time zones.", "One operator releases every approved payout."],
-  [
-    "Client calls, scope creep, one more quick revision.",
-    "You never meet the client. The operator absorbs all of it.",
-  ],
-  [
-    "Star ratings from strangers.",
-    "One reviewer, one rolling score. High scores unlock bigger payouts.",
-  ],
-];
-
-/* The candor block, worker side. One or two short lines each. */
-const workerTerms = (maxClaims: number, qcRounds: number): [string, string][] => [
-  ["WORK", `Claim any hour. Up to ${maxClaims} tasks at once.`],
-  [
-    "PAYOUT",
-    "Printed before you claim. Released when review passes. Nothing off the top. Reversed only for a clear missed error — rare.",
-  ],
-  [
-    "REVIEW",
-    `Sent back with notes, up to ${qcRounds} rounds. A final fail is unpaid.`,
-  ],
-  ["IDENTITY", "You never learn who they are. They never learn who you are."],
-  ["SCORE", "1–5, rolling. High scores open the high-value pool."],
-];
-
 const NOISE = {
   backgroundImage:
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
@@ -119,7 +83,7 @@ function PoolChip({ tag }: { tag: "open" | "you" | "claimed" | "high" }) {
   // Palette law: green is reserved for money/fixed/passed — a claim is a
   // state, so the "you" chip is ink, and only the payout on the row is green.
   if (tag === "you")
-    return <span className={`${base} bg-[#14161A] text-[#F7F6F3]`}>Claimed · you</span>;
+    return <span className={`${base} pulse-soft bg-[#14161A] text-[#F7F6F3]`}>Claimed · you</span>;
   if (tag === "claimed")
     return <span className={`${base} bg-[#14161A]/10 text-[#5B6069]`}>Claimed</span>;
   if (tag === "high")
@@ -137,10 +101,46 @@ function PoolChip({ tag }: { tag: "open" | "you" | "claimed" | "high" }) {
   );
 }
 
-export default async function WorkersHome() {
+function LangSwitch({ lang }: { lang: WorkersLang }) {
+  const seg = "rounded px-1.5 py-0.5 transition-colors duration-150";
+  return (
+    <span className="flex items-center gap-0.5 font-mono text-[11px]">
+      <Link
+        href="/workers?lang=en"
+        aria-current={lang === "en" ? "true" : undefined}
+        className={`${seg} ${lang === "en" ? "bg-[#14161A] text-[#F7F6F3]" : "text-[#5B6069] hover:text-[#14161A]"}`}
+      >
+        EN
+      </Link>
+      <Link
+        href="/workers?lang=tl"
+        aria-current={lang === "tl" ? "true" : undefined}
+        className={`${seg} ${lang === "tl" ? "bg-[#14161A] text-[#F7F6F3]" : "text-[#5B6069] hover:text-[#14161A]"}`}
+      >
+        TL
+      </Link>
+    </span>
+  );
+}
+
+export default async function WorkersHome({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
   const user = await getSessionUser();
   if (user) redirect(roleHome(user.role));
   const settings = await getSettings();
+  const sp = await searchParams;
+  const cookieStore = await cookies();
+  const lang = workersLangOf(sp.lang ?? cookieStore.get("ss-lang")?.value);
+  const t = WORKERS_I18N[lang];
+  const ch = (n: string, label: string) => (
+    <>
+      {n}
+      <span className="opacity-50">/06</span> · {label}
+    </>
+  );
 
   return (
     <div className="overflow-x-clip bg-[#F7F6F3]">
@@ -151,18 +151,19 @@ export default async function WorkersHome() {
             Second Shift
           </span>
           <AudienceToggle side="worker" tone="paper" />
-          <div className="flex items-center justify-end gap-5">
+          <div className="flex items-center justify-end gap-3 sm:gap-5">
+            <LangSwitch lang={lang} />
             <Link
               href="/login"
               className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
             >
-              Sign in
+              {t.nav.signIn}
             </Link>
             <Link
               href="/register/va"
               className="lift rounded-full bg-[#14161A] px-3 py-1 text-[12px] font-medium text-[#F7F6F3] hover:bg-black hover:shadow-[0_6px_24px_rgba(20,22,26,0.25)] sm:px-4 sm:py-1.5 sm:text-[13px]"
             >
-              Apply
+              {t.nav.apply}
             </Link>
           </div>
         </div>
@@ -170,36 +171,36 @@ export default async function WorkersHome() {
 
       {/* ── HERO — morning light ──────────────────────────────────────── */}
       <section className="relative overflow-hidden">
-        {/* morning glow: white light with the last of their night at the edge */}
+        <div aria-hidden className="paper-grid pointer-events-none absolute inset-0" />
         <div
           aria-hidden
           className="hero-glow glow-paperlight pointer-events-none absolute -top-48 left-[4%] h-[640px] w-[900px]"
         />
         <div
           aria-hidden
-          className="glow-dusk pointer-events-none absolute -top-24 right-[-10%] h-[400px] w-[560px] opacity-[0.18]"
+          className="glow-drift glow-dusk pointer-events-none absolute -top-24 right-[-10%] h-[400px] w-[560px] opacity-[0.18]"
         />
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.02]" style={NOISE} />
+        <PointerGlow tone="paper" />
 
         <div className="relative mx-auto w-full max-w-[1120px] px-6 pb-4 pt-20 sm:pt-28">
-          <h1 className="max-w-[17ch] text-[clamp(2.5rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-            <span className="anim-rise block text-[#8A9099]">America goes to sleep.</span>
-            <span className="anim-rise d-1 block text-[#14161A]">You wake up to paid work.</span>
+          <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
+            <span className="anim-rise block text-[#8A9099]">{t.hero.line1}</span>
+            <span className="anim-rise d-1 block text-[#14161A]">{t.hero.line2}</span>
           </h1>
           <p className="anim-rise d-2 mt-6 max-w-[54ch] text-[17px] leading-[1.5] text-[#5B6069]">
-            Priced tasks land overnight, the payout printed on every one. Pass review,
-            get paid.
+            {t.hero.sub}
           </p>
           <div className="anim-rise d-3 mt-8">
             <Link
               href="/register/va"
               className="lift inline-flex rounded-full bg-[#14161A] px-5 py-2.5 text-[15px] font-medium text-[#F7F6F3] hover:bg-black hover:shadow-[0_10px_36px_rgba(20,22,26,0.28)]"
             >
-              Apply to join the pool
+              {t.hero.cta}
             </Link>
           </div>
           <p className="anim-rise d-4 mt-4 font-mono text-[13px] text-[#5B6069]">
-            Short application. Real vetting. The pool stays small on purpose.
+            {t.hero.micro}
           </p>
         </div>
 
@@ -210,10 +211,10 @@ export default async function WorkersHome() {
       {/* ── THE POOL → YOUR LEDGER ────────────────────────────────────── */}
       <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
         <p className="anim-rise d-6 mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-          01<span className="opacity-50">/06</span> · The pool
+          {ch("01", t.ch01.label)}
         </p>
         <p className="anim-rise d-6 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#5B6069]">
-          One task&apos;s day: claimed 7:22 AM, released after review.
+          {t.ch01.caption}
         </p>
 
         <p className="sr-only">
@@ -224,10 +225,8 @@ export default async function WorkersHome() {
         </p>
 
         <Reveal replay>
-          <div
-            aria-hidden
-            className="relative overflow-hidden rounded-2xl border border-[#14161A]/10 shadow-[0_24px_60px_-30px_rgba(20,22,26,0.35)] transition-shadow duration-500 hover:shadow-[0_36px_90px_-30px_rgba(20,22,26,0.5)]"
-          >
+          <div aria-hidden className="sheen-frame sheen-frame--paper shadow-[0_24px_60px_-30px_rgba(20,22,26,0.35)]">
+          <div className="relative overflow-hidden rounded-2xl">
             <div className="grid md:grid-cols-2">
               {/* THE POOL — paper, morning */}
               <div className="bg-[#F7F6F3]">
@@ -296,9 +295,7 @@ export default async function WorkersHome() {
                           className={
                             l.big
                               ? "text-[18px] font-semibold text-[#F7F6F3] underline decoration-[#1E7F5C] decoration-2 underline-offset-4"
-                              : l.money
-                                ? "truncate text-[#C9CDD3]"
-                                : "truncate text-[#C9CDD3]"
+                              : "truncate text-[#C9CDD3]"
                           }
                         >
                           {l.detail}
@@ -347,6 +344,7 @@ export default async function WorkersHome() {
               </span>
             </div>
           </div>
+          </div>
         </Reveal>
       </section>
 
@@ -355,7 +353,7 @@ export default async function WorkersHome() {
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
             <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-[#5B6069]">
-              02<span className="opacity-50">/06</span> · The number you see is the number you get.
+              {ch("02", t.ch02.label)}
             </p>
             <div className="mx-auto max-w-[420px]">
               <div className="lift rounded-xl border border-[#14161A]/10 bg-white p-5 font-mono text-[12px] hover:border-[#14161A]/20">
@@ -401,13 +399,11 @@ export default async function WorkersHome() {
               </div>
 
               <div className="mt-6 grid gap-3 font-mono text-[12px] text-[#5B6069] sm:grid-cols-3">
-                <p className="srow border-t border-[#14161A]/20 pt-3">Fixed. Printed before you claim.</p>
-                <p className="srow border-t border-[#14161A]/20 pt-3">
-                  No commission off your number. $54 on the task is $54 released.
-                </p>
-                <p className="srow border-t border-[#14161A]/20 pt-3">
-                  Released when review passes.
-                </p>
+                {t.ch02.captions.map((c) => (
+                  <p key={c} className="srow border-t border-[#14161A]/20 pt-3">
+                    {c}
+                  </p>
+                ))}
               </div>
             </div>
           </Reveal>
@@ -415,23 +411,24 @@ export default async function WorkersHome() {
       </section>
 
       {/* ── THE DAY BAND ──────────────────────────────────────────────── */}
-      <section className="border-t border-black/8">
-        <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
+      <section className="relative overflow-hidden border-t border-black/8">
+        <PointerGlow tone="paper" />
+        <div className="relative mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              03<span className="opacity-50">/06</span> · The day
+              {ch("03", t.ch03.label)}
             </p>
             <h2 className="mb-2 text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-              Your working day is their night.
+              {t.ch03.h2}
             </h2>
             <p className="mb-8 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">
-              Your morning starts as New York goes quiet.
+              {t.ch03.sub}
             </p>
             <div className="space-y-4">
               {[
-                { label: "Your working hours — Manila", lit: (h: number) => h >= 8 && h <= 17 },
+                { label: t.ch03.barYours, lit: (h: number) => h >= 8 && h <= 17 },
                 {
-                  label: "Their working hours — New York, 12 hours behind",
+                  label: t.ch03.barTheirs,
                   // 8 AM–5 PM New York shifted 12h onto the Manila clock.
                   lit: (h: number) => h >= 20 || h <= 5,
                 },
@@ -447,7 +444,7 @@ export default async function WorkersHome() {
                     ))}
                     <span
                       aria-hidden
-                      className="band-sweep absolute inset-y-0 left-0 w-[2px] bg-[#F7F6F3] mix-blend-difference"
+                      className="band-sweep absolute inset-y-0 left-0 w-[3px] bg-[#F7F6F3] mix-blend-difference"
                     />
                   </div>
                 </div>
@@ -455,7 +452,7 @@ export default async function WorkersHome() {
             </div>
 
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {daySteps(settings.maxActiveClaims).map(([time, text]) => (
+              {t.ch03.steps(settings.maxActiveClaims).map(([time, text]) => (
                 <div key={time} className="srow">
                   <p className="font-mono text-[11px] tabular-nums text-[#5B6069]">{time}</p>
                   <p className="mt-1 text-[15px] leading-snug text-[#14161A]">{text}</p>
@@ -463,9 +460,7 @@ export default async function WorkersHome() {
               ))}
             </div>
 
-            <p className="mt-8 font-mono text-[12px] text-[#5B6069]">
-              Manila anchors the clock. The pool opens wherever your morning is.
-            </p>
+            <p className="mt-8 font-mono text-[12px] text-[#5B6069]">{t.ch03.footnote}</p>
           </Reveal>
         </div>
       </section>
@@ -481,33 +476,32 @@ export default async function WorkersHome() {
           <div className="relative mx-auto w-full max-w-[880px] px-6 py-24">
             <Reveal>
               <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
-                04<span className="opacity-50">/06</span> · The bar
+                {ch("04", t.ch04.label)}
               </p>
               <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
-                The bar is why the money is real.
+                {t.ch04.h2}
               </h2>
               <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-[#9AA1AB]">
-                Every delivery is reviewed before the client sees it. Real prices fund
-                real payouts — the bar is what holds the deal up.
+                {t.ch04.body}
               </p>
 
               <div className="mt-8 space-y-3">
                 <div className="srow rounded border-l-[3px] border-[#1E7F5C] bg-[#111317] px-4 py-3 font-mono text-[13px] text-[#F7F6F3] ring-1 ring-white/[0.06]">
-                  Passes review → paid.
+                  {t.ch04.rowPass}
                 </div>
                 <div className="srow rounded border-l-[3px] border-[#D98324] bg-[#111317] px-4 py-3 font-mono text-[13px] text-[#F7F6F3] ring-1 ring-white/[0.06]">
-                  Not right yet → returned with notes.
+                  {t.ch04.rowReturned}
                 </div>
                 <p className="srow pl-4 font-mono text-[12px] text-[#8A9099]">
-                  Revisions are part of the craft, not a strike.
+                  {t.ch04.revisionNote}
                 </p>
                 <div className="srow rounded border-l-[3px] border-[#5B6069] bg-[#111317] px-4 py-3 font-mono text-[13px] text-[#9AA1AB] ring-1 ring-white/[0.06]">
-                  Fails final review → unpaid. Rare, by design.
+                  {t.ch04.rowFail}
                 </div>
               </div>
 
               <p className="mt-8 border-t border-white/10 pt-4 font-mono text-[12px] leading-relaxed text-[#767C86]">
-                Not a page for everyone. That&apos;s why the pool is never a crowd.
+                {t.ch04.closing}
               </p>
             </Reveal>
           </div>
@@ -519,21 +513,21 @@ export default async function WorkersHome() {
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
-              05<span className="opacity-50">/06</span> · There, here
+              {ch("05", t.ch05.label)}
             </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
-              No proposals. No bids. No chasing.
+              {t.ch05.h2}
             </h2>
             <div className="mt-8">
               <div className="mb-2 hidden grid-cols-2 gap-6 md:grid">
                 <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#767C86]">
-                  There
+                  {t.ch05.there}
                 </span>
                 <span className="w-fit rounded border border-[#1E7F5C]/40 bg-[#1E7F5C]/10 px-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#F7F6F3]">
-                  Here
+                  {t.ch05.here}
                 </span>
               </div>
-              {THERE_HERE.map(([there, here]) => (
+              {t.ch05.pairs.map(([there, here]) => (
                 <div
                   key={there}
                   className="srow grid gap-2 border-b border-white/[0.05] py-4 md:grid-cols-2 md:gap-6"
@@ -554,7 +548,7 @@ export default async function WorkersHome() {
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
             <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
-              06<span className="opacity-50">/06</span> · The terms
+              {ch("06", t.ch06.label)}
             </p>
             {/* the shape of the company, in one line — decorative; the caption
                 below carries the meaning for screen readers */}
@@ -572,12 +566,10 @@ export default async function WorkersHome() {
                   ×
                 </span>
               </div>
-              <p className="mt-3 font-mono text-[11px] text-[#8A9099]">
-                Everything crosses through the operator. Nothing crosses directly.
-              </p>
+              <p className="mt-3 font-mono text-[11px] text-[#8A9099]">{t.ch06.schematic}</p>
             </div>
 
-            {workerTerms(settings.maxActiveClaims, settings.maxQcRounds).map(([label, text]) => (
+            {t.ch06.terms(settings.maxActiveClaims, settings.maxQcRounds).map(([label, text]) => (
               <div
                 key={label}
                 className="srow grid gap-2 border-b border-white/[0.06] py-5 sm:grid-cols-[140px_1fr] sm:gap-6"
@@ -610,21 +602,18 @@ export default async function WorkersHome() {
               <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.02]" style={NOISE} />
               <div className="relative">
                 <h2 className="text-[30px] font-semibold tracking-[-0.02em]">
-                  <span className="block text-[#8A9099]">America goes to sleep.</span>
-                  <span className="block text-[#14161A]">You wake up to paid work.</span>
+                  <span className="block text-[#8A9099]">{t.hero.line1}</span>
+                  <span className="block text-[#14161A]">{t.hero.line2}</span>
                 </h2>
                 <div className="mt-7">
                   <Link
                     href="/register/va"
                     className="lift inline-flex rounded-full bg-[#14161A] px-5 py-2.5 text-[15px] font-medium text-[#F7F6F3] hover:bg-black hover:shadow-[0_10px_36px_rgba(20,22,26,0.3)]"
                   >
-                    Apply now
+                    {t.closing.cta}
                   </Link>
                 </div>
-                <p className="mt-4 font-mono text-[12px] text-[#5B6069]">
-                  Account → short application → the operator&apos;s review → the pool.
-                  Not everyone gets in. That&apos;s the point.
-                </p>
+                <p className="mt-4 font-mono text-[12px] text-[#5B6069]">{t.closing.funnel}</p>
               </div>
             </div>
           </Reveal>
@@ -639,13 +628,13 @@ export default async function WorkersHome() {
           </span>
           <div className="flex items-center gap-6 text-[13px] text-[#8A9099]">
             <Link href="/how-it-works" className="transition-colors hover:text-white">
-              How it works
+              {t.footer.how}
             </Link>
             <Link href="/login" className="transition-colors hover:text-white">
-              Sign in
+              {t.footer.signIn}
             </Link>
             <Link href="/" className="transition-colors hover:text-white">
-              Send work instead
+              {t.footer.sendWork}
             </Link>
           </div>
         </div>

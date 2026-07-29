@@ -233,8 +233,9 @@ export default async function Home() {
       </section>
 
       {/* ── THE LEDGER (paper) ────────────────────────────────────────── */}
-      <section className="bg-[#F7F6F3]">
-        <div className="mx-auto w-full max-w-[880px] px-6 py-24">
+      <section className="relative overflow-hidden bg-[#F7F6F3]">
+        <PointerGlow tone="paper" />
+        <div className="relative mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
               03<span className="opacity-50">/06</span> · The ledger
@@ -268,8 +269,9 @@ export default async function Home() {
       </section>
 
       {/* ── THE NIGHT BAND (paper) ────────────────────────────────────── */}
-      <section className="border-t border-black/8 bg-[#F7F6F3]">
-        <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
+      <section className="relative overflow-hidden border-t border-black/8 bg-[#F7F6F3]">
+        <PointerGlow tone="paper" />
+        <div className="relative mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
               04<span className="opacity-50">/06</span> · The night
@@ -301,7 +303,7 @@ export default async function Home() {
                     {/* the same "now" sweeping both cities at once */}
                     <span
                       aria-hidden
-                      className="band-sweep absolute inset-y-0 left-0 w-[2px] bg-[#F7F6F3] mix-blend-difference"
+                      className="band-sweep absolute inset-y-0 left-0 w-[3px] bg-[#F7F6F3] mix-blend-difference"
                     />
                   </div>
                 </div>

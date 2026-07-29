@@ -3,12 +3,14 @@
 import { useEffect, useRef } from "react";
 
 /**
- * A dusk halo that drifts toward the pointer over the hero — atmosphere that
- * answers the visitor's hand. Mouse-only (pointer:fine), reduced-motion
- * gated, and cheap by construction: a flat radial gradient (never a blur()
- * filter) moved by transform only, updated at most once per frame via rAF.
+ * A light that FOLLOWS the pointer over the hero. Smooth-follow is done by
+ * lerping toward the cursor in a persistent rAF loop — never a CSS transform
+ * transition (a long transition restarting on every move leaves the glow
+ * permanently lagging behind the hand, which reads as broken).
+ * Flat gradient (no blur() filter), transform-only: pure compositor work.
+ * Mouse-only, reduced-motion gated.
  */
-export function PointerGlow() {
+export function PointerGlow({ tone = "night" }: { tone?: "night" | "paper" }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,23 +24,41 @@ export function PointerGlow() {
       window.matchMedia("(pointer: fine)").matches;
     if (!ok) return;
 
-    let raf = 0;
+    const HALF = 320; // half of the 640px glow
+    let targetX = 0;
+    let targetY = 0;
     let x = 0;
     let y = 0;
+    let raf = 0;
+    let active = false;
+
+    const loop = () => {
+      x += (targetX - x) * 0.16;
+      y += (targetY - y) * 0.16;
+      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      if (active || Math.abs(targetX - x) + Math.abs(targetY - y) > 0.5) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        raf = 0;
+      }
+    };
 
     const onMove = (e: PointerEvent) => {
       const r = host.getBoundingClientRect();
-      x = e.clientX - r.left - 280;
-      y = e.clientY - r.top - 280;
-      if (!raf) {
-        raf = requestAnimationFrame(() => {
-          raf = 0;
-          el.style.opacity = "1";
-          el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-        });
+      targetX = e.clientX - r.left - HALF;
+      targetY = e.clientY - r.top - HALF;
+      if (!active) {
+        active = true;
+        // First contact: appear AT the cursor, no cross-screen swoop.
+        x = targetX;
+        y = targetY;
+        el.style.opacity = "1";
       }
+      if (!raf) raf = requestAnimationFrame(loop);
     };
+
     const onLeave = () => {
+      active = false;
       el.style.opacity = "0";
     };
 
@@ -55,11 +75,8 @@ export function PointerGlow() {
     <div
       ref={ref}
       aria-hidden
-      className="glow-dusk pointer-events-none absolute left-0 top-0 h-[560px] w-[560px] opacity-0"
-      style={{
-        transition: "opacity 700ms ease, transform 900ms cubic-bezier(0.16, 1, 0.3, 1)",
-        willChange: "transform, opacity",
-      }}
+      className={`${tone === "paper" ? "glow-cursor--paper" : "glow-cursor"} pointer-events-none absolute left-0 top-0 h-[640px] w-[640px] opacity-0`}
+      style={{ transition: "opacity 500ms ease", willChange: "transform, opacity" }}
     />
   );
 }

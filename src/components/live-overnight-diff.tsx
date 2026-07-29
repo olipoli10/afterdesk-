@@ -93,7 +93,8 @@ export function LiveOvernightDiff() {
   const delivered = !playing || step >= DONE_STEP;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)]">
+    <div className="sheen-frame shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)]">
+    <div className="relative overflow-hidden rounded-2xl">
       {/* app-window chrome: this is the product, not an illustration */}
       <div className="flex h-10 items-center justify-between border-b border-white/8 bg-[#0F1011] px-4">
         <span className="font-mono text-[11px] text-[#8A9099]">second shift · task_0447</span>
@@ -227,6 +228,7 @@ export function LiveOvernightDiff() {
           $68 — approved before any work started.
         </span>
       </div>
+    </div>
     </div>
   );
 }

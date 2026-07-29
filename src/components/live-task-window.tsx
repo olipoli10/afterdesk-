@@ -110,9 +110,9 @@ export function LiveTaskWindow() {
   return (
     <div ref={ref} className="relative">
       <div className="glow-dusk pointer-events-none absolute -inset-16" />
-      {/* a thread of light travels the frame — the machine hums */}
+      {/* a thread of light travels the frame — the ring IS the border */}
       <div className="sheen-frame relative shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)]">
-      <div className="relative overflow-hidden rounded-[16px] border border-white/10 bg-[#111317]">
+      <div className="relative overflow-hidden rounded-[16px] bg-[#111317]">
         <div className="flex items-center justify-between border-b border-white/8 px-4 py-2.5">
           <span className="font-mono text-[11px] text-[#8A9099]">task_0448</span>
           <span
