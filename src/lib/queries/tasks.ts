@@ -1,6 +1,7 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";
 
 /**
  * RULE 2 enforcement lives here. Every read of Task data goes through the
@@ -41,6 +42,24 @@ export const clientTaskSelect = {
     select: { id: true, fileName: true, sizeBytes: true, mime: true, createdAt: true },
     orderBy: { createdAt: "asc" as const },
   },
+  /**
+   * Approved deliveries only — a rejected revision must stay invisible
+   * forever, and its filename can carry the worker's identity. `note` is the
+   * worker's message to the operator and is deliberately NOT selected.
+   */
+  submissions: {
+    where: { qcStatus: "approved" as const },
+    select: {
+      id: true,
+      reviewedAt: true,
+      files: {
+        where: { purgedAt: null },
+        select: { id: true, fileName: true, sizeBytes: true },
+        orderBy: { createdAt: "asc" as const },
+      },
+    },
+    orderBy: { reviewedAt: "desc" as const },
+  },
 } satisfies Prisma.TaskSelect;
 
 export type ClientTaskView = Prisma.TaskGetPayload<{ select: typeof clientTaskSelect }>;
@@ -61,6 +80,121 @@ export async function taskForClient(
   return prisma.task.findFirst({
     where: { id: taskId, clientId },
     select: clientTaskSelect,
+  });
+}
+
+// ---------- VA ----------
+
+/**
+ * RULE 2 / RULE 1: this select is the security boundary for the worker side.
+ * It must NEVER list clientPriceCents, clientId, client, clientDeadlineUtc,
+ * ai* fields, or Payment/Payout amounts belonging to anyone else. The worker
+ * sees their own payout and their own deadline, nothing about who is paying.
+ */
+export const vaTaskSelect = {
+  id: true,
+  title: true,
+  description: true,
+  quantity: true,
+  tier: true,
+  status: true,
+  currency: true,
+  vaPayoutCents: true,
+  vaDeadlineUtc: true,
+  claimedById: true,
+  claimedAt: true,
+  qcRounds: true,
+  createdAt: true,
+  category: { select: { name: true, slug: true, disputeCriteria: true } },
+  files: {
+    where: { kind: "input" as const, purgedAt: null },
+    select: { id: true, fileName: true, sizeBytes: true, mime: true },
+    orderBy: { createdAt: "asc" as const },
+  },
+} satisfies Prisma.TaskSelect;
+
+export type VaTaskView = Prisma.TaskGetPayload<{ select: typeof vaTaskSelect }>;
+
+/**
+ * Pool listing. Deliberately narrower than vaTaskSelect: file *names* stay out
+ * of the pool entirely, because a client's filename can identify them and the
+ * pool is visible to every approved worker. Counts only.
+ */
+export const vaPoolSelect = {
+  id: true,
+  title: true,
+  description: true,
+  quantity: true,
+  tier: true,
+  currency: true,
+  vaPayoutCents: true,
+  vaDeadlineUtc: true,
+  category: { select: { name: true, slug: true } },
+  _count: { select: { files: { where: { kind: "input", purgedAt: null } } } },
+} satisfies Prisma.TaskSelect;
+
+export type VaPoolView = Prisma.TaskGetPayload<{ select: typeof vaPoolSelect }>;
+
+/**
+ * The pool a specific worker is allowed to see. High-value tasks are gated on
+ * the rolling score and a minimum number of rated deliveries; both thresholds
+ * are admin-editable settings.
+ */
+export async function poolForVa(opts: {
+  score: number | null;
+  ratedCount: number;
+  highValueThreshold: number;
+  minRatedDeliveries: number;
+}): Promise<VaPoolView[]> {
+  const eligibleForHighValue =
+    opts.score !== null &&
+    opts.score >= opts.highValueThreshold &&
+    opts.ratedCount >= opts.minRatedDeliveries;
+
+  return prisma.task.findMany({
+    where: {
+      status: "open",
+      claimedById: null,
+      ...(eligibleForHighValue ? {} : { tier: "standard" }),
+    },
+    select: vaPoolSelect,
+    orderBy: [{ vaDeadlineUtc: { sort: "asc", nulls: "last" } }, { createdAt: "asc" }],
+    take: 100,
+  });
+}
+
+/** Tasks currently in this worker's hands. */
+export async function tasksForVa(vaId: string): Promise<VaTaskView[]> {
+  return prisma.task.findMany({
+    where: { claimedById: vaId, status: { in: VA_FILE_ACCESS_STATUSES } },
+    select: vaTaskSelect,
+    orderBy: { vaDeadlineUtc: { sort: "asc", nulls: "last" } },
+  });
+}
+
+/** One task, scoped to the worker who holds it. */
+export async function taskForVa(taskId: string, vaId: string): Promise<VaTaskView | null> {
+  return prisma.task.findFirst({
+    where: { id: taskId, claimedById: vaId },
+    select: vaTaskSelect,
+  });
+}
+
+/** This worker's finished history — payout amounts are theirs to see. */
+export async function completedTasksForVa(vaId: string) {
+  return prisma.task.findMany({
+    where: { claimedById: vaId, status: { in: ["completed", "cancelled", "expired"] } },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      currency: true,
+      vaPayoutCents: true,
+      completedAt: true,
+      category: { select: { name: true } },
+    },
+    orderBy: { completedAt: { sort: "desc", nulls: "last" } },
+    take: 50,
   });
 }
 
@@ -93,9 +227,13 @@ export const adminTaskSelect = {
   cancelReason: true,
   expiredAt: true,
   qcRounds: true,
+  revisionRounds: true,
   filesVerified: true,
-  clientPaidAt: true,
-  vaPaidAt: true,
+  isInternal: true,
+  estimatedMinutes: true,
+  firstCompletedAt: true,
+  paymentDueAt: true,
+  category: { select: { id: true, name: true, slug: true } },
   createdAt: true,
   client: { select: { id: true, name: true, email: true } },
   claimedBy: { select: { id: true, name: true, email: true } },

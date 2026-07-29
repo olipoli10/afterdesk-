@@ -20,16 +20,26 @@ export class TransitionError extends Error {
 export const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   submitted: ["pricing_review", "cancelled"],
   pricing_review: ["quoted", "cancelled"],
-  quoted: ["open", "declined", "expired", "cancelled"],
+  // Accepting no longer publishes the task: it must be paid for first. The
+  // one exception is the operator's own internal practice work, which skips
+  // the payment gate structurally (guarded on isInternal in the action).
+  quoted: ["awaiting_payment", "open", "declined", "expired", "cancelled"],
+  awaiting_payment: ["open", "expired", "cancelled"],
   declined: [],
   open: ["claimed", "expired", "cancelled"],
   claimed: ["submitted_for_qc", "open", "expired", "cancelled"],
   submitted_for_qc: ["completed", "qc_rejected", "cancelled"],
   qc_rejected: ["submitted_for_qc", "open", "cancelled"],
-  revision_requested: ["claimed", "open", "completed", "cancelled"],
-  completed: ["revision_requested"],
+  revision_requested: ["claimed", "open", "completed", "disputed", "cancelled"],
+  // No longer terminal: the client has a post-delivery window in which to ask
+  // for a revision or open a dispute.
+  completed: ["revision_requested", "disputed"],
+  // rejected -> completed (normal variance, release), rework -> the worker
+  // fixes it, upheld -> cancelled (client refunded, worker unpaid).
+  disputed: ["completed", "revision_requested", "cancelled"],
   cancelled: [],
-  expired: ["open", "cancelled"],
+  // A late payment needs somewhere to land; re-pooling is always a NEW task.
+  expired: ["awaiting_payment", "cancelled"],
 };
 
 export function isAllowedTransition(from: TaskStatus, to: TaskStatus): boolean {
@@ -46,7 +56,12 @@ type TransitionArgs = {
   actorId?: string;
   reason?: string;
   /** Extra Task columns to set atomically with the status change. */
-  data?: Prisma.TaskUpdateManyMutationInput;
+  /**
+   * Unchecked so the compare-and-swap can set foreign-key scalars directly
+   * (claimedById, categoryId). Prisma's checked updateMany input excludes any
+   * scalar that has a relation, which is exactly what the claim needs to write.
+   */
+  data?: Prisma.TaskUncheckedUpdateManyInput;
   meta?: Prisma.InputJsonValue;
   /**
    * Extra WHERE conditions folded into the compare-and-swap — e.g. a time

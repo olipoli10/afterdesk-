@@ -12,12 +12,15 @@ type PendingUpload = { name: string; status: "uploading" | "error"; error?: stri
  * submit action claims the returned file ids.
  */
 export function FileUpload({
+  kind = "input",
   maxFileSizeMB,
   maxFiles,
   allowedExtensions,
   files,
   onChange,
 }: {
+  /** "input" = client's source data, "deliverable" = the worker's finished work. */
+  kind?: "input" | "deliverable";
   maxFileSizeMB: number;
   maxFiles: number;
   allowedExtensions: string[];
@@ -50,6 +53,7 @@ export function FileUpload({
       setPending((p) => [...p, { name: file.name, status: "uploading" }]);
       const body = new FormData();
       body.append("file", file);
+      body.append("kind", kind);
       try {
         const res = await fetch("/api/upload", { method: "POST", body });
         const json = await res.json();

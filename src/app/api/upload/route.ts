@@ -21,9 +21,6 @@ const MAX_PENDING_UPLOADS = 40;
 export async function POST(request: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  if (user.role !== "CLIENT") {
-    return NextResponse.json({ error: "Only clients can upload input files." }, { status: 403 });
-  }
 
   const settings = await getSettings();
   const maxBytes = settings.maxFileSizeMB * 1024 * 1024;
@@ -54,6 +51,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No file provided." }, { status: 400 });
   }
 
+  // Each role has exactly one lane: clients upload the source data, workers
+  // upload finished work. Nobody can write into the other's kind.
+  const requestedKind = form.get("kind") === "deliverable" ? "deliverable" : "input";
+  if (requestedKind === "input" && user.role !== "CLIENT") {
+    return NextResponse.json({ error: "Only clients upload input files." }, { status: 403 });
+  }
+  if (requestedKind === "deliverable" && user.role !== "VA") {
+    return NextResponse.json({ error: "Only workers upload deliverables." }, { status: 403 });
+  }
+
   if (file.size <= 0 || file.size > maxBytes) {
     return NextResponse.json(
       { error: `File exceeds the ${settings.maxFileSizeMB} MB limit.` },
@@ -71,7 +78,7 @@ export async function POST(request: Request) {
   }
 
   // Opaque server-generated key — original filename never appears in keys/URLs.
-  const storageKey = `input/${randomUUID()}.${ext}`;
+  const storageKey = `${requestedKind}/${randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
   await putObject(storageKey, buffer);
 
@@ -79,7 +86,7 @@ export async function POST(request: Request) {
     const record = await prisma.file.create({
       data: {
         taskId: null,
-        kind: "input",
+        kind: requestedKind,
         uploaderId: user.id,
         storageKey,
         fileName: originalName,

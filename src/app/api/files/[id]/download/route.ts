@@ -1,8 +1,8 @@
-import path from "node:path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSessionUser, isApprovedVa } from "@/lib/authz";
 import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";
+import { deliverableFileLabel, inputFileLabel } from "@/lib/filenames";
 import { objectExists, objectStream } from "@/lib/storage";
 
 /**
@@ -31,8 +31,7 @@ export async function GET(
   });
   if (!file) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
-  const ext = path.extname(file.fileName);
-  const shortId = file.task ? file.task.id.slice(-6) : file.id.slice(-6);
+  const taskId = file.task?.id ?? file.id;
 
   let allowed = false;
   // Default to the real name; only the owner and the admin ever keep it.
@@ -49,7 +48,7 @@ export async function GET(
         // RULE 3: only admin-approved deliverables ever reach a client —
         // rejected revisions stay invisible forever.
         allowed = file.submission?.qcStatus === "approved";
-        downloadName = `task-${shortId}-deliverable${ext}`;
+        downloadName = deliverableFileLabel(file.fileName, taskId);
       }
     }
   } else if (user.role === "VA") {
@@ -65,7 +64,7 @@ export async function GET(
       } else if (file.kind === "input") {
         allowed = true;
         // RULE 1: the client's filename can identify them.
-        downloadName = `task-${shortId}-input-${file.id.slice(-4)}${ext}`;
+        downloadName = inputFileLabel(file.fileName, taskId, file.id);
       }
     }
   }

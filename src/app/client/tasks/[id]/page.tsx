@@ -9,6 +9,7 @@ import {
   CLIENT_STATUS_LABELS,
 } from "@/lib/status";
 import { formatCents } from "@/lib/money";
+import { deliverableFileLabel } from "@/lib/filenames";
 import { LocalTime } from "@/components/local-time";
 import { QuoteActions } from "@/components/quote-actions";
 import { Badge, Card, CardBody, PageTitle, formatBytes } from "@/components/ui";
@@ -135,6 +136,35 @@ export default async function ClientTaskPage({
           </dl>
         </CardBody>
       </Card>
+
+      {task.submissions.length > 0 ? (
+        <Card className="mb-4 border-emerald-200">
+          <CardBody>
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-label text-neutral-400">
+              Your finished work
+            </h2>
+            <p className="mb-3 text-sm text-neutral-600">
+              Reviewed and approved before it reached you.
+            </p>
+            <ul className="divide-y divide-neutral-100 text-sm">
+              {task.submissions[0].files.map((f) => (
+                <li key={f.id} className="flex items-center justify-between py-2">
+                  {/* RULE 1: never the worker's own filename — it can name them. */}
+                  <a
+                    href={`/api/files/${f.id}/download`}
+                    className="truncate font-medium text-blue-700 hover:underline"
+                  >
+                    {deliverableFileLabel(f.fileName, task.id)}
+                  </a>
+                  <span className="shrink-0 pl-2 text-xs text-neutral-400">
+                    {formatBytes(f.sizeBytes)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardBody>
+        </Card>
+      ) : null}
 
       {task.files.length > 0 ? (
         <Card>

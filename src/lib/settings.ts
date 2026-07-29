@@ -17,6 +17,14 @@ export type Settings = {
   // Client can request a revision within this window after completion.
   revisionWindowHours: number;
   maxQcRounds: number;
+  /** Revision rounds a client may request before it must become a dispute. */
+  maxRevisionRounds: number;
+  /** Floor on the inspection time a client gets back after a revision. */
+  revisionMinRemainingHours: number;
+  /** Work-in-progress cap per worker, so one person cannot hoard the pool. */
+  maxActiveClaims: number;
+  /** How long a client has to pay after accepting a quote. */
+  paymentWindowHours: number;
   retentionDays: number;
   scoreWindow: number;
   highValueThreshold: number;
@@ -43,6 +51,10 @@ export const DEFAULT_SETTINGS: Settings = {
   quoteValidityHours: 72,
   revisionWindowHours: 72,
   maxQcRounds: 2,
+  maxRevisionRounds: 2,
+  revisionMinRemainingHours: 24,
+  maxActiveClaims: 3,
+  paymentWindowHours: 48,
   retentionDays: 90,
   scoreWindow: 10,
   highValueThreshold: 4.0,
