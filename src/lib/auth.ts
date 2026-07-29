@@ -1,6 +1,18 @@
 import { betterAuth } from "better-auth";
+import { emailOTP } from "better-auth/plugins";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
+
+/**
+ * Google sign-in is enabled only when credentials are configured, so the app
+ * runs without them and the button is hidden rather than broken.
+ * A Google sign-up always produces a CLIENT account — assistants apply through
+ * the dedicated form because that flow creates their profile and entry test.
+ */
+export const googleEnabled = Boolean(
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+);
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -11,6 +23,38 @@ export const auth = betterAuth({
     minPasswordLength: 10,
     autoSignIn: true,
   },
+  ...(googleEnabled
+    ? {
+        socialProviders: {
+          google: {
+            clientId: process.env.GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+          },
+        },
+      }
+    : {}),
+  plugins: [
+    emailOTP({
+      otpLength: 6,
+      expiresIn: 600, // 10 minutes
+      sendVerificationOnSignUp: true,
+      allowedAttempts: 5,
+      async sendVerificationOTP({ email, otp, type }) {
+        const subject =
+          type === "forget-password"
+            ? "Reset your Nightlexicon password"
+            : "Your Nightlexicon verification code";
+        await sendEmail({
+          to: email,
+          subject,
+          text:
+            `Your verification code is ${otp}\n\n` +
+            `It expires in 10 minutes. If you did not request it, ignore this email.\n\n` +
+            `— Nightlexicon`,
+        });
+      },
+    }),
+  ],
   user: {
     additionalFields: {
       // RULE: role is NEVER client-assignable. input: false means the value
@@ -33,6 +77,7 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-up/email": { window: 300, max: 5 },
+      "/email-otp/verify-email": { window: 300, max: 10 },
     },
   },
   // No cookieCache: role/status checks must always hit the database so a
@@ -44,4 +89,5 @@ export type SessionUser = {
   email: string;
   name: string;
   role: "CLIENT" | "VA" | "ADMIN";
+  emailVerified: boolean;
 };

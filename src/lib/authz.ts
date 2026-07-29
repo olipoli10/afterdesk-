@@ -21,13 +21,24 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return null;
   const u = session.user as unknown as SessionUser & { role: string };
-  return { id: u.id, email: u.email, name: u.name, role: u.role as Role };
+  return {
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    role: u.role as Role,
+    emailVerified: Boolean(u.emailVerified),
+  };
 }
 
-/** Requires a logged-in user; redirects to /login otherwise. */
+/**
+ * Requires a signed-in account with a verified email address. Unverified
+ * accounts are held at the code-entry screen — they cannot submit tasks, claim
+ * work, or reach any dashboard.
+ */
 export async function requireUser(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) redirect("/login");
+  if (!user.emailVerified) redirect("/verify-email");
   return user;
 }
 
