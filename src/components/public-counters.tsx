@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import { publicStats } from "@/lib/queries/public-stats";
+import { RollingNumber } from "@/components/rolling-number";
 
 function bucketDollars(cents: number): string {
   return `$${Math.floor(cents / 100).toLocaleString("en-US")}+`;
@@ -59,10 +61,25 @@ export async function PublicCounters({
       : "text-[#1E7F5C]";
   const border = tone === "night" ? "border-white/[0.08]" : "border-[#14161A]/10";
 
-  const cells: { v: string; l: string; money?: boolean }[] = [
-    { v: n, l: taskWord },
-    ...(released ? [{ v: released, l: "released to workers", money: true }] : []),
-    { v: w, l: workerWord },
+  /* Evidence-layer motion: figures roll up once on entry, then hold. */
+  const cells: { node: ReactNode; l: string; money?: boolean }[] = [
+    { node: <RollingNumber value={stats.tasksDelivered} />, l: taskWord },
+    ...(stats.releasedBucketCents !== null
+      ? [
+          {
+            node: (
+              <RollingNumber
+                value={Math.floor(stats.releasedBucketCents / 100)}
+                prefix="$"
+                suffix="+"
+              />
+            ),
+            l: "released to workers",
+            money: true,
+          },
+        ]
+      : []),
+    { node: <RollingNumber value={stats.approvedWorkers} />, l: workerWord },
   ];
 
   return (
@@ -72,7 +89,7 @@ export async function PublicCounters({
       {cells.map((c) => (
         <span key={c.l} className="flex items-baseline gap-2.5">
           <span className={`text-[15px] font-medium tabular-nums ${c.money ? money : value}`}>
-            {c.v}
+            {c.node}
           </span>
           <span className={`text-[10px] uppercase tracking-[0.15em] sm:text-[11px] ${label}`}>
             {c.l}

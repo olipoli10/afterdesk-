@@ -209,6 +209,9 @@ export default async function WorkersHome() {
 
       {/* ── THE POOL → YOUR LEDGER ────────────────────────────────────── */}
       <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
+        <p className="anim-rise d-6 mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+          01<span className="opacity-50">/06</span> · The pool
+        </p>
         <p className="anim-rise d-6 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#5B6069]">
           One task&apos;s day: claimed 7:22 AM, released after review.
         </p>
@@ -352,7 +355,7 @@ export default async function WorkersHome() {
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
             <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-[#5B6069]">
-              The number you see is the number you get.
+              02<span className="opacity-50">/06</span> · The number you see is the number you get.
             </p>
             <div className="mx-auto max-w-[420px]">
               <div className="lift rounded-xl border border-[#14161A]/10 bg-white p-5 font-mono text-[12px] hover:border-[#14161A]/20">
@@ -415,6 +418,9 @@ export default async function WorkersHome() {
       <section className="border-t border-black/8">
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+              03<span className="opacity-50">/06</span> · The day
+            </p>
             <h2 className="mb-2 text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
               Your working day is their night.
             </h2>
@@ -474,6 +480,9 @@ export default async function WorkersHome() {
           />
           <div className="relative mx-auto w-full max-w-[880px] px-6 py-24">
             <Reveal>
+              <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
+                04<span className="opacity-50">/06</span> · The bar
+              </p>
               <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
                 The bar is why the money is real.
               </h2>
@@ -509,6 +518,9 @@ export default async function WorkersHome() {
       <section className="border-t border-white/8 bg-[#0A0B0D]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
+              05<span className="opacity-50">/06</span> · There, here
+            </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
               No proposals. No bids. No chasing.
             </h2>
@@ -541,6 +553,9 @@ export default async function WorkersHome() {
       <section className="border-t border-white/8 bg-[#111317]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
+              06<span className="opacity-50">/06</span> · The terms
+            </p>
             {/* the shape of the company, in one line — decorative; the caption
                 below carries the meaning for screen readers */}
             <div className="mb-10">

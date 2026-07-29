@@ -156,6 +156,9 @@ export default async function Home() {
 
       {/* ── THE DIFF ──────────────────────────────────────────────────── */}
       <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
+        <p className="anim-rise d-5 mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
+          01<span className="opacity-50">/06</span> · The overnight diff
+        </p>
         <p className="anim-rise d-5 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
           &ldquo;Dedupe our leads, fix the names, drop bad emails.&rdquo; — sent 6:41 PM
         </p>
@@ -270,7 +273,7 @@ export default async function Home() {
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
             <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
-              One price. Approved first.
+              02<span className="opacity-50">/06</span> · One price. Approved first.
             </p>
             <div className="mx-auto max-w-[420px]">
               <div className="lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] hover:border-white/20">
@@ -321,6 +324,9 @@ export default async function Home() {
       <section className="bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+              03<span className="opacity-50">/06</span> · The ledger
+            </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
               If you can describe it, it gets done.
             </h2>
@@ -353,6 +359,9 @@ export default async function Home() {
       <section className="border-t border-black/8 bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+              04<span className="opacity-50">/06</span> · The night
+            </p>
             <h2 className="mb-2 text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
               Your night is their working day.
             </h2>
@@ -403,6 +412,9 @@ export default async function Home() {
       <section className="border-t border-black/8 bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+              06<span className="opacity-50">/06</span> · The terms
+            </p>
             {terms(settings.retentionDays).map(([label, text]) => (
               <div
                 key={label}
@@ -423,6 +435,9 @@ export default async function Home() {
       <section className="border-t border-black/8 bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+              05<span className="opacity-50">/06</span> · The operator
+            </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
               One professional between you and the work.
             </h2>
