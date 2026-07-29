@@ -9,7 +9,12 @@ import { getSettings } from "@/lib/settings";
 import { parseMoneyToCents } from "@/lib/money";
 import { computeVaDeadline } from "@/lib/schedule";
 import { NON_TERMINAL_STATUSES } from "@/lib/status";
-import { transitionTask, TransitionError } from "@/lib/state";
+import {
+  transitionTask,
+  isAllowedTransition,
+  TransitionError,
+  IllegalTransitionError,
+} from "@/lib/state";
 import { nextInPricingQueue } from "@/lib/queries/tasks";
 
 const approveSchema = z.object({
@@ -135,14 +140,29 @@ export async function reassignTask(input: unknown): Promise<CancelResult> {
   if (!parsed.success) return { ok: false, error: "A reason is required to reassign." };
 
   try {
-    await transitionTask({
-      taskId: parsed.data.taskId,
-      from: ["claimed", "qc_rejected", "submitted_for_qc", "revision_requested"],
-      to: "open",
-      action: "admin_reassigned",
-      actorId: admin.id,
-      reason: parsed.data.reason,
-      data: { claimedById: null, claimedAt: null, qcRounds: 0 },
+    await prisma.$transaction(async (tx) => {
+      await transitionTask({
+        tx,
+        taskId: parsed.data.taskId,
+        from: ["claimed", "qc_rejected", "submitted_for_qc", "revision_requested"],
+        to: "open",
+        action: "admin_reassigned",
+        actorId: admin.id,
+        reason: parsed.data.reason,
+        data: { claimedById: null, claimedAt: null, qcRounds: 0 },
+      });
+      // A pending delivery must not dangle forever once the task leaves the
+      // worker's hands — resolve it with a worker-visible note so their
+      // history shows an honest record instead of a silent disappearance.
+      await tx.submission.updateMany({
+        where: { taskId: parsed.data.taskId, qcStatus: "pending" },
+        data: {
+          qcStatus: "rejected",
+          reviewedAt: new Date(),
+          qcComment:
+            "The operator returned this task to the pool before review — a reassignment, not a quality strike.",
+        },
+      });
     });
   } catch (e) {
     if (e instanceof TransitionError) {
@@ -163,7 +183,12 @@ const cancelSchema = z.object({
 
 export type CancelResult = { ok: true } | { ok: false; error: string };
 
-/** Admin override — allowed from any non-terminal state, reason mandatory. */
+/**
+ * Admin override — reason mandatory. The compare-set is every state that can
+ * LEGALLY reach cancelled, not every non-terminal state: `completed` is
+ * non-terminal (dispute window) but cannot be cancelled, and transitionTask
+ * rejects the whole call if any from-state is illegal.
+ */
 export async function cancelTask(input: unknown): Promise<CancelResult> {
   const admin = await requireRole("ADMIN");
   const parsed = cancelSchema.safeParse(input);
@@ -173,7 +198,7 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
   try {
     await transitionTask({
       taskId,
-      from: NON_TERMINAL_STATUSES,
+      from: NON_TERMINAL_STATUSES.filter((s) => isAllowedTransition(s, "cancelled")),
       to: "cancelled",
       action: "admin_cancelled",
       actorId: admin.id,
@@ -181,8 +206,11 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
       data: { cancelledAt: new Date(), cancelReason: reason },
     });
   } catch (e) {
+    if (e instanceof IllegalTransitionError) {
+      return { ok: false, error: "This task's state cannot be cancelled. Nothing was changed." };
+    }
     if (e instanceof TransitionError) {
-      return { ok: false, error: "This task is already in a terminal state." };
+      return { ok: false, error: "This task cannot be cancelled from its current state." };
     }
     throw e;
   }

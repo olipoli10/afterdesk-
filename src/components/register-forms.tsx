@@ -180,9 +180,12 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Open-redirect guard: only same-origin paths, never protocol-relative.
+  // Open-redirect guard: only same-origin paths — never protocol-relative and
+  // never backslashes (browsers normalize "/\evil.com" to "//evil.com").
   const destination =
-    next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\")
+      ? next
+      : "/";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

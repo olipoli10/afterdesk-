@@ -9,6 +9,10 @@ import { getSettings } from "@/lib/settings";
    Paper surface: this is a document.
    ───────────────────────────────────────────────────────────────────────── */
 
+/* The protocol numbers must track the live Setting table, never freeze at
+   build time. */
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "How it works — the protocol",
   description:
@@ -28,7 +32,7 @@ const protocol = (s: {
   [
     "02",
     "PRICE",
-    `The operator sets one fixed price. Within ${s.quoteTurnaroundHours} hours. You approve or decline.`,
+    `The operator sets one fixed price. Within ${s.quoteTurnaroundHours} working hours. You approve or decline.`,
   ],
   ["03", "NIGHT", "A vetted specialist claims it while America sleeps. You never meet."],
   [

@@ -133,13 +133,13 @@ export default async function Home() {
 
         <div className="relative mx-auto grid w-full max-w-[1120px] gap-12 px-6 pb-4 pt-20 sm:pt-28 lg:grid-cols-[1fr_420px] lg:items-center">
           <div>
-            <h1 className="max-w-[17ch] text-[clamp(2.5rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+            <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
               <span className="anim-rise block text-[#767C86]">Describe any task.</span>
               <span className="anim-rise d-1 block text-white">Get it back done by morning.</span>
             </h1>
             <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
-              Research, data, writing, spreadsheets, admin — priced in four hours,
-              delivered by morning.
+              Research, data, writing, spreadsheets, admin — priced in{" "}
+              {settings.quoteTurnaroundHours} working hours, delivered by morning.
             </p>
             <div className="anim-rise d-3 mt-8">
               <Link
@@ -226,10 +226,25 @@ export default async function Home() {
         </p>
 
         <Reveal>
+          {/* dusk halo behind the flagship artifact — static atmosphere */}
+          <div className="relative">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-x-10 -inset-y-8 rounded-[32px] bg-[#1B2740]/25 blur-[80px]"
+            />
           <div
             aria-hidden
             className="relative overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] transition-shadow duration-500 hover:shadow-[0_36px_90px_-20px_rgba(0,0,0,0.8)]"
           >
+            {/* app-window chrome: this is the product, not an illustration */}
+            <div className="flex items-center justify-between border-b border-white/8 bg-[#0F1011] px-4 py-2.5">
+              <span className="font-mono text-[11px] text-[#8A9099]">
+                second shift · task_0447
+              </span>
+              <span className="rounded border border-[#1E7F5C]/40 bg-[#1E7F5C]/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-[#F7F6F3]">
+                Delivered 7:07 AM
+              </span>
+            </div>
             <div className="grid md:grid-cols-2">
               {/* BEFORE — static: the mess is already there */}
               <div className="bg-[#111317]">
@@ -320,6 +335,7 @@ export default async function Home() {
               </span>
               <span className="text-white">$68 — approved before any work started.</span>
             </div>
+          </div>
           </div>
         </Reveal>
       </section>

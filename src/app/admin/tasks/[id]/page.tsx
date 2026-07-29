@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/authz";
 import { taskForAdmin, taskEventsForAdmin } from "@/lib/queries/tasks";
 import { ADMIN_STATUS_LABELS, statusBadgeClass, TERMINAL_STATUSES } from "@/lib/status";
+import { isAllowedTransition } from "@/lib/state";
 import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
 import { AdminCancel, AdminReturnToPool } from "@/components/admin-cancel";
@@ -33,6 +34,9 @@ export default async function AdminTaskDetail({
   const events = await taskEventsForAdmin(id);
   const isTerminal = TERMINAL_STATUSES.includes(task.status);
   const canReassign = REASSIGNABLE.includes(task.status) && task.claimedBy != null;
+  // `completed` is non-terminal (dispute window) but cannot be cancelled —
+  // never show a button that can only fail.
+  const canCancel = isAllowedTransition(task.status, "cancelled");
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -173,12 +177,12 @@ export default async function AdminTaskDetail({
         </CardBody>
       </Card>
 
-      {!isTerminal ? (
+      {canReassign || canCancel ? (
         <div className="space-y-4">
           {canReassign ? <AdminReturnToPool taskId={task.id} /> : null}
-          <AdminCancel taskId={task.id} />
+          {canCancel ? <AdminCancel taskId={task.id} /> : null}
         </div>
-      ) : (
+      ) : !isTerminal ? null : (
         <p className="text-xs text-[#5B6069]">
           Terminal state — no further transitions.
           {task.cancelReason ? ` Cancellation reason: “${task.cancelReason}”` : ""}

@@ -45,7 +45,7 @@ const VA_STATUS_COPY: Record<VaProfileStatus, { label: string; body: string }> =
   },
   suspended: {
     label: "Suspended",
-    body: "Your access to the pool is paused pending review. Tasks already in your hands are unaffected.",
+    body: "Your access is paused pending review. Tasks in your hands are on hold — the operator will restore or reassign them.",
   },
 };
 

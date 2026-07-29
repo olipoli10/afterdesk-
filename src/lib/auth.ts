@@ -7,8 +7,8 @@ import { sendEmail } from "@/lib/email";
 /**
  * Google sign-in is enabled only when credentials are configured, so the app
  * runs without them and the button is hidden rather than broken.
- * A Google sign-up always produces a CLIENT account — assistants apply through
- * the dedicated form because that flow creates their profile and entry test.
+ * A Google sign-up always produces a CLIENT account — workers apply through
+ * the dedicated form because that flow creates their profile for review.
  */
 export const googleEnabled = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET

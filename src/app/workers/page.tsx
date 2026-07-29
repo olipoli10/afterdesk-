@@ -622,8 +622,8 @@ export default async function WorkersHome() {
                   </Link>
                 </div>
                 <p className="mt-4 font-mono text-[12px] text-[#5B6069]">
-                  Account → short application → a graded entry test → the pool. Not
-                  everyone gets in. That&apos;s the point.
+                  Account → short application → the operator&apos;s review → the pool.
+                  Not everyone gets in. That&apos;s the point.
                 </p>
               </div>
             </div>
