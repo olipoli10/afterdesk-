@@ -10,6 +10,7 @@ import { LiveTaskWindow } from "@/components/live-task-window";
 import { LiveOvernightDiff } from "@/components/live-overnight-diff";
 import { PointerGlow } from "@/components/pointer-glow";
 import { LangSwitch } from "@/components/lang-switch";
+import { ScrollDamper } from "@/components/scroll-damper";
 import { PaperLedgerScan } from "@/components/paper-ledger-scan";
 import { PaperInstrument } from "@/components/paper-instrument";
 import { PaperReviewDesk } from "@/components/paper-review-desk";
@@ -89,6 +90,7 @@ export default async function Home({
     /* lang on the subtree: the root <html> is en, and screen readers must
        switch voice for the translated copy. */
     <div lang={lang} className="overflow-x-clip bg-[#0A0B0D]">
+      <ScrollDamper />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: ORG_JSONLD }}

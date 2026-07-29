@@ -6,13 +6,15 @@ import { NextResponse, type NextRequest } from "next/server";
  *    build the post-login deep link (`/login?next=…`) deterministically.
  *    safeNextPath() in src/lib/authz.ts consumes and re-validates it.
  * 2. Persist each public page's language choice (?lang=… → cookie) so a
- *    returning visitor keeps their language. The two audiences get separate
- *    cookies on purpose: the client page speaks en/fr/es, the worker page
- *    en/tl, and a French client is not the same person as a Filipino worker.
+ *    returning visitor keeps their language. Both pages offer all four
+ *    languages, but the cookies stay separate on purpose: a French client
+ *    and a Filipino worker are different people reading different pages,
+ *    and one choosing FIL must not flip the other's page.
  */
+const LANGS = ["en", "fr", "es", "tl"];
 const LANG_COOKIE: Record<string, { name: string; allowed: string[] }> = {
-  "/": { name: "ss-lang-client", allowed: ["en", "fr", "es"] },
-  "/workers": { name: "ss-lang-worker", allowed: ["en", "tl"] },
+  "/": { name: "ss-lang-client", allowed: LANGS },
+  "/workers": { name: "ss-lang-worker", allowed: LANGS },
 };
 
 export function middleware(req: NextRequest) {

@@ -10,6 +10,7 @@ import { PointerGlow } from "@/components/pointer-glow";
 import { LiveClaimCard } from "@/components/live-claim-card";
 import { StickyApply } from "@/components/sticky-apply";
 import { LangSwitch } from "@/components/lang-switch";
+import { ScrollDamper } from "@/components/scroll-damper";
 import { WORKERS_I18N, WORKERS_LANGS, workersLangOf } from "@/lib/i18n/workers";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -123,6 +124,7 @@ export default async function WorkersHome({
     /* lang on the subtree: the root <html> is en, and screen readers must
        switch voice for the Tagalog copy. */
     <div lang={lang} className="overflow-x-clip bg-[#F7F6F3]">
+      <ScrollDamper />
       {/* ── NAV ───────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
         <div className="mx-auto grid h-14 w-full max-w-[1120px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
@@ -217,7 +219,7 @@ export default async function WorkersHome({
           </p>
 
           <div aria-hidden className="sheen-frame sheen-frame--paper mt-8 shadow-[0_24px_60px_-32px_rgba(20,22,26,0.35)]">
-            <div className="overflow-hidden rounded-2xl bg-[#F7F6F3]">
+            <div className="relative overflow-hidden rounded-2xl bg-[#F7F6F3]">
               <div className="flex h-10 items-center justify-between border-b border-[#14161A]/10 bg-white px-4">
                 <span className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#1E7F5C]" />

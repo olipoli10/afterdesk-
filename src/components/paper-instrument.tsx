@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────
    THE INSTRUMENT — 04/06.
@@ -21,7 +21,14 @@ import { useEffect, useState, type CSSProperties } from "react";
    - The needle renders only after mount, so the server never prints a clock
      time it cannot vouch for and hydration can never mismatch.
 
-   Motion: one translate3d on one element, updated once a minute. Not a loop.
+   TWO MARKERS, TWO MEANINGS — do not merge them:
+   - The NEEDLE is the clock. It is information, it moves once a minute, and
+     it is the only thing allowed to say NOW.
+   - The PLAYHEAD is the story. It walks the four stations on a loop so the
+     instrument reads as running rather than parked, and it never claims a
+     time: a station it lights is dimmer than a station the needle is in.
+   Without the playhead the whole plate looks dead, because a needle that
+   advances 1/1440th of the ruler per minute is invisible.
    ───────────────────────────────────────────────────────────────────────── */
 
 const NY = "America/New_York";
@@ -73,6 +80,8 @@ export function PaperInstrument({
   /* Server frame: the standard 12-hour offset, no needle, nothing lit. */
   const [offset, setOffset] = useState(12);
   const [now, setNow] = useState<{ h: number; m: number } | null>(null);
+  const [demo, setDemo] = useState(-1);
+  const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const wantsMotion =
@@ -102,6 +111,59 @@ export function PaperInstrument({
     };
   }, []);
 
+  /* The playhead: walks the four stations, holds, repeats. Pauses off-screen
+     and on a hidden tab; never runs at all under reduced motion. */
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    const wantsMotion =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+    if (!wantsMotion) return;
+
+    let seen = false;
+    let id = 0;
+    const stop = () => {
+      window.clearInterval(id);
+      id = 0;
+    };
+    const start = () => {
+      if (id) return;
+      /* -1 is the beat of rest between passes, so the cycle reads as a loop
+         rather than a strobe. */
+      id = window.setInterval(() => setDemo((v) => (v >= 3 ? -1 : v + 1)), 1500);
+    };
+    const sync = () => {
+      if (seen && !document.hidden) start();
+      else {
+        stop();
+        setDemo(-1);
+      }
+    };
+
+    const io =
+      typeof IntersectionObserver === "function"
+        ? new IntersectionObserver(
+            (entries) => {
+              for (const e of entries) seen = e.isIntersecting;
+              sync();
+            },
+            { threshold: 0.3 }
+          )
+        : null;
+    io?.observe(el);
+    if (!io) {
+      seen = true;
+      sync();
+    }
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      stop();
+      io?.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, []);
+
   const night = manilaNight(offset);
   const pct = now ? ((now.h * 60 + now.m) / 1440) * 100 : 0;
   const active = now ? WINDOWS.findIndex((w) => inWindow(now.h, w)) : -1;
@@ -112,7 +174,7 @@ export function PaperInstrument({
   ];
 
   return (
-    <div className="mt-9">
+    <div ref={hostRef} className="mt-9">
       <div className="relative">
       {/* the ruler — hour labels, minor ticks every hour, major every six */}
       <div aria-hidden className="pl-[74px] sm:pl-[86px]">
@@ -181,15 +243,23 @@ export function PaperInstrument({
       {/* the four stations, hanging off the ruler on leader lines */}
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {steps.map(([time, text], i) => {
-          const on = active === i;
+          const on = active === i; // the clock — may say NOW
+          const lit = demo === i; // the story — never says NOW
           return (
             <div key={time} className="srow">
               <i aria-hidden className="plate-leader mb-2" />
               <div
-                className={`border-t pt-3 motion-safe:transition-colors motion-safe:duration-200 ${
-                  on ? "border-[#14161A]" : "border-black/10"
+                className={`relative border-t pt-3 motion-safe:transition-colors motion-safe:duration-300 ${
+                  on ? "border-[#14161A]" : lit ? "border-[#14161A]/45" : "border-black/10"
                 }`}
               >
+                {/* the playhead: a rule that draws itself across the station
+                    it is passing through, then releases */}
+                <span
+                  aria-hidden
+                  className="absolute -top-px left-0 h-px w-full origin-left bg-[#14161A] motion-safe:transition-transform motion-safe:duration-[700ms] motion-safe:ease-[cubic-bezier(.16,1,.3,1)]"
+                  style={{ transform: `scaleX(${lit ? 1 : 0})` }}
+                />
                 <p className="flex items-center gap-2 font-mono text-[11px] tabular-nums text-[#5B6069]">
                   <span>{time}</span>
                   {on ? (
@@ -199,8 +269,8 @@ export function PaperInstrument({
                   ) : null}
                 </p>
                 <p
-                  className={`mt-1 text-[15px] leading-snug motion-safe:transition-colors motion-safe:duration-200 ${
-                    on ? "text-[#14161A]" : "text-[#5B6069]"
+                  className={`mt-1 text-[15px] leading-snug motion-safe:transition-colors motion-safe:duration-300 ${
+                    on || lit ? "text-[#14161A]" : "text-[#5B6069]"
                   }`}
                 >
                   {text}

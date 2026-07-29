@@ -87,6 +87,7 @@ html {
   content: "";
   position: absolute;
   inset: -150%;
+  z-index: 0;
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
@@ -97,6 +98,14 @@ html {
     transparent 360deg
   );
   will-change: transform;
+}
+/* LOAD-BEARING: the orbiting gradient is absolutely positioned, so a STATIC
+   child paints underneath it and the sheen floods the card as a giant chrome
+   cone. Lifting every direct child makes the ring behave as a border no
+   matter how the consumer marks up its content — do not remove. */
+.sheen-frame > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* The night floor: a faint engineering grid that vanishes into the dark —
