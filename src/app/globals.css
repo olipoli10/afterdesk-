@@ -61,19 +61,50 @@ body {
     scroll-behavior: smooth;
   }
 
-  /* Entrance on load (above-the-fold hero elements). */
+  /* Entrance on load (above-the-fold hero elements) — big, cinematic rise. */
   .anim-rise {
     opacity: 0;
-    animation: nlx-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: nlx-rise 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   @keyframes nlx-rise {
     from {
       opacity: 0;
-      transform: translateY(28px);
+      transform: translateY(44px);
     }
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+
+  /* Ambient drift: a second glow slowly wandering the hero — the room
+     breathes even when the visitor does nothing. */
+  .glow-drift {
+    animation: nlx-drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes nlx-drift {
+    from {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.35;
+    }
+    to {
+      transform: translate(180px, 60px) scale(1.25);
+      opacity: 0.7;
+    }
+  }
+
+  /* Stamp-in: numbers and chips land like a stamp hitting paper. */
+  .stamp-in {
+    animation: nlx-stamp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes nlx-stamp {
+    from {
+      opacity: 0;
+      transform: scale(1.25);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
     }
   }
 
@@ -82,10 +113,10 @@ body {
      A watchdog in the component force-shows anything still armed after 1.2s. */
   .reveal-armed {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(40px);
     transition:
-      opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .reveal-armed.is-visible {
     opacity: 1;
@@ -95,10 +126,10 @@ body {
   /* Staggered children inside a reveal container. */
   .reveal-armed .srow {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(22px);
     transition:
-      opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .reveal-armed.is-visible .srow {
     opacity: 1;

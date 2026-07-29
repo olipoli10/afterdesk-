@@ -6,6 +6,7 @@ import { Reveal } from "@/components/reveal";
 import { AudienceToggle } from "@/components/audience-toggle";
 import { PublicCounters } from "@/components/public-counters";
 import { LiveTaskWindow } from "@/components/live-task-window";
+import { LiveOvernightDiff } from "@/components/live-overnight-diff";
 import { PointerGlow } from "@/components/pointer-glow";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -16,23 +17,6 @@ import { PointerGlow } from "@/components/pointer-glow";
    Motion: entrance rise on the hero, scroll-reveals below the fold, two
    ambient loops (hero glow, seam nudge) — all gated on prefers-reduced-motion.
    ───────────────────────────────────────────────────────────────────────── */
-
-const BEFORE_ROWS = [
-  { company: "acme widgets inc", contact: "j. smith", email: null },
-  { company: "ACME WIDGETS, INC.", contact: "John Smith", email: "jsmith@acme.com" },
-  { company: "northwind trading", contact: "m. garcia", email: "m.garcia@northwind", broken: true },
-  { company: "Northwind Trading Co", contact: "Maria Garcia", email: null },
-  { company: "delta tooling llc", contact: "r. chen", email: "rchen@delta.co" },
-  { company: "DELTA TOOLING", contact: "Ray Chen", email: "rchen@delta.co" },
-];
-
-const AFTER_ROWS = [
-  { company: "Acme Widgets Inc.", contact: "John Smith", email: "jsmith@acme.com", tag: "merged" },
-  { company: "Northwind Trading Co.", contact: "Maria Garcia", email: "m.garcia@northwind.com", tag: "fixed" },
-  { company: "Delta Tooling LLC", contact: "Ray Chen", email: "rchen@delta.co", tag: "merged" },
-  { company: "Prairie Fabrication", contact: "Dana Okafor", email: "d.okafor@prairiefab.com", tag: "fixed" },
-  { company: "Halcyon Freight", contact: "Tom Iversen", email: "t.iversen@halcyon.io", tag: "kept" },
-];
 
 /* Deliberately spread across research, writing, data, media and admin — the
    breadth of the marketplace is proven by the spread, not by a claim.
@@ -62,11 +46,6 @@ const NIGHT_STEPS = [
   ["7:07 AM", "It is checked, then it is yours."],
 ];
 
-const HATCH = {
-  backgroundImage:
-    "repeating-linear-gradient(45deg, transparent 0 4px, rgba(255,255,255,.10) 4px 5px)",
-};
-
 const NOISE = {
   backgroundImage:
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
@@ -84,10 +63,6 @@ const ORG_JSONLD = JSON.stringify({
   description:
     "Describe any task in plain English — priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
 });
-
-function Cell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`truncate px-3 ${className}`}>{children}</div>;
-}
 
 export default async function Home() {
   const user = await getSessionUser();
@@ -130,6 +105,10 @@ export default async function Home() {
         <div
           aria-hidden
           className="hero-glow pointer-events-none absolute -top-40 left-[8%] h-[520px] w-[760px] rounded-full bg-[#1B2740] blur-[130px]"
+        />
+        <div
+          aria-hidden
+          className="glow-drift pointer-events-none absolute right-[5%] top-[30%] h-[380px] w-[520px] rounded-full bg-[#1B2740]/60 blur-[120px]"
         />
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
         <PointerGlow />
@@ -187,116 +166,15 @@ export default async function Home() {
         </p>
 
         <Reveal replay>
-          {/* dusk halo behind the flagship artifact — static atmosphere */}
+          {/* dusk halo behind the flagship artifact, which WORKS on loop */}
           <div className="relative">
             <div
               aria-hidden
               className="pointer-events-none absolute -inset-x-10 -inset-y-8 rounded-[32px] bg-[#1B2740]/25 blur-[80px]"
             />
-          <div
-            aria-hidden
-            className="relative overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] transition-shadow duration-500 hover:shadow-[0_36px_90px_-20px_rgba(0,0,0,0.8)]"
-          >
-            {/* app-window chrome: this is the product, not an illustration */}
-            <div className="flex items-center justify-between border-b border-white/8 bg-[#0F1011] px-4 py-2.5">
-              <span className="font-mono text-[11px] text-[#8A9099]">
-                second shift · task_0447
-              </span>
-              <span className="rounded border border-[#1E7F5C]/40 bg-[#1E7F5C]/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-[#F7F6F3]">
-                Delivered 7:07 AM
-              </span>
+            <div aria-hidden className="relative">
+              <LiveOvernightDiff />
             </div>
-            <div className="grid md:grid-cols-2">
-              {/* BEFORE — static: the mess is already there */}
-              <div className="bg-[#111317]">
-                <div className="flex h-10 items-center gap-2 border-b border-white/8 px-4">
-                  <span className="h-1.5 w-1.5 rounded-full border border-[#767C86]" />
-                  <span className="font-mono text-[11px] text-[#8A9099]">
-                    leads_export.csv · sent 6:41 PM
-                  </span>
-                </div>
-                <div className="font-mono text-[12px] tabular-nums text-[#8A9099]">
-                  {BEFORE_ROWS.map((r, i) => (
-                    <div
-                      key={i}
-                      className="grid h-[34px] grid-cols-[1fr_0.75fr_1.15fr] items-center border-b border-white/6 last:border-0"
-                    >
-                      <Cell>{r.company}</Cell>
-                      <Cell>{r.contact}</Cell>
-                      <Cell>
-                        {r.email === null ? (
-                          <span
-                            className="inline-block h-[14px] w-[60%] rounded-[2px] align-middle"
-                            style={HATCH}
-                          />
-                        ) : (
-                          <span
-                            style={r.broken ? { boxShadow: "inset 0 -2px 0 #D98324" } : undefined}
-                          >
-                            {r.email}
-                          </span>
-                        )}
-                      </Cell>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* AFTER — rows stagger in: the work happening */}
-              <div className="border-t border-white/10 bg-[#F7F6F3] md:border-l md:border-t-0">
-                <div className="flex h-10 items-center gap-2 border-b border-black/8 px-4">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#1E7F5C]" />
-                  <span className="font-mono text-[11px] text-[#5B6069]">
-                    leads_export_clean.csv · returned 7:07 AM
-                  </span>
-                </div>
-                <div className="font-mono text-[12px] tabular-nums text-[#14161A]">
-                  {AFTER_ROWS.map((r, i) => (
-                    <div
-                      key={i}
-                      className="srow grid h-[34px] grid-cols-[1fr_0.7fr_1.1fr_auto] items-center border-b border-black/6 last:border-0"
-                    >
-                      <Cell>{r.company}</Cell>
-                      <Cell>{r.contact}</Cell>
-                      <Cell>{r.email}</Cell>
-                      <div className="pr-3">
-                        <span className="rounded bg-[#1E7F5C]/10 px-1.5 py-0.5 text-[10px] text-[#166049]">
-                          {r.tag}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* seam badge — desktop only, sits on the vertical join */}
-            <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 flex-col items-center md:flex">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F7F6F3] shadow-[0_2px_12px_rgba(0,0,0,0.4)]">
-                <svg viewBox="0 0 24 24" className="seam-chevron h-3.5 w-3.5 text-[#14161A]">
-                  <path
-                    d="M9 6l6 6-6 6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-              <span className="mt-2 rounded bg-[#0A0B0D]/60 px-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80">
-                Overnight
-              </span>
-            </div>
-
-            {/* footer bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-[#0A0B0D] px-4 py-3 font-mono text-[12px]">
-              <span className="text-[#767C86]">
-                142 rows · 18 duplicates merged · 31 emails corrected · 9 dropped
-              </span>
-              <span className="text-white">$68 — approved before any work started.</span>
-            </div>
-          </div>
           </div>
         </Reveal>
       </section>
