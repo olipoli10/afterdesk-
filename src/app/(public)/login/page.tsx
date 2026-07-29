@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { Card, CardBody, Field, inputClass, buttonPrimary } from "@/components/ui";
+import { AuthShell } from "@/components/auth-shell";
+import { Field, inputClass, buttonPrimary } from "@/components/ui";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,49 +30,48 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center px-4">
-      <h1 className="mb-1 text-lg font-semibold tracking-tight">Sign in</h1>
-      <p className="mb-5 text-sm text-neutral-500">Nightlexicon</p>
-      <Card>
-        <CardBody>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <Field label="Email">
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                className={inputClass}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Field>
-            <Field label="Password">
-              <input
-                type="password"
-                required
-                autoComplete="current-password"
-                className={inputClass}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Field>
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
-              {busy ? "Signing in…" : "Sign in"}
-            </button>
-          </form>
-        </CardBody>
-      </Card>
-      <p className="mt-4 text-center text-sm text-neutral-500">
-        No account?{" "}
-        <Link href="/register" className="font-medium text-indigo-600 hover:underline">
-          Client sign-up
-        </Link>{" "}
-        ·{" "}
-        <Link href="/register/va" className="font-medium text-indigo-600 hover:underline">
-          VA application
-        </Link>
-      </p>
-    </div>
+    <AuthShell
+      title="Sign in"
+      sub="Clients, assistants and the operator all sign in here — you land on your own dashboard."
+      footer={
+        <>
+          No account yet?{" "}
+          <Link href="/register" className="font-medium text-blue-700 hover:underline">
+            Client sign-up
+          </Link>{" "}
+          ·{" "}
+          <Link href="/register/va" className="font-medium text-blue-700 hover:underline">
+            Assistant application
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Email">
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            className={inputClass}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Field>
+        <Field label="Password">
+          <input
+            type="password"
+            required
+            autoComplete="current-password"
+            className={inputClass}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
+          {busy ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

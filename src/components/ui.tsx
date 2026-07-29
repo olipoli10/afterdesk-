@@ -3,9 +3,7 @@ import type { ReactNode } from "react";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-md border border-neutral-200 bg-white shadow-sm ${className}`}>
-      {children}
-    </div>
+    <div className={`rounded-lg border border-neutral-200 bg-white ${className}`}>{children}</div>
   );
 }
 
@@ -23,20 +21,29 @@ export function PageTitle({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight text-neutral-900">{title}</h1>
-        {sub ? <p className="mt-0.5 text-sm text-neutral-500">{sub}</p> : null}
+        <h1 className="text-xl font-semibold tracking-[-0.02em] text-neutral-900">{title}</h1>
+        {sub ? <p className="mt-1 max-w-2xl text-sm leading-relaxed text-neutral-500">{sub}</p> : null}
       </div>
       {action}
     </div>
   );
 }
 
+/** Small uppercase section label — the workhorse of the dense B2B look. */
+export function SectionLabel({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return (
+    <p className={`tracking-label text-[11px] font-semibold uppercase text-neutral-400 ${className}`}>
+      {children}
+    </p>
+  );
+}
+
 export function Badge({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-medium tracking-wide ${className}`}
+      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-medium ${className}`}
     >
       {children}
     </span>
@@ -54,10 +61,10 @@ export function EmptyState({
 }) {
   return (
     <Card>
-      <div className="flex flex-col items-start gap-2 p-8">
+      <div className="flex flex-col items-start gap-2 px-6 py-12">
         <h2 className="text-sm font-semibold text-neutral-900">{title}</h2>
         <p className="max-w-xl text-sm leading-relaxed text-neutral-500">{body}</p>
-        {action ? <div className="mt-2">{action}</div> : null}
+        {action ? <div className="mt-3">{action}</div> : null}
       </div>
     </Card>
   );
@@ -74,24 +81,31 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[13px] font-medium text-neutral-700">{label}</span>
+      <span className="mb-1.5 block text-[13px] font-medium text-neutral-800">{label}</span>
       {children}
-      {hint ? <span className="mt-1 block text-xs text-neutral-400">{hint}</span> : null}
+      {hint ? <span className="mt-1.5 block text-xs leading-relaxed text-neutral-500">{hint}</span> : null}
     </label>
   );
 }
 
 export const inputClass =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-[0_1px_1px_rgba(15,23,42,0.03)] placeholder:text-neutral-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/15";
 
 export const buttonPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40";
 
 export const buttonSecondary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-3.5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-colors hover:border-neutral-400 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40";
+
+/** For dark surfaces (the marketing hero). */
+export const buttonOnDark =
+  "inline-flex items-center justify-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#0b1120]";
+
+export const buttonGhostOnDark =
+  "inline-flex items-center justify-center gap-1.5 rounded-md border border-white/25 px-4 py-2 text-sm font-medium text-white transition-colors hover:border-white/50 hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#0b1120]";
 
 export const buttonDanger =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-red-200 bg-white px-3.5 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5 rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40";
 
 export function LinkButton({
   href,

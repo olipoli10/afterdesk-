@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* B2B infrastructure look: light, neutral, one accent. No auto dark-mode
-   inversion — the palette is deliberate. */
+/* B2B infrastructure look: light, neutral, one accent, deliberate type.
+   No auto dark-mode inversion — the palette is chosen, not derived. */
 :root {
   color-scheme: light;
 }
@@ -11,8 +11,29 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: #fafafa; /* neutral-50 */
-  color: #171717; /* neutral-900 */
+  background: #ffffff;
+  color: #0f172a;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Display type needs tighter tracking than the browser default at large sizes. */
+.display {
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.tracking-label {
+  letter-spacing: 0.09em;
+}
+
+::selection {
+  background: #1d4ed8;
+  color: #ffffff;
 }

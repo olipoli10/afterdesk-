@@ -5,7 +5,23 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { registerVa } from "@/server/actions/auth";
-import { Card, CardBody, Field, inputClass, buttonPrimary } from "@/components/ui";
+import { AuthShell } from "@/components/auth-shell";
+import { Field, inputClass, buttonPrimary } from "@/components/ui";
+
+const ASIDE = [
+  {
+    title: "You see the payout before you claim",
+    body: "Every task in the pool shows what it pays and when it is due. Claim what you want — first come, first served.",
+  },
+  {
+    title: "A short entry test first",
+    body: "Two or three sample exercises, graded personally. Once you pass, the task pool opens for you.",
+  },
+  {
+    title: "No clients to manage",
+    body: "No bidding, no interviews, no chasing anyone for payment. You do the work and submit it; we handle the rest.",
+  },
+];
 
 export default function RegisterVaPage() {
   const router = useRouter();
@@ -37,58 +53,56 @@ export default function RegisterVaPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center px-4">
-      <h1 className="mb-1 text-lg font-semibold tracking-tight">Apply as a virtual assistant</h1>
-      <p className="mb-5 text-sm text-neutral-500">
-        Create your account, pass a short entry test, then start claiming paid tasks.
-      </p>
-      <Card>
-        <CardBody>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <Field label="Full name">
-              <input
-                required
-                minLength={2}
-                autoComplete="name"
-                className={inputClass}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Field>
-            <Field label="Email">
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                className={inputClass}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Field>
-            <Field label="Password" hint="At least 10 characters.">
-              <input
-                type="password"
-                required
-                minLength={10}
-                autoComplete="new-password"
-                className={inputClass}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Field>
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
-              {busy ? "Creating account…" : "Apply"}
-            </button>
-          </form>
-        </CardBody>
-      </Card>
-      <p className="mt-4 text-center text-sm text-neutral-500">
-        Already applied?{" "}
-        <Link href="/login" className="font-medium text-indigo-600 hover:underline">
-          Sign in
-        </Link>
-      </p>
-    </div>
+    <AuthShell
+      title="Apply as a virtual assistant"
+      sub="Create your account, pass a short entry test, then start claiming paid tasks."
+      aside={ASIDE}
+      footer={
+        <>
+          Already applied?{" "}
+          <Link href="/login" className="font-medium text-blue-700 hover:underline">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Full name">
+          <input
+            required
+            minLength={2}
+            autoComplete="name"
+            className={inputClass}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            className={inputClass}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Field>
+        <Field label="Password" hint="At least 10 characters.">
+          <input
+            type="password"
+            required
+            minLength={10}
+            autoComplete="new-password"
+            className={inputClass}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
+          {busy ? "Creating account…" : "Apply"}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

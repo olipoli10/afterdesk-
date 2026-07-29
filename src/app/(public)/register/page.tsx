@@ -4,7 +4,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { Card, CardBody, Field, inputClass, buttonPrimary } from "@/components/ui";
+import { AuthShell } from "@/components/auth-shell";
+import { Field, inputClass, buttonPrimary } from "@/components/ui";
+
+const ASIDE = [
+  {
+    title: "You approve the price before anything starts",
+    body: "Submit a task, get one fixed price back. Decline it and you owe nothing — there is no subscription and no minimum.",
+  },
+  {
+    title: "Every deliverable is checked first",
+    body: "Work is reviewed against your description before it reaches you. You get the corrected version, not the first attempt.",
+  },
+  {
+    title: "Your data stays scoped and logged",
+    body: "Only the assistant on your task can open your files, access is revoked when the task ends, and everything is purged after 90 days.",
+  },
+];
 
 export default function RegisterClientPage() {
   const router = useRouter();
@@ -29,58 +45,56 @@ export default function RegisterClientPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center px-4">
-      <h1 className="mb-1 text-lg font-semibold tracking-tight">Create a client account</h1>
-      <p className="mb-5 text-sm text-neutral-500">
-        Submit tasks, approve a fixed price, receive quality-checked deliverables.
-      </p>
-      <Card>
-        <CardBody>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <Field label="Company or contact name">
-              <input
-                required
-                minLength={2}
-                autoComplete="organization"
-                className={inputClass}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Field>
-            <Field label="Email">
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                className={inputClass}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Field>
-            <Field label="Password" hint="At least 10 characters.">
-              <input
-                type="password"
-                required
-                minLength={10}
-                autoComplete="new-password"
-                className={inputClass}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Field>
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
-              {busy ? "Creating account…" : "Create account"}
-            </button>
-          </form>
-        </CardBody>
-      </Card>
-      <p className="mt-4 text-center text-sm text-neutral-500">
-        Already registered?{" "}
-        <Link href="/login" className="font-medium text-indigo-600 hover:underline">
-          Sign in
-        </Link>
-      </p>
-    </div>
+    <AuthShell
+      title="Create a client account"
+      sub="Submit tasks, approve a fixed price, download quality-checked work."
+      aside={ASIDE}
+      footer={
+        <>
+          Already registered?{" "}
+          <Link href="/login" className="font-medium text-blue-700 hover:underline">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Company or contact name">
+          <input
+            required
+            minLength={2}
+            autoComplete="organization"
+            className={inputClass}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            className={inputClass}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Field>
+        <Field label="Password" hint="At least 10 characters.">
+          <input
+            type="password"
+            required
+            minLength={10}
+            autoComplete="new-password"
+            className={inputClass}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
+          {busy ? "Creating account…" : "Create account"}
+        </button>
+      </form>
+    </AuthShell>
   );
 }
