@@ -22,16 +22,31 @@ Accounts: the admin is seeded from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env`
 (there is no public admin signup). Clients register at `/register`, VAs at
 `/register/va`.
 
+**Verification codes in development.** Sign-up emails a 6-digit code. With no
+`RESEND_API_KEY` set, the code is printed in the terminal running `npm run dev`
+instead of being sent — look for the `──── EMAIL (dev …) ────` block. Add a
+Resend key to `.env` to send real emails.
+
+**Optional keys** (both listed with instructions in `.env`): `GOOGLE_CLIENT_ID`
++ `GOOGLE_CLIENT_SECRET` make the "Continue with Google" button appear;
+`RESEND_API_KEY` switches email from console to real delivery. The app runs
+fine without either.
+
 > **Windows note:** if Prisma cannot reach the database, the connection string
 > must use `127.0.0.1`, not `localhost` — Node resolves `localhost` to IPv6
 > while the dev server listens on IPv4 only.
 
 ## What is built (spec steps 1–3)
 
-1. **Auth + three roles.** Better Auth (email + password). `role` is
-   `input: false` — it can only ever be set server-side, so a signup request
-   cannot smuggle `role: "ADMIN"`. Each area (`/client`, `/va`, `/admin`) is
-   gated in its layout and re-checked in every server action.
+1. **Auth + three roles.** Better Auth (email + password, optional Google).
+   `role` is `input: false` — it can only ever be set server-side, so a signup
+   request cannot smuggle `role: "ADMIN"`. Sign-up asks for the password twice
+   behind one show/hide toggle, then emails a 6-digit code; unverified accounts
+   are held at `/verify-email` and cannot reach any dashboard, upload, or
+   download. Each area (`/client`, `/va`, `/admin`) is gated in its layout and
+   re-checked in every server action. Google sign-ups are always CLIENT
+   accounts — assistants use the dedicated form because it also creates their
+   profile and entry test.
 2. **Client task submission.** Free-text description plus title, quantity,
    deadline (entered in the client's local timezone) and file uploads
    (200 MB/file, 20 files, csv/xlsx/xls/pdf/docx/png/jpg/zip).
