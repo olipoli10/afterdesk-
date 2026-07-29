@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Reveal } from "@/components/reveal";
+import { getSettings } from "@/lib/settings";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The doctrine page: the operating rules published as a numbered, versioned
@@ -15,13 +16,28 @@ export const metadata = {
   alternates: { canonical: "/how-it-works" },
 };
 
-const PROTOCOL: [string, string, string][] = [
+/* Every number here is the live setting — the public promise can never drift
+   from the enforced value. */
+const protocol = (s: {
+  quoteTurnaroundHours: number;
+  maxQcRounds: number;
+  revisionWindowHours: number;
+  retentionDays: number;
+}): [string, string, string][] => [
   ["01", "DESCRIBE", "You describe the task in plain English. Attach files if it needs them."],
-  ["02", "PRICE", "The operator sets one fixed price. Within four hours. You approve or decline."],
+  [
+    "02",
+    "PRICE",
+    `The operator sets one fixed price. Within ${s.quoteTurnaroundHours} hours. You approve or decline.`,
+  ],
   ["03", "NIGHT", "A vetted specialist claims it while America sleeps. You never meet."],
-  ["04", "REVIEW", "The operator checks every delivery. Sent back until right, up to 2 rounds."],
-  ["05", "MORNING", "Delivered before your day starts. 72 hours to flag anything."],
-  ["06", "DATA", "Access ends with the task. Files purged after 90 days."],
+  [
+    "04",
+    "REVIEW",
+    `The operator checks every delivery. Sent back until right, up to ${s.maxQcRounds} rounds.`,
+  ],
+  ["05", "MORNING", `Delivered before your day starts. ${s.revisionWindowHours} hours to flag anything.`],
+  ["06", "DATA", `Access ends with the task. Files purged after ${s.retentionDays} days.`],
 ];
 
 const STANDARD = [
@@ -37,7 +53,8 @@ const REFUSALS = [
   "Anything illegal, deceptive, or that harvests private personal data.",
 ];
 
-export default function HowItWorks() {
+export default async function HowItWorks() {
+  const settings = await getSettings();
   return (
     <div className="min-h-screen overflow-x-clip bg-[#F7F6F3]">
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
@@ -70,7 +87,7 @@ export default function HowItWorks() {
         {/* ── The protocol ─────────────────────────────────────────────── */}
         <Reveal className="mt-12">
           <div className="rounded-lg border border-[#14161A]/10 bg-white shadow-[0_1px_2px_rgba(20,22,26,0.04)]">
-            {PROTOCOL.map(([n, label, text]) => (
+            {protocol(settings).map(([n, label, text]) => (
               <div
                 key={n}
                 className="srow grid grid-cols-[52px_110px_1fr] items-baseline gap-3 border-b border-[#14161A]/[0.06] px-5 py-4 last:border-0 sm:gap-6"
@@ -101,8 +118,9 @@ export default function HowItWorks() {
             ))}
           </div>
           <p className="mt-4 font-mono text-[11px] text-[#5B6069]">
-            A delivery that misses the bar goes back with notes, up to 2 rounds. A final
-            fail is unpaid — the worker&apos;s risk, never yours.
+            A delivery that misses the bar goes back with notes, up to{" "}
+            {settings.maxQcRounds} rounds. A final fail is unpaid — the worker&apos;s
+            risk, never yours.
           </p>
         </Reveal>
 
