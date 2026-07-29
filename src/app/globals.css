@@ -140,6 +140,21 @@ body {
     to { left: calc(100% - 2px); }
   }
 
+  /* Live-session activity line: each new entry rises in like a log line. */
+  .live-line {
+    animation: nlx-liveline 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes nlx-liveline {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* Hover physics for interactive surfaces. */
   .lift {
     transition:

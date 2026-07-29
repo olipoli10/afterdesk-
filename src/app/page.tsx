@@ -5,6 +5,8 @@ import { getSettings } from "@/lib/settings";
 import { Reveal } from "@/components/reveal";
 import { AudienceToggle } from "@/components/audience-toggle";
 import { PublicCounters } from "@/components/public-counters";
+import { LiveTaskWindow } from "@/components/live-task-window";
+import { PointerGlow } from "@/components/pointer-glow";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The landing page is a picture, not an essay: a real file arriving broken at
@@ -130,6 +132,7 @@ export default async function Home() {
           className="hero-glow pointer-events-none absolute -top-40 left-[8%] h-[520px] w-[760px] rounded-full bg-[#1B2740] blur-[130px]"
         />
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
+        <PointerGlow />
 
         <div className="relative mx-auto grid w-full max-w-[1120px] gap-12 px-6 pb-4 pt-20 sm:pt-28 lg:grid-cols-[1fr_420px] lg:items-center">
           <div>
@@ -151,58 +154,16 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* The product IS the hero image: a quote arriving, dense and real.
-              This window carries the page's ONE deep shadow. */}
+          {/* The product IS the hero image — and it's ALIVE: one task's whole
+              life plays in the window, then loops. */}
           <p className="sr-only">
             Product preview: a task titled &ldquo;Clean a 1,800-row supplier price
-            list&rdquo; arrives with a fixed quote of $74, scope and morning return time
-            printed, ready to approve — priced by the operator 34 minutes after intake.
+            list&rdquo; is received at 6:41 PM, priced $74 by the operator 34 minutes
+            later, approved, done overnight by a vetted specialist, and passes review
+            by 7:07 AM.
           </p>
-          <div aria-hidden className="anim-rise d-3 relative">
-            <div className="pointer-events-none absolute -inset-6 rounded-[24px] bg-[#1B2740]/40 blur-[60px]" />
-            <div className="relative overflow-hidden rounded-[16px] border border-white/10 bg-[#111317] shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)]">
-              <div className="flex items-center justify-between border-b border-white/8 px-4 py-2.5">
-                <span className="font-mono text-[11px] text-[#8A9099]">task_0448</span>
-                <span className="rounded-[3px] bg-[#F7F6F3] px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] text-[#14161A]">
-                  Quote ready
-                </span>
-              </div>
-              <div className="px-4 py-4">
-                <p className="text-[15px] font-medium text-[#F7F6F3]">
-                  Clean a 1,800-row supplier price list
-                </p>
-                <div className="mt-3 space-y-1.5 font-mono text-[12px]">
-                  <div className="flex justify-between gap-4">
-                    <span className="shrink-0 text-[#767C86]">SCOPE</span>
-                    <span className="truncate text-[#C9CDD3]">merge duplicates, fix units</span>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <span className="shrink-0 text-[#767C86]">RETURNS</span>
-                    <span className="text-[#C9CDD3]">7:00 AM ET</span>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-baseline justify-between border-t border-white/8 pt-3">
-                  <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#767C86]">
-                    Fixed price
-                  </span>
-                  <span className="font-mono text-[26px] font-medium tabular-nums text-[#F7F6F3] underline decoration-[#1E7F5C] decoration-2 underline-offset-4">
-                    $74
-                  </span>
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <span className="lift flex-1 rounded-md bg-[#F7F6F3] py-2 text-center text-[12px] font-medium text-[#14161A]">
-                    Approve
-                  </span>
-                  <span className="flex-1 rounded-md border border-white/15 py-2 text-center text-[12px] font-medium text-[#8A9099]">
-                    Ask a question
-                  </span>
-                </div>
-              </div>
-              <div className="border-t border-white/8 bg-[#0F1011] px-4 py-2.5 font-mono text-[11px] text-[#767C86]">
-                <span className="text-[#8A9099]">7:15 PM</span> · priced by the operator ·{" "}
-                <span className="text-[#8A9099]">34 min after intake</span>
-              </div>
-            </div>
+          <div aria-hidden className="anim-rise d-3">
+            <LiveTaskWindow />
           </div>
         </div>
 
@@ -225,7 +186,7 @@ export default async function Home() {
           corrected, for a fixed price of $68 approved in advance.
         </p>
 
-        <Reveal>
+        <Reveal replay>
           {/* dusk halo behind the flagship artifact — static atmosphere */}
           <div className="relative">
             <div

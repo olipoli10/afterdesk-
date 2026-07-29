@@ -20,10 +20,13 @@ export function Reveal({
   children,
   className = "",
   delay = 0,
+  replay = false,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
+  /** Re-arm when scrolled out, so the stagger plays again on every entry. */
+  replay?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -45,7 +48,12 @@ export function Reveal({
         for (const entry of entries) {
           if (entry.isIntersecting) {
             show();
-            io.disconnect();
+            if (!replay) io.disconnect();
+          } else if (replay && el.classList.contains("is-visible")) {
+            // Fully out of view: re-arm for the next pass.
+            if (entry.boundingClientRect.top > 0 || entry.boundingClientRect.bottom < 0) {
+              el.classList.remove("is-visible");
+            }
           }
         }
       },
@@ -66,7 +74,7 @@ export function Reveal({
       window.clearTimeout(watchdog);
       io.disconnect();
     };
-  }, []);
+  }, [replay]);
 
   return (
     <div

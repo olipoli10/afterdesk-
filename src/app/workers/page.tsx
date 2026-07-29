@@ -223,7 +223,7 @@ export default async function WorkersHome() {
           task.
         </p>
 
-        <Reveal>
+        <Reveal replay>
           <div
             aria-hidden
             className="relative overflow-hidden rounded-2xl border border-[#14161A]/10 shadow-[0_24px_60px_-30px_rgba(20,22,26,0.35)] transition-shadow duration-500 hover:shadow-[0_36px_90px_-30px_rgba(20,22,26,0.5)]"
