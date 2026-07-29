@@ -5,9 +5,10 @@ import Link from "next/link";
  * choice IS the URL, and the middleware persists it to a year-long cookie so
  * a returning visitor lands in their own language.
  *
- * Each page passes its own set — the client side speaks EN/FR/ES, the worker
- * side EN/FIL. There is no shared cookie between them on purpose: a French
- * client and a Filipino worker are different people on different pages.
+ * Both pages offer the same four languages (EN/FR/ES/FIL), but each passes
+ * its own set and its own path, and the cookies stay separate on purpose: a
+ * French client and a Filipino worker are different people reading different
+ * pages, and one choosing FIL must not flip the other's page.
  */
 export function LangSwitch<T extends string>({
   path,

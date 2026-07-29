@@ -1,5 +1,6 @@
 /**
- * The client homepage speaks English, French and Spanish.
+ * The client homepage speaks English, French, Spanish and Tagalog (labelled
+ * FIL) — the same four the worker page offers, from the same shared list.
  *
  * THE RULE: the VOICE translates, the MACHINE stays English. Headings, body
  * copy, CTAs, captions, terms and example task titles are voice. The live
@@ -9,16 +10,14 @@
  * and showing that is honest signaling, not laziness.
  */
 
-export type ClientLang = "en" | "fr" | "es";
+import { SITE_LANGS, siteLangOf, type SiteLang } from "./langs";
 
-export const CLIENT_LANGS: { code: ClientLang; label: string }[] = [
-  { code: "en", label: "EN" },
-  { code: "fr", label: "FR" },
-  { code: "es", label: "ES" },
-];
+export type ClientLang = SiteLang;
+
+export const CLIENT_LANGS: { code: ClientLang; label: string }[] = SITE_LANGS;
 
 export function clientLangOf(value: string | undefined | null): ClientLang {
-  return value === "fr" || value === "es" ? value : "en";
+  return siteLangOf(value);
 }
 
 type Dict = {
@@ -334,4 +333,104 @@ const es: Dict = {
   footer: { how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros" },
 };
 
-export const CLIENT_I18N: Record<ClientLang, Dict> = { en, fr, es };
+/* Tagalog, labelled FIL. Register: conversational Filipino with the English
+   loanwords the market actually speaks (task, review, approve, fixed), never
+   textbook Filipino. That register decides the ledger tags too — DATA /
+   RESEARCH / MEDIA / DOCS are the words used out loud, while the textbook
+   renderings (PANANALIKSIK, DOKUMENTO) read as stilted and overrun the tag
+   column. The task titles beside them, where the meaning lives, are fully
+   translated. */
+const tl: Dict = {
+  nav: { signIn: "Mag-sign in", send: "Magpadala ng task" },
+  hero: {
+    line1: "Ilarawan ang kahit anong task.",
+    line2: "Tapos na ito pagsapit ng umaga.",
+    sub: (h) =>
+      `Research, data, pagsusulat, spreadsheets, admin — may presyo sa loob ng ${h} oras ng trabaho, hatid sa umaga.`,
+    cta: "Ilarawan ang task mo",
+  },
+  ch01: {
+    label: "Ang diff ng magdamag",
+    caption:
+      "“Alisin ang doble sa leads namin, ayusin ang mga pangalan, tanggalin ang mga sirang email.” — ipinadala 6:41 PM",
+  },
+  ch02: {
+    label: "Isang presyo. Aprubado muna.",
+    noMeter: "Walang subscription. Walang minimum. Walang orasang tumatakbo.",
+    captions: [
+      "Fixed. Hindi kada oras.",
+      "Ikaw ang mag-a-approve bago magsimula.",
+      "Balik bago ang unang meeting mo.",
+    ],
+  },
+  ch03: {
+    label: "Ang talaan",
+    h2: "Kung kaya mong ilarawan, magagawa ito.",
+    rows: [
+      ["DATA", "4,000 dobleng CRM contacts, nalinis", "$85"],
+      ["RESEARCH", "300 dental clinic, may email ng may-ari", "$140"],
+      ["SULAT", "12 product description mula sa spec sheets", "$70"],
+      ["MEDIA", "8 oras na panayam, na-transcribe at na-tag", "$110"],
+      ["RESEARCH", "5 pricing page ng kakumpitensya, isang sheet", "$95"],
+      ["DOCS", "90-pahinang proposal, ginawa sa template ninyo", "$75"],
+    ],
+    note: "HALIMBAWA LANG — HINDI ITO RATE CARD ·",
+  },
+  ch04: {
+    label: "Ang gabi",
+    h2: "Ang gabi mo ang araw ng trabaho nila.",
+    laneYou: "New York",
+    laneThem: "Maynila",
+    note: "12 oras na nauuna ang Maynila sa New York (13 kapag taglamig)",
+    steps: [
+      ["6:41 PM", "Ilalarawan mo ang task."],
+      ["7:15 PM", "Isang fixed na presyo. Aaprubahan mo."],
+      ["Magdamag", "Isang beripikadong espesyalista ang gagawa."],
+      ["7:07 AM", "Nasuri na ito, sa iyo na."],
+    ],
+  },
+  ch05: {
+    label: "Ang operator",
+    h2: "Isang propesyonal sa pagitan mo at ng trabaho.",
+    wall: "Operator",
+    desk: "Halimbawa — isang pasada ng review",
+    there: "Doon",
+    here: "Dito",
+    pairs: [
+      [
+        "Mag-post ng job. Magbasa ng apatnapung proposal.",
+        "Isang beses mong ilarawan. Presyo sa loob ng oras, hindi araw.",
+      ],
+      [
+        "Mag-interview, mag-hire, mag-onboard, mag-manage.",
+        "Walang i-manage. Ang operator ang bahala sa gabi.",
+      ],
+      [
+        "Orasang tumatakbo habang natutulog ka.",
+        "Isang fixed na presyo, aprubado bago magsimula ang kahit ano.",
+      ],
+      ["Umasa na tama ito sa umaga.", "Sinuri ng propesyonal bago mo pa ito makita."],
+    ],
+  },
+  ch06: {
+    label: "Ang mga kondisyon",
+    notes: "Pangkalahatang tala",
+    terms: (retentionDays) => [
+      ["PRESYO", "Isang fixed na presyo, aprubado bago magsimula ang kahit ano."],
+      ["REVIEW", "Bawat delivery ay dumadaan sa review bago mo makita."],
+      ["IDENTITY", "Hindi mo kailanman makikilala ang manggagawa. Iyon ang punto."],
+      ...(retentionDays
+        ? ([
+            [
+              "DATA",
+              `Nagtatapos ang access kasabay ng task. Buburahin ang files pagkatapos ng ${retentionDays} araw.`,
+            ],
+          ] as [string, string][])
+        : []),
+      ["PAGTANGGI", "May mga task na tinatanggihan namin."],
+    ],
+  },
+  footer: { how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin" },
+};
+
+export const CLIENT_I18N: Record<ClientLang, Dict> = { en, fr, es, tl };

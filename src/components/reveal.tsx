@@ -50,8 +50,12 @@ export function Reveal({
             show();
             if (!replay) io.disconnect();
           } else if (replay && el.classList.contains("is-visible")) {
-            // Fully out of view: re-arm for the next pass.
-            if (entry.boundingClientRect.top > 0 || entry.boundingClientRect.bottom < 0) {
+            /* Re-arm ONLY when the element sits entirely BELOW the viewport
+               — i.e. the visitor scrolled back up past it. Re-arming on the
+               way down would make the section they just passed slide down
+               and fade as it exits, which reads as the page bouncing back
+               up. Ask anyone who has scrolled this page. */
+            if (entry.boundingClientRect.top > 0) {
               el.classList.remove("is-visible");
             }
           }

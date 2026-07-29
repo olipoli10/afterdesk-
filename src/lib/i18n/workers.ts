@@ -1,25 +1,26 @@
 /**
- * The worker homepage speaks two languages: English and Tagalog (labelled
- * FIL). The ARTIFACTS (pool rows, ledger lines, payout slip, the claim card's
- * mono controls) stay English on purpose — real tasks arrive in English, and
- * showing that is honest signaling about what the job requires.
+ * The worker homepage speaks four languages: English, French, Spanish and
+ * Tagalog (labelled FIL) — the same four the client page offers, from the
+ * same shared list. The ARTIFACTS (pool rows, ledger lines, payout slip, the
+ * claim card's mono controls) stay English on purpose — real tasks arrive in
+ * English, and showing that is honest signaling about what the job requires.
+ * The mono term labels (WORK / PAYOUT / REVIEW / IDENTITY / SCORE) belong to
+ * that machine layer and stay English in every language.
  *
  * Register: natural conversational Tagalog with the loanwords Filipino
  * freelancers actually use (task, payout, review, claim, pool) — never
- * stiff textbook Filipino.
+ * stiff textbook Filipino. French is North-American French; Spanish is
+ * neutral international business Spanish.
  */
 
-export type WorkersLang = "en" | "tl";
+import { SITE_LANGS, siteLangOf, type SiteLang } from "./langs";
 
-/** "FIL" is the label — Filipino is the language's own name; `tl` is the
-    ISO code the URL and cookie carry. */
-export const WORKERS_LANGS: { code: WorkersLang; label: string }[] = [
-  { code: "en", label: "EN" },
-  { code: "tl", label: "FIL" },
-];
+export type WorkersLang = SiteLang;
+
+export const WORKERS_LANGS: { code: WorkersLang; label: string }[] = SITE_LANGS;
 
 export function workersLangOf(value: string | undefined | null): WorkersLang {
-  return value === "tl" ? "tl" : "en";
+  return siteLangOf(value);
 }
 
 type Dict = {
@@ -74,7 +75,8 @@ const en: Dict = {
     h2: "One list. Every price already on it.",
     body: "You claim what fits you. Nobody bids against you.",
     disclosure: "Example tasks. Every price is set by hand, per task.",
-    bandCaption: "Your day is their night — Manila runs 12 hours ahead of New York.",
+    bandCaption:
+      "Your day is their night — Manila runs 12 hours ahead of New York (13 in winter).",
   },
   ch02: {
     label: "The slip",
@@ -133,7 +135,8 @@ const tl: Dict = {
     h2: "Isang listahan. Nakalagay na ang bawat presyo.",
     body: "Kukunin mo ang bagay sa iyo. Walang makikipag-bidding sa iyo.",
     disclosure: "Mga halimbawang task. Bawat presyo ay itinatakda nang manu-mano, kada task.",
-    bandCaption: "Ang araw mo ay gabi nila — 12 oras na nauuna ang Maynila sa New York.",
+    bandCaption:
+      "Ang araw mo ay gabi nila — 12 oras na nauuna ang Maynila sa New York (13 kapag taglamig).",
   },
   ch02: {
     label: "Ang slip",
@@ -174,4 +177,133 @@ const tl: Dict = {
   footer: { how: "Paano ito gumagana", signIn: "Mag-sign in", sendWork: "Magpadala ng trabaho" },
 };
 
-export const WORKERS_I18N: Record<WorkersLang, Dict> = { en, tl };
+/* North-American French: "courriel" over "email", business register, no
+   France-only idioms. */
+const fr: Dict = {
+  nav: { signIn: "Connexion", apply: "Postuler" },
+  hero: {
+    kill: "Aucune proposition · Aucune enchère · Aucune commission",
+    h1: "Le montant est imprimé avant que vous preniez la tâche.",
+    sub: "La nuit, les tâches arrivent déjà chiffrées. Passez la révision, vous êtes payé.",
+    cta: "Postuler au bassin",
+    micro: "Candidature courte. Vraie sélection. Le bassin reste petit, exprès.",
+    cardCaption: "Exemple. Chaque tâche est chiffrée à la main avant d'apparaître.",
+    ghost: [
+      ["Proposition", "non requise"],
+      ["Enchères", "aucune"],
+      ["Commission", "$0.00"],
+      ["Appels clients", "0"],
+    ],
+  },
+  ch01: {
+    label: "Le bassin",
+    h2: "Une seule liste. Tous les prix déjà dessus.",
+    body: "Vous prenez ce qui vous convient. Personne n'enchérit contre vous.",
+    disclosure: "Tâches à titre d'exemple. Chaque prix est fixé à la main, tâche par tâche.",
+    bandCaption:
+      "Votre journée est leur nuit — Manille a 12 heures d'avance sur New York (13 en hiver).",
+  },
+  ch02: {
+    label: "Le bordereau",
+    h2: "Ce qui sort du montant imprimé.",
+    kicker: "Le montant imprimé est le montant que vous recevez.",
+  },
+  ch03: {
+    label: "La barre",
+    h2: "La barre, c'est ce qui rend l'argent réel.",
+    rowPass: "Passe la révision → payé.",
+    rowReturned: "Pas encore correct → retourné avec des notes.",
+    rowFail: "Échoue à la révision finale → non payé. Rare, par conception.",
+    footnote:
+      "Les révisions font partie du métier, pas une faute au dossier. Un paiement n'est renversé que pour une erreur claire échappée à la révision — rare.",
+  },
+  ch04: {
+    label: "Les conditions",
+    h2: "Vous ne rencontrez jamais le client.",
+    schematic: "Tout passe par l'opérateur. Rien ne passe directement.",
+    terms: (maxClaims, qcRounds) => [
+      ["WORK", `Vous faites la tâche, pas la vente. Jusqu'à ${maxClaims} à la fois.`],
+      ["PAYOUT", "Le montant imprimé. Aucune facture à courir après."],
+      [
+        "REVIEW",
+        `Un opérateur lit chaque livraison. Retournée avec des notes, jusqu'à ${qcRounds} rondes.`,
+      ],
+      ["IDENTITY", "Le client ne voit jamais votre nom."],
+      ["SCORE", "Aucune étoile publique. Un réviseur, une note continue."],
+    ],
+  },
+  closing: {
+    line1: "L'Amérique s'endort.",
+    line2: "Vous vous réveillez avec du travail payé.",
+    cta: "Postuler maintenant",
+    funnel:
+      "Compte → courte candidature → la révision de l'opérateur → le bassin. Tout le monde n'entre pas. C'est voulu.",
+  },
+  footer: { how: "Comment ça marche", signIn: "Connexion", sendWork: "Envoyer du travail" },
+};
+
+/* Neutral international business Spanish — tuteo, matching the client page. */
+const es: Dict = {
+  nav: { signIn: "Iniciar sesión", apply: "Postular" },
+  hero: {
+    kill: "Sin propuestas · Sin pujas · Sin comisión",
+    h1: "El pago está impreso antes de que tomes la tarea.",
+    sub: "De noche llegan tareas ya con precio. Pasa la revisión y cobras.",
+    cta: "Postula al grupo",
+    micro: "Postulación corta. Selección real. El grupo se mantiene pequeño a propósito.",
+    cardCaption: "Ejemplo. Cada tarea se cotiza a mano antes de aparecer.",
+    ghost: [
+      ["Propuesta", "no requerida"],
+      ["Pujas", "ninguna"],
+      ["Comisión", "$0.00"],
+      ["Llamadas de cliente", "0"],
+    ],
+  },
+  ch01: {
+    label: "El grupo",
+    h2: "Una lista. Todos los precios ya puestos.",
+    body: "Tomas lo que te queda bien. Nadie puja contra ti.",
+    disclosure: "Tareas de ejemplo. Cada precio se fija a mano, tarea por tarea.",
+    bandCaption:
+      "Tu día es su noche — Manila va 12 horas por delante de Nueva York (13 en invierno).",
+  },
+  ch02: {
+    label: "El comprobante",
+    h2: "Qué sale del número impreso.",
+    kicker: "El número impreso es el número que recibes.",
+  },
+  ch03: {
+    label: "El estándar",
+    h2: "El estándar es lo que hace real el dinero.",
+    rowPass: "Pasa la revisión → pagado.",
+    rowReturned: "Aún no está bien → devuelto con notas.",
+    rowFail: "Falla la revisión final → sin pago. Poco común, por diseño.",
+    footnote:
+      "Las revisiones son parte del oficio, no una falta. Un pago se revierte solo por un error claro que la revisión no vio — poco común.",
+  },
+  ch04: {
+    label: "Las condiciones",
+    h2: "Nunca conoces al cliente.",
+    schematic: "Todo pasa por el operador. Nada pasa directo.",
+    terms: (maxClaims, qcRounds) => [
+      ["WORK", `Haces la tarea, no la venta. Hasta ${maxClaims} a la vez.`],
+      ["PAYOUT", "El número impreso. Sin facturas que perseguir."],
+      [
+        "REVIEW",
+        `Un operador lee cada entrega. Devuelta con notas, hasta ${qcRounds} rondas.`,
+      ],
+      ["IDENTITY", "El cliente nunca ve tu nombre."],
+      ["SCORE", "Sin estrellas públicas. Un revisor, un puntaje continuo."],
+    ],
+  },
+  closing: {
+    line1: "América se va a dormir.",
+    line2: "Tú despiertas con trabajo pagado.",
+    cta: "Postula ahora",
+    funnel:
+      "Cuenta → postulación corta → la revisión del operador → el grupo. No todos entran. Ese es el punto.",
+  },
+  footer: { how: "Cómo funciona", signIn: "Iniciar sesión", sendWork: "Enviar trabajo" },
+};
+
+export const WORKERS_I18N: Record<WorkersLang, Dict> = { en, fr, es, tl };

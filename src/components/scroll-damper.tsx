@@ -4,37 +4,51 @@ import { useEffect } from "react";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Wheel damping. A mouse wheel on Windows fires ~100px per notch, so a page
-   built out of large calm plates flies past in three flicks — the founder's
-   "ça va beaucoup trop vite, ça a aucun sens". CSS cannot fix this; only the
-   input can be shaped.
+   built out of large calm plates flies past in three flicks. CSS cannot fix
+   this; only the input can be shaped.
+
+   TWO BUGS THIS FILE EXISTS TO NOT HAVE, both learned the hard way:
+
+   1. NEVER clamp the target to `scrollHeight - innerHeight`. The looping
+      artifacts on these pages change layout by a pixel or two as they play,
+      so that ceiling wobbles — and a target clamped against a momentarily
+      shorter document gets pulled BACKWARDS, which the visitor sees as the
+      page bouncing back up as they scroll down. `window.scrollTo` already
+      clamps at the bottom; we clamp only at 0.
+
+   2. NEVER keep glancing at `window.scrollY` as the source of truth while
+      also writing to it. If anything else moves the page — an anchor, the
+      keyboard, the scrollbar, the browser's own scroll anchoring — the two
+      fight. We remember what we last wrote; if reality has drifted from it,
+      something else is in charge and we surrender immediately.
 
    Deliberately narrow, because hijacking scroll is a dark pattern when done
-   greedily:
-   - MOUSE WHEELS ONLY. Trackpads emit many small continuous deltas and are
-     already smooth; they are left completely native (delta < TRACKPAD_MAX).
-   - Touch, keyboard, spacebar, scrollbar drags, find-in-page and anchor
-     jumps are never intercepted — they move the document, and the damper
-     re-syncs to wherever they left it.
-   - Ctrl+wheel (pinch zoom) is never touched.
-   - A wheel inside a genuinely scrollable element (the AI chat transcript,
-     an overflow-x table) is left alone.
-   - prefers-reduced-motion disables the whole thing.
+   greedily: mouse wheels only (trackpads emit small continuous deltas and
+   are already smooth — left completely native), never touch, keyboard,
+   scrollbar drags, find-in-page, anchor jumps or ctrl+wheel zoom, never
+   inside a genuinely scrollable child, and off entirely under
+   prefers-reduced-motion.
    ───────────────────────────────────────────────────────────────────────── */
 
 /** Fraction of the OS delta actually applied. 1 = native. */
-const FACTOR = 0.55;
+const FACTOR = 0.45;
 /** Per-frame approach rate toward the target. Higher = snappier, less glide. */
-const EASE = 0.14;
+const EASE = 0.16;
 /** Deltas at or below this are treated as a trackpad and left native. */
 const TRACKPAD_MAX = 40;
+/** How far reality may drift from our last write before we hand over. */
+const DRIFT_PX = 3;
 
-function scrollableAncestor(start: EventTarget | null): boolean {
+function insideScrollable(start: EventTarget | null): boolean {
   let el = start instanceof Element ? start : null;
   while (el && el !== document.body && el !== document.documentElement) {
     const s = getComputedStyle(el);
-    const canScrollY =
-      /(auto|scroll|overlay)/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 1;
-    if (canScrollY) return true;
+    if (
+      /(auto|scroll|overlay)/.test(s.overflowY) &&
+      el.scrollHeight > el.clientHeight + 1
+    ) {
+      return true;
+    }
     el = el.parentElement;
   }
   return false;
@@ -50,57 +64,73 @@ export function ScrollDamper() {
       return;
     }
 
-    let target = window.scrollY;
+    let target = window.scrollY; // where the wheel says we should end up
+    let written = window.scrollY; // the last value WE put on the document
     let raf = 0;
 
-    const maxScroll = () =>
-      Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const stop = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    };
 
     const loop = () => {
       const current = window.scrollY;
+
+      // Someone else is driving — let go, and take their position as ours.
+      if (Math.abs(current - written) > DRIFT_PX) {
+        target = current;
+        raf = 0;
+        return;
+      }
+
       const delta = target - current;
       if (Math.abs(delta) < 0.5) {
         raf = 0;
         return;
       }
+
       window.scrollTo(0, current + delta * EASE);
+      written = window.scrollY; // scrollTo clamps at both ends; trust it
       raf = requestAnimationFrame(loop);
     };
 
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey || e.defaultPrevented) return;
-      // deltaMode 1/2 are line/page wheels — rare, and the multiplier would
-      // be wrong; leave them native.
+      // deltaMode 1/2 are line/page wheels — the multiplier would be wrong.
       if (e.deltaMode !== 0) return;
       if (Math.abs(e.deltaY) <= TRACKPAD_MAX) return;
-      if (scrollableAncestor(e.target)) return;
+      if (insideScrollable(e.target)) return;
 
       e.preventDefault();
-      // Re-anchor if anything else moved the page since the last wheel.
-      if (!raf || Math.abs(target - window.scrollY) > window.innerHeight) {
+
+      // A fresh gesture (or one that drifted) starts from where we actually
+      // are. Only the floor is clamped — see bug 1 above.
+      if (!raf || Math.abs(window.scrollY - written) > DRIFT_PX) {
         target = window.scrollY;
+        written = window.scrollY;
       }
-      target = Math.min(maxScroll(), Math.max(0, target + e.deltaY * FACTOR));
+      target = Math.max(0, target + e.deltaY * FACTOR);
+
       if (!raf) raf = requestAnimationFrame(loop);
     };
 
-    // Any non-wheel movement wins: drop the glide and adopt the new position.
+    // Any other input wins outright.
     const surrender = () => {
-      if (raf) {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
+      stop();
       target = window.scrollY;
+      written = window.scrollY;
     };
 
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("keydown", surrender);
     window.addEventListener("touchstart", surrender, { passive: true });
+    window.addEventListener("mousedown", surrender);
     return () => {
-      if (raf) cancelAnimationFrame(raf);
+      stop();
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", surrender);
       window.removeEventListener("touchstart", surrender);
+      window.removeEventListener("mousedown", surrender);
     };
   }, []);
 
