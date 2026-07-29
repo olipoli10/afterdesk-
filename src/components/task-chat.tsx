@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { sendIntakeTurn } from "@/server/actions/intake";
@@ -37,6 +38,7 @@ export function TaskChat({
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [deadlineLocal, setDeadlineLocal] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [fellBack, setFellBack] = useState(false);
   const [thinking, startThinking] = useTransition();
   const [submitting, startSubmit] = useTransition();
   const endRef = useRef<HTMLDivElement>(null);
@@ -60,10 +62,17 @@ export function TaskChat({
       const result = await sendIntakeTurn(next.slice(1));
       if (!result.ok) {
         setError(result.error);
+        // Put the message back so it is never lost, and drop the turn that
+        // was never answered — the transcript must stay strictly alternating.
+        setTurns(next.slice(0, -1));
+        setInput(text);
+        if (result.kind === "unavailable" || result.kind === "limit") setFellBack(true);
         return;
       }
-      setTurns((t) => [...t, { role: "assistant", content: result.result.reply }]);
-      if (result.result.ready && result.result.draft) setDraft(result.result.draft);
+      setTurns((t) => [...t, { role: "assistant", content: result.reply }]);
+      // Always reconcile: a draft from an earlier turn must not survive a
+      // conversation that has moved on.
+      setDraft(result.ready && result.draft ? result.draft : null);
     });
   }
 
@@ -154,7 +163,19 @@ export function TaskChat({
         </div>
       </Card>
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3">
+          <p className="text-sm text-red-700">{error}</p>
+          {fellBack ? (
+            <Link
+              href="/client/tasks/new?mode=form"
+              className="mt-1.5 inline-block text-sm font-medium text-red-800 underline"
+            >
+              Write the task out myself
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
 
       {draft ? (
         <Card className="border-neutral-300">
