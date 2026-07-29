@@ -1,13 +1,19 @@
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getSessionUser } from "@/lib/authz";
+import { getSessionUser, isApprovedVa } from "@/lib/authz";
+import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";
 import { objectExists, objectStream } from "@/lib/storage";
 
 /**
  * The only way to read a stored file. Authorization is evaluated per file
  * against role + task relationship + task status, every access is logged,
  * and VA access ends the moment a task leaves their hands.
+ *
+ * RULE 1: filenames are anonymized in BOTH directions — a VA never sees the
+ * client's original filename ("AcmeCorp_CRM_export.xlsx"), a client never sees
+ * the VA's ("juan_delacruz_final.xlsx"). Only the owner of a file and the
+ * admin see its real name.
  */
 export async function GET(
   _request: Request,
@@ -25,11 +31,12 @@ export async function GET(
     },
   });
   if (!file) return NextResponse.json({ error: "Not found." }, { status: 404 });
-  if (file.purgedAt) {
-    return NextResponse.json({ error: "This file has been deleted per retention policy." }, { status: 410 });
-  }
+
+  const ext = path.extname(file.fileName);
+  const shortId = file.task ? file.task.id.slice(-6) : file.id.slice(-6);
 
   let allowed = false;
+  // Default to the real name; only the owner and the admin ever keep it.
   let downloadName = file.fileName;
 
   if (user.role === "ADMIN") {
@@ -37,28 +44,43 @@ export async function GET(
   } else if (user.role === "CLIENT") {
     if (file.task && file.task.clientId === user.id) {
       if (file.kind === "input") {
-        // Clients can always re-download their own uploads.
+        // Their own upload — they already know the name.
         allowed = true;
       } else if (file.kind === "deliverable") {
         // RULE 3: only admin-approved deliverables ever reach a client —
         // rejected revisions stay invisible forever.
         allowed = file.submission?.qcStatus === "approved";
-        const ext = path.extname(file.fileName);
-        downloadName = `task-${file.task.id.slice(-6)}-deliverable${ext}`;
+        downloadName = `task-${shortId}-deliverable${ext}`;
       }
     }
   } else if (user.role === "VA") {
     const activeForVa =
       file.task &&
       file.task.claimedById === user.id &&
-      ["claimed", "submitted_for_qc", "qc_rejected"].includes(file.task.status);
+      VA_FILE_ACCESS_STATUSES.includes(file.task.status) &&
+      (await isApprovedVa(user.id));
     if (activeForVa) {
-      // Input files while the task is in their hands; their own deliverables.
-      allowed = file.kind === "input" || file.uploaderId === user.id;
+      if (file.uploaderId === user.id) {
+        // Their own deliverable — real name.
+        allowed = true;
+      } else if (file.kind === "input") {
+        allowed = true;
+        // RULE 1: the client's filename can identify them.
+        downloadName = `task-${shortId}-input-${file.id.slice(-4)}${ext}`;
+      }
     }
   }
 
+  // Authorization first: an unauthorized caller gets an indistinguishable 404
+  // whether the file is missing, purged, or simply not theirs.
   if (!allowed) return NextResponse.json({ error: "Not found." }, { status: 404 });
+
+  if (file.purgedAt) {
+    return NextResponse.json(
+      { error: "This file has been deleted per retention policy." },
+      { status: 410 }
+    );
+  }
 
   if (!(await objectExists(file.storageKey))) {
     return NextResponse.json({ error: "File data missing." }, { status: 404 });

@@ -132,7 +132,7 @@ export default async function PricingDetailPage({
         </div>
       </div>
 
-      <PricingForm taskId={task.id} hasFiles={inputFiles.length > 0} />
+      <PricingForm taskId={task.id} fileCount={inputFiles.length} />
     </div>
   );
 }

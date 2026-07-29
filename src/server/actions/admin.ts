@@ -45,19 +45,19 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
 
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: {
-      clientDeadlineUtc: true,
-      _count: { select: { files: { where: { kind: "input", purgedAt: null } } } },
-    },
+    select: { clientDeadlineUtc: true },
   });
   if (!task) return { ok: false, error: "Task not found." };
 
-  // B3 decision: the admin pricing step doubles as the content gate on client
-  // files — verification is mandatory before anything becomes VA-visible.
-  if (task._count.files > 0 && !filesVerified) {
+  // The admin pricing step is the content gate on everything the client wrote
+  // (description and quantity are VA-visible verbatim) and everything they
+  // uploaded. The attestation is unconditional — a task with no files still
+  // carries a free-text description that can name the client.
+  if (!filesVerified) {
     return {
       ok: false,
-      error: "Confirm you opened the client files and checked them (contact info, unexpected content) before quoting.",
+      error:
+        "Confirm you reviewed the description, quantity and any files for contact info or identifying details before quoting.",
     };
   }
 
@@ -84,7 +84,10 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
         quoteExpiresAt,
         vaDeadlineUtc,
       },
-      meta: { clientPriceCents, vaPayoutCents, tier },
+      // RULE 2: never persist raw prices in TaskEvent.meta — the authoritative
+      // values live on the Task row behind the role-shaped selects, and meta
+      // has no role-shaping of its own.
+      meta: { tier, priced: true },
     });
   } catch (e) {
     if (e instanceof TransitionError) {

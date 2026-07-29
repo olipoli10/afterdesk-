@@ -126,6 +126,15 @@ model Account {
   @@index([userId])
 }
 
+// Better Auth's database-backed rate limiter (survives restarts, shared
+// across instances).
+model RateLimit {
+  id          String @id @default(cuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+}
+
 model Verification {
   id         String    @id @default(cuid())
   identifier String

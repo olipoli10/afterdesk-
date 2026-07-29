@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/authz";
-import { taskForAdmin, taskEvents } from "@/lib/queries/tasks";
+import { taskForAdmin, taskEventsForAdmin } from "@/lib/queries/tasks";
 import { ADMIN_STATUS_LABELS, statusBadgeClass, TERMINAL_STATUSES } from "@/lib/status";
 import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
@@ -17,7 +17,7 @@ export default async function AdminTaskDetail({
   const { id } = await params;
   const task = await taskForAdmin(id);
   if (!task) notFound();
-  const events = await taskEvents(id);
+  const events = await taskEventsForAdmin(id);
   const isTerminal = TERMINAL_STATUSES.includes(task.status);
 
   return (

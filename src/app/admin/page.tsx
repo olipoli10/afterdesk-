@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
+import { runOperatorSweeps } from "@/server/sweeps";
 import { Card, CardBody, PageTitle } from "@/components/ui";
 
 async function count(where: object): Promise<number> {
@@ -9,6 +10,7 @@ async function count(where: object): Promise<number> {
 
 export default async function AdminOverview() {
   await requireRole("ADMIN");
+  await runOperatorSweeps();
 
   const [pricing, quoted, open, working, terminalDone] = await Promise.all([
     count({ status: { in: ["submitted", "pricing_review"] } }),

@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/authz";
 import { pricingQueue } from "@/lib/queries/tasks";
+import { runOperatorSweeps } from "@/server/sweeps";
 import { LocalTime } from "@/components/local-time";
 import { Card, EmptyState, PageTitle } from "@/components/ui";
 
 export default async function PricingQueuePage() {
   await requireRole("ADMIN");
+  // No worker process in a one-operator product: time-driven transitions run
+  // when the operator opens their queue.
+  await runOperatorSweeps();
   const queue = await pricingQueue();
 
   if (queue.length === 0) {

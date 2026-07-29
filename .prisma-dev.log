@@ -1,0 +1,25 @@
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+-  Starting _prisma dev_ server default...
+
+
+
+
+
+
+√  Your local Prisma Postgres server default is now running 👍
+
+🔌 To connect with Prisma ORM use the following connection strings:
+
+   DATABASE_URL="postgres://postgres:postgres@localhost:51214/template1?sslmode=disable&connection_limit=10&connect_timeout=0&max_idle_connection_lifetime=0&pool_timeout=0&socket_timeout=0"
+   SHADOW_DATABASE_URL="postgres://postgres:postgres@localhost:51215/template1?sslmode=disable&connection_limit=10&connect_timeout=0&max_idle_connection_lifetime=0&pool_timeout=0&socket_timeout=0"
+
+🐘 You can also use the DATABASE_URL with the pg or postgres.js JavaScript drivers as well as your favorite DB gui.
+
+   For the best experience, set the maximum number of connections to 10, connect timeout to 0 and
+   idle timeout to the smallest positive value supported.
+
+🌊 Prisma Streams is available at:
+
+   PRISMA_STREAM_URL="http://127.0.0.1:51216/v1/stream/prisma-wal"

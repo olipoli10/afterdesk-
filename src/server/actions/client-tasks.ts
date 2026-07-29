@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
+import { expireStaleQuotes } from "@/server/sweeps";
 
 const submitTaskSchema = z.object({
   title: z.string().trim().min(3).max(140),
@@ -92,6 +93,7 @@ export async function submitTask(input: unknown): Promise<SubmitTaskResult> {
 
       // AI pricing arrives at build step 4 — until then tasks go straight to
       // the manual pricing queue so nothing is ever stuck in `submitted`.
+      // (submitted → pricing_review is in ALLOWED_TRANSITIONS.)
       await tx.task.update({ where: { id: created.id }, data: { status: "pricing_review" } });
       await tx.taskEvent.create({
         data: {
@@ -120,26 +122,13 @@ export type QuoteActionResult = { ok: true } | { ok: false; error: string };
 
 export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
   const user = await requireRole("CLIENT");
-  const task = await prisma.task.findFirst({
+  const owned = await prisma.task.findFirst({
     where: { id: taskId, clientId: user.id },
-    select: { quoteExpiresAt: true },
+    select: { id: true },
   });
-  if (!task) return { ok: false, error: "Task not found." };
+  if (!owned) return { ok: false, error: "Task not found." };
 
-  if (task.quoteExpiresAt && task.quoteExpiresAt.getTime() < Date.now()) {
-    try {
-      await transitionTask({
-        taskId,
-        from: "quoted",
-        to: "expired",
-        action: "quote_expired",
-        data: { expiredAt: new Date() },
-      });
-    } catch {
-      // already moved — fall through to the generic message
-    }
-    return { ok: false, error: "This quote has expired. The operator will follow up." };
-  }
+  await expireStaleQuotes(taskId);
 
   try {
     await transitionTask({
@@ -148,10 +137,15 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
       to: "open",
       action: "client_accepted_quote",
       actorId: user.id,
+      // Time bound inside the compare-and-swap: a quote that expires between
+      // the sweep and this write cannot be accepted by a racing request.
+      guard: { OR: [{ quoteExpiresAt: null }, { quoteExpiresAt: { gt: new Date() } }] },
       data: { acceptedAt: new Date() },
     });
   } catch (e) {
-    if (e instanceof TransitionError) return { ok: false, error: "This quote is no longer available." };
+    if (e instanceof TransitionError) {
+      return { ok: false, error: "This quote is no longer available — it may have expired." };
+    }
     throw e;
   }
 
@@ -168,6 +162,8 @@ export async function declineQuote(taskId: string, reason?: string): Promise<Quo
   });
   if (!owned) return { ok: false, error: "Task not found." };
 
+  await expireStaleQuotes(taskId);
+
   try {
     await transitionTask({
       taskId,
@@ -179,7 +175,9 @@ export async function declineQuote(taskId: string, reason?: string): Promise<Quo
       data: { declinedAt: new Date(), declineReason: reason?.trim() || null },
     });
   } catch (e) {
-    if (e instanceof TransitionError) return { ok: false, error: "This quote is no longer available." };
+    if (e instanceof TransitionError) {
+      return { ok: false, error: "This quote is no longer available — it may have expired." };
+    }
     throw e;
   }
 

@@ -176,7 +176,14 @@ export async function allTasksForAdmin(statusFilter?: string) {
   });
 }
 
-export async function taskEvents(taskId: string) {
+/**
+ * ADMIN ONLY — returns full audit rows including `meta` and `actorId`.
+ * TaskEvent sits outside the Task role-shaping above, so it gets the same
+ * treatment by naming: never call this from a client- or VA-facing page.
+ * Role-shaped variants (status changes only, no meta, no actor) belong here
+ * when client/VA timelines are built.
+ */
+export async function taskEventsForAdmin(taskId: string) {
   return prisma.taskEvent.findMany({
     where: { taskId },
     orderBy: { createdAt: "asc" },

@@ -25,8 +25,15 @@ export const auth = betterAuth({
   },
   rateLimit: {
     enabled: true,
+    // Database-backed: survives restarts and works across serverless instances,
+    // unlike the in-memory default.
+    storage: "database",
     window: 60,
     max: 30,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 300, max: 5 },
+    },
   },
   // No cookieCache: role/status checks must always hit the database so a
   // demoted or suspended account loses access immediately.

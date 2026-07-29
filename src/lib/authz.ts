@@ -2,6 +2,7 @@ import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth, type SessionUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 
 export type Role = "CLIENT" | "VA" | "ADMIN";
 
@@ -39,4 +40,29 @@ export async function requireRole(role: Role): Promise<SessionUser> {
   const user = await requireUser();
   if (user.role !== role) redirect(roleHome(user.role));
   return user;
+}
+
+/**
+ * VA gate for anything beyond the account page: pool, claim, task work, file
+ * downloads. Read from the database on every call — a VA rejected or
+ * suspended mid-session loses access on their next request, not whenever a
+ * cached session happens to expire.
+ */
+export async function requireApprovedVa(): Promise<SessionUser> {
+  const user = await requireRole("VA");
+  const profile = await prisma.vaProfile.findUnique({
+    where: { userId: user.id },
+    select: { status: true },
+  });
+  if (profile?.status !== "approved") redirect("/va");
+  return user;
+}
+
+/** Non-redirecting variant for route handlers (they return 404, not a redirect). */
+export async function isApprovedVa(userId: string): Promise<boolean> {
+  const profile = await prisma.vaProfile.findUnique({
+    where: { userId },
+    select: { status: true },
+  });
+  return profile?.status === "approved";
 }

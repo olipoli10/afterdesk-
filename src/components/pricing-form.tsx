@@ -23,12 +23,12 @@ function parseUsd(v: string): number | null {
  * to the next task in the queue. The two prices are independent by design —
  * no formula links them.
  */
-export function PricingForm({ taskId, hasFiles }: { taskId: string; hasFiles: boolean }) {
+export function PricingForm({ taskId, fileCount }: { taskId: string; fileCount: number }) {
   const router = useRouter();
   const [clientPrice, setClientPrice] = useState("");
   const [vaPayout, setVaPayout] = useState("");
   const [tier, setTier] = useState<"standard" | "high_value">("standard");
-  const [filesVerified, setFilesVerified] = useState(!hasFiles);
+  const [filesVerified, setFilesVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
@@ -120,20 +120,19 @@ export function PricingForm({ taskId, hasFiles }: { taskId: string; hasFiles: bo
           </Field>
         </div>
 
-        {hasFiles ? (
-          <label className="mt-4 flex items-start gap-2 text-sm text-neutral-700">
-            <input
-              type="checkbox"
-              className="mt-0.5"
-              checked={filesVerified}
-              onChange={(e) => setFilesVerified(e.target.checked)}
-            />
-            <span>
-              I opened the client&apos;s files and checked them (contact info, unexpected
-              content) — required before this becomes visible to VAs.
-            </span>
-          </label>
-        ) : null}
+        <label className="mt-4 flex items-start gap-2 text-sm text-neutral-700">
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            checked={filesVerified}
+            onChange={(e) => setFilesVerified(e.target.checked)}
+          />
+          <span>
+            I reviewed the description, quantity{fileCount > 0 ? ` and ${fileCount} file${fileCount > 1 ? "s" : ""}` : ""}{" "}
+            for contact info or identifying details — required before this becomes
+            visible to VAs.
+          </span>
+        </label>
 
         {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
 

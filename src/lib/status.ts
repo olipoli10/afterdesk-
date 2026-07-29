@@ -15,6 +15,19 @@ export const NON_TERMINAL_STATUSES: TaskStatus[] = [
   "expired",
 ];
 
+/**
+ * The window during which the assigned VA may read a task's input files (and
+ * their own deliverables). Single source of truth — the download route derives
+ * its rule from this, so the access window and the state machine cannot drift.
+ * `revision_requested` is included: the task is still in that VA's hands.
+ */
+export const VA_FILE_ACCESS_STATUSES: TaskStatus[] = [
+  "claimed",
+  "submitted_for_qc",
+  "qc_rejected",
+  "revision_requested",
+];
+
 /** Admin-facing labels — the raw truth. */
 export const ADMIN_STATUS_LABELS: Record<TaskStatus, string> = {
   submitted: "Submitted",

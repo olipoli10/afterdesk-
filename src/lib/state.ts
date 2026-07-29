@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma, type Task, type TaskStatus } from "@prisma/client";
+import { Prisma, type TaskStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
 export class TransitionError extends Error {
@@ -7,6 +7,33 @@ export class TransitionError extends Error {
     super(message);
     this.name = "TransitionError";
   }
+}
+
+/**
+ * The canonical transition map — mirrors the spec exactly. transitionTask
+ * refuses any (from, to) pair absent from this table, so no caller can invent
+ * a transition by passing the wrong `from`.
+ *
+ * Terminal states (declined, completed, cancelled) map to []. `expired` is not
+ * terminal: the admin can re-pool or cancel it.
+ */
+export const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
+  submitted: ["pricing_review", "cancelled"],
+  pricing_review: ["quoted", "cancelled"],
+  quoted: ["open", "declined", "expired", "cancelled"],
+  declined: [],
+  open: ["claimed", "expired", "cancelled"],
+  claimed: ["submitted_for_qc", "open", "expired", "cancelled"],
+  submitted_for_qc: ["completed", "qc_rejected", "cancelled"],
+  qc_rejected: ["submitted_for_qc", "open", "cancelled"],
+  revision_requested: ["claimed", "open", "completed", "cancelled"],
+  completed: ["revision_requested"],
+  cancelled: [],
+  expired: ["open", "cancelled"],
+};
+
+export function isAllowedTransition(from: TaskStatus, to: TaskStatus): boolean {
+  return ALLOWED_TRANSITIONS[from].includes(to);
 }
 
 type TransitionArgs = {
@@ -21,6 +48,11 @@ type TransitionArgs = {
   /** Extra Task columns to set atomically with the status change. */
   data?: Prisma.TaskUpdateManyMutationInput;
   meta?: Prisma.InputJsonValue;
+  /**
+   * Extra WHERE conditions folded into the compare-and-swap — e.g. a time
+   * bound so an expired quote cannot be accepted by a racing request.
+   */
+  guard?: Prisma.TaskWhereInput;
 };
 
 /**
@@ -29,11 +61,26 @@ type TransitionArgs = {
  * double-clicks, two tabs, two VAs claiming — cannot corrupt state, and the
  * audit event is written in the same transaction as the change.
  *
+ * Returns only { id, status }: never the full Task row, which would carry both
+ * prices and both identities into any caller that returns it to the browser.
+ *
  * Throws TransitionError when the task is not in the expected state (someone
- * else moved it first).
+ * else moved it first) or when the transition is not in ALLOWED_TRANSITIONS.
  */
-export async function transitionTask(args: TransitionArgs): Promise<Task> {
+export async function transitionTask(
+  args: TransitionArgs
+): Promise<{ id: string; status: TaskStatus }> {
   const from = Array.isArray(args.from) ? args.from : [args.from];
+
+  const illegal = from.filter((s) => !isAllowedTransition(s, args.to));
+  if (illegal.length === from.length) {
+    throw new TransitionError(
+      `Illegal transition: ${from.join("/")} → ${args.to} is not in the transition map.`
+    );
+  }
+  // Only keep the legal source states; a caller passing a mixed list gets the
+  // legal subset rather than a silent illegal write.
+  const legalFrom = from.filter((s) => isAllowedTransition(s, args.to));
 
   return prisma.$transaction(async (tx) => {
     const current = await tx.task.findUnique({
@@ -43,12 +90,12 @@ export async function transitionTask(args: TransitionArgs): Promise<Task> {
     if (!current) throw new TransitionError("Task not found.");
 
     const result = await tx.task.updateMany({
-      where: { id: args.taskId, status: { in: from } },
+      where: { ...args.guard, id: args.taskId, status: { in: legalFrom } },
       data: { ...args.data, status: args.to },
     });
     if (result.count === 0) {
       throw new TransitionError(
-        `Task is no longer in the expected state (expected ${from.join("/")}, found ${current.status}).`
+        `Task is no longer in the expected state (expected ${legalFrom.join("/")}, found ${current.status}).`
       );
     }
 
@@ -64,7 +111,7 @@ export async function transitionTask(args: TransitionArgs): Promise<Task> {
       },
     });
 
-    return tx.task.findUniqueOrThrow({ where: { id: args.taskId } });
+    return { id: args.taskId, status: args.to };
   });
 }
 
