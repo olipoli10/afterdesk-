@@ -2,21 +2,14 @@ import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { formatCents } from "@/lib/money";
+import { vaBadgeClass } from "@/lib/status";
 import { LocalTime } from "@/components/local-time";
 import { WorkerActions } from "@/components/worker-actions";
-import { Badge, Card, CardBody, EmptyState, PageTitle } from "@/components/ui";
-
-const STATUS_TONE: Record<string, string> = {
-  pending_test: "border-amber-200 bg-amber-50 text-amber-800",
-  pending_grading: "border-blue-200 bg-blue-50 text-blue-800",
-  approved: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  rejected: "border-neutral-200 bg-neutral-100 text-neutral-600",
-  suspended: "border-red-200 bg-red-50 text-red-800",
-};
+import { Badge, Card, CardBody, EmptyState, PageTitle, moneyPayout } from "@/components/ui";
 
 const STATUS_LABEL: Record<string, string> = {
-  pending_test: "Entry test required",
-  pending_grading: "Test submitted",
+  pending_test: "Application received",
+  pending_grading: "Awaiting your decision",
   approved: "Approved",
   rejected: "Rejected",
   suspended: "Suspended",
@@ -87,45 +80,51 @@ export default async function WorkersPage() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-[15px] font-medium text-neutral-900">{p.user.name}</h2>
-                    <Badge className={STATUS_TONE[p.status] ?? STATUS_TONE.pending_test}>
+                    <h2 className="text-[15px] font-medium text-[#14161A]">{p.user.name}</h2>
+                    <Badge className={vaBadgeClass(p.status)}>
                       {STATUS_LABEL[p.status] ?? p.status}
                     </Badge>
                   </div>
-                  <p className="mt-0.5 text-xs text-neutral-400">
-                    {p.user.email} · {p.timezone} · joined{" "}
+                  <p className="mt-0.5 text-xs text-[#5B6069]">
+                    <span className="font-mono">{p.user.email}</span> · {p.timezone} · joined{" "}
                     <LocalTime iso={p.createdAt} dateStyle="short" />
                   </p>
                   {p.status === "suspended" && p.suspensionReason ? (
-                    <p className="mt-2 text-sm text-neutral-600">{p.suspensionReason}</p>
+                    <p className="mt-2 text-sm text-[#5B6069]">{p.suspensionReason}</p>
                   ) : null}
                 </div>
 
                 <dl className="flex shrink-0 gap-5 text-sm">
                   <div className="text-right">
-                    <dt className="text-xs text-neutral-400">Score</dt>
-                    <dd className="tabular-nums text-neutral-900">
+                    <dt className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+                      Score
+                    </dt>
+                    <dd className="font-mono tabular-nums text-[#14161A]">
                       {p.scoreCache != null ? p.scoreCache.toFixed(2) : "—"}
                     </dd>
                   </div>
                   <div className="text-right">
-                    <dt className="text-xs text-neutral-400">Done</dt>
-                    <dd className="tabular-nums text-neutral-900">{p.tasksCompleted}</dd>
+                    <dt className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+                      Done
+                    </dt>
+                    <dd className="font-mono tabular-nums text-[#14161A]">{p.tasksCompleted}</dd>
                   </div>
                   <div className="text-right">
-                    <dt className="text-xs text-neutral-400">Dropped</dt>
-                    <dd className="tabular-nums text-neutral-900">{p.tasksAbandoned}</dd>
+                    <dt className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+                      Dropped
+                    </dt>
+                    <dd className="font-mono tabular-nums text-[#14161A]">{p.tasksAbandoned}</dd>
                   </div>
                   <div className="text-right">
-                    <dt className="text-xs text-neutral-400">Owed</dt>
-                    <dd className="tabular-nums text-neutral-900">
-                      {formatCents(owedByVa.get(p.userId) ?? 0)}
-                    </dd>
+                    <dt className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+                      Owed
+                    </dt>
+                    <dd className={moneyPayout}>{formatCents(owedByVa.get(p.userId) ?? 0)}</dd>
                   </div>
                 </dl>
               </div>
 
-              <div className="mt-4 border-t border-neutral-100 pt-3">
+              <div className="mt-4 border-t border-[#14161A]/[0.06] pt-3">
                 <WorkerActions vaUserId={p.userId} status={p.status} />
               </div>
             </CardBody>
@@ -133,10 +132,12 @@ export default async function WorkersPage() {
         ))}
       </div>
 
-      <p className="mt-6 text-xs leading-relaxed text-neutral-400">
-        A rolling score below {settings.suspensionFloor.toFixed(1)} across{" "}
-        {settings.minRatedDeliveries} rated deliveries suspends a worker automatically.
-        High-value tasks need {settings.highValueThreshold.toFixed(1)}.
+      <p className="mt-6 text-xs leading-relaxed text-[#5B6069]">
+        A rolling score below{" "}
+        <span className="font-mono tabular-nums">{settings.suspensionFloor.toFixed(1)}</span> across{" "}
+        <span className="font-mono tabular-nums">{settings.minRatedDeliveries}</span> rated
+        deliveries suspends a worker automatically. High-value tasks need{" "}
+        <span className="font-mono tabular-nums">{settings.highValueThreshold.toFixed(1)}</span>.
       </p>
     </>
   );

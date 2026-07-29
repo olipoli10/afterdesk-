@@ -64,7 +64,7 @@ export function TaskForm({
 
           <Field
             label="Describe the task"
-            hint="Plain language. What needs to be done, what the output should look like, anything the worker must know."
+            hint="Plain language. What needs to be done, what the output should look like, anything the specialist must know."
           >
             <textarea
               required
@@ -112,13 +112,17 @@ export function TaskForm({
             />
           </Field>
 
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {error ? (
+            <p role="alert" className="text-sm text-[#955710]">
+              {error}
+            </p>
+          ) : null}
 
           <div className="flex items-center gap-3">
             <button type="submit" disabled={isPending} className={buttonPrimary}>
               {isPending ? "Submitting…" : "Submit task"}
             </button>
-            <span className="text-xs text-neutral-400">
+            <span className="text-xs text-[#5B6069]">
               You&apos;ll receive one fixed price to approve — nothing starts before you do.
             </span>
           </div>

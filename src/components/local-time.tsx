@@ -1,12 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 /**
  * Every timestamp in the UI goes through this component: rendered in the
  * viewer's own timezone (or an explicit one), always with the timezone label.
  * Never a bare time.
+ *
+ * Timestamps are structural strings → mono, as a real <time> element.
+ * The server render uses UTC (the only zone it can know); the client's first
+ * render replaces it with the local zone via useSyncExternalStore's server/
+ * client snapshot split — one correction, no "…" placeholder, no CLS.
  */
+const subscribe = () => () => {};
+
+function format(iso: string | Date, dateStyle: "medium" | "short", timeZone?: string): string {
+  const d = typeof iso === "string" ? new Date(iso) : iso;
+  const fmt = new Intl.DateTimeFormat(undefined, { dateStyle, timeStyle: "short", timeZone });
+  const tzFmt = new Intl.DateTimeFormat(undefined, { timeZone, timeZoneName: "short" });
+  const tzName = tzFmt.formatToParts(d).find((p) => p.type === "timeZoneName")?.value ?? "";
+  return `${fmt.format(d)} ${tzName}`;
+}
+
 export function LocalTime({
   iso,
   timeZone,
@@ -17,24 +32,16 @@ export function LocalTime({
   timeZone?: string;
   dateStyle?: "medium" | "short";
 }) {
-  const [text, setText] = useState<string | null>(null);
+  const text = useSyncExternalStore(
+    subscribe,
+    () => format(iso, dateStyle, timeZone),
+    () => format(iso, dateStyle, timeZone ?? "UTC")
+  );
+  const dateTime = typeof iso === "string" ? iso : iso.toISOString();
 
-  useEffect(() => {
-    const d = typeof iso === "string" ? new Date(iso) : iso;
-    const fmt = new Intl.DateTimeFormat(undefined, {
-      dateStyle,
-      timeStyle: "short",
-      timeZone,
-    });
-    const tzFmt = new Intl.DateTimeFormat(undefined, {
-      timeZone,
-      timeZoneName: "short",
-    });
-    const tzName =
-      tzFmt.formatToParts(d).find((p) => p.type === "timeZoneName")?.value ?? "";
-    setText(`${fmt.format(d)} ${tzName}`);
-  }, [iso, timeZone, dateStyle]);
-
-  // Avoid hydration mismatch: server can't know the viewer's timezone.
-  return <span suppressHydrationWarning>{text ?? "…"}</span>;
+  return (
+    <time dateTime={dateTime} suppressHydrationWarning className="font-mono tabular-nums">
+      {text}
+    </time>
+  );
 }

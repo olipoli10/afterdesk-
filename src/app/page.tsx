@@ -67,6 +67,19 @@ const NOISE = {
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
 };
 
+export const metadata = {
+  alternates: { canonical: "/" },
+};
+
+const ORG_JSONLD = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Second Shift",
+  url: "https://secondshift.co",
+  description:
+    "Describe any task in plain English — priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
+});
+
 function Cell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`truncate px-3 ${className}`}>{children}</div>;
 }
@@ -78,6 +91,10 @@ export default async function Home() {
 
   return (
     <div className="overflow-x-clip bg-[#0A0B0D]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: ORG_JSONLD }}
+      />
       {/* ── NAV — sticky, blurred ─────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
         <div className="mx-auto grid h-14 w-full max-w-[1120px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">

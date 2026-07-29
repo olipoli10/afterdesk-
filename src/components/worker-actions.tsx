@@ -41,7 +41,11 @@ export function WorkerActions({
           value={reason}
           onChange={(e) => setReason(e.target.value)}
         />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="text-sm text-[#8C2F23]">
+            {error}
+          </p>
+        ) : null}
         <div className="flex gap-2">
           <button
             className={buttonSecondary}
@@ -51,7 +55,7 @@ export function WorkerActions({
             {isPending ? "Suspending…" : "Confirm suspension"}
           </button>
           <button
-            className="px-2 text-sm text-neutral-500 hover:text-neutral-800"
+            className="px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
             onClick={() => setSuspending(false)}
           >
             Cancel
@@ -83,13 +87,17 @@ export function WorkerActions({
       ) : null}
       {status === "approved" ? (
         <button
-          className="text-sm font-medium text-neutral-400 hover:text-red-600"
+          className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23]"
           onClick={() => setSuspending(true)}
         >
           Suspend…
         </button>
       ) : null}
-      {error ? <p className="w-full text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="w-full text-sm text-[#8C2F23]">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

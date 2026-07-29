@@ -1,39 +1,49 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth-shell";
 import { VaRegisterForm } from "@/components/register-forms";
+import { linkInline } from "@/components/ui";
 
+export const metadata: Metadata = {
+  title: "Apply to join the pool",
+  description: "Apply to work Second Shift tasks — the payout is printed before you claim.",
+  robots: { index: false, follow: false },
+};
+
+/* Slip-style aside — the worker came from the paper homepage. */
 const ASIDE = [
   {
-    title: "You see the payout before you claim",
+    title: "The payout is printed before you claim",
     body: "Every task in the pool shows what it pays and when it is due. Claim what you want — first come, first served.",
   },
   {
-    title: "A short entry test first",
-    body: "Two or three sample exercises, graded personally. Once you pass, the task pool opens for you.",
+    title: "The review is real",
+    body: "Every delivery is checked before it reaches the client. Your payout is released when review passes.",
   },
   {
-    title: "No clients to manage",
-    body: "No bidding, no interviews, no chasing anyone for payment. You do the work and submit it; we handle the rest.",
+    title: "A person reads your application",
+    body: "No automated screening. We review every application ourselves and open the pool for the ones we can stand behind.",
   },
 ];
 
 export default function RegisterVaPage() {
   return (
     <AuthShell
-      title="Apply as a virtual assistant"
-      sub="Create your account, pass a short entry test, then start claiming paid tasks."
+      title="Apply to join the pool"
+      sub="Create your account and send your application — we review every one before the pool opens."
       aside={ASIDE}
+      asideTone="paper"
       footer={
         <>
           Already applied?{" "}
-          <Link href="/login" className="font-medium text-blue-700 hover:underline">
+          <Link href="/login" className={linkInline}>
             Sign in
           </Link>
         </>
       }
     >
-      {/* Assistants apply through this form only — the flow creates their
-          profile and entry test, which a Google sign-up cannot do. */}
+      {/* Workers apply through this form only — the flow creates their
+          profile server-side, which a Google sign-up cannot do. */}
       <VaRegisterForm />
     </AuthShell>
   );

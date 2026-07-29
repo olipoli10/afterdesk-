@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { claimTask, releaseTask } from "@/server/actions/va-tasks";
-import { buttonPrimary, buttonSecondary } from "@/components/ui";
+import { buttonDanger, buttonSecondary, buttonPrimary } from "@/components/ui";
 
 export function ClaimButton({ taskId }: { taskId: string }) {
   const router = useRouter();
@@ -13,7 +13,7 @@ export function ClaimButton({ taskId }: { taskId: string }) {
   return (
     <div className="w-full">
       <button
-        className={`${buttonPrimary} w-full sm:w-auto`}
+        className={`${buttonPrimary} min-h-11 w-full sm:min-h-0 sm:w-auto`}
         disabled={isPending}
         onClick={() =>
           start(async () => {
@@ -30,7 +30,11 @@ export function ClaimButton({ taskId }: { taskId: string }) {
       >
         {isPending ? "Claiming…" : "Claim this task"}
       </button>
-      {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-[#8C2F23]">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -41,10 +45,26 @@ export function ReleaseButton({ taskId }: { taskId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, start] = useTransition();
 
+  // The trigger unmounts when the confirm block appears — without explicit
+  // focus management, keyboard focus falls back to <body> mid-destructive-flow.
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  const wasConfirming = useRef(false);
+
+  useEffect(() => {
+    if (confirming) {
+      wasConfirming.current = true;
+      confirmRef.current?.focus();
+    } else if (wasConfirming.current) {
+      triggerRef.current?.focus();
+    }
+  }, [confirming]);
+
   if (!confirming) {
     return (
       <button
-        className="text-sm font-medium text-neutral-500 hover:text-red-600"
+        ref={triggerRef}
+        className="-my-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
         onClick={() => setConfirming(true)}
       >
         Release this task
@@ -52,16 +72,23 @@ export function ReleaseButton({ taskId }: { taskId: string }) {
     );
   }
 
+  // Full-width block: at 360px the warning and both buttons need the whole
+  // column, not the right-hand slot of a justify-between footer row.
   return (
-    <div>
-      <p className="mb-2 text-sm text-neutral-600">
+    <div className="w-full rounded-lg border border-[#14161A]/10 bg-white p-4 shadow-[0_1px_2px_rgba(20,22,26,0.04)]">
+      <p className="text-sm leading-relaxed text-[#5B6069]">
         This returns the task to the pool and is recorded on your record. You will
         lose access to the client&apos;s files.
       </p>
-      {error ? <p className="mb-2 text-sm text-red-600">{error}</p> : null}
-      <div className="flex flex-wrap gap-2">
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-[#8C2F23]">
+          {error}
+        </p>
+      ) : null}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
-          className={buttonSecondary}
+          ref={confirmRef}
+          className={`${buttonDanger} min-h-11 sm:min-h-0`}
           disabled={isPending}
           onClick={() =>
             start(async () => {
@@ -78,7 +105,7 @@ export function ReleaseButton({ taskId }: { taskId: string }) {
           {isPending ? "Releasing…" : "Yes, release it"}
         </button>
         <button
-          className="px-2 text-sm text-neutral-500 hover:text-neutral-800"
+          className={`${buttonSecondary} min-h-11 sm:min-h-0`}
           onClick={() => setConfirming(false)}
         >
           Keep it

@@ -7,7 +7,16 @@ import { taskForAdmin } from "@/lib/queries/tasks";
 import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
 import { QcForm } from "@/components/qc-form";
-import { Card, CardBody, PageTitle, SectionLabel, formatBytes } from "@/components/ui";
+import {
+  Card,
+  CardBody,
+  PageTitle,
+  SectionLabel,
+  formatBytes,
+  linkInline,
+  moneyClient,
+  moneyPayout,
+} from "@/components/ui";
 
 export default async function QcReviewPage({
   params,
@@ -17,28 +26,31 @@ export default async function QcReviewPage({
   await requireRole("ADMIN");
   const { id } = await params;
 
-  const task = await taskForAdmin(id);
+  // The operator's highest-frequency drill-down: task, settings and the
+  // pending submission are independent — fetch them together. Only the
+  // worker profile genuinely depends on the submission.
+  const [task, settings, submission] = await Promise.all([
+    taskForAdmin(id),
+    getSettings(),
+    prisma.submission.findFirst({
+      where: { taskId: id, qcStatus: "pending" },
+      select: {
+        id: true,
+        attemptNo: true,
+        note: true,
+        submittedAt: true,
+        va: { select: { id: true, name: true } },
+        files: {
+          where: { purgedAt: null },
+          select: { id: true, fileName: true, sizeBytes: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+      orderBy: { attemptNo: "desc" },
+    }),
+  ]);
   if (!task) notFound();
   if (task.status !== "submitted_for_qc") redirect(`/admin/tasks/${id}`);
-
-  const settings = await getSettings();
-
-  const submission = await prisma.submission.findFirst({
-    where: { taskId: id, qcStatus: "pending" },
-    select: {
-      id: true,
-      attemptNo: true,
-      note: true,
-      submittedAt: true,
-      va: { select: { id: true, name: true } },
-      files: {
-        where: { purgedAt: null },
-        select: { id: true, fileName: true, sizeBytes: true },
-        orderBy: { createdAt: "asc" },
-      },
-    },
-    orderBy: { attemptNo: "desc" },
-  });
   if (!submission) redirect(`/admin/tasks/${id}`);
 
   const vaProfile = await prisma.vaProfile.findUnique({
@@ -54,7 +66,10 @@ export default async function QcReviewPage({
         title={task.title}
         sub={`Delivered by ${submission.va.name} · attempt ${submission.attemptNo}`}
         action={
-          <Link href="/admin/qc" className="text-sm font-medium text-neutral-500 hover:text-neutral-900">
+          <Link
+            href="/admin/qc"
+            className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+          >
             ← Queue
           </Link>
         }
@@ -63,12 +78,12 @@ export default async function QcReviewPage({
       <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_280px]">
         <Card>
           <CardBody>
-            <SectionLabel>What was asked for</SectionLabel>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-neutral-800">
+            <SectionLabel as="h2">What was asked for</SectionLabel>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#14161A]">
               {task.description}
             </p>
             {task.category?.name ? (
-              <p className="mt-3 border-t border-neutral-100 pt-3 text-xs text-neutral-500">
+              <p className="mt-3 border-t border-[#14161A]/[0.06] pt-3 text-xs text-[#5B6069]">
                 Category: {task.category.name}
               </p>
             ) : null}
@@ -78,21 +93,25 @@ export default async function QcReviewPage({
         <div className="space-y-4">
           <Card>
             <CardBody>
-              <SectionLabel>Worker record</SectionLabel>
+              <SectionLabel as="h2">Worker record</SectionLabel>
               <dl className="mt-2 space-y-1.5 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-neutral-500">Score</dt>
-                  <dd className="tabular-nums text-neutral-900">
+                  <dt className="text-[#5B6069]">Score</dt>
+                  <dd className="font-mono tabular-nums text-[#14161A]">
                     {vaProfile?.scoreCache != null ? vaProfile.scoreCache.toFixed(2) : "—"}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-neutral-500">Completed</dt>
-                  <dd className="tabular-nums text-neutral-900">{vaProfile?.tasksCompleted ?? 0}</dd>
+                  <dt className="text-[#5B6069]">Completed</dt>
+                  <dd className="font-mono tabular-nums text-[#14161A]">
+                    {vaProfile?.tasksCompleted ?? 0}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-neutral-500">QC rejections</dt>
-                  <dd className="tabular-nums text-neutral-900">{vaProfile?.qcRejections ?? 0}</dd>
+                  <dt className="text-[#5B6069]">QC rejections</dt>
+                  <dd className="font-mono tabular-nums text-[#14161A]">
+                    {vaProfile?.qcRejections ?? 0}
+                  </dd>
                 </div>
               </dl>
             </CardBody>
@@ -100,19 +119,19 @@ export default async function QcReviewPage({
 
           <Card>
             <CardBody>
-              <SectionLabel>Money</SectionLabel>
+              <SectionLabel as="h2">Money</SectionLabel>
               <dl className="mt-2 space-y-1.5 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-neutral-500">Client pays</dt>
-                  <dd className="tabular-nums text-neutral-900">
+                  <dt className="text-[#5B6069]">Client pays</dt>
+                  <dd className={moneyClient}>
                     {task.clientPriceCents != null
                       ? formatCents(task.clientPriceCents, task.currency)
                       : "—"}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-neutral-500">Worker earns</dt>
-                  <dd className="tabular-nums text-neutral-900">
+                  <dt className="text-[#5B6069]">Worker earns</dt>
+                  <dd className={moneyPayout}>
                     {task.vaPayoutCents != null
                       ? formatCents(task.vaPayoutCents, task.currency)
                       : "—"}
@@ -120,7 +139,7 @@ export default async function QcReviewPage({
                 </div>
               </dl>
               {task.clientDeadlineUtc ? (
-                <p className="mt-3 border-t border-neutral-100 pt-3 text-xs text-neutral-500">
+                <p className="mt-3 border-t border-[#14161A]/[0.06] pt-3 text-xs text-[#5B6069]">
                   Client expects it by{" "}
                   <LocalTime iso={task.clientDeadlineUtc} dateStyle="short" />
                 </p>
@@ -132,33 +151,30 @@ export default async function QcReviewPage({
 
       <Card className="mb-4">
         <CardBody>
-          <SectionLabel>The delivery</SectionLabel>
-          <p className="mt-1 text-xs text-neutral-400">
+          <SectionLabel as="h2">The delivery</SectionLabel>
+          <p className="mt-1 text-xs text-[#5B6069]">
             Submitted <LocalTime iso={submission.submittedAt} />
           </p>
           {submission.note ? (
-            <p className="mt-3 whitespace-pre-wrap rounded-md bg-neutral-50 p-3 text-sm leading-relaxed text-neutral-700">
+            <p className="mt-3 whitespace-pre-wrap rounded-md bg-[#14161A]/[0.03] p-3 text-sm leading-relaxed text-[#14161A]">
               {submission.note}
             </p>
           ) : null}
           {submission.files.length > 0 ? (
-            <ul className="mt-3 divide-y divide-neutral-100 text-sm">
+            <ul className="mt-3 divide-y divide-[#14161A]/[0.06] text-sm">
               {submission.files.map((f) => (
                 <li key={f.id} className="flex items-center justify-between py-2">
-                  <a
-                    href={`/api/files/${f.id}/download`}
-                    className="truncate font-medium text-blue-700 hover:underline"
-                  >
+                  <a href={`/api/files/${f.id}/download`} className={`truncate ${linkInline}`}>
                     {f.fileName}
                   </a>
-                  <span className="shrink-0 pl-2 text-xs text-neutral-400">
+                  <span className="shrink-0 pl-2 font-mono text-xs tabular-nums text-[#5B6069]">
                     {formatBytes(f.sizeBytes)}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-3 text-sm text-neutral-500">No files — the note is the delivery.</p>
+            <p className="mt-3 text-sm text-[#5B6069]">No files — the note is the delivery.</p>
           )}
         </CardBody>
       </Card>
@@ -166,17 +182,14 @@ export default async function QcReviewPage({
       {inputFiles.length > 0 ? (
         <Card className="mb-4">
           <CardBody>
-            <SectionLabel>What they worked from</SectionLabel>
-            <ul className="mt-2 divide-y divide-neutral-100 text-sm">
+            <SectionLabel as="h2">What they worked from</SectionLabel>
+            <ul className="mt-2 divide-y divide-[#14161A]/[0.06] text-sm">
               {inputFiles.map((f) => (
                 <li key={f.id} className="flex items-center justify-between py-2">
-                  <a
-                    href={`/api/files/${f.id}/download`}
-                    className="truncate text-neutral-700 hover:underline"
-                  >
+                  <a href={`/api/files/${f.id}/download`} className={`truncate ${linkInline}`}>
                     {f.fileName}
                   </a>
-                  <span className="shrink-0 pl-2 text-xs text-neutral-400">
+                  <span className="shrink-0 pl-2 font-mono text-xs tabular-nums text-[#5B6069]">
                     {formatBytes(f.sizeBytes)}
                   </span>
                 </li>

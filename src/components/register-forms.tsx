@@ -1,12 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { registerVa } from "@/server/actions/auth";
 import { GoogleButton, OrDivider } from "@/components/google-button";
 import { PasswordFields, passwordProblem } from "@/components/password-fields";
 import { Field, inputClass, buttonPrimary } from "@/components/ui";
+
+const fieldLabelClass =
+  "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#5B6069]";
 
 export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
@@ -72,7 +75,11 @@ export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }
           onPasswordChange={setPassword}
           onConfirmChange={setConfirm}
         />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="text-sm text-[#8C2F23]">
+            {error}
+          </p>
+        ) : null}
         <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
           {busy ? "Creating account…" : "Create account"}
         </button>
@@ -99,8 +106,8 @@ export function VaRegisterForm() {
     }
     setBusy(true);
     setError(null);
-    // Account + VA role are created server-side (role is never client-supplied),
-    // then we sign in with the same credentials.
+    // Account + worker role are created server-side (role is never
+    // client-supplied), then we sign in with the same credentials.
     const result = await registerVa({ name, email, password });
     if (!result.ok) {
       setError(result.error);
@@ -109,7 +116,8 @@ export function VaRegisterForm() {
     }
     const { error } = await authClient.signIn.email({ email, password });
     if (error) {
-      router.push("/login");
+      // The account WAS created — land on login with context, not cold.
+      router.push("/login?applied=1");
       return;
     }
     router.push("/va");
@@ -144,7 +152,11 @@ export function VaRegisterForm() {
         onPasswordChange={setPassword}
         onConfirmChange={setConfirm}
       />
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-[#8C2F23]">
+          {error}
+        </p>
+      ) : null}
       <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
         {busy ? "Creating account…" : "Apply"}
       </button>
@@ -152,13 +164,25 @@ export function VaRegisterForm() {
   );
 }
 
-export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
+export function LoginForm({
+  googleEnabled,
+  next,
+}: {
+  googleEnabled: boolean;
+  /** Same-origin path to return to after sign-in — already validated server-side. */
+  next?: string;
+}) {
   const router = useRouter();
+  const passwordId = useId();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Open-redirect guard: only same-origin paths, never protocol-relative.
+  const destination =
+    next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -170,8 +194,9 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
       setBusy(false);
       return;
     }
-    // "/" redirects to the right dashboard for the account's role.
-    router.push("/");
+    // "/" redirects to the right dashboard for the account's role;
+    // a validated deep link wins over the dashboard.
+    router.push(destination);
     router.refresh();
   }
 
@@ -179,7 +204,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
     <div className="space-y-5">
       {googleEnabled ? (
         <>
-          <GoogleButton label="Continue with Google" />
+          <GoogleButton label="Continue with Google" callbackURL={destination} />
           <OrDivider />
         </>
       ) : null}
@@ -197,17 +222,20 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
         </Field>
         <div>
           <div className="mb-1.5 flex items-baseline justify-between">
-            <span className="text-[13px] font-medium text-neutral-800">Password</span>
+            <label htmlFor={passwordId} className={fieldLabelClass}>
+              Password
+            </label>
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="text-[12px] font-medium text-neutral-500 transition-colors hover:text-neutral-900"
+              className="text-[12px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               aria-pressed={show}
             >
               {show ? "Hide password" : "Show password"}
             </button>
           </div>
           <input
+            id={passwordId}
             type={show ? "text" : "password"}
             required
             autoComplete="current-password"
@@ -216,7 +244,11 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="text-sm text-[#8C2F23]">
+            {error}
+          </p>
+        ) : null}
         <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
           {busy ? "Signing in…" : "Sign in"}
         </button>

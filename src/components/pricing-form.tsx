@@ -7,9 +7,12 @@ import {
   Card,
   CardBody,
   Field,
+  SectionLabel,
   inputClass,
   buttonPrimary,
   buttonDanger,
+  moneyClient,
+  moneyPayout,
 } from "@/components/ui";
 
 function parseUsd(v: string): number | null {
@@ -86,11 +89,11 @@ export function PricingForm({
   return (
     <Card>
       <CardBody>
-        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+        <SectionLabel as="h2" className="mb-3">
           Set pricing
-        </h2>
+        </SectionLabel>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Client price (USD)" hint="What the client pays. Never shown to VAs.">
+          <Field label="Client price (USD)" hint="What the client pays. Never shown to workers.">
             <input
               className={inputClass}
               placeholder="e.g. 180"
@@ -99,7 +102,7 @@ export function PricingForm({
               autoFocus
             />
           </Field>
-          <Field label="VA payout (USD)" hint="What the worker receives. Never shown to the client.">
+          <Field label="Worker payout (USD)" hint="What the worker receives. Never shown to the client.">
             <input
               className={inputClass}
               placeholder="e.g. 60"
@@ -110,12 +113,20 @@ export function PricingForm({
         </div>
 
         {margin != null ? (
-          <p className="mt-2 text-xs text-neutral-500">
+          <p className="mt-2 text-xs text-[#5B6069]">
             Margin:{" "}
-            <span className={margin >= 0 ? "font-medium text-neutral-800" : "font-medium text-red-600"}>
+            <span
+              className={
+                margin >= 0
+                  ? `font-medium ${moneyClient}`
+                  : "font-mono font-medium tabular-nums text-[#955710]"
+              }
+            >
               ${(margin / 100).toFixed(2)}
             </span>
-            {cp ? ` (${Math.round((margin / cp) * 100)}%)` : null}
+            {cp ? (
+              <span className="font-mono tabular-nums"> ({Math.round((margin / cp) * 100)}%)</span>
+            ) : null}
           </p>
         ) : null}
 
@@ -156,39 +167,43 @@ export function PricingForm({
         </div>
 
         {vp != null && estimatedMinutes && Number(estimatedMinutes) > 0 ? (
-          <p className="mt-2 text-xs text-neutral-500">
+          <p className="mt-2 text-xs text-[#5B6069]">
             Implied worker rate:{" "}
-            <span className="font-medium text-neutral-800">
+            <span className={`font-medium ${moneyPayout}`}>
               ${((vp / 100 / (Number(estimatedMinutes) / 60)) || 0).toFixed(2)}/hour
             </span>
           </p>
         ) : null}
 
-        <label className="mt-4 flex items-start gap-2 text-sm text-neutral-700">
+        <label className="mt-4 flex items-start gap-2 text-sm text-[#14161A]">
           <input
             type="checkbox"
-            className="mt-0.5"
+            className="mt-0.5 accent-[#14161A]"
             checked={filesVerified}
             onChange={(e) => setFilesVerified(e.target.checked)}
           />
           <span>
             I reviewed the description, quantity{fileCount > 0 ? ` and ${fileCount} file${fileCount > 1 ? "s" : ""}` : ""}{" "}
             for contact info or identifying details — required before this becomes
-            visible to VAs.
+            visible to workers.
           </span>
         </label>
 
-        {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="mt-3 text-sm text-[#8C2F23]">
+            {error}
+          </p>
+        ) : null}
 
         <div className="mt-5 flex items-center gap-3">
           <button className={buttonPrimary} disabled={isPending} onClick={approve}>
             {isPending ? "Approving…" : "Approve & next"}
           </button>
-          <span className="text-xs text-neutral-400">Ctrl+Enter</span>
+          <span className="font-mono text-xs text-[#5B6069]">Ctrl+Enter</span>
           <span className="flex-1" />
           {!showCancel ? (
             <button
-              className="text-sm font-medium text-neutral-400 hover:text-red-600"
+              className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23]"
               onClick={() => setShowCancel(true)}
             >
               Cancel task…
@@ -197,7 +212,7 @@ export function PricingForm({
         </div>
 
         {showCancel ? (
-          <div className="mt-4 space-y-2 border-t border-neutral-100 pt-4">
+          <div className="mt-4 space-y-2 border-t border-[#14161A]/[0.06] pt-4">
             <Field label="Cancellation reason (logged, required)">
               <input
                 className={inputClass}
@@ -225,7 +240,7 @@ export function PricingForm({
                 Cancel this task
               </button>
               <button
-                className="px-2 text-sm text-neutral-500 hover:text-neutral-800"
+                className="px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
                 onClick={() => setShowCancel(false)}
               >
                 Keep it

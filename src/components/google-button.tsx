@@ -2,13 +2,21 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { buttonSecondary } from "@/components/ui";
 
 /**
  * Google sign-in. Rendered only when the server reports credentials are
  * configured, so there is never a button that cannot work.
  * A new Google account is always a CLIENT account.
  */
-export function GoogleButton({ label = "Continue with Google" }: { label?: string }) {
+export function GoogleButton({
+  label = "Continue with Google",
+  callbackURL = "/",
+}: {
+  label?: string;
+  /** Same-origin path to land on after OAuth — callers validate it. */
+  callbackURL?: string;
+}) {
   const [busy, setBusy] = useState(false);
 
   return (
@@ -17,9 +25,9 @@ export function GoogleButton({ label = "Continue with Google" }: { label?: strin
       disabled={busy}
       onClick={async () => {
         setBusy(true);
-        await authClient.signIn.social({ provider: "google", callbackURL: "/" });
+        await authClient.signIn.social({ provider: "google", callbackURL });
       }}
-      className="inline-flex w-full items-center justify-center gap-2.5 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-colors hover:border-neutral-400 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
+      className={`${buttonSecondary} w-full`}
     >
       <svg aria-hidden viewBox="0 0 18 18" className="h-4 w-4">
         <path
@@ -47,9 +55,11 @@ export function GoogleButton({ label = "Continue with Google" }: { label?: strin
 export function OrDivider() {
   return (
     <div className="flex items-center gap-3 py-1">
-      <span className="h-px flex-1 bg-neutral-200" />
-      <span className="text-[11px] font-medium uppercase tracking-label text-neutral-400">or</span>
-      <span className="h-px flex-1 bg-neutral-200" />
+      <span className="h-px flex-1 bg-[#14161A]/10" />
+      <span className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[#5B6069]">
+        or
+      </span>
+      <span className="h-px flex-1 bg-[#14161A]/10" />
     </div>
   );
 }

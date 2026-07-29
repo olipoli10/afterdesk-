@@ -35,11 +35,25 @@ export function FileUpload({
     const list = Array.from(selected);
     if (inputRef.current) inputRef.current.value = "";
 
+    // Accumulate locally: `files` is the prop captured when the loop started,
+    // so spreading it per-upload would make each success overwrite the last
+    // (select 3 files, keep 1). Every onChange gets the running total.
+    const accumulated = [...files];
+
     for (const file of list) {
-      if (files.length + list.indexOf(file) >= maxFiles) break;
+      if (accumulated.length >= maxFiles) {
+        setPending((p) => [
+          ...p,
+          { name: file.name, status: "error", error: `Limit is ${maxFiles} files` },
+        ]);
+        continue;
+      }
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
       if (!allowedExtensions.includes(ext)) {
-        setPending((p) => [...p, { name: file.name, status: "error", error: "Unsupported type" }]);
+        setPending((p) => [
+          ...p,
+          { name: file.name, status: "error", error: `.${ext || "?"} files aren't accepted` },
+        ]);
         continue;
       }
       if (file.size > maxFileSizeMB * 1024 * 1024) {
@@ -64,10 +78,8 @@ export function FileUpload({
             { name: file.name, status: "error", error: json.error ?? "Upload failed" },
           ]);
         } else {
-          onChange([
-            ...files,
-            { id: json.id, fileName: json.fileName, sizeBytes: json.sizeBytes },
-          ]);
+          accumulated.push({ id: json.id, fileName: json.fileName, sizeBytes: json.sizeBytes });
+          onChange([...accumulated]);
         }
       } catch {
         setPending((p) =>
@@ -97,21 +109,27 @@ export function FileUpload({
       >
         Attach files
       </button>
-      <p className="mt-1 text-xs text-neutral-400">
+      <p className="mt-1 font-mono text-[11px] text-[#5B6069]">
         {allowedExtensions.map((e) => `.${e}`).join(", ")} — up to {maxFileSizeMB} MB each,{" "}
         {maxFiles} files max.
       </p>
 
       {files.length > 0 || pending.length > 0 ? (
-        <ul className="mt-3 divide-y divide-neutral-100 rounded-md border border-neutral-200 bg-white text-sm">
+        <ul
+          aria-live="polite"
+          className="mt-3 divide-y divide-[#14161A]/[0.06] rounded-md border border-[#14161A]/10 bg-white text-sm"
+        >
           {files.map((f) => (
             <li key={f.id} className="flex items-center justify-between gap-3 px-3 py-2">
-              <span className="truncate text-neutral-800">{f.fileName}</span>
-              <span className="flex shrink-0 items-center gap-3">
-                <span className="text-xs text-neutral-400">{formatBytes(f.sizeBytes)}</span>
+              <span className="truncate text-[#14161A]">{f.fileName}</span>
+              <span className="flex shrink-0 items-center gap-2">
+                <span className="font-mono text-xs tabular-nums text-[#5B6069]">
+                  {formatBytes(f.sizeBytes)}
+                </span>
                 <button
                   type="button"
-                  className="text-xs font-medium text-neutral-400 hover:text-red-600"
+                  aria-label={`Remove ${f.fileName}`}
+                  className="-my-1 rounded px-2 py-2 text-xs font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#14161A]"
                   onClick={() => onChange(files.filter((x) => x.id !== f.id))}
                 >
                   Remove
@@ -121,15 +139,16 @@ export function FileUpload({
           ))}
           {pending.map((p, i) => (
             <li key={`${p.name}-${i}`} className="flex items-center justify-between gap-3 px-3 py-2">
-              <span className="truncate text-neutral-500">{p.name}</span>
+              <span className="truncate text-[#5B6069]">{p.name}</span>
               {p.status === "uploading" ? (
-                <span className="text-xs text-neutral-400">Uploading…</span>
+                <span className="font-mono text-xs text-[#5B6069]">Uploading…</span>
               ) : (
-                <span className="flex items-center gap-2">
-                  <span className="text-xs text-red-600">{p.error}</span>
+                <span className="flex items-center gap-1">
+                  <span className="text-xs text-[#8C2F23]">{p.error}</span>
                   <button
                     type="button"
-                    className="text-xs font-medium text-neutral-400 hover:text-neutral-700"
+                    aria-label={`Dismiss error for ${p.name}`}
+                    className="-my-1 rounded px-2 py-2 text-xs font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#14161A]"
                     onClick={() => setPending((x) => x.filter((_, j) => j !== i))}
                   >
                     Dismiss

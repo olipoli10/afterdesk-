@@ -111,31 +111,45 @@ export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
   expired: "Expired",
 };
 
-/** Subtle badge styling (neutral base, semantic tints — no decorative badges). */
+/* ─────────────────────────────────────────────────────────────────────────
+   STAMP TONES — the palette law applied to statuses. Green means money
+   moved or approval happened, NEVER "your move" (a quote is not money).
+   Amber means work came back / needs attention, NEVER intake.
+   Text hexes are the AA-derived inks from globals.css — don't "fix" them
+   back to the raw brand hues; those fail contrast at stamp size.
+   ───────────────────────────────────────────────────────────────────────── */
+const T_ACT = "border-transparent bg-[#14161A] text-[#F7F6F3]"; // your move — someone must act NOW
+const T_DUSK = "border-[#1B2740]/30 bg-[#1B2740]/[0.06] text-[#1B2740]"; // out in the night — in flight
+const T_OPEN = "border-dashed border-[#14161A]/30 bg-transparent text-[#5B6069]"; // an unclaimed slot
+const T_WAIT = "border-[#14161A]/15 bg-transparent text-[#5B6069]"; // waiting on the other side
+const T_DEAD = "border-[#14161A]/10 bg-[#14161A]/[0.02] text-[#5B6069]"; // terminal, no money moved
+const T_GREEN = "border-[#1E7F5C]/40 bg-[#1E7F5C]/10 text-[#166049]"; // money/approved ONLY
+const T_AMBER = "border-[#D98324]/50 bg-[#D98324]/10 text-[#955710]"; // returned-work/attention ONLY
+
+/** Admin truth: solid ink = in MY queue, dusk = in flight, amber = came back. */
 export function statusBadgeClass(status: TaskStatus): string {
   switch (status) {
     case "submitted":
     case "pricing_review":
-      return "bg-amber-50 text-amber-800 border-amber-200";
+    case "submitted_for_qc":
+      return T_ACT;
     case "quoted":
     case "awaiting_payment":
-      return "bg-blue-50 text-blue-800 border-blue-200";
+      return T_WAIT;
     case "open":
-      return "bg-indigo-50 text-indigo-800 border-indigo-200";
+      return T_OPEN;
     case "claimed":
-    case "submitted_for_qc":
+      return T_DUSK;
     case "qc_rejected":
     case "revision_requested":
-      return "bg-violet-50 text-violet-800 border-violet-200";
     case "disputed":
-      return "bg-orange-50 text-orange-800 border-orange-200";
+      return T_AMBER;
     case "completed":
-      return "bg-emerald-50 text-emerald-800 border-emerald-200";
+      return T_GREEN;
     case "declined":
     case "cancelled":
-      return "bg-neutral-100 text-neutral-600 border-neutral-200";
     case "expired":
-      return "bg-red-50 text-red-800 border-red-200";
+      return T_DEAD;
     default: {
       const unreachable: never = status;
       throw new Error(`Unhandled task status: ${unreachable}`);
@@ -146,25 +160,52 @@ export function statusBadgeClass(status: TaskStatus): string {
 export function clientBadgeClass(cs: ClientStatus): string {
   switch (cs) {
     case "being_priced":
-      return "bg-amber-50 text-amber-800 border-amber-200";
+      return T_WAIT;
     case "quote_ready":
     case "awaiting_payment":
-      return "bg-blue-50 text-blue-800 border-blue-200";
+      return T_ACT; // the two "your move" moments — strongest neutral, NOT green
     case "in_progress":
     case "revision_in_progress":
-      return "bg-violet-50 text-violet-800 border-violet-200";
+      return T_DUSK; // the client never sees the QC loop as alarm
     case "under_review":
-      return "bg-orange-50 text-orange-800 border-orange-200";
+      return T_AMBER;
     case "completed":
-      return "bg-emerald-50 text-emerald-800 border-emerald-200";
+      return T_GREEN;
     case "declined":
     case "cancelled":
-      return "bg-neutral-100 text-neutral-600 border-neutral-200";
     case "expired":
-      return "bg-red-50 text-red-800 border-red-200";
+      return T_DEAD;
     default: {
       const unreachable: never = cs;
       throw new Error(`Unhandled client status: ${unreachable}`);
+    }
+  }
+}
+
+/** Worker-profile stamps — replaces the hand-rolled tone maps in the admin
+    workers page and the VA dashboard so the law can't drift per-page. */
+export type VaProfileStatus =
+  | "pending_test"
+  | "pending_grading"
+  | "approved"
+  | "rejected"
+  | "suspended";
+
+export function vaBadgeClass(status: VaProfileStatus): string {
+  switch (status) {
+    case "pending_test":
+      return T_OPEN; // ball with the applicant
+    case "pending_grading":
+      return T_ACT; // admin must grade
+    case "approved":
+      return T_GREEN; // an approval — the one non-money green
+    case "rejected":
+      return T_DEAD;
+    case "suspended":
+      return T_AMBER; // live restriction needing attention — not dead
+    default: {
+      const unreachable: never = status;
+      throw new Error(`Unhandled VA profile status: ${unreachable}`);
     }
   }
 }

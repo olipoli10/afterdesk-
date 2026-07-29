@@ -1,8 +1,10 @@
 "use server";
 
 import { z } from "zod";
+import { headers } from "next/headers";
 import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
+import { consumeRateLimit } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 
 const registerVaSchema = z.object({
@@ -28,6 +30,23 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
  * usable as a CLIENT.
  */
 export async function registerVa(input: unknown): Promise<ActionResult> {
+  // Server actions never pass through Better Auth's HTTP rate-limit
+  // middleware (/api/auth/*), so this path gets the same database-backed
+  // throttle the "/sign-up/email" custom rule gives the client signup:
+  // 5 attempts per 5 minutes per IP.
+  const hdrs = await headers();
+  const ip =
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    hdrs.get("x-real-ip") ||
+    "unknown";
+  const allowed = await consumeRateLimit(`action:register-va:${ip}`, {
+    window: 300,
+    max: 5,
+  });
+  if (!allowed) {
+    return { ok: false, error: "Too many attempts. Try again in a few minutes." };
+  }
+
   const parsed = registerVaSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: "Please fill in all fields (password: 10+ characters)." };

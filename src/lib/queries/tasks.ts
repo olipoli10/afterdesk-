@@ -203,6 +203,42 @@ export async function completedTasksForVa(vaId: string) {
   });
 }
 
+/**
+ * Deliveries that were rejected on the final QC round and left this worker's
+ * hands — the task went back to the pool (or on to someone else), so it no
+ * longer appears in tasksForVa/completedTasksForVa. Without this, the task
+ * simply vanishes from the worker's app with no record and no explanation.
+ *
+ * RULE 2: the select names only worker-safe fields — the operator's QC
+ * comment (written for the worker) and the task title they already worked
+ * under. Never clientPriceCents, clientId, client, or clientDeadlineUtc.
+ */
+export async function returnedSubmissionsForVa(vaId: string) {
+  return prisma.submission.findMany({
+    where: {
+      vaId,
+      qcStatus: "rejected",
+      // The task is no longer in this worker's hands. Prisma's `not` filter
+      // excludes NULL rows, so re-pooled (claimedById = null) tasks need
+      // their own branch.
+      OR: [
+        { task: { claimedById: null } },
+        { task: { NOT: { claimedById: vaId } } },
+      ],
+    },
+    select: {
+      id: true,
+      taskId: true,
+      reviewedAt: true,
+      qcComment: true,
+      task: { select: { id: true, title: true } },
+    },
+    orderBy: { reviewedAt: "desc" },
+    distinct: ["taskId"],
+    take: 25,
+  });
+}
+
 // ---------- ADMIN ----------
 
 export const adminTaskSelect = {

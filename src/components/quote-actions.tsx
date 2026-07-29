@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { acceptQuote, declineQuote } from "@/server/actions/client-tasks";
-import { buttonPrimary, buttonSecondary, inputClass } from "@/components/ui";
+import { Field, buttonPrimary, buttonSecondary, inputClass } from "@/components/ui";
 
 export function QuoteActions({ taskId }: { taskId: string }) {
   const router = useRouter();
@@ -16,7 +16,13 @@ export function QuoteActions({ taskId }: { taskId: string }) {
     setError(null);
     startTransition(async () => {
       const result = await fn();
-      if (!result.ok) setError(result.error ?? "Something went wrong.");
+      if (!result.ok) {
+        // Never a bare "something went wrong" at the highest-stakes click:
+        // say what is still true and what to do next.
+        setError(
+          result.error ?? "That didn't go through — the price is unchanged. Try again."
+        );
+      }
       router.refresh();
     });
   }
@@ -24,14 +30,21 @@ export function QuoteActions({ taskId }: { taskId: string }) {
   if (declining) {
     return (
       <div className="space-y-3">
-        <textarea
-          rows={2}
-          className={inputClass}
-          placeholder="Optional — tell us why, it helps us re-price fairly."
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <Field label="Why are you declining?" hint="Optional — it helps us re-price fairly.">
+          <textarea
+            rows={2}
+            autoFocus
+            className={inputClass}
+            placeholder="e.g. Over budget for this one"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </Field>
+        {error ? (
+          <p role="alert" className="text-sm text-[#955710]">
+            {error}
+          </p>
+        ) : null}
         <div className="flex gap-2">
           <button
             className={buttonSecondary}
@@ -41,7 +54,7 @@ export function QuoteActions({ taskId }: { taskId: string }) {
             {isPending ? "Declining…" : "Confirm decline"}
           </button>
           <button
-            className="px-2 text-sm text-neutral-500 hover:text-neutral-800"
+            className="rounded-sm px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             disabled={isPending}
             onClick={() => setDeclining(false)}
           >
@@ -54,7 +67,11 @@ export function QuoteActions({ taskId }: { taskId: string }) {
 
   return (
     <div className="space-y-3">
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-[#955710]">
+          {error}
+        </p>
+      ) : null}
       <div className="flex gap-2">
         <button
           className={buttonPrimary}

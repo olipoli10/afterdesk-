@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 
 /**
@@ -72,7 +73,12 @@ export const DEFAULT_SETTINGS: Settings = {
     "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD.",
 };
 
-export async function getSettings(): Promise<Settings> {
+/**
+ * Per-request memoized: getSettings is the most-called query in the app
+ * (layouts, pages and actions all read it). cache() dedupes within a single
+ * request only, so admin settings writes are visible on the very next request.
+ */
+export const getSettings = cache(async (): Promise<Settings> => {
   const rows = await prisma.setting.findMany();
   const merged: Record<string, unknown> = {
     ...structuredClone(DEFAULT_SETTINGS as unknown as Record<string, unknown>),
@@ -81,4 +87,4 @@ export async function getSettings(): Promise<Settings> {
     if (row.key in merged) merged[row.key] = row.value;
   }
   return merged as Settings;
-}
+});

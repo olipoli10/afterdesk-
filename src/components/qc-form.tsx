@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { approveDeliverable, rejectDeliverable } from "@/server/actions/admin-qc";
 import {
   Card,
@@ -12,6 +12,18 @@ import {
   buttonPrimary,
   buttonSecondary,
 } from "@/components/ui";
+
+/** True when a keydown originates from a typing context — never steal those keys. */
+function isTypingTarget(target: EventTarget | null): boolean {
+  const t = target as HTMLElement | null;
+  if (!t) return false;
+  return (
+    t.tagName === "INPUT" ||
+    t.tagName === "TEXTAREA" ||
+    t.tagName === "SELECT" ||
+    t.isContentEditable
+  );
+}
 
 /**
  * Batch-first QC: rating with 1-5 keys, Ctrl+Enter to approve, and
@@ -33,6 +45,7 @@ export function QcForm({
   const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, start] = useTransition();
+  const radioRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const lastRound = qcRound + 1 >= maxQcRounds;
 
@@ -53,13 +66,28 @@ export function QcForm({
     });
   }
 
+  /** Radiogroup arrow-key navigation: move selection AND focus together. */
+  function onRadioKeyDown(e: React.KeyboardEvent) {
+    let next: number | null = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") next = Math.min((rating ?? 0) + 1, 5);
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = Math.max((rating ?? 2) - 1, 1);
+    if (e.key === "Home") next = 1;
+    if (e.key === "End") next = 5;
+    if (next !== null) {
+      e.preventDefault();
+      setRating(next);
+      radioRefs.current[next - 1]?.focus();
+    }
+  }
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (rejecting) return;
-      const target = e.target as HTMLElement | null;
-      if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+      if (isTypingTarget(e.target)) return;
 
-      if (e.key >= "1" && e.key <= "5") setRating(Number(e.key));
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key >= "1" && e.key <= "5") {
+        setRating(Number(e.key));
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         approve();
@@ -73,51 +101,72 @@ export function QcForm({
   return (
     <Card>
       <CardBody>
-        <SectionLabel>Quality check</SectionLabel>
+        <SectionLabel as="h2">Quality check</SectionLabel>
 
         {!rejecting ? (
           <>
             <div className="mt-4">
-              <span className="mb-2 block text-[13px] font-medium text-neutral-800">
+              <span id="qc-rating-label" className="mb-2 block text-[13px] font-medium text-[#14161A]">
                 Rate this delivery
               </span>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setRating(n)}
-                    className={`h-10 w-10 rounded-md border text-sm font-medium tabular-nums transition-colors ${
-                      rating === n
-                        ? "border-neutral-900 bg-neutral-900 text-white"
-                        : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-400"
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
+              <div
+                role="radiogroup"
+                aria-labelledby="qc-rating-label"
+                className="flex gap-2"
+                onKeyDown={onRadioKeyDown}
+              >
+                {[1, 2, 3, 4, 5].map((n) => {
+                  const selected = rating === n;
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      aria-label={`${n} out of 5`}
+                      tabIndex={selected || (rating === null && n === 1) ? 0 : -1}
+                      ref={(el) => {
+                        radioRefs.current[n - 1] = el;
+                      }}
+                      onClick={() => setRating(n)}
+                      className={`inline-flex h-10 w-10 items-center justify-center gap-0.5 rounded-md border font-mono text-sm font-medium tabular-nums transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                        selected
+                          ? "border-[#14161A] bg-[#14161A] text-[#F7F6F3]"
+                          : "border-[#14161A]/20 bg-white text-[#14161A] hover:border-[#14161A]/40"
+                      }`}
+                    >
+                      {selected ? <span aria-hidden="true">✓</span> : null}
+                      {n}
+                    </button>
+                  );
+                })}
               </div>
-              <p className="mt-1.5 text-xs text-neutral-400">
+              <p className="mt-1.5 text-xs text-[#5B6069]">
                 Press 1–5 to rate. This feeds the worker&apos;s rolling score — the client
                 never sees it.
               </p>
             </div>
 
-            {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+            {error ? (
+              <p role="alert" className="mt-3 text-sm text-[#8C2F23]">
+                {error}
+              </p>
+            ) : null}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <button className={buttonPrimary} disabled={isPending} onClick={approve}>
                 {isPending ? "Approving…" : "Approve & next"}
               </button>
-              <span className="text-xs text-neutral-400">Ctrl+Enter</span>
+              <span className="font-mono text-xs text-[#5B6069]">Ctrl+Enter</span>
               <span className="flex-1" />
               <button
-                className="text-sm font-medium text-neutral-400 hover:text-red-600"
+                className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#955710]"
                 onClick={() => setRejecting(true)}
               >
                 Send back for changes…
               </button>
             </div>
-            <p className="mt-3 text-xs text-neutral-400">
+            <p className="mt-3 text-xs text-[#5B6069]">
               Approving releases the files to the client. Nothing has reached them yet.
             </p>
           </>
@@ -136,12 +185,16 @@ export function QcForm({
               />
             </Field>
             {lastRound ? (
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-[#955710]">
                 This is the last round. Sending it back again returns the task to the pool
                 for a different worker.
               </p>
             ) : null}
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
+            {error ? (
+              <p role="alert" className="text-sm text-[#8C2F23]">
+                {error}
+              </p>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               <button
                 className={buttonSecondary}
@@ -162,7 +215,7 @@ export function QcForm({
                 {isPending ? "Sending back…" : "Send back for changes"}
               </button>
               <button
-                className="px-2 text-sm text-neutral-500 hover:text-neutral-800"
+                className="px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
                 onClick={() => setRejecting(false)}
               >
                 Back

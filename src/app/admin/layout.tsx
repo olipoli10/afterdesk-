@@ -4,6 +4,11 @@ import { prisma } from "@/lib/db";
 import { pricingQueueCount } from "@/lib/queries/tasks";
 import { AppShell } from "@/components/app-shell";
 
+export const metadata = {
+  title: "Operator",
+  robots: { index: false, follow: false },
+};
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const user = await requireRole("ADMIN");
 
@@ -16,6 +21,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <AppShell
       areaLabel="Operator"
+      width="wide"
       userName={user.name}
       nav={[
         { href: "/admin", label: "Overview" },

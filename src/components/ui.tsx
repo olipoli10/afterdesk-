@@ -1,9 +1,22 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+/* ─────────────────────────────────────────────────────────────────────────
+   "The Paper Ledger" — the logged-in apps are the documents the homepages
+   promise: a paper desk (#F7F6F3), white printed sheets with hairline ink
+   borders, Geist Mono for every structural string, statuses as stamps.
+   Color is rationed by the palette law (see globals.css header).
+   Motion: a tool moves like paper — 150ms color transitions, nothing else.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/** A printed sheet on the desk. */
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-lg border border-neutral-200 bg-white ${className}`}>{children}</div>
+    <div
+      className={`rounded-lg border border-[#14161A]/10 bg-white shadow-[0_1px_2px_rgba(20,22,26,0.04)] ${className}`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -23,33 +36,48 @@ export function PageTitle({
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-xl font-semibold tracking-[-0.02em] text-neutral-900">{title}</h1>
-        {sub ? <p className="mt-1 max-w-2xl text-sm leading-relaxed text-neutral-500">{sub}</p> : null}
+        <h1 className="text-xl font-semibold tracking-[-0.02em] text-[#14161A]">{title}</h1>
+        {sub ? <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#5B6069]">{sub}</p> : null}
       </div>
       {action}
     </div>
   );
 }
 
-/** Small uppercase section label — the workhorse of the dense B2B look. */
-export function SectionLabel({ children, className = "" }: { children: ReactNode; className?: string }) {
+/**
+ * Small mono uppercase section label — like the row labels on the homepage
+ * quote card. `as` lets list sections keep a real heading for screen readers.
+ */
+export function SectionLabel({
+  children,
+  className = "",
+  as: Tag = "p",
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: "p" | "h2" | "h3";
+}) {
   return (
-    <p className={`tracking-label text-[11px] font-semibold uppercase text-neutral-400 ${className}`}>
+    <Tag
+      className={`font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-[#5B6069] ${className}`}
+    >
       {children}
-    </p>
+    </Tag>
   );
 }
 
+/** THE STAMP — status chips render through this; tone classes come from status.ts. */
 export function Badge({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-medium ${className}`}
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-[3px] border px-1.5 py-[3px] font-mono text-[11px] font-medium uppercase leading-none tracking-[0.08em] ${className}`}
     >
       {children}
     </span>
   );
 }
 
+/** An unprinted form: dashed rule, no sheet. */
 export function EmptyState({
   title,
   body,
@@ -60,13 +88,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <Card>
+    <div className="rounded-lg border border-dashed border-[#14161A]/20">
       <div className="flex flex-col items-start gap-2 px-6 py-12">
-        <h2 className="text-sm font-semibold text-neutral-900">{title}</h2>
-        <p className="max-w-xl text-sm leading-relaxed text-neutral-500">{body}</p>
+        <h2 className="text-sm font-medium text-[#14161A]">{title}</h2>
+        <p className="max-w-xl text-sm leading-relaxed text-[#5B6069]">{body}</p>
         {action ? <div className="mt-3">{action}</div> : null}
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -81,31 +109,48 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[13px] font-medium text-neutral-800">{label}</span>
+      <span className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+        {label}
+      </span>
       {children}
-      {hint ? <span className="mt-1.5 block text-xs leading-relaxed text-neutral-500">{hint}</span> : null}
+      {hint ? (
+        <span className="mt-1.5 block text-xs leading-relaxed text-[#5B6069]">{hint}</span>
+      ) : null}
     </label>
   );
 }
 
+/* 16px on mobile kills iOS focus-zoom; sm: restores desktop density.
+   Focus is ink, never blue. */
 export const inputClass =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-[0_1px_1px_rgba(15,23,42,0.03)] placeholder:text-neutral-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/15";
+  "w-full rounded-md border border-[#14161A]/20 bg-white px-3 py-2 text-[16px] text-[#14161A] placeholder:text-[#9AA1AB] focus:border-[#14161A] focus:outline-none focus:ring-2 focus:ring-[#14161A]/15 sm:text-sm";
 
 export const buttonPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex items-center justify-center gap-1.5 rounded-md bg-[#14161A] px-4 py-2 text-sm font-medium text-[#F7F6F3] transition-colors duration-150 hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3] disabled:cursor-not-allowed disabled:opacity-40";
 
 export const buttonSecondary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-colors hover:border-neutral-400 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex items-center justify-center gap-1.5 rounded-md border border-[#14161A]/20 bg-white px-4 py-2 text-sm font-medium text-[#14161A] transition-colors duration-150 hover:border-[#14161A]/40 hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3] disabled:cursor-not-allowed disabled:opacity-40";
 
-/** For dark surfaces (the marketing hero). */
+/** For dark night surfaces (marketing blocks). */
 export const buttonOnDark =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#0b1120]";
+  "inline-flex items-center justify-center gap-1.5 rounded-md bg-[#F7F6F3] px-4 py-2 text-sm font-medium text-[#14161A] transition-colors duration-150 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]";
 
 export const buttonGhostOnDark =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-white/25 px-4 py-2 text-sm font-medium text-white transition-colors hover:border-white/50 hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#0b1120]";
+  "inline-flex items-center justify-center gap-1.5 rounded-md border border-white/25 px-4 py-2 text-sm font-medium text-white transition-colors duration-150 hover:border-white/50 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]";
 
+/** Destructive actions only — never a status color. */
 export const buttonDanger =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex items-center justify-center gap-1.5 rounded-md border border-[#A23B2E]/40 bg-white px-4 py-2 text-sm font-medium text-[#8C2F23] transition-colors duration-150 hover:bg-[#A23B2E]/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8C2F23] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3] disabled:cursor-not-allowed disabled:opacity-40";
+
+/* Money treatments — two DISTINCT exports on purpose: the visual split
+   mirrors the RULE 2 code-level separation. Never introduce a shared
+   "price" component that could blur them. */
+export const moneyClient = "font-mono tabular-nums text-[#14161A]";
+export const moneyPayout = "font-mono tabular-nums text-[#166049]";
+
+/** Inline text link — ink with a soft underline; replaces every stray blue anchor. */
+export const linkInline =
+  "font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors duration-150 hover:decoration-[#14161A]";
 
 export function LinkButton({
   href,

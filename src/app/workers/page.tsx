@@ -25,9 +25,10 @@ import { PublicCounters } from "@/components/public-counters";
    ───────────────────────────────────────────────────────────────────────── */
 
 export const metadata = {
-  title: "Second Shift — Work with us",
+  title: "Work with us — get paid for careful work",
   description:
     "Tasks arrive while America sleeps, the payout printed on every one. No proposals, no bidding, no clients to manage.",
+  alternates: { canonical: "/workers" },
 };
 
 const POOL_ROWS: {

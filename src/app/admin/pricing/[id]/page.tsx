@@ -5,7 +5,15 @@ import { prisma } from "@/lib/db";
 import { taskForAdmin } from "@/lib/queries/tasks";
 import { LocalTime } from "@/components/local-time";
 import { PricingForm } from "@/components/pricing-form";
-import { Card, CardBody, PageTitle, formatBytes } from "@/components/ui";
+import {
+  Card,
+  CardBody,
+  PageTitle,
+  SectionLabel,
+  formatBytes,
+  linkInline,
+  moneyClient,
+} from "@/components/ui";
 
 export default async function PricingDetailPage({
   params,
@@ -34,7 +42,10 @@ export default async function PricingDetailPage({
         title={task.title}
         sub={`From ${task.client.name} (${task.client.email})`}
         action={
-          <Link href="/admin/pricing" className="text-sm font-medium text-neutral-500 hover:text-neutral-900">
+          <Link
+            href="/admin/pricing"
+            className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+          >
             ← Queue
           </Link>
         }
@@ -43,15 +54,15 @@ export default async function PricingDetailPage({
       <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_320px]">
         <Card>
           <CardBody>
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+            <SectionLabel as="h2" className="mb-2">
               Description
-            </h2>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-800">
+            </SectionLabel>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#14161A]">
               {task.description}
             </p>
             {task.quantity ? (
-              <p className="mt-3 border-t border-neutral-100 pt-3 text-sm text-neutral-600">
-                <span className="text-xs text-neutral-400">Volume:</span> {task.quantity}
+              <p className="mt-3 border-t border-[#14161A]/[0.06] pt-3 text-sm text-[#14161A]">
+                <span className="text-xs text-[#5B6069]">Volume:</span> {task.quantity}
               </p>
             ) : null}
           </CardBody>
@@ -60,48 +71,50 @@ export default async function PricingDetailPage({
         <div className="space-y-4">
           <Card>
             <CardBody>
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+              <SectionLabel as="h2" className="mb-2">
                 Deadlines
-              </h2>
+              </SectionLabel>
               {task.clientDeadlineUtc ? (
                 <dl className="space-y-2 text-sm">
                   <div>
-                    <dt className="text-xs text-neutral-400">Client receives by (your time)</dt>
-                    <dd className="font-medium text-neutral-900">
+                    <dt className="text-xs text-[#5B6069]">Client receives by (your time)</dt>
+                    <dd className="font-medium text-[#14161A]">
                       <LocalTime iso={task.clientDeadlineUtc} />
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-neutral-400">Same moment in Manila</dt>
-                    <dd className="text-neutral-700">
+                    <dt className="text-xs text-[#5B6069]">Same moment in Manila</dt>
+                    <dd className="text-[#14161A]">
                       <LocalTime iso={task.clientDeadlineUtc} timeZone="Asia/Manila" />
                     </dd>
                   </div>
-                  <p className="pt-1 text-xs text-neutral-400">
-                    The VA deadline (client deadline − QC buffer) is computed automatically
+                  <p className="pt-1 text-xs text-[#5B6069]">
+                    The worker deadline (client deadline − QC buffer) is computed automatically
                     at approval.
                   </p>
                 </dl>
               ) : (
-                <p className="text-sm text-neutral-500">No deadline set by the client.</p>
+                <p className="text-sm text-[#5B6069]">No deadline set by the client.</p>
               )}
             </CardBody>
           </Card>
 
           <Card>
             <CardBody>
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+              <SectionLabel as="h2" className="mb-2">
                 AI price suggestion
-              </h2>
+              </SectionLabel>
               {task.aiLowCents != null && task.aiHighCents != null ? (
-                <p className="text-sm text-neutral-800">
-                  ${(task.aiLowCents / 100).toFixed(0)} – ${(task.aiHighCents / 100).toFixed(0)}
+                <p className="text-sm">
+                  <span className={moneyClient}>
+                    ${(task.aiLowCents / 100).toFixed(0)} – ${(task.aiHighCents / 100).toFixed(0)}
+                  </span>
                   {task.aiReasoning ? (
-                    <span className="mt-1 block text-xs text-neutral-500">{task.aiReasoning}</span>
+                    <span className="mt-1 block text-xs text-[#5B6069]">{task.aiReasoning}</span>
                   ) : null}
                 </p>
               ) : (
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-[#5B6069]">
                   Not available yet — AI-suggested ranges arrive at build step 4. Price
                   manually for now.
                 </p>
@@ -111,22 +124,19 @@ export default async function PricingDetailPage({
 
           <Card>
             <CardBody>
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+              <SectionLabel as="h2" className="mb-2">
                 Client files ({inputFiles.length})
-              </h2>
+              </SectionLabel>
               {inputFiles.length === 0 ? (
-                <p className="text-sm text-neutral-500">No files attached.</p>
+                <p className="text-sm text-[#5B6069]">No files attached.</p>
               ) : (
-                <ul className="divide-y divide-neutral-100 text-sm">
+                <ul className="divide-y divide-[#14161A]/[0.06] text-sm">
                   {inputFiles.map((f) => (
                     <li key={f.id} className="flex items-center justify-between py-2">
-                      <a
-                        href={`/api/files/${f.id}/download`}
-                        className="truncate font-medium text-indigo-600 hover:underline"
-                      >
+                      <a href={`/api/files/${f.id}/download`} className={`truncate ${linkInline}`}>
                         {f.fileName}
                       </a>
-                      <span className="shrink-0 pl-2 text-xs text-neutral-400">
+                      <span className="shrink-0 pl-2 font-mono text-xs tabular-nums text-[#5B6069]">
                         {formatBytes(f.sizeBytes)}
                       </span>
                     </li>

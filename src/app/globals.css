@@ -1,7 +1,20 @@
 @import "tailwindcss";
 
-/* B2B infrastructure look: light, neutral, one accent, deliberate type.
-   No auto dark-mode inversion — the palette is chosen, not derived. */
+/* ────────────────────────────────────────────────────────────────────────
+   BRAND PALETTE (no auto dark-mode inversion — the palette is chosen):
+   night #0A0B0D · surface #111317 · dusk #1B2740 · paper #F7F6F3 · ink #14161A
+   muted ramp #767C86 / #8A9099 / #9AA1AB / #5B6069
+   green #1E7F5C — money/fixed/passed ONLY · amber #D98324 — returned-work ONLY
+
+   CONTRAST LAW (load-bearing — do not "clean up" these derived inks):
+   - Small text on white/paper: darkest muted #5B6069 only. #767C86 and
+     #9AA1AB FAIL AA below 18px on light surfaces (placeholders/night only).
+   - Green as small text on light = #166049 (6.5:1). Raw #1E7F5C fails <14px.
+   - Amber as small text on light = #955710 (5.8:1). Raw #D98324 is 2.9:1 —
+     it carries identity via borders/backgrounds, never as small text.
+   - Green text never sits directly on a night surface: paper text + green
+     underline there (see the homepages' ledger).
+   ──────────────────────────────────────────────────────────────────────── */
 :root {
   color-scheme: light;
 }
@@ -33,8 +46,8 @@ body {
 }
 
 ::selection {
-  background: #1d4ed8;
-  color: #ffffff;
+  background: #14161a;
+  color: #f7f6f3;
 }
 
 /* ────────────────────────────────────────────────────────────────────────

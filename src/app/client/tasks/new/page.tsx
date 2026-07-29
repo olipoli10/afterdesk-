@@ -15,8 +15,9 @@ export default async function NewTaskPage({
   const settings = await getSettings();
   const { mode } = await searchParams;
 
-  // The assistant is the default way in; the plain form stays available and is
-  // the automatic fallback when no AI key is configured.
+  // The intake chat is the default way in; the plain form stays available and
+  // is the automatic fallback when no AI key is configured. Client canon: the
+  // chat speaks as "we" and is never called an assistant.
   const useChat = aiEnabled && mode !== "form";
 
   return (
@@ -25,16 +26,16 @@ export default async function NewTaskPage({
         title={useChat ? "What do you need done?" : "Describe your task"}
         sub={
           useChat
-            ? "Say it however it comes out. The assistant will shape it into a brief, then you approve one fixed price before anything starts."
+            ? "Say it however it comes out. We'll shape it into a brief, then you approve one fixed price before anything starts."
             : "Plain language. You'll get one fixed price to approve before anything starts."
         }
         action={
           aiEnabled ? (
             <Link
               href={useChat ? "/client/tasks/new?mode=form" : "/client/tasks/new"}
-              className="text-[13px] font-medium text-neutral-500 transition-colors hover:text-neutral-900"
+              className="text-[13px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
             >
-              {useChat ? "Write it out myself" : "Use the assistant"}
+              {useChat ? "Write it out myself" : "Talk it through instead"}
             </Link>
           ) : null
         }

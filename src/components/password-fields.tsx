@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Field, inputClass } from "@/components/ui";
+
+const labelClass =
+  "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#5B6069]";
 
 /**
  * Password + confirmation with a single show/hide toggle covering both, plus
@@ -20,6 +23,7 @@ export function PasswordFields({
   onConfirmChange: (v: string) => void;
   minLength?: number;
 }) {
+  const passwordId = useId();
   const [show, setShow] = useState(false);
   const type = show ? "text" : "password";
 
@@ -31,17 +35,20 @@ export function PasswordFields({
     <div className="space-y-4">
       <div>
         <div className="mb-1.5 flex items-baseline justify-between">
-          <span className="text-[13px] font-medium text-neutral-800">Password</span>
+          <label htmlFor={passwordId} className={labelClass}>
+            Password
+          </label>
           <button
             type="button"
             onClick={() => setShow((s) => !s)}
-            className="text-[12px] font-medium text-neutral-500 transition-colors hover:text-neutral-900"
+            className="text-[12px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             aria-pressed={show}
           >
             {show ? "Hide password" : "Show password"}
           </button>
         </div>
         <input
+          id={passwordId}
           type={type}
           required
           minLength={minLength}
@@ -51,7 +58,7 @@ export function PasswordFields({
           onChange={(e) => onPasswordChange(e.target.value)}
         />
         <span
-          className={`mt-1.5 block text-xs ${tooShort ? "text-red-600" : "text-neutral-500"}`}
+          className={`mt-1.5 block text-xs ${tooShort ? "text-[#8C2F23]" : "text-[#5B6069]"}`}
         >
           {tooShort
             ? `${minLength - password.length} more character${minLength - password.length > 1 ? "s" : ""} needed.`
@@ -70,9 +77,9 @@ export function PasswordFields({
         />
       </Field>
       {mismatch ? (
-        <p className="-mt-2 text-xs text-red-600">Passwords do not match.</p>
+        <p className="-mt-2 text-xs text-[#8C2F23]">Passwords do not match.</p>
       ) : matched ? (
-        <p className="-mt-2 text-xs text-emerald-700">Passwords match.</p>
+        <p className="-mt-2 text-xs text-[#5B6069]">✓ Passwords match.</p>
       ) : null}
     </div>
   );
@@ -85,6 +92,6 @@ export function passwordProblem(
   minLength = 10
 ): string | null {
   if (password.length < minLength) return `Password must be at least ${minLength} characters.`;
-  if (password !== confirm) return "The two passwords do not match.";
+  if (password !== confirm) return "Passwords do not match.";
   return null;
 }

@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/authz";
-import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { poolForVa } from "@/lib/queries/tasks";
 import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
 import { ClaimButton } from "@/components/va-actions";
-import { Badge, Card, EmptyState, PageTitle } from "@/components/ui";
+import { Badge, Card, EmptyState, PageTitle, moneyPayout } from "@/components/ui";
+import { vaProfileFor } from "../layout";
 
 /**
  * The task pool. Mobile-first: many workers only ever see this on a phone, so
@@ -17,15 +17,17 @@ import { Badge, Card, EmptyState, PageTitle } from "@/components/ui";
  * clientId or clientDeadlineUtc. Filenames are excluded too — a client's own
  * filename can identify them, and the pool is visible to every approved worker.
  */
+
+const metaLabel = "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#5B6069]";
+
+/** Roughly three clamped lines — shorter briefs don't need an expander. */
+const CLAMP_THRESHOLD = 160;
+
 export default async function VaPoolPage() {
   const user = await requireRole("VA");
-  const profile = await prisma.vaProfile.findUnique({
-    where: { userId: user.id },
-    select: { status: true, scoreCache: true, ratedCount: true },
-  });
+  const [profile, settings] = await Promise.all([vaProfileFor(user.id), getSettings()]);
   if (profile?.status !== "approved") redirect("/va");
 
-  const settings = await getSettings();
   const tasks = await poolForVa({
     score: profile.scoreCache,
     ratedCount: profile.ratedCount,
@@ -42,13 +44,13 @@ export default async function VaPoolPage() {
     <>
       <PageTitle
         title="Available work"
-        sub="First come, first served. Every task here is already paid for by the client."
+        sub="First come, first served. Every task here has a fixed payout the client already approved."
       />
 
       {tasks.length === 0 ? (
         <EmptyState
           title="Nothing in the pool right now"
-          body="New tasks appear here as soon as they are paid for. Check back — claiming is first come, first served."
+          body="New tasks appear here the moment a client approves a fixed price. Check back — claiming is first come, first served."
         />
       ) : (
         <div className="space-y-3">
@@ -58,34 +60,54 @@ export default async function VaPoolPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-[15px] font-medium text-neutral-900">{t.title}</h2>
+                      <h2 className="text-[15px] font-medium text-[#14161A]">{t.title}</h2>
                       {t.tier === "high_value" ? (
-                        <Badge className="border-indigo-200 bg-indigo-50 text-indigo-800">
+                        <Badge className="border-[#1B2740]/30 bg-[#1B2740]/[0.06] text-[#1B2740]">
                           High-value
                         </Badge>
                       ) : null}
                       {t.category ? (
-                        <Badge className="border-neutral-200 bg-neutral-50 text-neutral-600">
+                        <Badge className="border-[#14161A]/15 bg-transparent text-[#5B6069]">
                           {t.category.name}
                         </Badge>
                       ) : null}
                     </div>
-                    <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-neutral-600">
-                      {t.description}
-                    </p>
+                    {/* The full brief must be readable BEFORE claiming — a claim
+                        release is recorded on the worker's record, so never make
+                        them commit on a three-line fragment. */}
+                    {t.description.length > CLAMP_THRESHOLD ? (
+                      <details className="group mt-2">
+                        <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          <span className="line-clamp-3 text-sm leading-relaxed text-[#5B6069] group-open:hidden">
+                            {t.description}
+                          </span>
+                          <span className="-my-1.5 inline-flex min-h-11 items-center font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors duration-150 hover:decoration-[#14161A] group-open:hidden">
+                            Read the full brief
+                          </span>
+                          <span className="-my-1.5 hidden min-h-11 items-center font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors duration-150 hover:decoration-[#14161A] group-open:inline-flex">
+                            Collapse the brief
+                          </span>
+                        </summary>
+                        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#5B6069]">
+                          {t.description}
+                        </p>
+                      </details>
+                    ) : (
+                      <p className="mt-2 text-sm leading-relaxed text-[#5B6069]">{t.description}</p>
+                    )}
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-xl font-semibold tabular-nums text-neutral-900">
+                    <p className={`text-xl font-medium ${moneyPayout}`}>
                       {t.vaPayoutCents != null ? formatCents(t.vaPayoutCents, t.currency) : "—"}
                     </p>
-                    <p className="text-[11px] text-neutral-400">you earn</p>
+                    <p className={metaLabel}>Your payout</p>
                   </div>
                 </div>
 
-                <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-neutral-100 pt-3 text-sm">
+                <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-[#14161A]/[0.08] pt-3 text-sm">
                   <div>
-                    <dt className="text-xs text-neutral-400">Due from you</dt>
-                    <dd className="text-neutral-800">
+                    <dt className={metaLabel}>Due from you</dt>
+                    <dd className="mt-0.5 text-[#14161A]">
                       {t.vaDeadlineUtc ? (
                         <LocalTime iso={t.vaDeadlineUtc} dateStyle="short" />
                       ) : (
@@ -95,13 +117,13 @@ export default async function VaPoolPage() {
                   </div>
                   {t.quantity ? (
                     <div>
-                      <dt className="text-xs text-neutral-400">Volume</dt>
-                      <dd className="text-neutral-800">{t.quantity}</dd>
+                      <dt className={metaLabel}>Volume</dt>
+                      <dd className="mt-0.5 font-mono tabular-nums text-[#14161A]">{t.quantity}</dd>
                     </div>
                   ) : null}
                   <div>
-                    <dt className="text-xs text-neutral-400">Files provided</dt>
-                    <dd className="text-neutral-800">{t._count.files}</dd>
+                    <dt className={metaLabel}>Files provided</dt>
+                    <dd className="mt-0.5 font-mono tabular-nums text-[#14161A]">{t._count.files}</dd>
                   </div>
                 </dl>
 
@@ -115,15 +137,21 @@ export default async function VaPoolPage() {
       )}
 
       {gatedFromHighValue ? (
-        <p className="mt-6 text-xs leading-relaxed text-neutral-500">
-          High-value tasks unlock at a {settings.highValueThreshold.toFixed(1)} rating across{" "}
-          {settings.minRatedDeliveries} rated deliveries. You have{" "}
-          {profile.ratedCount} so far.
+        <p className="mt-6 text-xs leading-relaxed text-[#5B6069]">
+          High-value tasks unlock at a{" "}
+          <span className="font-mono tabular-nums">{settings.highValueThreshold.toFixed(1)}</span>{" "}
+          rating across{" "}
+          <span className="font-mono tabular-nums">{settings.minRatedDeliveries}</span> rated
+          deliveries. You have{" "}
+          <span className="font-mono tabular-nums">{profile.ratedCount}</span> so far.
         </p>
       ) : null}
 
-      <p className="mt-2 text-xs text-neutral-400">
-        <Link href="/va" className="hover:text-neutral-700">
+      <p className="mt-2">
+        <Link
+          href="/va"
+          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+        >
           ← My work
         </Link>
       </p>

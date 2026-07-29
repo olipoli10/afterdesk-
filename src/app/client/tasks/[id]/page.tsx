@@ -12,7 +12,17 @@ import { formatCents } from "@/lib/money";
 import { deliverableFileLabel } from "@/lib/filenames";
 import { LocalTime } from "@/components/local-time";
 import { QuoteActions } from "@/components/quote-actions";
-import { Badge, Card, CardBody, PageTitle, formatBytes } from "@/components/ui";
+import {
+  Badge,
+  Card,
+  CardBody,
+  LinkButton,
+  PageTitle,
+  SectionLabel,
+  formatBytes,
+  linkInline,
+  moneyClient,
+} from "@/components/ui";
 
 export default async function ClientTaskPage({
   params,
@@ -36,32 +46,28 @@ export default async function ClientTaskPage({
 
       {/* Status panel — honest expectations, computed from operator working hours. */}
       {cs === "being_priced" ? (
-        <Card className="mb-4 border-amber-200 bg-amber-50/50">
+        <Card className="mb-4">
           <CardBody>
-            <p className="text-sm font-medium text-neutral-900">We&apos;re pricing your task.</p>
-            <p className="mt-1 text-sm text-neutral-600">
-              Expect your fixed quote by{" "}
-              <span className="font-medium text-neutral-900">
-                <LocalTime iso={computeQuotedBy(new Date(), settings)} />
-              </span>
-              . Quotes are prepared personally during our review hours — you&apos;ll see the
-              price here and can approve or decline it.
+            <p className="text-sm font-medium text-[#14161A]">We&apos;re pricing your task.</p>
+            <p className="mt-1 text-sm text-[#5B6069]">
+              Expect your fixed price by{" "}
+              <LocalTime iso={computeQuotedBy(new Date(), settings)} />. Prices are prepared
+              personally during our review hours — you&apos;ll see the number here and can
+              approve or decline it.
             </p>
           </CardBody>
         </Card>
       ) : null}
 
       {cs === "quote_ready" && task.clientPriceCents != null ? (
-        <Card className="mb-4 border-blue-200">
+        <Card className="mb-4 border-[#14161A]/20">
           <CardBody>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-              Your fixed price
-            </p>
-            <p className="mt-1 text-2xl font-semibold tracking-tight text-neutral-900">
+            <SectionLabel>Your fixed price</SectionLabel>
+            <p className={`mt-1 text-2xl font-medium ${moneyClient}`}>
               {formatCents(task.clientPriceCents, task.currency)}
             </p>
             {task.quoteExpiresAt ? (
-              <p className="mt-1 text-xs text-neutral-500">
+              <p className="mt-1 text-xs text-[#5B6069]">
                 Valid until <LocalTime iso={task.quoteExpiresAt} />
               </p>
             ) : null}
@@ -72,18 +78,32 @@ export default async function ClientTaskPage({
         </Card>
       ) : null}
 
-      {cs === "in_progress" ? (
-        <Card className="mb-4 border-violet-200 bg-violet-50/40">
+      {cs === "awaiting_payment" && task.clientPriceCents != null ? (
+        <Card className="mb-4 border-[#14161A]/20">
           <CardBody>
-            <p className="text-sm font-medium text-neutral-900">Work is underway.</p>
-            <p className="mt-1 text-sm text-neutral-600">
+            <p className="text-sm font-medium text-[#14161A]">
+              Payment is the next step.
+            </p>
+            <p className="mt-1 text-sm text-[#5B6069]">
+              You approved{" "}
+              <span className={moneyClient}>
+                {formatCents(task.clientPriceCents, task.currency)}
+              </span>
+              . Work starts once payment is settled.
+            </p>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {cs === "in_progress" ? (
+        <Card className="mb-4 border-[#1B2740]/30">
+          <CardBody>
+            <p className="text-sm font-medium text-[#14161A]">Work is underway.</p>
+            <p className="mt-1 text-sm text-[#5B6069]">
               {task.clientDeadlineUtc ? (
                 <>
                   Delivery of the reviewed work is due by{" "}
-                  <span className="font-medium text-neutral-900">
-                    <LocalTime iso={task.clientDeadlineUtc} />
-                  </span>
-                  .
+                  <LocalTime iso={task.clientDeadlineUtc} />.
                 </>
               ) : (
                 <>Your deliverable will appear here once it passes our quality review.</>
@@ -93,42 +113,120 @@ export default async function ClientTaskPage({
         </Card>
       ) : null}
 
+      {cs === "revision_in_progress" ? (
+        <Card className="mb-4 border-[#1B2740]/30">
+          <CardBody>
+            <p className="text-sm font-medium text-[#14161A]">
+              The revision is being worked on.
+            </p>
+            <p className="mt-1 text-sm text-[#5B6069]">
+              The updated delivery will appear here once it passes our quality review.
+            </p>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {cs === "under_review" ? (
+        <Card className="mb-4 border-[#D98324]/50">
+          <CardBody>
+            <p className="text-sm font-medium text-[#14161A]">
+              We&apos;re reviewing this delivery.
+            </p>
+            <p className="mt-1 text-sm text-[#5B6069]">
+              The operator is re-checking the work against your description. You&apos;ll see
+              the outcome here.
+            </p>
+          </CardBody>
+        </Card>
+      ) : null}
+
       {cs === "declined" ? (
         <Card className="mb-4">
           <CardBody>
-            <p className="text-sm text-neutral-600">
-              You declined this quote{task.declineReason ? <> — “{task.declineReason}”</> : null}.
-              Submit a new task anytime.
+            <p className="text-sm text-[#5B6069]">
+              You declined this price
+              {task.declineReason ? <> — &ldquo;{task.declineReason}&rdquo;</> : null}. Every
+              submission is priced fresh, so you can send the same task again anytime.
             </p>
+            <div className="mt-3">
+              <LinkButton href="/client/tasks/new" variant="secondary">
+                Submit it again
+              </LinkButton>
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {cs === "expired" ? (
+        <Card className="mb-4">
+          <CardBody>
+            <p className="text-sm text-[#5B6069]">
+              This price lapsed
+              {task.expiredAt ?? task.quoteExpiresAt ? (
+                <>
+                  {" "}
+                  on <LocalTime iso={(task.expiredAt ?? task.quoteExpiresAt)!} />
+                </>
+              ) : null}
+              . Prices are calculated fresh each time — submit the task again and we&apos;ll
+              re-price it.
+            </p>
+            <div className="mt-3">
+              <LinkButton href="/client/tasks/new" variant="secondary">
+                Submit it again
+              </LinkButton>
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {cs === "cancelled" ? (
+        <Card className="mb-4">
+          <CardBody>
+            <p className="text-sm text-[#5B6069]">
+              We cancelled this task
+              {task.cancelledAt ? (
+                <>
+                  {" "}
+                  on <LocalTime iso={task.cancelledAt} dateStyle="short" />
+                </>
+              ) : null}
+              . You were not charged. If you still need it done, submit it again.
+            </p>
+            <div className="mt-3">
+              <LinkButton href="/client/tasks/new" variant="secondary">
+                Submit a new task
+              </LinkButton>
+            </div>
           </CardBody>
         </Card>
       ) : null}
 
       <Card className="mb-4">
         <CardBody>
-          <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+          <SectionLabel as="h2" className="mb-2">
             Task description
-          </h2>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-800">
+          </SectionLabel>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#14161A]">
             {task.description}
           </p>
-          <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-neutral-100 pt-3 text-sm sm:grid-cols-3">
+          <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-[#14161A]/[0.06] pt-3 text-sm sm:grid-cols-3">
             {task.quantity ? (
               <div>
-                <dt className="text-xs text-neutral-400">Volume</dt>
-                <dd className="text-neutral-800">{task.quantity}</dd>
+                <dt className="text-xs text-[#5B6069]">Volume</dt>
+                <dd className="text-[#14161A]">{task.quantity}</dd>
               </div>
             ) : null}
             <div>
-              <dt className="text-xs text-neutral-400">Submitted</dt>
-              <dd className="text-neutral-800">
+              <dt className="text-xs text-[#5B6069]">Submitted</dt>
+              <dd className="text-[#14161A]">
                 <LocalTime iso={task.createdAt} dateStyle="short" />
               </dd>
             </div>
             {task.clientDeadlineUtc ? (
               <div>
-                <dt className="text-xs text-neutral-400">Your deadline</dt>
-                <dd className="text-neutral-800">
+                <dt className="text-xs text-[#5B6069]">Your deadline</dt>
+                <dd className="text-[#14161A]">
                   <LocalTime iso={task.clientDeadlineUtc} dateStyle="short" />
                 </dd>
               </div>
@@ -138,30 +236,31 @@ export default async function ClientTaskPage({
       </Card>
 
       {task.submissions.length > 0 ? (
-        <Card className="mb-4 border-emerald-200">
+        <Card className="mb-4 border-[#1E7F5C]/40">
           <CardBody>
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-label text-neutral-400">
+            <SectionLabel as="h2" className="mb-2">
               Your finished work
-            </h2>
-            <p className="mb-3 text-sm text-neutral-600">
+            </SectionLabel>
+            <p className="mb-3 text-sm text-[#5B6069]">
               Reviewed and approved before it reached you.
             </p>
-            <ul className="divide-y divide-neutral-100 text-sm">
+            <ul className="divide-y divide-[#14161A]/[0.06] text-sm">
               {task.submissions[0].files.map((f) => (
                 <li key={f.id} className="flex items-center justify-between py-2">
                   {/* RULE 1: never the worker's own filename — it can name them. */}
-                  <a
-                    href={`/api/files/${f.id}/download`}
-                    className="truncate font-medium text-blue-700 hover:underline"
-                  >
+                  <a href={`/api/files/${f.id}/download`} className={`truncate ${linkInline}`}>
                     {deliverableFileLabel(f.fileName, task.id, f.id)}
                   </a>
-                  <span className="shrink-0 pl-2 text-xs text-neutral-400">
+                  <span className="shrink-0 pl-2 font-mono text-xs tabular-nums text-[#5B6069]">
                     {formatBytes(f.sizeBytes)}
                   </span>
                 </li>
               ))}
             </ul>
+            <p className="mt-3 border-t border-[#14161A]/[0.06] pt-3 font-mono text-xs text-[#5B6069]">
+              Something not right with a delivery? Contact us and the operator will take it
+              from there.
+            </p>
           </CardBody>
         </Card>
       ) : null}
@@ -169,19 +268,16 @@ export default async function ClientTaskPage({
       {task.files.length > 0 ? (
         <Card>
           <CardBody>
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+            <SectionLabel as="h2" className="mb-2">
               Your files
-            </h2>
-            <ul className="divide-y divide-neutral-100 text-sm">
+            </SectionLabel>
+            <ul className="divide-y divide-[#14161A]/[0.06] text-sm">
               {task.files.map((f) => (
                 <li key={f.id} className="flex items-center justify-between py-2">
-                  <a
-                    href={`/api/files/${f.id}/download`}
-                    className="truncate font-medium text-indigo-600 hover:underline"
-                  >
+                  <a href={`/api/files/${f.id}/download`} className={`truncate ${linkInline}`}>
                     {f.fileName}
                   </a>
-                  <span className="shrink-0 text-xs text-neutral-400">
+                  <span className="shrink-0 pl-2 font-mono text-xs tabular-nums text-[#5B6069]">
                     {formatBytes(f.sizeBytes)}
                   </span>
                 </li>

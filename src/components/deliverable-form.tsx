@@ -56,11 +56,15 @@ export function DeliverableForm({
             />
           </Field>
 
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {error ? (
+            <p role="alert" className="text-sm text-[#8C2F23]">
+              {error}
+            </p>
+          ) : null}
 
           <div className="flex flex-wrap items-center gap-3">
             <button
-              className={buttonPrimary}
+              className={`${buttonPrimary} min-h-11 sm:min-h-0`}
               disabled={isPending}
               onClick={() =>
                 start(async () => {
@@ -81,8 +85,8 @@ export function DeliverableForm({
             >
               {isPending ? "Sending…" : "Send for review"}
             </button>
-            <span className="text-xs text-neutral-400">
-              The operator reviews it before the client sees anything.
+            <span className="text-xs leading-relaxed text-[#5B6069]">
+              The operator reviews every delivery before it reaches the client.
             </span>
           </div>
         </div>

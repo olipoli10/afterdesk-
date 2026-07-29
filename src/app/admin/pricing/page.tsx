@@ -31,32 +31,34 @@ export default async function PricingQueuePage() {
         sub={`${queue.length} task${queue.length > 1 ? "s" : ""} waiting — sorted by urgency. Open the first one and work down with Approve & next.`}
       />
       <Card>
-        <div className="divide-y divide-neutral-100">
+        <div className="divide-y divide-[#14161A]/[0.06]">
           {queue.map((t, i) => (
             <Link
               key={t.id}
               href={`/admin/pricing/${t.id}`}
-              className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-neutral-50"
+              className="flex items-center justify-between gap-4 px-4 py-3 transition-colors duration-150 hover:bg-[#14161A]/[0.02]"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="w-6 shrink-0 text-right text-xs tabular-nums text-neutral-300">
+                <span className="w-6 shrink-0 text-right font-mono text-xs tabular-nums text-[#5B6069]">
                   {i + 1}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-neutral-900">{t.title}</p>
-                  <p className="mt-0.5 text-xs text-neutral-400">
-                    {t.client.name} · {t._count.files} file{t._count.files === 1 ? "" : "s"} ·
-                    submitted <LocalTime iso={t.createdAt} dateStyle="short" />
+                  <p className="truncate text-sm font-medium text-[#14161A]">{t.title}</p>
+                  <p className="mt-0.5 text-xs text-[#5B6069]">
+                    {t.client.name} ·{" "}
+                    <span className="font-mono tabular-nums">{t._count.files}</span> file
+                    {t._count.files === 1 ? "" : "s"} · submitted{" "}
+                    <LocalTime iso={t.createdAt} dateStyle="short" />
                   </p>
                 </div>
               </div>
               <div className="shrink-0 text-right">
                 {t.clientDeadlineUtc ? (
-                  <p className="text-xs font-medium text-neutral-700">
+                  <p className="text-xs font-medium text-[#14161A]">
                     Client deadline: <LocalTime iso={t.clientDeadlineUtc} dateStyle="short" />
                   </p>
                 ) : (
-                  <p className="text-xs text-neutral-400">No deadline</p>
+                  <p className="text-xs text-[#5B6069]">No deadline</p>
                 )}
               </div>
             </Link>

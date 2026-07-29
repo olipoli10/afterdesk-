@@ -14,6 +14,15 @@ export const googleEnabled = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
 );
 
+// Fail fast: without a secret, Better Auth falls back to a known development
+// default — every session cookie guarding admin, pricing and QC would be
+// forgeable. A misconfigured deploy must crash at boot, not serve traffic.
+if (process.env.NODE_ENV === "production" && !process.env.BETTER_AUTH_SECRET) {
+  throw new Error(
+    "BETTER_AUTH_SECRET must be set in production. Refusing to start with the default development secret."
+  );
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   secret: process.env.BETTER_AUTH_SECRET,
@@ -81,6 +90,14 @@ export const auth = betterAuth({
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-up/email": { window: 300, max: 5 },
       "/email-otp/verify-email": { window: 300, max: 10 },
+      // Email-SENDING endpoints, throttled hard per IP so that the moment a
+      // mail provider is configured they cannot be used to bomb an arbitrary
+      // inbox (or burn provider spend). Dormant until RESEND_API_KEY is set.
+      "/email-otp/send-verification-otp": { window: 3600, max: 5 },
+      "/email-otp/request-password-reset": { window: 3600, max: 5 },
+      // Deprecated alias of request-password-reset — still routable, so it
+      // gets the same rule.
+      "/forget-password/email-otp": { window: 3600, max: 5 },
     },
   },
   // No cookieCache: role/status checks must always hit the database so a

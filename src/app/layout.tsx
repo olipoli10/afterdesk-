@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,8 +14,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Second Shift",
-  description: "Any task, described in plain English, done by a vetted specialist and checked before it reaches you.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Second Shift — Describe any task, get it back done by morning",
+    template: "%s · Second Shift",
+  },
+  description:
+    "Research, data, writing, spreadsheets, transcription, admin — described in plain English, priced fixed before anything starts, done overnight by a vetted specialist and reviewed before it reaches you.",
+  openGraph: {
+    siteName: "Second Shift",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0B0D",
 };
 
 export default function RootLayout({
