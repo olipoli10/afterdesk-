@@ -10,6 +10,9 @@ import { LiveTaskWindow } from "@/components/live-task-window";
 import { LiveOvernightDiff } from "@/components/live-overnight-diff";
 import { PointerGlow } from "@/components/pointer-glow";
 import { LangSwitch } from "@/components/lang-switch";
+import { PaperLedgerScan } from "@/components/paper-ledger-scan";
+import { PaperInstrument } from "@/components/paper-instrument";
+import { PaperReviewDesk } from "@/components/paper-review-desk";
 import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -61,6 +64,26 @@ export default async function Home({
       <span className="opacity-50">/06</span> · {label}
     </>
   );
+  /* On the paper half the chapter number is a drawing number: it grows a
+     leader line out to the plate edge, the way a plate is called out on a
+     drawing set. Zero words, all structure. */
+  const plateCh = (n: string, label: string) => (
+    <p className="mb-3 flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+      <span className="whitespace-nowrap">{ch(n, label)}</span>
+      <i aria-hidden className="chapter-leader" />
+    </p>
+  );
+  /* The published range is COMPUTED from the rows that are actually shown —
+     never typed by hand, so it can never drift from the evidence above it.
+     The rows themselves are guarded against colliding with the worker page
+     (see the note in src/lib/i18n/client.ts), which is what keeps the margin
+     underivable across the two pages. */
+  const amounts = t.ch03.rows
+    .map(([, , price]) => Number(price.replace(/[^0-9.]/g, "")))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const ledgerRange = amounts.length
+    ? `$${Math.min(...amounts)}–$${Math.max(...amounts)}`
+    : "";
 
   return (
     /* lang on the subtree: the root <html> is en, and screen readers must
@@ -227,160 +250,175 @@ export default async function Home({
         </div>
       </section>
 
-      {/* ── THE LEDGER (paper) ────────────────────────────────────────── */}
+      {/* ── 03/06 THE INDEX PLATE (paper) ─────────────────────────────
+             The flat table becomes a printed bill of materials that scans
+             itself: nothing carries a price until the operator passes over
+             it. The range under it is computed from the rows above it. */}
       <section className="relative overflow-hidden bg-[#F7F6F3]">
         <PointerGlow tone="paper" />
-        <div className="relative mx-auto w-full max-w-[880px] px-6 py-24">
-          <Reveal>
-            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              {ch("03", t.ch03.label)}
-            </p>
-            <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-              {t.ch03.h2}
-            </h2>
-            <div className="mt-8">
-              {t.ch03.rows.map(([tag, task, price]) => (
-                <div
-                  key={task}
-                  className="srow group flex items-baseline gap-4 border-b border-black/8 py-[15px] transition-colors hover:bg-black/[0.02] sm:gap-6"
-                >
-                  <span className="w-[86px] shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-[#5B6069]">
-                    {tag}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[14px] text-[#14161A]">
-                    {task}
-                  </span>
-                  <span className="shrink-0 font-mono text-[13px] tabular-nums text-[#166049]">
-                    {price}
-                  </span>
-                </div>
-              ))}
+        <div className="relative mx-auto w-full max-w-[920px] px-4 py-16 sm:px-6 sm:py-24">
+          <Reveal replay>
+            <div className="plate px-5 py-10 sm:px-9 sm:py-12">
+              {plateCh("03", t.ch03.label)}
+              <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+                {t.ch03.h2}
+              </h2>
+              <PaperLedgerScan
+                rows={t.ch03.rows}
+                note={t.ch03.note}
+                range={ledgerRange}
+              />
             </div>
-            <p className="mt-4 font-mono text-[11px] text-[#5B6069]">{t.ch03.caption}</p>
           </Reveal>
         </div>
       </section>
 
-      {/* ── THE NIGHT BAND (paper) ────────────────────────────────────── */}
+      {/* ── 04/06 THE INSTRUMENT (paper) ──────────────────────────────
+             The decorative sweep is retired. The band becomes a measured
+             24-hour ruler with a needle at the real New York clock, and the
+             four stations light only while the needle is inside them — with
+             an explicit idle state, because a lit station would otherwise
+             imply work is underway when it is not. */}
       <section className="relative overflow-hidden border-t border-black/8 bg-[#F7F6F3]">
         <PointerGlow tone="paper" />
-        <div className="relative mx-auto w-full max-w-[1120px] px-6 py-24">
-          <Reveal>
-            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              {ch("04", t.ch04.label)}
-            </p>
-            <h2 className="mb-2 text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-              {t.ch04.h2}
-            </h2>
-            <p className="mb-8 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">
-              {t.ch04.sub}
-            </p>
-            <div className="space-y-4">
-              {[
-                { label: t.ch04.barYours, lit: (h: number) => h >= 8 && h <= 17 },
-                {
-                  label: t.ch04.barTheirs,
-                  // 8 AM–5 PM Manila shifted 12h onto the New York clock.
-                  lit: (h: number) => h >= 20 || h <= 5,
-                },
-              ].map((row) => (
-                <div key={row.label}>
-                  <p className="mb-1.5 text-[13px] font-medium text-[#14161A]">{row.label}</p>
-                  <div className="relative grid grid-cols-[repeat(24,minmax(0,1fr))] gap-px overflow-hidden rounded bg-black/8">
-                    {Array.from({ length: 24 }, (_, i) => (
-                      <span
-                        key={i}
-                        className={`h-8 ${row.lit(i) ? "bg-[#14161A]" : "bg-[#1B2740]/15"}`}
-                      />
-                    ))}
-                    {/* the same "now" sweeping both cities at once */}
-                    <span
-                      aria-hidden
-                      className="band-sweep absolute inset-y-0 left-0 w-[3px] bg-[#F7F6F3] mix-blend-difference"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {t.ch04.steps.map(([time, text]) => (
-                <div key={time} className="srow">
-                  <p className="font-mono text-[11px] tabular-nums text-[#5B6069]">{time}</p>
-                  <p className="mt-1 text-[15px] leading-snug text-[#14161A]">{text}</p>
-                </div>
-              ))}
+        <div className="relative mx-auto w-full max-w-[1120px] px-4 py-16 sm:px-6 sm:py-24">
+          <Reveal replay>
+            <div className="plate px-5 py-10 sm:px-9 sm:py-12">
+              {plateCh("04", t.ch04.label)}
+              <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+                {t.ch04.h2}
+              </h2>
+              <PaperInstrument
+                laneYou={t.ch04.laneYou}
+                laneThem={t.ch04.laneThem}
+                note={t.ch04.note}
+                steps={t.ch04.steps}
+              />
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ── TERMS (paper) ─────────────────────────────────────────────── */}
-      <section className="border-t border-black/8 bg-[#F7F6F3]">
-        <div className="mx-auto w-full max-w-[880px] px-6 py-24">
-          <Reveal>
-            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              {ch("06", t.ch06.label)}
-            </p>
-            {t.ch06.terms(settings.retentionDays).map(([label, text]) => (
-              <div
-                key={label}
-                className="srow grid gap-2 border-b border-black/8 py-5 sm:grid-cols-[140px_1fr] sm:gap-6"
-              >
-                <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-[#5B6069]">
-                  {label}
-                </span>
-                <span className="text-[16px] leading-relaxed text-[#14161A]">{text}</span>
-              </div>
-            ))}
-          </Reveal>
-        </div>
-      </section>
+      {/* ── 05/06 THE SECTION CUT (paper) ─────────────────────────────
+             The artifact demonstrates the review; the wall states the rule.
+             THERE and HERE are drawn as an architectural section with a 45°
+             hatched OPERATOR band between them: facing statements arrive
+             from their own side, decelerate, and stop dead at the hatch.
+             Nothing crosses it — that used to be a sentence, and the
+             sentence is now deleted because the picture says it. */}
+      <section className="relative overflow-hidden border-t border-black/8 bg-[#F7F6F3]">
+        <div className="relative mx-auto w-full max-w-[920px] px-4 py-16 sm:px-6 sm:py-24">
+          <Reveal replay>
+            <div className="plate px-5 py-10 sm:px-9 sm:py-12">
+              {plateCh("05", t.ch05.label)}
+              <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+                {t.ch05.h2}
+              </h2>
 
-      {/* ── THE DIFFERENCE (paper) — who we are, why this and not a
-             freelance marketplace ───────────────────────────────────── */}
-      <section className="border-t border-black/8 bg-[#F7F6F3]">
-        <div className="mx-auto w-full max-w-[880px] px-6 py-24">
-          <Reveal>
-            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              {ch("05", t.ch05.label)}
-            </p>
-            <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-              {t.ch05.h2}
-            </h2>
-            <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-[#5B6069]">
-              {t.ch05.body}
-            </p>
-            <div className="mt-8">
-              <div className="mb-2 hidden grid-cols-2 gap-6 md:grid">
-                <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#5B6069]">
-                  {t.ch05.there}
-                </span>
-                <span className="w-fit rounded border border-[#1E7F5C]/40 bg-[#1E7F5C]/10 px-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#166049]">
-                  {t.ch05.here}
-                </span>
-              </div>
-              {t.ch05.pairs.map(([there, here]) => (
+              <PaperReviewDesk caption={t.ch05.desk} />
+
+              <div className="mt-12">
+                <div className="mb-2 hidden grid-cols-[1fr_2.75rem_1fr] md:grid">
+                  <span className="pr-5 text-right font-mono text-[10px] uppercase tracking-[0.16em] text-[#5B6069]">
+                    {t.ch05.there}
+                  </span>
+                  <span aria-hidden />
+                  <span className="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#5B6069]">
+                    {t.ch05.here}
+                  </span>
+                </div>
+
+                {/* mobile: the wall, stated once, above the stacked pairs */}
                 <div
-                  key={there}
-                  className="srow grid gap-2 border-b border-black/8 py-4 md:grid-cols-2 md:gap-6"
+                  aria-hidden
+                  className="hatch flex h-8 items-center justify-center md:hidden"
                 >
-                  <p className="text-[14px] leading-relaxed text-[#5B6069]">{there}</p>
-                  <p className="text-[14px] leading-relaxed text-[#14161A] md:border-l md:border-black/10 md:pl-6">
-                    {here}
-                  </p>
+                  <span className="bg-[#F7F6F3] px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B6069]">
+                    {t.ch05.wall}
+                  </span>
                 </div>
-              ))}
+
+                <div className="relative">
+                  {/* the wall itself — one hatched band, full height */}
+                  <div
+                    aria-hidden
+                    className="hatch absolute inset-y-0 left-1/2 hidden w-[2.75rem] -translate-x-1/2 items-center justify-center md:flex"
+                  >
+                    <span className="hatch-label bg-[#F7F6F3] px-1 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B6069]">
+                      {t.ch05.wall}
+                    </span>
+                  </div>
+
+                  {t.ch05.pairs.map(([there, here]) => (
+                    <div
+                      key={there}
+                      className="cut-row grid items-center border-b border-black/8 py-4 md:grid-cols-[1fr_2.75rem_1fr]"
+                    >
+                      <p className="arrive-l text-[14px] leading-relaxed text-[#5B6069] md:pr-5 md:text-right">
+                        {there}
+                      </p>
+                      <span aria-hidden className="hatch my-3 block h-3 md:my-0 md:hidden" />
+                      <span aria-hidden className="hidden md:block" />
+                      <p className="arrive-r text-[14px] leading-relaxed text-[#14161A] md:pl-5">
+                        {here}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ── CLOSING (paper page, ink block) ───────────────────────────── */}
-      <section className="bg-[#F7F6F3] pb-16">
-        <div className="mx-auto w-full max-w-[880px] px-6">
+      {/* ── 06/06 GENERAL NOTES (paper) ───────────────────────────────
+             The notes block every real drawing ends with, and deliberately
+             the stillest thing on the page: calm reads as honest, and this
+             is the candour block. A clause renders only where the setting
+             behind it exists — no placeholders, no invented numbers. */}
+      <section className="border-t border-black/8 bg-[#F7F6F3]">
+        <div className="mx-auto w-full max-w-[920px] px-4 py-16 sm:px-6 sm:py-24">
           <Reveal>
-            <div className="relative overflow-hidden rounded-2xl bg-[#0A0B0D] px-6 py-16 text-center">
+            <div className="plate px-5 py-10 sm:px-9 sm:py-12">
+              {plateCh("06", t.ch06.label)}
+              <div className="notes-box mt-7 px-5 py-8 sm:px-7">
+                <span className="absolute -top-2 left-5 bg-[#F7F6F3] px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B6069]">
+                  {t.ch06.notes}
+                </span>
+                {t.ch06.terms(settings.retentionDays).map(([label, text], i) => (
+                  <div
+                    key={label}
+                    className="grid grid-cols-[2.25rem_1fr] items-baseline border-b border-black/8 py-4 last:border-0 last:pb-0"
+                  >
+                    <span className="font-mono text-[11px] tabular-nums text-[#5B6069]">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#14161A]">
+                        {label}
+                      </span>
+                      <p className="mt-1 max-w-[62ch] text-[15px] leading-[1.65] text-[#14161A]">
+                        {text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── CLOSING — the sheet is trimmed, the night resumes ──────────
+             The paper half ends on a real trim edge with crop marks instead
+             of just stopping, and the ink block inherits the same drafting
+             frame inverted: paper-coloured corner ticks, a white hairline
+             grid. Green stays money-only — it never touches this CTA. */}
+      <section className="bg-[#F7F6F3] pb-16">
+        <div className="mx-auto w-full max-w-[920px] px-4 sm:px-6">
+          <div aria-hidden className="trim-line mb-12 hidden sm:block" />
+          <Reveal>
+            <div className="plate plate--ink relative overflow-hidden bg-[#0A0B0D] px-6 py-16 text-center">
               <div
                 aria-hidden
                 className="hero-glow glow-dusk pointer-events-none absolute -top-24 left-1/2 h-[360px] w-[600px] -translate-x-1/2"

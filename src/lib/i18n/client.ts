@@ -29,26 +29,45 @@ type Dict = {
   ch03: {
     label: string;
     h2: string;
+    /** Illustrative examples. HARD RULE: neither an amount nor a task domain
+     *  here may appear in the worker page's pool (src/app/workers/page.tsx —
+     *  $38/$48/$54/$66/$72/$120, tickets/addresses/zoning/order forms/
+     *  receipts/statements). If the two sets ever meet, the margin becomes
+     *  derivable across the two pages. The published range below is computed
+     *  from these rows, so it inherits the same rule. */
     rows: [string, string, string][];
-    caption: string;
+    /** Honesty label under the computed range. Translated on purpose: a
+     *  label nobody can read is not a disclosure. */
+    note: string;
   };
   ch04: {
     label: string;
     h2: string;
-    sub: string;
-    barYours: string;
-    barTheirs: string;
+    laneYou: string;
+    laneThem: string;
+    /** The only DST-honest phrasing of the offset. The live needle makes it
+     *  load-bearing: the lane actually shifts by an hour in winter. */
+    note: string;
     steps: [string, string][];
   };
   ch05: {
     label: string;
     h2: string;
-    body: string;
+    /** Vertical label on the hatched operator wall. */
+    wall: string;
+    /** Caption above the review artifact — EXAMPLE, outside the artifact. */
+    desk: string;
     there: string;
     here: string;
     pairs: [string, string][];
   };
-  ch06: { label: string; terms: (retentionDays: number) => [string, string][] };
+  ch06: {
+    label: string;
+    notes: string;
+    /** A clause renders only when the setting behind it exists — no
+     *  placeholders, no invented numbers. */
+    terms: (retentionDays: number | null) => [string, string][];
+  };
   footer: { how: string; signIn: string; work: string };
 };
 
@@ -85,14 +104,14 @@ const en: Dict = {
       ["RESEARCH", "5 competitors' pricing pages, one sheet", "$95"],
       ["DOCS", "90-page proposal rebuilt in our template", "$75"],
     ],
-    caption: "Illustrative tasks. Every price fixed, approved first.",
+    note: "ILLUSTRATIVE — NOT A RATE CARD ·",
   },
   ch04: {
     label: "The night",
     h2: "Your night is their working day.",
-    sub: "Your team stops at 5 PM. Theirs starts, twelve hours ahead.",
-    barYours: "Your working hours — New York",
-    barTheirs: "Their working hours — Manila, 12 hours ahead",
+    laneYou: "New York",
+    laneThem: "Manila",
+    note: "Manila runs 12 hours ahead of New York (13 in winter)",
     steps: [
       ["6:41 PM", "You describe the task."],
       ["7:15 PM", "One fixed price. You approve it."],
@@ -103,7 +122,8 @@ const en: Dict = {
   ch05: {
     label: "The operator",
     h2: "One professional between you and the work.",
-    body: "Run by an operator, not an algorithm. One professional prices, matches and reviews every task.",
+    wall: "Operator",
+    desk: "Example — one review pass",
     there: "There",
     here: "Here",
     pairs: [
@@ -115,11 +135,16 @@ const en: Dict = {
   },
   ch06: {
     label: "The terms",
+    notes: "General notes",
     terms: (retentionDays) => [
       ["PRICE", "One fixed price, approved before anything starts."],
       ["REVIEW", "Every delivery is reviewed before you see it."],
       ["IDENTITY", "You never meet the worker. That's the point."],
-      ["DATA", `Access ends with the task. Files purged after ${retentionDays} days.`],
+      ...(retentionDays
+        ? ([
+            ["DATA", `Access ends with the task. Files purged after ${retentionDays} days.`],
+          ] as [string, string][])
+        : []),
       ["REFUSALS", "Some tasks we turn down."],
     ],
   },
@@ -160,14 +185,14 @@ const fr: Dict = {
       ["RECHERCHE", "5 pages de prix concurrentes, une feuille", "$95"],
       ["DOCS", "Proposition de 90 pages refaite au gabarit", "$75"],
     ],
-    caption: "Tâches à titre d'exemple. Chaque prix fixe, approuvé d'abord.",
+    note: "À TITRE D'EXEMPLE — PAS UNE GRILLE DE PRIX ·",
   },
   ch04: {
     label: "La nuit",
     h2: "Votre nuit est leur journée de travail.",
-    sub: "Votre équipe arrête à 17 h. La leur commence, douze heures devant.",
-    barYours: "Vos heures de travail — New York",
-    barTheirs: "Leurs heures — Manille, 12 heures devant",
+    laneYou: "New York",
+    laneThem: "Manille",
+    note: "Manille a 12 heures d'avance sur New York (13 en hiver)",
     steps: [
       ["6:41 PM", "Vous décrivez la tâche."],
       ["7:15 PM", "Un prix fixe. Vous l'approuvez."],
@@ -178,7 +203,8 @@ const fr: Dict = {
   ch05: {
     label: "L'opérateur",
     h2: "Un professionnel entre vous et le travail.",
-    body: "Dirigé par un opérateur, pas un algorithme. Une personne fixe le prix, choisit qui fait le travail et vérifie tout.",
+    wall: "Opérateur",
+    desk: "Exemple — une passe de vérification",
     there: "Là-bas",
     here: "Ici",
     pairs: [
@@ -199,11 +225,19 @@ const fr: Dict = {
   },
   ch06: {
     label: "Les conditions",
+    notes: "Notes générales",
     terms: (retentionDays) => [
       ["PRIX", "Un prix fixe, approuvé avant que ça commence."],
       ["CONTRÔLE", "Chaque livraison est vérifiée avant que vous la voyiez."],
       ["IDENTITÉ", "Vous ne rencontrez jamais le travailleur. C'est le principe."],
-      ["DONNÉES", `L'accès finit avec la tâche. Fichiers purgés après ${retentionDays} jours.`],
+      ...(retentionDays
+        ? ([
+            [
+              "DONNÉES",
+              `L'accès finit avec la tâche. Fichiers purgés après ${retentionDays} jours.`,
+            ],
+          ] as [string, string][])
+        : []),
       ["REFUS", "Certaines tâches, on les refuse."],
     ],
   },
@@ -244,14 +278,14 @@ const es: Dict = {
       ["INVESTIGACIÓN", "5 páginas de precios de la competencia, una hoja", "$95"],
       ["DOCS", "Propuesta de 90 páginas rehecha en tu plantilla", "$75"],
     ],
-    caption: "Tareas de ejemplo. Cada precio fijo, aprobado primero.",
+    note: "ILUSTRATIVO — NO ES UNA LISTA DE PRECIOS ·",
   },
   ch04: {
     label: "La noche",
     h2: "Tu noche es su jornada de trabajo.",
-    sub: "Tu equipo para a las 5 PM. El suyo empieza, doce horas por delante.",
-    barYours: "Tu horario de trabajo — Nueva York",
-    barTheirs: "Su horario — Manila, 12 horas por delante",
+    laneYou: "Nueva York",
+    laneThem: "Manila",
+    note: "Manila va 12 horas por delante de Nueva York (13 en invierno)",
     steps: [
       ["6:41 PM", "Describes la tarea."],
       ["7:15 PM", "Un precio fijo. Lo apruebas."],
@@ -262,7 +296,8 @@ const es: Dict = {
   ch05: {
     label: "El operador",
     h2: "Un profesional entre tú y el trabajo.",
-    body: "Dirigido por un operador, no un algoritmo. Una persona pone el precio, asigna y revisa cada tarea.",
+    wall: "Operador",
+    desk: "Ejemplo — una pasada de revisión",
     there: "Allá",
     here: "Aquí",
     pairs: [
@@ -280,11 +315,19 @@ const es: Dict = {
   },
   ch06: {
     label: "Las condiciones",
+    notes: "Notas generales",
     terms: (retentionDays) => [
       ["PRECIO", "Un precio fijo, aprobado antes de empezar."],
       ["REVISIÓN", "Cada entrega se revisa antes de que la veas."],
       ["IDENTIDAD", "Nunca conoces al trabajador. Ese es el punto."],
-      ["DATOS", `El acceso termina con la tarea. Archivos purgados a los ${retentionDays} días.`],
+      ...(retentionDays
+        ? ([
+            [
+              "DATOS",
+              `El acceso termina con la tarea. Archivos purgados a los ${retentionDays} días.`,
+            ],
+          ] as [string, string][])
+        : []),
       ["RECHAZOS", "Algunas tareas las rechazamos."],
     ],
   },

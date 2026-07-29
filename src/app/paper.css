@@ -1,0 +1,427 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   THE DRAWING SET — the paper half of the client homepage.
+
+   The night half shows the machine RUNNING. This half shows it SPECIFIED:
+   every paper section is a plate on a drafting table. Depth is a two-tier
+   drafting grid, one pre-baked stock texture, hairlines, and exactly ONE
+   shadow tier for artifacts. Daylight stays daylight.
+
+   HARD LAWS OBSERVED HERE (do not "clean up"):
+   - Motion is transform + opacity ONLY. There is not one `filter:` in this
+     file. A blurred element that moves forces a gaussian re-raster every
+     frame and dropped this page to ~20fps once already.
+   - `.cast` box-shadows are PAINTED ONCE and only ever translated/faded.
+     Never transition a box-shadow VALUE.
+   - Everything that moves lives inside @media (prefers-reduced-motion:
+     no-preference). The static frame is always the complete, readable one.
+   - Smallest text on paper is #5B6069. #767C86 / #9AA1AB are decorative
+     hairline inks here, never type below 18px.
+   - No `scroll-behavior: smooth`. It was removed for notch-scrolling.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── THE PLATE ──────────────────────────────────────────────────────────
+   Substrate for every paper section: a pre-baked cotton-stock texture (a
+   static data-URI, rasterized once by the browser — never a live filter on
+   a live element) under a two-tier engineering grid (8px fine, 64px heavy),
+   inside an inset plate border with four corner ticks.
+   Grid ink stays <= 3.5% under body copy per the readability law.
+   ─────────────────────────────────────────────────────────────────────── */
+.plate {
+  --tick: rgba(20, 22, 26, 0.3);
+  --rule: rgba(20, 22, 26, 0.1);
+  position: relative;
+  border: 1px solid var(--rule);
+  background-image:
+    linear-gradient(rgba(20, 22, 26, 0.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 22, 26, 0.026) 1px, transparent 1px),
+    linear-gradient(rgba(20, 22, 26, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 22, 26, 0.045) 1px, transparent 1px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23s)' opacity='0.35'/%3E%3C/svg%3E");
+  background-size:
+    8px 8px,
+    8px 8px,
+    64px 64px,
+    64px 64px,
+    180px 180px;
+}
+/* The four corner ticks: eight hairline gradients on one pseudo-element,
+   so a plate costs zero extra DOM nodes. */
+.plate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-image:
+    linear-gradient(var(--tick), var(--tick)), linear-gradient(var(--tick), var(--tick)),
+    linear-gradient(var(--tick), var(--tick)), linear-gradient(var(--tick), var(--tick)),
+    linear-gradient(var(--tick), var(--tick)), linear-gradient(var(--tick), var(--tick)),
+    linear-gradient(var(--tick), var(--tick)), linear-gradient(var(--tick), var(--tick));
+  background-size:
+    11px 1px, 1px 11px,
+    11px 1px, 1px 11px,
+    11px 1px, 1px 11px,
+    11px 1px, 1px 11px;
+  background-position:
+    left top, left top,
+    right top, right top,
+    left bottom, left bottom,
+    right bottom, right bottom;
+}
+/* Inverted for the closing ink block: same component, paper-coloured ticks. */
+.plate--ink {
+  --tick: rgba(247, 246, 243, 0.28);
+  --rule: rgba(247, 246, 243, 0.12);
+  background-image:
+    linear-gradient(rgba(247, 246, 243, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 246, 243, 0.03) 1px, transparent 1px),
+    linear-gradient(rgba(247, 246, 243, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 246, 243, 0.04) 1px, transparent 1px);
+  background-size:
+    8px 8px,
+    8px 8px,
+    64px 64px,
+    64px 64px;
+}
+
+/* The chapter number grows a leader line toward the plate edge, the way a
+   drawing number points at its plate. */
+.chapter-leader {
+  display: block;
+  height: 1px;
+  flex: 1 1 auto;
+  background: rgba(20, 22, 26, 0.14);
+  transform-origin: left center;
+}
+.chapter-leader--ink {
+  background: rgba(247, 246, 243, 0.18);
+}
+
+/* ── DEPTH LAW ──────────────────────────────────────────────────────────
+   Exactly one shadow tier for artifacts (`.cast`) and one whisper tier for
+   rows (`.cast-row`). Everything else on paper is a 1px ink-alpha hairline.
+   Both are painted once on a pseudo-element and only ever transformed.
+   ─────────────────────────────────────────────────────────────────────── */
+.cast {
+  position: relative;
+}
+.cast::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    0 1px 0 rgba(20, 22, 26, 0.06),
+    0 18px 40px -28px rgba(20, 22, 26, 0.38);
+}
+
+/* ── LEDGER PLATE (03/06) ───────────────────────────────────────────────
+   A printed bill of materials: mono row numbers, dot leaders, fixed prices.
+   ─────────────────────────────────────────────────────────────────────── */
+.ledger {
+  --rowh: 62px;
+  position: relative;
+}
+@media (min-width: 640px) {
+  .ledger {
+    --rowh: 44px;
+  }
+}
+.ledger-row {
+  height: var(--rowh);
+  border-bottom: 1px solid rgba(20, 22, 26, 0.09);
+}
+/* The margin rule that goes ink under the pointer. */
+.ledger-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(20, 22, 26, 0.16);
+  opacity: 0;
+  transform-origin: center top;
+}
+.dotleader {
+  flex: 1 1 auto;
+  min-width: 1.25rem;
+  height: 1px;
+  margin: 0 0.75rem;
+  align-self: center;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(20, 22, 26, 0.26) 0 1px,
+    transparent 1px 5px
+  );
+}
+/* The scanning cursor: ONE 1px element, moved by translate3d only. */
+.ledger-cursor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--rowh);
+  pointer-events: none;
+  border-top: 1px solid rgba(20, 22, 26, 0.18);
+  border-bottom: 1px solid rgba(20, 22, 26, 0.18);
+  transform: translate3d(0, 0, 0);
+}
+.ledger-cursor::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  bottom: -1px;
+  width: 2px;
+  background: rgba(20, 22, 26, 0.45);
+}
+/* The price is uncovered by a solid paper block sliding off it — a mask
+   that is a transform, never a clip-path and never a filter. */
+.price-cover {
+  position: absolute;
+  inset: -3px -2px;
+  background: #f7f6f3;
+  transform: translate3d(0, 0, 0);
+}
+
+/* ── THE INSTRUMENT (04/06) ─────────────────────────────────────────────
+   A 24-hour ruler read by a needle at the real New York clock.
+   Ticks are two gradients: zero DOM, zero animation.
+   ─────────────────────────────────────────────────────────────────────── */
+.ruler-ticks {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(20, 22, 26, 0.13) 0 1px,
+      transparent 1px calc(100% / 24)
+    ),
+    repeating-linear-gradient(90deg, rgba(20, 22, 26, 0.3) 0 1px, transparent 1px calc(100% / 4));
+}
+/* Full-width carrier: a percentage translate resolves against its OWN
+   width, so 37.5% here is exactly 37.5% of the ruler. */
+.needle-track {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: translate3d(var(--t, 0%), 0, 0);
+}
+.needle-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 2px;
+  background: #14161a;
+}
+/* Leader lines dropping from the ruler down to each station card. */
+.plate-leader {
+  display: block;
+  width: 1px;
+  height: 14px;
+  background: rgba(20, 22, 26, 0.16);
+  transform-origin: top center;
+}
+
+/* ── THE SECTION CUT (05/06) ────────────────────────────────────────────
+   45-degree hatching: the operator wall. Facing statements arrive from
+   either side and stop dead against it. Nothing crosses.
+   ─────────────────────────────────────────────────────────────────────── */
+.hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(20, 22, 26, 0.055) 0 1px,
+    transparent 1px 6px
+  );
+  border-left: 1px solid rgba(20, 22, 26, 0.15);
+  border-right: 1px solid rgba(20, 22, 26, 0.15);
+}
+.hatch-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+@media (max-width: 767px) {
+  .hatch {
+    border-left: 0;
+    border-right: 0;
+    border-top: 1px solid rgba(20, 22, 26, 0.15);
+    border-bottom: 1px solid rgba(20, 22, 26, 0.15);
+  }
+  .hatch-label {
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+}
+
+/* ── GENERAL NOTES (06/06) ──────────────────────────────────────────────
+   The notes block every real drawing ends with. Deliberately still: calm
+   reads as honest, and this is the candour block.
+   ─────────────────────────────────────────────────────────────────────── */
+.notes-box {
+  position: relative;
+  border: 1px solid rgba(20, 22, 26, 0.14);
+}
+
+/* ── THE TRIM (paper → night) ───────────────────────────────────────────
+   The sheet gets a real edge instead of just stopping.
+   ─────────────────────────────────────────────────────────────────────── */
+.trim-line {
+  position: relative;
+  height: 1px;
+  border-top: 1px dashed #c9c5bd;
+}
+.trim-line::before,
+.trim-line::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  width: 1px;
+  height: 13px;
+  background: #9aa1ab;
+}
+.trim-line::before {
+  left: 0;
+}
+.trim-line::after {
+  right: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOTION. Three verbs, all compositor-only:
+     LINES DRAW      scaleX / scaleY from 0 with an explicit origin
+     THINGS LAND     the existing .stamp-in
+     THINGS ARRIVE   translate + opacity, ease-out, decelerating into place
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: no-preference) {
+  /* LINES DRAW — chapter leaders and station leaders, replayed by <Reveal>. */
+  .reveal-armed .chapter-leader,
+  .reveal-armed .plate-leader {
+    transform: scaleX(0);
+    transition: transform 0.42s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal-armed .plate-leader {
+    transform: scaleY(0);
+  }
+  .reveal-armed.is-visible .chapter-leader {
+    transform: scaleX(1);
+    transition-delay: 0.1s;
+  }
+  .reveal-armed.is-visible .plate-leader {
+    transform: scaleY(1);
+  }
+  .reveal-armed.is-visible .plate-leader:nth-child(1) { transition-delay: 0.08s; }
+  .reveal-armed.is-visible .plate-leader:nth-child(2) { transition-delay: 0.16s; }
+
+  /* LANDING — the one shadow tier contracts from soft/large to tight as the
+     artifact rises. The shadow is painted once; only transform and opacity
+     move, so the swing costs no repaint. */
+  .reveal-armed .cast::after {
+    opacity: 0.25;
+    transform: scale(1.03) translate3d(0, 10px, 0);
+    transition:
+      opacity 0.62s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.62s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal-armed.is-visible .cast::after {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* THINGS ARRIVE AND STOP — the section-cut rows decelerate into the
+     operator wall from their own side. Ease-out only: the deceleration IS
+     the rule being stated. */
+  .reveal-armed .arrive-l,
+  .reveal-armed .arrive-r {
+    opacity: 0;
+    transition:
+      opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.38s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal-armed .arrive-l { transform: translate3d(-12px, 0, 0); }
+  .reveal-armed .arrive-r { transform: translate3d(12px, 0, 0); }
+  .reveal-armed.is-visible .arrive-l,
+  .reveal-armed.is-visible .arrive-r {
+    opacity: 1;
+    transform: none;
+  }
+  /* The wall is the first child of the cut, so the rows start at 2. */
+  .reveal-armed.is-visible .cut-row:nth-child(2) .arrive-l,
+  .reveal-armed.is-visible .cut-row:nth-child(2) .arrive-r { transition-delay: 0.06s; }
+  .reveal-armed.is-visible .cut-row:nth-child(3) .arrive-l,
+  .reveal-armed.is-visible .cut-row:nth-child(3) .arrive-r { transition-delay: 0.12s; }
+  .reveal-armed.is-visible .cut-row:nth-child(4) .arrive-l,
+  .reveal-armed.is-visible .cut-row:nth-child(4) .arrive-r { transition-delay: 0.18s; }
+  .reveal-armed.is-visible .cut-row:nth-child(5) .arrive-l,
+  .reveal-armed.is-visible .cut-row:nth-child(5) .arrive-r { transition-delay: 0.24s; }
+
+  /* The plate frame snaps into place after the sheet lands. The GENERAL
+     NOTES block below it deliberately never moves — calm reads as honest. */
+  .reveal-armed .plate::before {
+    opacity: 0;
+    transition: opacity 0.3s linear;
+  }
+  .reveal-armed.is-visible .plate::before {
+    opacity: 1;
+    transition-delay: 0.07s;
+  }
+
+  /* THE ONE LOOP'S PIECES — the ledger cursor steps down the index and the
+     paper block slides off each price as it passes. */
+  .ledger-cursor {
+    transition: transform 0.32s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .price-cover {
+    transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .price-cover[data-off="true"] {
+    transform: translate3d(101%, 0, 0);
+  }
+
+  /* THE DESK — ledger rows lift like loose sheets. Compositor only: no
+     background-color transition (that is a repaint), no shadow value
+     change; the whisper shadow is painted at rest and faded in. */
+  .lift-sheet {
+    transition: transform 0.14s ease-out;
+  }
+  .lift-sheet::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 6px 14px -8px rgba(20, 22, 26, 0.28);
+    transition: opacity 0.14s ease-out;
+  }
+  .lift-sheet:hover,
+  .lift-sheet:focus-within {
+    transform: translate3d(0, -1px, 0);
+  }
+  .lift-sheet:hover::after,
+  .lift-sheet:focus-within::after {
+    opacity: 1;
+  }
+  .lift-sheet:hover::before,
+  .lift-sheet:focus-within::before {
+    opacity: 1;
+    background: #14161a;
+  }
+  .ledger-row::before {
+    transition:
+      opacity 0.14s ease-out,
+      background-color 0.14s ease-out;
+  }
+  /* Extension lines only on keyboard focus, per the graft. */
+  .lift-sheet:focus-visible {
+    outline: 1px solid rgba(20, 22, 26, 0.35);
+    outline-offset: 2px;
+  }
+}
+
+/* Coarse pointers get no hover state at all — nothing on this page hides
+   information behind a hover. */
+@media (hover: none) {
+  .lift-sheet::after {
+    display: none;
+  }
+}
