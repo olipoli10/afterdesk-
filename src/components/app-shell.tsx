@@ -20,7 +20,7 @@ export function AppShell({
           <div className="flex items-center gap-7">
             <div className="flex items-baseline gap-2">
               <Link href="/" className="text-[15px] font-semibold tracking-[-0.02em] text-neutral-900">
-                Nightlexicon
+                Second Shift
               </Link>
               <span className="tracking-label text-[10px] font-semibold uppercase text-neutral-400">
                 {areaLabel}

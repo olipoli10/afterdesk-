@@ -78,7 +78,7 @@ export default async function Home() {
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between px-6">
           <span className="font-mono text-[13px] uppercase tracking-[0.22em] text-white">
-            Nightlexicon
+            Second Shift
           </span>
           <div className="flex items-center gap-5">
             <Link
@@ -427,7 +427,7 @@ export default async function Home() {
       <footer className="border-t border-black/8 bg-[#F7F6F3]">
         <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-3 px-6 py-6">
           <span className="font-mono text-[12px] uppercase tracking-[0.22em] text-[#14161A]">
-            Nightlexicon
+            Second Shift
           </span>
           <div className="flex items-center gap-6 text-[13px] text-[#5B6069]">
             <Link href="/login" className="transition-colors hover:text-[#14161A]">

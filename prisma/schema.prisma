@@ -1,4 +1,4 @@
-// Nightlexicon — VA marketplace V1
+// Second Shift — task marketplace V1
 // Postgres. All timestamps UTC. All money in integer cents.
 
 generator client {

@@ -21,7 +21,7 @@ export function AuthShell({
       <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5">
           <Link href="/" className="text-[15px] font-semibold tracking-[-0.02em] text-neutral-900">
-            Nightlexicon
+            Second Shift
           </Link>
           <Link
             href="/"

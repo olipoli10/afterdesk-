@@ -1,8 +1,8 @@
-# Nightlexicon
+# Second Shift
 
-Two-sided platform for outsourced administrative work. Clients submit tasks; VAs
-(Philippines) execute them; a single operator/admin sits between the two sides
-and is the only channel between them.
+Two-sided platform for outsourced task work. Clients submit any task they can
+describe; vetted specialists (and AI, where appropriate) execute it; a single
+operator/admin sits between the two sides and is the only channel between them.
 
 ## Run it locally
 

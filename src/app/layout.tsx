@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nightlexicon",
-  description: "Outsourced administrative work, delivered overnight.",
+  title: "Second Shift",
+  description: "Any task, described in plain English, done by a vetted specialist and checked before it reaches you.",
 };
 
 export default function RootLayout({
