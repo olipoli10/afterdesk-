@@ -102,13 +102,14 @@ export default async function Home() {
       {/* ── HERO ──────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
         {/* ambient glow + film grain */}
+        <div aria-hidden className="night-grid pointer-events-none absolute inset-0" />
         <div
           aria-hidden
-          className="hero-glow pointer-events-none absolute -top-40 left-[8%] h-[520px] w-[760px] rounded-full bg-[#1B2740] blur-[130px]"
+          className="hero-glow glow-dusk pointer-events-none absolute -top-48 left-[2%] h-[640px] w-[900px]"
         />
         <div
           aria-hidden
-          className="glow-drift pointer-events-none absolute right-[5%] top-[30%] h-[380px] w-[520px] rounded-full bg-[#1B2740]/60 blur-[120px]"
+          className="glow-drift glow-dusk pointer-events-none absolute right-[0%] top-[20%] h-[480px] w-[640px]"
         />
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
         <PointerGlow />
@@ -170,7 +171,7 @@ export default async function Home() {
           <div className="relative">
             <div
               aria-hidden
-              className="pointer-events-none absolute -inset-x-10 -inset-y-8 rounded-[32px] bg-[#1B2740]/25 blur-[80px]"
+              className="glow-dusk pointer-events-none absolute -inset-x-24 -inset-y-16"
             />
             <div aria-hidden className="relative">
               <LiveOvernightDiff />
@@ -393,7 +394,7 @@ export default async function Home() {
             <div className="relative overflow-hidden rounded-2xl bg-[#0A0B0D] px-6 py-16 text-center">
               <div
                 aria-hidden
-                className="hero-glow pointer-events-none absolute -top-24 left-1/2 h-[280px] w-[480px] -translate-x-1/2 rounded-full bg-[#1B2740] blur-[110px]"
+                className="hero-glow glow-dusk pointer-events-none absolute -top-24 left-1/2 h-[360px] w-[600px] -translate-x-1/2"
               />
               <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
               <div className="relative">

@@ -173,11 +173,11 @@ export default async function WorkersHome() {
         {/* morning glow: white light with the last of their night at the edge */}
         <div
           aria-hidden
-          className="hero-glow pointer-events-none absolute -top-40 left-[8%] h-[520px] w-[760px] rounded-full bg-white blur-[130px]"
+          className="hero-glow glow-paperlight pointer-events-none absolute -top-48 left-[4%] h-[640px] w-[900px]"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-24 right-[-10%] h-[320px] w-[460px] rounded-full bg-[#1B2740] opacity-[0.07] blur-[120px]"
+          className="glow-dusk pointer-events-none absolute -top-24 right-[-10%] h-[400px] w-[560px] opacity-[0.18]"
         />
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.02]" style={NOISE} />
 
@@ -476,7 +476,7 @@ export default async function WorkersHome() {
         <div className="relative overflow-hidden">
           <div
             aria-hidden
-            className="hero-glow pointer-events-none absolute -top-32 left-1/2 h-[380px] w-[640px] -translate-x-1/2 rounded-full bg-[#1B2740] blur-[130px] opacity-60"
+            className="hero-glow glow-dusk pointer-events-none absolute -top-32 left-1/2 h-[460px] w-[760px] -translate-x-1/2 opacity-60"
           />
           <div className="relative mx-auto w-full max-w-[880px] px-6 py-24">
             <Reveal>

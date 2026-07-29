@@ -28,6 +28,39 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* ────────────────────────────────────────────────────────────────────────
+   Atmosphere primitives — pre-computed radial gradients, NEVER blur()
+   filters: a blurred element that moves forces a gaussian re-raster every
+   frame and drops the page to slideshow framerates. These are flat
+   gradients; animating their transform/opacity stays on the compositor.
+   ──────────────────────────────────────────────────────────────────────── */
+.glow-dusk {
+  background: radial-gradient(
+    closest-side,
+    rgba(27, 39, 64, 0.65) 0%,
+    rgba(27, 39, 64, 0.25) 45%,
+    rgba(27, 39, 64, 0) 72%
+  );
+}
+.glow-paperlight {
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.25) 45%,
+    rgba(255, 255, 255, 0) 72%
+  );
+}
+
+/* The night floor: a faint engineering grid that vanishes into the dark —
+   static image, zero runtime cost. */
+.night-grid {
+  background-image:
+    linear-gradient(rgba(247, 246, 243, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 246, 243, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+}
+
 body {
   background: #ffffff;
   color: #0f172a;
@@ -78,18 +111,52 @@ body {
   }
 
   /* Ambient drift: a second glow slowly wandering the hero — the room
-     breathes even when the visitor does nothing. */
+     breathes even when the visitor does nothing. Compositor-only. */
   .glow-drift {
     animation: nlx-drift 26s ease-in-out infinite alternate;
+    will-change: transform, opacity;
   }
   @keyframes nlx-drift {
     from {
-      transform: translate(0, 0) scale(1);
+      transform: translate3d(0, 0, 0) scale(1);
       opacity: 0.35;
     }
     to {
-      transform: translate(180px, 60px) scale(1.25);
+      transform: translate3d(180px, 60px, 0) scale(1.25);
       opacity: 0.7;
+    }
+  }
+
+  /* A thread of light traveling around the flagship artifact. The rotating
+     element is a plain gradient moved by transform only — GPU-cheap. */
+  .sheen-frame {
+    position: relative;
+    border-radius: 17px;
+    padding: 1px;
+    overflow: hidden;
+  }
+  .sheen-frame::before {
+    content: "";
+    position: absolute;
+    inset: -150%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 300deg,
+      rgba(94, 234, 176, 0.16) 330deg,
+      rgba(247, 246, 243, 0.5) 345deg,
+      rgba(94, 234, 176, 0.16) 352deg,
+      transparent 360deg
+    );
+    animation: nlx-sheen 7s linear infinite;
+    will-change: transform;
+  }
+  @keyframes nlx-sheen {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
     }
   }
 
@@ -153,13 +220,16 @@ body {
     50% { transform: translateX(4px); }
   }
 
-  /* Ambient cue 2: hero glow breathes, very slowly. */
+  /* Ambient cue 2: hero glow breathes, very slowly. Compositor-only —
+     NEVER put a blur() filter on an animated element; that is a full
+     gaussian re-raster per frame and the whole page drops to ~20fps. */
   .hero-glow {
     animation: nlx-breathe 10s ease-in-out infinite alternate;
+    will-change: transform, opacity;
   }
   @keyframes nlx-breathe {
-    from { opacity: 0.45; transform: scale(1); }
-    to { opacity: 0.85; transform: scale(1.18); }
+    from { opacity: 0.45; transform: scale3d(1, 1, 1); }
+    to { opacity: 0.85; transform: scale3d(1.18, 1.18, 1); }
   }
 
   /* The "now" line sweeping across the timezone band. */

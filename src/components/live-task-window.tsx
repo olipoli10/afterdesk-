@@ -109,8 +109,10 @@ export function LiveTaskWindow() {
 
   return (
     <div ref={ref} className="relative">
-      <div className="pointer-events-none absolute -inset-6 rounded-[24px] bg-[#1B2740]/40 blur-[60px]" />
-      <div className="relative overflow-hidden rounded-[16px] border border-white/10 bg-[#111317] shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)]">
+      <div className="glow-dusk pointer-events-none absolute -inset-16" />
+      {/* a thread of light travels the frame — the machine hums */}
+      <div className="sheen-frame relative shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)]">
+      <div className="relative overflow-hidden rounded-[16px] border border-white/10 bg-[#111317]">
         <div className="flex items-center justify-between border-b border-white/8 px-4 py-2.5">
           <span className="font-mono text-[11px] text-[#8A9099]">task_0448</span>
           <span
@@ -165,6 +167,7 @@ export function LiveTaskWindow() {
             {s.activity}
           </span>
         </div>
+      </div>
       </div>
     </div>
   );
