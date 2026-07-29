@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, roleHome } from "@/lib/authz";
+import { Reveal } from "@/components/reveal";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The landing page is a picture, not an essay: a real file arriving broken at
    night and leaving clean in the morning. Everything else is caption.
    Palette: night #0A0B0D / surface #111317 / dusk #1B2740 / paper #F7F6F3 /
    ink #14161A. Amber appears ONLY on damaged cells; green ONLY on fixed rows.
+   Motion: entrance rise on the hero, scroll-reveals below the fold, two
+   ambient loops (hero glow, seam nudge) — all gated on prefers-reduced-motion.
    ───────────────────────────────────────────────────────────────────────── */
 
 const BEFORE_ROWS = [
@@ -54,6 +57,11 @@ const HATCH = {
     "repeating-linear-gradient(45deg, transparent 0 4px, rgba(255,255,255,.10) 4px 5px)",
 };
 
+const NOISE = {
+  backgroundImage:
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
+};
+
 function Cell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`truncate px-3 ${className}`}>{children}</div>;
 }
@@ -63,9 +71,9 @@ export default async function Home() {
   if (user) redirect(roleHome(user.role));
 
   return (
-    <div className="bg-[#0A0B0D]">
-      {/* ── NAV ───────────────────────────────────────────────────────── */}
-      <header className="border-b border-white/8">
+    <div className="overflow-x-clip bg-[#0A0B0D]">
+      {/* ── NAV — sticky, blurred ─────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between px-6">
           <span className="font-mono text-[13px] uppercase tracking-[0.22em] text-white">
             Nightlexicon
@@ -79,7 +87,7 @@ export default async function Home() {
             </Link>
             <Link
               href="/register"
-              className="rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] transition-colors hover:bg-white"
+              className="lift rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)]"
             >
               Send a task
             </Link>
@@ -88,268 +96,313 @@ export default async function Home() {
       </header>
 
       {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1120px] px-6 pb-4 pt-20 sm:pt-28">
-        <h1 className="max-w-[16ch] text-[clamp(2.5rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
-          <span className="block text-[#767C86]">Send the mess tonight.</span>
-          <span className="block text-white">Get it back clean by morning.</span>
-        </h1>
-        <p className="mt-6 max-w-[46ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
-          Any admin task, described in plain English. One fixed price, approved before we
-          start. Done by a person, overnight.
-        </p>
-        <div className="mt-8">
-          <Link
-            href="/register"
-            className="inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] transition-colors hover:bg-white"
-          >
-            Describe your task
-          </Link>
+      <section className="relative overflow-hidden">
+        {/* ambient glow + film grain */}
+        <div
+          aria-hidden
+          className="hero-glow pointer-events-none absolute -top-40 left-[8%] h-[520px] w-[760px] rounded-full bg-[#1B2740] blur-[130px]"
+        />
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
+
+        <div className="relative mx-auto w-full max-w-[1120px] px-6 pb-4 pt-20 sm:pt-28">
+          <h1 className="max-w-[16ch] text-[clamp(2.5rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+            <span className="anim-rise block text-[#767C86]">Send the mess tonight.</span>
+            <span className="anim-rise d-1 block text-white">Get it back clean by morning.</span>
+          </h1>
+          <p className="anim-rise d-2 mt-6 max-w-[46ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
+            Any admin task, described in plain English. One fixed price, approved before we
+            start. Done by a person, overnight.
+          </p>
+          <div className="anim-rise d-3 mt-8">
+            <Link
+              href="/register"
+              className="lift inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)]"
+            >
+              Describe your task
+            </Link>
+          </div>
+          <p className="anim-rise d-4 mt-4 font-mono text-[13px] text-[#6B7280]">
+            You get a fixed price back within one business hour.
+          </p>
         </div>
-        <p className="mt-4 font-mono text-[13px] text-[#6B7280]">
-          You get a fixed price back within one business hour.
-        </p>
       </section>
 
       {/* ── THE DIFF ──────────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
-        <p className="mb-3 max-w-[70ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
+      <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
+        <p className="anim-rise d-5 mb-3 max-w-[70ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
           One task from last Tuesday, sent as a sentence: &ldquo;Dedupe our exported leads,
           fix the company names, drop anyone we can&apos;t email.&rdquo;
         </p>
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)]">
-          <div className="grid md:grid-cols-2">
-            {/* BEFORE */}
-            <div className="bg-[#111317]">
-              <div className="flex h-10 items-center gap-2 border-b border-white/8 px-4">
-                <span className="h-1.5 w-1.5 rounded-full border border-[#767C86]" />
-                <span className="font-mono text-[11px] text-[#8A9099]">
-                  leads_export.csv · sent 6:41 PM
-                </span>
-              </div>
-              <div className="font-mono text-[12px] tabular-nums text-[#8A9099]">
-                {BEFORE_ROWS.map((r, i) => (
-                  <div
-                    key={i}
-                    className="grid h-[34px] grid-cols-[1fr_0.75fr_1.15fr] items-center border-b border-white/6 last:border-0"
-                  >
-                    <Cell>{r.company}</Cell>
-                    <Cell>{r.contact}</Cell>
-                    <Cell>
-                      {r.email === null ? (
-                        <span
-                          aria-hidden
-                          className="inline-block h-[14px] w-[60%] rounded-[2px] align-middle"
-                          style={HATCH}
-                        />
-                      ) : (
-                        <span style={r.broken ? { boxShadow: "inset 0 -2px 0 #D98324" } : undefined}>
-                          {r.email}
-                        </span>
-                      )}
-                    </Cell>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <p className="sr-only">
+          Example: a lead export arrives with duplicate companies, inconsistent casing and
+          missing or invalid emails; it is returned the next morning deduplicated and
+          corrected, for a fixed price of $68 approved in advance.
+        </p>
 
-            {/* AFTER */}
-            <div className="border-t border-white/10 bg-[#F7F6F3] md:border-l md:border-t-0">
-              <div className="flex h-10 items-center gap-2 border-b border-black/8 px-4">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#1E7F5C]" />
-                <span className="font-mono text-[11px] text-[#5B6069]">
-                  leads_export_clean.csv · returned 7:07 AM
-                </span>
-              </div>
-              <div className="font-mono text-[12px] tabular-nums text-[#14161A]">
-                {AFTER_ROWS.map((r, i) => (
-                  <div
-                    key={i}
-                    className="grid h-[34px] grid-cols-[1fr_0.7fr_1.1fr_auto] items-center border-b border-black/6 last:border-0"
-                  >
-                    <Cell>{r.company}</Cell>
-                    <Cell>{r.contact}</Cell>
-                    <Cell>{r.email}</Cell>
-                    <div className="pr-3">
-                      <span className="rounded bg-[#1E7F5C]/10 px-1.5 py-0.5 text-[10px] text-[#166049]">
-                        {r.tag}
-                      </span>
+        <Reveal>
+          <div
+            aria-hidden
+            className="relative overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] transition-shadow duration-500 hover:shadow-[0_36px_90px_-20px_rgba(0,0,0,0.8)]"
+          >
+            <div className="grid md:grid-cols-2">
+              {/* BEFORE — static: the mess is already there */}
+              <div className="bg-[#111317]">
+                <div className="flex h-10 items-center gap-2 border-b border-white/8 px-4">
+                  <span className="h-1.5 w-1.5 rounded-full border border-[#767C86]" />
+                  <span className="font-mono text-[11px] text-[#8A9099]">
+                    leads_export.csv · sent 6:41 PM
+                  </span>
+                </div>
+                <div className="font-mono text-[12px] tabular-nums text-[#8A9099]">
+                  {BEFORE_ROWS.map((r, i) => (
+                    <div
+                      key={i}
+                      className="grid h-[34px] grid-cols-[1fr_0.75fr_1.15fr] items-center border-b border-white/6 last:border-0"
+                    >
+                      <Cell>{r.company}</Cell>
+                      <Cell>{r.contact}</Cell>
+                      <Cell>
+                        {r.email === null ? (
+                          <span
+                            className="inline-block h-[14px] w-[60%] rounded-[2px] align-middle"
+                            style={HATCH}
+                          />
+                        ) : (
+                          <span
+                            style={r.broken ? { boxShadow: "inset 0 -2px 0 #D98324" } : undefined}
+                          >
+                            {r.email}
+                          </span>
+                        )}
+                      </Cell>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* AFTER — rows stagger in: the work happening */}
+              <div className="border-t border-white/10 bg-[#F7F6F3] md:border-l md:border-t-0">
+                <div className="flex h-10 items-center gap-2 border-b border-black/8 px-4">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#1E7F5C]" />
+                  <span className="font-mono text-[11px] text-[#5B6069]">
+                    leads_export_clean.csv · returned 7:07 AM
+                  </span>
+                </div>
+                <div className="font-mono text-[12px] tabular-nums text-[#14161A]">
+                  {AFTER_ROWS.map((r, i) => (
+                    <div
+                      key={i}
+                      className="srow grid h-[34px] grid-cols-[1fr_0.7fr_1.1fr_auto] items-center border-b border-black/6 last:border-0"
+                    >
+                      <Cell>{r.company}</Cell>
+                      <Cell>{r.contact}</Cell>
+                      <Cell>{r.email}</Cell>
+                      <div className="pr-3">
+                        <span className="rounded bg-[#1E7F5C]/10 px-1.5 py-0.5 text-[10px] text-[#166049]">
+                          {r.tag}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* seam badge — desktop only, sits on the vertical join */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 flex-col items-center md:flex">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F7F6F3] shadow-[0_2px_12px_rgba(0,0,0,0.4)]">
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-[#14161A]" aria-hidden>
-                <path
-                  d="M9 6l6 6-6 6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-            <span className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/70">
-              Overnight
-            </span>
-          </div>
+            {/* seam badge — desktop only, sits on the vertical join */}
+            <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 flex-col items-center md:flex">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F7F6F3] shadow-[0_2px_12px_rgba(0,0,0,0.4)]">
+                <svg viewBox="0 0 24 24" className="seam-chevron h-3.5 w-3.5 text-[#14161A]">
+                  <path
+                    d="M9 6l6 6-6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/70">
+                Overnight
+              </span>
+            </div>
 
-          {/* footer bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#0A0B0D] px-4 py-3 font-mono text-[12px]">
-            <span className="text-[#767C86]">
-              142 rows · 18 duplicates merged · 31 emails corrected · 9 dropped
-            </span>
-            <span className="text-white">$68 — approved before any work started.</span>
+            {/* footer bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-[#0A0B0D] px-4 py-3 font-mono text-[12px]">
+              <span className="text-[#767C86]">
+                142 rows · 18 duplicates merged · 31 emails corrected · 9 dropped
+              </span>
+              <span className="text-white">$68 — approved before any work started.</span>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── THE RECEIPT ───────────────────────────────────────────────── */}
       <section className="border-t border-white/8">
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
-          <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
-            One price. Approved first.
-          </p>
-          <div className="mx-auto max-w-[420px]">
-            <div className="rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px]">
-              <div className="flex items-center justify-between border-b border-white/8 pb-3 text-[#767C86]">
-                <span>QUOTE #0412</span>
-                <span className="text-white">FIXED</span>
-              </div>
-              {[
-                ["TASK", "Dedupe 142-row lead export"],
-                ["SCOPE", "Merge on email, fix names, verify"],
-                ["RETURNS", "7:07 AM ET"],
-              ].map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-white/6 py-2.5">
-                  <span className="shrink-0 text-[#767C86]">{k}</span>
-                  <span className="text-right text-[#C9CDD3]">{v}</span>
+          <Reveal>
+            <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
+              One price. Approved first.
+            </p>
+            <div className="mx-auto max-w-[420px]">
+              <div className="lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] hover:border-white/20">
+                <div className="flex items-center justify-between border-b border-white/8 pb-3 text-[#767C86]">
+                  <span>QUOTE #0412</span>
+                  <span className="text-white">FIXED</span>
                 </div>
-              ))}
-              <div className="flex items-baseline justify-between pt-4">
-                <span className="text-[#767C86]">TOTAL</span>
-                <span className="text-[32px] font-medium tabular-nums leading-none text-white">
-                  $68
-                </span>
+                {[
+                  ["TASK", "Dedupe 142-row lead export"],
+                  ["SCOPE", "Merge on email, fix names, verify"],
+                  ["RETURNS", "7:07 AM ET"],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-4 border-b border-white/6 py-2.5">
+                    <span className="shrink-0 text-[#767C86]">{k}</span>
+                    <span className="text-right text-[#C9CDD3]">{v}</span>
+                  </div>
+                ))}
+                <div className="flex items-baseline justify-between pt-4">
+                  <span className="text-[#767C86]">TOTAL</span>
+                  <span className="text-[32px] font-medium tabular-nums leading-none text-white">
+                    $68
+                  </span>
+                </div>
+                <div className="mt-5 flex gap-2">
+                  <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
+                    APPROVE
+                  </span>
+                  <span className="flex-1 rounded border border-white/15 py-2 text-center text-[11px] text-[#8A9099]">
+                    ASK A QUESTION
+                  </span>
+                </div>
               </div>
-              <div className="mt-5 flex gap-2">
-                <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
-                  APPROVE
-                </span>
-                <span className="flex-1 rounded border border-white/15 py-2 text-center text-[11px] text-[#8A9099]">
-                  ASK A QUESTION
-                </span>
-              </div>
-            </div>
 
-            <div className="mt-6 grid gap-3 font-mono text-[12px] text-[#767C86] sm:grid-cols-3">
-              <p>Fixed. Never hourly.</p>
-              <p>You approve before work starts.</p>
-              <p>Back before your first meeting.</p>
+              <div className="mt-6 grid gap-3 font-mono text-[12px] text-[#767C86] sm:grid-cols-3">
+                <p className="srow">Fixed. Never hourly.</p>
+                <p className="srow">You approve before work starts.</p>
+                <p className="srow">Back before your first meeting.</p>
+              </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ── THE LEDGER (paper) ────────────────────────────────────────── */}
       <section className="bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
-          <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-            If you can describe it, it gets done.
-          </h2>
-          <div className="mt-8">
-            {LEDGER.map(([task, price]) => (
-              <div
-                key={task}
-                className="flex items-baseline justify-between gap-6 border-b border-black/8 py-[18px]"
-              >
-                <span className="font-mono text-[13px] text-[#5B6069]">{task}</span>
-                <span className="shrink-0 font-mono text-[12px] tabular-nums text-[#14161A]">
-                  {price} · 7:00 AM
-                </span>
-              </div>
-            ))}
-          </div>
+          <Reveal>
+            <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+              If you can describe it, it gets done.
+            </h2>
+            <div className="mt-8">
+              {LEDGER.map(([task, price]) => (
+                <div
+                  key={task}
+                  className="srow group flex items-baseline justify-between gap-6 border-b border-black/8 py-[18px] transition-colors hover:bg-black/[0.02]"
+                >
+                  <span className="font-mono text-[13px] text-[#5B6069] transition-colors group-hover:text-[#14161A]">
+                    {task}
+                  </span>
+                  <span className="shrink-0 font-mono text-[12px] tabular-nums text-[#14161A]">
+                    {price} · 7:00 AM
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ── THE NIGHT BAND (paper) ────────────────────────────────────── */}
       <section className="border-t border-black/8 bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
-          <div className="space-y-2">
-            {[
-              { label: "NEW YORK · ET", lit: (h: number) => h >= 8 && h <= 17 },
-              { label: "MANILA · PHT +12", lit: (h: number) => h < 8 || h > 17 },
-            ].map((row) => (
-              <div key={row.label}>
-                <p className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
-                  {row.label}
-                </p>
-                <div className="grid grid-cols-[repeat(24,minmax(0,1fr))] gap-px overflow-hidden rounded bg-black/8">
-                  {Array.from({ length: 24 }, (_, i) => (
+          <Reveal>
+            <div className="space-y-2">
+              {[
+                { label: "NEW YORK · ET", lit: (h: number) => h >= 8 && h <= 17 },
+                { label: "MANILA · PHT +12", lit: (h: number) => h < 8 || h > 17 },
+              ].map((row) => (
+                <div key={row.label}>
+                  <p className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
+                    {row.label}
+                  </p>
+                  <div className="relative grid grid-cols-[repeat(24,minmax(0,1fr))] gap-px overflow-hidden rounded bg-black/8">
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <span
+                        key={i}
+                        className={`h-8 ${row.lit(i) ? "bg-[#14161A]" : "bg-[#1B2740]/15"}`}
+                      />
+                    ))}
+                    {/* the same "now" sweeping both cities at once */}
                     <span
-                      key={i}
-                      className={`h-8 ${row.lit(i) ? "bg-[#14161A]" : "bg-[#1B2740]/15"}`}
+                      aria-hidden
+                      className="band-sweep absolute inset-y-0 left-0 w-[2px] bg-[#F7F6F3] mix-blend-difference"
                     />
-                  ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {NIGHT_STEPS.map(([time, text]) => (
-              <div key={time}>
-                <p className="font-mono text-[11px] tabular-nums text-[#767C86]">{time}</p>
-                <p className="mt-1 text-[15px] leading-snug text-[#14161A]">{text}</p>
-              </div>
-            ))}
-          </div>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {NIGHT_STEPS.map(([time, text]) => (
+                <div key={time} className="srow">
+                  <p className="font-mono text-[11px] tabular-nums text-[#767C86]">{time}</p>
+                  <p className="mt-1 text-[15px] leading-snug text-[#14161A]">{text}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ── TERMS (paper) ─────────────────────────────────────────────── */}
       <section className="border-t border-black/8 bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
-          {TERMS.map(([label, text]) => (
-            <div
-              key={label}
-              className="grid gap-2 border-b border-black/8 py-5 sm:grid-cols-[140px_1fr] sm:gap-6"
-            >
-              <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-[#767C86]">
-                {label}
-              </span>
-              <span className="text-[16px] leading-relaxed text-[#14161A]">{text}</span>
-            </div>
-          ))}
+          <Reveal>
+            {TERMS.map(([label, text]) => (
+              <div
+                key={label}
+                className="srow grid gap-2 border-b border-black/8 py-5 sm:grid-cols-[140px_1fr] sm:gap-6"
+              >
+                <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-[#767C86]">
+                  {label}
+                </span>
+                <span className="text-[16px] leading-relaxed text-[#14161A]">{text}</span>
+              </div>
+            ))}
+          </Reveal>
         </div>
       </section>
 
       {/* ── CLOSING (paper page, ink block) ───────────────────────────── */}
       <section className="bg-[#F7F6F3] pb-16">
         <div className="mx-auto w-full max-w-[880px] px-6">
-          <div className="rounded-2xl bg-[#0A0B0D] px-6 py-16 text-center">
-            <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-white">
-              Send your first task tonight.
-            </h2>
-            <div className="mt-7">
-              <Link
-                href="/register"
-                className="inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] transition-colors hover:bg-white"
-              >
-                Describe your task
-              </Link>
+          <Reveal>
+            <div className="relative overflow-hidden rounded-2xl bg-[#0A0B0D] px-6 py-16 text-center">
+              <div
+                aria-hidden
+                className="hero-glow pointer-events-none absolute -top-24 left-1/2 h-[280px] w-[480px] -translate-x-1/2 rounded-full bg-[#1B2740] blur-[110px]"
+              />
+              <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
+              <div className="relative">
+                <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-white">
+                  Send your first task tonight.
+                </h2>
+                <div className="mt-7">
+                  <Link
+                    href="/register"
+                    className="lift inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)]"
+                  >
+                    Describe your task
+                  </Link>
+                </div>
+                <p className="mt-4 font-mono text-[12px] text-[#767C86]">
+                  Priced within one business hour. Nothing starts until you approve it.
+                </p>
+              </div>
             </div>
-            <p className="mt-4 font-mono text-[12px] text-[#767C86]">
-              Priced within one business hour. Nothing starts until you approve it.
-            </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
