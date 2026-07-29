@@ -1,0 +1,198 @@
+
+> second-shift@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.12 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.105.46:3000
+- Environments: .env
+✓ Ready in 506ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+
+ GET / 200 in 1095ms (next.js: 730ms, application-code: 365ms)
+ GET / 200 in 1352ms (next.js: 796ms, application-code: 557ms)
+ GET /manifest.webmanifest 200 in 66ms (next.js: 52ms, application-code: 14ms)
+ GET / 200 in 104ms (next.js: 8ms, application-code: 96ms)
+ GET / 200 in 78ms (next.js: 6ms, application-code: 72ms)
+✓ Compiled in 234ms
+ GET / 200 in 760ms (next.js: 128ms, application-code: 632ms)
+ GET / 200 in 763ms (next.js: 84ms, application-code: 679ms)
+ GET / 200 in 592ms (next.js: 35ms, application-code: 557ms)
+ GET / 200 in 641ms (next.js: 55ms, application-code: 587ms)
+ GET / 200 in 561ms (next.js: 51ms, application-code: 510ms)
+ GET / 200 in 568ms (next.js: 32ms, application-code: 536ms)
+ GET / 200 in 567ms (next.js: 90ms, application-code: 477ms)
+ GET / 200 in 568ms (next.js: 71ms, application-code: 497ms)
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `{imported module ./src/lib/db.ts}["prisma"].setting.findMany()` invocation in
+C:\dev\nightlexicon\.next\dev\server\chunks\ssr\[root-of-the-server]__111l11o._.js:437:155
+
+  434     pricingPrompt: "You are pricing an outsourced administrative task performed by a trained virtual assistant. " + "Given the task description, estimate a fair USD price range (low/high) for the full task. " + "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD."
+  435 };
+  436 const getSettings = (0, {imported module ./nodemodules/next/dist/server/route-modules/app-page/vendored/rsc/react.js}["cache"])(async ()=>{
+→ 437     const rows = await {imported module ./src/lib/db.ts}["prisma"].setting.findMany(
+Can't reach database server at `127.0.0.1:51214`
+
+Please make sure your database server is running at `127.0.0.1:51214`.
+    at <unknown> (src\lib\settings.ts:82:37)
+    at async (src\lib\settings.ts:82:16)
+    at async Home (src\app\page.tsx:93:20)
+  80 |  */
+  81 | export const getSettings = cache(async (): Promise<Settings> => {
+> 82 |   const rows = await prisma.setting.findMany();
+     |                                     ^
+  83 |   const merged: Record<string, unknown> = {
+  84 |     ...structuredClone(DEFAULT_SETTINGS as unknown as Record<string, unknown>),
+  85 |   }; {
+  code: 'P1001',
+  meta: { modelName: 'Setting', database_location: '127.0.0.1:51214' },
+  clientVersion: '6.19.3',
+  digest: '2656397559'
+}
+ GET / 200 in 536ms (next.js: 29ms, application-code: 507ms)
+ GET / 200 in 619ms (next.js: 76ms, application-code: 543ms)
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `{imported module ./src/lib/db.ts}["prisma"].setting.findMany()` invocation in
+C:\dev\nightlexicon\.next\dev\server\chunks\ssr\[root-of-the-server]__111l11o._.js:437:155
+
+  434     pricingPrompt: "You are pricing an outsourced administrative task performed by a trained virtual assistant. " + "Given the task description, estimate a fair USD price range (low/high) for the full task. " + "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD."
+  435 };
+  436 const getSettings = (0, {imported module ./nodemodules/next/dist/server/route-modules/app-page/vendored/rsc/react.js}["cache"])(async ()=>{
+→ 437     const rows = await {imported module ./src/lib/db.ts}["prisma"].setting.findMany(
+Can't reach database server at `127.0.0.1:51214`
+
+Please make sure your database server is running at `127.0.0.1:51214`.
+    at <unknown> (src\lib\settings.ts:82:37)
+    at async (src\lib\settings.ts:82:16)
+    at async Home (src\app\page.tsx:93:20)
+  80 |  */
+  81 | export const getSettings = cache(async (): Promise<Settings> => {
+> 82 |   const rows = await prisma.setting.findMany();
+     |                                     ^
+  83 |   const merged: Record<string, unknown> = {
+  84 |     ...structuredClone(DEFAULT_SETTINGS as unknown as Record<string, unknown>),
+  85 |   }; {
+  code: 'P1001',
+  meta: { modelName: 'Setting', database_location: '127.0.0.1:51214' },
+  clientVersion: '6.19.3',
+  digest: '2656397559'
+}
+ GET / 200 in 679ms (next.js: 15ms, application-code: 665ms)
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `{imported module ./src/lib/db.ts}["prisma"].setting.findMany()` invocation in
+C:\dev\nightlexicon\.next\dev\server\chunks\ssr\[root-of-the-server]__111l11o._.js:437:155
+
+  434     pricingPrompt: "You are pricing an outsourced administrative task performed by a trained virtual assistant. " + "Given the task description, estimate a fair USD price range (low/high) for the full task. " + "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD."
+  435 };
+  436 const getSettings = (0, {imported module ./nodemodules/next/dist/server/route-modules/app-page/vendored/rsc/react.js}["cache"])(async ()=>{
+→ 437     const rows = await {imported module ./src/lib/db.ts}["prisma"].setting.findMany(
+Can't reach database server at `127.0.0.1:51214`
+
+Please make sure your database server is running at `127.0.0.1:51214`.
+    at <unknown> (src\lib\settings.ts:82:37)
+    at async (src\lib\settings.ts:82:16)
+    at async Home (src\app\page.tsx:93:20)
+  80 |  */
+  81 | export const getSettings = cache(async (): Promise<Settings> => {
+> 82 |   const rows = await prisma.setting.findMany();
+     |                                     ^
+  83 |   const merged: Record<string, unknown> = {
+  84 |     ...structuredClone(DEFAULT_SETTINGS as unknown as Record<string, unknown>),
+  85 |   }; {
+  code: 'P1001',
+  meta: { modelName: 'Setting', database_location: '127.0.0.1:51214' },
+  clientVersion: '6.19.3',
+  digest: '2656397559'
+}
+ GET / 200 in 585ms (next.js: 35ms, application-code: 550ms)
+ GET / 200 in 710ms (next.js: 6ms, application-code: 704ms)
+ GET / 200 in 491ms (next.js: 41ms, application-code: 450ms)
+ GET / 200 in 302ms (next.js: 36ms, application-code: 266ms)
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `{imported module ./src/lib/db.ts}["prisma"].setting.findMany()` invocation in
+C:\dev\nightlexicon\.next\dev\server\chunks\ssr\[root-of-the-server]__111l11o._.js:437:155
+
+  434     pricingPrompt: "You are pricing an outsourced administrative task performed by a trained virtual assistant. " + "Given the task description, estimate a fair USD price range (low/high) for the full task. " + "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD."
+  435 };
+  436 const getSettings = (0, {imported module ./nodemodules/next/dist/server/route-modules/app-page/vendored/rsc/react.js}["cache"])(async ()=>{
+→ 437     const rows = await {imported module ./src/lib/db.ts}["prisma"].setting.findMany(
+Can't reach database server at `127.0.0.1:51214`
+
+Please make sure your database server is running at `127.0.0.1:51214`.
+    at <unknown> (src\lib\settings.ts:82:37)
+    at async (src\lib\settings.ts:82:16)
+    at async Home (src\app\page.tsx:93:20)
+  80 |  */
+  81 | export const getSettings = cache(async (): Promise<Settings> => {
+> 82 |   const rows = await prisma.setting.findMany();
+     |                                     ^
+  83 |   const merged: Record<string, unknown> = {
+  84 |     ...structuredClone(DEFAULT_SETTINGS as unknown as Record<string, unknown>),
+  85 |   }; {
+  code: 'P1001',
+  meta: { modelName: 'Setting', database_location: '127.0.0.1:51214' },
+  clientVersion: '6.19.3',
+  digest: '2656397559'
+}
+ GET / 200 in 113ms (next.js: 20ms, application-code: 93ms)
+ GET / 200 in 900ms (next.js: 8ms, application-code: 893ms)
+ GET / 200 in 848ms (next.js: 13ms, application-code: 835ms)
+ GET / 200 in 848ms (next.js: 36ms, application-code: 812ms)
+ GET / 200 in 752ms (next.js: 64ms, application-code: 688ms)
+ GET / 200 in 759ms (next.js: 101ms, application-code: 658ms)
+ GET / 200 in 771ms (next.js: 20ms, application-code: 751ms)
+ GET / 200 in 663ms (next.js: 28ms, application-code: 634ms)
+ GET / 200 in 676ms (next.js: 8ms, application-code: 668ms)
+ GET / 200 in 664ms (next.js: 15ms, application-code: 649ms)
+ GET / 200 in 734ms (next.js: 10ms, application-code: 724ms)
+ GET / 200 in 741ms (next.js: 30ms, application-code: 710ms)
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `{imported module ./src/lib/db.ts}["prisma"].setting.findMany()` invocation in
+C:\dev\nightlexicon\.next\dev\server\chunks\ssr\[root-of-the-server]__111l11o._.js:437:155
+
+  434     pricingPrompt: "You are pricing an outsourced administrative task performed by a trained virtual assistant. " + "Given the task description, estimate a fair USD price range (low/high) for the full task. " + "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD."
+  435 };
+  436 const getSettings = (0, {imported module ./nodemodules/next/dist/server/route-modules/app-page/vendored/rsc/react.js}["cache"])(async ()=>{
+→ 437     const rows = await {imported module ./src/lib/db.ts}["prisma"].setting.findMany(
+Can't reach database server at `127.0.0.1:51214`
+
+Please make sure your database server is running at `127.0.0.1:51214`.
+    at <unknown> (src\lib\settings.ts:82:37)
+    at async (src\lib\settings.ts:82:16)
+    at async Home (src\app\page.tsx:93:20)
+  80 |  */
+  81 | export const getSettings = cache(async (): Promise<Settings> => {
+> 82 |   const rows = await prisma.setting.findMany();
+     |                                     ^
+  83 |   const merged: Record<string, unknown> = {
+  84 |     ...structuredClone(DEFAULT_SETTINGS as unknown as Record<string, unknown>),
+  85 |   }; {
+  code: 'P1001',
+  meta: { modelName: 'Setting', database_location: '127.0.0.1:51214' },
+  clientVersion: '6.19.3',
+  digest: '2656397559'
+}
+ GET / 200 in 143ms (next.js: 18ms, application-code: 125ms)
+ GET / 200 in 735ms (next.js: 6ms, application-code: 728ms)
+ GET / 200 in 738ms (next.js: 7ms, application-code: 731ms)
+ GET / 200 in 707ms (next.js: 24ms, application-code: 683ms)
+ GET / 200 in 694ms (next.js: 47ms, application-code: 647ms)
+ GET / 200 in 701ms (next.js: 11ms, application-code: 690ms)
+ GET / 200 in 712ms (next.js: 39ms, application-code: 673ms)
+ GET / 200 in 766ms (next.js: 61ms, application-code: 705ms)
+ GET / 200 in 719ms (next.js: 27ms, application-code: 692ms)
+ GET / 200 in 734ms (next.js: 10ms, application-code: 725ms)
+ GET / 200 in 736ms (next.js: 29ms, application-code: 707ms)
+ GET / 200 in 685ms (next.js: 9ms, application-code: 676ms)
+ GET / 200 in 700ms (next.js: 9ms, application-code: 691ms)
+ GET / 200 in 669ms (next.js: 28ms, application-code: 640ms)
+ GET / 200 in 671ms (next.js: 9ms, application-code: 661ms)
+ GET / 200 in 607ms (next.js: 26ms, application-code: 581ms)
+ GET / 200 in 613ms (next.js: 61ms, application-code: 552ms)
+ GET / 200 in 558ms (next.js: 16ms, application-code: 542ms)
+ GET / 200 in 555ms (next.js: 49ms, application-code: 506ms)
+ GET / 200 in 635ms (next.js: 58ms, application-code: 577ms)
