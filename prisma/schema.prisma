@@ -1,0 +1,360 @@
+// Nightlexicon — VA marketplace V1
+// Postgres. All timestamps UTC. All money in integer cents.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+enum Role {
+  CLIENT
+  VA
+  ADMIN
+}
+
+// Exact 12 states from the spec — do not add states without telling the operator.
+enum TaskStatus {
+  submitted
+  pricing_review
+  quoted
+  declined
+  open
+  claimed
+  submitted_for_qc
+  qc_rejected
+  revision_requested
+  completed
+  cancelled
+  expired
+}
+
+enum TaskTier {
+  standard
+  high_value
+}
+
+enum VaStatus {
+  pending_test
+  pending_grading
+  approved
+  rejected
+  suspended
+}
+
+enum FileKind {
+  input
+  deliverable
+}
+
+enum QcStatus {
+  pending
+  approved
+  rejected
+  superseded
+}
+
+enum TestStatus {
+  pending_grading
+  approved
+  rejected
+}
+
+enum PaymentKind {
+  va_payout
+  client_payment
+}
+
+// ---------- Auth (Better Auth owns these shapes) ----------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  // Locked server-side (input: false in Better Auth config) — never client-assignable.
+  role          Role      @default(CLIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions        Session[]
+  accounts        Account[]
+  vaProfile       VaProfile?
+  clientTasks     Task[]           @relation("ClientTasks")
+  claimedTasks    Task[]           @relation("ClaimedTasks")
+  submissions     Submission[]
+  testSubmissions TestSubmission[]
+  notifications   Notification[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+}
+
+// ---------- VA ----------
+
+model VaProfile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status           VaStatus  @default(pending_test)
+  timezone         String    @default("Asia/Manila")
+  // 30-day retake cooldown anchor; admin can override.
+  rejectedAt       DateTime?
+  cooldownOverride Boolean   @default(false)
+  suspendedAt      DateTime?
+  suspensionReason String?
+  // Reliability record
+  tasksCompleted   Int       @default(0)
+  tasksAbandoned   Int       @default(0)
+  deadlinesMissed  Int       @default(0)
+  qcRejections     Int       @default(0)
+  // Rolling score cache (last N ratings; N = settings.scoreWindow). Source of truth = Submission.rating.
+  scoreCache       Float?
+  ratedCount       Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// ---------- Tasks ----------
+
+model Task {
+  id          String     @id @default(cuid())
+  clientId    String
+  client      User       @relation("ClientTasks", fields: [clientId], references: [id], onDelete: Restrict)
+  title       String
+  description String
+  quantity    String?
+  tier        TaskTier   @default(standard)
+  status      TaskStatus @default(submitted)
+
+  // RULE 2 — two independent prices. Exposure is controlled exclusively
+  // through the role-shaped selects in src/lib/queries/. clientPriceCents is
+  // NEVER selected in any VA-facing query; vaPayoutCents NEVER in any
+  // client-facing query.
+  currency         String @default("USD")
+  clientPriceCents Int?
+  vaPayoutCents    Int?
+
+  // AI suggestion (internal — admin only, client never sees a range)
+  aiLowCents  Int?
+  aiHighCents Int?
+  aiReasoning String?
+
+  // Deadlines: client-facing vs VA-facing (client minus QC buffer). Both stored. UTC.
+  clientDeadlineUtc DateTime?
+  vaDeadlineUtc     DateTime?
+
+  quotedAt             DateTime?
+  quoteExpiresAt       DateTime?
+  acceptedAt           DateTime?
+  claimedById          String?
+  claimedBy            User?     @relation("ClaimedTasks", fields: [claimedById], references: [id], onDelete: Restrict)
+  claimedAt            DateTime?
+  completedAt          DateTime?
+  revisionWindowEndsAt DateTime?
+  declinedAt           DateTime?
+  declineReason        String?
+  cancelledAt          DateTime?
+  cancelReason         String?
+  expiredAt            DateTime?
+
+  qcRounds      Int     @default(0)
+  filesVerified Boolean @default(false)
+
+  // Manual money tracking (no payment rails)
+  clientPaidAt DateTime?
+  vaPaidAt     DateTime?
+
+  filesPurgedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  files       File[]
+  submissions Submission[]
+  events      TaskEvent[]
+
+  @@index([status])
+  @@index([clientId])
+  @@index([claimedById])
+}
+
+// One QC decision per submission attempt (a delivery may contain several files).
+model Submission {
+  id         String    @id @default(cuid())
+  taskId     String
+  task       Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  vaId       String
+  va         User      @relation(fields: [vaId], references: [id], onDelete: Restrict)
+  attemptNo  Int
+  note       String?
+  qcStatus   QcStatus  @default(pending)
+  qcComment  String?
+  rating     Int? // 1-5, set at QC approval
+  submittedAt DateTime @default(now())
+  reviewedAt DateTime?
+
+  files File[]
+
+  @@unique([taskId, attemptNo])
+  @@index([qcStatus])
+  @@index([vaId])
+}
+
+model File {
+  id           String    @id @default(cuid())
+  // Nullable until attached: upload happens first (ticket pattern), the
+  // submit action claims the file by checking uploaderId and setting taskId.
+  taskId       String?
+  task         Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  submissionId String?
+  submission   Submission? @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  kind         FileKind
+  uploaderId   String
+  storageKey   String    @unique
+  fileName     String
+  mime         String
+  sizeBytes    Int
+  createdAt    DateTime  @default(now())
+  purgedAt     DateTime?
+
+  accessLogs FileAccessLog[]
+
+  @@index([taskId])
+  @@index([uploaderId])
+}
+
+model FileAccessLog {
+  id        String   @id @default(cuid())
+  fileId    String
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  userId    String
+  action    String // "download" | "upload"
+  createdAt DateTime @default(now())
+
+  @@index([fileId])
+}
+
+// Audit log — one row per state change / notable admin action, written inside
+// the same transaction as the change itself.
+model TaskEvent {
+  id         String      @id @default(cuid())
+  taskId     String
+  task       Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fromStatus TaskStatus?
+  toStatus   TaskStatus?
+  action     String
+  actorId    String?
+  reason     String?
+  meta       Json?
+  createdAt  DateTime    @default(now())
+
+  @@index([taskId])
+}
+
+// ---------- Entry test ----------
+
+model TestQuestion {
+  id      String  @id @default(cuid())
+  version Int     @default(1)
+  order   Int
+  prompt  String
+  active  Boolean @default(true)
+}
+
+model TestSubmission {
+  id           String     @id @default(cuid())
+  vaId         String
+  va           User       @relation(fields: [vaId], references: [id], onDelete: Cascade)
+  testVersion  Int
+  // [{questionId, promptSnapshot, answer}] — prompts snapshotted so grading
+  // history stays readable after questions change.
+  answers      Json
+  status       TestStatus @default(pending_grading)
+  adminComment String?
+  submittedAt  DateTime   @default(now())
+  gradedAt     DateTime?
+
+  @@index([status])
+}
+
+// ---------- Notifications, settings, money tracking ----------
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  taskId    String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+// Admin-editable settings (working hours, QC buffer, thresholds, pricing
+// prompt, retention…) — changeable without redeploy.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+// Manual payment tracking history (no payment processing).
+model PaymentEvent {
+  id             String      @id @default(cuid())
+  kind           PaymentKind
+  counterpartyId String // VA userId or client userId
+  taskId         String?
+  amountCents    Int
+  note           String?
+  createdAt      DateTime    @default(now())
+
+  @@index([counterpartyId])
+}

@@ -1,26 +1,18 @@
 @import "tailwindcss";
 
+/* B2B infrastructure look: light, neutral, one accent. No auto dark-mode
+   inversion — the palette is deliberate. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #fafafa; /* neutral-50 */
+  color: #171717; /* neutral-900 */
+  -webkit-font-smoothing: antialiased;
 }
