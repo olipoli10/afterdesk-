@@ -30,12 +30,11 @@ import { useEffect } from "react";
    prefers-reduced-motion.
    ───────────────────────────────────────────────────────────────────────── */
 
-/** Fraction of the OS delta actually applied. 1 = native. */
-const FACTOR = 0.45;
+/* THE TWO KNOBS. If it feels wrong, these are the only numbers to touch. */
+/** Fraction of the OS delta actually applied. 1 = native, lower = slower. */
+const FACTOR = 0.3;
 /** Per-frame approach rate toward the target. Higher = snappier, less glide. */
 const EASE = 0.16;
-/** Deltas at or below this are treated as a trackpad and left native. */
-const TRACKPAD_MAX = 40;
 /** How far reality may drift from our last write before we hand over. */
 const DRIFT_PX = 3;
 
@@ -98,7 +97,11 @@ export function ScrollDamper() {
       if (e.ctrlKey || e.defaultPrevented) return;
       // deltaMode 1/2 are line/page wheels — the multiplier would be wrong.
       if (e.deltaMode !== 0) return;
-      if (Math.abs(e.deltaY) <= TRACKPAD_MAX) return;
+      /* Every pixel delta is damped, precision touchpads included. An
+         earlier version skipped small deltas to "leave trackpads native",
+         which quietly meant laptop visitors got no damping at all — and the
+         founder kept reporting the page was still too fast. */
+      if (e.deltaY === 0) return;
       if (insideScrollable(e.target)) return;
 
       e.preventDefault();
