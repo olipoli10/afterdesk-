@@ -48,7 +48,7 @@ export async function GET(
         // RULE 3: only admin-approved deliverables ever reach a client —
         // rejected revisions stay invisible forever.
         allowed = file.submission?.qcStatus === "approved";
-        downloadName = deliverableFileLabel(file.fileName, taskId);
+        downloadName = deliverableFileLabel(file.fileName, taskId, file.id);
       }
     }
   } else if (user.role === "VA") {

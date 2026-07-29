@@ -2,10 +2,23 @@ import "server-only";
 import { Prisma, type TaskStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
+/** The task was not in the expected state — someone else moved it first. */
 export class TransitionError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "TransitionError";
+  }
+}
+
+/**
+ * The requested (from, to) pair is not in the transition map. This is a bug in
+ * the caller, never a race, and must NOT be presented to a user as "someone
+ * else got there first".
+ */
+export class IllegalTransitionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "IllegalTransitionError";
   }
 }
 
@@ -28,9 +41,19 @@ export const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   declined: [],
   open: ["claimed", "expired", "cancelled"],
   claimed: ["submitted_for_qc", "open", "expired", "cancelled"],
-  submitted_for_qc: ["completed", "qc_rejected", "cancelled"],
+  // `open` here is the reassignment exit when the QC rounds are exhausted:
+  // the task goes back to the pool for a different worker.
+  submitted_for_qc: ["completed", "qc_rejected", "open", "cancelled"],
   qc_rejected: ["submitted_for_qc", "open", "cancelled"],
-  revision_requested: ["claimed", "open", "completed", "disputed", "cancelled"],
+  // `submitted_for_qc` is the worker re-delivering after a revision request.
+  revision_requested: [
+    "claimed",
+    "submitted_for_qc",
+    "open",
+    "completed",
+    "disputed",
+    "cancelled",
+  ],
   // No longer terminal: the client has a post-delivery window in which to ask
   // for a revision or open a dispute.
   completed: ["revision_requested", "disputed"],
@@ -68,6 +91,13 @@ type TransitionArgs = {
    * bound so an expired quote cannot be accepted by a racing request.
    */
   guard?: Prisma.TaskWhereInput;
+  /**
+   * Run inside an existing transaction. Required whenever the status change
+   * and its side effects (a QC decision, a score recompute, a payout row) must
+   * commit together — otherwise a failure between them leaves a task in a
+   * state its own supporting rows contradict.
+   */
+  tx?: Prisma.TransactionClient;
 };
 
 /**
@@ -87,17 +117,18 @@ export async function transitionTask(
 ): Promise<{ id: string; status: TaskStatus }> {
   const from = Array.isArray(args.from) ? args.from : [args.from];
 
+  // Strict: ANY illegal pair is a programming error, not something to quietly
+  // narrow away. Silently dropping illegal source states hides the bug and
+  // produces a "task already moved on" message the operator cannot act on.
   const illegal = from.filter((s) => !isAllowedTransition(s, args.to));
-  if (illegal.length === from.length) {
-    throw new TransitionError(
-      `Illegal transition: ${from.join("/")} → ${args.to} is not in the transition map.`
+  if (illegal.length > 0) {
+    throw new IllegalTransitionError(
+      `Illegal transition: ${illegal.join("/")} → ${args.to} is not in the transition map.`
     );
   }
-  // Only keep the legal source states; a caller passing a mixed list gets the
-  // legal subset rather than a silent illegal write.
-  const legalFrom = from.filter((s) => isAllowedTransition(s, args.to));
+  const legalFrom = from;
 
-  return prisma.$transaction(async (tx) => {
+  const run = async (tx: Prisma.TransactionClient) => {
     const current = await tx.task.findUnique({
       where: { id: args.taskId },
       select: { status: true },
@@ -127,7 +158,11 @@ export async function transitionTask(
     });
 
     return { id: args.taskId, status: args.to };
-  });
+  };
+
+  // Join the caller's transaction when given one, so the status change and its
+  // side effects commit or roll back together.
+  return args.tx ? run(args.tx) : prisma.$transaction(run);
 }
 
 /** Audit entry for non-transition actions (creation, uploads, edits). */

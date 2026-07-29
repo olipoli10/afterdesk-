@@ -172,10 +172,15 @@ export async function tasksForVa(vaId: string): Promise<VaTaskView[]> {
   });
 }
 
-/** One task, scoped to the worker who holds it. */
+/**
+ * One task, scoped to the worker who holds it. The status filter matters as
+ * much as the ownership one: claimedById survives a task moving to completed
+ * or cancelled, so without it the worker's page — and the client's filenames
+ * on it — would outlive their access to the work.
+ */
 export async function taskForVa(taskId: string, vaId: string): Promise<VaTaskView | null> {
   return prisma.task.findFirst({
-    where: { id: taskId, claimedById: vaId },
+    where: { id: taskId, claimedById: vaId, status: { in: VA_FILE_ACCESS_STATUSES } },
     select: vaTaskSelect,
   });
 }

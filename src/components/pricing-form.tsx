@@ -23,11 +23,21 @@ function parseUsd(v: string): number | null {
  * to the next task in the queue. The two prices are independent by design —
  * no formula links them.
  */
-export function PricingForm({ taskId, fileCount }: { taskId: string; fileCount: number }) {
+export function PricingForm({
+  taskId,
+  fileCount,
+  categories,
+}: {
+  taskId: string;
+  fileCount: number;
+  categories: { id: string; name: string }[];
+}) {
   const router = useRouter();
   const [clientPrice, setClientPrice] = useState("");
   const [vaPayout, setVaPayout] = useState("");
   const [tier, setTier] = useState<"standard" | "high_value">("standard");
+  const [categoryId, setCategoryId] = useState("");
+  const [estimatedMinutes, setEstimatedMinutes] = useState("");
   const [filesVerified, setFilesVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCancel, setShowCancel] = useState(false);
@@ -46,6 +56,8 @@ export function PricingForm({ taskId, fileCount }: { taskId: string; fileCount: 
         clientPrice,
         vaPayout,
         tier,
+        categoryId,
+        estimatedMinutes,
         filesVerified,
       });
       if (!result.ok) {
@@ -69,7 +81,7 @@ export function PricingForm({ taskId, fileCount }: { taskId: string; fileCount: 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientPrice, vaPayout, tier, filesVerified]);
+  }, [clientPrice, vaPayout, tier, categoryId, estimatedMinutes, filesVerified]);
 
   return (
     <Card>
@@ -107,8 +119,31 @@ export function PricingForm({ taskId, fileCount }: { taskId: string; fileCount: 
           </p>
         ) : null}
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field label="Priority tier" hint="High-value tasks are only visible to top-scored VAs.">
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <Field label="Category" hint="Sets the standard the work is judged against.">
+            <select
+              className={inputClass}
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">Choose…</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Estimated minutes" hint="Your honest guess at the work involved.">
+            <input
+              inputMode="numeric"
+              className={inputClass}
+              placeholder="e.g. 120"
+              value={estimatedMinutes}
+              onChange={(e) => setEstimatedMinutes(e.target.value.replace(/\D/g, ""))}
+            />
+          </Field>
+          <Field label="Priority tier" hint="High-value is gated on worker score.">
             <select
               className={inputClass}
               value={tier}
@@ -119,6 +154,15 @@ export function PricingForm({ taskId, fileCount }: { taskId: string; fileCount: 
             </select>
           </Field>
         </div>
+
+        {vp != null && estimatedMinutes && Number(estimatedMinutes) > 0 ? (
+          <p className="mt-2 text-xs text-neutral-500">
+            Implied worker rate:{" "}
+            <span className="font-medium text-neutral-800">
+              ${((vp / 100 / (Number(estimatedMinutes) / 60)) || 0).toFixed(2)}/hour
+            </span>
+          </p>
+        ) : null}
 
         <label className="mt-4 flex items-start gap-2 text-sm text-neutral-700">
           <input

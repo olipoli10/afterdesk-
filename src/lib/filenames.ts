@@ -18,7 +18,15 @@ export function inputFileLabel(fileName: string, taskId: string, fileId: string)
   return `task-${taskId.slice(-6)}-input-${fileId.slice(-4)}${extensionOf(fileName)}`;
 }
 
-/** What a client sees for a worker's deliverable. */
-export function deliverableFileLabel(fileName: string, taskId: string): string {
-  return `task-${taskId.slice(-6)}-deliverable${extensionOf(fileName)}`;
+/**
+ * What a client sees for a worker's deliverable. Includes a per-file
+ * discriminator: a delivery may carry up to 20 files, and without it every
+ * link in the list reads identically and every download overwrites the last.
+ */
+export function deliverableFileLabel(
+  fileName: string,
+  taskId: string,
+  fileId: string
+): string {
+  return `task-${taskId.slice(-6)}-deliverable-${fileId.slice(-4)}${extensionOf(fileName)}`;
 }

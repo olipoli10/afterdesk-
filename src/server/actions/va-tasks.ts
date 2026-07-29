@@ -5,76 +5,98 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireApprovedVa } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
-import { transitionTask, TransitionError } from "@/lib/state";
+import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
 
 export type VaActionResult = { ok: true } | { ok: false; error: string };
 
+/** Thrown inside a transaction to abort with a specific message. */
+class Refused extends Error {}
+
+function surfaced(e: unknown): VaActionResult | null {
+  if (e instanceof Refused) return { ok: false, error: e.message };
+  if (e instanceof IllegalTransitionError) {
+    console.error("illegal transition in VA action", e);
+    return { ok: false, error: "That action is not possible right now. Nothing was changed." };
+  }
+  return null;
+}
+
 /**
- * First come, first served. The compare-and-swap in transitionTask does the
- * work: `from: "open"` plus a guard on claimedById being null means exactly one
- * of two simultaneous claims can match. The loser gets a plain message, not an
- * error page.
+ * First come, first served.
  *
- * Eligibility is re-checked inside the same transaction — a worker suspended
- * between page load and click must not be able to claim.
+ * Every check runs INSIDE the transaction that performs the compare-and-swap.
+ * Read them outside and they are advisory: N parallel requests all read
+ * "2 active tasks", all pass the cap, and all claim — no crash, no timing luck
+ * required, just a browser that fires the action more than once.
  */
 export async function claimTask(taskId: string): Promise<VaActionResult> {
   const user = await requireApprovedVa();
   const settings = await getSettings();
 
-  const [profile, task, activeCount] = await Promise.all([
-    prisma.vaProfile.findUnique({
-      where: { userId: user.id },
-      select: { status: true, scoreCache: true, ratedCount: true },
-    }),
-    prisma.task.findUnique({ where: { id: taskId }, select: { tier: true, status: true } }),
-    prisma.task.count({
-      where: {
-        claimedById: user.id,
-        status: { in: ["claimed", "submitted_for_qc", "qc_rejected", "revision_requested"] },
-      },
-    }),
-  ]);
-
-  if (profile?.status !== "approved") {
-    return { ok: false, error: "Your account is not currently able to claim tasks." };
-  }
-  if (!task) return { ok: false, error: "This task is no longer available." };
-
-  // Tier gate — the same rule the pool query applies, re-checked at write time
-  // so a stale page cannot be used to claim a high-value task.
-  if (task.tier === "high_value") {
-    const eligible =
-      profile.scoreCache !== null &&
-      profile.scoreCache >= settings.highValueThreshold &&
-      profile.ratedCount >= settings.minRatedDeliveries;
-    if (!eligible) {
-      return {
-        ok: false,
-        error: `High-value tasks open up at a ${settings.highValueThreshold.toFixed(1)} score across ${settings.minRatedDeliveries} rated deliveries.`,
-      };
-    }
-  }
-
-  // Work-in-progress cap: without it one fast worker can hoard the pool.
-  if (activeCount >= settings.maxActiveClaims) {
-    return {
-      ok: false,
-      error: `You already have ${activeCount} tasks in progress. Finish one before claiming another.`,
-    };
-  }
-
   try {
-    await transitionTask({
-      taskId,
-      from: "open",
-      to: "claimed",
-      action: "va_claimed",
-      actorId: user.id,
-      guard: { claimedById: null },
-      data: { claimedById: user.id, claimedAt: new Date() },
+    await prisma.$transaction(async (tx) => {
+      const profile = await tx.vaProfile.findUnique({
+        where: { userId: user.id },
+        select: { status: true, scoreCache: true, ratedCount: true },
+      });
+      if (profile?.status !== "approved") {
+        throw new Refused("Your account is not currently able to claim tasks.");
+      }
+
+      const task = await tx.task.findUnique({
+        where: { id: taskId },
+        select: { tier: true },
+      });
+      if (!task) throw new Refused("This task is no longer available.");
+
+      // A worker who already failed this task out of QC cannot pick it up
+      // again — the reassignment exists to put fresh eyes on it.
+      const previouslyFailed = await tx.submission.count({
+        where: { taskId, vaId: user.id, qcStatus: "rejected" },
+      });
+      if (previouslyFailed > 0) {
+        throw new Refused("This task was reassigned after your earlier delivery. It is open to other workers now.");
+      }
+
+      if (task.tier === "high_value") {
+        const eligible =
+          profile.scoreCache !== null &&
+          profile.scoreCache >= settings.highValueThreshold &&
+          profile.ratedCount >= settings.minRatedDeliveries;
+        if (!eligible) {
+          throw new Refused(
+            `High-value tasks open up at a ${settings.highValueThreshold.toFixed(1)} score across ${settings.minRatedDeliveries} rated deliveries.`
+          );
+        }
+      }
+
+      // Work-in-progress cap: without it one fast worker can hoard the pool.
+      const activeCount = await tx.task.count({
+        where: {
+          claimedById: user.id,
+          status: { in: ["claimed", "submitted_for_qc", "qc_rejected", "revision_requested"] },
+        },
+      });
+      if (activeCount >= settings.maxActiveClaims) {
+        throw new Refused(
+          `You already have ${activeCount} tasks in progress. Finish one before claiming another.`
+        );
+      }
+
+      await transitionTask({
+        tx,
+        taskId,
+        from: "open",
+        to: "claimed",
+        action: "va_claimed",
+        actorId: user.id,
+        guard: { claimedById: null },
+        data: { claimedById: user.id, claimedAt: new Date() },
+      });
     });
   } catch (e) {
+    const handled = surfaced(e);
+    if (handled) return handled;
     if (e instanceof TransitionError) {
       return { ok: false, error: "This task was just taken by someone else." };
     }
@@ -88,38 +110,38 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
 
 /**
  * Voluntary release. Returns the task to the pool and marks an abandonment on
- * the worker's record — no money moves (nothing was owed yet).
+ * the worker's record — no money moves (nothing was owed yet). Both writes
+ * commit together so a double-click cannot double-count the abandonment.
  */
 export async function releaseTask(taskId: string): Promise<VaActionResult> {
   const user = await requireApprovedVa();
 
-  const owned = await prisma.task.findFirst({
-    where: { id: taskId, claimedById: user.id },
-    select: { id: true },
-  });
-  if (!owned) return { ok: false, error: "Task not found." };
-
   try {
-    await transitionTask({
-      taskId,
-      from: "claimed",
-      to: "open",
-      action: "va_released",
-      actorId: user.id,
-      guard: { claimedById: user.id },
-      data: { claimedById: null, claimedAt: null },
+    await prisma.$transaction(async (tx) => {
+      await transitionTask({
+        tx,
+        taskId,
+        from: "claimed",
+        to: "open",
+        action: "va_released",
+        actorId: user.id,
+        guard: { claimedById: user.id },
+        data: { claimedById: null, claimedAt: null },
+      });
+
+      await tx.vaProfile.update({
+        where: { userId: user.id },
+        data: { tasksAbandoned: { increment: 1 } },
+      });
     });
   } catch (e) {
+    const handled = surfaced(e);
+    if (handled) return handled;
     if (e instanceof TransitionError) {
       return { ok: false, error: "This task can no longer be released." };
     }
     throw e;
   }
-
-  await prisma.vaProfile.update({
-    where: { userId: user.id },
-    data: { tasksAbandoned: { increment: 1 } },
-  });
 
   revalidatePath("/va");
   revalidatePath("/va/pool");
@@ -133,9 +155,10 @@ const submitDeliverableSchema = z.object({
 });
 
 /**
- * Delivery. Creates one Submission (the QC unit) and attaches the uploaded
- * files to it. Several files can belong to one delivery; the admin makes one
- * decision on the whole submission, never file by file.
+ * Delivery. Creates one Submission (the QC unit), attaches the uploaded files
+ * to it, and moves the task — all in one transaction. Committing the
+ * Submission first and transitioning after leaves an orphan pending submission
+ * on a task that never entered the QC queue if anything fails between them.
  */
 export async function submitDeliverable(input: unknown): Promise<VaActionResult> {
   const user = await requireApprovedVa();
@@ -147,18 +170,16 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
     return { ok: false, error: "Attach the finished work, or write your answer in the note." };
   }
 
-  const task = await prisma.task.findFirst({
-    where: { id: taskId, claimedById: user.id },
-    select: { id: true, status: true },
-  });
-  if (!task) return { ok: false, error: "Task not found." };
-  if (!["claimed", "qc_rejected", "revision_requested"].includes(task.status)) {
-    return { ok: false, error: "This task is not open for delivery right now." };
-  }
-
   try {
     await prisma.$transaction(async (tx) => {
-      const previous = await tx.submission.count({ where: { taskId } });
+      const task = await tx.task.findFirst({
+        where: { id: taskId, claimedById: user.id },
+        select: { status: true },
+      });
+      if (!task) throw new Refused("Task not found.");
+      if (!["claimed", "qc_rejected", "revision_requested"].includes(task.status)) {
+        throw new Refused("This task is not open for delivery right now.");
+      }
 
       // Anything still pending is superseded by this delivery, so the QC queue
       // can never show two undecided submissions for one task.
@@ -166,6 +187,11 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
         where: { taskId, qcStatus: "pending" },
         data: { qcStatus: "superseded" },
       });
+
+      // attemptNo is a display counter; the unique constraint on
+      // (taskId, attemptNo) is what actually prevents a duplicate, and the
+      // whole transaction rolls back if two deliveries race to the same number.
+      const previous = await tx.submission.count({ where: { taskId } });
 
       const submission = await tx.submission.create({
         data: {
@@ -186,23 +212,25 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
           },
           data: { taskId, submissionId: submission.id },
         });
-        if (claimed.count !== fileIds.length) throw new Error("file-claim-mismatch");
+        if (claimed.count !== fileIds.length) {
+          throw new Refused("One of the files could not be attached. Re-upload and try again.");
+        }
       }
-    });
 
-    await transitionTask({
-      taskId,
-      from: ["claimed", "qc_rejected", "revision_requested"],
-      to: "submitted_for_qc",
-      action: "va_submitted_deliverable",
-      actorId: user.id,
-      guard: { claimedById: user.id },
-      meta: { files: fileIds.length },
+      await transitionTask({
+        tx,
+        taskId,
+        from: ["claimed", "qc_rejected", "revision_requested"],
+        to: "submitted_for_qc",
+        action: "va_submitted_deliverable",
+        actorId: user.id,
+        guard: { claimedById: user.id },
+        meta: { files: fileIds.length },
+      });
     });
   } catch (e) {
-    if (e instanceof Error && e.message === "file-claim-mismatch") {
-      return { ok: false, error: "One of the files could not be attached. Re-upload and try again." };
-    }
+    const handled = surfaced(e);
+    if (handled) return handled;
     if (e instanceof TransitionError) {
       return { ok: false, error: "This task is no longer open for delivery." };
     }

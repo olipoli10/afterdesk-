@@ -154,7 +154,7 @@ export default async function ClientTaskPage({
                     href={`/api/files/${f.id}/download`}
                     className="truncate font-medium text-blue-700 hover:underline"
                   >
-                    {deliverableFileLabel(f.fileName, task.id)}
+                    {deliverableFileLabel(f.fileName, task.id, f.id)}
                   </a>
                   <span className="shrink-0 pl-2 text-xs text-neutral-400">
                     {formatBytes(f.sizeBytes)}

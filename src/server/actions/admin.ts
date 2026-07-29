@@ -18,6 +18,11 @@ const approveSchema = z.object({
   vaPayout: z.string().trim().min(1),
   tier: z.enum(["standard", "high_value"]),
   filesVerified: z.boolean(),
+  // Required before a quote goes out: the category drives the dispute criteria
+  // the worker is judged against and the per-category medians; the estimate
+  // is what makes "is this payout fair" answerable.
+  categoryId: z.string().min(1),
+  estimatedMinutes: z.coerce.number().int().min(1).max(100000),
 });
 
 export type ApproveResult =
@@ -31,8 +36,16 @@ export type ApproveResult =
 export async function approvePricing(input: unknown): Promise<ApproveResult> {
   const admin = await requireRole("ADMIN");
   const parsed = approveSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid form data." };
-  const { taskId, tier, filesVerified } = parsed.data;
+  if (!parsed.success) {
+    const missingCategory = parsed.error.issues.some((i) => i.path[0] === "categoryId");
+    return {
+      ok: false,
+      error: missingCategory
+        ? "Pick a category and an estimate — both are needed before a quote goes out."
+        : "Invalid form data.",
+    };
+  }
+  const { taskId, tier, filesVerified, categoryId, estimatedMinutes } = parsed.data;
 
   let clientPriceCents: number;
   let vaPayoutCents: number;
@@ -79,6 +92,8 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
         clientPriceCents,
         vaPayoutCents,
         tier,
+        categoryId,
+        estimatedMinutes,
         filesVerified: true,
         quotedAt: now,
         quoteExpiresAt,
@@ -100,6 +115,45 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
   revalidatePath("/admin");
   const nextId = await nextInPricingQueue(taskId);
   return { ok: true, nextId };
+}
+
+const reassignSchema = z.object({
+  taskId: z.string(),
+  reason: z.string().trim().min(3).max(2000),
+});
+
+/**
+ * Pulls a task out of a worker's hands and back into the pool. Without this,
+ * a suspended or unresponsive worker's in-flight tasks are frozen: they cannot
+ * deliver (the pool gate blocks them) and nobody else can pick it up.
+ *
+ * QC rounds reset, because the next worker starts fresh.
+ */
+export async function reassignTask(input: unknown): Promise<CancelResult> {
+  const admin = await requireRole("ADMIN");
+  const parsed = reassignSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "A reason is required to reassign." };
+
+  try {
+    await transitionTask({
+      taskId: parsed.data.taskId,
+      from: ["claimed", "qc_rejected", "submitted_for_qc", "revision_requested"],
+      to: "open",
+      action: "admin_reassigned",
+      actorId: admin.id,
+      reason: parsed.data.reason,
+      data: { claimedById: null, claimedAt: null, qcRounds: 0 },
+    });
+  } catch (e) {
+    if (e instanceof TransitionError) {
+      return { ok: false, error: "This task is not currently assigned to anyone." };
+    }
+    throw e;
+  }
+
+  revalidatePath("/admin/tasks");
+  revalidatePath("/admin/workers");
+  return { ok: true };
 }
 
 const cancelSchema = z.object({

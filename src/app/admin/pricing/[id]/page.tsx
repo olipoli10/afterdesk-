@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireRole } from "@/lib/authz";
+import { prisma } from "@/lib/db";
 import { taskForAdmin } from "@/lib/queries/tasks";
 import { LocalTime } from "@/components/local-time";
 import { PricingForm } from "@/components/pricing-form";
@@ -21,6 +22,11 @@ export default async function PricingDetailPage({
   }
 
   const inputFiles = task.files.filter((f) => f.kind === "input");
+  const categories = await prisma.taskCategory.findMany({
+    where: { active: true },
+    select: { id: true, name: true },
+    orderBy: { sortOrder: "asc" },
+  });
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -132,7 +138,11 @@ export default async function PricingDetailPage({
         </div>
       </div>
 
-      <PricingForm taskId={task.id} fileCount={inputFiles.length} />
+      <PricingForm
+        taskId={task.id}
+        fileCount={inputFiles.length}
+        categories={categories}
+      />
     </div>
   );
 }
