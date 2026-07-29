@@ -46,3 +46,6 @@ storage/
 
 .prisma-dev.log
 
+
+.next-dev.log
+.prisma-dev.log
