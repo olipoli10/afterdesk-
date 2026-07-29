@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, roleHome } from "@/lib/authz";
+import { getSettings } from "@/lib/settings";
 import { Reveal } from "@/components/reveal";
+import { AudienceToggle } from "@/components/audience-toggle";
+import { PublicCounters } from "@/components/public-counters";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The landing page is a picture, not an essay: a real file arriving broken at
@@ -40,10 +43,10 @@ const LEDGER = [
   ["Rebuild a 90-page proposal in our template", "$75"],
 ];
 
-const TERMS = [
+const terms = (retentionDays: number): [string, string][] => [
   ["PRICE", "One fixed price, approved before any work starts."],
-  ["REVIEW", "Every delivery is reviewed by a US-based professional before you see it."],
-  ["DATA", "Access ends when the task does. Files purged after 90 days."],
+  ["REVIEW", "Every delivery is reviewed by a professional before you see it."],
+  ["DATA", `Access ends when the task does. Files purged after ${retentionDays} days.`],
   ["COMMITMENT", "No subscription, no minimum. Skip a night by not sending a task."],
 ];
 
@@ -71,31 +74,27 @@ function Cell({ children, className = "" }: { children: React.ReactNode; classNa
 export default async function Home() {
   const user = await getSessionUser();
   if (user) redirect(roleHome(user.role));
+  const settings = await getSettings();
 
   return (
     <div className="overflow-x-clip bg-[#0A0B0D]">
       {/* ── NAV — sticky, blurred ─────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
-        <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between px-6">
-          <span className="font-mono text-[13px] uppercase tracking-[0.22em] text-white">
+        <div className="mx-auto grid h-14 w-full max-w-[1120px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
+          <span className="whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.14em] text-white sm:text-[13px] sm:tracking-[0.22em]">
             Second Shift
           </span>
-          <div className="flex items-center gap-5">
-            <Link
-              href="/register/va"
-              className="text-[13px] font-medium text-[#8A9099] transition-colors hover:text-white"
-            >
-              For workers
-            </Link>
+          <AudienceToggle side="client" tone="night" />
+          <div className="flex items-center justify-end gap-5">
             <Link
               href="/login"
-              className="text-[13px] font-medium text-[#8A9099] transition-colors hover:text-white"
+              className="text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:text-[13px]"
             >
               Sign in
             </Link>
             <Link
               href="/register"
-              className="lift rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)]"
+              className="lift hidden rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] sm:block"
             >
               Send a task
             </Link>
@@ -119,8 +118,8 @@ export default async function Home() {
           </h1>
           <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
             Research, data, writing, spreadsheets, transcription, admin — if you can describe
-            it, we take it on. Matched to vetted specialists and AI, wherever the work gets
-            done best. One fixed price, approved before anything starts.
+            it, we take it on. Matched to vetted specialists working with the best tools for
+            the job. One fixed price, approved before anything starts.
           </p>
           <div className="anim-rise d-3 mt-8">
             <Link
@@ -131,7 +130,7 @@ export default async function Home() {
             </Link>
           </div>
           <p className="anim-rise d-4 mt-4 font-mono text-[13px] text-[#6B7280]">
-            You get a fixed price back within one business hour.
+            You get a fixed price back within four hours — usually faster.
           </p>
         </div>
       </section>
@@ -139,7 +138,7 @@ export default async function Home() {
       {/* ── THE DIFF ──────────────────────────────────────────────────── */}
       <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
         <p className="anim-rise d-5 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
-          One of last week&apos;s tasks, sent as a single sentence: &ldquo;Dedupe our exported
+          A task like this arrives as a single sentence: &ldquo;Dedupe our exported
           leads, fix the company names, drop anyone we can&apos;t email.&rdquo;
         </p>
 
@@ -232,7 +231,7 @@ export default async function Home() {
                   />
                 </svg>
               </span>
-              <span className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/70">
+              <span className="mt-2 rounded bg-[#0A0B0D]/60 px-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80">
                 Overnight
               </span>
             </div>
@@ -319,6 +318,9 @@ export default async function Home() {
                 </div>
               ))}
             </div>
+            {/* the running total closes the ledger metaphor — same three live
+                figures the worker page shows, read off the same ledger */}
+            <PublicCounters tone="paper" variant="line" className="mt-6 pt-4" />
           </Reveal>
         </div>
       </section>
@@ -339,7 +341,8 @@ export default async function Home() {
                 { label: "Your working hours — New York", lit: (h: number) => h >= 8 && h <= 17 },
                 {
                   label: "Their working hours — Manila, 12 hours ahead",
-                  lit: (h: number) => h < 8 || h > 17,
+                  // 8 AM–5 PM Manila shifted 12h onto the New York clock.
+                  lit: (h: number) => h >= 20 || h <= 5,
                 },
               ].map((row) => (
                 <div key={row.label}>
@@ -364,7 +367,7 @@ export default async function Home() {
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {NIGHT_STEPS.map(([time, text]) => (
                 <div key={time} className="srow">
-                  <p className="font-mono text-[11px] tabular-nums text-[#767C86]">{time}</p>
+                  <p className="font-mono text-[11px] tabular-nums text-[#5B6069]">{time}</p>
                   <p className="mt-1 text-[15px] leading-snug text-[#14161A]">{text}</p>
                 </div>
               ))}
@@ -377,17 +380,62 @@ export default async function Home() {
       <section className="border-t border-black/8 bg-[#F7F6F3]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-24">
           <Reveal>
-            {TERMS.map(([label, text]) => (
+            {terms(settings.retentionDays).map(([label, text]) => (
               <div
                 key={label}
                 className="srow grid gap-2 border-b border-black/8 py-5 sm:grid-cols-[140px_1fr] sm:gap-6"
               >
-                <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-[#767C86]">
+                <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-[#5B6069]">
                   {label}
                 </span>
                 <span className="text-[16px] leading-relaxed text-[#14161A]">{text}</span>
               </div>
             ))}
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── THE DIFFERENCE (paper) — who we are, why this and not a
+             freelance marketplace ───────────────────────────────────── */}
+      <section className="border-t border-black/8 bg-[#F7F6F3]">
+        <div className="mx-auto w-full max-w-[880px] px-6 py-24">
+          <Reveal>
+            <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+              One professional between you and the work.
+            </h2>
+            <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-[#5B6069]">
+              Second Shift is run by an operator, not an algorithm. Every price is set by
+              the operator — one professional who reads your task — every match is
+              deliberate, and every delivery is reviewed before it reaches you. Nobody in
+              the pool ever learns who you are — your files cross to them stripped of
+              anything that says it.
+            </p>
+            <div className="mt-8">
+              <div className="mb-2 hidden grid-cols-2 gap-6 md:grid">
+                <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-[#5B6069]">
+                  There
+                </span>
+                <span className="w-fit rounded border border-[#1E7F5C]/40 bg-[#1E7F5C]/10 px-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#166049]">
+                  Here
+                </span>
+              </div>
+              {[
+                ["Post a job. Read forty proposals.", "Describe it once. One price back in hours, not days."],
+                ["Interview, hire, onboard, manage.", "Nothing to manage. The operator runs the night."],
+                ["Hourly meters running while you sleep.", "One fixed price, approved before anything starts."],
+                ["Hope it's right in the morning.", "Reviewed by a professional before you ever see it."],
+              ].map(([there, here]) => (
+                <div
+                  key={there}
+                  className="srow grid gap-2 border-b border-black/8 py-4 md:grid-cols-2 md:gap-6"
+                >
+                  <p className="text-[14px] leading-relaxed text-[#5B6069]">{there}</p>
+                  <p className="text-[14px] leading-relaxed text-[#14161A] md:border-l md:border-black/10 md:pl-6">
+                    {here}
+                  </p>
+                </div>
+              ))}
+            </div>
           </Reveal>
         </div>
       </section>
@@ -415,7 +463,7 @@ export default async function Home() {
                   </Link>
                 </div>
                 <p className="mt-4 font-mono text-[12px] text-[#767C86]">
-                  Priced within one business hour. Nothing starts until you approve it.
+                  Priced within four hours. Nothing starts until you approve it.
                 </p>
               </div>
             </div>
@@ -433,7 +481,7 @@ export default async function Home() {
             <Link href="/login" className="transition-colors hover:text-[#14161A]">
               Sign in
             </Link>
-            <Link href="/register/va" className="transition-colors hover:text-[#14161A]">
+            <Link href="/workers" className="transition-colors hover:text-[#14161A]">
               Work with us
             </Link>
           </div>
