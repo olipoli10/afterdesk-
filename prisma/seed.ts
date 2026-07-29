@@ -4,6 +4,10 @@
  *    better-auth/crypto) and stored as a "credential" account row, exactly the
  *    shape Better Auth's email+password login verifies against.
  *  - placeholder entry-test questions (v1 — operator supplies real content later)
+ *  - task categories — required at pricing time (approvePricing rejects a
+ *    quote with no categoryId); slugs match the tags already shown in the
+ *    client homepage's example ledger (src/lib/i18n/client.ts ch03.rows), so
+ *    the marketing copy and the real taxonomy never drift apart.
  *
  * Settings are intentionally NOT seeded: defaults live in src/lib/settings.ts
  * and the Setting table only stores overrides.
@@ -47,6 +51,73 @@ async function main() {
       data: { accountId: created.id },
     });
     console.log(`Admin created: ${email}`);
+  }
+
+  const categoryCount = await prisma.taskCategory.count();
+  if (categoryCount === 0) {
+    await prisma.taskCategory.createMany({
+      data: [
+        {
+          slug: "data",
+          name: "Data",
+          sortOrder: 1,
+          disputeCriteria:
+            "Delivered file matches the requested format and every row from the source is accounted for (kept, merged, or explicitly dropped with a reason). Minor formatting preference differences are not grounds for a dispute.",
+        },
+        {
+          slug: "research",
+          name: "Research",
+          sortOrder: 2,
+          disputeCriteria:
+            "Every requested field is populated or explicitly marked unavailable after a real search. Isolated inaccuracies in publicly-sourced data (a changed phone number, a stale listing) are normal variance, not a dispute ground — a pattern of unresearched or fabricated entries is.",
+        },
+        {
+          slug: "writing",
+          name: "Writing",
+          sortOrder: 3,
+          disputeCriteria:
+            "Matches the requested length, tone, and format; free of factual claims the brief didn't supply. Style preference alone is not a dispute ground.",
+        },
+        {
+          slug: "media",
+          name: "Media",
+          sortOrder: 4,
+          disputeCriteria:
+            "Transcription/tagging matches the source audio or video at normal accuracy for the stated language and audio quality; timestamps or tags follow the requested scheme.",
+        },
+        {
+          slug: "docs",
+          name: "Docs",
+          sortOrder: 5,
+          disputeCriteria:
+            "Rebuilt or reformatted document preserves all source content in the requested template, with consistent formatting throughout.",
+        },
+        {
+          slug: "admin",
+          name: "Admin",
+          sortOrder: 6,
+          disputeCriteria:
+            "Task is completed per the brief's explicit steps; anything left ambiguous in the brief is noted rather than guessed.",
+        },
+        {
+          slug: "design",
+          name: "Design",
+          sortOrder: 7,
+          disputeCriteria:
+            "Delivered asset matches the requested dimensions, format, and brief; brand assets (logo, colors) used as supplied, not altered.",
+        },
+        {
+          slug: "other",
+          name: "Other",
+          sortOrder: 8,
+          disputeCriteria:
+            "Completed per the brief's explicit scope. Used when a task genuinely does not fit the other categories.",
+        },
+      ],
+    });
+    console.log("Task categories created (8).");
+  } else {
+    console.log("Task categories already present — skipping.");
   }
 
   const questionCount = await prisma.testQuestion.count();

@@ -31,7 +31,15 @@ export class IllegalTransitionError extends Error {
  * terminal: the admin can re-pool or cancel it.
  */
 export const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
-  submitted: ["pricing_review", "cancelled"],
+  // A task is promoted submitted -> pricing_review immediately at creation
+  // (see client-tasks.ts), so "submitted" never persists live. But every
+  // other reader (admin.ts's approvePricing, the pricing queue queries, the
+  // admin UI gate) treats the two as one interchangeable "awaiting pricing"
+  // bucket — so "submitted" needs the same outgoing edges as
+  // "pricing_review" or the defensive from:["submitted","pricing_review"]
+  // union those callers pass gets rejected outright by the strict from-set
+  // check below, regardless of the row's real status.
+  submitted: ["pricing_review", "quoted", "cancelled"],
   pricing_review: ["quoted", "cancelled"],
   // Accepting no longer publishes the task: it must be paid for first. The
   // one exception is the operator's own internal practice work, which skips
