@@ -54,6 +54,8 @@ type Dict = {
     byWorkNote: string;
     lessons: (n: number) => string;
     exam: string;
+    /** The anchor into a published course page. */
+    read: string;
   };
   closing: { h2: string; body: string; cta: string; micro: string };
   footer: { workers: string; how: string; signIn: string };
@@ -98,6 +100,7 @@ const en: Dict = {
     byWorkNote: "Each teaches the exact standard that kind of delivery is judged against.",
     lessons: (n) => `${n} lessons`,
     exam: "exam + certificate",
+    read: "Read the course",
   },
   closing: {
     h2: "The courses are free. The work is real.",
@@ -147,6 +150,7 @@ const tl: Dict = {
     byWorkNote: "Bawat isa ay nagtuturo ng eksaktong pamantayan kung paano husgahan ang ganoong delivery.",
     lessons: (n) => `${n} na leksyon`,
     exam: "exam + certificate",
+    read: "Basahin ang kurso",
   },
   closing: {
     h2: "Libre ang mga kurso. Totoo ang trabaho.",
@@ -196,6 +200,7 @@ const fr: Dict = {
     byWorkNote: "Chacun enseigne la norme exacte selon laquelle ce type de livraison est jugé.",
     lessons: (n) => `${n} leçons`,
     exam: "examen + certificat",
+    read: "Lire le cours",
   },
   closing: {
     h2: "Les cours sont gratuits. Le travail est réel.",
@@ -245,6 +250,7 @@ const es: Dict = {
     byWorkNote: "Cada uno enseña el estándar exacto con el que se juzga ese tipo de entrega.",
     lessons: (n) => `${n} lecciones`,
     exam: "examen + certificado",
+    read: "Leer el curso",
   },
   closing: {
     h2: "Los cursos son gratis. El trabajo es real.",

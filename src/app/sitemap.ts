@@ -1,17 +1,30 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
+import { PUBLISHED_COURSES } from "@/lib/academy/public";
 
+/**
+ * Generated from the same allowlist the course routes are built from, so the
+ * sitemap and the site cannot disagree: publishing a course adds its URL here
+ * automatically, and withholding one removes it.
+ *
+ * No `priority` or `changeFrequency` — Google has said publicly it ignores
+ * both, and a hand-maintained priority column is a standing invitation to
+ * argue with the link graph and lose.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
+  const pages = [
+    "",
+    "/workers",
+    "/academy",
+    "/how-it-works",
+    "/security",
+    "/privacy",
+    "/terms",
+    "/acceptable-use",
+  ];
+
   return [
-    { url: SITE_URL, changeFrequency: "weekly", priority: 1 },
-    { url: `${SITE_URL}/workers`, changeFrequency: "weekly", priority: 0.9 },
-    // The Academy is the shareable half of the worker funnel — free training
-    // is only word of mouth if it can be looked at without an account.
-    { url: `${SITE_URL}/academy`, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${SITE_URL}/security`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${SITE_URL}/privacy`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${SITE_URL}/terms`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${SITE_URL}/acceptable-use`, changeFrequency: "monthly", priority: 0.5 },
+    ...pages.map((p) => ({ url: `${SITE_URL}${p}` })),
+    ...PUBLISHED_COURSES.map((slug) => ({ url: `${SITE_URL}/academy/${slug}` })),
   ];
 }

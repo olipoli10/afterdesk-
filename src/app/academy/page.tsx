@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { Reveal } from "@/components/reveal";
 import { LangSwitch } from "@/components/lang-switch";
-import { publicCourses, academyStats } from "@/lib/academy/public";
+import { publicCourses, academyStats, isPublished } from "@/lib/academy/public";
 import { courseLook } from "@/lib/academy/look";
 import { ACADEMY_I18N, ACADEMY_LANGS, academyLangOf } from "@/lib/i18n/academy";
 import { SITE_URL } from "@/lib/site";
@@ -88,8 +88,42 @@ export default async function AcademyPublicPage({
      but a screen reader must not read them in the page's voice locale. */
   const machine = { lang: "en" as const };
 
+  /**
+   * An ItemList of Course over the PUBLISHED courses only — Course list is
+   * the one Google rich result this site currently qualifies for, and listing
+   * a course here that has no page would be a broken promise to the crawler.
+   * No aggregateRating, no offers: there are no ratings and there is no price.
+   */
+  const published = courses.filter((c) => isPublished(c.slug));
+  const listJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: published.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Course",
+        "@id": `${SITE_URL}/academy/${c.slug}#course`,
+        name: c.title,
+        description: c.summary,
+        url: `${SITE_URL}/academy/${c.slug}`,
+        inLanguage: "en",
+        isAccessibleForFree: true,
+        timeRequired: `PT${c.minutes}M`,
+        provider: { "@id": `${SITE_URL}/#organization` },
+        hasCourseInstance: [
+          { "@type": "CourseInstance", courseMode: "online", courseWorkload: `PT${c.minutes}M` },
+        ],
+      },
+    })),
+  };
+
   return (
     <div lang={lang} className="overflow-x-clip bg-[#F7F6F3]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(listJsonLd) }}
+      />
       {/* ── NAV ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-4 px-4 sm:px-6">
@@ -249,7 +283,22 @@ export default async function AcademyPublicPage({
                         className="h-[7px] w-[7px] shrink-0 rounded-full"
                         style={{ backgroundColor: look.hue }}
                       />
-                      <span className="min-w-0">{c.title}</span>
+                      {/* Published courses get a real anchor — before this the
+                          29 cards were bare <article> elements and no course
+                          anchor existed anywhere on the site. Withheld courses
+                          stay listed but unlinked: the curriculum is honest
+                          about its own size without publishing the grading
+                          spec. */}
+                      {isPublished(c.slug) ? (
+                        <Link
+                          href={`/academy/${c.slug}`}
+                          className="min-w-0 underline decoration-[#14161A]/25 underline-offset-[3px] transition-colors hover:decoration-[#14161A]"
+                        >
+                          {c.title}
+                        </Link>
+                      ) : (
+                        <span className="min-w-0">{c.title}</span>
+                      )}
                     </h4>
                     <p {...machine} className="mt-2 text-[14px] leading-relaxed text-[#5B6069]">
                       {c.summary}
@@ -273,9 +322,19 @@ export default async function AcademyPublicPage({
                       ))}
                     </ol>
 
-                    <p className="mt-3.5 border-t border-[#14161A]/[0.08] pt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[#5B6069]">
-                      {t.curriculum.lessons(c.lessonCount)} · ~{c.minutes} min ·{" "}
-                      {t.curriculum.exam}
+                    <p className="mt-3.5 flex flex-wrap items-center gap-x-2 border-t border-[#14161A]/[0.08] pt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[#5B6069]">
+                      <span>
+                        {t.curriculum.lessons(c.lessonCount)} · ~{c.minutes} min ·{" "}
+                        {t.curriculum.exam}
+                      </span>
+                      {isPublished(c.slug) ? (
+                        <Link
+                          href={`/academy/${c.slug}`}
+                          className="ml-auto whitespace-nowrap font-semibold text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors hover:decoration-[#14161A]"
+                        >
+                          {t.curriculum.read} →
+                        </Link>
+                      ) : null}
                     </p>
                   </article>
                 );

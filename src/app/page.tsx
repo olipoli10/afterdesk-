@@ -15,6 +15,7 @@ import { PaperInstrument } from "@/components/paper-instrument";
 import { PaperReviewDesk } from "@/components/paper-review-desk";
 import { TrustLinks } from "@/components/trust-links";
 import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
+import { SITE_URL } from "@/lib/site";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The landing page is a picture, not an essay: a real file arriving broken at
@@ -38,11 +39,22 @@ export const metadata = {
   alternates: { canonical: "/" },
 };
 
+/**
+ * The canonical Organization node. Every course page's Course.provider points
+ * at this @id rather than restating the org, so there is exactly one place
+ * that describes the company and no chance of two nodes disagreeing.
+ *
+ * Nothing here is aspirational: no aggregateRating (there are no ratings), no
+ * sameAs (there are no profiles yet), no logo until a real one is exported to
+ * public/. Structured data that claims more than the business has is worse
+ * than none.
+ */
 const ORG_JSONLD = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": `${SITE_URL}/#organization`,
   name: "Second Shift",
-  url: "https://secondshift.co",
+  url: SITE_URL,
   description:
     "Describe any task in plain English — priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
 });
