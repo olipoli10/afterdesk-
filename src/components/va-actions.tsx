@@ -5,15 +5,37 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { claimTask, releaseTask } from "@/server/actions/va-tasks";
 import { buttonDanger, buttonSecondary, buttonPrimary } from "@/components/ui";
 
-export function ClaimButton({ taskId }: { taskId: string }) {
+/** The board tile's claim: dusk fill, mono uppercase — the tile's one accent. */
+const buttonBoard =
+  "inline-flex min-h-11 items-center justify-center rounded-[3px] bg-[#1B2740] px-4 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-150 hover:bg-[#0A0B0D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2740] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-40";
+
+export function ClaimButton({
+  taskId,
+  variant = "primary",
+  label = "Claim this task",
+}: {
+  taskId: string;
+  /**
+   * "board" is the pool tile (compact, dusk-filled, mono). "primary" is the
+   * pre-claim detail page, where the claim is THE action on the screen.
+   * "secondary" remains for calmer contexts.
+   */
+  variant?: "primary" | "secondary" | "board";
+  label?: string;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, start] = useTransition();
 
+  const cls =
+    variant === "board"
+      ? buttonBoard
+      : `${variant === "secondary" ? buttonSecondary : buttonPrimary} min-h-11 w-full sm:min-h-0 sm:w-auto`;
+
   return (
-    <div className="w-full">
+    <div className={variant === "board" ? "" : "w-full"}>
       <button
-        className={`${buttonPrimary} min-h-11 w-full sm:min-h-0 sm:w-auto`}
+        className={cls}
         disabled={isPending}
         onClick={() =>
           start(async () => {
@@ -28,7 +50,7 @@ export function ClaimButton({ taskId }: { taskId: string }) {
           })
         }
       >
-        {isPending ? "Claiming…" : "Claim this task"}
+        {isPending ? "Claiming…" : variant === "board" ? "Claim" : label}
       </button>
       {error ? (
         <p role="alert" className="mt-2 text-sm text-[#8C2F23]">

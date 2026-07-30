@@ -142,7 +142,7 @@ export default async function VaHome() {
     <div className="space-y-6">
       <PageTitle
         title="My work"
-        action={approved ? <LinkButton href="/va/pool">Browse available work</LinkButton> : undefined}
+        action={approved ? <LinkButton href="/va/pool">Find work</LinkButton> : undefined}
       />
 
       {/* Account status */}
@@ -201,7 +201,7 @@ export default async function VaHome() {
             <EmptyState
               title="Nothing claimed"
               body="When you claim a task from the pool it appears here with the client's files and your deadline."
-              action={<LinkButton href="/va/pool">Browse available work</LinkButton>}
+              action={<LinkButton href="/va/pool">Find work</LinkButton>}
             />
           ) : (
             <Card>

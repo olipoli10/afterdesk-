@@ -5,9 +5,13 @@
  *    shape Better Auth's email+password login verifies against.
  *  - placeholder entry-test questions (v1 — operator supplies real content later)
  *  - task categories — required at pricing time (approvePricing rejects a
- *    quote with no categoryId); slugs match the tags already shown in the
- *    client homepage's example ledger (src/lib/i18n/client.ts ch03.rows), so
- *    the marketing copy and the real taxonomy never drift apart.
+ *    quote with no categoryId), and now also the worker pool's organizing
+ *    spine (src/app/va/pool). The taxonomy is deliberately shaped by WORKER
+ *    SKILL, not by the client homepage's marketing tags: a worker picks a lane
+ *    ("I do data cleanup", "I do transcription"), so "Data entry &
+ *    transcription" and "List building" are separate lanes even though the
+ *    homepage ledger lumps both under DATA. Those ledger rows are display
+ *    copy; this is the real taxonomy, and they are allowed to differ.
  *
  * Settings are intentionally NOT seeded: defaults live in src/lib/settings.ts
  * and the Setting table only stores overrides.
@@ -53,72 +57,98 @@ async function main() {
     console.log(`Admin created: ${email}`);
   }
 
-  const categoryCount = await prisma.taskCategory.count();
-  if (categoryCount === 0) {
-    await prisma.taskCategory.createMany({
-      data: [
-        {
-          slug: "data",
-          name: "Data",
-          sortOrder: 1,
-          disputeCriteria:
-            "Delivered file matches the requested format and every row from the source is accounted for (kept, merged, or explicitly dropped with a reason). Minor formatting preference differences are not grounds for a dispute.",
-        },
-        {
-          slug: "research",
-          name: "Research",
-          sortOrder: 2,
-          disputeCriteria:
-            "Every requested field is populated or explicitly marked unavailable after a real search. Isolated inaccuracies in publicly-sourced data (a changed phone number, a stale listing) are normal variance, not a dispute ground — a pattern of unresearched or fabricated entries is.",
-        },
-        {
-          slug: "writing",
-          name: "Writing",
-          sortOrder: 3,
-          disputeCriteria:
-            "Matches the requested length, tone, and format; free of factual claims the brief didn't supply. Style preference alone is not a dispute ground.",
-        },
-        {
-          slug: "media",
-          name: "Media",
-          sortOrder: 4,
-          disputeCriteria:
-            "Transcription/tagging matches the source audio or video at normal accuracy for the stated language and audio quality; timestamps or tags follow the requested scheme.",
-        },
-        {
-          slug: "docs",
-          name: "Docs",
-          sortOrder: 5,
-          disputeCriteria:
-            "Rebuilt or reformatted document preserves all source content in the requested template, with consistent formatting throughout.",
-        },
-        {
-          slug: "admin",
-          name: "Admin",
-          sortOrder: 6,
-          disputeCriteria:
-            "Task is completed per the brief's explicit steps; anything left ambiguous in the brief is noted rather than guessed.",
-        },
-        {
-          slug: "design",
-          name: "Design",
-          sortOrder: 7,
-          disputeCriteria:
-            "Delivered asset matches the requested dimensions, format, and brief; brand assets (logo, colors) used as supplied, not altered.",
-        },
-        {
-          slug: "other",
-          name: "Other",
-          sortOrder: 8,
-          disputeCriteria:
-            "Completed per the brief's explicit scope. Used when a task genuinely does not fit the other categories.",
-        },
-      ],
+  /**
+   * Upsert by slug rather than "skip the whole block if any row exists": the
+   * old form meant a database that already had the categories could never
+   * receive a NEW one, and could never have a missing disputeCriteria filled
+   * in — which is exactly the state the live database was found in.
+   *
+   * An existing row keeps its name and sortOrder (the operator may have edited
+   * them); only a NULL disputeCriteria is backfilled. Nothing is ever
+   * overwritten, so this is safe to re-run against a live database.
+   */
+  const CATEGORIES = [
+    {
+      slug: "data-cleanup",
+      name: "Data cleanup",
+      sortOrder: 0,
+      disputeCriteria:
+        "Every row from the source is accounted for — kept, merged, or dropped with a stated reason — and the delivered file matches the requested format and column order. Minor formatting preferences are not grounds for a dispute.",
+    },
+    {
+      slug: "data-entry",
+      name: "Data entry & transcription",
+      sortOrder: 1,
+      disputeCriteria:
+        "Keyed or transcribed content matches the source at normal accuracy for the stated language and source quality, and follows the requested template or timestamp scheme. Illegible or inaudible source material must be flagged, never guessed — a guessed value is a dispute ground, a flagged one is not.",
+    },
+    {
+      slug: "list-building",
+      name: "List building",
+      sortOrder: 2,
+      disputeCriteria:
+        "Records match the stated sourcing criteria and every requested field is populated or explicitly marked unavailable after a real search. Isolated staleness in public data is normal variance; a pattern of fabricated or unresearched entries is not.",
+    },
+    {
+      slug: "research",
+      name: "Research",
+      sortOrder: 3,
+      disputeCriteria:
+        "Every requested field is populated or explicitly marked unavailable after a real search, and figures are traceable to a source where the brief asked for sourcing. Isolated inaccuracies in publicly-sourced data are normal variance; fabricated findings are not.",
+    },
+    {
+      slug: "document-production",
+      name: "Document production",
+      sortOrder: 4,
+      disputeCriteria:
+        "The rebuilt or reformatted document preserves all source content exactly, in the requested template, with consistent formatting throughout. Content changes were not requested and are a dispute ground in either direction.",
+    },
+    {
+      slug: "writing",
+      name: "Writing",
+      sortOrder: 5,
+      disputeCriteria:
+        "Matches the requested length, tone, and format, and makes no factual claim the brief didn't supply. Style preference alone is not a dispute ground.",
+    },
+    {
+      slug: "analysis",
+      name: "Analysis",
+      sortOrder: 6,
+      disputeCriteria:
+        "Figures reconcile to the source data and the stated method was followed. A conclusion the client disagrees with is not a dispute ground; an arithmetic or method error is.",
+    },
+    {
+      slug: "admin-coordination",
+      name: "Admin & coordination",
+      sortOrder: 7,
+      disputeCriteria:
+        "Completed per the brief's explicit steps, with the actions taken logged where a log was requested. Anything the brief left ambiguous is noted rather than guessed.",
+    },
+  ];
+
+  let created = 0;
+  let backfilled = 0;
+  for (const c of CATEGORIES) {
+    const existing = await prisma.taskCategory.findUnique({
+      where: { slug: c.slug },
+      select: { id: true, disputeCriteria: true },
     });
-    console.log("Task categories created (8).");
-  } else {
-    console.log("Task categories already present — skipping.");
+    if (!existing) {
+      await prisma.taskCategory.create({ data: c });
+      created += 1;
+    } else if (existing.disputeCriteria === null) {
+      await prisma.taskCategory.update({
+        where: { id: existing.id },
+        data: { disputeCriteria: c.disputeCriteria },
+      });
+      backfilled += 1;
+    }
   }
+  console.log(
+    `Task categories: ${created} created, ${backfilled} dispute-criteria backfilled, ${
+      CATEGORIES.length - created - backfilled
+    } already complete.`
+  );
 
   const questionCount = await prisma.testQuestion.count();
   if (questionCount === 0) {

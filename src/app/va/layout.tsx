@@ -41,10 +41,21 @@ export default async function VaLayout({ children }: { children: ReactNode }) {
       nav={
         approved
           ? [
+              // Nav and the board's h1 share ONE name on purpose — the old
+              // chrome mixed four variants ("Browse available work", "The
+              // pool", "Available work", "Open work") and read as noise.
+              // The /va CTA names the intent instead ("Find work").
               { href: "/va", label: "My work" },
               { href: "/va/pool", label: "Available work" },
+              { href: "/va/training", label: "Training" },
             ]
-          : [{ href: "/va", label: "My account" }]
+          : [
+              // Training is open pre-approval on purpose: an applicant who
+              // reads the guides before review delivers better first work,
+              // and nothing in them is client data.
+              { href: "/va", label: "My account" },
+              { href: "/va/training", label: "Training" },
+            ]
       }
     >
       {children}

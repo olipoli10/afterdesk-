@@ -163,6 +163,52 @@ export async function poolForVa(opts: {
   });
 }
 
+/**
+ * One pool task, read BEFORE claiming — the "Details" page behind every board
+ * tile, so a worker never has to commit on a truncated brief (a claim release
+ * is recorded on their record).
+ *
+ * RULE 2: same boundary as vaPoolSelect — no client identity, no client
+ * price, no client deadline, and NO FILENAMES (a count only): the task is
+ * still unclaimed, so this page is visible to every approved worker.
+ * disputeCriteria is included on purpose: it is the standard the work will be
+ * judged against, authored for the worker to read before claiming.
+ *
+ * The same high-value gate as poolForVa applies — a gated worker must not be
+ * able to open a high-value task by guessing its URL.
+ */
+export const vaPoolDetailSelect = {
+  ...vaPoolSelect,
+  category: { select: { name: true, slug: true, disputeCriteria: true } },
+} satisfies Prisma.TaskSelect;
+
+export type VaPoolDetailView = Prisma.TaskGetPayload<{ select: typeof vaPoolDetailSelect }>;
+
+export async function poolTaskForVa(
+  taskId: string,
+  opts: {
+    score: number | null;
+    ratedCount: number;
+    highValueThreshold: number;
+    minRatedDeliveries: number;
+  }
+): Promise<VaPoolDetailView | null> {
+  const eligibleForHighValue =
+    opts.score !== null &&
+    opts.score >= opts.highValueThreshold &&
+    opts.ratedCount >= opts.minRatedDeliveries;
+
+  return prisma.task.findFirst({
+    where: {
+      id: taskId,
+      status: "open",
+      claimedById: null,
+      ...(eligibleForHighValue ? {} : { tier: "standard" }),
+    },
+    select: vaPoolDetailSelect,
+  });
+}
+
 /** Tasks currently in this worker's hands. */
 export async function tasksForVa(vaId: string): Promise<VaTaskView[]> {
   return prisma.task.findMany({
