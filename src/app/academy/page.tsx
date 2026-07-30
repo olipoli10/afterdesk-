@@ -24,15 +24,24 @@ import { TrustLinks } from "@/components/trust-links";
    lib/academy/content.ts into this page.
    ───────────────────────────────────────────────────────────────────────── */
 
+/**
+ * The one page on this site with a genuinely winnable search lane: the
+ * incumbents on "free virtual assistant training" are small. So the title
+ * leads with that exact phrase, and the numbers are the proof that separates
+ * it from the course-mill listings around it.
+ *
+ * openGraph deliberately sets ONLY what differs from the root layout —
+ * overriding siteName/type/locale here would drop them from the merge.
+ */
 export const metadata: Metadata = {
-  title: "The Academy — free training for remote workers",
+  title: "Free virtual assistant training — 29 courses, real exams, permanent certificates",
   description:
-    "Twelve free courses with real exams and permanent certificates: platform, business English, spreadsheets, data, research, writing, documents and admin. No paid tier, no certificate fee.",
+    "Free VA training for Filipino remote workers: 29 courses with written lessons, real exams and a certificate that stays yours. Inbox, calendar, data, research, writing, admin, and the career itself. No paid tier, no certificate fee, ever.",
   alternates: { canonical: "/academy" },
   openGraph: {
-    title: "The Academy — free training for remote workers",
+    title: "Free virtual assistant training — 29 courses with real exams",
     description:
-      "Twelve free courses, real exams, certificates that stay yours. Open before you are approved.",
+      "Free VA courses, real exams, certificates that stay yours. Open before you are approved.",
     url: `${SITE_URL}/academy`,
   },
 };

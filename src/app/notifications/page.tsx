@@ -9,6 +9,16 @@ import { Card, CardBody, EmptyState, PageTitle, buttonSecondary } from "@/compon
 import { LocalTime } from "@/components/local-time";
 import { AppShell } from "@/components/app-shell";
 
+/**
+ * Session-only, and the one logged-in route that sits outside the /client,
+ * /va and /admin segments — so it never inherited their layout-level noindex
+ * and was the single authenticated page a crawler was invited to index.
+ */
+export const metadata = {
+  title: "Notifications",
+  robots: { index: false, follow: false },
+};
+
 function taskHref(role: "CLIENT" | "VA" | "ADMIN", taskId: string): string {
   if (role === "ADMIN") return `/admin/tasks/${taskId}`;
   if (role === "VA") return `/va/tasks/${taskId}`;

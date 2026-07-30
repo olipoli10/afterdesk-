@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/policy-page";
 
-export const metadata: Metadata = { title: "Security" };
+export const metadata: Metadata = {
+  title: "Security",
+  description:
+    "How Second Shift protects the files you send: uploads are inspected and scrubbed of author metadata, access ends with the task, and every delivery is reviewed by one operator before it reaches you.",
+  alternates: { canonical: "/security" },
+};
 
 export default function SecurityPage() {
   return (

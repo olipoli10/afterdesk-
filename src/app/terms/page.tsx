@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/policy-page";
 
-export const metadata: Metadata = { title: "Terms" };
+export const metadata: Metadata = {
+  title: "Terms",
+  description:
+    "The operational agreement behind every Second Shift task: one fixed price approved before work starts, what the review standard covers, and how revisions, disputes and refunds work.",
+  alternates: { canonical: "/terms" },
+};
 
 export default function TermsPage() {
   return (
     <PolicyPage
       title="Service terms"
-      intro="These terms describe the operational agreement shown before a task is purchased. Entity details and governing-law language must be reviewed by counsel before public launch."
+      intro="These terms describe the operational agreement shown before a task is purchased: what you are buying, what one fixed price covers, and what happens when a delivery is wrong."
     >
       <section>
         <h2 className="text-xl font-semibold">A task is a fixed scope</h2>

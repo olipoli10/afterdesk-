@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { PolicyPage } from "@/components/policy-page";
 import { getSettings } from "@/lib/settings";
 
-export const metadata: Metadata = { title: "Privacy" };
+export const metadata: Metadata = {
+  title: "Privacy",
+  description:
+    "What Second Shift collects, why, how long it is kept, and who can see it. Client and worker never learn each other’s identity — that separation is enforced in the data layer, not just the interface.",
+  alternates: { canonical: "/privacy" },
+};
 
 export const dynamic = "force-dynamic";
 

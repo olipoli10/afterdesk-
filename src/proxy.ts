@@ -15,6 +15,11 @@ const LANGS = ["en", "fr", "es", "tl"];
 const LANG_COOKIE: Record<string, { name: string; allowed: string[] }> = {
   "/": { name: "ss-lang-client", allowed: LANGS },
   "/workers": { name: "ss-lang-worker", allowed: LANGS },
+  // /academy is worker-side and shares their cookie: someone who picked FIL on
+  // /workers should land on the Academy in FIL, and a worker who arrives on
+  // the shared /academy link first should keep their choice when they click
+  // through to apply. Without this, the page reads the cookie it can never set.
+  "/academy": { name: "ss-lang-worker", allowed: LANGS },
 };
 
 export function proxy(req: NextRequest) {
@@ -40,5 +45,13 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/workers", "/client/:path*", "/va/:path*", "/admin/:path*"],
+  matcher: [
+    "/",
+    "/workers",
+    "/academy",
+    "/notifications",
+    "/client/:path*",
+    "/va/:path*",
+    "/admin/:path*",
+  ],
 };

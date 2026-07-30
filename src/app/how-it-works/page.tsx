@@ -15,9 +15,9 @@ import { TrustLinks } from "@/components/trust-links";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "How it works — the protocol",
+  title: "How it works — fixed-price task outsourcing, step by step",
   description:
-    "One fixed price, one operator, one review standard. The Second Shift protocol, versioned and dated.",
+    "How Second Shift outsourcing works: you describe the task, one operator sets a fixed price within four working hours, a vetted specialist does it overnight, and it is reviewed before you see it. The full protocol, versioned and dated.",
   alternates: { canonical: "/how-it-works" },
 };
 

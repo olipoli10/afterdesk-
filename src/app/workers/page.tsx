@@ -29,10 +29,16 @@ import { TrustLinks } from "@/components/trust-links";
    domain or a figure with the client page.
    ───────────────────────────────────────────────────────────────────────── */
 
+/**
+ * The title leads with the category nouns the audience actually types
+ * ("virtual assistant work", "Philippines") rather than with the brand, which
+ * nobody searches yet. The promise still closes the line — it is the
+ * differentiator and it survives truncation at ~60 characters.
+ */
 export const metadata = {
-  title: "Work with us — the payout is printed before you claim",
+  title: "Virtual assistant work from the Philippines — the payout is printed before you claim",
   description:
-    "Overnight, tasks land priced. No proposals, no bidding, no commission off your rate. Pass review, get paid.",
+    "Remote virtual assistant work for Filipino specialists. Tasks arrive already priced — no proposals, no bidding, no commission off your rate. Free training and a certificate before you apply.",
   alternates: { canonical: "/workers" },
 };
 
@@ -360,7 +366,7 @@ export default async function WorkersHome({
                 href="/academy"
                 className="font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-[5px] transition-colors hover:decoration-[#14161A]"
               >
-                {t.chAcademy.ctaLink}
+                {t.chAcademy.ctaLink(stats.courses)}
               </Link>{" "}
               <span className="font-mono text-[12px] text-[#5B6069]">{t.chAcademy.ctaTail}</span>
             </p>

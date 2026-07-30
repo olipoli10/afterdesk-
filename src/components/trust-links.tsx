@@ -8,6 +8,15 @@ export function TrustLinks({ tone = "paper" }: { tone?: "paper" | "night" }) {
   return (
     <nav aria-label="Trust and policies" className="flex flex-wrap items-center gap-x-5 gap-y-2">
       {[
+        /**
+         * The Academy leads on purpose. This component is on every public
+         * page, and /academy had exactly ONE inbound internal link on the
+         * whole site — an audit found the platform's largest asset was very
+         * nearly an orphan. Anchor text carries the category noun rather
+         * than the product name, because "free training" is what the
+         * audience searches and what a crawler should read here.
+         */
+        ["/academy", "Free training for remote workers"],
         ["/security", "Security"],
         ["/privacy", "Privacy"],
         ["/terms", "Terms"],

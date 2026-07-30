@@ -15,12 +15,19 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  /**
+   * The default title is the HOMEPAGE title, and it leads with the category
+   * nouns a buyer types — "outsource admin tasks", "data entry", "virtual
+   * assistant" — rather than with the brand, which nobody searches yet. The
+   * promise still closes the line; the brand rides the template on every
+   * other page.
+   */
   title: {
-    default: "Second Shift — Describe any task, get it back done by morning",
+    default: "Outsource admin, data & research tasks — done overnight at one fixed price",
     template: "%s · Second Shift",
   },
   description:
-    "Research, data, writing, spreadsheets, transcription, admin — described in plain English, priced fixed before anything starts, done overnight by a vetted specialist and reviewed before it reaches you.",
+    "A virtual assistant service without the hiring: describe any admin, data, research or writing task in plain English, approve one fixed price, and get it back done by morning — reviewed by an operator before it reaches you. No subscription, no hourly meter.",
   openGraph: {
     siteName: "Second Shift",
     type: "website",

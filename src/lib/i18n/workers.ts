@@ -44,7 +44,7 @@ type Dict = {
     body: string;
     caption: string;
     english: string;
-    ctaLink: string;
+    ctaLink: (courses: number) => string;
     ctaTail: string;
   };
   ch01: { label: string; h2: string; body: string; disclosure: string; bandCaption: string };
@@ -84,12 +84,12 @@ const en: Dict = {
     ],
   },
   chAcademy: {
-    label: "The academy",
-    h2: "12 free courses. Here is the exam.",
+    label: "The virtual assistant academy",
+    h2: "Free courses. Here is the exam.",
     body: "Every course opens the day you make an account, and your certificates are on your application when we read it.",
     caption: "One real question from the Data cleanup exam. The answer is printed on purpose.",
     english: "The courses and the exams are in English, like the work.",
-    ctaLink: "See all twelve courses",
+    ctaLink: (n) => `See all ${n} free courses`,
     ctaTail: "— no account needed.",
   },
   ch01: {
@@ -98,7 +98,7 @@ const en: Dict = {
     body: "You claim what fits you. Nobody bids against you.",
     disclosure: "Example tasks. Every price is set by hand, per task.",
     bandCaption:
-      "Your day is their night — Manila runs 12 hours ahead of New York (13 in winter).",
+      "Your day is their night — Manila, Philippines runs 12 hours ahead of New York (13 in winter).",
   },
   ch02: {
     label: "The slip",
@@ -153,12 +153,12 @@ const tl: Dict = {
     ],
   },
   chAcademy: {
-    label: "Ang academy",
-    h2: "12 libreng kurso. Heto ang exam.",
+    label: "Ang virtual assistant academy",
+    h2: "Libreng kurso. Heto ang exam.",
     body: "Bukas ang bawat kurso sa araw na gumawa ka ng account, at nasa application mo na ang mga certificate mo kapag binasa namin ito.",
     caption: "Isang totoong tanong mula sa Data cleanup exam. Sadyang nakalimbag ang sagot.",
     english: "Nasa Ingles ang mga kurso at exam, tulad ng trabaho.",
-    ctaLink: "Tingnan ang lahat ng labindalawang kurso",
+    ctaLink: (n) => `Tingnan ang lahat ng ${n} libreng kurso`,
     ctaTail: "— hindi kailangan ng account.",
   },
   ch01: {
@@ -167,7 +167,7 @@ const tl: Dict = {
     body: "Kukunin mo ang bagay sa iyo. Walang makikipag-bidding sa iyo.",
     disclosure: "Mga halimbawang task. Bawat presyo ay itinatakda nang manu-mano, kada task.",
     bandCaption:
-      "Ang araw mo ay gabi nila — 12 oras na nauuna ang Maynila sa New York (13 kapag taglamig).",
+      "Ang araw mo ay gabi nila — 12 oras na nauuna ang Maynila, Pilipinas sa New York (13 kapag taglamig).",
   },
   ch02: {
     label: "Ang slip",
@@ -227,12 +227,12 @@ const fr: Dict = {
     ],
   },
   chAcademy: {
-    label: "L'académie",
-    h2: "12 cours gratuits. Voici l'examen.",
+    label: "L'académie d'adjoint virtuel",
+    h2: "Des cours gratuits. Voici l'examen.",
     body: "Chaque cours s'ouvre le jour où vous créez un compte, et vos certificats sont sur votre candidature quand nous la lisons.",
     caption: "Une vraie question de l'examen Data cleanup. La réponse est imprimée exprès.",
     english: "Les cours et les examens sont en anglais, comme le travail.",
-    ctaLink: "Voir les douze cours",
+    ctaLink: (n) => `Voir les ${n} cours gratuits`,
     ctaTail: "— aucun compte requis.",
   },
   ch01: {
@@ -241,7 +241,7 @@ const fr: Dict = {
     body: "Vous prenez ce qui vous convient. Personne n'enchérit contre vous.",
     disclosure: "Tâches à titre d'exemple. Chaque prix est fixé à la main, tâche par tâche.",
     bandCaption:
-      "Votre journée est leur nuit — Manille a 12 heures d'avance sur New York (13 en hiver).",
+      "Votre journée est leur nuit — Manille, aux Philippines, a 12 heures d'avance sur New York (13 en hiver).",
   },
   ch02: {
     label: "Le bordereau",
@@ -300,12 +300,12 @@ const es: Dict = {
     ],
   },
   chAcademy: {
-    label: "La academia",
-    h2: "12 cursos gratis. Aquí está el examen.",
+    label: "La academia de asistente virtual",
+    h2: "Cursos gratis. Aquí está el examen.",
     body: "Cada curso se abre el día que creas una cuenta, y tus certificados están en tu postulación cuando la leemos.",
     caption: "Una pregunta real del examen de Data cleanup. La respuesta está impresa a propósito.",
     english: "Los cursos y los exámenes son en inglés, como el trabajo.",
-    ctaLink: "Ver los doce cursos",
+    ctaLink: (n) => `Ver los ${n} cursos gratis`,
     ctaTail: "— sin cuenta.",
   },
   ch01: {
@@ -314,7 +314,7 @@ const es: Dict = {
     body: "Tomas lo que te queda bien. Nadie puja contra ti.",
     disclosure: "Tareas de ejemplo. Cada precio se fija a mano, tarea por tarea.",
     bandCaption:
-      "Tu día es su noche — Manila va 12 horas por delante de Nueva York (13 en invierno).",
+      "Tu día es su noche — Manila, Filipinas, va 12 horas por delante de Nueva York (13 en invierno).",
   },
   ch02: {
     label: "El comprobante",

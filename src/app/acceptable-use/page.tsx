@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/policy-page";
 
-export const metadata: Metadata = { title: "Acceptable use" };
+export const metadata: Metadata = {
+  title: "Acceptable use",
+  description:
+    "What Second Shift will and will not take on. Some tasks we turn down — this page says which, and why, in plain language.",
+  alternates: { canonical: "/acceptable-use" },
+};
 
 export default function AcceptableUsePage() {
   return (
