@@ -47,14 +47,15 @@ export default async function VaLayout({ children }: { children: ReactNode }) {
               // The /va CTA names the intent instead ("Find work").
               { href: "/va", label: "My work" },
               { href: "/va/pool", label: "Available work" },
-              { href: "/va/training", label: "Training" },
+              { href: "/va/training", label: "Academy" },
             ]
           : [
-              // Training is open pre-approval on purpose: an applicant who
-              // reads the guides before review delivers better first work,
-              // and nothing in them is client data.
+              // The Academy is open pre-approval on purpose: free courses
+              // and certificates BEFORE the review are the funnel — an
+              // applicant who arrives certified is the whole point, and
+              // nothing in the courses is client data.
               { href: "/va", label: "My account" },
-              { href: "/va/training", label: "Training" },
+              { href: "/va/training", label: "Academy" },
             ]
       }
     >

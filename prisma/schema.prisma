@@ -153,6 +153,42 @@ model User {
   testSubmissions TestSubmission[]
   notifications   Notification[]
   payouts         Payout[]
+  examAttempts    ExamAttempt[]
+  certifications  Certification[]
+}
+
+/**
+ * One graded run at a course exam. Course content and the answer key live in
+ * code (src/lib/academy) — the database records only who answered what and
+ * the grade, so a content edit can never orphan an attempt.
+ */
+model ExamAttempt {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseSlug String
+  /// Correct answers out of `total`, graded server-side against the key in code.
+  score      Int
+  total      Int
+  passed     Boolean
+  /// The chosen option index per question, in question order.
+  answers    Json
+  createdAt  DateTime @default(now())
+
+  @@index([userId, courseSlug, createdAt])
+}
+
+/// Earned once per (worker, course) on the first passing attempt. Never revoked
+/// by a retake — a certificate is a fact about a date, not a rolling state.
+model Certification {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseSlug String
+  earnedAt   DateTime @default(now())
+
+  @@unique([userId, courseSlug])
+  @@index([userId])
 }
 
 model Session {

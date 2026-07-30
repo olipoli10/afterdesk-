@@ -94,7 +94,7 @@ export default async function VaHome() {
   const copy = VA_STATUS_COPY[status];
   const approved = status === "approved";
 
-  const [active, history, returned, owed] = await Promise.all([
+  const [active, history, returned, owed, certCount] = await Promise.all([
     approved ? tasksForVa(user.id) : Promise.resolve([]),
     approved ? completedTasksForVa(user.id) : Promise.resolve([]),
     approved ? returnedSubmissionsForVa(user.id) : Promise.resolve([]),
@@ -103,6 +103,7 @@ export default async function VaHome() {
       where: { vaId: user.id, status: { in: ["owed", "released"] } },
       _sum: { amountCents: true },
     }),
+    prisma.certification.count({ where: { userId: user.id } }),
   ]);
 
   const pendingCents = owed._sum.amountCents ?? 0;
@@ -159,8 +160,32 @@ export default async function VaHome() {
         </CardBody>
       </Card>
 
+      {/* The funnel: an applicant with time on their hands and a review
+          pending is exactly who the Academy is for — and arriving at the
+          review already certified is the strongest application there is. */}
+      {!approved && status !== "suspended" ? (
+        <Card>
+          <CardBody>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[#14161A]">
+                  While you wait — the Academy is open.
+                </p>
+                <p className="mt-1.5 max-w-[52ch] text-sm leading-relaxed text-[#5B6069]">
+                  Free courses with real exams and certificates
+                  {certCount > 0
+                    ? ` — you hold ${certCount} already. Every one you add strengthens your application.`
+                    : ". Certificates you earn now are on your profile when your application is reviewed."}
+                </p>
+              </div>
+              <LinkButton href="/va/training">Start a course</LinkButton>
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+
       {approved ? (
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardBody className="!p-4">
               <SectionLabel>Quality score</SectionLabel>
@@ -187,6 +212,20 @@ export default async function VaHome() {
                 {formatCents(pendingCents)}
               </p>
               <p className="text-[11px] text-[#5B6069]">paid out manually</p>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody className="!p-4">
+              <SectionLabel>Certificates</SectionLabel>
+              <p className="mt-1 font-mono text-xl font-medium tabular-nums text-[#14161A]">
+                {certCount}
+              </p>
+              <Link
+                href="/va/training"
+                className="font-mono text-[11px] text-[#5B6069] underline decoration-[#5B6069]/40 underline-offset-2 transition-colors duration-150 hover:text-[#14161A] hover:decoration-[#14161A]"
+              >
+                the Academy
+              </Link>
             </CardBody>
           </Card>
         </div>

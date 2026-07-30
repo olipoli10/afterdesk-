@@ -20,6 +20,12 @@ del "%LOCALAPPDATA%\prisma-dev-nodejs\Data\default\server.json" 2>nul
 del "%LOCALAPPDATA%\prisma-dev-nodejs\Data\durable-streams\default\server.lock" 2>nul
 del "%LOCALAPPDATA%\prisma-dev-nodejs\Data\durable-streams\default\server.lock.lock" 2>nul
 del "%LOCALAPPDATA%\prisma-dev-nodejs\Data\durable-streams\default\server.json" 2>nul
+rem proper-lockfile creates server.lock.lock as a DIRECTORY ("Lock file is
+rem already being held") — del can't remove it, only rd can. Also clear the
+rem stale postgres pid, which survives an unclean kill the same way.
+rd /s /q "%LOCALAPPDATA%\prisma-dev-nodejs\Data\durable-streams\default\server.lock.lock" 2>nul
+rd /s /q "%LOCALAPPDATA%\prisma-dev-nodejs\Data\default\server.lock.lock" 2>nul
+del "%LOCALAPPDATA%\prisma-dev-nodejs\Data\default\.pglite\postmaster.pid" 2>nul
 npx prisma dev >> C:\dev\nightlexicon\.prisma-dev.log 2>&1
 timeout /t 3 /nobreak >nul
 goto loop
