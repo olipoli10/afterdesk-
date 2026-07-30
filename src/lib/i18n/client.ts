@@ -23,7 +23,15 @@ export function clientLangOf(value: string | undefined | null): ClientLang {
 type Dict = {
   nav: { signIn: string; send: string };
   hero: { line1: string; line2: string; sub: (h: number) => string; cta: string };
-  ch01: { label: string; caption: string };
+  ch01: {
+    label: string;
+    /** A MUSEUM LABEL, not a voice. The artifact underneath already prints
+     *  its own filename and both clock times; the old caption restated them
+     *  as an invented client quote, which is the worst of both — redundant
+     *  AND fabricated. Set in the same uppercase mono as the ledger's
+     *  ILLUSTRATIVE note, because it does the same job. */
+    caption: string;
+  };
   ch02: { label: string; noMeter: string; captions: [string, string, string] };
   ch03: {
     label: string;
@@ -52,21 +60,30 @@ type Dict = {
   ch05: {
     label: string;
     h2: string;
+    /** RESCUED from the deleted terms block. It is the strangest and most
+     *  load-bearing fact on the site — the one thing no competitor says —
+     *  and deleting the notes block would have deleted it with them. It
+     *  belongs here anyway: this is the chapter about the seam. */
+    never: string;
     /** Vertical label on the hatched operator wall. */
     wall: string;
     /** Caption above the review artifact — EXAMPLE, outside the artifact. */
     desk: string;
+    /** These name the two things the reader is CHOOSING BETWEEN, not two
+     *  places. "There / Here" named a location, which is not what the rows
+     *  underneath compare — so the whole column read as decoration. */
     there: string;
     here: string;
+    /** Repeated on mobile as a key: the labels above live in a md:grid, so
+     *  the stacked pairs used to arrive with no labels at all. */
+    keyLabel: string;
     pairs: [string, string][];
   };
-  ch06: {
-    label: string;
-    notes: string;
-    /** A clause renders only when the setting behind it exists — no
-     *  placeholders, no invented numbers. */
-    terms: (retentionDays: number | null) => [string, string][];
-  };
+  /** The trim edge. The old chapter 06 (GENERAL NOTES) restated chapters
+   *  02–05 in smaller type; the two clauses that carried NEW information
+   *  (retention, refusals) now live on /how-it-works as §06 and NOT IN
+   *  SCOPE, so this is the pointer to them rather than a sixth chapter. */
+  close: { protocol: string };
   footer: { about: string; how: string; signIn: string; work: string };
 };
 
@@ -81,7 +98,7 @@ const en: Dict = {
   },
   ch01: {
     label: "The overnight diff",
-    caption: "“Dedupe our leads, fix the names, drop bad emails.” — sent 6:41 PM",
+    caption: "Example — one file, before and after one night",
   },
   ch02: {
     label: "One price. Approved first.",
@@ -121,10 +138,12 @@ const en: Dict = {
   ch05: {
     label: "The operator",
     h2: "One professional between you and the work.",
+    never: "You never meet the worker. That's the point.",
     wall: "Operator",
     desk: "Example — one review pass",
-    there: "There",
-    here: "Here",
+    there: "Hiring a freelancer",
+    here: "Sending a task",
+    keyLabel: "Which side is which",
     pairs: [
       ["Post a job. Read forty proposals.", "Describe it once. One price back in hours, not days."],
       ["Interview, hire, onboard, manage.", "Nothing to manage. The operator runs the night."],
@@ -132,21 +151,7 @@ const en: Dict = {
       ["Hope it's right in the morning.", "Reviewed by a professional before you ever see it."],
     ],
   },
-  ch06: {
-    label: "The terms",
-    notes: "General notes",
-    terms: (retentionDays) => [
-      ["PRICE", "One fixed price, approved before anything starts."],
-      ["REVIEW", "Every delivery is reviewed before you see it."],
-      ["IDENTITY", "You never meet the worker. That's the point."],
-      ...(retentionDays
-        ? ([
-            ["DATA", `Access ends with the task. Files purged after ${retentionDays} days.`],
-          ] as [string, string][])
-        : []),
-      ["REFUSALS", "Some tasks we turn down."],
-    ],
-  },
+  close: { protocol: "Full protocol — six stages, versioned" },
   footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us" },
 };
 
@@ -161,8 +166,7 @@ const fr: Dict = {
   },
   ch01: {
     label: "Une nuit de différence",
-    caption:
-      "« Dédoublonnez nos leads, corrigez les noms, retirez les mauvais courriels. » — envoyé 18 h 41",
+    caption: "Exemple — un fichier, avant et après une nuit",
   },
   ch02: {
     label: "Un prix. Approuvé d'abord.",
@@ -202,10 +206,12 @@ const fr: Dict = {
   ch05: {
     label: "L'opérateur",
     h2: "Un professionnel entre vous et le travail.",
+    never: "Vous ne rencontrez jamais le travailleur. C'est le principe.",
     wall: "Opérateur",
     desk: "Exemple — une passe de vérification",
-    there: "Là-bas",
-    here: "Ici",
+    there: "Engager un pigiste",
+    here: "Envoyer une tâche",
+    keyLabel: "Quel côté est lequel",
     pairs: [
       [
         "Publier une offre. Lire quarante propositions.",
@@ -222,24 +228,7 @@ const fr: Dict = {
       ],
     ],
   },
-  ch06: {
-    label: "Les conditions",
-    notes: "Notes générales",
-    terms: (retentionDays) => [
-      ["PRIX", "Un prix fixe, approuvé avant que ça commence."],
-      ["CONTRÔLE", "Chaque livraison est vérifiée avant que vous la voyiez."],
-      ["IDENTITÉ", "Vous ne rencontrez jamais le travailleur. C'est le principe."],
-      ...(retentionDays
-        ? ([
-            [
-              "DONNÉES",
-              `L'accès finit avec la tâche. Fichiers purgés après ${retentionDays} jours.`,
-            ],
-          ] as [string, string][])
-        : []),
-      ["REFUS", "Certaines tâches, on les refuse."],
-    ],
-  },
+  close: { protocol: "Protocole complet — six étapes, versionné" },
   footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", work: "Travailler avec nous" },
 };
 
@@ -254,8 +243,7 @@ const es: Dict = {
   },
   ch01: {
     label: "El antes y después de una noche",
-    caption:
-      "«Depura nuestros leads, corrige los nombres, elimina los correos malos.» — enviado 6:41 PM",
+    caption: "Ejemplo — un archivo, antes y después de una noche",
   },
   ch02: {
     label: "Un precio. Aprobado primero.",
@@ -295,10 +283,12 @@ const es: Dict = {
   ch05: {
     label: "El operador",
     h2: "Un profesional entre tú y el trabajo.",
+    never: "Nunca conoces al trabajador. Ese es el punto.",
     wall: "Operador",
     desk: "Ejemplo — una pasada de revisión",
-    there: "Allá",
-    here: "Aquí",
+    there: "Contratar a un freelance",
+    here: "Enviar una tarea",
+    keyLabel: "Qué lado es cuál",
     pairs: [
       [
         "Publicas un trabajo. Lees cuarenta propuestas.",
@@ -312,24 +302,7 @@ const es: Dict = {
       ["Esperar que esté bien por la mañana.", "Revisado por un profesional antes de que lo veas."],
     ],
   },
-  ch06: {
-    label: "Las condiciones",
-    notes: "Notas generales",
-    terms: (retentionDays) => [
-      ["PRECIO", "Un precio fijo, aprobado antes de empezar."],
-      ["REVISIÓN", "Cada entrega se revisa antes de que la veas."],
-      ["IDENTIDAD", "Nunca conoces al trabajador. Ese es el punto."],
-      ...(retentionDays
-        ? ([
-            [
-              "DATOS",
-              `El acceso termina con la tarea. Archivos purgados a los ${retentionDays} días.`,
-            ],
-          ] as [string, string][])
-        : []),
-      ["RECHAZOS", "Algunas tareas las rechazamos."],
-    ],
-  },
+  close: { protocol: "Protocolo completo — seis etapas, versionado" },
   footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros" },
 };
 
@@ -351,8 +324,7 @@ const tl: Dict = {
   },
   ch01: {
     label: "Ang diff ng magdamag",
-    caption:
-      "“Alisin ang doble sa leads namin, ayusin ang mga pangalan, tanggalin ang mga sirang email.” — ipinadala 6:41 PM",
+    caption: "Halimbawa — isang file, bago at pagkatapos ng isang gabi",
   },
   ch02: {
     label: "Isang presyo. Aprubado muna.",
@@ -392,10 +364,12 @@ const tl: Dict = {
   ch05: {
     label: "Ang operator",
     h2: "Isang propesyonal sa pagitan mo at ng trabaho.",
+    never: "Hindi mo kailanman makikilala ang manggagawa. Iyon ang punto.",
     wall: "Operator",
     desk: "Halimbawa — isang pasada ng review",
-    there: "Doon",
-    here: "Dito",
+    there: "Kumuha ng freelancer",
+    here: "Magpadala ng task",
+    keyLabel: "Alin ang alin",
     pairs: [
       [
         "Mag-post ng job. Magbasa ng apatnapung proposal.",
@@ -412,24 +386,7 @@ const tl: Dict = {
       ["Umasa na tama ito sa umaga.", "Sinuri ng propesyonal bago mo pa ito makita."],
     ],
   },
-  ch06: {
-    label: "Ang mga kondisyon",
-    notes: "Pangkalahatang tala",
-    terms: (retentionDays) => [
-      ["PRESYO", "Isang fixed na presyo, aprubado bago magsimula ang kahit ano."],
-      ["REVIEW", "Bawat delivery ay dumadaan sa review bago mo makita."],
-      ["IDENTITY", "Hindi mo kailanman makikilala ang manggagawa. Iyon ang punto."],
-      ...(retentionDays
-        ? ([
-            [
-              "DATA",
-              `Nagtatapos ang access kasabay ng task. Buburahin ang files pagkatapos ng ${retentionDays} araw.`,
-            ],
-          ] as [string, string][])
-        : []),
-      ["PAGTANGGI", "May mga task na tinatanggihan namin."],
-    ],
-  },
+  close: { protocol: "Buong protocol — anim na yugto, may bersyon" },
   footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin" },
 };
 

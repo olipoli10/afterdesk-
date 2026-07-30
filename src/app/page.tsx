@@ -71,10 +71,14 @@ export default async function Home({
   const cookieStore = await cookies();
   const lang = clientLangOf(sp.lang ?? cookieStore.get("ss-lang-client")?.value);
   const t = CLIENT_I18N[lang];
+  /* Five chapters, not six. The old 06/06 was a GENERAL NOTES block that
+     restated chapters 02–05 in smaller type; its two genuinely new clauses
+     (retention, refusals) now live on /how-it-works, which is linked from
+     the trim edge below. */
   const ch = (n: string, label: string) => (
     <>
       {n}
-      <span className="opacity-50">/06</span> · {label}
+      <span className="opacity-50">/05</span> · {label}
     </>
   );
   /* On the paper half the chapter number is a drawing number: it grows a
@@ -116,6 +120,15 @@ export default async function Home({
           <AudienceToggle side="client" tone="night" />
           <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
+            {/* Promoted out of the footer: this is the story page, and a story
+                nobody can find is not a story. Hidden on mobile alongside Sign
+                in — the header only has room for the toggle and the CTA there. */}
+            <Link
+              href="/about"
+              className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
+            >
+              {t.footer.about}
+            </Link>
             <Link
               href="/login"
               className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
@@ -188,7 +201,11 @@ export default async function Home({
         <p className="anim-rise d-5 mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
           {ch("01", t.ch01.label)}
         </p>
-        <p className="anim-rise d-5 mb-3 max-w-[74ch] font-mono text-[11px] leading-relaxed text-[#767C86]">
+        {/* A museum label, set exactly like the ledger's ILLUSTRATIVE note.
+            The artifact below prints its own filename and both clock times,
+            so a caption in an invented client's voice was restating the
+            picture AND inventing a quote to do it. */}
+        <p className="anim-rise d-5 mb-3 max-w-[74ch] font-mono text-[11px] uppercase leading-relaxed tracking-[0.14em] text-[#767C86]">
           {t.ch01.caption}
         </p>
 
@@ -328,6 +345,12 @@ export default async function Home({
               <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
                 {t.ch05.h2}
               </h2>
+              {/* The one sentence rescued from the deleted notes block. It is
+                  the strangest fact about this product and the only one no
+                  competitor can copy without rebuilding their company. */}
+              <p className="mt-4 max-w-[44ch] text-[18px] leading-snug tracking-[-0.01em] text-[#14161A]">
+                {t.ch05.never}
+              </p>
 
               <PaperReviewDesk caption={t.ch05.desk} />
 
@@ -342,14 +365,30 @@ export default async function Home({
                   </span>
                 </div>
 
-                {/* mobile: the wall, stated once, above the stacked pairs */}
-                <div
-                  aria-hidden
-                  className="hatch flex h-8 items-center justify-center md:hidden"
-                >
-                  <span className="bg-[#F7F6F3] px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B6069]">
-                    {t.ch05.wall}
-                  </span>
+                {/* mobile: the THERE/HERE labels above live inside a md:grid,
+                    so on a phone the stacked pairs used to arrive with no
+                    labels at all — four unattributed sentences either side of
+                    a hatch. This states the order once, in the same
+                    three-part grammar (muted · wall · ink) every row repeats,
+                    and absorbs the wall band that used to sit here alone. */}
+                <div className="mb-6 md:hidden">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#8A9099]">
+                    {t.ch05.keyLabel}
+                  </p>
+                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-[#5B6069]">
+                    {t.ch05.there}
+                  </p>
+                  <div
+                    aria-hidden
+                    className="hatch my-2 flex h-8 items-center justify-center"
+                  >
+                    <span className="bg-[#F7F6F3] px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B6069]">
+                      {t.ch05.wall}
+                    </span>
+                  </div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#14161A]">
+                    {t.ch05.here}
+                  </p>
                 </div>
 
                 <div className="relative">
@@ -385,51 +424,27 @@ export default async function Home({
         </div>
       </section>
 
-      {/* ── 06/06 GENERAL NOTES (paper) ───────────────────────────────
-             The notes block every real drawing ends with, and deliberately
-             the stillest thing on the page: calm reads as honest, and this
-             is the candour block. A clause renders only where the setting
-             behind it exists — no placeholders, no invented numbers. */}
-      <section className="border-t border-black/8 bg-[#F7F6F3]">
-        <div className="mx-auto w-full max-w-[920px] px-4 py-16 sm:px-6 sm:py-24">
-          <Reveal>
-            <div className="plate px-5 py-10 sm:px-9 sm:py-12">
-              {plateCh("06", t.ch06.label)}
-              <div className="notes-box mt-7 px-5 py-8 sm:px-7">
-                <span className="absolute -top-2 left-5 bg-[#F7F6F3] px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B6069]">
-                  {t.ch06.notes}
-                </span>
-                {t.ch06.terms(settings.retentionDays).map(([label, text], i) => (
-                  <div
-                    key={label}
-                    className="grid grid-cols-[2.25rem_1fr] items-baseline border-b border-black/8 py-4 last:border-0 last:pb-0"
-                  >
-                    <span className="font-mono text-[11px] tabular-nums text-[#5B6069]">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <div>
-                      <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#14161A]">
-                        {label}
-                      </span>
-                      <p className="mt-1 max-w-[62ch] text-[15px] leading-[1.65] text-[#14161A]">
-                        {text}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       {/* ── CLOSING — the sheet is trimmed, the night resumes ──────────
              The paper half ends on a real trim edge with crop marks instead
              of just stopping, and the ink block inherits the same drafting
              frame inverted: paper-coloured corner ticks, a white hairline
-             grid. Green stays money-only — it never touches this CTA. */}
+             grid. Green stays money-only — it never touches this CTA.
+
+             The GENERAL NOTES chapter that used to sit above this is gone.
+             Four of its six clauses restated chapters 02–05 in smaller type;
+             the two that carried new information (retention, refusals) are
+             §06 and NOT IN SCOPE on the protocol page, so this is a pointer
+             to the document rather than a sixth chapter repeating it. */}
       <section className="bg-[#F7F6F3] pb-16">
         <div className="mx-auto w-full max-w-[920px] px-4 sm:px-6">
+          <p className="mb-8 text-right font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+            <Link
+              href="/how-it-works"
+              className="transition-colors hover:text-[#14161A]"
+            >
+              {t.close.protocol} <span aria-hidden>→</span>
+            </Link>
+          </p>
           <div aria-hidden className="trim-line mb-12 hidden sm:block" />
           <Reveal>
             <div className="plate plate--ink relative overflow-hidden bg-[#0A0B0D] px-6 py-16 text-center">
