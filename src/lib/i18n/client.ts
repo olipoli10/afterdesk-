@@ -67,7 +67,7 @@ type Dict = {
      *  placeholders, no invented numbers. */
     terms: (retentionDays: number | null) => [string, string][];
   };
-  footer: { how: string; signIn: string; work: string };
+  footer: { about: string; how: string; signIn: string; work: string };
 };
 
 const en: Dict = {
@@ -147,7 +147,7 @@ const en: Dict = {
       ["REFUSALS", "Some tasks we turn down."],
     ],
   },
-  footer: { how: "How it works", signIn: "Sign in", work: "Work with us" },
+  footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us" },
 };
 
 const fr: Dict = {
@@ -240,7 +240,7 @@ const fr: Dict = {
       ["REFUS", "Certaines tâches, on les refuse."],
     ],
   },
-  footer: { how: "Comment ça marche", signIn: "Connexion", work: "Travailler avec nous" },
+  footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", work: "Travailler avec nous" },
 };
 
 const es: Dict = {
@@ -330,7 +330,7 @@ const es: Dict = {
       ["RECHAZOS", "Algunas tareas las rechazamos."],
     ],
   },
-  footer: { how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros" },
+  footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros" },
 };
 
 /* Tagalog, labelled FIL. Register: conversational Filipino with the English
@@ -430,7 +430,7 @@ const tl: Dict = {
       ["PAGTANGGI", "May mga task na tinatanggihan namin."],
     ],
   },
-  footer: { how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin" },
+  footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin" },
 };
 
 export const CLIENT_I18N: Record<ClientLang, Dict> = { en, fr, es, tl };

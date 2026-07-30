@@ -667,6 +667,9 @@ export default async function WorkersHome({
             Second Shift
           </span>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[#8A9099] sm:justify-end">
+            <Link href="/about" className="transition-colors hover:text-white">
+              {t.footer.about}
+            </Link>
             <Link href="/how-it-works" className="transition-colors hover:text-white">
               {t.footer.how}
             </Link>

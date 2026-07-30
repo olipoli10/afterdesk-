@@ -64,7 +64,7 @@ type Dict = {
     terms: (maxClaims: number, qcRounds: number) => [string, string][];
   };
   closing: { line1: string; line2: string; cta: string; funnel: string };
-  footer: { how: string; signIn: string; sendWork: string };
+  footer: { about: string; how: string; signIn: string; sendWork: string };
 };
 
 const en: Dict = {
@@ -133,7 +133,7 @@ const en: Dict = {
     funnel:
       "Account → short application → the operator's review → the pool. Not everyone gets in. That's the point.",
   },
-  footer: { how: "How it works", signIn: "Sign in", sendWork: "Send work instead" },
+  footer: { about: "About us", how: "How it works", signIn: "Sign in", sendWork: "Send work instead" },
 };
 
 const tl: Dict = {
@@ -205,7 +205,7 @@ const tl: Dict = {
     funnel:
       "Account → maikling application → review ng operator → ang pool. Hindi lahat nakakapasok. Iyon mismo ang punto.",
   },
-  footer: { how: "Paano ito gumagana", signIn: "Mag-sign in", sendWork: "Magpadala ng trabaho" },
+  footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", sendWork: "Magpadala ng trabaho" },
 };
 
 /* North-American French: "courriel" over "email", business register, no
@@ -279,7 +279,7 @@ const fr: Dict = {
     funnel:
       "Compte → courte candidature → la révision de l'opérateur → le bassin. Tout le monde n'entre pas. C'est voulu.",
   },
-  footer: { how: "Comment ça marche", signIn: "Connexion", sendWork: "Envoyer du travail" },
+  footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", sendWork: "Envoyer du travail" },
 };
 
 /* Neutral international business Spanish — tuteo, matching the client page. */
@@ -352,7 +352,7 @@ const es: Dict = {
     funnel:
       "Cuenta → postulación corta → la revisión del operador → el grupo. No todos entran. Ese es el punto.",
   },
-  footer: { how: "Cómo funciona", signIn: "Iniciar sesión", sendWork: "Enviar trabajo" },
+  footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", sendWork: "Enviar trabajo" },
 };
 
 export const WORKERS_I18N: Record<WorkersLang, Dict> = { en, fr, es, tl };
