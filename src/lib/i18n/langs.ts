@@ -21,3 +21,33 @@ export const SITE_LANGS: { code: SiteLang; label: string }[] = [
 export function siteLangOf(value: string | undefined | null): SiteLang {
   return value === "fr" || value === "es" || value === "tl" ? value : "en";
 }
+
+/**
+ * hreflang + canonical for a page that renders all four languages at ONE
+ * path, switched by ?lang= and a cookie.
+ *
+ * English is the default rendering, so it owns the bare path and x-default;
+ * the other three own their ?lang= URL. The canonical follows the SAME rule,
+ * because an alternate that does not self-canonicalise is discarded: a page
+ * reached as ?lang=fr canonicalises to ?lang=fr, and everything else —
+ * including ?lang=en — canonicalises to the bare path.
+ *
+ * The COOKIE deliberately never enters this. Googlebot does not carry one,
+ * so a cookie-driven French rendering is still the bare path's content as
+ * far as any crawler is concerned; letting the cookie move the canonical
+ * would make the same URL claim four different canonicals depending on who
+ * asked.
+ */
+export function langAlternates(path: string, queryLang: string | undefined | null) {
+  const chosen = SITE_LANGS.some((l) => l.code === queryLang)
+    ? (queryLang as SiteLang)
+    : null;
+  const url = (code: SiteLang) => (code === "en" ? path : `${path}?lang=${code}`);
+  return {
+    canonical: chosen ? url(chosen) : path,
+    languages: {
+      ...Object.fromEntries(SITE_LANGS.map((l) => [l.code, url(l.code)])),
+      "x-default": path,
+    },
+  };
+}

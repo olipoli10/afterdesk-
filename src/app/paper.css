@@ -254,15 +254,6 @@
   }
 }
 
-/* ── GENERAL NOTES (06/06) ──────────────────────────────────────────────
-   The notes block every real drawing ends with. Deliberately still: calm
-   reads as honest, and this is the candour block.
-   ─────────────────────────────────────────────────────────────────────── */
-.notes-box {
-  position: relative;
-  border: 1px solid rgba(20, 22, 26, 0.14);
-}
-
 /* ── THE TRIM (paper → night) ───────────────────────────────────────────
    The sheet gets a real edge instead of just stopping.
    ─────────────────────────────────────────────────────────────────────── */
@@ -422,6 +413,202 @@
    information behind a hover. */
 @media (hover: none) {
   .lift-sheet::after {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THE PROTOCOL PLATE (/how-it-works)
+   The six stages are drawn as ONE continuous orthogonal path descending
+   through three vertical lanes — YOU · OPERATOR · NIGHT — instead of being
+   listed as six identical rows. The path changes colour at the wall of the
+   night because it is inside the night there, and it ends in a dashed tail
+   because the record stops existing.
+
+   GEOMETRY LAW — the path is orthogonal ONLY, and every coordinate in it is
+   an exact fraction of the viewBox. That is what lets preserveAspectRatio
+   ="none" stretch it to any rail width or row height without distortion:
+   horizontals stay horizontal, verticals stay vertical, and the lane centres
+   land on the same fractions (16.67% / 50% / 66.67% / 83.33%) at every size.
+   Add a diagonal here and it shears. Don't.
+   ─────────────────────────────────────────────────────────────────────── */
+/* Six EQUAL rows, sized by the tallest one.
+   The drawing's stage marks sit on exact sixths of the rail, so the six rows
+   have to be exactly equal — but a hard `height` is a guess, and it was wrong
+   the moment the page had four languages: "Un spécialiste vérifié travaille
+   pendant que vous dormez." wraps to one more line than its English original
+   on a 320px screen, and the text quietly spilled into the row below.
+   `repeat(6, minmax(<floor>, 1fr))` makes the rows equal BY CONSTRUCTION and
+   lets the tallest translation set the size for all six. The rail is
+   position:absolute, so it stays out of flow and never becomes a seventh. */
+.pp-stages {
+  position: relative;
+  display: grid;
+  grid-template-rows: repeat(6, minmax(76px, 1fr));
+}
+
+/* The rail is absolutely positioned BEHIND the rows and sits exactly over
+   the empty second grid column of every row (40px § column + 22px gap). */
+.pp-rail {
+  position: absolute;
+  left: 62px;
+  top: 0;
+  bottom: 0;
+  width: 264px;
+  pointer-events: none;
+}
+.pp-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 33.333%;
+}
+.pp-band-you {
+  left: 0;
+}
+.pp-band-op {
+  left: 33.333%;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(20, 22, 26, 0.055) 0 1px,
+    transparent 1px 6px
+  );
+  border-left: 1px solid rgba(20, 22, 26, 0.15);
+  border-right: 1px solid rgba(20, 22, 26, 0.15);
+}
+.pp-band-night {
+  left: 66.667%;
+  background: #0a0b0d;
+}
+.pp-rail svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Stage marks are HTML, not SVG: non-uniform scaling can never square them. */
+.pp-mark {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  background: #f7f6f3;
+  border: 2px solid #14161a;
+}
+.pp-mark-night {
+  background: #0a0b0d;
+  border-color: #f7f6f3;
+}
+
+/* DETAIL A is ringed on stage 04 the way a drawing calls out a blow-up. */
+.pp-ring {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 1px dashed rgba(20, 22, 26, 0.45);
+}
+.pp-leader {
+  position: absolute;
+  height: 1px;
+  background: rgba(20, 22, 26, 0.35);
+}
+.pp-tag {
+  position: absolute;
+  margin: -8px 0 0 0;
+  padding: 0 4px;
+  background: #f7f6f3;
+  border: 1px solid rgba(20, 22, 26, 0.35);
+}
+
+/* Rows carry NO horizontal rules — a rule would rebuild the table this
+   drawing exists to replace. */
+.pp-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px 264px minmax(0, 1fr) 104px;
+  column-gap: 22px;
+  align-items: center;
+  padding: 6px 0;
+}
+.pp-dim {
+  text-align: right;
+  border-top: 1px solid rgba(20, 22, 26, 0.22);
+  padding-top: 5px;
+}
+
+/* The hatched spine on NOT IN SCOPE. Deliberately NOT .hatch: that class
+   flips its borders to top/bottom under 768px, which is right for the
+   homepage's horizontal wall and wrong for a vertical spine. */
+.pp-spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(20, 22, 26, 0.3) 0 1px,
+    transparent 1px 5px
+  );
+  border-left: 1px solid rgba(20, 22, 26, 0.22);
+  border-right: 1px solid rgba(20, 22, 26, 0.22);
+}
+
+/* ── COMPACT ────────────────────────────────────────────────────────────
+   860px, not 480px. The full drawing needs 40 + 264 + 104 + three 22px
+   gaps = 474px of fixed columns before a single word of the stage text;
+   inside a 900px sheet that runs out at about 790px, so a 480px breakpoint
+   left every tablet and small laptop rendering a broken plate. The rail
+   keeps all three lanes here — it just narrows, and the same SVG stretches
+   onto it exactly.
+   ─────────────────────────────────────────────────────────────────────── */
+@media (max-width: 859px) {
+  .pp-rail {
+    left: 0;
+    width: 96px;
+  }
+  .pp-stages {
+    grid-template-rows: repeat(6, minmax(96px, 1fr));
+  }
+  .pp-row {
+    grid-template-columns: 96px minmax(0, 1fr);
+    column-gap: 14px;
+  }
+  /* one notch down: the text column is under 200px here */
+  .pp-row .pp-say {
+    font-size: 14px;
+  }
+  .pp-clause {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+  }
+  .pp-spacer {
+    display: none;
+  }
+  .pp-body {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .pp-dim {
+    grid-column: 2;
+    grid-row: 3;
+    text-align: left;
+    border-top: 0;
+    padding-top: 2px;
+  }
+  .pp-dim > * {
+    display: inline;
+  }
+  .pp-dim .pp-unit {
+    margin-left: 6px;
+  }
+  .pp-ring,
+  .pp-leader,
+  .pp-tag {
     display: none;
   }
 }

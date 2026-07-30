@@ -146,6 +146,12 @@ export default async function WorkersHome({
           <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/workers" current={lang} options={WORKERS_LANGS} tone="paper" />
             <Link
+              href="/about"
+              className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
+            >
+              {t.footer.about}
+            </Link>
+            <Link
               href="/login"
               className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
             >

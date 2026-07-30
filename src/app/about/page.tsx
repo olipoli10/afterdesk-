@@ -1,196 +1,232 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Reveal } from "@/components/reveal";
 import { TrustLinks } from "@/components/trust-links";
+import { LangSwitch } from "@/components/lang-switch";
+import { SITE_LANGS, langAlternates } from "@/lib/i18n/langs";
+import { ABOUT_I18N, docLangOf } from "@/lib/i18n/docs";
 
 /* ─────────────────────────────────────────────────────────────────────────
    ABOUT US — the origin story, told in the company's own "we" voice.
-   Same paper-document treatment as /how-it-works: this is a doctrine page,
-   not a marketing hero, so it earns its length instead of fighting for it.
 
    Deliberately corporate, not confessional: no first person, no "I noticed",
    no founder photo, no name anywhere on the site right now. A company can
    be small and still speak as "we" — most one-person companies do.
 
-   English-only, matching /how-it-works: this is the same kind of document,
-   not a conversion page, so it does not carry the four-language treatment.
+   It carries the SAME type ladder as /how-it-works, because the two pages
+   are the same kind of object: a document. One opening statement several
+   times body size, movement rules instead of a hairline under every row,
+   and the three commitments numbered and set large. What it does NOT carry
+   is the protocol's drawing — this page has no process to draw, and a
+   decorative diagram here would be exactly the flatness-with-extra-steps
+   the redesign exists to remove.
+
+   Four languages, like every other public page: the story of why Filipino
+   specialists get treated badly is the last story that should only be
+   readable in English.
    ───────────────────────────────────────────────────────────────────────── */
 
-export const metadata = {
-  title: "About us — why Second Shift exists",
-  description:
-    "Two years outsourcing work to the Philippines taught us the real problem on both sides: entrepreneurs lose hours screening resumes, and Filipino specialists too often go underpaid or unpaid. Second Shift is the fix — one fixed price, one review standard, and free training that protects the people doing the work.",
-  alternates: { canonical: "/about" },
-};
+async function resolveLang(sp: { lang?: string }) {
+  const jar = await cookies();
+  return docLangOf(
+    sp.lang,
+    jar.get("ss-lang-doc")?.value,
+    jar.get("ss-lang-client")?.value,
+    jar.get("ss-lang-worker")?.value
+  );
+}
 
-const PROBLEM = [
-  {
-    side: "For entrepreneurs",
-    body: "Outsourcing was supposed to save time. In practice it spent it: hours lost posting a job, reading forty proposals, screening resumes that all say the same thing, and interviewing people you have no reliable way to judge before you have paid them.",
-  },
-  {
-    side: "For Filipino specialists",
-    body: "The other side of that same market is worse. Fake job posts, unpaid “test tasks” that are really just free work, and clients who vanish before the invoice is due. A skilled specialist has no shortage of demand — they have a shortage of clients who pay what the work is worth, on time, every time.",
-  },
-];
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const t = ABOUT_I18N[await resolveLang(sp)];
+  return {
+    title: t.meta.title,
+    description: t.meta.description,
+    alternates: langAlternates("/about", sp.lang),
+  };
+}
 
-const SOLUTION = [
-  {
-    n: "01",
-    label: "ONE PRICE",
-    body: "No proposals, no bidding, no hourly meter. A task gets one fixed price before anyone starts, so an entrepreneur is never guessing what the invoice will say.",
-  },
-  {
-    n: "02",
-    label: "ONE STANDARD",
-    body: "Every delivery is checked against the same written standard before it reaches the client — not a star rating, not a popularity contest. The work either meets the bar or it goes back with notes.",
-  },
-  {
-    n: "03",
-    label: "FREE TRAINING",
-    body: "The Academy teaches the trade itself — not just how to use this platform — for free, with real exams and a certificate that stays with the worker no matter what. Training is protection: a specialist who can spot a scam and prove their skill is much harder to underpay.",
-  },
-];
+export default async function AboutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const lang = await resolveLang(sp);
+  const t = ABOUT_I18N[lang];
 
-export default function AboutPage() {
   return (
-    <div className="min-h-screen overflow-x-clip bg-[#F7F6F3]">
+    <div lang={lang} className="min-h-screen overflow-x-clip bg-[#F7F6F3]">
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
-        <div className="mx-auto flex h-14 w-full max-w-[880px] items-center justify-between px-6">
+        <div className="mx-auto flex h-14 w-full max-w-[900px] items-center justify-between gap-3 px-6">
           <Link
             href="/"
             className="whitespace-nowrap font-mono text-[12px] uppercase tracking-[0.22em] text-[#14161A]"
           >
             Second Shift
           </Link>
-          <div className="flex items-center gap-5 text-[13px] font-medium">
-            <Link href="/how-it-works" className="text-[#5B6069] transition-colors hover:text-[#14161A]">
-              How it works
+          <div className="flex items-center gap-3 text-[13px] font-medium sm:gap-5">
+            <LangSwitch path="/about" current={lang} options={SITE_LANGS} tone="paper" />
+            <Link
+              href="/how-it-works"
+              className="text-[#5B6069] transition-colors hover:text-[#14161A]"
+            >
+              {t.nav.how}
             </Link>
-            <Link href="/workers" className="text-[#5B6069] transition-colors hover:text-[#14161A]">
-              For workers
+            <Link
+              href="/"
+              className="hidden text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
+            >
+              {t.nav.client}
+            </Link>
+            <Link
+              href="/workers"
+              className="hidden text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
+            >
+              {t.nav.workers}
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[880px] px-6 py-16 sm:py-24">
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-          About us
+      <main className="mx-auto w-full max-w-[900px] px-6 pb-24 pt-14 sm:pt-20">
+        {/* ── DOCKET ────────────────────────────────────────────────────── */}
+        <p className="flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5B6069]">
+          <span className="whitespace-nowrap">{t.kicker}</span>
+          <i aria-hidden className="h-px flex-auto bg-[#14161A]/12" />
         </p>
-        <h1 className="mt-3 max-w-[18ch] text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-[1.08] tracking-[-0.02em] text-[#14161A]">
-          We built this because the old way was broken on both ends.
+
+        {/* ── THE OPENING STATEMENT ─────────────────────────────────────── */}
+        <h1 className="mt-7 max-w-[18ch] text-[clamp(2.1rem,6vw,3.6rem)] font-semibold leading-[1.02] tracking-[-0.032em] text-[#14161A]">
+          {t.h1}
         </h1>
-        <p className="mt-5 max-w-[62ch] text-[16px] leading-relaxed text-[#5B6069]">
-          We have spent the last two years working directly with Filipino specialists —
-          hiring them, managing them, and watching where that relationship kept going wrong.
-          What we saw was not a market gap. It was a market failing two groups of people at once,
-          for two very different reasons.
+        <p className="mt-7 max-w-[52ch] text-[19px] leading-[1.5] text-[#5B6069]">
+          {t.lede}
         </p>
 
-        {/* ── The problem, both sides ──────────────────────────────────── */}
-        <Reveal className="mt-14">
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-            What we kept running into
-          </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {PROBLEM.map((p) => (
-              <div
-                key={p.side}
-                className="srow rounded-lg border border-[#14161A]/10 bg-white p-5 shadow-[0_1px_2px_rgba(20,22,26,0.04)]"
-              >
-                <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#14161A]">
-                  {p.side}
+        {/* ── MOVEMENT I — the problem, both sides ──────────────────────── */}
+        <hr className="mt-16 border-0 border-t border-[#14161A]/12" />
+        <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5B6069]">
+          {t.problemHead}
+        </p>
+
+        {/* No cards. Each side gets a heading at heading size and its own
+            column, so the two problems read as two arguments rather than
+            two boxes of the same grey. */}
+        <Reveal className="mt-8">
+          <div className="grid gap-10 sm:grid-cols-2 sm:gap-12">
+            {t.problem.map(([side, body]) => (
+              <section key={side}>
+                <h2 className="text-[clamp(1.15rem,2.4vw,1.4rem)] font-semibold leading-[1.2] tracking-[-0.02em] text-[#14161A]">
+                  {side}
+                </h2>
+                <p className="mt-3 max-w-[46ch] text-[16px] leading-[1.65] text-[#5B6069]">
+                  {body}
                 </p>
-                <p className="mt-2 text-[14px] leading-relaxed text-[#5B6069]">{p.body}</p>
-              </div>
+              </section>
             ))}
           </div>
-          <p className="mt-5 max-w-[64ch] text-[14px] leading-relaxed text-[#5B6069]">
-            Neither problem is really about money. Entrepreneurs were not short on candidates —
-            they were short on a reliable way to judge one before committing. Filipino specialists
-            were not short on skill — they were short on clients who would pay for it honestly.
-            Fix the trust problem on both sides and the money problem mostly solves itself.
+        </Reveal>
+
+        {/* The turn. Set in ink at reading size — this is the sentence the
+            whole page exists to land, and it used to be the same 14px grey
+            as everything around it. */}
+        <Reveal className="mt-10">
+          <p className="max-w-[58ch] border-l-2 border-[#14161A]/25 pl-5 text-[17px] leading-[1.6] text-[#14161A]">
+            {t.bridge}
           </p>
         </Reveal>
 
-        {/* ── The solution ──────────────────────────────────────────────── */}
-        <Reveal className="mt-16">
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-            So we built a simpler way
-          </h2>
-          <p className="mt-3 max-w-[64ch] text-[15px] leading-relaxed text-[#14161A]">
-            Second Shift is not a job board and not a freelance marketplace — both of those
-            already exist, and neither fixed what we kept seeing. It is a portal with one job:
-            make it simple for an entrepreneur to get a task done well, and make it safe for a
-            Filipino specialist to get paid fairly for doing it.
-          </p>
-          <div className="mt-6 rounded-lg border border-[#14161A]/10 bg-white shadow-[0_1px_2px_rgba(20,22,26,0.04)]">
-            {SOLUTION.map((s) => (
-              <div
-                key={s.n}
-                className="srow grid grid-cols-[52px_130px_1fr] items-baseline gap-3 border-b border-[#14161A]/[0.06] px-5 py-4 last:border-0 sm:gap-6"
+        {/* ── MOVEMENT II — the solution ────────────────────────────────── */}
+        <hr className="mt-16 border-0 border-t border-[#14161A]/12" />
+        <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5B6069]">
+          {t.solutionHead}
+        </p>
+        <p className="mt-6 max-w-[58ch] text-[17px] leading-[1.6] text-[#14161A]">
+          {t.solutionLede}
+        </p>
+
+        <Reveal className="mt-10">
+          <div>
+            {t.solution.map(([label, body], i) => (
+              <section
+                key={label}
+                className="mt-10 grid grid-cols-[52px_minmax(0,1fr)] gap-x-4 first:mt-0 sm:grid-cols-[92px_minmax(0,1fr)] sm:gap-x-8"
               >
-                <span className="font-mono text-[11px] tabular-nums text-[#5B6069]">{s.n}/03</span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#14161A]">
-                  {s.label}
-                </span>
-                <span className="text-[14px] leading-relaxed text-[#14161A]">{s.body}</span>
-              </div>
+                <p className="font-mono text-[26px] leading-[0.9] tabular-nums tracking-[-0.02em] text-[#5B6069] sm:text-[44px]">
+                  {String(i + 1).padStart(2, "0")}
+                  <i className="mt-1.5 block text-[11px] not-italic tracking-[0.14em]">
+                    /0{t.solution.length}
+                  </i>
+                </p>
+                <div>
+                  <h2 className="text-[clamp(1.35rem,3vw,1.75rem)] font-semibold leading-[1.12] tracking-[-0.025em] text-[#14161A]">
+                    {label}
+                  </h2>
+                  <p className="mt-2.5 max-w-[50ch] text-[16px] leading-[1.6] text-[#5B6069]">
+                    {body}
+                  </p>
+                </div>
+              </section>
             ))}
           </div>
         </Reveal>
 
-        {/* ── Why it matters, plainly ─────────────────────────────────────
-            Ties into two real assets rather than restating slogans: the
-            Academy's honest "what's the catch" answer, and the scam course,
-            which is the most direct evidence this problem is real. */}
-        <Reveal className="mt-16">
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-            Why free training is part of the business, not a marketing line
-          </h2>
-          <p className="mt-3 max-w-[64ch] text-[15px] leading-relaxed text-[#14161A]">
-            A specialist who has been trained properly delivers work that passes review the first
-            time, which costs us less and pays them faster — so the training pays for itself.
-            But it also does something we think matters on its own: it gives a Filipino specialist
-            a real, portable credential and the judgment to{" "}
+        {/* ── MOVEMENT III — why the training is real ───────────────────
+            Ties into the one asset that proves the problem above is real:
+            the scam course, which is free to anyone whether or not they
+            ever claim a task here. */}
+        <hr className="mt-16 border-0 border-t border-[#14161A]/12" />
+        <p className="mt-5 max-w-[46ch] font-mono text-[11px] uppercase tracking-[0.18em] text-[#5B6069]">
+          {t.trainingHead}
+        </p>
+        <Reveal className="mt-6">
+          <p className="max-w-[58ch] text-[17px] leading-[1.6] text-[#14161A]">
+            {t.trainingA}
             <Link
               href="/academy/spotting-scams"
               className="font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors hover:decoration-[#14161A]"
             >
-              recognize a fake job offer
-            </Link>{" "}
-            before it costs them anything. That is available to anyone, free, whether or not they
-            ever claim a task here.
+              {t.trainingLink}
+            </Link>
+            {t.trainingB}
           </p>
         </Reveal>
 
-        {/* ── Bookend ──────────────────────────────────────────────────── */}
-        <Reveal className="mt-16">
+        {/* ── BOOKEND ───────────────────────────────────────────────────── */}
+        <Reveal className="mt-14">
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-[#0A0B0D] px-6 py-8">
             <p className="text-[18px] font-semibold tracking-[-0.02em]">
-              <span className="text-[#767C86]">Describe any task. </span>
-              <span className="text-white">Get it back done by morning.</span>
+              <span className="text-[#767C86]">{t.bookend.dim} </span>
+              <span className="text-white">{t.bookend.lit}</span>
             </p>
             <Link
               href="/register"
               className="lift inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[14px] font-medium text-[#14161A] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              Describe your task
+              {t.bookend.cta}
             </Link>
           </div>
         </Reveal>
 
         <p className="mt-10 font-mono text-[11px] text-[#5B6069]">
-          Read the full operating protocol at{" "}
-          <Link href="/how-it-works" className="underline decoration-[#5B6069]/40 underline-offset-2 hover:text-[#14161A]">
-            How it works
+          {t.protocolNote}{" "}
+          <Link
+            href="/how-it-works"
+            className="underline decoration-[#5B6069]/40 underline-offset-2 hover:text-[#14161A]"
+          >
+            {t.protocolLink}
           </Link>
           .
         </p>
       </main>
 
       <footer className="border-t border-black/8">
-        <div className="mx-auto flex w-full max-w-[880px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[12px]">
+        <div className="mx-auto flex w-full max-w-[900px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[12px]">
           <span className="font-mono uppercase tracking-[0.16em] text-[#14161A]">
             Second Shift
           </span>

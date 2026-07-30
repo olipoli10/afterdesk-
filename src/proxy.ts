@@ -20,6 +20,13 @@ const LANG_COOKIE: Record<string, { name: string; allowed: string[] }> = {
   // the shared /academy link first should keep their choice when they click
   // through to apply. Without this, the page reads the cookie it can never set.
   "/academy": { name: "ss-lang-worker", allowed: LANGS },
+  // The two DOCUMENT pages are linked from both homepage footers, so neither
+  // audience owns them. They get a cookie of their own and read a fallback
+  // chain (doc → client → worker → en, see src/lib/i18n/docs.ts): a French
+  // client and a Filipino worker each arrive in their own language, and
+  // switching language here still cannot flip either homepage.
+  "/about": { name: "ss-lang-doc", allowed: LANGS },
+  "/how-it-works": { name: "ss-lang-doc", allowed: LANGS },
 };
 
 export function proxy(req: NextRequest) {
@@ -49,6 +56,8 @@ export const config = {
     "/",
     "/workers",
     "/academy",
+    "/about",
+    "/how-it-works",
     "/notifications",
     "/client/:path*",
     "/va/:path*",
