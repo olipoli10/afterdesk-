@@ -17,7 +17,7 @@
  *
  * THE RULE, unchanged from the homepages: the VOICE translates, the MACHINE
  * stays English. Headings, body copy and clause text are voice. Revision
- * dates, the ISO stamp, "N.T.S." and the §-numbers are machine.
+ * dates and the ISO stamp are machine.
  */
 
 import { siteLangOf, type SiteLang } from "./langs";
@@ -63,7 +63,6 @@ type ProtocolDict = {
   deck: string;
   movement1: string;
   lanes: [string, string, string];
-  axis: string;
   stages: (s: ProtocolSettings) => Stage[];
   movement2: string;
   detail: {
@@ -78,7 +77,6 @@ type ProtocolDict = {
     cols: [string, string, string];
     rows: [string, string, string][];
   };
-  titleblock: [string, string][];
   bookend: { dim: string; lit: string; cta: string };
 };
 
@@ -94,7 +92,6 @@ const pEn: ProtocolDict = {
   deck: "Every price, review and payout here is set by the same person.",
   movement1: "The night, in six stages",
   lanes: ["You", "Operator", "Night"],
-  axis: "Stage · N.T.S.",
   stages: (s) => [
     { label: "Describe", say: "Plain English. Attach files if needed." },
     {
@@ -132,7 +129,7 @@ const pEn: ProtocolDict = {
   movement2: "Two clauses",
   detail: {
     head: "Detail A",
-    sub: "§04 Review — what passes",
+    sub: "Stage 04 — what passes",
     criteria: [
       ["Complete", "Every item the brief names."],
       ["Verified", "Checked against the source files."],
@@ -154,12 +151,6 @@ const pEn: ProtocolDict = {
     cols: ["Rev", "Date", "Change"],
     rows: [["01", "2026-07-30", "First published."]],
   },
-  titleblock: [
-    ["Document", "Operating protocol"],
-    ["Plate", "01 of 01 · Scale N.T.S."],
-    ["Revision", "1 · Issued 2026-07-30"],
-    ["Issued by", "The operator"],
-  ],
   bookend: {
     dim: "Describe any task.",
     lit: "Get it back done by morning.",
@@ -179,7 +170,6 @@ const pFr: ProtocolDict = {
   deck: "Chaque prix, chaque contrôle et chaque paiement ici est fixé par la même personne.",
   movement1: "La nuit, en six étapes",
   lanes: ["Vous", "Opérateur", "Nuit"],
-  axis: "Étape · S.É.",
   stages: (s) => [
     { label: "Décrire", say: "En clair. Joignez des fichiers au besoin." },
     {
@@ -217,7 +207,7 @@ const pFr: ProtocolDict = {
   movement2: "Deux clauses",
   detail: {
     head: "Détail A",
-    sub: "§04 Contrôle — ce qui passe",
+    sub: "Étape 04 — ce qui passe",
     criteria: [
       ["Complet", "Chaque élément nommé dans la demande."],
       ["Vérifié", "Recoupé avec les fichiers sources."],
@@ -239,12 +229,6 @@ const pFr: ProtocolDict = {
     cols: ["Rév", "Date", "Changement"],
     rows: [["01", "2026-07-30", "Première publication."]],
   },
-  titleblock: [
-    ["Document", "Protocole d'exploitation"],
-    ["Planche", "01 de 01 · Échelle S.É."],
-    ["Révision", "1 · Émise 2026-07-30"],
-    ["Émis par", "L'opérateur"],
-  ],
   bookend: {
     dim: "Décrivez n'importe quelle tâche.",
     lit: "Récupérez-la faite au matin.",
@@ -264,7 +248,6 @@ const pEs: ProtocolDict = {
   deck: "Cada precio, cada revisión y cada pago aquí los fija la misma persona.",
   movement1: "La noche, en seis etapas",
   lanes: ["Tú", "Operador", "Noche"],
-  axis: "Etapa · S.E.",
   stages: (s) => [
     { label: "Describir", say: "En lenguaje claro. Adjunta archivos si hacen falta." },
     {
@@ -302,7 +285,7 @@ const pEs: ProtocolDict = {
   movement2: "Dos cláusulas",
   detail: {
     head: "Detalle A",
-    sub: "§04 Revisión — qué pasa el filtro",
+    sub: "Etapa 04 — qué pasa el filtro",
     criteria: [
       ["Completo", "Cada punto que nombra el encargo."],
       ["Verificado", "Contrastado con los archivos fuente."],
@@ -324,12 +307,6 @@ const pEs: ProtocolDict = {
     cols: ["Rev", "Fecha", "Cambio"],
     rows: [["01", "2026-07-30", "Primera publicación."]],
   },
-  titleblock: [
-    ["Documento", "Protocolo operativo"],
-    ["Lámina", "01 de 01 · Escala S.E."],
-    ["Revisión", "1 · Emitida 2026-07-30"],
-    ["Emitido por", "El operador"],
-  ],
   bookend: {
     dim: "Describe cualquier tarea.",
     lit: "Recíbela lista por la mañana.",
@@ -349,7 +326,6 @@ const pTl: ProtocolDict = {
   deck: "Isang tao lang ang nagtatakda ng bawat presyo, review at bayad dito.",
   movement1: "Ang gabi, sa anim na yugto",
   lanes: ["Ikaw", "Operator", "Gabi"],
-  axis: "Yugto · N.T.S.",
   stages: (s) => [
     { label: "Ilarawan", say: "Simpleng salita. Maglakip ng file kung kailangan." },
     {
@@ -387,7 +363,7 @@ const pTl: ProtocolDict = {
   movement2: "Dalawang kondisyon",
   detail: {
     head: "Detail A",
-    sub: "§04 Review — ano ang pumapasa",
+    sub: "Yugto 04 — ano ang pumapasa",
     criteria: [
       ["Kumpleto", "Bawat bagay na nakasaad sa brief."],
       ["Beripikado", "Sinalungat sa mga source file."],
@@ -409,12 +385,6 @@ const pTl: ProtocolDict = {
     cols: ["Rev", "Petsa", "Pagbabago"],
     rows: [["01", "2026-07-30", "Unang inilathala."]],
   },
-  titleblock: [
-    ["Dokumento", "Operating protocol"],
-    ["Plate", "01 ng 01 · Scale N.T.S."],
-    ["Rebisyon", "1 · Inilabas 2026-07-30"],
-    ["Inilabas ni", "Ang operator"],
-  ],
   bookend: {
     dim: "Ilarawan ang kahit anong task.",
     lit: "Tapos na ito pagsapit ng umaga.",
@@ -442,8 +412,15 @@ type AboutDict = {
   h1: string;
   lede: string;
   problemHead: string;
-  problem: [string, string][];
-  bridge: string;
+  /** A heading and three FACTS — not a heading and a 55-word paragraph.
+   *  The first version of this page told the story in five block
+   *  paragraphs and the verdict was "still too much bloc text, c'est laid
+   *  et donne pas envie de lire". Correct. Everything below is now the
+   *  shortest true sentence that still carries the point. */
+  problem: [string, string[]][];
+  /** The turn, in two lines, set at heading size. This used to be a
+   *  60-word paragraph in the same grey as everything around it. */
+  bridge: [string, string];
   solutionHead: string;
   solutionLede: string;
   solution: [string, string][];
@@ -467,43 +444,49 @@ const aEn: AboutDict = {
   nav: { how: "How it works", client: "Get work done", workers: "For workers" },
   kicker: "About us",
   h1: "We built this because the old way was broken on both ends.",
-  lede: "We have spent the last two years working directly with Filipino specialists — hiring them, managing them, and watching where that relationship kept going wrong. What we saw was not a market gap. It was a market failing two groups of people at once, for two very different reasons.",
+  lede: "Two years hiring and managing Filipino specialists showed us the same thing over and over. Not a gap in the market — a market failing both sides at once.",
   problemHead: "What we kept running into",
   problem: [
     [
       "For entrepreneurs",
-      "Outsourcing was supposed to save time. In practice it spent it: hours lost posting a job, reading forty proposals, screening resumes that all say the same thing, and interviewing people you have no reliable way to judge before you have paid them.",
+      [
+        "Forty proposals to read.",
+        "Resumes that all say the same thing.",
+        "No way to judge anyone until you have already paid them.",
+      ],
     ],
     [
       "For Filipino specialists",
-      "The other side of that same market is worse. Fake job posts, unpaid “test tasks” that are really just free work, and clients who vanish before the invoice is due. A skilled specialist has no shortage of demand — they have a shortage of clients who pay what the work is worth, on time, every time.",
+      [
+        "Fake job posts.",
+        "Unpaid \u201Ctest tasks\u201D that are really just free work.",
+        "Clients who vanish before the invoice is due.",
+      ],
     ],
   ],
-  bridge:
-    "Neither problem is really about money. Entrepreneurs were not short on candidates — they were short on a reliable way to judge one before committing. Filipino specialists were not short on skill — they were short on clients who would pay for it honestly. Fix the trust problem on both sides and the money problem mostly solves itself.",
+  bridge: ["Neither side was short on people.", "Both sides were short on trust."],
   solutionHead: "So we built a simpler way",
   solutionLede:
-    "Second Shift is not a job board and not a freelance marketplace — both of those already exist, and neither fixed what we kept seeing. It is a portal with one job: make it simple for an entrepreneur to get a task done well, and make it safe for a Filipino specialist to get paid fairly for doing it.",
+    "Not a job board. Not a freelance marketplace. Both already exist, and neither fixed what we kept seeing.",
   solution: [
     [
       "One price",
-      "No proposals, no bidding, no hourly meter. A task gets one fixed price before anyone starts, so an entrepreneur is never guessing what the invoice will say.",
+      "One fixed price before anyone starts. No proposals, no bidding, no hourly meter.",
     ],
     [
       "One standard",
-      "Every delivery is checked against the same written standard before it reaches the client — not a star rating, not a popularity contest. The work either meets the bar or it goes back with notes.",
+      "Every delivery is checked against the same written standard before the client sees it. It meets the bar, or it goes back with notes.",
     ],
     [
       "Free training",
-      "The Academy teaches the trade itself — not just how to use this platform — for free, with real exams and a certificate that stays with the worker no matter what. Training is protection: a specialist who can spot a scam and prove their skill is much harder to underpay.",
+      "The Academy teaches the trade itself, free, with real exams and a certificate the worker keeps.",
     ],
   ],
   trainingHead: "Why free training is part of the business, not a marketing line",
   trainingA:
-    "A specialist who has been trained properly delivers work that passes review the first time, which costs us less and pays them faster — so the training pays for itself. But it also does something we think matters on its own: it gives a Filipino specialist a real, portable credential and the judgment to ",
+    "A specialist who was trained properly passes review the first time. That costs us less and pays them faster. It also hands them a credential they keep, and the judgment to ",
   trainingLink: "recognize a fake job offer",
-  trainingB:
-    " before it costs them anything. That is available to anyone, free, whether or not they ever claim a task here.",
+  trainingB: " before it costs them anything. Free to anyone, task or no task.",
   bookend: {
     dim: "Describe any task.",
     lit: "Get it back done by morning.",
@@ -517,158 +500,176 @@ const aFr: AboutDict = {
   meta: {
     title: "Qui nous sommes — pourquoi Second Shift existe",
     description:
-      "Deux ans à faire affaire avec des spécialistes philippins nous ont montré le vrai problème des deux côtés : les entrepreneurs perdent des heures à trier des CV, et les spécialistes philippins sont trop souvent sous-payés ou pas payés du tout. Second Shift est la solution — un prix fixe, un standard de contrôle, et une formation gratuite qui protège ceux qui font le travail.",
+      "Deux ans \u00E0 faire affaire avec des sp\u00E9cialistes philippins nous ont montr\u00E9 le vrai probl\u00E8me des deux c\u00F4t\u00E9s : les entrepreneurs perdent des heures \u00E0 trier des CV, et les sp\u00E9cialistes philippins sont trop souvent sous-pay\u00E9s ou pas pay\u00E9s du tout. Second Shift est la solution \u2014 un prix fixe, un standard de contr\u00F4le, et une formation gratuite qui prot\u00E8ge ceux qui font le travail.",
   },
-  nav: { how: "Comment ça marche", client: "Faire faire du travail", workers: "Pour les travailleurs" },
+  nav: { how: "Comment \u00E7a marche", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   kicker: "Qui nous sommes",
-  h1: "On a bâti ça parce que l'ancienne façon était brisée des deux bords.",
-  lede: "Ça fait deux ans qu'on travaille directement avec des spécialistes philippins — on les engage, on les gère, et on voit exactement où cette relation déraille. Ce qu'on a vu, ce n'était pas un créneau à prendre. C'était un marché qui échoue deux groupes de personnes en même temps, pour deux raisons complètement différentes.",
-  problemHead: "Ce qu'on a vu revenir sans arrêt",
+  h1: "On a b\u00E2ti \u00E7a parce que l'ancienne fa\u00E7on \u00E9tait bris\u00E9e des deux bords.",
+  lede: "Deux ans \u00E0 engager et \u00E0 g\u00E9rer des sp\u00E9cialistes philippins nous ont montr\u00E9 la m\u00EAme affaire chaque fois. Pas un cr\u00E9neau \u00E0 prendre : un march\u00E9 qui \u00E9choue les deux bords en m\u00EAme temps.",
+  problemHead: "Ce qu'on a vu revenir sans arr\u00EAt",
   problem: [
     [
       "Pour les entrepreneurs",
-      "La sous-traitance était censée faire sauver du temps. En pratique, elle en coûtait : des heures à publier une offre, à lire quarante propositions, à trier des CV qui disent tous la même chose, et à interviewer des gens qu'on n'a aucun moyen fiable de juger avant de les avoir payés.",
+      [
+        "Quarante propositions \u00E0 lire.",
+        "Des CV qui disent tous la m\u00EAme chose.",
+        "Aucun moyen de juger quelqu'un avant de l'avoir pay\u00E9.",
+      ],
     ],
     [
-      "Pour les spécialistes philippins",
-      "L'autre côté du même marché est pire. De fausses offres d'emploi, des « tâches d'essai » non payées qui sont juste du travail gratuit, et des clients qui disparaissent avant l'échéance de la facture. Un spécialiste compétent ne manque pas de demande — il manque de clients qui paient ce que le travail vaut, à temps, chaque fois.",
+      "Pour les sp\u00E9cialistes philippins",
+      [
+        "De fausses offres d'emploi.",
+        "Des \u00AB t\u00E2ches d'essai \u00BB non pay\u00E9es qui sont juste du travail gratuit.",
+        "Des clients qui disparaissent avant l'\u00E9ch\u00E9ance de la facture.",
+      ],
     ],
   ],
-  bridge:
-    "Ni l'un ni l'autre n'est vraiment une question d'argent. Les entrepreneurs ne manquaient pas de candidats — ils manquaient d'une façon fiable d'en juger un avant de s'engager. Les spécialistes philippins ne manquaient pas de compétence — ils manquaient de clients qui la paient honnêtement. Réglez le problème de confiance des deux côtés et le problème d'argent se règle presque tout seul.",
-  solutionHead: "Alors on a bâti une façon plus simple",
+  bridge: ["Personne ne manquait de monde.", "Les deux bords manquaient de confiance."],
+  solutionHead: "Alors on a b\u00E2ti une fa\u00E7on plus simple",
   solutionLede:
-    "Second Shift n'est pas un site d'offres d'emploi ni une place de marché de pigistes — ça existe déjà, et ni l'un ni l'autre n'a réglé ce qu'on voyait. C'est un portail avec une seule job : rendre ça simple pour un entrepreneur de faire faire une tâche comme du monde, et rendre ça sécuritaire pour un spécialiste philippin d'être payé correctement pour la faire.",
+    "Pas un site d'offres d'emploi. Pas une place de march\u00E9 de pigistes. \u00C7a existe d\u00E9j\u00E0, et \u00E7a n'a rien r\u00E9gl\u00E9 de ce qu'on voyait.",
   solution: [
     [
       "Un prix",
-      "Pas de propositions, pas d'enchères, pas de compteur horaire. Une tâche reçoit un prix fixe avant que qui que ce soit commence, donc un entrepreneur ne devine jamais ce que la facture va dire.",
+      "Un prix fixe avant que qui que ce soit commence. Pas de propositions, pas d'ench\u00E8res, pas de compteur horaire.",
     ],
     [
       "Un standard",
-      "Chaque livraison est vérifiée contre le même standard écrit avant d'arriver au client — pas une cote en étoiles, pas un concours de popularité. Le travail atteint la barre, ou il repart avec des notes.",
+      "Chaque livraison est v\u00E9rifi\u00E9e contre le m\u00EAme standard \u00E9crit avant que le client la voie. Elle passe, ou elle repart avec des notes.",
     ],
     [
       "Formation gratuite",
-      "L'Académie enseigne le métier lui-même — pas juste comment se servir de la plateforme — gratuitement, avec de vrais examens et un certificat qui reste au travailleur quoi qu'il arrive. La formation, c'est de la protection : un spécialiste capable de repérer une arnaque et de prouver sa compétence est pas mal plus dur à sous-payer.",
+      "L'Acad\u00E9mie enseigne le m\u00E9tier lui-m\u00EAme, gratuitement, avec de vrais examens et un certificat que le travailleur garde.",
     ],
   ],
-  trainingHead: "Pourquoi la formation gratuite fait partie du modèle, pas du marketing",
+  trainingHead: "Pourquoi la formation gratuite fait partie du mod\u00E8le, pas du marketing",
   trainingA:
-    "Un spécialiste bien formé livre du travail qui passe le contrôle du premier coup, ce qui nous coûte moins cher et le paie plus vite — la formation se paie donc d'elle-même. Mais elle fait aussi quelque chose qui compte en soi : elle donne à un spécialiste philippin un vrai diplôme qu'il emporte avec lui, et le jugement pour ",
-  trainingLink: "reconnaître une fausse offre d'emploi",
-  trainingB:
-    " avant qu'elle lui coûte quoi que ce soit. C'est offert à tout le monde, gratuitement, qu'ils prennent une tâche ici ou jamais.",
+    "Un sp\u00E9cialiste bien form\u00E9 passe le contr\u00F4le du premier coup. \u00C7a nous co\u00FBte moins cher et \u00E7a le paie plus vite. \u00C7a lui donne aussi un dipl\u00F4me qu'il garde, et le jugement pour ",
+  trainingLink: "reconna\u00EEtre une fausse offre d'emploi",
+  trainingB: " avant qu'elle lui co\u00FBte quoi que ce soit. Gratuit pour tout le monde, t\u00E2che ou pas.",
   bookend: {
-    dim: "Décrivez n'importe quelle tâche.",
-    lit: "Récupérez-la faite au matin.",
-    cta: "Décrivez votre tâche",
+    dim: "D\u00E9crivez n'importe quelle t\u00E2che.",
+    lit: "R\u00E9cup\u00E9rez-la faite au matin.",
+    cta: "D\u00E9crivez votre t\u00E2che",
   },
   protocolNote: "Lisez le protocole d'exploitation complet sur",
-  protocolLink: "Comment ça marche",
+  protocolLink: "Comment \u00E7a marche",
 };
 
 const aEs: AboutDict = {
   meta: {
-    title: "Quiénes somos — por qué existe Second Shift",
+    title: "Qui\u00E9nes somos \u2014 por qu\u00E9 existe Second Shift",
     description:
-      "Dos años trabajando con especialistas filipinos nos enseñaron el problema real de ambos lados: los emprendedores pierden horas filtrando currículums, y los especialistas filipinos con demasiada frecuencia cobran de menos o no cobran. Second Shift es la solución — un precio fijo, un estándar de revisión, y formación gratuita que protege a quien hace el trabajo.",
+      "Dos a\u00F1os trabajando con especialistas filipinos nos ense\u00F1aron el problema real de ambos lados: los emprendedores pierden horas filtrando curr\u00EDculums, y los especialistas filipinos con demasiada frecuencia cobran de menos o no cobran. Second Shift es la soluci\u00F3n \u2014 un precio fijo, un est\u00E1ndar de revisi\u00F3n, y formaci\u00F3n gratuita que protege a quien hace el trabajo.",
   },
-  nav: { how: "Cómo funciona", client: "Haz que se haga", workers: "Para trabajadores" },
-  kicker: "Quiénes somos",
+  nav: { how: "C\u00F3mo funciona", client: "Haz que se haga", workers: "Para trabajadores" },
+  kicker: "Qui\u00E9nes somos",
   h1: "Construimos esto porque la vieja forma estaba rota de los dos lados.",
-  lede: "Llevamos dos años trabajando directamente con especialistas filipinos — contratándolos, gestionándolos, y viendo dónde esa relación se rompía una y otra vez. Lo que vimos no era un hueco de mercado. Era un mercado fallándole a dos grupos de personas a la vez, por dos razones muy distintas.",
+  lede: "Dos a\u00F1os contratando y gestionando especialistas filipinos nos mostraron lo mismo una y otra vez. No un hueco de mercado: un mercado fall\u00E1ndole a los dos lados a la vez.",
   problemHead: "Con lo que chocábamos una y otra vez",
   problem: [
     [
       "Para los emprendedores",
-      "Subcontratar debía ahorrar tiempo. En la práctica lo gastaba: horas publicando una oferta, leyendo cuarenta propuestas, filtrando currículums que dicen todos lo mismo, y entrevistando a gente que no tienes forma fiable de juzgar antes de haberla pagado.",
+      [
+        "Cuarenta propuestas que leer.",
+        "Curr\u00EDculums que dicen todos lo mismo.",
+        "Ninguna forma de juzgar a nadie antes de haberle pagado.",
+      ],
     ],
     [
       "Para los especialistas filipinos",
-      "El otro lado de ese mismo mercado es peor. Ofertas de trabajo falsas, «tareas de prueba» sin pagar que son simplemente trabajo gratis, y clientes que desaparecen antes de que venza la factura. A un especialista competente no le falta demanda — le faltan clientes que paguen lo que vale el trabajo, a tiempo, siempre.",
+      [
+        "Ofertas de trabajo falsas.",
+        "\u00ABTareas de prueba\u00BB sin pagar que son trabajo gratis.",
+        "Clientes que desaparecen antes de que venza la factura.",
+      ],
     ],
   ],
-  bridge:
-    "Ninguno de los dos problemas es realmente de dinero. A los emprendedores no les faltaban candidatos — les faltaba una forma fiable de juzgar a uno antes de comprometerse. A los especialistas filipinos no les faltaba habilidad — les faltaban clientes que la pagaran honestamente. Arregla el problema de confianza de los dos lados y el problema de dinero se arregla casi solo.",
-  solutionHead: "Así que construimos algo más simple",
+  bridge: ["A nadie le faltaba gente.", "A los dos lados les faltaba confianza."],
+  solutionHead: "As\u00ED que construimos algo m\u00E1s simple",
   solutionLede:
-    "Second Shift no es un portal de empleo ni un mercado de freelancers — los dos ya existen, y ninguno arregló lo que veíamos. Es un portal con un solo trabajo: hacer simple para un emprendedor que una tarea salga bien, y hacer seguro para un especialista filipino cobrar justamente por hacerla.",
+    "No es un portal de empleo. No es un mercado de freelancers. Los dos ya existen, y ninguno arregl\u00F3 lo que ve\u00EDamos.",
   solution: [
     [
       "Un precio",
-      "Sin propuestas, sin pujas, sin contador por hora. Una tarea recibe un precio fijo antes de que nadie empiece, así que el emprendedor nunca adivina lo que dirá la factura.",
+      "Un precio fijo antes de que nadie empiece. Sin propuestas, sin pujas, sin contador por hora.",
     ],
     [
-      "Un estándar",
-      "Cada entrega se contrasta con el mismo estándar escrito antes de llegar al cliente — no una calificación de estrellas, no un concurso de popularidad. El trabajo cumple la barra, o vuelve con notas.",
+      "Un est\u00E1ndar",
+      "Cada entrega se contrasta con el mismo est\u00E1ndar escrito antes de que la vea el cliente. Cumple, o vuelve con notas.",
     ],
     [
-      "Formación gratuita",
-      "La Academia enseña el oficio en sí — no solo cómo usar esta plataforma — gratis, con exámenes reales y un certificado que se queda con el trabajador pase lo que pase. La formación es protección: a un especialista que sabe detectar una estafa y demostrar su nivel es mucho más difícil pagarle de menos.",
+      "Formaci\u00F3n gratuita",
+      "La Academia ense\u00F1a el oficio en s\u00ED, gratis, con ex\u00E1menes reales y un certificado que el trabajador se queda.",
     ],
   ],
-  trainingHead: "Por qué la formación gratuita es parte del negocio, no una frase de marketing",
+  trainingHead: "Por qu\u00E9 la formaci\u00F3n gratuita es parte del negocio, no una frase de marketing",
   trainingA:
-    "Un especialista bien formado entrega trabajo que pasa la revisión a la primera, lo que nos cuesta menos y le paga más rápido — así que la formación se paga sola. Pero además hace algo que nos importa por sí mismo: le da a un especialista filipino una credencial real y portátil, y el criterio para ",
+    "Un especialista bien formado pasa la revisi\u00F3n a la primera. Eso nos cuesta menos y le paga m\u00E1s r\u00E1pido. Tambi\u00E9n le da una credencial que se queda con \u00E9l, y el criterio para ",
   trainingLink: "reconocer una oferta de trabajo falsa",
-  trainingB:
-    " antes de que le cueste nada. Está disponible para cualquiera, gratis, tome o no tome nunca una tarea aquí.",
+  trainingB: " antes de que le cueste nada. Gratis para cualquiera, con tarea o sin ella.",
   bookend: {
     dim: "Describe cualquier tarea.",
-    lit: "Recíbela lista por la mañana.",
+    lit: "Rec\u00EDbela lista por la ma\u00F1ana.",
     cta: "Describe tu tarea",
   },
   protocolNote: "Lee el protocolo operativo completo en",
-  protocolLink: "Cómo funciona",
+  protocolLink: "C\u00F3mo funciona",
 };
 
 const aTl: AboutDict = {
   meta: {
-    title: "Tungkol sa amin — bakit umiiral ang Second Shift",
+    title: "Tungkol sa amin \u2014 bakit umiiral ang Second Shift",
     description:
-      "Dalawang taon ng pakikipagtrabaho sa mga Pilipinong espesyalista ang nagturo sa amin ng totoong problema sa magkabilang panig: nauubos ang oras ng mga negosyante sa pagsala ng resume, at madalas kulang ang bayad o walang bayad ang mga Pilipinong espesyalista. Ang Second Shift ang sagot — isang fixed na presyo, isang pamantayan sa review, at libreng pagsasanay na nagpoprotekta sa gumagawa ng trabaho.",
+      "Dalawang taon ng pakikipagtrabaho sa mga Pilipinong espesyalista ang nagturo sa amin ng totoong problema sa magkabilang panig: nauubos ang oras ng mga negosyante sa pagsala ng resume, at madalas kulang ang bayad o walang bayad ang mga Pilipinong espesyalista. Ang Second Shift ang sagot \u2014 isang fixed na presyo, isang pamantayan sa review, at libreng pagsasanay na nagpoprotekta sa gumagawa ng trabaho.",
   },
   nav: { how: "Paano ito gumagana", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   kicker: "Tungkol sa amin",
   h1: "Ginawa namin ito dahil sira ang lumang paraan sa magkabilang dulo.",
-  lede: "Dalawang taon na kaming direktang nakikipagtrabaho sa mga Pilipinong espesyalista — kinukuha sila, minamanage sila, at nakikita namin kung saan paulit-ulit nasisira ang ugnayang iyon. Ang nakita namin ay hindi puwang sa merkado. Isa itong merkadong pumapalpak sa dalawang grupo ng tao nang sabay, sa dalawang magkaibang dahilan.",
+  lede: "Dalawang taon ng pagkuha at pag-manage ng mga Pilipinong espesyalista ang nagpakita sa amin ng parehong bagay nang paulit-ulit. Hindi ito puwang sa merkado: merkadong pumapalpak sa magkabilang panig nang sabay.",
   problemHead: "Ang paulit-ulit naming nakikita",
   problem: [
     [
       "Para sa mga negosyante",
-      "Dapat sanang nakakatipid ng oras ang outsourcing. Sa totoo lang, nauubos nito ang oras: oras sa pagpo-post ng job, sa pagbabasa ng apatnapung proposal, sa pagsala ng mga resume na pare-pareho ang sinasabi, at sa pag-interview ng taong wala kang maaasahang paraan para husgahan bago mo pa mabayaran.",
+      [
+        "Apatnapung proposal na babasahin.",
+        "Mga resume na pare-pareho ang sinasabi.",
+        "Walang paraan para husgahan ang sinuman bago mo pa siya mabayaran.",
+      ],
     ],
     [
       "Para sa mga Pilipinong espesyalista",
-      "Mas malala ang kabilang panig ng parehong merkado. Pekeng job post, walang bayad na “test task” na libreng trabaho lang talaga, at mga kliyenteng naglalaho bago pa sumapit ang bayaran. Hindi kulang sa demand ang mahusay na espesyalista — kulang sila sa kliyenteng nagbabayad ng tamang halaga, sa tamang oras, sa tuwina.",
+      [
+        "Pekeng job post.",
+        "Walang bayad na \u201Ctest task\u201D na libreng trabaho lang talaga.",
+        "Mga kliyenteng naglalaho bago sumapit ang bayaran.",
+      ],
     ],
   ],
-  bridge:
-    "Ang totoo, hindi tungkol sa pera ang dalawang problemang ito. Hindi kulang sa kandidato ang mga negosyante — kulang sila ng maaasahang paraan para husgahan ang isa bago mangako. Hindi kulang sa galing ang mga Pilipinong espesyalista — kulang sila ng kliyenteng magbabayad nang tapat. Ayusin ang problema sa tiwala sa magkabilang panig at halos kusa nang naaayos ang problema sa pera.",
+  bridge: ["Walang kulang sa tao ang kahit sinong panig.", "Ang kulang sa dalawa ay tiwala."],
   solutionHead: "Kaya gumawa kami ng mas simpleng paraan",
   solutionLede:
-    "Ang Second Shift ay hindi job board at hindi freelance marketplace — meron na niyan, at wala sa dalawa ang umayos sa nakikita namin. Isa itong portal na may iisang trabaho: gawing simple para sa negosyante na maipagawa nang maayos ang isang task, at gawing ligtas para sa Pilipinong espesyalista na mabayaran nang patas sa paggawa nito.",
+    "Hindi job board. Hindi freelance marketplace. Meron na niyan, at wala sa dalawa ang umayos sa nakikita namin.",
   solution: [
     [
       "Isang presyo",
-      "Walang proposal, walang bidding, walang orasang tumatakbo. May isang fixed na presyo ang task bago pa magsimula ang kahit sino, kaya hindi hinuhulaan ng negosyante kung magkano ang lalabas sa invoice.",
+      "Isang fixed na presyo bago magsimula ang kahit sino. Walang proposal, walang bidding, walang orasang tumatakbo.",
     ],
     [
       "Isang pamantayan",
-      "Bawat delivery ay sinusukat sa parehong nakasulat na pamantayan bago makarating sa kliyente — hindi star rating, hindi popularity contest. Umaabot ang trabaho sa pamantayan, o babalik ito na may tala.",
+      "Bawat delivery ay sinusukat sa parehong nakasulat na pamantayan bago makita ng kliyente. Pumasa, o babalik ito na may tala.",
     ],
     [
       "Libreng pagsasanay",
-      "Ang Academy ay nagtuturo ng mismong hanapbuhay — hindi lang kung paano gamitin ang platform na ito — nang libre, may tunay na eksaminasyon at sertipikong mananatili sa manggagawa kahit ano ang mangyari. Proteksyon ang pagsasanay: mas mahirap kulangan sa bayad ang espesyalistang marunong tumukoy ng scam at makapagpatunay ng galing niya.",
+      "Nagtuturo ang Academy ng mismong hanapbuhay, libre, may tunay na eksaminasyon at sertipikong mananatili sa manggagawa.",
     ],
   ],
   trainingHead: "Bakit bahagi ng negosyo ang libreng pagsasanay, hindi lang pang-marketing",
   trainingA:
-    "Ang espesyalistang maayos na nasanay ay naghahatid ng trabahong pumapasa sa review sa unang subok, na mas mura para sa amin at mas mabilis siyang nababayaran — kaya kusang nababayaran ng pagsasanay ang sarili nito. Pero may ginagawa rin itong mahalaga mag-isa: binibigyan nito ang Pilipinong espesyalista ng tunay na kredensyal na dala-dala niya, at ng pag-iisip para ",
+    "Ang espesyalistang maayos na nasanay ay pumapasa sa review sa unang subok. Mas mura iyon para sa amin at mas mabilis siyang nababayaran. Binibigyan din siya nito ng kredensyal na dala-dala niya, at ng pag-iisip para ",
   trainingLink: "makilala ang pekeng alok ng trabaho",
-  trainingB:
-    " bago pa ito magdulot ng gastos sa kanya. Bukas ito sa kahit sino, libre, kumuha man sila ng task dito o hindi kailanman.",
+  trainingB: " bago pa ito magdulot ng gastos sa kanya. Libre sa kahit sino, may task man o wala.",
   bookend: {
     dim: "Ilarawan ang kahit anong task.",
     lit: "Tapos na ito pagsapit ng umaga.",

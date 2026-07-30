@@ -163,8 +163,11 @@ export default async function HowItWorks({
 
         <Reveal className="mt-8">
           <figure className="plate px-4 py-6 sm:px-7 sm:py-7">
-            {/* lane headers — the drawing's key, on wide screens */}
-            <div className="mb-3 grid grid-cols-[40px_264px_minmax(0,1fr)] gap-x-[22px] max-[859px]:hidden">
+            {/* lane headers — the drawing's key, on wide screens.
+                There used to be a fourth label out here reading "STAGE ·
+                N.T.S.". It is drafting jargon (not to scale) and it told a
+                customer nothing, so it is gone. */}
+            <div className="mb-3 grid grid-cols-[40px_264px] gap-x-[22px] max-[859px]:hidden">
               <span aria-hidden />
               <span className="grid grid-cols-3">
                 {t.lanes.map((lane) => (
@@ -175,9 +178,6 @@ export default async function HowItWorks({
                     {lane}
                   </span>
                 ))}
-              </span>
-              <span className="pl-[22px] font-mono text-[10px] uppercase tracking-[0.14em] text-[#5B6069]">
-                {t.axis}
               </span>
             </div>
 
@@ -270,15 +270,21 @@ export default async function HowItWorks({
                 <i className="pp-mark" style={{ left: "16.67%", top: "91.67%" }} />
 
                 {/* DETAIL A, ringed on stage 04 the way a drawing calls out
-                    a blow-up. The box it points at is directly below. */}
+                    a blow-up. The box it points at is directly below.
+
+                    The leader points LEFT. Pointing right sent it straight
+                    into the black night lane, where the tag landed on top
+                    of the slab and read as a rendering accident; the You
+                    lane is empty at this row, so the callout has clear
+                    paper to land on. */}
                 <i className="pp-ring" style={{ left: "50%", top: "58.33%" }} />
                 <i
                   className="pp-leader"
-                  style={{ left: "calc(50% + 15px)", top: "58.33%", width: "74px" }}
+                  style={{ left: "calc(50% - 70px)", top: "58.33%", width: "55px" }}
                 />
                 <span
                   className="pp-tag font-mono text-[10px] tracking-[0.12em] text-[#14161A]"
-                  style={{ left: "calc(50% + 89px)", top: "58.33%" }}
+                  style={{ left: "calc(50% - 90px)", top: "58.33%" }}
                 >
                   A
                 </span>
@@ -287,8 +293,10 @@ export default async function HowItWorks({
               {/* ── the six stages ─────────────────────────────────────── */}
               {stages.map((stage, i) => (
                 <div key={stage.label} className="pp-row">
+                  {/* Plain numbers. The § was borrowed from legal drafting
+                      for a page that is not a legal document. */}
                   <span className="pp-clause font-mono text-[10px] tabular-nums text-[#5B6069]">
-                    §{String(i + 1).padStart(2, "0")}
+                    {String(i + 1).padStart(2, "0")}
                   </span>
                   <span className="pp-spacer" aria-hidden />
                   <div className="pp-body">
@@ -318,20 +326,12 @@ export default async function HowItWorks({
               ))}
             </div>
 
-            {/* ── title block — a drawing sheet signs itself ──────────── */}
-            <figcaption className="ml-auto mt-6 w-full border border-[#14161A]/16 bg-[#F7F6F3] sm:w-[360px]">
-              {t.titleblock.map(([k, v]) => (
-                <div
-                  key={k}
-                  className="grid grid-cols-[92px_minmax(0,1fr)] border-b border-[#14161A]/12 font-mono text-[10px] uppercase tracking-[0.08em] last:border-b-0"
-                >
-                  <span className="border-r border-[#14161A]/12 px-2 py-1.5 text-[#5B6069]">
-                    {k}
-                  </span>
-                  <span className="px-2 py-1.5 text-[#14161A]">{v}</span>
-                </div>
-              ))}
-            </figcaption>
+            {/* The title block that used to sit here is gone. It said
+                DOCUMENT: OPERATING PROTOCOL / PLATE: 01 OF 01 · SCALE
+                N.T.S. / REVISION: 1 / ISSUED BY: THE OPERATOR — four rows
+                of costume. The heading above already says what the document
+                is, the REVISIONS table below already carries the revision
+                and its date, and "issued by the operator" is the deck. */}
           </figure>
         </Reveal>
 

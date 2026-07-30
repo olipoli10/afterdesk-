@@ -201,14 +201,12 @@ export default async function Home({
         <p className="anim-rise d-5 mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
           {ch("01", t.ch01.label)}
         </p>
-        {/* A museum label, set exactly like the ledger's ILLUSTRATIVE note.
-            The artifact below prints its own filename and both clock times,
-            so a caption in an invented client's voice was restating the
-            picture AND inventing a quote to do it. */}
-        <p className="anim-rise d-5 mb-3 max-w-[74ch] font-mono text-[11px] uppercase leading-relaxed tracking-[0.14em] text-[#767C86]">
-          {t.ch01.caption}
-        </p>
-
+        {/* No caption. Two have now been tried here and both restated the
+            artifact below: an invented client quote, then a museum label.
+            The artifact prints its own filename, both clock times and an
+            OVERNIGHT divider, and the chapter label above already says
+            "the overnight diff". The description a sighted reader gets
+            from the picture is below, for everyone else. */}
         <p className="sr-only">
           Example: a lead export arrives with duplicate companies, inconsistent casing and
           missing or invalid emails; it is returned the next morning deduplicated and

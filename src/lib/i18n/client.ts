@@ -23,15 +23,15 @@ export function clientLangOf(value: string | undefined | null): ClientLang {
 type Dict = {
   nav: { signIn: string; send: string };
   hero: { line1: string; line2: string; sub: (h: number) => string; cta: string };
-  ch01: {
-    label: string;
-    /** A MUSEUM LABEL, not a voice. The artifact underneath already prints
-     *  its own filename and both clock times; the old caption restated them
-     *  as an invented client quote, which is the worst of both — redundant
-     *  AND fabricated. Set in the same uppercase mono as the ledger's
-     *  ILLUSTRATIVE note, because it does the same job. */
-    caption: string;
-  };
+  /* NO CAPTION. This chapter had two in a row and both said nothing the
+     picture wasn't already saying: first an invented client quote, then a
+     museum label ("one file, before and after one night") describing a
+     before/after of one file. The artifact prints its own filename, both
+     clock times and an OVERNIGHT divider; the chapter label above it says
+     "the overnight diff". A third restatement is not a caption, it is
+     throat-clearing. The sr-only paragraph in page.tsx carries the full
+     description for anyone who cannot see the artifact. */
+  ch01: { label: string };
   ch02: { label: string; noMeter: string; captions: [string, string, string] };
   ch03: {
     label: string;
@@ -96,10 +96,7 @@ const en: Dict = {
       `Research, data, writing, spreadsheets, admin — priced in ${h} working hours, delivered by morning.`,
     cta: "Describe your task",
   },
-  ch01: {
-    label: "The overnight diff",
-    caption: "Example — one file, before and after one night",
-  },
+  ch01: { label: "The overnight diff" },
   ch02: {
     label: "One price. Approved first.",
     noMeter: "No subscription. No minimum. No hourly meter.",
@@ -164,10 +161,7 @@ const fr: Dict = {
       `Recherche, données, rédaction, tableurs, admin — prix fixe en ${h} heures ouvrables, livré au matin.`,
     cta: "Décrivez votre tâche",
   },
-  ch01: {
-    label: "Une nuit de différence",
-    caption: "Exemple — un fichier, avant et après une nuit",
-  },
+  ch01: { label: "Une nuit de différence" },
   ch02: {
     label: "Un prix. Approuvé d'abord.",
     noMeter: "Aucun abonnement. Aucun minimum. Aucun compteur horaire.",
@@ -241,10 +235,7 @@ const es: Dict = {
       `Investigación, datos, redacción, hojas de cálculo, admin — precio fijo en ${h} horas hábiles, entregado por la mañana.`,
     cta: "Describe tu tarea",
   },
-  ch01: {
-    label: "El antes y después de una noche",
-    caption: "Ejemplo — un archivo, antes y después de una noche",
-  },
+  ch01: { label: "El antes y después de una noche" },
   ch02: {
     label: "Un precio. Aprobado primero.",
     noMeter: "Sin suscripción. Sin mínimo. Sin contador por hora.",
@@ -322,10 +313,7 @@ const tl: Dict = {
       `Research, data, pagsusulat, spreadsheets, admin — may presyo sa loob ng ${h} oras ng trabaho, hatid sa umaga.`,
     cta: "Ilarawan ang task mo",
   },
-  ch01: {
-    label: "Ang diff ng magdamag",
-    caption: "Halimbawa — isang file, bago at pagkatapos ng isang gabi",
-  },
+  ch01: { label: "Ang diff ng magdamag" },
   ch02: {
     label: "Isang presyo. Aprubado muna.",
     noMeter: "Walang subscription. Walang minimum. Walang orasang tumatakbo.",

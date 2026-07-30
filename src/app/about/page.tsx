@@ -114,30 +114,40 @@ export default async function AboutPage({
           {t.problemHead}
         </p>
 
-        {/* No cards. Each side gets a heading at heading size and its own
-            column, so the two problems read as two arguments rather than
-            two boxes of the same grey. */}
+        {/* No cards and no paragraphs. Each side is a heading and three
+            facts, one per line, each on its own hairline. A reader can take
+            the whole complaint in without reading a sentence of prose —
+            which is the point, because the complaint IS a list. */}
         <Reveal className="mt-8">
-          <div className="grid gap-10 sm:grid-cols-2 sm:gap-12">
-            {t.problem.map(([side, body]) => (
+          <div className="grid gap-10 sm:grid-cols-2 sm:gap-14">
+            {t.problem.map(([side, facts]) => (
               <section key={side}>
-                <h2 className="text-[clamp(1.15rem,2.4vw,1.4rem)] font-semibold leading-[1.2] tracking-[-0.02em] text-[#14161A]">
+                <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
                   {side}
                 </h2>
-                <p className="mt-3 max-w-[46ch] text-[16px] leading-[1.65] text-[#5B6069]">
-                  {body}
-                </p>
+                <ul className="mt-3">
+                  {facts.map((fact) => (
+                    <li
+                      key={fact}
+                      className="border-t border-[#14161A]/10 py-3 text-[17px] leading-[1.4] text-[#14161A] first:border-t-0 first:pt-0"
+                    >
+                      {fact}
+                    </li>
+                  ))}
+                </ul>
               </section>
             ))}
           </div>
         </Reveal>
 
-        {/* The turn. Set in ink at reading size — this is the sentence the
-            whole page exists to land, and it used to be the same 14px grey
-            as everything around it. */}
-        <Reveal className="mt-10">
-          <p className="max-w-[58ch] border-l-2 border-[#14161A]/25 pl-5 text-[17px] leading-[1.6] text-[#14161A]">
-            {t.bridge}
+        {/* The turn, and the only place on this page that reaches heading
+            size twice. It was a 60-word paragraph in the same grey as
+            everything around it; it is the sentence the page exists to
+            land, so it gets to be the second-biggest thing on the sheet. */}
+        <Reveal className="mt-14">
+          <p className="max-w-[24ch] text-[clamp(1.5rem,3.4vw,2.1rem)] font-semibold leading-[1.15] tracking-[-0.028em]">
+            <span className="block text-[#5B6069]">{t.bridge[0]}</span>
+            <span className="block text-[#14161A]">{t.bridge[1]}</span>
           </p>
         </Reveal>
 

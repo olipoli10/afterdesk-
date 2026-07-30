@@ -249,8 +249,12 @@ const fr: Dict = {
     kicker: "Le montant imprimé est le montant que vous recevez.",
   },
   ch03: {
-    label: "La barre",
-    h2: "La barre, c'est ce qui rend l'argent réel.",
+    /* "La barre" was a literal translation of "the bar" and it means
+       nothing in French — a barre is a rod, a helm, or a courtroom. The
+       other two locales already had the right word (El estándar / Ang
+       pamantayan); French was the only one still wearing the calque. */
+    label: "Le standard",
+    h2: "C'est le standard qui rend votre paye fiable.",
     rowPass: "Passe la révision → payé.",
     rowReturned: "Pas encore correct → retourné avec des notes.",
     rowFail: "Échoue à la révision finale → non payé. Rare, par conception.",
