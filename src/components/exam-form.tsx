@@ -19,12 +19,15 @@ export function ExamForm({
   courseTitle,
   questions,
   attemptsLeftToday,
+  attemptNo,
   familyHue,
 }: {
   slug: string;
   courseTitle: string;
   questions: PublicQuestion[];
   attemptsLeftToday: number;
+  /** Pins the per-attempt scramble the server rendered this sheet with. */
+  attemptNo: number;
   familyHue: string;
 }) {
   const router = useRouter();
@@ -44,7 +47,7 @@ export function ExamForm({
     }
     setMissing([]);
     start(async () => {
-      const r = await submitExam({ slug, answers: answers as number[] });
+      const r = await submitExam({ slug, answers: answers as number[], attemptNo });
       setResult(r);
       if (r.ok) {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -117,9 +120,9 @@ export function ExamForm({
             <button
               className={buttonSecondary}
               onClick={() => {
-                setResult(null);
-                setAnswers(questions.map(() => null));
-                window.scrollTo({ top: 0 });
+                // A new attempt is a NEW paper — the scramble is keyed on the
+                // attempt number, so the sheet must be re-fetched, not reused.
+                window.location.reload();
               }}
             >
               Try again

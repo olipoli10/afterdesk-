@@ -10,6 +10,7 @@ import {
   examWindowStart,
   type PublicQuestion,
 } from "@/lib/academy/types";
+import { examLayout } from "@/lib/academy/shuffle";
 import { ExamForm } from "@/components/exam-form";
 import { EmptyState, LinkButton } from "@/components/ui";
 
@@ -39,16 +40,34 @@ export default async function ExamPage({
 
   const look = courseLook(course.track, course.slug);
 
-  const recent = await prisma.examAttempt.count({
-    where: { userId: user.id, courseSlug: slug, createdAt: { gte: examWindowStart() } },
-  });
+  const [recent, takenSoFar] = await Promise.all([
+    prisma.examAttempt.count({
+      where: { userId: user.id, courseSlug: slug, createdAt: { gte: examWindowStart() } },
+    }),
+    prisma.examAttempt.count({ where: { userId: user.id, courseSlug: slug } }),
+  ]);
   const attemptsLeft = Math.max(0, EXAM_ATTEMPTS_PER_DAY - recent);
 
-  // RULE: the answer key never leaves the server.
-  const questions: PublicQuestion[] = course.exam.questions.map((q) => ({
-    prompt: q.prompt,
-    options: q.options,
-  }));
+  /**
+   * RULE: the answer key never leaves the server — only prompt and options do.
+   *
+   * And the ORDER is scrambled per attempt. Two attempts at the same exam are
+   * different papers, so their scores cannot be correlated position by
+   * position, which is what made the score a Mastermind oracle worth a pass in
+   * ~10 guesses. The layout is derived from (userId, slug, attemptNo), so the
+   * grader recomputes it exactly without the browser ever sending it.
+   */
+  const layout = examLayout(
+    user.id,
+    slug,
+    takenSoFar,
+    course.exam.questions.length,
+    course.exam.questions.map((q) => q.options.length)
+  );
+  const questions: PublicQuestion[] = layout.questions.map((canonical, slot) => {
+    const q = course.exam.questions[canonical];
+    return { prompt: q.prompt, options: layout.options[slot].map((o) => q.options[o]) };
+  });
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -93,6 +112,7 @@ export default async function ExamPage({
             courseTitle={course.title}
             questions={questions}
             attemptsLeftToday={attemptsLeft}
+            attemptNo={takenSoFar}
             familyHue={look.hue}
           />
         )}

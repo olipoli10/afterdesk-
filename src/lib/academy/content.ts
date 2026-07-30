@@ -2,15 +2,22 @@ import "server-only";
 import type { Course } from "./types";
 
 /**
- * THE CURRICULUM — 12 courses: 4 foundations + one per task category.
- * GENERATED from the academy-courses authoring run, then validated
- * (12 questions per exam, 4 options each, exactly one correct, no markdown).
- * Edit by hand freely — this header is provenance, not a lock.
+ * THE CURRICULUM.
+ *
+ * Four tracks: foundations (how to work here), the toolkit (the jobs a virtual
+ * assistant is hired to do anywhere), the career (getting hired, getting paid,
+ * lasting), and one course per kind of work in the pool.
+ *
+ * GENERATED from the authoring runs, then validated — every exam is exactly 12
+ * questions of 4 options with one correct answer, no duplicate options, no
+ * markdown, and the answer positions are checked for the flat distribution that
+ * would make an exam guessable. Edit by hand freely; this note is provenance,
+ * not a lock.
  *
  * server-only: every course carries its exam's ANSWER KEY. This module must
- * never be imported by a client component; the exam page strips questions to
- * their public projection before render, and grading happens in the
- * submitExam server action.
+ * never be imported by a client component. Public surfaces read the narrow
+ * projection in ./public.ts instead, and grading happens in the submitExam
+ * server action.
  */
 export const COURSES: Record<string, Course> = {
   "va-foundations": {
@@ -1239,6 +1246,7162 @@ export const COURSES: Record<string, Course> = {
         }
       ]
     }
+  },
+  "inbox-management": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "It is the start of your shift. Three hundred and eleven messages arrived overnight, and the third one you open needs a twenty-minute answer. What do you do?",
+          "options": [
+            "Answer it now while the context is fresh, then continue scanning the rest of the pile.",
+            "Leave it unread so you remember to come back to it after the sweep.",
+            "Label it Draft, keep sweeping the whole pile, and write it once everything is sorted.",
+            "Forward it to your client with a note saying it will take you twenty minutes."
+          ],
+          "correct": 2,
+          "explain": "The first pass is labelling only. Switching between scanning and writing is slow, and a later message may change what that answer needs to say."
+        },
+        {
+          "prompt": "A new client says the fastest way to start is to send you their email password over chat. What is the right response?",
+          "options": [
+            "Ask them to add you as a delegate on the account instead, and explain that it is safer for them.",
+            "Accept it and store the password in a password manager with two-factor turned on.",
+            "Accept it, but ask them to change the password to something temporary first.",
+            "Decline, and tell them you can only work from exported message files."
+          ],
+          "correct": 0,
+          "explain": "Delegated access lets you read, reply and archive from your own login, leaves a clean trail, and can be switched off in one click."
+        },
+        {
+          "prompt": "A message that appears to be from your client, sent from a slightly different address, asks you to update a supplier's bank details today because the payment is late. You are alone on shift. What do you do?",
+          "options": [
+            "Update the details, since you have handled supplier admin for this client before, then report it in the handover.",
+            "Do not act, and confirm with your client through the channel you normally use before anything else.",
+            "Reply to the message asking the sender to confirm the request in writing first.",
+            "Forward it to the supplier so they can confirm whether the details are really theirs."
+          ],
+          "correct": 1,
+          "explain": "Urgent, unusual money requests are the standard shape of fraud. Confirm through a channel you already use, never by replying to the message itself."
+        },
+        {
+          "prompt": "A customer writes furiously that a delivery promised for Friday never arrived and their weekend is ruined. Your authority covers scheduling only. What do you send within the hour?",
+          "options": [
+            "An apology explaining that the warehouse has been short-staffed all month, and offering a discount.",
+            "Nothing yet, because the situation needs your client's decision and any reply could commit them.",
+            "A request for the order number and photographs before anything can be looked into.",
+            "A short note confirming you have read it, who is handling it, and when they will hear back."
+          ],
+          "correct": 3,
+          "explain": "An acknowledgement needs no special authority: received, with whom, by when. Admitting a cause or offering a discount commits your client to something you cannot promise."
+        },
+        {
+          "prompt": "You have a well-used template for late deliveries. A long, personal message arrives from your client's oldest customer describing how the mistake hurt their own business. What do you do?",
+          "options": [
+            "Send the template with the first and last lines rewritten to mention their business.",
+            "Write the reply from nothing, or draft it and escalate, because a template will be recognised.",
+            "Send the template unchanged so the response goes out fast, then follow up personally later.",
+            "Reply asking for the order details so the complaint can be logged properly first."
+          ],
+          "correct": 1,
+          "explain": "After a mistake, and to someone who wrote at length personally, the value of the reply is the evidence that a human read theirs."
+        },
+        {
+          "prompt": "Your client insists they never received a signed quote from a supplier last spring. It is not in the inbox. What do you do first?",
+          "options": [
+            "Search all mail with the sender, a date range and has:attachment, including spam and trash.",
+            "Ask the supplier to resend the signed quote so there is a current copy on file.",
+            "Tell your client it was never received, and offer to request a replacement today.",
+            "Check the archive label you made for that supplier, and stop if it is not there."
+          ],
+          "correct": 0,
+          "explain": "Search with from, a date bracket, has:attachment and in:anywhere reaches archived, spam and trashed mail in seconds, before anyone is asked to redo work."
+        },
+        {
+          "prompt": "A prospective customer asks whether your client can do a job for the price listed on an old page of their website. You know the current price. What do you do?",
+          "options": [
+            "Reply with the current price, since you know it and the old page is out of date.",
+            "Reply that the website is wrong and that someone will follow up with correct pricing.",
+            "Draft the reply, leave it unsent, and flag it in your handover for approval.",
+            "Forward the message to your client with no comment so they can handle pricing themselves."
+          ],
+          "correct": 2,
+          "explain": "Pricing commits your client and is expensive to take back, so it is a draft. A flagged draft takes them about thirty seconds to approve."
+        },
+        {
+          "prompt": "You send a supplier a request that needs an answer by the end of the month. What do you do the moment it is sent?",
+          "options": [
+            "Add a row to the tracking sheet and rely on your weekly review to catch it.",
+            "Apply the Waiting label to the sent message and snooze the thread to your chase date.",
+            "Mark the thread unread so it stays visible near the top of the inbox.",
+            "Note it in tonight's handover so your client can chase it if it goes quiet."
+          ],
+          "correct": 1,
+          "explain": "Label plus snooze gives you both the overview and the reminder. Either one alone depends on you remembering at exactly the right moment."
+        },
+        {
+          "prompt": "You realise you sent a reply from the Draft lane before your client approved it. The content was accurate, the recipient answered politely, and nobody has noticed. What do you do?",
+          "options": [
+            "Say nothing, since the content was correct and raising it would only worry the client.",
+            "Note it in the tracking sheet so there is a record if it ever comes up.",
+            "Mention it at the end of the month with the other small process issues.",
+            "Tell your client today, in the handover, with what was sent and what you have changed."
+          ],
+          "correct": 3,
+          "explain": "An error your client hears from you costs trust once. One they discover later costs it permanently, and this one is easy to report."
+        },
+        {
+          "prompt": "A long supplier thread is in dense technical English and you want to be certain you understood it. The brief says nothing about tools. What is acceptable?",
+          "options": [
+            "Read it again carefully, then ask your client the specific question you cannot resolve.",
+            "Paste the thread into a free AI assistant and ask it to summarise the key points.",
+            "Paste it into a translation and grammar tool, which only checks language, not content.",
+            "Forward the thread to your own address so you can read it on a larger screen."
+          ],
+          "correct": 0,
+          "explain": "Client mail does not leave the inbox. No third-party tool and no personal forwarding unless the brief names the tool and allows it."
+        },
+        {
+          "prompt": "Your client wants replies to sound like them. A recipient asks you directly whether they are speaking to your client personally. What do you do?",
+          "options": [
+            "Answer in your client's voice, since the client asked for their replies to sound that way.",
+            "Ignore the question and answer the business point, which is what the message is about.",
+            "Say plainly that you handle the inbox on your client's behalf, and answer the business point.",
+            "Confirm you are answering on their behalf only if the recipient asks a second time."
+          ],
+          "correct": 2,
+          "explain": "Voice is style, identity is not yours to borrow. Confirming who you are costs nothing, and denying it damages the client's credibility, not only yours."
+        },
+        {
+          "prompt": "Your shift ends. You handled forty messages, drafted six replies, and two decisions need your client. What goes at the top of your handover note?",
+          "options": [
+            "A short summary of volume: how many arrived, how many you handled, how many remain.",
+            "The two decisions only they can make, numbered, each with its deadline.",
+            "The six drafts waiting for approval, so they can clear those quickly first.",
+            "The list of what you handled and closed, so they can see things are under control."
+          ],
+          "correct": 1,
+          "explain": "The note is ordered by what it costs them to miss. Decisions with deadlines come first, and everything else is reassurance that can wait."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "What running an inbox really means",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The job is decisions, not reading",
+            "body": "An inbox is not a reading list. It is a queue of decisions somebody has to make, and your client hired you so they make fewer of them. On any morning, most of what arrives needs no decision from them at all: receipts, newsletters, calendar noise, replies confirming something already agreed. A smaller pile needs a short answer that you can write. A very small pile genuinely needs their judgement. Your value is the sorting, not the typing. A client who opens the inbox and sees eleven messages instead of three hundred and ten will keep you for years. Measure yourself on that number, not on how many replies you sent."
+          },
+          {
+            "heading": "Access without passwords",
+            "body": "Ask for delegated access before you ask for a password. Gmail lets an account owner add a delegate: you open their mail from your own logged-in account, you read, reply and archive, and replies show as sent by you on their behalf. Google Workspace administrators can also set up a shared mailbox. Both leave a clean trail, both can be switched off in one click, and neither puts their password on your machine. If a client offers the password anyway, explain delegation first, and say plainly that it is safer for them. Keep two-factor codes on their side, never yours. Use a password manager for anything you do hold, lock your screen, and never open a client inbox on a borrowed computer."
+          },
+          {
+            "heading": "Confidentiality is the whole contract",
+            "body": "Everything in that inbox belongs to the client. Salary conversations, unsigned contracts, a supplier dispute, a medical appointment: you will see all of it, and none of it leaves the inbox. Do not forward client mail to your own address to read later. Do not paste client email into a translator, a grammar checker or an AI assistant unless the client has written that it is allowed and named the tool. Do not screenshot anything for a portfolio, a course or a friend. When a task is done, delete local copies of attachments from your downloads folder. If someone outside asks what your client is working on, the honest answer is that you do not discuss client work. Say it once, plainly, and it is never awkward again."
+          },
+          {
+            "heading": "How Second Shift differs",
+            "body": "Second Shift tasks never give you a client inbox, and you never write to a client's contacts. There is no chat, no calls, no direct thread of any kind. What you may get is the flat version of this work: a set of exported messages to sort and summarise, a batch of replies to draft in a document, a template library to build, a contact list pulled out of a thread. You do the thinking, you upload the file with a note to the operator, and the operator reviews it before anyone sees it. Everything else in this course is for the inbox work you do for other clients directly, where you hold the keys. Both need the same judgement. Only one lets you press send."
+          }
+        ],
+        "keyPoints": [
+          "Your value is the sorting, not the typing. Count what you removed from their day.",
+          "Ask for delegated access, not a password. Safer for the client and for you.",
+          "Client mail never leaves the inbox: no forwarding, no AI tools, no screenshots, no portfolio.",
+          "On Second Shift you never touch a client inbox or contact anyone. The operator does."
+        ]
+      },
+      {
+        "title": "Triage that survives 300 messages",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Sort by decision, not by topic",
+            "body": "Topic folders feel tidy and do nothing for you. Sort by the decision instead. Every message lands in one of four lanes. Handle: you can deal with it completely, today, without asking. Draft: an answer is needed, you can write it, they approve before it goes. Theirs: only they can decide, so it goes in front of them clean and summarised. Nothing: file it, archive it, or let a filter make it disappear before you ever see it. The question that sorts a message in two seconds is not what is this about, it is who has to decide this. A newsletter and an invoice can share a sender and belong in different lanes. Build your labels around these four and the inbox starts running itself."
+          },
+          {
+            "heading": "The first pass: no replies",
+            "body": "Open the inbox and write nothing on the first pass. Scan from newest to oldest, label each message into its lane, archive the nothing pile, and move on. Do not open attachments, do not start replies, do not go looking things up. This feels wrong the first week and it is the single biggest speed gain available to you. Two reasons. Replying puts you in writing mode, and switching between scanning and writing costs more time than either task. And the message you would have spent twenty minutes on at seven o'clock is sometimes cancelled by one that arrives at half past. Three hundred messages take about twenty minutes to label. Then you sit down and work the lanes in order, with the whole picture in front of you."
+          },
+          {
+            "heading": "Touch it once",
+            "body": "After the sweep, work each lane top to bottom and finish what you open. If a message is in Handle and the reply takes under two minutes, write it and archive it. If it takes longer, it was mislabelled: move it to Draft. The habit to kill is reading a message, feeling unsure, and leaving it unread to think about later. Unread is not a decision, and tomorrow you will read it again from scratch. If you truly cannot act, that is information: label it Waiting or Theirs with a one-line note saying what is missing. Every message you read twice is a message you have paid for twice. The inbox should empty in one direction only."
+          },
+          {
+            "heading": "Timeboxing the sweep",
+            "body": "Agree the rhythm in writing with your client before your first shift. A common shape is three sweeps: one at the start of your shift, one mid-shift, one before you hand over. Between sweeps the inbox is closed. Constant monitoring feels responsive and produces a day with no finished work in it. What matters more than frequency is that the client knows the schedule, so nobody waits on a reply that was never coming for six hours. Then define urgent narrowly with them: a named customer, a specific supplier, anything with a same-day deadline. Everything else waits for the next sweep. Write the rule down where you both can see it, because urgent means different things to the two of you."
+          },
+          {
+            "heading": "What deserves an alert",
+            "body": "Some things cannot wait for the handover note, and interrupting your client is a tool you spend carefully. Agree one channel for it and use only that channel. A good alert is short and contains the decision needed, the deadline, and what you have already done. Not a forward with no comment. Not five separate pings in ten minutes: batch them if they arrived together. Interrupt for a missed deadline that is still recoverable, a payment or legal notice, an angry message from a named account, a meeting change inside the next few hours, or anything you suspect is a security problem. If you are alerting more than once or twice a week, the escalation rule is too wide, and you should fix the rule rather than the habit."
+          }
+        ],
+        "keyPoints": [
+          "Four lanes: Handle, Draft, Theirs, Nothing. Ask who has to decide.",
+          "Label the whole pile before you write a single reply.",
+          "Unread is not a decision. Read once, decide once.",
+          "Three sweeps a day beats all-day monitoring, if the client knows the schedule.",
+          "An alert names the decision, the deadline, and what you already did."
+        ]
+      },
+      {
+        "title": "Labels, filters and search that work",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Build labels from the four lanes",
+            "body": "Keep the label list short enough to use at speed. Start with four: Handle, Draft, Theirs, Waiting. Gmail sorts labels alphabetically, so prefix them with a digit if you want them in working order, and give each a strong colour so you can read the lane from the message list without stopping. Underneath those, add only labels you will actually filter on: one per recurring sender group, one per active project, one for receipts. Resist a label per topic. Twelve labels is a system, sixty is a second inbox. Review the list monthly and delete anything you have not clicked in four weeks. Labels are not filing cabinets, they are handles you grab while moving fast."
+          },
+          {
+            "heading": "Filters do the sorting you repeat",
+            "body": "A filter is a rule that runs before you look. In Gmail, open a message of the kind you want handled automatically, use the menu to filter messages like these, adjust the criteria, and choose what happens. Four recipes cover most inboxes. Newsletters and marketing: skip the inbox, apply a Reading label, mark as read. Receipts and invoices: skip the inbox, apply Receipts, never mark as spam. Named important senders: apply a colour and a star, never skip the inbox. Automated notifications nobody reads: skip the inbox and label them. Build filters from what you actually did last week, not from what you imagine arriving. Two new filters a week for a month will halve the volume you personally touch. Never set a filter to delete."
+          },
+          {
+            "heading": "Multiple inboxes on one screen",
+            "body": "Gmail has a layout called multiple inboxes that turns your lanes into panels on one screen. In settings, choose it as your inbox type, then define each section with a search query: one for the Draft label, one for Theirs, one for Waiting, and the main inbox for anything not yet sorted. You get the whole workload without clicking between labels, and an empty panel is a visible finish line. Set the section titles in plain words your client would understand, because you will screenshot this view or describe it in a handover. If the screen gets crowded, cut the number of rows per section rather than removing a section. On a small laptop, put the sections below the inbox instead of beside it."
+          },
+          {
+            "heading": "Search operators worth memorising",
+            "body": "Search is faster than any folder, once you know six operators. from: and to: narrow by person. subject: searches the subject line only. has:attachment with filename:pdf finds the document somebody swears they sent. after: and before: with a date bracket a period, and older_than:1y takes a year in one step. A minus sign excludes, so from:accounts -label:receipts shows what your filter missed. Quotation marks force an exact phrase. in:anywhere reaches spam and trash when a message has vanished. Combine them freely. When a client asks whether they ever approved something, a good search finds the answer in fifteen seconds, and that one skill will convince them faster than any tidy label scheme."
+          },
+          {
+            "heading": "Archive, do not delete",
+            "body": "Archiving removes a message from the inbox and keeps it findable forever. Deleting removes the client's record. You do not know which supplier thread becomes a dispute in eight months, so archive by default and let search do the rest. The exceptions are obvious spam and genuine duplicates, and even those can simply be archived. Never empty a client's trash. Never build a filter that deletes. If the client asks you to clear space, treat that as a conversation to have with them, not an afternoon of quiet deleting. Unsubscribing is different and welcome: use the unsubscribe link on real newsletters they no longer read, one at a time, and note in the handover which ones you removed so nothing disappears without them knowing."
+          }
+        ],
+        "keyPoints": [
+          "Four lane labels plus a handful more. Twelve is a system, sixty is chaos.",
+          "Build filters from last week's real messages. Never let a filter delete.",
+          "Multiple inboxes puts every lane on one screen at once.",
+          "Six operators beat any folder tree: from, subject, has:attachment, dates, minus, quotes.",
+          "Archive by default. You do not know which thread matters in a year."
+        ]
+      },
+      {
+        "title": "What you send, draft, or escalate",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The authority document",
+            "body": "Before you send a single message on someone's behalf, write down what you are allowed to send. Make a short Google Doc with two columns: kinds of message, and what you do with them. Fill it in with real examples from their last month, not categories in the abstract. Meeting reschedule with an existing contact: send. New customer asking for pricing: draft. Anything from their accountant: leave for them. Get the client to read it and reply in writing that it is right, and keep that reply. This document protects both of you. When something goes wrong, and eventually something will, the question is never who is to blame, it is what did we agree. Review it monthly and move items up as trust builds."
+          },
+          {
+            "heading": "Send, draft, or theirs",
+            "body": "Level one is send: routine, factual, reversible, and covered by a rule you already agreed. Confirming a meeting, sending an address, replying that a document arrived, forwarding to the right person internally. Level two is draft: you probably know the correct answer, but it commits your client, sets a price, expresses an opinion, or goes to somebody who matters. You write the whole reply, leave it in drafts, and flag it in your handover so approval takes thirty seconds instead of thirty minutes. Level three is theirs: you do not write it at all, you summarise it. The test between one and two is simple. If the reply would be embarrassing or expensive to take back, it is a draft. When unsure which level applies, treat it as the higher one."
+          },
+          {
+            "heading": "The never-touch list",
+            "body": "Some mail you never answer, never draft, and never file away quietly. Anything legal: a demand letter, a dispute, anything with a lawyer copied. Anything that moves money: payment instructions, bank details, invoice changes, refunds. Anything about people: hiring, firing, complaints, salaries, references. Press and interview requests. Messages from the client's family or their doctor. Password resets and security alerts, which you flag rather than click. And any message asking for something urgent and unusual, especially if it appears to come from your client and pushes you to move fast: that is the shape of a fraud attempt, and the answer is always to confirm through a different channel. Put this list in the authority document, word for word, so it is never a judgement call at midnight."
+          },
+          {
+            "heading": "Escalate without dumping",
+            "body": "Handing a message up is a piece of work, not an act of forwarding. A dumped escalation reads as three letters and a wall of quoted text. A useful one gives the decision in the first line, then who is asking, what they want, the deadline, what you found when you checked, and two or three options with your recommendation. Three or four sentences is usually enough. If you have drafted a possible reply, say so and where it is. If you already did something, such as buying time with a holding message, say that too so they do not repeat it. Your client should be able to answer with one word. That is the standard: they read six lines, type yes, and the thing is finished."
+          },
+          {
+            "heading": "Widening authority over time",
+            "body": "Authority should grow, and it will not grow unless you make it easy. Keep a private note of every draft your client approved without changing a word. After a month, take the three categories with the most untouched approvals and propose moving them to send, with the exact wording you would use. That is a concrete request with evidence behind it, and most clients say yes. The reverse matters too. If a draft comes back edited, read the edit and write down what changed, because the same correction twice is a rule you have not learned yet. Never widen your own authority quietly because it seemed obvious. Sending one message you were not cleared to send costs more trust than a hundred good ones earn."
+          }
+        ],
+        "keyPoints": [
+          "Write the authority document before your first send, and keep the client's written yes.",
+          "Send, draft, or summarise. If a reply is expensive to take back, draft it.",
+          "Never touch legal, money, personnel, press, or security alerts. Flag them.",
+          "An escalation gives the decision, the deadline, the options, and your recommendation.",
+          "Grow your authority with evidence, never quietly."
+        ]
+      },
+      {
+        "title": "Writing in someone else's voice",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Read the sent folder first",
+            "body": "Before you write anything, spend an hour in their sent folder. Read fifty of their own replies, and read across different recipients: a customer, a supplier, a colleague. You are looking for mechanics, not personality. How do they open, and does it change with the recipient. Do they use first names. Are their sentences short or long. Do they thank people in advance, or not at all. How do they say no. How do they close, and what is the exact sign-off. Do they use contractions, dashes, one-line paragraphs. Notice what they never do, which is usually more distinctive than what they do. Copy ten replies you consider typical into a document as reference. That hour saves you a month of corrections."
+          },
+          {
+            "heading": "Build a voice sheet",
+            "body": "Turn what you found into a one-page sheet you keep open while writing. List the greetings they use and who gets which. The sign-off exactly as they type it, including the line breaks. Five phrases they actually use. Five phrases they never use, which for many people includes please be advised, kindly, and hope this finds you well. Their answer to the three situations you will face most: saying no, buying time, asking for information. Typical length in sentences, because most assistants write too much. Their rules about names, titles and how the company is written. Add to it every time a draft comes back edited. When somebody else eventually covers your shift, this sheet is what you hand them, and it is worth more than any briefing."
+          },
+          {
+            "heading": "The line you do not cross",
+            "body": "Writing in someone's voice is not pretending to be them, and the difference is not subtle. From a delegated Gmail account, recipients see that the message was sent by you on their behalf, and that is correct and normal. Do not remove it, and do not set up an account that hides it. Never sign a message with your client's name as though they typed it unless they have told you in writing that this is how they want it done, and keep that instruction. Never agree to a contract, a price or a legal commitment in their name. Never use their identity to verify anything, and never confirm a payment change. If a message would only work because the reader thinks the client wrote it personally, it is not yours to send."
+          },
+          {
+            "heading": "Structure carries more than style",
+            "body": "Recipients judge a reply on whether it answered them, and only afterwards on how it sounded. Answer the actual question in the first sentence, even when the answer is no or not yet. Put any request for action in its own short paragraph so it survives being read on a phone. If there are dates or numbers, repeat them exactly as the sender wrote them. One topic per email: a reply that answers three questions gets a response to one. Say what happens next and who does it. Then stop. Most drafts get shorter when you delete the first paragraph, because the first paragraph is usually you clearing your throat. Good structure in slightly wrong voice reads as competent. Perfect voice with a buried answer reads as an assistant who missed the point."
+          },
+          {
+            "heading": "When your own voice is better",
+            "body": "Not everything should sound like your client. When you write as yourself, clearly as their assistant, use plain professional English and stop performing. Scheduling, chasing documents, confirming details and coordinating logistics are usually faster and clearer coming from you, and many clients prefer it because it protects their own name for the things that need it. Ask which of these they want in their voice and which in yours. Second Shift works on the same principle: what you upload is a draft, the operator reviews it, and nothing goes out under anyone's name until it has passed that review. The skill is knowing whose name a message needs, not proving you can imitate anyone."
+          }
+        ],
+        "keyPoints": [
+          "Fifty sent messages tell you more about voice than any briefing call.",
+          "Keep a one-page voice sheet, and update it every time a draft is edited.",
+          "On behalf of is honest. Never sign as them without written instruction.",
+          "Answer in the first sentence. Structure beats style every time.",
+          "Some messages are better in your own name. Ask which ones."
+        ]
+      },
+      {
+        "title": "Templates that do not sound robotic",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Templates come from repetition",
+            "body": "Do not sit down to write templates. Work a normal week and keep a tally of every reply you write more than twice: the same information request, the same booking confirmation, the same polite no, the same document chase. At the end of the week you will have between six and twelve. Those are your templates and nothing else is. For each one, take the best version you actually sent, not a fresh idealised draft, and strip out everything specific into visible gaps like NAME, DATE and AMOUNT in capitals. Capitals matter: a half-filled template is the classic embarrassment, and NAME sitting in the middle of a sentence is impossible to miss on a final read. Templates built this way already sound like the person, because they came from them."
+          },
+          {
+            "heading": "Gmail templates, step by step",
+            "body": "Gmail calls them templates and they are off by default. In settings, open the advanced tab and enable templates. Then compose the message, open the three-dot menu at the bottom right of the compose window, choose templates, and save the draft as a new one with a name you will recognise in a list of twenty. To use it, start a reply, open the same menu, and insert. You can also attach a template to a filter so an incoming message of a known kind gets a reply automatically, which is useful for a genuinely fixed acknowledgement and dangerous for anything else. Name templates by situation, not by number: Chasing missing invoice, Declining meeting request, Booking confirmed. You will be reading that list under time pressure."
+          },
+          {
+            "heading": "The two-line rule",
+            "body": "A template becomes robotic in one specific way: the reader can tell that nothing in it was written for them. Fix it with two lines. The first line refers to something only their message contains, in your own words, not a quotation. Thanks for sending the revised floor plan, the ceiling heights are what we needed. The last line says what happens next and when, with a real date. Between those two, the body can be entirely standard and nobody will notice. Then read the whole thing once before sending, out loud if you can, because that is when you catch the wrong name, the leftover NAME, the pricing from a different customer, and the cheerful sentence that does not belong in a message about a delay. Two lines and one read-through is the whole discipline."
+          },
+          {
+            "heading": "When a template is wrong",
+            "body": "Some messages must be written from nothing. Anything after a mistake, yours or the company's. Any reply to a person who is upset, because a template is exactly what they will smell and it will make them angrier. Anything where the sender has clearly written at length and personally. Bad news of any kind. Any first message to somebody who matters. Anything where a wrong detail costs money. In each of these, the value of the reply is the evidence that a human read theirs. You can still hold a structure in your head, apology, cause, fix, next step, but every sentence gets typed. If you are ever unsure whether a situation deserves a template, it does not."
+          },
+          {
+            "heading": "Maintaining the library",
+            "body": "A template library rots. Review it once a quarter: open each one, read it as a stranger, and check the details that expire. Prices, hours, addresses, links, staff names, product names, the sign-off. Delete anything you have not used in three months, because a stale template is worse than none, and the day you reach for it in a hurry it will name someone who left in March. Keep the master list in a Google Doc as well as in Gmail, so it survives an account change and so your client can read it. Show them the library. Most clients have never seen the words their inbox sends on their behalf, and reading it is often the moment they realise how much of their day you are carrying."
+          }
+        ],
+        "keyPoints": [
+          "Templates come from replies you already wrote twice. Nothing else qualifies.",
+          "Leave gaps in capitals so a half-filled template is impossible to miss.",
+          "Personal first line, dated last line. The middle can be standard.",
+          "Never template an apology, bad news, or a reply to someone upset.",
+          "Review the library quarterly. Delete anything unused for three months."
+        ]
+      },
+      {
+        "title": "Handling angry and difficult email",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Slow down the loop",
+            "body": "An angry email is a timing problem before it is a writing problem. The first draft you write in the first two minutes will be defensive, and it will contain a sentence you cannot take back. Write it if it helps, in a blank document, then close it without saving. Then check three things before you touch the reply: what actually happened, what was actually promised, and whether this person is angry for the first time or the third. The third time changes everything, and it will be in the thread history. Speed still matters, so do not go quiet for a day. A short honest acknowledgement inside an hour cools more situations than a perfect reply the next morning. What you must not do is answer at the same temperature they wrote."
+          },
+          {
+            "heading": "What you can send without permission",
+            "body": "Even with narrow authority, you can almost always send an acknowledgement, and it is the most valuable message in the whole exchange. It has three parts and no fourth. You have received it and read it. It is with the person who can decide, named if that is normal. When they will hear back, with a specific time you can actually keep. What you never do without permission: admit fault, name a cause, promise a refund or a discount, blame a colleague or a supplier, or explain what went wrong internally. Words like our mistake and we will fix it are commitments made in someone else's name. Confirm the one promise you can keep, which is the reply time, then keep it. If that deadline slips, write again before it passes, not after."
+          },
+          {
+            "heading": "Acknowledge, facts, next step",
+            "body": "When you are cleared to answer properly, the shape is short. Acknowledge what they lost, not their feelings: the delivery missed Friday and that cost you the weekend. Then the facts in order, dated, with no adjectives, including the part that is not flattering to your side. Then the next step, with a name and a date. No paragraph about how much the company values them. No use of the word regret doing the work of a fix. If some of the fault is theirs, state the sequence and let it speak, because we did not receive a reply to our email of the fourth is a fact, while you failed to reply is a fight. Read it once more and delete every sentence that exists to make your side feel better."
+          },
+          {
+            "heading": "The ones you never answer",
+            "body": "Some messages leave the inbox routine immediately, whatever your authority says. Anything mentioning a lawyer, a court, a regulator or a chargeback. Anything using publicity or a public review as leverage. Personal abuse or threats aimed at anyone. Anything about the death, illness or serious personal trouble of a named person. Anything alleging discrimination, harassment or a safety problem. For all of these you do one thing: send it to your client with a one-line summary, say that you have not replied and will not, and stop. Do not acknowledge, do not apologise, do not ask a clarifying question, because in a dispute every line you write becomes part of the record. Then log it: date, sender, subject, what you did. That log has saved a great many assistants."
+          },
+          {
+            "heading": "Protecting yourself",
+            "body": "You will be shouted at for things you did not do, and the shouting is not about you. Do not carry it into the next message. Two habits help. Never reply to an angry email as the last thing you do in a shift, because tired and stung is the exact state that sends something regrettable. And never argue the same point twice in one thread: if the second reply comes back at the same temperature, it is a decision for your client, not another attempt from you. If a client is the one being abusive to you, that is a different situation and it is not part of the job. Write it down, keep the messages, and decide with a clear head whether to continue. Good clients do not shout at their assistants."
+          }
+        ],
+        "keyPoints": [
+          "Never answer at the same temperature. Write the angry draft, then close it unsaved.",
+          "You can always acknowledge: received, with whom, by when. That needs no permission.",
+          "Never admit fault, name a cause, or promise money without written authority.",
+          "Lawyers, threats, abuse or discrimination: pass it up, do not reply, log it.",
+          "Never send an angry reply as the last thing in your shift."
+        ]
+      },
+      {
+        "title": "The follow-up loop",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Every loop needs a name and date",
+            "body": "Most of what goes wrong in an inbox is not a bad reply, it is a message nobody answered and nobody noticed. The moment you send something that needs a response, or your client does, it becomes an open loop, and every open loop needs two things attached: a person and a date. Who owes what, by when. Without the date it is a hope. This runs in both directions. Their unanswered requests to other people are the obvious half. The half that gets forgotten is what your client owes: the quote they said they would send, the reference they promised, the form the accountant needs. You are the only person holding the whole picture, and tracking it is often the service a client notices most."
+          },
+          {
+            "heading": "The Waiting label and snooze",
+            "body": "Two Gmail features do the work. When you send something that needs an answer, apply your Waiting label to the sent message so the thread lives in one visible place. Then snooze the thread to the date you would chase, and it returns to the top of the inbox that morning. Use them together, because snooze alone hides the item until the day and you lose the overview, while a label alone needs you to remember to look. Snooze to a working morning, not to a Friday evening or a Sunday. When the answer arrives, remove the label the same minute, because a Waiting list full of things that already came back stops being trusted within about a week. An empty Waiting label at the end of a shift is a real achievement."
+          },
+          {
+            "heading": "A tracking sheet that survives",
+            "body": "For anything that outlives a week, the label is not enough and a Google Sheet is. Six columns: what, who owes it, asked on, chase on, status, link to the thread. One row per open item. Sort by chase date so today's chases sit at the top. Colour only the overdue rows, red, and nothing else, because a sheet where everything is coloured tells you nothing. Share it with the client in view or comment mode and put the link in every handover note, so they can look without asking you. The sheet is also your protection. When somebody says they never received a request, the row shows the date and the thread proves it. Keep it in the client's own Drive, not yours, so it stays theirs when the work ends."
+          },
+          {
+            "heading": "Chasing without nagging",
+            "body": "A chase should be easy to answer and impossible to take badly. Reply inside the original thread so the whole history is right there. Keep it to two sentences: what you need, and the date you need it by. Never open with an accusation about not hearing back, and never write just following up, which says nothing and invites nothing. Make the answer cheap: offer two dates rather than asking for availability, attach the form again rather than referring to it, or say that a yes or no by Thursday is enough. A workable rhythm is three days, then a week, then a fortnight, then stop and tell your client the item is stalled. After the second chase the problem is no longer a missing email, and pushing harder will not fix it."
+          },
+          {
+            "heading": "Closing the loop out loud",
+            "body": "Finished work that nobody saw finish still costs your client attention, because they are still carrying it. When a loop closes, say so in one line in the handover: the signed contract came back from the supplier on Tuesday, filed in the shared folder, nothing needed from you. Then remove the label and mark the row done. Keep completed rows on a second tab rather than deleting them, because a month of closed loops is the clearest evidence of your value that exists, and it will be there when you ask about rates or when the client wonders what they are paying for. On Second Shift your delivery note does the same job: a short, plain statement of what is finished and what still needs a decision."
+          }
+        ],
+        "keyPoints": [
+          "Every open loop gets a person and a date. Without a date it is a hope.",
+          "Waiting label plus snooze. Remove the label the minute the answer lands.",
+          "Track long items in the client's own Google Sheet, sorted by chase date.",
+          "Chase in-thread, two sentences, with a date. Never write just following up.",
+          "Say when a loop closes. Closed loops are the record of your value."
+        ]
+      },
+      {
+        "title": "Daily routine and the handover note",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The shift routine",
+            "body": "A routine turns a stressful inbox into a shift with a shape. Start with the sweep: label everything, archive the noise, write nothing. Then work Handle top to bottom and empty it. Then write the Draft lane, leaving each reply in drafts, and note which ones are time-sensitive. Then prepare the Theirs lane: summarise each one in a line or two so your client reads your summary and not a forwarded wall. Then the chases due today from your sheet. Then a short second sweep for whatever arrived while you worked. Then the handover note, written last and never skipped. Same order every day. The order matters more than the timing, because a fixed order is what lets you stop thinking about the inbox and start thinking about the work."
+          },
+          {
+            "heading": "Working while they sleep",
+            "body": "If you work while your client sleeps, you have an advantage office assistants never get: several uninterrupted hours in an inbox that is not moving. Use them for the work that needs quiet, the drafts and the sorting and the sheet, and leave anything needing an answer from a colleague for the overlap window. Agree one or two hours of overlap in writing and hold them, because a week without a single shared hour turns small questions into two-day delays. Know their public holidays and working days, not only yours, and write both calendars somewhere you both see. Be careful with send times too: a reply landing at three in the morning their time can read as pressure, so use schedule send to land messages in their working morning."
+          },
+          {
+            "heading": "The handover note",
+            "body": "The handover note is what your client reads with their first coffee, and for many of them it is the whole product. Keep it under twenty lines, in the body of one email, never as an attachment. Five parts, always in the same order. Needs you today: the decisions only they can make, numbered, each with its deadline. Drafts waiting for approval, with the recipient and one line on what each says. Done and closed: what you handled, one line each, so they can stop carrying it. Waiting on others, with the chase dates. Anything unusual: a new sender, a change in tone, something you were not sure about. Then stop. No greeting paragraph, no apologies, no summary of the summary. Same headings every day so their eye knows where to land."
+          },
+          {
+            "heading": "The weekly reset",
+            "body": "Once a week, in a quiet hour, do the maintenance the daily routine has no room for. Empty the Waiting label of everything that has come back. Read the whole tracking sheet, not only today's rows. Review which filters fired most and add one or two new ones from the week's repetition. Unsubscribe from three things nobody reads. Read the last drafts your client edited and update the voice sheet. Check the authority document against anything that surprised you. Then write a short weekly note: how many messages arrived and how many actually reached them, what changed, and what you propose to automate next. That last part is what turns an assistant into someone the client plans around instead of someone they instruct."
+          },
+          {
+            "heading": "Proving invisible work",
+            "body": "Inbox work is invisible when it goes well, which is a real professional risk. Nobody notices the two hundred messages that never reached them. Keep three simple numbers each week: messages received, messages that needed the client, and open loops closed. A Gmail search with a date range gives you the first two in a minute. Show the trend monthly, not daily. Do not dress it up, and never chase a number by pushing borderline messages out of their proper lane, because the moment a number stops being honest it is worthless. Keep the record for yourself as well. When you ask for a rate increase or apply for larger work, the sentence that lands is that you took an inbox from three hundred and ten daily messages to eleven decisions."
+          }
+        ],
+        "keyPoints": [
+          "Same order every shift: sweep, handle, draft, summarise, chase, sweep, handover.",
+          "Their night is your quiet time. Protect one or two overlap hours in writing.",
+          "Handover note: needs you, drafts, done, waiting, unusual. Under twenty lines.",
+          "One weekly maintenance hour keeps the whole system from rotting.",
+          "Keep three honest numbers. Invisible work needs a record."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can triage three hundred messages into four decision lanes in twenty minutes.",
+      "You can build Gmail labels, filters and templates that do the repeating work for you.",
+      "You can tell what to send, what to draft for approval, and what to escalate.",
+      "You can write in a client's voice without ever pretending to be them.",
+      "You can run a follow-up loop so nothing dies waiting for an answer.",
+      "You can write a handover note your client reads in two minutes."
+    ],
+    "slug": "inbox-management",
+    "summary": "Running someone else's inbox is the most common virtual assistant job and the one clients trust least easily. This course gives you a triage system that survives three hundred messages a day, the free Gmail setup that does the sorting for you, clear rules on what to send and what to escalate, and a handover note that shows exactly what happened while your client slept.",
+    "tagline": "Run someone else's inbox so well they stop opening it themselves.",
+    "title": "Email and inbox management",
+    "track": "craft"
+  },
+  "calendar-scheduling": {
+    "slug": "calendar-scheduling",
+    "title": "Calendar and scheduling",
+    "track": "craft",
+    "tagline": "Own a calendar across time zones without ever causing a 3am call.",
+    "summary": "This course teaches you to own someone's calendar across time zones: converting and writing times that cannot be misread, catching daylight saving before it moves a meeting, configuring free booking pages, protecting the day with buffers and focus blocks, auditing recurring meetings that stopped earning their hour, and rescheduling without damage. You finish able to run a confirmation habit that keeps a schedule correct while your client sleeps.",
+    "outcomes": [
+      "You can write and convert times that no one can misread, in either party's zone.",
+      "You can spot daylight saving traps before they move a meeting an hour.",
+      "You can set up a free booking page that protects the day rather than filling it.",
+      "You can audit recurring meetings and show, in hours, what each one costs.",
+      "You can reschedule or cancel cleanly, in a message that keeps the relationship.",
+      "You can run a confirmation habit that stops meetings failing at three in the morning."
+    ],
+    "lessons": [
+      {
+        "title": "Owning a calendar you never see",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What owning a calendar means",
+            "body": "Owning a calendar means one person is accountable for what is on it and what is not. Not the person who accepts invitations, and not only the person who books rooms. It is the person who can answer, at any hour, why a meeting exists, who is coming, and what happens if it moves. When you own a calendar you are running someone's most limited resource. Every hour you place there is an hour they cannot spend elsewhere, and every hour you leave empty is also a decision. Treat the calendar as an operating document rather than a list. Read it forward: what is coming, what is unconfirmed, what will collide. The work is not booking. The work is holding the shape of the week so the person living it does not have to."
+          },
+          {
+            "heading": "Mistakes here are public",
+            "body": "Most work gives you a chance to catch your own errors before anyone sees them. Scheduling does not. If you put a call an hour late, three people sit waiting and every one of them knows. If you miss a time zone, someone wakes at three in the morning for nothing. The error arrives with an audience, and it arrives attached to your client's name. This is why calendar work is trusted slowly, and why owning it well makes you hard to replace. Accept that the standard here is not usually right. A schedule that is right ninety-five times out of a hundred still produces a visible failure most months, and that is the part people remember. Build habits that check themselves, because nobody looks again before the meeting starts."
+          },
+          {
+            "heading": "One source of truth",
+            "body": "Decide, in writing, which calendar is real. When times live in a calendar, a message thread, an email confirmation and someone's notebook, they drift, and the version people act on is whichever they saw last. The rule is simple: the calendar entry is the truth, and anything agreed elsewhere is not real until it is in the entry. That means every confirmation ends with you updating the event, not with you noting it down to do later. It also means the entry carries everything needed to attend: the joining link, the location, the agenda, the prep document. If a person has to search their inbox to find out where to be, the calendar is not doing its job. One place, complete, current."
+          },
+          {
+            "heading": "How this reaches you here",
+            "body": "On Second Shift you do not meet the client and you do not contact their attendees. A calendar task arrives with what you need in the brief and the attached files: the schedule as it stands, the constraints, the outcome wanted. You build the result, which might be a corrected schedule, an audit table, a set of draft messages or a prep document, and you upload it with a note to the operator, who reviews it and passes it on. You never send an invitation to a third party or write to an attendee unless the brief says to and gives you the account to do it from. Working directly for another client, outside this platform, you may hold the calendar itself. The craft is identical. Only who presses send changes."
+          },
+          {
+            "heading": "A calendar is confidential",
+            "body": "A calendar is one of the most revealing documents a business has. Meeting titles name deals, lawyers, candidates and diagnoses. Attendee lists show who is talking to whom. A pattern of meetings can tell an outsider that a company is being sold before the staff know. Treat everything you see the way you treat the files in a task. Client data never leaves the task: no pasting invitations, attendee lists or agendas into third-party services or AI tools unless the brief says so, no screenshots kept for reference, no copies after delivery, and never a client's schedule as a portfolio sample. If you need to show what you can do, build a fictional example. Confidentiality is the reason a stranger is allowed near a calendar at all."
+          }
+        ],
+        "keyPoints": [
+          "Owning a calendar means answering why every meeting exists, not just booking rooms.",
+          "Errors arrive with an audience; ninety-five percent correct still means a visible failure most months.",
+          "Nothing is agreed until it is in the calendar entry, complete and current.",
+          "On Second Shift you build the schedule and draft the messages; the operator sends.",
+          "A calendar reveals deals, candidates and health; it never leaves the task."
+        ]
+      },
+      {
+        "title": "Time zones, written correctly",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "UTC is the anchor",
+            "body": "Every time zone is described as an offset from UTC, the world's reference clock. Manila is UTC+8 all year. New York is UTC-5 for part of the year and UTC-4 for the rest. London is UTC+0 and UTC+1. India is UTC+5:30 and Nepal is UTC+5:45, so not every offset is a whole hour. Two habits follow. First, think in offsets rather than in memorised gaps, because a gap is the difference between two offsets and either one can change. Second, never store a time as a bare number. Store it as a clock time plus a place: 09:00 New York, not 22:00 my time. Calendar tools handle this correctly when you attach a named zone to the event, and wrongly when you type in an offset you worked out yourself."
+          },
+          {
+            "heading": "Confirm in their local time",
+            "body": "The person attending reads the time on their own clock, so that is the number you must get right and the number you must state. Writing to someone in Berlin, lead with the Berlin time. Writing to your client in Denver, lead with Denver. Adding the other side's time afterwards is useful context, but the first number in the sentence should be the one the reader lives in. This is not politeness. It is error reduction. If you state a time in their zone and it is wrong, they notice immediately, because it sits against the shape of their own day. A wrong time expressed in your zone slides past unchecked. Make every message self-checking by putting the number where the reader can test it."
+          },
+          {
+            "heading": "Write times that cannot be misread",
+            "body": "Use a full form: day of week, date, month, 24-hour time, named place. Tuesday 4 February, 14:00 London time. The day of week catches date errors, because a person knows what day they mean even when they mistype a number. The 24-hour clock removes the confusion that causes twelve-hour errors, and noon and midnight are worth spelling out in words, because 12:00 and 00:00 are both read wrongly often enough to matter. Name the place rather than using an abbreviation. CST is used for more than one zone, and BST, IST and CDT each mean different things depending on the country. Write New York time, Manila time, Sydney time. Nobody has ever been confused by a city name."
+          },
+          {
+            "heading": "The date rollover trap",
+            "body": "Manila is ahead of the Americas and Europe, so a single meeting can sit on a different calendar date at each end. In January, 20:00 on Monday in New York is 09:00 on Tuesday in Manila. If you write only the time, one of you will arrive on the wrong day, and it is usually the person who did the converting late at night. Carry the date with the time on both sides: Monday the third, 20:00 New York time, which is Tuesday the fourth, 09:00 Manila time. The same trap sits in deadlines. End of day Friday for a client in California is early Saturday for you. If something is due by their Friday close, work it back to your own clock and write that time down before you plan the day."
+          },
+          {
+            "heading": "Let a tool check the arithmetic",
+            "body": "Do every conversion twice, by two different routes, whenever the meeting matters. Google Calendar can display a secondary time zone beside your own, and lets you set a time zone on an individual event, so you can enter 09:00 New York and read what that is for you. Its world clock shows several cities at once against the time you are viewing. A free site such as time.is gives a city's current time and offset, and a plain search for one city's time in another city works as a second opinion. Never trust a gap you remember. The failure mode is confidence: you know New York is thirteen hours behind, you type it in, and for a few weeks of the year you are wrong."
+          }
+        ],
+        "keyPoints": [
+          "Store a time as a clock time plus a named place, never a bare offset.",
+          "Lead with the reader's own local time so a wrong number is caught immediately.",
+          "Use day, date, 24-hour clock and a city name; abbreviations like CST are ambiguous.",
+          "Carry the date on both sides; Manila is often already on tomorrow.",
+          "Check every conversion twice, by two routes, for the exact date being booked."
+        ]
+      },
+      {
+        "title": "Daylight saving, the classic trap",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Offsets are not constants",
+            "body": "Roughly a quarter of the world moves its clocks twice a year and the rest does not. That single fact produces most scheduling failures involving otherwise careful people, because the error is invisible: the meeting was correct when it was booked and became wrong later. The gap between two cities is not a property of those cities. It is the difference between whatever offsets they happen to be using on the date of the meeting. A call at 21:00 Manila is 08:00 New York in January and 09:00 New York in June, without anyone touching the invitation. Stop treating a gap as a number you know. Treat it as something you look up for that specific date, every time, including on dates months ahead."
+          },
+          {
+            "heading": "Different regions, different dates",
+            "body": "The United States and Canada change clocks in spring and again in autumn. Most of Europe and the United Kingdom change on different weekends from North America. Australia and New Zealand move in the opposite direction, because their seasons are reversed. Several countries have changed their rules in recent years and others are debating it. Two consequences matter. First, there are stretches of a few weeks each year when the usual gap between, say, New York and London is one hour different from normal, because one side has shifted and the other has not. Second, do not memorise the dates. Look up the current rule for that country, in the year you are working, from the country's own official time authority, and check it again the following year."
+          },
+          {
+            "heading": "The Philippines does not shift",
+            "body": "The Philippines stays at UTC+8 all year. Your clock never moves, which sounds simple and is exactly what makes this dangerous. Because nothing changes on your side, there is no visible event to remind you that anything changed at all. What moves is the distance between you and every client who does shift. Twice a year the call that has been comfortable at 21:00 lands an hour earlier or later in their day, and a recurring series booked in your own local time drifts quietly away from the client's working hours. Other places hold a single offset too: Japan, China, India, most of Africa and most of South America. If you cover several regions, your overlap window changes more than once a season. Put those shift weekends in your own calendar as reminders."
+          },
+          {
+            "heading": "The weeks where things break",
+            "body": "The damage concentrates in the two or three weeks each year when one region has shifted and the other has not. In those windows, anything booked by hand using a remembered gap is an hour wrong. Recurring meetings suffer most, because nobody re-reads them. Before each shift weekend, take fifteen minutes: open the client's next three weeks, find every event involving a party in a region about to change, and verify the local times on both sides for those exact dates. Pay particular attention to anything at the edges of the day, where an hour of drift pushes a call outside working hours or into someone's night. Then flag what you found with a recommendation, rather than moving senior people's meetings on your own initiative."
+          },
+          {
+            "heading": "Let the calendar hold the rule",
+            "body": "The safe method is to make the calendar do the arithmetic. Create every event with a named time zone attached, normally the zone the meeting belongs to, which is usually the host's or the client's. The tool then applies whatever rule is in force on that date and shows each attendee the correct local time, including through a shift. The unsafe method is to compute a time yourself, type it into your own zone, and repeat it weekly. That is the pattern that breaks. One more detail worth knowing: a recurring series anchored to a named zone keeps its local start time in that zone through a shift, which means the time changes for everyone else. Decide deliberately which end stays fixed, and tell the client which one you chose."
+          }
+        ],
+        "keyPoints": [
+          "The gap between two cities is not fixed; look it up for the exact date.",
+          "The United States, Europe and the southern hemisphere shift on different dates and directions.",
+          "The Philippines never shifts, so your overlap with clients moves twice a year unnoticed.",
+          "Audit the next three weeks before every shift weekend, especially recurring and edge-of-day meetings.",
+          "Attach a named time zone to events and let the calendar apply the rule."
+        ]
+      },
+      {
+        "title": "Booking links and their limits",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What a booking page does",
+            "body": "A booking page publishes a slice of someone's availability and lets another person choose a slot, which then writes itself into the calendar. It removes the four-message exchange that scheduling usually costs, and it removes conversion errors, because the visitor sees times in their own zone. For low-stakes inbound meetings, such as a first call with someone who asked for one, an interview slot or a support session, it is the right tool and it saves hours a week. Its real value is not automation. It is that availability gets defined once, correctly, by you, instead of being reconstructed from memory every time someone asks. That is also why a badly configured page does damage quietly: the mistake repeats with every booking until somebody notices."
+          },
+          {
+            "heading": "The free path",
+            "body": "You do not need a paid subscription. Google Calendar includes an appointment booking page on ordinary free accounts: you set the hours you offer, the meeting length and the buffer, and it produces a link that respects existing events. Dedicated scheduling products exist, and their paid tiers add routing, payments and multiple hosts, but their free tiers and the built-in calendar option cover the great majority of ordinary work. For group availability, a free poll page where people tick the slots that suit them is enough. Before you set any tool up, check what it asks visitors for. If the form collects a phone number or a company name you do not need, turn it off. Collect the least you can."
+          },
+          {
+            "heading": "Configure it so it cannot embarrass you",
+            "body": "Set working hours in the host's own time zone, not yours. Add a buffer before and after, so bookings cannot stack. Set a minimum notice period, so nobody books a call for twenty minutes from now. Cap bookings per day, so a busy Tuesday does not become six calls. Limit how far ahead the page opens, usually a few weeks, so strangers cannot claim time in three months. Connect every calendar the host actually uses, including personal ones, for busy checking only, because a page that cannot see the school run will book over it. Then test it from a different account in a different time zone, and take a real slot yourself to see exactly what the confirmation and the invitation say."
+          },
+          {
+            "heading": "Where a link is the wrong answer",
+            "body": "Never send a bare booking link to someone senior to your client, to a client's own customer, to an investor, or to anyone doing your side a favour. It reads as a claim that your time is worth more than theirs, and it costs relationships to save two messages. It is also wrong when three or more calendars must line up, when the meeting needs a room, travel or equipment, when the other party's assistant is scheduling on their behalf, or when the person has already ignored one link. In those cases, offer specific times. A reasonable middle path is to propose two or three concrete slots in the reader's local time and add the link at the end, for anyone who prefers to choose their own."
+          },
+          {
+            "heading": "The link is not the message",
+            "body": "A link on its own is not a request. It carries no purpose, no duration and no context, and it moves the work of deciding onto the reader. Whatever tool you use, the message around it does the actual job: who wants to meet, why, how long it will take, and what will be discussed. Two sentences are enough. Then check the result rather than assuming it worked. Automated bookings still need a human to look at them. Does the slot collide with travel. Did the visitor pick a time that is 06:00 for the host. Is the length right for what they wrote in the notes. Read every automatic booking the day it lands and fix or flag it. The tool was never meant to replace your judgement."
+          }
+        ],
+        "keyPoints": [
+          "A booking page defines availability once, correctly, instead of reconstructing it from memory each time.",
+          "Google Calendar's free appointment page covers most work; no paid subscription is required.",
+          "Configure buffers, minimum notice, a daily cap and the host's own time zone, then test it.",
+          "Never send a bare link to someone senior, a customer, or anyone doing you a favour.",
+          "Read every automatic booking the day it lands; the tool has no judgement."
+        ]
+      },
+      {
+        "title": "Buffers, focus blocks, travel time",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Back-to-back is a design failure",
+            "body": "A day of meetings with no gaps looks efficient and performs badly. Calls run over. People need two minutes to write down what they just agreed, and if they never get those two minutes the decision evaporates. Someone arrives late to the next call, apologises, and the pattern compounds until the afternoon collapses. When you build a day you are not fitting the maximum number of blocks into the available hours. You are producing a day a human can actually complete. That makes the empty space part of the work, not a failure to fill it. If your client's calendar is solid from 09:00 to 18:00 and they are permanently behind, the calendar is the cause, and proposing the fix is your job."
+          },
+          {
+            "heading": "Buffers as a default",
+            "body": "Make a gap the default rather than something you add when you remember. Five to ten minutes after short internal calls, fifteen after anything external or difficult, and a real break in the middle of the day that is not the fallback slot for every urgent request. Book meetings for fifty minutes instead of sixty, and twenty-five instead of thirty. Almost nobody notices, and the day gains an hour. Where a booking page is in use, set the buffer inside the tool so it applies without you. Protect the first block of the working day if that is when the person thinks best, and be careful with the last hour before a hard stop, because a meeting there has nowhere to overrun into."
+          },
+          {
+            "heading": "Focus blocks that survive",
+            "body": "Work that requires thinking has to be on the calendar, or it loses to anything that has a time attached. Block it like a meeting, with a specific name. Draft the supplier proposal, not focus time, because a vague block gets moved and a named one has a visible cost attached to moving it. Put it where the person is actually sharp, which you learn by watching what they reschedule. Defend it the way you defend an external meeting: when a request arrives for that slot, offer the next available alternative first, and move the block only if the person says so. A focus block that is always the first thing sacrificed teaches everyone it is not real, and within a month it will be gone."
+          },
+          {
+            "heading": "Travel time is real time",
+            "body": "If someone has to move between two places, the movement is an appointment. Put it in the calendar with the location, and use the duration that journey actually takes at that hour on that day, not the best case. The same applies without physical travel. A person coming out of a hard conversation cannot start the next one in the same second, and someone joining a call from a phone in a taxi is attending in name only. Watch for the specific traps: an in-person meeting sandwiched between two video calls, a lunch across town with a hard stop after it, an airport run against a fixed departure. When the geometry does not work, say so before booking. Another day is a smaller problem than a missed meeting."
+          },
+          {
+            "heading": "The calendar as a workload picture",
+            "body": "Once a week, count. How many hours were spent in meetings, how many of those were external, how many days had no gap longer than thirty minutes, how many focus blocks survived. Four plain numbers, tracked across a month, tell a client more about their week than any conversation, and they turn feeling overwhelmed into something that can be acted on. If meeting hours are climbing, bring the number and one recommendation: a series to shorten, a standing meeting that could be a written update, one day to defend as meeting-free. Offer it as an observation, not a verdict, and let the person decide. Your job is to make the shape of the week visible while there is still time to change it."
+          }
+        ],
+        "keyPoints": [
+          "Empty space is part of the design; a full day performs worse than a spaced one.",
+          "Default to buffers and fifty-minute meetings rather than adding gaps when you remember.",
+          "Name focus blocks after the actual work so moving them has a visible cost.",
+          "Travel and recovery time are appointments; book them with realistic durations.",
+          "Count meeting hours weekly and bring the number with one concrete recommendation."
+        ]
+      },
+      {
+        "title": "Recurring meetings and how they rot",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Why series decay",
+            "body": "A recurring meeting is created for a reason that is true on the day it is created. Nothing in any calendar tool ever checks whether that reason still holds. The project ends, the two people who needed to sync no longer work together, the decision it existed to make was made in March, and the invitation keeps firing every Tuesday because ending it would require somebody to decide. Attendee lists grow, because adding a person is polite and removing one feels like a demotion. This is how an organisation ends up with a third of its week booked against questions nobody is asking any more. Recurring meetings are not the problem. Unreviewed recurring meetings are, and reviewing them is work nobody owns until you do."
+          },
+          {
+            "heading": "Give every series an end",
+            "body": "When you create a recurring meeting, set an end date or a review date. A weekly project sync ends when the project ends. A daily stand-up during a launch ends the week after launch. If nobody can name a date, use a review date instead: three months out, put a short task in the calendar to ask whether this is still needed. An endless series should be a deliberate choice, not the default the tool offered. Write the reason into the invitation body in one line, so that whoever inherits this calendar in a year can tell what it was for. That sentence is what makes the meeting reviewable at all. Without it, everyone defends the meeting because nobody can prove what it was supposed to do."
+          },
+          {
+            "heading": "Running a calendar audit",
+            "body": "The deliverable is a table, not an opinion. One row per recurring series, with columns for name, frequency, length, number of attendees, hours consumed per month, those hours multiplied by attendees, the stated purpose, and the last date it produced a visible outcome. Then a recommendation on each row: keep, shorten, reduce frequency, merge with another series, replace with a written update, or end. Sort by total attendee hours, because that is where the argument lives. A weekly hour with eight people is thirty-two person-hours a month, and numbers persuade where adjectives do not. Present it, recommend, and let the client decide. Do not end meetings you were not asked to end, and never decline attendance on someone else's behalf."
+          },
+          {
+            "heading": "Editing a series without breaking it",
+            "body": "Calendar tools offer three scopes when you change a recurring event: this event only, this and all following events, or the entire series. Choose wrong and you overwrite notes on individual instances, resend invitations to everyone, and lose the acceptances. Moving one instance is almost always this event only. A permanent change of day or time is this and following, which preserves the history behind it. Reserve the whole series for correcting something that was always wrong, such as a missing joining link. Two warnings. Editing a long series often resends the invitation to every attendee, so do it inside their working hours rather than at three in the morning. And after any change that crosses a clock shift, open two future instances and check both sides."
+          },
+          {
+            "heading": "Ghost series and drift",
+            "body": "Watch for the failures that leave no obvious trace. A cancelled instance that survives in one person's copy because their tool synced badly. A series whose organiser has left the company, which nobody can now edit and which has to be recreated. Two overlapping series that were meant to replace one another, with half the team still on the old one. A meeting that has quietly become a different meeting from the one in its title, so newcomers arrive expecting something else. When you find these, write down what you observed and what you propose, then hand the list over. Renaming a meeting to match what it actually is, and trimming an attendee list with the organiser's agreement, are two of the cheapest improvements available."
+          }
+        ],
+        "keyPoints": [
+          "No tool ever checks whether a recurring meeting's original reason still holds.",
+          "Every series gets an end date or a review date, and one line of stated purpose.",
+          "Audit output is a table sorted by attendee hours per month, with a recommendation per row.",
+          "Use this-event, this-and-following or all-events deliberately; the wrong scope resends and overwrites.",
+          "Recommend, but never end meetings or decline on someone's behalf uninvited."
+        ]
+      },
+      {
+        "title": "Scheduling across three calendars",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Never ask when someone is free",
+            "body": "Asking when someone is free hands the reader an open problem and a blank page. The reply comes back in two days, in vague form, listing times that have already gone. Multi-party scheduling degrades fast: with three parties, every round of open questions costs days, and the availability you gathered in round one has expired by round three. Replace the open question with a closed one. You propose, they accept. The work moves to you, which is the point, because you are the one being paid to hold it. Before you propose anything, establish the constraints in writing: who must attend and who is optional, how long, which zones, and any hard exclusions such as school runs, prayer times, or a country whose weekend falls on different days."
+          },
+          {
+            "heading": "Offer options, not questions",
+            "body": "Send two or three specific slots, written in the recipient's local time with the date and the day of week, and say how long the meeting will take. Add a short expiry: these are held until Thursday. Include a fallback line so that a no is still useful: if none of these work, send two times that suit you next week and I will build around them. Three options is the practical maximum, because more looks like an availability dump and invites deliberation. Choose options that are genuinely different, such as one early, one midday and one late, rather than three consecutive half-hours on the same afternoon. And confirm every option works on your own side first. Withdrawing a slot you proposed costs more than offering fewer."
+          },
+          {
+            "heading": "Hold what you offer",
+            "body": "The moment you propose slots, place tentative holds on the internal calendars for all of them, marked clearly as holds with the expiry in the title. Otherwise a colleague books over option two while you are waiting for a reply, and you have to go back and withdraw it. As soon as one option is confirmed, release the others the same hour. Holds that are never released are worse than no holds at all, because people learn to ignore them and then book over the real one. For anything with more than two parties, keep a short tracker: who was asked, what was offered, when, what came back, what is still open. A free spreadsheet is enough, and it answers where is that meeting instantly."
+          },
+          {
+            "heading": "The chase, on a schedule",
+            "body": "Silence is not an answer and waiting is not a plan. Decide the follow-up rhythm before you send. For a meeting next week, follow up after one working day. For one a month out, after three. Follow up at most twice, and make the second one carry new information rather than repeating the first, usually that the held slots are expiring or the options have changed. After two, stop chasing and go back to your client with a status and a recommendation: propose a different date range, go ahead without this person, or have someone more senior make the ask. Never let a request sit open with nobody owning it. An unanswered scheduling thread is a task, and it is yours until it closes."
+          },
+          {
+            "heading": "External parties and poll pages",
+            "body": "When five or more people have to find a time, a free poll page where each person ticks the slots that suit them is faster than mail. Use it carefully. Check whether the page shows every participant's name and answers to anyone holding the link, because that link often gets forwarded outside the intended group. Do not put a sensitive meeting title on a page anyone can open: call it a thirty-minute discussion, not redundancy planning. Never publish attendees' email addresses there, and close or delete the poll once the time is set. The usual rule applies without exception. Client data does not leave the task, and a public scheduling page is one of the easiest ways to leak it without noticing."
+          }
+        ],
+        "keyPoints": [
+          "Replace the open question with two or three specific slots in the reader's local time.",
+          "Gather constraints in writing first: required attendees, duration, zones, hard exclusions.",
+          "Hold every offered slot as tentative, and release the losers within the hour.",
+          "Follow up on a decided rhythm, at most twice, then return with a recommendation.",
+          "Poll pages can expose names, emails and meeting titles to anyone holding the link."
+        ]
+      },
+      {
+        "title": "Rescheduling and cancelling cleanly",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Speed is most of the apology",
+            "body": "The cost of a change is almost entirely a function of notice. A meeting moved six days out costs the other person nothing. The same meeting moved twenty minutes before costs them a prepared morning, a cancelled journey, and their opinion of whoever did it. So the instant you know a change is coming, act, even if you do not yet have replacement times. A short note saying that tomorrow will not work and that options are coming within the hour is far better than a perfect message sent tomorrow morning. Do not wait for certainty. Waiting to see whether the conflict resolves itself is the single most common way a manageable reschedule turns into a damaged relationship."
+          },
+          {
+            "heading": "The message that does it",
+            "body": "Keep it to five parts and one apology. What changed, stated plainly. One apology, not three. Two or three new times in the reader's local time, with dates and days. What happens to anything already sent or prepared. A clear next step. For example: our 10:00 on Thursday needs to move, as a supplier issue has taken that morning. Apologies for the short notice. Could any of these work: Friday 14 March at 10:00, Friday 14 March at 15:30, or Monday 17 March at 11:00, all London time. The agenda and figures already sent still stand. Tell me which suits and I will send the updated invitation. No excuses, no internal detail, no blaming a third party. Short is respectful."
+          },
+          {
+            "heading": "Who absorbs the inconvenience",
+            "body": "The side that caused the change flexes. If your client is moving the meeting, offer times inside the other person's working day even where that is inconvenient for your side, and take the awkward hour yourself. Weight it further by who is doing whom a favour: a candidate who took unpaid leave for an interview, a supplier who travelled, anyone who has already moved once. Never make the same person move twice. If a second change becomes unavoidable, do not simply propose again. Say plainly that this is the second change, offer a wider set of times, and let them choose freely. And when a change affects someone's travel or costs them money, flag it to your client before sending, because that decision sits above your level."
+          },
+          {
+            "heading": "Cancelling is not rescheduling",
+            "body": "Be explicit about which one you are doing. A message saying the meeting is off, without saying whether it will return, leaves the other person holding a slot they cannot fill and a question they now have to ask. If it is coming back, say when you will propose new times. If it is not, say so directly, and say what replaces it, if anything: a written update, a decision made elsewhere, a shorter call next month. Then do the mechanical part properly. Cancel the calendar event rather than deleting it silently, so attendees get the notice. Release rooms and equipment. Cancel associated travel where you can. Remove the holds you placed. And tell anyone downstream whose preparation is now wasted, before they finish it."
+          },
+          {
+            "heading": "On Second Shift you draft, not send",
+            "body": "When a Second Shift task involves a change to someone's schedule, your deliverable is the work, not the act. That means the updated schedule or calendar file, the message written and ready to send, a short list of what changed and who is affected, and any decision the operator needs to make. You upload it with a note explaining anything ambiguous and what you would recommend. You do not contact attendees, and you do not make a change you were not asked to make. Working directly for another client, outside this platform, you may be the one who sends. Even then the discipline holds: draft it fully, check the times twice, and get one confirmation from the person whose name is on the message."
+          }
+        ],
+        "keyPoints": [
+          "Notice is the apology; send a holding note within minutes rather than a perfect one tomorrow.",
+          "Five parts, one apology: what changed, new times in their zone, prep status, next step.",
+          "The side causing the change flexes, and nobody is asked to move twice.",
+          "Say plainly whether a meeting is cancelled or returning, and release rooms and holds.",
+          "On Second Shift you deliver the draft and the changes; the operator sends."
+        ]
+      },
+      {
+        "title": "Agendas, prep and confirmation",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "An invitation without an agenda",
+            "body": "An invitation with only a title is a request for an hour of someone's life with no statement of what it is for. It produces meetings that begin with five minutes of orientation and end without a decision, and it makes the meeting impossible to prepare for or to decline sensibly. Every invitation you build should answer three things in its body: why this meeting exists, what we need to leave with, and what each person should bring. One line each is enough. This is also the fastest improvement you can make to a calendar you have inherited. Adding a purpose line to every standing meeting changes how those meetings run, and it costs one afternoon of your time."
+          },
+          {
+            "heading": "What goes in the invitation body",
+            "body": "Put the joining link on the first line, above everything else, because that is what someone opens on a phone thirty seconds before the start. Then the purpose in one sentence. Then the agenda: three or four items, each with an owner and a number of minutes, adding up to less than the length of the meeting. Then the location with a fallback, such as a dial-in number or who to ask for at reception. Then links to the prep document and any attachments. Keep it short enough to read on a phone without scrolling twice. Check that everyone invited can actually open every link, because a document restricted to one company is invisible to an external guest, and nobody discovers that until the meeting starts."
+          },
+          {
+            "heading": "The prep document",
+            "body": "For anything important, one page in a free document tool is worth more than the meeting itself. Structure it: who is attending, with one line on each person and their role; the decision or outcome needed; the background in a short paragraph; the three questions to ask; the numbers or documents that will be referenced; and the history, meaning what was agreed last time and what has not been delivered since. Send it far enough ahead to be read, which usually means the day before rather than an hour before. Keep the client's material in it and nothing else. Do not paste it into third-party tools to summarise or rewrite it, and do not keep a copy once the task is delivered."
+          },
+          {
+            "heading": "The confirmation habit",
+            "body": "The day before, reconfirm in writing. Restate the date, the day of week, the time in both parties' local zones, the duration and the joining method, and ask for a one-word confirmation. This single habit catches nearly everything: the clock shift you missed, the attendee who changed roles, the room that was double-booked, the guest who never saw the invitation because it landed in a shared inbox. On the day, check the joining link opens, check the acceptances, and verify the offset for that exact date rather than trusting the number you calculated last month. For anything outside normal hours on either side, reconfirm twice, at booking and the day before. That is the habit that prevents a three in the morning call for a meeting that moved."
+          },
+          {
+            "heading": "The end-of-shift brief",
+            "body": "If you work while your client sleeps, finish your shift by producing tomorrow for them. One short document: the day's meetings in their local time, in order, each with the joining link, the purpose and the prep attached; anything unconfirmed, marked as unconfirmed; any conflict you could not resolve, with your recommendation; and anything you need a decision on. It takes fifteen minutes and it is the most visible thing you produce, because it is the first thing they read. It also closes your own loop, since writing the day out forces you to look at every entry once more while there is still time to fix it. Meetings checked twice, in writing, rarely go wrong."
+          }
+        ],
+        "keyPoints": [
+          "Every invitation states why it exists, what it must produce, and what to bring.",
+          "Joining link first, agenda with owners and minutes, location fallback, prep links.",
+          "A one-page prep document beats a long one and never leaves the task.",
+          "Reconfirm the day before in both local zones; twice for anything outside normal hours.",
+          "End your shift by writing out tomorrow: order, links, purpose, unconfirmed items, decisions needed."
+        ]
+      }
+    ],
+    "exam": {
+      "questions": [
+        {
+          "prompt": "It is late March. Your client is in New York and the other party is in London. In February the gap between them was five hours. You now have to send an invitation for a call next Wednesday.",
+          "options": [
+            "Use five hours. The gap between New York and London is fixed, so February's number still applies.",
+            "Ask the London contact to tell you what their current offset from UTC is this week.",
+            "Create the event with each city's named time zone and read the local times the calendar shows for that exact date.",
+            "Convert both sides to UTC using the offsets you noted in February, then send the invitation."
+          ],
+          "correct": 2,
+          "explain": "Clock rules change on different dates in each region, so a remembered gap can be wrong for weeks. Let the calendar apply the rule for the specific date."
+        },
+        {
+          "prompt": "You work 21:00 to 05:00 Manila time to overlap with a client in Chicago. In November the client mentions that your calls now start an hour earlier in their day. Your own clock has not moved.",
+          "options": [
+            "Chicago came off daylight time, so the gap between Manila and Chicago changed by one hour.",
+            "The Philippines shifted its clocks for winter, which moved your hours relative to Chicago.",
+            "The calendar re-rendered the recurring series in UTC instead of local time.",
+            "Manila moved from UTC+8 to UTC+7, which is why the client sees a change."
+          ],
+          "correct": 0,
+          "explain": "The Philippines stays on UTC+8 all year. When a client's region shifts, the distance between you changes even though your own clock never moves."
+        },
+        {
+          "prompt": "An hour before the end of your shift you notice that a call you booked for tomorrow morning was entered one hour early. Nobody has mentioned it. Correcting it means telling the operator you made a mistake.",
+          "options": [
+            "Leave it. An hour either way is unlikely to matter much to the people attending.",
+            "Move the event quietly. The updated invitation tells everyone what they need to know.",
+            "Move the event and mention it only if the operator asks why the time changed.",
+            "Fix it now and tell the operator exactly what happened, what you changed, and who was notified."
+          ],
+          "correct": 3,
+          "explain": "An error you catch and report early costs one message. The same error found by an attendee costs the client's credibility and yours."
+        },
+        {
+          "prompt": "You are drafting a reschedule note for a client's board meeting. You want help with the wording, so you consider pasting the invitation, including six attendee names and their email addresses, into a free online writing assistant.",
+          "options": [
+            "Paste it, but remove the client's company name first so the meeting cannot be identified.",
+            "Write the draft yourself from the brief, and keep the attendee details inside the task.",
+            "Paste it, then delete the conversation history in the tool afterwards.",
+            "Paste only the email addresses, since the names are the part that identifies people."
+          ],
+          "correct": 1,
+          "explain": "Client data never leaves the task. Attendee names and addresses are exactly the material a third-party service must not receive unless the brief says otherwise."
+        },
+        {
+          "prompt": "Your client needs thirty minutes with an investor who has already agreed in principle to talk. You have a booking page configured on the client's calendar.",
+          "options": [
+            "Offer three specific times in the investor's local time, and add the booking link at the end as an alternative.",
+            "Send the booking link on its own. It shows real availability and saves several messages.",
+            "Ask the investor to send times that suit them over the next few weeks.",
+            "Block two hours on the client's calendar and ask the investor to pick any point inside it."
+          ],
+          "correct": 0,
+          "explain": "A bare link to someone senior, or to anyone doing your side a favour, reads badly. Specific options do the work for them, with the link left optional."
+        },
+        {
+          "prompt": "A client asks you to clean up their calendar. There are fourteen recurring meetings, several of which look pointless from the outside.",
+          "options": [
+            "End the three series with the lowest attendance, since low attendance shows they are not valued.",
+            "Shorten every sixty-minute recurring meeting to thirty minutes and tell the client afterwards.",
+            "Decline, on the client's behalf, the series they have not attended in the last month.",
+            "Produce a table of every series with frequency, attendees, monthly hours and last outcome, then recommend keep, shorten, merge or end."
+          ],
+          "correct": 3,
+          "explain": "You surface the cost in hours and recommend. Ending someone's meeting, or declining on their behalf, is a decision that belongs to the client."
+        },
+        {
+          "prompt": "You need to move next Tuesday's instance of a weekly stand-up by thirty minutes. The series runs indefinitely, and several past and future instances carry notes added by attendees.",
+          "options": [
+            "Edit the whole series to the new time, then re-add any notes that get overwritten.",
+            "Edit that single instance only, leaving the rest of the series untouched.",
+            "Cancel the series and create a replacement at the new time starting next Tuesday.",
+            "Use this and following events, so the change carries forward without extra work later."
+          ],
+          "correct": 1,
+          "explain": "A one-off move is a single-instance edit. Wider scopes resend invitations, lose acceptances, and can overwrite notes attached to individual instances."
+        },
+        {
+          "prompt": "You are arranging a call across three calendars in three countries. You have sent three options to the external party and are waiting for their reply. The two internal attendees have busy calendars.",
+          "options": [
+            "Leave the slots open. Blocking time you may not use wastes the internal attendees' availability.",
+            "Book the first option outright now, and cancel it if the external party picks another.",
+            "Put tentative holds on the internal calendars for all three options and release them as soon as one is confirmed.",
+            "Ask the internal attendees to remember the three options and keep them free until you confirm."
+          ],
+          "correct": 2,
+          "explain": "Holds stop a colleague booking over an option you have already offered. Releasing them the same hour is what keeps holds credible next time."
+        },
+        {
+          "prompt": "A client asks you to fit a thirty-minute call into tomorrow. The only gap runs from 15:00, when an in-person meeting across the city ends, to 16:00, when a video call starts from their office.",
+          "options": [
+            "Do not book it. Flag the gap as travel time and offer times on another day.",
+            "Book it 15:00 to 15:30 and note that they can join from the car on the way back.",
+            "Book it 15:30 to 16:00 and add a note about the travel beforehand.",
+            "Book it and let the client decide whether to move the earlier meeting."
+          ],
+          "correct": 0,
+          "explain": "Travel is an appointment. Filling that gap guarantees someone is late or attending from a moving vehicle, and surfacing the conflict was your job first."
+        },
+        {
+          "prompt": "Your client has to move tomorrow's call with a supplier because of a family emergency. You are drafting the message that does it.",
+          "options": [
+            "Explain the emergency in detail, so the supplier understands the change was genuinely unavoidable.",
+            "State what changed, apologise once, offer new times in the supplier's local time, and say what happens to the prep.",
+            "Apologise and ask the supplier to send times that work for them next week.",
+            "Send a short apology with the booking link so they can choose a new slot themselves."
+          ],
+          "correct": 1,
+          "explain": "A clean reschedule says what changed, apologises once, proposes times in the reader's own zone, and closes the loop on anything already prepared."
+        },
+        {
+          "prompt": "A call was arranged eleven days ago for 22:00 client time with a party in another country. It is now the day before the call.",
+          "options": [
+            "Nothing is needed. The invitation was accepted and nothing has changed since.",
+            "Send a reminder one hour before the call starts.",
+            "Re-send the original invitation on the morning of the call.",
+            "Reconfirm in writing today, restating date and time in both local zones, and check the joining link works."
+          ],
+          "correct": 3,
+          "explain": "A late-night call arranged well in advance is exactly where a clock shift or a diary change hides. Written reconfirmation the day before catches it."
+        },
+        {
+          "prompt": "A Second Shift task asks you to rebuild a client's meeting schedule and write the notes telling attendees about the changes. The attached file contains the attendees' email addresses.",
+          "options": [
+            "Send the notes to the attendees so the new schedule takes effect without delay.",
+            "Deliver the rebuilt schedule and the draft notes to the operator, and contact nobody.",
+            "Send the notes and copy the operator, so the work is visible and nothing is hidden.",
+            "Ask the client in your delivery note whether they would like you to send them."
+          ],
+          "correct": 1,
+          "explain": "You never contact a client's attendees. You deliver the schedule and the drafts to the operator, who reviews them and passes them on."
+        }
+      ]
+    }
+  },
+  "customer-support": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You open a queue of fourteen tickets. One is titled URGENT in capitals and reports a typo on a marketing page. Another, written calmly, says card payments have failed for every customer since last night. What do you work first?",
+          "options": [
+            "The typo, because it is quick and clears one ticket before the harder work.",
+            "The payment failure, then a short acknowledgement to the typo reporter with a realistic time.",
+            "Whichever arrived first, so the queue stays fair and nobody waits longer than anyone else.",
+            "The typo, because the sender is clearly upset and calming them prevents an escalation."
+          ],
+          "correct": 1,
+          "explain": "Priority is impact times urgency, not tone. Payments failing for everyone outranks a typo, and the typo reporter still deserves a short honest reply."
+        },
+        {
+          "prompt": "A customer reports that report exports are cutting off partway. You cannot reproduce it and have passed it to a developer. You have no cause and no fix yet. What is the best first reply?",
+          "options": [
+            "Confirm what you can see, say the cause is not yet known, name the next step, give a time.",
+            "Wait until the developer answers so your reply contains a real solution instead of nothing.",
+            "Tell them it is likely a browser issue and ask them to clear their cache meanwhile.",
+            "Apologise for the inconvenience and say the team is on it and will be in touch soon."
+          ],
+          "correct": 0,
+          "explain": "A first reply does not need a fix. It needs acknowledgement, what you actually know, the next step, and a time you can keep."
+        },
+        {
+          "prompt": "A customer asks whether the mobile app will get offline mode. You saw an internal discussion where two engineers said it was likely next year, but nothing has been announced or committed. What do you tell the customer?",
+          "options": [
+            "Yes, it is planned for next year, so they can plan their own work around it.",
+            "That you cannot discuss the roadmap at all, and end the topic there.",
+            "It is not something we have committed to, log the request, share only what is published.",
+            "Probably next year, adding that plans can change and nothing is guaranteed."
+          ],
+          "correct": 2,
+          "explain": "Internal discussion is not a commitment. Repeating it creates a promise the business never made, and hedging words do not remove the expectation you created."
+        },
+        {
+          "prompt": "You told a customer yesterday that their annual plan could be downgraded mid-term with a credit. Today you learn that is wrong. They have already told their finance team. Nobody else has noticed your error. What do you do?",
+          "options": [
+            "Wait to see whether they raise it, since the mistake may never come up again.",
+            "Quietly apply the credit yourself so the customer never finds out you were wrong.",
+            "Ask a colleague to take over the thread so the correction does not come from you.",
+            "Write to them today, correct it plainly, say what is actually possible, tell your manager."
+          ],
+          "correct": 3,
+          "explain": "Errors get worse with time and this one is already inside their finance planning. Correcting it yourself, immediately, is both honest and cheaper than the alternative."
+        },
+        {
+          "prompt": "You have a macro for password reset problems. This customer's reset email went to an old address on the account, which the macro does not mention, and half the macro covers the mobile app they do not use. What do you send?",
+          "options": [
+            "The macro unchanged, since it contains the correct official steps and saves you time.",
+            "The macro with a personal opening naming the old address, mobile section deleted, specific next step.",
+            "A fully hand-written reply, because using a macro here would feel impersonal to the customer.",
+            "The macro plus a note apologising that parts of it may not apply to their setup."
+          ],
+          "correct": 1,
+          "explain": "Macros are starting points. Keep the tested steps, delete what does not apply, and write the first and last lines for this specific person."
+        },
+        {
+          "prompt": "A customer writes in capitals that your product is garbage and that they have reported this same sync failure twice already. Checking, you find both earlier tickets were closed without a real fix. How do you open your reply?",
+          "options": [
+            "By naming the history plainly, saying it was closed twice without a fix, then what happens now.",
+            "By apologising several times so they can see how seriously you take their frustration.",
+            "By explaining that the previous agent followed the standard process for that ticket type.",
+            "By promising a refund and priority handling so the conversation calms down quickly."
+          ],
+          "correct": 0,
+          "explain": "Naming the real history proves you read it and takes the heat out. Repeated apology and bought peace both weaken the reply."
+        },
+        {
+          "prompt": "You have spent your agreed time limit on a data import bug and are no closer to a cause. You are escalating to engineering. What makes this a good escalation?",
+          "options": [
+            "A short message asking them to please look at this ticket when they have a moment.",
+            "A forwarded copy of the customer's entire thread with no summary, so nothing is lost.",
+            "Ticket link, what the customer wants, reproduction steps, what you tried, impact, what you promised, one question.",
+            "A description of how long you spent and how difficult the customer has been throughout."
+          ],
+          "correct": 2,
+          "explain": "A stranger should be able to pick it up without asking you anything, and should know exactly which decision or action you need from them."
+        },
+        {
+          "prompt": "To demonstrate an import bug, a customer attaches a spreadsheet containing their own clients' names and phone numbers. You want to find the malformed rows quickly and are tempted to paste it into a free online AI tool. What do you do?",
+          "options": [
+            "Paste it in, since the tool is only reading the data and not storing anything.",
+            "Work inside the approved tools only, and ask before any file leaves the ticket.",
+            "Remove the phone numbers first, then paste the rest into the tool to be safe.",
+            "Email the file to yourself so you can look at it on your own machine tonight."
+          ],
+          "correct": 1,
+          "explain": "Client data never leaves the task. Third-party uploads, partial redaction and personal email are all the same breach, whoever the client is."
+        },
+        {
+          "prompt": "A customer asks for a refund after the return window closed. Their reason is genuine and sympathetic. Refunds outside the window are not in your decision box, and your manager is offline for three hours. What do you do?",
+          "options": [
+            "Approve it and explain the circumstances to your manager afterwards, since the case is clearly fair.",
+            "Tell them the answer is no, since the policy is written and the window has closed.",
+            "Say it should be fine and you are just waiting on a formality from your manager.",
+            "Say you cannot approve it yourself, that you are asking, and when they will hear back."
+          ],
+          "correct": 3,
+          "explain": "You may not grant what you have no authority to grant, and you may not imply it is coming. Honest process plus a time is the answer."
+        },
+        {
+          "prompt": "Your first response time looks bad this month. A colleague suggests sending every new ticket a short reply saying we have received your message and are looking into it, which stops the clock. What do you do?",
+          "options": [
+            "Refuse, because a reply with no information is not a first response, and report the real cause.",
+            "Do it, since customers do like knowing their message arrived and the number improves.",
+            "Do it only for tickets you expect to be slow, so the average is not distorted.",
+            "Do it this month to hit the target, then fix the underlying workload next month."
+          ],
+          "correct": 0,
+          "explain": "That is gaming a metric. The customer learns nothing, the number lies, and the credibility of every number you report afterwards is gone."
+        },
+        {
+          "prompt": "You are writing a help-centre article from a ticket you solved. Your clearest screenshot shows the error, and also shows the customer's email address, company name and order number. What do you do?",
+          "options": [
+            "Blur the identifying details in the image and use it, since the error is clearly visible.",
+            "Use it as it is, because the customer will be pleased that their case helped others.",
+            "Recreate the screenshot in a test account with dummy data, and remove all identifiers from the text.",
+            "Crop the image tightly around the error message and publish the rest of the article unchanged."
+          ],
+          "correct": 2,
+          "explain": "Blurring is often reversible and cropping can miss things. A rebuilt screenshot with dummy data is the only version that is safe by default."
+        },
+        {
+          "prompt": "You claim a Second Shift task: draft replies to twenty exported support tickets for a client. Three of them ask about a refund policy the brief does not cover, and you cannot contact the client. What do you deliver?",
+          "options": [
+            "Twenty drafts, using the refund approach you have seen most other companies apply.",
+            "Seventeen drafts, plus a delivery note listing the three and asking the operator for the policy.",
+            "Twenty drafts, with the three refund replies marked as a best guess in the file.",
+            "Nothing yet, holding the whole task until someone answers the refund question for you."
+          ],
+          "correct": 1,
+          "explain": "You never invent a policy. Deliver everything you can, flag exactly what is blocked, and ask the operator, who is the only route to the client."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "The front line, honestly",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What the job actually is",
+            "body": "Front-line support means you are the first person a customer reaches when something is wrong, confusing, or slower than they expected. You are not there to be liked. You are there to give a correct answer, or an honest account of when a correct answer is coming. Most tickets are not dramatic. Someone forgot a password, an invoice has the wrong address, a file will not upload. A small number are serious: money lost, data missing, a business stopped. Good support is mostly the boring work done reliably, plus the judgement to recognise the small number that are not boring and treat them differently. That mix is the skill. Speed alone is not the skill, and neither is politeness alone."
+          },
+          {
+            "heading": "You are the company's voice",
+            "body": "To the person writing in, you are the company. They will not distinguish between you, the developer who shipped the bug, and the policy someone wrote three years ago. That is uncomfortable and it is also useful, because it means your reply can repair a bad experience by itself. It also means you carry a limit: you can only speak for what the business has actually decided. When you write we, you commit the whole business. Say we will refund that and somebody must refund it. This is why the strongest habit in support is separating what you know, what you can do, and what you are guessing. Those three things get different sentences, and the guesses never go out."
+          },
+          {
+            "heading": "The queue is a signal",
+            "body": "A support queue is the cheapest research the business will ever get. If eleven people this week asked where their invoice number lives, that is not eleven annoyances, it is one missing label in the interface or one missing help article. Keep a running note of repeated questions, a plain Google Sheets tab with the date, the topic and a link to the ticket. Once a month you can say, with numbers, that this one confusion cost roughly forty replies. That is the difference between someone who answers tickets and someone the business keeps. Nobody else in the company sees this pattern, because nobody else reads every message."
+          },
+          {
+            "heading": "How Second Shift differs",
+            "body": "Support work on Second Shift looks different from support work elsewhere, and you should know both. Elsewhere you may sit in a shared inbox and reply to customers directly under your own name. Here you never speak to a client and never speak to their customers. A support task usually means drafting replies from a ticket export, writing help articles, tagging and triaging a backlog, or building a macro library. You upload the drafts, the operator reviews them, and the client sends them. Everything in this course still applies, because the judgement is identical. The only change is that your reply passes a review step before it reaches a human, so anything uncertain goes in the note to the operator rather than into the reply."
+          }
+        ],
+        "keyPoints": [
+          "You are the first person reached, and the whole company to them.",
+          "Separate what you know, what you can do, and what you are guessing.",
+          "Repeated questions are data. Log them and report them monthly.",
+          "On Second Shift you draft replies; the operator reviews before anything is sent."
+        ]
+      },
+      {
+        "title": "Triage and priority",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Read before you answer",
+            "body": "The instinct at the start of a shift is to open the oldest ticket and begin typing. Do not. Spend the first five to ten minutes reading every subject line and the first two lines of every message, and sort them. You are looking for one thing: what breaks if this waits four hours. A queue of thirty tickets usually contains one or two that genuinely cannot wait, a handful that are quick, and a long middle that is fine until this afternoon. If you answer in arrival order you will spend your best hour on a font colour question while a payment failure sits unread. Reading first costs ten minutes and routinely saves two hours."
+          },
+          {
+            "heading": "Impact times urgency",
+            "body": "Priority is not how upset the sender is. It is impact multiplied by urgency. Impact means how many people are affected and how badly: everyone locked out is high, one person mildly inconvenienced is low. Urgency means what happens if it waits: a payroll run tonight is urgent, a report due next month is not. A calm message saying nobody on our team can log in outranks a furious message about a misspelled heading. This is the hardest habit to build, because loud feels urgent. Judge the described consequence, not the tone. If the message does not say what is at stake, that is your first question, and it is worth asking in the first reply."
+          },
+          {
+            "heading": "Four buckets that work anywhere",
+            "body": "Sort into four buckets and use the same names every day. Broken for everyone: the product or a core function is down or losing money right now. Broken for one: a single account is blocked and cannot work. Degraded: it works but wrongly or slowly, and a workaround exists. Question: nothing is broken, someone needs an answer or a how-to. Work them top down, but never let the bottom bucket rot. A question left for three days becomes a complaint, and a complaint costs four replies instead of one. Practical rule: clear the top two buckets, then spend a fixed block on the oldest questions before touching anything new."
+          },
+          {
+            "heading": "Re-triage as the day moves",
+            "body": "Priority is not set once. A degraded ticket becomes broken for everyone when three more people report the same thing within an hour. Two similar tickets are a coincidence, four are an incident. When you see a pattern forming, stop answering them one by one and say so upward immediately, before you write another reply. Also re-triage downward. A ticket marked urgent because the sender said urgent, which turns out to be a question about next quarter, should be moved down without ceremony and without a lecture. Nobody needs to be told they mislabelled their own problem. Handle it correctly and move on."
+          }
+        ],
+        "keyPoints": [
+          "Read the whole queue before answering the first ticket.",
+          "Priority is impact times urgency, never how loudly it was written.",
+          "Four buckets: broken for everyone, broken for one, degraded, question.",
+          "Four similar reports in an hour is an incident. Say so immediately."
+        ]
+      },
+      {
+        "title": "The first reply",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Four parts, in this order",
+            "body": "Every good first reply does four things, in order. Acknowledge what happened in the sender's own terms. State what you know right now, including that you do not yet know the cause if that is true. State what happens next and who is doing it. Give a time. Three sentences can carry all four. Thanks for the screenshot, I can see the export is stopping at row 500. I have not found the cause yet, so I have passed the file to our engineer. I will write back by 14:00 your time today, even if the only news is that we are still looking. Nothing there is a promise the business cannot keep, and the customer now knows exactly what to expect."
+          },
+          {
+            "heading": "State what you know, not what you hope",
+            "body": "The most common failure in a first reply is filling the silence with optimism. This should be fixed shortly. It is probably a browser issue. Try clearing your cache. Those sentences buy you an hour and cost you the next three, because when the guess is wrong you have to walk it back, and you have taught the person not to trust you. If you do not know, write that you do not know and write what you are doing to find out. Customers forgive not knowing. They do not forgive being managed. The one thing you must never do is invent a cause, a cure, or a date that nobody has agreed to."
+          },
+          {
+            "heading": "Give a time you can keep",
+            "body": "Never write soon, shortly, as soon as possible, or we will get back to you. Those tell the reader nothing and they start a countdown you cannot see. Give a clock time or a date, and pick one you can beat. If you think you will know by noon, say by end of day, then reply at noon and be early. If the deadline arrives and you have nothing, still write. A message saying no news yet, still with the engineer, next update by 17:00, is a real update and it keeps the trust you built. Missed self-imposed deadlines destroy more support relationships than slow fixes do."
+          },
+          {
+            "heading": "Answer the question they asked",
+            "body": "Read the whole message before replying, including the part after the first question mark. People often bury the real problem in the last line: and also our invoice still shows the old company name. Answering only the first question guarantees a second ticket. If there are three questions, answer three, in the order they asked, and make it visually obvious that you did. If you can only answer two, say plainly that you are still working on the third and when you will have it. Never answer a question they did not ask in order to avoid one you cannot."
+          },
+          {
+            "heading": "Close the loop before you close the ticket",
+            "body": "A ticket is not resolved when you send the answer. It is resolved when the person confirms it worked, or when you have given them everything they need and told them how to reopen. Before closing, ask one specific question: can you confirm the export completes now. Vague closers like let me know if you need anything else invite silence. If they go quiet after a real fix, close with a short note saying what you did and that replying reopens the thread. Never close a ticket to make your numbers look better while the person is still stuck. That is the fastest way to lose the work you are trying to keep."
+          }
+        ],
+        "keyPoints": [
+          "Acknowledge, state what you know, state what happens next, give a time.",
+          "Never invent a cause, a cure, or a date nobody agreed to.",
+          "Give a clock time you can beat, then beat it.",
+          "Answer every question asked, including the one buried at the end.",
+          "Close when it is confirmed fixed, not when it is off your screen."
+        ]
+      },
+      {
+        "title": "Tone under fire",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The anger is about the problem",
+            "body": "When someone writes in furious, almost none of it is about you. They are late, they look bad in front of their own boss, or they have explained this twice already. Reading their message as a personal attack makes you defensive, and defensive writing sounds like blame. Read it instead as information: this person is under pressure, and the pressure has a source you can probably name. Your first sentence should name it. You have reported this twice now and it is still happening, and I understand why that is frustrating. That sentence does more work than any apology, because it proves you read the history rather than starting fresh from their worst moment."
+          },
+          {
+            "heading": "Apologise once, precisely",
+            "body": "One apology, for something specific, then move to action. I am sorry this took three days to answer. Not I am so sorry for the inconvenience, repeated in every paragraph. Repeated apology reads as either insincere or panicked, and it pushes the whole reply toward you rather than their problem. Do not apologise for things that are not wrong, either. If policy is being applied correctly and the answer is no, saying sorry four times does not soften it, it just makes the no sound negotiable when it is not. Apologise for the delay, the error, the confusion you actually caused. Then spend the rest of the message on what happens now."
+          },
+          {
+            "heading": "De-escalate without over-promising",
+            "body": "The trap in a hot ticket is buying peace with a promise. I will make sure you get a full refund. I will have this fixed today. Said to calm someone down, those sentences hand the business a bill and hand you a problem, because if it does not happen you have turned a bad situation into a broken promise. Calm comes from certainty, not generosity. Specific facts, a named next step, a time, and one person owning it will settle almost anyone. Here is what I know, here is what I am doing, here is when you will hear from me, and I am staying on it until it is done. That is enough."
+          },
+          {
+            "heading": "Words that inflame, words that settle",
+            "body": "Some phrases reliably make things worse. As I already explained tells someone they are slow. Unfortunately our policy states hides behind paperwork. You should have makes it their fault. Actually corrects them for sport. Replace them with plain statements: here is the part I did not make clear, here is what I can do, here is what I cannot. Avoid the passive voice when something went wrong on your side. Your order was not shipped is a shrug. We did not ship your order is the truth and it lands better, because people can feel the difference between an account of events and a story with nobody in it."
+          },
+          {
+            "heading": "When it stops being about work",
+            "body": "Frustration is normal and part of the job. Insults, threats and abuse are not, and you do not have to absorb them to be professional. Answer the work content once, calmly, and state plainly that you will keep helping but will step away from the thread if the language continues. Then follow through, and tell your manager or the operator what happened, with the thread attached. Do not argue, do not match the tone, and do not delete the message. Keeping a record protects you. This is one of the few situations where handing a ticket to someone else is not a failure. Nothing in your job description includes being abused."
+          }
+        ],
+        "keyPoints": [
+          "Their anger has a source. Name it in your first sentence.",
+          "Apologise once, for something specific, then move to action.",
+          "Calm comes from certainty, not from promises you cannot fund.",
+          "Write we did not ship your order, not your order was not shipped.",
+          "Abuse is not part of the job. State the limit and follow through."
+        ]
+      },
+      {
+        "title": "Macros that still sound human",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Why macros are not cheating",
+            "body": "If you answer the same question forty times a month, writing it fresh each time is not craftsmanship, it is a slow way to make more typos. A macro is a saved reply you paste and adapt. Done well it makes your answers more accurate, because the tested wording, the correct link and the exact steps stop being retyped from memory at eleven at night. The failure is not using macros. The failure is sending one unedited into a situation it does not fit, so the customer receives an answer to a question they did not ask, correctly formatted and completely useless."
+          },
+          {
+            "heading": "Build the library free",
+            "body": "You do not need paid software. Keep a Google Doc with one macro per heading, or a Google Sheets tab with three columns: trigger, macro text, last reviewed. Most help desks, including free tiers, have a saved-reply feature, so use it when the client has one. Your browser or operating system may also offer free text expansion. Name macros with the customer's words, not internal jargon: call it cannot log in after password reset, not auth flow 2. You will find it faster at speed. Start with the ten questions you answered most this month. Ten good macros cover most of a normal queue."
+          },
+          {
+            "heading": "The two-line rule",
+            "body": "Every macro goes out with a first line and a last line written by you, for this person. The first line names their specific situation: I can see your reset email went to the old address on the account. The last line names the specific next step: try it now and tell me if the code arrives, and if it does not I will reset it manually from my side. The middle can be the saved steps word for word. That is enough to make a pasted reply read as written. Also delete every part of the macro that does not apply. A leftover paragraph about mobile apps in a reply to a desktop user tells the reader you did not read their message."
+          },
+          {
+            "heading": "Kill the tells",
+            "body": "Certain phrases mark a message as machine-shaped: dear valued customer, we sincerely apologise for any inconvenience this may have caused, your satisfaction is our top priority, please do not hesitate to reach out. They are not offensive, they are just empty, and readers skip them looking for content. Write macros the way you would explain it to a colleague. Short sentences, second person, specific nouns. Also check the placeholders every single time before sending. A reply that opens Hi FIRSTNAME undoes everything else in the message, and it is the one mistake customers screenshot and post."
+          },
+          {
+            "heading": "Review the library monthly",
+            "body": "Macros rot. Prices change, buttons move, features get renamed, and a saved reply that was accurate in March will be quietly wrong by August. Put a monthly reminder in your calendar and walk the list: does this link still work, is this still the actual screen name, is this policy still current. Update the last reviewed column. If you cannot confirm something is still true, do not send it, ask. Sending a customer a step that no longer exists costs two more replies and looks worse than saying you will check. A stale macro is a promise made by a version of the business that no longer exists."
+          }
+        ],
+        "keyPoints": [
+          "A macro is a starting point, never a finished reply.",
+          "First line and last line always written by you, for this person.",
+          "Delete every macro paragraph that does not apply to this ticket.",
+          "Check placeholders before sending. Hi FIRSTNAME undoes the whole message.",
+          "Review the library monthly. Stale macros are wrong answers delivered confidently."
+        ]
+      },
+      {
+        "title": "Promises, refunds and limits",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Never invent a promise",
+            "body": "This is the rule the whole course rests on. You may only state commitments the business has actually made: published policy, written terms, or something a manager or the operator confirmed in writing. You may not promise a refund, a discount, a delivery date, a feature, or an exception because it would end the conversation faster. An invented promise does not disappear when your shift ends. It becomes a screenshot, a chargeback, or a legal problem, and it lands on somebody who never agreed to it. If you feel the pull to promise something, that is the moment to write: I do not have the authority to approve that, here is what I can do, and here is who decides."
+          },
+          {
+            "heading": "Know your decision box",
+            "body": "On your first day with any client, ask for the box: what can I approve alone, what needs approval, what is never allowed. Write the answers down and keep them beside the queue. A typical box might be resend an invoice, extend a trial by a fixed number of days, replace a damaged item under a set value, apply a documented policy exception. Anything above the line goes to a named person. If nobody will define the box for you, write your best understanding and send it for confirmation, then work from the confirmed version. Ten minutes of that saves you from the worst mistake in support, which is discovering your limits by exceeding them."
+          },
+          {
+            "heading": "Refunds and money questions",
+            "body": "Refund requests are where invented promises do the most damage, so handle them mechanically. Find the written policy. Check the facts of this account against it. If it clearly qualifies and it is inside your box, do it and say so plainly. If it does not qualify, say so once, in plain words, without hiding behind the policy document, and offer what you can actually give. If it is borderline or sympathetic, do not decide alone: escalate with a short recommendation and tell the customer a decision is coming and when. Never speculate about tax, invoicing law, or what their bank will do. Point them to the official source or the finance contact and say plainly that it is outside what you can answer."
+          },
+          {
+            "heading": "Saying no without hiding",
+            "body": "A clean no has three parts: the answer, the reason in one sentence, and the best available alternative. We cannot refund this because the purchase is outside the return window written in the terms you agreed to. What I can do is extend your plan by one month at no charge, and I have asked my manager to review the case. Note the tone: nothing apologetic, nothing defensive, no policy fortress. Do not say I am afraid there is nothing I can do unless you have genuinely checked that there is nothing, including asking someone with more authority. Most of the time there is something, and finding it is the job."
+          },
+          {
+            "heading": "Write down every exception",
+            "body": "When an exception is approved, record it: the date, who approved it, what was granted, and why. One line in a shared sheet or a note on the ticket is enough. Two things then become possible. You can answer the next similar case consistently instead of guessing, and the business can see that it granted the same exception eleven times, which usually means the policy is wrong and should change. Undocumented exceptions are how a support team ends up with fourteen private versions of the rules, and how a customer discovers that the answer depends on who picked up their ticket."
+          }
+        ],
+        "keyPoints": [
+          "State only commitments the business has actually made, in writing.",
+          "Ask on day one what you can approve, what needs approval, what never.",
+          "A clean no: the answer, one reason, the best real alternative.",
+          "Borderline and sympathetic cases get escalated with a recommendation, not decided alone.",
+          "Record every approved exception. Repeated exceptions mean the policy is wrong."
+        ]
+      },
+      {
+        "title": "Escalating cleanly",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Escalate on triggers, not feelings",
+            "body": "Agree the triggers in advance so escalation is a rule, not a mood. Common ones: you have spent your agreed maximum time and are not closer, the issue affects more than a set number of accounts, money or data has been lost, someone mentions legal action, press or a regulator, the request is outside your decision box, or the same problem has come back after being marked fixed. Write your triggers on the same page as your decision box. Escalating too early wastes a senior person's time, escalating too late costs the business a customer. Triggers remove the ego from the choice, and they let you escalate at minute twenty instead of hour three."
+          },
+          {
+            "heading": "The handover packet",
+            "body": "A good escalation can be picked up by someone who has never seen the ticket, without asking you anything. Include six things: a link to the ticket, one sentence on what the customer wants, the exact steps to reproduce or the facts of the case, what you already tried and what happened, the impact in plain numbers, and what you told the customer including any time you promised. Then ask one clear question. I need you to decide whether we refund outside the window, or I need engineering to confirm whether the export limit is intentional. Escalations that say please help with this are why senior people stop reading escalations."
+          },
+          {
+            "heading": "You still own it",
+            "body": "Escalating moves the work, not the responsibility. You remain the person the customer hears from. That means you keep the update schedule you promised, even when you have nothing new, and you chase the person you escalated to when the time passes. Set your own reminder. If your escalation has gone unanswered past its deadline, chase once, politely and specifically, then escalate the escalation. Handing a ticket over and going quiet is how a customer discovers three weeks later that nobody was ever working on it. The customer never has to know who inside the business is holding the ball. They only have to know that you are still holding the thread."
+          },
+          {
+            "heading": "Escalate safely",
+            "body": "Escalation is the most common place customer data leaks. Share the minimum needed and use approved channels only. Do not forward a customer's file to your personal email to work on later, do not paste their spreadsheet or their message into a free AI tool or an online converter to summarise it, and do not put account numbers into a group chat that half the company can read. Redact what the recipient does not need. On Second Shift the rule is absolute: client data never leaves the task. No copies after delivery, no third-party uploads unless the brief says so, and no using the work as a portfolio sample. Treat every client you ever work for the same way."
+          }
+        ],
+        "keyPoints": [
+          "Agree escalation triggers in advance so the choice is never emotional.",
+          "Handover packet: link, want, facts, what you tried, impact, promises, one question.",
+          "Escalation moves the work, never the responsibility. Keep updating the customer.",
+          "Never put customer data in personal email, group chats, or free AI tools."
+        ]
+      },
+      {
+        "title": "From ticket to help article",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Write it while it is warm",
+            "body": "The best moment to write a help article is the ten minutes after you solve something for the second time. You still have the exact error text, the working steps, and the wrong turn you took first. A week later you will remember the shape and lose the details, and the details are the article. Keep a running list of candidates: any question you have answered twice, any answer that took you more than fifteen minutes to work out, any step people get wrong in the same place. You are not writing documentation for its own sake. You are writing the reply you will paste next Tuesday."
+          },
+          {
+            "heading": "Title it the way they ask it",
+            "body": "People search with the words in their head, not the words in your product. Title the article the way the customer described the problem. Export stops at 500 rows, not Handling pagination limits in bulk data operations. If several people described it differently, put the alternatives in the first paragraph so search can find them. A good test: paste your title into the search box of the help centre and ask whether a stressed person typing at speed would land on it. If the title contains a word that only appears in your internal tools, it is the wrong title."
+          },
+          {
+            "heading": "Symptom, cause, steps, failure",
+            "body": "Use the same four-part shape every time. Symptom: what the person sees, in their words, including the exact error message. Cause: one or two sentences on why it happens, without an engineering lecture. Steps: numbered actions, one action per step, written so someone can follow them while tired. What if it still fails: the one or two other things it could be, and how to contact support with the right details. That last part is the one everybody skips and the one that saves the most tickets, because it stops the article from ending in dead silence for the third of readers it did not fix."
+          },
+          {
+            "heading": "Take the customer out",
+            "body": "The article ships to the public. The ticket does not. Remove every trace of the person who reported it: name, company, email, account number, order number, internal ticket references, and anything visible in a screenshot. Rebuild screenshots with a test account and dummy data rather than blurring real details, because blurring is often reversible and always looks careless. Never quote a customer's message, even flatteringly, without written permission. This is the same rule you follow when you deliver on Second Shift and when you build a portfolio: the client's data is theirs, and their customers never agreed to appear in your work. Anonymous by default, always."
+          },
+          {
+            "heading": "Prove it works",
+            "body": "An article is finished when someone else can follow it. Test it yourself from a clean state, following only what you wrote and doing nothing you know from memory. You will find one missing step almost every time. Then use it: link it in your next reply on that topic, with one line of context rather than a bare address. If people still write in after reading it, the article is not clear, and that is information, not an insult. Track which articles you send most and revisit those first. Two well-tested articles that get sent daily beat forty that nobody ever finds."
+          }
+        ],
+        "keyPoints": [
+          "Write the article the second time you solve it, while details are fresh.",
+          "Title it with the customer's words, not your product's vocabulary.",
+          "Symptom, cause, numbered steps, and what to do if it still fails.",
+          "Strip every identifier. Rebuild screenshots with dummy data, never blur real ones.",
+          "Test the article from a clean state before you publish it."
+        ]
+      },
+      {
+        "title": "Measuring yourself honestly",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Three numbers, not fifteen",
+            "body": "Track three things and you will know whether you are good. First response time: how long from the customer writing to a real human reply. Resolution time: from arrival to the moment they confirm it is done. Reopen rate: how often a ticket you closed comes back. Everything else is decoration at your level. If your workplace does not measure them, measure yourself in a Google Sheets tab: date, ticket, arrived, first reply, resolved, reopened yes or no. Twenty rows a week is enough to see your own pattern, and it is the only evidence you will have when you ask for more work or better pay."
+          },
+          {
+            "heading": "First response, honestly counted",
+            "body": "First response time only counts a reply that carries information. An automatic acknowledgement is not a first response, and neither is a message saying we have received your request and will look into it, because the customer knows nothing they did not know before. Count from when they wrote, not from when you opened it, and count in their working hours, not yours. Most support work across time zones is judged this way: a ticket that arrived at nine in the morning for them and was answered at nine the next morning for them was a one day response, no matter how convenient your night was."
+          },
+          {
+            "heading": "Resolution and reopens",
+            "body": "Resolution time flatters you if you close tickets early, which is why reopen rate sits beside it. A fast average with one in five coming back means you are closing tickets, not solving problems. Watch the pair together. Also separate the tickets you could solve alone from the ones that waited on someone else, because they measure different things: your work, and the business's bottlenecks. If your queue is slow because engineering takes eleven days, that number belongs in a report, not in your conscience. Bring it up with the dates, calmly, once you can show it happened more than twice."
+          },
+          {
+            "heading": "The ways people cheat",
+            "body": "Every metric can be gamed and every trick is visible. Sending a content-free holding reply to stop the response clock. Closing and reopening a ticket to reset resolution time. Splitting one problem into four tickets to raise your closed count. Marking a ticket solved on Friday knowing the customer will write back Monday. These work for one review cycle and then somebody reads the tickets. Worse, they cost you the one thing that makes you employable across every client you will ever have, which is that your numbers mean what they say. Report a bad week as a bad week, with the reason."
+          },
+          {
+            "heading": "The weekly five minutes",
+            "body": "Once a week, look at your own sheet and answer three questions. Which ticket took longest and why. Which answer did I have to send twice, and should it be an article or a macro. What did I promise and not deliver. Write one line for each. Over a quarter this becomes an honest account of your work that you can hand to anyone: here is my volume, here is my response time, here are the four articles I wrote that cut the password questions in half. On Second Shift, that same habit shows up in the note you send the operator with each delivery."
+          }
+        ],
+        "keyPoints": [
+          "Track first response, resolution and reopen rate. Ignore the rest for now.",
+          "A holding message with no information is not a first response.",
+          "Fast resolution with high reopens means closing tickets, not solving problems.",
+          "Report a bad week as a bad week, with the reason.",
+          "Five minutes weekly turns your queue into evidence of your work."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can triage a queue by impact and urgency instead of by tone.",
+      "You can write a first reply that acknowledges, informs, commits and gives a time.",
+      "You can de-escalate an angry ticket without grovelling or promising anything you cannot deliver.",
+      "You can escalate with a handover packet a stranger could pick up cold.",
+      "You can turn a solved ticket into a public help article, safely anonymised.",
+      "You can measure your response and resolution honestly, and report a bad week."
+    ],
+    "slug": "customer-support",
+    "summary": "Front-line support is judgement under time pressure: sorting a queue by real impact, writing a first reply that tells the truth about what you know, and staying calm without giving away things the business never agreed to. This course takes you from a cold queue to a clean escalation, a published help article, and numbers about your own work that mean what they say.",
+    "tagline": "Answer the hard tickets well, and never promise what the business has not.",
+    "title": "Customer support and help desk",
+    "track": "craft"
+  },
+  "crm-pipeline": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You log a 40-minute call with a contact who has one open deal. The CRM lets you attach the activity to the contact, the deal, or both. You are working fast and want to move on. What do you do?",
+          "options": [
+            "Attach it to the contact; the deal is linked to the contact anyway.",
+            "Attach it to both the contact and the deal, so the deal history is complete.",
+            "Attach it to the deal only, since the deal is what gets reported.",
+            "Log it as a note on the company so everyone on the account sees it."
+          ],
+          "correct": 1,
+          "explain": "An activity attached only to the contact disappears from the deal timeline, which is exactly where the next person looks. Attaching to both keeps the deal history complete."
+        },
+        {
+          "prompt": "You are entering 60 deals from a spreadsheet a salesperson sent. Eleven have no amount. The client's report groups by amount, and the salesperson is offline until Monday. The task is due tonight. What do you enter in those eleven?",
+          "options": [
+            "The team's average deal size, so the pipeline total is not understated.",
+            "Zero, which is clearly not a real value and flags itself.",
+            "Nothing; leave the amount blank and list the eleven deals in your delivery note.",
+            "Your best estimate from the company size, marked as an estimate in the deal name."
+          ],
+          "correct": 2,
+          "explain": "Blank means unknown and anyone can fill it in five minutes. A guessed amount enters the forecast and cannot later be told apart from a real one."
+        },
+        {
+          "prompt": "Deduplicating contacts, you find two records with the same person's name at the same company: one with a personal address, one with a work address. Both carry logged activity. What is the right action?",
+          "options": [
+            "Merge them, keeping the record with the richer activity history as the survivor.",
+            "Delete the personal-address record, since business contacts should use business addresses.",
+            "Leave both; two different email addresses mean two different records.",
+            "Merge them and keep the newest record, because its field values are more current."
+          ],
+          "correct": 0,
+          "explain": "One real person gets one record. The richer history makes the better survivor, because activities are hard to recreate while a field value is easy to copy over first."
+        },
+        {
+          "prompt": "A sales manager asks you to move four deals from proposal to negotiation before tomorrow's forecast meeting. You can find no logged evidence of any buyer response on any of the four. What do you do?",
+          "options": [
+            "Refuse to move them, because a stage move requires evidence in the record.",
+            "Move them and add notes describing buyer responses so the stages look supported.",
+            "Move the two that look most likely and leave the other two where they are.",
+            "Move them as instructed, and log plainly that the change was requested by the manager."
+          ],
+          "correct": 3,
+          "explain": "You are not the judge of the deal, but you are the record of what was decided. Doing what was asked and noting who asked keeps the database honest."
+        },
+        {
+          "prompt": "A client asks you to deduplicate 4,000 companies overnight. Your exact-domain pass returns 380 likely duplicate pairs. The CRM has a bulk merge button. This is your first job on this database. What do you do?",
+          "options": [
+            "Run the bulk merge on all 380, since matching on domain is reliable.",
+            "Merge a sample of twenty by hand, deliver them for confirmation, then scale after approval.",
+            "Merge the pairs where both records share a country, and leave the rest alone.",
+            "Export the list of 380 and deliver only the list, performing no merges at all."
+          ],
+          "correct": 1,
+          "explain": "Most merges cannot be undone. A confirmed sample costs an hour and proves your rules before they touch hundreds of records."
+        },
+        {
+          "prompt": "In a clean-up sweep you find a deal worth 25,000 sitting in negotiation. Its close date passed four months ago, the last activity was six months ago, and its owner left the company in March. The brief says nothing about departed owners. What do you do?",
+          "options": [
+            "Put it on the escalation list with the facts, and ask before changing anything.",
+            "Close it as lost; six months of silence settles the question.",
+            "Reassign it to the sales manager and push the close date out one quarter.",
+            "Delete it, since an unusable record only clutters the pipeline."
+          ],
+          "correct": 0,
+          "explain": "The brief does not settle the rule and the amount is large. Escalating the cases you cannot decide is what makes the other buckets safe to apply."
+        },
+        {
+          "prompt": "You have a CRM export of 9,000 contacts to deduplicate. A free website would do the fuzzy matching in seconds if you upload the file. The brief says nothing about outside tools. What do you do?",
+          "options": [
+            "Upload it, then delete the file from the tool as soon as you are finished.",
+            "Upload only the name and company columns, leaving out emails and phone numbers.",
+            "Upload a sample of 500 rows first, to test whether the matching is any good.",
+            "Do the matching yourself in Google Sheets; client data does not leave the task."
+          ],
+          "correct": 3,
+          "explain": "Client files never go to third-party services unless the brief explicitly says so. Stripping columns, sampling, or deleting afterwards does not make the upload allowed."
+        },
+        {
+          "prompt": "You are asked for the weekly pipeline report. The export shows 214 open deals. The sales lead will give it about six minutes and act on two lines. What do you lead with?",
+          "options": [
+            "A table of all 214 open deals sorted by amount, so nothing is hidden.",
+            "A chart of deal counts by stage, which shows the shape of the pipeline.",
+            "Six headline numbers with a column comparing each against last week's report.",
+            "A written summary of what each salesperson did during the week."
+          ],
+          "correct": 2,
+          "explain": "A lead reads for coverage and movement. Headline numbers with a difference column give both at a glance, and the difference column is the part most people omit."
+        },
+        {
+          "prompt": "Lead source is a free-text field. In one quarter it holds webinar, Webinar, web-inar, Web Event and forty other spellings. The client wants a report they can trust. What do you deliver?",
+          "options": [
+            "The cleaned column, with the odd spellings quietly corrected.",
+            "The cleaned column plus the mapping you used, so the field can become a picklist.",
+            "A pivot table counting each spelling exactly as it stands today.",
+            "A new field called lead source clean, leaving the original untouched and unexplained."
+          ],
+          "correct": 1,
+          "explain": "The mapping shows your decisions and lets the client convert the field into a picklist, which is what stops the same mess returning next quarter."
+        },
+        {
+          "prompt": "A deal sits in meeting held. Meeting notes exist, a proposal was genuinely emailed, and there has been no reply for three weeks. There is no next step recorded and nobody can tell you what it should be. What is the correct record?",
+          "options": [
+            "Leave it in meeting held, because three weeks of silence means nothing has moved.",
+            "Move it to proposal sent and set the close date to the end of the quarter.",
+            "Move it back to qualified, since the meeting produced no next step.",
+            "Move it to proposal sent, attach the proposal as evidence, and leave next step empty."
+          ],
+          "correct": 3,
+          "explain": "The proposal really was sent, so the stage is supported. Leaving next step honestly empty is how a stalled deal gets found in the weekly report."
+        },
+        {
+          "prompt": "The CRM refuses to save a new contact without a phone number. You are entering 30 contacts from a form export and 12 of them have no phone. The deadline is two hours away. What do you do?",
+          "options": [
+            "Save the 18 complete ones, and flag the 12 blocked records and the reason in your note.",
+            "Enter the company switchboard number for the 12, since it reaches them indirectly.",
+            "Enter a placeholder such as 000 000 0000 so the records save, then move on.",
+            "Copy the phone number from another contact already recorded at the same company."
+          ],
+          "correct": 0,
+          "explain": "A forced value is a guessed value, and later nobody can tell it from a real one. The blocked records and the system rule are what the operator needs to know."
+        },
+        {
+          "prompt": "Halfway through a sweep, an instruction reaches you to delete every closed lost deal older than two years so the reports look tidier. What is the right response?",
+          "options": [
+            "Delete them; closed lost deals no longer affect the current pipeline.",
+            "Ask for the instruction and its exact scope in writing, and propose archiving instead.",
+            "Delete them but keep a CSV copy on your own drive in case they are needed.",
+            "Delete only the ones with no logged activity, and keep any with calls attached."
+          ],
+          "correct": 1,
+          "explain": "Deleting destroys reporting for every past period those deals appeared in. Archiving keeps the history, and a written instruction protects both sides."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "What a CRM Actually Models",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Four objects, one shape",
+            "body": "Almost every CRM, paid or free, models the same four things. A contact is one human being with one email address. A company is one organisation. A deal is one specific opportunity to sell something to that company, carrying an amount, a stage and a close date. An activity is one thing that actually happened: a call, an email, a meeting, a note. Everything else a CRM offers is decoration on those four. Learn them once and you can work in any tool a client hands you, because the buttons change and the model does not. When you open an unfamiliar CRM, your first job is to find where each of the four lives and what the client calls it. Some say opportunities instead of deals, some say accounts instead of companies."
+          },
+          {
+            "heading": "Why the links matter",
+            "body": "The four objects are only useful because of how they connect. A contact belongs to a company. A deal belongs to a company and involves one or more contacts. Activities attach to a contact, a deal, or both. Get the links right and one question answers itself: what is happening with this account? Get them wrong and the database lies quietly. A deal with no contacts attached is a deal nobody can follow up. An activity logged against the contact but not the deal disappears from the deal timeline, so the next person sees silence where there was a two-hour meeting. When you create anything at all, your last step is always the same: check what it is attached to."
+          },
+          {
+            "heading": "One record per real thing",
+            "body": "The central rule is that one thing in the world gets one record in the database. One person, one contact record, even if they wrote from two addresses. One company, one company record, even if the client's team spells it three ways. One opportunity, one deal, even if it stalls and restarts later. Break that rule and every number downstream is wrong: the forecast double-counts, the report shows more pipeline than exists, and two salespeople call the same buyer in the same week. Most of the mess you will be asked to clean up is this rule broken quietly, hundreds of times, by people in a hurry. Everything else in this course is either protecting that rule or repairing it."
+          },
+          {
+            "heading": "Free tools that do the job",
+            "body": "You do not need a paid subscription to work properly. The HubSpot free tier gives you real contacts, companies, deals and a pipeline with stages, and many small clients already use it. If a client has no CRM at all, a well-built Google Sheet does the same job: one tab per object, a unique ID column on each, and the company ID repeated on the contact and deal tabs so the links survive sorting. Salesforce and Pipedrive dominate larger companies and you may meet them on a client's account, but you never need to buy one to learn this. The discipline transfers exactly. A tidy spreadsheet beats an expensive CRM full of duplicates, every time."
+          }
+        ],
+        "keyPoints": [
+          "A CRM models four things: contact, company, deal, activity.",
+          "The links carry the meaning. Always check what a new record attaches to.",
+          "One real thing gets exactly one record. Every number downstream depends on it.",
+          "HubSpot free tier or a structured Google Sheet both work. The model never changes."
+        ]
+      },
+      {
+        "title": "Stages, and the Evidence Rule",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What a stage really is",
+            "body": "A stage is a claim about where the buyer is, not about how hopeful the seller feels. Typical stages run something like new, qualified, meeting held, proposal sent, negotiation, closed won, closed lost. The names vary by client and the names do not matter. What matters is that each stage means one specific, checkable thing has happened in the real world. Qualified does not mean the salesperson likes the look of it. It means someone confirmed the budget, the need, and the person who signs. When a stage means a feeling, the pipeline becomes a mood chart and the forecast built on it is fiction. Your job, whether you own the data or only maintain it, is to keep each stage meaning what it says."
+          },
+          {
+            "heading": "Exit criteria, written down",
+            "body": "For each stage there should be a written sentence saying what must be true before a deal leaves it. Proposal sent leaves when the buyer has confirmed receipt and given a date for their answer. Meeting held leaves when notes exist and a next step is booked. If the client has no written criteria, ask for them, and if nobody has ever written them, offer to draft what you observe and have the sales lead confirm it. That single page is the most valuable document in a CRM. It turns arguments about a deal into a check against a list, and it makes your own updates defensible: you moved the deal because the criterion was met and the evidence is logged."
+          },
+          {
+            "heading": "Move on evidence, not optimism",
+            "body": "The discipline is simple to state and hard to hold. A deal moves forward only when something happened, and that something is logged where the next person can see it. An email confirming the meeting. A signed order form. A reply agreeing the price. No evidence, no move. This applies backwards too: a deal that has gone quiet does not stay in negotiation because moving it back would look bad. If you are updating a CRM on someone else's instruction and they tell you to advance a deal you can see no evidence for, do it and record plainly what you were told and by whom. You are not the judge of the deal. You are the record of what was decided."
+          },
+          {
+            "heading": "Close date and amount are data",
+            "body": "Stage is the headline, but close date and amount decide the forecast. A close date is the date the buyer is expected to sign, not the end of a quarter someone hopes for, and not a date nobody has touched since March. When a close date has passed and the deal is still open, that is not a small formatting problem: it is the most common single reason a forecast is wrong. Flag every one you find. Amounts follow the same rule. Use a number the buyer has seen, or the client's stated standard price for that product, never a figure you invented to fill the cell. If the real amount is unknown, the next lesson explains what to do."
+          }
+        ],
+        "keyPoints": [
+          "A stage describes the buyer's position, not the seller's confidence.",
+          "Every stage needs written exit criteria. Draft them if nobody has.",
+          "No evidence, no stage move. Deals are allowed to move backwards.",
+          "A close date in the past is the loudest error in any pipeline."
+        ]
+      },
+      {
+        "title": "Duplicates and How to Merge",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Where duplicates come from",
+            "body": "Duplicates are not a sign of careless people. They are the normal result of many hands and several doors. A form creates a contact with a personal address, then the same person emails from work. An import runs twice because the first one seemed to fail. Two salespeople create the same company because one typed Acme Ltd and the other Acme Limited. A trade show list arrives as a CSV and lands on top of everything. Understanding the source matters, because the same source will keep producing duplicates after you have finished cleaning. When you deliver a deduplication job, saying where the duplicates came from is often worth more to the client than the merge itself, and it is the part most people leave out."
+          },
+          {
+            "heading": "Find them without guessing",
+            "body": "Work from exact keys first, then loosen. Export the contacts, and in Google Sheets build a helper column that lowercases and trims the email, then use COUNTIF on that column to count how many times each value appears. Anything above one is an exact duplicate and needs no judgment. Next, match companies on the website domain rather than the name, because domains are unique and names are not. Then, and only then, look at softer signals: same last name plus same company, same phone number, company names that match once you strip Ltd, Inc, GmbH and punctuation. Each pass leaves a shorter list needing more thought. Never start with the fuzzy pass, or you will spend your night on judgment calls the exact pass would have settled."
+          },
+          {
+            "heading": "Deciding what is really the same",
+            "body": "Two records that look alike are not always the same thing. Two people can share a name inside one company. A parent company and its subsidiary can share a website and still be separate accounts with separate budgets. Shared inboxes belong to no single human and must never be merged into a person. Ask one question: if I merge these, does one real thing end up with one record, or do two real things get flattened into one? When you are not sure, do not merge. Put the pair on a review list with both record links and the reason you hesitated, and let the client decide. An unmerged duplicate is untidy. A wrong merge destroys information nobody can rebuild."
+          },
+          {
+            "heading": "Merging without losing history",
+            "body": "A merge is not a delete. Done properly, one record survives and everything attached to the other moves onto it: activities, deals, notes, files, form submissions. Before you merge anything in bulk, export the full list of both sides so the original state can be reconstructed, because most merges cannot be undone. Choose the survivor deliberately rather than by default. The record with the richer history is usually the better survivor, even when the other has newer field values, because activities are hard to recreate and a phone number is easy to copy over. Then check what the merge kept: CRMs typically keep the survivor's field values and discard the other's, so any value you wanted from the losing record must be copied first."
+          },
+          {
+            "heading": "When not to merge",
+            "body": "Some pairs should stay apart, and knowing them saves you from a bad night. Do not merge a person into a shared inbox. Do not merge two companies because the names match if the domains differ. Do not merge deals: two open deals on one account are often two genuine opportunities, and if they truly are duplicates the right move is usually to close one as a duplicate so the history stays visible, following whatever the client's process says. And never merge in bulk on your first pass through an unfamiliar database. Do a sample of twenty by hand, show them, get confirmation, then scale. The sample costs an hour. Reversing a bad bulk merge can cost a client their year."
+          }
+        ],
+        "keyPoints": [
+          "Duplicates come from repeat imports, forms and inconsistent naming. Name the source, not just the count.",
+          "Match on exact keys first: email, then domain. Save fuzzy matching for last.",
+          "Ask whether merging leaves one real thing with one record. If unsure, do not merge.",
+          "Export both sides before merging. Most merges cannot be undone.",
+          "Merge twenty by hand and get them confirmed before touching hundreds."
+        ]
+      },
+      {
+        "title": "Fields, and Why Blank Wins",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Which fields actually matter",
+            "body": "Every CRM has a handful of fields the business genuinely runs on. Usually it is deal owner, amount, close date, stage and lead source, plus the domain and country on the company. These feed the reports, so an error in them travels. Before you start any CRM work, ask which fields the client's reports actually use, and treat those as sacred. If nobody can tell you, look at what the last report grouped by. Knowing which five fields matter changes how you work: you spend your attention where a mistake would show up in a board meeting, instead of spreading it evenly across forty fields nobody has read since the system was set up."
+          },
+          {
+            "heading": "Blank is honest, guessed is poison",
+            "body": "A blank field says we do not know. A guessed field says we know, and it is wrong. The first can be filled by anyone in five minutes. The second can sit undetected for years and be counted in a forecast. So when a value is not in front of you, leave it empty. Do not put a placeholder date. Do not set the amount to the average deal size to make the pipeline look complete. Do not pick the first option in a list just to get past a required field. If a system forces a value before it will save, that is worth flagging rather than defeating, and if you must save anyway, record exactly which records were forced and why. Completeness is not accuracy."
+          },
+          {
+            "heading": "Picklists beat free text",
+            "body": "Any field you will ever count should be a picklist, not a text box. Lead source typed by hand becomes webinar, Webinar, web-inar and web in a single quarter, and the report shows four sources where there was one. Industry, country, deal type and stage all belong in fixed lists. When you are asked to clean a free-text field, the deliverable is usually two things: the cleaned column, and a short list of the values you mapped onto each other so the client can see your decisions and turn the field into a picklist afterwards. If you are building a spreadsheet CRM, use data validation from a named list on a hidden tab. Two minutes of work prevents the mess permanently."
+          },
+          {
+            "heading": "Decide the format once",
+            "body": "Half of CRM cleaning is not judgment, it is choosing a format and holding it everywhere. Phone numbers in international format with the country code. Dates in one unambiguous format, remembering that 03/04 means March to one reader and April to another. Company names without the legal suffix unless the client wants it. Websites as bare domains, lowercase, no www and no trailing slash. Names capitalised properly rather than shouted in capitals because that is how the import arrived. Write your chosen formats at the top of your delivery note, or on a short tab called standards. The value of a standard is not that it is the best possible choice. It is that everyone after you can follow it."
+          }
+        ],
+        "keyPoints": [
+          "Find the five fields the client's reports use, and guard those first.",
+          "Blank means unknown and is fixable. A guessed value is a lie that spreads.",
+          "Any field you will count should be a picklist, never free text.",
+          "Write your formatting standards down so the next person can follow them."
+        ]
+      },
+      {
+        "title": "Logging Activity So It Is True",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What counts as an activity",
+            "body": "An activity records that something happened between the seller and the buyer: a call, an email, a meeting, a demo, a quote sent. It has a date, a type, the people involved, and what came of it. Internal chatter is not an activity. Neither is a task someone plans to do. The line matters because activity counts get reported and compared, so if planned calls are logged as completed ones, the report says the team spoke to sixty prospects when it spoke to twenty. Attach every activity to the deal as well as the contact whenever a deal exists. An activity attached only to the person vanishes from the deal history, which is exactly where the next person will look."
+          },
+          {
+            "heading": "Log it the same day",
+            "body": "Memory decays faster than anyone believes. A call logged three days later loses the buyer's exact objection, the name they mentioned, the date they said they would decide. Those are the details that make the record worth keeping. If you are logging on behalf of a salesperson from their notes or recordings, do it within the working day the material reaches you, and log what the source says rather than what you infer from it. When something in the source is unclear, mark it unclear instead of smoothing it over. A record saying a decision date was mentioned but not captured is more useful than a confident date that turns out to be invented."
+          },
+          {
+            "heading": "Notes someone else can use",
+            "body": "Write the note for a colleague who knows nothing about the deal and picks it up in six months. Three things carry almost all the value: what the buyer actually said, what was agreed, and what happens next with a date. Keep quotes as quotes when the exact words matter, especially about price, timing and competitors. Cut the adjectives. Great call, very positive tells the next reader nothing, while they asked for pricing on forty seats and said budget clears in the new fiscal year tells them everything. Length is not quality. Five accurate lines beat a page of impressions, and five lines actually get read, which the page does not."
+          },
+          {
+            "heading": "The next step is the point",
+            "body": "If a CRM has one field that predicts whether a deal closes, it is the next step with a date. A deal with no scheduled next step is drifting, whatever stage it sits in, and a good sales lead scans that column before anything else. So every activity you log should end by setting or updating the next step. If the source material does not say what the next step is, leave it empty and flag it rather than inventing something plausible. Empty next-step fields are the fastest way to find the deals in trouble, which is precisely why they must be honestly empty rather than politely filled."
+          },
+          {
+            "heading": "What never goes in a note",
+            "body": "A CRM note is a business record. It can be read by the whole company, exported in a legal dispute, or shown to the buyer by accident. So it holds facts and agreements, not opinions about people, not guesses about their finances or their personal life, and nothing you would not repeat with them in the room. Never paste passwords or card details into a note; if a buyer sends them, raise it through the proper channel and keep them out of the record. On Second Shift, your channel for anything sensitive is the delivery note to the operator, never a message to the client, because you have no contact with them at all."
+          }
+        ],
+        "keyPoints": [
+          "An activity is something that happened, never something planned.",
+          "Attach activities to the deal too, or the deal history looks empty.",
+          "Log the same day, and record what the source says rather than what you infer.",
+          "Every deal needs a next step with a date, or an honestly empty one.",
+          "Notes are business records. Facts and agreements only."
+        ]
+      },
+      {
+        "title": "The Weekly Pipeline Report",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "What a sales lead is asking",
+            "body": "A sales lead opens your report with four questions in mind. Will we hit the number this quarter? Which deals are actually moving? Where is it stuck? And can I trust these figures? Everything you include should answer one of the four. That is why a report listing every open deal is useless: it answers none of them and hands the reader the work you were paid to do. Write for a person with six minutes who will act on two lines of it. The best pipeline reports are short, the same shape every week, and boring in a specific way: the reader knows exactly where to look, so the changes jump out at them."
+          },
+          {
+            "heading": "The six numbers to lead with",
+            "body": "Start with total open pipeline value against target, because coverage is the first question. Then the count of open deals and the average size, which explains whether the total comes from many small deals or one large one. Then what closed won and closed lost since the last report, with the loss reasons if that field exists. Then what entered as new. Then the deals whose close date has slipped into the past. Present them as a small table with this week, last week, and the difference. The difference column is where a busy reader looks first, and it is the column most people forget to include."
+          },
+          {
+            "heading": "Movement matters more than totals",
+            "body": "A total tells you where you are. Movement tells you where you are going. So the heart of the report is what changed: which deals advanced a stage, which moved backwards, and which have not moved at all since the last report. That last group is the one nobody wants to write down and the one the sales lead needs most. List the deals with no activity in the last two weeks, with the owner and the days since the last touch, and keep it to the largest ten so it stays readable. You are not accusing anyone. You are showing where attention will pay, which is the entire job."
+          },
+          {
+            "heading": "Build it from an export",
+            "body": "You rarely need more than a CSV export and Google Sheets. Export the open deals with these columns: deal name, company, owner, amount, stage, close date, created date, last activity date. Paste it into a raw tab and never edit that tab, so your work can always be rebuilt from the source. Do the arithmetic on a second tab using SUMIF by stage and by owner, COUNTIF for the deal counts, and TODAY minus last activity date for staleness. Keep the report itself on a third tab, formatted for reading, with the export date written at the top. Same columns, same order, every week. That consistency is what turns a spreadsheet into a report people rely on."
+          },
+          {
+            "heading": "Say what the data cannot say",
+            "body": "Every report should end with a short data quality note, because the numbers mean little without one. Say how many deals have no close date, how many have a close date in the past, how many have no amount, and how many have no owner. Give the counts plainly and do not soften them. If the export was taken mid-import, or a stage was renamed this week, say that too. This section protects the reader from acting on a number that is thinner than it looks, and it protects you, because a figure you flagged is never a figure you hid. On Second Shift the same honesty goes into your delivery note."
+          }
+        ],
+        "keyPoints": [
+          "The lead wants four answers: coverage, movement, blockages, and whether the figures are trustworthy.",
+          "Lead with six numbers and a difference column against last week.",
+          "Stalled deals are the most valuable list in the whole report.",
+          "Export to a raw tab, calculate on a second, present on a third.",
+          "Close every report with a data quality note. Counts, not softening."
+        ]
+      },
+      {
+        "title": "Stale Pipeline and the Sweep",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "How a pipeline goes stale",
+            "body": "A stale pipeline has a look you learn to recognise within a minute. Close dates clustered on the last day of quarters that have already passed. Deals sitting in one stage for months with no activity. A stage everyone quietly stopped using. Owners who left the company still holding thirty deals. Amounts that are suspiciously round, all ending in triple zeros. Contacts with no company attached. The same buyer appearing four times. None of these are opinions: each is a filter you can run and a count you can report. Start any clean-up by producing those counts, because they tell the client how big the job is and give you a before figure to show against your after figure."
+          },
+          {
+            "heading": "Before you touch anything",
+            "body": "Take a full export first, every object, and keep it untouched until the work is approved. That export is your undo button, and in most CRMs it is the only one you get. Then agree the rules in writing before you apply them: what counts as stale, what happens to deals owned by someone who left, whether closing a dead deal needs a reason code. Ambiguity here is not a detail, because a sweep multiplies it by a thousand records. On Second Shift that agreement comes from the brief and from the operator, so if the brief does not settle a rule, ask before you sweep rather than after. One question costs minutes. One wrong rule costs the whole job."
+          },
+          {
+            "heading": "Sort into four buckets",
+            "body": "Work each stale deal into one of four buckets and nothing else. Revive: there is recent evidence of life, so it stays open and gets a real close date and a next step. Reschedule: it is genuinely alive but the date was fantasy, so the date moves with a note explaining why. Close lost: nothing has happened for months and nobody can point to a reason it is still alive, so it closes with a reason recorded. Escalate: you cannot tell, so it goes on a list for a human who knows the account. Four buckets handle almost any sweep, and the fourth is what makes the other three safe to apply."
+          },
+          {
+            "heading": "Propose, do not delete",
+            "body": "Your default output from a sweep is a proposal, not a completed action. Build a sheet with one row per record showing the current values, the proposed values, and the reason, then let the owner approve in batches. Yes, it is slower. It is also the difference between a contractor a client trusts with their database and one they never let near it again. Deletion in particular is almost never yours to perform. Closing a deal as lost keeps the history; deleting it destroys reporting for every past period that deal appeared in. If someone asks you to delete records, ask for that instruction in writing and ask what they want preserved. Archive over delete, every time."
+          },
+          {
+            "heading": "Delivering a sweep",
+            "body": "Deliver three things. First, the before and after counts on the same measures you started with, so the improvement is a number rather than a claim. Second, the exceptions list: what you could not decide and why, with enough detail that someone else can finish it. Third, the rules you applied, written plainly, because those rules are what stops the mess returning and they usually become the client's new standard. Keep your working files inside the task. On Second Shift that means no copies on your own drive after approval, no uploads to outside tools, and nothing from that database used as an example anywhere. Their pipeline leaves your machine when the task closes."
+          }
+        ],
+        "keyPoints": [
+          "Staleness is measurable: past close dates, no activity, departed owners, suspiciously round amounts.",
+          "Take a full export before any bulk change. It is your only undo button.",
+          "Sort every stale deal into revive, reschedule, close lost, or escalate.",
+          "Propose changes for approval. Archive over delete, always.",
+          "Deliver before and after counts, an exceptions list, and the rules you applied."
+        ]
+      },
+      {
+        "title": "Keeping It Clean",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "A habit, not a project",
+            "body": "Every database you are asked to rescue was cleaned before, often more than once. The reason it is dirty again is that the clean-up was a project and hygiene is a habit. The rules that hold are the ones attached to a moment: nothing saved without an owner, no deal advanced without evidence logged, no import run without a duplicate check, every call logged the same day. If you work on a client's CRM regularly, propose one small standing routine rather than another large clean-up, and show the counts each time so the value stays visible. Clients pay for the big clean-up. What they actually need, and quietly value more, is that it never becomes necessary again."
+          },
+          {
+            "heading": "The data dictionary",
+            "body": "A data dictionary is one page saying, for each field that matters, what it means, who fills it, when, and what the allowed values are. Lead source means how this contact first reached us, chosen from this list of eight, set once and never changed afterwards. It is boring to write and it settles nearly every argument a team can have about their data. If a client does not have one, offering to build it from what already exists is among the most valuable things you can hand over, and it costs you a couple of hours. Keep it where the CRM is, not in somebody's inbox, and put the date and the author at the top."
+          },
+          {
+            "heading": "Guard the doors",
+            "body": "Data gets in through a few doors, and hygiene is mostly guarding them. Every import should be checked before it runs: column headers mapped deliberately, a duplicate check on email and domain, a test with twenty rows, and a note of the file name and date so the batch can be identified later. Web forms should write into picklists rather than free text wherever they can. Integrations that create records automatically deserve a look every month, because a quiet one can generate thousands of records nobody asked for. When you inherit a mess, the door is usually still open. Finding it and saying so is worth more than the cleaning."
+          },
+          {
+            "heading": "A weekly and monthly rhythm",
+            "body": "Weekly, take fifteen minutes: deals with close dates in the past, deals with no next step, new records missing an owner, and anything created by an import since the last check. Monthly, take an hour: run the duplicate passes again, review the picklists for new junk values, check for owners who have left, and compare the completeness of the reporting fields against last month. Write the same short summary each time, with counts. The rhythm matters more than the length. Fifteen honest minutes a week keeps a database in a state that would otherwise take two full days a year and a great deal of arguing."
+          },
+          {
+            "heading": "Confidentiality while you work",
+            "body": "A CRM is the most sensitive file most companies own: their customers, their prices, their losses. Treat exports accordingly. Do not upload a CRM export to a spreadsheet cleaner, a deduplication website, or an AI tool to speed the job up, unless the client or the brief explicitly allows it, and on Second Shift that means the brief and nothing else. Work in the client's own environment, or in files that stay inside the task. Delete every local copy once the work is approved. Never use a real pipeline as a portfolio sample, even with names removed, because deal sizes and industries identify companies far more easily than most people expect."
+          }
+        ],
+        "keyPoints": [
+          "Clean-ups fail because hygiene is a habit attached to moments, not a one-off project.",
+          "A one-page data dictionary settles most arguments a team has about its data.",
+          "Check every import: mapped headers, duplicate check, twenty-row test, dated file name.",
+          "Fifteen honest minutes each week beats two full days a year.",
+          "CRM exports are highly sensitive. They never leave the task and never become samples."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can explain how contacts, companies, deals and activities connect, and why that matters.",
+      "You can move a deal between stages only when the evidence supports it.",
+      "You can find duplicates and merge them without losing history or breaking links.",
+      "You can decide when to leave a field blank instead of guessing.",
+      "You can build a weekly pipeline report a sales lead actually reads.",
+      "You can run a clean-up sweep on a stale pipeline without deleting anything."
+    ],
+    "slug": "crm-pipeline",
+    "summary": "A CRM is only worth what its worst record is worth. This course teaches you to model contacts, companies, deals and activities correctly, move a deal only on evidence, merge duplicates without losing history, and log work so the pipeline reflects reality. You finish able to build a weekly pipeline report, run a clean-up sweep on a stale database, and hold the standard that keeps it clean.",
+    "tagline": "Keep a sales database true, and build the report a sales lead trusts.",
+    "title": "CRM and Pipeline Hygiene",
+    "track": "craft"
+  },
+  "ecommerce-ops": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You are adding a shirt in three sizes and two colours to a store. One code you would naturally use, TSH-BLU-M, already exists on a retired product that had sales last year. What do you do?",
+          "options": [
+            "Reuse it; the old product is gone and the code fits the store's pattern.",
+            "Create a new unique code that follows the pattern and leave the retired one untouched.",
+            "Reuse it but add a line on the listing explaining the earlier product.",
+            "Use one code for the shirt and record colour and size in the description."
+          ],
+          "correct": 1,
+          "explain": "Retired codes still sit on old orders and stock history, so reusing one corrupts records that already point at it. Every sellable combination needs its own code."
+        },
+        {
+          "prompt": "A spec sheet for a children's water bottle says BPA-free, stainless steel, water resistant lid. The brief asks for lively copy. A similar product on another site is sold as leakproof and non-toxic. What do you write?",
+          "options": [
+            "Use leakproof and non-toxic; both are standard terms for this kind of product.",
+            "Write water resistant lid and BPA-free stainless steel, and nothing beyond the sheet.",
+            "Write leakproof but not non-toxic, since leakproof is the milder of the two.",
+            "Use both terms and flag them in your delivery note so the client can remove them."
+          ],
+          "correct": 1,
+          "explain": "Water resistant is not leakproof, and non-toxic is a claim the source never makes. Copy stays inside the supplied facts, especially for a product used by children."
+        },
+        {
+          "prompt": "A product sells an average of 8 units a day. The supplier's lead time is 21 days. The store's rule is ten days of safety stock. Stock on hand is 260. What is true?",
+          "options": [
+            "The reorder point is 168 units, so ordering can wait a while.",
+            "The reorder point is 290 units, so the order is already overdue.",
+            "The reorder point is 248 units, so an order is due within about two days.",
+            "Stock is 260 and nothing is close to zero, so no action is needed."
+          ],
+          "correct": 2,
+          "explain": "Daily sales times lead time is 168, plus 80 units of cover, giving 248. At eight a day, 260 reaches that point in under two days."
+        },
+        {
+          "prompt": "An order paid three days ago cannot ship: one of its two items is out of stock for two weeks. The brief covers address fixes and stock holds and says nothing about partial shipping or cancellations. What do you do?",
+          "options": [
+            "Ship the in-stock item now and refund the other so the customer gets something.",
+            "Cancel and refund the whole order so the customer can buy elsewhere.",
+            "Hold the entire order for two weeks; most customers accept a wait.",
+            "Hold it, write the situation on the order record, and put the decision to whoever can make it."
+          ],
+          "correct": 3,
+          "explain": "Splitting or cancelling moves money and changes what the customer was promised. With no rule in the brief, park the order, record it, and escalate the decision."
+        },
+        {
+          "prompt": "A customer asks where their order is. Tracking shows the label was created eleven days ago with no carrier scan since. The brief asks you to draft the reply for the client to send.",
+          "options": [
+            "Write that it is on its way and should arrive in the next few days.",
+            "Write that carrier delays are widespread at the moment and ask them to be patient.",
+            "State that nothing has scanned since the label, that you are checking today, and give an update date.",
+            "Send the tracking link again and ask them to follow it themselves."
+          ],
+          "correct": 2,
+          "explain": "Saying it is on its way is a guess the tracking contradicts. A good reply states the fact, the action being taken, and when the customer hears back."
+        },
+        {
+          "prompt": "A jacket comes back inside the returns window and passes inspection. The customer's email asks that the refund go to a different card, because the original one was cancelled. What do you do?",
+          "options": [
+            "Stop, process nothing, and flag the request to whoever authorises refunds.",
+            "Refund the new card, since a cancelled card cannot receive the money.",
+            "Ask the customer for the new card number and their bank details to be sure.",
+            "Refund the original card and tell them their bank will pass it on."
+          ],
+          "correct": 0,
+          "explain": "Refunds go back to the paying method, and a redirect request is a known fraud pattern. It is a stop and an escalation, never card details you collect."
+        },
+        {
+          "prompt": "A brief asks you to post five short positive reviews on the store's own product pages under different names, to balance a run of bad ones. What do you do?",
+          "options": [
+            "Write them but keep them factual, so nothing in them is untrue.",
+            "Write three rather than five, so the pattern is less obvious.",
+            "Post from your own account only, so no name is invented.",
+            "Do not write them, and say plainly in your delivery note why you did not."
+          ],
+          "correct": 3,
+          "explain": "Fake reviews break platform rules and the law in many countries, and stores get removed for them. Refusing protects the client from a penalty they may not have considered."
+        },
+        {
+          "prompt": "You have 400 orders to summarise and the store's export is in an awkward format. A free online converter would reshape it in seconds. The brief says nothing about outside tools. What do you do?",
+          "options": [
+            "Use the converter, then delete the uploaded file from the site afterwards.",
+            "Reshape the file yourself in a spreadsheet, keeping the data inside the task.",
+            "Strip the customer names first, then upload the rest for conversion.",
+            "Use it, since the brief did not forbid it, and mention it in your note."
+          ],
+          "correct": 1,
+          "explain": "Order exports carry real names and addresses. Client data never leaves the task unless the brief says so, and an address alone still identifies a person."
+        },
+        {
+          "prompt": "A cycle count of a fast-moving item shows 143 on the shelf. The system says 150. You were asked to count, not to adjust. What do you do?",
+          "options": [
+            "Correct the system to 143 so the store stops overselling straight away.",
+            "Recount once, then record 143, 150, the difference, the date and any likely cause.",
+            "Record 150 and see whether the same gap appears at the next count.",
+            "Record 146, since a single count can easily be off by a few."
+          ],
+          "correct": 1,
+          "explain": "You were asked to count. A recount protects against your own error, and the discrepancy record with its cause is what the client decides from."
+        },
+        {
+          "prompt": "The brief asks for 40 listings built from supplied spec sheets. Two sheets give no weight or dimensions, and this store charges shipping by weight. The deadline is tonight. What do you do?",
+          "options": [
+            "Estimate the two weights from similar products so all 40 are complete.",
+            "Deliver 38 without comment; the other two sheets were unusable.",
+            "Publish all 40 with the two weight fields empty and say nothing about it.",
+            "Publish all 40, leave those weights empty, and name the two products in your note."
+          ],
+          "correct": 3,
+          "explain": "A guessed weight becomes a wrong shipping charge on every sale. An empty field named in the note is a decision the operator can settle in a minute."
+        },
+        {
+          "prompt": "Your weekly health check finds 11 paid orders still unfulfilled, down from 14 last week. The oldest of them is 23 days old. How do you report it?",
+          "options": [
+            "Lead with the 23-day order, because the falling total is hiding a stuck case.",
+            "Report the total as improving; 11 from 14 is the trend that matters.",
+            "Leave it out this week, since the number is moving the right way.",
+            "Report the total and add that the queue is worth watching."
+          ],
+          "correct": 0,
+          "explain": "The direction is good and one order has been stuck three weeks. Ageing matters more than the count, and the stalled order is the thing someone can act on."
+        },
+        {
+          "prompt": "A client sends copy and specs for a lamp in black, white and grey, but only one photo, of the black one. What do you do about the other two listings?",
+          "options": [
+            "List all three, use the real photo only on the black one, and request the missing two.",
+            "Take photos of the same lamp from another retailer's site and use those.",
+            "Recolour the black photo in a free image editor so each variant matches.",
+            "Put the black photo on all three listings; the shape is what buyers judge."
+          ],
+          "correct": 0,
+          "explain": "Another retailer's photos are their property, and a recoloured or wrong-variant image misrepresents what is sold. Publish what is real and name what is missing."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "The Back Office of a Store",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "What store operations actually is",
+            "body": "Store operations is everything that happens after the marketing and before the customer is happy. Someone keeps the catalogue accurate, watches stock, pushes orders out the door, answers where is my order, processes returns, and reads reviews. None of it is glamorous and all of it is load-bearing. A wrong stock number sells something that cannot be shipped. A missing image kills a product's sales. An unanswered return becomes a chargeback. Store owners hire help for this work because it is constant and detailed, and because it can be described precisely enough to hand over. That is why it shows up as paid work, and why doing it well makes you the person a store keeps coming back to."
+          },
+          {
+            "heading": "The four systems in every store",
+            "body": "Whatever platform a store runs on, the same four systems sit underneath, wearing different names. The catalogue holds products, variants, prices and images. Inventory holds how many of each exist, and where. Orders hold what was bought, by whom, and what has shipped. Customers hold the people, their addresses and their history. Every task you get touches one or two of these, and most confusion comes from not knowing which. A product with the wrong price is a catalogue problem. A product that sold when it was gone is an inventory problem. A parcel that never moved is an order and shipping problem. Name the system first; the fix is usually obvious once you have."
+          },
+          {
+            "heading": "Learn the shape, not the buttons",
+            "body": "You will be dropped into store admins you have never seen. Do not try to memorise menus. Ask any system the same six questions: where do I list all records, how do I filter and sort them, how do I find one, how do I edit one, how do I edit many at once, and how do I export to a spreadsheet. Nearly every admin answers all six, and once you can answer them you can work. Find the export first. A store's own admin is often clumsy, while an export into a free spreadsheet gives you sorting, counting and comparison it may not offer. Remember that the export is client data and stays where the brief says it stays."
+          },
+          {
+            "heading": "Order data is the sensitive part",
+            "body": "Catalogue work is mostly public information. Order and customer work is not. An order record carries a real person's name, home address, phone number, email and what they bought, and in some stores the last digits of a card. Treat all of it the way you would want your own address treated in a stranger's hands. Never export customer data anywhere except the file the brief asks for, never paste order details into a translator, a formatting site or an AI tool, and never keep a copy after the work is approved. On Second Shift this is not a preference: client data stays inside the task, and a tool that needs it uploaded is a tool you cannot use. If you ever see full card numbers, stop and flag it."
+          }
+        ],
+        "keyPoints": [
+          "Store operations is the constant, detailed work after marketing and before a happy customer.",
+          "Four systems in every store: catalogue, inventory, orders, customers. Name the system before fixing.",
+          "Learn where any admin lists, filters, edits, bulk-edits and exports. Skip the menus.",
+          "Order records hold real names and addresses. They never leave the task."
+        ]
+      },
+      {
+        "title": "Listings That Hold Up",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The anatomy of a listing",
+            "body": "A listing is not a description with a price. It is a record with a dozen fields, and a store is judged on whether those fields are complete and consistent across hundreds of products. The usual set: title, description, one or more images, price and compare-at price, product code, variants, stock quantity, weight and dimensions for shipping, category, tags, and the spec fields the store filters on, such as size, material, colour or voltage. Missing fields have visible consequences. No weight means shipping is charged wrong. No category means the product is unfindable. No spec values mean it never appears when a shopper filters. Before adding anything, open three listings the client is happy with and write down every field they fill. That list is your template."
+          },
+          {
+            "heading": "Titles follow a house pattern",
+            "body": "Store titles are not creative writing. They follow one pattern applied to every product, so a shopper scanning a category page compares like with like. A common shape is brand, then model or product name, then the attribute that distinguishes it, then size or quantity. Whatever the store already does, copy it exactly: capitalisation, the separator it uses, whether units are written as ml or mL. If the existing titles disagree with each other, that is worth flagging rather than silently picking a winner. Write the pattern down as a sentence at the top of your working sheet and check every title against it before delivery. Consistency is the deliverable here, and a cleverer title that breaks the pattern is a defect."
+          },
+          {
+            "heading": "Product codes and variants",
+            "body": "A product code, usually called a SKU, is the store's internal name for one exact sellable thing. A blue shirt in medium and the same shirt in large are two codes, not one. Good codes are unique, stable, and readable by a human in a warehouse: TSH-BLU-M tells you more than 100294. Three rules matter. Never reuse a retired code for a new product, because old orders still point at it. Never change a code that has sales history unless the brief says to. Never invent one that breaks the store's existing pattern. Variants are the same product in different options, and every combination the store sells needs its own row with its own code, price and stock. A combination that does not exist should not be listed as available."
+          },
+          {
+            "heading": "Images to the store's standard",
+            "body": "Most stores have an image standard even if nobody wrote it down. Look at the listings the client likes. How many images, what the first one shows, whether the background is white, whether they are square, roughly what size. Match it. Free tools cover the usual work: GIMP crops, resizes and exports at a set pixel size, and handles batches. Name files predictably, usually by product code, so an image can always be traced back to its product. Write alt text that describes the product plainly for someone who cannot see it, not a list of keywords. Two hard limits. Never take images from another store or a search engine, because they belong to someone else. Never present a photo of one variant as another."
+          },
+          {
+            "heading": "Check it the way QC will",
+            "body": "Before delivery, stop being the person who wrote the listings and become the person checking them. The fastest method is a sweep by field, not by product. Sort your sheet by title and scan for pattern breaks. Sort by product code and look for duplicates or blanks. Filter for empty image cells, empty weights, missing categories. Errors cluster in columns, so column by column finds what product by product misses. Then open two or three finished listings the way a shopper sees them and read them cold. If the brief asked for forty and you delivered thirty-eight because two spec sheets were unusable, say so in your delivery note with the two product names. A stated gap is a decision. A silent one is a rejection."
+          }
+        ],
+        "keyPoints": [
+          "A listing is a record of a dozen fields, not a description with a price.",
+          "Copy the store's title pattern exactly. Consistency beats cleverness.",
+          "One sellable thing, one product code. Never reuse or silently change one.",
+          "Match the store's image standard, and never take images from another site.",
+          "Check by column, not by product. Errors cluster in fields."
+        ]
+      },
+      {
+        "title": "Product Copy Without Invented Claims",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Start from the spec sheet",
+            "body": "Product copy is a translation job, not an invention job. Your source is the spec sheet, the manufacturer's data, or whatever the client supplied, and everything you write has to trace back to it. Read the whole source before writing a word, then list the facts you actually have: dimensions, materials, capacity, compatibility, what is in the box, warranty length. Now sort them by what a buyer decides on. For a backpack that is capacity, laptop size, weight and whether it fits in a cabin bag. For a cable it is length, connector types and speed. Your paragraphs should follow the buyer's order of questions, not the spec sheet's order of rows. If a decisive fact is missing from the source, that is a finding, not a gap for you to fill."
+          },
+          {
+            "heading": "Feature first, then what it means",
+            "body": "The pattern that works is a fact followed by its consequence for the buyer. The bag holds 28 litres, which covers a change of clothes for three days. The panel is 6 mm aluminium, so it does not flex when you lean on it. USB-C at 100 watts, enough to charge a laptop while you use it. The fact comes from the spec sheet, and the consequence has to be an ordinary, checkable inference from it, not a promise. Best in its class, revolutionary, and you will love it are not consequences, they are noise, and a careful store owner cuts them. Keep sentences short and readable on a phone, because most shoppers are on one. Two tight paragraphs plus a spec list beats a page nobody reads."
+          },
+          {
+            "heading": "The line you never cross",
+            "body": "You may never add a claim the source does not make. Water resistant is not waterproof. Antibacterial, hypoallergenic, organic, certified, food safe, medical grade and lifetime warranty are all statements a business can be held to, and in many countries they are regulated. If the spec sheet does not say it, it does not go in the copy, even when a similar product elsewhere is sold that way. This applies hardest to anything eaten, applied to skin, or used by children: never write that a product treats, prevents or cures anything. If the client wants such wording, it has to come from them in writing, and the authority on what is allowed is the regulator in the country of sale, not us and not you. This is not legal advice; it is where the work stops."
+          },
+          {
+            "heading": "When the source is silent",
+            "body": "Work with three buckets. Known facts, straight from the source. Reasonable consequences, which you may write. Unknowns, which you may not. Keep the unknowns in a visible list as you go: no weight given, strap material not stated, compatibility with the older model unclear. Deliver that list with the copy. On Second Shift it goes in your delivery note, plainly: fifteen descriptions written, three fields I could not source, listed here. The operator can go back to the client in a minute. What you must never do is close a gap by finding a similar product elsewhere and borrowing its numbers, because eventually you borrow a number that is wrong and it gets published under the client's name. An honest gap is cheap. A wrong specification is not."
+          }
+        ],
+        "keyPoints": [
+          "Everything you write traces back to the source the client supplied.",
+          "A fact plus a checkable consequence. Superlatives are noise.",
+          "Never add a claim the spec sheet does not make.",
+          "Health and safety wording comes from the client and the regulator, never from you.",
+          "Missing facts go in a list for the client, never invented."
+        ]
+      },
+      {
+        "title": "Inventory and the Reorder Point",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The number has to match the shelf",
+            "body": "Every stock number in a store is a claim about the physical world, and it is wrong more often than owners think. Returns get restocked twice. Damaged units are thrown out without an adjustment. A warehouse pick is missed. A second sales channel sells the last unit a minute before the website does. The consequences are not symmetric. Stock recorded too high causes oversells, which means cancelling on a customer who already paid, and that costs the store far more than the item. Stock recorded too low is quieter but expensive: the product looks unavailable and simply stops selling. Your job in inventory work is to make the recorded number and the real number agree, and to make the disagreements visible when they cannot be resolved from your desk."
+          },
+          {
+            "heading": "Sales rate, lead time, reorder point",
+            "body": "The reorder point is the stock level at which you must order more so you do not run out while the next shipment is in transit. It has three inputs: how many you sell a day, how many days the supplier takes to deliver, and how much cushion you want. The arithmetic is average daily sales multiplied by lead time in days, plus safety stock. If a product sells 8 a day, the supplier takes 21 days, and the store wants 10 days of cushion, that is 8 times 21, which is 168, plus 80, giving a reorder point of 248 units. When stock falls to 248, it is time to order, not when it reaches zero. Calculate the daily rate over a recent, representative period, and state which period you used."
+          },
+          {
+            "heading": "Safety stock is a judgement",
+            "body": "Safety stock covers the days when sales spike or the supplier is late, and choosing it is a business decision, not a formula you settle alone. A cheap, slow, always-available item needs almost none. A bestseller shipped by sea from another continent needs weeks of it. If the brief gives you a rule, apply it exactly. If it does not, use a stated assumption rather than a silent one: I used ten days of cover for every product because the brief did not specify, and here is the same list recalculated at seven and fourteen days. That hands the client a decision instead of a mystery. Watch for the things that break an average: a promotion week, a one-off bulk order from a single buyer, a product that only sells in December."
+          },
+          {
+            "heading": "Counting, adjusting, and the log",
+            "body": "Nobody counts a whole warehouse often. The practical method is cycle counting: count a slice regularly, prioritising fast movers and high value items, so everything is verified over a cycle instead of once a year in a panic. When a count disagrees with the system, do not simply type in the new number. Record the product, the counted quantity, the system quantity, the difference, the date, and, where you know it, the likely cause. A pattern in those causes is worth more than any single correction, because it points at the process that keeps breaking. Adjustments change what a store believes it owns, so they need a trail. If you were not asked to make adjustments, do not make them. Deliver the discrepancy list and let the client decide."
+          }
+        ],
+        "keyPoints": [
+          "Stock too high causes oversells and cancellations. Stock too low makes products invisible.",
+          "Reorder point equals average daily sales times lead time, plus safety stock.",
+          "Safety stock is a business decision. State your assumption instead of hiding it.",
+          "Cycle count regularly, and log every adjustment with quantity, date and likely cause."
+        ]
+      },
+      {
+        "title": "Orders and the Exceptions",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The clean orders come first",
+            "body": "An ordinary order needs almost nothing from you. Payment captured, items in stock, address clean, pack, ship, done. On a good day you push a hundred of those through in batches and the whole thing takes an hour. The time goes somewhere else. In most stores a small share of orders, often somewhere between one in twenty and one in ten, has something wrong with it, and that minority consumes most of your shift. So process the clean ones first, in one uninterrupted pass, and move the odd ones into a separate list as you meet them. Working straight down the list and stopping to solve each problem as it appears is the slowest possible method, because every stop breaks the rhythm of the easy work."
+          },
+          {
+            "heading": "The exceptions that eat the day",
+            "body": "The list is short and it repeats. An address that is incomplete, undeliverable, or obviously a typo. An item that turns out to be out of stock after the sale. Two identical orders from the same customer minutes apart. An order that has to ship in two parcels from two locations. A destination that is a post box, a remote area, or another country with customs paperwork. A payment the processor has flagged for review. A customer who wants to change or cancel after paying but before shipping. A price on the site that was plainly wrong. Learn to recognise all eight on sight, because recognising them is most of the speed. For each, the store either already has a rule or it does not, and finding out which is the first step."
+          },
+          {
+            "heading": "Rules first, judgement second",
+            "body": "Sort every exception into three boxes before touching it. Things you may fix yourself, such as correcting Steet to Street or adding a house number the postcode confirms. Things you do by a stated rule, such as the store's policy of shipping the in-stock part of an order and cancelling the rest. Things that are never yours, which means anything that moves money or promises something to a customer: refunds, cancellations, free replacements, upgraded shipping, discount codes. If the store has no rule for a case, do not invent one under time pressure. Park the order, keep working, and put the case in front of whoever decides, with what you found and what the options are. On Second Shift that is your delivery note; there is nobody else to ask."
+          },
+          {
+            "heading": "Write it on the order",
+            "body": "Every store's order record has somewhere to write an internal note, and it is the only memory that survives you. Write what you found, what you did, and when. Address corrected from the customer's reply, 14 March. Held for stock, supplier says the sixth. One line, on the record, at the moment it happens. Do not keep this history in your head, in a personal notebook, or in your own email, because the person picking the order up tomorrow will have none of those. When you deliver a batch of order work, your summary is a count and a list: eighty-two processed, six held, with the reason for each. That is a deliverable someone can act on without asking you a single question."
+          }
+        ],
+        "keyPoints": [
+          "Process clean orders in one pass and quarantine the exceptions into a separate list.",
+          "Eight exception types cover most days. Recognising them on sight is the speed.",
+          "Anything that moves money or promises a customer is never your call alone.",
+          "Write what you did on the order record, at the moment you do it."
+        ]
+      },
+      {
+        "title": "Shipping and Where Is My Order",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Tracking numbers are a promise",
+            "body": "The tracking number is where a store's promise becomes checkable. Three things have to be true: the number is real and scanning, it is attached to the right order, and the customer has been told it exists. Mismatched tracking is a common and damaging mistake, because a customer watching someone else's parcel believes theirs is arriving and is angrier when it does not. When you enter or import tracking numbers in bulk, verify a sample against the orders by hand, and check that the carrier on the label matches the one recorded on the order. If a shipment goes out without a number, write that on the order rather than leaving the field empty and hoping nobody asks."
+          },
+          {
+            "heading": "Reading a tracking history",
+            "body": "Carrier statuses differ in wording but not in meaning. Label created with no scan means the parcel never entered the network. It may still be on a packing table, and after a couple of business days that is a warehouse question, not a carrier question. Scans that stop for several days usually mean a missorted or stuck parcel, and most carriers want an enquiry opened rather than a wait. Delivered with nothing received is often a neighbour, a reception desk, or a scan made a street early, and the first step is asking the carrier for the delivery detail or photo. Returned to sender means a bad address or failed attempts, and it needs a reshipping decision before anything else. Read the whole history, not the last line."
+          },
+          {
+            "heading": "The where-is-my-order reply",
+            "body": "The customer wants one thing: to know what happens next and when. A reply that works has four parts and fits in a short paragraph. Acknowledge the order by number. State where it is in plain words, not a copied carrier code. State what you are doing and by when: we have opened an enquiry with the carrier and will come back to you by Thursday. Give one clear next step if there is one. Apologise once, briefly, and never twice in the same message. Do not promise a delivery date the carrier has not given you, and never write that it is on its way when the tracking says nothing has moved. On Second Shift you draft these and the client sends them, so write them ready to send."
+          },
+          {
+            "heading": "Lost, late, damaged, and duties",
+            "body": "Every carrier has a window for reporting a lost or damaged parcel, and missing it usually ends the claim, so the date matters more than the wording. Gather what the claim needs before writing anything: order number, tracking number, ship date, declared value, photos of the damage and the packaging. What the customer is offered, a reshipment, a refund, or nothing, is the store's decision and not yours. International orders bring customs duties and taxes, usually paid by the buyer on arrival unless the store has chosen otherwise. Rates and thresholds change by country and by year, so never quote a figure from memory. Point to the destination country's official customs authority and tell the client the answer has to come from there. That is not tax advice, and neither is anything else you write."
+          }
+        ],
+        "keyPoints": [
+          "Verify tracking numbers against orders. Wrong tracking is worse than none at all.",
+          "Read the whole tracking history; the last line rarely explains the problem.",
+          "A good reply gives the fact, the action being taken, and a date.",
+          "Report loss or damage inside the carrier's window, with the evidence gathered first.",
+          "Duties change by country and year. Point to the official customs source."
+        ]
+      },
+      {
+        "title": "Returns and Refunds",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The policy is your instruction",
+            "body": "Every returns question is answered by the store's policy first and by your opinion never. Before you touch a return queue, take five things from that policy and keep them beside you: how many days the customer has, what condition the item must be in, who pays return shipping, what is excluded, and what proof is required. Exclusions are where disputes come from, so read them twice: personalised items, opened hygiene products, perishable goods, clearance stock. If the policy is silent on the case in front of you, that silence is the finding. Do not decide it, and do not tell a customer what you assume the policy means. Ask the client through your delivery note and write the answer down, so the next person inherits a rule instead of the same question."
+          },
+          {
+            "heading": "The workflow end to end",
+            "body": "A return has the same eight steps everywhere. The customer requests it. Someone checks it against the policy and authorises or declines. An authorised return gets a reference number and usually a label. The parcel arrives and is matched to that reference. Someone inspects the item and records its condition. A decision follows: refund, exchange, repair, or refuse. The stock is either put back on the shelf or written off. The refund or exchange is processed and the case is closed with the reason recorded. The two steps most often skipped are matching the arriving parcel to its reference, which is how unidentified boxes pile up in a corner, and recording the reason, which is the only data that ever tells a store why its returns happen."
+          },
+          {
+            "heading": "Inspect it and write it down",
+            "body": "Inspection is where a return becomes a number. Open the parcel, check the item is what the return was authorised for, and record its condition in words anyone can check later: unopened, opened but complete and unmarked, used with scuffing on the base, missing the charger. Photograph anything that is not perfect, before repackaging. Then apply the policy rather than your sympathy, and where the policy allows a partial refund for a missing accessory or visible wear, state the deduction and the reason on the record. Two things to resist: deciding a customer is lying because the item looks used, and deciding they are honest because their note is polite. Neither belongs in the file. Describe what is in front of you and let the person with authority decide."
+          },
+          {
+            "heading": "Refunds move money",
+            "body": "A refund goes back to the payment method that paid, in the currency it paid in. That is not a preference. It is how disputes stay resolvable, and it is the best defence against a common fraud: a request to send the money to a different card, account or wallet. Treat any such request as a stop, not a task, however plausible the reason, and treat a return address that changes mid-conversation the same way. You should never need a customer's bank details, never ask for a full card number, and never accept one if it is sent to you. Unless the brief explicitly authorises you to issue refunds, your work ends at a recommendation with the evidence attached, and someone with the authority presses the button."
+          }
+        ],
+        "keyPoints": [
+          "Take five facts from the policy: window, condition, shipping, exclusions, proof required.",
+          "Match every arriving parcel to its return reference, and record the reason.",
+          "Describe condition in checkable words and photograph anything that is not perfect.",
+          "Refunds go back to the original payment method. Any other request is a stop.",
+          "Never handle bank or card details. Recommend, and let the authorised person execute."
+        ]
+      },
+      {
+        "title": "Reviews and the Bad One",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Who you are really answering",
+            "body": "A public review has two audiences and you only really speak to one of them. The reviewer may never read your reply. The hundred people who read the review while deciding whether to buy certainly will, and what they are judging is not the complaint, it is how the store behaves when something goes wrong. That changes what a good reply looks like. Calm, specific, short, and it never argues. A store that answers a two-star review with a defensive paragraph loses more sales than the review did on its own. A store that answers plainly and fixes the problem often gains from it, because shoppers now know what happens if their own parcel goes missing."
+          },
+          {
+            "heading": "How to answer a bad review",
+            "body": "Four moves, in order, in about five sentences. Thank them and name the specific problem so it is obvious you read it: you ordered the 40 centimetre model and received the 30. Say what went wrong, if you know and it does not expose anyone by name. Say what is being done about it, both for them and in general. Give one route to reach the store, the normal support channel, and stop. Never dispute the facts in public, never repeat the customer's order details or address, never offer anything in exchange for changing a review, and never use a reply to sell. If the review contains a factual error that matters, correct it once, neutrally, and leave it there."
+          },
+          {
+            "heading": "Nothing about reviews is invented",
+            "body": "You will occasionally be asked, directly or by hint, to write reviews, to post one under another name, to have friends post them, or to bury a bad one under new ones. The answer is no, every time. Fake reviews break the rules of every platform that hosts them, they are illegal in a growing number of countries, and stores are removed for them. The same goes for review gating, meaning a system that quietly routes happy customers to the public form and unhappy ones somewhere private. If a brief asks for anything in this territory, stop and flag it rather than complying. On Second Shift, say so plainly in your delivery note. Refusing protects the client from a penalty they may not have considered."
+          },
+          {
+            "heading": "Reviews are cheap data",
+            "body": "Read a store's reviews with a spreadsheet open and one column for the theme, and the pattern shows up within fifty entries. Smaller than I expected, four times, is not a customer problem. It is a listing with no dimensions and no photo showing scale. Arrived in nine days, repeatedly, means the shipping estimate on the product page is a story the store tells itself. Instructions unclear points at a leaflet, not at the product. This is the most useful thing you can hand a store owner: not the reviews, which they have already seen, but the count by theme and the specific listing or process each theme points at. It turns complaining into a work list."
+          }
+        ],
+        "keyPoints": [
+          "You reply for the future readers, not the reviewer. Calm, specific, short.",
+          "Answer in four moves, and never argue in public or repeat order details.",
+          "Never write, buy, or gate reviews. Flag the request instead of complying.",
+          "Tag review themes; each pattern points at one listing or process to fix."
+        ]
+      },
+      {
+        "title": "The Weekly Store Health Check",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Why a weekly sweep exists",
+            "body": "Store problems do not announce themselves. A product goes out of stock on a Tuesday and nobody notices until a customer asks. An image fails to upload and one listing sits blank for a month. Six orders never left the warehouse because their payment status was odd. None of these produce an alert. They produce a slow leak. A weekly health check is a fixed set of questions asked in the same order every week, so leaks are caught in days instead of quarters. It takes about an hour once you have built it, and it is one of the easiest recurring deliverables to justify, because the client gets a list of real problems every week that they did not have to find."
+          },
+          {
+            "heading": "Catalogue and stock checks",
+            "body": "Export the catalogue and ask five questions. Which live products have no image, no description, or no price. Which product codes are duplicated or blank. Which listings break the title pattern or are missing a spec field the store filters on. Which products are below their reorder point, and which will cross it before the next check given their sales rate. Which products have had no sales for a long stretch and are still occupying stock and attention. A free spreadsheet such as Google Sheets answers all of this with sorting, filters and a few counts, and you can rebuild the same sheet every week in minutes if the column layout never changes. Record the date and time of the export, because a stock number without a timestamp means nothing."
+          },
+          {
+            "heading": "Orders, returns and reviews",
+            "body": "Then ask five more. Which paid orders are still unfulfilled beyond the store's normal window. Which shipped orders have tracking that has not scanned in days, or no tracking at all. Which authorised returns have not arrived, and which arrived parcels are still uninspected. Which refunds are approved but not yet processed. Which reviews from the past week are unanswered, and what the week's complaint themes were. Each of these is a queue, and queues fail by growing quietly. What you are looking for is not only the number but the direction and the age. Eleven unfulfilled orders is fine if it was fourteen last week and the oldest is two days old. It is an emergency if the oldest is three weeks."
+          },
+          {
+            "heading": "Deliver a report, not a feeling",
+            "body": "The output is a short document and one spreadsheet, never a paragraph saying things look fine. Give each check a count, last week's count beside it, and the rows behind it on their own tab. At the top, the three to five things you would fix first and why. Keep the wording factual: 23 live products have no image, up from 19; the oldest unfulfilled order is 12 days old; three of this week's five reviews mention sizing on the same product. When this goes to an operator, your delivery note names the biggest finding in one sentence so it is not buried in a tab. Then delete your working copies once the work is approved, because they are full of the store's customers."
+          }
+        ],
+        "keyPoints": [
+          "Errors accumulate silently. A weekly sweep catches leaks in days, not quarters.",
+          "Ask the same questions in the same order every week.",
+          "Catalogue checks: missing fields, duplicate codes, pattern breaks, reorder points, dead stock.",
+          "Queue checks: unfulfilled orders, silent tracking, pending returns and refunds, unanswered reviews.",
+          "Report each count against last week, with the rows behind it and the top fixes."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can build a complete, consistent listing with variants, codes and images.",
+      "You can write product copy from a spec sheet without inventing a claim.",
+      "You can calculate a reorder point and spot stock about to run out.",
+      "You can process orders and resolve the exception cases that eat your day.",
+      "You can draft where-is-my-order, returns and bad-review replies that hold up.",
+      "You can run a weekly store health check and report what it found."
+    ],
+    "slug": "ecommerce-ops",
+    "summary": "Online stores run on unglamorous back-office work: listings that stay consistent, stock counts that match reality, orders that hit exceptions, returns, refunds and reviews. This course teaches those shapes on any platform, so you can open an unfamiliar store admin and know what to check first. You finish able to run a week of store operations and prove in writing what you did.",
+    "tagline": "The back office of an online store: listings, stock, orders, returns, reviews.",
+    "title": "E-commerce store operations",
+    "track": "craft"
+  },
+  "social-media-ops": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "Eight posts are written for next week. The client approved five. Tomorrow's slot holds one of the three unapproved posts, and the client has not replied in two days. What do you do?",
+          "options": [
+            "Schedule the unapproved post; it follows the voice sheet and the client can ask for edits after it goes out.",
+            "Move an approved post from later in the month into tomorrow's slot, then follow up on the pending approvals.",
+            "Leave the slot empty and say nothing until the client replies about the approvals.",
+            "Publish it and mark the row as draft so the client knows it was not formally approved."
+          ],
+          "correct": 1,
+          "explain": "Nothing goes live without an approval on the record. The buffer of approved content exists so an unanswered message never costs the client a slot."
+        },
+        {
+          "prompt": "A client sends a six hundred word blog post and asks for it to go out on three platforms this week.",
+          "options": [
+            "Paste the first three paragraphs into all three platforms with the same hashtag set.",
+            "Post the link on all three with the blog title as the caption.",
+            "Take one idea from the post and write three different posts, each shaped for its platform.",
+            "Publish it on the platform with the most followers and skip the other two."
+          ],
+          "correct": 2,
+          "explain": "The idea travels between platforms; the words do not. Each platform rewards a different length, first line and format, and copy-paste is visible to anyone following in two places."
+        },
+        {
+          "prompt": "You are writing the first line of a caption announcing that a bakery will open at seven in the morning from Monday. Which opening does the most work?",
+          "options": [
+            "We open at seven starting Monday.",
+            "We are excited to announce some changes to our schedule.",
+            "Big news is coming your way this week, so stay tuned.",
+            "An important update from everyone here at the bakery."
+          ],
+          "correct": 0,
+          "explain": "Most readers see one line before deciding. A specific, concrete statement delivers the news in that line; the others make the reader work for information you already have."
+        },
+        {
+          "prompt": "A customer comments publicly that her delivery arrived cold and the driver was rude. You know nothing about the order and cannot authorise refunds. What is the best reply?",
+          "options": [
+            "Apologise for the experience, say cold food is not acceptable, and ask her to message the order number and delivery time.",
+            "Hide the comment so other customers do not see it, then tell the client what happened.",
+            "Say this is unusual, that the drivers are normally polite, and ask her to be fair.",
+            "Wait until the client explains what happened before replying to her at all."
+          ],
+          "correct": 0,
+          "explain": "You can apologise for an experience without admitting a cause you do not know, and moving to private gets the details. Hiding or delaying makes it worse."
+        },
+        {
+          "prompt": "A commenter writes that your client's product made her child sick and that she is speaking to a lawyer. The client is asleep and will not see a message for six hours. What do you do?",
+          "options": [
+            "Reply with the refund policy and offer a discount code to settle it quickly.",
+            "Ask her publicly for the batch number and photos so you can start investigating.",
+            "Post a short acknowledgement that you have passed it on, then escalate immediately with a screenshot and a proposed reply.",
+            "Delete the comment, screenshot it, and wait for the client to wake up."
+          ],
+          "correct": 2,
+          "explain": "Illness, a minor and a legal threat all sit above your authority. A holding reply prevents silence looking like hiding while the decision goes to the client."
+        },
+        {
+          "prompt": "You want to summarise a client's unreleased product specification to speed up caption writing. The brief says nothing about outside tools.",
+          "options": [
+            "Paste it into a free AI tool; the file is not published and nobody else sees it.",
+            "Paste only the sections without customer names, since that makes it anonymous enough.",
+            "Run it through an online grammar checker instead, which is not really an AI tool.",
+            "Work from the file as given and ask for written permission before using any outside tool."
+          ],
+          "correct": 3,
+          "explain": "Client material does not leave the task. Silence in the brief is not permission, and uploading an unreleased document to any third-party service is a disclosure."
+        },
+        {
+          "prompt": "You work from Manila. The client's audience is in Chicago and she asks for posts at eight in the morning. You are setting up scheduling for the first time.",
+          "options": [
+            "Schedule at eight in the morning, since the tool already shows times in your zone.",
+            "Convert to the audience's zone, label the calendar column with it, and confirm with a dated test post.",
+            "Schedule at eight in the evening Manila time, since Chicago is roughly opposite.",
+            "Ask the client to publish the posts herself so the timing cannot go wrong."
+          ],
+          "correct": 1,
+          "explain": "Scheduling tools show your own zone, which is where the mistake happens. Planning in the audience's zone and testing once removes the guess for every later post."
+        },
+        {
+          "prompt": "Reach fell forty percent this month and saves fell with it. Follower count rose slightly because of a giveaway. You are writing the monthly report.",
+          "options": [
+            "Open with the follower growth and place the reach and saves decline further down.",
+            "State the reach and saves decline first, give your read on the cause, and propose one test.",
+            "Hold the report a few weeks in case the numbers recover before the client sees them.",
+            "List all the numbers without comment, since interpreting them is the client's decision."
+          ],
+          "correct": 1,
+          "explain": "A giveaway inflates followers temporarily and hides the real result. Leading with the decline, your honest read and a proposed test is what the client pays for."
+        },
+        {
+          "prompt": "A customer posts a good photo of your client's product on her own public account. You want to repost it.",
+          "options": [
+            "Repost it with credit in the caption, since crediting the creator is the requirement.",
+            "Repost it and tag her account, which gives her exposure in exchange.",
+            "Ask her in writing, save the reply, credit her, and check the client allows reposts.",
+            "Screenshot it without her handle so she is not identifiable in the post."
+          ],
+          "correct": 2,
+          "explain": "The photo is her work and reposting publishes about her. Written permission kept on file, plus credit and the client's rule, is the only safe version."
+        },
+        {
+          "prompt": "A storm knocks out your power and internet for two days. You manage two accounts with a daily inbox pass.",
+          "options": [
+            "Message the client that publishing pauses until power returns.",
+            "Publish everything that was missed at once when you get back online.",
+            "Post from mobile data without waiting for approvals so the feed keeps moving.",
+            "Nothing stops: two weeks of approved posts are scheduled, and you warn the client that replies will be late."
+          ],
+          "correct": 3,
+          "explain": "The buffer exists for exactly this. Scheduled approved content keeps publishing; the only real gap is the inbox, and telling the client early is the professional half."
+        },
+        {
+          "prompt": "A commenter leaves a racist remark on a client post. Other followers are starting to reply to it.",
+          "options": [
+            "Screenshot it, hide it under the client's comment policy, log it, and tell the client.",
+            "Reply publicly explaining why the comment is unacceptable on this page.",
+            "Delete it straight away and move on, since it is obviously just spam.",
+            "Leave it and let the client's followers deal with it themselves."
+          ],
+          "correct": 0,
+          "explain": "Hiding removes it without destroying the record, the screenshot preserves evidence, and the client needs to know. Arguing in public keeps the thread alive."
+        },
+        {
+          "prompt": "A new client sends her Instagram password in a chat message so you can start scheduling.",
+          "options": [
+            "Save it in your password manager and use it only for scheduling posts.",
+            "Use it once to connect the scheduler, then ask her to change the password.",
+            "Ask her to grant delegated access instead, change that password, and delete the message.",
+            "Forward it to the operator so it is held somewhere safer than your chat."
+          ],
+          "correct": 2,
+          "explain": "Delegated access keeps her login hers and keeps you provably clear of anything you did not do. A password sent in chat is already exposed and should be changed."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "What this work actually is",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The half you own",
+            "body": "Social media splits in two. Someone decides what the business stands for, what it sells, and what it will pay to promote. That is strategy, and it usually stays with the client or their marketing lead. The other half is operations: the calendar, the drafts, the images, the scheduling, the replies, the numbers at month end. That half is a real job, and it is the one you are hired for. Being clear about the split protects you. When a client asks why sales are flat, you can show what was published, what it reached and what you recommend, without pretending you control pricing, product or the offer. When you do have an opinion on strategy, offer it as a recommendation in the report, not as a change you made on your own."
+          },
+          {
+            "heading": "How Second Shift tasks differ",
+            "body": "On Second Shift, social work arrives as a defined deliverable. Thirty captions for a month, a content calendar, a set of graphics, a metrics report. You download the brief and the source files, you produce the work, you upload it with a note to the operator, and QC reviews it before the client sees it. You do not hold the client's account, you do not post to a live page, and you never speak to the client directly. The operator is the only person between you and them. Everything else in this course describes work you may also do for clients outside this platform, where you often will hold access and post directly. Both are normal parts of a social media career. Keep the difference straight so you never assume access you do not have."
+          },
+          {
+            "heading": "The weekly rhythm",
+            "body": "The work has a shape. Most days you spend twenty to forty minutes in the inbox: comments, messages, mentions, tags. One day a week you batch, which means writing, designing and queueing the coming week or two. Once a month you pull the numbers and write the report, and once a month you plan the next block of content. Everything else is admin. When you quote a price or a workload, quote it against that shape rather than against a vague idea of managing accounts. Two platforms, twelve posts a month, a daily inbox pass and one report is a specific job that both sides can plan around. Managing our social is not."
+          },
+          {
+            "heading": "What good looks like",
+            "body": "You can measure yourself without a rating. Good work means the client approves the batch with small edits rather than rewrites. Nothing missed its slot. No comment sat unanswered for two days. Nothing went out that the client had not seen. The report told them something they did not already know. And when something went wrong, they heard it from you first. Clients rarely notice good social operations. They notice missed posts, a typo in a price, a complaint left burning in public over a weekend, and reports that arrive late and say nothing. Most of this course is about removing those five failures."
+          }
+        ],
+        "keyPoints": [
+          "Strategy belongs to the client; the calendar, the drafts and the inbox belong to you.",
+          "On Second Shift you deliver files through the platform and never hold client accounts.",
+          "Quote the shape of the work: platforms, posts per month, inbox passes, one report.",
+          "Clients notice missed slots, wrong prices and unanswered complaints, not your best caption."
+        ]
+      },
+      {
+        "title": "The calendar and the batch",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "One sheet, one source of truth",
+            "body": "Build the calendar in a Google Sheet and make it the only place the plan lives. One row per post. Columns for date, time with the audience's time zone named in the header, platform, content pillar, hook, full caption, link to the image or video, destination link, status, approver, and the URL of the post once it is live. Freeze the header row and sort by date. Share it with the client with comment access, so feedback lands next to the post it refers to instead of scattering across messages. When a client asks what is going out on the fourteenth, you send one link. When you get sick, whoever covers you can read the sheet and continue. A plan that lives in your head is not a plan a client can approve."
+          },
+          {
+            "heading": "Pillars beat the blank page",
+            "body": "Choose four content pillars with the client and rotate them. For a dental clinic that might be patient education, before and after proof, the people who work there, and offers. For a bakery, product, process, the neighbourhood, and promotion. Agree the mix in plain numbers: of twelve posts a month, six educate, three show proof, two are human, one sells. Now the blank page is gone. You are not asking what should we post, you are asking what this month's education post is about. Pillars also protect the client from themselves. When they want four sales posts in one week, you can show the mix you agreed and what happened the last time the feed was mostly selling."
+          },
+          {
+            "heading": "Status and approval columns",
+            "body": "Use five statuses and only five: draft, ready for review, approved, scheduled, posted. A post moves one step at a time and never skips approved. Put the approver's name and the date in the row so there is a record of who said yes. This single column settles most arguments. If a client says they never agreed to a post, the row shows the date they approved it. If they never replied, the row shows it sat in review and that you moved a different approved post into the slot. Set a standing rule and write it in the sheet: content not approved seventy two hours before its slot gets replaced by something already approved. Then follow it every time, including when the post is good."
+          },
+          {
+            "heading": "Batch by task type",
+            "body": "Do not build posts one at a time from idea to finished graphic. Batch by the type of thinking. First session, write twelve hooks. Second, expand the approved hooks into captions. Third, make or select all the images in one sitting in Canva free. Fourth, load everything into the scheduler. Switching between writing and design costs far more time than it feels like. Name assets so they sort themselves, in the form 2026-03-14-ig-carousel-v1.png, one folder per client per month. Keep the editable file and not only the export, because a price will change and you will need to open it again. A batched month takes most people one long day. The same twelve posts made one at a time eat an hour here and an hour there for four weeks."
+          },
+          {
+            "heading": "Keep two weeks of buffer",
+            "body": "Aim to always have two weeks of approved, scheduled content sitting ahead of today. This is the difference between a professional operation and a scramble. Power cuts, a storm, a sick child, a client who disappears for ten days: none of it touches the feed if the buffer is there. Build it once by working a month ahead for a single cycle, then top it up during each batch. Tell the client the buffer exists and what it is for. It also changes how you negotiate. When a client asks for an urgent post today, you are not choosing between chaos and refusing. You can say the queue is full through the twenty-first, that this can replace the post on the eighteenth, and what that trade costs."
+          }
+        ],
+        "keyPoints": [
+          "One sheet, one row per post, with the audience's time zone named in the header.",
+          "Four pillars and an agreed mix turn every planning session into a short one.",
+          "Nothing moves past review without a name and a date in the approver column.",
+          "Batch by task type: hooks, then captions, then images, then scheduling.",
+          "Two weeks of approved content in the queue is your insurance against everything."
+        ]
+      },
+      {
+        "title": "One idea, several platforms",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Repurpose the idea, rewrite the post",
+            "body": "Clients ask for the same content on four platforms, and the lazy version is visible from a distance. A caption written for one audience, pasted everywhere, with a line about the link in the bio on a platform where links work fine. What travels between platforms is the idea, not the words. Take the idea and write it again for each place. Same fact, different shape, different first line, sometimes a different point. A single customer story can become a short vertical video, a text post that opens with the number, a carousel that walks through the steps, and a longer written piece for a professional audience. That is one hour of thinking and forty minutes of rewriting, and it reads as four native posts instead of one post shouted four times."
+          },
+          {
+            "heading": "What actually changes per platform",
+            "body": "Four things change. Length, because some feeds truncate after a line or two and some reward a longer read. The first line, because it is often all anyone sees before deciding. Link behaviour, because some platforms let you put a working link in the post and others push it to a profile or a comment. And shape, because a square image, a four by five portrait and a nine by sixteen vertical are three different crops, not one image resized. Check the current behaviour yourself rather than trusting an article from two years ago. Platforms change these rules often, and a caption written for last year's layout gets cut in the wrong place."
+          },
+          {
+            "heading": "Video is one clip, cut differently",
+            "body": "One recording gives you several posts. Cut a sixty second version and a fifteen second version from the same footage, and pull one still frame for an image post. Free editing is genuinely good now. The free version of DaVinci Resolve handles cutting, captions and export. Burn captions into the video or use the platform's caption tool, because most people watch with sound off, and a video that only works with sound loses most of its audience in the first second. Keep the first two seconds free of logos and intros, since nobody waits through an animated brand stamp. Export vertical for feeds that are vertical, rather than posting a horizontal clip with black bars, which reads as a repost from somewhere else."
+          },
+          {
+            "heading": "The read-aloud test",
+            "body": "Before you deliver a set, read the versions of the same idea one after another out loud. If two of them are the same sentences with a different hashtag block, you have copy-pasted. Change something real: open with a different line, cut the professional framing for the casual platform, ask a different question at the end. The test is whether someone who follows the client in two places would feel spoken to twice or served the same thing twice. One more habit. Keep a note of which version performed best on which platform. After three months you stop guessing about shape and start knowing what that particular audience responds to."
+          }
+        ],
+        "keyPoints": [
+          "Move the idea between platforms; write the words again for each one.",
+          "Length, first line, link behaviour and aspect ratio change; check current behaviour yourself.",
+          "Burn in captions, because most people watch with the sound off.",
+          "If two versions read the same aloud, you copy-pasted."
+        ]
+      },
+      {
+        "title": "Captions and hooks",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The first line does the work",
+            "body": "Most people see one line before deciding to stop or scroll, so spend a disproportionate amount of your time there. Specific beats clever, and concrete beats corporate. We are excited to announce some changes to our schedule tells the reader nothing. We open at seven starting Monday tells them everything in half the space. Three hooks work reliably because they promise something real. A number, as in three things that void your warranty. A named mistake, as in most people water this plant twice as often as they should. Or a direct statement of the news, as in the clinic is open Saturdays from March. Write five hooks for every post and pick one. The first is almost never the best, and the exercise takes four minutes."
+          },
+          {
+            "heading": "One post, one idea",
+            "body": "A caption that makes three points makes none. Decide the single thing the reader should walk away with, then build around it. Hook, one idea, one piece of proof or detail that makes it credible, one action. Proof is the part most people skip and it is what makes a post believable. A price, a date, a measurement, a small specific detail from the work. We fixed a leak becomes we found the leak behind the wall in about forty minutes, because the meter kept moving with every tap closed. Keep paragraphs to one or two lines. A wall of text on a phone gets scrolled past no matter how good the writing is."
+          },
+          {
+            "heading": "Write in the client's voice",
+            "body": "Your job is to sound like the client, not like you. Build a one page voice sheet at the start and get it approved once. How formal, whether the brand says we or uses the business name, words they always use, words they refuse, emoji policy, whether humour is allowed, how they refer to customers, and how they talk about competitors and prices. Add three examples of posts they liked and two they did not. Reuse it for every batch and hand it to anyone who covers for you. Where the client's voice conflicts with clarity, raise it rather than quietly rewriting the brand. Where it conflicts with honesty, do not write it. A claim you cannot support is a problem for them and for you, and it is the one place where following the brief is not enough."
+          },
+          {
+            "heading": "Ask for something possible",
+            "body": "End with one action the reader can take right now from the phone in their hand. Tell us your street and we will say if we deliver there. Save this for the next time your printer jams. Send us the model number and we will check stock. Engage with us below is not an action. Neither is check out our website with no reason to. One call to action per post, because two means neither happens. If the post exists to be saved rather than clicked, say so and stop asking for clicks. And match the action to the platform. Asking for a link click where links are awkward wastes the post."
+          },
+          {
+            "heading": "Proofread it as a deliverable",
+            "body": "A caption is a document with your name on it. Read it aloud, which catches most awkward sentences. Then check every fact against the source the client gave you: prices, dates, opening hours, names, spellings, the address, the phone number. Never round a number to make it read better and never write a claim the source does not support. If the brief says the sale ends soon and you cannot find the date, ask, and do not invent Friday. Click every link you include, in a private window, from a phone if you can. A broken link or a wrong price in a published post costs the client real money and takes ten seconds to prevent."
+          }
+        ],
+        "keyPoints": [
+          "Write five hooks per post and pick one; the first is rarely best.",
+          "One post, one idea, one piece of proof, one action.",
+          "A voice sheet approved once saves an argument in every batch.",
+          "Check every price, date and name against the source before delivering.",
+          "Never write a claim the source does not support."
+        ]
+      },
+      {
+        "title": "Hashtags, tags and mentions",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What hashtags can and cannot do",
+            "body": "Hashtags are a discovery aid on some platforms and close to decoration on others. They help a new or small account get seen by people who do not follow it yet, mostly where people browse by topic. They do not rescue a weak post, and thirty tags on a post nobody stops for still reaches nobody. Do not promise a client growth from hashtags. If you are asked, say plainly what they do: a modest amount of extra reach on the right platform, worth two minutes of work, not a strategy on its own. Where the platform serves content by interest instead of tags, say that too, and put the effort into the first line of the caption instead."
+          },
+          {
+            "heading": "Build sets, not piles",
+            "body": "Make a small sheet of hashtag sets, one set per content pillar, and rotate them. A workable set mixes three levels: a few broad tags with large volume, a majority of specific niche tags where a small account can actually surface, and local or brand tags nobody else uses. Ten to fifteen relevant tags beats thirty scraped from a generator. Check every tag before you use it the first time. Open it and look at what is actually posted under it. Tags get hijacked, go dormant, or turn out to mean something else entirely in another community, and your client's post will sit in that feed. Review the sets every quarter, because the ones that worked in January can be dead by June."
+          },
+          {
+            "heading": "Tagging people is a permission question",
+            "body": "Tagging is publishing about someone. Tagging another business puts your client's post in their notifications and sometimes on their profile. Tagging a customer identifies them in public to everyone they know. Never tag a customer without their written permission, even when they are visibly happy in the photo, and never tag a minor. Get the client's rule on tagging partners and suppliers once, in writing, and follow it. Location tags need the same care. A tag on a home studio publishes where someone lives, and a tag on a staff photo tells the internet where your client's team is right now. When you are unsure, leave the tag off. Nobody has ever complained that a post was not tagged enough."
+          },
+          {
+            "heading": "Reposting other people's content",
+            "body": "Sharing a customer's photo of the product is one of the best kinds of content, and it is also someone else's work. Ask in a message, get a yes in writing, save the screenshot of that yes in the client folder, and credit the creator in the caption and on the image. If they say no or do not answer, you do not have permission, because silence is not a yes. The same applies to images and music you find online. A photo from a search result is not free to use, and a track behind a video can mute or remove the post. Use the platform's own audio library, the client's own footage, or free stock sources where the licence is clear, and note the source in your sheet."
+          }
+        ],
+        "keyPoints": [
+          "Hashtags are a small reach aid, not a growth strategy; never promise otherwise.",
+          "Ten to fifteen tags across broad, niche and local beats thirty scraped ones.",
+          "Open every new tag and look at what is posted under it.",
+          "Tagging a person is publishing about them; get written permission, never tag minors.",
+          "Save the screenshot of every repost permission in the client folder."
+        ]
+      },
+      {
+        "title": "Scheduling without paying for tools",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Native schedulers first",
+            "body": "Most platforms now let you schedule for free from their own business tools, and that is where to start. Meta Business Suite schedules Facebook and Instagram at no cost. Professional networks, video platforms and pinboard platforms have their own built-in scheduling. Native tools are free, they rarely break the way third-party connections do, and they do not need the client to authorise an outside app. Paid all-in-one dashboards exist and larger teams use them, but a client paying for one is a decision, not a requirement. The free tiers of those tools usually cover a small number of accounts and posts per month, which is enough for many clients. Never sign a client up for a paid tool, or connect their accounts to any outside service, without asking them first."
+          },
+          {
+            "heading": "Time zones are the usual disaster",
+            "body": "You work in Manila. The audience may be in London or Chicago. Scheduling tools show times in the zone of whoever is logged in, and that is where the mistake lives. Write the audience's time zone into the header of your calendar column and plan in that zone only. When you set up a new client or a new tool, run one dated test post at a specific time and confirm when it actually appeared. Check twice a year for daylight saving shifts in the audience's country, because a schedule set in November posts an hour off in April and nobody tells you. If a post is time-sensitive, an offer ending or an event starting, do not trust the scheduler alone. Set a reminder and check it went out."
+          },
+          {
+            "heading": "When there is no scheduler",
+            "body": "Some platforms and some account types cannot be scheduled from outside, and some clients will not grant the access a scheduler needs. Then you run a manual queue. Create a calendar event at the exact posting time with the caption in the description and the asset attached or linked, assigned to whoever holds the account. The person posting copies, pastes, uploads, and is done in ninety seconds. Keep the same status columns in the sheet so nothing depends on memory. This is also the honest answer when a client wants to keep control of their accounts. You are not blocked. You prepare everything and hand it over ready to publish, and your sheet still shows what went out and when."
+          },
+          {
+            "heading": "Check the morning after",
+            "body": "Scheduled posts fail quietly. A token expires, an image is rejected, a video finishes processing after the slot, a post publishes to the wrong account. Nobody tells you. Build a two minute check into the start of your day: open each account, confirm yesterday's posts are live, the image is not cropped through someone's face, the link opens, and the caption did not lose its line breaks. Paste the live URL into the posted column of your sheet. That column is your proof at month end and your shortcut when you need to find a post again. When something did fail, fix it and tell the client the same day, before they find it. A failure you report is an inconvenience. A failure they find is a competence problem."
+          }
+        ],
+        "keyPoints": [
+          "Start with free native schedulers; never connect a client's accounts to outside tools unasked.",
+          "Plan in the audience's time zone and name it in the column header.",
+          "Run a dated test post whenever you set up a new account or tool.",
+          "Confirm every scheduled post went live, then paste its URL in the sheet."
+        ]
+      },
+      {
+        "title": "The inbox and the difficult reply",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Two passes a day, four buckets",
+            "body": "Community management is a routine, not a mood. Agree two fixed windows with the client, one early and one late in your working day, and a response target you can keep, such as within four working hours on weekdays. Every pass, sort what you find into four buckets. Routine questions you can answer from the brief. Praise, which gets a short human reply rather than the same thank you copied onto twenty comments. Complaints, which get the handling below. And sensitive items, which you do not answer at all without the client. Keep a short answers file for the routine bucket: opening hours, delivery areas, prices, sizes, how to book. Written once, checked by the client, reused daily, and updated whenever the client changes something."
+          },
+          {
+            "heading": "The reply that defuses",
+            "body": "An angry comment is looking for two things: to be heard, and to know what happens next. Give both and the temperature drops. Acknowledge what happened in their words, without disputing it. Apologise for the experience, which you can always do honestly, rather than admitting a cause you do not know. Give one concrete next step. Then move it out of public view by inviting a message with the details. Never argue, never correct their tone, never reply twice in the same thread, and never answer sarcasm with sarcasm. Public replies are written for the hundred people reading, not for the one person complaining. And do not delete a genuine complaint. Deleting turns one unhappy customer into a screenshot that spreads."
+          },
+          {
+            "heading": "A worked example",
+            "body": "A customer comments that the delivery arrived cold and the driver was rude. You know nothing about this order. A reply that works: I am sorry, that is not the experience we want, and cold food is not acceptable. Please send us a message with your order number and the delivery time and we will look into what happened today. Notice what it does not do. It does not blame the driver, promise a refund you cannot authorise, claim the driver is normally polite, or ask the customer to be reasonable. Then do the internal half. Screenshot the comment, log it in a simple issues sheet with date, platform, customer and your reply, and send it to the client the same day."
+          },
+          {
+            "heading": "Hide, delete or leave",
+            "body": "Get the client's policy in writing and apply it the same way every time. A workable default: leave criticism, even harsh criticism, because deleting it always looks worse. Hide comments containing slurs, harassment, or claims about another named person that could be defamatory. Delete only obvious spam and scam links, which put followers at risk. Block only when the client's policy allows it, and note who and why. Always screenshot before you hide or delete anything. The record matters if it becomes a dispute, and hidden comments can disappear from your view entirely. Keep the log short and current, so at month end you can tell the client what actually happened in the comments rather than a feeling about it."
+          },
+          {
+            "heading": "Do not become the story",
+            "body": "You are writing as someone else's business. Nothing you post from that account should be traceable to your opinions. Do not reply to political posts, do not like or share things from the brand account, do not join arguments in other people's comment sections on the client's behalf, and do not follow accounts from the client's profile without a rule that says you can. Watch which account you are logged into. Posting a personal comment from a client's account is one of the few mistakes that ends a relationship on its own. Use a separate browser profile for each client, or log out at the end of the pass. If it does happen, delete it, screenshot it and tell the client immediately. They will find out anyway."
+          }
+        ],
+        "keyPoints": [
+          "Two fixed inbox windows a day, four buckets, one agreed response target.",
+          "Acknowledge, apologise for the experience, give one next step, move it to private.",
+          "Never delete a genuine complaint, and screenshot before hiding anything.",
+          "Log every complaint and send it to the client the same day.",
+          "Check which account you are logged into before every reply."
+        ]
+      },
+      {
+        "title": "Escalation, approval and access",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The line you never cross alone",
+            "body": "You never speak for the brand on anything sensitive without approval. Sensitive means anything with a consequence outside social media. Injury, illness, or a product making someone sick. Legal threats, lawyers, regulators. Accusations of discrimination, harassment or mistreatment of staff. Refunds, compensation, prices or dates not already published. Anything involving a minor, a death, a crime or an accident. Politics, religion and current news events. Anything a journalist asks. Anything about money, tax, health or safety, which needs a professional answer rather than a social media reply. This list is not you being timid. One confident reply on any of these can commit the business to something it cannot deliver, or become the quote in an article. Print the list and keep it beside you."
+          },
+          {
+            "heading": "The holding reply",
+            "body": "Escalating does not mean silence, because silence in public looks like hiding. Post one short reply that acknowledges without admitting, denying or promising. Thank you for telling us. We have passed this to the team and someone will contact you directly. Then move immediately. Screenshot the comment or message with the timestamp and the profile visible, send it to the client through the channel you agreed, say plainly that you have not answered on the substance, and propose the reply you would send once they confirm. Give them a deadline, such as needing a decision before the end of your working day. On Second Shift you raise it with the operator in your delivery note and answer for nobody. Escalating fast is a professional act, not an admission that you cannot cope."
+          },
+          {
+            "heading": "Access without passwords",
+            "body": "Ask for delegated access, never a personal password. Business tools on the major platforms let a client add you to a page or account with a defined role while their own login stays theirs. That protects them, and it protects you, because you cannot be blamed for something done from an account you never held. If a client sends a password in a chat message, do not use it. Ask them to grant proper access instead, ask them to change that password, and ask them to delete the message. Never forward it to anyone. Where a shared login genuinely cannot be avoided, it belongs in a password manager with sharing, such as the free tier of Bitwarden, not in a note or a chat thread. Turn on two-factor authentication, and ask to be removed the day the engagement ends."
+          },
+          {
+            "heading": "The content is not your portfolio",
+            "body": "Client material stays with the client. Do not upload their files, customer lists, unpublished campaigns or analytics to any third-party service or AI tool unless the brief says you may. Do not keep copies after the work is delivered. Do not post their content, screenshots of their results or their name in your own marketing without written permission, and on Second Shift not at all, because platform work is never a portfolio sample. If you want work to show, build your own project and use that. What is usually safe to describe is the shape of the work, such as running daily community management for a healthcare clinic, without naming it, showing its numbers or reproducing its posts. When you are unsure whether something is confidential, treat it as confidential and ask."
+          }
+        ],
+        "keyPoints": [
+          "Never answer publicly on injury, legal, staff, refunds, minors, money, health or news.",
+          "Post a holding reply, screenshot it, escalate the same day with a proposed answer.",
+          "Ask for delegated access under your own login; never accept a personal password.",
+          "Client files never go into outside tools or AI without written permission.",
+          "Second Shift work is never a portfolio sample."
+        ]
+      },
+      {
+        "title": "Numbers and the monthly report",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Vanity versus decision",
+            "body": "A number is worth reporting if it changes what you do next month. Follower count, total likes and raw impressions usually do not. They move with the platform's mood and they tell you nothing about what to write. Saves, shares, profile visits, link clicks, replies and messages asking to buy do change decisions, because they tell you which post made someone act. The simplest filter is to ask so what after each number. Followers grew by two hundred, so what. If the answer is nothing, it belongs in a small table, not in the headline. Watch for a giveaway or a viral novelty post inflating a metric. It looks like growth and it usually leaves within a month, which you should say in the report rather than let the client believe it."
+          },
+          {
+            "heading": "Match the metric to the goal",
+            "body": "Agree the goal first, then the two or three numbers that track it. If the goal is being known, watch reach to non-followers, video views held past the first few seconds, and new followers. If the goal is interest, watch saves, shares, profile visits and questions in the comments. If the goal is action, watch link clicks, messages asking about price or availability, and whatever the client can count on their side: bookings, calls, orders. Ask the client what happened on their end, because social numbers alone cannot tell you whether anyone bought. If you send traffic to a website, add campaign tags to your links with a free URL builder so their analytics can separate social traffic from everything else. Set that up once and use it on every link."
+          },
+          {
+            "heading": "Where the numbers come from",
+            "body": "Every platform has free built-in insights, and that is enough for a monthly report. The catch is history. Platforms show a rolling window, often ninety days or less, and then the data is gone. So copy the key figures into a Google Sheet on the same day each month, one row per month per platform. After six months you have something the platform cannot give you, which is a trend. Take the figures on a consistent date and always for the same period length, because a month with thirty-one days will beat a month with twenty-eight for no interesting reason. Note anything unusual in a comments column: a holiday, an outage, a week the client sent no photos. In a year those notes will explain a dip nobody else remembers."
+          },
+          {
+            "heading": "The one page monthly report",
+            "body": "Keep it to one page and the same shape every month. What we published, as counts by platform and pillar. What happened, as three to five numbers, each with last month beside it and a plain sentence on what changed. The three best posts, with the link and one line on why you think they worked. The two weakest, with your read. What we recommend next month, in two or three specific actions. What we need from you, which is usually photos, approvals or a decision. Write it in a Google Doc and send the link. Avoid a wall of dashboard screenshots. A client who wanted screenshots would open the dashboard. What they are paying for is the sentence saying what the numbers mean and what you propose to do."
+          },
+          {
+            "heading": "When the numbers are bad",
+            "body": "Report a bad month first and plainly. Reach fell thirty-eight percent, saves fell with it, and here is what I think happened. Then give your best honest read, marked as a read and not a fact: a change in what the platform is showing, four weeks with no video, the shift to sales posts we agreed to try. Then propose one test for next month and say what you expect it to prove. Never lead with a metric that happened to rise while the ones that matter fell. Never quote a number you did not pull yourself, and never estimate one to fill a gap. If a figure is unavailable, write that it is unavailable and why. Clients forgive a bad month. They do not forgive a report arranged to look better than reality."
+          }
+        ],
+        "keyPoints": [
+          "Ask so what after every number; if nothing changes, it is not a headline.",
+          "Pick two or three metrics per goal and agree them before the month starts.",
+          "Copy platform figures into a sheet monthly, because the history window will close.",
+          "One page: published, numbers, best and weakest posts, recommendations, what you need.",
+          "Report a bad month first and plainly, with your read and one test."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can plan a month of content in one sheet and never post anything unapproved.",
+      "You can adapt one idea into posts that fit each platform without sounding copy-pasted.",
+      "You can write hooks and captions in the client's voice rather than your own.",
+      "You can schedule across time zones with free native tools and verify posts went live.",
+      "You can defuse a public complaint and escalate anything sensitive before speaking for the brand.",
+      "You can build a monthly report that reports honestly on the numbers that matter."
+    ],
+    "slug": "social-media-ops",
+    "summary": "This course covers the operational half of social media: the content calendar, batching, adapting one idea across platforms, captions and hooks, hashtags and tagging, free scheduling, the inbox, and the monthly report. You finish able to run a client's accounts week after week without drama, defuse a public complaint, and hand anything sensitive to the client before you speak for the brand.",
+    "tagline": "The operational half of social: calendars, captions, replies, and reports.",
+    "title": "Social media management",
+    "track": "craft"
+  },
+  "project-coordination": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You send a plan showing Thursday as the delivery date for the designer. He replies with a thumbs up and nothing else. On Wednesday you learn he has not started. What went wrong at the planning stage?",
+          "options": [
+            "Nothing went wrong in planning; he agreed and then failed to deliver.",
+            "The plan should have given him an earlier date to absorb this kind of delay.",
+            "You had a due date you typed, not a commitment he stated in his own words.",
+            "The task should have gone to the design team so that someone would pick it up."
+          ],
+          "correct": 2,
+          "explain": "A date you set and nobody objected to is a wish. A commitment is the person naming a date themselves, in their own words, in writing."
+        },
+        {
+          "prompt": "A developer tells you by message that she is waiting on API keys from the client's IT team. Her card still sits in In progress. What is the best move?",
+          "options": [
+            "Ask her to move the card to Blocked with the reason and the date the wait started.",
+            "Move the card yourself and note the reason, so the board is accurate tonight.",
+            "Leave it in In progress, since she is still working on other parts of the same feature.",
+            "Comment on the card so the history is kept, and revisit it at the weekly review."
+          ],
+          "correct": 0,
+          "explain": "Waiting work must be visible, and the owner should move her own card. Updating it for her teaches the team that the board is your private hobby."
+        },
+        {
+          "prompt": "Five tasks remain. Four sit on the chain that ends at launch. The fifth, a blog announcement, has four days of slack. A team member has a free day and asks what to pick up. What do you tell her?",
+          "options": [
+            "The blog announcement, so at least one whole task gets finished today.",
+            "Whichever task she is fastest at, since a finished task is progress either way.",
+            "Nothing yet; wait for the weekly review so the plan is not disturbed.",
+            "The task on the chain to launch that is closest to slipping."
+          ],
+          "correct": 3,
+          "explain": "Only work on the longest dependent chain moves the end date. Finishing a task with slack feels productive and changes nothing about the launch."
+        },
+        {
+          "prompt": "You take notes for a client's weekly meeting. To save time you want to run the recording through a free online transcription tool. The client has never discussed this with you. What do you do?",
+          "options": [
+            "Use it, then delete the file from the service afterwards so no copy remains.",
+            "Ask the client in writing first, since the recording leaves their control the moment you upload it.",
+            "Use it only for the internal parts of the meeting and type the client sections by hand.",
+            "Use a tool that states it does not train on uploaded data, which removes the concern."
+          ],
+          "correct": 1,
+          "explain": "Sending client material to a third party is the client's decision, not yours. Get permission in writing before anything leaves their hands."
+        },
+        {
+          "prompt": "Friday's update is due. The launch will now slip by three days because of a supplier. You suspect the supplier might still recover over the weekend. What do you send?",
+          "options": [
+            "At risk, with the supplier named, and you confirm the date on Monday when you know.",
+            "Off track, with the new date and what you are doing about it.",
+            "Nothing until Monday, so you can report a definite outcome rather than a moving one.",
+            "On track, with a note that the supplier situation is being watched closely."
+          ],
+          "correct": 1,
+          "explain": "The date has already moved, so the honest word is off track with the new date. Hoping for a weekend recovery is how at risk becomes a nasty surprise."
+        },
+        {
+          "prompt": "A client's accountant owes you a spreadsheet due tomorrow. He has never been late before, and he has not replied to the thread in a week. What is the best message to send now?",
+          "options": [
+            "None yet. His record is good, so wait until the deadline passes before asking.",
+            "A note saying you have not heard from him in a week and the deadline is tomorrow.",
+            "A message to his manager asking whether he is still the right owner for this.",
+            "A short friendly reminder that it is due tomorrow, with the template attached, asking if the date still works."
+          ],
+          "correct": 3,
+          "explain": "The first nudge comes before the deadline, assumes good faith, and carries everything he needs. Most late work is forgotten work, not resistance."
+        },
+        {
+          "prompt": "A client says the marketing team will handle the newsletter before the launch. You are writing the plan. What goes on the card?",
+          "options": [
+            "Ask who you should follow up with, then write that person's name, the action and a date.",
+            "Marketing team as the owner, with the launch date as the due date.",
+            "The client's name as owner, since he is accountable for his own team.",
+            "Newsletter as a task with no owner yet, to be chased at the first weekly review."
+          ],
+          "correct": 0,
+          "explain": "A task owned by a team is owned by nobody. Asking who to follow up with is a normal question and saves you a week later."
+        },
+        {
+          "prompt": "Three weeks ago the client chose supplier B. Today he asks why you did not use supplier A, and remembers the discussion differently. Your notes record the decision but not the reason. What is the lesson?",
+          "options": [
+            "Send him the notes; a recorded decision settles the question on its own.",
+            "Ask the other attendees what they remember, then update the note accordingly.",
+            "Log the reason with every decision, because the reason is what people question later.",
+            "Confirm decisions of this size by separate email rather than inside meeting notes."
+          ],
+          "correct": 2,
+          "explain": "Decisions are rarely disputed. Their reasons are. One line of why, written at the time, is what makes a decision log worth keeping."
+        },
+        {
+          "prompt": "A legal review you cannot influence has been sitting for nine days and now threatens the launch. You are writing to the client's operations director, who does not know the project in detail. What do you include?",
+          "options": [
+            "A summary of the project, the full history of the review, and a request for her help.",
+            "What is blocked, since when, the cost in days, two options, and what you recommend.",
+            "The delay, and a request that she chases the legal team, since she has the authority.",
+            "The delay, with your emails attached so she can see the effort you have already made."
+          ],
+          "correct": 1,
+          "explain": "An escalation is a request for a decision, not a complaint. Cost and options let a busy person act in a single reply."
+        },
+        {
+          "prompt": "You forgot to send a form to the printer on Monday and notice on Wednesday. The posters will now arrive two days late for an event, though a paid rush option might still make it. What do you do?",
+          "options": [
+            "Order the rush option, absorb the extra cost quietly, and say nothing since the date holds.",
+            "Send the form now and mention the two day change in Friday's regular update.",
+            "Ask the printer whether they can catch up before deciding whether to say anything.",
+            "Tell the client today: the delay, the rush option and its cost, and your recommendation."
+          ],
+          "correct": 3,
+          "explain": "Bad news only travels well when it travels early, and paying for a rush is the client's decision, including when it is your mistake being fixed."
+        },
+        {
+          "prompt": "A client in London writes: send me the deck by end of day Tuesday. You work nights in Manila. What is the right response?",
+          "options": [
+            "Deliver by the end of your own Tuesday shift, which is well inside his Tuesday.",
+            "Deliver by midnight Manila time on Tuesday, since that is the end of the day where you are.",
+            "Confirm the exact hour and time zone, then record it in the plan in one agreed zone.",
+            "Assume London time and deliver by his evening, which is the safer of the two readings."
+          ],
+          "correct": 2,
+          "explain": "End of day means nothing across time zones. Ask once, agree an hour and a zone, and write it where both of you can see it."
+        },
+        {
+          "prompt": "You claim a task to build a project plan from a client's brief and meeting notes. The notes contain a decision that contradicts the deadline in the brief. Your delivery is due in six hours. What do you do?",
+          "options": [
+            "Follow the notes, since they are more recent than the brief, and deliver on time.",
+            "Build the plan on the brief and flag the contradiction in your delivery note.",
+            "Build two versions of the plan so the operator can choose the correct one.",
+            "Hold the delivery until the operator confirms which of the two dates is right."
+          ],
+          "correct": 1,
+          "explain": "The brief governs the work, and the delivery note is your channel to the operator. Flagging the contradiction takes one line and he can settle it in seconds."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "What coordination actually is",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The job in one sentence",
+            "body": "Coordination is making sure that work other people are doing arrives, in the right order, before someone is waiting on it. You are not the person doing the design, the code, or the sales call. You are the person who knows what state each piece is in, who is waiting on what, and what will hurt if it slips. Most projects do not fail because someone lacked skill. They fail because two people each thought the other was handling something, or because a decision sat in an inbox for nine days and nobody noticed. Your value is that nothing sits unnoticed. Clients pay for that, because the alternative is a founder holding twelve threads in his head while also running a business."
+          },
+          {
+            "heading": "You own the picture, not the work",
+            "body": "You will rarely have authority over the people you coordinate. A developer does not report to you. A client's accountant does not answer to you. What you have instead is the clearest picture in the room and the habit of writing it down. That is more power than it sounds. When you can say that the launch page needs copy by Thursday because the developer blocked Friday for the build, the date stops being your opinion and becomes a fact everyone can see. Coordination without authority works when your picture is accurate, your updates are boring and regular, and you never surprise people. It stops working the moment the board says one thing and reality says another, because then everyone starts keeping private lists again."
+          },
+          {
+            "heading": "Where projects actually die",
+            "body": "Watch four failure points and you will catch most trouble early. Handoffs, where work leaves one person and nobody confirms the next person received it. Decisions, where everyone assumed a choice was made and nobody wrote it down. Waits, where a task is technically not late but has been sitting untouched for a week. Silence, where a person you depend on has not answered in days and you tell yourself no news is good news. None of these look dramatic on the day they start. They become a missed launch three weeks later. The whole craft is noticing them in the first week, while a two-minute message still fixes them."
+          },
+          {
+            "heading": "Coordination on Second Shift is different",
+            "body": "Much of this course is about work you do for other clients, standing between several people and keeping them moving. On Second Shift the shape is different, and it is worth being plain about it. Here an operator has already scoped and priced the task, and you never contact the client or anyone on their team. A coordination task in the pool is normally a deliverable about coordination: build the project plan, restructure the board, write the status report, produce the meeting notes and action list from a transcript. You produce the artifact, you note anything unclear for the operator, and you deliver. The thinking is the same. The chasing is not yours to do here."
+          }
+        ],
+        "keyPoints": [
+          "Coordination is making other people's work arrive before someone is waiting on it.",
+          "You rarely have authority. An accurate written picture is what gives you weight.",
+          "Projects die at handoffs, unrecorded decisions, silent waits, and unanswered messages.",
+          "On Second Shift you produce the coordination artifact; the operator handles all client contact."
+        ]
+      },
+      {
+        "title": "Breaking a goal into tasks",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Start from the finished thing",
+            "body": "Before you list a single task, write one sentence describing what exists at the end that does not exist now. A new pricing page, live, with three plans and a working checkout button. That sentence is your reference for every argument later. Without it, people add work that feels productive and nobody can say whether it belongs. With it, you can ask one question about any proposed piece of work: does this have to be true for that sentence to be true? If yes, it is a task. If no, it goes on a separate list called later. Write the sentence, then get the person who asked for the project to confirm it in writing. Half the scope arguments you will ever have are prevented right there."
+          },
+          {
+            "heading": "A task is a verb and an owner",
+            "body": "Write tasks as an action a specific person takes. Not pricing page, which is a topic. Write draft the copy for the three plan cards, Maria, Thursday 14 October. A topic cannot be finished. An action can. Three things belong on every task: what gets done, who does it, and when it is due. If any of the three is missing, the task is not real yet and will quietly rot. Avoid the word help. Maria helps with the launch is not a task, it is a feeling. If two people are genuinely involved, split it. Maria drafts, then Ben reviews. Two tasks, two owners, two dates, and a clear moment when the work passes from one hand to the other."
+          },
+          {
+            "heading": "One owner, always",
+            "body": "Every task gets exactly one name. Not the marketing team, not Maria and Ben. A task owned by two people is a task owned by nobody, and you will discover that on the day it was due. The owner is not necessarily the person doing all the work. They are the person who answers for it and who you talk to about it. If a client says the team will handle it, that is your cue to ask a polite question: who should I follow up with on this one? Nobody is offended by that question, and it saves you a week later. Write the name on the card, in the plan, and in the notes, so nobody has to remember it."
+          },
+          {
+            "heading": "Size it so it can move",
+            "body": "A task that takes three weeks tells you nothing until it is late. Break work into pieces that can plausibly be finished in a day or two. Small tasks give honest signal: when four of six are done, you know where you stand, whereas one large task sits at some invented percentage for a fortnight. There is a limit. Do not split so finely that maintaining the list costs more than the work. A useful test is whether you could tell, in one glance, that a piece is genuinely finished. If the answer needs a conversation, the piece is still too big, or the finish line has not been defined yet."
+          },
+          {
+            "heading": "Say what done means",
+            "body": "For every task that matters, write one line describing what finished looks like. Done for a research task might be fifteen companies in the sheet, each with name, website, contact email and source link, no blank cells. Done for a draft might be full text in the shared document, ready for review, no placeholders. This line takes twenty seconds to write and prevents the most common project argument, which is two people using the same word for different things. It also lets you check work without becoming the quality police. You are not judging taste. You are asking whether the thing you both agreed on is actually present."
+          }
+        ],
+        "keyPoints": [
+          "Write one sentence naming what exists at the end. Every task must serve it.",
+          "A real task has an action, one owner, and a date. Missing any, it rots.",
+          "One name per task. Two owners means nobody owns it.",
+          "Break work into one or two day pieces so lateness shows early.",
+          "Write one line of what done means before the work starts."
+        ]
+      },
+      {
+        "title": "Due dates and commitments",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "A date you set is a wish",
+            "body": "There is a real difference between a due date and a commitment. A due date is a number you typed into a board. A commitment is a specific person saying, in their own words, that they will deliver a specific thing by a specific day. Plans full of the first kind look organised and predict nothing. You can tell them apart with one question: did they say it, or did you? If you set the date and they merely did not object, you have a wish. Silence is not agreement, especially from someone senior, or from someone who was busy when you asked. Getting the words out of their mouth, in writing, is the highest value habit in this whole course."
+          },
+          {
+            "heading": "How to ask for a real date",
+            "body": "Do not ask can you do this by Friday, because the polite answer is yes and the true answer arrives on Monday. Ask when can you have this done, then stay quiet. If the date they give is too late, you now have a real conversation about priority or scope instead of a false agreement. Ask two follow up questions: what do you need from anyone else to hit that, and what would stop you. The first surfaces a dependency you did not know about. The second surfaces a risk while it is still cheap. Then repeat it back in one sentence so it is on the record. So you will send the draft by Thursday the ninth, once Ben sends the logo files."
+          },
+          {
+            "heading": "Vague dates and time zones",
+            "body": "Refuse vague dates gently. Next week, end of month and soon are not dates. Ask for a day, and write the calendar date beside the weekday, because Thursday means two different days in a long email thread. End of day is worse than it looks when you work nights and your client is on the other side of the world. Your end of day and theirs can be sixteen hours apart. Name the time zone, or name a moment that is unambiguous for both, such as before you start work on Tuesday. In every plan you keep, choose one time zone, write it at the top, and convert everything into it. Confusion about the clock has ruined more deadlines than laziness ever has."
+          },
+          {
+            "heading": "Buffer belongs to the plan",
+            "body": "People pad. Ask for two days and you get a five day estimate with three days of quiet insurance inside it, which you can neither see nor manage. It is healthier to take honest estimates and hold the buffer yourself, at the end of the chain, where you can watch how much is left. If the client needs the site live on the twentieth, plan to finish on the seventeenth and keep those three days as the project's cushion rather than sprinkling them invisibly. Say this out loud so nobody feels tricked. Give me your honest number, not a safe one, and I will hold the slack for all of us."
+          },
+          {
+            "heading": "When a commitment slips",
+            "body": "Commitments break. That is normal and not a moral failure. What matters is what happens next, and the rule you want everyone to know is simple: tell me the moment you know, not on the due date. A day of warning is often enough to reorder the work, while an unannounced miss costs everyone else their plan too. Model it yourself. When you are the one who will be late, send the message early, state the new date, and say what you did to limit the damage. People forgive slips they hear about in time. They stop trusting people who go quiet and hope."
+          }
+        ],
+        "keyPoints": [
+          "A due date you typed is a wish. A commitment is words they said.",
+          "Ask when can you have this done, then stop talking.",
+          "Never accept next week. Ask for a date, and name the time zone.",
+          "Hold buffer at the end of the plan, not hidden inside each task.",
+          "Tell people the moment you know you will be late, not on the day."
+        ]
+      },
+      {
+        "title": "Dependencies and the critical path",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "What waits on what",
+            "body": "A dependency is simply this. Task B cannot start, or cannot finish, until task A is done. The developer cannot build the page until the copy exists. The accountant cannot close the month until the bank statements are exported. Most schedule pain comes from dependencies nobody wrote down, so write them down. Beside each task, note what it is waiting for and who owns that. Then check the dates. If the thing you are waiting for is due the same day you need it, you have no room at all, and any small slip moves you. When you look at a plan for the first time, hunting for these waits is the fastest way to find where it is already broken."
+          },
+          {
+            "heading": "The longest chain sets the date",
+            "body": "Line your dependent tasks up end to end and one chain will be longer than the rest. That chain decides when the project can finish, and people call it the critical path. The term is worth knowing because clients use it, but the useful part is behavioural. Work on that chain is the work you protect. If something on it slips by a day, the whole project slips by a day, no matter how much other work you finished. Find the chain by starting at the finished thing and walking backwards, asking what had to happen immediately before this. When you reach the start, you have the spine of the plan and you know which tasks deserve your attention first."
+          },
+          {
+            "heading": "Slack is where flexibility lives",
+            "body": "Tasks that are not on the longest chain have slack. They could start late, or take longer, without moving the end date. That is genuinely useful information. It tells you where you can be relaxed, where to place work for the person who is stretched thin, and what you can safely postpone when something urgent lands. It also warns you about a trap. Push slack too far and a comfortable task quietly becomes critical, because no room is left. A weekly look at the plan should ask two questions. Is anything on the critical chain at risk, and has anything with slack used all of it up without me noticing."
+          },
+          {
+            "heading": "The waits you do not control",
+            "body": "The worst dependencies belong to other people: a client approval, a bank, a supplier, a legal review, a landlord. You cannot make these faster by working harder, so treat them differently. Start them as early as possible, even before you strictly need to. Ask up front how long they usually take and plan on the honest answer rather than the hopeful one. Give the other side everything they need in one message so there is no back and forth. Then track the wait visibly, with the date you asked and the date you were promised, because an approval sitting untouched for eleven days is a fact people respond to, while a feeling that it is taking a while is not."
+          },
+          {
+            "heading": "Mapping it in a free spreadsheet",
+            "body": "You do not need special software. In Google Sheets, use one row per task with columns for task, owner, start, days needed, due date and waiting on. Sort by due date and read the waiting on column from top to bottom. Anything waiting on a task with a later due date is an error you just found. If you want to see the chain, colour the cells of tasks that feed each other and follow the colour. Paid tools draw the arrows for you and are pleasant on large projects, but the thinking is identical, and a sheet you actually update beats a beautiful chart nobody has touched since the kickoff."
+          }
+        ],
+        "keyPoints": [
+          "A dependency is one task that cannot start or finish until another is done.",
+          "The longest chain of dependent tasks sets the end date. Protect that chain.",
+          "Tasks off the chain have slack. Watch for slack quietly running out.",
+          "Start approvals and other people's waits early, and track how long they sit.",
+          "A sorted sheet with a waiting on column is enough to plan a small project."
+        ]
+      },
+      {
+        "title": "Running a board that tells the truth",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Columns are a promise",
+            "body": "Your columns should describe what actually happens to work here, not a generic template. For a content project that might be Brief, Writing, Review, Client approval, Published. The test of a column is that everyone agrees what it means for a card to be sitting in it. Keep the number small, because every extra column is another decision someone has to make when they move a card, and hesitation is how boards go stale. Two columns earn their place almost everywhere. Blocked, so waiting work is visible instead of hiding inside In progress, and Done, which means finished by the definition you wrote, not almost. If a card cannot be placed cleanly anywhere, the columns are wrong, not the card."
+          },
+          {
+            "heading": "What belongs on a card",
+            "body": "A card should let a stranger act without asking you anything. A title that is a verb, with a person's name. A due date. One line of what done means. Links to the files needed. The name of the thing it is waiting on, if any. Discussion stays in the card comments so the history sits with the work rather than in someone's private messages. Attachments matter more than people expect, because half the delay in small projects is somebody hunting for a file. If your card needs three paragraphs of explanation, either the task is too big or a decision has not been made yet, and you should fix that instead of writing more."
+          },
+          {
+            "heading": "Blocked is a column, not a feeling",
+            "body": "When someone cannot proceed, the card moves to Blocked and gains one line: what it is waiting for, who owns that, and since when. This is the single most valuable habit on a board. It converts a vague sense that things are slow into a short visible list that a decision maker can clear in one sitting. It also protects people, because a person sitting in Blocked is not idle or lazy, they are stopped, and now everyone can see the difference. Review the Blocked column first, every time you open the board, before anything else. The oldest card there is usually the most expensive thing in your project."
+          },
+          {
+            "heading": "A stale board is worse than none",
+            "body": "A board that reflects hope instead of reality is worse than no board, because people make decisions from it. Two habits keep it honest. First, you sweep it yourself on a fixed rhythm, at least twice a week, and anything that has not moved in five days gets a short direct question to its owner. Second, you make updating cheap for everyone else. Never ask someone for a status by message and then copy it onto the board yourself, because that teaches them the board is your hobby. Ask them to move the card, and thank them when they do. If people will not update it, use fewer columns and fewer cards until they will."
+          },
+          {
+            "heading": "Free tools that are enough",
+            "body": "The Trello free tier gives you boards, cards, checklists, due dates and attachments, which covers most small projects. The Notion free plan holds a board and the written material in one place. The Asana free tier supports task lists with owners and dates, and suits work that is a sequence rather than a flow. A Google Sheet is still a respectable choice, and often the right one when the client is not comfortable learning anything new. Choose what the client will actually open. A tool you love that they never look at gives you nothing. One rule holds across all of them: client project data lives only in the workspace they own or the one they told you to use."
+          }
+        ],
+        "keyPoints": [
+          "Columns should describe what really happens, and be few enough to decide fast.",
+          "A card should let a stranger act: owner, date, done line, files, blocker.",
+          "Blocked is a column with a reason and a date, not a private feeling.",
+          "Sweep the board twice a week and question anything unmoved for five days.",
+          "Free Trello, Notion, Asana or a plain sheet all work. Pick what the client opens."
+        ]
+      },
+      {
+        "title": "The status update people actually read",
+        "minutes": 5,
+        "sections": [
+          {
+            "heading": "Answer three questions in two lines",
+            "body": "A busy person reading your update wants three things and will not scroll for them. Are we going to hit the date. What changed since last time. What do you need from me. Put those at the top, in that order, and put the detail underneath for the one reader in ten who wants it. The most common mistake is opening with a narrative of activity: this week I contacted the printer, followed up with Ben, and reorganised the folder. That tells the reader about your effort, not about their project. Effort belongs in a line at the bottom, if anywhere. Start with the answer, then the reason, then the evidence."
+          },
+          {
+            "heading": "Use the status word plainly",
+            "body": "Give the project one word and mean it: on track, at risk, or off track. On track means the agreed date still holds and nobody needs to do anything. At risk means something specific could move it, and you name what. Off track means the date has already moved, and you state the new one. Do not invent shades of green to soften bad news. A project that is at risk for three weeks and then suddenly off track destroys more trust than one that was honestly at risk from the start. If you find yourself writing mostly on track, stop, decide which of the three words is true, and write that instead."
+          },
+          {
+            "heading": "Ask for exactly one thing",
+            "body": "Most updates die because they ask for nothing, or ask for five things vaguely. Decide the single most valuable thing this reader can do, then ask for it with a date and a default. For example: I need your approval on the copy by Wednesday, and if I do not hear back I will proceed with version B so the build stays on schedule. That sentence gives them a decision, a deadline, and a way for their silence to still move the project forward. Do not bury the ask inside a paragraph. It goes on its own line, near the top, and it names the person if more than one is reading."
+          },
+          {
+            "heading": "Same shape, same time, every week",
+            "body": "Send it on the same day, at the same hour, in the same format, whether the news is good or bad. Predictability is most of the value. People stop asking for updates when they know one is coming, and they read yours quickly because the third line is always the same kind of line. Keep it short enough to read on a phone, roughly two hundred words, with any detail in a linked document instead of the message body. Never skip a week because nothing happened. Nothing happened is itself a status, and it usually means something is blocked, which is exactly what they need to know."
+          }
+        ],
+        "keyPoints": [
+          "Open with the date, what changed, and what you need. Detail goes below.",
+          "Pick one word: on track, at risk, or off track. No softened shades.",
+          "Make one ask, with a date and a default if nobody replies.",
+          "Same day, same shape, every week, especially when the news is bad."
+        ]
+      },
+      {
+        "title": "Chasing without nagging",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Track promises so memory does not",
+            "body": "Keep one list of everything you are waiting on: what it is, who owes it, the date they gave, and the date you last asked. A sheet is fine. Without it you chase whoever you happen to remember at midnight, which means the loudest thread gets three messages and the quiet one is forgotten for a fortnight. With it, chasing becomes a ten minute routine at a fixed time rather than an anxiety you carry all day. It also changes how you sound. Someone who says I have you down for the supplier list, due Tuesday, last discussed on the fourth is not nagging. They are keeping the record, and people respond differently to that."
+          },
+          {
+            "heading": "The first nudge is a service",
+            "body": "Send the first reminder before the due date, not after, and make it a reminder rather than an accusation. One line, friendly, with everything they need attached. Quick note that the draft is due Thursday, the outline is in this document, tell me if the date is a problem. Half of all late work is not resistance, it is someone who lost the thread among forty other things, and your note rescues them. Never open with as per my previous email. Assume good faith for the first two contacts, because you are usually right, and because a relationship you burn on Tuesday still has to deliver on Friday."
+          },
+          {
+            "heading": "Make the reply cheap",
+            "body": "The easier you make it to answer, the faster answers come. Ask one question, not four. Offer options instead of open questions: can you still make Thursday, or should we move it to Monday. Attach the file rather than referring to it. Put the ask in the first line so it survives a phone preview. If you need a decision from someone senior, write it so the whole reply can be one word. Choose your moment too. A message that lands when someone starts their day gets read, while one that lands at the end of theirs gets postponed. If your night is their morning, that timing is an advantage you already have."
+          },
+          {
+            "heading": "When to raise it, and to whom",
+            "body": "Escalating is not telling on someone. It is asking a person with authority to unblock something that is costing the project. Do it after your own attempts have failed and before the damage lands, not the day after the deadline. Keep a clear order: a direct message, then a second one naming the consequence, then a mention in the status update everyone sees, then a private word with the person who can decide. Give one last chance before each step, and say so plainly. If I do not hear back by tomorrow I will flag this in Friday's update so the delay is visible. Most people move at that sentence."
+          },
+          {
+            "heading": "Keep the tone flat and the facts exact",
+            "body": "When you do raise it, describe the situation without adjectives. The logo files were due on the sixth. I asked on the fourth, the seventh and the eleventh. The build cannot start without them and the launch date is the twentieth. That paragraph is unanswerable because there is nothing in it to argue with. Compare it with Ben has been ignoring me for weeks, which invites a defence and turns a scheduling problem into a personal one. Never write anything about a person that you would not be comfortable having them read, because they usually do read it. Facts, dates, cost, and the decision you need. Nothing else."
+          }
+        ],
+        "keyPoints": [
+          "Keep one list of what you are owed, by whom, and when you last asked.",
+          "Send the first nudge before the deadline, with everything they need attached.",
+          "One question, options instead of open ends, and the ask in the first line.",
+          "Escalate before the damage, after your own attempts, and warn people first.",
+          "State dates and costs without adjectives. Never write what you would not want read."
+        ]
+      },
+      {
+        "title": "Meeting notes and decision logs",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Notes are for the people absent",
+            "body": "Write notes for the person who was not in the room and has ninety seconds. That means no transcript. Capture three things: decisions made, actions agreed with an owner and a date, and open questions with the name of whoever will resolve them. Everything else is atmosphere. If a discussion went in circles for twenty minutes and landed nowhere, the note is one line saying no decision reached, to be settled by Maria before Friday, which is far more useful than four paragraphs of who said what. Write during the meeting, not after, because your memory of the exact date someone committed to is worse than you think."
+          },
+          {
+            "heading": "Send them fast and invite correction",
+            "body": "Send the notes the same day, ideally within the hour, while everyone can still recognise their own words. Speed is what makes notes authoritative. Whoever writes them first defines what happened. End with one line inviting correction, such as tell me by tomorrow if I have recorded anything wrongly. That sentence turns your notes from your version into the shared record, and it gives you cover, because a decision nobody corrected for a week is a decision. Put the actions in a short list at the top with names and dates, rather than buried in the discussion, so people find their own line in three seconds."
+          },
+          {
+            "heading": "The decision log is separate and permanent",
+            "body": "Keep a decision log apart from the notes. One running list with the date, the decision, who made it, and one line on why. It takes a minute per entry and it is the document clients thank you for months later, when somebody asks why we chose the cheaper supplier and nobody can remember. Reasons matter more than the decisions themselves, because circumstances change and you need to know whether the reason still holds. When a decision is reversed, do not edit the old entry. Add a new one saying what changed and why. A log you can trust is one where nothing is quietly rewritten."
+          },
+          {
+            "heading": "What leaves the room",
+            "body": "Meeting material is client data. Do not record without asking, and if you want to use a transcription or an AI tool, confirm in writing that the client permits it, because that content leaves their control the moment you upload it. On Second Shift the rule is stricter and simpler. Client files never leave the task. You do not upload them to any third party service unless the brief tells you to, you do not keep copies after delivery, and you never use the notes or the board as a portfolio sample. Discretion is social as well. What someone said in frustration during a meeting does not belong in a note twelve people will read."
+          }
+        ],
+        "keyPoints": [
+          "Capture decisions, actions with owners and dates, and open questions. Not a transcript.",
+          "Send notes the same day and invite corrections. The first written version becomes the record.",
+          "Keep a permanent decision log with dates and reasons. Never rewrite old entries.",
+          "Confirm permission in writing before recording or running client material through any tool.",
+          "On Second Shift, client files never leave the task and are never portfolio samples."
+        ]
+      },
+      {
+        "title": "Risks, escalation, and weekly rhythm",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "A risk is not a problem yet",
+            "body": "A risk is something that has not happened and would hurt if it did. An issue is something that has already happened. Keeping them apart matters because they need different responses. Risks get watched and prepared for. Issues get fixed and reported. Most teams keep no risk list at all, which means every risk is discovered on the day it becomes an issue. Yours can be five columns in a sheet: what could go wrong, how bad it would be, how likely it looks, what we would do about it, and who is watching it. If a risk cannot be described in one sentence, you do not understand it well enough to manage it yet."
+          },
+          {
+            "heading": "Watch few risks, and watch them properly",
+            "body": "Do not list forty risks, because nobody reads forty. Carry the three or four that would genuinely damage the project and review them every week. For each one, decide in advance what you would do, because a plan made calmly on Monday beats one made in panic on Thursday. Also decide the trigger, which is the observable thing that means this has stopped being a risk. If the supplier has not confirmed by the tenth, we order from the second supplier. Written triggers stop the slow drift where everybody can see trouble coming and nobody wants to be the one who calls it."
+          },
+          {
+            "heading": "The shape of a good escalation",
+            "body": "When you need help, send five short parts in this order. What is blocked, in one line. Since when, with the date. What it costs if it continues, in days or in money. The options you see, usually two or three with their trade-offs. What you recommend, and what you need from the reader. That last part is the one people forget, and without it your message reads as a complaint. Escalate early and small. A two day delay raised on day one is a scheduling question, while the same delay raised on day nine is a crisis with an audience."
+          },
+          {
+            "heading": "The weekly rhythm",
+            "body": "Projects stay honest on a rhythm, not on willpower. Pick a shape and keep it. Early in the week, review the board, confirm what is due, and send reminders for anything landing in the next few days. Midweek, check the blocked column and the risk list, and escalate anything that has not moved. Late in the week, sweep for stale cards, correct the plan so it matches reality, and send the status update. Then write down the one thing that must not slip next week. This costs about ninety minutes across a week and replaces the constant background worry that you have forgotten something."
+          },
+          {
+            "heading": "What honesty costs and buys",
+            "body": "The hardest moment in this work is the update where you have to write that the date has moved, or that you missed something. The instinct is to wait one more day in case it fixes itself. It rarely does, and the cost compounds while your credibility drains. Say it plainly, early, with what you are doing about it and without a paragraph of defence. Clients keep the people who tell them bad news in time, because that is the entire product they are buying: no surprises. Someone who reports a slipped date on Tuesday is worth more than someone whose projects look fine until the day they do not."
+          }
+        ],
+        "keyPoints": [
+          "A risk has not happened yet. An issue has. Handle them differently.",
+          "Carry three or four real risks, each with a written trigger and a planned response.",
+          "Escalate with what is blocked, since when, the cost, the options, and your recommendation.",
+          "Keep a weekly rhythm: nudge early, check blockers midweek, sweep and report at the end.",
+          "Bad news delivered early is the product clients are actually buying."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can turn a vague goal into tasks with owners, dates, and a done line.",
+      "You can tell a real commitment from a due date, and get one in writing.",
+      "You can map dependencies, find the critical path, and see where slack is running out.",
+      "You can run a board that reflects reality and makes blockers visible.",
+      "You can write a status update a busy person reads in ten seconds.",
+      "You can chase, escalate, and log decisions without damaging a working relationship."
+    ],
+    "slug": "project-coordination",
+    "summary": "Coordination is the work of keeping other people's work moving: turning a goal into owned tasks with real dates, running a board that reflects reality, and telling a busy person the truth in ten seconds. This course covers dependencies, chasing, meeting notes, decision logs, risk, escalation, and the weekly rhythm that keeps a project honest.",
+    "tagline": "Keeping other people's work moving, without authority and without nagging.",
+    "title": "Project and task coordination",
+    "track": "craft"
+  },
+  "slides-decks": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You are building a results deck. The brief includes two spreadsheets with the same name and different Q3 revenue figures, and nothing explains which one is current. What do you do?",
+          "options": [
+            "Use the higher figure, since the client's summary describes a strong quarter.",
+            "Average the two figures and note the method in small text under the chart.",
+            "Use the later-dated file, mark it on the slide, and explain the choice in your delivery note.",
+            "Build the deck twice, one version per file, and let quality control choose."
+          ],
+          "correct": 2,
+          "explain": "You cannot resolve it alone, so take the safer choice, make it visible, and say exactly what you did. Averaging invents a number that exists in neither file."
+        },
+        {
+          "prompt": "A bar chart comparing four regions shows values between 91 and 97. Your tool started the axis at 90, which makes the gaps look dramatic. The client's notes say one region is far ahead. What is correct?",
+          "options": [
+            "Set the axis to start at zero and let the small differences look small.",
+            "Keep the axis at 90, because it matches what the client's own summary says.",
+            "Keep the axis at 90 but add a footnote saying the scale is cut.",
+            "Switch to a line chart so the truncated axis becomes acceptable."
+          ],
+          "correct": 0,
+          "explain": "Bar length carries the message, so a cut axis exaggerates differences. A footnote does not repair it, and changing chart type to justify the scale is worse."
+        },
+        {
+          "prompt": "The raw material includes a forty page internal strategy document you need to condense. Pasting it into a free online summarising tool would save two hours. The brief says nothing about outside tools. What do you do?",
+          "options": [
+            "Paste it in, since the brief does not forbid it and the output stays with you.",
+            "Do not upload it; read and condense it yourself, keeping the file inside the task.",
+            "Remove the company name first, then paste the rest into the tool.",
+            "Ask someone else to summarise it so the file never touches an online service."
+          ],
+          "correct": 1,
+          "explain": "Silence in a brief is not permission. Client material stays inside the task, and stripping the company name does not make unreleased strategy safe on a stranger's server."
+        },
+        {
+          "prompt": "You built a deck using a font you installed on your own machine. It looks excellent. The client will open the editable file in their own copy of presentation software. What is the risk?",
+          "options": [
+            "The file will be much larger and may be blocked by email systems.",
+            "The font will look slightly different but the layout will hold.",
+            "There is no risk, because presentation software always embeds the fonts you used.",
+            "Their machine substitutes another font and the text reflows, breaking your layout."
+          ],
+          "correct": 3,
+          "explain": "A font that exists only on your machine is silently replaced on theirs, changing line breaks and spacing across every slide. Common fonts avoid this completely."
+        },
+        {
+          "prompt": "You need a photograph of a busy warehouse for a title slide. A search engine shows a perfect image sitting on a company blog. What is the correct next step?",
+          "options": [
+            "Use it, but credit the blog in small text at the bottom of the slide.",
+            "Find a similar photograph in a free library, check its licence, and record the source.",
+            "Use it after cropping and shifting the colours so it is no longer identical.",
+            "Include it now and ask later whether the client already has permission."
+          ],
+          "correct": 1,
+          "explain": "Search shows you where images live, not what you may do with them. A licence you read and recorded gives the client a defensible answer months later."
+        },
+        {
+          "prompt": "You chart the monthly figures and see that growth flattened after April. The client's notes say growth accelerated all year. The deadline is in three hours. What do you do?",
+          "options": [
+            "Chart it straight and say in your delivery note that the data contradicts the summary.",
+            "Show the full year as one total, which matches the client's description.",
+            "Use a quarterly view, since it smooths monthly noise and reads more cleanly.",
+            "Leave the chart out and keep the client's sentence as the headline."
+          ],
+          "correct": 0,
+          "explain": "Flagging beats guessing. Smoothing, aggregating or dropping the chart all hide something the client needs to know before this deck reaches anyone."
+        },
+        {
+          "prompt": "One slide holds a chart on hiring costs, a table of open roles, and three lines about a new office. You cannot write a single headline that covers all of it. What is the best fix?",
+          "options": [
+            "Reduce the body text to sixteen points so everything fits with clean margins.",
+            "Keep the layout and use a broad headline such as People update.",
+            "Move the table into the speaker notes so the presenter reads it aloud.",
+            "Split it into separate slides, each with a headline stating its own point."
+          ],
+          "correct": 3,
+          "explain": "If one headline cannot cover the slide, the slide holds more than one idea. Splitting costs nothing, while smaller type and vague topic titles just hide the problem."
+        },
+        {
+          "prompt": "The client sent screenshots of their support dashboard for slide eleven. Zooming in, you can read three customer email addresses in a side panel. What do you do?",
+          "options": [
+            "Use it as delivered, since the client supplied the screenshot themselves.",
+            "Shrink the screenshot until the addresses are too small to read.",
+            "Cover the addresses with a solid shape and mention it in your delivery note.",
+            "Apply a heavy blur to the panel, which is normal practice for personal data."
+          ],
+          "correct": 2,
+          "explain": "A solid shape removes the data, while shrinking and blurring can be zoomed or reversed. Telling the operator lets the client decide whether more of the image needs treatment."
+        },
+        {
+          "prompt": "The brief says the deck will be emailed to twelve regional managers who will read it alone. You wrote short headlines and put the explanation in the speaker notes. What should change?",
+          "options": [
+            "Nothing, because the notes travel inside the file and readers can open them.",
+            "Move the essential explanation onto the slides, since no presenter will be there.",
+            "Record a voice track for each slide so the notes are heard instead of read.",
+            "Send the speaker notes as a separate document alongside the deck."
+          ],
+          "correct": 1,
+          "explain": "A read-alone deck has to carry its own explanation. Most readers never open the notes panel, and a second file guarantees the two versions drift apart."
+        },
+        {
+          "prompt": "The brief includes the client's existing template. You think its spacing and title colour are poor. You are building thirty new slides for them. What do you do?",
+          "options": [
+            "Use their template exactly, and raise any real readability problem in your delivery note.",
+            "Improve the spacing and colours, since a clearer deck serves the client better.",
+            "Use their template on the title slide and your own layout for content slides.",
+            "Build in your own theme and attach a version in their template as an option."
+          ],
+          "correct": 0,
+          "explain": "Matching their existing decks usually matters more to them than your preference. Raising the concern in your note gives them the choice instead of you making it for them."
+        },
+        {
+          "prompt": "A deck you delivered three weeks ago was approved. A friend asks to see examples of your work, and one chart slide from that job is the best thing you have made. What do you do?",
+          "options": [
+            "Show it with the client's name and numbers removed, which makes it anonymous.",
+            "Show it privately to one person only, since it is not being published anywhere.",
+            "Check first whether removing the logo would be enough to make it shareable.",
+            "Do not use it; rebuild a similar slide with invented data as your own sample."
+          ],
+          "correct": 3,
+          "explain": "Client work is not yours to show, anonymised or not, and copies should not survive delivery. A slide built on invented data proves the same skill and belongs to you."
+        },
+        {
+          "prompt": "You finish a deck in Google Slides and export it to the editable format the brief requested. The deadline is in twenty minutes. What is the last thing you should do before delivering?",
+          "options": [
+            "Compress the images so the file is small enough to email comfortably.",
+            "Open the exported file yourself and check every slide at full screen for shifted text.",
+            "Also export a PDF, since it will reveal any problem the other file has.",
+            "Run the spellcheck once more in Google Slides to catch late typing."
+          ],
+          "correct": 1,
+          "explain": "Conversion between tools moves text boxes and drops effects. Only opening the exported file shows what the client will actually see; the original cannot reveal it."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "Decide the argument before the deck",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What a deck is actually for",
+            "body": "A deck is not a document. It is a visual aid for a decision or an explanation, and every slide either moves that along or gets cut. Before you open any tool, find three things in the brief: who will see this, what they should do or believe afterwards, and whether it will be presented live or read alone. Those three answers change everything downstream, including how much text belongs on a slide. On Second Shift you cannot ask the client directly. The brief is your source and your delivery note is your channel back. If the brief is silent, do not build forty slides on a silent guess. Pick the reading the brief most supports, build that, and say which reading you used. A deck built for the wrong audience is not fixable by prettier slides."
+          },
+          {
+            "heading": "Write the one sentence first",
+            "body": "Before the first slide, write the single sentence the audience should be able to repeat the next morning. Not the topic, the point. Not quarterly marketing update, but rather we should move half the ad budget to email because email brought more signups at a quarter of the cost. That sentence is the spine. Every section exists to support it, and anything that does not support it is either a different deck or an appendix. Write it at the top of your working document and keep it visible. When the raw material tempts you with an interesting chart that serves nothing, the sentence is what lets you leave it out without feeling like you cut corners."
+          },
+          {
+            "heading": "Build the storyline in text",
+            "body": "Write your headlines as plain lines in a document before touching a slide tool. One line per slide, each stating the point of that slide as a full sentence. Then read the list top to bottom and ask whether a stranger would follow the argument from headlines alone. If there is a jump, you are missing a slide. If two lines say nearly the same thing, you have one slide too many. Reordering ten lines in a document takes a minute. Reordering ten finished slides with charts and images takes an hour. This is the cheapest place in the whole job to be wrong, so be wrong here on purpose, several times, until the order holds."
+          },
+          {
+            "heading": "A structure that usually holds",
+            "body": "When the brief gives you material but no shape, a reliable default is this. Here is the situation everyone agrees on. Here is the problem or change that breaks it. Here is what we recommend. Here is the evidence. Here is what happens next and who does what. Senior audiences especially expect the recommendation early, not saved for a reveal at slide thirty. If the raw material is a research dump with no recommendation in it, do not invent one. Present the findings in a clear order and say plainly in your delivery note that the source material contained no conclusion. Structure is your job. Deciding the client's position is not."
+          }
+        ],
+        "keyPoints": [
+          "A deck is a visual aid for a decision, not a document read alone.",
+          "Write the sentence the audience should repeat tomorrow before opening any tool.",
+          "Draft headlines in a text document first; reordering finished slides costs an hour.",
+          "Structure the material, but never invent a recommendation the source does not contain."
+        ]
+      },
+      {
+        "title": "Working from someone else's raw material",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Inventory before you build",
+            "body": "Raw material arrives as a mess. A transcript, three spreadsheets, an old deck, a document full of tracked changes. Before you build anything, spend fifteen minutes making an inventory. List every file, what is in it, its date, and whether it looks final or draft. Two spreadsheets with the same name and different numbers is the single most common trap, and finding it at the end costs you a rebuild. While you do this, note which figures appear more than once and whether they agree. If the old deck says revenue grew twelve percent and the spreadsheet says nine, you have found the question you need to settle before slide one, not after slide forty."
+          },
+          {
+            "heading": "Separate fact from assertion",
+            "body": "As you read, mark each claim as either something the material proves or something the author asserts. A number in a spreadsheet with a date and a source is provable. A sentence in a transcript saying the market is growing fast is an assertion. Both can appear in the deck, but they have to be dressed differently. Provable things get a chart, a figure and a source line. Assertions get stated as the client's view, not as fact, and never get a fake chart built around them. Inventing a chart to make an opinion look measured is the fastest way to damage a client, and it is exactly the kind of thing quality control catches and sends back."
+          },
+          {
+            "heading": "Assumptions and the delivery note",
+            "body": "You will hit questions you cannot ask, because you never speak to the client and the channel you have is the note you send with your delivery. So handle ambiguity by rule. Choose the safer assumption, meaning the one that is easier to correct if it turns out wrong. Make it visible on the slide rather than buried, for example a source line naming the file you used. Then state it plainly in your note. The two spreadsheets disagree on Q3, so I used the one dated March 12. That gives the operator a ten second decision instead of a puzzle. Working directly for your own clients, the same discipline applies, except you send the question first and the note anyway."
+          },
+          {
+            "heading": "Client data stays in the task",
+            "body": "Everything in the task stays in the task. Do not upload client files to online converters, free design sites that require an upload, or an AI tool to summarise, unless the brief explicitly says you may. Those services keep copies, and a client's unreleased numbers sitting on a stranger's server is a breach whether or not anyone notices. When the job is delivered and approved, delete your local copies. Do not keep the deck as a portfolio sample, do not screenshot a slide for social media, and do not reuse the client's chart in another client's work. If you want portfolio pieces, build them from public or invented data. That is the only version you own."
+          },
+          {
+            "heading": "Their words, your structure",
+            "body": "Use the client's vocabulary, not yours. If their material says partners, do not switch to resellers because it sounds sharper. If a product name is written a particular way, copy it exactly, including capital letters. Your job is to restructure and clarify, not to translate their world into your words. Where their phrasing is genuinely unclear, keep it and flag it rather than guessing at the meaning. Where a sentence is grammatically broken but the meaning is obvious, fix the grammar quietly. That line is simpler than it sounds. Fix how it reads, never change what it says. When you are unsure which side of the line you are on, keep the original and mention it in your note."
+          }
+        ],
+        "keyPoints": [
+          "Inventory every file and date first; conflicting versions are the usual trap.",
+          "Mark claims as proven or asserted, and dress them differently on the slide.",
+          "Where the brief is silent, take the safer assumption and state it in your note.",
+          "Client files never leave the task; no copies kept, no portfolio use.",
+          "Fix how a sentence reads, never change what it says."
+        ]
+      },
+      {
+        "title": "One idea per slide, stated plainly",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The headline states the point",
+            "body": "Most slide titles name a topic, such as Q3 results. A working headline states the conclusion, such as Q3 grew nine percent and all of it came from existing customers. Topic titles make the audience hunt for the point. Conclusion headlines hand it to them. This one change does more for a deck than any design work. Keep headlines to one line where you can and two at most, written as ordinary sentences rather than clipped fragments. Do not use capitals or punctuation tricks to add emphasis. If you cannot write the conclusion of a slide as a sentence, you do not yet know what the slide is for, and building the chart first will not tell you."
+          },
+          {
+            "heading": "Everything else proves the headline",
+            "body": "Once the headline states the point, everything else on the slide has one job, which is making that point believable at a glance. A chart, a small table, a diagram, two or three supporting lines. If an element does not support the headline, it belongs on another slide or nowhere. This is also the fastest way to repair a slide someone else built. Read the headline, then delete whatever does not serve it. Watch for the logo, the date, the page number and the decorative shape that together eat a third of the space and prove nothing. Space is the resource you are spending, and every element competes for the two seconds the audience gives the slide."
+          },
+          {
+            "heading": "Turning paragraphs into slide-sized pieces",
+            "body": "Raw material comes in paragraphs. Slides cannot hold paragraphs. Take the paragraph, find the claim, put the claim in the headline, and keep only the two or three specifics that make it land. A number, a date, a name. The rest goes into the speaker notes, where the presenter can say it out loud, or into an appendix slide after the end for people who want the detail. Nothing is lost. It is moved to where it works. A useful test is timing. If a line on a slide takes more than about eight seconds to read, the audience will read instead of listening, and you have just muted the presenter."
+          },
+          {
+            "heading": "When a slide holds two ideas",
+            "body": "If you cannot write one headline that covers everything on the slide, you have two slides. Split it. Two clear slides always beat one crowded slide, and nobody in the room is counting. The exception is a hard page limit in the brief. If you hit one, tell the operator which content you compressed rather than shrinking the font to eight points to make it fit. Body text below roughly eighteen points on a presented slide is a sign that you are hiding a structural problem behind typography. Documents meant to be read can carry smaller text, but then you are building a document, and it should be built as one from the start."
+          }
+        ],
+        "keyPoints": [
+          "Headlines state the conclusion, not the topic; that single change transforms a deck.",
+          "Everything on the slide must prove the headline; anything else moves or goes.",
+          "Detail belongs in speaker notes or an appendix, not shrunk to eight points.",
+          "Two clear slides beat one crowded slide; nobody counts the slides."
+        ]
+      },
+      {
+        "title": "Turning a paragraph into a diagram",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Four shapes cover most paragraphs",
+            "body": "Most business paragraphs are one of four shapes underneath. A sequence, where steps happen in order, which you draw as boxes and arrows. A comparison, where two or three options sit side by side against the same criteria, where a small table usually beats a picture. A structure, where parts make up a whole, shown by nesting or a stacked bar. A change over time, carried by a timeline or a line chart. Read the paragraph and ask which of the four it is. If it is none of them, it is probably an argument rather than a structure, and it belongs in words. Choosing the wrong shape is worse than plain text, because a diagram makes a promise about how the idea is organised."
+          },
+          {
+            "heading": "Building it with plain shapes",
+            "body": "You do not need special software. In Google Slides, use Insert then Shape for boxes, hold Shift while dragging to keep proportions, and use Arrange then Align and Distribute so boxes line up exactly rather than approximately. Group a finished diagram so it moves as one object. LibreOffice Impress offers the same tools under its Format and Shape menus. Canva free gives you ready diagram layouts, which is fine, but change the colours to the client's and delete the decorative extras that came with the template. Avoid built in three dimensional and glossy effects entirely. They add nothing, they date the deck instantly, and they often break when the file is opened in different software."
+          },
+          {
+            "heading": "Labels do the work",
+            "body": "An unlabelled diagram is decoration. Every box gets a noun, every arrow gets a verb or a condition, and anything representing a quantity gets a number and a unit. If an arrow means approved by finance, write approved by finance on it rather than using a colour the audience must decode from a legend. Keep the vocabulary identical to the rest of the deck. If the previous slide said onboarding, the box says onboarding, not activation. Then run the honest test. Cover the headline and show the diagram to someone who has not read the material. If they cannot tell you what it says, the diagram is not finished, however neat it looks."
+          },
+          {
+            "heading": "When a diagram is wrong",
+            "body": "Not every paragraph should become a picture. Three loosely linked ideas become three floating boxes and an arrow that means nothing, which is worse than one clear sentence. If the content is a list of items with attributes, use a small table rather than shapes. If it is one number that matters, put the number on the slide large and the context underneath. If it is a story or a judgement, write it as a short sentence and let the presenter speak. Diagrams earn their space when the relationship between the parts is the point. When the parts themselves are the point, plainer formats win."
+          }
+        ],
+        "keyPoints": [
+          "Most paragraphs are a sequence, a comparison, a structure, or a change over time.",
+          "Align and distribute, then group; approximate alignment is visible to everyone.",
+          "Label every box and arrow; an unlabelled diagram is decoration.",
+          "If the parts matter more than the relationships, use a table or a sentence."
+        ]
+      },
+      {
+        "title": "Charts that tell the truth",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "Let the question pick the chart",
+            "body": "Let the question choose the chart. Comparing amounts across categories is a bar chart, horizontal when the labels are long. Showing movement over time is a line chart. Showing parts of a whole can be a pie, but only with three or four slices, since beyond that a stacked bar or a sorted bar is far easier to read. A relationship between two measures is a scatter. That covers nearly everything a business deck needs. Avoid doughnuts, radars, three dimensional anything, and dual axis charts with two different scales, which are the easiest way in the world to make two unrelated lines look connected. If you are choosing a chart because it looks interesting, you have stopped answering the question."
+          },
+          {
+            "heading": "Axes and baselines",
+            "body": "Bar charts must start at zero. The length of a bar is the message, so cutting the axis at ninety makes a two percent difference look like a doubling, and that is a lie whether or not you meant it. Line charts may start above zero, because the message is the slope rather than the length, but label the axis clearly so nobody misreads the scale. Keep intervals even and do not skip a year because data is missing. If percentages should add to one hundred and they add to ninety seven, find out why before publishing, and if it is rounding, say so in a footnote. These are not stylistic preferences. A misleading chart is the client's reputation, signed with your work."
+          },
+          {
+            "heading": "Say what the numbers are",
+            "body": "Every chart needs four things. What is measured, the unit, the period covered, and where the number came from. Missing units are among the most common defects sent back in revision. Write the source in small text at the bottom of the slide, using the client's own wording, for example internal sales report, January to June. If a percentage comes from a small sample, put the count beside it, because forty percent of five people is a very different statement from forty percent of five thousand. If the raw material does not tell you where a number came from, do not invent a plausible source. Leave a visible placeholder and raise it in your delivery note."
+          },
+          {
+            "heading": "Strip the chart down",
+            "body": "Default chart settings are built for spreadsheets, not for a room. Delete the heavy gridlines, drop the chart border, and remove the legend by labelling lines or bars directly where they sit. Use one strong colour for the series that matters and grey for the rest, so the eye lands where the headline points. Sort bars by value unless the categories have a natural order such as months. Round numbers to what the decision needs, so nine point three percent, not nine point two eight four. This is not decoration. Every element you remove makes the remaining ones easier to read, and the audience has only a few seconds to spend."
+          },
+          {
+            "heading": "When data contradicts the summary",
+            "body": "Sometimes you build the chart and it does not show what the client's summary says. Do not narrow the date range until it does. Do not switch to an index that hides the drop. Do not quietly change the chart type until the shape looks better. Build it straight, then say what you found in your delivery note. The summary says growth accelerated, the monthly data shows it flattened after April. That note is one of the most valuable things you will ever send. Being wrong in public costs the client far more than a revision costs anyone. Flagging beats guessing every time, and it separates someone who assembles slides from someone a client relies on."
+          }
+        ],
+        "keyPoints": [
+          "The question picks the chart, not the other way round.",
+          "Bars start at zero; a cut axis turns a small gap into a lie.",
+          "Label the measure, unit, period and source on every chart, every time.",
+          "If the data contradicts the summary, flag it instead of reshaping the chart."
+        ]
+      },
+      {
+        "title": "Making forty slides look like one",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "Set the master before slide two",
+            "body": "Consistency is not taste, it is a system, and the system lives in the master or theme. In Google Slides, open View then Theme Builder to set fonts, sizes, colours and the position of the title box once, and every slide inherits it. LibreOffice Impress calls it View then Master Slide. In Canva free, the template you choose plays the same role. Set this up before you build content, because retrofitting a master onto forty finished slides means touching all forty. If the client sent an existing template, use theirs and do not improve it. Matching their other decks is usually worth more to them than your better spacing, and departing from the template is the sort of thing that gets a deck sent back."
+          },
+          {
+            "heading": "Two fonts and fixed sizes",
+            "body": "Two fonts is plenty and one is fine. Pick your sizes and stay on them. One size for headlines, one for body, one for the small source line, and nothing invented in between. When everything is bold, nothing is emphasised, so use bold for the one number that matters and leave the rest alone. Avoid capitals for anything longer than a couple of words, because capitals are slower to read. Use fonts that exist everywhere, such as Arial, Calibri, Georgia or the standard Google Fonts, so the file does not reflow on another machine. An unusual font that lives only on your laptop is silently replaced on theirs, and the layout you spent an hour on breaks."
+          },
+          {
+            "heading": "Alignment and the invisible grid",
+            "body": "The difference between amateur and professional slides is usually alignment, not creativity. Every element should sit on a small number of invisible lines. The same left margin on every slide, the same top position for every title, the same gap between items. Use the align and distribute tools rather than your eye, and turn on guides. Keep generous empty margins, since a slide crowded to the edges reads as anxious and prints badly. When something feels wrong on a slide and you cannot name why, it is usually that two elements are nearly aligned rather than aligned. A near miss is more visible than an obvious difference. Fix it by snapping to the grid, not by nudging."
+          },
+          {
+            "heading": "Give every colour a job",
+            "body": "Give every colour a job and write the jobs down. One colour for emphasis, one neutral grey for everything secondary, and the client's brand colours wherever you have them. Three or four colours in total is usually right. Do not add colour because a slide looks empty. Check contrast, because light grey text on white disappears on a projector and a decorative gradient behind text becomes unreadable in a bright room. Roughly eight percent of men have some form of colour vision deficiency, so never use red and green alone to mean opposite things. Add a label, a shape or a difference in position so the meaning survives without colour, including in black and white print."
+          },
+          {
+            "heading": "Repairing an inherited deck",
+            "body": "You will often be handed a deck built by five people over two years. Do not redesign it unless you were asked to. Run a repair pass instead. Apply the master so titles land in the same place, unify the fonts and sizes, align the content boxes, and standardise colours to the client's palette. Then list what you changed in your delivery note. Keep the odd choices that are clearly deliberate, such as a strange but consistent title colour, and fix the ones that are clearly accidents, such as three sizes of the same heading. Repair work is quiet, it is never complimented, and it is noticed immediately when it is missing."
+          }
+        ],
+        "keyPoints": [
+          "Set the master or theme before building content, never after forty slides.",
+          "Two fonts, fixed sizes, and only fonts that exist on every machine.",
+          "Align with the tools, not your eye; nearly aligned is worse than different.",
+          "Never let colour alone carry meaning; it dies in print and for many readers.",
+          "Repair an inherited deck rather than redesigning it unasked."
+        ]
+      },
+      {
+        "title": "Images, icons and licences",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Why you cannot grab from search",
+            "body": "An image found through a search engine is not free to use. Search shows you where pictures live, not what you are allowed to do with them, and most of what it shows belongs to someone, often an agency that employs people to find unlicensed use. Invoices for one unlicensed photograph are real, and they land on the client, who then asks who put it there. The rule is simple. If you cannot name the licence and where you got it, it does not go in the deck. This is not caution for its own sake. It is the difference between a supplier who creates risk and one who removes it."
+          },
+          {
+            "heading": "Where free images come from",
+            "body": "Free libraries such as Unsplash, Pexels and Pixabay offer photographs usable in commercial work, and Openverse and Wikimedia Commons collect openly licensed material, though Wikimedia in particular mixes several licences with different conditions. For icons, Google Material Symbols and the free tiers of the common icon sets cover most needs. Do not trust a summary, including this one. Open the licence page on the day you download, read what it allows and what it requires, and follow it. Terms change. Some licences require credit, some forbid using a person's face in a way that suggests endorsement, and some forbid resale inside a template. Reading a licence takes two minutes and is part of the job."
+          },
+          {
+            "heading": "Keep a source record",
+            "body": "Keep a plain record for every asset you place. File name, where it came from, the licence, and the date you downloaded it. Three columns in a text file is enough. Deliver it alongside the deck, or summarise it in your delivery note. Six months later, when someone asks whether the photograph on slide four is cleared, that record is the answer and it takes seconds to produce. Without it, the safest response is to remove the image and rebuild the slide. The habit costs you a minute per image and makes you the person clients keep, because most people do not do it and everyone eventually needs it."
+          },
+          {
+            "heading": "Screenshots, logos and faces",
+            "body": "Screenshots from the client's own systems are usually fine, but check them closely before they go in. Real customer names, email addresses, account numbers and internal comments hide in the corners of screenshots. Crop them out, and where the underlying text must be unreadable use a solid shape rather than a blur, because some blurs can be reversed. Competitor logos in a factual comparison are normally acceptable, but never redrawn or altered. Be careful with stock photographs of people. A smiling model beside the words our customers implies something untrue. If the client has photographs of their real team or their real site, those are better than anything in a stock library."
+          },
+          {
+            "heading": "Images that earn their place",
+            "body": "An image earns its place by carrying meaning, not by filling space. One strong photograph across a whole slide, with the headline over a darkened area, beats four small pictures scattered around text. Crop to the part that matters instead of shrinking the whole frame. Never stretch an image out of proportion, and hold Shift while resizing to keep it true. Check resolution at full size, because a picture that looks acceptable in a small box turns to mush on a projector. When the deck is finished, compress the images if the file is heavy, since a deck that will not open in an email is a deck nobody read."
+          }
+        ],
+        "keyPoints": [
+          "Search shows you where images live, not what you may do with them.",
+          "Read the licence page yourself on the day you download; terms change.",
+          "Record file, source, licence and date for every asset you place.",
+          "Screenshots hide real names and account numbers; cover them with solid shapes."
+        ]
+      },
+      {
+        "title": "Speaker notes and the reading version",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Notes are for the presenter",
+            "body": "Speaker notes sit under the slide and are visible only to the person presenting. They exist so the slide can stay clean while the presenter still has what they need to say. Write them for someone standing in front of a room, slightly nervous, who needs to find their place fast, not for a reader with time to spare. Short lines, the specific figures, the name of the source if someone asks, and the sentence that leads into the next slide. Google Slides, LibreOffice Impress and Canva all provide a notes area under the canvas. Do not keep notes in a separate document, because the two will drift apart the moment there is a revision."
+          },
+          {
+            "heading": "What goes in the notes",
+            "body": "Put four things in the notes. The point of the slide in one sentence, so the presenter can open with it. The two or three facts behind the number, for whoever asks where it came from. Anything sensitive about how far the presenter should go, for example that a figure is unaudited or a date is not yet confirmed. And a short transition into the next slide, which is what most presenters actually struggle with. Keep it to what fits on half a screen, since nobody reads a paragraph while presenting. If you are writing for a presenter you have never met, write plainly and avoid jokes and idioms, because delivering someone else's joke is uncomfortable."
+          },
+          {
+            "heading": "Decks that travel without a presenter",
+            "body": "A deck that will be emailed and read alone is a different product from a deck presented live. Nobody is there to explain it, so the slide has to carry more. Fuller headlines, a short paragraph under the chart, direct labels instead of a legend the presenter would have talked through. Speaker notes disappear for most readers, so anything essential must move onto the slide itself. Find out which version you are building before you start, because converting one into the other is close to a rebuild. If the brief does not say, build the presented version and add one short summary line per slide, which survives both uses reasonably well."
+          },
+          {
+            "heading": "Handouts and appendices",
+            "body": "When detail does not fit but the client needs it available, use an appendix after a clearly marked end slide. Number appendix slides separately and reference them from the main deck, for example see appendix two for the full regional breakdown. This keeps the argument tight while proving you did not lose the detail. Some clients want a handout carrying more text than the presented slides. If so, that is a second export rather than a change to the deck, and you should say which is which in your delivery note. Never assume one deck can double as a report. When the brief asks for both, they are two files."
+          }
+        ],
+        "keyPoints": [
+          "Speaker notes keep the slide clean and give the presenter what to say.",
+          "Write notes as short lines with figures, sources and a transition.",
+          "A read-alone deck must carry on the slide what a presenter would say.",
+          "Detail goes in a marked appendix, referenced from the main deck."
+        ]
+      },
+      {
+        "title": "Exporting and the pre-send check",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Choose the format for the medium",
+            "body": "PDF is the safe default for anything being sent out, because it fixes fonts and layout on every machine. Send the editable file when the brief asks for it, or when the client will keep working on the deck, and match the requested format exactly. If the request names an editable presentation format, export it from Google Slides or Impress and then open the exported file yourself to see what moved, because conversion between tools shifts text boxes and can drop effects. Slide size matters too. Widescreen sixteen by nine for screens, and a page shaped setup only if the file is genuinely going to be printed as a document. Set that at the start, never at the end."
+          },
+          {
+            "heading": "What breaks in export",
+            "body": "The two things that break most often are fonts and links. If you used a font the recipient does not have, their machine substitutes another and every text box reflows, which is why common fonts matter. Embedded video and animation frequently do not survive export, so never let a key point depend on one. Check that any hyperlink you added still goes where it should after export. Open the exported file on a different device if you can, or at least in a different application, and look at it once at full screen. Exporting is not the end of the job. Reviewing what you exported is the end of the job."
+          },
+          {
+            "heading": "Printing and black and white",
+            "body": "If the deck may be printed, check it in black and white before sending. Colour coded charts collapse into identical greys, pale text vanishes, and a dark full bleed background consumes a great deal of ink and often prints as a muddy block. Test by exporting to PDF and previewing in grayscale. Make sure no meaning depends on colour alone, which is the same rule that keeps the deck readable for people with colour vision deficiency. Check margins as well, since elements pushed to the very edge of a slide are frequently cut off by printers. When in doubt, keep an empty band around the edge of every slide."
+          },
+          {
+            "heading": "The pre-send pass",
+            "body": "Before you deliver, do one slow pass with the deck at full screen rather than in the editing view. Check that every headline states a point and that no headline is duplicated. Check every number against the source material once more, especially any you typed by hand. Run a spellcheck, then read the deck aloud, which catches the errors a spellcheck approves. Confirm every chart has units, a period and a source. Look for the placeholder text you left on slide six. Confirm the slide numbers run correctly and the file name is clear and dated. Then leave it for ten minutes, come back, and look once more before you upload."
+          },
+          {
+            "heading": "The delivery note",
+            "body": "Your note to the operator is part of the deliverable. Say what you built, what you assumed, and what you would check with the client if you could. For example, forty two slides plus five appendix slides, exported as PDF and as an editable file, used the March 12 spreadsheet where the two sources disagreed, slide nineteen has no source in the raw material and is marked, images are from Pexels with the licence list attached. That note is what lets quality control approve you quickly, and it turns a revision into a two minute fix. Do not use it to apologise. Use it to be precise."
+          }
+        ],
+        "keyPoints": [
+          "PDF unless the brief asks otherwise, and always open what you exported.",
+          "Uncommon fonts reflow on other machines and break the layout you built.",
+          "Check the deck in grayscale before it can reach a printer.",
+          "Deliver a note stating what you built, what you assumed, and what you flagged."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can turn raw notes and spreadsheets into a structured argument before building a single slide.",
+      "You can write headlines that state the point and cut everything that does not support them.",
+      "You can choose an honest chart, label it fully, and flag data that contradicts the summary.",
+      "You can set a master so forty slides look like one document.",
+      "You can source images legally and keep a licence record for every asset.",
+      "You can export for screen, print or reading and run a real pre-send check."
+    ],
+    "slug": "slides-decks",
+    "summary": "You will learn to build a presentation from someone else's raw material: finding the argument first, writing headlines that state the point, turning paragraphs into diagrams, choosing charts that do not mislead, and holding forty slides to one consistent system. We cover image licensing, speaker notes, exporting for screen and print, and the pre-send check. Free tools throughout, including Google Slides, Canva free and LibreOffice Impress.",
+    "tagline": "Build decks that make the argument, not just the slides.",
+    "title": "Presentations and slide decks",
+    "track": "craft"
+  },
+  "design-basics": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You are placing a white headline over a client photo of a beach. The sky area is bright and the water is dark, so half the headline disappears. The brief requires this photo.",
+          "options": [
+            "Add a heavy drop shadow to every letter so the headline separates from the sky",
+            "Switch the headline to the brand yellow, which is brighter than plain white",
+            "Add a dark gradient overlay behind the text area, then keep the headline white",
+            "Outline each letter in black so it stays readable over both sky and water"
+          ],
+          "correct": 2,
+          "explain": "An overlay gives the text one consistent background to sit on. Shadows and letter outlines are patches that still look messy at the size people actually see."
+        },
+        {
+          "prompt": "A client's brand yellow fails a contrast check as body text on white. The brief says use brand colours throughout, and you cannot reach the client directly.",
+          "options": [
+            "Keep body text dark, use the yellow for large headings or backgrounds, and explain in your note",
+            "Darken the brand yellow slightly until it passes the check, since it is barely different",
+            "Use the yellow as specified. The brief is the brief, and contrast is a preference",
+            "Swap the yellow for another brand colour and mention nothing, since the palette is approved"
+          ],
+          "correct": 0,
+          "explain": "Brand colours are not yours to alter. Use the colour where it works, keep the text readable, and tell us what you did so the client can decide."
+        },
+        {
+          "prompt": "The only logo you received is a 200 pixel wide PNG pulled from the client's website. The task is a printed A4 flyer with the logo running across the top.",
+          "options": [
+            "Place it at the size you need and add sharpening so the edges look crisper",
+            "Ask for the original vector or high resolution logo before building the layout around it",
+            "Upload it to a free online image upscaler and use the enlarged result",
+            "Use it at its native small size in a corner so the blurriness is less visible"
+          ],
+          "correct": 1,
+          "explain": "Enlarging adds no detail, and uploading client assets to outside services breaks confidentiality. The real file exists, and asking for it costs less than a reprint."
+        },
+        {
+          "prompt": "A client photo is landscape. The layout needs a tall portrait space. Dragging the corner to fill the space distorts the people in the shot.",
+          "options": [
+            "Stretch it to fit but reduce the opacity so the distortion is less obvious",
+            "Leave white bars above and below the photo so the proportions stay correct",
+            "Fit the whole photo inside the space and fill the remainder with the brand colour",
+            "Crop to portrait around the subject, or request a different image if cropping ruins it"
+          ],
+          "correct": 3,
+          "explain": "Cropping keeps proportions and keeps the subject. Stretching is visible even when people cannot name it, and bars or fills advertise that the wrong image was used."
+        },
+        {
+          "prompt": "The client sends four hundred words for a one page A4 handout designed for eleven point body text. It does not fit.",
+          "options": [
+            "Reduce the body text to eight points and tighten line spacing until everything fits",
+            "Keep type readable, use a second page or shorter copy, and say so in your note",
+            "Reduce the margins to five millimetres and run the text closer to the edges",
+            "Cut the paragraphs you judge least important so the page fits at the correct size"
+          ],
+          "correct": 1,
+          "explain": "Too much content is a content problem. Shrinking type or margins makes it unreadable, and cutting the client's copy without telling anyone is not your call."
+        },
+        {
+          "prompt": "You are formatting a status table. Overdue rows are filled red and on track rows green. The client will print it on an office black and white printer.",
+          "options": [
+            "Keep the colours and increase their saturation so they stay distinguishable when printed",
+            "Remove the colours entirely and let the reader work the status out from the dates",
+            "Keep the colours and add a status word in a column so meaning survives greyscale",
+            "Replace red and green with dark blue and light blue, which print as different greys"
+          ],
+          "correct": 2,
+          "explain": "Colour must never be the only carrier of meaning. A status word survives greyscale printing and colour blindness, and it costs one column."
+        },
+        {
+          "prompt": "The brand guideline names a paid typeface you do not own. A font sharing site offers it as a free download and your deadline is tonight.",
+          "options": [
+            "Download it from the sharing site. The client owns a licence, so the file is covered",
+            "Use it for headings only, since a small amount of use is generally accepted",
+            "Recreate the headings as images so the font file never appears in the delivered file",
+            "Use the closest free alternative, keep everything else on brand, and name the substitution"
+          ],
+          "correct": 3,
+          "explain": "Fonts from sharing sites are usually pirated and put the client at legal risk. A named substitution is honest and easy for us to correct later."
+        },
+        {
+          "prompt": "A task includes a client spreadsheet and product photos. A free online tool would remove the photo backgrounds in seconds, and an AI assistant could rewrite the captions faster than you can.",
+          "options": [
+            "Use both tools but delete your accounts afterwards so no copies remain anywhere",
+            "Do neither unless the brief allows it. Client material stays inside the task",
+            "Use the background remover, since photos are not sensitive data like the spreadsheet is",
+            "Use the AI assistant for captions only, since text alone cannot identify the client"
+          ],
+          "correct": 1,
+          "explain": "Client material does not go to third party services unless the brief says so. You cannot promise what those services keep or do with it afterwards."
+        },
+        {
+          "prompt": "Your one page layout has a centred heading, left aligned body text, a right aligned date, and cards spaced at seven, nine and eleven millimetres because you nudged them by eye. The client says it looks unprofessional but cannot say why.",
+          "options": [
+            "Pick one alignment for the text and set every gap to the same value using align tools",
+            "Add ruled lines between the sections so the divisions look deliberate",
+            "Increase the heading size so the page has a stronger focal point",
+            "Put the brand colour behind each card so the blocks read as a set"
+          ],
+          "correct": 0,
+          "explain": "Mixed alignment and uneven gaps are exactly what people feel and cannot name. Consistent edges and repeated spacing values fix it without adding anything new."
+        },
+        {
+          "prompt": "You have finished a logo lockup the client will use on their website header and on a printed banner two metres wide.",
+          "options": [
+            "Export one large PNG at three thousand pixels wide, which covers both uses",
+            "Export a JPG at maximum quality, which keeps the file small for the website",
+            "Provide an SVG for web and a print ready PDF, and ask the printer its requirements",
+            "Provide a PNG for the web and the same PNG scaled up for the banner"
+          ],
+          "correct": 2,
+          "explain": "Vector formats stay sharp at any size, which is what a two metre banner needs. Pixel formats cannot be enlarged without going soft."
+        },
+        {
+          "prompt": "You need a photo of a smiling office worker for a client advertisement. You find a perfect one on a free library marked editorial use only, and another on a competitor's website.",
+          "options": [
+            "Use the competitor's photo, since it is already published publicly on the internet",
+            "Use the editorial image and credit the photographer in small text at the bottom",
+            "Use the editorial image, since a free library would not host anything restricted",
+            "Find a library image cleared for commercial use, and record the licence in your note"
+          ],
+          "correct": 3,
+          "explain": "Editorial use excludes advertising, and a credit does not change the licence. Images on another company's site are not yours to take."
+        },
+        {
+          "prompt": "It is one hour before your deadline. The brief did not specify the slide size and you built the deck at four by three. You now suspect the client presents on a sixteen by nine screen.",
+          "options": [
+            "Deliver as built. The brief did not specify, so the omission is not your responsibility",
+            "Deliver it and state plainly in your note that the size was unspecified and which you chose",
+            "Rebuild at sixteen by nine and deliver only that, since the newer shape is safer",
+            "Deliver both versions with no note, so the client can simply pick the one they need"
+          ],
+          "correct": 1,
+          "explain": "A named assumption takes one sentence and lets us correct it before the client sees the file. Silence turns a small gap into a revision."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "Design decisions, not design taste",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "You will touch design work",
+            "body": "Most of the work you do is not design. But a lot of it lands in front of someone's eyes: a slide deck for a board meeting, a one page summary, a formatted proposal, a simple social graphic, a cleaned up report. Nobody is asking you to be a designer. They are asking for work that does not look broken. Broken means the title collides with the logo, three fonts fight each other, the photo is stretched, the colours are almost the brand colours. A client rarely writes that down as a complaint. They just stop trusting the file. This course gives you enough judgement to avoid that, and to explain your choices when someone asks why you did it that way."
+          },
+          {
+            "heading": "Four decisions, every time",
+            "body": "Almost everything that reads as good design comes from four decisions. What should be seen first, and is it clearly bigger or bolder than the rest. What lines up with what, and are there fewer edges than you started with. What stands apart enough to be read without effort. How much empty space sits between things, and is it consistent. That is hierarchy, alignment, contrast and spacing. You can apply all four without knowing any theory, without taste, and without an eye. When a layout feels wrong and you cannot say why, walk the four questions in order. In our experience one of them is always the answer, and it is usually spacing."
+          },
+          {
+            "heading": "Read the brief before opening Canva",
+            "body": "Before you touch a tool, get four things from the brief. Where does this end up: a printed page, a phone screen, a projector, an email. What exact size or aspect ratio that destination needs. Which brand assets exist: a logo file, hex codes, named fonts, an existing template. What done looks like, and by when. If something is missing, do not invent it quietly. On a Second Shift task you never contact the client, so we are the route: state the gap and the assumption you made in the note you send with your delivery. A named assumption is easy for us to correct. A silent one turns into a revision."
+          },
+          {
+            "heading": "What never leaves the task",
+            "body": "Client material is theirs, not yours. Their logo files, photos, customer lists and unpublished documents stay inside the task. Do not upload them to a free online converter, an image enhancer, an AI tool or your personal drive to make life easier. Those services keep copies, and you cannot promise what happens next. Use the tools the brief allows, work in your own account, and when the task is approved, delete the working files. You also do not keep the finished piece as a portfolio sample, even a beautiful one, and even with the name blurred. If you want work to show, build your own practice pieces with your own content. That is what this course is designed to help you do."
+          }
+        ],
+        "keyPoints": [
+          "Nobody expects a designer. They expect a file that does not look broken.",
+          "Hierarchy, alignment, contrast, spacing. Four questions answer almost every layout problem.",
+          "Get destination, size, brand assets and deadline before opening any tool.",
+          "Name your assumptions in the delivery note instead of guessing silently.",
+          "Client files never leave the task, and finished client work is not your portfolio."
+        ]
+      },
+      {
+        "title": "Hierarchy: what gets seen first",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "One element has to win",
+            "body": "Open any layout you are asked to make and ask what a person should take away if they look for one second. The event name. The number. The headline. That element wins, and everything else is arranged to lose gracefully. Beginners emphasise everything: bold title, bold subtitle, bold call to action, a bright box around the date. When every part shouts, the eye has nowhere to land and the piece reads as noise. Rank the content before you design. One primary message, one or two secondary lines, then supporting detail like a website address or a date. If the client insists three things matter equally, pick the one that would still matter if the reader saw nothing else, and treat the rest as secondary."
+          },
+          {
+            "heading": "Four levers of emphasis",
+            "body": "You create hierarchy with size, weight, position and space, in that order of power. Size is the bluntest: a headline around two to three times the body text reads instantly as the headline. Weight comes next: bold for the primary line, regular for everything else, and resist bolding whole paragraphs. Position matters because most readers start at the top left of a page and at the centre of a social graphic. Space is the quiet lever: an element with room around it looks important even at the same size as its neighbours. Colour is a fifth lever but the weakest one to lean on, because it fails in greyscale printing and for readers with colour blindness. If your hierarchy only works in colour, it does not work."
+          },
+          {
+            "heading": "The squint test",
+            "body": "Before you deliver anything, shrink it. Zoom the page out to about a quarter size, or look at it on your phone, or blur your eyes until the text becomes grey shapes. Whatever you can still identify is your real hierarchy. If the logo survives and the headline does not, you have a problem the client will notice in one second. This takes fifteen seconds and catches more errors than any other habit in this course. Do it again after the last edit, because late changes are where hierarchy usually breaks: someone adds a line, you shrink the headline to fit, and the piece quietly flattens. If nothing stands out at thumbnail size, make the winner bigger rather than making everything else smaller."
+          },
+          {
+            "heading": "Documents and slides need it too",
+            "body": "Hierarchy is not only for graphics. A ten page report needs a reader to find a section without reading every line. In Google Docs, use the built in Heading 1 and Heading 2 styles rather than manually enlarging and bolding text. Real styles keep sizes consistent, build the outline panel, and let you generate a table of contents that updates. On slides, one idea per slide, and a title that states the point rather than naming the topic. Sales grew forty percent in Q3 tells the room something. Q3 results does not. Keep every slide title in the same position and size, because a title that jumps two centimetres between slides is visible to everyone watching the deck."
+          }
+        ],
+        "keyPoints": [
+          "Decide the one message that wins before you open the tool.",
+          "Size, weight, position and space create emphasis. Colour alone is not enough.",
+          "Zoom to thumbnail size before delivering. What survives is your real hierarchy.",
+          "Use real heading styles in documents instead of manual bolding."
+        ]
+      },
+      {
+        "title": "Alignment, spacing and grouping",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Fewer edges is cleaner",
+            "body": "Alignment means every element sits on a line shared with something else. Those lines are invisible, but the eye finds them, and a page with three invisible lines looks calm while the same page with eleven looks accidental. Default to left alignment for text. It gives every line a hard edge to start from and it is the easiest thing to read in long form. Centre alignment is fine for a short headline, a title slide or a certificate, and painful for a paragraph, because the reader hunts for the start of each line. Whatever you choose, be consistent: do not centre the heading and left align the text beneath it unless you are doing it deliberately across the whole piece. Mixed alignment is the most common reason work looks amateur."
+          },
+          {
+            "heading": "Margins and safe areas",
+            "body": "Give the whole layout a margin and keep it equal on every side unless the design says otherwise. Nothing except a deliberate full bleed background should touch the edge of the canvas. For anything going to print, keep important content well inside the trim, because printers cut with a small tolerance and text near the edge can lose a few millimetres. For social posts, remember the platform adds its own furniture: profile pictures, captions and buttons sit over the corners and the lower band of the frame, so keep your headline and logo away from those zones. When you are unsure, more margin is safer than less. Crowded edges read as cheap, and they are the first thing a brand manager points at."
+          },
+          {
+            "heading": "Space says what belongs together",
+            "body": "Space groups things more strongly than boxes or lines do. A caption placed close under its image belongs to the image. Move it down a few millimetres so the gap matches the gap to the next paragraph, and the reader no longer knows what it describes. Use this deliberately: small gaps inside a group, larger gaps between groups. The practical trick is to pick a small set of spacing values and reuse them, for example eight, sixteen, twenty four and thirty two pixels, instead of typing a different number each time. Consistent spacing is most of what people mean when they say a design looks professional. When something feels crowded, do not shrink the text. Increase the gap between the groups and leave the text alone."
+          },
+          {
+            "heading": "Let the tool align for you",
+            "body": "Nudging by eye is where errors creep in, because two pixels of misalignment is invisible while you work and obvious in the finished file. In Canva, drag an element until the smart guides appear, select several elements and use the align tools, or open the position panel and type exact coordinates. Tidy up spreads selected items evenly. In Google Slides and Docs, use the ruler, guides and the align and distribute menus. The habit worth building is to duplicate rather than redraw: copy a card you already positioned, move it with the arrow keys, and its size and spacing come along unchanged. Then check the corners at full zoom before you export, because a half aligned grid is worse than an obviously loose one."
+          },
+          {
+            "heading": "Empty space is doing work",
+            "body": "New designers fill space because filling feels like effort. Empty space is not waste. It is what makes the rest readable, and it is free. If a client sends more content than fits, the answer is rarely a smaller font. It is fewer words, a second page, or a second slide. Say that plainly in your note rather than shrinking body text to eight points to force a fit, because at that size nobody reads it and everyone can see it was forced. There is a limit in the other direction too: a lonely headline floating in an enormous white page looks unfinished rather than elegant. Aim for space that is generous and even, not dramatic, and let the margins be the biggest empty areas on the page."
+          }
+        ],
+        "keyPoints": [
+          "Left align by default. Mixed alignment is the fastest way to look amateur.",
+          "Keep an equal margin. Nothing important sits near a trimmed or covered edge.",
+          "Small gaps inside a group, bigger gaps between groups.",
+          "Use smart guides, align tools and typed coordinates instead of nudging by eye.",
+          "Too much content is a content problem, not a font size problem."
+        ]
+      },
+      {
+        "title": "Contrast and readability",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Contrast means it can be read",
+            "body": "Contrast has two jobs. The first is legibility: dark text on a light background, or light text on a dark background, with enough difference that a tired person on a phone in daylight can read it. Grey text on a slightly lighter grey looks refined on your screen and disappears on everyone else's. The second job is emphasis: a difference big enough to signal that two things are not the same. Half differences are the trap. A heading two points larger than the body text does not look intentional, it looks like a mistake. If two elements are different, make them clearly different in size, weight or colour. If they are the same kind of thing, make them identical. Nearly the same is the only wrong answer."
+          },
+          {
+            "heading": "Text over photographs",
+            "body": "Placing text directly on a photograph is where most amateur work falls apart, because a photo is not one colour. Your white headline is readable over the dark trees and vanishes over the sky. Three fixes work, in order of quality. Choose or crop the image so the text sits over a calm, even area. Add a dark overlay across the whole image, or a gradient that is dark where the text sits, then place light text on top. Or put the text on a solid block beside the image rather than over it. What does not work is a drop shadow doing all the labour, or an outline around every letter. Always check the result at the size it will actually be seen, not at full screen in the editor."
+          },
+          {
+            "heading": "Check contrast, do not guess",
+            "body": "Your monitor lies to you. It is brighter than the phone your work will be read on, and you already know what the text says, so your brain fills in what your eye cannot resolve. Use the free WebAIM Contrast Checker: paste the text colour and the background colour as hex codes and it returns a ratio. The widely used accessibility guideline, WCAG AA, asks for at least four and a half to one for normal body text, and three to one for large or heavy text. Brand colours often fail this, especially yellow, light green and pale grey on white. When that happens, do not change the brand colour. Darken the text, put the brand colour behind large type only, or use it as a background with a colour that passes on top."
+          },
+          {
+            "heading": "Colour alone is not a signal",
+            "body": "Around one man in twelve has some form of colour blindness, and red and green are the pair most often confused. Documents also get printed in black and white far more often than anyone plans for. So never let colour be the only thing carrying meaning. If a chart has a red line and a green line, label the lines directly or use different dash patterns as well. If a table marks overdue rows in red, add the word overdue in a column. If a form marks required fields in orange, add the word required. A quick test: turn the file to greyscale, or screenshot it and desaturate the screenshot. If any information disappears, your design is carrying meaning in a channel some readers do not have."
+          }
+        ],
+        "keyPoints": [
+          "Make things clearly different or exactly the same. Nearly the same looks like a mistake.",
+          "Text over photos needs a calm area, an overlay, or a solid block.",
+          "Check hex pairs in the free WebAIM checker instead of trusting your monitor.",
+          "Never let colour be the only carrier of meaning."
+        ]
+      },
+      {
+        "title": "Type: pairing and safe defaults",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Two typefaces, maximum",
+            "body": "One typeface used across a whole piece is never wrong. Two is the practical maximum: one for headings, one for body text. Three is almost always a sign that someone kept adding. When you pair two, pair them for contrast rather than similarity. A serif heading over a sans serif body works because the two are clearly doing different jobs. Two similar sans serifs sitting next to each other just look like a mistake. The easy alternative is a superfamily: one typeface that ships with many weights, where you use the bold weight for headings and the regular weight for the body. Avoid decorative, script and handwriting faces for anything longer than a few words. They are hard to read at small sizes and they date badly."
+          },
+          {
+            "heading": "Pairings that always work",
+            "body": "Google Fonts is free, and the files can be downloaded and installed on your own machine as well as used inside Canva and Google Docs. Four pairings that hold up in almost any business context: Lora for headings with Source Sans for body, Playfair Display with Lato, Merriweather with Open Sans, and Inter used alone across both roles in different weights. If you are working in a plain document that has to open cleanly on a stranger's computer, use what is already installed everywhere: Arial, Helvetica, Calibri, Georgia or Times New Roman. Boring is a feature in a contract or a report. Keep a short list of your own defaults so you are not choosing fonts at eleven at night with a deadline in an hour."
+          },
+          {
+            "heading": "Size, spacing and line length",
+            "body": "Three numbers make text comfortable. Body text sits around ten to twelve points in a printed document, and around sixteen pixels on screen, which is larger than most people expect. Line spacing sits around one point four to one point six times the text size, because lines packed tightly become a grey block and lines spread far apart stop reading as a paragraph. Line length sits around fifty to seventy five characters, roughly ten to twelve words, which is why a full width paragraph across a wide slide is uncomfortable and a two column layout often is not. On slides, treat about twenty four points as the floor for anything the room needs to read. If the text will not fit at those numbers, the problem is the amount of text."
+          },
+          {
+            "heading": "Small habits that ruin text",
+            "body": "A few things quietly mark work as unprofessional. Long passages in capitals, which slow reading by removing word shapes, are fine for a three word label and painful for a sentence. Faux bold and faux italic, produced by clicking the B button on a font that has no bold weight, look smeared next to a real bold. Underlining anything that is not a link, since underline now reads as clickable. Justified text in a narrow column, which opens rivers of white space between words. Five different text sizes on one page, when two or three would do. And a heading left alone at the bottom of a page while its paragraph starts on the next one. Fix that by pushing the heading over rather than stretching what sits above it."
+          },
+          {
+            "heading": "When the brand font is not free",
+            "body": "Brand guidelines often name a font you do not have. Check Google Fonts first, because a large share of brand fonts live there and are free to install and use commercially. If it is a paid or custom licensed font, do not download it from a font sharing site. Those files are usually pirated, sometimes carry malware, and using them puts the client at legal risk as well as you. The professional move is to use the nearest free substitute, keep everything else in the layout faithful to the brand, and state plainly in your delivery note which font you substituted and why. On a Second Shift task, we pass that to the client. Silent substitution is what causes a revision three days later."
+          }
+        ],
+        "keyPoints": [
+          "One typeface is safe, two is the maximum, three is a mistake.",
+          "Keep four go to pairings from Google Fonts so you never improvise.",
+          "Sixteen pixels on screen, line spacing near one and a half, short lines.",
+          "Never install a pirated font. Substitute, then say what you substituted."
+        ]
+      },
+      {
+        "title": "Colour and the brand kit",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Brand colours are not yours",
+            "body": "A brand colour is a specific value, not an approximate mood. If the guideline says the blue is hex zero zero five two nine nine, that is the blue, not the one that looked better against your photograph. Clients spend real money making that colour consistent across a website, a shopfront and a business card, and a version that is slightly off is more damaging than an obviously different colour, because it reads as sloppy rather than deliberate. So copy hex codes, never pick colours with the eyedropper from a compressed screenshot, and never adjust brightness to taste. If a brand colour genuinely does not work in a particular place, say so in your note and propose an option. Changing it quietly is the version that gets caught."
+          },
+          {
+            "heading": "Building a palette that holds",
+            "body": "A simple ratio keeps palettes calm: roughly sixty percent of the surface in a dominant colour, usually a neutral like white or a light grey, thirty percent in a secondary, and ten percent in an accent used for the one thing you want noticed. Most brand palettes give you more colours than you need for a single piece. Using all of them is a choice, and usually the wrong one. Two colours plus a neutral is enough for almost any layout. Keep your accent rare, because an accent used on six elements is no longer an accent. Beware large areas of fully saturated colour: a page of pure bright red is exhausting to look at, while the same red on a button and a rule line looks confident."
+          },
+          {
+            "heading": "Screen colour and print colour",
+            "body": "Screens make colour with light and print makes it with ink, so they cannot match perfectly. Hex codes and RGB are for screens. Print work uses CMYK, and some vivid screen colours, especially bright oranges, greens and blues, come out noticeably duller on paper. That is normal and not your error. If a task is going to a professional printer, ask through your note what the printer wants: colour mode, resolution, bleed and file type. Do not guess, because a file that has to be remade costs the client a day. For everyday office printing a normal PDF is fine. Also check the piece in greyscale before print, since plenty of clients print colour documents on the office black and white machine."
+          },
+          {
+            "heading": "Working inside a brand kit",
+            "body": "A brand kit is a set of decisions already made for you: logo files, hex codes, named fonts, sometimes ready made templates. Your job is to apply them, not improve them. The logo rules are the ones people break most. Keep clear space around it, roughly the height of one letter of the logo on every side. Never stretch it, and hold shift while resizing so the proportions lock. Never recolour it, add a shadow to it, rotate it or place it on a busy photo. Use the version made for dark backgrounds when the background is dark, which is usually the white or reversed file. If the only logo you were given is a small blurry image pulled from a website, ask for the real file before you build anything around it."
+          },
+          {
+            "heading": "When there is no brand kit",
+            "body": "Many small clients have no kit at all. Then you build the minimum yourself and state it. Take the two or three colours already used on their website or existing materials, pick a neutral, choose one heading and one body typeface, and write those choices down in your delivery note so the next person can repeat them. Consistency you invented is still consistency, and it is far better than a piece that matches nothing. Do not sample colours from a low quality screenshot or a photo, since compression shifts them. If they have a website, the real hex codes are visible in the page source or through a free browser colour picker extension. When you are guessing, say you are guessing."
+          }
+        ],
+        "keyPoints": [
+          "Copy hex codes exactly. A slightly wrong brand colour reads as sloppy.",
+          "Two colours plus a neutral is enough. Keep the accent rare.",
+          "Screens use hex and RGB, print uses CMYK. Ask the printer for specs.",
+          "Never stretch, recolour or crowd a logo. Hold shift when resizing.",
+          "No brand kit means you define one and write it down."
+        ]
+      },
+      {
+        "title": "Images, resolution and aspect ratios",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Resolution is pixel count",
+            "body": "An image has a fixed number of pixels, for example two thousand by fifteen hundred. That number is all the detail that exists. Making the image bigger in a layout does not create detail, it spreads the same pixels wider, which is why an enlarged logo goes soft and blocky. For screen work, the image should be at least as many pixels as the space it fills, and about twice that if it must stay sharp on high density phone screens. For print, the rule of thumb is three hundred pixels per inch of printed size, so a photo printed ten centimetres wide needs roughly twelve hundred pixels across. Shrinking a large image is always safe. Enlarging a small one is not, and no setting in any tool changes that."
+          },
+          {
+            "heading": "Crop, never stretch",
+            "body": "Aspect ratio is the relationship between width and height. When you drag a corner handle without holding shift, most tools change that relationship and the image is stretched: faces widen, circles become eggs, logos look wrong in a way people notice without being able to name it. Hold shift, or use the tool's lock proportions option, every single time. When an image has to fit a different shape, crop it rather than squashing it. Crop with intent: keep the subject and the space they are looking into, keep eyes near the upper third, and do not slice a person off at the neck or the ankles. If the crop destroys the picture, the honest answer is that this image is the wrong shape here, and a different image is needed."
+          },
+          {
+            "heading": "Common sizes by destination",
+            "body": "Match the canvas to the destination before you start. Square social posts are usually one thousand and eighty by one thousand and eighty pixels. Portrait posts are one thousand and eighty by one thousand three hundred and fifty. Full screen stories and vertical video are one thousand and eighty by one thousand nine hundred and twenty, a nine by sixteen shape. Standard slides are sixteen by nine, which exports well at nineteen twenty by ten eighty. Email headers are commonly six hundred pixels wide. Documents are A4 or US Letter depending on the client's country, and mixing those up causes reprinting. Platforms change their specifications, so confirm the current number when the brief names a platform rather than trusting a size you memorised last year."
+          },
+          {
+            "heading": "Prepare images in the right order",
+            "body": "Work in one order: crop first, then resize down to the size you need, then export once. Repeatedly opening and saving a JPG degrades it a little each time, so keep the original untouched and export new copies from it. Watch file weight as well as looks. An email attachment full of eight megabyte photos annoys everyone, and a web image over about three hundred kilobytes usually means it was never resized. Free tools cover all of this: Canva for cropping and resizing, GIMP for anything more detailed, and Squoosh for compressing an image while you watch the quality live. Whatever you use, remember the rule from lesson one. Client photos do not get uploaded to random online services, however convenient the free enhancer looks."
+          }
+        ],
+        "keyPoints": [
+          "Pixels are detail. Enlarging a small image never adds any.",
+          "Hold shift or lock proportions. Crop to fit, never stretch.",
+          "Set the canvas to the destination size before you start designing.",
+          "Crop, resize, export once. Keep the original file untouched."
+        ]
+      },
+      {
+        "title": "File formats and clean exports",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Four formats cover everything",
+            "body": "JPG is for photographs. It compresses well, has no transparency, and loses a little quality each time it is saved. PNG is for graphics with flat colour, screenshots, and anything that needs a transparent background. It is sharper on text and edges than JPG, and heavier on photographs. SVG is a vector format: it is drawn from instructions rather than pixels, so it stays perfectly sharp at any size and is the right format for a logo used on the web. PDF is for anything that must print or be read exactly as laid out, because it carries fonts and layout with it. Those four cover almost every task you will be given. GIF is only for short simple animations, and WEBP is a modern web format some older software still refuses to open."
+          },
+          {
+            "heading": "Transparency and logo files",
+            "body": "A transparent background lets a logo sit on any colour. That is why a logo delivered as a JPG is a problem: it always arrives with a white box around it, which shows the moment it is placed on a coloured header. Ask for PNG or SVG. If a client only has a logo inside a PDF, the shapes inside are often still vector and can be exported cleanly rather than screenshotted. Keep both a full colour version and a white or reversed version, and use the reversed one on dark backgrounds instead of putting a white rectangle behind the colour logo. When you check transparency, place the file over a bright colour for a moment. A faint white halo means it was cut out badly."
+          },
+          {
+            "heading": "Export for where it is going",
+            "body": "The destination decides the export. Web and social get PNG or JPG at the exact pixel size, compressed enough to load quickly. Slides that someone will edit get the native file, plus a PDF if they only need to present it. Anything printed gets a PDF, with the settings the printer asked for, and fonts embedded so the layout does not reflow on another machine. Editable source stays with you until the task is approved. In Canva, the download menu lets you choose the type, the size multiplier, and whether to flatten the file or keep PDF text selectable. If a brief says print ready, that is a specific request: ask what the printer requires rather than exporting a screen quality PNG and hoping."
+          },
+          {
+            "heading": "File names are part of the work",
+            "body": "A file called final version two updated is a small insult to the person opening it. Name files so a stranger can sort them: client or project, what the thing is, the size or version, and a date written year first so files sort in order. Use hyphens or underscores rather than spaces, keep names short, and never put anything confidential in a file name. Deliver exactly what was asked for, with no extra drafts or working files unless the brief wants them. On a Second Shift task, upload the files and use the note to tell us what is inside, which decisions you made, and anything the client needs to know. That note is what makes review fast."
+          }
+        ],
+        "keyPoints": [
+          "JPG for photos, PNG for flat graphics and transparency, SVG for logos, PDF for print.",
+          "A logo supplied as a JPG brings a white box with it.",
+          "Export at the exact destination size, and ask before making print files.",
+          "Name files so a stranger can sort them, and keep names clean."
+        ]
+      },
+      {
+        "title": "Canva, templates and licensing",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "A Canva workflow that holds",
+            "body": "Start by creating the design at the exact final size rather than resizing later, because the free plan does not resize an existing design for you. Upload the logo and any client photos into the uploads panel so they are one click away. Build the first page completely, then duplicate it for variations so spacing and positions carry over. Lock the background and any element you have finished positioning, which stops the accidental drag that moves a photo four pixels while you edit text. Rename pages so page three is not a mystery. Use the position panel to type coordinates instead of nudging. Before exporting, click through every page at full zoom and look at the corners, because that is where stray elements hide."
+          },
+          {
+            "heading": "Templates without the template smell",
+            "body": "Templates are a legitimate shortcut and using one is not cheating. Choose one for its structure, not its picture, then replace everything: text, images, colours and fonts. Work that still carries the template's stock photo and its default typeface looks generic because it is. Two traps on the free plan. First, many elements, fonts and templates belong to the paid tier and are marked as such. Filter to free assets before you build, because discovering it at export time means either a watermark or an hour of rework. Second, elements often sit just outside the canvas edge, invisible while you work but present in the file. Scroll around the canvas edges and delete anything you are not using before you export."
+          },
+          {
+            "heading": "Brand assets without a paid plan",
+            "body": "The built in brand kit is a paid feature, so build the free equivalent. Make a folder for each client holding the logo files, and keep one plain document listing the hex codes, the fonts and the sizes you use. In Canva, type the hex code into the colour field rather than picking from the palette, and once used it stays available in the recently used row for that design. Save your finished layout as your own reusable starting point by duplicating the design instead of starting from scratch each month. Consistency comes from writing choices down, not from remembering them. If someone else takes over the task next month, that one document is what lets the second version match the first."
+          },
+          {
+            "heading": "Stock images and licences",
+            "body": "You cannot use an image just because you found it. Pictures pulled from a search engine, a news article or another company's website belong to someone. Use free libraries with clear terms, such as Unsplash, Pexels, Pixabay or Openverse, and read the licence on the actual asset rather than assuming it matches the site, because terms change and some items are marked editorial use only, which excludes advertising. Watch the content inside the photo as well: recognisable faces used in a way that implies endorsement, visible brand logos, artwork and famous buildings all carry their own restrictions. Keep a short record of where each image came from and under which licence, and put that in your delivery note. If the client is asked later, that record is the answer."
+          },
+          {
+            "heading": "Delivering and letting go",
+            "body": "Deliver the exact files requested, at the right sizes and formats, with names a stranger can sort. In your note to us, say what you made, which decisions you took and why, which fonts or colours you substituted, and where any stock images came from. If you were unsure about something, say so there instead of hoping. When the task is approved, remove the client's material from your machine and your cloud storage, including the uploads panel of the design tool. Do not keep the piece as a portfolio sample, do not post it, and do not describe the client publicly. If you want work to show, redo the same exercise with invented content of your own. That version is yours, and it demonstrates the same skill."
+          }
+        ],
+        "keyPoints": [
+          "Set the exact canvas size first. The free plan will not resize it later.",
+          "Filter to free assets and clear elements hiding outside the canvas.",
+          "Write brand choices in one document so the next version matches.",
+          "Read the licence on the asset itself and record where images came from.",
+          "Delete client material after approval. Finished client work is not your portfolio."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can decide hierarchy, alignment, contrast and spacing deliberately instead of guessing at a layout.",
+      "You can pair fonts, size text and set line spacing using safe free defaults.",
+      "You can apply a brand kit faithfully, including logo rules and exact hex codes.",
+      "You can pick the right file format, size and export for each destination.",
+      "You can source and licence images legally and record where each one came from.",
+      "You can hand off clean files with a note that makes review fast."
+    ],
+    "slug": "design-basics",
+    "summary": "You will learn the small set of decisions that separate clean work from work that looks broken: hierarchy, alignment, contrast, spacing, type, colour, images and exports. You will learn to work inside someone else's brand without changing it, to license images properly, and to build a fast, free Canva workflow. By the end you can produce a layout, name the reason behind every choice, and hand it over cleanly.",
+    "tagline": "Enough design judgement to make clean work and never embarrass a brand.",
+    "title": "Visual basics for non-designers",
+    "track": "craft"
+  },
+  "seo-content-ops": {
+    "slug": "seo-content-ops",
+    "title": "SEO and content operations",
+    "track": "craft",
+    "tagline": "The publishing side of content: research it, format it, ship it, check it.",
+    "summary": "This course covers the work clients actually hire you for: finding what people search for, building pages that answer it, formatting and publishing them cleanly, and checking the result. You will run keyword research and on-page checks with free tools only, ship through a CMS without breaking anything, and read Search Console without overclaiming. It also draws the line you never cross to make a page rank.",
+    "outcomes": [
+      "You can build a keyword list from free tools and read its intent.",
+      "You can run an on-page checklist over any article before it goes live.",
+      "You can format and illustrate a web page so it reads well everywhere.",
+      "You can publish in a CMS and run a pass that catches mistakes.",
+      "You can keep a content calendar and repurpose one article into several assets.",
+      "You can read Search Console basics and report results without overstating them."
+    ],
+    "lessons": [
+      {
+        "title": "Where Content Operations Sits",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The pipeline, end to end",
+            "body": "Content work moves through the same stages almost everywhere. Someone decides a topic. Someone researches the query behind it and writes a brief. A draft gets written, then edited. The draft is formatted for the web, illustrated, and loaded into a content management system. Someone checks it before it goes live. It is published, linked from other pages, and shared. Weeks later someone looks at what it did and decides whether to update it. When a client hires a virtual assistant for content, they are usually buying the middle and the end of that chain: research, formatting, images, publishing, checking, reporting. This course is about doing those stages well enough that nothing breaks and nothing has to be redone."
+          },
+          {
+            "heading": "Operations, not strategy",
+            "body": "Strategy is deciding what to publish and why. Operations is making sure it ships, correctly, on the day it was meant to. Most clients keep strategy and hand over operations, and we think that suits you: operations is measurable, teachable, and the part that quietly fails when nobody owns it. Know which decisions are yours. If the brief names a target query, that strategy decision is already made. If it does not say which category the post belongs in, that is an operations decision, so make it, note it, and move on. When a real strategy question appears in the middle of your work, do not settle it silently. Name it and ask."
+          },
+          {
+            "heading": "What a usable brief contains",
+            "body": "Before you write or publish anything, check that the brief answers these: the target query, the intent behind it, who the page is for, the angle, roughly how long, the points that must appear, which existing pages to link to, what the reader should do at the end, the publish date, and where it goes live. A brief missing two or three of these is normal. A brief missing all of them means someone has to make those calls, and if that someone is you, say so before you start rather than after. Writing the missing pieces down and getting them confirmed takes ten minutes and saves a rewrite."
+          },
+          {
+            "heading": "Access and client data",
+            "body": "Content work hands you keys: a CMS account, a media library, sometimes analytics. Treat all of it as borrowed. Use your own named account rather than a shared login, keep the password in a password manager, turn on two-factor authentication where the client allows it, and never pass access to anyone else. Client drafts, files and screenshots stay inside the job: no uploading them to converters, cloud drives or AI tools unless the brief says so, no keeping copies once the work is approved, and no using the finished page as a portfolio sample without written permission. On Second Shift the shape is simpler. Files come with the task and go back through us. No client logins, no client contact."
+          }
+        ],
+        "keyPoints": [
+          "Clients usually keep strategy and hand over operations: research, formatting, publishing, checking, reporting.",
+          "A brief answering query, intent, angle, length, links and deadline is workable.",
+          "Make operations decisions yourself. Name strategy decisions and ask.",
+          "Client files stay inside the job. No outside tools, no copies, no portfolio use."
+        ]
+      },
+      {
+        "title": "Keyword Research With Free Tools",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "A keyword is a real question",
+            "body": "A keyword is not a magic phrase. It is what a person actually typed, in their own words, at a moment when they wanted something. Your job in research is to find those phrasings, not to invent clever ones. Short phrases like running shoes carry enormous demand and enormous competition. Longer, more specific phrases like running shoes for flat feet wide fit carry less demand each, but there are far more of them, they say much more about what the person wants, and a small site can realistically answer them. Most content work for small and medium clients lives in that long tail. Collect queries in the exact words people use, awkward grammar included. That phrasing is data."
+          },
+          {
+            "heading": "The free stack",
+            "body": "You can do usable research without paying anything. Google's own search box suggests real queries as you type, and adding a letter after your phrase surfaces more. The People also ask box gives you subtopics and their wording. Related searches at the bottom of the results page gives you neighbours. Google Trends shows relative interest over time and by region, which is enough to compare two phrasings or catch seasonality. Google Search Console, if the client already has a site, shows the queries bringing them impressions today, and that is the highest quality source you will ever get. Forums, question and answer sites, and the contents list of a long Wikipedia article show how people describe a problem before they know its vocabulary."
+          },
+          {
+            "heading": "What the paid tools add",
+            "body": "Paid platforms exist and clients sometimes name them. They estimate monthly search volume, difficulty scores and competitor keyword lists in one place, which saves hours. Two things are worth knowing. First, those volumes are estimates, including in the expensive tools, so treat any number as a rough band rather than a fact. Second, you can approximate the important judgement without them. Google Keyword Planner gives broad ranges free if the client already has an ads account. If a client asks for volume data and has no tool, say plainly what free sources can and cannot produce instead of presenting a guess as a measurement. Being clear about the limits of your data is part of the work."
+          },
+          {
+            "heading": "Building the keyword sheet",
+            "body": "Put the research in one Google Sheet, one row per query, with columns for the query, where you found it, the intent, the page type that would answer it, priority, the target page once decided, and notes. Then group. Queries that want the same answer belong to one cluster and one page: how to clean suede shoes and cleaning suede sneakers are the same job. Give each cluster a primary query and keep the variants as rows underneath it. This grouping is the actual deliverable. A flat list of two hundred phrases is raw material. A sheet of thirty clusters, each with an intent and a proposed page, is something a client can act on this week."
+          }
+        ],
+        "keyPoints": [
+          "Collect the words people actually type, awkward grammar included.",
+          "Autocomplete, People also ask, related searches, Trends and Search Console cost nothing.",
+          "Volume numbers are estimates everywhere. Never present a guess as a measurement.",
+          "Deliver clusters with intent and a proposed page, not a flat list."
+        ]
+      },
+      {
+        "title": "Reading Search Intent",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Four things a searcher wants",
+            "body": "Behind every query is one of four wants. Some people want to know something: how composting works. Some want to go somewhere specific: a company name plus the word login. Some are comparing before they buy: best budget laptop for students, alternatives, reviews. Some are ready to act: buy, price, book, download, near me. The same words can carry different intent in different markets, so never decide from the phrasing alone. What matters is that the page you produce matches the want. An article aimed at someone ready to buy will lose to a product page, and a product page aimed at someone still learning will lose to a guide. Getting this right before writing saves the whole piece."
+          },
+          {
+            "heading": "The results page tells you",
+            "body": "The fastest way to read intent is to run the query yourself in a private window and study the first ten results. Notice the format: list articles, step by step guides, product pages, category pages, tools, videos, forum threads. Notice the depth, the publication dates, and whether large well known sites dominate. Notice what Google adds around them: People also ask, images, a map pack, shopping results, a featured snippet. That mixture is the answer Google has settled on for this query, tested against millions of people. You are not obliged to copy it, but you should be able to explain why you are doing something different. When ten results are comparison lists, a sales page will not win that query."
+          },
+          {
+            "heading": "When the brief and results disagree",
+            "body": "This happens often. A client wants a page selling their service to rank for a question people ask while they are still learning. Do not quietly write the sales page and hope, and do not quietly change the target either. Say what you found: the top results are all guides, so a sales page is unlikely to rank here. Then propose the version that works, usually a genuine guide that answers the question and links clearly to the service page. That structure serves the reader and the client at once. Raising this before you write costs one message. Raising it after the page has been live for three months costs the client a quarter."
+          },
+          {
+            "heading": "One page per intent",
+            "body": "If two pages on the same site chase the same want with the same answer, they compete with each other, split their internal links, and confuse anyone deciding which one to show. Before adding a page, search the client's own site for the query using the site colon operator in Google, or check the content calendar. If a page already covers it, the right move is usually to improve that page rather than publish a near duplicate. If a brief asks for a new page that duplicates an existing one, flag it with the existing URL attached. That single link makes the decision easy for whoever owns the strategy."
+          }
+        ],
+        "keyPoints": [
+          "Every query wants one of four things: to know, go, compare, or act.",
+          "Read the top ten results to see the format that intent rewards.",
+          "Raise a mismatch before writing, and propose the version that works.",
+          "Two pages chasing one intent compete with each other. Improve one instead."
+        ]
+      },
+      {
+        "title": "The On-Page Checklist",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Title tag and meta description",
+            "body": "The title tag is the clickable line in search results, and it is separate from the headline shown on the page, even when a CMS fills both from one field. Keep it around sixty characters so it is not cut off, put the main query near the front, make it different from every other title on the site, and write it as a sentence a human would click. The meta description is the grey text below it. It does not directly decide rankings, but it decides clicks, so write roughly one hundred and fifty characters saying what the reader gets. Google often rewrites both, which is not a failure. Empty fields, duplicates across pages, and padding with repeated keywords are the failures."
+          },
+          {
+            "heading": "Headings map the page",
+            "body": "Use one H1, matching what the page is about. Use H2 for each main section and H3 for subsections inside them, without skipping levels. Headings are structure, not styling: if an H3 looks too small, change the theme, not the tag. Written well, your headings read on their own as a table of contents, and that is the test. Someone should understand the article from the headings alone. Screen reader users navigate by them, and search engines use them to work out what the page covers. Avoid headings that say nothing, like Introduction or More information. Say what the section actually contains, in the reader's words where that fits naturally."
+          },
+          {
+            "heading": "URL slug and internal links",
+            "body": "Slugs should be short, lowercase, hyphenated and readable: cleaning-suede-shoes, not post-id-4471 and not a full sentence. Set it before publishing, because changing a live URL breaks every existing link unless a redirect is put in place, and that belongs to whoever owns the site. If you think a live slug needs changing, flag it rather than doing it. Internal links matter more than most people expect. Add two to five links from your new page to genuinely relevant existing pages, and add at least one link from an established page back to the new one so it is not an orphan. Use anchor text that describes the destination, and click every link in preview."
+          },
+          {
+            "heading": "Alt text and the opening",
+            "body": "Alt text describes what an image conveys in its context, for someone who cannot see it. Write what matters: a bar chart showing sales doubling between 2021 and 2024, not chart or image of chart. Skip the words image of, keep it to a sentence, and include the query only where it belongs naturally. Images that are purely decorative take an empty alt attribute so screen readers skip them. The opening of the page matters just as much. Answer the query in the first hundred words, in plain language, using the searcher's phrasing once because it is the natural way to say it. There is no keyword density target worth chasing. Write it once, properly, and move on."
+          },
+          {
+            "heading": "Run it as a list",
+            "body": "None of this is hard. All of it is forgettable at one in the morning on the fourth article of the night. So build the checklist once, in a sheet or a document, one row per item and one column per page, and run it top to bottom every time. Title present, short, unique. Meta description written. One H1. Heading levels in order. Slug clean. Two to five internal links out, one in. Every image compressed, renamed, with alt text. Opening answers the query. Every link clicks through. The point of a checklist is that it is boring and complete, and that it does not depend on how tired you are."
+          }
+        ],
+        "keyPoints": [
+          "Title around sixty characters, query near the front, unique on the site.",
+          "One H1, ordered headings, and headings that read as a table of contents.",
+          "Set the slug before publishing. Changing a live URL needs a redirect.",
+          "Alt text describes function. Decorative images take an empty alt attribute.",
+          "Run the same written checklist every time, no matter how tired you are."
+        ]
+      },
+      {
+        "title": "Formatting an Article for the Web",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "People scan before they read",
+            "body": "A reader arriving from search decides in a few seconds whether the page holds their answer. Give them that answer near the top, then let the detail follow. Keep paragraphs to two to four sentences, because a wall of text on a phone is a wall. Put a subheading every few hundred words so someone scrolling can find the part they need. One idea per paragraph, and the sentence carrying the point goes at the start, not buried at the end. None of this means writing shallow. Long, detailed pages do well when they are navigable. What loses readers is not length, it is not being able to see the shape of what they are reading."
+          },
+          {
+            "heading": "Lists, tables, emphasis",
+            "body": "Use a list when items are genuinely parallel and short. Do not turn every paragraph into bullets, because a page of bullets carries no argument and reads as notes. Use a table when you are comparing several things across the same attributes, and keep it narrow enough to survive a phone screen. Bold the phrase a scanner must not miss, once or twice per section, never whole paragraphs. Avoid all capitals, avoid coloured text as the only signal for something, and avoid underlining anything that is not a link, because readers will try to click it. Emphasis works by contrast. When everything is emphasised, nothing is."
+          },
+          {
+            "heading": "Links and clean markup",
+            "body": "Write link text that describes where it goes, not click here or read more, because that text is what screen readers list and what search engines read. Link to external sources you actually opened, and quote them accurately. If a link is sponsored or an affiliate link it needs the right rel attribute, and whether a link counts as sponsored is the client's call, so ask rather than guess. Never strip attributes off existing links. When you paste from a word processor, paste as plain text and rebuild the formatting in the editor, because pasted markup carries invisible font tags and stray styles that break the site's design and are miserable to clean up later."
+          },
+          {
+            "heading": "Check it on a phone",
+            "body": "Most readers are on a phone, and most drafts are built on a laptop. Before you call a page done, look at it narrow: use the CMS preview, resize your browser window, or open the preview link on your own phone. Check that the first screen makes the subject obvious, that images are not cropped into nonsense, that tables scroll instead of overflowing, that line lengths are comfortable, and that links are far enough apart to tap. Then read the page once in preview as a reader rather than as the person who built it. Formatting problems are much easier to see when you stop editing and start reading."
+          }
+        ],
+        "keyPoints": [
+          "Answer near the top, short paragraphs, a subheading every few hundred words.",
+          "Lists for parallel items, tables for comparisons, bold for the line that matters.",
+          "Descriptive link text. Paste as plain text and rebuild formatting in the editor.",
+          "Check every page narrow, on a phone or a resized window, before publishing."
+        ]
+      },
+      {
+        "title": "Images That Earn Their Place",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Where images come from",
+            "body": "In order of preference: the client's own library, screenshots or photos you make yourself, then free stock libraries with clear licences such as Unsplash, Pexels or Pixabay, then Wikimedia Commons, where many files are free but require a specific attribution line you must reproduce. Never take an image from a search results page or another company's site. Licensing claims are one of the few ways a small blog post generates a real bill. Record the source and licence of every image in your sheet, next to the page it appears on, so that if anyone asks in a year you can answer in ten seconds. Canva's free plan is fine for simple graphics; check what its licence allows commercially."
+          },
+          {
+            "heading": "Resize, then compress",
+            "body": "The most common mistake in content work is uploading a photo straight from a phone or camera. A five megabyte image displayed eight hundred pixels wide makes the page slow for everyone and helps nobody. Resize first, to roughly the width the design actually uses, then compress. Squoosh runs in a browser and is free; GIMP does the same job offline. Use JPEG for photographs, or WebP where the CMS supports it, since it is usually much smaller at the same quality. Use PNG for flat graphics, screenshots and anything needing transparency, and SVG for logos and icons. A full width photograph under a few hundred kilobytes is a reasonable target. Always check the result at full size before accepting the compression."
+          },
+          {
+            "heading": "Names, alt text, captions",
+            "body": "Rename files before upload. A name like suede-shoe-cleaning-step-3.jpg tells a human, a search engine and your future self what it is; the name the camera gave it tells nobody. Lowercase, hyphens, no spaces. Write alt text for every image that carries meaning, describing its function on the page rather than listing everything visible in it. Captions are optional and worth using, because captions get read more often than body text, which makes a caption a second chance to land a point. Do not simply repeat the alt text there; the two do different jobs for different people. Set the featured image as well, since that is what appears in listings and when the page is shared."
+          },
+          {
+            "heading": "Screenshots and what they leak",
+            "body": "Screenshots are the fastest way to publish something you did not mean to publish. Before one goes into a page, look at every corner: browser tabs, bookmarks bar, notification popups, real customer names, email addresses, account numbers, internal URLs, and other clients' data sitting in a shared dashboard. Crop hard, blur what remains, or rebuild the screenshot with dummy data, which is usually cleaner than blurring. Never publish a screenshot showing one client's information on another client's site. When the work is approved, delete the working images from your machine along with everything else from the job. Assume anything visible in a published image will eventually be read by someone."
+          }
+        ],
+        "keyPoints": [
+          "Client library first, then free stock with a clear licence. Never scrape images.",
+          "Resize to display width, then compress. Phone-sized uploads are the usual mistake.",
+          "Rename files, write alt text, set the featured image, use captions deliberately.",
+          "Screenshots leak names, emails and other clients. Crop, blur, or rebuild with dummy data."
+        ]
+      },
+      {
+        "title": "Publishing and the Pre-Publish Pass",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Draft, preview, schedule, publish",
+            "body": "Every content management system has the same states under different names: draft, preview, scheduled, published, and usually a revision history. Work in draft. Judge the page in preview, which renders it in the real template, rather than from inside the editor. Schedule rather than staying awake to press a button at seven in the morning. Know your role as well: an author can usually write but not publish, an editor can publish anything, an administrator can break the site. Ask for the smallest role that lets you do the job. Publishing rights are trust, not a convenience, and the default rule is that you do not publish anything the client has not approved, unless the brief explicitly puts the calendar in your hands."
+          },
+          {
+            "heading": "The fields nobody remembers",
+            "body": "Beyond the body text, a post carries settings that decide how it behaves: slug, excerpt or summary, featured image, category, tags, author, publish date, template, canonical URL, and an index or noindex setting. Use categories and tags that already exist rather than inventing new ones, because an invented tag creates a thin archive page nobody wanted. Watch the two silent killers. A canonical URL pointing at another page tells search engines to ignore this one. A noindex setting keeps it out of results entirely. Both are invisible on the live page, and both are commonly inherited when you duplicate an old post to reuse its layout, which is otherwise a good habit."
+          },
+          {
+            "heading": "The pre-publish pass",
+            "body": "Run the same pass every time, in preview, before anything goes live. Title tag present, short, unique. Meta description written. One H1, headings in order. Slug clean and final. Every internal and external link clicked. Images compressed, renamed, with alt text, featured image set. No placeholder text, no leftover comments, no tracked changes. Spelling checked by a tool and then by your own eyes. Mobile view checked. Category and author correct. Publish date correct. Canonical and index settings correct. Then publish. This takes five to eight minutes on an article, and it is the difference between someone a client trusts with the keys and someone they check behind every single time."
+          },
+          {
+            "heading": "After it goes live",
+            "body": "Open the live URL in a private window, logged out, and read it as a stranger would. Check that it appears where it should: the blog index, the right category, the navigation if it belongs there. Add the internal link from an older page if you have not already. If the client uses Search Console, you can inspect the URL and request indexing, which is a nudge rather than a guarantee. Record the live URL in the content calendar. If the layout is badly wrong, revert to the previous revision instead of editing live under pressure. Then write down what you changed and when, because in three months that log is the only reliable memory anyone has."
+          }
+        ],
+        "keyPoints": [
+          "Work in draft, judge in preview, schedule instead of staying up.",
+          "Ask for the smallest CMS role that does the job. Never publish without approval.",
+          "Canonical and noindex settings are invisible on the page and inherited by duplicates.",
+          "Run the same written pre-publish pass every time. It takes under ten minutes.",
+          "After publishing, check the live URL logged out and record it in the calendar."
+        ]
+      },
+      {
+        "title": "Content Calendars and Repurposing",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The calendar is a status board",
+            "body": "A content calendar is not a decoration. It is the one place anybody can look to see what is coming and what is stuck. One row per piece, in a shared Google Sheet, with columns for publish date, working title, target query, intent, format, owner, status, brief link, draft link, live URL and notes. Keep the status values fixed and few: idea, briefed, drafting, in review, scheduled, live, needs update. Fixed values let you filter and count; free text does not. Update the sheet the moment something changes rather than at the end of the week. A calendar three days stale gets ignored, and once it is ignored people start asking you for status by message instead."
+          },
+          {
+            "heading": "Planning a month honestly",
+            "body": "Plan against the capacity you actually have, not the capacity you wish you had. Count the hours, subtract the ones already committed, and leave slots empty on purpose for the work that always arrives: an urgent update, a broken page, a piece that comes back from review needing a rewrite. Batch similar work so you are not switching tools all day: research several briefs in one sitting, do a set of images in another. Then plan around the real bottleneck, which is almost never your writing speed. It is review time on the client's side. Build that window into the dates, ask for it explicitly, and mark a piece blocked when it overruns rather than absorbing the delay silently."
+          },
+          {
+            "heading": "One article, several assets",
+            "body": "A finished guide is raw material for a lot of other work. It can become a newsletter section, several social posts each built on one point rather than the whole thing, a question and answer block on a service page, a short video or carousel script, a hub that links related posts together, or a slide deck for the sales team. The rule is to rewrite for the channel instead of pasting the same paragraphs everywhere, because a paragraph that works in an article reads wrong in an email and worse in a caption. Always link back to the original. Republishing the full text on another domain is legitimate when handled with a canonical tag or a rewrite, but that decision belongs to the client."
+          },
+          {
+            "heading": "Updating beats writing new",
+            "body": "An existing page that already collects impressions is usually a better investment than a new one. Look for pages sitting just below the top results, or pages that have gone stale: outdated facts, dead links, screenshots of an interface that has changed, a topic the results now cover differently. Update the content properly, add the sections that are genuinely missing, fix the links, refresh the images. Change the visible date only if you truly made substantial changes, because a date bumped on an untouched page is a small lie that readers notice. Keep an update log, in the calendar or at the foot of the page, saying what changed and when. That log makes the next update fast."
+          }
+        ],
+        "keyPoints": [
+          "One shared sheet, one row per piece, fixed status values, updated immediately.",
+          "Plan against real capacity and build client review time into the dates.",
+          "Rewrite for each channel when repurposing, and always link back to the original.",
+          "Updating a stale page often beats a new one. Log what you changed."
+        ]
+      },
+      {
+        "title": "Search Console, and the Line",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "What Search Console shows",
+            "body": "Google Search Console is free and shows how a site appears in Google search, which is not the same as analytics: it is about the results page, not about what people do once they arrive. The client grants you access to their existing property. You never verify or create a property for a site you do not own. Three parts cover most of the work. The Performance report lists queries and pages with their numbers. The Pages report tells you what is indexed, what is not, and why. URL Inspection checks a single page and lets you request indexing. Start there. Everything else in the tool can wait until somebody asks you for it."
+          },
+          {
+            "heading": "The four numbers",
+            "body": "Impressions count how often a page appeared in results. Clicks count how often someone chose it. Click-through rate is clicks divided by impressions, and it mostly reflects how well your title and meta description are doing their job. Average position is exactly that, an average across many queries and many searchers, so it moves for reasons that have nothing to do with you. Compare a period against the previous period of the same length, twenty-eight days against twenty-eight days, rather than reading day to day. Remember that search demand is seasonal, and that a page with forty impressions can swing wildly on noise alone. Small numbers are not trends."
+          },
+          {
+            "heading": "What you may conclude",
+            "body": "Some readings are safe. Many impressions and almost no clicks means people see the page and do not choose it, so the title and description are the first thing to change. No impressions at all means the page is new, not indexed, or aimed at something nobody searches, and the Pages report tells you which. Clicks arriving on queries you never targeted is real information about what the page actually answers. Other readings are not safe. You cannot conclude that a ranking change caused a change in sales, and you must never promise a position to anyone. Write reports the way you write a delivery note: what you did, what the numbers show, what you think it means, what you would try next."
+          },
+          {
+            "heading": "The honesty line",
+            "body": "Four things you do not do, whatever the deadline. You do not fabricate expertise: no invented credentials, no author bio for a person who does not exist, no statistic without a source you actually opened, no made-up quotes, reviews or case studies. You do not stuff keywords, hide text, or write for a machine at the reader's expense. You do not present generated text as original research, first-hand experience, or testing that never happened. And you do not copy or reword somebody else's article and publish it as the client's. Use whatever tools help you draft, within the confidentiality rules, then verify every fact and every claim yourself and be able to say where each one came from."
+          },
+          {
+            "heading": "When you are asked anyway",
+            "body": "Sooner or later someone asks for the thing that crosses the line: fifty spun articles, invented statistics, reviews written by nobody, a claim you cannot verify, links hidden from readers. Answer plainly and in writing. Say what you will not do, say why in one sentence, and offer the version you can do instead, with what it would realistically take. Most of these requests come from pressure rather than bad faith, and a concrete alternative usually ends the conversation. If it does not, decline the work. On Second Shift you never contact the client: put the problem in your delivery note so we can settle it, or release the task. Your name stays attached to your work long after any campaign is forgotten."
+          }
+        ],
+        "keyPoints": [
+          "Search Console is about the results page, not what visitors do afterwards.",
+          "Compare twenty-eight days to the previous twenty-eight. Small numbers are noise.",
+          "High impressions with no clicks points at the title and description first.",
+          "Never fabricate expertise, stuff keywords, or pass generated text off as research.",
+          "Asked to cross the line, say no in writing and offer a real alternative."
+        ]
+      }
+    ],
+    "exam": {
+      "questions": [
+        {
+          "prompt": "A client wants twenty keyword ideas for a new blog. There is no budget for a research tool, and the site is too new to have any search data of its own. The deadline is tonight. What do you deliver?",
+          "options": [
+            "Estimated volumes from a free browser plugin, presented in a column headed monthly searches.",
+            "A list built from autocomplete, People also ask and related searches, with the volume column marked unknown.",
+            "The twenty phrases that appear most often in the page titles of three competitors.",
+            "A message asking the client to buy a research tool before you can start."
+          ],
+          "correct": 1,
+          "explain": "Free sources show real demand and real phrasing. The honest delivery gives direction and labels clearly what you could not measure."
+        },
+        {
+          "prompt": "The brief targets best noise cancelling headphones with a product page for one model. You run the query and every result on the first page is a comparison list from a review site. What do you do?",
+          "options": [
+            "Write the product page as briefed; the client decides what ranks for what.",
+            "Write the product page and repeat the target phrase more often to compete.",
+            "Change the target query to the model name and carry on without mentioning it.",
+            "Flag the mismatch before writing and propose a comparison guide that links to the product page."
+          ],
+          "correct": 3,
+          "explain": "The results page shows what searchers want for that query. Raise the conflict before writing instead of silently choosing one side."
+        },
+        {
+          "prompt": "You wrote a title tag of about ninety-five characters. It reads well and contains the target query near the end. What do you do before publishing?",
+          "options": [
+            "Cut it to roughly sixty characters and move the main query near the front.",
+            "Leave it; Google will show whichever part of the title it prefers.",
+            "Keep it and paste the same text into the meta description for consistency.",
+            "Shorten it by removing small words and separating the keywords with pipes."
+          ],
+          "correct": 0,
+          "explain": "Long titles get truncated in results, so whatever matters must come first. Around sixty characters usually survives intact."
+        },
+        {
+          "prompt": "An article has one H1, then jumps from H2 straight to H4, because H4 renders at a size you prefer in this theme. What do you do?",
+          "options": [
+            "Leave it; heading levels are a visual choice and readers do not notice.",
+            "Change every heading in the article to H2 so the levels are consistent.",
+            "Use H3 for that level, and change the theme settings if the size matters.",
+            "Replace the headings with bold paragraphs so nothing depends on the theme."
+          ],
+          "correct": 2,
+          "explain": "Headings describe structure, not size. Screen readers and search engines follow the order, so fix the level and handle appearance separately."
+        },
+        {
+          "prompt": "A client sends twelve photos straight from a phone, five to eight megabytes each, and the brief says to place them through the article. What do you do?",
+          "options": [
+            "Upload them as they are; the content management system handles sizing itself.",
+            "Resize each to the content width, compress it, rename it, and write alt text before uploading.",
+            "Use three of them and leave the rest out so the page stays fast.",
+            "Convert them all to PNG before uploading so that no quality is lost."
+          ],
+          "correct": 1,
+          "explain": "Full-size phone photos make pages slow. Resizing and compressing before upload, with real file names and alt text, is the standard pass."
+        },
+        {
+          "prompt": "You claimed a Second Shift task to rewrite a client's three thousand word draft for the web. A free AI rewriter would halve your time. The brief says nothing about AI tools. What do you do?",
+          "options": [
+            "Use the tool, then delete the conversation history once you are finished.",
+            "Use the tool a paragraph at a time so no single upload holds the whole draft.",
+            "Remove the company name from the draft first, then use the tool on the rest.",
+            "Rewrite it yourself; client files do not go to outside tools unless the brief says so."
+          ],
+          "correct": 3,
+          "explain": "Client content never leaves the task. Splitting the upload, stripping a name, or deleting history afterwards does not change that the file left."
+        },
+        {
+          "prompt": "To save time you duplicated last year's post to reuse its layout, then replaced the text and images. The article now looks finished in the editor. What do you check before publishing?",
+          "options": [
+            "Nothing extra; duplicating a post only copies the visible content.",
+            "Spelling and image quality, since those are the parts readers actually see.",
+            "The slug, canonical URL, index setting, category, author and featured image.",
+            "Publish it and ask the client to review the settings once it is live."
+          ],
+          "correct": 2,
+          "explain": "A duplicated post inherits hidden fields. A canonical pointing at the old page or a leftover noindex quietly keeps the new one out of results."
+        },
+        {
+          "prompt": "The brief asks you to cite a study showing that a technique improves results by a specific percentage. After an hour of searching, you cannot find any study that says it. The piece is due in three hours. What do you do?",
+          "options": [
+            "Use the figure from a marketing blog that states it without naming a source.",
+            "Tell the operator you could not verify the claim and propose wording that drops the number.",
+            "Write a plausible figure and describe it as approximate so nobody is misled.",
+            "Leave the sentence with a placeholder and publish, planning to correct it later."
+          ],
+          "correct": 1,
+          "explain": "An unverifiable number becomes a fabrication the moment it is published. Say what you found and offer wording the client can stand behind."
+        },
+        {
+          "prompt": "In Search Console, a page shows four thousand impressions, twelve clicks and an average position of eight over the last twenty-eight days. What is the first thing to change?",
+          "options": [
+            "The title tag and meta description, since people see the page and do not choose it.",
+            "The article length, adding several hundred words to push the position higher.",
+            "Nothing yet; request indexing first, because the page is clearly not indexed.",
+            "The report wording, since high impressions already show that traffic is growing."
+          ],
+          "correct": 0,
+          "explain": "Impressions without clicks point at the snippet rather than the page's presence. The title and description are what searchers actually judge."
+        },
+        {
+          "prompt": "You added five internal links to a new article. Every one uses the anchor text read more, and every one points at the site's homepage. What do you do?",
+          "options": [
+            "Leave them; internal links help the site regardless of where they point.",
+            "Remove them, because internal links send ranking value away from the new page.",
+            "Keep the anchors as they are but set the links to open in a new tab.",
+            "Rewrite the anchors to describe the destination and point them at relevant pages."
+          ],
+          "correct": 3,
+          "explain": "Anchor text tells readers and search engines what the destination covers, and a link only helps when it leads somewhere genuinely relevant."
+        },
+        {
+          "prompt": "A client asks for thirty articles in one week, generated with an AI tool and published under the heading original research from our team. What do you do?",
+          "options": [
+            "Produce them as asked; the client owns the site and decides how to label it.",
+            "Produce them, but add a small note at the bottom of each page.",
+            "Say plainly you will not present generated text as original research, and offer a schedule you can stand behind.",
+            "Produce them and add the target keyword throughout to make up for thin content."
+          ],
+          "correct": 2,
+          "explain": "Passing generated text off as first-hand research misleads readers and exposes the client. Name the line, then offer what you can honestly produce."
+        },
+        {
+          "prompt": "A client wants the same fifteen hundred word guide republished word for word on three partner blogs next month. What do you do?",
+          "options": [
+            "Publish all three copies; more versions mean more chances of ranking somewhere.",
+            "Explain the duplicate content risk, offer a canonical tag or rewritten versions, and let the client decide.",
+            "Publish them with the paragraphs reordered and the headings changed so each looks new.",
+            "Refuse the request, because publishing the same article on several sites is never acceptable."
+          ],
+          "correct": 1,
+          "explain": "Syndication is legitimate when handled properly. Your job is to name the risk and the options, not to decide for the client or disguise the copies."
+        }
+      ]
+    }
+  },
+  "ai-tools": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You are finishing a research task. The model gave you a market size figure and named the report it came from. You search for that report and cannot find it anywhere. Your delivery is due in an hour.",
+          "options": [
+            "Include the figure and cite the report the model named, since it gave a specific source",
+            "Include the figure without a citation, so nobody can trace where it came from",
+            "Leave the figure out and tell the operator in your note that the claim could not be sourced",
+            "Ask the model to confirm the report exists, and include it if it says yes"
+          ],
+          "correct": 2,
+          "explain": "A source you cannot find is a source that may not exist. Deliver what you verified and say plainly what you could not confirm."
+        },
+        {
+          "prompt": "A Second Shift task gives you a client spreadsheet of 900 customer rows. You need a formula to flag duplicate contacts and you want help writing it. The brief says nothing about AI tools.",
+          "options": [
+            "Rebuild five invented rows with the same column structure and ask about those",
+            "Upload the file to the AI tool and ask it to remove the duplicates",
+            "Paste only the email column, since email addresses alone are not really sensitive",
+            "Paste the first twenty rows, a sample small enough to be harmless"
+          ],
+          "correct": 0,
+          "explain": "Client data never goes into a third-party tool without explicit written permission, and silence means no. An invented sample gets you the same formula with no exposure."
+        },
+        {
+          "prompt": "You claimed a Second Shift transcription task. The audio is 40 minutes of a recorded meeting and you are behind schedule. An online transcription service would finish it in five minutes. The brief does not mention AI or third-party tools.",
+          "options": [
+            "Use the service, since the brief did not forbid it",
+            "Use the service, then delete the file from your account afterwards",
+            "Use it only for the passages you genuinely cannot hear",
+            "Do not upload it. On Second Shift, silence in the brief means no"
+          ],
+          "correct": 3,
+          "explain": "On Second Shift the default is never. Uploading client audio to an outside service transfers client data the client never agreed to move."
+        },
+        {
+          "prompt": "For a client of your own, outside Second Shift, you drafted a newsletter with AI help, then rewrote and fact-checked it yourself. The brief said nothing about AI. The client emails and asks directly whether you used AI.",
+          "options": [
+            "Say no, since you edited it heavily and the final words are your own",
+            "Say yes, name which parts you drafted with it and how you checked them",
+            "Say your working process is your own and you prefer not to detail it",
+            "Say you only used it for research, which is close enough to true"
+          ],
+          "correct": 1,
+          "explain": "A direct question gets a direct answer. Explaining what you drafted, what you rewrote and how you verified it is honest and usually reassuring."
+        },
+        {
+          "prompt": "You asked for a spreadsheet formula and got a nested one that returns numbers matching the client's sample. You do not understand how it works, and the task is due tomorrow.",
+          "options": [
+            "Deliver it. The output matches the sample the client provided",
+            "Test it on rows whose answers you already know, and keep at it until you can explain every part",
+            "Ask the model to explain it and paste that explanation into your delivery note",
+            "Abandon it and do the whole job manually so you never need the formula"
+          ],
+          "correct": 1,
+          "explain": "A formula you cannot explain is one you cannot fix when it breaks on next month's data. Test against known answers, then understand it."
+        },
+        {
+          "prompt": "You asked a model for a product description and received 400 words of generic marketing language. You need 80 words in a plain, factual tone, with three specific features named.",
+          "options": [
+            "Start a fresh conversation and ask again, hoping for a better result",
+            "Ask it to make the text shorter and more punchy",
+            "Write it yourself, since the tool clearly cannot handle this kind of work",
+            "Reply in the same thread with a word limit, the audience, required facts, and a sample of the tone"
+          ],
+          "correct": 3,
+          "explain": "Iterating in the same thread with checkable constraints is faster than restarting. Word limits, audience, required facts and a tone sample are instructions a model can follow."
+        },
+        {
+          "prompt": "A list-building task needs verified email contacts for 40 companies. With one hour left, you have verified 34. The model offers plausible-looking addresses for the remaining six.",
+          "options": [
+            "Use the first.last pattern, which is correct at most companies",
+            "Use the model's addresses and mark them as low confidence in a separate column",
+            "Deliver 34 verified rows, leave six blank, and say in your note which ones you could not verify",
+            "Fill the six with each company's general contact address so no cell is empty"
+          ],
+          "correct": 2,
+          "explain": "Six honest blanks cost the operator a little. Six invented addresses cost the client a bounced campaign and cost you the trust behind every future delivery."
+        },
+        {
+          "prompt": "You finished a 12-page report for a client of your own who has approved AI use in writing. You want the tool to give it a genuinely useful second pass before you send it.",
+          "options": [
+            "Ask whether the report is good, and send it if the answer is positive",
+            "Ask it to list every internal inconsistency, unclear sentence and unsupported claim it finds",
+            "Ask it to rewrite the whole report in a cleaner style and send that version",
+            "Ask it to score the report out of ten and revise anything below eight"
+          ],
+          "correct": 1,
+          "explain": "Asking whether work is good invites flattery. Asking for inconsistencies, unclear sentences and unsupported claims produces candidates you can judge for yourself."
+        },
+        {
+          "prompt": "A client outside Second Shift has approved uploading their documents. You ask for a summary of a 30-page report, and the summary contains a revenue figure you do not remember seeing in the document.",
+          "options": [
+            "Search the document for that figure and delete it if it is not there",
+            "Keep it. A summary comes from the document, so the figure must be inside",
+            "Ask the model which page it came from and trust the page number it gives",
+            "Soften it to approximately, so the number is less exposed if it is wrong"
+          ],
+          "correct": 0,
+          "explain": "Summaries can still contain invented detail. Check the source for the figure and drop it if it is absent. A page number from the model is not evidence."
+        },
+        {
+          "prompt": "You delivered a competitor analysis to a client two weeks ago. A prospective new client asks to see a writing sample of that kind of work.",
+          "options": [
+            "Send it with the client's name and logo removed",
+            "Send it. The work is yours, since you wrote every word of it",
+            "Send the first page only, since a partial document is not really a disclosure",
+            "Write a new sample on a made-up company using the same method and structure"
+          ],
+          "correct": 3,
+          "explain": "Client work is not your portfolio, even with the name removed. A sample built on invented data shows the same method with nothing of the client's in it."
+        },
+        {
+          "prompt": "A Second Shift brief explicitly permits AI drafting for a writing task. You used it for two sections, rewrote both, and verified the figures. You are uploading your delivery with a note to the operator.",
+          "options": [
+            "Nothing about the tool. It was permitted, so it is not worth mentioning",
+            "A general line saying that AI was used somewhere in the work",
+            "Which parts you drafted with the tool, and how you checked the facts in them",
+            "The full prompts you used, so the operator can reproduce your process"
+          ],
+          "correct": 2,
+          "explain": "The note is most useful when it is specific. Naming the AI-drafted parts and your checks tells the operator exactly where to look hardest."
+        },
+        {
+          "prompt": "A task comes back for revision. Two dates in your timeline are wrong. They came from an AI draft that you did not check against the source documents.",
+          "options": [
+            "Explain in the revision note that the AI tool produced the incorrect dates",
+            "Fix the dates against the source documents and say plainly that you failed to verify them",
+            "Fix the dates and say nothing, since the correction is what actually matters",
+            "Fix the dates and note that AI-assisted work carries a small margin of error"
+          ],
+          "correct": 1,
+          "explain": "Owning the miss is the only answer that protects the relationship. The tool was not responsible for delivering the work. You were."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "Where AI helps and where it fails",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The honest split",
+            "body": "AI writing tools are now part of ordinary virtual assistant work. Pretending otherwise helps nobody. What matters is knowing precisely which parts of a task a language model can carry and which parts it will quietly ruin. The split is not about difficulty. A model will happily produce a polished two hundred word summary of a document it read correctly, and with the same confidence produce a company registration number that does not exist. The dividing line is whether the answer depends on a fact in the world, or on shaping text you already have. Shaping text is where it is strong. Supplying facts is where it is weak. Hold that line in your head while you work and most of the danger disappears."
+          },
+          {
+            "heading": "What it genuinely does well",
+            "body": "The strong uses share a shape: you supply the material, the model reshapes it. Turning your rough notes into a clean paragraph. Compressing a document you already have into a summary. Rewriting a blunt sentence so it reads politely. Producing eight subject line options so you can pick one. Converting a block of text into a table, or a table into sentences. Writing a first-pass spreadsheet formula from a description of your columns. Explaining what an unfamiliar formula does, piece by piece, so you can decide whether to trust it. Suggesting a structure for a report before you write it. In every one of these, the truth of the content comes from you or from the source in front of you. The model is doing carpentry on material you already own."
+          },
+          {
+            "heading": "Where it reliably fails",
+            "body": "The weak uses share the opposite shape: you ask the model to supply a fact. Prices, dates, phone numbers, email addresses, job titles, company registration details, statistics, study results, quotations, links and citations. Anything about a real person or a real business. Anything that changed recently. It will also miscount and mis-add across a long list, because it is not calculating, it is writing what a calculation tends to look like. None of this arrives with a warning. You get a clean, formatted answer in the same voice it uses when it is right. Treat every fact that originates inside the model, rather than inside your source material, as unverified until you have checked it against something real."
+          },
+          {
+            "heading": "Why the failures look convincing",
+            "body": "A language model produces the next piece of text that fits. Fitting and being true are different properties, and they come apart most often exactly where you need precision: a specific number, a specific name, a specific web address. The model has no separate sense of certainty it can show you. It cannot tell you that it invented the citation, because from the inside, generating an invented citation and generating a real one are the same operation. This is why fluency is a trap. We are all trained to read confident, well-structured writing as informed writing. With these tools, the polish tells you nothing about the accuracy. Read the content, not the surface."
+          },
+          {
+            "heading": "What the failure costs",
+            "body": "Here is how it usually goes. A list building job, forty companies, six contacts that could not be found. The model offers six plausible addresses. They look right. Three of them bounce when the client runs the campaign. The client does not conclude that a tool made a mistake. The client concludes that the work cannot be trusted, and starts checking everything, which is more expensive than doing it themselves. On Second Shift the operator reviews every delivery before the client sees it, so an invented row usually comes back to you as a revision rather than reaching the client. That protection is real, and it is not something to lean on. Deliveries that keep coming back are noticed."
+          }
+        ],
+        "keyPoints": [
+          "AI reshapes material you supply. It does not reliably supply facts.",
+          "Fluent output and accurate output look identical. Polish proves nothing.",
+          "Treat any fact that originated inside the model as unverified.",
+          "Long-list arithmetic and counting are weaknesses, not strengths.",
+          "One invented row costs more trust than the whole file earned."
+        ]
+      },
+      {
+        "title": "Hallucination and the verification habit",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "What a hallucination is",
+            "body": "The word is unfortunate, because it suggests a malfunction. Producing text that is fluent, specific and false is not a bug in these systems. It is the same process that produces text that is fluent, specific and true. When you ask for a source, the model writes something with the shape of a source: an author, a plausible year, a title made of words that belong together. Sometimes that shape lands on a real paper. Sometimes it does not. The same applies to a statistic, a contract clause, a product specification, a person's job title. Once you see this as normal output rather than an error state, you stop being surprised by it and start building the habit that handles it."
+          },
+          {
+            "heading": "The verification rule",
+            "body": "Here is the rule, and it is short. Every factual claim that came from the model, rather than from your source material, gets checked against something outside the model before it goes into a deliverable. Names, numbers, dates, prices, quotations, links, anything with a source attached. There is no category of fact small enough to skip. The invented ones are usually the small ones, because small facts are the ones nobody feels the need to check. If you remember one sentence from this course, remember that a model is an excellent drafting tool and a research assistant who cannot be trusted about the research."
+          },
+          {
+            "heading": "How to check quickly",
+            "body": "Verification does not have to be slow. Go to the primary source rather than a page quoting it: the company's own site for a company fact, the official statistics agency for a statistic, the report itself for a study. Open the link with your own eyes rather than trusting that a link exists. If two independent sources disagree, you have found a real problem worth flagging, not a coin to flip. Check the date on everything, because a true fact from four years ago can be false today. For a person's role or a company's address, one authoritative page beats five blog posts that copied each other."
+          },
+          {
+            "heading": "When you cannot verify",
+            "body": "Sometimes the fact is simply not findable in the time you have. That is not a failure, it is information, and the professional move is to say so. Leave the cell blank rather than filling it. Mark the claim clearly in your draft as unverified. On Second Shift, write it in the note to the operator with your delivery: which item, what you tried, what you could not confirm. An honest gap is a small cost the operator can absorb. A confident invention is a cost that lands on the client, with your delivery attached to it."
+          },
+          {
+            "heading": "Where the risk is highest",
+            "body": "Some work is more dangerous than other work. Research summaries, list building, anything with citations, and anything touching money, tax, law or health. In those last areas, be strict with yourself. Do not let a model produce rates, thresholds, filing deadlines or dosages that end up in a client document. If a task needs that kind of content, take it from the official body that publishes it, note the date you read it, and say plainly in your delivery that the client should confirm it with a qualified professional. We are not qualified to give that advice, and neither is the tool."
+          }
+        ],
+        "keyPoints": [
+          "Hallucination is normal output, not a malfunction. Expect it every session.",
+          "Every model-sourced fact is checked outside the model before delivery.",
+          "Open the link yourself. A cited source is not a real source.",
+          "An honest gap costs far less than a confident invention.",
+          "Never let a model produce rates, deadlines or dosages."
+        ]
+      },
+      {
+        "title": "The confidentiality line",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "On Second Shift, the default is never",
+            "body": "Start with the part that has no nuance. On a Second Shift task, client files, client text, client names and client data do not go into a third-party AI tool. Not a chat assistant, not an online transcription service, not a document summariser, not a writing tool that uploads the whole file, not an image tool. The default is no. The only exception is a brief that explicitly says otherwise, in writing, in the task itself. Silence is not permission. A brief that does not mention AI is a brief that does not allow it. This is not a suspicion about you. It is the promise the client was given when they handed over their data, and everyone who touches the task keeps it."
+          },
+          {
+            "heading": "Pasting is a transfer",
+            "body": "It helps to stop thinking of the paste as a keystroke and start thinking of it as sending. When you paste a client's customer list into a website, you have moved that data onto a company's servers in another country. It may be stored. It may be reviewed by people. It may be used to improve a product. Free tiers in particular often keep and learn from what you send. Whether or not anything visibly bad happens, you have made a decision the client never agreed to, using data that was not yours to move. That is the breach, not the outcome. Your intent does not enter into it, and neither does how careful the tool's marketing sounds."
+          },
+          {
+            "heading": "What counts as client data",
+            "body": "More than you would guess. Obviously names, email addresses, phone numbers, home addresses, invoices, bank details, salaries, customer lists and internal documents. Also the less obvious things: the client's business name paired with a problem they have, an unreleased product name, pricing they have not published, a screenshot of their dashboard, a file name that reveals a deal, the raw text of an email even with the sender removed. Deleting names is not anonymising when the remaining detail identifies the business. Ask one question before you paste anything. If the client read a transcript of what I just sent to this website, would they be comfortable? If you have to think about it, the answer is no."
+          },
+          {
+            "heading": "How to get help without sending data",
+            "body": "Almost everything you want from the tool can be had without the data. You need the method, not the material. Rebuild the shape of the problem with invented content: the same column headers renamed, four fake rows, a made-up company called Acme with made-up figures. Ask about the technique in the abstract. How do I match two lists on partial names. How do I structure a comparison table for a supplier review. What is a clean way to phrase a bad-news paragraph. Then apply the answer to the real file yourself. This costs an extra three minutes and removes the risk completely. Build the habit while the stakes are low, so that under deadline pressure your hands do the safe thing automatically."
+          },
+          {
+            "heading": "After the task, and other clients",
+            "body": "Two more edges. When a task is delivered, delete your working copies. Downloads folder, desktop, any temporary spreadsheet, anything you sent to yourself. You keep no copy after delivery, and you do not reuse client work as a portfolio sample, on Second Shift or anywhere else. Build samples from invented data instead. Outside Second Shift, some of your own clients will actively want you to use AI. Good. Get it in writing and get it specific: which tools, which data, whether output can be reused, whether disclosure is expected. A verbal yes is worth writing down in an email and having them confirm. Permission that is not written is permission you cannot prove."
+          }
+        ],
+        "keyPoints": [
+          "On Second Shift the default is never. Silence in a brief means no.",
+          "Pasting into a website is sending data to a company.",
+          "Ask for the method, not with the material. Rebuild it with fake rows.",
+          "Delete working copies after delivery. Client work is never a portfolio sample.",
+          "Outside Second Shift, get AI permission in writing and specific."
+        ]
+      },
+      {
+        "title": "Prompting that actually works",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Four things every good prompt has",
+            "body": "Context, task, constraints, example. Context is who this is for and what it belongs to: a follow-up to a supplier who has missed two deadlines, in a relationship the client wants to keep. Task is the single thing you want produced. Constraints are the boundaries: ninety words maximum, no apology, one clear request, plain sentences. Example is a piece of writing that already sounds the way you want, pasted in with the instruction to match its register. Most bad output comes from prompts that contain only the task. Write a follow-up email gives you the average of everything ever written under that heading, and that average is exactly the bland text everyone now recognises."
+          },
+          {
+            "heading": "Give it the material",
+            "body": "A model cannot use what it does not have. If you want a summary that reflects your notes, paste your notes, not a description of them. If you want a rewrite in a client's public voice, paste two paragraphs they already published. If you want a formula, describe every column by header, position and content. This is where the confidentiality line does its work. You supply material that is yours or already public, and you rebuild anything confidential as an equivalent with invented content. Given real material, output improves immediately, because the model is doing what it is good at, working on what is in front of it, instead of what it is bad at, inventing what is missing."
+          },
+          {
+            "heading": "Constraints beat adjectives",
+            "body": "Make it shorter is weak. Cut to sixty words is strong. More professional is weak, because a model's idea of professional is corporate padding. Remove every adjective, no sentence over twenty words, never use leverage or seamless is strong. Numbers, banned words, required words, output format, reading level, point of view. The rule of thumb is that any instruction you could not check afterwards is an instruction the model cannot follow reliably. If you cannot tell whether it obeyed, it does not know either. Write constraints you could verify with your own eyes in ten seconds, and you will get output you can verify in ten seconds."
+          },
+          {
+            "heading": "Iterate, do not restart",
+            "body": "When the first output is wrong, most people delete everything and rewrite the prompt from scratch. Continuing is usually faster. Say what was wrong and what to keep: the structure is right, the second paragraph is too soft, rewrite only that paragraph and leave the rest alone. Three rounds of correction beat one perfect prompt, and each round teaches you something about how to ask next time. Two habits help. Ask for several options rather than one answer while you are still exploring, then narrow. And when a thread has drifted into confusion, start fresh with the best version so far pasted in as the starting point, rather than dragging the confusion along."
+          },
+          {
+            "heading": "Keep the prompts that worked",
+            "body": "The prompts you use most are the ones you will use for years. Keep them in a plain document, one per task type, with the constraints already written in: your invoice reminder prompt, your meeting-notes-to-summary prompt, your formula prompt with your usual column conventions. Add a line each time you learn what to include. This file is one of the few genuinely compounding assets in this work, and building it costs nothing beyond the discipline to paste. Keep it free of any client detail, so the file itself stays safe to keep, safe to reuse across clients, and safe to open in front of anyone."
+          }
+        ],
+        "keyPoints": [
+          "Context, task, constraints, example. Task-only prompts produce averages.",
+          "Write constraints you could check yourself: word counts, banned words, format.",
+          "Correct the draft in the same thread instead of starting over.",
+          "Keep a personal prompt file, with no client detail in it."
+        ]
+      },
+      {
+        "title": "Using AI to check your work",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The second reader you do not have",
+            "body": "Working alone is the hardest part of remote work when it comes to quality. You wrote it, so you read what you meant instead of what is there. A model is a genuinely useful second reader, with one condition: it is checking your writing and your logic, never your facts. Consistency, clarity, structure, tone, whether the conclusion follows from what came before, whether a paragraph contradicts one three pages earlier, whether everything the brief asked for is actually present. That is real value on a long document and it costs two minutes. It does not tell you whether the numbers are right. Nothing except the source tells you that."
+          },
+          {
+            "heading": "Ask for problems, not praise",
+            "body": "If you ask whether your report is good, you will be told it is good. That is the shape of answer the question invites, and it is worth nothing. Ask adversarially instead. List every internal inconsistency. Find every sentence that could be read two ways. Name every claim here with no supporting evidence. Where would a sceptical client push back. What did the brief ask for that this document does not deliver. Rewrite the three weakest sentences and say why they were weak. Then judge the answers yourself, because a good share of them will be wrong or irrelevant. You are generating candidates for review, not verdicts."
+          },
+          {
+            "heading": "Checking without exposing the work",
+            "body": "The confidentiality line applies here too, including to your own drafts, because a draft written for a client contains the client's information. On a Second Shift task, do not paste the deliverable into a tool to have it checked. Run your own checklist, read it aloud, and use the tool only on things containing nothing of the client's: a formula pattern with fake data, a general question about phrasing a comparison, a grammar question about a sentence you rewrote with invented names. When a client outside the platform has approved AI use, the same document can go in with fewer contortions, but the approval has to exist first."
+          },
+          {
+            "heading": "What a machine check cannot do",
+            "body": "It cannot verify facts. It cannot know that this client dislikes the word solutions, that last month they asked for dates written a particular way, or that the file has to be named a certain thing. It cannot open your spreadsheet and see that a filter is still applied. It will sometimes flag correct sentences as errors and confidently rewrite something accurate into something wrong. So the sequence matters. Finish the work, run your own checklist, use the tool as a last sweep, then read its suggestions with your judgement switched on. Never accept a change you cannot explain the reason for. A silent improvement you did not understand is how a correct file becomes an incorrect one."
+          }
+        ],
+        "keyPoints": [
+          "Ask it to find faults. Asking whether it is good yields flattery.",
+          "It checks writing and logic. It cannot check facts.",
+          "On Second Shift, never paste the deliverable in for a check.",
+          "Accept no change you cannot explain in your own words."
+        ]
+      },
+      {
+        "title": "Formulas, code and spreadsheets",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The best everyday use",
+            "body": "Describing a spreadsheet problem in words and getting a working formula back is one of the strongest uses there is. It is fast, the ground is well documented, and you can test the answer completely. Say what you have and what you want. Column A holds full names, column B holds email addresses that may contain the surname, I want a column that flags rows where no email contains the surname, in Google Sheets. Name the tool you are using, because syntax differs between Google Sheets and Excel and the model will otherwise pick one for you. Say what should happen to blanks and errors. Ask for a short explanation of each part alongside the formula."
+          },
+          {
+            "heading": "Test before you trust",
+            "body": "A formula that returns numbers is not a formula that returns correct numbers. Build a small test where you already know the answer: twenty rows you have checked by hand, including the awkward ones. A blank. A duplicate. A name with an apostrophe or a suffix. A date in the wrong format. Text where a number should be. Run the formula and compare against your hand-checked result, row by row. If it matches on all twenty, extend it. If it fails on one, you have learned exactly where the logic is weak, which you would never have learned from the nine hundred rows where it happened to look fine."
+          },
+          {
+            "heading": "Explain it or do not ship it",
+            "body": "You will sometimes get a formula three layers deep that works and that you do not understand. Do not deliver it. The reason is practical rather than moral. It will be run again next month on slightly different data, and when it breaks, it is your file and you cannot fix it. Ask for a plain-language walkthrough of each function. Ask for a simpler version even if it is longer. Break it into helper columns you can read, then collapse it once you understand it. The standard for delivery is that you could explain what the formula does to someone who asked, without opening the tool again."
+          },
+          {
+            "heading": "Structure without data",
+            "body": "You can describe a spreadsheet completely without exposing a single real value. Give the headers, renamed if the headers themselves are sensitive, the data type of each column, the row count, and three or four invented rows carrying the same quirks as the real ones. That fake sample is worth building carefully, because the quirks are the whole problem: the trailing spaces, the mixed date formats, the two rows where the region is spelled differently. Solve it on the fake sample, then run the solution on the real file yourself. Nothing left the task, and you still got the help you needed."
+          },
+          {
+            "heading": "Scripts and the same discipline",
+            "body": "The same applies to a script, a formula inside a form, or a small automation. Read it before you run it. Understand what it touches. Never run something that deletes, overwrites or sends on a client file until you have run it on a copy of a fake file first and watched what it does. Keep an untouched original of any client file you received, work on a duplicate, and check the result before you deliver. Most disasters in this line of work are not dramatic. They are a well-meaning script quietly overwriting a column that took someone a week to compile."
+          }
+        ],
+        "keyPoints": [
+          "Name your tool and your column layout. Spreadsheet syntax differs.",
+          "Test on twenty rows you checked by hand, including the awkward ones.",
+          "If you cannot explain the formula, you cannot deliver it.",
+          "Describe structure with invented rows that carry the real quirks.",
+          "Run anything destructive on a copy of a fake file first."
+        ]
+      },
+      {
+        "title": "Disclosing AI use honestly",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The brief decides",
+            "body": "Disclosure has two separate questions inside it, and people muddle them. The first is whether you were allowed to use the tool at all. That is answered by the brief and by nothing else. The second is whether, having been allowed, you should say where you used it. Handle the first question first. If the brief is silent about AI on a Second Shift task, you did not have permission to put client data into one, and the disclosure question never arises. Where a brief permits it, disclosure becomes a matter of being useful and being honest, which here are almost always the same thing."
+          },
+          {
+            "heading": "When disclosure matters",
+            "body": "It matters most when the client's decision would change if they knew. A client paying for original research, an opinion piece published under their own name, anything they will sign, anything touching law, money or health. Those people are buying your judgement, and they are entitled to know what produced the words. It matters less for the mechanics. Nobody needs to be told you used a tool to convert a date format, to draft a formula you then tested, or to check your own grammar. The test is not how much the tool did. The test is whether a reasonable client would want to know."
+          },
+          {
+            "heading": "How to say it",
+            "body": "Say it plainly and specifically, in a sentence or two, without apology and without over-explaining. The structure that works is what you used it for, what you did yourself, and how you checked. For example: the first draft of sections two and three was AI-assisted, I rewrote and restructured both, and every figure and citation was verified against the original reports. On Second Shift, where the brief allowed AI use, that goes in the note to the operator with your delivery. The person reviewing your work benefits from knowing which parts to look at hardest, and telling them costs you nothing but a sentence."
+          },
+          {
+            "heading": "Never claim it did not happen",
+            "body": "There is one absolute here. If someone asks you directly whether AI was involved, you tell the truth. Not a technically-true answer, not that it is your own process, not that you only used it for research. A direct question gets a direct answer, even when the honest answer is awkward, even when you suspect it will cost you the work. Getting caught in that particular lie ends a working relationship permanently and deservedly. The reason is not that detection tools exist, because they are unreliable and they are not the point. The reason is that a client who cannot trust your answer about this cannot trust your answer about anything."
+          }
+        ],
+        "keyPoints": [
+          "Permission comes from the brief. Disclosure is a separate, later question.",
+          "Disclose where a reasonable client's decision would change if they knew.",
+          "Say what you used it for, what you did, how you checked.",
+          "A direct question about AI gets a direct answer. Always."
+        ]
+      },
+      {
+        "title": "The output is yours",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The tool is not an excuse",
+            "body": "When a wrong figure reaches a client, there is no version of that conversation where the AI wrote it improves your position. You chose the tool. You wrote the prompt. You read the output and decided it was good enough. You put it in the file and you delivered it. The responsibility is complete and it does not divide. This is not harshness. It is the same standard that applies to a calculator, a template, or a colleague you asked for help. Everything that leaves under your name is yours. Once you accept that fully, everything else in this course stops being a rule imposed on you and becomes obviously self-interested."
+          },
+          {
+            "heading": "The signature test",
+            "body": "Before any delivery that involved a tool, ask one question. Would I defend every sentence of this if the client called me about it right now. Not is it probably fine. Would you stand behind this specific number, this specific claim, this specific sentence, and explain where it came from. Anything that fails the test gets verified, rewritten, or removed. In practice this catches the two failure modes that actually matter: the fact you did not check, and the paragraph you did not really read. It takes a minute on most deliveries and it is the single most useful habit in this course."
+          },
+          {
+            "heading": "Keep your own skill",
+            "body": "There is a slower risk worth naming. If the tool writes every email, you stop getting better at writing emails. If it builds every formula, your spreadsheet skill stops growing, and the ceiling of what you can check becomes the ceiling of what you can safely deliver. That matters because your judgement is the thing clients are paying for, and judgement is what tells you an output is subtly wrong. Protect it deliberately. Write the first draft yourself sometimes. Work out the formula yourself when there is no deadline pressure. Read the explanation of anything you accepted without understanding. Use the tool to go faster at what you can already do, and to learn what you cannot."
+          },
+          {
+            "heading": "A policy in one paragraph",
+            "body": "Here is the whole course in something you could say out loud. I use AI tools for drafting, reformatting and first-pass ideas. No client data goes into any third-party tool without written permission, and on Second Shift that permission is not given, so it does not happen. Every fact, figure, name and citation is verified against a real source before delivery. I disclose AI use where it would matter to you, and I answer directly if you ask. Whatever I deliver, I can explain, and I stand behind it. Say that, mean it, and you are ahead of most people working today, with tools or without them."
+          }
+        ],
+        "keyPoints": [
+          "The tool is never an excuse. Everything under your name is yours.",
+          "Signature test: would you defend every sentence if called right now.",
+          "Use AI to go faster at what you can already do.",
+          "Your judgement is the product. Do not let it atrophy."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can tell which parts of a task AI can safely carry",
+      "You can verify every factual claim a model produces before it reaches a client",
+      "You can protect client data without giving up the speed AI offers",
+      "You can write prompts with context, constraints and examples that produce usable drafts",
+      "You can use AI to review your own work without exposing the client's",
+      "You can disclose AI use honestly and stand behind everything you deliver"
+    ],
+    "slug": "ai-tools",
+    "summary": "AI can genuinely speed up drafting, summarising, reformatting and first-pass formulas, and it can also invent facts, leak client data and cost you a client in a single delivery. This course teaches where the line sits, how to verify what a model produces, what never goes into a third-party tool, and how to prompt, check and disclose like a professional. Everything you deliver stays yours.",
+    "tagline": "Real speed from AI, without the invented facts or the leaked client data.",
+    "title": "AI tools, used responsibly",
+    "track": "craft"
+  },
+  "bookkeeping-basics": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You are categorising a month of expenses. A payment to the same hardware store appears eleven times. The client's category list has both Office Supplies and Repairs and Maintenance, and the bank descriptions do not say which. What do you do?",
+          "options": [
+            "Split them by your best guess so each line looks reasonable, and mention it only if asked",
+            "Put them all under Repairs and Maintenance, since a hardware store is closer to repairs than to supplies",
+            "Categorise all eleven the same way, mark them for review with a note, and ask which category the client wants",
+            "Create a new category called Hardware Store so the total is easy to see later"
+          ],
+          "correct": 2,
+          "explain": "Consistency plus a clear question is fixable in one move. Eleven scattered guesses are not, and inventing a category breaks the comparison between months."
+        },
+        {
+          "prompt": "A claimed Second Shift task gives you sixty receipt photos to type into a spreadsheet. Typing them will take three hours. A free online tool would read them automatically if you upload the images. The brief says nothing about outside tools. What do you do?",
+          "options": [
+            "Type them yourself and keep the client data inside the task, unless the brief explicitly allows an outside tool",
+            "Upload them, since the tool is free and nobody is being charged for the client's data",
+            "Upload only the receipts that show no customer names, since those cannot identify anyone",
+            "Upload them and name the tool in your delivery note so the operator knows what you used"
+          ],
+          "correct": 0,
+          "explain": "Client data never leaves the task. Silence in the brief is not permission, and disclosing the upload afterwards does not undo the disclosure."
+        },
+        {
+          "prompt": "You work directly for a business owner, outside Second Shift. You are raising an invoice from a timesheet that totals 18 hours. The owner emails you to bill 20 hours because two extra hours were obviously worked. The written agreement says billing follows the timesheet. What do you do?",
+          "options": [
+            "Bill 20 hours as instructed, since the owner decides what to bill their own customer",
+            "Bill 18 hours quietly, because the signed agreement is the document that governs",
+            "Bill 18 hours and add a separate line for two hours of unrecorded work",
+            "Prepare 20 hours only after asking the owner to confirm in writing, noting the timesheet says 18"
+          ],
+          "correct": 3,
+          "explain": "The owner can decide to bill more, but you never move a number away from its source document without a written instruction you can point to later."
+        },
+        {
+          "prompt": "An invoice is 40 days overdue. Answering your third reminder, the customer asks to pay half now and half in six weeks. You handle the owner's receivables and have never been told what to do in this situation. What do you do?",
+          "options": [
+            "Accept the split, since half the money now is better than nothing and it keeps the relationship warm",
+            "Tell them you will confirm shortly, put the request to the owner with the ageing detail, and wait for the decision",
+            "Refuse and repeat the original due date, since the terms were agreed before the work started",
+            "Accept the split but add a late fee to the second half to protect the owner"
+          ],
+          "correct": 1,
+          "explain": "Payment plans, discounts and fees are the owner's decisions. Your job is to present the request clearly and quickly, then carry out whatever they choose."
+        },
+        {
+          "prompt": "A customer says they paid an invoice of 500 dollars in full, and their remittance advice shows 500. Only 486 dollars arrived in the bank. The gap looks like a transfer fee. What do you record?",
+          "options": [
+            "Record 486 received against the invoice, leave a 14 dollar balance open, and flag the shortfall with the remittance attached",
+            "Mark the invoice paid in full and record 14 dollars as a bank charge so the balance clears",
+            "Mark the invoice paid in full, since the customer sent 500 and the shortfall is the bank's doing",
+            "Leave the 486 unmatched until the customer sends the missing 14 dollars"
+          ],
+          "correct": 0,
+          "explain": "You record what actually arrived. Whether the fee is absorbed as a cost or chased from the customer is the owner's call, not yours to assume."
+        },
+        {
+          "prompt": "You are reconciling March. The books show a 1,200 dollar supplier payment dated 30 March. The bank statement shows it clearing on 2 April. Everything else matches. What do you do?",
+          "options": [
+            "Change the book date to 2 April so March reconciles cleanly and both records agree",
+            "Delete the entry from March and re-enter it in April where the bank shows it",
+            "Leave both dates as they are, list it as a timing difference in your summary, and carry it into April",
+            "Flag it as a discrepancy you cannot explain and stop the reconciliation there"
+          ],
+          "correct": 2,
+          "explain": "A payment made at month end that clears days later is normal. It is reported as a timing difference, not corrected by editing dates or deleting entries."
+        },
+        {
+          "prompt": "You prepare supplier payments. An email from a regular supplier's usual address says their bank account has changed and asks that this month's payment go to the new account. The attached invoice looks completely normal. What do you do?",
+          "options": [
+            "Prepare the payment to the new account and note the change in the supplier file for next month",
+            "Reply to the email asking them to confirm the new details, then prepare the payment once they do",
+            "Prepare the payment to the old account and ignore the email until the supplier follows up",
+            "Prepare nothing, flag it to the owner, and verify by phoning the supplier on a number you already had"
+          ],
+          "correct": 3,
+          "explain": "Changed bank details by email is a common fraud. A reply confirms nothing if the mailbox is compromised, so verification uses a contact route you already trusted."
+        },
+        {
+          "prompt": "While categorising, the owner asks you directly whether they can claim the full cost of a new laptop this year or must spread it over several years. You have read about this and think you know the answer. What do you do?",
+          "options": [
+            "Say it is a question for their accountant, record the purchase with its invoice, and add it to your questions list",
+            "Give them your understanding, but tell them clearly to double check it with their accountant",
+            "Look up the rule on the tax authority website and tell them which part applies to their laptop",
+            "Record it as a full expense this year, which is what most small businesses do with equipment"
+          ],
+          "correct": 0,
+          "explain": "How an asset is treated is regulated advice you are not qualified to give. Even a well sourced answer becomes advice once you hand it over as the answer."
+        },
+        {
+          "prompt": "You are two hours over your own estimate on a reconciliation. Three transactions totalling 4,100 dollars have no supporting documents and will not match. Delivery is due in one hour. What do you do?",
+          "options": [
+            "Categorise the three as Miscellaneous so the file is complete, and mention them if anyone asks later",
+            "Deliver on time with the three listed as unresolved, the amounts, and exactly what you checked",
+            "Hold the delivery until you have chased down all three, even if that means being a day late without warning",
+            "Match them to the closest supplier invoices by amount, since a near match is better than a gap"
+          ],
+          "correct": 1,
+          "explain": "An honest unresolved list is useful work. A tidy file built on guesses is worse than a gap, because nobody downstream knows the numbers cannot be trusted."
+        },
+        {
+          "prompt": "You sent invoice 2026-041 for 900 dollars yesterday. The owner now tells you the agreed price was 750 dollars. The customer has not paid yet. What do you do?",
+          "options": [
+            "Edit invoice 2026-041 down to 750 dollars and resend it with the same number and date",
+            "Delete 2026-041 and issue a fresh invoice at 750 dollars using the next number in the sequence",
+            "Leave the invoice and ask the customer to simply pay 750, noting the difference in your records",
+            "Keep 2026-041 in the records and ask the owner to issue a credit note or corrected invoice, referencing the original"
+          ],
+          "correct": 3,
+          "explain": "A sent invoice already exists outside your file. Corrections are made by a new document that references it, never by quietly editing or deleting the original."
+        },
+        {
+          "prompt": "In the business account you find a 320 dollar payment to a furniture shop and a 90 dollar supermarket charge, both on a Saturday. The owner works from home. There is no note about either. What do you do?",
+          "options": [
+            "Leave both uncategorised, list them with dates, amounts and vendors, and ask the owner what each was for",
+            "Categorise the furniture as Office Equipment and the supermarket as Personal, since that is the likely split",
+            "Categorise both as Personal Drawings, because weekend spending in these categories is almost always personal",
+            "Categorise both as business expenses and let the accountant remove anything that does not belong"
+          ],
+          "correct": 0,
+          "explain": "Deciding whether spending is business or personal is the owner's call and has tax consequences. Your value is the clean question, not the confident guess."
+        },
+        {
+          "prompt": "You are finishing a claimed task. The notes in the brief ask you to date three purchases as 31 December, although the receipts clearly show 3 January. The task is otherwise straightforward and the payout is good. What do you do?",
+          "options": [
+            "Do it, since the dates came from the brief and following the brief is what you are paid for",
+            "Do it, but write the real dates in a comment column so the record still contains the truth",
+            "Keep the receipt dates and raise the instruction with the operator in your delivery note rather than changing them",
+            "Change the dates and note in your delivery that you were unsure whether the instruction was correct"
+          ],
+          "correct": 2,
+          "explain": "Moving a transaction across a period boundary changes which year it belongs to. An instruction does not make it correct, so you raise it instead of quietly doing it."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "What the job actually is",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Your side of the line",
+            "body": "Bookkeeping support means handling the paperwork that makes someone else's accounting possible. You collect receipts, record transactions, keep categories consistent, prepare invoices, chase payment, and reconcile the month against the bank. What you do not do is decide how a transaction should be treated for tax, tell someone what they can deduct, or file anything with a tax authority. That work belongs to a qualified accountant or licensed tax professional in the client's country. Nothing in this course is accounting or tax advice, and you should never present your own work as advice. The line is not a limit on your value. An owner with clean, current, organised books pays their accountant for judgement instead of for cleanup, and you are the reason that is possible."
+          },
+          {
+            "heading": "What lands on your desk",
+            "body": "The work is concrete. A month of bank transactions exported to a spreadsheet, none of them categorised. A folder of phone photos of receipts, some of them sideways. Six invoices to raise from a timesheet and a rate card. A list of customers who have not paid, and the reminders that need to go out. A March bank statement to check line by line against the records. That is the shape of most bookkeeping tasks you will see, on this platform and elsewhere. None of it requires a licence. All of it requires care, because every number you type becomes the basis of a decision somebody else makes later."
+          },
+          {
+            "heading": "The questions to ask before you start",
+            "body": "Before you touch a file, you need six answers. Which records am I working in, and where do they live. What is the exact period. What is the existing category list, and can I see last month's finished version. What do I do with anything I am unsure about. Who signs off. When is it due. On Second Shift these usually sit in the brief, and if one is missing you raise it with the operator rather than guessing halfway through. Working directly for a business owner, you ask once at the beginning and write the answers somewhere you can reread. Five minutes at the start saves an hour of rework at the end."
+          },
+          {
+            "heading": "How this works on Second Shift",
+            "body": "On Second Shift the payout is printed before you claim, so read the brief first and decide whether the work fits the price. Once you claim, the files come down with the task. Your questions go to the operator, never to the client, because you and the client never meet. You upload the finished file with a note explaining what you did, what you assumed, and what you could not resolve. The operator reviews it before the client ever sees it, and may send it back for revision. That review is not an insult. It is a second pair of eyes on numbers, which is exactly what bookkeeping needs. Working directly for an owner, you are the only pair of eyes, so you build the checks yourself."
+          }
+        ],
+        "keyPoints": [
+          "You prepare and organise the books. A qualified accountant advises and files.",
+          "Ask the six setup questions before you start, not halfway through the file.",
+          "Every number you type becomes the basis of a decision someone else makes.",
+          "On Second Shift, questions go to the operator, never to the client."
+        ]
+      },
+      {
+        "title": "The words on the page",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Invoice, bill, receipt",
+            "body": "Three documents get mixed up constantly, and mixing them up loses money. An invoice is a request for payment. When your client issues one, it is a sale and it sits in accounts receivable until it is paid. When your client receives one, the same document is a bill, and it sits in accounts payable until they pay it. A receipt is proof that payment already happened. A receipt is not a request for anything, and an unpaid invoice is not proof of anything. When somebody hands you a pile of paper and calls it all receipts, sort it first. Half of it is usually bills, and some of those may still be unpaid."
+          },
+          {
+            "heading": "Payable, receivable and ageing",
+            "body": "Accounts payable is what the business owes to others. Accounts receivable is what others owe the business. Both are lists, and both are only useful when they carry dates. Ageing means grouping those amounts by how overdue they are: not yet due, one to thirty days late, thirty one to sixty, sixty one to ninety, and over ninety. An ageing report is the single most useful thing you can hand an owner who feels vaguely worried about cash, because it converts a feeling into four numbers. You will build one in Google Sheets later in this course, and you will use it to decide who to chase first."
+          },
+          {
+            "heading": "Income, expense, and the proof behind them",
+            "body": "Income is money the business earned. An expense is money it spent to operate. Those definitions sound obvious until you meet the edges. Money that arrives is not always income: a loan, a refund, a transfer between the owner's own accounts, and a customer deposit are all money in, and none of them is a sale. Money that leaves is not always an expense: a loan repayment, money the owner takes out for themselves, and a transfer to savings all reduce the bank balance without being a cost of doing business. You do not need to classify these correctly on your own. You need to recognise them and stop, because these are exactly the lines an accountant wants flagged."
+          },
+          {
+            "heading": "Reconciliation, and two ways to count time",
+            "body": "Reconciliation means comparing your records against an independent record, usually a bank statement, and explaining every difference. It is the routine that catches what everything else missed, and you will do a full one in a later lesson. One more pair of words. Cash basis records income when money actually moves. Accrual basis records it when the invoice is issued or received, regardless of when it is paid. Which one a business uses is decided by its accountant and the rules that apply to it, not by you. You only need to know which one is in use, because it tells you which date to record. If nobody has told you, that is a question, not a guess."
+          }
+        ],
+        "keyPoints": [
+          "An invoice asks for money. A receipt proves it arrived. Sort the pile first.",
+          "Payable is what the business owes. Receivable is what it is owed.",
+          "Money in is not always income, and money out is not always an expense.",
+          "Cash or accrual is the accountant's decision. You just need to know which."
+        ]
+      },
+      {
+        "title": "Categorising expenses consistently",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Use the list that already exists",
+            "body": "Every set of books has a category list, sometimes called a chart of accounts. Your first move is to find it, not to design one. Ask for it, or open last month's finished file and read what was used. If a list genuinely does not exist, propose a short one and get it approved before you start typing, rather than inventing categories as you go. Twelve to twenty categories covers most small businesses: rent, utilities, software, professional fees, travel, meals, supplies, equipment, bank charges, advertising, contractors, insurance. A long list feels thorough and behaves badly, because the more choices there are, the less consistently anyone picks the same one twice."
+          },
+          {
+            "heading": "Consistency beats cleverness",
+            "body": "The purpose of categories is comparison. An owner wants to see that software costs jumped from 210 dollars to 640 dollars between February and March. That comparison only works if the same kind of expense lands in the same place every month. This is why one slightly imperfect category applied consistently to all eleven payments beats eleven thoughtful individual judgements. One consistent mistake is one correction. Eleven scattered guesses are eleven investigations, and the accountant charges by the hour. So build a rule and hold it. This vendor goes to this category, every time, until somebody who owns the books tells you otherwise."
+          },
+          {
+            "heading": "Write the rules down",
+            "body": "Keep a rules sheet in the same file, one tab, three columns: vendor or description, category, and note. Every time you decide something, it goes on that sheet, and when you deliver, the sheet goes with the work. This does three things. Whoever picks up the file next month makes the same choices you did. The accountant can correct one rule instead of fifty rows. And you can defend every decision without having to remember it. In a spreadsheet, sort by description before you categorise. Identical vendors group together and you fill a block at a time, which is faster and far more consistent than working down the file in date order."
+          },
+          {
+            "heading": "The unsure column",
+            "body": "Never guess to fill a cell. Add a column called Status and mark anything uncertain as Ask, with a short note saying what you need. Then build the questions list at the end: row number, date, amount, vendor, and the specific question. Ten precise questions delivered with the file is professional. One vague message saying that some things were unclear is not. Do not park unknowns in a category called Miscellaneous or Other and move on, because that category is where clarity goes to die and it hides exactly the transactions that need attention. If the unsure pile is very large, that is information too, and you say so plainly in your note."
+          },
+          {
+            "heading": "Personal, mixed and awkward",
+            "body": "Some spending genuinely sits between business and personal. A laptop bought on the business card and used at home. A phone bill on one account. A meal that may have been a client or may have been Saturday. Whether these count as business expenses affects tax, which means the call is not yours. Your job is to isolate them, describe them accurately, and hand them over. Write what you can see, not what you assume: date, vendor, amount, and any detail printed on the receipt. Never label a transaction personal or business just to make a file look finished. Two hours over budget and honest is a better outcome than on time and quietly wrong."
+          }
+        ],
+        "keyPoints": [
+          "Find the existing category list before you invent one.",
+          "One consistent mistake is one correction. Eleven guesses are eleven investigations.",
+          "Keep a rules sheet and deliver it with the finished file.",
+          "Mark unsure rows Ask and deliver a precise questions list.",
+          "Business or personal is the owner's call, never yours."
+        ]
+      },
+      {
+        "title": "Receipts, capture and filing",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Capture before it fades",
+            "body": "Thermal paper receipts fade. A receipt photographed in week one is still readable in five years, while the same receipt left in a drawer in June may be blank by December. So the rule is capture early, capture everything, sort later. When you photograph, lay the receipt flat on a plain surface, get the whole document in frame including the top and bottom edges, and check that the date, the vendor, the total and any tax line are readable before you move on. Google Drive on a phone has a free scan function that flattens and crops. Any phone camera works if you are careful. A blurry photo is not a receipt, it is a future question."
+          },
+          {
+            "heading": "Name files so they sort themselves",
+            "body": "Use one pattern and never break it. Date first in year, month, day order, then vendor, then amount, so 2026-03-14_MeralcoElectric_1240.75.pdf. Dates written that way sort chronologically by themselves in every system, which is why the format is worth the small ugliness. Spell each vendor the same way every time, capitals included, and keep the approved spellings on your rules sheet. One receipt per file. Never merge twelve receipts into a single PDF to save space, because the moment somebody needs the third one they have to open and scroll everything. Avoid spaces and punctuation beyond hyphens and underscores, since some systems mangle them."
+          },
+          {
+            "heading": "A folder structure that survives",
+            "body": "Keep it shallow. Year, then month, then everything for that month in one place. Deep folder trees feel organised and slow everyone down, and by month four nobody remembers which branch a receipt went into. If the business has more than one account or card, one extra level for that is reasonable, and that is the limit. Name folders the same way as files, with the year and month in numbers so they sort correctly. Then write a one paragraph note at the top level explaining the system in plain language. When somebody else takes over, or when you come back to the file after eight months, that paragraph is what saves the afternoon."
+          },
+          {
+            "heading": "The missing receipt log",
+            "body": "You will always have transactions with no supporting document. Keep a log: date, amount, vendor as it appears on the bank line, and what you already tried. Deliver it with the work. Never fabricate a receipt, never type an amount you cannot actually read, and never assume that a 47 dollar charge from a familiar vendor was the usual thing. If a receipt is only partly readable, capture what is there and note what is missing. The log is not an admission of failure. It is the difference between a file where the gaps are known and a file where they are hidden, and only one of those can be trusted."
+          },
+          {
+            "heading": "Where the files are allowed to live",
+            "body": "Receipts and statements live in the client's own storage, not yours. On Second Shift the files arrive with the claimed task and the finished work goes back through the delivery upload, so nothing needs to sit on your machine after approval. Delete local copies once the work is approved. Client data never leaves the task: no uploading receipts, statements or customer lists to a third party service, an online converter or an AI tool, unless the brief says so explicitly. Silence is not permission. Never keep a copy as a personal reference, and never use real client documents as a portfolio sample, however well you blur the name. That rule protects the client, and it is also the only reason anyone trusts you with a bank statement."
+          }
+        ],
+        "keyPoints": [
+          "Capture receipts early. Thermal paper can fade to blank within months.",
+          "Name files date first, then vendor, then amount. One receipt per file.",
+          "Keep folders shallow and write down the system for the next person.",
+          "Log missing receipts. Never fabricate one or type an amount you cannot read.",
+          "Client files stay in the task. No third party uploads, no copies kept."
+        ]
+      },
+      {
+        "title": "Building an invoice",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "What has to be on it",
+            "body": "An invoice is a formal request for money, and a vague one is easy to ignore. It needs the word Invoice, a unique invoice number, the issue date, and the due date written as an actual date. It needs the seller's full business name, address, contact details, and any business or tax registration number the client uses. It needs the customer's name and address, not just a first name. It needs line items with a clear description, quantity, rate and line total. It needs the subtotal, any tax line the client's setup requires, the total, and the currency stated explicitly. It needs payment instructions and a reference to quote. Requirements vary by country and by the client's tax position, so use their template and their accountant's guidance, not one you found online."
+          },
+          {
+            "heading": "Numbering and dates",
+            "body": "Invoice numbers must be unique, sequential and never reused. A format such as 2026-041 tells you the year and the position at a glance. Never delete an invoice to free up a number, and never leave unexplained gaps in the sequence, because gaps look like hidden sales to anyone reviewing later. Terms are the second half of this. Net 15 or Net 30 means payment is due fifteen or thirty days from the invoice date, but do not make the customer count. Write the due date in full, as in Due 14 April 2026. An explicit due date makes the first reminder easy to write and removes the most common excuse for late payment, which is genuine confusion about when it was due."
+          },
+          {
+            "heading": "Build it from evidence",
+            "body": "Every figure on an invoice should come from a document, not from memory or from what feels about right. The rate comes from the agreement or the rate card. The quantity comes from the timesheet, the delivery log or the purchase order. If the owner tells you to bill something different from what the evidence shows, that is their right, and you ask for the instruction in writing before you change the number. Then check three things before it goes anywhere: the right customer, the right total recalculated by hand rather than trusted from a formula, and the right payment details. Wrong bank details on an otherwise correct invoice is the most expensive small mistake in this work."
+          },
+          {
+            "heading": "Free tools, and the client's tools",
+            "body": "Many businesses run accounting software such as QuickBooks, Xero or Zoho Books. If your client does, you work inside their account with the access they grant you, and you never open a personal or trial account to hold their business data. Where no software exists, the free path works fine. Build the invoice in Google Docs or Google Sheets from a template you keep clean, fill it in, then export to PDF. Always send PDF, never an editable file. Keep a numbered copy of every invoice in the client's own storage, and keep an invoice register in Sheets with number, date, customer, amount, due date and status. That register is what the ageing report is built from, and reconstructing it later is far harder than keeping it now."
+          },
+          {
+            "heading": "Who presses send",
+            "body": "Sending is not always your decision. Some owners want to review every invoice before it goes out, some want you to send from their address or their software, and some want to send it themselves. Ask once and follow the answer. Where you do send, use the business's own address and a plain subject line carrying the invoice number and the amount. Attach the PDF, restate the amount and the due date in the body, and keep the message short. On Second Shift you send nothing to anyone. You prepare the invoice, deliver the file through the task with a note, and the operator handles everything downstream. You never contact a client or a client's customers."
+          }
+        ],
+        "keyPoints": [
+          "An invoice needs a unique number, a real due date, and the currency stated.",
+          "Never reuse or delete an invoice number. Gaps look like hidden sales.",
+          "Every figure comes from a document. Only a written instruction changes a number.",
+          "Send PDF, never an editable file, and keep a register of every invoice.",
+          "On Second Shift you prepare and deliver. The operator handles all sending."
+        ]
+      },
+      {
+        "title": "Chasing payment without burning bridges",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Build the ageing first",
+            "body": "You cannot chase what you cannot see. From the invoice register, build a simple ageing in Google Sheets: one row per unpaid invoice with customer, number, amount, due date, and days overdue calculated from today. Group into not yet due, one to thirty, thirty one to sixty, sixty one to ninety, and over ninety. Sort by amount inside each group. Now the work orders itself. The oldest and largest go first, because those are the ones most likely to become bad debt and the ones the owner most needs resolved. Refresh the ageing before every chasing session, because nothing looks worse than demanding money that arrived on Tuesday."
+          },
+          {
+            "heading": "The sequence",
+            "body": "A chase is a sequence, not a single anxious email. Three days before the due date, a short friendly note with the invoice attached and the due date restated. The day after it falls due, a brief message that assumes an oversight. At seven days, a plainer message asking for a payment date. At fourteen days, the same again, with the history and a question about whether the invoice was received at all. At around thirty days you stop and hand it to the owner with a summary of everything sent. Every step keeps the invoice attached, restates the amount, the number and the due date, and asks one clear question. Firmness comes from repetition and clarity, not from stronger words."
+          },
+          {
+            "heading": "Words that work",
+            "body": "Short beats long, and specific beats polite noise. A workable message reads like this. Invoice 2026-041 for 840 dollars was due on 14 March. It is attached again for convenience. Could you confirm the date it will be paid. That is the whole message. Do not apologise for asking, do not explain that you hate to chase, and do not threaten anything. Assume good faith for a long time, because most late payment is administrative rather than refusal. The invoice went to the wrong mailbox, the approver was away, a purchase order number was missing. A specific question uncovers those reasons. A vague reminder just adds another unread email to the pile."
+          },
+          {
+            "heading": "Where your authority ends",
+            "body": "You do not agree discounts. You do not agree payment plans. You do not write off a balance, threaten legal action, or tell a customer their account is suspended. Every one of those is an owner decision with consequences you do not carry. When a customer proposes something, your job is speed and clarity. Tell them you will confirm shortly, put the request to the owner with the ageing detail attached, and come back with the answer. That is not weakness. Answering within a day with a real decision beats improvising in the moment and creating a promise the business then has to honour."
+          },
+          {
+            "heading": "Log every contact",
+            "body": "Keep a contact log beside the ageing: date, invoice number, channel, who you reached, what they said, and any date they promised. Two things come out of it. Your next message can reference the last one specifically, which is what makes a chase feel serious rather than automated. And when the owner asks what happened with a customer, you answer in ten seconds with facts instead of impressions. If a customer promises a date, note it and follow up the day after it passes, without fail. Nothing weakens a chasing sequence faster than a broken promise that nobody noticed."
+          }
+        ],
+        "keyPoints": [
+          "Build an ageing report first. It decides who you chase and when.",
+          "Chase in a sequence: before due, day after, day seven, day fourteen, escalate.",
+          "Assume good faith. Most late payment is administrative, not refusal.",
+          "Discounts, plans and write offs are owner decisions. Bring options, not promises.",
+          "Log every contact and follow up every promised payment date."
+        ]
+      },
+      {
+        "title": "Matching payments to invoices",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "A deposit is not a payment yet",
+            "body": "Money arriving in the bank tells you almost nothing until you know which invoice it settles. Matching is that step, and it is the part most often skipped when somebody is in a hurry. Work from two lists: open invoices, and money received that is not yet allocated. Take each deposit, find its invoice, record the invoice number against the deposit and the payment date against the invoice, then move both off the open lists. A remittance advice, the note a customer sends saying what they are paying for, makes this trivial when it exists. When it does not, match by amount first, then by date, then by the reference on the bank line."
+          },
+          {
+            "heading": "Four messy cases",
+            "body": "Partial payment: record what arrived, leave the remainder open, note it. Combined payment: one deposit covering several invoices, so split it across them and confirm the total ties exactly before you close any of them. Overpayment: record the full amount received, leave a credit sitting on the customer's account, and tell the owner rather than deciding to refund. Short payment: 486 dollars arrives against a 500 dollar invoice, usually a transfer or currency fee. Record 486, leave 14 open, flag it. Whether the business absorbs that fee or chases it is a decision, not a formatting problem. The rule underneath all four is the same. Never mark an invoice paid in full when the money that arrived was not the full amount."
+          },
+          {
+            "heading": "Unidentified deposits",
+            "body": "Sometimes money arrives and nothing fits. No matching amount, no reference, no remittance. Do not force it onto the nearest invoice because it is roughly the right size, and do not delete it. Park it in an unidentified queue with the date, the amount and whatever the bank line says, and ask. Matching a payment to the wrong invoice creates two errors at once: an invoice that looks settled and is not, and a real payment nobody can trace. That is much harder to unpick in October than it was to ask about in March. The same applies to a deposit you suspect is a loan, a refund, or the owner's own money. Park it and ask."
+          },
+          {
+            "heading": "Refunds, credit notes and corrections",
+            "body": "A refund is money going back to a customer. A credit note is a document that reduces what a customer owes without any money moving. They are not interchangeable, and neither one is a licence to edit history. If an invoice was wrong, you do not open it and change the number, and you do not delete it. You keep it, and the owner issues a credit note or a corrected invoice that references the original number. This matters because a sent invoice already exists outside your file, in somebody else's inbox and possibly in their payables. Quietly editing your copy makes the two versions disagree, and whoever discovers that later will not assume it was innocent."
+          }
+        ],
+        "keyPoints": [
+          "A deposit means nothing until it is tied to a specific invoice.",
+          "Never mark an invoice paid in full for a partial or short payment.",
+          "Park unidentified deposits and ask. A forced match creates two errors.",
+          "Correct a sent invoice with a credit note, never by editing or deleting."
+        ]
+      },
+      {
+        "title": "The monthly reconciliation",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "What you are comparing",
+            "body": "Reconciliation compares the records the business keeps against a record it does not control, almost always the bank statement. The goal is simple to state. Every line on the statement appears once in the books, every line in the books appears once on the statement, and anything left over has a written explanation. When that is true, the closing balance in the books equals the closing balance on the statement, and the month can be closed. Doing this every month takes an hour or two. Doing it once a year takes days and finds problems too late to fix cheaply. That is why a reliable monthly reconciliation is one of the most valuable recurring services you can offer, on this platform or directly."
+          },
+          {
+            "heading": "Set up before you tick",
+            "body": "Half the work is preparation. Export the bank statement for the period as CSV where possible, and export or copy the book records for exactly the same dates. Put them side by side in one Google Sheets file, one tab each, with the same column shape: date, description, money in, money out. Force both date columns into the same format, because mixed date formats are the single most common cause of a reconciliation that will not close. Write the statement's opening and closing balances at the top of the sheet before you start, since those are the two numbers you are working towards. Add a match column to each tab. You will put a reference in it, not a tick, so every match can be traced later."
+          },
+          {
+            "heading": "Tick and tie",
+            "body": "Work through the statement line by line rather than the books, because the statement is the record you cannot argue with. For each line, find its partner in the books: amount first, then date within a few days, then description. When you find it, put the same short reference in both match columns, such as M-014. When you do not, leave it and keep moving rather than stopping to investigate. Sorting a copy of each tab by amount helps you spot pairs quickly, and it also exposes duplicates, which show up as two identical amounts on the same side within a few days. Mark, never delete. A row you delete to make things fit is a row nobody can ever check."
+          },
+          {
+            "heading": "Timing differences and real errors",
+            "body": "What is left over falls into two piles, and telling them apart is the skill. A timing difference is real and normal: a payment made on 30 March that clears on 2 April, a deposit banked on the last day that lands the next, a cheque not yet presented. You do not correct these. You list them, carry them forward, and expect them to match next month. A real error is different: a duplicate entry, an amount typed wrong, a transaction in the bank with nothing in the books, a payment recorded that never happened. Those get flagged, with the amount and what you checked. Editing dates to make a timing difference disappear is not reconciliation, it is hiding the thing the process exists to reveal."
+          },
+          {
+            "heading": "What you deliver",
+            "body": "Deliver three things. The reconciled sheet with its match references intact, so anyone can retrace your steps. A summary in plain sentences giving the opening balance, the closing balance per the statement, the closing balance per the books, how many lines matched, and the unmatched items with a reason for each. And your questions. If it does not balance, say so, and say by exactly how much and where you looked. A reconciliation that is out by 43.20 dollars with an honest note attached is a useful piece of work. A reconciliation that balances because something was quietly adjusted is worse than none, because it will be trusted."
+          }
+        ],
+        "keyPoints": [
+          "Every statement line appears once in the books, and every book line once on the statement.",
+          "Fix date formats before you start. Mixed formats break most reconciliations.",
+          "Mark matches with a traceable reference. Never delete a row to make it fit.",
+          "Timing differences are carried forward. Real errors are flagged with the amount.",
+          "Out by a known amount with an explanation beats a balance you invented."
+        ]
+      },
+      {
+        "title": "Flag, do not fix",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The line between fixing and flagging",
+            "body": "You fix your own work. Typos you introduced, formatting, a column you mis-sorted, a formula you wrote wrong. You do not silently change a number that came from a source document, and you do not delete a transaction because it looks odd. The test is simple. If the change alters what the records say happened, it is not yours to make, so you write it up instead. This is not timidity and it is not pushing work back up the chain. Flagging is the higher skill, because it takes noticing that something is wrong, describing it precisely, and resisting the urge to make the file look tidy. Anyone can produce a file with no open questions. Only a careful person produces the right open questions."
+          },
+          {
+            "heading": "What always gets flagged",
+            "body": "Learn this list. A payment that appears twice with the same amount and vendor within a few days. A vendor you have never seen receiving a large amount. Any request to change a supplier's bank details, especially by email. Round number cash withdrawals with no documentation. Spending that looks personal on a business account. An invoice that appears to have been paid twice. A transaction dated after the period was closed. A missing document above whatever threshold the owner has set. And anything at all that you do not understand. Flagging costs one sentence. Not flagging costs somebody money, sometimes a great deal of it, and the sentence you did not write is the one they will ask about."
+          },
+          {
+            "heading": "Bank detail changes and other traps",
+            "body": "One pattern deserves its own paragraph, because it is how small businesses lose large sums. An email arrives from a supplier's real address, or one that looks almost identical, saying their bank account has changed and asking that the next payment go to the new one. The attached invoice looks completely normal. Replying to that email confirms nothing, because if the mailbox is compromised you are asking the fraudster for confirmation. The only verification that counts is a phone call to a number you already had, from before the email arrived, and the flag goes to the owner first. Slow is the correct speed here. No legitimate supplier has ever lost a client over one day's delay to verify a bank change."
+          },
+          {
+            "heading": "Honesty under time pressure",
+            "body": "The dangerous moment is not when you find something serious. It is when you are already over your estimate, the delivery is due, and three transactions will not resolve. Every instinct says to categorise them as Miscellaneous, close the file and move on. Do not. Deliver on time with those three listed clearly: amounts, dates, what you checked, what you need. That is complete work with a known edge. A file with the gaps papered over is not complete, it is dangerous, because everyone downstream will treat it as finished. Nobody has ever lost a client for delivering an honest unresolved list. People lose clients when a hidden guess surfaces six months later."
+          },
+          {
+            "heading": "When you are asked to bend it",
+            "body": "Sooner or later somebody asks you to move a date into the previous period, record a personal purchase as a business expense, delete a row, or just make it balance. Sometimes it comes from pressure rather than dishonesty. The answer is the same either way. You do not do it, you say so politely, and you put your reason in writing to whoever owns the books. On Second Shift you leave the source data exactly as it is and raise the instruction with the operator in your delivery note. Nothing is worth your name on falsified records, and the practical reality is that these things surface during audits and disputes, when the person who held the pen gets asked why."
+          }
+        ],
+        "keyPoints": [
+          "Fix your own work. Never silently change a number from a source document.",
+          "Duplicates, unknown vendors, changed bank details and personal spending always get flagged.",
+          "Verify a bank detail change by phone, on a number you already had.",
+          "Deliver on time with an honest unresolved list rather than a tidy guess.",
+          "You never backdate and never delete. You put your reason in writing."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can name the boundary between bookkeeping support and the accountant's regulated work.",
+      "You can categorise a month of expenses consistently and document the rules you used.",
+      "You can build a correct invoice and run a polite, escalating payment chase sequence.",
+      "You can reconcile a month against a bank statement and explain every unmatched line.",
+      "You can match partial, combined and short payments without falsely marking invoices paid.",
+      "You can spot the discrepancies that must be flagged instead of quietly fixed."
+    ],
+    "slug": "bookkeeping-basics",
+    "summary": "You will learn the bookkeeping work you are actually asked to do: capturing receipts, categorising expenses consistently, building and sending invoices, chasing payment politely, matching money received to open invoices, and reconciling a month against the bank statement. You will also learn the line you do not cross, because a qualified accountant advises and files while you prepare and organise. Nothing here is accounting or tax advice.",
+    "tagline": "Keep the books clean, get the invoices paid, and know where your job stops.",
+    "title": "Bookkeeping and invoicing basics",
+    "track": "craft"
+  },
+  "getting-hired": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "A job post reads: \"Rockstar VA needed. Must handle email, bookkeeping, video editing, social media, cold calling, web design. Unpaid two-week trial to prove yourself. Start immediately.\" You need work this month. What do you do?",
+          "options": [
+            "Apply, mention every skill listed, and accept the trial to get a foot in the door",
+            "Apply but ask for the trial to be paid, and read the rest of the post for scope and pay before deciding",
+            "Skip it entirely and stop looking at posts from small businesses",
+            "Apply and offer to do the trial for free but only for three days"
+          ],
+          "correct": 1,
+          "explain": "Unpaid multi-week trials are a real red flag, but one flag is worth a question, not silence. Asking for paid trial work and checking scope and pay is the professional response."
+        },
+        {
+          "prompt": "You are writing your profile headline. You have done inbox management, light bookkeeping, some Canva graphics, data entry, and customer email. Which headline is strongest?",
+          "options": [
+            "Virtual Assistant skilled in admin, bookkeeping, design, data entry and customer service",
+            "Hardworking and reliable VA available immediately for any task, fast learner",
+            "Inbox and calendar management for busy founders. Zero-inbox by end of your day.",
+            "Experienced remote professional offering a wide range of business support services"
+          ],
+          "correct": 2,
+          "explain": "One clear focus plus the outcome the client gets beats a list of five skills. The buyer sees exactly what problem you solve."
+        },
+        {
+          "prompt": "A client's test task asks you to clean a 60-row spreadsheet, says it should take about 40 minutes, and offers payment on delivery. It also mentions the tool you will use daily. This is:",
+          "options": [
+            "Unfair, because a test task should never be required at all",
+            "A fair test: small, paid, bounded, and representative of the real work",
+            "Unfair, because 40 minutes is too long to work before being hired",
+            "A fair test only if they also guarantee the job afterwards"
+          ],
+          "correct": 1,
+          "explain": "A fair test is small, paid, clearly scoped, and looks like the actual job. No guarantee of hire is required for it to be fair."
+        },
+        {
+          "prompt": "You are three sentences into a cover message. You want to prove you read the post about managing a chaotic Shopify returns inbox. Which sentence proves it best?",
+          "options": [
+            "I have excellent communication skills and years of experience in customer service",
+            "I am very interested in this role and believe I would be a great fit for your team",
+            "I noticed you mentioned returns pile up on Mondays. I handled a similar Monday backlog by triaging refunds first.",
+            "I am hardworking, detail-oriented, and available to start immediately at your convenience"
+          ],
+          "correct": 2,
+          "explain": "Naming a specific detail from the post and pairing it with a matching piece of your experience is the only line here that could not have been sent to anyone else."
+        },
+        {
+          "prompt": "You have worked with a client for seven months. Your scope has grown from inbox to inbox plus reporting plus vendor chasing. You want a higher rate. The best approach is:",
+          "options": [
+            "Send a short message noting the added scope and your results, propose a new rate and a start date",
+            "Wait until they praise your work and then ask in the same conversation",
+            "Say nothing and hope they offer a raise at the one-year mark",
+            "Tell them your cost of living has increased and you need more money"
+          ],
+          "correct": 0,
+          "explain": "Raises are argued from scope and results, with a concrete number and a date. Praise is not a plan and personal cost is not the client's decision basis."
+        },
+        {
+          "prompt": "During an interview the client says: \"Tell me how you would handle our week.\" You have never worked in their industry. What is the strongest answer?",
+          "options": [
+            "Claim you have industry experience so you are not screened out at this stage",
+            "Say you are a fast learner and will figure out the industry within a week",
+            "Describe your general process and avoid mentioning the gap in industry knowledge",
+            "Say you have not worked in this industry, describe your process for the same task type, and ask what the first week actually looks like"
+          ],
+          "correct": 3,
+          "explain": "Naming the gap plainly, then showing transferable process and asking a real question, reads as competence. Claiming experience you lack gets discovered in week one."
+        },
+        {
+          "prompt": "A client asks you to lower your rate by 40 percent, saying there will be much more work later at your full rate. You have room in your schedule. What is the sound decision?",
+          "options": [
+            "Accept, because volume later will make up the difference",
+            "Refuse the work entirely and end the conversation",
+            "Hold your rate, offer a smaller scope that fits their budget now, and say you are glad to discuss growth later",
+            "Accept but secretly do lower quality work at the reduced rate"
+          ],
+          "correct": 2,
+          "explain": "Future volume is a promise, not a contract. Reducing scope instead of price keeps your rate intact and still gives the client something they can afford."
+        },
+        {
+          "prompt": "You are finishing a paid test task for a prospective client. The output is a well-built reporting sheet you are proud of. You would like to show it to future clients. What do you do?",
+          "options": [
+            "Share it as a portfolio piece since you built it and were paid for it",
+            "Blur the company name and share the rest of the sheet publicly",
+            "Ask the client whether you can share an anonymised version, and if they say no, build your own sample with invented data",
+            "Keep a copy privately and only send it to serious prospects"
+          ],
+          "correct": 2,
+          "explain": "Client work is the client's, even when you built it. Asking first, and otherwise building a sample from invented data, is the only safe path."
+        },
+        {
+          "prompt": "Ten days after a promising interview, you have heard nothing. The client said they would decide \"soon.\" What is the best move?",
+          "options": [
+            "Send a short message restating your interest, adding one useful thought about their situation, and asking if the role is still open",
+            "Send a message every three days until they reply",
+            "Assume you were rejected and move on without contacting them",
+            "Send a message saying you have another offer, to create urgency"
+          ],
+          "correct": 0,
+          "explain": "One short follow-up that adds something useful is professional and often works. Invented offers are lies that collapse the moment they are tested."
+        },
+        {
+          "prompt": "You are building your first profile and have no client work yet. You do have five years running the office of a family business. The best use of that is:",
+          "options": [
+            "Leave it out because it was not remote freelance work",
+            "Describe it as freelance client work to avoid looking new",
+            "Say you are new and hope a client takes a chance on you",
+            "Write it as concrete work: what you managed, the volume you handled, the outcome you produced"
+          ],
+          "correct": 3,
+          "explain": "Real work is real work regardless of the label. Describing volume and outcome gives a client something to judge, which apologising for being new does not."
+        },
+        {
+          "prompt": "A prospective client sends a task before any agreement: clean and merge two customer lists, roughly 4,000 rows, unpaid, \"to see your quality.\" What is the most professional response?",
+          "options": [
+            "Do the first 100 rows unpaid, deliver them, and offer to complete the rest as paid work",
+            "Complete all 4,000 rows quickly to stand out from other applicants",
+            "Ignore the message and withdraw from consideration without replying",
+            "Reply that you never do any work before a signed contract exists"
+          ],
+          "correct": 0,
+          "explain": "A small unpaid sample you choose to give is different from delivering thousands of rows of real production work for free. Capping it and pricing the rest is both cooperative and firm."
+        },
+        {
+          "prompt": "A client asks during an interview: \"What questions do you have for me?\" Which question shows you understand the job best?",
+          "options": [
+            "Is there a possibility of a raise after six months?",
+            "When you say the report is late, what does the person receiving it do with it?",
+            "How many hours per week will I be working?",
+            "What tools does your team use for communication?"
+          ],
+          "correct": 1,
+          "explain": "Asking what the deliverable is actually for shows you think about the client's outcome, not just your own schedule. The other questions matter but come later."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "Choose a focus, not a list",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Why forty skills reads as none",
+            "body": "The most common profile we see lists everything a person has ever touched. Email, bookkeeping, social media, video editing, cold calling, research, design. It feels safe. It is the opposite. A client hiring for one problem reads a list of twelve skills and cannot tell whether you are good at theirs. Nothing in the list is loud enough to be remembered an hour later. Meanwhile the person who wrote inbox and calendar management for founders who travel is instantly sortable. The client knows where to file them. Choosing a focus does not mean refusing other work. It means leading with one thing so the buyer can recognise you. You can still say yes to a research task. You just stop asking a stranger to figure out what you are for."
+          },
+          {
+            "heading": "How to pick yours honestly",
+            "body": "Write down every kind of work you have actually delivered, paid or unpaid, in a job or for a family business. Next to each, write two things: how many times you have done it, and whether you enjoyed the third time. Enjoyment matters because focus means doing it for years. Then look for the overlap between what you have done repeatedly, what people came back to you for, and what someone pays money to have removed from their week. That overlap is your focus. If nothing overlaps yet, pick the closest thing and do it twenty times. Focus is not a decision you make once from a chair. It is a decision you confirm with repetition."
+          },
+          {
+            "heading": "Focus is a starting point, not a cage",
+            "body": "People resist choosing because they think they are locking a door. In practice the opposite happens. A client who hires you for inbox triage discovers you can also build a clean report, and gives you the report. Focus gets you through the first door. What you do afterwards decides how many rooms you get. Also, focus is revisable. Two years in, you may find that the reporting work pays better and drains you less than the inbox work. Change the lead. Nobody is holding you to the sentence you wrote in your first month. What you cannot do is skip the choosing and expect a stranger to do it for you."
+          },
+          {
+            "heading": "Where Second Shift differs",
+            "body": "Inside Second Shift, you do not need a profile to get work. Tasks sit in the pool with a fixed payout printed before you claim, and you claim what you can do well. That is deliberate. It removes the selling from the earning. But the moment you look for work outside this platform, and most of you will and should, the selling comes back. This course is about that world. Treat your Second Shift record as evidence for yourself: the categories you claim most, the deliveries that passed QC first time, the work you were fastest at. That is a focus, discovered by doing. Read your own history before you write a word of a profile."
+          }
+        ],
+        "keyPoints": [
+          "A list of twelve skills tells a client nothing; one clear focus makes you sortable",
+          "Pick the overlap between what you have done repeatedly and what someone pays to remove",
+          "Focus opens the first door; what you deliver afterwards opens the rest",
+          "Your Second Shift claim history is real evidence of where you are strongest",
+          "Focus is revisable. Repetition, not reflection alone, confirms it"
+        ]
+      },
+      {
+        "title": "A profile that leads with outcomes",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "The buyer is skimming, not reading",
+            "body": "Assume the person reading your profile has thirty other tabs open and gives you about eight seconds before deciding to read further or leave. That is not cruelty, it is workload. So the top of your profile has one job: make them want the next paragraph. The strongest opening names who you help and what changes for them. Inbox and calendar management for busy founders. Zero-inbox by the end of your day, not mine. That is two lines and a client already knows whether to keep reading. Compare it to experienced remote professional offering a wide range of business support services. Every word is true and none of it survives eight seconds."
+          },
+          {
+            "heading": "Outcome, not activity",
+            "body": "Activity is what you do. Outcome is what changes because you did it. Handled email is activity. Cut a 400-email backlog to under 20 open threads in the first week is an outcome. Did data entry is activity. Entered 3,000 supplier records with a second-pass check, zero corrections requested is an outcome. The shift is mechanical: after each activity, ask what was true afterwards that was not true before. Volume, time, error rate, what the client stopped having to do. Use real numbers you can defend. If you do not have a number, describe the state change in plain words. Never inflate. A client who hires you on a number and finds it fictional will not keep you."
+          },
+          {
+            "heading": "What goes in the body",
+            "body": "After the headline, three blocks. First, what you do, in specifics: the tasks, the tools, the file types you produce. Second, evidence: two or three short examples of work with volume and result, written as three-line stories rather than adjectives. Third, how you work: your hours in the client's time zone, how fast you confirm a message, what you do when a brief is unclear. That third block wins more work than people expect, because most clients have been burned by someone who went quiet. Say plainly that you flag blockers within the working day. Keep the whole thing shorter than you want to. Cut every sentence that would be true of any other person."
+          },
+          {
+            "heading": "Words to delete",
+            "body": "Some words do nothing because everyone uses them. Hardworking. Detail-oriented. Fast learner. Passionate. Team player. Reliable. Highly motivated. They cost you nothing to write, which is exactly why they convince nobody. Delete them and replace each with the evidence that made you want to write it. Instead of detail-oriented, say you run a second pass on every list before delivery and note what you checked. Instead of fast learner, name a tool you learned in a week and what you built with it. The test for any sentence in your profile: could a person who has never done this work honestly write it too? If yes, it is not earning its place."
+          }
+        ],
+        "keyPoints": [
+          "Your headline has about eight seconds to earn the next paragraph",
+          "Convert every activity into what changed: volume, time, error rate, work removed",
+          "Say how you work under pressure. Most clients have been burned by silence",
+          "Delete hardworking, detail-oriented, fast learner. They are free to write and free to fake",
+          "If a person who never did this work could write the sentence, cut it"
+        ]
+      },
+      {
+        "title": "The application that gets read",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Why templates smell",
+            "body": "Clients receive dozens of applications that open with the same three moves: greeting, self-description, availability. After the fifth one they stop reading the first paragraph entirely and scan for anything specific. That is the whole game. Not charm, not length, not formatting. Specificity. Something in your message that could only have been written by someone who read their post. This is also why the copy-paste approach fails even when the writing is good: the client is not comparing your template against no template, they are comparing it against fifteen others that also sound polished and interchangeable. One concrete sentence beats a page of competent generic writing."
+          },
+          {
+            "heading": "The three-sentence cover message",
+            "body": "Sentence one: name the specific thing in their post, and show you understood the problem behind it, not just the words. Sentence two: the closest thing you have actually done, with a number or a result. Sentence three: what you would do first, or one sharp question about the work. That is the whole message. You may add a line with a relevant sample or your availability. Resist everything else. Short messages get read; long messages get skimmed and skimming loses your best sentence. Write it fresh each time. Three sentences written for one post takes about ten minutes, and ten minutes on five applications beats two minutes on forty."
+          },
+          {
+            "heading": "Evidence beats adjectives",
+            "body": "Every claim you make should carry something a client could check or picture. Not I am organised, but I ran a shared calendar for four people across three time zones for two years, with a written handover for each. Not I am good with spreadsheets, but here is a sample sheet I built with invented data showing how I structure a monthly report. If you have no client work yet, build the sample yourself with fake data. It proves the same skill and it belongs to you. What you must never do is attach real client files as proof. That data is not yours to circulate, no matter how good it makes you look."
+          },
+          {
+            "heading": "Volume, tracking, and knowing when to stop",
+            "body": "Applying is a numbers game only in the sense that good applications need volume too. Five tailored applications a day is a real week of work and a realistic target. Keep a simple sheet in Google Sheets: date, company, role, what you said, follow-up date, outcome. Two things happen. You stop double-applying and forgetting who you already contacted, and after a month you can see which kind of post actually replies to you. That pattern is worth more than any advice. If a category never replies after thirty applications, the problem is the fit or the message, and the sheet is what tells you which."
+          }
+        ],
+        "keyPoints": [
+          "Clients scan for specificity. One concrete sentence beats a polished generic page",
+          "Three sentences: their detail, your matching evidence, your first move or one real question",
+          "Build portfolio samples with invented data. Never attach a real client's files",
+          "Five tailored applications beat forty copy-pasted ones",
+          "Track every application in a sheet. After a month the pattern tells you what to change"
+        ]
+      },
+      {
+        "title": "Thinking clearly about your rate",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "The race to the bottom does not end",
+            "body": "The logic feels sound: charge less than everyone, win the work, raise later. It fails for a specific reason. Clients who choose on price alone keep choosing on price, so every renewal is a new auction against someone newer than you. You also attract the clients with the least patience and the most scope creep, because a low price signals that your time is cheap and therefore expendable. Meanwhile you are working more hours for less, which leaves no time to build the skills that would get you out. We say this plainly because the people who suffer most from it are the ones who need the money most. Underpricing is not humility. It is a trap with a friendly entrance."
+          },
+          {
+            "heading": "Build your number from the bottom",
+            "body": "Start with what you need, not what others charge. Add up your monthly living costs. Add what you set aside for tax and for the months work is thin, and check the official government source in your country for what applies to you, because we are not qualified to tell you and the rules change. Add something for equipment, internet and a small buffer. Divide by the hours you can realistically bill in a month, which is far fewer than the hours you work, because admin, applications and unpaid learning are real. That number is your floor. Not your price, your floor. Below it you are paying to work. Knowing the floor is what lets you decline calmly instead of anxiously."
+          },
+          {
+            "heading": "Price the outcome where you can",
+            "body": "Hourly pricing punishes you for getting faster, which is the strange result of billing time for work you keep improving at. Where the deliverable is well-defined, quote for the job: this report, this cleaned list, this weekly inbox routine. To do it, track your real hours for a few weeks so you know what things actually take. Then quote the job at your target rate times your honest estimate, plus room for one revision. If the client changes the scope, that is a new quote, said politely and without apology. Second Shift works this way already, which is why every task shows a fixed payout before you claim. You are seeing outcome pricing from the inside."
+          },
+          {
+            "heading": "Raising your rate later",
+            "body": "Raises do not arrive. You ask for them, in writing, with three parts: what has changed in scope since you started, what results you have produced, the new rate and the date it starts. Give a few weeks of notice. Do not apologise, do not explain your personal expenses, and do not threaten to leave. Some clients say yes immediately. Some negotiate. Some say no, and then you decide whether to keep them while you replace them. That is a normal business outcome, not a rejection of you. Raise new clients first, since new quotes carry no history, then bring existing clients up as their scope grows."
+          }
+        ],
+        "keyPoints": [
+          "Price-first clients renew as price-first clients. The auction never stops",
+          "Build your floor from real monthly costs divided by realistically billable hours",
+          "Check your own government's official source on tax. We are not qualified to advise you",
+          "Quote the job, not the hour, when the deliverable is defined. Speed should reward you",
+          "Ask for raises in writing: scope changed, results delivered, new rate, start date"
+        ]
+      },
+      {
+        "title": "The interview and the right questions",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "What the client is actually assessing",
+            "body": "Most clients hiring remote help are not evaluating your knowledge. They are trying to answer one question: if I hand this person something and go away, will it be done properly and will they tell me if it is not. Everything you say should feed that question. Describe how you take a brief, what you do when it is ambiguous, how you confirm you understood before spending four hours, what you send when you deliver. A person who explains their process calmly sounds like someone who has been trusted before. A person who only says yes to everything sounds like someone who has not yet discovered what goes wrong."
+          },
+          {
+            "heading": "Prepare three stories, not answers",
+            "body": "Rehearsed answers sound rehearsed. Prepared stories do not, because you are recalling rather than reciting. Before the call, write three short ones: a task you delivered well with a number attached, a time something went wrong and what you did about it, and a time you had to ask a question rather than guess. Each story is four sentences: the situation, what you did, what happened, what you changed afterwards. These three cover most of what you will be asked. The failure story is the one people skip, and it is the one that builds the most trust, provided it ends with what you fixed rather than whose fault it was."
+          },
+          {
+            "heading": "The questions that show you understand",
+            "body": "When they ask what questions you have, the weak options are hours, pay and tools, all of which matter and all of which can come later. The strong questions are about the work and the person receiving it. What does the person getting this report do with it. What does a good week look like for you, and what does a bad one look like. What has gone wrong with this task before. How will you tell me I am doing it right. Those questions come from someone imagining the job rather than the paycheque. They also protect you, because the answers reveal whether the role is defined or whether nobody has thought it through."
+          },
+          {
+            "heading": "Honesty about gaps",
+            "body": "You will be asked about something you have not done. The instinct is to blur it. Do not. Say you have not done that specific thing, then say what you have done that is closest and what you would need to learn it. This works because the client will find out anyway in week one, and because the person who admits one gap becomes believable on everything else they claimed. Confidence is not claiming to have done everything. It is being able to say no to one thing without your whole credibility collapsing. If a client will only hire someone who has done everything, that job was never going to be a good one."
+          }
+        ],
+        "keyPoints": [
+          "The client is asking one thing: can I hand this over and walk away",
+          "Prepare three stories: a win with a number, a failure you fixed, a time you asked instead of guessed",
+          "Ask what the deliverable is for and what has gone wrong with it before",
+          "Name gaps plainly, then name the closest thing you have done",
+          "Admitting one gap makes everything else you claim believable"
+        ]
+      },
+      {
+        "title": "Test tasks and what fair looks like",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Why test tasks exist",
+            "body": "A client cannot verify anything you wrote. Interviews reward people who interview well, which is not the same as people who work well. So a small piece of real work is often the fairest step in the whole process, especially for you if you are newer and your written record is thin. A test task is where a careful person beats a polished one. Treat it as an opportunity rather than an insult. The question is never whether to do test work. The question is whether this particular test is proportionate, paid, and honest about what it is."
+          },
+          {
+            "heading": "The shape of a fair test",
+            "body": "A fair test is small, roughly an hour or less. It is paid, or small enough that you would offer it freely. It is clearly scoped, so you know when you are finished. It looks like the actual job rather than an unrelated puzzle. And it comes with a decision timeline, so you are not left waiting a month. When a test breaks these, it usually breaks them obviously: four thousand rows to clean, five articles to write, a full month of a client's backlog, all unpaid, all delivered before any agreement exists. That is not assessment. That is production work with the payment step removed."
+          },
+          {
+            "heading": "How to decline without burning it",
+            "body": "You do not have to accept or refuse. Counter. Say you are glad to show your work, name what you will do for free, and price the rest. I will clean the first 100 rows so you can see the standard, and I would charge for the remaining rows at my usual rate. This is cooperative and firm at once, and honest clients almost always accept it. The ones who insist you must do all of it unpaid have told you what working with them will be like, and they have told you before you were owed any money. Losing that client costs you nothing you would have kept."
+          },
+          {
+            "heading": "Doing the test properly",
+            "body": "Once you accept, treat it as the highest-visibility work you will do for that client. Follow the brief exactly, including the boring parts about file naming and format, because deviation there is the fastest way to be rejected. Deliver early if you can. Include a two-line note explaining what you did, anything you noticed, and any assumption you made where the brief was silent. That note is often what wins it, because it shows you thought rather than clicked. And whatever you produce, the client data stays inside the task. Do not put it through an outside service or an AI tool, do not keep a copy after delivery, and do not later use it as a sample."
+          }
+        ],
+        "keyPoints": [
+          "A test task is where careful people beat polished people. Welcome it",
+          "Fair means small, paid, clearly scoped, representative, with a decision date",
+          "Counter unfair tests: a free sample plus a price for the rest",
+          "Follow the boring instructions exactly. Format and naming are half the assessment",
+          "Test data is client data. Nothing leaves the task, nothing is kept, nothing becomes a sample"
+        ]
+      },
+      {
+        "title": "Red flags in a job post",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Flags that mean stop",
+            "body": "A few things justify closing the tab without a reply. Any request that you pay money to be hired: a training fee, a placement fee, a deposit for equipment. Legitimate work pays you, never the reverse. Any request for banking passwords, national identity numbers or copies of documents before an agreement exists. Any offer to send you money to forward on, or to receive packages and reship them, which is how people get used in fraud without understanding it. Any post that will not say what the company is or what the work is, but promises unusual money. These are not negotiations. Leave, and do not send documents."
+          },
+          {
+            "heading": "Flags that mean ask a question",
+            "body": "Most flags are softer and only mean the post was written carelessly. A rockstar or ninja asking for six unrelated skills at once, which usually means nobody has defined the role. No pay range at all. Vague hours with immediately available and always on in the same sentence. A description of a previous assistant who was difficult, which tells you how you may be described later. Extremely fast hiring with no questions asked, which often means high turnover. None of these are disqualifying alone. Each is a question you should ask before the first hour of work: what exactly is the scope, what is the range, what does always on mean in practice."
+          },
+          {
+            "heading": "Reading the post for what it does not say",
+            "body": "The strongest signal is usually an absence. A post that never mentions what the work is for, who receives it, or what a good result looks like was written by someone who has not thought about it, and that thinking will land on you unpaid and unacknowledged. A post that mentions no tools may mean no systems. A post with no mention of how or when they pay is worth a direct question. You are allowed to ask these things before applying and the good clients will answer. Getting no answer is itself an answer, and it costs you one message to find out."
+          },
+          {
+            "heading": "Trusting the feeling, then checking it",
+            "body": "Experienced people describe a sense that a post is off before they can say why. That instinct is pattern recognition and it is usually right, but do not stop at the feeling. Write down what triggered it in one sentence. Half the time you will find the specific thing and it is answerable. The other half you will find nothing you can name, and then you decline and move on without needing to justify it to anyone. You do not owe an explanation for declining. Keep a short private list of posts that felt wrong and what happened next. Over a year it becomes the most accurate instruction manual you own."
+          }
+        ],
+        "keyPoints": [
+          "Never pay to be hired, never send bank or ID details before an agreement, never forward money or packages",
+          "Soft flags are questions, not verdicts. Ask about scope, range and what always on means",
+          "What a post omits, especially what the work is for, tells you more than what it says",
+          "You never owe an explanation for declining",
+          "Log posts that felt wrong and what happened. Your own record beats any advice"
+        ]
+      },
+      {
+        "title": "Follow-up and the long game",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The follow-up almost nobody sends",
+            "body": "Silence after a good conversation usually means the client got busy, not that you lost. Most applicants never follow up, so one short message puts you in a small group. Send it about a week after the last contact. Three lines: you are still interested, one useful thought about their situation that you have had since you spoke, and a direct question about whether the role is still open. The useful thought is what separates a follow-up from a nudge. It costs you ten minutes of thinking and it demonstrates that you were still turning their problem over after the call ended."
+          },
+          {
+            "heading": "How many times, and when to stop",
+            "body": "Two follow-ups is the ceiling. One after about a week, one about two weeks after that, then stop. A third message does not persuade anyone and it changes how you are remembered. When you stop, stop cleanly: a final line saying you will leave it there and would be glad to hear from them if things change. That message occasionally gets a reply weeks later, because it removes pressure and leaves the door visibly open. What never works is manufactured urgency. Do not invent a competing offer. Clients test that more often than people expect, and being caught in an obvious lie ends the relationship and travels."
+          },
+          {
+            "heading": "The no that is not the end",
+            "body": "When you are turned down, reply once, briefly, thanking them and asking to be kept in mind if the need returns. It feels pointless. It is not. First choices fall through, budgets reappear, and the person who responded gracefully is the easy call to make. If it feels natural, ask what would have made you a stronger fit. Some will not answer and some will tell you something precise that improves every future application. Take that answer without arguing, even if you disagree. You asked for information, not a verdict to appeal."
+          },
+          {
+            "heading": "Building the thing that compounds",
+            "body": "Individual applications are the smallest part of getting hired over a career. What compounds is a small set of clients who come back, and people who mention your name because you delivered without drama. That comes from the boring things: doing what you said by the day you said, telling people early when something will be late, and never delivering silence. Keep your own record of what you shipped and the numbers behind it, because it is the raw material of every future profile and every rate increase. And protect the thing underneath all of it. A reputation for honesty about what went wrong is the most valuable asset you will build, and the only one that cannot be rebuilt quickly once broken."
+          }
+        ],
+        "keyPoints": [
+          "One follow-up a week later, carrying a useful thought, puts you ahead of most applicants",
+          "Two follow-ups maximum, then close cleanly and leave the door open",
+          "Never invent a competing offer. Being caught ends more than one relationship",
+          "Answer a rejection gracefully and ask what would have made you stronger",
+          "Repeat clients and referrals come from delivering on time and never delivering silence"
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can choose one focus and defend it instead of listing every skill you have",
+      "You can write a profile that leads with outcomes and survives an eight-second skim",
+      "You can write a three-sentence cover message that proves you read the post",
+      "You can build your rate from your real costs and ask for a raise in writing",
+      "You can tell a fair paid test task from unpaid production work, and counter fairly",
+      "You can spot red flags in a post and follow up without becoming a nuisance"
+    ],
+    "slug": "getting-hired",
+    "summary": "This course teaches you how to find and win virtual assistant work outside Second Shift. You will choose a focus, write a profile and application that get read, set a rate you can defend, handle interviews and test tasks, and follow up without becoming a nuisance. Every method here is plain and repeatable. There are no hacks.",
+    "tagline": "Choose a focus, write what gets read, and charge what the work is worth.",
+    "title": "Getting hired as a virtual assistant",
+    "track": "career"
+  },
+  "portfolio-proof": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You just delivered a data cleanup on Second Shift and QC approved it. The spreadsheet is the best work you have produced and you want a portfolio sample. What do you do?",
+          "options": [
+            "Blur the company name in a screenshot of three rows and use that as your sample.",
+            "Keep the file privately and show it only to clients who ask directly, never publicly.",
+            "Delete every copy, then build a synthetic sample with invented data that demonstrates the same cleanup.",
+            "Ask the operator in your delivery note whether the client would allow you to show it."
+          ],
+          "correct": 2,
+          "explain": "Client work is never a sample on Second Shift, in any form. Delete your copies after approval and demonstrate the same skill with invented data."
+        },
+        {
+          "prompt": "A prospective client outside Second Shift asks for a list building sample. You have never built one you are allowed to show. You have three days before they decide.",
+          "options": [
+            "Build a synthetic list for an invented company, with sources and a flagged-rows tab.",
+            "Send your research brief sample and say list building uses very similar skills anyway.",
+            "Send a lightly edited version of a list you built for a client last year.",
+            "Tell them you have samples but prefer to walk through them on a call first."
+          ],
+          "correct": 0,
+          "explain": "Three days is enough to build a proper synthetic sample. It shows the exact skill they asked about without touching anyone's confidential data."
+        },
+        {
+          "prompt": "A client outside Second Shift replies to your request with: sure, feel free to use our work in your portfolio. You want to show the monthly report you build for them.",
+          "options": [
+            "Take the screenshot now, since the email is written permission and that is what matters.",
+            "Rebuild the report in a blank file with invented figures and publish it without replying.",
+            "Publish the report with the logo removed, since the permission clearly covers the content.",
+            "Reply naming exactly what you would show, how it would be altered, and where it would appear, then wait for confirmation."
+          ],
+          "correct": 3,
+          "explain": "Vague permission is not permission. Confirm the specifics in writing so you hold an email that still stands up two years from now."
+        },
+        {
+          "prompt": "You are writing a case study about a 412-row list you cleaned. You did not record the exact number of duplicates you merged. You believe it was around fifty.",
+          "options": [
+            "Write approximately fifty duplicates merged, and start logging exact counts from now on.",
+            "Write fifty-two duplicates merged, since a precise number reads as more credible.",
+            "Leave the numbers out entirely and describe the work qualitatively instead.",
+            "Write over sixty duplicates merged, rounding up to reflect the real effort involved."
+          ],
+          "correct": 0,
+          "explain": "An approximate number honestly labelled costs you nothing. A precise-sounding invention collapses under one follow-up question and takes the rest of your portfolio with it."
+        },
+        {
+          "prompt": "A posting asks for someone to write research briefs. You have five samples ready: research, data cleanup, document formatting, list building and transcription. What do you send?",
+          "options": [
+            "All five, so they can see the full range of work you handle.",
+            "A link to the Drive folder holding everything, so they can browse whatever interests them.",
+            "The research brief sample, with two lines on what it is and what it shows.",
+            "The research brief and the list building sample, since research often involves list work."
+          ],
+          "correct": 2,
+          "explain": "One well-chosen sample framed in two lines answers their question. Sending everything hands the sorting to a busy stranger and suggests you did not read the posting."
+        },
+        {
+          "prompt": "The source file on your claimed Second Shift task is in a format your spreadsheet will not open. A free online converter would fix it in one minute. The brief says nothing about converters.",
+          "options": [
+            "Upload it to the converter, since the service deletes files from its servers afterwards.",
+            "Do not upload it. Find a way to open it locally, and flag it in your delivery note.",
+            "Upload only part of the file, since a partial extract is not really client data.",
+            "Convert it, then delete the converted copy from the service to remove the risk."
+          ],
+          "correct": 1,
+          "explain": "Client data never leaves the task. An online converter is a third party, and deleting afterwards does not undo the upload that already happened."
+        },
+        {
+          "prompt": "You have completed ninety tasks. An application asks about your accuracy. Your work log shows four revision requests: one was your error, three were unclear briefs.",
+          "options": [
+            "State ninety tasks with four revisions requested, noting three were clarifications rather than errors.",
+            "State ninety tasks with one revision, since only one was genuinely your mistake.",
+            "Say your accuracy is very high and that clients rarely ask you for changes.",
+            "Leave the number out, because four revisions might make them hesitate to hire you."
+          ],
+          "correct": 0,
+          "explain": "The full honest figure persuades more than a flattering one, and the distinction between errors and clarifications is exactly what a careful client wants to see."
+        },
+        {
+          "prompt": "You are building a data cleanup sample. You have downloaded a tidy 300-row dataset from a public open data portal. How do you turn it into a convincing sample?",
+          "options": [
+            "Use it as the finished output and describe the cleanup you would have performed on it.",
+            "Expand it to ten thousand rows so the sample proves you can handle volume.",
+            "Damage a copy on purpose with duplicates, mixed date formats and blank fields, then clean it and keep both.",
+            "Add a notes tab describing the typical problems found in datasets like this one."
+          ],
+          "correct": 2,
+          "explain": "The skill is handling mess, so you have to create the mess yourself. Keeping the raw and cleaned versions together is what makes the sample convincing."
+        },
+        {
+          "prompt": "A client outside Second Shift, six months into working together, has just thanked you warmly for a delivery. You would like a testimonial you can use.",
+          "options": [
+            "Add the request to your next invoice email so it does not cost them another message.",
+            "Ask them to write whatever they feel, so the result sounds authentic rather than scripted.",
+            "Write a strong testimonial yourself and ask them to approve it without changes.",
+            "Ask now, say what would help, offer a modest draft they can edit, and confirm what you may publish."
+          ],
+          "correct": 3,
+          "explain": "Ask while the delivery is fresh and never alongside an invoice. A modest draft is easy to approve, and publishing permission has to be explicit."
+        },
+        {
+          "prompt": "You have written permission to show a monthly report you built for a client. You plan to delete the client name and the figures from the original file and save it under a new name.",
+          "options": [
+            "Rebuild it in a blank file, typing only what you decided to include, then check the file properties.",
+            "That is fine, as long as you also remove the logo and change the font.",
+            "Save it as a PDF first, then black out the client name inside the PDF.",
+            "Delete the name and figures, then send it from an email account with no signature."
+          ],
+          "correct": 0,
+          "explain": "Deleting from the original leaves metadata, comments, hidden sheets and earlier versions behind. Rebuilding by hand is the only version you can defend."
+        },
+        {
+          "prompt": "You have finished all twelve Academy courses and hold twelve certificates. You are assembling your one-page portfolio for a posting focused on research work.",
+          "options": [
+            "List all twelve, since the volume shows commitment and covers whatever they care about.",
+            "List three to five relevant ones as single lines, with the research course first.",
+            "List them under a heading describing them as professional qualifications in virtual assistance.",
+            "Leave certificates off entirely, because only real client work impresses a real client."
+          ],
+          "correct": 1,
+          "explain": "A grid of badges reads as many courses and little work. A few relevant certificates, honestly labelled and ordered for this posting, carry more weight."
+        },
+        {
+          "prompt": "A posting asks for a sample of an invoice reconciliation, which you have never done. Applications close tonight and you want this job badly.",
+          "options": [
+            "Build a quick reconciliation sample within the hour so you have something to send.",
+            "Send your data cleanup sample and describe it as reconciliation work, which is close enough.",
+            "Say you have no reconciliation sample, offer the cleanup sample as the nearest skill, and propose a small paid test task.",
+            "Skip the sample question in your message and emphasise your availability and rate instead."
+          ],
+          "correct": 2,
+          "explain": "Admitting the gap and offering a paid test beats a rushed sample, a stretched claim or silence. Invented experience gets caught in the first week."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "The proof problem",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Why nobody can see your work",
+            "body": "Almost everything good you produce belongs to somebody else. The cleaned list, the research brief, the reformatted deck: the moment you deliver it, it is the client's property and often covered by a confidentiality clause you agreed to. On Second Shift the rule is absolute. Client work is never yours to show, not as a file, not as a screenshot, not as a redacted extract. That leaves you in a bind nobody warns you about. The people hiring you want to see work. The work you have done is the work you cannot show. Everyone serious faces this, including lawyers, accountants and agency staff. They solved it the same way you will: by building proof that was never a client's to begin with, and by keeping a record of what they did."
+          },
+          {
+            "heading": "What a client is really asking",
+            "body": "When somebody asks for samples they are not admiring your craft. They are trying to reduce risk. Three questions sit behind the request. Can you follow instructions exactly. Is your output clean enough to hand to somebody else without fixing it first. Will you disappear, argue or invent excuses when something goes wrong. A sample answers the first two directly. The third is answered by how you behave in the exchange: whether you read the posting, whether you sent what was asked for, whether your file is named sensibly. This changes what you need to build. You do not need an impressive body of work. You need a small number of artifacts that answer those questions faster than a paragraph of claims can. Two good samples beat ten mediocre ones every time."
+          },
+          {
+            "heading": "Three kinds of proof",
+            "body": "Proof comes in three forms and you need some of each. Artifacts are things you made and can hand over: a cleaned spreadsheet, a research brief, a formatted document. They show the output a client would receive. Records are your own account of what you have done: a work log, volumes handled, turnaround times, revision rates. They show consistency over time. Signals come from other people: a certificate from a course with a real exam, a testimonial from somebody who worked with you, a profile that has been alive for two years. They show that someone other than you vouches. Artifacts alone look thin. Records alone sound like claims. Signals alone look borrowed. Together they read as a person who actually does this work."
+          },
+          {
+            "heading": "Build it before you need it",
+            "body": "The worst time to build a portfolio is the evening you find a posting you want. You rush, you produce something thin, and the temptation to reach for a real client file becomes very strong. Build it in quiet weeks instead. One sample takes two or three focused hours if you plan it. Three samples, a one-page document and a work log is a month of small evenings, and then it is done for a year. Set a fixed slot, an hour twice a week, and treat it as unpaid work that pays later. Keep every file in one folder with a clear structure so you are never hunting. When a good opportunity appears you send in ten minutes what would otherwise have cost you a night and your judgement."
+          }
+        ],
+        "keyPoints": [
+          "Your best work belongs to the client and can never be used as a sample.",
+          "Clients ask for samples to reduce risk, not to admire your craft.",
+          "Proof has three forms: artifacts you made, records you kept, signals from other people.",
+          "Build your portfolio in quiet weeks, not the night you find a posting."
+        ]
+      },
+      {
+        "title": "What you may never show",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "The rule in one sentence",
+            "body": "Client data never leaves the task. That is the whole doctrine and it does not bend. On Second Shift, files you download on a claimed task are for producing that delivery and nothing else. You do not upload them to a third party service, a free online converter, a translation site or an AI assistant unless the brief explicitly tells you to. You do not email them to yourself. You do not keep them once the delivery is approved. And you never use them, in any form, as a portfolio sample. Most clients outside Second Shift hold the same position even when nobody writes it down, because the data usually is not theirs either. It belongs to their customers, their patients, their suppliers. You are three steps from a person who never agreed to any of this."
+          },
+          {
+            "heading": "A screenshot is still the file",
+            "body": "People break this rule believing they have found a safe version of it. A cropped screenshot with the company name blurred. Three sample rows out of four thousand. A PDF with the logo removed. Each one still contains client data, and blurring is weaker than it looks: names show through low-resolution edits, cropped columns still carry unique combinations, and one row of a customer list is still a real person's address. There is also the part you cannot see. Spreadsheets carry hidden sheets, filters, comments and formulas pointing at other files. Documents carry the author name, edit history and tracked changes. Images carry creation data. If your safety plan depends on nobody looking closely, it is not a plan. Treat any file that passed through a client's hands as unusable, in every form."
+          },
+          {
+            "heading": "Keep nothing after approval",
+            "body": "When a delivery is approved and paid, your copy stops having a reason to exist. Delete the downloaded source files, the working versions and the exports you made along the way, then empty the recycle bin. Check the places files hide: the downloads folder, the desktop, an automatic cloud sync folder, the email you sent yourself, the phone that opened the attachment. Do this the same day, while you still remember where everything went. If you want to remember the task, write a line in your work log instead: what type of file, how many rows, how long it took, what was difficult. That line is the thing you can keep and use forever. The file is the thing that can end your career if it turns up somewhere it should not."
+          },
+          {
+            "heading": "Refusing is a selling point",
+            "body": "This looks like a pure cost until you see it from the client's side. Somebody handing a customer list to a stranger in another country is nervous, and they are right to be. A person who states plainly that they never reuse client work, never store it after delivery and never put it through outside tools is answering the fear before it is spoken. Put one sentence about it in your one-page portfolio. It costs you nothing and it separates you from everyone whose portfolio quietly displays other people's confidential documents. Clients notice those. Some of them think: interesting, so my files will be in there next year. The habit protects you too. You cannot leak what you no longer hold, and you cannot be blamed for a breach you had no copy of."
+          },
+          {
+            "heading": "Where permission fits",
+            "body": "Outside Second Shift there is a narrow path. If a client gives you written permission to show a specific piece of work, and you keep that email, you may show that piece within the limits they set. Vague permission is not permission. Verbal permission you cannot produce later is not permission. And permission from your direct contact does not cover their customers' data. On Second Shift there is no path at all. You have no contact with clients, so there is nobody to ask, and the answer is fixed anyway. Client work is never a sample. If something about a task itself is unclear, the note you send with your delivery is your channel to the operator. Use it for questions about the work, not for requests to reuse it."
+          }
+        ],
+        "keyPoints": [
+          "Client data never leaves the task, in any form, including screenshots and sample rows.",
+          "Blurring and cropping do not remove hidden metadata, comments or unique identifying details.",
+          "Delete every copy the day a delivery is approved, then check where files hide.",
+          "Say plainly that you never reuse client work; nervous clients are listening for it."
+        ]
+      },
+      {
+        "title": "Samples you build yourself",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Invent the client, keep the skill",
+            "body": "A synthetic sample is work you produce start to finish with data you made up, for a company that does not exist. It is not a lesser version of a real sample. The client cannot verify your real work anyway, so what they are actually reading is the quality of the output in front of them. Start by inventing a plausible situation. A 40-seat dental clinic with three years of appointment records. A small equipment importer whose supplier list arrives in four inconsistent formats. A regional bakery chain that wants competitor pricing. Give it a name that is obviously invented, like Northfield Dental or Harbour Rise Imports, so nobody can mistake it for a real business. Then do the job properly, exactly as you would if somebody were paying for it."
+          },
+          {
+            "heading": "Make your own messy data",
+            "body": "Clean data proves nothing, because the skill is in handling mess. Build the mess deliberately. In Google Sheets, generate a few hundred rows, then damage them on purpose: duplicate thirty records with small spelling differences, write dates in three formats, put trailing spaces in half the names, leave some fields blank, mix upper and lower case, stick two values in one cell. Public open data portals and published statistical tables give you realistic names, addresses and categories to start from, free of charge. Three hundred rows is enough. Ten thousand rows only proves you can scroll. Save the damaged version before you touch it, because that raw file is half of what makes the sample convincing. Anyone can hand over something tidy. Few people can show the state it arrived in."
+          },
+          {
+            "heading": "Show the work, not just the result",
+            "body": "Structure the sample so a busy person sees what you did in fifteen seconds. Use three tabs. Raw, containing the mess exactly as it arrived. Clean, containing the finished output. Notes, containing what you changed and why: eleven duplicates merged, dates standardised to one format, four rows flagged because the address could not be resolved. That third tab is the one that gets you hired. It shows you make decisions, record them, and flag what you could not settle instead of guessing. Add a line at the top of Notes stating the rules you applied. For a document or a research sample, do the same in a different shape: the brief you worked from, the finished piece, and a paragraph on sources and what you could not confirm."
+          },
+          {
+            "heading": "Label it honestly",
+            "body": "Put one line at the top of every synthetic sample: this is a demonstration sample built with invented data for a company that does not exist. Never let a reader assume it is client work, and never answer a question about it in a way that implies a real engagement. This feels like it weakens the sample. It does the opposite. It tells the reader you understand confidentiality, which is precisely the trait they are worried about, and it removes any chance of being caught in an overstatement later. Honest framing also makes the conversation easier. You can talk freely about your choices, walk through the decisions and let them test you, because there is nothing in the file you need to protect or explain away."
+          },
+          {
+            "heading": "Three to five samples, no more",
+            "body": "Build one sample for each category of work you actually want to be paid for, and stop. Three is a working portfolio. Five is generous. Beyond that you are maintaining a museum. Choose categories where the work is common and the output is visible: a data cleanup, a research brief, a formatted document, a built list with sources. Each should stand alone and be understandable without you in the room. Give every file a name that reads correctly in a stranger's downloads folder, such as Data cleanup sample, Maria Santos. Revisit them once or twice a year, because your standards rise and last year's work starts to look slow. Replacing one sample properly is worth more than adding two."
+          }
+        ],
+        "keyPoints": [
+          "A synthetic sample built properly shows the same skill as work you cannot show.",
+          "Damage your own data on purpose; clean data proves nothing about your judgement.",
+          "Keep raw, clean and notes together; the notes tab is what gets you hired.",
+          "Label every sample as invented data, then talk about it freely.",
+          "Three to five samples is a portfolio; more is a museum."
+        ]
+      },
+      {
+        "title": "Sanitising real work safely",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Sanitised is not anonymous",
+            "body": "Removing names is the easy part and it is rarely enough. A record can identify somebody through a combination of details that look harmless on their own: a job title, a city, a purchase date, a company size. Take a list of forty suppliers with the names stripped out, keep the towns and the product categories, and somebody inside that industry can name half of them in ten minutes. The same applies to a document. A distinctive phrase, a product code, a template layout or an unusual date range can point straight back to the source. The test is not whether you removed the obvious identifiers. The test is whether a knowledgeable stranger could work out who this was. If you cannot answer that confidently, the material is not safe to show."
+          },
+          {
+            "heading": "Rebuild, do not redact",
+            "body": "Deleting a column and saving under a new name leaves more behind than people expect. Spreadsheets keep hidden sheets, filtered rows, comment threads, named ranges and formulas that reference the original workbook. Documents keep the author name, the company that registered the software, tracked changes and earlier versions. PDF files keep text underneath black rectangles, which can be copied straight out. Image files keep creation data. If you have permission and you genuinely need to show real work, do not clean the original file. Open a blank file and rebuild the structure by hand, typing only what you decided to include. It takes longer and it is the only version you can defend. Then open the result on another device, check the file properties, and read it as a stranger would."
+          },
+          {
+            "heading": "Written permission comes first",
+            "body": "None of this applies until you have permission, and permission means an email you can produce two years from now. Ask for something specific: I would like to show the structure of the monthly report I build for you, with all figures replaced by invented numbers and your name removed, in a private portfolio document I send to prospective clients. Name what, name how, name where. If the reply is enthusiastic but vague, write back with the specifics and ask them to confirm. Remember that your contact may not have the authority to grant it, particularly where the data belongs to their own customers. If they hesitate, take that as your answer and build a synthetic sample instead. Nobody has ever lost a contract for being careful with somebody else's information."
+          },
+          {
+            "heading": "When in doubt, build synthetic",
+            "body": "Weigh the two outcomes. A well-built synthetic sample costs you an evening and demonstrates the same skill. A sanitising mistake costs you a client, possibly a legal problem, and a reputation that follows you. The gain from using real work is small, because the reader cannot verify it and does not know the client anyway. The downside is not small. So settle the default before you are tired and in a hurry: if there is any doubt about a piece of real work, it does not go in the portfolio, and you build the invented version instead. This rule is worth writing down where you will see it, because the pressure to bend it always arrives at the worst moment, when an opportunity looks perfect and you feel underprepared."
+          }
+        ],
+        "keyPoints": [
+          "Removing names is not anonymising; combinations of small details still identify people.",
+          "Rebuild in a blank file rather than deleting from the original, because metadata survives.",
+          "Permission means a specific written email you can still produce two years later.",
+          "Any doubt at all means you build the synthetic version instead."
+        ]
+      },
+      {
+        "title": "The case study without names",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Four parts, under 200 words",
+            "body": "A case study is a short written account of a job you did. It carries proof a file cannot: it shows how you think. Use four parts and keep the whole thing under two hundred words. The situation, in two sentences. What you were asked to do, in one. What you actually did, in three or four, including the decisions and the problems. The result, in one or two, with a number you can stand behind. Write it in plain past tense with no adjectives about yourself. Not: I meticulously ensured accuracy. Instead: I checked every merged record against the original and flagged nineteen I could not resolve. The second sentence proves the first without claiming it. Three case studies is plenty, and they cost you nothing but honest recall."
+          },
+          {
+            "heading": "Describe the client by shape",
+            "body": "Name the type, never the business. A twelve-person logistics company. A solo consultant in the training sector. A regional chain of garden centres. That gives the reader the context they need, which is size and sector, without giving away who it was. Watch for detail that narrows too far. The third largest importer of Italian tile in a small country is a name with extra steps. If your client operates in a thin market, blur one level further: an importer in the building materials trade. When you are unsure whether a description identifies them, ask whether a competitor reading it would know. Do the same for people. Not Sarah in accounts, but the finance lead. Somebody should be able to read your entire portfolio and learn nothing about your clients."
+          },
+          {
+            "heading": "Numbers you can defend",
+            "body": "Numbers make a case study credible, and invented numbers destroy it the moment somebody asks a follow-up question. Count things you actually did. Rows processed. Hours taken. Duplicates found. Sources checked. Revisions requested. Turnaround from claim to delivery. Those are yours and you can describe how you arrived at them. Be far more careful with business outcomes. You did not increase their sales by thirty percent; you built a list their sales team used, and you have no idea what happened next. If you do not have the exact figure, round down and say approximately: around four hundred rows, roughly six hours. Nobody minds an approximate number honestly labelled. Everybody notices when a precise-sounding claim collapses under one question, and that is when the rest of your portfolio stops being believed."
+          },
+          {
+            "heading": "Say what went wrong",
+            "body": "The strongest case study includes a problem. Somewhere in every real job something did not fit: the source file was worse than described, two columns contradicted each other, a brief was ambiguous, a delivery came back for revision. Write one sentence on it and one sentence on what you did. The source list contained ninety-four records with no country field, so I flagged them in a separate tab rather than guessing from the phone codes. That single line tells the reader more than three paragraphs of confidence. It shows you notice problems, you do not paper over them, and you hand back something the client can act on. Anyone who has hired before knows the smooth job does not exist, and a portfolio of flawless stories reads as inexperience or fiction."
+          }
+        ],
+        "keyPoints": [
+          "Four parts, under two hundred words: situation, task, what you did, result.",
+          "Describe the client by size and sector, never by name or unique detail.",
+          "Count what you did; never claim business outcomes you cannot verify.",
+          "Include one problem and how you handled it; flawless stories read as fiction."
+        ]
+      },
+      {
+        "title": "The one-page portfolio",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "One page, one minute",
+            "body": "The person reading you is skimming, probably on a phone, probably with eleven other applicants open. Give them one page they can read in a minute. Top of the page: your name, the three or four things you do, and your working hours expressed in the client's terms rather than yours. Not: I am in the Philippines. Instead: I work 9pm to 5am Manila time, which covers a full US Eastern business day. That sentence answers a question they were going to ask on the second email. Add one line on how fast you typically turn work around, and one on how you handle confidentiality. That is the top third done, and it has already told them more than most portfolios manage in four pages."
+          },
+          {
+            "heading": "The middle: three proofs",
+            "body": "Below the header, list three samples. Each gets three lines and no more. What it is: a data cleanup of a 380-row supplier list. What it shows: duplicate detection, date standardisation, and a change log with flagged rows. Where it is: one link. Then a short case study section, two or three of them, each the compressed version from the previous lesson. Then certificates, one line each. Order matters. Put the sample closest to the work they posted first, which means the document changes slightly for each application. Keep a master version and edit the order before you send. Nothing on this page should require the reader to click anything to understand what you do. The links are for people who are already interested."
+          },
+          {
+            "heading": "How you work",
+            "body": "Reserve four or five lines near the bottom for the practical facts a client wants and rarely gets. The hours you are genuinely available and how much overlap that gives with their day. Your typical turnaround for a small task. The tools you use, naming the free ones honestly: Google Sheets, Google Docs, whatever else you actually know. What you do when a brief is unclear, which should be that you ask before you guess and flag anything you had to assume. And one line on confidentiality: you do not keep client files after delivery, you do not put client data through outside services, and you never use client work as a sample. State it as fact, not as a promise. It reads better and it is easier to keep."
+          },
+          {
+            "heading": "Build it free, make it open",
+            "body": "Write it in Google Docs, then export a PDF. Name the file so it makes sense in a stranger's downloads folder: Maria Santos, virtual assistant portfolio. Keep the samples in one Drive folder with sharing set so anyone with the link can view, then test every link in a private browsing window where you are not signed in. A link that asks the client to request access is worse than no link. Check the whole thing on a phone. If your spreadsheet sample opens as an unreadable wall on a small screen, add a short summary at the top of the first tab. Put the date somewhere on the page and review it every three months. A portfolio dated two years ago tells a story you did not intend."
+          }
+        ],
+        "keyPoints": [
+          "One page, readable in a minute, on a phone.",
+          "State your working hours in the client's timezone, not your own.",
+          "Three samples, three lines each: what it is, what it shows, one link.",
+          "Test every link signed out; an access request screen is worse than no link."
+        ]
+      },
+      {
+        "title": "Certificates and testimonials",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "What a certificate proves",
+            "body": "A certificate says that on a specific date you passed a specific exam. That is a real thing and it is worth having. It shows you finished something voluntarily, that a third party set the standard rather than you, and that you knew the material well enough to answer questions under test conditions. It does not say you have done the work for a paying client, and you should never let it imply that. Our Academy certificates are permanent and they are yours, carrying the exam name and the date. Present them as what they are. A client who reads honest framing on a certificate believes the rest of your page more readily. A client who catches a course certificate dressed up as experience stops reading altogether."
+          },
+          {
+            "heading": "Present them without clutter",
+            "body": "One line each, near the bottom of the page, in the order that matters for this application. The course name, the issuer, the month and year. Nothing else. Resist the collection instinct. Twelve badges in a grid reads as somebody who has done a lot of courses and not much work, which is the opposite of the impression you want. Three to five relevant ones are stronger than everything you have ever earned. If a certificate is directly relevant to the posting, mention it once in your message as a single clause, not a paragraph. And if you are asked what a certificate covered, be able to answer in two sentences. Not being able to describe your own certificate is worse than not holding it."
+          },
+          {
+            "heading": "How to ask for a testimonial",
+            "body": "Ask right after a delivery that went well, while the relief is fresh, and never in the same message as an invoice. Make it easy. Tell them exactly what would help: two or three sentences on what I did, how quickly, and whether the work needed correcting. Offer to draft something they can edit, which most busy people prefer, and keep the draft accurate and modest so editing it feels like agreeing rather than inflating. Ask explicitly what you may publish: their full name and company, or only a first name and an industry. Keep the reply. On Second Shift this route does not exist, because you have no contact with clients. Here your evidence is your own record and your certificates, and that is fine."
+          },
+          {
+            "heading": "What a good testimonial says",
+            "body": "Great to work with is worth nothing, because everybody has one. A useful testimonial names behaviour. She turned around a 600-row cleanup in under a day and flagged the rows she could not verify instead of filling them in. He asked two questions before starting that saved us a rewrite. Those describe someone specific. When you draft one for a client to edit, write that kind of sentence and let them soften it if they want. Two strong testimonials are enough. If you have none yet, say nothing rather than writing something vague, and lean on samples and case studies instead. Absence is normal early on. Padding is noticed, and it makes a reader wonder what else has been inflated."
+          }
+        ],
+        "keyPoints": [
+          "A certificate proves you passed an exam on a date, not that you have client experience.",
+          "Three to five relevant certificates beat a grid of twelve badges.",
+          "Ask for testimonials right after a good delivery, and offer a draft they can edit.",
+          "A useful testimonial names specific behaviour, not general pleasantness.",
+          "Second Shift gives you no client contact, so your record and certificates are the evidence."
+        ]
+      },
+      {
+        "title": "The work log becomes your evidence",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Two minutes at the end",
+            "body": "Everything you did last March is gone unless you wrote it down. Not the fact that you worked, but the details that make an application credible: how many rows, how long it took, what went wrong, what you decided. Spend two minutes at the end of every task filling one row in a spreadsheet. Date, category of work, what you produced described by type and volume, hours spent, tools used, one line on the hardest part and how you handled it, and whether it came back for revision. Two minutes. That is the whole discipline. In six months you have a record no interview question can catch out, and a set of honest numbers you can quote without hesitating or rounding upward in panic."
+          },
+          {
+            "heading": "Log the work, not the client",
+            "body": "Your log has to survive being read by somebody else, so keep client data out of it entirely. No names of people, no company names you would be uncomfortable seeing repeated, no extracts of the data, no file copies. Use a code for each client, C1, C2, C3, and keep the key somewhere separate if you need one at all. Describe by shape: dental clinic, twelve staff. Describe the work by type and volume: supplier list cleanup, 380 rows, 47 duplicates merged, 9 rows flagged. That is enough to write a case study from and it identifies nobody. Keep the log in your own account, on your own storage, never on a drive a client controls, and back it up somewhere other than the machine you work on."
+          },
+          {
+            "heading": "Track your own error rate",
+            "body": "The number most workers cannot state is the one that would impress a client most: how often their work comes back. Log it. Every revision request, what it concerned, and whether it was your error, an unclear brief or a change of mind. After thirty tasks you have a real figure, and you can say something few applicants can. I have delivered around ninety tasks with four revisions requested, three of which were clarifications rather than errors. That is specific, checkable in tone, and honest. It also makes you better. Categorising your own revisions shows you your patterns, and patterns are fixable. Most people fix nothing because they never see the pattern, only the individual bad day."
+          },
+          {
+            "heading": "Turn the log into portfolio lines",
+            "body": "Once a month, spend fifteen minutes reading the log and rolling it up. Total tasks by category. Total volume handled. Average turnaround. Revision rate. Add the one or two jobs that would make good case studies, and write them while you still remember the problem. Update your one-page portfolio if the numbers moved meaningfully. This is where the log stops being admin and becomes the reason your application is stronger than somebody with the same skills. They write: I am detail oriented. You write: in the last six months I have cleaned around 14,000 rows across nineteen tasks, with an average turnaround under twelve hours. Same work, entirely different reading, and yours came from a spreadsheet you kept two minutes at a time."
+          }
+        ],
+        "keyPoints": [
+          "Two minutes per task: date, type, volume, hours, difficulty, revision.",
+          "Keep client names and data out of the log; use codes and describe by shape.",
+          "Track revisions and their causes; a known error rate is rare and persuasive.",
+          "Roll the log up monthly into numbers your portfolio can quote."
+        ]
+      },
+      {
+        "title": "Sending proof without dumping links",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Match the sample to the ask",
+            "body": "The most common mistake in an application is sending everything. Five links, three attachments, a full portfolio and a request that they look through it. That is work you have handed to a busy stranger, and busy strangers do not do it. Read the posting properly and pick the single sample closest to what they described. If they want a lead list built, send the list building sample, not the research brief you are prouder of. If nothing matches exactly, pick the one that shares the underlying skill and say which part is comparable. One well-chosen sample answers their question. Five samples ask them to find the answer themselves, and quietly signal that you did not read what they wrote."
+          },
+          {
+            "heading": "Frame it in two lines",
+            "body": "Never send a bare link. Two lines around it change how it is read. First, what it is: a 380-row supplier list cleanup, built with invented data as a demonstration sample. Second, what it shows and why it is relevant: it has the duplicate handling and the flagged-row log your posting mentions. Then the link, then stop. Do not explain your whole history, do not apologise for the sample being synthetic, do not add a second link because you are worried the first is not enough. The framing does the work. It shows you understood the posting, it tells them what to look for before they click, and it means the thirty seconds they spend on your file are spent on the right part."
+          },
+          {
+            "heading": "One link, tested",
+            "body": "Send one link where possible and two at most, and if you can only send one, make it the one-page portfolio. Do not send zip files, which people will not open. Do not attach large files unless they asked for attachments. Do not link to a folder containing everything, which puts the sorting back on them. Before you send, open the link in a private window where you are not signed in and confirm it loads for a stranger. Check that the file name is professional, that the document has no leftover placeholder text, and that the date on it is current. Most link problems are permissions, and a client who hits an access request screen usually just moves on to the next applicant."
+          },
+          {
+            "heading": "When you do not have what they want",
+            "body": "Sometimes they ask for a sample of exactly the thing you have never built. Say so, plainly and briefly, then offer the nearest thing and a way forward. I have not built a CRM migration sample. Here is a data cleanup that shows the matching and deduplication logic, and I am happy to do a small paid test task so you can see the real thing. That is a stronger answer than silence, a stretched claim, or a rushed sample built in an hour that shows your worst work. Never invent experience under pressure. It is the easiest lie to catch, it usually gets caught in the first week of the job, and the version of you that admitted the gap would still have had it."
+          },
+          {
+            "heading": "After you send",
+            "body": "Send once, follow up once, then leave it. A single short follow-up after five to seven days is reasonable and often works. Anything beyond that costs you more than it gains. Use the waiting time to fix what you noticed while assembling the application: the sample that took too long to explain, the case study with the vague number, the link that needed a permission change. Keep a short record of what you sent to whom and when, so you do not send the same person a different version of your story three months later. Applications are a numbers game with a quality floor. The portfolio work you did once keeps paying, and every round should leave it slightly better than it was."
+          }
+        ],
+        "keyPoints": [
+          "Send one sample matched to the posting, not everything you have built.",
+          "Frame every link with what it is and what it shows, then stop.",
+          "Test links while signed out; permission errors lose applications silently.",
+          "Admit a gap and offer a paid test task rather than inventing experience."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can prove your skill without ever showing a client's file.",
+      "You can build synthetic samples that demonstrate the same skill as real work.",
+      "You can write a case study with no names and honest numbers.",
+      "You can assemble a one-page portfolio a client reads in a minute.",
+      "You can ask for a testimonial and keep a work log as evidence.",
+      "You can send the right proof in an application without dumping links."
+    ],
+    "slug": "portfolio-proof",
+    "summary": "Most of your best work belongs to someone else and can never be shown. This course teaches you to prove your skill anyway: synthetic samples that demonstrate the same ability, case studies written without names, a one-page portfolio, certificates and testimonials used honestly, and a work log that becomes your evidence later. You finish with proof you can send tomorrow.",
+    "tagline": "Show what you can do without ever showing a client's file.",
+    "title": "Building a portfolio that proves it",
+    "track": "career"
+  },
+  "freelance-money": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "A transfer service advertises zero fees. Another charges a flat fee but claims a better rate. You will receive similar amounts every week. How do you decide which costs you less?",
+          "options": [
+            "Choose the zero-fee service; a stated fee is money you avoid paying.",
+            "Compare the rates shown on each service's home page on the same day.",
+            "Send a small amount through each and compare what actually lands in your currency.",
+            "Ask in a group of workers which service people found cheapest this month."
+          ],
+          "correct": 2,
+          "explain": "The advertised rate carries a margin that is never printed as a fee. Only the amount that lands, for the same amount sent, gives the true cost."
+        },
+        {
+          "prompt": "A payment of 120 dollars lands as less local currency than you expected. What belongs in your record for it?",
+          "options": [
+            "Gross amount, fees charged, rate applied, net landed, date and transaction reference.",
+            "The net amount that landed, since that is the money you actually received.",
+            "The 120 dollars agreed, since that is what the work was priced at.",
+            "The net amount, plus a reminder to check the difference next time."
+          ],
+          "correct": 0,
+          "explain": "A record holding one number cannot explain a shortfall. Gross, fees, rate, net and reference together let you verify or query any payment later."
+        },
+        {
+          "prompt": "You are three months into working for overseas clients and have set nothing aside for obligations, because you are not sure what applies to you. What is the sound move?",
+          "options": [
+            "Wait until something official arrives, then deal with it properly.",
+            "Use the percentage a worker in another country posted in a group chat.",
+            "Set aside nothing until your income is stable enough to plan around.",
+            "Start setting aside a deliberately generous share now, and confirm what applies with your revenue authority."
+          ],
+          "correct": 3,
+          "explain": "Not knowing the rule is a reason to over-reserve and to ask the official source, not a reason to spend money that may not be yours."
+        },
+        {
+          "prompt": "A detailed, confident post in a workers' group states exactly what people doing your kind of work must register for and file. How should you treat it?",
+          "options": [
+            "As reliable, since several people in the thread confirm it.",
+            "As a lead to check with your revenue authority or a licensed professional.",
+            "As reliable if the person says they work as an accountant.",
+            "As reliable for now, since group answers are usually current."
+          ],
+          "correct": 1,
+          "explain": "Rules differ by country and change over time. A post can point you at the right question, but only the official source or a qualified professional can answer it."
+        },
+        {
+          "prompt": "You issued invoice 0041, then noticed the amount was wrong. The client has not paid yet. What do you do?",
+          "options": [
+            "Delete 0041 and reissue it with the same number and the correct amount.",
+            "Keep 0041 on file, mark it cancelled, and issue the next number instead.",
+            "Edit the PDF, resend it, and keep only the corrected version.",
+            "Skip to 0043 so the wrong invoice is clearly abandoned."
+          ],
+          "correct": 1,
+          "explain": "Numbers are sequential and permanent. Deleting or reusing one leaves a gap that looks like something hidden, while a documented cancellation does not."
+        },
+        {
+          "prompt": "You are invoicing a client outside Second Shift for cleaning their customer list. What belongs on the description line?",
+          "options": [
+            "The service and the volume, for example data cleanup of one contact list, three hours.",
+            "A sample of the cleaned rows, so the client sees the value delivered.",
+            "The customer names covered, so the invoice is precise and easy to verify.",
+            "Nothing specific, just services rendered, so no client data is exposed."
+          ],
+          "correct": 0,
+          "explain": "An invoice describes the work, not its content. Service and volume are precise without putting client data into a document you keep for years."
+        },
+        {
+          "prompt": "Everything you earn lands in the same account you use for groceries and family transfers. At month end you cannot say what the work actually earned. What is the first fix?",
+          "options": [
+            "Reconstruct the last few months from bank statements and be careful from now on.",
+            "Keep every personal receipt from now on so household spending can be subtracted later.",
+            "Ask your bank to categorise incoming transfers so work income is tagged automatically.",
+            "Open or dedicate a separate account for work money, and pay yourself a set transfer from it."
+          ],
+          "correct": 3,
+          "explain": "Separation is what makes a record possible. Once work money has its own account, income, costs and household spending stop overlapping."
+        },
+        {
+          "prompt": "A task category pays well per task, but each one costs you long unpaid stretches on reading, checking and revisions. How do you judge whether it is worth doing?",
+          "options": [
+            "Compare the payout per task against the other categories in the pool.",
+            "Divide what actually landed by every hour spent, including the unpaid ones.",
+            "Judge by how confident you feel; speed improves with practice.",
+            "Count production hours only, since admin time applies to every category equally."
+          ],
+          "correct": 1,
+          "explain": "Effective rate is money landed over total hours. Unpaid hours are real hours, and a high payout per task can still be a poor rate."
+        },
+        {
+          "prompt": "Rent is due and the only money left is the pot you set aside for obligations. A payout is expected in ten days. What is the honest handling?",
+          "options": [
+            "Spend it; the obligation is not due yet and income is coming.",
+            "Spend it and pause setting aside until you have caught up.",
+            "Use it only if you must, record the amount as owed, and repay it from the next payout.",
+            "Move it to your personal account so the balance stops looking confusing."
+          ],
+          "correct": 2,
+          "explain": "The money is owed to someone else. Writing it down as a debt to yourself is what makes it get repaid instead of quietly disappearing."
+        },
+        {
+          "prompt": "A client you already work with outside Second Shift emails from a slightly different address, asking you to resend your bank details for a faster payment. What do you do?",
+          "options": [
+            "Confirm through the channel you already use with them before sending anything.",
+            "Reply with the details; you have worked with this client for months.",
+            "Send the account number but not your full name, to limit exposure.",
+            "Send the details and ask them to confirm afterwards that they arrived."
+          ],
+          "correct": 0,
+          "explain": "A changed address is a reason to verify on a channel you already trust. Confirming costs a few minutes; sending details to the wrong person costs a payment."
+        },
+        {
+          "prompt": "A Second Shift task was approved and the payout released. You want proof of that income for your own records. What do you keep?",
+          "options": [
+            "The client files, so you can show what the work involved.",
+            "A copy of the delivered file, renamed so it cannot be identified.",
+            "A screenshot of the brief with the client details cropped out.",
+            "Your payment record: date, task reference, amount, and the payout confirmation."
+          ],
+          "correct": 3,
+          "explain": "Your records document the money, not the client's material. Files are deleted after approval; the payout record is yours to keep."
+        },
+        {
+          "prompt": "You want to know the lowest rate you can accept without working at a loss. What do you calculate first?",
+          "options": [
+            "The average rate people with your skills say they charge.",
+            "Your monthly costs, including set-asides, divided by the hours you can realistically bill.",
+            "The highest payout you have ever earned in a single night.",
+            "The rate that keeps you competitive in the categories you claim most."
+          ],
+          "correct": 1,
+          "explain": "A floor comes from your own numbers. Costs divided by realistic billable hours is the point below which a task costs you money."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "The Money Side Of Freelancing",
+        "minutes": 5,
+        "sections": [
+          {
+            "heading": "The job behind the job",
+            "body": "You are good at the work. That is the part clients see and the part you trained for. The other part, the one nobody hires you for, is running the small business the work sits inside: knowing what landed in your account, what it cost to get there, what you owe, and what an hour of your time actually earns. It takes a few hours a month once it is set up, and it is the difference between earning steadily for years and discovering in a bad month that you cannot say where the money went. This course is about that second job. None of it is difficult. Most of it is a spreadsheet, a folder, and a habit you keep on the same day every week."
+          },
+          {
+            "heading": "What we can and cannot say",
+            "body": "We can teach you how money moves, what a record should contain, and what questions to ask. We cannot tell you what you owe, what you must register for, or when anything is due. Those rules differ by country, change without warning, and depend on facts about you that we do not know. Anyone who gives you a number without knowing your situation is guessing, and we will not do that. This course is not tax, legal, or financial advice. Where a rule applies to you, the answer comes from your own country's revenue authority or from a licensed professional you pay for an hour of their time. We will say this again in later lessons, because it is the part people skip."
+          },
+          {
+            "heading": "Four habits that carry the rest",
+            "body": "Everything in this course reduces to four habits. Record every payment when it arrives, not at the end of the year. Keep work money separate from household money so the two never have to be untangled. Set aside a share of every payment for obligations before you spend anything, and build a buffer, because your income is lumpy and your bills are not. Price your time from your own costs, not from what a task looks like it is worth. Do those four and the rest is paperwork. Skip them and every month starts with a question you cannot answer. The order matters too: the record comes first, because you cannot separate, set aside, or price anything you have not measured."
+          },
+          {
+            "heading": "Where Second Shift fits",
+            "body": "On our platform the money side is deliberately simple. The payout is fixed and printed before you claim, so there is nothing to negotiate, no proposal to price, and no payment to chase. After your delivery passes QC, the payout is released. That is one client of yours behaving predictably. Everything else in your career will be less tidy: clients who pay late, clients who pay in a currency you do not hold, clients who want an invoice in a format you have never produced. This course is written for that whole picture, not only for us. And whatever you earn here counts as your income like any other. Our simplicity does not change your obligations in your own country."
+          }
+        ],
+        "keyPoints": [
+          "The work is one job. Running the money behind it is another.",
+          "We teach concepts and questions. Country rules come from official sources only.",
+          "Four habits: record, separate, set aside, price.",
+          "Second Shift pays a fixed amount after QC approval. Other clients are messier."
+        ]
+      },
+      {
+        "title": "Getting Paid Across Borders",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The chain your money travels",
+            "body": "Money from an overseas client does not move in one step. It leaves the client or the platform, passes through one or more institutions, is converted from one currency to another somewhere along the way, and finally arrives in an account or a cash pickup near you. Every hop can take a fee, and the conversion hop takes the largest one, usually without calling it a fee. Knowing the chain matters because when something goes wrong, the fault sits at one specific hop, and the question you ask is different at each. A payment that never left is a sender problem. A payment sitting in verification is a receiving-service problem. A payment that arrived smaller than expected is usually the conversion."
+          },
+          {
+            "heading": "The four things to compare",
+            "body": "When you compare two ways of receiving money, compare four things and write them down. First, fees, both the fixed charge and the percentage, and whether the sender or you pays them. Second, the exchange-rate margin, which is the gap between the real market rate and the rate you are given. Third, arrival time, measured honestly from the day the client sends to the day you can spend it. Fourth, limits and coverage: how much you can receive per transaction and per month, whether the service reaches your area, and what happens when you exceed a limit. A method that wins on one of the four can lose badly on another. The cheapest method that arrives too late to pay rent is not the cheapest method."
+          },
+          {
+            "heading": "Verification and the name on the account",
+            "body": "Receiving money internationally almost always requires you to prove who you are. Expect to provide identification and, sometimes, proof of address, before anything large can land. Do this before you need it, not on the day a payment is held. One detail causes more delays than any other: the name on the receiving account must match the name the sender used, exactly. A missing middle name, a married name, or a nickname is enough to freeze a payment for days. Give clients the exact spelling on your account and keep it consistent everywhere. Treat any request for your payment details with care, and confirm through a channel you already use with that client before sending anything, especially if the request arrives from a new address."
+          },
+          {
+            "heading": "Test small, then decide",
+            "body": "We do not recommend one method over another, and you should be careful with anyone who does. Availability, fees, and rules change by country and by month, and someone recommending a service may be paid for it. Do your own comparison instead, and make it cheap: send or receive a small amount through each method you are considering, record what left and what landed, and see the real cost for yourself. Keep the receipts of those tests. Two small tests will teach you more than a week of reading opinions, and the numbers will be about your country, your currency, and your bank rather than someone else's. Recheck once or twice a year, because the winner changes."
+          },
+          {
+            "heading": "When a payment does not arrive",
+            "body": "Before anyone can help you, you need the reference number, the exact amount sent, the date, and the sending method. That is why the record habit exists. When a payment is late, check the expected arrival window first, because many services quote a range and a payment inside its own window is not late. If it is genuinely overdue, contact the receiving service with the reference, and tell the payer factually and without accusation. On Second Shift, a payout question goes to us and nowhere else. With other clients, keep the conversation short and documented, and keep working only if the delay is a one-off. Repeated late payment is information about the client, not about you."
+          }
+        ],
+        "keyPoints": [
+          "Money crosses several hops. The conversion hop usually costs the most.",
+          "Compare fees, exchange margin, arrival time, and limits before choosing.",
+          "The name on your account must match the sender exactly.",
+          "Test a small amount yourself instead of trusting recommendations.",
+          "Without reference, amount and date, nobody can trace a payment."
+        ]
+      },
+      {
+        "title": "The Rate You See Is Not Yours",
+        "minutes": 5,
+        "sections": [
+          {
+            "heading": "The mid-market rate",
+            "body": "There is one rate that currencies actually trade at between banks. It is the number you see on a search engine or a financial site, and it is called the mid-market rate. You will almost never receive it. What a service offers you is that rate minus a margin it keeps, and that margin is how many services make most of their money. This is not a scandal, it is the business model. It matters because the margin is invisible. A fee of two dollars is printed on your receipt. A margin hidden inside the rate is printed nowhere, and it is often the larger of the two. When you compare methods, the advertised rate is a starting point, not a cost."
+          },
+          {
+            "heading": "Zero fees is a claim",
+            "body": "A service advertising no fees is telling you something true and incomplete. It may charge nothing as a stated fee and still take more than a competitor through the rate. Another may charge a visible fixed fee and give you a rate close to mid-market, which makes it cheaper on any meaningful amount. The only way to know is to ignore both claims and look at two numbers: how much left the sender, and how much arrived in your currency. Everything between those two numbers is the cost of the method, whatever the marketing calls it. Treat free as a word in an advertisement, not as a number in your records."
+          },
+          {
+            "heading": "Computing what actually landed",
+            "body": "The calculation is small and worth doing every time for the first few months. Take the amount that landed in your currency and divide it by the amount sent in the original currency. That gives your effective rate for that transfer. Compare it to the mid-market rate on the same day and you have the real cost, expressed as a percentage you can compare with anything. Do it in a free spreadsheet with five columns: date, amount sent, currency, amount landed, effective rate. After ten payments you will know which method costs you least without asking anyone. If you find a difference you cannot explain, that is a question for the service, and you will have the numbers to ask it precisely."
+          },
+          {
+            "heading": "Compare over months, not once",
+            "body": "One transfer is a snapshot. Rates move daily, services run promotions, and a method that won last month can lose this month because your amount was different or the corridor changed. Judge over a run of payments, not a single lucky one. Watch for two patterns in particular: costs that rise as the amount rises, because a percentage margin scales while a flat fee does not, and costs that spike at weekends or holidays when markets are closed. If most of your income arrives in similar amounts on a similar schedule, optimise for that case rather than the general one. Whatever you conclude, write it in your own sheet. Next year you will not remember why you chose what you chose."
+          }
+        ],
+        "keyPoints": [
+          "The mid-market rate is the real rate. You receive it minus a margin.",
+          "A hidden margin is often larger than a printed fee.",
+          "Effective rate equals amount landed divided by amount sent.",
+          "Judge a method across many payments, not one."
+        ]
+      },
+      {
+        "title": "Records From Day One",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Memory is not a record",
+            "body": "You will remember the payment that arrived this week. You will not remember, eleven months from now, whether the client who paid you in March paid the full amount, what the transfer cost, or which of two similar tasks it covered. Nobody does. The people who look organised are not the ones with better memories, they are the ones who wrote it down when it happened, in under a minute. Start on the first payment, not when it becomes urgent. Reconstructing a year backwards from bank statements takes days, produces gaps, and always happens at the worst possible moment, usually while someone official or a client is waiting for an answer. A record kept from day one is thirty seconds a payment."
+          },
+          {
+            "heading": "What one line contains",
+            "body": "A useful record answers every question anyone can ask about a payment. One row per payment, with these columns: the date the client sent it and the date it landed, who paid, what it was for in your own words, the gross amount and its currency, the fees charged, the rate applied, the net amount that landed in your currency, the reference or transaction number, and a link to the proof file. That is ten columns and it fits in a free spreadsheet. If you cannot fill a column, put in what you know and mark the gap rather than leaving it blank, because a blank looks like it was never checked. Add one more column for whether you set money aside from that payment."
+          },
+          {
+            "heading": "One sheet, one folder, one rule",
+            "body": "Keep it boring. One spreadsheet holds every payment, one folder holds every proof, and one naming rule connects them. A naming rule that works: the date first in year, month, day order, then the payer, then the reference, for example 2026-03-14-clientname-inv0041. Dates in that order sort correctly by themselves, which no other format does. Save the receipt, the transfer confirmation, or the payout screen as a file in that folder, and put its name in the record row. When someone asks for proof of an amount, you find it by name in seconds instead of scrolling through a year of downloads. Free tools do all of this. A spreadsheet and a cloud drive folder are enough, and a local backup as well is better."
+          },
+          {
+            "heading": "Backups and how long you keep it",
+            "body": "Records that exist in one place do not exist. Keep the sheet and the proof folder in at least two places: a cloud drive and a copy on a drive you control, or two clouds if that is what you have. Check once a year that you can actually open the older files. On how long to keep records, we cannot give you a number, because retention periods differ by country and change. Ask your revenue authority or an accountant what applies to you, and until you have that answer, keep everything. Storage costs almost nothing and a missing year costs a great deal. This is one of the questions to bring to the conversation we describe later in this course."
+          },
+          {
+            "heading": "What never goes in your records",
+            "body": "Your records document money, not client material. The row says what the work was in your own general words, for example data cleanup of one contact list. It does not contain the client's data, their customers, their files, or screenshots of their documents. This holds for every client and it is absolute on Second Shift: client files never leave the task, no copies are kept after approval, and nothing from a task becomes a sample. Your proof folder holds payment confirmations, invoices you issued, and your own notes. If you ever need to show what you earned, the payment record is the evidence. The work itself is never yours to show."
+          }
+        ],
+        "keyPoints": [
+          "Write the record when the payment lands, not at year end.",
+          "One row: dates, payer, gross, fees, rate, net, reference, proof.",
+          "Name files date first so they sort themselves.",
+          "Keep records in two places and test the backup yearly.",
+          "Records hold money, never client data or client work."
+        ]
+      },
+      {
+        "title": "Separating Business And Personal Money",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Why one account hides everything",
+            "body": "When work income and household spending share an account, every question takes an hour to answer. Did that month earn enough? You cannot say, because the balance also absorbed groceries, a family transfer, and a phone top-up. Did a client actually pay? You have to scroll. What did transfers cost you? Buried. Mixing also makes it far harder to show anyone, whether an accountant, an authority, or a lender, what your work actually earns, because the honest answer requires reconstructing it line by line. Separation is not bureaucracy. It is the single change that makes every other habit in this course cheap to keep. Most people who feel disorganised about money do not need discipline, they need two accounts instead of one."
+          },
+          {
+            "heading": "The separate account",
+            "body": "The practical version: one account receives all work income and pays all work costs. Nothing personal touches it. Depending on your country and your situation this may be a business account, a second personal account, or a separate e-wallet, and what you are allowed or required to use is one of the questions for your revenue authority or accountant. If opening anything new is not possible right now, the fallback is a separate ledger: the same spreadsheet discipline applied to one shared account, with every row marked work or personal on the day it happens. That is worse but workable. What does not work is deciding at the end of the month which of forty transactions were work."
+          },
+          {
+            "heading": "Paying yourself on purpose",
+            "body": "Once work money is separate, you need a way to move it into your life without destroying the separation. Do it as a deliberate transfer on a fixed schedule, for a chosen amount, from the work account to your personal account, and label it. Many countries treat money an owner takes out of their own business differently from a salary, and the paperwork can differ, so this is another question for a professional rather than for us. The habit itself is what matters: your household runs on a predictable transfer while the work account absorbs the irregularity. It also makes an uncomfortable truth visible, which is whether the work can actually afford what you are taking out."
+          },
+          {
+            "heading": "Costs and the evidence for them",
+            "body": "Work has costs: internet, electricity, a headset, a repair, transfer fees, a paid seat somewhere with reliable power, software. Pay them from the work account and keep the receipt in the same folder as your payment proofs. Two habits make this useful later. Record what the cost was for in plain words, and record whether it was entirely for work or shared with personal use, because that distinction matters in most systems and you will not remember it later. What we will not tell you is which of these you can deduct, at what share, or under what conditions. That depends entirely on your country and your situation. Collect the evidence now so that when you ask a qualified professional, the answer is usable rather than theoretical."
+          }
+        ],
+        "keyPoints": [
+          "One mixed account turns every simple question into an hour of scrolling.",
+          "All work income in, all work costs out, nothing personal.",
+          "Pay yourself a deliberate, labelled transfer on a fixed schedule.",
+          "Note work versus personal use on a cost the day it happens.",
+          "Whether a cost is deductible is a question for a professional."
+        ]
+      },
+      {
+        "title": "Irregular Income, Steady Life",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Lumpy income, monthly bills",
+            "body": "Your income arrives in uneven lumps: a strong week, a quiet fortnight, a month where three clients pay at once. Your rent, your electricity, and your family's needs arrive on a schedule that ignores all of that. Most of the financial pain in freelance work comes from that mismatch and not from the total earned. The fix is not to earn more. It is to put a buffer between the lumpy side and the steady side, so a quiet fortnight is an inconvenience rather than an emergency. That buffer is built out of good months on purpose, which is the hard part, because good months feel like the moment to relax. Treat a strong month as funding for the weak one you have not had yet."
+          },
+          {
+            "heading": "Know your floor number",
+            "body": "You cannot plan around a number you have never calculated. Spend twenty minutes and write down what one ordinary month actually costs: housing, food, utilities, transport, phone and internet, family obligations, debt payments, and the work costs from the last lesson. Add the annual things divided by twelve. The total is your floor, the amount you must earn in a month before anything is left over. Almost everyone underestimates it before writing it down, usually by leaving out the irregular items. Once you know the floor, decisions get easier: you know what a survival month looks like in tasks, you know how large a buffer needs to be, and you know when a rate is not worth accepting."
+          },
+          {
+            "heading": "The set-aside, moved on arrival",
+            "body": "Money that is not yours should not sit in the account you spend from. When a payment lands, move a share of it immediately into a separate place for obligations, before you budget with the rest. Do it the same day, as part of recording the payment. We cannot tell you what share, because what you owe depends on your country, your registration status, and your situation, and those rules change. Until you have a real answer from your revenue authority or an accountant, choose a share that is deliberately too high rather than too low. Being over-reserved returns money to you later. Being under-reserved produces a bill you cannot pay. When you get a real answer, adjust the share and keep the habit."
+          },
+          {
+            "heading": "The buffer, and how it grows",
+            "body": "The buffer is different from the set-aside: it is your money, held for months when work is thin. Aim for a target expressed in months of your floor, and start with a first target that feels achievable rather than ideal, because a buffer you never reach is not motivating. Grow it from good months by treating the transfer as a bill you pay yourself, not as whatever is left over. There will never be anything left over. Keep it somewhere you can reach within a day but not on the card in your pocket, and agree with yourself in advance what counts as a reason to touch it. If you use it, the next good month refills it before anything else."
+          },
+          {
+            "heading": "Sinking funds for yearly costs",
+            "body": "Some costs arrive once a year and feel like disasters every time: a laptop that dies, a phone replacement, an annual connection payment, a professional fee, a trip home. They are predictable in total even when the date is not. Divide each expected annual cost by twelve and move that much aside every month into a named pot. When the laptop dies it becomes a purchase and not a crisis, and you never have to take a task you would otherwise refuse just because the timing is bad. This is the same mechanism as the buffer applied to known costs. Between the set-aside, the buffer, and these pots, most of what makes irregular income frightening becomes arithmetic you did in advance."
+          }
+        ],
+        "keyPoints": [
+          "The pain comes from timing, not from the total you earn.",
+          "Calculate your monthly floor before planning anything else.",
+          "Move the obligations set-aside the day a payment lands.",
+          "Over-reserve until an official answer tells you the real share.",
+          "Buffer for thin months, named pots for yearly costs."
+        ]
+      },
+      {
+        "title": "Registering And Asking The Right People",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "What registering usually means",
+            "body": "Most countries have some way for a person working for themselves to be recognised officially. The shape differs, but the pieces are often similar: you register your activity, you receive or use a taxpayer identification number, you may be allowed or required to issue official receipts or invoices, and you file something on a regular cycle. There may be more than one category available, with different obligations depending on how much you earn or what kind of work you do. Being registered can also unlock ordinary things: a business bank account, a loan application, a rental agreement, a formal contract with a larger client. We are describing the concept so you know what to ask about. We are not telling you what applies to you, because we cannot know."
+          },
+          {
+            "heading": "Why we will not tell you the rules",
+            "body": "Specific rules for your situation would need to come with a date, a country, and a category, and even then they change. Rates change, thresholds move, deadlines shift, categories are created and abolished. A course written today and read in two years would be wrong in ways neither of us could see. Getting it wrong is not a small thing, because penalties fall on you and not on whoever told you. So we will keep repeating the same unsatisfying sentence. This is not tax, legal, or financial advice. Anything specific must come from your own country's revenue authority or from a licensed professional who knows your numbers. That is not caution for our own sake. It is the only answer that stays correct."
+          },
+          {
+            "heading": "Where the real answer lives",
+            "body": "There are two reliable sources and they cost less than people expect. The first is your country's revenue authority: an official website, a hotline, and usually a local office where you can ask in person. Their information is free and it is the actual rule. The second is a licensed accountant or tax professional, paid for a single consultation. One hour with someone who knows your country and your situation will settle questions you could spend months guessing at, and it is often cheaper than one mistake. What is not a source: a group chat, a forum thread, a confident post, or another person doing similar work who is sure of their answer. They may be right. You have no way to tell, and you carry the consequence."
+          },
+          {
+            "heading": "Questions to bring with you",
+            "body": "Go in with a written list so the hour is not wasted. What category, if any, should someone doing my kind of work register under? What are my obligations once registered, and how often do I file? What share of my income should I be setting aside, given what I earn? What records must I keep, in what form, and for how long? What do I do about income received from clients outside the country? Do I need to issue invoices, and must they follow a particular format or numbering? What happens if I have already been working without registering? Write the answers down with the date and who told you. Take the same list to both sources and compare."
+          },
+          {
+            "heading": "Requests from overseas clients",
+            "body": "A client abroad may ask you for something you have never seen: a tax form from their country, a declaration of where you live, a signed contractor agreement, or a business registration number. Do not fabricate anything and do not sign what you have not read. Ask the client what the document is for, then take it to your professional before returning it. If you do not have a number they are asking for, say so plainly rather than inventing one. Be careful about who is really asking, too: a request for identity documents or bank details deserves confirmation through a channel you already use with that client. On Second Shift, anything of this kind comes through us and never directly from a client."
+          }
+        ],
+        "keyPoints": [
+          "Registration usually means a number, a category, records, and a filing cycle.",
+          "We give concepts. Specifics come from your revenue authority or a professional.",
+          "One paid hour with an accountant beats months of guessing.",
+          "Bring a written list of questions and record the answers.",
+          "Never fabricate a number or sign a form you have not read."
+        ]
+      },
+      {
+        "title": "Invoices, Numbering And Retention",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Why an invoice exists",
+            "body": "An invoice is a dated, numbered statement that a specific amount is owed for specific work. It does three jobs at once: it tells the client exactly what to pay and how, it becomes your proof that the income was earned and when, and it forms a sequence that can be checked from the outside. Even when a client pays without one, the invoice is what turns a bank transfer into a documented transaction. On Second Shift the payout is handled by the platform after QC approval, so you are not chasing anyone for payment. Whether you must still keep or issue documents for that income is a question for your revenue authority, not for us. With clients you deal with directly, the invoice is your basic instrument."
+          },
+          {
+            "heading": "What an invoice contains",
+            "body": "At minimum: your full name or business name, your address and contact details, and your tax identification number if you have one. Then the client's name and address, the invoice number, the issue date, and the date or period the work covers. Then the description of the work, the quantity or hours, the rate, the total, and the currency stated explicitly, because a bare number is ambiguous across borders. Finally, payment terms, the due date, and how to pay you. Requirements vary by country and some places mandate specific wording or formats, so confirm with your revenue authority before deciding your template is compliant. A free document editor or spreadsheet produces a perfectly acceptable invoice exported as a PDF. Nothing here requires paid software."
+          },
+          {
+            "heading": "Numbering that holds up",
+            "body": "Invoice numbers are a sequence, and the point of a sequence is that gaps are visible. Number them consecutively from your first invoice, never reuse a number, never skip one to tidy something away, and never renumber history. A simple scheme is the year followed by a counter, for example 2026-0001, restarting the counter each year if you prefer. Keep the counter in the same spreadsheet as your payments, so the next number is never a guess. If you work with several clients, resist giving each one their own sequence unless a professional tells you your country expects it, because one sequence is simpler to defend. Gaps in a numbered sequence are the first thing anyone reviewing your records will notice."
+          },
+          {
+            "heading": "Corrections without deletions",
+            "body": "You will get one wrong. The rule is that a document you issued is not deleted or quietly edited, because the copy the client already has does not disappear when yours does. Correct it on the record instead: mark the original as cancelled or corrected, keep it in your files, and issue a new document with the next number, referring to the one it replaces. Tell the client which one to pay. This is more work than editing the file, and it is the whole difference between records that survive a question and records that raise one. The same applies when a payment arrives in a different amount than invoiced. Record what was actually received and document why it differs. Never adjust the past to match."
+          },
+          {
+            "heading": "Storage and confidentiality",
+            "body": "Keep every invoice you issue as a PDF in the same proof folder as your payment records, named with the same date-first rule, and backed up in two places. How long to keep them is a country question, so ask, and keep everything until you have the answer. One more line matters and it is the one people break: the description on an invoice names the service, not the client's material. Data cleanup of one contact list, three hours, is correct. Rows of the client's actual customers is not, and neither is an attached copy of the delivered file as evidence. Your invoice proves what you did and what you were owed. It never carries the client's content, and work done for a client is never a sample you show elsewhere."
+          }
+        ],
+        "keyPoints": [
+          "An invoice turns a transfer into a documented, dated transaction.",
+          "State the currency explicitly and confirm format requirements locally.",
+          "Number consecutively. Never reuse, skip, or renumber.",
+          "Correct with a new document. Never delete or edit history.",
+          "Describe the service on an invoice, never the client's data."
+        ]
+      },
+      {
+        "title": "Pricing Your Time",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Effective rate, not headline pay",
+            "body": "The number that matters is not what a task pays. It is what landed in your currency divided by every hour the task consumed. Those hours include reading the brief, setting up, the work itself, checking it, writing the delivery note, any revision, and the admin of recording the payment. A task paying well per piece can be a poor hour once you count honestly, and a modest one you have done fifty times can be excellent. You will not know which is which by feel, because effort and time are remembered badly. Time three or four tasks in each category you do, start to finish, and write the effective rate next to the payment in your record. The answer is often not the one you expected."
+          },
+          {
+            "heading": "The costs nobody bills you",
+            "body": "An hour of work is not free to produce. It consumes electricity and connection, wear on a machine you will replace, sometimes a paid seat somewhere with reliable power. Add the transfer cost of getting paid, the share you set aside for obligations, and the unpaid hours: the tasks you started and released, the admin, the learning. When people say they are working at a loss, this is usually where it happened. They compared a payment to nothing at all. Put the real costs into the floor calculation from the earlier lesson, and remember that unpaid hours are hours. Two of them attached to a paid hour cut that rate to a third of what it looked like."
+          },
+          {
+            "heading": "Finding your minimum",
+            "body": "Your minimum acceptable rate comes from your own numbers, not from what others charge. Take your monthly floor, including work costs and what you set aside, and divide it by the hours you can genuinely bill in a month. Be honest about that second number, because nobody bills every waking hour, and the difference between hours worked and hours billed is where optimism hides. The result is the rate below which working costs you money. Treat it as a line, not a target. Above it, decide by preference, by learning, by how steady the client is. Below it, the answer is no, and knowing why makes saying it much easier than a vague feeling that something is not worth doing."
+          },
+          {
+            "heading": "Fixed payouts and your real levers",
+            "body": "On Second Shift the payout is set before you see the task, so pricing is not a negotiation you can enter. That does not remove your control, it moves it. Your levers are which tasks you claim, how well a category matches your speed, and how rarely your work comes back for revision, since a revision cuts your effective rate on a payout that does not change. Track effective rate by category over a few weeks and the pattern will be obvious: some categories reward you, some do not. Claim more of the first and fewer of the second. That is pricing, done with your choices instead of your quotes, and it is the same discipline you will use everywhere else."
+          },
+          {
+            "heading": "Raising your rate elsewhere",
+            "body": "With clients you deal with directly, your rate is yours to set and to change. Change it with evidence and notice rather than apology. Evidence is your own record: the effective rate on their work, what the scope has become compared to what was agreed, what your costs have done. Notice is telling them before the next cycle, in one short message, stating the new rate and the date it starts. Do not explain your household, do not negotiate against yourself in advance, and do not raise it retroactively. Some clients will accept and some will not, and the ones who leave over a modest increase were usually the ones with the worst effective rate anyway. That is what the record is for: knowing which is which before you decide."
+          }
+        ],
+        "keyPoints": [
+          "Effective rate is money landed divided by every hour, paid or unpaid.",
+          "Unpaid hours, transfer costs, and set-asides all reduce what you keep.",
+          "Your minimum is your floor divided by realistic billable hours.",
+          "With fixed payouts, your lever is which tasks you claim.",
+          "Raise rates with evidence and notice, never retroactively."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can compare payment methods on fees, exchange margin, arrival time and limits.",
+      "You can keep a payment record that explains any amount you ever received.",
+      "You can separate work money from household money and pay yourself deliberately.",
+      "You can set aside for obligations and build a buffer on irregular income.",
+      "You can issue and retain invoices with a numbering sequence that holds up.",
+      "You can calculate your effective hourly rate and refuse work below your floor."
+    ],
+    "slug": "freelance-money",
+    "summary": "The money side of freelancing is a second job nobody trains you for: payments that arrive smaller than agreed, records nobody asks for until they matter, and rates that quietly lose you money. This course teaches the concepts and the questions, not the rules of your country, so you can compare payment methods honestly, keep records from day one, set aside on irregular income, and price your time above your own floor.",
+    "tagline": "Getting paid across borders, keeping records, and never working at a loss.",
+    "title": "Money and records for freelancers",
+    "track": "career"
+  },
+  "spotting-scams": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "A remote data-entry role offers steady work. Before your first shift, the company asks for 1,500 pesos for a mandatory training module, refundable after thirty days of employment. The recruiter is polite and the paperwork looks complete. What do you do?",
+          "options": [
+            "Pay it; the amount is small and it is refundable after thirty days.",
+            "Refuse and stop; a real employer never charges you to start work.",
+            "Ask to have the fee deducted from your first payout instead.",
+            "Pay half now and the rest once the first payment arrives."
+          ],
+          "correct": 1,
+          "explain": "In real employment money flows toward you. Calling a fee refundable or mandatory training does not change the direction, and small amounts are chosen because they get paid."
+        },
+        {
+          "prompt": "A new client overpays your first invoice by 200 dollars by cheque, apologizes, and asks you to send the difference back today through an e-wallet. Your banking app already shows the full amount as available.",
+          "options": [
+            "Send the 200 back, since the app shows the funds are already there.",
+            "Send it back but keep a screenshot in case the cheque bounces.",
+            "Send nothing and ask your bank whether the cheque has finally cleared.",
+            "Return it once, then require all future payments by bank transfer only."
+          ],
+          "correct": 2,
+          "explain": "Available is not settled. A cheque can reverse days later, and any money you already forwarded comes out of your own account."
+        },
+        {
+          "prompt": "An agency offers you a part-time role as a local payment coordinator. Client payments arrive in your personal bank account, you withdraw them and forward them by wallet transfer, and you keep five percent. The contract looks real.",
+          "options": [
+            "Refuse, keep the messages, and report it; this is money laundering.",
+            "Accept but declare every transfer to your bank so it stays transparent.",
+            "Accept only small transfers until you have verified the agency properly.",
+            "Ask for written proof the funds are legitimate before starting."
+          ],
+          "correct": 0,
+          "explain": "Moving other people's money through your account is money muling. The account holder is the name on the transfers, and prosecutions fall on them even when they believed it was a job."
+        },
+        {
+          "prompt": "A hiring manager sends a test task: clean 400 rows of their live customer list, due tomorrow morning, unpaid. He mentions that several shortlisted candidates each received a different section of the same file.",
+          "options": [
+            "Do it well; a strong test is the fastest way to win the role.",
+            "Do it, and ask to be paid for it only if they hire you.",
+            "Do it, but deliver a degraded version they cannot use directly.",
+            "Decline the unpaid production work and offer a short sample task instead."
+          ],
+          "correct": 3,
+          "explain": "Live client data, a business deadline, and split sections across candidates add up to a finished job done for free. A real test is small and uses sample data."
+        },
+        {
+          "prompt": "Four employers each send a test before hiring. Which one is a normal, legitimate test task?",
+          "options": [
+            "A three-hour report on their real Q3 sales file, due before your interview.",
+            "A 30-minute exercise on a dummy dataset, identical for every candidate, scope stated.",
+            "An unlimited task on live client records, with feedback promised after hiring.",
+            "A short task sent only to you, on real data, with no timeframe mentioned."
+          ],
+          "correct": 1,
+          "explain": "A real test is short, bounded, the same for every candidate, and built on sample or anonymized data. Live records and open scope are the marks of production work."
+        },
+        {
+          "prompt": "An email offers you a coordinator role at a well-known logistics company. The signature and logo look right, but the address ends in a free mail domain, and the message links to an onboarding portal.",
+          "options": [
+            "Open the portal but enter nothing until you have seen what it asks for.",
+            "Reply asking the recruiter to confirm that the role is genuine.",
+            "Search for the company yourself and check its own careers page.",
+            "Check whether the logo and signature match the company's real branding."
+          ],
+          "correct": 2,
+          "explain": "You verify a company through sources it did not send you. A free mail domain for a corporate role is already a strong signal, and their link only proves they built the page."
+        },
+        {
+          "prompt": "You are midway through what feels like a real hiring process. The HR contact says she will send a six-digit code to your phone to verify your identity, and asks you to read it back to her on the call.",
+          "options": [
+            "Refuse; a one-time code is never shared with anyone, for any reason.",
+            "Read it back, since she sent it and it verifies only your phone.",
+            "Ask which account the code came from, then decide.",
+            "Read it back, then change that account's password immediately afterwards."
+          ],
+          "correct": 0,
+          "explain": "One-time codes exist to prove you are you. Anyone asking for one is trying to act as you, whatever they say the code is for."
+        },
+        {
+          "prompt": "Before any offer or contract, a recruiter asks by chat for a photo of your ID front and back, a selfie holding it, and your bank details, so they can prepare your onboarding.",
+          "options": [
+            "Send the ID only, and hold the bank details until the contract arrives.",
+            "Send everything, but watermark the ID image with today's date.",
+            "Send it through the chat app, which is more private than email.",
+            "Send nothing yet; documents come after a verified offer, through company systems."
+          ],
+          "correct": 3,
+          "explain": "That bundle is a complete identity kit. Documents follow a genuine offer from a company you verified yourself, and travel through its own system, not a messaging app."
+        },
+        {
+          "prompt": "A cousin you trust refers you to an online role she says she has worked in for months. The company asks for a 3,000-peso equipment deposit, refunded with your first payout. You do not want to insult her by refusing.",
+          "options": [
+            "Pay it; a referral from close family is the verification you needed.",
+            "Decline the payment and tell her plainly why the deposit worries you.",
+            "Pay a smaller amount as a compromise and see what happens.",
+            "Pay it, but ask for the refund promise in a written contract."
+          ],
+          "correct": 1,
+          "explain": "A trusted referral does not change the rule, and she may be caught in it too. Saying so plainly protects both of you better than a quiet compromise."
+        },
+        {
+          "prompt": "You have already forwarded 8,000 pesos of an employer's payment to a supplier account as instructed. An hour later the original payment reverses. The employer says one more transfer will unlock everything and settle it.",
+          "options": [
+            "Send the last transfer; you are too far in to walk away now.",
+            "Stop replying and wait to see whether the reversal corrects itself.",
+            "Stop sending, screenshot everything, and call your bank and the police.",
+            "Tell the employer you know it is a scam and demand your money back."
+          ],
+          "correct": 2,
+          "explain": "The next payment is always the one that supposedly fixes it. Speed matters: some transfers can be halted in the first hours, and your evidence decides how far a report goes."
+        },
+        {
+          "prompt": "Two days after losing money to a fake employer, someone messages you offering to recover the funds. They show screenshots of recovered cases and ask for a small advance fee to open your file.",
+          "options": [
+            "Ignore it; advance-fee recovery offers are a second scam run on victim lists.",
+            "Pay the fee; the amount is far smaller than what you lost.",
+            "Ask them to take their fee out of the recovered amount instead.",
+            "Send your case documents but no money, and see what they find."
+          ],
+          "correct": 0,
+          "explain": "Victim lists are sold and reused. Nobody legitimate charges an advance fee to recover money, and sending documents hands them the identity they came for."
+        },
+        {
+          "prompt": "Someone messages you privately, says they are a Second Shift client whose task you delivered last week, and offers the same work directly at a higher rate. They ask for your bank details to set up payment.",
+          "options": [
+            "Take it; the work is the same and the pay is better.",
+            "Do not engage, send nothing, and report the message to us.",
+            "Ask for proof they were the client before sharing anything.",
+            "Accept the work but keep the payments running through the platform."
+          ],
+          "correct": 1,
+          "explain": "Clients never contact workers on Second Shift. Anyone claiming to be one is impersonating the platform, and asking for proof only continues a conversation you should end."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "How job scams actually work",
+        "minutes": 5,
+        "sections": [
+          {
+            "heading": "A market built on need",
+            "body": "Scams follow money and need. Remote work attracts both: thousands of capable people applying for positions they cannot verify, from a distance, often while a household depends on the result. That combination is what scammers hunt, and it is why the volume of fake postings is high in every remote market on earth. None of this means the market is rotten. Real clients and real jobs are the majority. It means you need a filter, and the filter has to be a habit rather than a mood, because the day you most need money is the day your judgement is worst. We are going to give you that filter: a small number of shapes to recognize, and a check you can run in five minutes before you hand over anything at all."
+          },
+          {
+            "heading": "They want money or identity",
+            "body": "Almost every job scam is after one of two things, and knowing which one tells you what happens next. The first is your money: a fee, a deposit, a payment you make and never see again. The second is your identity: your documents, your bank details, your logins, or the use of your name and your account to move someone else's money. A few want a third thing, which is free labor dressed as a test. Everything in this course is a variation on those three. When a new offer feels strange but you cannot say why, ask the question directly: if this is a scam, what exactly would they be taking? The answer usually appears in seconds, and it points straight at the step you should refuse."
+          },
+          {
+            "heading": "Professional appearance proves nothing",
+            "body": "A logo, a signature block, a careers page, a contract in a PDF, an interview over chat, a colleague who confirms the company is real: all of that costs a scammer almost nothing. Websites are cheap. Registration numbers are public and can be copied. Real brands are impersonated daily precisely because their reputation does the persuading. So drop appearance as evidence. What counts is what you can verify independently, and what counts is behavior: which direction money moves, whether the person will appear on video, whether the terms exist anywhere outside a chat window. A polished operation that asks you to pay a fee is a scam. A plain email from a small business that pays you first is a job."
+          },
+          {
+            "heading": "Being scammed is not stupidity",
+            "body": "People who get scammed are not careless or naive. They are usually busy, hopeful, and under time pressure, which is exactly the state the script is designed to produce. Professionals with twenty years of experience lose money to these schemes. Teachers, nurses, accountants, engineers. We say this now because shame is the scammer's best protection: victims who feel foolish stay quiet, do not report, and the same operation runs again next week on someone else. If it has already happened to you, the last lesson of this course is about what to do, and none of it involves blaming yourself. Treat this material as a professional skill, like checking a spreadsheet before delivery, not as a character test you might fail."
+          }
+        ],
+        "keyPoints": [
+          "Every job scam wants one of three things: your money, your identity, or free labor.",
+          "Appearance is cheap. Judge behavior: money direction, video, and terms in writing.",
+          "Ask directly: if this were a scam, what would they be taking?",
+          "Victims are not naive. Shame keeps scams alive by keeping people quiet."
+        ]
+      },
+      {
+        "title": "Money moving the wrong way",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The one rule that never bends",
+            "body": "Here is the rule that catches more scams than any other: in real employment, money flows toward you. An employer pays you. You do not pay an employer for the chance to work for them, and you do not pay to be considered, trained, activated, verified, insured or placed. If money is being asked of you at any point before, during or after hiring, stop and treat everything else as unproven, no matter how convincing the rest looks. This holds across countries, industries and job levels. It holds when the fee is small. It holds when the fee is called refundable. Scammers know the rule too, which is why they spend their effort making the payment sound like something other than a payment. Learn the disguises and the rule does the rest."
+          },
+          {
+            "heading": "Fees dressed as something else",
+            "body": "The names change; the shape does not. An application or processing fee. A training or certification fee before you may start. A background check you must pay for. A placement fee taken from you rather than from the employer. A refundable deposit to activate your account. A small charge to receive your first payment. All of them move money from you to a stranger who has not yet paid you anything, and all of them are the scam. Two honest cases exist and look different. You may choose to buy a course or a certificate for yourself, from a provider you picked, with no job attached. And a real employer may reimburse a cost you already had. Neither involves paying a person who is dangling a job in front of you."
+          },
+          {
+            "heading": "Equipment and software deposits",
+            "body": "A common version: you are hired, the company will ship you a laptop and headset, and you need to pay a deposit or buy the equipment from their approved supplier. Sometimes they send a cheque to cover it, which you deposit and use to pay the supplier. The supplier is them. The cheque bounces a week later and the money is gone from your account. Real employers either ship equipment at their own cost, let you use what you already own, or state an allowance that arrives with your pay. Nobody legitimate needs you to route money through a supplier they chose. If a role requires software, it is either free, provided by the company, or something you already own and mentioned in your application."
+          },
+          {
+            "heading": "What this means for Second Shift",
+            "body": "We will never ask you for money. Not to join, not to be vetted, not to take an Academy course, not to sit an exam, not to receive a certificate, and not to claim a task. There is no equipment to buy from us and no deposit of any kind. Every task in the pool shows a fixed payout before you claim it, and that money moves in one direction only, from us to you after quality control approves your delivery. If anyone ever contacts you claiming to represent us and asks for a payment, a deposit or a fee, it is not us. Say no and tell us. The same test we are teaching you applies to us, and we intend to pass it every time."
+          }
+        ],
+        "keyPoints": [
+          "In real employment money flows toward you. Any fee before pay is the scam.",
+          "Training fees, deposits, activation charges and placement fees are one shape renamed.",
+          "Nobody legitimate needs you to buy equipment from a supplier they chose.",
+          "Second Shift never asks you for money, at any stage, for any reason."
+        ]
+      },
+      {
+        "title": "Cheques, refunds and money muling",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The overpayment and refund script",
+            "body": "You are hired, and your first payment arrives larger than agreed. The employer apologizes for the error and asks you to return the difference, quickly, to a named account or wallet. Or you are asked to receive money meant for a supplier and pass it on, keeping a share. In both versions the original payment is fake, stolen or reversible, and the money you send back is real and yours. When it unwinds, your bank takes the fake payment back out of your account and the money you forwarded is gone. The rule is simple and absolute: you never send money back to an employer, and you never move money on their behalf. If a payment arrives that you did not expect, do not touch it. Report it to your bank and wait."
+          },
+          {
+            "heading": "Available is not the same as cleared",
+            "body": "Bank apps and e-wallets often show funds as available before the payment has truly settled. With cheques this gap can be days, sometimes weeks. Scammers build their timing around it: they want you to see the balance, believe it is yours, and send the refund before the underlying payment fails. When it fails, the reversal falls on you, because you are the account holder who spent it. Treat any incoming payment from a new party as provisional. If you must act on one, ask your bank directly whether the funds have cleared and finally settled, and take the answer from the bank rather than from the person asking you to hurry. This is not financial advice. It is a description of how settlement works and why the delay is the weapon."
+          },
+          {
+            "heading": "Processing payments is a crime",
+            "body": "Some offers are open about the work: receive payments into your personal account, withdraw or forward them, keep a percentage. It may be called payment processing, financial agent, local representative or transfer coordinator. This is money muling, and it is the laundering of money stolen from other people. Say this part plainly to yourself, because it is the part victims learn too late. When it is investigated, the account holder is the person the evidence points to. You are the one whose name is on the transfers. People are prosecuted for this, have accounts frozen, are refused by banks for years, and can face charges even when they believed they had a job. There is no version of this arrangement that is legal for you. Refuse it, keep the messages, report it."
+          },
+          {
+            "heading": "Parcels, gift cards and top-ups",
+            "body": "The same laundering logic appears without a bank account. Reshipping schemes ask you to receive parcels at home, repack them and forward them abroad; the goods were bought with stolen cards and you are the link in the chain that can be found. Gift card errands ask you to buy cards for a client or a boss and send the codes; the codes are cash and cannot be recovered. Mobile top-up and crypto transfer requests work the same way, chosen because the transfer cannot be reversed once it is made. A legitimate job may ask you to spend company money through company systems with real receipts. It does not ask you, in week one, to buy value with your own funds and send the codes to a stranger."
+          }
+        ],
+        "keyPoints": [
+          "You never refund an employer and never move money on their behalf.",
+          "Funds shown as available are not settled. The reversal lands on you.",
+          "Processing payments through your account is laundering, and the account holder gets charged.",
+          "Gift cards, top-ups and crypto are chosen because they cannot be reversed."
+        ]
+      },
+      {
+        "title": "Test tasks and free work",
+        "minutes": 5,
+        "sections": [
+          {
+            "heading": "When a test is production",
+            "body": "Unpaid test tasks are the quietest scam because you lose only time, and only once, so few people report it. The shape is recognizable. The test is large: several hours, hundreds of rows, a full article, a whole deck. It uses real live client material rather than a sample. It has a deadline tied to someone's actual business, not to your convenience. Different candidates receive different sections, which together happen to make a finished job. And the feedback never comes, or comes as a polite decline after your work is used. Add it up: twelve candidates doing three hours each is thirty-six hours of production work for nothing, and the position may not exist. The tell is not the word unpaid. The tell is whether the output is usable by them tomorrow."
+          },
+          {
+            "heading": "What a real test looks like",
+            "body": "Genuine skills tests exist and are reasonable. They are small, usually well under an hour. They are the same for every candidate, which is what lets the client compare answers. They use a sample, dummy data or an old anonymized file rather than live client records. The scope and the time expected are stated up front. You get an answer either way, often with a comment on what was strong or weak. Some employers pay for tests as a matter of policy, and that is a good sign rather than a requirement. If a test meets those conditions, doing it is a fair trade: you spend forty minutes, they get evidence you can do the work, and you get evidence the process is real. Refusing every test on principle will cost you good jobs."
+          },
+          {
+            "heading": "How to ask without losing the job",
+            "body": "You are allowed to ask questions, and asking them is itself a filter, because real employers answer and scammers get annoyed. Useful wording: how long should this take, and is there a scope limit. Is this sample data or live client work. Will all candidates do the same test. When will I hear back. If it runs longer than an hour, is there a fee for the test. Send it as one short, friendly message rather than a list of demands. A real hiring manager reads that as a professional protecting their time. If the reply is pressure, vagueness or a suggestion that you are not serious, you have your answer, and it arrived before you spent the afternoon."
+          },
+          {
+            "heading": "How Second Shift does this",
+            "body": "We do not use unpaid test tasks. Entry runs through vetting and this Academy, and the exams you sit here are ours, not a client's work in disguise. Once you are approved, every task in the pool carries a fixed payout printed before you claim, including the first one you ever do. There is no trial period at a lower rate and no sample task you complete for free to prove yourself. If you ever see something on our platform that looks like unpaid production work, that is a bug or an impersonation, and we want to hear about it. We built it this way on purpose, because free trial work is one of the mechanisms that made remote work feel cheap, and we are not interested in reproducing it."
+          }
+        ],
+        "keyPoints": [
+          "The tell is not the word unpaid. It is whether they can use your output.",
+          "A real test is short, identical for all candidates, and uses sample data.",
+          "Asking about scope and timing filters employers. Real ones answer, scammers push back.",
+          "Second Shift has no unpaid tests. Every task shows a fixed payout first."
+        ]
+      },
+      {
+        "title": "Your documents and your logins",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "What your identity is worth",
+            "body": "A clear photograph of your government ID, plus a selfie holding it, plus your date of birth and address, is enough for someone to open accounts, take loans, register wallets and register companies in your name. That package sells, and it keeps working for years. Which is why so much fake hiring never asks for a peso: the documents are the payday. Damage from stolen identity is slow and hard to reverse. You may only discover it when a lender contacts you about a debt you never took, or when an account you need is refused. So treat your documents like cash and your logins like keys. The question is not whether the request seems normal, but whether the person asking has been verified and needs it yet."
+          },
+          {
+            "heading": "Fake onboarding is the favorite",
+            "body": "The most efficient version of this scam is a hiring process that looks complete. You get an offer letter, a welcome message, and a link to an onboarding portal where you upload your ID, your bank details and a signed contract, and create a password. The portal is theirs. The password you chose is very likely one you use elsewhere. The bank details go straight into fraud. Everything felt legitimate because there was paperwork, and paperwork is the cheapest thing to fake. The counter is boring and it works: never reach a company's systems through a link someone sent you. Find the company yourself, from a search or an address you already knew, and log in there. If the portal exists only at the end of their link, it exists only for you."
+          },
+          {
+            "heading": "When sharing documents is normal",
+            "body": "Legitimate employers do need identity documents eventually, so the answer is not to refuse forever. It is sequence and channel. Sequence: documents come after a genuine offer from an employer you have verified independently, not during a first chat. Channel: through the company's own system, or an official address at their own domain, never a personal mail account and never a messaging app. Practical habits help. Send the minimum asked for, not your whole folder. Where the receiving system allows it, use a copy marked with the purpose and the date across the image, so it cannot be reused elsewhere. Never send a full ID, a selfie holding it, and your bank details together to a party you have not verified. That bundle is the complete kit."
+          },
+          {
+            "heading": "Passwords and one-time codes",
+            "body": "One rule has no exceptions: you never give anyone a one-time code. Not to an HR representative, not to verify your account, not to a support agent, not to someone who says they sent it by mistake. Those codes exist to prove it is you, so anyone asking for one is trying to be you. Alongside that, use a different password for every important account, starting with the email address your other accounts recover through, and turn on two-step verification there first. A free password manager will handle the rest, and your browser's built-in one is far better than reusing a password. If you do nothing else after this lesson, protect the email account, because whoever controls it can reset everything else you own."
+          }
+        ],
+        "keyPoints": [
+          "A full ID, a selfie holding it, and bank details are a complete identity kit.",
+          "Never reach a company's systems through a link that was sent to you.",
+          "Documents come after a verified offer, through company systems, never a personal account.",
+          "Never share a one-time code with anyone, for any stated reason.",
+          "Protect your main email first. It resets everything else you own."
+        ]
+      },
+      {
+        "title": "Unsolicited offers and fake brands",
+        "minutes": 5,
+        "sections": [
+          {
+            "heading": "The message that arrives unasked",
+            "body": "A large share of scams begins with a message you did not invite: a chat request, an SMS, a direct message, an email saying your CV was found and a role is reserved for you. The pay is above the market, the requirements are vague, and the next step is always to move the conversation to a private chat app. Some of these end in a fee, some in identity theft, and some in the task-and-commission apps where you complete small paid jobs, watch a small balance grow, and are then asked to deposit your own money to unlock the next level. That deposit is the whole business. Unsolicited does not automatically mean fake, but it does mean unproven, and the burden of proof sits with them."
+          },
+          {
+            "heading": "Read the address, not the name",
+            "body": "The display name on an email or a chat account is decorative; anyone can type anything there. What matters is the actual address and domain. A corporate recruiting role that writes from a free mail account is a strong signal, because real companies use their own domain. Then read the domain itself, character by character, looking for the near miss: an extra letter, a hyphen that does not belong, a different ending where the real company uses a plain one, or a familiar name sitting in front of an unrelated domain. Do the same with any link before clicking, because the visible text can say anything while the destination says something else. This takes fifteen seconds and defeats a large share of impersonation."
+          },
+          {
+            "heading": "Verify from the other direction",
+            "body": "Never verify a company using the materials the company sent you. Their site, their number, their reference letter and their staff list are all part of the package. Go the other way instead. Search for the company yourself and open its site from the results. Find the careers page and see whether the role is posted there. Look up the recruiter's name on the professional network and check whether the profile is old, connected and consistent, or created last month with a stock photograph. Where a business register is public, look for the company in it. If the role exists on the company's own site, apply through that page rather than through the message you received. If it exists nowhere except in your inbox, you have your answer."
+          },
+          {
+            "heading": "Real recruiters exist",
+            "body": "None of this means an unexpected approach is always a fraud. Recruiters really do search professional networks and message people who never applied. The difference is what happens when you slow the conversation down. A real recruiter will name the client or explain why they cannot yet, will appear on a video call, will send the details in an email from a company domain, and will not mind that you took two days to verify them. A scammer needs the pace they set. They will push, hint that the role is going to someone else, or refuse video with a reason that changes each time. Slowing down costs you nothing with a genuine employer. It costs a scammer everything, which is why they resist it."
+          }
+        ],
+        "keyPoints": [
+          "Unsolicited is not proof of fraud, but the burden of proof is theirs.",
+          "Display names are decorative. Read the real address, domain and link destination.",
+          "Verify a company using sources it did not give you.",
+          "Real recruiters tolerate you slowing down. Scammers cannot afford it."
+        ]
+      },
+      {
+        "title": "The tells and the five-minute check",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Six tells that travel together",
+            "body": "Individually a tell can have an innocent explanation. Together they are a diagnosis. One: money is being asked of you, in any form and under any name. Two: urgency, a deadline to accept, a slot that expires today. Three: refusal to appear on video, or a voice-only call with an excuse that changes. Four: a personal or free mail domain for a corporate role, or a lookalike domain. Five: the terms live only in chat, and nothing is confirmed in a document or an email you can keep. Six: the pay is well above the market for work described so vaguely that you could not start it tomorrow. Two of these on the same offer is enough to stop and verify before you send anything at all."
+          },
+          {
+            "heading": "Urgency is the engine",
+            "body": "Every scam script runs on time pressure, because thinking is the only defence that reliably works and thinking takes time. So the offer expires today. The deposit must arrive before the shipment leaves. Twelve other candidates are waiting. The client is angry. Notice what this does: it moves you from judging the offer to protecting the offer. Once you are afraid of losing it, you stop asking questions and start doing whatever keeps it alive. The counter is a rule you set in advance, before any of it applies to you. Nothing goes out on the same day it is asked for. No money, no documents, no codes, no signature. Twenty-four hours costs you nothing real, and almost every genuine opportunity survives it. Almost no scam does."
+          },
+          {
+            "heading": "Nothing exists until it is written",
+            "body": "Ask for the arrangement in writing: the work, the rate, when payment happens, and who you report to. Ask for it in an email rather than a chat message, because chat can be deleted from both sides and often is. Two things then happen. A real employer sends something, and now you have terms you can hold them to. A fake one delays, sends a document that contradicts what you were told, or gets irritated that you asked. Keep everything either way: screenshots, the full email, account names, numbers, dates, and any transaction reference. If this later becomes a report to your bank or the police, the quality of your evidence decides how far it goes."
+          },
+          {
+            "heading": "Your five-minute check",
+            "body": "Run this before you send money, documents, codes or hours of work. One, which direction does money move; if any of it moves toward them, stop here. Two, read the sender's real address and the destination of any link. Three, find the company yourself and check whether the role exists on its own site. Four, check the person: profile age, connections, whether a video call is possible. Five, ask for the terms in writing and watch how they react. Five minutes, five steps, and it stops the overwhelming majority of what is out there. Write the steps somewhere you will see them, because the point is to have the check ready on the night you are tired, broke and hopeful, which is exactly when the message arrives."
+          }
+        ],
+        "keyPoints": [
+          "Money toward them, urgency, no video, wrong domain, chat-only terms, unreal pay.",
+          "Set the rule in advance: nothing goes out the same day it is requested.",
+          "Ask for terms by email. Keep every screenshot, name, number and reference.",
+          "Five steps, five minutes, run before you send anything of value."
+        ]
+      },
+      {
+        "title": "After a scam: what to do",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "The first hour",
+            "body": "If you realize mid-scam, stop where you are. Send nothing further, however much has already gone, because the next request is always framed as the one that fixes the last. Do not warn them that you know; simply stop replying. Then, in this order: contact your bank or e-wallet provider and tell them exactly what happened, because some transfers can be halted or recalled in the first hours and almost none can later. If you shared login details, change those passwords now, starting with your email. If you gave card details, ask the provider to block the card. Screenshot everything before you delete anything, or before the other side deletes it. Speed matters more than completeness here. You can write the full account of it afterwards."
+          },
+          {
+            "heading": "Secure what they touched",
+            "body": "Work through what they actually reached. Passwords: change them anywhere you reused the one you gave, starting with the email account your other accounts recover through, then turn on two-step verification there. Devices: if you installed anything they asked you to install, especially remote access or screen sharing software, remove it and change your passwords from a different device. Accounts: watch your bank and wallet statements closely for small unfamiliar charges, which are often a test before a larger one. Documents: if you sent identity documents, assume they are in circulation and check periodically whether accounts or loans have been opened in your name. Where your country offers a way to flag your identity as compromised, using it is worth the paperwork."
+          },
+          {
+            "heading": "Report it properly",
+            "body": "Report even when the amount is small and even when you expect nothing back, because reports are how patterns get seen and how the same operation stops working next month. Report to your bank or wallet provider, to the platform where the contact happened, and to the police. In the Philippines, cybercrime complaints are handled by units within the national police and the investigation bureau, and other countries have their equivalent; look up the current official channel on the agency's own website rather than trusting a number someone sends you. Bring your evidence organized: dates, names, accounts, amounts, screenshots. We are not lawyers and this is not legal advice. If the sums are significant or your identity was taken, ask a qualified professional in your country what your options are."
+          },
+          {
+            "heading": "The second scam: recovery services",
+            "body": "Within days of being scammed, many people are contacted by someone offering to recover the lost funds: an agent, a lawyer, a hacker, a fraud specialist, sometimes a person claiming to be from the authorities. They will show testimonials and ask for a fee, or for your documents, to start. This is a second scam, run on lists of known victims, often by the same people. Nobody legitimate charges you an advance fee to get your money back. Recovery, when it happens at all, happens through your bank, the payment provider, or a police case. Treat every unsolicited offer of help after a scam as part of the scam, and route everything through the official channels you contacted yourself."
+          },
+          {
+            "heading": "Say it out loud",
+            "body": "Tell someone. A partner, a friend, a peer in this work. Not because talking undoes the loss, but because silence is the condition scams need in order to keep running, and because the second opinion you skipped before the transfer is still useful afterwards. Post the details in a workers' community if you have one, with the account names, the domains and the script they used, so the next person recognizes it in time. If it happened while working with us, tell us, and tell us even when it happened somewhere else, because knowing which scripts are circulating helps us warn everyone. What happened is information now. It stops being a private failure the moment you hand it to someone who can use it."
+          }
+        ],
+        "keyPoints": [
+          "Stop sending immediately. The next payment is always framed as the fix.",
+          "Call your bank first. Some transfers can be recalled within hours, not days.",
+          "Change the email password first, then anything sharing that password.",
+          "Anyone offering to recover your money for a fee is the second scam.",
+          "Report it and tell people. Silence is what keeps the operation running."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can name the common scam shapes and recognize them from a first message.",
+      "You can apply the one rule about which direction money is allowed to flow.",
+      "You can tell a real test task from unpaid production work.",
+      "You can protect your identity documents, your passwords and your one-time codes.",
+      "You can verify an unknown employer independently in about five minutes.",
+      "You can act correctly in the first hour after a scam, including reporting."
+    ],
+    "slug": "spotting-scams",
+    "summary": "Job scams are not random. They come in a handful of shapes that repeat, and every one of them can be spotted before you lose money, time or your identity. This course teaches those shapes, the tells they share, the five-minute check that catches most of them, and exactly what to do in the hour after you realize you were caught.",
+    "tagline": "The recognizable shapes of job scams, and the checks that take five minutes.",
+    "title": "Spotting fake jobs and scams",
+    "track": "career"
+  },
+  "night-shift-health": {
+    "exam": {
+      "questions": [
+        {
+          "prompt": "Three nights of short sleep in, you feel normal and you are keeping up with the pool. Your last two deliveries came back for revision over small transposed numbers. What is the most accurate reading of this?",
+          "options": [
+            "The briefs were unusually unclear this week, so the revisions are a documentation problem",
+            "Your skill has slipped and you should redo the data entry course before claiming again",
+            "Sleep debt is already affecting your accuracy, even though you do not feel tired yet",
+            "Two revisions is normal variation, so nothing needs changing unless it happens again next week"
+          ],
+          "correct": 2,
+          "explain": "Sustained attention drops before the sensation of tiredness arrives. A rising revision rate on task types you normally deliver clean is the first honest signal of sleep debt."
+        },
+        {
+          "prompt": "Your shift ends at six in the morning and you anchor sleep from seven to two. On your two days off, your family wants you on a normal daytime schedule. What protects you best over the long run?",
+          "options": [
+            "Keep the seven to two anchor on days off and move only the sleep around it",
+            "Flip fully to sleeping at night on days off, then flip back before your next shift",
+            "Stay awake through the whole first day off so you can reset by sleeping that night",
+            "Sleep whenever you feel tired on days off, since the week's debt needs clearing anyway"
+          ],
+          "correct": 0,
+          "explain": "The anchor only works if it never moves. Flipping for two days and back is the equivalent of a time-zone change twice every week, paid for on Monday and Tuesday."
+        },
+        {
+          "prompt": "You anchor sleep at seven in the morning. It is three, you are flagging, and there is coffee. What does the half-life of caffeine tell you about this cup?",
+          "options": [
+            "Caffeine clears within about two hours, so a three o'clock cup is safely out by seven",
+            "Half-life only matters for energy drinks, which are far more concentrated than brewed coffee",
+            "You will be awake four more hours anyway, so the timing cannot affect your sleep",
+            "A large part of it will still be in you at seven, and it will cost you sleep quality"
+          ],
+          "correct": 3,
+          "explain": "Caffeine's half-life is roughly five to six hours in many adults and varies widely. A cup four hours before your anchor is still substantially present when you lie down."
+        },
+        {
+          "prompt": "You have a thirty-minute break in the middle of your shift and you want the most alertness you can get out of it.",
+          "options": [
+            "Nap the full thirty minutes, then drink coffee once you wake up",
+            "Drink the coffee first, then nap about twenty minutes and wake as it takes effect",
+            "Skip the nap and drink two coffees, since short naps only leave you groggier",
+            "Nap forty-five minutes so you get a deeper and more restorative stretch of sleep"
+          ],
+          "correct": 1,
+          "explain": "Caffeine needs twenty to thirty minutes to act, so drinking first and napping short means you wake as it lands. Longer naps wake you mid-cycle, which is the heavy zone."
+        },
+        {
+          "prompt": "You sleep from seven in the morning in a room with a bright window, and there is no money for blackout curtains this month. What is the most effective near-free step?",
+          "options": [
+            "Move your sleep later, to eleven, when the light in the room is less direct",
+            "Leave the window as it is and rely on being tired enough to sleep through it",
+            "Use your phone in bed until your eyes feel tired enough for sleep to come",
+            "Cover the window with cardboard or a dark blanket and tape over the standby lights"
+          ],
+          "correct": 3,
+          "explain": "Light is the main signal your body clock reads. Cardboard, a dark blanket and tape over standby LEDs cost nothing and do most of the work of blackout curtains."
+        },
+        {
+          "prompt": "It is four in the morning and a claimed task includes a client PDF you need as a spreadsheet. A free online converter would do it in seconds. The brief says nothing about which tools to use.",
+          "options": [
+            "Do the conversion yourself with the tools on your own machine and keep the file inside the task",
+            "Use the converter, then delete the uploaded file from that site once you are finished",
+            "Use the converter but rename the file first so the client cannot be identified from it",
+            "Ask another worker who does this task type which converter they use, and follow that"
+          ],
+          "correct": 0,
+          "explain": "Client data never leaves the task. Silence in the brief is not permission, and deleting or renaming afterwards does not undo the fact that you uploaded it."
+        },
+        {
+          "prompt": "You work eight-hour shifts on a laptop at the kitchen table and your neck aches by the third hour. You have very little money to spend on this.",
+          "options": [
+            "Work from the bed with the laptop on your knees so your neck is not bent forward",
+            "Raise the laptop on books to eye level and add a cheap separate keyboard and mouse",
+            "Buy a gaming chair, since the chair is what determines neck posture at a desk",
+            "Push through the shift and stretch the neck thoroughly once the delivery is uploaded"
+          ],
+          "correct": 1,
+          "explain": "A laptop forces a choice between screen height and hand position. Raising the screen and separating the keyboard fixes both, and costs less than almost anything else."
+        },
+        {
+          "prompt": "Six hours into a data cleanup task, your eyes are burning and the rows are starting to blur.",
+          "options": [
+            "Turn off the room light so there is less contrast between the screen and the room",
+            "Increase the screen brightness so the text becomes easier to resolve",
+            "Finish the batch first, then rest your eyes for fifteen minutes at the end",
+            "Every twenty minutes look at something twenty feet away for twenty seconds, and blink deliberately"
+          ],
+          "correct": 3,
+          "explain": "Focusing far away releases the focusing muscles, and deliberate blinking replaces the blink rate screens suppress. A dark room with a bright screen makes strain worse, not better."
+        },
+        {
+          "prompt": "You claimed a research task, slept badly, and by the deadline about a fifth of the rows are guesses you are not confident about. The payout was fixed before you claimed.",
+          "options": [
+            "Deliver everything as complete, since QC will catch anything wrong and ask for a revision",
+            "Delete the uncertain rows so the file contains only what you are sure of, and say nothing",
+            "Deliver and name the uncertain rows in the note to the operator so they can be checked",
+            "Fill the uncertain rows with the most likely value, because a complete file is what was ordered"
+          ],
+          "correct": 2,
+          "explain": "Flagging uncertainty in the delivery note costs you nothing and protects the client. Guessing silently or quietly dropping rows hides a problem QC cannot see."
+        },
+        {
+          "prompt": "You are exhausted and behind. Your cousin does the same kind of data entry and offers to finish the last two hundred rows tonight on your machine.",
+          "options": [
+            "Refuse, and deliver what you have with an honest note about what is incomplete",
+            "Accept, then check every row yourself before delivering so the quality is still yours",
+            "Accept, but remove the client names from the file first so nothing identifiable is shared",
+            "Accept just this once because the deadline is tonight, and never do it again"
+          ],
+          "correct": 0,
+          "explain": "The client's data reaching a person we never vetted is a breach regardless of who checks the rows afterwards. We approve and pay for work done by you."
+        },
+        {
+          "prompt": "You eat a large rice meal at two in the morning and crash badly by half past three on every shift.",
+          "options": [
+            "Add a sweet drink at three to carry you through to the end of the shift",
+            "Move the large meal to before the shift and eat something small and protein-heavy mid-shift",
+            "Stop eating during the shift entirely and have your meal once the delivery is uploaded",
+            "Keep the meal but have a strong coffee with it so the crash is covered"
+          ],
+          "correct": 1,
+          "explain": "Digestion is slowest in the small hours, and a heavy meal plus sugar builds the crash. A real meal before the shift with small food during it holds much better."
+        },
+        {
+          "prompt": "For three weeks your room has been dark and your anchor stable, but you still lie awake for hours, and twice you have fallen asleep without meaning to on the ride home.",
+          "options": [
+            "See a doctor, and bring your actual working and sleeping schedule to the appointment",
+            "Add a longer nap before the shift and give the schedule another month to settle",
+            "Try a sleep supplement recommended in an online group for shift workers",
+            "Cut caffeine to zero immediately and see whether the sleep comes back on its own"
+          ],
+          "correct": 0,
+          "explain": "Insomnia that persists despite a dark room and a stable schedule, plus involuntary sleep, belongs with a clinician. Bringing your real schedule changes the advice you get."
+        }
+      ]
+    },
+    "lessons": [
+      {
+        "title": "Nights are a skill, not a sacrifice",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "What this course is and is not",
+            "body": "We are not doctors and this is not medical advice. Nothing here diagnoses anything, replaces a clinician, or should be used instead of seeing one. We name no dosages, no supplements and no thresholds, because those change and getting them wrong would hurt you. What we can teach is the occupational craft of working while most people sleep, which is a genuine professional skill with real techniques, and which almost nobody is ever taught. Where a question belongs to a doctor or a pharmacist, we say so and stop. For anything about your own body, your own conditions and your own medication, the answer comes from a licensed professional who can examine you, not from a course page."
+          },
+          {
+            "heading": "The night is a choice here",
+            "body": "Second Shift has no client calls, no chat and no meetings. You claim a task from the pool at a payout printed before you claim it, you download the files, you deliver, and we handle everything on the client side. Nobody is waiting for you to be online at three in the morning. That means the night is a choice, and some people pay a health cost for an availability nobody asked for. If you work nights because another client wants overlap, because the house is finally quiet, because the connection is better then, or because you have a daytime job, those are real reasons. The rest of this course is written for you."
+          },
+          {
+            "heading": "Sleep debt arrives as errors first",
+            "body": "Here is the part most people get wrong. Sleep loss does not announce itself as sleepiness. It shows up first as a drop in sustained attention, and that drop is invisible from the inside. You feel normal. You transpose two digits in a phone column. You read the word exclude as include. You complete the first half of an instruction and forget there was a second half. The work still looks like work while you are doing it. On our side it arrives as a revision. One revision is nothing. Three in a week, on task types you have delivered clean for months, is not a skill problem and not bad luck. It is a body problem wearing a work costume."
+          },
+          {
+            "heading": "Track your own error rate",
+            "body": "You do not have to guess about any of this. Keep four columns in a free spreadsheet, Google Sheets is fine: the date, the hours you actually slept before the shift, whether the delivery came back for revision, and one word for how the shift felt. Thirty seconds per task. After three weeks you have something more useful than any general advice, including ours, because it is about you. Most people find a threshold, a number of hours below which their revisions cluster. Once you know your number, protecting it stops being a matter of discipline and becomes arithmetic. Log your own hours and outcomes only, never anything about the content of a client's task."
+          }
+        ],
+        "keyPoints": [
+          "This is occupational craft, not medical advice. A doctor is a doctor.",
+          "Sleep debt shows up as errors before it shows up as tiredness.",
+          "We have no client calls, so the night is a choice, not a duty.",
+          "Log hours slept against revisions for three weeks. The pattern is yours."
+        ]
+      },
+      {
+        "title": "Anchor your sleep and defend it",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "One block, at the same hours",
+            "body": "An anchor is a block of sleep you take at the same clock time every single day, including days off and holidays. Choose it around the shift you work most weeks. If you finish at six in the morning, an anchor from seven to two works well. The anchor does not have to be all of your sleep. It has to be the part that never moves. What damages night workers over years is usually not the night itself but a schedule that slides two hours in one direction and three in the other, so the body never gets to predict anything. A body that can predict when sleep arrives prepares for it. A body that cannot stays half ready all the time."
+          },
+          {
+            "heading": "Split sleep is legitimate",
+            "body": "Sleep does not have to arrive in one piece. Shift workers everywhere run two blocks, for example five hours after the shift and ninety minutes before the next one starts. That is not a failure of discipline and it is not cheating. For many people the second block is worth more than an extra hour added to the first, because it puts rest immediately before the hours that need accuracy. Try it for two weeks and judge it against your log rather than against how you feel on any single day. If your total keeps landing well below the seven to nine hours that sleep researchers give as the usual adult range, that is the thing to fix before anything else in this course."
+          },
+          {
+            "heading": "Days off are the real trap",
+            "body": "The pull is strong. Two days off, the family awake in daylight, so you flip to a day schedule and flip back on Sunday night. That is a time-zone change twice a week, and you pay for it on Monday and Tuesday with exactly the error rate we described. The compromise that works is to keep the anchor and move only what surrounds it. Sleep seven to two as always, then be awake and present from the afternoon onward. You lose the morning with everyone. You keep the week. If there is an occasion worth flipping for, and there will be, flip deliberately, name the cost, and plan two easier days afterwards instead of claiming your heaviest task."
+          },
+          {
+            "heading": "End the shift on purpose",
+            "body": "Your head does not stop because the upload finished. Build a wind-down of thirty to forty minutes that always runs in the same order. Deliver the file, write the note to the operator, close the client files, clear the desk. Then a shower, dim lights, no decisions, no scrolling. Write down the first thing you will do at the start of your next shift, on paper, so your mind stops rehearsing it. Unfinished work is one of the most common reasons people lie awake, and it is the cheapest one to fix. Running the same order every night trains the body to read the sequence as an instruction, which is worth more than any single element inside it."
+          },
+          {
+            "heading": "The pool at five in the morning",
+            "body": "The payout is printed before you claim, which is the whole point of how we work, and it also makes one more task at five in the morning very easy to justify. This is the most common way an anchor dies. Decide your claim window before the shift starts and put a hard end on it. The last hour of a shift is for finishing and delivering, never for claiming. A task claimed at the end of a tired shift is the task most likely to come back for revision, so the extra payout often costs more hours than it buys. The pool will still have work when you wake up."
+          }
+        ],
+        "keyPoints": [
+          "An anchor is a fixed sleep block you never move, days off included.",
+          "Split sleep is a real strategy, not a failure of discipline.",
+          "Flipping your schedule for the weekend costs you jet lag twice a week.",
+          "Decide your claim window before the shift. The last hour delivers, never claims."
+        ]
+      },
+      {
+        "title": "Light, darkness and the bedroom",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Light is the master signal",
+            "body": "Your body clock pays far more attention to light than to the time on your phone. Bright light means day and tells the body to be alert. Darkness is the permission slip for sleep. That is why the ride home at sunrise is the enemy of a night worker: forty minutes of morning sun arrives exactly when your body needs the opposite message. Sunglasses on the way home are equipment, not vanity, and a cap helps. Run it the other way during the shift. Bright light where you work supports alertness, then dim the room in the last hour before your anchor. You are not fighting your body clock, you are feeding it the signals in the right order."
+          },
+          {
+            "heading": "Making a room dark for nothing",
+            "body": "You do not need blackout curtains. Cardboard cut to the window, a dark blanket clipped over the frame, or foil taped to the glass all do the job. Tape over the standby lights on the router, the fan and the extension cord, because those small blue points are brighter at eye level than people expect. Roll a towel along the gap under the door. The test is simple: hold your hand in front of your face and you should barely see it. If none of that is possible because you share the room, a sleep mask is the highest return for the smallest money you will spend on this job, and a folded shirt works until you buy one."
+          },
+          {
+            "heading": "Noise, heat and the household",
+            "body": "Daytime sleep competes with a house that is awake, and with the street outside it. Steady sound beats silence, because it is the change in noise that wakes you rather than the level. A fan gives you constant sound and moving air at the same time, which handles the other problem, since a hot room breaks sleep in its second half. Point it across the bed rather than at your face. Earplugs are cheap. Beyond equipment, the household is the real variable. Write your sleep block on paper and put it on the door so nobody has to guess. People generally respect a schedule they can see and forget one they have to remember."
+          },
+          {
+            "heading": "The phone belongs across the room",
+            "body": "The screen is a problem, but the bigger problem is that a phone is a decision machine. Every notification asks you to think, and thinking is the opposite of falling asleep. Charge it across the room. If it is your alarm, that is an argument for putting it further away rather than closer, because it forces you upright to stop it. If you use it to fall asleep, choose something with no decisions in it, such as the same long recording every day, rather than scrolling. Give yourself thirty minutes between the last screen and the anchor, and count the laptop in that. Nobody manages this perfectly. Aim for most days."
+          }
+        ],
+        "keyPoints": [
+          "Your body clock reads light, not the clock on the wall.",
+          "Sunglasses on the ride home after a night shift are equipment.",
+          "Darkness can be free: cardboard, a blanket, tape over standby lights.",
+          "A fan gives you steady sound and moving air at once.",
+          "The phone is a decision machine. Charge it across the room."
+        ]
+      },
+      {
+        "title": "Caffeine as a tool with a half-life",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What a half-life actually means",
+            "body": "Half-life is the time your body needs to clear half of what you took in. For caffeine that is roughly five to six hours in many adults, and it varies a great deal from one person to the next. Some people clear it much faster, some much slower, and certain medications and conditions change it, which is a question for a doctor or a pharmacist rather than for us. Do the arithmetic once and it changes how you drink. A cup at midnight with an anchor at seven in the morning means a meaningful part of that caffeine is still circulating when you lie down. It does not vanish because you closed your eyes."
+          },
+          {
+            "heading": "Front-load it, then stop",
+            "body": "Put most of your caffeine in the first half of the shift and set a hard cutoff several hours before your anchor. Write the cutoff time on a note stuck to the screen, because at four in the morning you will negotiate with yourself and lose. Then be honest about what caffeine does. It blocks the feeling of sleepiness. It does not give back the accuracy that sleep debt took. You can be wide awake and still transposing digits, and that combination is more dangerous than being obviously tired, because obvious tiredness at least makes you check your work twice. Caffeine holds alertness through a shift you are otherwise fit to work. It does not replace the sleep."
+          },
+          {
+            "heading": "Tolerance and the escalation trap",
+            "body": "The pattern is predictable. The usual amount stops working, so you drink more, so you sleep worse, so you need more again. People arrive at six or eight cups a shift without ever deciding to. If you are already there, cutting to zero overnight buys two or three days of headache and terrible work, which is why most people fail at it. Taper instead, reducing by about one cup every few days across two weeks. Watch the sugar as well. Sweetened sachets and energy drinks carry a load of sugar that produces its own rise and fall, and that fall usually gets blamed on the night rather than on the drink."
+          },
+          {
+            "heading": "The nap and the coffee together",
+            "body": "Caffeine takes twenty to thirty minutes to take effect, and that gap is useful. Drink, then lie down immediately for a twenty-minute nap, and you wake as the caffeine arrives. Keep naps either short, around twenty minutes, or long enough for a full cycle, around ninety. The middle is where you wake heavy and useless for half an hour, which is why people conclude that naps do not work for them. Set two alarms and put one out of reach. If your break is thirty minutes, this is the highest-value way to spend it. If the household is awake, a mask and earplugs make a twenty-minute nap possible in a bright room."
+          }
+        ],
+        "keyPoints": [
+          "Half-life means an evening coffee is still half in you at midnight.",
+          "Caffeine hides sleepiness. It does not restore accuracy.",
+          "Front-load caffeine and stop at a fixed time you wrote down.",
+          "Drink, then nap twenty minutes, and wake as the caffeine lands.",
+          "Escalating doses need a two-week taper, not a sudden stop."
+        ]
+      },
+      {
+        "title": "Eating on an inverted clock",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Your digestion stayed on day shift",
+            "body": "Digestion runs on the same body clock as everything else, and it is slowest in the small hours. A large meal at two in the morning sits heavily, and the sluggish hour that follows often gets blamed on the night when it was built at the table. The shape that works for most people is a real meal before the shift, something small in the middle, and a light meal after the shift and before the anchor. Not a feast. Going to bed hungry tends to wake you around the fourth hour. Going to bed very full makes the first hour hard. Aim for the middle, and leave about an hour between the last food and lying down."
+          },
+          {
+            "heading": "The three o'clock crash is built",
+            "body": "Fast carbohydrates and sugar give you twenty good minutes and charge you an hour. Rice, bread, sweetened coffee and soft drinks all rise fast and fall fast, and the fall lands in the worst part of the shift. Food with protein and some fibre holds much longer. Eggs, tuna, chicken, boiled peanuts, a banana, or leftovers from the meal before the shift all work, cost little and need no preparation at two in the morning. Prepare the mid-shift food before the shift starts, while you still have judgement. Nobody makes a good food decision at three in the morning standing in front of a fridge."
+          },
+          {
+            "heading": "Water first, snack second",
+            "body": "Mild dehydration reads as tiredness and often as hunger, so a lot of three o'clock snacking is thirst wearing a disguise. Keep a bottle on the desk and finish it on a schedule you can see, for example one refill per batch of work rather than whenever you happen to notice. The trip to refill it is a feature rather than a cost, because it stands you up and takes your eyes off the screen. Be sensible about the last hour before your anchor, since waking twice to use the bathroom cuts your sleep into pieces. Front-load the water the same way you front-load the caffeine."
+          },
+          {
+            "heading": "Alcohol is a poor sleeping pill",
+            "body": "Alcohol does shorten the time it takes to fall asleep, which is why people reach for it after a hard shift, and that is the whole of its usefulness. The second half of the sleep comes out fragmented and shallower, so you wake after six hours feeling like you had four. On an inverted schedule, where your sleep is already working against the light, that is an expensive trade. If you drink, leave real distance between the last drink and your anchor, and do not let it become the thing that ends your shift. If it is the only way you can stop working, that is worth raising with a doctor."
+          }
+        ],
+        "keyPoints": [
+          "Digestion is slowest in the small hours. A heavy two o'clock meal costs you.",
+          "Real meal before the shift, small food during, light meal before sleep.",
+          "Sugar buys twenty minutes and charges you an hour.",
+          "Prepare mid-shift food before the shift, while you still have judgement.",
+          "Alcohol shortens the time to sleep and ruins the second half."
+        ]
+      },
+      {
+        "title": "Movement in a small space",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Ten minutes you will actually do",
+            "body": "Almost nobody finishes an eight-hour shift and goes to a gym. What survives is short, needs no equipment, and happens within a few steps of the desk. Ten minutes covers it: bodyweight squats, push-ups against a wall or on your knees, a hip hinge with no weight, calf raises, and a plank held for as long as it stays honest. Do what you can complete rather than what a program prescribes, because the version you repeat beats the version you abandon in week two. If you have a health condition or an old injury, that is exactly where you ask a doctor or a physiotherapist what to avoid, and it is not something we can answer for you."
+          },
+          {
+            "heading": "Break the sitting, not the shift",
+            "body": "The harm of desk work comes from the stillness more than the hours. Stand up every forty-five to sixty minutes, even for a minute. Do not rely on remembering, because when the work is going well you will not. Tie it to something that already happens: every time you finish a batch of rows, every time you save the file, every time you close a section of the brief. Stand, refill the water, roll the shoulders, look out of the window. It costs about sixty seconds and it protects your back, your hips and your eyes at the same time. It also breaks the tunnel that makes people miss the second half of an instruction."
+          },
+          {
+            "heading": "Timing movement around your anchor",
+            "body": "Hard exercise close to sleep keeps many people awake, so put the demanding session after you wake rather than before you sleep. After the shift, keep it to a walk and some stretching. There is a light problem to solve here too. If you walk straight after a night shift, wear sunglasses, because the point is to move without telling your body it is morning. If you walk after you wake in the afternoon, take the daylight deliberately, since it helps hold the anchor in place and makes the coming shift easier. Same activity, opposite instruction, depending on which side of your sleep it falls."
+          },
+          {
+            "heading": "Stretch what the work shortens",
+            "body": "Sitting shortens the hip flexors and the chest, and holding the head forward loads the back of the neck. Three stretches cover most of it. Stand in a doorway with your forearms on the frame and step through to open the chest. Kneel on one knee and push that hip forward to open the front of the hip. Tuck the chin straight back, as though making a double chin, to reverse the forward head position. Hold each for about thirty seconds, twice, and put the sequence inside your end-of-shift wind-down so it happens without needing a separate decision."
+          }
+        ],
+        "keyPoints": [
+          "Ten minutes you actually do beats an hour you plan.",
+          "Stand every forty-five to sixty minutes, tied to a task event.",
+          "Hard exercise near your anchor delays sleep. Do it after you wake.",
+          "Sunglasses for the walk home, daylight for the walk after waking.",
+          "Stretch hips, chest and neck. Sitting shortens all three."
+        ]
+      },
+      {
+        "title": "The workstation that does not hurt you",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Screen at eye level, arm's length",
+            "body": "The top line of the screen should sit at or just below eye level, about an arm's length away. A laptop cannot do this, because the screen and the keyboard are joined. Raise the screen and your hands go up with it, so your shoulders climb. Keep the keyboard comfortable and your head drops forward, which is where the neck ache is manufactured. The fix is to put the laptop on a stack of books or a box until the screen reaches eye level, then use a separate keyboard and mouse below it. Those two cheap items are the highest-value purchase a laptop worker makes. Until you can, alternate: an hour raised for reading, then lowered for typing."
+          },
+          {
+            "heading": "Chair, feet, elbows, wrists",
+            "body": "Feet flat on the floor, or on a stack of books if the chair is too high. Hips level with or slightly above the knees. Elbows at roughly a right angle, with the forearms about level with the desk. Wrists straight and floating rather than bent up over the edge of the table, because that edge is where a lot of wrist pain gets built over months. A rolled towel behind the lower back turns an ordinary kitchen chair into something you can sit in for eight hours, and a firm cushion raises a chair that is too low. None of this needs an office chair. It needs five minutes and things already in your house."
+          },
+          {
+            "heading": "Twenty, twenty, twenty, and blinking",
+            "body": "Every twenty minutes, look at something roughly twenty feet away, about six metres, for twenty seconds. The muscles that focus your eyes are held in one position all shift, and this releases them. Blinking matters just as much. Blink rate drops by around half when people stare at a screen, and that is most of what dry, burning eyes actually are, so blink deliberately while you look away. Room lighting is the other half of it. A bright screen in a dark room is harder work than a bright screen in a lit room, so keep a lamp beside or behind you, positioned so it does not reflect off the glass. If strain persists for weeks, see an optometrist."
+          },
+          {
+            "heading": "The screen other people can see",
+            "body": "Your desk is almost certainly in a home with other people in it. A client's spreadsheet on your screen at three in the morning is still confidential when the only person passing behind you is family. Position the screen so it does not face the door, lock the machine whenever you stand up, and work in an account nobody else uses. The rule that goes with it is harder and matters more. Client data stays inside the task. Do not upload a client file to a free online converter, a translation site or an AI tool to save time, unless the brief tells you to. Delete your copies once the delivery is approved, and never keep client work as a portfolio sample."
+          }
+        ],
+        "keyPoints": [
+          "Top of the screen at eye level, about an arm's length away.",
+          "Raise the laptop, add a keyboard and mouse. Highest-value fix there is.",
+          "A rolled towel and a stack of books fix most of a bad chair.",
+          "Every twenty minutes, twenty seconds at twenty feet. Blink on purpose.",
+          "Client data stays inside the task. No third-party tools, no kept copies."
+        ]
+      },
+      {
+        "title": "Family time on an inverted week",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Absence is a scheduling problem",
+            "body": "People who work nights do not disappear because they work more hours. They disappear because their waking hours stopped overlapping with anyone else's, and overlap is what relationships actually run on. That is good news, because a scheduling problem can be solved and a character problem cannot. Find the overlaps you already have: the hour before your shift, the hour after you wake, the meal that sits on the edge of both. Choose two of them, name them, and defend them the way you defend the anchor. Two hours a week that always happen are worth more than an intention to spend time together once things calm down, because things do not calm down on their own."
+          },
+          {
+            "heading": "One shared meal, not negotiable",
+            "body": "Pick one meal that everybody attends and put it in the same slot every week. It does not need to be long. What it needs is to be reliable, so nobody in the house has to wonder whether you are part of the household this week. Around it, make the schedule visible. Write your shift and your sleep block on paper, stick it where people look, and update it when it changes. Children in particular do much better with a parent whose hours are strange but known than with a parent whose hours are a mystery. The same is true of every adult in the house, they are just quieter about it."
+          },
+          {
+            "heading": "Say no to daytime errand creep",
+            "body": "Because you are home during the day, everyone assumes you are free. The bank, the government office, the school run, driving a relative somewhere, waiting for a delivery. Each of these lands squarely inside your sleep block, and each one on its own is reasonable. Together they dismantle the anchor. Treat your sleep hours as working hours, because that is exactly what they are. Say it plainly and without apology: I work nights, I sleep from seven to two, I can do it at three. Most people accept that immediately once it is stated as a fact rather than a preference. The ones who do not usually get there the second time you say it."
+          },
+          {
+            "heading": "The quiet nobody warns you about",
+            "body": "We built this platform with no client contact on purpose. You never take a call, never manage a client's mood, never get messaged at midnight, and your payout does not depend on charming anyone. That protects you, and it also means your working hours contain no conversation at all. Eight silent hours, several nights a week, adds up in a way people rarely predict and often mistake for something being wrong with them. So put the social contact somewhere deliberate instead of hoping it happens. A standing call with a friend on the same schedule, a group of people who also work nights, church, a sport. Whatever it is, it has to be scheduled, like the sleep."
+          }
+        ],
+        "keyPoints": [
+          "You disappear from overlap, not from hours. That makes it fixable.",
+          "Protect two hours a week that always happen. Write them down.",
+          "Your sleep block is working hours. Say so plainly, without apology.",
+          "A visible written schedule gets respected. A remembered one does not.",
+          "No client contact protects you, and it also makes the work silent."
+        ]
+      },
+      {
+        "title": "Burnout, and when to see a doctor",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The early signs, in order",
+            "body": "Burnout rarely announces itself. The usual order runs like this. The same task starts taking longer. Revisions rise. You begin putting off opening the pool. Then you claim nothing for days and claim too much in a single panic. Small decisions feel heavy. You stop caring about the finish you used to be proud of, which is the one that hurts. Sleep gets worse on days off instead of better. Cynicism arrives last and it feels like clarity, which is what makes it so convincing. If opening the pool produces dread rather than the ordinary mix of interest and reluctance, treat that as information about your capacity, not as a verdict about your character."
+          },
+          {
+            "heading": "What to actually do about it",
+            "body": "Cut claim volume before you cut sleep. That is the whole rule, and most people do the opposite. Take the smaller payout you can finish clean rather than the large one you will deliver late and tired. Take a full forty-eight hours where you claim nothing at all and keep the anchor anyway, because a rest that also destroys your schedule leaves you worse off than before. Then fix one physical thing, the worst one, rather than all of them at once: the dark room, the chair, the caffeine cutoff. Trying to change six habits during a bad week is how people conclude that none of it works. One change, two weeks, checked against your log."
+          },
+          {
+            "heading": "Never hand your task to anyone",
+            "body": "Here is the shortcut that exhaustion offers, and we want you to recognise it before it arrives. You are behind, and a cousin or a friend does the same kind of work and offers to finish the rows for you. Do not. The client's file would reach a person we never vetted, which is a breach of confidentiality no matter how carefully you check the result afterwards, and we approve and pay for work done by you. It ends your place here. If you cannot finish, deliver what you have and say so in the note to the operator. An honest short delivery is a revision. A quiet handoff is the end of the relationship."
+          },
+          {
+            "heading": "When to see a doctor, plainly",
+            "body": "We are not doctors, so here is the plain version. See one if you cannot sleep for weeks even with a dark room and a stable schedule. See one if you fall asleep without meaning to during a shift or while riding. See one if you snore heavily and wake unrefreshed, or if you have chest pain, a racing heart, persistent headaches, or heartburn most nights. See one if your mood stays low even on days off. If you are having thoughts of harming yourself, that is not something to manage with a better schedule; get help immediately from a local emergency service or crisis line. Bring your real schedule to any appointment, because a doctor who knows you work nights gives different advice."
+          },
+          {
+            "heading": "Nights are survivable, not free",
+            "body": "Long-term night work carries real health costs, and pretending otherwise would not respect you. That is not a reason to panic. It is a reason to treat it as a job with equipment and rules rather than as something you simply endure, and it is a reason to review the choice. Because we run no calls and no meetings, most tasks in the pool care only about the deadline and not about the hour you did them, so many people here can move toward daylight work without losing anything. If you are on nights for another client, for the quiet house, or for the money, choose it deliberately and look at that choice again every few months."
+          }
+        ],
+        "keyPoints": [
+          "Burnout shows as slower work and rising revisions before it feels like burnout.",
+          "Cut claim volume before you cut sleep.",
+          "Never hand a client's task to anyone else. That is a breach.",
+          "Involuntary sleep, chest pain, or a low mood that stays: see a doctor.",
+          "Nights are survivable, not free. Review the choice every few months."
+        ]
+      }
+    ],
+    "outcomes": [
+      "You can build a sleep anchor that survives your days off and holidays.",
+      "You can use light, darkness and caffeine timing deliberately instead of hoping.",
+      "You can spot a rising error rate as the first signal of sleep debt.",
+      "You can set up a workstation that will not injure your neck, wrists or eyes.",
+      "You can protect family time without disappearing from your own household.",
+      "You can recognise burnout early and name the signs that mean seeing a doctor."
+    ],
+    "slug": "night-shift-health",
+    "summary": "Working the client's night is an occupational skill, and it can be done well or badly. This course covers the practical craft of it: anchoring sleep, using light and caffeine deliberately, eating and moving on an inverted clock, building a workstation that does not injure you, protecting your family time, and recognising burnout early enough to act. It is not medical advice, and we say plainly where a doctor belongs.",
+    "tagline": "Work the client's night for years, not months, without wrecking your body.",
+    "title": "Working nights sustainably",
+    "track": "career"
   },
   "data-cleanup": {
     "slug": "data-cleanup",

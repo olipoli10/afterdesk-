@@ -6,11 +6,14 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
 import { courseFor } from "@/lib/academy/content";
 import { gradeExam } from "@/lib/academy/grade";
+import { examLayout, toCanonicalAnswers } from "@/lib/academy/shuffle";
 import { EXAM_ATTEMPTS_PER_DAY, examWindowStart } from "@/lib/academy/types";
 
 const submitExamSchema = z.object({
   slug: z.string().min(1).max(60),
   answers: z.array(z.number().int().min(0).max(3)).max(50),
+  /** Which attempt this sheet was rendered for — pins the scramble. */
+  attemptNo: z.number().int().min(0).max(100000),
 });
 
 export type ExamResult =
@@ -35,7 +38,7 @@ export async function submitExam(input: unknown): Promise<ExamResult> {
   const user = await requireRole("VA");
   const parsed = submitExamSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid submission." };
-  const { slug, answers } = parsed.data;
+  const { slug, answers, attemptNo } = parsed.data;
   const course = courseFor(slug);
   if (!course) return { ok: false, error: "This course does not exist." };
   const questions = course.exam.questions;
@@ -44,7 +47,6 @@ export async function submitExam(input: unknown): Promise<ExamResult> {
   }
 
   const since = examWindowStart();
-  const graded = gradeExam(questions, answers);
   const committed = await prisma.$transaction(async (tx) => {
     // $executeRaw, NOT $queryRaw: pg_advisory_xact_lock() returns void, and
     // $queryRaw asks the engine to deserialize the result columns — on a void
@@ -61,6 +63,30 @@ export async function submitExam(input: unknown): Promise<ExamResult> {
     });
     if (recent >= EXAM_ATTEMPTS_PER_DAY) return { limited: true as const, recent };
 
+    /**
+     * The scramble is derived from (userId, slug, attemptNo) — never sent by
+     * the browser — so the grader reproduces exactly the layout the exam page
+     * rendered. Recomputing the count HERE, inside the lock, is what makes
+     * that safe: if another tab submitted in between, the number moved and the
+     * answers in hand describe a different paper, so we refuse rather than
+     * grade the wrong questions.
+     */
+    const takenSoFar = await tx.examAttempt.count({
+      where: { userId: user.id, courseSlug: slug },
+    });
+    if (takenSoFar !== attemptNo) {
+      return { stale: true as const, recent };
+    }
+    const layout = examLayout(
+      user.id,
+      slug,
+      attemptNo,
+      questions.length,
+      questions.map((q) => q.options.length)
+    );
+    const canonical = toCanonicalAnswers(layout, answers);
+    const graded = gradeExam(questions, canonical);
+
     await tx.examAttempt.create({
       data: {
         userId: user.id,
@@ -68,7 +94,7 @@ export async function submitExam(input: unknown): Promise<ExamResult> {
         score: graded.score,
         total: graded.total,
         passed: graded.passed,
-        answers,
+        answers: canonical,
       },
     });
     if (graded.passed) {
@@ -84,9 +110,15 @@ export async function submitExam(input: unknown): Promise<ExamResult> {
         where: { userId_courseSlug: { userId: user.id, courseSlug: slug } },
         select: { id: true },
       })) !== null;
-    return { limited: false as const, recent, certified };
+    return { limited: false as const, recent, certified, graded };
   });
 
+  if ("stale" in committed) {
+    return {
+      ok: false,
+      error: "This exam sheet is out of date — reopen the exam and answer the current one.",
+    };
+  }
   if (committed.limited) {
     return {
       ok: false,
@@ -100,9 +132,9 @@ export async function submitExam(input: unknown): Promise<ExamResult> {
 
   return {
     ok: true,
-    score: graded.score,
-    total: graded.total,
-    passed: graded.passed,
+    score: committed.graded.score,
+    total: committed.graded.total,
+    passed: committed.graded.passed,
     /**
      * NEVER the per-question breakdown on a failure. Naming which questions
      * were missed is enough to solve the whole exam by elimination: answer
@@ -113,8 +145,8 @@ export async function submitExam(input: unknown): Promise<ExamResult> {
      * The score alone is the honest signal; the lessons are the remedy.
      */
     wrong: [],
-    corrections: graded.passed
-      ? graded.wrong.map((index) => ({
+    corrections: committed.graded.passed
+      ? committed.graded.wrong.map((index) => ({
           index,
           correct: questions[index].correct,
           explain: questions[index].explain,

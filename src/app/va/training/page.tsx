@@ -3,8 +3,8 @@ import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { FAMILIES } from "@/lib/families";
 import { allCourses, courseMinutes } from "@/lib/academy/content";
-import { courseLook } from "@/lib/academy/look";
-import type { Course } from "@/lib/academy/types";
+import { courseLook, TRACK_LOOK } from "@/lib/academy/look";
+import type { Course, CourseTrack } from "@/lib/academy/types";
 import { PageTitle } from "@/components/ui";
 
 /**
@@ -83,8 +83,19 @@ export default async function AcademyHubPage() {
   const bestBySlug = new Map(bests.map((b) => [b.courseSlug, b._max.score ?? 0]));
 
   const courses = allCourses();
-  const foundations = courses.filter((c) => c.track === "foundations");
   const categoryCourses = courses.filter((c) => c.track === "category");
+  const totalMinutes = courses.reduce((s, c) => s + courseMinutes(c), 0);
+
+  /**
+   * The three non-category tracks, in the order a worker should meet them:
+   * how to work here, then the toolkit of the trade, then the career itself.
+   * Category courses keep their own family sections below.
+   */
+  const TRACKS: { track: Exclude<CourseTrack, "category">; blurb: string }[] = [
+    { track: "foundations", blurb: "How to work here, whatever you work on." },
+    { track: "craft", blurb: "The jobs a virtual assistant is hired to do — anywhere, not only here." },
+    { track: "career", blurb: "Getting hired, getting paid, and lasting in this work." },
+  ];
 
   return (
     <>
@@ -98,33 +109,54 @@ export default async function AcademyHubPage() {
           <span className="font-bold tabular-nums text-white">{certified.size}</span>
           <span className="text-[#9AA9C4]"> / {courses.length} certificates earned</span>
         </p>
+        <p className="font-mono text-[12px] text-[#9AA9C4]">
+          <span className="font-bold tabular-nums text-white">
+            {Math.round(totalMinutes / 60)}
+          </span>{" "}
+          hours of it
+        </p>
         <p className="text-[12px] text-[#9AA9C4]">
           Pass an exam at 10/12 to earn its certificate — it stays on your profile for good.
         </p>
       </div>
 
       <div className="space-y-8">
-        {foundations.length > 0 ? (
-          <section>
-            <div className="mb-2.5 flex items-baseline gap-3">
-              <p className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[#1B2740]">
-                <span aria-hidden className="h-[3px] w-4 shrink-0 rounded-[2px] bg-[#1B2740]" />
-                Start here — Foundations
-              </p>
-              <p className="text-[12px] text-[#5B6069]">How to work here, whatever you work on.</p>
-            </div>
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-              {foundations.map((c) => (
-                <CourseCard
-                  key={c.slug}
-                  course={c}
-                  certified={certified.has(c.slug)}
-                  bestScore={bestBySlug.get(c.slug) ?? null}
-                />
-              ))}
-            </div>
-          </section>
-        ) : null}
+        {TRACKS.map(({ track, blurb }, i) => {
+          const inTrack = courses.filter((c) => c.track === track);
+          if (inTrack.length === 0) return null;
+          const look = TRACK_LOOK[track];
+          return (
+            <section key={track}>
+              <div className="mb-2.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <p
+                  className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em]"
+                  style={{ color: look.hue }}
+                >
+                  <span
+                    aria-hidden
+                    className="h-[3px] w-4 shrink-0 rounded-[2px]"
+                    style={{ backgroundColor: look.hue }}
+                  />
+                  {i === 0 ? `Start here — ${look.label}` : look.label}
+                </p>
+                <p className="text-[12px] text-[#5B6069]">{blurb}</p>
+                <span className="ml-auto font-mono text-[11px] tabular-nums text-[#5B6069]">
+                  {inTrack.length}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                {inTrack.map((c) => (
+                  <CourseCard
+                    key={c.slug}
+                    course={c}
+                    certified={certified.has(c.slug)}
+                    bestScore={bestBySlug.get(c.slug) ?? null}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
 
         {FAMILIES.map((f) => {
           const inFamily = categoryCourses.filter(

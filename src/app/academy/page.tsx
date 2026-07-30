@@ -49,8 +49,31 @@ export default async function AcademyPublicPage({
 
   const courses = publicCourses();
   const stats = academyStats();
-  const foundations = courses.filter((c) => c.track === "foundations");
-  const byWork = courses.filter((c) => c.track === "category");
+
+  /* Four groups, in the order a reader should meet them: how the platform
+     works, the trade's toolkit, the career itself, then one per kind of work. */
+  const groups: { name: string; note: string; list: typeof courses }[] = [
+    {
+      name: t.curriculum.foundations,
+      note: t.curriculum.foundationsNote,
+      list: courses.filter((c) => c.track === "foundations"),
+    },
+    {
+      name: t.curriculum.craft,
+      note: t.curriculum.craftNote,
+      list: courses.filter((c) => c.track === "craft"),
+    },
+    {
+      name: t.curriculum.career,
+      note: t.curriculum.careerNote,
+      list: courses.filter((c) => c.track === "career"),
+    },
+    {
+      name: t.curriculum.byWork,
+      note: t.curriculum.byWorkNote,
+      list: courses.filter((c) => c.track === "category"),
+    },
+  ].filter((g) => g.list.length > 0);
 
   /* Course titles are the product, so they stay English in every language —
      but a screen reader must not read them in the page's voice locale. */
@@ -188,10 +211,7 @@ export default async function AcademyPublicPage({
           </h2>
         </Reveal>
 
-        {[
-          { list: foundations, name: t.curriculum.foundations, note: t.curriculum.foundationsNote },
-          { list: byWork, name: t.curriculum.byWork, note: t.curriculum.byWorkNote },
-        ].map((group) => (
+        {groups.map((group) => (
           <div key={group.name} className="mt-10">
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-[#14161A]/10 pb-2">
               <h3 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#14161A]">

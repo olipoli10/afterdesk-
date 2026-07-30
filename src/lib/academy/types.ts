@@ -6,7 +6,22 @@
  * curriculum, and a content edit can never orphan an attempt.
  */
 
-export type CourseTrack = "foundations" | "category";
+/**
+ * Four tracks, and the split is the Academy's argument.
+ *
+ *  foundations — how to work HERE. Take these first.
+ *  category    — one per task kind in the pool; each teaches the exact standard
+ *                that kind of delivery is judged against.
+ *  craft       — the virtual-assistant toolkit: inbox, calendar, support, CRM,
+ *                storefronts, decks, AI. Work a VA does anywhere, not only here.
+ *  career      — the profession itself: getting hired, proving your work,
+ *                money and records, spotting scams, surviving the night shift.
+ *
+ * The last two exist because the founder's goal is to be the reference for
+ * Filipino VAs, not an onboarding funnel — a school that only teaches its own
+ * chores is a funnel. Teaching the whole career is the reputation.
+ */
+export type CourseTrack = "foundations" | "category" | "craft" | "career";
 
 export type LessonSection = { heading: string; body: string };
 

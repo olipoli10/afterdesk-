@@ -46,6 +46,10 @@ type Dict = {
     h2: string;
     foundations: string;
     foundationsNote: string;
+    craft: string;
+    craftNote: string;
+    career: string;
+    careerNote: string;
     byWork: string;
     byWorkNote: string;
     lessons: (n: number) => string;
@@ -61,7 +65,7 @@ const en: Dict = {
     kill: "Free · No paid tier · No certificate fee",
     h1a: "Learn the work.",
     h1b: "Keep the certificate.",
-    sub: "Twelve courses, real exams, and a certificate that stays yours — free, and open before you are approved.",
+    sub: "Real courses, real exams, and a certificate that stays yours — free, and open before you are approved.",
     cta: "Create a free account",
     micro: "You can start the first course tonight.",
   },
@@ -70,7 +74,7 @@ const en: Dict = {
     label: "How it works",
     h2: "Read, sit the exam, keep the certificate.",
     steps: [
-      ["Read", "Five to seven short lessons per course. Written for the work, not for a syllabus."],
+      ["Read", "Short lessons per course, written for the work rather than for a syllabus."],
       ["Sit the exam", "Twelve scenario questions. Pass at ten. Three attempts a day — the bar is the point."],
       ["Keep it", "The certificate is permanent, on your profile, and visible when we review your application."],
     ],
@@ -86,6 +90,10 @@ const en: Dict = {
     h2: "Everything, and what is in it.",
     foundations: "Foundations",
     foundationsNote: "Take these first — they apply to every kind of task.",
+    craft: "The toolkit",
+    craftNote: "The jobs a virtual assistant is hired to do — anywhere, not only here.",
+    career: "The career",
+    careerNote: "Getting hired, getting paid, and lasting in this work.",
     byWork: "One per kind of work",
     byWorkNote: "Each teaches the exact standard that kind of delivery is judged against.",
     lessons: (n) => `${n} lessons`,
@@ -106,7 +114,7 @@ const tl: Dict = {
     kill: "Libre · Walang bayad na tier · Walang bayad sa certificate",
     h1a: "Matutunan ang trabaho.",
     h1b: "Sa iyo ang certificate.",
-    sub: "Labindalawang kurso, totoong exam, at certificate na mananatiling sa iyo — libre, at bukas bago ka pa ma-approve.",
+    sub: "Totoong kurso, totoong exam, at certificate na mananatiling sa iyo — libre, at bukas bago ka pa ma-approve.",
     cta: "Gumawa ng libreng account",
     micro: "Pwede mong simulan ang unang kurso ngayong gabi.",
   },
@@ -115,7 +123,7 @@ const tl: Dict = {
     label: "Paano ito gumagana",
     h2: "Magbasa, kumuha ng exam, panatilihin ang certificate.",
     steps: [
-      ["Magbasa", "Lima hanggang pitong maikling leksyon bawat kurso. Isinulat para sa trabaho, hindi para sa syllabus."],
+      ["Magbasa", "Maiikling leksyon bawat kurso, isinulat para sa trabaho at hindi para sa syllabus."],
       ["Kumuha ng exam", "Labindalawang tanong na senaryo. Pasado sa sampu. Tatlong subok kada araw — ang pamantayan ang punto."],
       ["Panatilihin", "Permanente ang certificate, nasa profile mo, at nakikita namin kapag ni-review ang application mo."],
     ],
@@ -131,6 +139,10 @@ const tl: Dict = {
     h2: "Lahat, at kung ano ang laman.",
     foundations: "Pundasyon",
     foundationsNote: "Kunin muna ito — gamit ito sa lahat ng uri ng task.",
+    craft: "Ang toolkit",
+    craftNote: "Ang mga trabahong kinukuha sa isang virtual assistant — kahit saan, hindi lang dito.",
+    career: "Ang karera",
+    careerNote: "Pagkuha ng trabaho, pagsingil, at pagtagal sa gawaing ito.",
     byWork: "Isa bawat uri ng trabaho",
     byWorkNote: "Bawat isa ay nagtuturo ng eksaktong pamantayan kung paano husgahan ang ganoong delivery.",
     lessons: (n) => `${n} na leksyon`,
@@ -151,7 +163,7 @@ const fr: Dict = {
     kill: "Gratuit · Aucune formule payante · Aucuns frais de certificat",
     h1a: "Apprenez le métier.",
     h1b: "Gardez le certificat.",
-    sub: "Douze cours, de vrais examens, et un certificat qui reste le vôtre — gratuit, et accessible avant même votre approbation.",
+    sub: "De vrais cours, de vrais examens, et un certificat qui reste le vôtre — gratuit, et accessible avant même votre approbation.",
     cta: "Créer un compte gratuit",
     micro: "Vous pouvez commencer le premier cours ce soir.",
   },
@@ -160,7 +172,7 @@ const fr: Dict = {
     label: "Comment ça marche",
     h2: "Lisez, passez l'examen, gardez le certificat.",
     steps: [
-      ["Lire", "Cinq à sept courtes leçons par cours. Écrites pour le travail, pas pour un programme scolaire."],
+      ["Lire", "De courtes leçons par cours, écrites pour le travail et non pour un programme scolaire."],
       ["Passer l'examen", "Douze mises en situation. Réussite à dix. Trois essais par jour — la barre, c'est le but."],
       ["Le garder", "Le certificat est permanent, sur votre profil, et visible quand nous révisons votre candidature."],
     ],
@@ -176,6 +188,10 @@ const fr: Dict = {
     h2: "Tout, et ce qu'il contient.",
     foundations: "Fondations",
     foundationsNote: "À faire en premier — elles servent à tous les types de tâches.",
+    craft: "La boîte à outils",
+    craftNote: "Les tâches pour lesquelles on engage un adjoint virtuel — partout, pas seulement ici.",
+    career: "La carrière",
+    careerNote: "Se faire engager, se faire payer, et durer dans ce métier.",
     byWork: "Un par type de travail",
     byWorkNote: "Chacun enseigne la norme exacte selon laquelle ce type de livraison est jugé.",
     lessons: (n) => `${n} leçons`,
@@ -196,7 +212,7 @@ const es: Dict = {
     kill: "Gratis · Sin plan de pago · Sin costo de certificado",
     h1a: "Aprende el oficio.",
     h1b: "Quédate el certificado.",
-    sub: "Doce cursos, exámenes reales y un certificado que es tuyo — gratis, y abierto antes de que te aprueben.",
+    sub: "Cursos reales, exámenes reales y un certificado que es tuyo — gratis, y abierto antes de que te aprueben.",
     cta: "Crear una cuenta gratis",
     micro: "Puedes empezar el primer curso esta noche.",
   },
@@ -205,7 +221,7 @@ const es: Dict = {
     label: "Cómo funciona",
     h2: "Lee, presenta el examen, quédate el certificado.",
     steps: [
-      ["Leer", "Cinco a siete lecciones cortas por curso. Escritas para el trabajo, no para un programa."],
+      ["Leer", "Lecciones cortas por curso, escritas para el trabajo y no para un programa."],
       ["Presentar el examen", "Doce preguntas de escenario. Apruebas con diez. Tres intentos al día — el estándar es el punto."],
       ["Quedártelo", "El certificado es permanente, está en tu perfil y lo vemos al revisar tu postulación."],
     ],
@@ -221,6 +237,10 @@ const es: Dict = {
     h2: "Todo, y lo que contiene.",
     foundations: "Fundamentos",
     foundationsNote: "Toma estos primero — sirven para todo tipo de tarea.",
+    craft: "La caja de herramientas",
+    craftNote: "Los trabajos para los que se contrata a un asistente virtual — en cualquier lugar, no solo aquí.",
+    career: "La carrera",
+    careerNote: "Conseguir trabajo, cobrar, y durar en este oficio.",
     byWork: "Uno por tipo de trabajo",
     byWorkNote: "Cada uno enseña el estándar exacto con el que se juzga ese tipo de entrega.",
     lessons: (n) => `${n} lecciones`,
