@@ -102,6 +102,7 @@ export function TaskForm({
           <Field
             label="Input files (optional)"
             hint="The data the task operates on — an export, a list, a spreadsheet."
+            group
           >
             <FileUpload
               maxFileSizeMB={maxFileSizeMB}

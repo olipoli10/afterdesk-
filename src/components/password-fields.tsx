@@ -41,7 +41,7 @@ export function PasswordFields({
           <button
             type="button"
             onClick={() => setShow((s) => !s)}
-            className="text-[12px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="min-h-11 px-2 text-[12px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             aria-pressed={show}
           >
             {show ? "Hide password" : "Show password"}
@@ -77,9 +77,9 @@ export function PasswordFields({
         />
       </Field>
       {mismatch ? (
-        <p className="-mt-2 text-xs text-[#8C2F23]">Passwords do not match.</p>
+        <p role="alert" className="-mt-2 text-xs text-[#8C2F23]">Passwords do not match.</p>
       ) : matched ? (
-        <p className="-mt-2 text-xs text-[#5B6069]">✓ Passwords match.</p>
+        <p role="status" className="-mt-2 text-xs text-[#5B6069]">✓ Passwords match.</p>
       ) : null}
     </div>
   );

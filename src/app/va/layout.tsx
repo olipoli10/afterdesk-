@@ -31,13 +31,17 @@ export const vaProfileFor = cache(async (userId: string) =>
 export default async function VaLayout({ children }: { children: ReactNode }) {
   const user = await requireRole("VA");
 
-  const profile = await vaProfileFor(user.id);
+  const [profile, notificationCount] = await Promise.all([
+    vaProfileFor(user.id),
+    prisma.notification.count({ where: { userId: user.id, readAt: null } }),
+  ]);
   const approved = profile?.status === "approved";
 
   return (
     <AppShell
       areaLabel="Work"
       userName={user.name}
+      notificationCount={notificationCount}
       nav={
         approved
           ? [

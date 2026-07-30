@@ -99,6 +99,7 @@ export function FileUpload({
         ref={inputRef}
         type="file"
         multiple
+        accept={allowedExtensions.map((extension) => `.${extension}`).join(",")}
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
       />
@@ -129,7 +130,7 @@ export function FileUpload({
                 <button
                   type="button"
                   aria-label={`Remove ${f.fileName}`}
-                  className="-my-1 rounded px-2 py-2 text-xs font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#14161A]"
+                  className="-my-1 min-h-11 min-w-11 rounded px-2 py-2 text-xs font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#14161A]"
                   onClick={() => onChange(files.filter((x) => x.id !== f.id))}
                 >
                   Remove
@@ -148,7 +149,7 @@ export function FileUpload({
                   <button
                     type="button"
                     aria-label={`Dismiss error for ${p.name}`}
-                    className="-my-1 rounded px-2 py-2 text-xs font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#14161A]"
+                    className="-my-1 min-h-11 min-w-11 rounded px-2 py-2 text-xs font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#14161A]"
                     onClick={() => setPending((x) => x.filter((_, j) => j !== i))}
                   >
                     Dismiss

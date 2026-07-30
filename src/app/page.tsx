@@ -10,10 +10,10 @@ import { LiveTaskWindow } from "@/components/live-task-window";
 import { LiveOvernightDiff } from "@/components/live-overnight-diff";
 import { PointerGlow } from "@/components/pointer-glow";
 import { LangSwitch } from "@/components/lang-switch";
-import { ScrollDamper } from "@/components/scroll-damper";
 import { PaperLedgerScan } from "@/components/paper-ledger-scan";
 import { PaperInstrument } from "@/components/paper-instrument";
 import { PaperReviewDesk } from "@/components/paper-review-desk";
+import { TrustLinks } from "@/components/trust-links";
 import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -90,19 +90,19 @@ export default async function Home({
     /* lang on the subtree: the root <html> is en, and screen readers must
        switch voice for the translated copy. */
     <div lang={lang} className="overflow-x-clip bg-[#0A0B0D]">
-      <ScrollDamper />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: ORG_JSONLD }}
       />
       {/* ── NAV — sticky, blurred ─────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
-        <div className="mx-auto grid h-14 w-full max-w-[1120px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
+        <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
           <span className="whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.14em] text-white sm:text-[13px] sm:tracking-[0.22em]">
-            Second Shift
+            <span className="sm:hidden">SS</span>
+            <span className="hidden sm:inline">Second Shift</span>
           </span>
           <AudienceToggle side="client" tone="night" />
-          <div className="flex items-center justify-end gap-3 sm:gap-5">
+          <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
             <Link
               href="/login"
@@ -112,7 +112,7 @@ export default async function Home({
             </Link>
             <Link
               href="/register"
-              className="lift hidden rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] sm:block"
+              className="lift hidden min-h-11 items-center rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
             >
               {t.nav.send}
             </Link>
@@ -147,7 +147,7 @@ export default async function Home({
             <div className="anim-rise d-3 mt-8">
               <Link
                 href="/register"
-                className="lift inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)]"
+                className="lift inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 {t.hero.cta}
               </Link>
@@ -209,7 +209,7 @@ export default async function Home({
             </p>
             <div className="mx-auto max-w-[420px]">
               <div className="lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] transition-colors hover:border-white/20 hover:bg-[#15171B]">
-                <div className="flex items-center justify-between border-b border-white/8 pb-3 text-[#767C86]">
+                <div className="flex items-center justify-between border-b border-white/8 pb-3 text-[#8A9099]">
                   <span>QUOTE #0412</span>
                   <span className="text-white">FIXED</span>
                 </div>
@@ -219,17 +219,17 @@ export default async function Home({
                   ["RETURNS", "7:07 AM ET"],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4 border-b border-white/6 py-2.5">
-                    <span className="shrink-0 text-[#767C86]">{k}</span>
+                    <span className="shrink-0 text-[#8A9099]">{k}</span>
                     <span className="text-right text-[#C9CDD3]">{v}</span>
                   </div>
                 ))}
                 <div className="flex items-baseline justify-between pt-4">
-                  <span className="text-[#767C86]">TOTAL</span>
+                  <span className="text-[#8A9099]">TOTAL</span>
                   <span className="text-[32px] font-medium tabular-nums leading-none text-white">
                     $68
                   </span>
                 </div>
-                <p className="mt-2 text-right text-[11px] text-[#767C86]">{t.ch02.noMeter}</p>
+                <p className="mt-2 text-right text-[11px] text-[#8A9099]">{t.ch02.noMeter}</p>
                 <div className="mt-5 flex gap-2">
                   <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
                     APPROVE
@@ -434,7 +434,7 @@ export default async function Home({
                 <div className="mt-7">
                   <Link
                     href="/register"
-                    className="lift inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)]"
+                    className="lift inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
                     {t.hero.cta}
                   </Link>
@@ -447,11 +447,11 @@ export default async function Home({
 
       {/* ── FOOTER ────────────────────────────────────────────────────── */}
       <footer className="border-t border-black/8 bg-[#F7F6F3]">
-        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-3 px-6 py-6">
+        <div className="mx-auto grid w-full max-w-[1120px] gap-4 px-6 py-6 sm:grid-cols-[auto_1fr] sm:items-center">
           <span className="font-mono text-[12px] uppercase tracking-[0.22em] text-[#14161A]">
             Second Shift
           </span>
-          <div className="flex items-center gap-6 text-[13px] text-[#5B6069]">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[#5B6069] sm:justify-end">
             <Link href="/how-it-works" className="transition-colors hover:text-[#14161A]">
               {t.footer.how}
             </Link>
@@ -461,6 +461,9 @@ export default async function Home({
             <Link href="/workers" className="transition-colors hover:text-[#14161A]">
               {t.footer.work}
             </Link>
+          </div>
+          <div className="text-[12px] sm:col-span-2 sm:border-t sm:border-black/8 sm:pt-4">
+            <TrustLinks />
           </div>
         </div>
       </footer>

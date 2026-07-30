@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 
 /**
@@ -31,6 +32,7 @@ export type Settings = {
   highValueThreshold: number;
   suspensionFloor: number;
   minRatedDeliveries: number;
+  minWorkerHourlyUsd: number;
   testCooldownDays: number;
   maxFileSizeMB: number;
   maxFilesPerTask: number;
@@ -39,6 +41,42 @@ export type Settings = {
   pricingModel: string;
   pricingPrompt: string;
 };
+
+const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
+const positiveHours = z.number().positive().max(24 * 30);
+
+export const SettingsSchema = z.object({
+  workingHours: z.object({
+    timezone: z.string().min(1).max(100),
+    days: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+    start: time,
+    end: time,
+  }),
+  quoteTurnaroundHours: positiveHours,
+  qcBufferHours: positiveHours,
+  quoteValidityHours: positiveHours,
+  revisionWindowHours: positiveHours,
+  maxQcRounds: z.number().int().min(1).max(10),
+  maxRevisionRounds: z.number().int().min(0).max(10),
+  revisionMinRemainingHours: positiveHours,
+  maxActiveClaims: z.number().int().min(1).max(20),
+  paymentWindowHours: positiveHours,
+  retentionDays: z.number().int().min(1).max(3650),
+  scoreWindow: z.number().int().min(1).max(100),
+  highValueThreshold: z.number().min(1).max(5),
+  suspensionFloor: z.number().min(1).max(5),
+  minRatedDeliveries: z.number().int().min(1).max(100),
+  minWorkerHourlyUsd: z.number().positive().max(500),
+  testCooldownDays: z.number().int().min(1).max(365),
+  maxFileSizeMB: z.number().int().min(1).max(200),
+  maxFilesPerTask: z.number().int().min(1).max(100),
+  allowedExtensions: z
+    .array(z.enum(["csv", "xlsx", "pdf", "docx", "png", "jpg", "jpeg"]))
+    .min(1),
+  deadlineWarningHours: positiveHours,
+  pricingModel: z.string().min(1).max(100),
+  pricingPrompt: z.string().min(20).max(20_000),
+});
 
 export const DEFAULT_SETTINGS: Settings = {
   workingHours: {
@@ -61,10 +99,16 @@ export const DEFAULT_SETTINGS: Settings = {
   highValueThreshold: 4.0,
   suspensionFloor: 2.5,
   minRatedDeliveries: 3,
+  minWorkerHourlyUsd: 12,
   testCooldownDays: 30,
-  maxFileSizeMB: 200,
+  // Direct uploads are buffered by the route handler. Keep the built-in
+  // storage driver deliberately conservative; larger files belong on a
+  // presigned object-storage flow.
+  maxFileSizeMB: 25,
   maxFilesPerTask: 20,
-  allowedExtensions: ["csv", "xlsx", "xls", "pdf", "docx", "png", "jpg", "jpeg", "zip"],
+  // Legacy XLS and arbitrary ZIP archives stay blocked until a sandboxed
+  // document-conversion service is configured.
+  allowedExtensions: ["csv", "xlsx", "pdf", "docx", "png", "jpg", "jpeg"],
   deadlineWarningHours: 12,
   pricingModel: "claude-opus-5",
   pricingPrompt:
@@ -86,5 +130,12 @@ export const getSettings = cache(async (): Promise<Settings> => {
   for (const row of rows) {
     if (row.key in merged) merged[row.key] = row.value;
   }
-  return merged as Settings;
+  const parsed = SettingsSchema.safeParse(merged);
+  if (parsed.success) return parsed.data;
+
+  // A malformed admin row must never turn a file-size limit or a quality
+  // threshold into `undefined`. Fail safe to the reviewed defaults and leave
+  // a precise server-side diagnostic for the operator.
+  console.error("[settings] invalid database override; defaults restored", parsed.error.issues);
+  return structuredClone(DEFAULT_SETTINGS);
 });

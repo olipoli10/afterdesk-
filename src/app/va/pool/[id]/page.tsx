@@ -131,7 +131,7 @@ export default async function PoolTaskPage({
           </div>
 
           {/* spec */}
-          <dl className="mt-4 grid grid-cols-3 gap-x-4 border-t border-[#14161A]/[0.08] pt-3">
+          <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-[#14161A]/[0.08] pt-3 sm:grid-cols-4">
             <div>
               <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#5B6069]">
                 Due from you
@@ -161,6 +161,16 @@ export default async function PoolTaskPage({
               </dt>
               <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#14161A]">
                 {task._count.files}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#5B6069]">
+                Estimated effort
+              </dt>
+              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#14161A]">
+                {task.estimatedMinutes != null
+                  ? `~${(task.estimatedMinutes / 60).toFixed(1)} h`
+                  : "—"}
               </dd>
             </div>
           </dl>

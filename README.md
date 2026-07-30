@@ -1,111 +1,145 @@
 # Second Shift
 
-Two-sided platform for outsourced task work. Clients submit any task they can
-describe; vetted specialists (and AI, where appropriate) execute it; a single
-operator/admin sits between the two sides and is the only channel between them.
+Second Shift is an operator-mediated marketplace for asynchronous administrative
+work. Clients approve a fixed price before work starts; vetted specialists see
+only the worker payout; the operator controls identity separation, quality
+review, revisions, disputes, refunds and payouts.
 
-## Run it locally
+This repository is a Next.js 16.2 application backed by PostgreSQL and Prisma.
+It includes the client, specialist and operator experiences, Stripe Checkout,
+email verification and notification delivery, file inspection, an academy and
+the operational maintenance endpoint.
+
+## Local setup
+
+Requirements: Node.js 22+, npm and PostgreSQL. Prisma's local database can be
+used for development.
 
 ```bash
-# 1. Start the local Postgres (leave it running in its own terminal)
+npm install
+Copy-Item .env.example .env
+
+# In a separate terminal:
 npx prisma dev
 
-# 2. First time only: create the schema and the admin account
-npm run db:push
+# Back in the application terminal:
+npm run db:migrate
 npm run db:seed
-
-# 3. Start the app
-npm run dev          # http://localhost:3000
+npm run dev
 ```
 
-Accounts: the admin is seeded from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env`
-(there is no public admin signup). Clients register at `/register`, VAs at
-`/register/va`.
+The seed requires `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`. There is no
+public admin sign-up. Client registration is at `/register`; specialist
+applications are at `/register/va`.
 
-**Verification codes in development.** Sign-up emails a 6-digit code. With no
-`RESEND_API_KEY` set, the code is printed in the terminal running `npm run dev`
-instead of being sent — look for the `──── EMAIL (dev …) ────` block. Add a
-Resend key to `.env` to send real emails.
+Without `RESEND_API_KEY`, development emails are printed in the server
+terminal. Card checkout is unavailable until the Stripe variables are set.
+The Anthropic key is optional: intake falls back to the structured form and
+the operator can price manually. `AI_MODEL` defaults to `claude-sonnet-5` and
+can be pinned to another model available to the account.
 
-**Optional keys** (both listed with instructions in `.env`): `GOOGLE_CLIENT_ID`
-+ `GOOGLE_CLIENT_SECRET` make the "Continue with Google" button appear;
-`RESEND_API_KEY` switches email from console to real delivery. The app runs
-fine without either.
+Do not use `prisma db push`. Schema and database protections are versioned in
+`prisma/migrations`.
 
-> **Windows note:** if Prisma cannot reach the database, the connection string
-> must use `127.0.0.1`, not `localhost` — Node resolves `localhost` to IPv6
-> while the dev server listens on IPv4 only.
+### Existing databases created with `db push`
 
-## What is built (spec steps 1–3)
+Back up the database first. If it was created from the pre-migration Prisma
+schema, mark only the baseline as applied, then deploy the remaining
+migrations. The idempotent `legacy_upgrade` bridge adds any columns, tables
+and indexes missing from that older schema; it is a no-op on a fresh install.
 
-1. **Auth + three roles.** Better Auth (email + password, optional Google).
-   `role` is `input: false` — it can only ever be set server-side, so a signup
-   request cannot smuggle `role: "ADMIN"`. Sign-up asks for the password twice
-   behind one show/hide toggle, then emails a 6-digit code; unverified accounts
-   are held at `/verify-email` and cannot reach any dashboard, upload, or
-   download. Each area (`/client`, `/va`, `/admin`) is gated in its layout and
-   re-checked in every server action. Google sign-ups are always CLIENT
-   accounts — assistants use the dedicated form because it also creates their
-   profile and entry test.
-2. **Client task submission.** Free-text description plus title, quantity,
-   deadline (entered in the client's local timezone) and file uploads
-   (200 MB/file, 20 files, csv/xlsx/xls/pdf/docx/png/jpg/zip).
-3. **Admin pricing queue.** Urgency-sorted queue, task detail with the client's
-   files, the two independent prices, priority tier, approve-and-advance
-   (`Ctrl+Enter`), and cancel-with-reason.
+```bash
+npx prisma migrate resolve --applied 20260730000000_baseline
+npm run db:migrate
+```
 
-Not built yet: AI price suggestion (4), VA pool + claim (5), deliverables + QC
-(6), entry test (7), notifications (8), score + payouts (9).
+Existing file rows intentionally remain blocked until they are inspected.
+Open the task in the operator area and use **Recheck** beside each legacy file.
 
-## The two hard rules, and where they live in code
+## Core guarantees
 
-**RULE 2 — `client_price` and `va_payout` are independent and role-isolated.**
-Enforced at the data layer, not the UI: every read goes through a role-shaped
-`select` in `src/lib/queries/tasks.ts`. `clientTaskSelect` does not list
-`vaPayoutCents`; the VA selects will not list `clientPriceCents`. The forbidden
-column is absent from the SQL projection, so it cannot reach a payload even if
-a component tries to render it. Corollaries kept in place deliberately:
+- Every protected read and mutation rechecks the session, role and resource
+  ownership. Unverified email accounts cannot use protected areas.
+- Client price and specialist payout are independent integer-cent values and
+  are omitted from the other role's SQL projection.
+- A non-internal task cannot enter the worker pool without a received payment.
+  Stripe fulfillment uses signed webhooks and idempotent records.
+- Task transitions are compare-and-swap operations written with their audit
+  event. PostgreSQL triggers enforce payment, completion/payout and immutable
+  completion-time invariants.
+- Refunds and payouts are queued as money intents. Stripe refunds are processed
+  by maintenance; manual payments, refunds and specialist payouts require an
+  operator reference. Chargebacks and reversals are reconciled from Stripe.
+- Uploaded files are limited to 25 MB and the reviewed extensions:
+  CSV, XLSX, PDF, DOCX, PNG and JPEG. Signatures, archive expansion,
+  dangerous formulas, macros, external Office relationships and known malware
+  payloads are checked. Common Office/image metadata is removed.
+- Production uploads fail closed unless ClamAV is reachable. Files cannot be
+  attached or downloaded until their scan evidence is `clean`.
+- Worker-facing filenames are generated and client-authored revision/dispute
+  text is not shown directly to workers. The operator publishes an
+  identity-safe instruction summary.
+- Terminal task files are purged after the configured retention period. Blob
+  deletion succeeds before the database is marked purged.
+- The ledger is append-only in PostgreSQL, sequenced under an advisory lock and
+  linked by a tamper-evident hash chain.
 
-- `transitionTask` returns `{ id, status }`, never a full `Task` row.
-- Prices are **not** written into `TaskEvent.meta` (that table has no
-  role-shaping); the audit log records `{ tier, priced: true }`.
-- `taskEventsForAdmin` is named for its only safe audience.
+No automated scanner can reliably remove identifying information written into
+visible document content. The product therefore still requires client
+redaction and operator review; the public security page says this explicitly.
 
-**RULE 1 — client and VA never learn each other's identity.** No messaging
-exists anywhere. Filenames are anonymized in both directions
-(`src/app/api/files/[id]/download/route.ts`): a VA sees
-`task-abc123-input-9f2.csv`, never `AcmeCorp_CRM_export.csv`; a client sees
-`task-abc123-deliverable.xlsx`, never the VA's filename. The pricing step is a
-mandatory content gate — the operator must attest they reviewed the
-description, quantity and files for identifying details before a task can be
-quoted.
+## Required production services
 
-## Conventions worth keeping
+1. **PostgreSQL** — set pooled `DATABASE_URL` for the app and unpooled
+   `DIRECT_URL` for migrations. Run `npm run db:migrate` during deployment.
+2. **Persistent private storage** — mount `./storage` as a non-public volume,
+   or replace `src/lib/storage.ts` with a private object-storage adapter.
+3. **ClamAV** — set `CLAMAV_HOST` and optionally `CLAMAV_PORT`. Production
+   scanning cannot be disabled.
+4. **Stripe** — set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`; send these
+   events to `POST /api/webhooks/stripe`:
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `charge.refunded`, `charge.dispute.created`, `charge.dispute.closed`.
+5. **Resend** — set `RESEND_API_KEY` and a verified `EMAIL_FROM`. Production
+   verification and notification mail refuses to silently fall back.
+6. **Scheduler** — call `POST /api/cron/maintenance` with
+   `Authorization: Bearer $CRON_SECRET`. A five-minute interval is appropriate.
+   It expires quotes/payments, removes orphan/retained files, processes money
+   intents and drains the email outbox.
+7. **Authentication origin** — set a strong `BETTER_AUTH_SECRET`,
+   `BETTER_AUTH_URL`, `APP_URL` and `NEXT_PUBLIC_SITE_URL` to the HTTPS origin.
 
-- **All money is integer cents** (`src/lib/money.ts`), with a `currency` column.
-- **All timestamps are UTC in the database**, rendered in the viewer's timezone
-  with a visible timezone label (`src/components/local-time.tsx`). Never render
-  a bare time.
-- **Two deadlines per task.** `clientDeadlineUtc` is when the client receives
-  approved work; `vaDeadlineUtc` is that minus the QC buffer (default 3 h). A VA
-  must never see the client-facing deadline.
-- **Status changes go through `transitionTask` only** (`src/lib/state.ts`). It
-  validates the pair against `ALLOWED_TRANSITIONS`, performs a compare-and-swap
-  (so concurrent actors cannot corrupt state), and writes the audit event in the
-  same transaction. This is also the claim-race mechanism for step 5.
-- **No `prisma.*` calls outside `src/lib` and `src/server`** — a grep-able rule
-  that keeps the role-shaped selects the only path to task data.
-- **Operational values are settings, not constants** (`src/lib/settings.ts`):
-  working hours, QC buffer, thresholds, windows, retention, and the AI pricing
-  prompt. Defaults live in code; a `Setting` row overrides any of them without a
-  redeploy.
-- **Sweeps instead of a worker** (`src/server/sweeps.ts`): quote expiry and
-  orphan-file cleanup run when the operator opens their queue. A one-person
-  product does not need a scheduler yet.
+Optional Google login uses `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 
-## Deployment (when ready)
+## Verification
 
-Vercel **Pro** (the Hobby plan forbids commercial use), Neon Postgres, and
-Cloudflare R2 with presigned URLs replacing the local-disk storage driver
-(`src/lib/storage.ts` is already the seam). Vercel caps direct uploads at
-~4.5 MB, so presigned R2 uploads are required for the 200 MB limit.
+```bash
+npm run lint
+npm run typecheck
+npm run test:run
+npm run build
+npm audit
+npx prisma migrate status
+```
+
+CI repeats those checks against PostgreSQL 16. The dependency overrides pin
+patched PostCSS, Sharp and brace expansion releases. `patch-package` contains
+the small CommonJS compatibility adapter needed by ESLint's older Minimatch.
+
+## Deliberate V1 limits
+
+- Specialist payouts are operator-recorded, not sent through an external
+  payout API.
+- The built-in storage adapter expects one persistent application volume; use
+  object storage before horizontally scaling the web tier.
+- Quality review and identity-content review are operator work. Capacity is
+  therefore constrained by operator throughput.
+- The legal pages are operational drafts. Insert the contracting entity,
+  governing law, tax treatment and counsel-approved worker classification
+  before public commercial launch.
+
+The business model makes sense only while the operator can price, review and
+resolve exceptions cheaply enough to preserve the spread between client price
+and worker payout. Track review minutes, rework rate, refund/chargeback rate,
+specialist effective hourly earnings and contribution margin per task before
+scaling acquisition.

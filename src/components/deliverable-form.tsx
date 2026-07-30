@@ -33,6 +33,7 @@ export function DeliverableForm({
           <Field
             label="Files"
             hint="The finished work. Several files are fine — they are reviewed together as one delivery."
+            group
           >
             <FileUpload
               kind="deliverable"
@@ -64,7 +65,7 @@ export function DeliverableForm({
 
           <div className="flex flex-wrap items-center gap-3">
             <button
-              className={`${buttonPrimary} min-h-11 sm:min-h-0`}
+              className={buttonPrimary}
               disabled={isPending}
               onClick={() =>
                 start(async () => {

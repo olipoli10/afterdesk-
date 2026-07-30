@@ -27,6 +27,40 @@ export function QuoteActions({ taskId }: { taskId: string }) {
     });
   }
 
+  function acceptAndPay() {
+    setError(null);
+    startTransition(async () => {
+      const accepted = await acceptQuote(taskId);
+      if (!accepted.ok) {
+        setError(accepted.error);
+        router.refresh();
+        return;
+      }
+      try {
+        const response = await fetch("/api/payments/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ taskId }),
+        });
+        const result = (await response.json()) as { url?: string; error?: string };
+        if (!response.ok || !result.url) {
+          setError(
+            result.error ??
+              "Your price was accepted, but secure checkout could not start. Use Pay securely to retry."
+          );
+          router.refresh();
+          return;
+        }
+        window.location.assign(result.url);
+      } catch {
+        setError(
+          "Your price was accepted, but secure checkout could not start. Use Pay securely to retry."
+        );
+        router.refresh();
+      }
+    });
+  }
+
   if (declining) {
     return (
       <div className="space-y-3">
@@ -54,7 +88,7 @@ export function QuoteActions({ taskId }: { taskId: string }) {
             {isPending ? "Declining…" : "Confirm decline"}
           </button>
           <button
-            className="rounded-sm px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="min-h-11 rounded-sm px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             disabled={isPending}
             onClick={() => setDeclining(false)}
           >
@@ -76,9 +110,9 @@ export function QuoteActions({ taskId }: { taskId: string }) {
         <button
           className={buttonPrimary}
           disabled={isPending}
-          onClick={() => run(() => acceptQuote(taskId))}
+          onClick={acceptAndPay}
         >
-          {isPending ? "Accepting…" : "Accept price"}
+          {isPending ? "Opening checkout…" : "Accept price & pay"}
         </button>
         <button
           className={buttonSecondary}

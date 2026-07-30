@@ -74,6 +74,12 @@ export function BoardTile({
     units !== null && task.vaPayoutCents != null
       ? Math.round(task.vaPayoutCents / units)
       : null;
+  const estimatedHours =
+    task.estimatedMinutes != null ? Math.max(0.25, task.estimatedMinutes / 60) : null;
+  const effectiveHourlyCents =
+    estimatedHours && task.vaPayoutCents != null
+      ? Math.round(task.vaPayoutCents / estimatedHours)
+      : null;
 
   return (
     <div className="flex min-w-0 flex-col rounded-[4px] border border-[#E4E2DC] bg-white px-3.5 pt-3 transition-colors duration-150 hover:border-[#D5D2CB]">
@@ -127,6 +133,12 @@ export function BoardTile({
         <span className="tabular-nums">
           {task._count.files} {task._count.files === 1 ? "file" : "files"}
         </span>
+        {estimatedHours ? (
+          <>
+            <span aria-hidden className="h-[3px] w-[3px] rounded-full bg-[#D5D2CB]" />
+            <span className="tabular-nums">~{estimatedHours.toFixed(1)} h</span>
+          </>
+        ) : null}
       </p>
 
       {/* foot — payout · details · claim */}
@@ -138,6 +150,11 @@ export function BoardTile({
           {perUnitCents != null ? (
             <span className="block font-mono text-[11px] tabular-nums text-[#5B6069]">
               {formatCents(perUnitCents, task.currency)} each
+            </span>
+          ) : null}
+          {effectiveHourlyCents != null ? (
+            <span className="block font-mono text-[11px] tabular-nums text-[#5B6069]">
+              ~{formatCents(effectiveHourlyCents, task.currency)}/h estimated
             </span>
           ) : null}
         </span>

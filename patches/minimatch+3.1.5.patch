@@ -1,0 +1,16 @@
+diff --git a/node_modules/minimatch/minimatch.js b/node_modules/minimatch/minimatch.js
+index 2e4a058..00da30a 100644
+--- a/node_modules/minimatch/minimatch.js
++++ b/node_modules/minimatch/minimatch.js
+@@ -7,7 +7,10 @@ var path = (function () { try { return require('path') } catch (e) {}}()) || {
+ minimatch.sep = path.sep
+ 
+ var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {}
+-var expand = require('brace-expansion')
++// brace-expansion >=5 exposes a named export and adds bounded expansion.
++// Keep minimatch 3's callable expectation while consuming the patched release.
++var expandModule = require('brace-expansion')
++var expand = expandModule.expand || expandModule
+ 
+ var plTypes = {
+   '!': { open: '(?:(?!(?:', close: '))[^/]*?)'},

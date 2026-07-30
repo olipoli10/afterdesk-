@@ -17,7 +17,7 @@ const LANG_COOKIE: Record<string, { name: string; allowed: string[] }> = {
   "/workers": { name: "ss-lang-worker", allowed: LANGS },
 };
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const headers = new Headers(req.headers);
   headers.set("x-pathname", req.nextUrl.pathname);
   const res = NextResponse.next({ request: { headers } });
@@ -29,6 +29,8 @@ export function middleware(req: NextRequest) {
       res.cookies.set(rule.name, lang, {
         path: "/",
         maxAge: 60 * 60 * 24 * 365,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
     }

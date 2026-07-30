@@ -30,7 +30,7 @@ export function ClaimButton({
   const cls =
     variant === "board"
       ? buttonBoard
-      : `${variant === "secondary" ? buttonSecondary : buttonPrimary} min-h-11 w-full sm:min-h-0 sm:w-auto`;
+      : `${variant === "secondary" ? buttonSecondary : buttonPrimary} w-full sm:w-auto`;
 
   return (
     <div className={variant === "board" ? "" : "w-full"}>
@@ -110,7 +110,7 @@ export function ReleaseButton({ taskId }: { taskId: string }) {
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           ref={confirmRef}
-          className={`${buttonDanger} min-h-11 sm:min-h-0`}
+          className={buttonDanger}
           disabled={isPending}
           onClick={() =>
             start(async () => {
@@ -127,7 +127,7 @@ export function ReleaseButton({ taskId }: { taskId: string }) {
           {isPending ? "Releasing…" : "Yes, release it"}
         </button>
         <button
-          className={`${buttonSecondary} min-h-11 sm:min-h-0`}
+          className={buttonSecondary}
           onClick={() => setConfirming(false)}
         >
           Keep it

@@ -42,7 +42,7 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
  * Best-effort server-side derivation of the pathname being requested, for the
  * post-login deep link. Next.js only exposes the path via request headers
  * (`next-url` on client-router RSC navigations; `x-pathname`/`x-invoke-path`
- * when middleware or the dev server provide them), so on a cold direct load
+ * when Proxy or the dev server provide them), so on a cold direct load
  * this may return null — in that case login simply lands on the role home.
  *
  * Safety: only a relative path is ever returned — no origin, no
@@ -64,11 +64,8 @@ async function safeNextPath(): Promise<string | null> {
  * /login with `?next=<attempted path>` so the login form can return them to
  * the page they asked for (bookmarked task URLs, future email links).
  *
- * Email verification is intentionally NOT enforced: there is no mail provider
- * configured yet, so a gate here would lock every account out. To turn it back
- * on once RESEND_API_KEY is set: re-add `if (!user.emailVerified)
- * redirect("/verify-email")` here and flip `sendVerificationOnSignUp` in
- * src/lib/auth.ts.
+ * Email verification is a hard product boundary: unverified sessions can
+ * reach the verification page, but not task, worker or operator data.
  */
 export async function requireUser(): Promise<SessionUser> {
   const user = await getSessionUser();
@@ -76,6 +73,7 @@ export async function requireUser(): Promise<SessionUser> {
     const next = await safeNextPath();
     redirect(next ? `/login?next=${encodeURIComponent(next)}` : "/login");
   }
+  if (!user.emailVerified) redirect("/verify-email");
   return user;
 }
 
@@ -117,7 +115,7 @@ export async function isApprovedVa(userId: string): Promise<boolean> {
 
 /**
  * Fixed-window rate limit backed by Better Auth's RateLimit table (the same
- * database storage its HTTP middleware uses), for code paths that never pass
+ * database storage its HTTP route uses), for code paths that never pass
  * through /api/auth/* — server actions and route handlers. Synthetic keys
  * (`action:...`, `upload:...`) cannot collide with Better Auth's own
  * `<ip><path>` keys.

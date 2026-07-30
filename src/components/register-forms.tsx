@@ -35,7 +35,7 @@ export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }
       setBusy(false);
       return;
     }
-    router.push("/client");
+    router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     router.refresh();
   }
 
@@ -94,6 +94,10 @@ export function VaRegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [experienceSummary, setExperienceSummary] = useState("");
+  const [specialties, setSpecialties] = useState("");
+  const [weeklyAvailability, setWeeklyAvailability] = useState("");
+  const [portfolioUrl, setPortfolioUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -108,7 +112,15 @@ export function VaRegisterForm() {
     setError(null);
     // Account + worker role are created server-side (role is never
     // client-supplied), then we sign in with the same credentials.
-    const result = await registerVa({ name, email, password });
+    const result = await registerVa({
+      name,
+      email,
+      password,
+      experienceSummary,
+      specialties,
+      weeklyAvailability,
+      portfolioUrl,
+    });
     if (!result.ok) {
       setError(result.error);
       setBusy(false);
@@ -120,7 +132,7 @@ export function VaRegisterForm() {
       router.push("/login?applied=1");
       return;
     }
-    router.push("/va");
+    router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     router.refresh();
   }
 
@@ -144,6 +156,44 @@ export function VaRegisterForm() {
           className={inputClass}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+        />
+      </Field>
+      <Field
+        label="Relevant experience"
+        hint="Describe one or two concrete projects, tools used, and how you checked the work."
+      >
+        <textarea
+          required
+          minLength={40}
+          rows={5}
+          className={inputClass}
+          value={experienceSummary}
+          onChange={(e) => setExperienceSummary(e.target.value)}
+        />
+      </Field>
+      <Field label="Specialties" hint="For example: Excel cleanup, research, document production.">
+        <input
+          required
+          minLength={10}
+          className={inputClass}
+          value={specialties}
+          onChange={(e) => setSpecialties(e.target.value)}
+        />
+      </Field>
+      <Field label="Weekly availability" hint="Hours per week and usual Manila working window.">
+        <input
+          required
+          className={inputClass}
+          value={weeklyAvailability}
+          onChange={(e) => setWeeklyAvailability(e.target.value)}
+        />
+      </Field>
+      <Field label="Portfolio or work sample URL" hint="Optional. Do not include client-confidential work.">
+        <input
+          type="url"
+          className={inputClass}
+          value={portfolioUrl}
+          onChange={(e) => setPortfolioUrl(e.target.value)}
         />
       </Field>
       <PasswordFields
@@ -197,6 +247,12 @@ export function LoginForm({
       setBusy(false);
       return;
     }
+    const session = await authClient.getSession();
+    if (session.data?.user && !session.data.user.emailVerified) {
+      router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+      router.refresh();
+      return;
+    }
     // "/" redirects to the right dashboard for the account's role;
     // a validated deep link wins over the dashboard.
     router.push(destination);
@@ -231,7 +287,7 @@ export function LoginForm({
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="text-[12px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="min-h-11 px-2 text-[12px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               aria-pressed={show}
             >
               {show ? "Hide password" : "Show password"}

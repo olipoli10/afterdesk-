@@ -1,4 +1,4 @@
-﻿-- CreateSchema
+-- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
@@ -15,6 +15,9 @@ CREATE TYPE "VaStatus" AS ENUM ('pending_test', 'pending_grading', 'approved', '
 
 -- CreateEnum
 CREATE TYPE "FileKind" AS ENUM ('input', 'deliverable');
+
+-- CreateEnum
+CREATE TYPE "FileScanStatus" AS ENUM ('pending', 'clean', 'rejected', 'error');
 
 -- CreateEnum
 CREATE TYPE "QcStatus" AS ENUM ('pending', 'approved', 'rejected', 'superseded');
@@ -58,6 +61,30 @@ CREATE TABLE "User" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ExamAttempt" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "courseSlug" TEXT NOT NULL,
+    "score" INTEGER NOT NULL,
+    "total" INTEGER NOT NULL,
+    "passed" BOOLEAN NOT NULL,
+    "answers" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ExamAttempt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Certification" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "courseSlug" TEXT NOT NULL,
+    "earnedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Certification_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -125,6 +152,11 @@ CREATE TABLE "VaProfile" (
     "cooldownOverride" BOOLEAN NOT NULL DEFAULT false,
     "suspendedAt" TIMESTAMP(3),
     "suspensionReason" TEXT,
+    "experienceSummary" TEXT,
+    "specialties" TEXT,
+    "weeklyAvailability" TEXT,
+    "portfolioUrl" TEXT,
+    "applicationSubmittedAt" TIMESTAMP(3),
     "tasksCompleted" INTEGER NOT NULL DEFAULT 0,
     "tasksAbandoned" INTEGER NOT NULL DEFAULT 0,
     "deadlinesMissed" INTEGER NOT NULL DEFAULT 0,
@@ -173,6 +205,7 @@ CREATE TABLE "Task" (
     "firstCompletedAt" TIMESTAMP(3),
     "windowPausedAt" TIMESTAMP(3),
     "revisionRounds" INTEGER NOT NULL DEFAULT 0,
+    "revisionInstructions" TEXT,
     "qcRounds" INTEGER NOT NULL DEFAULT 0,
     "filesVerified" BOOLEAN NOT NULL DEFAULT false,
     "filesPurgedAt" TIMESTAMP(3),
@@ -223,6 +256,11 @@ CREATE TABLE "File" (
     "fileName" TEXT NOT NULL,
     "mime" TEXT NOT NULL,
     "sizeBytes" INTEGER NOT NULL,
+    "scanStatus" "FileScanStatus" NOT NULL DEFAULT 'pending',
+    "detectedMime" TEXT,
+    "sha256" TEXT,
+    "scanDetails" TEXT,
+    "scannedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "purgedAt" TIMESTAMP(3),
 
@@ -289,6 +327,9 @@ CREATE TABLE "Notification" (
     "body" TEXT,
     "taskId" TEXT,
     "readAt" TIMESTAMP(3),
+    "emailedAt" TIMESTAMP(3),
+    "emailAttempts" INTEGER NOT NULL DEFAULT 0,
+    "emailError" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
@@ -340,6 +381,7 @@ CREATE TABLE "Payment" (
     "method" "PaymentMethod" NOT NULL,
     "provider" TEXT,
     "providerRef" TEXT,
+    "checkoutSessionId" TEXT,
     "status" "PaymentStatus" NOT NULL DEFAULT 'pending',
     "receivedAt" TIMESTAMP(3),
     "note" TEXT,
@@ -472,6 +514,15 @@ CREATE TABLE "AdminEvent" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE INDEX "ExamAttempt_userId_courseSlug_createdAt_idx" ON "ExamAttempt"("userId", "courseSlug", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Certification_userId_idx" ON "Certification"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Certification_userId_courseSlug_key" ON "Certification"("userId", "courseSlug");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Session_token_key" ON "Session"("token");
 
 -- CreateIndex
@@ -520,6 +571,9 @@ CREATE INDEX "File_taskId_idx" ON "File"("taskId");
 CREATE INDEX "File_uploaderId_idx" ON "File"("uploaderId");
 
 -- CreateIndex
+CREATE INDEX "File_scanStatus_idx" ON "File"("scanStatus");
+
+-- CreateIndex
 CREATE INDEX "FileAccessLog_fileId_idx" ON "FileAccessLog"("fileId");
 
 -- CreateIndex
@@ -532,10 +586,16 @@ CREATE INDEX "TestSubmission_status_idx" ON "TestSubmission"("status");
 CREATE INDEX "Notification_userId_readAt_idx" ON "Notification"("userId", "readAt");
 
 -- CreateIndex
+CREATE INDEX "Notification_emailedAt_createdAt_idx" ON "Notification"("emailedAt", "createdAt");
+
+-- CreateIndex
 CREATE INDEX "AiUsage_userId_createdAt_idx" ON "AiUsage"("userId", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "PaymentEvent_counterpartyId_idx" ON "PaymentEvent"("counterpartyId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Payment_checkoutSessionId_key" ON "Payment"("checkoutSessionId");
 
 -- CreateIndex
 CREATE INDEX "Payment_taskId_idx" ON "Payment"("taskId");
@@ -596,6 +656,12 @@ CREATE INDEX "AdminEvent_entity_entityId_idx" ON "AdminEvent"("entity", "entityI
 
 -- CreateIndex
 CREATE INDEX "AdminEvent_actorId_createdAt_idx" ON "AdminEvent"("actorId", "createdAt");
+
+-- AddForeignKey
+ALTER TABLE "ExamAttempt" ADD CONSTRAINT "ExamAttempt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Certification" ADD CONSTRAINT "Certification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

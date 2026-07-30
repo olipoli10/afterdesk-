@@ -13,6 +13,10 @@ const registerVaSchema = z.object({
   // signUpEmail just created, and email casing must never route it elsewhere.
   email: z.string().trim().toLowerCase().email().max(200),
   password: z.string().min(10).max(200),
+  experienceSummary: z.string().trim().min(40).max(2000),
+  specialties: z.string().trim().min(10).max(500),
+  weeklyAvailability: z.string().trim().min(3).max(200),
+  portfolioUrl: z.union([z.literal(""), z.string().trim().url().max(500)]).optional(),
 });
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -31,7 +35,7 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
  */
 export async function registerVa(input: unknown): Promise<ActionResult> {
   // Server actions never pass through Better Auth's HTTP rate-limit
-  // middleware (/api/auth/*), so this path gets the same database-backed
+  // route (/api/auth/*), so this path gets the same database-backed
   // throttle the "/sign-up/email" custom rule gives the client signup:
   // 5 attempts per 5 minutes per IP.
   const hdrs = await headers();
@@ -51,7 +55,15 @@ export async function registerVa(input: unknown): Promise<ActionResult> {
   if (!parsed.success) {
     return { ok: false, error: "Please fill in all fields (password: 10+ characters)." };
   }
-  const { name, email, password } = parsed.data;
+  const {
+    name,
+    email,
+    password,
+    experienceSummary,
+    specialties,
+    weeklyAvailability,
+    portfolioUrl,
+  } = parsed.data;
 
   let createdUserId: string;
   try {
@@ -75,7 +87,16 @@ export async function registerVa(input: unknown): Promise<ActionResult> {
         where: { id: createdUserId, role: "CLIENT" },
         data: { role: "VA" },
       }),
-      prisma.vaProfile.create({ data: { userId: createdUserId } }),
+      prisma.vaProfile.create({
+        data: {
+          userId: createdUserId,
+          experienceSummary,
+          specialties,
+          weeklyAvailability,
+          portfolioUrl: portfolioUrl || null,
+          applicationSubmittedAt: new Date(),
+        },
+      }),
     ]);
   } catch {
     // Fail closed: never leave a usable account whose role does not match the

@@ -3,11 +3,12 @@ import { after } from "next/server";
 import { prisma } from "@/lib/db";
 import { deleteObject } from "@/lib/storage";
 import { transitionTask, TransitionError } from "@/lib/state";
+import { getSettings } from "@/lib/settings";
 
 /**
- * Time-driven state changes. A single-operator product has no worker process,
- * so these run opportunistically: on the admin dashboard/queue load and before
- * any client action on a quote. They are idempotent and safe to call often.
+ * Time-driven state changes. The authenticated maintenance endpoint runs these
+ * on a schedule, and operator/client surfaces also run the critical checks
+ * opportunistically. They are idempotent and safe to call often.
  */
 
 /** Unattached uploads older than this are reaped. */
@@ -48,6 +49,31 @@ export async function expireStaleQuotes(taskId?: string): Promise<number> {
   return expired;
 }
 
+export async function expireStalePayments(): Promise<number> {
+  const stale = await prisma.task.findMany({
+    where: { status: "awaiting_payment", paymentDueAt: { lt: new Date() } },
+    select: { id: true },
+    take: 200,
+  });
+  let expired = 0;
+  for (const task of stale) {
+    try {
+      await transitionTask({
+        taskId: task.id,
+        from: "awaiting_payment",
+        to: "expired",
+        action: "payment_window_expired",
+        data: { expiredAt: new Date() },
+        guard: { paymentDueAt: { lt: new Date() } },
+      });
+      expired++;
+    } catch (error) {
+      if (!(error instanceof TransitionError)) throw error;
+    }
+  }
+  return expired;
+}
+
 /**
  * Deletes uploads that were never attached to a task (client abandoned the
  * form). Blob first, row second, so a row never points at missing data.
@@ -79,6 +105,58 @@ export async function reapOrphanFiles(): Promise<number> {
   return deleted;
 }
 
+/** Purges attached files after the published retention period. */
+export async function purgeExpiredTaskFiles(): Promise<number> {
+  const settings = await getSettings();
+  const cutoff = new Date(Date.now() - settings.retentionDays * 24 * 60 * 60 * 1000);
+  const tasks = await prisma.task.findMany({
+    where: {
+      filesPurgedAt: null,
+      status: { in: ["completed", "cancelled", "declined", "expired"] },
+      OR: [
+        { firstCompletedAt: { lt: cutoff } },
+        { firstCompletedAt: null, updatedAt: { lt: cutoff } },
+      ],
+    },
+    select: {
+      id: true,
+      files: {
+        where: { purgedAt: null },
+        select: { id: true, storageKey: true },
+      },
+    },
+    take: 50,
+  });
+
+  let purged = 0;
+  for (const task of tasks) {
+    const results = await Promise.allSettled(
+      task.files.map((file) => deleteObject(file.storageKey))
+    );
+    if (results.some((result) => result.status === "rejected")) continue;
+    const now = new Date();
+    await prisma.$transaction([
+      prisma.file.updateMany({
+        where: { id: { in: task.files.map((file) => file.id) }, purgedAt: null },
+        data: { purgedAt: now },
+      }),
+      prisma.task.update({
+        where: { id: task.id },
+        data: { filesPurgedAt: now },
+      }),
+      prisma.taskEvent.create({
+        data: {
+          taskId: task.id,
+          action: "retention_files_purged",
+          meta: { files: task.files.length, retentionDays: settings.retentionDays },
+        },
+      }),
+    ]);
+    purged += task.files.length;
+  }
+  return purged;
+}
+
 /**
  * Both sweeps, for the admin surfaces to call on load.
  *
@@ -94,7 +172,9 @@ export async function runOperatorSweeps(): Promise<void> {
   after(async () => {
     try {
       await expireStaleQuotes();
+      await expireStalePayments();
       await reapOrphanFiles();
+      await purgeExpiredTaskFiles();
     } catch (e) {
       console.error("[sweeps] operator sweep failed:", e);
     }

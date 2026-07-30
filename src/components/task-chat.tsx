@@ -7,6 +7,7 @@ import { sendIntakeTurn } from "@/server/actions/intake";
 import { submitTask } from "@/server/actions/client-tasks";
 import { FileUpload, type UploadedFile } from "@/components/file-upload";
 import type { IntakeDraft } from "@/lib/ai";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   Card,
   CardBody,
@@ -45,13 +46,9 @@ export function TaskChat({
   const paneRef = useRef<HTMLDivElement>(null);
   // On touch/small screens Enter must make a newline (virtual keyboards have
   // no Shift+Enter); only a fine pointer gets Enter-to-send.
-  const [desktop, setDesktop] = useState(false);
+  const desktop = useMediaQuery("(hover: hover) and (pointer: fine)");
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  useEffect(() => {
-    setDesktop(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
-  }, []);
 
   useEffect(() => {
     // Scroll the transcript pane only — never yank the whole document.
@@ -253,6 +250,7 @@ export function TaskChat({
               <Field
                 label="Files"
                 hint="Anything the task works on — an export, a list, documents."
+                group
               >
                 <FileUpload
                   maxFileSizeMB={maxFileSizeMB}

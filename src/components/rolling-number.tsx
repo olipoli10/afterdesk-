@@ -48,7 +48,7 @@ export function RollingNumber({
       started = true;
       const t0 = performance.now();
       const tick = (t: number) => {
-        const p = Math.min(1, (t - t0) / durationMs);
+        const p = Math.max(0, Math.min(1, (t - t0) / durationMs));
         const eased = 1 - Math.pow(1 - p, 3);
         setShown(Math.round(value * eased));
         if (p < 1) raf = requestAnimationFrame(tick);

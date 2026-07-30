@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Reveal } from "@/components/reveal";
 import { getSettings } from "@/lib/settings";
+import { TrustLinks } from "@/components/trust-links";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The doctrine page: the operating rules published as a numbered, versioned
@@ -154,7 +155,7 @@ export default async function HowItWorks() {
             </p>
             <Link
               href="/register"
-              className="lift inline-flex rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[14px] font-medium text-[#14161A] hover:bg-white"
+              className="lift inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[14px] font-medium text-[#14161A] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               Describe your task
             </Link>
@@ -165,6 +166,14 @@ export default async function HowItWorks() {
           Changes to this protocol are versioned and dated here.
         </p>
       </main>
+      <footer className="border-t border-black/8">
+        <div className="mx-auto flex w-full max-w-[880px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[12px]">
+          <span className="font-mono uppercase tracking-[0.16em] text-[#14161A]">
+            Second Shift
+          </span>
+          <TrustLinks />
+        </div>
+      </footer>
     </div>
   );
 }

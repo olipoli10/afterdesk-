@@ -11,7 +11,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const aiEnabled = Boolean(process.env.ANTHROPIC_API_KEY);
 
-export const AI_MODEL = process.env.AI_MODEL || "claude-opus-5";
+export const AI_MODEL = process.env.AI_MODEL || "claude-sonnet-5";
 
 /** Thinking shares this budget on Opus 5 (adaptive is on by default). */
 const MAX_TOKENS = 16000;

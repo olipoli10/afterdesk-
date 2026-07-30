@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // Pooled connection for the running app.
   url       = env("DATABASE_URL")
   // Unpooled connection for migrations: the migration engine uses prepared
@@ -60,6 +60,13 @@ enum FileKind {
   deliverable
 }
 
+enum FileScanStatus {
+  pending
+  clean
+  rejected
+  error
+}
+
 enum QcStatus {
   pending
   approved
@@ -89,6 +96,7 @@ enum PaymentStatus {
   received
   refunded
   partially_refunded
+  chargeback
 }
 
 enum PayoutStatus {
@@ -106,8 +114,10 @@ enum DisputeOutcome {
   upheld // worker error, unrecoverable — client refunded, worker unpaid
 }
 
-/** Queued money instruction. Written inside the state transaction; drained by
-    the scheduled endpoint. Nothing calls Stripe or Wise from a server action. */
+/**
+ * Queued money instruction. Written inside the state transaction; drained by
+ * the scheduled endpoint. Nothing calls Stripe or Wise from a server action.
+ */
 enum MoneyIntentKind {
   refund_client
   release_payout
@@ -134,15 +144,15 @@ enum LedgerKind {
 // ---------- Auth (Better Auth owns these shapes) ----------
 
 model User {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
   // Locked server-side (input: false in Better Auth config) — never client-assignable.
-  role          Role      @default(CLIENT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          Role     @default(CLIENT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   sessions        Session[]
   accounts        Account[]
@@ -245,26 +255,33 @@ model Verification {
 // ---------- VA ----------
 
 model VaProfile {
-  id               String    @id @default(cuid())
-  userId           String    @unique
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status           VaStatus  @default(pending_test)
-  timezone         String    @default("Asia/Manila")
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status                 VaStatus  @default(pending_test)
+  timezone               String    @default("Asia/Manila")
   // 30-day retake cooldown anchor; admin can override.
-  rejectedAt       DateTime?
-  cooldownOverride Boolean   @default(false)
-  suspendedAt      DateTime?
-  suspensionReason String?
+  rejectedAt             DateTime?
+  cooldownOverride       Boolean   @default(false)
+  suspendedAt            DateTime?
+  suspensionReason       String?
+  // Application evidence reviewed by the operator before pool access. Kept
+  // on the private profile only; none of these fields reach clients.
+  experienceSummary      String?
+  specialties            String?
+  weeklyAvailability     String?
+  portfolioUrl           String?
+  applicationSubmittedAt DateTime?
   // Reliability record
-  tasksCompleted   Int       @default(0)
-  tasksAbandoned   Int       @default(0)
-  deadlinesMissed  Int       @default(0)
-  qcRejections     Int       @default(0)
+  tasksCompleted         Int       @default(0)
+  tasksAbandoned         Int       @default(0)
+  deadlinesMissed        Int       @default(0)
+  qcRejections           Int       @default(0)
   // Rolling score cache (last N ratings; N = settings.scoreWindow). Source of truth = Submission.rating.
-  scoreCache       Float?
-  ratedCount       Int       @default(0)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  scoreCache             Float?
+  ratedCount             Int       @default(0)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
 
 // ---------- Tasks ----------
@@ -331,9 +348,12 @@ model Task {
   // a revision pauses it (windowPausedAt) and the paused duration is added
   // back on return, with a floor so reworked files always get a real look.
   // firstCompletedAt is immutable: audit anchor + hard ceiling on the loop.
-  firstCompletedAt DateTime?
-  windowPausedAt   DateTime?
-  revisionRounds   Int       @default(0)
+  firstCompletedAt     DateTime?
+  windowPausedAt       DateTime?
+  revisionRounds       Int       @default(0)
+  // Operator-authored, identity-safe instructions shown to the worker. The
+  // client's raw revision/dispute text stays in TaskEvent/Dispute (admin only).
+  revisionInstructions String?
 
   qcRounds      Int     @default(0)
   filesVerified Boolean @default(false)
@@ -359,16 +379,20 @@ model Task {
   @@index([categoryId])
 }
 
-/** Closed, admin-editable taxonomy. A real table, not a Setting blob, because
-    ledger rows reference it permanently. Clients never self-select — the party
-    that benefits from a category must not choose it. */
+/**
+ * Closed, admin-editable taxonomy. A real table, not a Setting blob, because
+ * ledger rows reference it permanently. Clients never self-select — the party
+ * that benefits from a category must not choose it.
+ */
 model TaskCategory {
   id              String   @id @default(cuid())
   slug            String   @unique
   name            String
-  /** What counts as delivered, and the tolerated error margin. Shown to the
-      client at quote time and to the worker before they claim, so a dispute is
-      checked against a written standard instead of judged by mood. */
+  /**
+   * What counts as delivered, and the tolerated error margin. Shown to the
+   * client at quote time and to the worker before they claim, so a dispute is
+   * checked against a written standard instead of judged by mood.
+   */
   disputeCriteria String?
   sortOrder       Int      @default(0)
   active          Boolean  @default(true)
@@ -380,18 +404,18 @@ model TaskCategory {
 
 // One QC decision per submission attempt (a delivery may contain several files).
 model Submission {
-  id         String    @id @default(cuid())
-  taskId     String
-  task       Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  vaId       String
-  va         User      @relation(fields: [vaId], references: [id], onDelete: Restrict)
-  attemptNo  Int
-  note       String?
-  qcStatus   QcStatus  @default(pending)
-  qcComment  String?
-  rating     Int? // 1-5, set at QC approval
-  submittedAt DateTime @default(now())
-  reviewedAt DateTime?
+  id          String    @id @default(cuid())
+  taskId      String
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  vaId        String
+  va          User      @relation(fields: [vaId], references: [id], onDelete: Restrict)
+  attemptNo   Int
+  note        String?
+  qcStatus    QcStatus  @default(pending)
+  qcComment   String?
+  rating      Int? // 1-5, set at QC approval
+  submittedAt DateTime  @default(now())
+  reviewedAt  DateTime?
 
   files File[]
 
@@ -401,26 +425,35 @@ model Submission {
 }
 
 model File {
-  id           String    @id @default(cuid())
+  id           String         @id @default(cuid())
   // Nullable until attached: upload happens first (ticket pattern), the
   // submit action claims the file by checking uploaderId and setting taskId.
   taskId       String?
-  task         Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task         Task?          @relation(fields: [taskId], references: [id], onDelete: Cascade)
   submissionId String?
-  submission   Submission? @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  submission   Submission?    @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   kind         FileKind
   uploaderId   String
-  storageKey   String    @unique
+  storageKey   String         @unique
   fileName     String
   mime         String
   sizeBytes    Int
-  createdAt    DateTime  @default(now())
+  // Uploads are unavailable until their declared type, byte signature and
+  // malware scan all pass. `sha256` also makes incident response and
+  // duplicate-malware blocking possible without retaining the raw upload.
+  scanStatus   FileScanStatus @default(pending)
+  detectedMime String?
+  sha256       String?
+  scanDetails  String?
+  scannedAt    DateTime?
+  createdAt    DateTime       @default(now())
   purgedAt     DateTime?
 
   accessLogs FileAccessLog[]
 
   @@index([taskId])
   @@index([uploaderId])
+  @@index([scanStatus])
 }
 
 model FileAccessLog {
@@ -480,17 +513,21 @@ model TestSubmission {
 // ---------- Notifications, settings, money tracking ----------
 
 model Notification {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String
-  title     String
-  body      String?
-  taskId    String?
-  readAt    DateTime?
-  createdAt DateTime  @default(now())
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String
+  title         String
+  body          String?
+  taskId        String?
+  readAt        DateTime?
+  emailedAt     DateTime?
+  emailAttempts Int       @default(0)
+  emailError    String?
+  createdAt     DateTime  @default(now())
 
   @@index([userId, readAt])
+  @@index([emailedAt, createdAt])
 }
 
 // Admin-editable settings (working hours, QC buffer, thresholds, pricing
@@ -535,23 +572,26 @@ model PaymentEvent {
 // worker is a subcontractor paid out of collected revenue. Nothing is held on
 // anyone's behalf. The word "escrow" must not appear in this codebase or the UI.
 
-/** What the client paid for a task. Not unique on taskId: a task can be paid,
-    refunded, and (as a new task) paid again, and a chargeback can arrive
-    months later. */
+/**
+ * What the client paid for a task. Not unique on taskId: a task can be paid,
+ * refunded, and (as a new task) paid again, and a chargeback can arrive
+ * months later.
+ */
 model Payment {
-  id          String        @id @default(cuid())
-  taskId      String
-  task        Task          @relation(fields: [taskId], references: [id], onDelete: Restrict)
-  amountCents Int
-  currency    String        @default("USD")
-  method      PaymentMethod
-  provider    String? // "stripe" | null for manual
-  providerRef String? // payment intent id / wire reference
-  status      PaymentStatus @default(pending)
-  receivedAt  DateTime?
-  note        String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  taskId            String
+  task              Task          @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  amountCents       Int
+  currency          String        @default("USD")
+  method            PaymentMethod
+  provider          String? // "stripe" | null for manual
+  providerRef       String? // payment intent id / wire reference
+  checkoutSessionId String?       @unique
+  status            PaymentStatus @default(pending)
+  receivedAt        DateTime?
+  note              String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   refunds Refund[]
 
@@ -574,8 +614,10 @@ model Refund {
   @@index([paymentId])
 }
 
-/** What a worker is owed / has been paid. Several rows per task are possible
-    (a reassignment after a worker was already partly settled). */
+/**
+ * What a worker is owed / has been paid. Several rows per task are possible
+ * (a reassignment after a worker was already partly settled).
+ */
 model Payout {
   id          String       @id @default(cuid())
   taskId      String
@@ -597,9 +639,11 @@ model Payout {
   @@index([vaId, status])
 }
 
-/** Queued money instruction. Written inside the same transaction as the state
-    change; drained only by the scheduled endpoint. No server action ever calls
-    a payment provider directly, and idempotencyKey makes a retry safe. */
+/**
+ * Queued money instruction. Written inside the same transaction as the state
+ * change; drained only by the scheduled endpoint. No server action ever calls
+ * a payment provider directly, and idempotencyKey makes a retry safe.
+ */
 model MoneyIntent {
   id             String            @id @default(cuid())
   taskId         String
@@ -618,18 +662,24 @@ model MoneyIntent {
 }
 
 model Dispute {
-  id         String          @id @default(cuid())
-  taskId     String
-  task       Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  /** Closed vocabulary anchored in TaskCategory.disputeCriteria — a free-text
-      "not satisfied" cannot open a dispute. */
-  reasonCode String
-  /** The client's own words. ADMIN ONLY — never selected in a worker-facing
-      query. This is the one place client identity could cross the divide. */
-  reasonDetail String
-  /** The only worker-visible description of the complaint. Drafted by the AI,
-      approved or edited by the admin. Must be non-null before the task can go
-      back to the worker. */
+  id                    String         @id @default(cuid())
+  taskId                String
+  task                  Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  /**
+   * Closed vocabulary anchored in TaskCategory.disputeCriteria — a free-text
+   * "not satisfied" cannot open a dispute.
+   */
+  reasonCode            String
+  /**
+   * The client's own words. ADMIN ONLY — never selected in a worker-facing
+   * query. This is the one place client identity could cross the divide.
+   */
+  reasonDetail          String
+  /**
+   * The only worker-visible description of the complaint. Drafted by the AI,
+   * approved or edited by the admin. Must be non-null before the task can go
+   * back to the worker.
+   */
   adminSummaryForWorker String?
   outcome               DisputeOutcome @default(pending)
   decidedAt             DateTime?
@@ -643,45 +693,55 @@ model Dispute {
 
 // ---------- Public trust surfaces ----------
 
-/** Append-only. Enforced in Postgres (non-owner app role without UPDATE/DELETE
-    + BEFORE UPDATE/DELETE/TRUNCATE triggers); seq, occurredAt and the hash
-    chain are assigned by a BEFORE INSERT trigger so the app cannot forge them.
-    Category name/slug are snapshotted so a later rename cannot re-label
-    published history. */
+/**
+ * Append-only. Enforced in Postgres (non-owner app role without UPDATE/DELETE
+ * + BEFORE UPDATE/DELETE/TRUNCATE triggers); seq, occurredAt and the hash
+ * chain are assigned by a BEFORE INSERT trigger so the app cannot forge them.
+ * Category name/slug are snapshotted so a later rename cannot re-label
+ * published history.
+ */
 model LedgerEntry {
-  id             String     @id @default(cuid())
-  seq            BigInt     @unique
-  kind           LedgerKind
-  amountCents    Int
-  currency       String     @default("USD")
-  categoryId     String?
-  categorySlug   String?
-  categoryName   String?
-  /** Origin of the money movement (Stripe event id, Payment id...) — a unique
-      pair so a redelivered webhook cannot double-count revenue. */
-  sourceKind     String
-  sourceId       String
-  occurredAt     DateTime
+  id              String     @id @default(cuid())
+  seq             BigInt     @unique
+  kind            LedgerKind
+  amountCents     Int
+  currency        String     @default("USD")
+  categoryId      String?
+  categorySlug    String?
+  categoryName    String?
+  /**
+   * Origin of the money movement (Stripe event id, Payment id...) — a unique
+   * pair so a redelivered webhook cannot double-count revenue.
+   */
+  sourceKind      String
+  sourceId        String
+  occurredAt      DateTime
   correctsEntryId String?
-  isInternal     Boolean    @default(false)
-  /** Excluded from the published figures without being deleted. */
-  publiclyVisible Boolean   @default(true)
-  prevHash       String
-  rowHash        String     @unique
-  createdAt      DateTime   @default(now())
+  isInternal      Boolean    @default(false)
+  /**
+   * Excluded from the published figures without being deleted.
+   */
+  publiclyVisible Boolean    @default(true)
+  prevHash        String
+  rowHash         String     @unique
+  createdAt       DateTime   @default(now())
 
   @@unique([sourceKind, sourceId])
   @@unique([prevHash])
   @@index([occurredAt])
 }
 
-/** Counters are periodic snapshots, never live queries: a number that moves on
-    every delivery lets either side subtract two page loads and read the other
-    side's price. Only advanced once enough new entries have accumulated. */
+/**
+ * Counters are periodic snapshots, never live queries: a number that moves on
+ * every delivery lets either side subtract two page loads and read the other
+ * side's price. Only advanced once enough new entries have accumulated.
+ */
 model MetricSnapshot {
   id             String   @id @default(cuid())
   key            String
-  /** Category id for per-category metrics, null for platform-wide. */
+  /**
+   * Category id for per-category metrics, null for platform-wide.
+   */
   dimension      String?
   unit           String // cents | count | minutes | ratio
   valueNumeric   Float
@@ -689,7 +749,9 @@ model MetricSnapshot {
   windowEnd      DateTime
   sampleSize     Int
   currency       String?
-  /** Hash of the query that produced it, so a definition change is visible. */
+  /**
+   * Hash of the query that produced it, so a definition change is visible.
+   */
   definitionHash String
   createdAt      DateTime @default(now())
 
@@ -697,9 +759,11 @@ model MetricSnapshot {
   @@index([key, windowEnd])
 }
 
-/** User- and settings-level audit. Separate from TaskEvent (which is task-
-    scoped and cascades); this must survive the deletion of what it describes.
-    Never stores raw price values — field names and redacted payloads only. */
+/**
+ * User- and settings-level audit. Separate from TaskEvent (which is task-
+ * scoped and cascades); this must survive the deletion of what it describes.
+ * Never stores raw price values — field names and redacted payloads only.
+ */
 model AdminEvent {
   id        String   @id @default(cuid())
   actorId   String

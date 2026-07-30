@@ -77,10 +77,13 @@ export function ExamForm({
             <p className="mt-1.5 text-[22px] font-semibold tracking-[-0.015em] text-[#14161A]">
               {result.score}/{result.total} — not this time
             </p>
+            {/* No per-question breakdown on a failure, on purpose: naming the
+                missed questions would let three attempts solve the whole exam
+                by elimination. The score is the signal; the lessons are the
+                remedy. */}
             <p className="mt-2 text-sm leading-relaxed text-[#5B6069]">
-              Passing is 10 of 12. You missed{" "}
-              {result.wrong.map((i) => `Q${i + 1}`).join(", ")} — the lessons cover every
-              one of them.{" "}
+              Passing is 10 of 12. We don&apos;t say which ones you missed — that would give
+              the exam away — but the lessons cover all of them.{" "}
               {result.attemptsLeftToday > 0
                 ? `${result.attemptsLeftToday} attempt${result.attemptsLeftToday === 1 ? "" : "s"} left today.`
                 : "The exam reopens tomorrow — that pause is part of the design."}

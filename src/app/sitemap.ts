@@ -9,5 +9,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // is only word of mouth if it can be looked at without an account.
     { url: `${SITE_URL}/academy`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/security`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${SITE_URL}/privacy`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${SITE_URL}/terms`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${SITE_URL}/acceptable-use`, changeFrequency: "monthly", priority: 0.5 },
   ];
 }

@@ -3,7 +3,6 @@
  *  - admin account — password hashed with Better Auth's own hasher (scrypt via
  *    better-auth/crypto) and stored as a "credential" account row, exactly the
  *    shape Better Auth's email+password login verifies against.
- *  - placeholder entry-test questions (v1 — operator supplies real content later)
  *  - task categories — required at pricing time (approvePricing rejects a
  *    quote with no categoryId), and now also the worker pool's organizing
  *    spine (src/app/va/pool). The taxonomy is deliberately shaped by WORKER
@@ -150,33 +149,14 @@ async function main() {
     } already complete.`
   );
 
-  const questionCount = await prisma.testQuestion.count();
-  if (questionCount === 0) {
-    await prisma.testQuestion.createMany({
-      data: [
-        {
-          version: 1,
-          order: 1,
-          prompt:
-            "[PLACEHOLDER] Sample exercise 1 — e.g. clean and deduplicate the provided list of 20 contact rows and return the corrected list.",
-        },
-        {
-          version: 1,
-          order: 2,
-          prompt:
-            "[PLACEHOLDER] Sample exercise 2 — e.g. research the company websites for 5 given business names and record the correct URL for each.",
-        },
-        {
-          version: 1,
-          order: 3,
-          prompt:
-            "[PLACEHOLDER] Sample exercise 3 — e.g. transcribe the fields from the attached sample invoice into the requested column format.",
-        },
-      ],
-    });
-    console.log("Placeholder test questions created (v1).");
-  } else {
-    console.log("Test questions already present — skipping.");
+  // The product currently uses the Academy's real course exams instead of a
+  // separate entry test. Remove rows produced by the old seed so an operator
+  // never mistakes scaffolding for an active qualification workflow.
+  const removedPlaceholders = await prisma.testQuestion.deleteMany({
+    where: { prompt: { startsWith: "[PLACEHOLDER]" } },
+  });
+  if (removedPlaceholders.count > 0) {
+    console.log(`Removed ${removedPlaceholders.count} obsolete placeholder test questions.`);
   }
 }
 

@@ -62,10 +62,20 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
         select: {
           taskId: true,
           vaId: true,
-          task: { select: { firstCompletedAt: true } },
+          task: {
+            select: {
+              firstCompletedAt: true,
+              clientId: true,
+              vaPayoutCents: true,
+              currency: true,
+            },
+          },
         },
       });
       const isFirstCompletion = submission.task.firstCompletedAt === null;
+      if (submission.task.vaPayoutCents == null || submission.task.vaPayoutCents <= 0) {
+        throw new Error("Approved task has no worker payout.");
+      }
 
       await transitionTask({
         tx,
@@ -116,6 +126,74 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
               }
             : {}),
         },
+      });
+
+      // Approval and the money obligation are one invariant: a completed task
+      // can never exist without a payout row and an idempotent release intent.
+      const existingPayout = await tx.payout.findUnique({
+        where: {
+          taskId_vaId: { taskId: submission.taskId, vaId: submission.vaId },
+        },
+        select: { id: true, status: true },
+      });
+      if (!existingPayout) {
+        await tx.payout.create({
+          data: {
+            taskId: submission.taskId,
+            vaId: submission.vaId,
+            amountCents: submission.task.vaPayoutCents,
+            currency: submission.task.currency,
+            status: "released",
+            releasedAt: now,
+          },
+        });
+      } else if (existingPayout.status !== "paid") {
+        await tx.payout.update({
+          where: { id: existingPayout.id },
+          data: {
+            amountCents: submission.task.vaPayoutCents,
+            currency: submission.task.currency,
+            status: "released",
+            releasedAt: now,
+          },
+        });
+      }
+      if (existingPayout?.status !== "paid") {
+        await tx.moneyIntent.upsert({
+          where: { idempotencyKey: `release-payout:${submission.taskId}:${submission.vaId}` },
+          create: {
+            taskId: submission.taskId,
+            kind: "release_payout",
+            amountCents: submission.task.vaPayoutCents,
+            currency: submission.task.currency,
+            idempotencyKey: `release-payout:${submission.taskId}:${submission.vaId}`,
+          },
+          update: {
+            amountCents: submission.task.vaPayoutCents,
+            currency: submission.task.currency,
+            status: "queued",
+            lastError: null,
+            processedAt: null,
+          },
+        });
+      }
+      await tx.notification.createMany({
+        data: [
+          {
+            userId: submission.task.clientId,
+            type: "delivery_approved",
+            title: "Your reviewed delivery is ready",
+            body: "Download it from the task page. Your review window starts now.",
+            taskId: submission.taskId,
+          },
+          {
+            userId: submission.vaId,
+            type: "delivery_approved",
+            title: "Delivery approved",
+            body: "Your payout has been released for processing.",
+            taskId: submission.taskId,
+          },
+        ],
       });
     });
   } catch (e) {

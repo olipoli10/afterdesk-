@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { addHours } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
@@ -73,6 +75,7 @@ export async function submitTask(input: unknown): Promise<SubmitTaskResult> {
             uploaderId: user.id,
             taskId: null,
             kind: "input",
+            scanStatus: "clean",
           },
           data: { taskId: created.id },
         });
@@ -124,23 +127,29 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
   const user = await requireRole("CLIENT");
   const owned = await prisma.task.findFirst({
     where: { id: taskId, clientId: user.id },
-    select: { id: true },
+    select: { id: true, isInternal: true },
   });
   if (!owned) return { ok: false, error: "Task not found." };
 
   await expireStaleQuotes(taskId);
 
   try {
+    const now = new Date();
+    const settings = await getSettings();
     await transitionTask({
       taskId,
       from: "quoted",
-      to: "open",
+      to: owned.isInternal ? "open" : "awaiting_payment",
       action: "client_accepted_quote",
       actorId: user.id,
       // Time bound inside the compare-and-swap: a quote that expires between
       // the sweep and this write cannot be accepted by a racing request.
       guard: { OR: [{ quoteExpiresAt: null }, { quoteExpiresAt: { gt: new Date() } }] },
-      data: { acceptedAt: new Date() },
+      data: {
+        acceptedAt: now,
+        paymentDueAt: owned.isInternal ? null : addHours(now, settings.paymentWindowHours),
+      },
+      meta: { paymentRequired: !owned.isInternal },
     });
   } catch (e) {
     if (e instanceof TransitionError) {
@@ -183,5 +192,193 @@ export async function declineQuote(taskId: string, reason?: string): Promise<Quo
 
   revalidatePath(`/client/tasks/${taskId}`);
   revalidatePath("/client");
+  return { ok: true };
+}
+
+const revisionSchema = z.object({
+  taskId: z.string().min(1).max(100),
+  detail: z.string().trim().min(10).max(4000),
+});
+
+async function pauseUnpaidPayout(
+  tx: Prisma.TransactionClient,
+  taskId: string,
+  reason: string
+) {
+  await tx.payout.updateMany({
+    where: { taskId, status: "released" },
+    data: { status: "owed", releasedAt: null, note: reason },
+  });
+  await tx.moneyIntent.updateMany({
+    where: { taskId, kind: "release_payout", status: { in: ["queued", "processing"] } },
+    data: { status: "failed", lastError: reason },
+  });
+}
+
+export async function requestRevision(input: unknown): Promise<QuoteActionResult> {
+  const user = await requireRole("CLIENT");
+  const parsed = revisionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Describe the exact change needed (10–4,000 characters)." };
+  }
+  const settings = await getSettings();
+  const now = new Date();
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const task = await tx.task.findFirst({
+        where: { id: parsed.data.taskId, clientId: user.id },
+        select: {
+          id: true,
+          status: true,
+          revisionRounds: true,
+          revisionWindowEndsAt: true,
+        },
+      });
+      if (
+        !task ||
+        task.status !== "completed" ||
+        !task.revisionWindowEndsAt ||
+        task.revisionWindowEndsAt <= now
+      ) {
+        throw new TransitionError("revision-window-closed");
+      }
+      if (task.revisionRounds >= settings.maxRevisionRounds) {
+        throw new TransitionError("revision-limit");
+      }
+
+      await transitionTask({
+        tx,
+        taskId: task.id,
+        from: "completed",
+        to: "revision_requested",
+        action: "client_requested_revision",
+        actorId: user.id,
+        reason: parsed.data.detail,
+        guard: { revisionWindowEndsAt: { gt: now } },
+        data: {
+          revisionRounds: { increment: 1 },
+          windowPausedAt: now,
+          revisionInstructions: null,
+        },
+        meta: { round: task.revisionRounds + 1, pendingOperatorSummary: true },
+      });
+      await pauseUnpaidPayout(tx, task.id, "Paused while a client revision is reviewed.");
+      const admins = await tx.user.findMany({
+        where: { role: "ADMIN" },
+        select: { id: true },
+      });
+      if (admins.length > 0) {
+        await tx.notification.createMany({
+          data: admins.map((admin) => ({
+            userId: admin.id,
+            type: "revision_requested",
+            title: "Client revision needs an identity-safe summary",
+            body: "Review the client's note before releasing instructions to the worker.",
+            taskId: task.id,
+          })),
+        });
+      }
+    });
+  } catch (error) {
+    if (error instanceof TransitionError) {
+      return {
+        ok: false,
+        error:
+          error.message === "revision-limit"
+            ? "The included revision rounds have been used. Open a dispute if the written delivery standard was missed."
+            : "The review window has closed or this task has already moved on.",
+      };
+    }
+    throw error;
+  }
+
+  revalidatePath(`/client/tasks/${parsed.data.taskId}`);
+  revalidatePath("/client");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+const disputeSchema = z.object({
+  taskId: z.string().min(1).max(100),
+  reasonCode: z.enum([
+    "missing_work",
+    "incorrect_output",
+    "format_not_followed",
+    "fabricated_or_unverifiable",
+  ]),
+  detail: z.string().trim().min(20).max(4000),
+});
+
+export async function openDispute(input: unknown): Promise<QuoteActionResult> {
+  const user = await requireRole("CLIENT");
+  const parsed = disputeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Choose a standard and describe the problem in detail." };
+  }
+  const now = new Date();
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const task = await tx.task.findFirst({
+        where: { id: parsed.data.taskId, clientId: user.id },
+        select: { id: true, status: true, revisionWindowEndsAt: true },
+      });
+      if (
+        !task ||
+        task.status !== "completed" ||
+        !task.revisionWindowEndsAt ||
+        task.revisionWindowEndsAt <= now
+      ) {
+        throw new TransitionError("dispute-window-closed");
+      }
+      await tx.dispute.create({
+        data: {
+          taskId: task.id,
+          reasonCode: parsed.data.reasonCode,
+          reasonDetail: parsed.data.detail,
+        },
+      });
+      await transitionTask({
+        tx,
+        taskId: task.id,
+        from: "completed",
+        to: "disputed",
+        action: "client_opened_dispute",
+        actorId: user.id,
+        guard: { revisionWindowEndsAt: { gt: now } },
+        data: { windowPausedAt: now, revisionInstructions: null },
+        meta: { reasonCode: parsed.data.reasonCode },
+      });
+      await pauseUnpaidPayout(tx, task.id, "Paused while a client dispute is decided.");
+      const admins = await tx.user.findMany({
+        where: { role: "ADMIN" },
+        select: { id: true },
+      });
+      if (admins.length > 0) {
+        await tx.notification.createMany({
+          data: admins.map((admin) => ({
+            userId: admin.id,
+            type: "dispute_opened",
+            title: "Client dispute requires a decision",
+            body: "Judge it against the task category's written delivery standard.",
+            taskId: task.id,
+          })),
+        });
+      }
+    });
+  } catch (error) {
+    if (error instanceof TransitionError) {
+      return { ok: false, error: "The review window has closed or this task has moved on." };
+    }
+    if (error instanceof Error && error.message.toLowerCase().includes("unique constraint")) {
+      return { ok: false, error: "A dispute is already open for this task." };
+    }
+    throw error;
+  }
+
+  revalidatePath(`/client/tasks/${parsed.data.taskId}`);
+  revalidatePath("/client");
+  revalidatePath("/admin");
   return { ok: true };
 }

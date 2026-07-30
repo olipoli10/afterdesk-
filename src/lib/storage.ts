@@ -1,18 +1,19 @@
 import "server-only";
 import { createReadStream } from "node:fs";
-import { mkdir, stat, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
 
 /**
- * Storage abstraction. Local-disk driver for development; the production
- * driver will be Cloudflare R2 with presigned PUT/GET (required anyway —
- * Vercel caps direct uploads at ~4.5MB and the platform cap is 200MB).
+ * Private local-disk storage driver. Production must mount a persistent,
+ * non-public volume at ./storage or replace this module with an object-storage
+ * adapter. Keeping the root statically scoped also prevents deployment
+ * tracing from sweeping the entire application directory.
  * Keys are server-generated and opaque; original filenames never appear in
  * keys or URLs.
  */
 
-const ROOT = path.resolve(process.cwd(), process.env.STORAGE_DIR || "./storage");
+const ROOT = path.join(process.cwd(), "storage");
 
 function resolveKey(key: string): string {
   const p = path.resolve(ROOT, key);
@@ -28,20 +29,27 @@ export async function putObject(key: string, data: Buffer): Promise<void> {
   await writeFile(p, data);
 }
 
+export async function readObject(key: string): Promise<Buffer> {
+  return readFile(resolveKey(key));
+}
+
 export async function objectExists(key: string): Promise<boolean> {
   try {
     await stat(resolveKey(key));
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+    throw error;
   }
 }
 
 export async function deleteObject(key: string): Promise<void> {
   try {
     await unlink(resolveKey(key));
-  } catch {
-    // already gone — purge is idempotent
+  } catch (error) {
+    // Only an already-absent object is a successful idempotent purge. Storage
+    // outages and permission failures must be retried, never hidden.
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
 }
 

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { approveVa, rejectVa, suspendVa } from "@/server/actions/admin-va";
-import { inputClass, buttonPrimary, buttonSecondary } from "@/components/ui";
+import { Field, inputClass, buttonPrimary, buttonSecondary } from "@/components/ui";
 
 export function WorkerActions({
   vaUserId,
@@ -35,12 +35,14 @@ export function WorkerActions({
   if (suspending) {
     return (
       <div className="w-full space-y-2">
-        <input
-          className={inputClass}
-          placeholder="Reason (logged, shown to the worker)"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
+        <Field label="Suspension reason">
+          <input
+            className={inputClass}
+            placeholder="Logged and shown to the worker"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </Field>
         {error ? (
           <p role="alert" className="text-sm text-[#8C2F23]">
             {error}
@@ -55,7 +57,7 @@ export function WorkerActions({
             {isPending ? "Suspending…" : "Confirm suspension"}
           </button>
           <button
-            className="px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+            className="min-h-11 px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
             onClick={() => setSuspending(false)}
           >
             Cancel
@@ -87,7 +89,7 @@ export function WorkerActions({
       ) : null}
       {status === "approved" ? (
         <button
-          className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23]"
+          className="min-h-11 px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8C2F23]"
           onClick={() => setSuspending(true)}
         >
           Suspend…

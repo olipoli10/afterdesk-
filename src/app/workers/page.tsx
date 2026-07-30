@@ -10,9 +10,9 @@ import { PointerGlow } from "@/components/pointer-glow";
 import { LiveClaimCard } from "@/components/live-claim-card";
 import { StickyApply } from "@/components/sticky-apply";
 import { LangSwitch } from "@/components/lang-switch";
-import { ScrollDamper } from "@/components/scroll-damper";
 import { WORKERS_I18N, WORKERS_LANGS, workersLangOf } from "@/lib/i18n/workers";
 import { publicSampleQuestion, academyStats } from "@/lib/academy/public";
+import { TrustLinks } from "@/components/trust-links";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The worker homepage — "THE SWITCH". The page used to explain the deal in
@@ -129,15 +129,15 @@ export default async function WorkersHome({
     /* lang on the subtree: the root <html> is en, and screen readers must
        switch voice for the Tagalog copy. */
     <div lang={lang} className="overflow-x-clip bg-[#F7F6F3]">
-      <ScrollDamper />
       {/* ── NAV ───────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
-        <div className="mx-auto grid h-14 w-full max-w-[1120px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
+        <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
           <span className="whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.14em] text-[#14161A] sm:text-[13px] sm:tracking-[0.22em]">
-            Second Shift
+            <span className="sm:hidden">SS</span>
+            <span className="hidden sm:inline">Second Shift</span>
           </span>
           <AudienceToggle side="worker" tone="paper" />
-          <div className="flex items-center justify-end gap-3 sm:gap-5">
+          <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/workers" current={lang} options={WORKERS_LANGS} tone="paper" />
             <Link
               href="/login"
@@ -147,7 +147,7 @@ export default async function WorkersHome({
             </Link>
             <Link
               href="/register/va"
-              className="lift rounded-full bg-[#14161A] px-3 py-1 text-[12px] font-medium text-[#F7F6F3] hover:bg-black sm:px-4 sm:py-1.5 sm:text-[13px]"
+              className="lift hidden min-h-11 items-center rounded-full bg-[#14161A] px-4 py-1.5 text-[13px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:inline-flex"
             >
               {t.nav.apply}
             </Link>
@@ -578,7 +578,7 @@ export default async function WorkersHome({
       <section className="border-t border-white/8 bg-[#111317]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-20">
           <Reveal>
-            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#8A9099]">
               {ch("05", t.ch04.label)}
             </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
@@ -597,7 +597,7 @@ export default async function WorkersHome({
               </div>
               <div aria-hidden className="relative mt-3">
                 <div className="border-t border-dashed border-white/15" />
-                <span className="absolute left-1/2 top-1/2 flex h-5 w-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#111317] font-mono text-[11px] text-[#767C86] ring-1 ring-white/15">
+                <span className="absolute left-1/2 top-1/2 flex h-5 w-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#111317] font-mono text-[11px] text-[#8A9099] ring-1 ring-white/15">
                   ×
                 </span>
               </div>
@@ -656,11 +656,11 @@ export default async function WorkersHome({
 
       {/* ── FOOTER ────────────────────────────────────────────────────── */}
       <footer className="border-t border-white/10 bg-[#0A0B0D] pb-20 sm:pb-0">
-        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-3 px-6 py-6">
+        <div className="mx-auto grid w-full max-w-[1120px] gap-4 px-6 py-6 sm:grid-cols-[auto_1fr] sm:items-center">
           <span className="font-mono text-[12px] uppercase tracking-[0.22em] text-[#F7F6F3]">
             Second Shift
           </span>
-          <div className="flex items-center gap-6 text-[13px] text-[#8A9099]">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[#8A9099] sm:justify-end">
             <Link href="/how-it-works" className="transition-colors hover:text-white">
               {t.footer.how}
             </Link>
@@ -670,6 +670,9 @@ export default async function WorkersHome({
             <Link href="/" className="transition-colors hover:text-white">
               {t.footer.sendWork}
             </Link>
+          </div>
+          <div className="text-[12px] sm:col-span-2 sm:border-t sm:border-white/10 sm:pt-4">
+            <TrustLinks tone="night" />
           </div>
         </div>
       </footer>

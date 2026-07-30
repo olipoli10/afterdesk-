@@ -40,7 +40,8 @@ export default async function AdminTasksPage({
           <Link
             key={f}
             href={f === "all" ? "/admin/tasks" : `/admin/tasks?status=${f}`}
-            className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors duration-150 ${
+            aria-current={filter === f ? "page" : undefined}
+            className={`inline-flex min-h-11 items-center rounded-md border px-2.5 py-1 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] ${
               filter === f
                 ? "border-[#14161A] bg-[#14161A] text-[#F7F6F3]"
                 : "border-[#14161A]/20 bg-white text-[#5B6069] hover:bg-[#F7F6F3] hover:text-[#14161A]"

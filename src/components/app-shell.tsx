@@ -11,12 +11,14 @@ export function AppShell({
   areaLabel,
   nav,
   userName,
+  notificationCount = 0,
   children,
   width = "default",
 }: {
   areaLabel: string;
   nav: { href: string; label: string; badge?: number }[];
   userName: string;
+  notificationCount?: number;
   children: ReactNode;
   /** "wide" for the admin console — the densest surface earns more columns. */
   width?: "default" | "wide";
@@ -53,6 +55,17 @@ export function AppShell({
             </nav>
           </div>
           <div className="flex shrink-0 items-center gap-3">
+            <Link
+              href="/notifications"
+              className="relative inline-flex min-h-11 items-center rounded px-2 text-[12px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
+            >
+              Updates
+              {notificationCount > 0 ? (
+                <span className="ml-1.5 rounded-full bg-[#A82318] px-1.5 py-0.5 font-mono text-[10px] leading-none text-white">
+                  {notificationCount > 99 ? "99+" : notificationCount}
+                </span>
+              ) : null}
+            </Link>
             <span className="hidden font-mono text-[12px] text-[#5B6069] sm:block">{userName}</span>
             <SignOutButton />
           </div>

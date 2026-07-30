@@ -25,17 +25,28 @@ export async function approveVa(input: unknown): Promise<AdminVaResult> {
   });
   if (!profile) return { ok: false, error: "Worker not found." };
 
-  await prisma.vaProfile.update({
-    where: { userId: parsed.data.vaUserId },
-    data: { status: "approved", suspendedAt: null, suspensionReason: null, rejectedAt: null },
-  });
-  await logAdminEvent({
-    actorId: admin.id,
-    entity: "VaProfile",
-    entityId: parsed.data.vaUserId,
-    action: "approve",
-    before: { status: profile.status },
-    after: { status: "approved" },
+  await prisma.$transaction(async (tx) => {
+    await tx.vaProfile.update({
+      where: { userId: parsed.data.vaUserId },
+      data: { status: "approved", suspendedAt: null, suspensionReason: null, rejectedAt: null },
+    });
+    await logAdminEvent({
+      tx,
+      actorId: admin.id,
+      entity: "VaProfile",
+      entityId: parsed.data.vaUserId,
+      action: "approve",
+      before: { status: profile.status },
+      after: { status: "approved" },
+    });
+    await tx.notification.create({
+      data: {
+        userId: parsed.data.vaUserId,
+        type: "application_approved",
+        title: "Your application was approved",
+        body: "The task pool is now open to you.",
+      },
+    });
   });
 
   revalidatePath("/admin/workers");
@@ -54,17 +65,28 @@ export async function rejectVa(input: unknown): Promise<AdminVaResult> {
   });
   if (!profile) return { ok: false, error: "Worker not found." };
 
-  await prisma.vaProfile.update({
-    where: { userId: parsed.data.vaUserId },
-    data: { status: "rejected", rejectedAt: new Date() },
-  });
-  await logAdminEvent({
-    actorId: admin.id,
-    entity: "VaProfile",
-    entityId: parsed.data.vaUserId,
-    action: "reject",
-    before: { status: profile.status },
-    after: { status: "rejected", reason: parsed.data.reason ?? null },
+  await prisma.$transaction(async (tx) => {
+    await tx.vaProfile.update({
+      where: { userId: parsed.data.vaUserId },
+      data: { status: "rejected", rejectedAt: new Date() },
+    });
+    await logAdminEvent({
+      tx,
+      actorId: admin.id,
+      entity: "VaProfile",
+      entityId: parsed.data.vaUserId,
+      action: "reject",
+      before: { status: profile.status },
+      after: { status: "rejected", reason: parsed.data.reason ?? null },
+    });
+    await tx.notification.create({
+      data: {
+        userId: parsed.data.vaUserId,
+        type: "application_rejected",
+        title: "Application decision",
+        body: "Your application was not approved this time. Academy access remains available.",
+      },
+    });
   });
 
   revalidatePath("/admin/workers");
@@ -93,24 +115,33 @@ export async function suspendVa(input: unknown): Promise<AdminVaResult> {
   });
   if (!profile) return { ok: false, error: "Worker not found." };
 
-  await prisma.$transaction([
-    prisma.vaProfile.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.vaProfile.update({
       where: { userId: parsed.data.vaUserId },
       data: {
         status: "suspended",
         suspendedAt: new Date(),
         suspensionReason: parsed.data.reason,
       },
-    }),
-    prisma.session.deleteMany({ where: { userId: parsed.data.vaUserId } }),
-  ]);
-  await logAdminEvent({
-    actorId: admin.id,
-    entity: "VaProfile",
-    entityId: parsed.data.vaUserId,
-    action: "suspend",
-    before: { status: profile.status },
-    after: { status: "suspended", reason: parsed.data.reason },
+    });
+    await tx.session.deleteMany({ where: { userId: parsed.data.vaUserId } });
+    await logAdminEvent({
+      tx,
+      actorId: admin.id,
+      entity: "VaProfile",
+      entityId: parsed.data.vaUserId,
+      action: "suspend",
+      before: { status: profile.status },
+      after: { status: "suspended", reason: parsed.data.reason },
+    });
+    await tx.notification.create({
+      data: {
+        userId: parsed.data.vaUserId,
+        type: "account_suspended",
+        title: "Pool access paused",
+        body: parsed.data.reason,
+      },
+    });
   });
 
   revalidatePath("/admin/workers");

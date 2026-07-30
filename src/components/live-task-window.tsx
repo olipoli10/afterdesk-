@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The hero is a SESSION, not a screenshot: one task's whole life plays out
@@ -81,19 +82,10 @@ function stampClass(tone: Step["stampTone"]): string {
 }
 
 export function LiveTaskWindow() {
-  // Server renders the canonical QUOTE READY state (index 1).
-  const [i, setI] = useState(1);
-  const [playing, setPlaying] = useState(false);
+  // The server snapshot renders QUOTE READY; motion-capable clients play from intake.
+  const [i, setI] = useState(0);
+  const playing = useMediaQuery("(prefers-reduced-motion: no-preference)");
   const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const wantsMotion =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
-    if (!wantsMotion) return;
-    setPlaying(true);
-    setI(0);
-  }, []);
 
   useEffect(() => {
     if (!playing) return;
@@ -105,7 +97,8 @@ export function LiveTaskWindow() {
     return () => window.clearTimeout(t);
   }, [playing, i]);
 
-  const s = STEPS[i];
+  const visibleIndex = playing ? i : 1;
+  const s = STEPS[visibleIndex];
 
   return (
     <div ref={ref} className="relative">
@@ -127,18 +120,18 @@ export function LiveTaskWindow() {
           </p>
           <div className="mt-3 space-y-1.5 font-mono text-[12px]">
             <div className="flex justify-between gap-4">
-              <span className="shrink-0 text-[#767C86]">SCOPE</span>
+              <span className="shrink-0 text-[#8A9099]">SCOPE</span>
               <span className="truncate text-[#C9CDD3]">merge duplicates, fix units</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="shrink-0 text-[#767C86]">RETURNS</span>
+              <span className="shrink-0 text-[#8A9099]">RETURNS</span>
               <span className="text-[#C9CDD3]">7:00 AM ET</span>
             </div>
           </div>
           <div
             className={`mt-4 flex items-baseline justify-between border-t border-white/8 pt-3 transition-opacity duration-500 ${s.showPrice ? "opacity-100" : "opacity-0"}`}
           >
-            <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#767C86]">
+            <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#8A9099]">
               Fixed price
             </span>
             <span className="font-mono text-[26px] font-medium tabular-nums text-[#F7F6F3] underline decoration-[#1E7F5C] decoration-2 underline-offset-4">
@@ -162,8 +155,8 @@ export function LiveTaskWindow() {
             </span>
           </div>
         </div>
-        <div className="border-t border-white/8 bg-[#0F1011] px-4 py-2.5 font-mono text-[11px] text-[#767C86]">
-          <span key={i} className="live-line block">
+        <div className="border-t border-white/8 bg-[#0F1011] px-4 py-2.5 font-mono text-[11px] text-[#8A9099]">
+          <span key={visibleIndex} className="live-line block">
             {s.activity}
           </span>
         </div>

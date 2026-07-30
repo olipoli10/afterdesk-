@@ -12,7 +12,7 @@ export default function NotFound() {
       <div className="mt-8 flex items-center gap-4 text-[13px] font-medium">
         <Link
           href="/"
-          className="rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[#14161A] transition-colors hover:bg-white"
+          className="inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[#14161A] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
           Get work done
         </Link>

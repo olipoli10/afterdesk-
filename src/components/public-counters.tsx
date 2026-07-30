@@ -29,7 +29,9 @@ export async function PublicCounters({
   className?: string;
 }) {
   const stats = await publicStats();
-  if (stats.tasksDelivered === 0) return null;
+  // Tiny seed numbers hurt trust and can expose individual activity. Publish
+  // only once both sides have enough real depth to be meaningful.
+  if (stats.tasksDelivered < 10 || stats.approvedWorkers < 5) return null;
 
   const n = stats.tasksDelivered.toLocaleString("en-US");
   const w = stats.approvedWorkers.toLocaleString("en-US");

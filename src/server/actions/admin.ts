@@ -80,6 +80,13 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
   }
 
   const settings = await getSettings();
+  const effectiveHourlyUsd = (vaPayoutCents / 100) / (estimatedMinutes / 60);
+  if (effectiveHourlyUsd < settings.minWorkerHourlyUsd) {
+    return {
+      ok: false,
+      error: `That payout is about $${effectiveHourlyUsd.toFixed(2)}/hour. Raise it to at least $${settings.minWorkerHourlyUsd.toFixed(2)}/hour for the estimate.`,
+    };
+  }
   const now = new Date();
   const quoteExpiresAt = addHours(now, settings.quoteValidityHours);
   const vaDeadlineUtc = task.clientDeadlineUtc
@@ -196,14 +203,80 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
   const { taskId, reason } = parsed.data;
 
   try {
-    await transitionTask({
-      taskId,
-      from: NON_TERMINAL_STATUSES.filter((s) => isAllowedTransition(s, "cancelled")),
-      to: "cancelled",
-      action: "admin_cancelled",
-      actorId: admin.id,
-      reason,
-      data: { cancelledAt: new Date(), cancelReason: reason },
+    await prisma.$transaction(async (tx) => {
+      const task = await tx.task.findUnique({
+        where: { id: taskId },
+        select: {
+          clientId: true,
+          isInternal: true,
+          currency: true,
+          payments: {
+            where: { status: { in: ["received", "partially_refunded"] } },
+            orderBy: { receivedAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              amountCents: true,
+              refunds: { select: { amountCents: true } },
+            },
+          },
+        },
+      });
+      if (!task) throw new TransitionError("Task not found.");
+
+      await transitionTask({
+        tx,
+        taskId,
+        from: NON_TERMINAL_STATUSES.filter((s) => isAllowedTransition(s, "cancelled")),
+        to: "cancelled",
+        action: "admin_cancelled",
+        actorId: admin.id,
+        reason,
+        data: { cancelledAt: new Date(), cancelReason: reason },
+      });
+
+      await tx.payout.updateMany({
+        where: { taskId, status: { not: "paid" } },
+        data: { status: "void", note: `Task cancelled: ${reason}` },
+      });
+      await tx.moneyIntent.updateMany({
+        where: {
+          taskId,
+          kind: "release_payout",
+          status: { in: ["queued", "failed"] },
+        },
+        data: { status: "done", processedAt: new Date(), lastError: null },
+      });
+
+      const payment = task.payments[0];
+      const alreadyRefunded =
+        payment?.refunds.reduce((sum, refund) => sum + refund.amountCents, 0) ?? 0;
+      const refundDue = payment ? payment.amountCents - alreadyRefunded : 0;
+      if (!task.isInternal && payment && refundDue > 0) {
+        await tx.moneyIntent.upsert({
+          where: { idempotencyKey: `refund-admin-cancel:${taskId}:${payment.id}` },
+          create: {
+            taskId,
+            kind: "refund_client",
+            amountCents: refundDue,
+            currency: task.currency,
+            idempotencyKey: `refund-admin-cancel:${taskId}:${payment.id}`,
+          },
+          update: {},
+        });
+      }
+      await tx.notification.create({
+        data: {
+          userId: task.clientId,
+          type: "task_cancelled",
+          title: refundDue > 0 ? "Task cancelled — refund queued" : "Task cancelled",
+          body:
+            refundDue > 0
+              ? "The remaining received payment will be returned to its original method."
+              : reason,
+          taskId,
+        },
+      });
     });
   } catch (e) {
     if (e instanceof IllegalTransitionError) {

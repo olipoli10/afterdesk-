@@ -12,6 +12,8 @@ import { formatCents } from "@/lib/money";
 import { deliverableFileLabel } from "@/lib/filenames";
 import { LocalTime } from "@/components/local-time";
 import { QuoteActions } from "@/components/quote-actions";
+import { PaymentActions } from "@/components/payment-actions";
+import { ClientResolutionActions } from "@/components/client-resolution-actions";
 import {
   Badge,
   Card,
@@ -91,6 +93,7 @@ export default async function ClientTaskPage({
               </span>
               . Work starts once payment is settled.
             </p>
+            <PaymentActions taskId={task.id} />
           </CardBody>
         </Card>
       ) : null}
@@ -258,9 +261,20 @@ export default async function ClientTaskPage({
               ))}
             </ul>
             <p className="mt-3 border-t border-[#14161A]/[0.06] pt-3 font-mono text-xs text-[#5B6069]">
-              Something not right with a delivery? Contact us and the operator will take it
-              from there.
+              Something not right? Use the review controls below. Your note goes to the
+              operator and never directly to the worker.
             </p>
+            {task.status === "completed" &&
+            task.revisionWindowEndsAt &&
+            task.revisionWindowEndsAt > new Date() ? (
+              <ClientResolutionActions
+                taskId={task.id}
+                revisionsLeft={Math.max(
+                  0,
+                  settings.maxRevisionRounds - task.revisionRounds
+                )}
+              />
+            ) : null}
           </CardBody>
         </Card>
       ) : null}

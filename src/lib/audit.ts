@@ -61,8 +61,10 @@ export async function logAdminEvent(entry: {
   action: string;
   before?: unknown;
   after?: unknown;
+  tx?: Prisma.TransactionClient;
 }): Promise<void> {
-  await prisma.adminEvent.create({
+  const db = entry.tx ?? prisma;
+  await db.adminEvent.create({
     data: {
       actorId: entry.actorId,
       entity: entry.entity,

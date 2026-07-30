@@ -26,7 +26,7 @@ export function AudienceToggle({
       : "text-[#5B6069] hover:text-[#14161A]";
 
   const seg =
-    "whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium leading-5 transition-colors sm:px-3.5 sm:text-[13px]";
+    "flex min-h-11 items-center whitespace-nowrap rounded-full px-2.5 text-[11px] font-medium leading-5 transition-colors sm:px-3.5 sm:text-[13px]";
 
   return (
     <nav

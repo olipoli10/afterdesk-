@@ -8,6 +8,16 @@ import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
 import { AdminCancel, AdminReturnToPool } from "@/components/admin-cancel";
 import {
+  ManualPaymentForm,
+  ManualRefundForm,
+  PayoutForm,
+} from "@/components/admin-money-actions";
+import { RecheckFileButton } from "@/components/admin-file-actions";
+import {
+  DisputeDecisionForm,
+  RevisionInstructionsForm,
+} from "@/components/admin-resolution-actions";
+import {
   Badge,
   Card,
   CardBody,
@@ -134,21 +144,154 @@ export default async function AdminTaskDetail({
             </SectionLabel>
             <ul className="divide-y divide-[#14161A]/[0.06] text-sm">
               {task.files.map((f) => (
-                <li key={f.id} className="flex items-center justify-between py-2">
+                <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                   <span className="flex min-w-0 items-center gap-2">
                     <span className="shrink-0 rounded-[3px] bg-[#14161A]/[0.04] px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-[#5B6069]">
                       {f.kind}
+                    </span>
+                    <span className="shrink-0 rounded-[3px] bg-[#1E7F5C]/10 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-[#166049]">
+                      {f.scanStatus}
                     </span>
                     <a href={`/api/files/${f.id}/download`} className={`truncate ${linkInline}`}>
                       {f.fileName}
                     </a>
                   </span>
-                  <span className="shrink-0 pl-2 font-mono text-xs tabular-nums text-[#5B6069]">
-                    {formatBytes(f.sizeBytes)}
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="font-mono text-xs tabular-nums text-[#5B6069]">
+                      {formatBytes(f.sizeBytes)}
+                    </span>
+                    {f.scanStatus !== "clean" ? <RecheckFileButton fileId={f.id} /> : null}
                   </span>
                 </li>
               ))}
             </ul>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      <Card className="mb-4">
+        <CardBody>
+          <SectionLabel as="h2" className="mb-2">
+            Client payment
+          </SectionLabel>
+          {task.payments.length > 0 ? (
+            <ul className="mb-3 space-y-1 text-sm text-[#5B6069]">
+              {task.payments.map((payment) => (
+                <li
+                  key={payment.id}
+                  className="space-y-1 border-b border-black/5 pb-2 last:border-0"
+                >
+                  <div className="flex flex-wrap justify-between gap-2">
+                    <span>
+                      {payment.provider ?? payment.method} · {payment.status}
+                      {payment.providerRef ? ` · ${payment.providerRef}` : ""}
+                    </span>
+                    <span className={moneyClient}>
+                      {formatCents(payment.amountCents, task.currency)}
+                    </span>
+                  </div>
+                  {payment.refunds.map((refund) => (
+                    <p key={refund.id} className="text-xs text-[#8C2F23]">
+                      Refund · {formatCents(refund.amountCents, task.currency)}
+                      {refund.providerRef ? ` · ${refund.providerRef}` : ""}
+                    </p>
+                  ))}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mb-3 text-sm text-[#5B6069]">No payment recorded.</p>
+          )}
+          {task.status === "awaiting_payment" ? (
+            <ManualPaymentForm taskId={task.id} />
+          ) : null}
+          {task.moneyIntents
+            .filter(
+              (intent) =>
+                intent.kind === "refund_client" &&
+                ["queued", "failed"].includes(intent.status)
+            )
+            .map((intent) => (
+              <div
+                key={intent.id}
+                className="mt-4 rounded-md border border-[#D98324]/40 bg-[#D98324]/5 p-3"
+              >
+                <p className="mb-2 text-sm text-[#14161A]">
+                  Refund due: {formatCents(intent.amountCents, intent.currency)}
+                </p>
+                {intent.lastError ? (
+                  <p className="mb-2 text-xs text-[#8C2F23]">{intent.lastError}</p>
+                ) : null}
+                {task.payments.some((payment) => payment.provider === "manual") ? (
+                  <ManualRefundForm intentId={intent.id} />
+                ) : (
+                  <p className="text-xs text-[#5B6069]">
+                    Stripe refund is queued for the maintenance worker.
+                  </p>
+                )}
+              </div>
+            ))}
+        </CardBody>
+      </Card>
+
+      {task.payouts.length > 0 ? (
+        <Card className="mb-4">
+          <CardBody>
+            <SectionLabel as="h2" className="mb-2">
+              Worker payout
+            </SectionLabel>
+            <div className="space-y-4">
+              {task.payouts.map((payout) => (
+                <div key={payout.id} className="space-y-2">
+                  <p className="flex flex-wrap justify-between gap-2 text-sm text-[#5B6069]">
+                    <span>
+                      {payout.status}
+                      {payout.reference ? ` · ${payout.reference}` : ""}
+                    </span>
+                    <span className={moneyPayout}>
+                      {formatCents(payout.amountCents, payout.currency)}
+                    </span>
+                  </p>
+                  {payout.status === "owed" || payout.status === "released" ? (
+                    <PayoutForm payoutId={payout.id} />
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {task.status === "revision_requested" && !task.revisionInstructions ? (
+        <Card className="mb-4 border-[#D98324]/50">
+          <CardBody>
+            <SectionLabel as="h2" className="mb-2">
+              Revision awaiting your summary
+            </SectionLabel>
+            <RevisionInstructionsForm taskId={task.id} />
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {task.disputes.some((dispute) => dispute.outcome === "pending") ? (
+        <Card className="mb-4 border-[#A82318]/40">
+          <CardBody>
+            <SectionLabel as="h2" className="mb-2">
+              Open dispute
+            </SectionLabel>
+            {task.disputes
+              .filter((dispute) => dispute.outcome === "pending")
+              .map((dispute) => (
+                <div key={dispute.id} className="space-y-3">
+                  <p className="font-mono text-xs uppercase text-[#8C2F23]">
+                    {dispute.reasonCode.replaceAll("_", " ")}
+                  </p>
+                  <p className="whitespace-pre-wrap text-sm text-[#14161A]">
+                    {dispute.reasonDetail}
+                  </p>
+                  <DisputeDecisionForm disputeId={dispute.id} />
+                </div>
+              ))}
           </CardBody>
         </Card>
       ) : null}

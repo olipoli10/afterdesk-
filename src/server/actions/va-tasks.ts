@@ -174,11 +174,14 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
     await prisma.$transaction(async (tx) => {
       const task = await tx.task.findFirst({
         where: { id: taskId, claimedById: user.id },
-        select: { status: true },
+        select: { status: true, revisionInstructions: true },
       });
       if (!task) throw new Refused("Task not found.");
       if (!["claimed", "qc_rejected", "revision_requested"].includes(task.status)) {
         throw new Refused("This task is not open for delivery right now.");
+      }
+      if (task.status === "revision_requested" && !task.revisionInstructions) {
+        throw new Refused("The operator is still preparing the revision instructions.");
       }
 
       // Anything still pending is superseded by this delivery, so the QC queue
@@ -209,6 +212,7 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
             uploaderId: user.id,
             taskId: null,
             kind: "deliverable",
+            scanStatus: "clean",
           },
           data: { taskId, submissionId: submission.id },
         });

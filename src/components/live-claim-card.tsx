@@ -156,7 +156,7 @@ export function LiveClaimCard({
                   <span className="block uppercase tracking-[0.12em] line-through decoration-[#14161A]/30">
                     {k}
                   </span>
-                  <span className="block tabular-nums text-[#767C86]">{v}</span>
+                  <span className="block tabular-nums text-[#5B6069]">{v}</span>
                 </div>
               ))}
             </div>

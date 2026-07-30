@@ -7,6 +7,7 @@ import { publicCourses, academyStats } from "@/lib/academy/public";
 import { courseLook } from "@/lib/academy/look";
 import { ACADEMY_I18N, ACADEMY_LANGS, academyLangOf } from "@/lib/i18n/academy";
 import { SITE_URL } from "@/lib/site";
+import { TrustLinks } from "@/components/trust-links";
 
 /* ─────────────────────────────────────────────────────────────────────────
    THE PUBLIC ACADEMY — the shareable asset.
@@ -76,7 +77,7 @@ export default async function AcademyPublicPage({
             </Link>
             <Link
               href="/register/va"
-              className="lift rounded-full bg-[#14161A] px-3 py-1 text-[12px] font-medium text-[#F7F6F3] hover:bg-black sm:px-4 sm:py-1.5 sm:text-[13px]"
+              className="lift inline-flex min-h-11 items-center rounded-full bg-[#14161A] px-3 py-1 text-[12px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:px-4 sm:py-1.5 sm:text-[13px]"
             >
               {t.nav.apply}
             </Link>
@@ -280,7 +281,7 @@ export default async function AcademyPublicPage({
 
       {/* ── FOOTER ──────────────────────────────────────────────────────── */}
       <footer className="border-t border-black/8">
-        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 text-[13px] text-[#5B6069]">
+        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center gap-x-6 gap-y-3 px-6 py-8 text-[13px] text-[#5B6069]">
           <span className="font-mono text-[11px] uppercase tracking-[0.14em]">Second Shift</span>
           <Link href="/workers" className="transition-colors hover:text-[#14161A]">
             {t.footer.workers}
@@ -291,6 +292,9 @@ export default async function AcademyPublicPage({
           <Link href="/login" className="ml-auto transition-colors hover:text-[#14161A]">
             {t.footer.signIn}
           </Link>
+          <div className="basis-full border-t border-black/8 pt-4 text-[12px]">
+            <TrustLinks />
+          </div>
         </div>
       </footer>
     </div>

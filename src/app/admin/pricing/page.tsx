@@ -7,8 +7,8 @@ import { Card, EmptyState, PageTitle } from "@/components/ui";
 
 export default async function PricingQueuePage() {
   await requireRole("ADMIN");
-  // No worker process in a one-operator product: time-driven transitions run
-  // when the operator opens their queue.
+  // The scheduler is primary; this opportunistic run keeps the queue correct
+  // even when the maintenance job is briefly delayed.
   await runOperatorSweeps();
   const queue = await pricingQueue();
 

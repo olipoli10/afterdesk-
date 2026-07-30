@@ -31,6 +31,11 @@ export default async function WorkersPage() {
       deadlinesMissed: true,
       qcRejections: true,
       suspensionReason: true,
+      experienceSummary: true,
+      specialties: true,
+      weeklyAvailability: true,
+      portfolioUrl: true,
+      applicationSubmittedAt: true,
       createdAt: true,
       user: { select: { name: true, email: true } },
     },
@@ -91,6 +96,29 @@ export default async function WorkersPage() {
                   </p>
                   {p.status === "suspended" && p.suspensionReason ? (
                     <p className="mt-2 text-sm text-[#5B6069]">{p.suspensionReason}</p>
+                  ) : null}
+                  {p.experienceSummary ? (
+                    <div className="mt-3 max-w-2xl space-y-1 text-sm text-[#5B6069]">
+                      <p className="whitespace-pre-wrap text-[#14161A]">{p.experienceSummary}</p>
+                      <p>
+                        <span className="font-medium text-[#14161A]">Specialties:</span>{" "}
+                        {p.specialties}
+                      </p>
+                      <p>
+                        <span className="font-medium text-[#14161A]">Availability:</span>{" "}
+                        {p.weeklyAvailability}
+                      </p>
+                      {p.portfolioUrl ? (
+                        <a
+                          href={p.portfolioUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-block underline underline-offset-2"
+                        >
+                          Open work sample
+                        </a>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
 

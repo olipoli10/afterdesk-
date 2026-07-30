@@ -79,6 +79,9 @@ export async function GET(
       { status: 410 }
     );
   }
+  if (file.scanStatus !== "clean") {
+    return NextResponse.json({ error: "File is not available." }, { status: 423 });
+  }
 
   if (!(await objectExists(file.storageKey))) {
     return NextResponse.json({ error: "File data missing." }, { status: 404 });

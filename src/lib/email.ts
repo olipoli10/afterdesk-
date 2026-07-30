@@ -20,6 +20,9 @@ export async function sendEmail({ to, subject, text }: SendArgs): Promise<void> 
   const from = process.env.EMAIL_FROM || "Second Shift <onboarding@resend.dev>";
 
   if (!apiKey) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("RESEND_API_KEY must be configured before production email can be sent.");
+    }
     console.info(
       `\n──────── EMAIL (dev — no RESEND_API_KEY set) ────────\n` +
         `To:      ${to}\n` +

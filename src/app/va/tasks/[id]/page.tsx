@@ -48,7 +48,9 @@ export default async function VaTaskPage({
   ]);
   if (!task) notFound();
 
-  const canDeliver = ["claimed", "qc_rejected", "revision_requested"].includes(task.status);
+  const canDeliver =
+    ["claimed", "qc_rejected"].includes(task.status) ||
+    (task.status === "revision_requested" && Boolean(task.revisionInstructions));
   const awaitingReview = task.status === "submitted_for_qc";
 
   return (
@@ -110,11 +112,11 @@ export default async function VaTaskPage({
             <p className="mt-1 text-sm leading-relaxed text-[#5B6069]">
               The client asked for changes after delivery.
             </p>
-            {lastReview?.qcComment ? (
+            {task.revisionInstructions ? (
               <>
                 <SectionLabel className="mt-3">Operator&apos;s note</SectionLabel>
                 <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#14161A]">
-                  {lastReview.qcComment}
+                  {task.revisionInstructions}
                 </p>
               </>
             ) : (

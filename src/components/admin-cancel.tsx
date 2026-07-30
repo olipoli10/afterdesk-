@@ -16,7 +16,7 @@ export function AdminCancel({ taskId }: { taskId: string }) {
   if (!open) {
     return (
       <button
-        className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23]"
+        className="min-h-11 px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#8C2F23] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8C2F23]"
         onClick={() => setOpen(true)}
       >
         Cancel this task…
@@ -59,7 +59,7 @@ export function AdminCancel({ taskId }: { taskId: string }) {
             {isPending ? "Cancelling…" : "Confirm cancellation"}
           </button>
           <button
-            className="px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+            className="min-h-11 px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
             onClick={() => setOpen(false)}
           >
             Keep task
@@ -85,7 +85,7 @@ export function AdminReturnToPool({ taskId }: { taskId: string }) {
   if (!open) {
     return (
       <button
-        className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+        className="min-h-11 px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
         onClick={() => setOpen(true)}
       >
         Return to pool…
@@ -131,7 +131,7 @@ export function AdminReturnToPool({ taskId }: { taskId: string }) {
             {isPending ? "Returning…" : "Confirm — return to pool"}
           </button>
           <button
-            className="px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+            className="min-h-11 px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
             onClick={() => setOpen(false)}
           >
             Keep assignment

@@ -129,7 +129,7 @@ export function QcForm({
                         radioRefs.current[n - 1] = el;
                       }}
                       onClick={() => setRating(n)}
-                      className={`inline-flex h-10 w-10 items-center justify-center gap-0.5 rounded-md border font-mono text-sm font-medium tabular-nums transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                      className={`inline-flex h-11 w-11 items-center justify-center gap-0.5 rounded-md border font-mono text-sm font-medium tabular-nums transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
                         selected
                           ? "border-[#14161A] bg-[#14161A] text-[#F7F6F3]"
                           : "border-[#14161A]/20 bg-white text-[#14161A] hover:border-[#14161A]/40"
@@ -160,7 +160,7 @@ export function QcForm({
               <span className="font-mono text-xs text-[#5B6069]">Ctrl+Enter</span>
               <span className="flex-1" />
               <button
-                className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#955710]"
+                className="min-h-11 px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#955710] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
                 onClick={() => setRejecting(true)}
               >
                 Send back for changes…
@@ -215,7 +215,7 @@ export function QcForm({
                 {isPending ? "Sending back…" : "Send back for changes"}
               </button>
               <button
-                className="px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+                className="min-h-11 px-2 text-sm text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
                 onClick={() => setRejecting(false)}
               >
                 Back

@@ -5,14 +5,17 @@ import { prisma } from "@/lib/db";
 import { consumeRateLimit, getSessionUser, isApprovedVa } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { deleteObject, putObject } from "@/lib/storage";
+import {
+  FileRejectedError,
+  inspectAndSanitizeFile,
+  ScannerUnavailableError,
+} from "@/lib/file-security";
 
 /**
- * Upload-first, attach-later (mirrors the future R2 presigned flow):
+ * Upload-first, attach-later:
  * files are uploaded before the task exists (taskId null) and are claimed by
  * the submit action, which verifies uploaderId. Unattached files are reaped
  * by the orphan sweep (src/server/sweeps.ts).
- *
- * V1 scope: client input files only (VA deliverables arrive at build step 6).
  */
 
 /** Unattached uploads a single client may hold at once. */
@@ -103,6 +106,12 @@ export async function POST(request: Request) {
   }
 
   const originalName = path.basename(file.name || "file");
+  if (
+    Buffer.byteLength(originalName, "utf8") > 255 ||
+    /[\u0000-\u001f\u007f]/.test(originalName)
+  ) {
+    return NextResponse.json({ error: "The filename is invalid or too long." }, { status: 400 });
+  }
   const ext = path.extname(originalName).toLowerCase().replace(".", "");
   if (!settings.allowedExtensions.includes(ext)) {
     return NextResponse.json(
@@ -114,7 +123,19 @@ export async function POST(request: Request) {
   // Opaque server-generated key — original filename never appears in keys/URLs.
   const storageKey = `${requestedKind}/${randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-  await putObject(storageKey, buffer);
+  let inspected;
+  try {
+    inspected = await inspectAndSanitizeFile(buffer, ext);
+  } catch (error) {
+    if (error instanceof FileRejectedError) {
+      return NextResponse.json({ error: error.message }, { status: 422 });
+    }
+    if (error instanceof ScannerUnavailableError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+    throw error;
+  }
+  await putObject(storageKey, inspected.buffer);
 
   try {
     const record = await prisma.file.create({
@@ -126,8 +147,13 @@ export async function POST(request: Request) {
         fileName: originalName,
         // Server-derived from the validated extension, never the browser's
         // claim: this value is echoed back as Content-Type on download.
-        mime: mimeForExtension(ext),
-        sizeBytes: file.size,
+        mime: inspected.detectedMime,
+        sizeBytes: inspected.buffer.length,
+        scanStatus: "clean",
+        detectedMime: inspected.detectedMime,
+        sha256: inspected.sha256,
+        scanDetails: inspected.details,
+        scannedAt: new Date(),
       },
     });
     await prisma.fileAccessLog.create({
@@ -143,29 +169,5 @@ export async function POST(request: Request) {
     // Compensate: never leave a blob with no row pointing at it.
     await deleteObject(storageKey);
     throw e;
-  }
-}
-
-function mimeForExtension(ext: string): string {
-  switch (ext) {
-    case "csv":
-      return "text/csv";
-    case "xlsx":
-      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    case "xls":
-      return "application/vnd.ms-excel";
-    case "pdf":
-      return "application/pdf";
-    case "docx":
-      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    case "png":
-      return "image/png";
-    case "jpg":
-    case "jpeg":
-      return "image/jpeg";
-    case "zip":
-      return "application/zip";
-    default:
-      return "application/octet-stream";
   }
 }

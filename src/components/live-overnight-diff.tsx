@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The flagship artifact WORKS while you watch: the broken file gets scanned
@@ -60,19 +61,11 @@ function Cell({ children, className = "" }: { children: ReactNode; className?: s
 }
 
 export function LiveOvernightDiff() {
-  // Server renders the finished night.
-  const [step, setStep] = useState(DONE_STEP);
-  const [playing, setPlaying] = useState(false);
+  // The external-store server snapshot keeps SSR on the finished night;
+  // motion-capable clients start at the beginning without a mount effect.
+  const [step, setStep] = useState(0);
+  const playing = useMediaQuery("(prefers-reduced-motion: no-preference)");
   const [loop, setLoop] = useState(0);
-
-  useEffect(() => {
-    const wantsMotion =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
-    if (!wantsMotion) return;
-    setPlaying(true);
-    setStep(0);
-  }, []);
 
   useEffect(() => {
     if (!playing) return;
@@ -87,10 +80,14 @@ export function LiveOvernightDiff() {
     return () => window.clearTimeout(t);
   }, [playing, step]);
 
-  const scanIndex = playing && step < SCAN_END ? step : -1;
-  const builtRows = !playing || step >= BUILD_END ? AFTER_ROWS.length : Math.max(0, step - SCAN_END);
-  const statsShown = !playing || step >= STATS_STEP;
-  const delivered = !playing || step >= DONE_STEP;
+  const visibleStep = playing ? step : DONE_STEP;
+  const scanIndex = playing && visibleStep < SCAN_END ? visibleStep : -1;
+  const builtRows =
+    !playing || visibleStep >= BUILD_END
+      ? AFTER_ROWS.length
+      : Math.max(0, visibleStep - SCAN_END);
+  const statsShown = !playing || visibleStep >= STATS_STEP;
+  const delivered = !playing || visibleStep >= DONE_STEP;
 
   return (
     <div className="sheen-frame shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)]">
@@ -106,7 +103,7 @@ export function LiveOvernightDiff() {
             Delivered 7:07 AM
           </span>
         ) : (
-          <span className="font-mono text-[10px] text-[#767C86]">
+          <span className="font-mono text-[10px] text-[#8A9099]">
             {step < SCAN_END ? "scanning…" : "working overnight…"}
           </span>
         )}
@@ -208,7 +205,7 @@ export function LiveOvernightDiff() {
 
       {/* footer bar — the stats punch in, then the money line */}
       <div className="flex min-h-[44px] flex-wrap items-center justify-between gap-2 bg-[#0A0B0D] px-4 py-3 font-mono text-[12px]">
-        <span className="text-[#767C86]">
+        <span className="text-[#8A9099]">
           {statsShown
             ? STATS.map(([n, label], i) => (
                 <span
