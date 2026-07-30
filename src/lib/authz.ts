@@ -60,6 +60,23 @@ async function safeNextPath(): Promise<string | null> {
 }
 
 /**
+ * Validates the `?next=` a login page (full or modal) was reached with —
+ * never trust it past this. Shared by both /login (src/app/(public)/login)
+ * and its intercepted modal (src/app/@modal/(.)login) so a hardening fix
+ * made in one can never silently miss the other.
+ *
+ * Same-origin relative paths only: no protocol-relative `//`, no
+ * backslashes (browsers normalize "/\evil.com" to "//evil.com").
+ */
+export function safeNextParam(raw: string | string[] | undefined): string | undefined {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) {
+    return value;
+  }
+  return undefined;
+}
+
+/**
  * Requires a signed-in account. An unauthenticated visitor is bounced to
  * /login with `?next=<attempted path>` so the login form can return them to
  * the page they asked for (bookmarked task URLs, future email links).

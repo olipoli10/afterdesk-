@@ -1,9 +1,21 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { googleEnabled } from "@/lib/auth";
+import { safeNextParam } from "@/lib/authz";
 import { AuthShell } from "@/components/auth-shell";
 import { LoginForm } from "@/components/register-forms";
 import { linkInline } from "@/components/ui";
+
+/*
+ * THE FULL-PAGE FALLBACK. A soft navigation to /login from anywhere inside
+ * the app — clicking "Sign in" in a nav, a stale-session redirect while
+ * browsing — is intercepted by src/app/@modal/(.)login and shown as a
+ * window over the current page instead. This file only renders on a real
+ * document load: a refresh, a typed URL, a bookmark, an email link, or the
+ * very first request the browser ever makes for /login. It has to stay
+ * complete and correct on its own — it is not a fallback for a broken
+ * modal, it is the page every one of those direct arrivals actually gets.
+ */
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -11,20 +23,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Only forward same-origin paths — never protocol-relative or absolute URLs. */
-function safeNext(raw: string | string[] | undefined): string | undefined {
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
-  return undefined;
-}
-
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const next = safeNext(params.next);
+  const next = safeNextParam(params.next);
   const applied = params.applied === "1";
 
   return (

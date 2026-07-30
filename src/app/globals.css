@@ -353,3 +353,65 @@ body {
   .d-5 { animation-delay: 0.48s; }
   .d-6 { animation-delay: 0.6s; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THE LOGIN WINDOW — a native <dialog>, opened via an intercepting route
+   (src/app/@modal/(.)login) so clicking "Sign in" anywhere in the app pops
+   this over the current page instead of navigating away from it. A hard
+   navigation, refresh, or direct link to /login still gets the full
+   AuthShell page (src/app/(public)/login/page.tsx) — the modal is a soft-
+   navigation shortcut, not a replacement for a real, bookmarkable URL.
+   ─────────────────────────────────────────────────────────────────────── */
+dialog.ss-modal {
+  padding: 0;
+  border: none;
+  /* auto, not hidden: on a short viewport (a landscape phone, a small
+     laptop window) the UA stylesheet caps the dialog's height before the
+     form content stops growing — without scroll, the submit button just
+     sits past the visible edge, unreachable. auto keeps the rounded
+     corners clipping the header/footer background bands (Tailwind's
+     overflow-hidden on the element) while still letting the box itself
+     scroll as a unit when it has to. */
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100dvh - 2rem);
+}
+dialog.ss-modal::backdrop {
+  background: rgba(10, 11, 13, 0.6);
+  backdrop-filter: blur(6px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  dialog.ss-modal,
+  dialog.ss-modal::backdrop {
+    transition:
+      opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      display 0.22s allow-discrete,
+      overlay 0.22s allow-discrete;
+  }
+  dialog.ss-modal {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  dialog.ss-modal[open] {
+    opacity: 1;
+    transform: none;
+  }
+  @starting-style {
+    dialog.ss-modal[open] {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+  }
+  dialog.ss-modal::backdrop {
+    opacity: 0;
+  }
+  dialog.ss-modal[open]::backdrop {
+    opacity: 1;
+  }
+  @starting-style {
+    dialog.ss-modal[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}
