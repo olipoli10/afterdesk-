@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth-shell";
 import { VerifyEmailForm } from "@/components/verify-email-form";
 import { getSessionUser, roleHome } from "@/lib/authz";
+import { linkInline } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Verify your email",
@@ -17,11 +18,15 @@ export default async function VerifyEmailPage() {
 
   return (
     <AuthShell
-      title="Check your inbox"
+      kicker="Verify email"
+      title="Check your inbox."
       sub="Email verification protects tasks, files and payments from account impersonation."
       footer={
         <>
-          Wrong account? <Link href="/login" className="underline">Sign in again</Link>
+          Wrong account?{" "}
+          <Link href="/login" className={linkInline}>
+            Sign in again
+          </Link>
         </>
       }
     >

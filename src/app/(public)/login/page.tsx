@@ -29,7 +29,8 @@ export default async function LoginPage({
 
   return (
     <AuthShell
-      title="Sign in"
+      kicker="Sign in"
+      title="Welcome back."
       sub="Sign in to your dashboard."
       footer={
         <>
@@ -47,7 +48,7 @@ export default async function LoginPage({
       {applied ? (
         <p
           role="status"
-          className="mb-5 rounded-md border border-[#14161A]/15 bg-[#F7F6F3] px-3 py-2.5 text-sm leading-relaxed text-[#14161A]"
+          className="mb-5 rounded-md border-l-[3px] border-[#166049] bg-[#166049]/[0.06] px-3 py-2.5 text-sm leading-relaxed text-[#14161A]"
         >
           Application received — sign in to continue.
         </p>

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 const ASIDE = [
   {
     title: "The Academy opens today, not after approval",
-    body: "Twelve free courses with real exams and permanent certificates. Start tonight — every certificate you earn is on your profile when we review you.",
+    body: "Twenty free courses with real exams and permanent certificates. Start tonight — every certificate you earn is on your profile when we review you.",
   },
   {
     title: "The payout is printed before you claim",
@@ -33,7 +33,8 @@ const ASIDE = [
 export default function RegisterVaPage() {
   return (
     <AuthShell
-      title="Apply to join the pool"
+      kicker="Specialist application"
+      title="Apply to join the pool."
       sub="Create your account and send your application — we review every one before the pool opens."
       aside={ASIDE}
       asideTone="paper"

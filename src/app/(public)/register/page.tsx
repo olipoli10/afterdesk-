@@ -30,7 +30,8 @@ const ASIDE = [
 export default function RegisterClientPage() {
   return (
     <AuthShell
-      title="Create a client account"
+      kicker="Client sign-up"
+      title="Create your account."
       sub="Send tasks, approve a fixed price, download reviewed work."
       aside={ASIDE}
       asideTone="night"
