@@ -1,0 +1,298 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
+import type { Metadata } from "next";
+import { Reveal } from "@/components/reveal";
+import { LangSwitch } from "@/components/lang-switch";
+import { publicCourses, academyStats } from "@/lib/academy/public";
+import { courseLook } from "@/lib/academy/look";
+import { ACADEMY_I18N, ACADEMY_LANGS, academyLangOf } from "@/lib/i18n/academy";
+import { SITE_URL } from "@/lib/site";
+
+/* ─────────────────────────────────────────────────────────────────────────
+   THE PUBLIC ACADEMY — the shareable asset.
+   The whole curriculum, visible with no account, so a worker can send the
+   link to a friend and the friend sees the real thing instead of a login
+   wall. This page is the growth mechanism: free training is only word of
+   mouth if the training can be looked at.
+
+   INDEXED on purpose — the only worker-side page besides /workers that is.
+   Paper surface: this is a prospectus.
+
+   SAFETY: everything here comes from lib/academy/public.ts, which is the
+   narrow projection that cannot carry an exam answer key. Never import
+   lib/academy/content.ts into this page.
+   ───────────────────────────────────────────────────────────────────────── */
+
+export const metadata: Metadata = {
+  title: "The Academy — free training for remote workers",
+  description:
+    "Twelve free courses with real exams and permanent certificates: platform, business English, spreadsheets, data, research, writing, documents and admin. No paid tier, no certificate fee.",
+  alternates: { canonical: "/academy" },
+  openGraph: {
+    title: "The Academy — free training for remote workers",
+    description:
+      "Twelve free courses, real exams, certificates that stay yours. Open before you are approved.",
+    url: `${SITE_URL}/academy`,
+  },
+};
+
+export default async function AcademyPublicPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const cookieStore = await cookies();
+  const lang = academyLangOf(sp.lang ?? cookieStore.get("ss-lang-worker")?.value);
+  const t = ACADEMY_I18N[lang];
+
+  const courses = publicCourses();
+  const stats = academyStats();
+  const foundations = courses.filter((c) => c.track === "foundations");
+  const byWork = courses.filter((c) => c.track === "category");
+
+  /* Course titles are the product, so they stay English in every language —
+     but a screen reader must not read them in the page's voice locale. */
+  const machine = { lang: "en" as const };
+
+  return (
+    <div lang={lang} className="overflow-x-clip bg-[#F7F6F3]">
+      {/* ── NAV ─────────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
+        <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-4 px-4 sm:px-6">
+          <Link
+            href="/workers"
+            className="whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.14em] text-[#14161A] sm:text-[13px] sm:tracking-[0.22em]"
+          >
+            Second Shift
+          </Link>
+          <div className="flex items-center gap-3 sm:gap-5">
+            <LangSwitch path="/academy" current={lang} options={ACADEMY_LANGS} tone="paper" />
+            <Link
+              href="/login"
+              className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
+            >
+              {t.nav.signIn}
+            </Link>
+            <Link
+              href="/register/va"
+              className="lift rounded-full bg-[#14161A] px-3 py-1 text-[12px] font-medium text-[#F7F6F3] hover:bg-black sm:px-4 sm:py-1.5 sm:text-[13px]"
+            >
+              {t.nav.apply}
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ── HERO ────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-black/8">
+        <div aria-hidden className="paper-grid pointer-events-none absolute inset-0" />
+        <div
+          aria-hidden
+          className="hero-glow glow-paperlight pointer-events-none absolute -top-48 left-[6%] h-[560px] w-[820px]"
+        />
+        <div className="relative mx-auto w-full max-w-[1120px] px-6 pb-14 pt-16 sm:pt-20">
+          <p className="anim-rise font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">
+            {t.hero.kill}
+          </p>
+          <h1 className="anim-rise d-1 mt-4 max-w-[18ch] text-[clamp(2rem,5.5vw,3.5rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-[#14161A]">
+            <span className="block">{t.hero.h1a}</span>
+            <span className="block text-[#5B6069]">{t.hero.h1b}</span>
+          </h1>
+          <p className="anim-rise d-2 mt-5 max-w-[52ch] text-[17px] leading-[1.5] text-[#5B6069]">
+            {t.hero.sub}
+          </p>
+
+          {/* The three real numbers — the scale, checkable against the list below. */}
+          <dl className="anim-rise d-3 mt-9 flex flex-wrap gap-x-10 gap-y-5">
+            {[
+              [stats.courses, t.stats.courses],
+              [stats.lessons, t.stats.lessons],
+              [stats.questions, t.stats.questions],
+            ].map(([n, label]) => (
+              <div key={label as string}>
+                <dd className="font-mono text-[38px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-[#14161A]">
+                  {n}
+                </dd>
+                <dt className="mt-2 text-[13px] text-[#5B6069]">{label}</dt>
+              </div>
+            ))}
+          </dl>
+
+          <div className="anim-rise d-4 mt-9 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <Link
+              href="/register/va"
+              className="lift inline-flex h-12 items-center rounded-full bg-[#14161A] px-6 text-[15px] font-medium text-[#F7F6F3] hover:bg-black"
+            >
+              {t.hero.cta}
+            </Link>
+            <p className="font-mono text-[12px] text-[#5B6069]">{t.hero.micro}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ────────────────────────────────────────────────── */}
+      <section className="mx-auto w-full max-w-[1120px] px-6 py-16">
+        <Reveal replay>
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+            {t.deal.label}
+          </p>
+          <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+            {t.deal.h2}
+          </h2>
+          <ol className="mt-8 grid gap-px overflow-hidden rounded-2xl bg-[#14161A]/10 sm:grid-cols-3">
+            {t.deal.steps.map(([step, body], i) => (
+              <li key={step} className="bg-white p-6">
+                <p className="font-mono text-[11px] tabular-nums text-[#5B6069]">
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <p className="mt-2 text-[17px] font-medium tracking-[-0.01em] text-[#14161A]">
+                  {step}
+                </p>
+                <p className="mt-2 text-[14px] leading-relaxed text-[#5B6069]">{body}</p>
+              </li>
+            ))}
+          </ol>
+        </Reveal>
+      </section>
+
+      {/* ── THE CATCH — the credibility section, on night ────────────────── */}
+      <section className="border-y border-black/8 bg-[#0A0B0D]">
+        <div className="mx-auto w-full max-w-[1120px] px-6 py-16">
+          <Reveal>
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#8A9099]">
+              {t.why.label}
+            </p>
+            <h2 className="max-w-[20ch] text-[26px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
+              {t.why.h2}
+            </h2>
+            <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-[#8A9099]">
+              {t.why.body}
+            </p>
+            <p className="mt-6 inline-block border-l-2 border-[#F7F6F3]/30 pl-4 font-mono text-[12px] leading-relaxed text-[#F7F6F3]">
+              {t.why.pledge}
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── THE CURRICULUM ──────────────────────────────────────────────── */}
+      <section className="mx-auto w-full max-w-[1120px] px-6 py-16">
+        <Reveal replay>
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+            {t.curriculum.label}
+          </p>
+          <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+            {t.curriculum.h2}
+          </h2>
+        </Reveal>
+
+        {[
+          { list: foundations, name: t.curriculum.foundations, note: t.curriculum.foundationsNote },
+          { list: byWork, name: t.curriculum.byWork, note: t.curriculum.byWorkNote },
+        ].map((group) => (
+          <div key={group.name} className="mt-10">
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-[#14161A]/10 pb-2">
+              <h3 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#14161A]">
+                {group.name}
+              </h3>
+              <p className="text-[13px] text-[#5B6069]">{group.note}</p>
+              <span className="ml-auto font-mono text-[12px] tabular-nums text-[#5B6069]">
+                {group.list.length}
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {group.list.map((c) => {
+                const look = courseLook(c.track, c.slug);
+                return (
+                  <article
+                    key={c.slug}
+                    className="flex min-w-0 flex-col rounded-lg border border-[#14161A]/10 bg-white p-5"
+                  >
+                    <h4
+                      {...machine}
+                      className="flex items-center gap-2 text-[16px] font-semibold tracking-[-0.01em] text-[#14161A]"
+                    >
+                      <span
+                        aria-hidden
+                        className="h-[7px] w-[7px] shrink-0 rounded-full"
+                        style={{ backgroundColor: look.hue }}
+                      />
+                      <span className="min-w-0">{c.title}</span>
+                    </h4>
+                    <p {...machine} className="mt-2 text-[14px] leading-relaxed text-[#5B6069]">
+                      {c.summary}
+                    </p>
+
+                    {/* The lesson list is the proof the course is real. */}
+                    <ol
+                      {...machine}
+                      className="mt-3.5 space-y-1 border-t border-[#14161A]/[0.08] pt-3.5"
+                    >
+                      {c.lessonTitles.map((title, i) => (
+                        <li key={i} className="flex gap-2.5 text-[13px] leading-relaxed">
+                          <span
+                            aria-hidden
+                            className="font-mono text-[11px] tabular-nums text-[#9AA1AB]"
+                          >
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <span className="min-w-0 text-[#14161A]">{title}</span>
+                        </li>
+                      ))}
+                    </ol>
+
+                    <p className="mt-3.5 border-t border-[#14161A]/[0.08] pt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[#5B6069]">
+                      {t.curriculum.lessons(c.lessonCount)} · ~{c.minutes} min ·{" "}
+                      {t.curriculum.exam}
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* ── CLOSING ─────────────────────────────────────────────────────── */}
+      <section className="border-t border-black/8 bg-white">
+        <div className="mx-auto w-full max-w-[1120px] px-6 py-16">
+          <Reveal>
+            <h2 className="max-w-[22ch] text-[clamp(1.6rem,3.4vw,2.2rem)] font-semibold leading-[1.15] tracking-[-0.025em] text-[#14161A]">
+              {t.closing.h2}
+            </h2>
+            <p className="mt-4 max-w-[58ch] text-[15px] leading-relaxed text-[#5B6069]">
+              {t.closing.body}
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <Link
+                href="/register/va"
+                className="lift inline-flex h-12 items-center rounded-full bg-[#14161A] px-6 text-[15px] font-medium text-[#F7F6F3] hover:bg-black"
+              >
+                {t.closing.cta}
+              </Link>
+              <p className="text-[13px] text-[#5B6069]">{t.closing.micro}</p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── FOOTER ──────────────────────────────────────────────────────── */}
+      <footer className="border-t border-black/8">
+        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 text-[13px] text-[#5B6069]">
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em]">Second Shift</span>
+          <Link href="/workers" className="transition-colors hover:text-[#14161A]">
+            {t.footer.workers}
+          </Link>
+          <Link href="/how-it-works" className="transition-colors hover:text-[#14161A]">
+            {t.footer.how}
+          </Link>
+          <Link href="/login" className="ml-auto transition-colors hover:text-[#14161A]">
+            {t.footer.signIn}
+          </Link>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -12,6 +12,7 @@ import { StickyApply } from "@/components/sticky-apply";
 import { LangSwitch } from "@/components/lang-switch";
 import { ScrollDamper } from "@/components/scroll-damper";
 import { WORKERS_I18N, WORKERS_LANGS, workersLangOf } from "@/lib/i18n/workers";
+import { publicSampleQuestion, academyStats } from "@/lib/academy/public";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The worker homepage — "THE SWITCH". The page used to explain the deal in
@@ -116,9 +117,13 @@ export default async function WorkersHome({
   const ch = (n: string, label: string) => (
     <>
       {n}
-      <span className="opacity-50">/04</span> · {label}
+      <span className="opacity-50">/05</span> · {label}
     </>
   );
+  /* The one published exam question, read from the LIVE curriculum so the
+     caption "one real question" can never quietly become false. */
+  const sample = publicSampleQuestion();
+  const stats = academyStats();
 
   return (
     /* lang on the subtree: the root <html> is en, and screen readers must
@@ -205,11 +210,169 @@ export default async function WorkersHome({
         <PublicCounters tone="paper" variant="strip" className="anim-rise d-5 mt-14" />
       </section>
 
-      {/* ── 01/04 THE POOL ────────────────────────────────────────────── */}
-      <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-20 pt-16">
+      {/* ── 01/05 THE ACADEMY ─────────────────────────────────────────────
+          The acquisition argument, in first place by the founder's call:
+          free training is the reason to sign up, and word of mouth is the
+          growth mechanism. A certificate mill never shows you its test — so
+          this chapter shows one, marked, to a stranger with no account.
+          That performs "free, real, nothing withheld" instead of claiming it.
+
+          COLOUR: no green and no amber anywhere in here. Green is money and
+          amber is returned work; a graded answer is neither, so the mark is
+          ink and the pass stamp is dusk. The first green a reader meets is
+          still the payout in 02 THE POOL.
+          ──────────────────────────────────────────────────────────────── */}
+      {sample ? (
+        <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-20 pt-16">
+          <Reveal replay>
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+              {ch("01", t.chAcademy.label)}
+            </p>
+            <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+              {t.chAcademy.h2}
+            </h2>
+            <p className="mt-2 max-w-[54ch] text-[15px] leading-relaxed text-[#5B6069]">
+              {t.chAcademy.body}
+            </p>
+
+            <div
+              aria-hidden
+              className="sheen-frame sheen-frame--paper mt-8 max-w-[760px] shadow-[0_24px_60px_-32px_rgba(20,22,26,0.35)]"
+            >
+              <div className="overflow-hidden rounded-2xl bg-white">
+                {/* the scale, as machinery rather than bullets */}
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 border-b border-[#14161A]/10 bg-[#F7F6F3] px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#5B6069]">
+                  <span>
+                    <b className="font-medium text-[#14161A]">{stats.courses}</b> courses
+                  </span>
+                  <span className="text-[#14161A]/25">·</span>
+                  <span>
+                    <b className="font-medium text-[#14161A]">{stats.lessons}</b> lessons
+                  </span>
+                  <span className="text-[#14161A]/25">·</span>
+                  <span>
+                    <b className="font-medium text-[#14161A]">{stats.questions}</b> exam questions
+                  </span>
+                </div>
+
+                {/* the same 40px instrument bar as task_pool — one house idiom */}
+                <div className="flex h-10 items-center justify-between gap-3 border-b border-[#14161A]/10 px-4">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#1B2740]" />
+                    <span className="truncate font-mono text-[11px] lowercase text-[#5B6069]">
+                      exam · {sample.courseTitle}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-mono text-[11px] tabular-nums text-[#5B6069]">
+                    {stats.passScore} of {stats.questionCount} to pass
+                  </span>
+                </div>
+
+                {/* the paper */}
+                <div className="px-5 py-5 sm:px-6">
+                  <p className="max-w-[58ch] text-[15px] leading-[1.55] text-[#14161A] sm:text-[16px]">
+                    {sample.prompt}
+                  </p>
+                  <ol className="mt-4 grid gap-1.5">
+                    {sample.options.map((opt, i) => {
+                      const right = i === sample.correct;
+                      return (
+                        <li
+                          key={i}
+                          className={`srow flex items-start gap-3 rounded-lg border px-3 py-2.5 ${
+                            right
+                              ? "border-[#14161A]/15 bg-[#F7F6F3] shadow-[inset_0_0_0_1px_rgba(20,22,26,0.05)]"
+                              : "border-transparent"
+                          }`}
+                        >
+                          <span
+                            aria-hidden
+                            className={`mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center font-mono text-[11px] font-medium ${
+                              right
+                                ? "rounded-[5px] bg-[#14161A] text-[#F7F6F3]"
+                                : "rounded-full border border-[#14161A]/20 text-[#5B6069]"
+                            }`}
+                          >
+                            {"ABCD"[i]}
+                          </span>
+                          <span
+                            className={`min-w-0 pt-0.5 text-[14px] leading-[1.45] text-[#14161A] sm:text-[15px] ${
+                              right ? "font-medium" : ""
+                            }`}
+                          >
+                            {right ? <span className="sr-only">Correct answer: </span> : null}
+                            {opt}
+                          </span>
+                          {right ? (
+                            <span
+                              aria-hidden
+                              className="ml-auto shrink-0 pt-0.5 font-mono text-[15px] font-semibold text-[#14161A]"
+                            >
+                              ✓
+                            </span>
+                          ) : null}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  <p className="mt-3.5 border-l-2 border-[#14161A]/20 pl-3 font-mono text-[12px] leading-[1.55] text-[#5B6069]">
+                    <b className="font-semibold tracking-[0.08em] text-[#14161A]">CORRECT</b> ·{" "}
+                    {sample.explain}
+                  </p>
+                </div>
+
+                {/* the terms, as machine stamps — $0.00 in ink, never green */}
+                <dl className="grid grid-cols-2 border-t border-[#14161A]/10 bg-[#F7F6F3] sm:grid-cols-4">
+                  {[
+                    ["Pass mark", `${stats.passScore} of ${stats.questionCount}`],
+                    ["Attempts", `${stats.attemptsPerDay} per 24 h`],
+                    ["Certificate", "permanent"],
+                    ["Cost", "$0.00"],
+                  ].map(([k, v], i) => (
+                    <div
+                      key={k}
+                      className={`px-4 py-3 ${i % 2 === 1 ? "border-l border-[#14161A]/[0.06]" : ""} ${
+                        i >= 2 ? "border-t border-[#14161A]/[0.06] sm:border-t-0" : ""
+                      } ${i === 2 ? "sm:border-l" : ""} ${i === 3 ? "sm:border-l" : ""}`}
+                    >
+                      <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#5B6069]">
+                        {k}
+                      </dt>
+                      <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#14161A]">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
+
+            <p className="sr-only">
+              Example exam question from the {sample.courseTitle} course, shown with its correct
+              answer marked and the examiner&apos;s reason. Pass mark {stats.passScore} of{" "}
+              {stats.questionCount}, {stats.attemptsPerDay} attempts per 24 hours, the certificate
+              is permanent and the cost is zero.
+            </p>
+
+            <p className="mt-3 max-w-[62ch] font-mono text-[11px] leading-relaxed text-[#5B6069]">
+              {t.chAcademy.caption} {t.chAcademy.english}
+            </p>
+            <p className="mt-4 text-[15px]">
+              <Link
+                href="/academy"
+                className="font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-[5px] transition-colors hover:decoration-[#14161A]"
+              >
+                {t.chAcademy.ctaLink}
+              </Link>{" "}
+              <span className="font-mono text-[12px] text-[#5B6069]">{t.chAcademy.ctaTail}</span>
+            </p>
+          </Reveal>
+        </section>
+      ) : null}
+
+      {/* ── 02/05 THE POOL ────────────────────────────────────────────── */}
+      <section className="relative mx-auto w-full max-w-[1120px] border-t border-black/8 px-6 pb-20 pt-16">
         <Reveal replay>
           <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-            {ch("01", t.ch01.label)}
+            {ch("02", t.ch01.label)}
           </p>
           <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
             {t.ch01.h2}
@@ -276,12 +439,12 @@ export default async function WorkersHome({
         </Reveal>
       </section>
 
-      {/* ── 02/04 THE SLIP ────────────────────────────────────────────── */}
+      {/* ── 03/05 THE SLIP ────────────────────────────────────────────── */}
       <section className="border-t border-black/8">
         <div className="mx-auto w-full max-w-[1120px] px-6 py-20">
           <Reveal>
             <p className="mb-2 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              {ch("02", t.ch02.label)}
+              {ch("03", t.ch02.label)}
             </p>
             <h2 className="mb-10 text-center text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
               {t.ch02.h2}
@@ -334,7 +497,7 @@ export default async function WorkersHome({
         </div>
       </section>
 
-      {/* ── 03/04 THE BAR — the page's one big turn to night ──────────── */}
+      {/* ── 04/05 THE BAR — the page's one big turn to night ──────────── */}
       <section className="bg-[#0A0B0D]">
         <div className="relative overflow-hidden">
           <div
@@ -344,7 +507,7 @@ export default async function WorkersHome({
           <div className="relative mx-auto w-full max-w-[880px] px-6 py-20">
             <Reveal>
               <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
-                {ch("03", t.ch03.label)}
+                {ch("04", t.ch03.label)}
               </p>
               <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
                 {t.ch03.h2}
@@ -411,12 +574,12 @@ export default async function WorkersHome({
         </div>
       </section>
 
-      {/* ── 04/04 THE TERMS ───────────────────────────────────────────── */}
+      {/* ── 05/05 THE TERMS ───────────────────────────────────────────── */}
       <section className="border-t border-white/8 bg-[#111317]">
         <div className="mx-auto w-full max-w-[880px] px-6 py-20">
           <Reveal>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
-              {ch("04", t.ch04.label)}
+              {ch("05", t.ch04.label)}
             </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
               {t.ch04.h2}

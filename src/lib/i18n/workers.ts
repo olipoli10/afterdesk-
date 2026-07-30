@@ -34,6 +34,19 @@ type Dict = {
     cardCaption: string;
     ghost: [string, string][];
   };
+  /** The Academy chapter — 01/05, the acquisition argument. The exam
+   *  artifact's own strings stay English in every language (same law as the
+   *  pool rows and the payout slip): the courses and exams really are in
+   *  English, and a reader deserves to see that before signing up. */
+  chAcademy: {
+    label: string;
+    h2: string;
+    body: string;
+    caption: string;
+    english: string;
+    ctaLink: string;
+    ctaTail: string;
+  };
   ch01: { label: string; h2: string; body: string; disclosure: string; bandCaption: string };
   ch02: { label: string; h2: string; kicker: string };
   ch03: {
@@ -69,6 +82,15 @@ const en: Dict = {
       ["Commission", "$0.00"],
       ["Client calls", "0"],
     ],
+  },
+  chAcademy: {
+    label: "The academy",
+    h2: "12 free courses. Here is the exam.",
+    body: "Every course opens the day you make an account, and your certificates are on your application when we read it.",
+    caption: "One real question from the Data cleanup exam. The answer is printed on purpose.",
+    english: "The courses and the exams are in English, like the work.",
+    ctaLink: "See all twelve courses",
+    ctaTail: "— no account needed.",
   },
   ch01: {
     label: "The pool",
@@ -129,6 +151,15 @@ const tl: Dict = {
       ["Komisyon", "$0.00"],
       ["Tawag ng client", "0"],
     ],
+  },
+  chAcademy: {
+    label: "Ang academy",
+    h2: "12 libreng kurso. Heto ang exam.",
+    body: "Bukas ang bawat kurso sa araw na gumawa ka ng account, at nasa application mo na ang mga certificate mo kapag binasa namin ito.",
+    caption: "Isang totoong tanong mula sa Data cleanup exam. Sadyang nakalimbag ang sagot.",
+    english: "Nasa Ingles ang mga kurso at exam, tulad ng trabaho.",
+    ctaLink: "Tingnan ang lahat ng labindalawang kurso",
+    ctaTail: "— hindi kailangan ng account.",
   },
   ch01: {
     label: "Ang pool",
@@ -195,6 +226,15 @@ const fr: Dict = {
       ["Appels clients", "0"],
     ],
   },
+  chAcademy: {
+    label: "L'académie",
+    h2: "12 cours gratuits. Voici l'examen.",
+    body: "Chaque cours s'ouvre le jour où vous créez un compte, et vos certificats sont sur votre candidature quand nous la lisons.",
+    caption: "Une vraie question de l'examen Data cleanup. La réponse est imprimée exprès.",
+    english: "Les cours et les examens sont en anglais, comme le travail.",
+    ctaLink: "Voir les douze cours",
+    ctaTail: "— aucun compte requis.",
+  },
   ch01: {
     label: "Le bassin",
     h2: "Une seule liste. Tous les prix déjà dessus.",
@@ -258,6 +298,15 @@ const es: Dict = {
       ["Comisión", "$0.00"],
       ["Llamadas de cliente", "0"],
     ],
+  },
+  chAcademy: {
+    label: "La academia",
+    h2: "12 cursos gratis. Aquí está el examen.",
+    body: "Cada curso se abre el día que creas una cuenta, y tus certificados están en tu postulación cuando la leemos.",
+    caption: "Una pregunta real del examen de Data cleanup. La respuesta está impresa a propósito.",
+    english: "Los cursos y los exámenes son en inglés, como el trabajo.",
+    ctaLink: "Ver los doce cursos",
+    ctaTail: "— sin cuenta.",
   },
   ch01: {
     label: "El grupo",

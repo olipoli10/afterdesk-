@@ -10,15 +10,19 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/* Slip-style aside — the worker came from the paper homepage. */
+/* Slip-style aside — the worker came from the paper homepage.
+   The Academy leads on purpose: this page's one moment of friction is the
+   wait for review, and the Academy is the honest answer to "what do I do
+   now?" — it opens the second the account exists, and what you earn in it
+   is on the desk when we read your application. */
 const ASIDE = [
+  {
+    title: "The Academy opens today, not after approval",
+    body: "Twelve free courses with real exams and permanent certificates. Start tonight — every certificate you earn is on your profile when we review you.",
+  },
   {
     title: "The payout is printed before you claim",
     body: "Every task in the pool shows what it pays and when it is due. Claim what you want — first come, first served.",
-  },
-  {
-    title: "The review is real",
-    body: "Every delivery is checked before it reaches the client. Your payout is released when review passes.",
   },
   {
     title: "A person reads your application",
