@@ -40,6 +40,14 @@ export default function TermsPage() {
         </p>
       </section>
       <section>
+        <h2 className="text-xl font-semibold">Who operates Second Shift</h2>
+        <p className="mt-2">
+          Second Shift is operated by Olivier Robert. Every price, quality review and payout
+          decision described in these terms is made by that one person — not a support queue,
+          not an algorithm.
+        </p>
+      </section>
+      <section>
         <h2 className="text-xl font-semibold">Confidentiality and rights</h2>
         <p className="mt-2">
           Users must upload only material they are authorized to share. Workers may use task data
