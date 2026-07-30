@@ -88,12 +88,12 @@ export default async function HowItWorks() {
         <h1 className="mt-3 text-[clamp(1.8rem,4vw,2.6rem)] font-semibold leading-[1.05] tracking-[-0.02em] text-[#14161A]">
           One price. One operator. One standard.
         </h1>
-        {/* The audit's honest E-E-A-T finding: a payments product with no
-            named human anywhere on it. "The operator" appears nine times on
-            this page as a role — this line grounds it in a person, once,
-            near the top, rather than leaving it an abstraction. */}
+        {/* The audit's E-E-A-T finding stands (a payments product with no
+            named human), but naming the operator is on hold for now — see
+            the commit that removed the name for why. Restore a name here
+            when that changes. */}
         <p className="mt-3 font-mono text-[12px] text-[#5B6069]">
-          Every price, review and payout on Second Shift is set by one person: Olivier Robert.
+          Every price, review and payout on Second Shift is set by one person.
         </p>
 
         {/* ── The protocol ─────────────────────────────────────────────── */}

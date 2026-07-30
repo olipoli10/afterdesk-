@@ -36,12 +36,12 @@ export function PolicyPage({
       <footer className="border-t border-black/10">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-5 py-7 text-sm">
           <TrustLinks />
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[#5B6069]">
-            <span>Operated by Olivier Robert</span>
-            <a href="mailto:support@secondshift.co" className="hover:text-[#14161A]">
-              support@secondshift.co
-            </a>
-          </div>
+          <a
+            href="mailto:support@secondshift.co"
+            className="text-[#5B6069] hover:text-[#14161A]"
+          >
+            support@secondshift.co
+          </a>
         </div>
       </footer>
     </div>

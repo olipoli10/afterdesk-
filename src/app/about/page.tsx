@@ -8,9 +8,8 @@ import { TrustLinks } from "@/components/trust-links";
    not a marketing hero, so it earns its length instead of fighting for it.
 
    Deliberately corporate, not confessional: no first person, no "I noticed",
-   no founder photo, no personal narrative beyond what "Operated by
-   Olivier Robert" already states elsewhere. A company can be small and still
-   speak as "we" — most one-person companies do.
+   no founder photo, no name anywhere on the site right now. A company can
+   be small and still speak as "we" — most one-person companies do.
 
    English-only, matching /how-it-works: this is the same kind of document,
    not a conversion page, so it does not carry the four-language treatment.
