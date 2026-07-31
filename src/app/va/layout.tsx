@@ -43,6 +43,9 @@ export default async function VaLayout({ children }: { children: ReactNode }) {
       userName={user.name}
       notificationCount={notificationCount}
       tone="night"
+      // A worker who signs out belongs back on the worker storefront, not on
+      // the client one and not on a login form.
+      signedOutTo="/workers"
       nav={
         approved
           ? [

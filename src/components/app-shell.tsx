@@ -13,6 +13,16 @@ import { Wordmark } from "@/components/logo";
  * the same #0A0B0D / #F7F6F3 / #8A9099 tokens as the marketing night side
  * rather than a fresh palette, and threads through to every child (Wordmark,
  * NavLink, SignOutButton) so nothing here is still hardcoded light-mode.
+ *
+ * LAYOUT — why the nav wraps to its own row below md:
+ * it used to sit inline next to the wordmark inside a shrinkable flex box,
+ * with the brand and the account actions both `shrink-0` on either side. At
+ * 375px that left the nav a scroll container measuring literally ZERO pixels
+ * wide holding 266px of links: every item was off-screen, so a tap either
+ * did nothing or landed on the neighbouring item — "Available work" quietly
+ * sent you back to the dashboard because you were really hitting "My work".
+ * The nav is now `order-last w-full` on phones (its own full-bleed row under
+ * a hairline) and only goes inline at md, where all three items provably fit.
  */
 export function AppShell({
   areaLabel,
@@ -22,6 +32,7 @@ export function AppShell({
   children,
   width = "default",
   tone = "paper",
+  signedOutTo = "/",
 }: {
   areaLabel: string;
   nav: { href: string; label: string; badge?: number }[];
@@ -31,10 +42,20 @@ export function AppShell({
   /** "wide" for the admin console — the densest surface earns more columns. */
   width?: "default" | "wide";
   tone?: "paper" | "night";
+  /**
+   * Where signing out lands. Signing out should return you to the storefront
+   * you came from, not to a login form you didn't ask for — so the worker
+   * portal sends you to /workers and everyone else to the client homepage.
+   */
+  signedOutTo?: string;
 }) {
   const container = width === "wide" ? "max-w-[1220px]" : "max-w-6xl";
   const hrefs = nav.map((n) => n.href);
   const night = tone === "night";
+  // The wordmark goes to the portal root, not "/" — for a signed-in account
+  // "/" only bounces back here (src/app/page.tsx), so link the real thing.
+  const homeHref = nav[0]?.href ?? "/";
+  const hairline = night ? "border-white/8" : "border-[#14161A]/10";
 
   return (
     <div className={night ? "relative min-h-screen overflow-hidden bg-[#0A0B0D]" : "min-h-screen bg-[#F7F6F3]"}>
@@ -59,36 +80,39 @@ export function AppShell({
             : "sticky top-0 z-40 border-b border-[#14161A]/10 bg-[#F7F6F3]/90 backdrop-blur-sm"
         }
       >
-        <div className={`mx-auto flex h-14 w-full ${container} items-center justify-between gap-4 px-5`}>
-          <div className="flex min-w-0 items-center gap-4">
-            <div className="flex shrink-0 items-center gap-3">
-              <Link href="/" className="text-[12px]">
-                <Wordmark tone={night ? "paper" : "ink"} />
-              </Link>
-              <span
-                className={
-                  night
-                    ? "rounded-[3px] border border-white/20 px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] text-[#8A9099]"
-                    : "rounded-[3px] border border-[#14161A]/20 px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] text-[#5B6069]"
-                }
-              >
-                {areaLabel}
-              </span>
-            </div>
-            <nav className="flex items-center gap-1 overflow-x-auto">
-              {nav.map((item) => (
-                <NavLink
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  badge={item.badge}
-                  exactSiblings={hrefs}
-                  tone={tone}
-                />
-              ))}
-            </nav>
+        <div className={`mx-auto flex w-full ${container} flex-wrap items-center gap-x-4 gap-y-0 px-5`}>
+          <div className="flex h-14 shrink-0 items-center gap-3">
+            <Link href={homeHref} className="text-[12px]">
+              <Wordmark tone={night ? "paper" : "ink"} />
+            </Link>
+            {/* The area chip is redundant on a phone — the nav row right
+                below already names the room — and it is the 54px that
+                decides whether "Notifications" fits beside it. */}
+            <span
+              className={
+                night
+                  ? "hidden rounded-[3px] border border-white/20 px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] text-[#8A9099] md:inline-block"
+                  : "hidden rounded-[3px] border border-[#14161A]/20 px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] text-[#5B6069] md:inline-block"
+              }
+            >
+              {areaLabel}
+            </span>
           </div>
-          <div className="flex shrink-0 items-center gap-3">
+          <nav
+            className={`order-last -mx-5 flex w-[calc(100%+2.5rem)] items-center gap-1 overflow-x-auto border-t px-3 ${hairline} md:order-none md:mx-0 md:w-auto md:border-t-0 md:px-0`}
+          >
+            {nav.map((item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                badge={item.badge}
+                exactSiblings={hrefs}
+                tone={tone}
+              />
+            ))}
+          </nav>
+          <div className="ml-auto flex h-14 shrink-0 items-center gap-3">
             <Link
               href="/notifications"
               className={
@@ -97,7 +121,7 @@ export function AppShell({
                   : "relative inline-flex min-h-11 items-center rounded px-2 text-[12px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
               }
             >
-              Updates
+              Notifications
               {notificationCount > 0 ? (
                 <span className="ml-1.5 rounded-full bg-[#A82318] px-1.5 py-0.5 font-mono text-[10px] leading-none text-white">
                   {notificationCount > 99 ? "99+" : notificationCount}
@@ -107,13 +131,13 @@ export function AppShell({
             <span
               className={
                 night
-                  ? "hidden font-mono text-[12px] text-[#8A9099] sm:block"
-                  : "hidden font-mono text-[12px] text-[#5B6069] sm:block"
+                  ? "hidden font-mono text-[12px] text-[#8A9099] lg:block"
+                  : "hidden font-mono text-[12px] text-[#5B6069] lg:block"
               }
             >
               {userName}
             </span>
-            <SignOutButton tone={tone} />
+            <SignOutButton tone={tone} home={signedOutTo} />
           </div>
         </div>
       </header>

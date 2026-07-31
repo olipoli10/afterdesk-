@@ -2,7 +2,19 @@
 
 import { authClient } from "@/lib/auth-client";
 
-export function SignOutButton({ tone = "paper" }: { tone?: "paper" | "night" }) {
+/**
+ * `home` is where signing out lands. It used to be hardcoded to /login, which
+ * answered a question nobody asked — someone who just left the app wants the
+ * storefront, not a form. The worker portal passes /workers, everyone else
+ * gets the client homepage.
+ */
+export function SignOutButton({
+  tone = "paper",
+  home = "/",
+}: {
+  tone?: "paper" | "night";
+  home?: string;
+}) {
   const cls =
     tone === "night"
       ? "min-h-11 rounded-md px-2.5 py-1.5 text-[13px] font-medium text-[#8A9099] transition-colors duration-150 hover:text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
@@ -13,7 +25,7 @@ export function SignOutButton({ tone = "paper" }: { tone?: "paper" | "night" }) 
       className={cls}
       onClick={async () => {
         await authClient.signOut();
-        window.location.href = "/login";
+        window.location.href = home;
       }}
     >
       Sign out

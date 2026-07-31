@@ -41,7 +41,7 @@ export function NavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       aria-label={badge !== undefined && badge > 0 ? `${label}, ${badge} waiting` : undefined}
-      className={`relative flex h-14 shrink-0 items-center gap-1.5 px-2.5 text-[13px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset ${ring} ${
+      className={`relative flex h-12 shrink-0 items-center gap-1.5 px-2.5 text-[13px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset md:h-14 ${ring} ${
         active ? activeCls : idleCls
       }`}
     >
