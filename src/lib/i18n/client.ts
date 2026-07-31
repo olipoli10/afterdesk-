@@ -28,7 +28,16 @@ export function clientLangOf(value: string | undefined | null): ClientLang {
 
 type Dict = {
   nav: { signIn: string; send: string };
-  hero: { line1: string; line2: string; sub: (h: number) => string; cta: string };
+  hero: {
+    line1: string;
+    line2: string;
+    sub: (h: number) => string;
+    /** Why this exists, in one breath: time is what an entrepreneur is
+     *  actually short on, and the old way of hiring spends it (or the money
+     *  it takes to pay someone else to spend theirs) instead of saving it. */
+    timeNote: string;
+    cta: string;
+  };
   /* NO CAPTION. This chapter had two in a row and both said nothing the
      picture wasn't already saying: first an invented client quote, then a
      museum label ("one file, before and after one night") describing a
@@ -142,6 +151,8 @@ const en: Dict = {
     line2: "Get it back done by morning.",
     sub: (h) =>
       `Research, data, writing, spreadsheets, admin: priced in ${h} working hours, delivered by morning.`,
+    timeNote:
+      "Time is the resource you can't buy more of. The old way of hiring spends it anyway: read hundreds of resumes yourself, or pay someone else to read them and spend your money instead.",
     cta: "Describe your task",
   },
   ch01: { label: "The overnight diff" },
@@ -247,6 +258,8 @@ const fr: Dict = {
     line2: "Récupérez-la faite au matin.",
     sub: (h) =>
       `Recherche, données, rédaction, tableurs, admin : prix fixe en ${h} heures ouvrables, livré au matin.`,
+    timeNote:
+      "Le temps est la seule ressource que vous ne pouvez pas racheter. L'ancienne façon d'embaucher le dépense quand même : lisez des centaines de CV vous-même, ou payez quelqu'un pour les lire et dépensez votre argent à la place.",
     cta: "Décrivez votre tâche",
   },
   ch01: { label: "Une nuit de différence" },
@@ -352,6 +365,8 @@ const es: Dict = {
     line2: "Recíbela lista por la mañana.",
     sub: (h) =>
       `Investigación, datos, redacción, hojas de cálculo, admin: precio fijo en ${h} horas hábiles, entregado por la mañana.`,
+    timeNote:
+      "El tiempo es el único recurso que no puedes comprar de más. La vieja forma de contratar lo gasta igual: lee cientos de currículums tú mismo, o paga a alguien para que los lea y gasta tu dinero en su lugar.",
     cta: "Describe tu tarea",
   },
   ch01: { label: "El antes y después de una noche" },
@@ -464,6 +479,8 @@ const tl: Dict = {
     line2: "Tapos na ito pagsapit ng umaga.",
     sub: (h) =>
       `Research, data, pagsusulat, spreadsheets, admin: may presyo sa loob ng ${h} oras ng trabaho, hatid sa umaga.`,
+    timeNote:
+      "Ang oras ang resource na hindi mo na mabibili pa. Ginagastos pa rin ito ng lumang paraan ng pag-hire: basahin mo mismo ang daan-daang resume, o bayaran ang iba para basahin ito at gastusin ang pera mo sa halip.",
     cta: "Ilarawan ang task mo",
   },
   ch01: { label: "Ang diff ng magdamag" },

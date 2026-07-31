@@ -176,6 +176,16 @@ export default async function Home({
             <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
               {t.hero.sub(settings.quoteTurnaroundHours)}
             </p>
+            {/* Why this exists, in the fewest words that still land it: an
+                entrepreneur's scarce resource is time, and the old way of
+                hiring (piles of resumes to read) spends exactly that,
+                either directly or by way of someone else's fee to read them
+                for you. This used to live as two bullet points on /about;
+                it reads better as one breath, and it belongs at the top of
+                the pitch, not three clicks into it. */}
+            <p className="anim-rise d-2 mt-4 max-w-[48ch] text-[14px] leading-[1.6] text-[#767C86]">
+              {t.hero.timeNote}
+            </p>
             <div className="anim-rise d-3 mt-8">
               <Link
                 href="/register"

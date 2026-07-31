@@ -450,10 +450,9 @@ const aEn: AboutDict = {
     [
       "For entrepreneurs",
       [
-        "Hundreds of proposals that all say the same thing.",
+        "Hundreds of proposals to read.",
+        "Resumes that all say the same thing.",
         "No way to know if any of them are good until you've already paid.",
-        "Screen it yourself, and it's the time you hired help to save that goes.",
-        "Pay someone $20 an hour to screen it for you, and it's money that goes instead.",
       ],
     ],
     [
@@ -512,10 +511,9 @@ const aFr: AboutDict = {
     [
       "Pour les entrepreneurs",
       [
-        "Des centaines de propositions qui disent toutes la m\u00EAme chose.",
+        "Des centaines de propositions \u00E0 lire.",
+        "Des CV qui disent tous la m\u00EAme chose.",
         "Aucun moyen de savoir si elles sont bonnes avant de les avoir pay\u00E9es.",
-        "Trier \u00E7a vous-m\u00EAme, et c'est votre temps, celui que vous vouliez sauver, qui y passe.",
-        "Payer quelqu'un 20 $ de l'heure pour trier \u00E0 votre place, et c'est votre argent qui y passe.",
       ],
     ],
     [
@@ -574,10 +572,9 @@ const aEs: AboutDict = {
     [
       "Para los emprendedores",
       [
-        "Cientos de propuestas que dicen todas lo mismo.",
+        "Cientos de propuestas que leer.",
+        "Curr\u00EDculums que dicen todos lo mismo.",
         "Ninguna forma de saber si son buenas antes de haberlas pagado.",
-        "Filtrarlo t\u00FA mismo, y se te va el tiempo que quer\u00EDas ahorrar.",
-        "Pagarle a alguien $20 la hora para filtrar por ti, y se te va el dinero en su lugar.",
       ],
     ],
     [
@@ -636,10 +633,9 @@ const aTl: AboutDict = {
     [
       "Para sa mga negosyante",
       [
-        "Daan-daang proposal na pare-pareho lang ang sinasabi.",
+        "Daan-daang proposal na babasahin.",
+        "Mga resume na pare-pareho ang sinasabi.",
         "Walang paraan para malaman kung maganda sila bago mo pa sila mabayaran.",
-        "I-screen mo mismo, at oras mo, ang gusto mo sanang matipid, ang mauubos.",
-        "Bayaran ang iba ng $20 kada oras para i-screen para sa iyo, at pera naman ang mauubos.",
       ],
     ],
     [
