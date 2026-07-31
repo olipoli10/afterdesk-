@@ -193,6 +193,11 @@ export default async function Home({
               >
                 {t.hero.cta}
               </Link>
+              {/* Same micro-copy slot the Academy hero uses under its own
+                  CTA ("You can start the first course tonight."): the literal
+                  answer to "what actually happens if I click this," landed
+                  in one breath, right where someone is deciding to click. */}
+              <p className="mt-3 font-mono text-[12px] text-[#767C86]">{t.hero.guarantee}</p>
             </div>
           </div>
 

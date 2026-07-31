@@ -37,6 +37,12 @@ type Dict = {
      *  it takes to pay someone else to spend theirs) instead of saving it. */
     timeNote: string;
     cta: string;
+    /** Sits directly under the CTA, same micro-copy convention as the
+     *  Academy hero's "You can start the first course tonight." — the
+     *  literal answer to "so what actually happens if I click this": the
+     *  card is authorized, not charged, and stays that way on both sides
+     *  (you, and the specialist) until you approve the delivery. */
+    guarantee: string;
   };
   /* NO CAPTION. This chapter had two in a row and both said nothing the
      picture wasn't already saying: first an invented client quote, then a
@@ -154,6 +160,8 @@ const en: Dict = {
     timeNote:
       "Time is the resource you can't buy more of. The old way of hiring spends it anyway: read hundreds of resumes yourself, or pay someone else to read them and spend your money instead.",
     cta: "Describe your task",
+    guarantee:
+      "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
   },
   ch01: { label: "The overnight diff" },
   ch02: {
@@ -261,6 +269,8 @@ const fr: Dict = {
     timeNote:
       "Le temps est la seule ressource que vous ne pouvez pas racheter. L'ancienne façon d'embaucher le dépense quand même : lisez des centaines de CV vous-même, ou payez quelqu'un pour les lire et dépensez votre argent à la place.",
     cta: "Décrivez votre tâche",
+    guarantee:
+      "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
   },
   ch01: { label: "Une nuit de différence" },
   ch02: {
@@ -368,6 +378,8 @@ const es: Dict = {
     timeNote:
       "El tiempo es el único recurso que no puedes comprar de más. La vieja forma de contratar lo gasta igual: lee cientos de currículums tú mismo, o paga a alguien para que los lea y gasta tu dinero en su lugar.",
     cta: "Describe tu tarea",
+    guarantee:
+      "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
   },
   ch01: { label: "El antes y después de una noche" },
   ch02: {
@@ -482,6 +494,8 @@ const tl: Dict = {
     timeNote:
       "Ang oras ang resource na hindi mo na mabibili pa. Ginagastos pa rin ito ng lumang paraan ng pag-hire: basahin mo mismo ang daan-daang resume, o bayaran ang iba para basahin ito at gastusin ang pera mo sa halip.",
     cta: "Ilarawan ang task mo",
+    guarantee:
+      "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",
   },
   ch01: { label: "Ang diff ng magdamag" },
   ch02: {
