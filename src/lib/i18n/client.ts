@@ -36,15 +36,6 @@ type Dict = {
   hero: {
     line1: string;
     line2: string;
-    sub: (h: number) => string;
-    /** The competitive-advantage line, between the sub-headline and the CTA.
-     *  The visitor already knows hiring a worker directly is cheap and easy
-     *  (OnlineJobs, Upwork) — what they're actually avoiding is checking the
-     *  work, chasing replies, fixing mistakes. This names that management
-     *  overhead as the thing being sold away, in one breath, before the
-     *  reader ever has to scroll to find out why this beats doing it
-     *  themselves. */
-    edge: string;
     cta: string;
     /** Sits directly under the CTA, same micro-copy convention as the
      *  Academy hero's "You can start the first course tonight." — the
@@ -208,9 +199,6 @@ const en: Dict = {
   hero: {
     line1: "Describe any task.",
     line2: "Get it back done by morning.",
-    sub: (h) =>
-      `Research, data, writing, spreadsheets, admin: describe it, get a fixed price within ${h} working hours, then it's done by morning.`,
-    edge: "No proposals to read. No hourly rate to negotiate. No one to manage. We check the work before you ever see it.",
     cta: "Describe your task",
     guarantee:
       "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
@@ -361,9 +349,6 @@ const fr: Dict = {
   hero: {
     line1: "Décrivez n'importe quelle tâche.",
     line2: "Récupérez-la faite au matin.",
-    sub: (h) =>
-      `Recherche, données, rédaction, tableurs, admin : décrivez-la, obtenez un prix fixe en ${h} heures ouvrables, puis c'est fait au matin.`,
-    edge: "Aucune proposition à lire. Aucun taux horaire à négocier. Personne à gérer. Nous vérifions le travail avant que vous ne le voyiez.",
     cta: "Décrivez votre tâche",
     guarantee:
       "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
@@ -514,9 +499,6 @@ const es: Dict = {
   hero: {
     line1: "Describe cualquier tarea.",
     line2: "Recíbela lista por la mañana.",
-    sub: (h) =>
-      `Investigación, datos, redacción, hojas de cálculo, admin: descríbela, obtén un precio fijo en ${h} horas hábiles, luego está listo por la mañana.`,
-    edge: "Ninguna propuesta que leer. Ninguna tarifa por hora que negociar. Nadie a quien gestionar. Revisamos el trabajo antes de que tú lo veas.",
     cta: "Describe tu tarea",
     guarantee:
       "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
@@ -674,9 +656,6 @@ const tl: Dict = {
   hero: {
     line1: "Ilarawan ang kahit anong task.",
     line2: "Tapos na ito pagsapit ng umaga.",
-    sub: (h) =>
-      `Research, data, pagsusulat, spreadsheets, admin: ilarawan ito, kumuha ng fixed na presyo sa loob ng ${h} oras ng trabaho, tapos tapos na ito pagsapit ng umaga.`,
-    edge: "Walang proposal na babasahin. Walang hourly rate na pag-uusapan. Wala kang pamamahalaan. Sinusuri namin ang trabaho bago mo pa ito makita.",
     cta: "Ilarawan ang task mo",
     guarantee:
       "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",

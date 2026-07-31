@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
 import { cookies, headers } from "next/headers";
 import { getSessionUser, roleHome } from "@/lib/authz";
-import { getSettings } from "@/lib/settings";
 import { Reveal } from "@/components/reveal";
 import { AudienceToggle } from "@/components/audience-toggle";
 import { PublicCounters } from "@/components/public-counters";
@@ -57,7 +56,7 @@ const ORG_JSONLD = JSON.stringify({
   name: "AfterDesk",
   url: SITE_URL,
   description:
-    "Describe any task in plain English: priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
+    "Describe any task in plain language: priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
 });
 
 /**
@@ -112,7 +111,6 @@ export default async function Home({
      roleHome(): that is a door which does not open for it, and requireUser()
      would only send it here anyway, one loading flash later. */
   const portal = user ? (user.emailVerified ? roleHome(user.role) : "/verify-email") : undefined;
-  const settings = await getSettings();
   const sp = await searchParams;
   const cookieStore = await cookies();
   const lang = clientLangOf(sp.lang ?? cookieStore.get("ss-lang-client")?.value);
@@ -249,22 +247,7 @@ export default async function Home({
               </h1>
             </div>
 
-            <div className="order-4">
-              <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
-                {t.hero.sub(settings.quoteTurnaroundHours)}
-              </p>
-              {/* The competitive-advantage line. A visitor here already knows
-                  hiring someone directly is cheap and easy — what they don't
-                  have is the hour they'd spend checking that person's work.
-                  This names that management overhead as the thing being sold
-                  away, so "why not just do it myself" gets answered before
-                  anyone has to scroll past the hero for it. */}
-              <p className="anim-rise d-2 mt-4 max-w-[48ch] text-[15px] leading-[1.6] text-[#C9CDD3]">
-                {t.hero.edge}
-              </p>
-            </div>
-
-            <div className="anim-rise d-3 order-3 mt-8">
+            <div className="anim-rise d-2 order-3 mt-8">
               <Link
                 href="/register"
                 className="lift inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
@@ -365,21 +348,6 @@ export default async function Home({
               </div>
             ))}
           </Reveal>
-          {/* The standing guarantees, not the process — deliberately
-              smaller and unnumbered so this doesn't read as the same
-              "three things" list a second time. steps above is the
-              timeline (describe → done → pay); this is what's true no
-              matter where a task sits on that timeline. */}
-          <Reveal className="mt-10 grid gap-6 border-t border-white/8 pt-8 sm:grid-cols-3">
-            {t.whatWeAre.pillars.map(([label, body]) => (
-              <div key={label} className="srow">
-                <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[#C9CDD3]">
-                  {label}
-                </p>
-                <p className="mt-1.5 text-[13px] leading-[1.5] text-[#767C86]">{body}</p>
-              </div>
-            ))}
-          </Reveal>
         </div>
       </section>
 
@@ -448,6 +416,23 @@ export default async function Home({
                 ))}
               </div>
             </div>
+          </Reveal>
+          {/* The standing guarantees, not the process — deliberately smaller
+              and unnumbered so it never reads as a "three things" list a
+              second time next to the numbered chapters. Sits right under the
+              receipt on purpose: the price just proved the rule (one fixed
+              number, no meter), so this is the moment to name the three
+              things that stay true no matter where a task sits on its own
+              timeline, before the reader moves on to how the pool works. */}
+          <Reveal className="mx-auto mt-10 grid max-w-[720px] gap-6 border-t border-white/8 pt-8 sm:grid-cols-3">
+            {t.whatWeAre.pillars.map(([label, body]) => (
+              <div key={label} className="srow">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[#C9CDD3]">
+                  {label}
+                </p>
+                <p className="mt-1.5 text-[13px] leading-[1.5] text-[#767C86]">{body}</p>
+              </div>
+            ))}
           </Reveal>
         </div>
       </section>

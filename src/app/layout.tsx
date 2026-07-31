@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s · AfterDesk",
   },
   description:
-    "A virtual assistant service without the hiring: describe any admin, data, research or writing task in plain English, approve one fixed price, and get it back done by morning, reviewed by an operator before it reaches you. No subscription, no hourly meter.",
+    "A virtual assistant service without the hiring: describe any admin, data, research or writing task in plain language, approve one fixed price, and get it back done by morning, reviewed by an operator before it reaches you. No subscription, no hourly meter.",
   openGraph: {
     siteName: "AfterDesk",
     type: "website",
