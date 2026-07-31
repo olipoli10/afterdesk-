@@ -93,7 +93,7 @@ const pEn: ProtocolDict = {
   movement1: "The night, in six stages",
   lanes: ["You", "Operator", "Night"],
   stages: (s) => [
-    { label: "Describe", say: "Plain English. Attach files if needed." },
+    { label: "Describe", say: "Plain language. Attach files if needed." },
     {
       label: "Price",
       say: "One fixed price. You approve or decline.",

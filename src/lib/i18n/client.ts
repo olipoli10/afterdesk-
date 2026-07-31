@@ -216,7 +216,7 @@ const en: Dict = {
     steps: [
       [
         "Describe it",
-        "Plain English, any admin, data, research or writing task. A specialist here prices it and you approve before anything starts.",
+        "Plain language, any admin, data, research or writing task. A specialist here prices it and you approve before anything starts.",
       ],
       [
         "It gets done",
