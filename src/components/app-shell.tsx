@@ -37,11 +37,25 @@ export function AppShell({
   const night = tone === "night";
 
   return (
-    <div className={night ? "min-h-screen bg-[#0A0B0D]" : "min-h-screen bg-[#F7F6F3]"}>
+    <div className={night ? "relative min-h-screen overflow-hidden bg-[#0A0B0D]" : "min-h-screen bg-[#F7F6F3]"}>
+      {/* The grid + glow every glass Card (src/components/ui.tsx) blurs
+          against — without something textured behind it, a translucent
+          card over a flat #0A0B0D reads almost identically to an opaque
+          one. Fixed, not absolute: it has to stay put while the page
+          scrolls, the same way the login modal's backdrop does. */}
+      {night ? (
+        <>
+          <div aria-hidden className="night-grid pointer-events-none fixed inset-0" />
+          <div
+            aria-hidden
+            className="glow-dusk pointer-events-none fixed -top-40 left-[8%] h-[560px] w-[760px]"
+          />
+        </>
+      ) : null}
       <header
         className={
           night
-            ? "sticky top-0 z-40 border-b border-white/8 bg-[#0A0B0D]/90 backdrop-blur-sm"
+            ? "sticky top-0 z-40 border-b border-white/8 bg-[#0A0B0D]/70 backdrop-blur-md"
             : "sticky top-0 z-40 border-b border-[#14161A]/10 bg-[#F7F6F3]/90 backdrop-blur-sm"
         }
       >
@@ -103,7 +117,7 @@ export function AppShell({
           </div>
         </div>
       </header>
-      <main className={`mx-auto w-full ${container} px-5 py-7`}>{children}</main>
+      <main className={`relative z-10 mx-auto w-full ${container} px-5 py-7`}>{children}</main>
     </div>
   );
 }

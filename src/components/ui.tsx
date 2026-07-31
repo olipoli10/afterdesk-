@@ -9,10 +9,13 @@ import type { ReactNode } from "react";
    Motion: a tool moves like paper — 150ms color transitions, nothing else.
    ───────────────────────────────────────────────────────────────────────── */
 
-/** A printed sheet on the desk — or, tone="night", a card floating on the
- *  worker portal's dark surface (src/app/va). The night tone reuses colors
- *  already established elsewhere (the homepage's #111317 artifact cards, a
- *  white/10 hairline border) rather than inventing a second dark palette. */
+/** A printed sheet on the desk — or, tone="night", a frosted glass bubble
+ *  floating over the worker portal's dark grid (src/app/va, AppShell
+ *  tone="night" — see the fixed night-grid + glow it renders behind every
+ *  card). Same recipe as the login modal's dialog (src/components/
+ *  login-modal.tsx): a translucent tint, backdrop-blur, and a single inset
+ *  highlight standing in for a top-lit edge — reused rather than a flatter
+ *  opaque #111317, so cards read as floating glass, not paint. */
 export function Card({
   children,
   className = "",
@@ -24,7 +27,7 @@ export function Card({
 }) {
   const surface =
     tone === "night"
-      ? "border-white/10 bg-[#111317]"
+      ? "border-white/[0.14] bg-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_16px_40px_-24px_rgba(0,0,0,0.6)] backdrop-blur-xl"
       : "border-[#14161A]/10 bg-white shadow-[0_1px_2px_rgba(20,22,26,0.04)]";
   return <div className={`rounded-lg border ${surface} ${className}`}>{children}</div>;
 }
