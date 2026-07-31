@@ -20,10 +20,11 @@ import { useEffect, useRef, useState } from "react";
    ───────────────────────────────────────────────────────────────────────── */
 
 type Beat = {
-  /** Label above the amount. */
-  label: string;
-  /** The one control's text. */
-  control: string;
+  /** Which label sits above the amount. */
+  labelKey: "printed" | "released";
+  /** Which control text shows. Words come from LiveClaimCardCopy — this is
+   *  only the choreography, matching the same split as LiveTaskWindowCopy. */
+  controlKey: "claim" | "claimedAt" | "inReview" | "paid";
   /** Control styling: ink = actionable, muted = in flight, green = released. */
   tone: "ink" | "muted" | "green";
   /** Ghost rows visible from this beat on. */
@@ -31,24 +32,38 @@ type Beat = {
 };
 
 const BEATS: Beat[] = [
-  { label: "Payout — printed", control: "Claim", tone: "ink", ghosts: false },
-  { label: "Payout — printed", control: "Claim", tone: "ink", ghosts: false },
-  { label: "Payout — printed", control: "Claim", tone: "ink", ghosts: true },
-  { label: "Payout — printed", control: "Claimed 7:22 AM", tone: "muted", ghosts: true },
-  { label: "Payout — printed", control: "In review", tone: "muted", ghosts: true },
-  { label: "Released", control: "Paid", tone: "green", ghosts: true },
+  { labelKey: "printed", controlKey: "claim", tone: "ink", ghosts: false },
+  { labelKey: "printed", controlKey: "claim", tone: "ink", ghosts: false },
+  { labelKey: "printed", controlKey: "claim", tone: "ink", ghosts: true },
+  { labelKey: "printed", controlKey: "claimedAt", tone: "muted", ghosts: true },
+  { labelKey: "printed", controlKey: "inReview", tone: "muted", ghosts: true },
+  { labelKey: "released", controlKey: "paid", tone: "green", ghosts: true },
 ];
 
 /* The hold on beat 1 is load-bearing: the money sits on screen alone, before
    any interaction, which is literally what the headline claims. */
 const BEAT_MS = [500, 1600, 1100, 1400, 1600, 3000];
 
+export type LiveClaimCardCopy = {
+  illustrative: string;
+  taskTitle: string;
+  taskDetail: string;
+  labelPrinted: string;
+  labelReleased: string;
+  claim: string;
+  claimedAt: string;
+  inReview: string;
+  paid: string;
+};
+
 export function LiveClaimCard({
   ghost,
   caption,
+  copy,
 }: {
   ghost: [string, string][];
   caption: string;
+  copy: LiveClaimCardCopy;
 }) {
   const [i, setI] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -111,21 +126,18 @@ export function LiveClaimCard({
         <div className="relative overflow-hidden rounded-[16px] bg-white">
           {/* top rail */}
           <div className="flex items-center justify-between border-b border-[#14161A]/[0.08] px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#5B6069]">
+            {/* "Task #0871" is a machine ID, not a word — stays literal. */}
             <span>Task #0871</span>
-            <span>Illustrative</span>
+            <span>{copy.illustrative}</span>
           </div>
 
           <div className="grid gap-x-6 px-4 py-4 sm:grid-cols-[1fr_auto]">
             <div className="min-w-0">
-              <p className="text-[15px] font-medium leading-snug text-[#14161A]">
-                Tag 1,200 support tickets by topic
-              </p>
-              <p className="mt-1 font-mono text-[11px] text-[#5B6069]">
-                One sheet, topic per row, every ticket tagged
-              </p>
+              <p className="text-[15px] font-medium leading-snug text-[#14161A]">{copy.taskTitle}</p>
+              <p className="mt-1 font-mono text-[11px] text-[#5B6069]">{copy.taskDetail}</p>
 
               <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#5B6069]">
-                {b.label}
+                {b.labelKey === "released" ? copy.labelReleased : copy.labelPrinted}
               </p>
               {/* THE INVARIANT: no transition, no transform, no key. This node
                   is identical in every beat — that is the entire argument. */}
@@ -137,7 +149,7 @@ export function LiveClaimCard({
                 <span
                   className={`inline-flex min-w-[128px] items-center justify-center rounded-md border px-4 py-2 font-mono text-[12px] uppercase tracking-[0.1em] transition-colors duration-300 ${control}`}
                 >
-                  {b.control}
+                  {copy[b.controlKey]}
                 </span>
               </div>
             </div>

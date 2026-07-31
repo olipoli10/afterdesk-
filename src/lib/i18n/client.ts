@@ -2,12 +2,18 @@
  * The client homepage speaks English, French, Spanish and Tagalog (labelled
  * FIL) — the same four the worker page offers, from the same shared list.
  *
- * THE RULE: the VOICE translates, the MACHINE stays English. Headings, body
- * copy, CTAs, captions, terms and example task titles are voice. The live
- * artifacts (the quote window, the overnight CSV diff), their mono field
- * labels (TASK / SCOPE / TOTAL), status stamps, filenames and clock times are
- * machine output — they stay English, because the platform runs in English
- * and showing that is honest signaling, not laziness.
+ * THE RULE, REVISED: the VOICE translates, and so now does anything a reader
+ * has to actually UNDERSTAND to follow what's happening — including the live
+ * task window's stamps and status line. The distinction that survives is
+ * narrower than "machine vs voice": raw DATA (clock times, prices, filenames,
+ * task IDs like task_0448) stays literal because it isn't language, but the
+ * WORDS describing what that data means are voice and must translate. The
+ * original rule read "6:41 PM · task received" as machine output because it
+ * looks like a log line — but a Filipino-speaking visitor reading only
+ * "task received" in English mid-sentence doesn't experience a log, they
+ * experience a gap in a page that was otherwise speaking to them. Literal
+ * data (t.liveWindow does not translate "task_0448" or "$74") stays put;
+ * every word around it now lives in t.liveWindow below.
  */
 
 import { SITE_LANGS, siteLangOf, type SiteLang } from "./langs";
@@ -32,7 +38,22 @@ type Dict = {
      throat-clearing. The sr-only paragraph in page.tsx carries the full
      description for anyone who cannot see the artifact. */
   ch01: { label: string };
-  ch02: { label: string; noMeter: string; captions: [string, string, string] };
+  ch02: {
+    label: string;
+    noMeter: string;
+    captions: [string, string, string];
+    /** The quote slip's own field labels and controls. "QUOTE #0412" and the
+     *  RETURNS value ("7:07 AM ET") are literal data and don't move. */
+    fixed: string;
+    fieldTask: string;
+    taskValue: string;
+    fieldScope: string;
+    scopeValue: string;
+    fieldReturns: string;
+    fieldTotal: string;
+    approve: string;
+    askQuestion: string;
+  };
   ch03: {
     label: string;
     h2: string;
@@ -91,6 +112,27 @@ type Dict = {
    *  SCOPE, so this is the pointer to them rather than a sixth chapter. */
   close: { protocol: string };
   footer: { about: string; how: string; signIn: string; work: string };
+  /** The hero's live task window (src/components/live-task-window.tsx). Five
+   *  stamps and their status lines, in the STEPS order the component plays
+   *  them: Intake → Quote ready → In progress → In review → Delivered. Clock
+   *  times inside each line are literal data and do not move between
+   *  languages — only the words are translated per language below. */
+  liveWindow: {
+    taskTitle: string;
+    /** "SCOPE" field label and its value ("merge duplicates, fix units"). */
+    fieldScope: string;
+    scopeValue: string;
+    /** "RETURNS" field label. Its value, "7:00 AM ET", is literal and lives
+     *  in the component — a timezone abbreviation is not a word to translate. */
+    fieldReturns: string;
+    fixedPrice: string;
+    approve: string;
+    approved: string;
+    download: string;
+    askQuestion: string;
+    stamps: [string, string, string, string, string];
+    lines: [string, string, string, string, string];
+  };
 };
 
 const en: Dict = {
@@ -111,6 +153,15 @@ const en: Dict = {
       "You approve before work starts.",
       "Back before your first meeting.",
     ],
+    fixed: "FIXED",
+    fieldTask: "TASK",
+    taskValue: "Dedupe 142-row lead export",
+    fieldScope: "SCOPE",
+    scopeValue: "Merge on email, fix names, verify",
+    fieldReturns: "RETURNS",
+    fieldTotal: "TOTAL",
+    approve: "APPROVE",
+    askQuestion: "ASK A QUESTION",
   },
   ch03: {
     label: "The ledger",
@@ -168,6 +219,25 @@ const en: Dict = {
   },
   close: { protocol: "Full protocol — six stages, versioned" },
   footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us" },
+  liveWindow: {
+    taskTitle: "Clean a 1,800-row supplier price list",
+    fieldScope: "SCOPE",
+    scopeValue: "merge duplicates, fix units",
+    fieldReturns: "RETURNS",
+    fixedPrice: "Fixed price",
+    approve: "Approve",
+    approved: "Approved ✓",
+    download: "Download delivery",
+    askQuestion: "Ask a question",
+    stamps: ["Intake", "Quote ready", "In progress", "In review", "Delivered"],
+    lines: [
+      "6:41 PM · task received",
+      "7:15 PM · priced by the operator · 34 min after intake",
+      "7:22 PM · approved · claimed by a vetted specialist",
+      "5:58 AM · delivered · operator review in progress",
+      "7:07 AM · passed review · in your inbox",
+    ],
+  },
 };
 
 const fr: Dict = {
@@ -188,6 +258,15 @@ const fr: Dict = {
       "Vous approuvez avant que ça commence.",
       "De retour avant votre première réunion.",
     ],
+    fixed: "FIXE",
+    fieldTask: "TÂCHE",
+    taskValue: "Déduplication d'un export de 142 prospects",
+    fieldScope: "PORTÉE",
+    scopeValue: "Fusion par courriel, correction des noms, vérification",
+    fieldReturns: "LIVRAISON",
+    fieldTotal: "TOTAL",
+    approve: "APPROUVER",
+    askQuestion: "POSER UNE QUESTION",
   },
   ch03: {
     label: "Le registre",
@@ -244,6 +323,25 @@ const fr: Dict = {
     ],
   },
   close: { protocol: "Protocole complet — six étapes, versionné" },
+  liveWindow: {
+    taskTitle: "Nettoyer une liste de prix fournisseur de 1 800 lignes",
+    fieldScope: "PORTÉE",
+    scopeValue: "fusionner les doublons, corriger les unités",
+    fieldReturns: "LIVRAISON",
+    fixedPrice: "Prix fixe",
+    approve: "Approuver",
+    approved: "Approuvé ✓",
+    download: "Télécharger la livraison",
+    askQuestion: "Poser une question",
+    stamps: ["Réception", "Prix prêt", "En cours", "En révision", "Livré"],
+    lines: [
+      "18 h 41 · tâche reçue",
+      "19 h 15 · prix fixé par l'opérateur · 34 min après réception",
+      "19 h 22 · approuvé · pris en charge par un spécialiste vérifié",
+      "5 h 58 · livré · révision par l'opérateur en cours",
+      "7 h 07 · révision réussie · dans votre boîte de réception",
+    ],
+  },
   footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", work: "Travailler avec nous" },
 };
 
@@ -265,6 +363,15 @@ const es: Dict = {
       "Apruebas antes de que empiece.",
       "De vuelta antes de tu primera reunión.",
     ],
+    fixed: "FIJO",
+    fieldTask: "TAREA",
+    taskValue: "Deduplicar exportación de 142 contactos",
+    fieldScope: "ALCANCE",
+    scopeValue: "Fusionar por correo, corregir nombres, verificar",
+    fieldReturns: "ENTREGA",
+    fieldTotal: "TOTAL",
+    approve: "APROBAR",
+    askQuestion: "HACER UNA PREGUNTA",
   },
   ch03: {
     label: "El registro",
@@ -321,6 +428,25 @@ const es: Dict = {
     ],
   },
   close: { protocol: "Protocolo completo — seis etapas, versionado" },
+  liveWindow: {
+    taskTitle: "Limpiar una lista de precios de proveedor de 1800 filas",
+    fieldScope: "ALCANCE",
+    scopeValue: "fusionar duplicados, corregir unidades",
+    fieldReturns: "ENTREGA",
+    fixedPrice: "Precio fijo",
+    approve: "Aprobar",
+    approved: "Aprobado ✓",
+    download: "Descargar entrega",
+    askQuestion: "Hacer una pregunta",
+    stamps: ["Recepción", "Precio listo", "En curso", "En revisión", "Entregado"],
+    lines: [
+      "6:41 p. m. · tarea recibida",
+      "7:15 p. m. · precio fijado por el operador · 34 min después de la recepción",
+      "7:22 p. m. · aprobado · asignado a un especialista verificado",
+      "5:58 a. m. · entregado · revisión del operador en curso",
+      "7:07 a. m. · pasó la revisión · en tu bandeja de entrada",
+    ],
+  },
   footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros" },
 };
 
@@ -349,6 +475,15 @@ const tl: Dict = {
       "Ikaw ang mag-a-approve bago magsimula.",
       "Balik bago ang unang meeting mo.",
     ],
+    fixed: "FIXED",
+    fieldTask: "TASK",
+    taskValue: "Pag-dedupe ng 142-row na lead export",
+    fieldScope: "SAKLAW",
+    scopeValue: "I-merge base sa email, ayusin ang mga pangalan, i-verify",
+    fieldReturns: "PAGBABALIK",
+    fieldTotal: "TOTAL",
+    approve: "APRUBAHAN",
+    askQuestion: "MAGTANONG",
   },
   ch03: {
     label: "Ang talaan",
@@ -405,6 +540,25 @@ const tl: Dict = {
     ],
   },
   close: { protocol: "Buong protocol — anim na yugto, may bersyon" },
+  liveWindow: {
+    taskTitle: "Linisin ang 1,800-row na listahan ng presyo ng supplier",
+    fieldScope: "SAKLAW",
+    scopeValue: "pagsamahin ang mga duplicate, ayusin ang mga unit",
+    fieldReturns: "PAGBABALIK",
+    fixedPrice: "Fixed na presyo",
+    approve: "Aprubahan",
+    approved: "Inaprubahan ✓",
+    download: "I-download ang delivery",
+    askQuestion: "Magtanong",
+    stamps: ["Natanggap", "Presyo handa na", "Isinasagawa", "Sinusuri", "Naihatid"],
+    lines: [
+      "6:41 PM · natanggap ang task",
+      "7:15 PM · pinresyuhan ng operator · 34 min pagkatapos matanggap",
+      "7:22 PM · inaprubahan · kinuha ng beripikadong espesyalista",
+      "5:58 AM · naihatid · isinasagawa ang review ng operator",
+      "7:07 AM · pumasa sa review · nasa inbox mo na",
+    ],
+  },
   footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin" },
 };
 

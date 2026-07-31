@@ -1,11 +1,21 @@
 /**
  * The worker homepage speaks four languages: English, French, Spanish and
  * Tagalog (labelled FIL) — the same four the client page offers, from the
- * same shared list. The ARTIFACTS (pool rows, ledger lines, payout slip, the
- * claim card's mono controls) stay English on purpose — real tasks arrive in
- * English, and showing that is honest signaling about what the job requires.
- * The mono term labels (WORK / PAYOUT / REVIEW / IDENTITY / SCORE) belong to
- * that machine layer and stay English in every language.
+ * same shared list.
+ *
+ * REVISED POLICY — this file used to keep every artifact (the claim card,
+ * the pool rows, the payout slip) in English on the theory that real tasks
+ * arrive in English, so showing that up front was honest signaling. That
+ * held for genuinely English CONTENT — a real task brief, a real pool
+ * listing — but the claim card's own chrome (its labels, its control text:
+ * "Claim", "Paid", "Released") was never content, it was UI, and a Tagalog
+ * reader landing on the page most likely to close the language gap with a
+ * new applicant was reading a page that switched back to English at the
+ * exact moment it demonstrated what claiming and getting paid feel like.
+ * The claim card (t.claimCard below) now translates. The mono term labels
+ * in ch04 (WORK / PAYOUT / REVIEW / IDENTITY / SCORE) are a narrower case —
+ * they read as fixed contract-term headings on a printed schematic, closer
+ * to a form's field names than to prose — and stay English for now.
  *
  * Register: natural conversational Tagalog with the loanwords Filipino
  * freelancers actually use (task, payout, review, claim, pool) — never
@@ -34,10 +44,28 @@ type Dict = {
     cardCaption: string;
     ghost: [string, string][];
   };
-  /** The Academy chapter — 01/05, the acquisition argument. The exam
-   *  artifact's own strings stay English in every language (same law as the
-   *  pool rows and the payout slip): the courses and exams really are in
-   *  English, and a reader deserves to see that before signing up. */
+  /** The hero's claim card (src/components/live-claim-card.tsx). Its task
+   *  brief text ("Tag 1,200 support tickets by topic") is realistic EXAMPLE
+   *  content and stays English on the same honest-signaling logic as ch03's
+   *  ledger rows — a real brief would be. Everything else on the card is UI
+   *  chrome the reader has to follow to get the card's whole argument, and
+   *  now translates. */
+  claimCard: {
+    illustrative: string;
+    taskTitle: string;
+    taskDetail: string;
+    labelPrinted: string;
+    labelReleased: string;
+    claim: string;
+    claimedAt: string;
+    inReview: string;
+    paid: string;
+  };
+  /** The Academy chapter — 01/05, the acquisition argument. The one public
+   *  sample question (t.sampleExam below, wired via src/lib/academy/
+   *  sample-i18n.ts) now translates — see the note there for why that one
+   *  exception exists while the real courses behind the account stay
+   *  English. */
   chAcademy: {
     label: string;
     h2: string;
@@ -65,6 +93,18 @@ type Dict = {
   };
   closing: { line1: string; line2: string; cta: string; funnel: string };
   footer: { about: string; how: string; signIn: string; sendWork: string };
+  /** UI chrome for src/components/sample-exam.tsx — the "pick an answer"
+   *  prompt, the miss message, and the correct-answer eyebrow. The question
+   *  itself (prompt/options/explain) is a separate translation, in
+   *  src/lib/academy/sample-i18n.ts, because it has to line up 1:1 with one
+   *  specific question inside the real (English) course content. */
+  sampleExamUi: {
+    pickOne: string;
+    notThatOne: string;
+    keepGoingPrefix: string;
+    freeWithAccount: string;
+    correct: string;
+  };
 };
 
 const en: Dict = {
@@ -83,11 +123,22 @@ const en: Dict = {
       ["Client calls", "0"],
     ],
   },
+  claimCard: {
+    illustrative: "Illustrative",
+    taskTitle: "Tag 1,200 support tickets by topic",
+    taskDetail: "One sheet, topic per row, every ticket tagged",
+    labelPrinted: "Payout — printed",
+    labelReleased: "Released",
+    claim: "Claim",
+    claimedAt: "Claimed 7:22 AM",
+    inReview: "In review",
+    paid: "Paid",
+  },
   chAcademy: {
     label: "The virtual assistant academy",
     h2: "Free courses. Here is the exam.",
     body: "Every course opens the day you make an account, and your certificates are on your application when we read it.",
-    caption: "One real question from the Data cleanup exam. The answer is printed on purpose.",
+    caption: "One real question from the Data cleanup exam. Answer it yourself — nothing is hidden.",
     english: "The courses and the exams are in English, like the work.",
     ctaLink: (n) => `See all ${n} free courses`,
     ctaTail: "— no account needed.",
@@ -140,6 +191,13 @@ const en: Dict = {
       "Account → short application → the operator's review → the pool. Not everyone gets in. That's the point.",
   },
   footer: { about: "About us", how: "How it works", signIn: "Sign in", sendWork: "Send work instead" },
+  sampleExamUi: {
+    pickOne: "Pick an answer",
+    notThatOne: "Not that one.",
+    keepGoingPrefix: "Keep going — or take the course it comes from,",
+    freeWithAccount: "free with an account",
+    correct: "CORRECT",
+  },
 };
 
 const tl: Dict = {
@@ -158,11 +216,22 @@ const tl: Dict = {
       ["Tawag ng client", "0"],
     ],
   },
+  claimCard: {
+    illustrative: "Halimbawa",
+    taskTitle: "Tag 1,200 support tickets by topic",
+    taskDetail: "One sheet, topic per row, every ticket tagged",
+    labelPrinted: "Payout — nakalimbag na",
+    labelReleased: "Napalabas na",
+    claim: "I-claim",
+    claimedAt: "Na-claim 7:22 AM",
+    inReview: "Sinusuri",
+    paid: "Bayad na",
+  },
   chAcademy: {
     label: "Ang virtual assistant academy",
     h2: "Libreng kurso. Heto ang exam.",
     body: "Bukas ang bawat kurso sa araw na gumawa ka ng account, at nasa application mo na ang mga certificate mo kapag binasa namin ito.",
-    caption: "Isang totoong tanong mula sa Data cleanup exam. Sadyang nakalimbag ang sagot.",
+    caption: "Isang totoong tanong mula sa Data cleanup exam. Sagutin mo mismo — walang itinatago.",
     english: "Nasa Ingles ang mga kurso at exam, tulad ng trabaho.",
     ctaLink: (n) => `Tingnan ang lahat ng ${n} libreng kurso`,
     ctaTail: "— hindi kailangan ng account.",
@@ -212,6 +281,13 @@ const tl: Dict = {
       "Account → maikling application → review ng operator → ang pool. Hindi lahat nakakapasok. Iyon mismo ang punto.",
   },
   footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", sendWork: "Magpadala ng trabaho" },
+  sampleExamUi: {
+    pickOne: "Pumili ng sagot",
+    notThatOne: "Hindi iyan.",
+    keepGoingPrefix: "Tuloy lang — o kunin ang kurso kung saan ito galing,",
+    freeWithAccount: "libre kasama ang account",
+    correct: "TAMA",
+  },
 };
 
 /* North-American French: "courriel" over "email", business register, no
@@ -232,11 +308,22 @@ const fr: Dict = {
       ["Appels clients", "0"],
     ],
   },
+  claimCard: {
+    illustrative: "Illustratif",
+    taskTitle: "Tag 1,200 support tickets by topic",
+    taskDetail: "One sheet, topic per row, every ticket tagged",
+    labelPrinted: "Paiement — imprimé",
+    labelReleased: "Libéré",
+    claim: "Réclamer",
+    claimedAt: "Réclamée 7 h 22",
+    inReview: "En révision",
+    paid: "Payé",
+  },
   chAcademy: {
     label: "L'académie d'adjoint virtuel",
     h2: "Des cours gratuits. Voici l'examen.",
     body: "Chaque cours s'ouvre le jour où vous créez un compte, et vos certificats sont sur votre candidature quand nous la lisons.",
-    caption: "Une vraie question de l'examen Data cleanup. La réponse est imprimée exprès.",
+    caption: "Une vraie question de l'examen Data cleanup. Répondez vous-même — rien n'est caché.",
     english: "Les cours et les examens sont en anglais, comme le travail.",
     ctaLink: (n) => `Voir les ${n} cours gratuits`,
     ctaTail: "— aucun compte requis.",
@@ -290,6 +377,13 @@ const fr: Dict = {
       "Compte → courte candidature → la révision de l'opérateur → le bassin. Tout le monde n'entre pas. C'est voulu.",
   },
   footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", sendWork: "Envoyer du travail" },
+  sampleExamUi: {
+    pickOne: "Choisissez une réponse",
+    notThatOne: "Pas celle-là.",
+    keepGoingPrefix: "Continuez — ou suivez le cours dont elle vient,",
+    freeWithAccount: "gratuit avec un compte",
+    correct: "CORRECT",
+  },
 };
 
 /* Neutral international business Spanish — tuteo, matching the client page. */
@@ -309,11 +403,22 @@ const es: Dict = {
       ["Llamadas de cliente", "0"],
     ],
   },
+  claimCard: {
+    illustrative: "Ilustrativo",
+    taskTitle: "Tag 1,200 support tickets by topic",
+    taskDetail: "One sheet, topic per row, every ticket tagged",
+    labelPrinted: "Pago — impreso",
+    labelReleased: "Liberado",
+    claim: "Reclamar",
+    claimedAt: "Reclamada 7:22 a. m.",
+    inReview: "En revisión",
+    paid: "Pagado",
+  },
   chAcademy: {
     label: "La academia de asistente virtual",
     h2: "Cursos gratis. Aquí está el examen.",
     body: "Cada curso se abre el día que creas una cuenta, y tus certificados están en tu postulación cuando la leemos.",
-    caption: "Una pregunta real del examen de Data cleanup. La respuesta está impresa a propósito.",
+    caption: "Una pregunta real del examen de Data cleanup. Respóndela tú mismo — nada está oculto.",
     english: "Los cursos y los exámenes son en inglés, como el trabajo.",
     ctaLink: (n) => `Ver los ${n} cursos gratis`,
     ctaTail: "— sin cuenta.",
@@ -363,6 +468,13 @@ const es: Dict = {
       "Cuenta → postulación corta → la revisión del operador → el grupo. No todos entran. Ese es el punto.",
   },
   footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", sendWork: "Enviar trabajo" },
+  sampleExamUi: {
+    pickOne: "Elige una respuesta",
+    notThatOne: "Esa no.",
+    keepGoingPrefix: "Sigue intentando — o toma el curso de donde viene,",
+    freeWithAccount: "gratis con una cuenta",
+    correct: "CORRECTO",
+  },
 };
 
 export const WORKERS_I18N: Record<WorkersLang, Dict> = { en, fr, es, tl };

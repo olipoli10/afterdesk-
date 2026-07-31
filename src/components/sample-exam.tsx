@@ -25,17 +25,27 @@ import { useState } from "react";
  * used here is the same token as the payout green rather than a second
  * green, so the palette does not grow a near-duplicate.
  */
+export type SampleExamUiCopy = {
+  pickOne: string;
+  notThatOne: string;
+  keepGoingPrefix: string;
+  freeWithAccount: string;
+  correct: string;
+};
+
 export function SampleExam({
   prompt,
   options,
   correct,
   explain,
+  ui,
   applyHref = "/register/va",
 }: {
   prompt: string;
   options: string[];
   correct: number;
   explain: string;
+  ui: SampleExamUiCopy;
   applyHref?: string;
 }) {
   const [wrong, setWrong] = useState<number[]>([]);
@@ -96,7 +106,7 @@ export function SampleExam({
                     aria-hidden
                     className="stamp-in ml-auto shrink-0 pt-0.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[#166049]"
                   >
-                    Correct
+                    {ui.correct}
                   </span>
                 ) : null}
               </button>
@@ -110,23 +120,22 @@ export function SampleExam({
       <div role="status" aria-live="polite" className="mt-3.5">
         {solved ? (
           <p className="border-l-2 border-[#166049]/40 pl-3 font-mono text-[12px] leading-[1.55] text-[#5B6069]">
-            <b className="font-semibold tracking-[0.08em] text-[#166049]">CORRECT</b> · {explain}
+            <b className="font-semibold tracking-[0.08em] text-[#166049]">{ui.correct}</b> · {explain}
           </p>
         ) : wrong.length > 0 ? (
           <p className="border-l-2 border-[#A82318]/30 pl-3 text-[13px] leading-[1.55] text-[#5B6069]">
-            <b className="font-medium text-[#8C2F23]">Not that one.</b> Keep going — or take the course
-            it comes from,{" "}
+            <b className="font-medium text-[#8C2F23]">{ui.notThatOne}</b> {ui.keepGoingPrefix}{" "}
             <Link
               href={applyHref}
               className="font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-[3px] transition-colors hover:decoration-[#14161A]"
             >
-              free with an account
+              {ui.freeWithAccount}
             </Link>
             .
           </p>
         ) : (
           <p className="pl-3 font-mono text-[11px] uppercase tracking-[0.1em] text-[#8A9099]">
-            Pick an answer
+            {ui.pickOne}
           </p>
         )}
       </div>

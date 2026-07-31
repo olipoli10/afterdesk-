@@ -202,7 +202,7 @@ export default async function Home({
               the one that survives: it is the one carrying NEW information,
               and it has captions under it that the window does not. */}
           <div aria-hidden className="anim-rise d-3 hidden sm:block">
-            <LiveTaskWindow />
+            <LiveTaskWindow copy={t.liveWindow} />
           </div>
         </div>
 
@@ -226,13 +226,15 @@ export default async function Home({
             <div className="mx-auto max-w-[420px]">
               <div className="lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] transition-colors hover:border-white/20 hover:bg-[#15171B]">
                 <div className="flex items-center justify-between border-b border-white/8 pb-3 text-[#8A9099]">
+                  {/* "QUOTE #0412" is a machine ID and stays literal. */}
                   <span>QUOTE #0412</span>
-                  <span className="text-white">FIXED</span>
+                  <span className="text-white">{t.ch02.fixed}</span>
                 </div>
                 {[
-                  ["TASK", "Dedupe 142-row lead export"],
-                  ["SCOPE", "Merge on email, fix names, verify"],
-                  ["RETURNS", "7:07 AM ET"],
+                  [t.ch02.fieldTask, t.ch02.taskValue],
+                  [t.ch02.fieldScope, t.ch02.scopeValue],
+                  // The RETURNS value is a literal clock time + timezone, not a word.
+                  [t.ch02.fieldReturns, "7:07 AM ET"],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4 border-b border-white/6 py-2.5">
                     <span className="shrink-0 text-[#8A9099]">{k}</span>
@@ -240,7 +242,7 @@ export default async function Home({
                   </div>
                 ))}
                 <div className="flex items-baseline justify-between pt-4">
-                  <span className="text-[#8A9099]">TOTAL</span>
+                  <span className="text-[#8A9099]">{t.ch02.fieldTotal}</span>
                   <span className="text-[32px] font-medium tabular-nums leading-none text-white">
                     $68
                   </span>
@@ -248,10 +250,10 @@ export default async function Home({
                 <p className="mt-2 text-right text-[11px] text-[#8A9099]">{t.ch02.noMeter}</p>
                 <div className="mt-5 flex gap-2">
                   <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
-                    APPROVE
+                    {t.ch02.approve}
                   </span>
                   <span className="flex-1 rounded border border-white/15 py-2 text-center text-[11px] text-[#8A9099]">
-                    ASK A QUESTION
+                    {t.ch02.askQuestion}
                   </span>
                 </div>
               </div>

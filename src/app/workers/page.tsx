@@ -15,6 +15,7 @@ import { StickyApply } from "@/components/sticky-apply";
 import { LangSwitch } from "@/components/lang-switch";
 import { WORKERS_I18N, WORKERS_LANGS, workersLangOf } from "@/lib/i18n/workers";
 import { publicSampleQuestion, academyStats } from "@/lib/academy/public";
+import { SAMPLE_EXAM_TRANSLATIONS } from "@/lib/academy/sample-i18n";
 import { TrustLinks } from "@/components/trust-links";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -130,8 +131,14 @@ export default async function WorkersHome({
     </>
   );
   /* The one published exam question, read from the LIVE curriculum so the
-     caption "one real question" can never quietly become false. */
-  const sample = publicSampleQuestion();
+     caption "one real question" can never quietly become false. The prompt/
+     options/explain are overridden per language from a hand-maintained
+     translation table (src/lib/academy/sample-i18n.ts) — the course title
+     and correct index always come from the real English question, so a
+     translation can never silently disagree with which answer is right. */
+  const rawSample = publicSampleQuestion();
+  const translation = SAMPLE_EXAM_TRANSLATIONS[lang];
+  const sample = rawSample && translation ? { ...rawSample, ...translation } : rawSample;
   const stats = academyStats();
 
   return (
@@ -222,7 +229,7 @@ export default async function WorkersHome({
             no client calls are involved.
           </p>
           <div aria-hidden className="anim-rise d-3 order-4 mt-10 lg:order-none lg:mt-0">
-            <LiveClaimCard ghost={t.hero.ghost} caption={t.hero.cardCaption} />
+            <LiveClaimCard ghost={t.hero.ghost} caption={t.hero.cardCaption} copy={t.claimCard} />
           </div>
         </div>
 
@@ -293,6 +300,7 @@ export default async function WorkersHome({
                   options={sample.options}
                   correct={sample.correct}
                   explain={sample.explain}
+                  ui={t.sampleExamUi}
                 />
 
                 {/* the terms, as machine stamps — $0.00 in ink, never green.

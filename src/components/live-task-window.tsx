@@ -13,56 +13,23 @@ import { useMediaQuery } from "@/hooks/use-media-query";
    fake live feed.
    ───────────────────────────────────────────────────────────────────────── */
 
+/* The stamp text and activity line for each step are language-dependent
+   (LiveTaskWindowCopy.stamps / .lines, same order) — this array is now just
+   the STRUCTURE: which tone, and which flags flip on, at each of the five
+   beats. Language never changes the choreography, only the words. */
 type Step = {
-  stamp: string;
   stampTone: "muted" | "paper" | "dusk" | "green";
-  activity: string;
   showPrice: boolean;
   approved: boolean;
   released: boolean;
 };
 
 const STEPS: Step[] = [
-  {
-    stamp: "Intake",
-    stampTone: "muted",
-    activity: "6:41 PM · task received",
-    showPrice: false,
-    approved: false,
-    released: false,
-  },
-  {
-    stamp: "Quote ready",
-    stampTone: "paper",
-    activity: "7:15 PM · priced by the operator · 34 min after intake",
-    showPrice: true,
-    approved: false,
-    released: false,
-  },
-  {
-    stamp: "In progress",
-    stampTone: "dusk",
-    activity: "7:22 PM · approved · claimed by a vetted specialist",
-    showPrice: true,
-    approved: true,
-    released: false,
-  },
-  {
-    stamp: "In review",
-    stampTone: "muted",
-    activity: "5:58 AM · delivered · operator review in progress",
-    showPrice: true,
-    approved: true,
-    released: false,
-  },
-  {
-    stamp: "Delivered",
-    stampTone: "green",
-    activity: "7:07 AM · passed review · in your inbox",
-    showPrice: true,
-    approved: true,
-    released: true,
-  },
+  { stampTone: "muted", showPrice: false, approved: false, released: false },
+  { stampTone: "paper", showPrice: true, approved: false, released: false },
+  { stampTone: "dusk", showPrice: true, approved: true, released: false },
+  { stampTone: "muted", showPrice: true, approved: true, released: false },
+  { stampTone: "green", showPrice: true, approved: true, released: true },
 ];
 
 const STEP_MS = 2100;
@@ -81,7 +48,21 @@ function stampClass(tone: Step["stampTone"]): string {
   }
 }
 
-export function LiveTaskWindow() {
+export type LiveTaskWindowCopy = {
+  taskTitle: string;
+  fieldScope: string;
+  scopeValue: string;
+  fieldReturns: string;
+  fixedPrice: string;
+  approve: string;
+  approved: string;
+  download: string;
+  askQuestion: string;
+  stamps: [string, string, string, string, string];
+  lines: [string, string, string, string, string];
+};
+
+export function LiveTaskWindow({ copy }: { copy: LiveTaskWindowCopy }) {
   // The server snapshot renders QUOTE READY; motion-capable clients play from intake.
   const [i, setI] = useState(0);
   const playing = useMediaQuery("(prefers-reduced-motion: no-preference)");
@@ -111,20 +92,19 @@ export function LiveTaskWindow() {
           <span
             className={`rounded-[3px] px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] transition-colors duration-300 ${stampClass(s.stampTone)}`}
           >
-            {s.stamp}
+            {copy.stamps[visibleIndex]}
           </span>
         </div>
         <div className="px-4 py-4">
-          <p className="text-[15px] font-medium text-[#F7F6F3]">
-            Clean a 1,800-row supplier price list
-          </p>
+          <p className="text-[15px] font-medium text-[#F7F6F3]">{copy.taskTitle}</p>
           <div className="mt-3 space-y-1.5 font-mono text-[12px]">
             <div className="flex justify-between gap-4">
-              <span className="shrink-0 text-[#8A9099]">SCOPE</span>
-              <span className="truncate text-[#C9CDD3]">merge duplicates, fix units</span>
+              <span className="shrink-0 text-[#8A9099]">{copy.fieldScope}</span>
+              <span className="truncate text-[#C9CDD3]">{copy.scopeValue}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="shrink-0 text-[#8A9099]">RETURNS</span>
+              <span className="shrink-0 text-[#8A9099]">{copy.fieldReturns}</span>
+              {/* Literal clock time + timezone abbreviation — data, not a word. */}
               <span className="text-[#C9CDD3]">7:00 AM ET</span>
             </div>
           </div>
@@ -132,7 +112,7 @@ export function LiveTaskWindow() {
             className={`mt-4 flex items-baseline justify-between border-t border-white/8 pt-3 transition-opacity duration-500 ${s.showPrice ? "opacity-100" : "opacity-0"}`}
           >
             <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#8A9099]">
-              Fixed price
+              {copy.fixedPrice}
             </span>
             <span className="font-mono text-[26px] font-medium tabular-nums text-[#F7F6F3] underline decoration-[#1E7F5C] decoration-2 underline-offset-4">
               $74
@@ -148,16 +128,16 @@ export function LiveTaskWindow() {
                     : "bg-[#F7F6F3] text-[#14161A]"
               }`}
             >
-              {s.released ? "Download delivery" : s.approved ? "Approved ✓" : "Approve"}
+              {s.released ? copy.download : s.approved ? copy.approved : copy.approve}
             </span>
             <span className="flex-1 rounded-md border border-white/15 py-2 text-center text-[12px] font-medium text-[#8A9099]">
-              Ask a question
+              {copy.askQuestion}
             </span>
           </div>
         </div>
         <div className="border-t border-white/8 bg-[#0F1011] px-4 py-2.5 font-mono text-[11px] text-[#8A9099]">
           <span key={visibleIndex} className="live-line block">
-            {s.activity}
+            {copy.lines[visibleIndex]}
           </span>
         </div>
       </div>
