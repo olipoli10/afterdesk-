@@ -209,3 +209,47 @@ export function vaBadgeClass(status: VaProfileStatus): string {
     }
   }
 }
+
+/**
+ * AI pricing confidence, for the pricing queue and detail screen. Not
+ * green/amber/red: green means money moved (T_GREEN), amber means work
+ * came back (T_AMBER) — a suggestion is neither, so borrowing either tone
+ * would say something untrue by the same law that already keeps every
+ * other stamp in this file honest. T_ACT/T_DUSK/T_DEAD instead reads as
+ * "urgency" without claiming to be a money or QC signal: solid ink for
+ * "act now", quiet dusk for "in between", and the calm terminal tone for
+ * "safe to skim" — the same three-step visual weight this file already
+ * uses everywhere else.
+ */
+export function aiConfidenceBadgeClass(confidence: "low" | "medium" | "high" | null): string {
+  switch (confidence) {
+    case "low":
+    case null: // not yet computed reads exactly like "low" — see queries/tasks.ts
+      return T_ACT;
+    case "medium":
+      return T_DUSK;
+    case "high":
+      return T_DEAD;
+    default: {
+      const unreachable: never = confidence;
+      throw new Error(`Unhandled AI confidence: ${unreachable}`);
+    }
+  }
+}
+
+export function aiConfidenceLabel(confidence: "low" | "medium" | "high" | null): string {
+  switch (confidence) {
+    case "low":
+      return "Low confidence";
+    case null:
+      return "Not computed";
+    case "medium":
+      return "Medium confidence";
+    case "high":
+      return "High confidence";
+    default: {
+      const unreachable: never = confidence;
+      throw new Error(`Unhandled AI confidence: ${unreachable}`);
+    }
+  }
+}

@@ -305,6 +305,12 @@ export const adminTaskSelect = {
   aiLowCents: true,
   aiHighCents: true,
   aiReasoning: true,
+  aiSuggestedPriceCents: true,
+  aiSuggestedVaPayoutCents: true,
+  aiConfidence: true,
+  aiEstimatedMinutes: true,
+  aiSuggestedCategorySlug: true,
+  aiComputedAt: true,
   clientDeadlineUtc: true,
   vaDeadlineUtc: true,
   quotedAt: true,
@@ -415,7 +421,15 @@ export async function taskForAdmin(taskId: string): Promise<AdminTaskView | null
   return prisma.task.findUnique({ where: { id: taskId }, select: adminTaskSelect });
 }
 
-/** Pricing queue, most urgent first (closest client deadline, then oldest). */
+/**
+ * Pricing queue, lowest AI confidence first — those are the ones that
+ * genuinely need the admin's judgment; "not yet computed" (AI pricing
+ * disabled, or this one call failed) sorts with them for the same reason.
+ * High-confidence tasks sort last, so they cluster at the bottom for
+ * Approve & next to burn through quickly. Deadline urgency is the
+ * secondary sort within each confidence tier — this is a priority queue,
+ * not just an urgency queue.
+ */
 export async function pricingQueue() {
   return prisma.task.findMany({
     where: { status: { in: ["submitted", "pricing_review"] } },
@@ -425,10 +439,17 @@ export async function pricingQueue() {
       status: true,
       clientDeadlineUtc: true,
       createdAt: true,
+      aiConfidence: true,
+      aiSuggestedPriceCents: true,
+      aiComputedAt: true,
       client: { select: { name: true, email: true } },
       _count: { select: { files: true } },
     },
-    orderBy: [{ clientDeadlineUtc: { sort: "asc", nulls: "last" } }, { createdAt: "asc" }],
+    orderBy: [
+      { aiConfidence: { sort: "asc", nulls: "first" } },
+      { clientDeadlineUtc: { sort: "asc", nulls: "last" } },
+      { createdAt: "asc" },
+    ],
   });
 }
 
@@ -436,12 +457,19 @@ export async function pricingQueueCount(): Promise<number> {
   return prisma.task.count({ where: { status: { in: ["submitted", "pricing_review"] } } });
 }
 
-/** Next task in the pricing queue after excluding one (approve-and-advance). */
+/** Next task in the pricing queue after excluding one (approve-and-advance).
+ *  Same ordering as pricingQueue() — approve-and-advance must always land
+ *  on whatever the queue currently shows as row one, or the two would
+ *  silently disagree about what "next" means. */
 export async function nextInPricingQueue(excludeId: string): Promise<string | null> {
   const rows = await prisma.task.findMany({
     where: { status: { in: ["submitted", "pricing_review"] }, id: { not: excludeId } },
     select: { id: true },
-    orderBy: [{ clientDeadlineUtc: { sort: "asc", nulls: "last" } }, { createdAt: "asc" }],
+    orderBy: [
+      { aiConfidence: { sort: "asc", nulls: "first" } },
+      { clientDeadlineUtc: { sort: "asc", nulls: "last" } },
+      { createdAt: "asc" },
+    ],
     take: 1,
   });
   return rows[0]?.id ?? null;

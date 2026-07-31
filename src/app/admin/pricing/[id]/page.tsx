@@ -10,10 +10,13 @@ import {
   CardBody,
   PageTitle,
   SectionLabel,
+  Badge,
   formatBytes,
   linkInline,
   moneyClient,
+  moneyPayout,
 } from "@/components/ui";
+import { aiConfidenceBadgeClass, aiConfidenceLabel } from "@/lib/status";
 
 export default async function PricingDetailPage({
   params,
@@ -32,9 +35,17 @@ export default async function PricingDetailPage({
   const inputFiles = task.files.filter((f) => f.kind === "input");
   const categories = await prisma.taskCategory.findMany({
     where: { active: true },
-    select: { id: true, name: true },
+    select: { id: true, name: true, slug: true },
     orderBy: { sortOrder: "asc" },
   });
+  // The model names a category by slug (it has no idea what internal ids
+  // exist); resolved to an id here so PricingForm's <select> — which is
+  // keyed by id, like every other category picker in this admin — can
+  // preselect it. A slug the model invents or that later goes inactive
+  // just fails to match anything, which is fine: the dropdown falls back
+  // to its own "Choose…" placeholder exactly as if no suggestion existed.
+  const suggestedCategoryId =
+    categories.find((c) => c.slug === task.aiSuggestedCategorySlug)?.id ?? "";
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -101,22 +112,44 @@ export default async function PricingDetailPage({
 
           <Card>
             <CardBody>
-              <SectionLabel as="h2" className="mb-2">
-                AI price suggestion
-              </SectionLabel>
-              {task.aiLowCents != null && task.aiHighCents != null ? (
-                <p className="text-sm">
-                  <span className={moneyClient}>
-                    ${(task.aiLowCents / 100).toFixed(0)} – ${(task.aiHighCents / 100).toFixed(0)}
-                  </span>
-                  {task.aiReasoning ? (
-                    <span className="mt-1 block text-xs text-[#5B6069]">{task.aiReasoning}</span>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <SectionLabel as="h2">AI price suggestion</SectionLabel>
+                <Badge className={aiConfidenceBadgeClass(task.aiConfidence)}>
+                  {aiConfidenceLabel(task.aiConfidence)}
+                </Badge>
+              </div>
+              {task.aiSuggestedPriceCents != null ? (
+                <div className="space-y-2.5 text-sm">
+                  <p>
+                    <span className={`text-lg font-semibold ${moneyClient}`}>
+                      ${(task.aiSuggestedPriceCents / 100).toFixed(0)}
+                    </span>
+                    {task.aiLowCents != null && task.aiHighCents != null ? (
+                      <span className="ml-1.5 text-xs text-[#5B6069]">
+                        (${(task.aiLowCents / 100).toFixed(0)} – ${(task.aiHighCents / 100).toFixed(0)})
+                      </span>
+                    ) : null}
+                  </p>
+                  {task.aiSuggestedVaPayoutCents != null ? (
+                    <p className="text-xs text-[#5B6069]">
+                      Suggested worker payout:{" "}
+                      <span className={`font-medium ${moneyPayout}`}>
+                        ${(task.aiSuggestedVaPayoutCents / 100).toFixed(0)}
+                      </span>
+                      {task.aiEstimatedMinutes ? ` · ~${task.aiEstimatedMinutes} min` : null}
+                    </p>
                   ) : null}
-                </p>
+                  {task.aiReasoning ? (
+                    <p className="border-t border-[#14161A]/[0.06] pt-2.5 leading-relaxed text-[#5B6069]">
+                      {task.aiReasoning}
+                    </p>
+                  ) : null}
+                </div>
               ) : (
                 <p className="text-sm text-[#5B6069]">
-                  Not available yet — AI-suggested ranges arrive at build step 4. Price
-                  manually for now.
+                  {task.aiComputedAt
+                    ? "The model found nothing usable for this task — price manually."
+                    : "Not computed for this task (AI pricing not configured, or still in progress) — price manually for now."}
                 </p>
               )}
             </CardBody>
@@ -152,6 +185,17 @@ export default async function PricingDetailPage({
         taskId={task.id}
         fileCount={inputFiles.length}
         categories={categories}
+        aiSuggestion={
+          task.aiSuggestedPriceCents != null
+            ? {
+                priceCents: task.aiSuggestedPriceCents,
+                vaPayoutCents: task.aiSuggestedVaPayoutCents,
+                estimatedMinutes: task.aiEstimatedMinutes,
+                categoryId: suggestedCategoryId,
+                confidence: task.aiConfidence,
+              }
+            : null
+        }
       />
     </div>
   );

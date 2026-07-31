@@ -2,16 +2,21 @@
 // Postgres. All timestamps UTC. All money in integer cents.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider   = "postgresql"
   // Pooled connection for the running app.
-  url       = env("DATABASE_URL")
+  url        = env("DATABASE_URL")
   // Unpooled connection for migrations: the migration engine uses prepared
   // statements, which a transaction pooler (pgbouncer) breaks.
-  directUrl = env("DIRECT_URL")
+  directUrl  = env("DIRECT_URL")
+  // Pricing-reference embeddings (TaskEmbedding, below). Confirmed working
+  // on both managed Postgres and the local PGlite dev server (0.8.1) before
+  // this was added — see the commit that introduced AI pricing suggestions.
+  extensions = [vector]
 }
 
 // ---------- Enums ----------
@@ -40,6 +45,18 @@ enum TaskStatus {
   disputed // client escalated within the post-delivery window
   cancelled
   expired
+}
+
+/**
+ * How many closely-comparable APPROVED reference tasks backed the AI's
+ * suggestion — set server-side from the retrieval result, never trusted
+ * from the model's own self-report alone (see pricing-ai.ts: zero close
+ * matches forces "low" regardless of what the model returns).
+ */
+enum AiConfidence {
+  low
+  medium
+  high
 }
 
 enum TaskTier {
@@ -317,10 +334,34 @@ model Task {
   clientPriceCents Int?
   vaPayoutCents    Int?
 
-  // AI suggestion (internal — admin only, client never sees a range)
+  // AI pricing suggestion (internal — admin only, client and worker never
+  // see any of this). Computed once, at submission (src/server/actions/
+  // client-tasks.ts), so the pricing queue has something to sort
+  // confidence on before the admin ever opens a task — never lazily on
+  // page load. aiLowCents/aiHighCents/aiReasoning predate this feature and
+  // are reused as-is (price_range_low / price_range_high / reasoning from
+  // the model's structured output); everything below is new.
   aiLowCents  Int?
   aiHighCents Int?
   aiReasoning String?
+
+  // RULE 2 applies here too: aiSuggestedPriceCents and
+  // aiSuggestedVaPayoutCents are two independent model outputs, never one
+  // derived from the other — same separation the human-entered
+  // clientPriceCents/vaPayoutCents above already enforce.
+  aiSuggestedPriceCents    Int?
+  aiSuggestedVaPayoutCents Int?
+  aiConfidence             AiConfidence?
+  aiEstimatedMinutes       Int?
+  // A hint only — the category select in the pricing form is still
+  // required and still the admin's own call. Stored as a slug rather than
+  // a relation: an unrecognized or stale slug should just fail to
+  // highlight anything in the UI, never block pricing.
+  aiSuggestedCategorySlug  String?
+  // Null while the suggestion is still being computed (or was skipped —
+  // ANTHROPIC_API_KEY/VOYAGE_API_KEY not configured) vs. genuinely absent;
+  // the queue UI tells those two states apart on this alone.
+  aiComputedAt             DateTime?
 
   // Deadlines: client-facing vs VA-facing (client minus QC buffer). Both stored. UTC.
   clientDeadlineUtc DateTime?
@@ -372,6 +413,7 @@ model Task {
   payouts      Payout[]
   disputes     Dispute[]
   moneyIntents MoneyIntent[]
+  embeddingRow TaskEmbedding?
 
   @@index([status])
   @@index([clientId])
@@ -400,6 +442,34 @@ model TaskCategory {
   updatedAt       DateTime @updatedAt
 
   tasks Task[]
+}
+
+/**
+ * One embedding per task, generated once from title+description when the AI
+ * pricing suggestion first runs (src/lib/pricing-ai.ts) — whether or not
+ * that task ever gets approved. A task becomes usable as a REFERENCE for
+ * some later task's retrieval only once it has a real clientPriceCents /
+ * vaPayoutCents (enforced in the retrieval query, not by anything here);
+ * until then its embedding just sits here unused, which is fine — it means
+ * the day it IS approved, no backfill is needed.
+ *
+ * A separate table rather than a column on Task: the vector only matters to
+ * one query (nearest-neighbor retrieval), and keeping it off the hot Task
+ * table means every ordinary Task read stays exactly as cheap as before
+ * this feature existed.
+ *
+ * Unsupported("vector(1024)") because Prisma's schema language has no
+ * native pgvector type; every read/write against this column goes through
+ * $queryRaw/$executeRaw in src/lib/pricing-ai.ts. 1024 = the output
+ * dimension of the Voyage embedding model pricing-ai.ts calls — the two
+ * must be changed together or every existing row's dimension stops
+ * matching new ones.
+ */
+model TaskEmbedding {
+  taskId    String                    @id
+  task      Task                      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  embedding Unsupported("vector(1024)")
+  createdAt DateTime                  @default(now())
 }
 
 // One QC decision per submission attempt (a delivery may contain several files).

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { addHours } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
@@ -10,6 +11,7 @@ import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { expireStaleQuotes } from "@/server/sweeps";
+import { computeAiPricingSuggestion } from "@/lib/pricing-ai";
 
 const submitTaskSchema = z.object({
   title: z.string().trim().min(3).max(140),
@@ -94,21 +96,34 @@ export async function submitTask(input: unknown): Promise<SubmitTaskResult> {
         },
       });
 
-      // AI pricing arrives at build step 4 — until then tasks go straight to
-      // the manual pricing queue so nothing is ever stuck in `submitted`.
-      // (submitted → pricing_review is in ALLOWED_TRANSITIONS.)
+      // Every task lands in the manual pricing queue regardless of what the
+      // AI computes — see computeAiPricingSuggestion's RULE 3 note. This
+      // transition happens NOW, synchronously, so a task is never stuck in
+      // `submitted` waiting on an external API call that might be slow, or
+      // that might fail outright (embeddingsEnabled/aiEnabled false, or a
+      // transient Anthropic/Voyage error).
       await tx.task.update({ where: { id: created.id }, data: { status: "pricing_review" } });
       await tx.taskEvent.create({
         data: {
           taskId: created.id,
           fromStatus: "submitted",
           toStatus: "pricing_review",
-          action: "ai_pricing_skipped",
+          action: "entered_pricing_queue",
         },
       });
 
       return created;
     });
+
+    // Runs AFTER the response is sent (Next's after()), not inside the
+    // transaction above: an Anthropic + Voyage round trip is seconds, and
+    // holding a DB transaction open for that long risks lock contention
+    // for no reason — the suggestion is an enhancement to an already-queued
+    // task, not a precondition for queuing it. A client who submits and
+    // immediately opens the admin's own view (unlikely, but not
+    // impossible) sees "not computed yet" for a few seconds, never a
+    // blocked or failed submission.
+    after(() => computeAiPricingSuggestion(task.id));
 
     revalidatePath("/client");
     revalidatePath("/admin/pricing");
