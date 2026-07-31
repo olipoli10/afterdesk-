@@ -8,7 +8,7 @@ import { Reveal } from "@/components/reveal";
 import { AudienceToggle } from "@/components/audience-toggle";
 import { PublicCounters } from "@/components/public-counters";
 import { LiveTaskWindow } from "@/components/live-task-window";
-import { LiveOvernightDiff } from "@/components/live-overnight-diff";
+import { FloatingLinks } from "@/components/floating-links";
 import { PointerGlow } from "@/components/pointer-glow";
 import { LangSwitch } from "@/components/lang-switch";
 import { PaperLedgerScan } from "@/components/paper-ledger-scan";
@@ -72,14 +72,16 @@ export default async function Home({
   const cookieStore = await cookies();
   const lang = clientLangOf(sp.lang ?? cookieStore.get("ss-lang-client")?.value);
   const t = CLIENT_I18N[lang];
-  /* Five chapters, not six. The old 06/06 was a GENERAL NOTES block that
-     restated chapters 02–05 in smaller type; its two genuinely new clauses
-     (retention, refusals) now live on /how-it-works, which is linked from
-     the trim edge below. */
+  /* Four chapters. Two were cut, for the same reason both times — they
+     restated what a neighbour already showed. The old 06/06 was a GENERAL
+     NOTES block summarising the chapters above it (its two genuinely new
+     clauses, retention and refusals, now live on /how-it-works); the old
+     01/05 was the overnight-diff artifact, which repeated the hero's own
+     task window. */
   const ch = (n: string, label: string) => (
     <>
       {n}
-      <span className="opacity-50">/05</span> · {label}
+      <span className="opacity-50">/04</span> · {label}
     </>
   );
   /* On the paper half the chapter number is a drawing number: it grows a
@@ -158,8 +160,15 @@ export default async function Home({
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
         <PointerGlow />
 
-        <div className="relative mx-auto grid w-full max-w-[1120px] gap-12 px-6 pb-4 pt-20 sm:pt-28 lg:grid-cols-[1fr_420px] lg:items-center">
+        <div className="relative mx-auto grid w-full max-w-[1120px] gap-12 px-6 pb-4 pt-10 sm:pt-28 lg:grid-cols-[1fr_420px] lg:items-center">
           <div>
+            {/* Phone-only: the two links the header has no room for. */}
+            <FloatingLinks
+              tone="night"
+              aboutLabel={t.footer.about}
+              signInLabel={t.nav.signIn}
+              className="anim-rise mb-9"
+            />
             <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
               <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>
               <span className="anim-rise d-1 block text-white">{t.hero.line2}</span>
@@ -194,43 +203,18 @@ export default async function Home({
         <PublicCounters tone="night" variant="strip" className="anim-rise d-4 mt-12" />
       </section>
 
-      {/* ── THE DIFF ──────────────────────────────────────────────────── */}
-      <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-24 pt-12">
-        <p className="anim-rise d-5 mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
-          {ch("01", t.ch01.label)}
-        </p>
-        {/* No caption. Two have now been tried here and both restated the
-            artifact below: an invented client quote, then a museum label.
-            The artifact prints its own filename, both clock times and an
-            OVERNIGHT divider, and the chapter label above already says
-            "the overnight diff". The description a sighted reader gets
-            from the picture is below, for everyone else. */}
-        <p className="sr-only">
-          Example: a lead export arrives with duplicate companies, inconsistent casing and
-          missing or invalid emails; it is returned the next morning deduplicated and
-          corrected, for a fixed price of $68 approved in advance.
-        </p>
-
-        <Reveal replay>
-          {/* dusk halo behind the flagship artifact, which WORKS on loop */}
-          <div className="relative">
-            <div
-              aria-hidden
-              className="glow-dusk pointer-events-none absolute -inset-x-24 -inset-y-16"
-            />
-            <div aria-hidden className="relative">
-              <LiveOvernightDiff />
-            </div>
-          </div>
-        </Reveal>
-      </section>
-
       {/* ── THE RECEIPT ───────────────────────────────────────────────── */}
+      {/* The overnight-diff artifact used to sit above this, as chapter 01.
+          It was cut: the hero's own task window already plays a task's whole
+          life, so a second looping before/after demo restated the promise a
+          third time (headline, window, diff) and cost most of a phone screen
+          to do it. The receipt below is the first thing that adds NEW
+          information — the price — so it opens the set now. */}
       <section className="border-t border-white/8">
         <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
           <Reveal>
             <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
-              {ch("02", t.ch02.label)}
+              {ch("01", t.ch02.label)}
             </p>
             <div className="mx-auto max-w-[420px]">
               <div className="lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] transition-colors hover:border-white/20 hover:bg-[#15171B]">
@@ -286,7 +270,7 @@ export default async function Home({
         <div className="relative mx-auto w-full max-w-[920px] px-4 py-16 sm:px-6 sm:py-24">
           <Reveal replay>
             <div className="plate px-5 py-10 sm:px-9 sm:py-12">
-              {plateCh("03", t.ch03.label)}
+              {plateCh("02", t.ch03.label)}
               <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
                 {t.ch03.h2}
               </h2>
@@ -311,7 +295,7 @@ export default async function Home({
         <div className="relative mx-auto w-full max-w-[1120px] px-4 py-16 sm:px-6 sm:py-24">
           <Reveal replay>
             <div className="plate px-5 py-10 sm:px-9 sm:py-12">
-              {plateCh("04", t.ch04.label)}
+              {plateCh("03", t.ch04.label)}
               <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
                 {t.ch04.h2}
               </h2>
@@ -337,7 +321,7 @@ export default async function Home({
         <div className="relative mx-auto w-full max-w-[920px] px-4 py-16 sm:px-6 sm:py-24">
           <Reveal replay>
             <div className="plate px-5 py-10 sm:px-9 sm:py-12">
-              {plateCh("05", t.ch05.label)}
+              {plateCh("04", t.ch05.label)}
               <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
                 {t.ch05.h2}
               </h2>

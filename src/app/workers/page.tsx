@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
+import { FloatingLinks } from "@/components/floating-links";
 import { cookies } from "next/headers";
 import { getSessionUser, roleHome } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
@@ -182,8 +183,15 @@ export default async function WorkersHome({
         {/* Mobile order puts the proof before the ask: kill · H1 · sub ·
             card · CTA. `contents` lets the copy children participate in the
             same flex flow so `order` can interleave them with the card. */}
-        <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-16 sm:pt-24 lg:grid lg:grid-cols-[1fr_460px] lg:items-center lg:gap-14">
+        <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-10 sm:pt-24 lg:grid lg:grid-cols-[1fr_460px] lg:items-center lg:gap-14">
           <div className="contents lg:block">
+            {/* Phone-only: the two links the header has no room for. */}
+            <FloatingLinks
+              tone="paper"
+              aboutLabel={t.footer.about}
+              signInLabel={t.nav.signIn}
+              className="anim-rise order-0 mb-9"
+            />
             <p className="anim-rise order-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">
               {t.hero.kill}
             </p>
@@ -279,7 +287,7 @@ export default async function WorkersHome({
                 </div>
 
                 {/* the paper */}
-                <div className="px-5 py-5 sm:px-6">
+                <div className="px-4 py-4 sm:px-6 sm:py-5">
                   <p className="max-w-[58ch] text-[15px] leading-[1.55] text-[#14161A] sm:text-[16px]">
                     {sample.prompt}
                   </p>
@@ -331,8 +339,23 @@ export default async function WorkersHome({
                   </p>
                 </div>
 
-                {/* the terms, as machine stamps — $0.00 in ink, never green */}
-                <dl className="grid grid-cols-2 border-t border-[#14161A]/10 bg-[#F7F6F3] sm:grid-cols-4">
+                {/* the terms, as machine stamps — $0.00 in ink, never green.
+                    Two shapes, because the four-cell version costs two rows on
+                    a phone for facts the reader has already been given: the
+                    pass mark is printed in the instrument bar directly above,
+                    and the attempt limit only matters once someone is IN the
+                    exam. The phone keeps the two that are genuinely new here —
+                    the certificate is permanent, and it costs nothing. */}
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-[#14161A]/10 bg-[#F7F6F3] px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#5B6069] sm:hidden">
+                  <span>
+                    certificate <b className="font-medium text-[#14161A]">permanent</b>
+                  </span>
+                  <span className="text-[#14161A]/25">·</span>
+                  <span>
+                    cost <b className="font-medium tabular-nums text-[#14161A]">$0.00</b>
+                  </span>
+                </p>
+                <dl className="hidden border-t border-[#14161A]/10 bg-[#F7F6F3] sm:grid sm:grid-cols-4">
                   {[
                     ["Pass mark", `${stats.passScore} of ${stats.questionCount}`],
                     ["Attempts", `${stats.attemptsPerDay} per 24 h`],
@@ -341,9 +364,7 @@ export default async function WorkersHome({
                   ].map(([k, v], i) => (
                     <div
                       key={k}
-                      className={`px-4 py-3 ${i % 2 === 1 ? "border-l border-[#14161A]/[0.06]" : ""} ${
-                        i >= 2 ? "border-t border-[#14161A]/[0.06] sm:border-t-0" : ""
-                      } ${i === 2 ? "sm:border-l" : ""} ${i === 3 ? "sm:border-l" : ""}`}
+                      className={`px-4 py-3 ${i > 0 ? "border-l border-[#14161A]/[0.06]" : ""}`}
                     >
                       <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#5B6069]">
                         {k}
