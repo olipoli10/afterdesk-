@@ -42,6 +42,7 @@ export default async function VaLayout({ children }: { children: ReactNode }) {
       areaLabel="Work"
       userName={user.name}
       notificationCount={notificationCount}
+      tone="night"
       nav={
         approved
           ? [

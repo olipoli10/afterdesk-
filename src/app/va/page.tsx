@@ -18,7 +18,7 @@ import {
   LinkButton,
   PageTitle,
   SectionLabel,
-  moneyPayout,
+  moneyPayoutNight,
 } from "@/components/ui";
 import { vaProfileFor } from "./layout";
 
@@ -119,7 +119,7 @@ export default async function VaHome() {
       key: `t-${t.id}`,
       title: t.title,
       when: t.completedAt,
-      badgeClass: statusBadgeClass(t.status),
+      badgeClass: statusBadgeClass(t.status, true),
       badgeLabel: VA_HISTORY_LABELS[t.status] ?? "Closed",
       // Only an approved delivery is paid — never show a payout figure on a
       // cancelled or expired task.
@@ -131,7 +131,7 @@ export default async function VaHome() {
       key: `s-${s.id}`,
       title: s.task.title,
       when: s.reviewedAt,
-      badgeClass: statusBadgeClass("qc_rejected"),
+      badgeClass: statusBadgeClass("qc_rejected", true),
       badgeLabel: "Returned",
       amountCents: null,
       currency: "USD",
@@ -143,19 +143,20 @@ export default async function VaHome() {
     <div className="space-y-6">
       <PageTitle
         title="My work"
-        action={approved ? <LinkButton href="/va/pool">Find work</LinkButton> : undefined}
+        tone="night"
+        action={approved ? <LinkButton href="/va/pool" tone="night">Find work</LinkButton> : undefined}
       />
 
       {/* Account status */}
-      <Card>
+      <Card tone="night">
         <CardBody>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-medium text-[#14161A]">Account status</p>
-            <Badge className={vaBadgeClass(status)}>{copy.label}</Badge>
+            <p className="text-sm font-medium text-[#F7F6F3]">Account status</p>
+            <Badge className={vaBadgeClass(status, true)}>{copy.label}</Badge>
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-[#5B6069]">{copy.body}</p>
+          <p className="mt-3 text-sm leading-relaxed text-[#8A9099]">{copy.body}</p>
           {status === "suspended" && profile?.suspensionReason ? (
-            <p className="mt-2 text-sm text-[#5B6069]">Reason: {profile.suspensionReason}</p>
+            <p className="mt-2 text-sm text-[#8A9099]">Reason: {profile.suspensionReason}</p>
           ) : null}
         </CardBody>
       </Card>
@@ -164,21 +165,21 @@ export default async function VaHome() {
           pending is exactly who the Academy is for — and arriving at the
           review already certified is the strongest application there is. */}
       {!approved && status !== "suspended" ? (
-        <Card>
+        <Card tone="night">
           <CardBody>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-[#14161A]">
+                <p className="text-sm font-medium text-[#F7F6F3]">
                   While you wait — the Academy is open.
                 </p>
-                <p className="mt-1.5 max-w-[52ch] text-sm leading-relaxed text-[#5B6069]">
+                <p className="mt-1.5 max-w-[52ch] text-sm leading-relaxed text-[#8A9099]">
                   Free courses with real exams and certificates
                   {certCount > 0
                     ? ` — you hold ${certCount} already. Every one you add strengthens your application.`
                     : ". Certificates you earn now are on your profile when your application is reviewed."}
                 </p>
               </div>
-              <LinkButton href="/va/training">Start a course</LinkButton>
+              <LinkButton href="/va/training" tone="night">Start a course</LinkButton>
             </div>
           </CardBody>
         </Card>
@@ -186,43 +187,43 @@ export default async function VaHome() {
 
       {approved ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card tone="night">
             <CardBody className="!p-4">
-              <SectionLabel>Quality score</SectionLabel>
-              <p className="mt-1 font-mono text-xl font-medium tabular-nums text-[#14161A]">
+              <SectionLabel tone="night">Quality score</SectionLabel>
+              <p className="mt-1 font-mono text-xl font-medium tabular-nums text-[#F7F6F3]">
                 {profile?.scoreCache != null ? profile.scoreCache.toFixed(2) : "—"}
               </p>
-              <p className="font-mono text-[11px] tabular-nums text-[#5B6069]">
+              <p className="font-mono text-[11px] tabular-nums text-[#8A9099]">
                 {profile?.ratedCount ?? 0} rated {profile?.ratedCount === 1 ? "delivery" : "deliveries"}
               </p>
             </CardBody>
           </Card>
-          <Card>
+          <Card tone="night">
             <CardBody className="!p-4">
-              <SectionLabel>Completed</SectionLabel>
-              <p className="mt-1 font-mono text-xl font-medium tabular-nums text-[#14161A]">
+              <SectionLabel tone="night">Completed</SectionLabel>
+              <p className="mt-1 font-mono text-xl font-medium tabular-nums text-[#F7F6F3]">
                 {profile?.tasksCompleted ?? 0}
               </p>
             </CardBody>
           </Card>
-          <Card>
+          <Card tone="night">
             <CardBody className="!p-4">
-              <SectionLabel>Pending payout</SectionLabel>
-              <p className={`mt-1 text-xl font-medium ${moneyPayout}`}>
+              <SectionLabel tone="night">Pending payout</SectionLabel>
+              <p className={`mt-1 text-xl font-medium ${moneyPayoutNight}`}>
                 {formatCents(pendingCents)}
               </p>
-              <p className="text-[11px] text-[#5B6069]">paid out manually</p>
+              <p className="text-[11px] text-[#8A9099]">paid out manually</p>
             </CardBody>
           </Card>
-          <Card>
+          <Card tone="night">
             <CardBody className="!p-4">
-              <SectionLabel>Certificates</SectionLabel>
-              <p className="mt-1 font-mono text-xl font-medium tabular-nums text-[#14161A]">
+              <SectionLabel tone="night">Certificates</SectionLabel>
+              <p className="mt-1 font-mono text-xl font-medium tabular-nums text-[#F7F6F3]">
                 {certCount}
               </p>
               <Link
                 href="/va/training"
-                className="font-mono text-[11px] text-[#5B6069] underline decoration-[#5B6069]/40 underline-offset-2 transition-colors duration-150 hover:text-[#14161A] hover:decoration-[#14161A]"
+                className="font-mono text-[11px] text-[#8A9099] underline decoration-white/25 underline-offset-2 transition-colors duration-150 hover:text-[#F7F6F3] hover:decoration-white/60"
               >
                 the Academy
               </Link>
@@ -233,31 +234,32 @@ export default async function VaHome() {
 
       {approved ? (
         <section>
-          <SectionLabel as="h2" className="mb-2">
+          <SectionLabel as="h2" className="mb-2" tone="night">
             In my hands
           </SectionLabel>
           {sortedActive.length === 0 ? (
             <EmptyState
               title="Nothing claimed"
               body="When you claim a task from the pool it appears here with the client's files and your deadline."
-              action={<LinkButton href="/va/pool">Find work</LinkButton>}
+              action={<LinkButton href="/va/pool" tone="night">Find work</LinkButton>}
+              tone="night"
             />
           ) : (
-            <Card>
-              <div className="divide-y divide-[#14161A]/[0.06]">
+            <Card tone="night">
+              <div className="divide-y divide-white/[0.06]">
                 {sortedActive.map((t) => (
                   <Link
                     key={t.id}
                     href={`/va/tasks/${t.id}`}
-                    className="flex items-center justify-between gap-4 px-4 py-3 transition-colors duration-150 hover:bg-[#14161A]/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#14161A]"
+                    className="flex items-center justify-between gap-4 px-4 py-3 transition-colors duration-150 hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-[#14161A]">{t.title}</p>
+                      <p className="truncate text-sm font-medium text-[#F7F6F3]">{t.title}</p>
                       <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <Badge className={statusBadgeClass(t.status)}>
+                        <Badge className={statusBadgeClass(t.status, true)}>
                           {VA_TASK_LABELS[t.status] ?? "In progress"}
                         </Badge>
-                        <span className="font-mono text-xs tabular-nums text-[#5B6069]">
+                        <span className="font-mono text-xs tabular-nums text-[#8A9099]">
                           {t.vaDeadlineUtc ? (
                             <>
                               Due <LocalTime iso={t.vaDeadlineUtc} dateStyle="short" />
@@ -269,7 +271,7 @@ export default async function VaHome() {
                         </span>
                       </p>
                     </div>
-                    <span className={`shrink-0 text-sm ${moneyPayout}`}>
+                    <span className={`shrink-0 text-sm ${moneyPayoutNight}`}>
                       {t.vaPayoutCents != null ? formatCents(t.vaPayoutCents, t.currency) : "—"}
                     </span>
                   </Link>
@@ -282,32 +284,32 @@ export default async function VaHome() {
 
       {historyRows.length > 0 ? (
         <section>
-          <SectionLabel as="h2" className="mb-2">
+          <SectionLabel as="h2" className="mb-2" tone="night">
             History
           </SectionLabel>
-          <Card>
-            <div className="divide-y divide-[#14161A]/[0.06]">
+          <Card tone="night">
+            <div className="divide-y divide-white/[0.06]">
               {historyRows.map((row) => (
                 <div key={row.key} className="flex items-center justify-between gap-4 px-4 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-[#14161A]">{row.title}</p>
+                    <p className="truncate text-sm text-[#F7F6F3]">{row.title}</p>
                     <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                       <Badge className={row.badgeClass}>{row.badgeLabel}</Badge>
                       {row.when ? (
-                        <span className="font-mono text-xs tabular-nums text-[#5B6069]">
+                        <span className="font-mono text-xs tabular-nums text-[#8A9099]">
                           <LocalTime iso={row.when} dateStyle="short" />
                         </span>
                       ) : null}
                     </p>
                     {row.note ? (
-                      <p className="mt-1 text-xs leading-relaxed text-[#5B6069]">{row.note}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-[#8A9099]">{row.note}</p>
                     ) : null}
                   </div>
                   <span
                     className={
                       row.amountCents != null
-                        ? `shrink-0 text-sm ${moneyPayout}`
-                        : "shrink-0 font-mono text-sm text-[#5B6069]"
+                        ? `shrink-0 text-sm ${moneyPayoutNight}`
+                        : "shrink-0 font-mono text-sm text-[#8A9099]"
                     }
                   >
                     {row.amountCents != null ? formatCents(row.amountCents, row.currency) : "—"}
@@ -320,7 +322,7 @@ export default async function VaHome() {
       ) : null}
 
       {approved ? (
-        <p className="text-xs leading-relaxed text-[#5B6069]">
+        <p className="text-xs leading-relaxed text-[#8A9099]">
           You may hold up to{" "}
           <span className="font-mono tabular-nums">{settings.maxActiveClaims}</span> tasks at
           once. Payouts are released after the operator approves your delivery, then paid out

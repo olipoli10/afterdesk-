@@ -5,7 +5,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from "@/server/actions/notifications";
-import { Card, CardBody, EmptyState, PageTitle, buttonSecondary } from "@/components/ui";
+import { Card, CardBody, EmptyState, PageTitle, buttonSecondary, buttonSecondaryNight } from "@/components/ui";
 import { LocalTime } from "@/components/local-time";
 import { AppShell } from "@/components/app-shell";
 
@@ -51,6 +51,12 @@ export default async function NotificationsPage() {
             { href: "/client/tasks/new", label: "New task" },
           ];
 
+  const tone = user.role === "VA" ? "night" : "paper";
+  const night = tone === "night";
+  const ink = night ? "text-[#F7F6F3]" : "text-[#14161A]";
+  const muted = night ? "text-[#8A9099]" : "text-[#5B6069]";
+  const ring = night ? "focus-visible:ring-white" : "focus-visible:ring-[#14161A]";
+
   return (
     <AppShell
       areaLabel={user.role === "ADMIN" ? "Operator" : user.role === "VA" ? "Work" : "Client"}
@@ -58,33 +64,39 @@ export default async function NotificationsPage() {
       notificationCount={unread}
       nav={nav}
       width={user.role === "ADMIN" ? "wide" : "default"}
+      tone={tone}
     >
       <div className="mx-auto max-w-2xl">
       <PageTitle
         title="Updates"
         sub="Task, review, payment and account decisions."
+        tone={tone}
         action={
           unread > 0 ? (
             <form action={markAllNotificationsRead}>
-              <button className={buttonSecondary}>Mark all read</button>
+              <button className={night ? buttonSecondaryNight : buttonSecondary}>Mark all read</button>
             </form>
           ) : undefined
         }
       />
       {rows.length === 0 ? (
-        <EmptyState title="No updates yet" body="Important task and account changes appear here." />
+        <EmptyState
+          title="No updates yet"
+          body="Important task and account changes appear here."
+          tone={tone}
+        />
       ) : (
-        <Card>
-          <div className="divide-y divide-[#14161A]/[0.06]">
+        <Card tone={tone}>
+          <div className={night ? "divide-y divide-white/[0.06]" : "divide-y divide-[#14161A]/[0.06]"}>
             {rows.map((row) => (
               <CardBody key={row.id} className={row.readAt ? "opacity-70" : ""}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium text-[#14161A]">{row.title}</p>
+                    <p className={`text-sm font-medium ${ink}`}>{row.title}</p>
                     {row.body ? (
-                      <p className="mt-1 text-sm leading-relaxed text-[#5B6069]">{row.body}</p>
+                      <p className={`mt-1 text-sm leading-relaxed ${muted}`}>{row.body}</p>
                     ) : null}
-                    <p className="mt-2 font-mono text-xs text-[#5B6069]">
+                    <p className={`mt-2 font-mono text-xs ${muted}`}>
                       <LocalTime iso={row.createdAt} dateStyle="short" />
                     </p>
                   </div>
@@ -92,14 +104,16 @@ export default async function NotificationsPage() {
                     {row.taskId ? (
                       <Link
                         href={taskHref(user.role, row.taskId)}
-                        className="inline-flex min-h-11 items-center px-2 text-sm font-medium underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
+                        className={`inline-flex min-h-11 items-center px-2 text-sm font-medium underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 ${ring} ${ink}`}
                       >
                         Open task
                       </Link>
                     ) : null}
                     {!row.readAt ? (
                       <form action={markNotificationRead.bind(null, row.id)}>
-                        <button className="min-h-11 px-2 text-xs text-[#5B6069] underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]">
+                        <button
+                          className={`min-h-11 px-2 text-xs underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 ${ring} ${muted}`}
+                        >
                           Mark read
                         </button>
                       </form>

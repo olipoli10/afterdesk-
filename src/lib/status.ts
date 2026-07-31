@@ -126,30 +126,47 @@ const T_DEAD = "border-[#14161A]/10 bg-[#14161A]/[0.02] text-[#5B6069]"; // term
 const T_GREEN = "border-[#1E7F5C]/40 bg-[#1E7F5C]/10 text-[#166049]"; // money/approved ONLY
 const T_AMBER = "border-[#D98324]/50 bg-[#D98324]/10 text-[#955710]"; // returned-work/attention ONLY
 
-/** Admin truth: solid ink = in MY queue, dusk = in flight, amber = came back. */
-export function statusBadgeClass(status: TaskStatus): string {
+/* ── NIGHT VARIANTS — same seven tones, same meaning, re-tuned for the
+   worker portal's dark ground (src/app/va). T_ACT inverts (a solid paper
+   chip reads as "loudest" on dark the way solid ink did on paper); the
+   others keep their light-mode SHAPE (dashed/solid/transparent) and swap
+   only the alpha ramp and text color for contrast on #0A0B0D. Every color
+   used here already exists elsewhere in the app — see the Card/badge notes
+   in src/components/ui.tsx — nothing new was invented for this surface. */
+const N_ACT = "border-transparent bg-[#F7F6F3] text-[#14161A]";
+const N_DUSK = "border-[#1B2740] bg-[#1B2740]/60 text-[#C9CDD3]";
+const N_OPEN = "border-dashed border-white/25 bg-transparent text-[#8A9099]";
+const N_WAIT = "border-white/15 bg-transparent text-[#8A9099]";
+const N_DEAD = "border-white/8 bg-white/[0.02] text-[#767C86]";
+const N_GREEN = "border-[#1E7F5C]/50 bg-[#1E7F5C]/20 text-[#3DDCA0]";
+const N_AMBER = "border-[#D98324]/40 bg-[#D98324]/[0.12] text-[#E8A854]";
+
+/** Admin truth: solid ink = in MY queue, dusk = in flight, amber = came back.
+ *  `night` selects the worker-portal dark variant above — same status, same
+ *  meaning, different ground. */
+export function statusBadgeClass(status: TaskStatus, night = false): string {
   switch (status) {
     case "submitted":
     case "pricing_review":
     case "submitted_for_qc":
-      return T_ACT;
+      return night ? N_ACT : T_ACT;
     case "quoted":
     case "awaiting_payment":
-      return T_WAIT;
+      return night ? N_WAIT : T_WAIT;
     case "open":
-      return T_OPEN;
+      return night ? N_OPEN : T_OPEN;
     case "claimed":
-      return T_DUSK;
+      return night ? N_DUSK : T_DUSK;
     case "qc_rejected":
     case "revision_requested":
     case "disputed":
-      return T_AMBER;
+      return night ? N_AMBER : T_AMBER;
     case "completed":
-      return T_GREEN;
+      return night ? N_GREEN : T_GREEN;
     case "declined":
     case "cancelled":
     case "expired":
-      return T_DEAD;
+      return night ? N_DEAD : T_DEAD;
     default: {
       const unreachable: never = status;
       throw new Error(`Unhandled task status: ${unreachable}`);
@@ -191,18 +208,18 @@ export type VaProfileStatus =
   | "rejected"
   | "suspended";
 
-export function vaBadgeClass(status: VaProfileStatus): string {
+export function vaBadgeClass(status: VaProfileStatus, night = false): string {
   switch (status) {
     case "pending_test":
-      return T_OPEN; // ball with the applicant
+      return night ? N_OPEN : T_OPEN; // ball with the applicant
     case "pending_grading":
-      return T_ACT; // admin must grade
+      return night ? N_ACT : T_ACT; // admin must grade
     case "approved":
-      return T_GREEN; // an approval — the one non-money green
+      return night ? N_GREEN : T_GREEN; // an approval — the one non-money green
     case "rejected":
-      return T_DEAD;
+      return night ? N_DEAD : T_DEAD;
     case "suspended":
-      return T_AMBER; // live restriction needing attention — not dead
+      return night ? N_AMBER : T_AMBER; // live restriction needing attention — not dead
     default: {
       const unreachable: never = status;
       throw new Error(`Unhandled VA profile status: ${unreachable}`);
