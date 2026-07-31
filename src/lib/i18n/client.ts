@@ -32,10 +32,6 @@ type Dict = {
     line1: string;
     line2: string;
     sub: (h: number) => string;
-    /** Why this exists, in one breath: time is what an entrepreneur is
-     *  actually short on, and the old way of hiring spends it (or the money
-     *  it takes to pay someone else to spend theirs) instead of saving it. */
-    timeNote: string;
     cta: string;
     /** Sits directly under the CTA, same micro-copy convention as the
      *  Academy hero's "You can start the first course tonight." — the
@@ -167,18 +163,16 @@ const en: Dict = {
     line1: "Describe any task.",
     line2: "Get it back done by morning.",
     sub: (h) =>
-      `Research, data, writing, spreadsheets, admin: priced in ${h} working hours, delivered by morning.`,
-    timeNote:
-      "Time is the resource you can't buy more of. The old way of hiring spends it anyway: read hundreds of resumes yourself, or pay someone else to read them and spend your money instead.",
+      `Research, data, writing, spreadsheets, admin: describe it, get a fixed price within ${h} working hours, then it's done by morning.`,
     cta: "Describe your task",
     guarantee:
       "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
   },
   whatWeAre: {
     label: "What this is",
-    h2: "One rule: you don't pay for work that isn't right.",
+    h2: "AfterDesk is a task outsourcing service built around vetted specialists in the Philippines.",
     intro:
-      "AfterDesk is a task outsourcing service built around vetted specialists in the Philippines, matched to entrepreneurs who want work off their plate without spending hours finding who to trust with it.",
+      "Entrepreneurs send a task, a specialist here prices it, and one rule makes it safe to try: you don't pay for work that isn't right.",
     steps: [
       [
         "Describe it",
@@ -190,7 +184,7 @@ const en: Dict = {
       ],
       [
         "You only pay if it's right",
-        "Your card is authorized, not charged. Nothing is billed, and the specialist isn't paid, until you approve the finished work.",
+        "Your card is authorized through Stripe, not charged. Nothing is billed, and the specialist isn't paid, until you approve the finished work.",
       ],
     ],
   },
@@ -296,18 +290,16 @@ const fr: Dict = {
     line1: "Décrivez n'importe quelle tâche.",
     line2: "Récupérez-la faite au matin.",
     sub: (h) =>
-      `Recherche, données, rédaction, tableurs, admin : prix fixe en ${h} heures ouvrables, livré au matin.`,
-    timeNote:
-      "Le temps est la seule ressource que vous ne pouvez pas racheter. L'ancienne façon d'embaucher le dépense quand même : lisez des centaines de CV vous-même, ou payez quelqu'un pour les lire et dépensez votre argent à la place.",
+      `Recherche, données, rédaction, tableurs, admin : décrivez-la, obtenez un prix fixe en ${h} heures ouvrables, puis c'est fait au matin.`,
     cta: "Décrivez votre tâche",
     guarantee:
       "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
   },
   whatWeAre: {
     label: "Ce qu'on fait",
-    h2: "Une seule règle : vous ne payez pas pour un travail qui ne fait pas l'affaire.",
+    h2: "AfterDesk est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines.",
     intro:
-      "AfterDesk est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines, jumelés à des entrepreneurs qui veulent se débarrasser d'une tâche sans passer des heures à trouver à qui la confier.",
+      "Les entrepreneurs envoient une tâche, un spécialiste ici la chiffre, et une seule règle rend ça sûr d'essayer : vous ne payez pas pour un travail qui ne fait pas l'affaire.",
     steps: [
       [
         "Décrivez-la",
@@ -319,7 +311,7 @@ const fr: Dict = {
       ],
       [
         "Vous ne payez que si c'est bon",
-        "Votre carte est autorisée, pas débitée. Rien n'est facturé, et le spécialiste n'est pas payé, tant que vous n'approuvez pas le travail livré.",
+        "Votre carte est autorisée via Stripe, pas débitée. Rien n'est facturé, et le spécialiste n'est pas payé, tant que vous n'approuvez pas le travail livré.",
       ],
     ],
   },
@@ -425,18 +417,16 @@ const es: Dict = {
     line1: "Describe cualquier tarea.",
     line2: "Recíbela lista por la mañana.",
     sub: (h) =>
-      `Investigación, datos, redacción, hojas de cálculo, admin: precio fijo en ${h} horas hábiles, entregado por la mañana.`,
-    timeNote:
-      "El tiempo es el único recurso que no puedes comprar de más. La vieja forma de contratar lo gasta igual: lee cientos de currículums tú mismo, o paga a alguien para que los lea y gasta tu dinero en su lugar.",
+      `Investigación, datos, redacción, hojas de cálculo, admin: descríbela, obtén un precio fijo en ${h} horas hábiles, luego está listo por la mañana.`,
     cta: "Describe tu tarea",
     guarantee:
       "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
   },
   whatWeAre: {
     label: "Qué es esto",
-    h2: "Una sola regla: no pagas por un trabajo que no está bien.",
+    h2: "AfterDesk es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas.",
     intro:
-      "AfterDesk es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas, emparejados con emprendedores que quieren sacarse una tarea de encima sin pasar horas buscando en quién confiarla.",
+      "Los emprendedores envían una tarea, un especialista aquí la cotiza, y una sola regla hace que sea seguro intentarlo: no pagas por un trabajo que no está bien.",
     steps: [
       [
         "Descríbela",
@@ -448,7 +438,7 @@ const es: Dict = {
       ],
       [
         "Solo pagas si está bien",
-        "Tu tarjeta queda autorizada, no cobrada. No se cobra nada, y el especialista no recibe pago, hasta que apruebas el trabajo entregado.",
+        "Tu tarjeta queda autorizada a través de Stripe, no cobrada. No se cobra nada, y el especialista no recibe pago, hasta que apruebas el trabajo entregado.",
       ],
     ],
   },
@@ -561,18 +551,16 @@ const tl: Dict = {
     line1: "Ilarawan ang kahit anong task.",
     line2: "Tapos na ito pagsapit ng umaga.",
     sub: (h) =>
-      `Research, data, pagsusulat, spreadsheets, admin: may presyo sa loob ng ${h} oras ng trabaho, hatid sa umaga.`,
-    timeNote:
-      "Ang oras ang resource na hindi mo na mabibili pa. Ginagastos pa rin ito ng lumang paraan ng pag-hire: basahin mo mismo ang daan-daang resume, o bayaran ang iba para basahin ito at gastusin ang pera mo sa halip.",
+      `Research, data, pagsusulat, spreadsheets, admin: ilarawan ito, kumuha ng fixed na presyo sa loob ng ${h} oras ng trabaho, tapos tapos na ito pagsapit ng umaga.`,
     cta: "Ilarawan ang task mo",
     guarantee:
       "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",
   },
   whatWeAre: {
     label: "Ano ito",
-    h2: "Isang panuntunan lang: hindi ka nagbabayad para sa trabahong hindi maayos.",
+    h2: "Ang AfterDesk ay isang task outsourcing service na nakabuo sa paligid ng beripikadong espesyalista sa Pilipinas.",
     intro:
-      "Ang AfterDesk ay isang task outsourcing service na nakabuo sa paligid ng beripikadong espesyalista sa Pilipinas, itinutugma sa mga negosyanteng gustong maalis ang task sa kanilang listahan nang hindi gumugugol ng oras sa paghahanap kung kanino ito ipagkakatiwala.",
+      "Nagpapadala ang mga negosyante ng task, ipepresyo ito ng espesyalista dito, at isang panuntunan ang gumagawa nitong ligtas subukan: hindi ka nagbabayad para sa trabahong hindi maayos.",
     steps: [
       [
         "Ilarawan ito",
@@ -584,7 +572,7 @@ const tl: Dict = {
       ],
       [
         "Babayaran mo lang kung tama ito",
-        "Naka-authorize lang ang card mo, hindi sinisingil. Walang sisingilin, at hindi babayaran ang espesyalista, hanggang sa aprubahan mo ang natapos na trabaho.",
+        "Naka-authorize ang card mo sa pamamagitan ng Stripe, hindi sinisingil. Walang sisingilin, at hindi babayaran ang espesyalista, hanggang sa aprubahan mo ang natapos na trabaho.",
       ],
     ],
   },
