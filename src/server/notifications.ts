@@ -13,6 +13,7 @@ export async function deliverPendingNotifications(): Promise<{
       title: true,
       body: true,
       taskId: true,
+      emailAttempts: true,
       user: { select: { email: true, role: true } },
     },
     orderBy: { createdAt: "asc" },
@@ -22,12 +23,15 @@ export async function deliverPendingNotifications(): Promise<{
   let failed = 0;
   for (const row of rows) {
     const claimed = await prisma.notification.updateMany({
-      where: { id: row.id, emailedAt: null, emailAttempts: { lt: 5 } },
+      where: { id: row.id, emailedAt: null, emailAttempts: row.emailAttempts },
       data: { emailAttempts: { increment: 1 }, emailError: null },
     });
     if (claimed.count === 0) continue;
     try {
-      const appUrl = process.env.APP_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000";
+      const appUrl = process.env.APP_URL || process.env.BETTER_AUTH_URL;
+      if (!appUrl && process.env.NODE_ENV === "production") {
+        throw new Error("APP_URL must be configured before notification emails can be sent.");
+      }
       const taskPath =
         row.user.role === "ADMIN"
           ? `/admin/tasks/${row.taskId}`
@@ -39,7 +43,7 @@ export async function deliverPendingNotifications(): Promise<{
         subject: row.title,
         text:
           `${row.body ?? row.title}\n\n` +
-          (row.taskId ? `Open task: ${new URL(taskPath, appUrl).toString()}\n\n` : "") +
+          (row.taskId ? `Open task: ${new URL(taskPath, appUrl || "http://localhost:3000").toString()}\n\n` : "") +
           "Sign in to AfterDesk for the authoritative status.",
       });
       await prisma.notification.update({

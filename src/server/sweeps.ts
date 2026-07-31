@@ -135,23 +135,27 @@ export async function purgeExpiredTaskFiles(): Promise<number> {
     );
     if (results.some((result) => result.status === "rejected")) continue;
     const now = new Date();
-    await prisma.$transaction([
-      prisma.file.updateMany({
+    await prisma.$transaction(async (tx) => {
+      const result = await tx.file.updateMany({
         where: { id: { in: task.files.map((file) => file.id) }, purgedAt: null },
         data: { purgedAt: now },
-      }),
-      prisma.task.update({
+      });
+      await tx.task.update({
         where: { id: task.id },
         data: { filesPurgedAt: now },
-      }),
-      prisma.taskEvent.create({
-        data: {
-          taskId: task.id,
-          action: "retention_files_purged",
-          meta: { files: task.files.length, retentionDays: settings.retentionDays },
-        },
-      }),
-    ]);
+      });
+      // An overlapping sweep may have already purged these files; only log
+      // the event when this run is the one that actually changed anything.
+      if (result.count > 0) {
+        await tx.taskEvent.create({
+          data: {
+            taskId: task.id,
+            action: "retention_files_purged",
+            meta: { files: result.count, retentionDays: settings.retentionDays },
+          },
+        });
+      }
+    });
     purged += task.files.length;
   }
   return purged;

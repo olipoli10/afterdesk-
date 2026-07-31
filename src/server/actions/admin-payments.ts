@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
 import { insertLedgerEntry } from "@/lib/ledger";
 import { transitionTask, TransitionError } from "@/lib/state";
+import { logAdminEvent } from "@/lib/audit";
 
 export type MoneyActionResult = { ok: true } | { ok: false; error: string };
 
@@ -207,17 +208,16 @@ export async function recordManualRefund(input: unknown): Promise<MoneyActionRes
           taskId: intent.taskId,
         },
       });
-      await tx.adminEvent.create({
-        data: {
-          actorId: admin.id,
-          entity: "Refund",
-          entityId: refund.id,
-          action: "manual_refund_recorded",
-          after: {
-            moneyIntentId: intent.id,
-            amountCents: intent.amountCents,
-            reference: parsed.data.reference,
-          },
+      await logAdminEvent({
+        tx,
+        actorId: admin.id,
+        entity: "Refund",
+        entityId: refund.id,
+        action: "manual_refund_recorded",
+        after: {
+          moneyIntentId: intent.id,
+          amountCents: intent.amountCents,
+          reference: parsed.data.reference,
         },
       });
       return { taskId: intent.taskId };

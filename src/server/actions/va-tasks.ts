@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireApprovedVa } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
@@ -71,6 +72,12 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
       }
 
       // Work-in-progress cap: without it one fast worker can hoard the pool.
+      // The advisory lock serializes this check per worker so two concurrent
+      // claims on two different tasks can't both read the same count and both
+      // pass it (mirrors the exam-attempt cap in academy.ts's submitExam).
+      await tx.$executeRaw`
+        SELECT pg_advisory_xact_lock(hashtext(${`claim-cap:${user.id}`}))
+      `;
       const activeCount = await tx.task.count({
         where: {
           claimedById: user.id,
@@ -237,6 +244,12 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
     if (handled) return handled;
     if (e instanceof TransitionError) {
       return { ok: false, error: "This task is no longer open for delivery." };
+    }
+    // Two deliveries raced to the same attemptNo and lost the (taskId,
+    // attemptNo) unique constraint — the whole transaction already rolled
+    // back, so nothing was double-submitted, just retry.
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      return { ok: false, error: "This task is no longer open for delivery. Try again." };
     }
     throw e;
   }

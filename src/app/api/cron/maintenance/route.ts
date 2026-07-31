@@ -19,18 +19,30 @@ function hasValidBearer(value: string | null, secret: string): boolean {
   return supplied.length === expected.length && timingSafeEqual(supplied, expected);
 }
 
+// Each job is isolated so an unrelated rethrow (e.g. a transient DB error in
+// a sweep) can never fail-fast the surrounding Promise.all and cut a live
+// Stripe call in processMoneyIntents off mid-flight.
+async function run<T>(name: string, job: Promise<T>): Promise<T | null> {
+  try {
+    return await job;
+  } catch (e) {
+    console.error(`[cron/maintenance] ${name} failed:`, e);
+    return null;
+  }
+}
+
 export async function POST(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || !hasValidBearer(request.headers.get("authorization"), secret)) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
   const [quotes, payments, orphans, purged, money, notifications] = await Promise.all([
-    expireStaleQuotes(),
-    expireStalePayments(),
-    reapOrphanFiles(),
-    purgeExpiredTaskFiles(),
-    processMoneyIntents(),
-    deliverPendingNotifications(),
+    run("quotes", expireStaleQuotes()),
+    run("payments", expireStalePayments()),
+    run("orphans", reapOrphanFiles()),
+    run("purged", purgeExpiredTaskFiles()),
+    run("money", processMoneyIntents()),
+    run("notifications", deliverPendingNotifications()),
   ]);
   return NextResponse.json({ quotes, payments, orphans, purged, money, notifications });
 }

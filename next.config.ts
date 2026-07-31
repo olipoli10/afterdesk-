@@ -3,6 +3,14 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV === "development";
 const contentSecurityPolicy = [
   "default-src 'self'",
+  // 'unsafe-inline' stays because dropping it needs a per-request nonce
+  // threaded through src/proxy.ts and the root layout (Next's own hydration
+  // scripts must carry it too) — a bigger change than this header. It is not
+  // this app's XSS defense: nothing renders untrusted input via
+  // dangerouslySetInnerHTML (the only uses are static application/ld+json,
+  // which browsers never execute as script), so React/JSX's default escaping
+  // is what actually stops injected script here. CSP is defense-in-depth on
+  // top of that, covering exfiltration/framing/mixed-content.
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",

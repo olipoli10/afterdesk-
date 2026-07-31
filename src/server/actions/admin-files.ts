@@ -63,14 +63,25 @@ export async function recheckFile(fileId: string): Promise<RecheckFileResult> {
       error instanceof FileRejectedError || error instanceof ScannerUnavailableError
         ? error.message
         : "The stored file could not be inspected.";
-    await prisma.file.update({
-      where: { id: file.id },
-      data: {
-        scanStatus: status,
-        scanDetails: message.slice(0, 1000),
-        scannedAt: new Date(),
-      },
-    });
+    await prisma.$transaction([
+      prisma.file.update({
+        where: { id: file.id },
+        data: {
+          scanStatus: status,
+          scanDetails: message.slice(0, 1000),
+          scannedAt: new Date(),
+        },
+      }),
+      prisma.adminEvent.create({
+        data: {
+          actorId: admin.id,
+          entity: "File",
+          entityId: file.id,
+          action: "file_recheck_failed",
+          after: { scanStatus: status },
+        },
+      }),
+    ]);
     if (file.taskId) revalidatePath(`/admin/tasks/${file.taskId}`);
     return { ok: false, error: message };
   }

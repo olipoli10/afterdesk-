@@ -25,11 +25,16 @@ export async function approveVa(input: unknown): Promise<AdminVaResult> {
   });
   if (!profile) return { ok: false, error: "Worker not found." };
 
-  await prisma.$transaction(async (tx) => {
-    await tx.vaProfile.update({
-      where: { userId: parsed.data.vaUserId },
+  const claimed = await prisma.$transaction(async (tx) => {
+    const result = await tx.vaProfile.updateMany({
+      where: {
+        userId: parsed.data.vaUserId,
+        status: { in: ["pending_test", "pending_grading", "rejected", "suspended"] },
+      },
       data: { status: "approved", suspendedAt: null, suspensionReason: null, rejectedAt: null },
     });
+    if (result.count === 0) return false;
+
     await logAdminEvent({
       tx,
       actorId: admin.id,
@@ -47,7 +52,9 @@ export async function approveVa(input: unknown): Promise<AdminVaResult> {
         body: "The task pool is now open to you.",
       },
     });
+    return true;
   });
+  if (!claimed) return { ok: false, error: "This worker's status already changed." };
 
   revalidatePath("/admin/workers");
   return { ok: true };
@@ -65,11 +72,13 @@ export async function rejectVa(input: unknown): Promise<AdminVaResult> {
   });
   if (!profile) return { ok: false, error: "Worker not found." };
 
-  await prisma.$transaction(async (tx) => {
-    await tx.vaProfile.update({
-      where: { userId: parsed.data.vaUserId },
+  const claimed = await prisma.$transaction(async (tx) => {
+    const result = await tx.vaProfile.updateMany({
+      where: { userId: parsed.data.vaUserId, status: { in: ["pending_test", "pending_grading"] } },
       data: { status: "rejected", rejectedAt: new Date() },
     });
+    if (result.count === 0) return false;
+
     await logAdminEvent({
       tx,
       actorId: admin.id,
@@ -87,7 +96,9 @@ export async function rejectVa(input: unknown): Promise<AdminVaResult> {
         body: "Your application was not approved this time. Academy access remains available.",
       },
     });
+    return true;
   });
+  if (!claimed) return { ok: false, error: "This worker's status already changed." };
 
   revalidatePath("/admin/workers");
   return { ok: true };
@@ -115,15 +126,17 @@ export async function suspendVa(input: unknown): Promise<AdminVaResult> {
   });
   if (!profile) return { ok: false, error: "Worker not found." };
 
-  await prisma.$transaction(async (tx) => {
-    await tx.vaProfile.update({
-      where: { userId: parsed.data.vaUserId },
+  const claimed = await prisma.$transaction(async (tx) => {
+    const result = await tx.vaProfile.updateMany({
+      where: { userId: parsed.data.vaUserId, status: "approved" },
       data: {
         status: "suspended",
         suspendedAt: new Date(),
         suspensionReason: parsed.data.reason,
       },
     });
+    if (result.count === 0) return false;
+
     await tx.session.deleteMany({ where: { userId: parsed.data.vaUserId } });
     await logAdminEvent({
       tx,
@@ -142,7 +155,9 @@ export async function suspendVa(input: unknown): Promise<AdminVaResult> {
         body: parsed.data.reason,
       },
     });
+    return true;
   });
+  if (!claimed) return { ok: false, error: "This worker's status already changed." };
 
   revalidatePath("/admin/workers");
   return { ok: true };

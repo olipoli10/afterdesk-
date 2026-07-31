@@ -25,13 +25,18 @@ export async function publishRevisionInstructions(input: unknown): Promise<Resol
   const result = await prisma.$transaction(async (tx) => {
     const task = await tx.task.findUnique({
       where: { id: parsed.data.taskId },
-      select: { status: true, claimedById: true },
+      select: { claimedById: true },
     });
-    if (!task || task.status !== "revision_requested" || !task.claimedById) return false;
-    await tx.task.update({
-      where: { id: parsed.data.taskId },
+    if (!task || !task.claimedById) return false;
+    const updated = await tx.task.updateMany({
+      where: {
+        id: parsed.data.taskId,
+        status: "revision_requested",
+        claimedById: { not: null },
+      },
       data: { revisionInstructions: parsed.data.summary },
     });
+    if (updated.count === 0) return false;
     await tx.taskEvent.create({
       data: {
         taskId: parsed.data.taskId,

@@ -196,7 +196,12 @@ const INFO_SURVIVES = new RegExp(
  * no real exporter obfuscates an Info key, so the only thing this costs is
  * files that were hiding something.
  */
-const ESCAPED_KEY = /\/[A-Za-z0-9#]*#[0-9A-Fa-f]{2}[A-Za-z0-9#]*\s*[(<]/;
+// Both repeats are bounded at 127 — the name-length ISO 32000-1 §7.3.5
+// recommends above — so a `/'#41'.repeat(N)` payload with no `(` or `<`
+// nearby can no longer make the two adjacent stars backtrack O(N) ways at
+// O(N) offsets; the worst case per offset is now a fixed 127*127 instead of
+// growing with the input, so total work stays linear in file size.
+const ESCAPED_KEY = /\/[A-Za-z0-9#]{0,127}#[0-9A-Fa-f]{2}[A-Za-z0-9#]{0,127}\s*[(<]/;
 const XMP_ATTR_SURVIVES = new RegExp(
   `\\b(?:${XMP_ATTR_NS.join("|")}):[A-Za-z][\\w.-]*\\s*=\\s*(?:"\\s*[^"\\s]|'\\s*[^'\\s])`
 );

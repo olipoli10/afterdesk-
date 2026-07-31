@@ -247,7 +247,7 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
       await tx.moneyIntent.updateMany({
         where: {
           taskId,
-          kind: "release_payout",
+          kind: { in: ["release_payout", "capture_client_payment"] },
           status: { in: ["queued", "failed"] },
         },
         data: { status: "done", processedAt: new Date(), lastError: null },
