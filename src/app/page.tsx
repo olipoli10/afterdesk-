@@ -274,8 +274,21 @@ export default async function Home({
               {/* Same micro-copy slot the Academy hero uses under its own
                   CTA ("You can start the first course tonight."): the literal
                   answer to "what actually happens if I click this," landed
-                  in one breath, right where someone is deciding to click. */}
-              <p className="mt-3 font-mono text-[12px] text-[#767C86]">{t.hero.guarantee}</p>
+                  in one breath, right where someone is deciding to click. The
+                  shield is the one glyph on the page that means "protected,"
+                  reused nowhere else, so it never has to compete for what it
+                  points at. */}
+              <p className="mt-3 flex items-start gap-1.5 font-mono text-[12px] text-[#767C86]">
+                <svg viewBox="0 0 16 16" fill="none" className="mt-[1px] h-3.5 w-3.5 shrink-0 text-[#5B6069]" aria-hidden>
+                  <path
+                    d="M8 1.5 13.5 3.5V7.5C13.5 11 11.2 13.3 8 14.5C4.8 13.3 2.5 11 2.5 7.5V3.5L8 1.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {t.hero.guarantee}
+              </p>
             </div>
           </div>
 
