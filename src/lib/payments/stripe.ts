@@ -66,7 +66,10 @@ export async function checkoutUrlForTask(taskId: string, clientId: string): Prom
   if (existing?.checkoutSessionId) {
     const session = await stripeClient.checkout.sessions.retrieve(existing.checkoutSessionId);
     if (session.status === "open" && session.url) return session.url;
-    if (session.payment_status === "paid") {
+    // Manual capture: payment_status stays "unpaid" even once the customer
+    // has successfully authorized the card. session.status "complete" is
+    // the correct "they finished checkout" signal here — see fulfillCheckout.
+    if (session.status === "complete") {
       await fulfillCheckout(session);
       return `${baseUrl()}/client/tasks/${task.id}?payment=received`;
     }
@@ -114,7 +117,14 @@ export async function checkoutUrlForTask(taskId: string, clientId: string): Prom
         },
       ],
       metadata: { taskId: task.id, paymentId: payment.id, clientId },
-      payment_intent_data: { metadata: { taskId: task.id, paymentId: payment.id } },
+      // Authorize the card, don't capture it: the client's money genuinely
+      // stays on hold, not a real charge, until QC approves the delivery
+      // and admin-qc.ts enqueues capture_client_payment. See fulfillCheckout
+      // below for the matching webhook-side change.
+      payment_intent_data: {
+        capture_method: "manual",
+        metadata: { taskId: task.id, paymentId: payment.id },
+      },
       success_url: `${baseUrl()}/client/tasks/${task.id}?payment=received`,
       cancel_url: `${baseUrl()}/client/tasks/${task.id}?payment=cancelled`,
       expires_at: expiresAt,
@@ -134,9 +144,19 @@ export async function checkoutUrlForTask(taskId: string, clientId: string): Prom
   return session.url;
 }
 
-/** Idempotent fulfillment called by both the webhook and checkout recovery. */
+/**
+ * Idempotent fulfillment called by both the webhook and checkout recovery.
+ *
+ * With capture_method: manual, completing Checkout AUTHORIZES the card —
+ * it does not charge it. session.payment_status stays "unpaid" the whole
+ * time; session.status "complete" is what actually means "they finished
+ * checkout, the card is good, the amount is on hold." The real charge (and
+ * the ledger "sale" entry recognizing revenue) only happens later, when
+ * QC approval enqueues a capture_client_payment money intent — see
+ * src/server/actions/admin-qc.ts and src/server/money-intents.ts.
+ */
 export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise<void> {
-  if (session.payment_status !== "paid") return;
+  if (session.status !== "complete") return;
   const taskId = session.metadata?.taskId || session.client_reference_id;
   const paymentId = session.metadata?.paymentId;
   if (!taskId || !paymentId) throw new Error("Stripe Checkout session is missing task metadata.");
@@ -146,7 +166,7 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
   const paymentIntent =
     typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
   if (amount == null || !currency || !paymentIntent) {
-    throw new Error("Stripe Checkout session is missing settled payment details.");
+    throw new Error("Stripe Checkout session is missing authorized payment details.");
   }
 
   await prisma.$transaction(async (tx) => {
@@ -157,26 +177,20 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
     });
     if (!payment || payment.taskId !== taskId) throw new Error("Payment/task mismatch.");
     if (payment.amountCents !== amount || payment.currency !== currency) {
-      throw new Error("Paid amount does not match the approved quote.");
+      throw new Error("Authorized amount does not match the approved quote.");
     }
 
-    if (payment.status !== "received") {
+    if (payment.status === "pending") {
+      // No ledger entry here on purpose: no money has moved yet, only a
+      // hold. The ledger "sale" entry is inserted by the
+      // capture_client_payment money intent, at actual capture time.
       await tx.payment.update({
         where: { id: payment.id },
         data: {
-          status: "received",
-          receivedAt: new Date(),
+          status: "authorized",
           providerRef: paymentIntent,
           checkoutSessionId: session.id,
         },
-      });
-      await insertLedgerEntry(tx, {
-        kind: "sale",
-        amountCents: amount,
-        currency,
-        sourceKind: "stripe_checkout",
-        sourceId: session.id,
-        taskId,
       });
     }
 
@@ -214,14 +228,16 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
         meta: { provider: "stripe", checkoutSessionId: session.id },
       });
     } else if (task?.status === "cancelled") {
+      // Only ever a hold at this point, never a real charge (see above) — so
+      // there is nothing to refund, only an authorization to release.
       await tx.moneyIntent.upsert({
-        where: { idempotencyKey: `late-payment-refund:${payment.id}` },
+        where: { idempotencyKey: `late-payment-cancel:${payment.id}` },
         create: {
           taskId,
-          kind: "refund_client",
+          kind: "cancel_authorization",
           amountCents: amount,
           currency,
-          idempotencyKey: `late-payment-refund:${payment.id}`,
+          idempotencyKey: `late-payment-cancel:${payment.id}`,
         },
         update: {},
       });
@@ -230,7 +246,7 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
           userId: task.clientId,
           type: "refund_queued",
           title: "Payment received after cancellation",
-          body: "The payment arrived too late to open the task. A full refund has been queued.",
+          body: "The payment arrived too late to open the task. The hold on your card will be released.",
           taskId,
         },
       });
@@ -483,10 +499,89 @@ export async function reconcileStripeDispute(dispute: Stripe.Dispute): Promise<v
   });
 }
 
+/**
+ * Reconciles an authorization Stripe canceled on its own — almost always
+ * the 7-day card-authorization window expiring before QC approval ever
+ * triggered a capture (see the "explicitly out of scope" note on the plan:
+ * this is treated as a rare edge case flagged for an operator, not
+ * something auto-recovered). Our own cancel_authorization money intent
+ * (task cancelled, dispute upheld pre-approval) also lands here, but that
+ * path already updated the payment row itself before this event arrives,
+ * so it is a no-op redelivery in that case.
+ */
+export async function reconcileStripePaymentIntentCanceled(
+  paymentIntent: Stripe.PaymentIntent
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: { provider_providerRef: { provider: "stripe", providerRef: paymentIntent.id } },
+      select: { id: true, taskId: true, status: true },
+    });
+    if (!payment || payment.status !== "authorized") return;
+
+    await tx.payment.update({ where: { id: payment.id }, data: { status: "cancelled" } });
+
+    const task = await tx.task.findUnique({
+      where: { id: payment.taskId },
+      select: {
+        status: true,
+        clientId: true,
+      },
+    });
+    const stillActive =
+      task &&
+      !["cancelled", "expired", "declined"].includes(task.status);
+    if (stillActive) {
+      // We didn't ask for this cancellation (see the doc comment above) —
+      // the hold just expired out from under an in-flight task. Nothing
+      // else in this codebase can silently re-request payment, so this has
+      // to reach a human.
+      await notifyAdmins(tx, {
+        type: "authorization_expired",
+        title: "A client's payment hold expired before approval",
+        body: `Task ${payment.taskId} is still ${task!.status}, but the Stripe authorization on it (${paymentIntent.id}) expired unused. The client needs to be asked to pay again.`,
+        taskId: payment.taskId,
+      });
+    }
+  });
+}
+
 export function constructStripeEvent(payload: string, signature: string): Stripe.Event {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) throw new PaymentUnavailableError("STRIPE_WEBHOOK_SECRET is not configured.");
   return stripe().webhooks.constructEvent(payload, signature, secret);
+}
+
+/**
+ * Turns a held authorization into a real charge. Called only from the
+ * capture_client_payment money intent (src/server/money-intents.ts), which
+ * is only ever enqueued at QC approval (src/server/actions/admin-qc.ts) —
+ * so by the time this runs, the delivery has already cleared review.
+ */
+export async function captureStripePayment(input: {
+  paymentIntentId: string;
+  idempotencyKey: string;
+}): Promise<{ id: string; amountReceived: number }> {
+  const intent = await stripe().paymentIntents.capture(input.paymentIntentId, undefined, {
+    idempotencyKey: input.idempotencyKey,
+  });
+  return { id: intent.id, amountReceived: intent.amount_received };
+}
+
+/**
+ * Releases a held authorization that will never be captured: the task was
+ * cancelled, or a dispute was upheld, before QC approval ever happened.
+ * Distinct from refundStripePayment — no money has moved yet, so there is
+ * nothing to refund, only a hold to release.
+ */
+export async function cancelStripeAuthorization(input: {
+  paymentIntentId: string;
+  idempotencyKey: string;
+}): Promise<{ id: string }> {
+  const intent = await stripe().paymentIntents.cancel(input.paymentIntentId, undefined, {
+    idempotencyKey: input.idempotencyKey,
+  });
+  return { id: intent.id };
 }
 
 export async function refundStripePayment(input: {

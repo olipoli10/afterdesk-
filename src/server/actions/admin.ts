@@ -211,11 +211,16 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
           isInternal: true,
           currency: true,
           payments: {
-            where: { status: { in: ["received", "partially_refunded"] } },
-            orderBy: { receivedAt: "desc" },
+            // Both are eligible for cancellation cleanup, but need different
+            // Stripe calls: "authorized" money never moved (cancel the hold),
+            // "received"/"partially_refunded" money did (refund it). See the
+            // branch below.
+            where: { status: { in: ["authorized", "received", "partially_refunded"] } },
+            orderBy: { createdAt: "desc" },
             take: 1,
             select: {
               id: true,
+              status: true,
               amountCents: true,
               refunds: { select: { amountCents: true } },
             },
@@ -251,7 +256,9 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
       const payment = task.payments[0];
       const alreadyRefunded =
         payment?.refunds.reduce((sum, refund) => sum + refund.amountCents, 0) ?? 0;
-      const refundDue = payment ? payment.amountCents - alreadyRefunded : 0;
+      const refundDue =
+        payment && payment.status !== "authorized" ? payment.amountCents - alreadyRefunded : 0;
+      const holdToRelease = payment?.status === "authorized";
       if (!task.isInternal && payment && refundDue > 0) {
         await tx.moneyIntent.upsert({
           where: { idempotencyKey: `refund-admin-cancel:${taskId}:${payment.id}` },
@@ -264,16 +271,36 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
           },
           update: {},
         });
+      } else if (!task.isInternal && payment && holdToRelease) {
+        // Nothing was ever charged — release the hold instead of refunding.
+        await tx.moneyIntent.upsert({
+          where: { idempotencyKey: `cancel-admin-cancel:${taskId}:${payment.id}` },
+          create: {
+            taskId,
+            kind: "cancel_authorization",
+            amountCents: payment.amountCents,
+            currency: task.currency,
+            idempotencyKey: `cancel-admin-cancel:${taskId}:${payment.id}`,
+          },
+          update: {},
+        });
       }
       await tx.notification.create({
         data: {
           userId: task.clientId,
           type: "task_cancelled",
-          title: refundDue > 0 ? "Task cancelled — refund queued" : "Task cancelled",
+          title:
+            refundDue > 0
+              ? "Task cancelled — refund queued"
+              : holdToRelease
+                ? "Task cancelled — card hold released"
+                : "Task cancelled",
           body:
             refundDue > 0
               ? "The remaining received payment will be returned to its original method."
-              : reason,
+              : holdToRelease
+                ? "Your card was never charged. The hold will be released."
+                : reason,
           taskId,
         },
       });

@@ -92,11 +92,17 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
               revisionWindowEndsAt: true,
               windowPausedAt: true,
               payments: {
-                where: { status: { in: ["received", "partially_refunded"] } },
-                orderBy: { receivedAt: "desc" },
+                // Almost always "received" by the time a dispute exists
+                // (disputes only open on "completed" tasks, and QC approval
+                // already enqueues the capture) — "authorized" only shows up
+                // in the narrow window before that capture money intent has
+                // actually run. See the branch below.
+                where: { status: { in: ["authorized", "received", "partially_refunded"] } },
+                orderBy: { createdAt: "desc" },
                 take: 1,
                 select: {
                   id: true,
+                  status: true,
                   amountCents: true,
                   refunds: { select: { amountCents: true } },
                 },
@@ -205,13 +211,22 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
           data: { status: "void", note: "Client dispute upheld." },
         });
         await tx.moneyIntent.updateMany({
-          where: { taskId, kind: "release_payout", status: { in: ["queued", "failed"] } },
+          where: {
+            taskId,
+            kind: { in: ["release_payout", "capture_client_payment"] },
+            status: { in: ["queued", "failed"] },
+          },
           data: { status: "done", processedAt: now, lastError: null },
         });
         const payment = dispute.task.payments[0];
         const alreadyRefunded =
           payment?.refunds.reduce((sum, refund) => sum + refund.amountCents, 0) ?? 0;
-        const refundDue = payment ? payment.amountCents - alreadyRefunded : 0;
+        // Almost always "received" (see the query comment above) — the
+        // "authorized" branch only fires in the rare window where a dispute
+        // was upheld before the capture money intent QC approval enqueued
+        // ever got processed.
+        const refundDue =
+          payment && payment.status !== "authorized" ? payment.amountCents - alreadyRefunded : 0;
         if (payment && refundDue > 0) {
           await tx.moneyIntent.upsert({
             where: { idempotencyKey: `refund-upheld-dispute:${dispute.id}` },
@@ -221,6 +236,18 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
               amountCents: refundDue,
               currency: dispute.task.currency,
               idempotencyKey: `refund-upheld-dispute:${dispute.id}`,
+            },
+            update: {},
+          });
+        } else if (payment && payment.status === "authorized") {
+          await tx.moneyIntent.upsert({
+            where: { idempotencyKey: `cancel-upheld-dispute:${dispute.id}` },
+            create: {
+              taskId,
+              kind: "cancel_authorization",
+              amountCents: payment.amountCents,
+              currency: dispute.task.currency,
+              idempotencyKey: `cancel-upheld-dispute:${dispute.id}`,
             },
             update: {},
           });

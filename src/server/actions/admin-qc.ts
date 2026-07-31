@@ -68,6 +68,12 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
               clientId: true,
               vaPayoutCents: true,
               currency: true,
+              payments: {
+                where: { status: "authorized" },
+                select: { id: true, amountCents: true, currency: true },
+                orderBy: { createdAt: "desc" },
+                take: 1,
+              },
             },
           },
         },
@@ -175,6 +181,29 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
             lastError: null,
             processedAt: null,
           },
+        });
+      }
+
+      // The other half of the same invariant: QC approval is the moment
+      // this delivery becomes final (see decideDispute's "rejected" outcome
+      // for the case where a client complaint doesn't change that), so it's
+      // also the moment the client's held authorization turns into a real
+      // charge. Same transaction as the payout release above, on purpose —
+      // a capture and a payout release always originate from the same
+      // "this delivery is final" decision. No client payment exists for
+      // internal/test tasks, hence the guard.
+      const authorizedPayment = submission.task.payments[0];
+      if (authorizedPayment) {
+        await tx.moneyIntent.upsert({
+          where: { idempotencyKey: `capture-payment:${submission.taskId}:${authorizedPayment.id}` },
+          create: {
+            taskId: submission.taskId,
+            kind: "capture_client_payment",
+            amountCents: authorizedPayment.amountCents,
+            currency: authorizedPayment.currency,
+            idempotencyKey: `capture-payment:${submission.taskId}:${authorizedPayment.id}`,
+          },
+          update: {},
         });
       }
       await tx.notification.createMany({

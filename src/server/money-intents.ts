@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { insertLedgerEntry } from "@/lib/ledger";
-import { refundStripePayment } from "@/lib/payments/stripe";
+import { cancelStripeAuthorization, captureStripePayment, refundStripePayment } from "@/lib/payments/stripe";
 
 const MAX_ATTEMPTS = 5;
 
@@ -56,6 +56,88 @@ export async function processMoneyIntents(): Promise<{
         continue;
       }
 
+      if (intent.kind === "capture_client_payment") {
+        // Enqueued only by admin-qc.ts approveDeliverable, so an
+        // "authorized" payment should exist. If the hold expired first
+        // (7-day card window; see reconcileStripePaymentIntentCanceled in
+        // src/lib/payments/stripe.ts), this throws and the generic catch
+        // below records why, without silently retrying forever.
+        const authorized = await prisma.payment.findFirst({
+          where: { taskId: intent.taskId, status: "authorized" },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, amountCents: true, currency: true, provider: true, providerRef: true },
+        });
+        if (!authorized) throw new Error("No authorized client payment exists for this task.");
+        if (authorized.provider !== "stripe" || !authorized.providerRef) {
+          throw new Error("Non-Stripe payment cannot be auto-captured.");
+        }
+        await captureStripePayment({
+          paymentIntentId: authorized.providerRef,
+          idempotencyKey: intent.idempotencyKey,
+        });
+        await prisma.$transaction(async (tx) => {
+          await tx.payment.update({
+            where: { id: authorized.id },
+            data: { status: "received", receivedAt: new Date() },
+          });
+          // Revenue is recognized here, at actual capture, not at checkout —
+          // this is the whole point of the authorize/capture split.
+          await insertLedgerEntry(tx, {
+            kind: "sale",
+            amountCents: authorized.amountCents,
+            currency: authorized.currency,
+            sourceKind: "stripe_checkout",
+            sourceId: authorized.providerRef!,
+            taskId: intent.taskId,
+          });
+          await tx.moneyIntent.update({
+            where: { id: intent.id },
+            data: { status: "done", processedAt: new Date(), lastError: null },
+          });
+        });
+        completed++;
+        continue;
+      }
+
+      if (intent.kind === "cancel_authorization") {
+        const authorized = await prisma.payment.findFirst({
+          where: { taskId: intent.taskId, status: "authorized" },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, provider: true, providerRef: true },
+        });
+        if (!authorized) {
+          // Already resolved — most likely reconcileStripePaymentIntentCanceled
+          // (src/lib/payments/stripe.ts) already saw the same cancellation via
+          // webhook and updated the row first. Not an error.
+          await prisma.moneyIntent.update({
+            where: { id: intent.id },
+            data: { status: "done", processedAt: new Date(), lastError: null },
+          });
+          completed++;
+          continue;
+        }
+        if (authorized.provider !== "stripe" || !authorized.providerRef) {
+          throw new Error("Non-Stripe payment cannot be auto-cancelled.");
+        }
+        await cancelStripeAuthorization({
+          paymentIntentId: authorized.providerRef,
+          idempotencyKey: intent.idempotencyKey,
+        });
+        await prisma.$transaction([
+          prisma.payment.update({ where: { id: authorized.id }, data: { status: "cancelled" } }),
+          prisma.moneyIntent.update({
+            where: { id: intent.id },
+            data: { status: "done", processedAt: new Date(), lastError: null },
+          }),
+        ]);
+        completed++;
+        continue;
+      }
+
+      // refund_client — the only remaining kind. Reverses money that was
+      // actually captured (see capture_client_payment above); a payment
+      // that's merely "authorized" has no captured funds to refund, which
+      // is exactly why cancel_authorization exists as a separate kind.
       const payment = await prisma.payment.findFirst({
         where: {
           taskId: intent.taskId,

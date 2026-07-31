@@ -91,7 +91,8 @@ export default async function ClientTaskPage({
               <span className={moneyClient}>
                 {formatCents(task.clientPriceCents, task.currency)}
               </span>
-              . Work starts once payment is settled.
+              . Work starts once your card is authorized, and nothing is
+              actually charged until you approve the delivered work.
             </p>
             <PaymentActions taskId={task.id} />
           </CardBody>

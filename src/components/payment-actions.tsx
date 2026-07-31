@@ -40,8 +40,8 @@ export function PaymentActions({ taskId }: { taskId: string }) {
         </p>
       ) : null}
       <p className="text-xs text-[#5B6069]">
-        Card details are entered on Stripe. Work is not released to the pool until Stripe
-        confirms payment.
+        Card details are entered on Stripe. Your card is authorized, not charged. Nothing is
+        actually billed until you approve the delivered work.
       </p>
     </div>
   );

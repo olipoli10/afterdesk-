@@ -110,7 +110,18 @@ enum PaymentMethod {
 
 enum PaymentStatus {
   pending
+  // Card is authorized (Stripe holds the amount) but not yet captured — no
+  // money has actually moved, and no ledger "sale" entry exists yet. Set by
+  // checkout.session.completed under capture_method: manual.
+  authorized
+  // Actually captured: money is in AfterDesk's account and a ledger "sale"
+  // entry exists. Set only when the capture_client_payment money intent
+  // succeeds (src/server/money-intents.ts), which fires on QC approval.
   received
+  // An authorization that was voided before it was ever captured — a
+  // cancelled task, or a dispute upheld before QC approval happened. Never
+  // touched real money, so this is distinct from `refunded`.
+  cancelled
   refunded
   partially_refunded
   chargeback
@@ -139,6 +150,16 @@ enum MoneyIntentKind {
   refund_client
   release_payout
   void_payout
+  // Captures a held Stripe authorization for real — the client's card is
+  // actually charged now. Enqueued by admin-qc.ts approveDeliverable, in
+  // the same transaction that releases the worker's payout, so a capture
+  // and a payout release always originate from the same "this delivery is
+  // final" decision.
+  capture_client_payment
+  // Voids a Stripe authorization that was never captured (task cancelled,
+  // or a dispute upheld, before QC approval ever triggered a capture).
+  // Distinct from refund_client, which reverses money that actually moved.
+  cancel_authorization
 }
 
 enum MoneyIntentStatus {

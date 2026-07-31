@@ -4,6 +4,7 @@ import {
   fulfillCheckout,
   PaymentUnavailableError,
   reconcileStripeDispute,
+  reconcileStripePaymentIntentCanceled,
   reconcileStripeRefunds,
 } from "@/lib/payments/stripe";
 
@@ -53,6 +54,12 @@ export async function POST(request: Request) {
       case "charge.dispute.created":
       case "charge.dispute.closed":
         await reconcileStripeDispute(event.data.object);
+        break;
+      case "payment_intent.canceled":
+        // Almost always an authorization expiring (7-day card hold) before
+        // QC approval ever triggered a capture. See the doc comment on
+        // reconcileStripePaymentIntentCanceled.
+        await reconcileStripePaymentIntentCanceled(event.data.object);
         break;
     }
     return NextResponse.json({ received: true });
