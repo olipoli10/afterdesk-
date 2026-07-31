@@ -117,6 +117,17 @@ html {
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
 }
+/* Same grid, a center-anchored vignette instead of a top-anchored one: for a
+   card that sits in the MIDDLE of the screen (system pages — error, 404 —
+   rather than a hero with content below), the grid should read strongest at
+   the edges and fade in behind the card, not fade toward the bottom. */
+.night-grid--center {
+  background-image:
+    linear-gradient(rgba(247, 246, 243, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 246, 243, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 60% 55% at 50% 50%, transparent 35%, black 85%);
+}
 /* Its daylight twin for the worker side: ink hairlines on paper. */
 .paper-grid {
   background-image:

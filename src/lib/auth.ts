@@ -40,6 +40,33 @@ export const auth = betterAuth({
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
           },
         },
+        /**
+         * Without this, Better Auth refuses to link a Google sign-in to an
+         * EXISTING local account with the same email unless that local
+         * account already has emailVerified: true — surfacing as
+         * account_not_linked at /api/auth/error. That default protects
+         * against a weak, self-reported OAuth provider hijacking an
+         * unverified signup; it does not fit Google, which independently
+         * proves the signer-in genuinely controls the inbox — proof at
+         * least as strong as our own OTP flow, and stronger than an
+         * unverified local signup ever had. trustedProviders: ["google"]
+         * is the only social provider configured here, so this is scoped
+         * to Google in practice, not a blanket relaxation — revisit if a
+         * second, less-trustworthy provider is ever added.
+         *
+         * A successful link also flips the local account's emailVerified
+         * to true (Better Auth's own linkAccount path, not something added
+         * here) — proving ownership via Google resolves the local
+         * account's stale unverified state as a side effect, it doesn't
+         * bypass it.
+         */
+        account: {
+          accountLinking: {
+            enabled: true,
+            trustedProviders: ["google"],
+            requireLocalEmailVerified: false,
+          },
+        },
       }
     : {}),
   plugins: [
