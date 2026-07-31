@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/authz";
 import { courseFor } from "@/lib/academy/content";
-import { courseLook } from "@/lib/academy/look";
+import { courseLook, nightHue } from "@/lib/academy/look";
 import { Card, CardBody, LinkButton, SectionLabel } from "@/components/ui";
 
 /**
@@ -49,7 +49,7 @@ export default async function LessonPage({
 
       <p
         className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em]"
-        style={{ color: look.hue }}
+        style={{ color: nightHue(look) }}
       >
         Lesson {String(index + 1).padStart(2, "0")} / {String(course.lessons.length).padStart(2, "0")}
       </p>
@@ -83,7 +83,7 @@ export default async function LessonPage({
                   <span
                     aria-hidden
                     className="mt-[7px] h-[7px] w-[7px] shrink-0 rounded-[2px]"
-                    style={{ backgroundColor: look.hue }}
+                    style={{ backgroundColor: nightHue(look) }}
                   />
                   <span className="text-sm leading-relaxed text-[#F7F6F3]">{k}</span>
                 </li>

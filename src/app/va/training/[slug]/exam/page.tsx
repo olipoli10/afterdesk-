@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { courseFor } from "@/lib/academy/content";
-import { courseLook } from "@/lib/academy/look";
+import { courseLook, nightHue } from "@/lib/academy/look";
 import {
   EXAM_ATTEMPTS_PER_DAY,
   EXAM_PASS_SCORE,
@@ -82,7 +82,7 @@ export default async function ExamPage({
 
       <p
         className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em]"
-        style={{ color: look.hue }}
+        style={{ color: nightHue(look) }}
       >
         Exam
       </p>
@@ -114,7 +114,7 @@ export default async function ExamPage({
             questions={questions}
             attemptsLeftToday={attemptsLeft}
             attemptNo={takenSoFar}
-            familyHue={look.hue}
+            familyHue={nightHue(look)}
           />
         )}
       </div>

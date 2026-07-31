@@ -50,3 +50,19 @@ export const TRACK_LOOK: Record<Exclude<CourseTrack, "category">, Family> = {
 export function courseLook(track: CourseTrack, slug: string): Family {
   return track === "category" ? familyOf(slug) : TRACK_LOOK[track];
 }
+
+/**
+ * FOUNDATIONS.hue (#1B2740) is the platform's own "dusk" colour — chosen
+ * dark on purpose so it holds 8+:1 contrast against the PAPER academy
+ * (src/app/academy). Every course-detail page under the WORKER portal
+ * (src/app/va/training/**) is night-toned, and that same dark navy sits
+ * almost flush against the #0A0B0D page behind it — the "Start here —
+ * Foundations" label and its dot were reading as invisible there.
+ *
+ * Use this wherever a look's hue paints TEXT, a dot, or a border on a
+ * night-toned page; leave look.hue untouched for the paper academy, whose
+ * contrast was already solved.
+ */
+export function nightHue(look: Family): string {
+  return look.key === "foundations" ? "#6E85B8" : look.hue;
+}

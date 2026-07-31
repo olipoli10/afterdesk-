@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { FAMILIES } from "@/lib/families";
 import { allCourses, courseMinutes } from "@/lib/academy/content";
-import { courseLook, TRACK_LOOK } from "@/lib/academy/look";
+import { courseLook, nightHue, TRACK_LOOK } from "@/lib/academy/look";
 import type { Course, CourseTrack } from "@/lib/academy/types";
 import { PageTitle } from "@/components/ui";
 
@@ -47,7 +47,7 @@ function CourseCard({
         <span
           aria-hidden
           className="h-[7px] w-[7px] shrink-0 rounded-full"
-          style={{ backgroundColor: look.hue }}
+          style={{ backgroundColor: nightHue(look) }}
         />
         <span className="min-w-0 truncate text-[15.5px] font-semibold tracking-[-0.008em] text-[#F7F6F3] group-hover:underline group-hover:decoration-white/30 group-hover:underline-offset-2">
           {course.title}
@@ -136,12 +136,12 @@ export default async function AcademyHubPage() {
               <div className="mb-2.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <p
                   className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em]"
-                  style={{ color: look.hue }}
+                  style={{ color: nightHue(look) }}
                 >
                   <span
                     aria-hidden
                     className="h-[3px] w-4 shrink-0 rounded-[2px]"
-                    style={{ backgroundColor: look.hue }}
+                    style={{ backgroundColor: nightHue(look) }}
                   />
                   {i === 0 ? `Start here — ${look.label}` : look.label}
                 </p>

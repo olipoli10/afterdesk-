@@ -128,6 +128,18 @@ export const auth = betterAuth({
   },
   // No cookieCache: role/status checks must always hit the database so a
   // demoted or suspended account loses access immediately.
+  session: {
+    // The portal is the product; the marketing pages around it are just the
+    // cover. A worker or client who has to type their password back in every
+    // few days experiences that as the portal being unreliable, not as a
+    // security feature — so this is deliberately long, and slides forward
+    // (updateAge) on every active week rather than counting down from
+    // sign-in, meaning a regular user is effectively never logged out.
+    // Default (7 days, no slide reset until a full day passes) was the
+    // Better Auth default, chosen for nothing specific to this product.
+    expiresIn: 60 * 60 * 24 * 30, // 30 days
+    updateAge: 60 * 60 * 24, // refresh the 30-day window on any use after a day
+  },
 });
 
 export type SessionUser = {

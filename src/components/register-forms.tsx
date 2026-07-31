@@ -260,8 +260,16 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
+  // Checked by default: the portal is the point of this site, not the
+  // marketing pages around it, so staying signed in is the behaviour that
+  // needs an opt-OUT, not an opt-in. Wired straight to Better Auth's own
+  // rememberMe flag (see src/lib/auth.ts's session block for how long that
+  // actually lasts) — unchecking still signs you in, it just makes the
+  // browser drop the cookie on close instead of keeping it for 30 days.
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const rememberMeId = useId();
 
   // Open-redirect guard: only same-origin paths — never protocol-relative and
   // never backslashes (browsers normalize "/\evil.com" to "//evil.com").
@@ -274,7 +282,7 @@ export function LoginForm({
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const { error } = await authClient.signIn.email({ email, password });
+    const { error } = await authClient.signIn.email({ email, password, rememberMe });
     if (error) {
       setError(error.message ?? "Sign-in failed.");
       setBusy(false);
@@ -351,6 +359,19 @@ export function LoginForm({
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+        <label
+          htmlFor={rememberMeId}
+          className={`flex min-h-11 items-center gap-2 text-sm ${tone === "glass" ? "text-white/70" : "text-[#5B6069]"}`}
+        >
+          <input
+            id={rememberMeId}
+            type="checkbox"
+            className={tone === "glass" ? "accent-[#F7F6F3]" : "accent-[#14161A]"}
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          Keep me signed in on this device
+        </label>
         {error ? (
           <p role="alert" className={`text-sm ${tone === "glass" ? "text-[#FF9A8B]" : "text-[#8C2F23]"}`}>
             {error}

@@ -198,11 +198,39 @@ export default async function VaPoolPage({
             </Link>
           </div>
 
-          {/* ── category key / navigation ── */}
+          {/* ── category key / navigation ──
+              The family-grouped grid below reads fine at sm+ (2-4 columns,
+              short), but at grid-cols-1 it stacked EVERY category as its own
+              44px full-width row — on a phone with 5-8 categories that's a
+              long wall you had to scroll past before reaching a single task.
+              Below sm it's replaced with one horizontally-scrolling chip
+              row instead: same destinations (?cat=slug), same family dot,
+              a fraction of the height. */}
           {cats.length >= 2 ? (
             <nav
               aria-label="Categories"
-              className="mb-6 mt-2.5 grid grid-cols-1 gap-x-6 gap-y-3 rounded-[4px] border border-white/10 bg-[#111317] px-4 py-3 sm:grid-cols-2 lg:grid-cols-4"
+              className="-mx-5 mb-5 mt-2.5 flex gap-2 overflow-x-auto px-5 pb-1 sm:hidden"
+            >
+              {cats.map((c) => {
+                const hue = familyOf(c.slug).hue;
+                return (
+                  <Link
+                    key={c.slug}
+                    href={`/va/pool?cat=${c.slug}`}
+                    className="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[3px] border border-white/15 px-3 font-mono text-[12.5px] text-[#F7F6F3] transition-colors duration-150 hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
+                  >
+                    <span aria-hidden className="h-[7px] w-[7px] shrink-0 rounded-full" style={{ backgroundColor: hue }} />
+                    {c.name}
+                    <span className="tabular-nums text-[#8A9099]">{c.n}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          ) : null}
+          {cats.length >= 2 ? (
+            <nav
+              aria-label="Categories"
+              className="mb-6 mt-2.5 hidden gap-x-6 gap-y-3 rounded-[4px] border border-white/10 bg-[#111317] px-4 py-3 sm:grid sm:grid-cols-2 lg:grid-cols-4"
             >
               {presentFamilies.map((f) => (
                 <div key={f.key} className="min-w-0 py-1">

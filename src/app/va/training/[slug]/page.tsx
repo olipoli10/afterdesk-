@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { courseFor, courseMinutes } from "@/lib/academy/content";
-import { courseLook } from "@/lib/academy/look";
+import { courseLook, nightHue } from "@/lib/academy/look";
 import { EXAM_PASS_SCORE, EXAM_QUESTION_COUNT, examWindowStart } from "@/lib/academy/types";
 import { hasGuide } from "@/lib/training/content";
 import { Card, LinkButton, SectionLabel } from "@/components/ui";
@@ -72,12 +72,12 @@ export default async function CoursePage({
       <div className="flex flex-wrap items-center gap-2">
         <p
           className="flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em]"
-          style={{ color: look.hue }}
+          style={{ color: nightHue(look) }}
         >
           <span
             aria-hidden
             className="h-[7px] w-[7px] rounded-full"
-            style={{ backgroundColor: look.hue }}
+            style={{ backgroundColor: nightHue(look) }}
           />
           {look.label}
         </p>
@@ -110,7 +110,7 @@ export default async function CoursePage({
                 <span
                   aria-hidden
                   className="mt-[7px] h-[7px] w-[7px] shrink-0 rounded-[2px] border"
-                  style={{ borderColor: look.hue }}
+                  style={{ borderColor: nightHue(look) }}
                 />
                 <span className="text-sm leading-relaxed text-[#F7F6F3]">{o}</span>
               </li>
@@ -124,7 +124,7 @@ export default async function CoursePage({
         <div className="mt-6 rounded-[4px] px-4 py-3.5" style={{ backgroundColor: look.tint }}>
           <p
             className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em]"
-            style={{ color: look.hue }}
+            style={{ color: nightHue(look) }}
           >
             The standard your work is judged against
           </p>
@@ -150,7 +150,7 @@ export default async function CoursePage({
                   <span
                     aria-hidden
                     className="font-mono text-[13px] font-bold tabular-nums"
-                    style={{ color: look.hue }}
+                    style={{ color: nightHue(look) }}
                   >
                     {String(i + 1).padStart(2, "0")}
                   </span>
