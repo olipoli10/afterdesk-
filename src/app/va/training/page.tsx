@@ -36,7 +36,12 @@ function CourseCard({
   return (
     <Link
       href={`/va/training/${course.slug}`}
-      className="group flex min-w-0 flex-col rounded-[4px] border border-white/10 bg-[#111317] px-4 py-3.5 transition-colors duration-150 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
+      // Course cards used to be #111317 — a hair lighter than the #0A0B0D
+      // page behind them, so on a real screen they read as one dark mass
+      // with no visible seams between courses. #171E2B is deliberately
+      // blue-leaning (not just a lighter grey) so each card reads as its
+      // own surface, not a shade of the background.
+      className="group flex min-w-0 flex-col rounded-[4px] border border-white/[0.12] bg-[#171E2B] px-4 py-4 transition-colors duration-150 hover:border-white/25 hover:bg-[#1B2333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
     >
       <span className="flex items-center gap-1.5">
         <span
@@ -145,7 +150,7 @@ export default async function AcademyHubPage() {
                   {inTrack.length}
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {inTrack.map((c) => (
                   <CourseCard
                     key={c.slug}
@@ -177,7 +182,7 @@ export default async function AcademyHubPage() {
                 />
                 {f.label}
               </p>
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {inFamily.map((c) => (
                   <CourseCard
                     key={c.slug}
