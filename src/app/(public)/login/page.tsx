@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { googleEnabled } from "@/lib/auth";
-import { safeNextParam } from "@/lib/authz";
+import { getSessionUser, roleHome, safeNextParam } from "@/lib/authz";
 import { AuthShell } from "@/components/auth-shell";
 import { LoginForm } from "@/components/register-forms";
 import { linkInline } from "@/components/ui";
@@ -28,6 +29,13 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  // Same guard as the intercepted modal (src/app/@modal/(.)login) — see the
+  // comment there for why an already-authenticated visitor must never see
+  // this form. This copy has to exist independently: a direct/hard
+  // navigation to /login never renders the modal at all.
+  const user = await getSessionUser();
+  if (user) redirect(roleHome(user.role));
+
   const params = await searchParams;
   const next = safeNextParam(params.next);
   const applied = params.applied === "1";
