@@ -41,7 +41,7 @@ export default async function LessonPage({
       <p className="mb-4">
         <Link
           href={`/va/training/${slug}`}
-          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#8A9099] transition-colors duration-150 hover:text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
         >
           ← {course.title}
         </Link>
@@ -53,29 +53,29 @@ export default async function LessonPage({
       >
         Lesson {String(index + 1).padStart(2, "0")} / {String(course.lessons.length).padStart(2, "0")}
       </p>
-      <h1 className="mt-1.5 text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-[#14161A]">
+      <h1 className="mt-1.5 text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-[#F7F6F3]">
         {lesson.title}
       </h1>
-      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[#5B6069]">
+      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[#8A9099]">
         ~{lesson.minutes} min
       </p>
 
       <div className="mt-5 space-y-5">
         {lesson.sections.map((s, i) => (
           <section key={i}>
-            <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[#14161A]">
+            <h2 className="text-[16px] font-semibold tracking-[-0.01em] text-[#F7F6F3]">
               {s.heading}
             </h2>
-            <p className="mt-1.5 text-[15px] leading-[1.7] text-[#14161A]/90">{s.body}</p>
+            <p className="mt-1.5 text-[15px] leading-[1.7] text-[#F7F6F3]/90">{s.body}</p>
           </section>
         ))}
       </div>
 
       <section className="mt-7">
-        <SectionLabel as="h2" className="mb-2.5">
+        <SectionLabel as="h2" className="mb-2.5" tone="night">
           Remember
         </SectionLabel>
-        <Card>
+        <Card tone="night">
           <CardBody className="!py-3">
             <ul className="space-y-2">
               {lesson.keyPoints.map((k, i) => (
@@ -85,7 +85,7 @@ export default async function LessonPage({
                     className="mt-[7px] h-[7px] w-[7px] shrink-0 rounded-[2px]"
                     style={{ backgroundColor: look.hue }}
                   />
-                  <span className="text-sm leading-relaxed text-[#14161A]">{k}</span>
+                  <span className="text-sm leading-relaxed text-[#F7F6F3]">{k}</span>
                 </li>
               ))}
             </ul>
@@ -93,21 +93,21 @@ export default async function LessonPage({
         </Card>
       </section>
 
-      <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-[#14161A]/[0.08] pt-5">
+      <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-white/10 pt-5">
         {prev !== null ? (
-          <LinkButton href={`/va/training/${slug}/lesson/${prev}`} variant="secondary">
+          <LinkButton href={`/va/training/${slug}/lesson/${prev}`} variant="secondary" tone="night">
             ← Previous
           </LinkButton>
         ) : null}
         {next !== null ? (
-          <LinkButton href={`/va/training/${slug}/lesson/${next}`}>Next lesson →</LinkButton>
+          <LinkButton href={`/va/training/${slug}/lesson/${next}`} tone="night">Next lesson →</LinkButton>
         ) : (
-          <LinkButton href={`/va/training/${slug}/exam`}>Take the exam →</LinkButton>
+          <LinkButton href={`/va/training/${slug}/exam`} tone="night">Take the exam →</LinkButton>
         )}
         <span className="ml-auto">
           <Link
             href={`/va/training/${slug}`}
-            className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+            className="text-sm font-medium text-[#8A9099] transition-colors duration-150 hover:text-[#F7F6F3]"
           >
             Course overview
           </Link>

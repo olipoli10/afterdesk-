@@ -3,11 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { claimTask, releaseTask } from "@/server/actions/va-tasks";
-import { buttonDanger, buttonSecondary, buttonPrimary } from "@/components/ui";
+import { buttonPrimaryNight, buttonSecondaryNight } from "@/components/ui";
 
 /** The board tile's claim: dusk fill, mono uppercase — the tile's one accent. */
 const buttonBoard =
-  "inline-flex min-h-11 items-center justify-center rounded-[3px] bg-[#1B2740] px-4 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-150 hover:bg-[#0A0B0D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2740] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex min-h-11 items-center justify-center rounded-[3px] bg-[#1B2740] px-4 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-150 hover:bg-[#0A0B0D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2740] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D] disabled:cursor-not-allowed disabled:opacity-40";
+
+/** Destructive action on the dark surface — same shape as buttonSecondaryNight
+ *  (hairline border, transparent fill) with the danger red/FF9A8B pairing
+ *  used for on-dark error text elsewhere (register-forms, deliverable-form). */
+const buttonDangerNight =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md border border-[#A23B2E]/40 bg-transparent px-4 py-2 text-sm font-medium text-[#FF9A8B] transition-colors duration-150 hover:bg-[#A23B2E]/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A8B] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D] disabled:cursor-not-allowed disabled:opacity-40";
 
 export function ClaimButton({
   taskId,
@@ -30,7 +36,7 @@ export function ClaimButton({
   const cls =
     variant === "board"
       ? buttonBoard
-      : `${variant === "secondary" ? buttonSecondary : buttonPrimary} w-full sm:w-auto`;
+      : `${variant === "secondary" ? buttonSecondaryNight : buttonPrimaryNight} w-full sm:w-auto`;
 
   return (
     <div className={variant === "board" ? "" : "w-full"}>
@@ -53,7 +59,7 @@ export function ClaimButton({
         {isPending ? "Claiming…" : variant === "board" ? "Claim" : label}
       </button>
       {error ? (
-        <p role="alert" className="mt-2 text-sm text-[#8C2F23]">
+        <p role="alert" className="mt-2 text-sm text-[#FF9A8B]">
           {error}
         </p>
       ) : null}
@@ -86,7 +92,7 @@ export function ReleaseButton({ taskId }: { taskId: string }) {
     return (
       <button
         ref={triggerRef}
-        className="-my-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+        className="-my-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#8A9099] transition-colors duration-150 hover:text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
         onClick={() => setConfirming(true)}
       >
         Release this task
@@ -97,20 +103,20 @@ export function ReleaseButton({ taskId }: { taskId: string }) {
   // Full-width block: at 360px the warning and both buttons need the whole
   // column, not the right-hand slot of a justify-between footer row.
   return (
-    <div className="w-full rounded-lg border border-[#14161A]/10 bg-white p-4 shadow-[0_1px_2px_rgba(20,22,26,0.04)]">
-      <p className="text-sm leading-relaxed text-[#5B6069]">
+    <div className="w-full rounded-lg border border-white/10 bg-[#111317] p-4">
+      <p className="text-sm leading-relaxed text-[#8A9099]">
         This returns the task to the pool and is recorded on your record. You will
         lose access to the client&apos;s files.
       </p>
       {error ? (
-        <p role="alert" className="mt-2 text-sm text-[#8C2F23]">
+        <p role="alert" className="mt-2 text-sm text-[#FF9A8B]">
           {error}
         </p>
       ) : null}
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           ref={confirmRef}
-          className={buttonDanger}
+          className={buttonDangerNight}
           disabled={isPending}
           onClick={() =>
             start(async () => {
@@ -127,7 +133,7 @@ export function ReleaseButton({ taskId }: { taskId: string }) {
           {isPending ? "Releasing…" : "Yes, release it"}
         </button>
         <button
-          className={buttonSecondary}
+          className={buttonSecondaryNight}
           onClick={() => setConfirming(false)}
         >
           Keep it

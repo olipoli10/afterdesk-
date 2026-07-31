@@ -7,7 +7,7 @@ import { formatCents } from "@/lib/money";
 import { familyOf } from "@/lib/families";
 import { LocalTime } from "@/components/local-time";
 import { ClaimButton } from "@/components/va-actions";
-import { Card, CardBody, EmptyState, LinkButton, SectionLabel } from "@/components/ui";
+import { Card, CardBody, EmptyState, LinkButton, SectionLabel, moneyPayoutNight } from "@/components/ui";
 import { hasGuide } from "@/lib/training/content";
 import { duePill } from "../board-tile";
 import { vaProfileFor } from "../../layout";
@@ -58,7 +58,8 @@ export default async function PoolTaskPage({
         <EmptyState
           title="This task has left the pool"
           body="Someone claimed it first, or it's no longer open. The board moves fast — everything still available is one tap away."
-          action={<LinkButton href="/va/pool">Back to available work</LinkButton>}
+          action={<LinkButton href="/va/pool" tone="night">Back to available work</LinkButton>}
+          tone="night"
         />
       </div>
     );
@@ -73,13 +74,13 @@ export default async function PoolTaskPage({
       <p className="mb-4">
         <Link
           href="/va/pool"
-          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#8A9099] transition-colors duration-150 hover:text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
         >
           ← Available work
         </Link>
       </p>
 
-      <Card>
+      <Card tone="night">
         <CardBody>
           {/* category + stamps */}
           <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -96,7 +97,7 @@ export default async function PoolTaskPage({
             </span>
             <span className="ml-auto flex shrink-0 items-center gap-1.5">
               {task.tier === "high_value" ? (
-                <span className="rounded-[2px] border border-[#1B2740] px-1.5 py-[2px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#1B2740]">
+                <span className="rounded-[2px] border border-[#1B2740] bg-[#1B2740]/60 px-1.5 py-[2px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#C9CDD3]">
                   High value
                 </span>
               ) : null}
@@ -106,8 +107,8 @@ export default async function PoolTaskPage({
                     due.tone === "soon"
                       ? "bg-[#A82318] text-white"
                       : due.tone === "near"
-                        ? "bg-[#EDEBE6] text-[#14161A]"
-                        : "text-[#5B6069]"
+                        ? "bg-[#1B2740]/60 text-[#C9CDD3]"
+                        : "text-[#8A9099]"
                   }`}
                 >
                   {due.label}
@@ -116,27 +117,27 @@ export default async function PoolTaskPage({
             </span>
           </div>
 
-          <h1 className="mt-2 text-[22px] font-semibold leading-snug tracking-[-0.015em] text-[#14161A]">
+          <h1 className="mt-2 text-[22px] font-semibold leading-snug tracking-[-0.015em] text-[#F7F6F3]">
             {task.title}
           </h1>
 
           {/* payout */}
           <div className="mt-3 flex items-baseline gap-3">
-            <p className="font-mono text-[26px] font-bold leading-none tracking-[-0.02em] tabular-nums text-[#166049]">
+            <p className={`font-mono text-[26px] font-bold leading-none tracking-[-0.02em] tabular-nums ${moneyPayoutNight}`}>
               {task.vaPayoutCents != null ? formatCents(task.vaPayoutCents, task.currency) : "—"}
             </p>
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#5B6069]">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#8A9099]">
               Your payout — fixed
             </p>
           </div>
 
           {/* spec */}
-          <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-[#14161A]/[0.08] pt-3 sm:grid-cols-4">
+          <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-white/10 pt-3 sm:grid-cols-4">
             <div>
-              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#5B6069]">
+              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#8A9099]">
                 Due from you
               </dt>
-              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#14161A]">
+              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#F7F6F3]">
                 {task.vaDeadlineUtc ? (
                   <LocalTime iso={task.vaDeadlineUtc} dateStyle="short" />
                 ) : (
@@ -148,26 +149,26 @@ export default async function PoolTaskPage({
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#5B6069]">
+              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#8A9099]">
                 Volume
               </dt>
-              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#14161A]">
+              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#F7F6F3]">
                 {task.quantity ?? <span aria-hidden>—</span>}
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#5B6069]">
+              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#8A9099]">
                 Files
               </dt>
-              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#14161A]">
+              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#F7F6F3]">
                 {task._count.files}
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#5B6069]">
+              <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-[#8A9099]">
                 Estimated effort
               </dt>
-              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#14161A]">
+              <dd className="mt-1 font-mono text-[13px] tabular-nums text-[#F7F6F3]">
                 {task.estimatedMinutes != null
                   ? `~${(task.estimatedMinutes / 60).toFixed(1)} h`
                   : "—"}
@@ -175,40 +176,37 @@ export default async function PoolTaskPage({
             </div>
           </dl>
           {task._count.files > 0 ? (
-            <p className="mt-2 text-xs leading-relaxed text-[#5B6069]">
+            <p className="mt-2 text-xs leading-relaxed text-[#8A9099]">
               File names and downloads unlock when you claim — until then the pool shows
               counts only.
             </p>
           ) : null}
 
           {/* the full brief */}
-          <div className="mt-5 border-t border-[#14161A]/[0.08] pt-4">
-            <SectionLabel as="h2">The brief</SectionLabel>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-[1.65] text-[#14161A]">
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <SectionLabel as="h2" tone="night">The brief</SectionLabel>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-[1.65] text-[#F7F6F3]">
               {task.description}
             </p>
           </div>
 
           {/* the standard it will be judged against */}
           {task.category?.disputeCriteria ? (
-            <div
-              className="mt-5 rounded-[4px] px-4 py-3.5"
-              style={{ backgroundColor: fam.tint }}
-            >
+            <div className="mt-5 rounded-[4px] bg-white/[0.04] px-4 py-3.5">
               <p
                 className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em]"
                 style={{ color: fam.hue }}
               >
                 What counts as delivered
               </p>
-              <p className="mt-1.5 text-sm leading-relaxed text-[#14161A]">
+              <p className="mt-1.5 text-sm leading-relaxed text-[#F7F6F3]">
                 {task.category.disputeCriteria}
               </p>
               {guide ? (
                 <p className="mt-2">
                   <Link
                     href={`/va/training/${guide}`}
-                    className="font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors duration-150 hover:decoration-[#14161A]"
+                    className="font-medium text-[#F7F6F3] underline decoration-white/30 underline-offset-2 transition-colors duration-150 hover:decoration-white"
                   >
                     Read the {task.category.name} guide
                   </Link>
@@ -218,9 +216,9 @@ export default async function PoolTaskPage({
           ) : null}
 
           {/* the one action */}
-          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-[#14161A]/[0.08] pt-4">
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
             <ClaimButton taskId={task.id} label="Claim this task" />
-            <span className="text-xs leading-relaxed text-[#5B6069]">
+            <span className="text-xs leading-relaxed text-[#8A9099]">
               First come, first served. Releasing a claimed task is recorded on your record.
             </span>
           </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatCents } from "@/lib/money";
 import { familyOf } from "@/lib/families";
 import { ClaimButton } from "@/components/va-actions";
+import { moneyPayoutNight } from "@/components/ui";
 import type { VaPoolView } from "@/lib/queries/tasks";
 
 /**
@@ -54,8 +55,8 @@ export function duePill(vaDeadlineUtc: Date | null): {
 
 const DUE_TONE: Record<"soon" | "near" | "far", string> = {
   soon: "bg-[#A82318] text-white",
-  near: "bg-[#EDEBE6] text-[#14161A]",
-  far: "text-[#5B6069]",
+  near: "bg-[#1B2740]/60 text-[#C9CDD3]",
+  far: "text-[#8A9099]",
 };
 
 export function BoardTile({
@@ -82,7 +83,7 @@ export function BoardTile({
       : null;
 
   return (
-    <div className="flex min-w-0 flex-col rounded-[4px] border border-[#E4E2DC] bg-white px-3.5 pt-3 transition-colors duration-150 hover:border-[#D5D2CB]">
+    <div className="flex min-w-0 flex-col rounded-[4px] border border-white/10 bg-[#111317] px-3.5 pt-3 transition-colors duration-150 hover:border-white/20">
       {/* top row — category + stamps */}
       <div className="flex min-w-0 items-center gap-2">
         <span
@@ -98,7 +99,7 @@ export function BoardTile({
         </span>
         <span className="ml-auto flex shrink-0 items-center gap-1.5">
           {task.tier === "high_value" ? (
-            <span className="rounded-[2px] border border-[#1B2740] px-1.5 py-[2px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#1B2740]">
+            <span className="rounded-[2px] border border-[#1B2740] bg-[#1B2740]/60 px-1.5 py-[2px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#C9CDD3]">
               High value
             </span>
           ) : null}
@@ -113,21 +114,21 @@ export function BoardTile({
       </div>
 
       {/* title — links to the pre-claim detail page */}
-      <Heading className="mt-1.5 min-h-[2.56em] text-[15.5px] font-semibold leading-[1.28] tracking-[-0.008em] text-[#14161A]">
+      <Heading className="mt-1.5 min-h-[2.56em] text-[15.5px] font-semibold leading-[1.28] tracking-[-0.008em] text-[#F7F6F3]">
         <Link
           href={`/va/pool/${task.id}`}
-          className="transition-colors duration-150 hover:text-[#1B2740] hover:underline hover:decoration-[#14161A]/30 hover:underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2"
+          className="transition-colors duration-150 hover:text-[#C9CDD3] hover:underline hover:decoration-white/30 hover:underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white"
         >
           {task.title}
         </Link>
       </Heading>
 
       {/* meta — the separator is drawn, not typed (a faint middot is sub-AA text) */}
-      <p className="mb-2.5 mt-1.5 flex items-center gap-2 font-mono text-[11.5px] text-[#5B6069]">
+      <p className="mb-2.5 mt-1.5 flex items-center gap-2 font-mono text-[11.5px] text-[#8A9099]">
         {task.quantity ? (
           <>
             <span className="tabular-nums">{task.quantity}</span>
-            <span aria-hidden className="h-[3px] w-[3px] rounded-full bg-[#D5D2CB]" />
+            <span aria-hidden className="h-[3px] w-[3px] rounded-full bg-white/20" />
           </>
         ) : null}
         <span className="tabular-nums">
@@ -135,32 +136,34 @@ export function BoardTile({
         </span>
         {estimatedHours ? (
           <>
-            <span aria-hidden className="h-[3px] w-[3px] rounded-full bg-[#D5D2CB]" />
+            <span aria-hidden className="h-[3px] w-[3px] rounded-full bg-white/20" />
             <span className="tabular-nums">~{estimatedHours.toFixed(1)} h</span>
           </>
         ) : null}
       </p>
 
       {/* foot — payout · details · claim */}
-      <div className="mt-auto flex items-center gap-2.5 border-t border-[#E4E2DC] py-2">
+      <div className="mt-auto flex items-center gap-2.5 border-t border-white/10 py-2">
         <span className="min-w-0">
-          <span className="block font-mono text-[19px] font-bold leading-[1.15] tracking-[-0.02em] tabular-nums text-[#166049]">
+          <span
+            className={`block text-[19px] font-bold leading-[1.15] tracking-[-0.02em] ${moneyPayoutNight}`}
+          >
             {task.vaPayoutCents != null ? formatCents(task.vaPayoutCents, task.currency) : "—"}
           </span>
           {perUnitCents != null ? (
-            <span className="block font-mono text-[11px] tabular-nums text-[#5B6069]">
+            <span className="block font-mono text-[11px] tabular-nums text-[#8A9099]">
               {formatCents(perUnitCents, task.currency)} each
             </span>
           ) : null}
           {effectiveHourlyCents != null ? (
-            <span className="block font-mono text-[11px] tabular-nums text-[#5B6069]">
+            <span className="block font-mono text-[11px] tabular-nums text-[#8A9099]">
               ~{formatCents(effectiveHourlyCents, task.currency)}/h estimated
             </span>
           ) : null}
         </span>
         <Link
           href={`/va/pool/${task.id}`}
-          className="ml-auto inline-flex min-h-11 shrink-0 items-center px-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors duration-150 hover:decoration-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2"
+          className="ml-auto inline-flex min-h-11 shrink-0 items-center px-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.08em] text-[#F7F6F3] underline decoration-white/30 underline-offset-2 transition-colors duration-150 hover:decoration-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white"
           aria-label={`Details of “${task.title}”`}
         >
           Details

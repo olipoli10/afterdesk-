@@ -48,10 +48,10 @@ function viewHref(v: View): string {
 }
 
 function chip(active: boolean): string {
-  return `inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-[3px] border px-3.5 font-mono text-[12.5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3] ${
+  return `inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-[3px] border px-3.5 font-mono text-[12.5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D] ${
     active
-      ? "border-[#14161A] bg-[#14161A] text-white"
-      : "border-[#D5D2CB] text-[#14161A] hover:border-[#14161A]"
+      ? "border-[#F7F6F3] bg-[#F7F6F3] text-[#14161A]"
+      : "border-white/15 text-[#F7F6F3] hover:border-white/40"
   }`;
 }
 
@@ -167,6 +167,7 @@ export default async function VaPoolPage({
           <EmptyState
             title="The pool is empty"
             body="New work is posted the moment a client approves a fixed price. Nothing is held back — when it's empty, it's empty."
+            tone="night"
           />
         </div>
       ) : (
@@ -180,7 +181,7 @@ export default async function VaPoolPage({
               <Link href={viewHref("due24")} className={chip(view === "due24")}>
                 Due ≤ 24 h{" "}
                 <span
-                  className={`font-bold tabular-nums ${view === "due24" ? "text-[#FF9A8B]" : "text-[#A82318]"}`}
+                  className={`font-bold tabular-nums ${view === "due24" ? "text-[#A82318]" : "text-[#FF9A8B]"}`}
                 >
                   {due24.length}
                 </span>
@@ -201,7 +202,7 @@ export default async function VaPoolPage({
           {cats.length >= 2 ? (
             <nav
               aria-label="Categories"
-              className="mb-6 mt-2.5 grid grid-cols-1 gap-x-6 gap-y-3 rounded-[4px] border border-[#E4E2DC] bg-white px-4 py-3 sm:grid-cols-2 lg:grid-cols-4"
+              className="mb-6 mt-2.5 grid grid-cols-1 gap-x-6 gap-y-3 rounded-[4px] border border-white/10 bg-[#111317] px-4 py-3 sm:grid-cols-2 lg:grid-cols-4"
             >
               {presentFamilies.map((f) => (
                 <div key={f.key} className="min-w-0 py-1">
@@ -222,10 +223,10 @@ export default async function VaPoolPage({
                       <Link
                         key={c.slug}
                         href={`/va/pool?cat=${c.slug}`}
-                        className="flex min-h-11 items-center gap-3 py-1 text-sm text-[#14161A] transition-colors duration-150 hover:underline hover:decoration-[#14161A]/30 hover:underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#14161A]"
+                        className="flex min-h-11 items-center gap-3 py-1 text-sm text-[#F7F6F3] transition-colors duration-150 hover:underline hover:decoration-white/30 hover:underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white"
                       >
                         <span className="min-w-0 [overflow-wrap:anywhere]">{c.name}</span>
-                        <span className="ml-auto shrink-0 font-mono text-sm tabular-nums text-[#5B6069]">
+                        <span className="ml-auto shrink-0 font-mono text-sm tabular-nums text-[#8A9099]">
                           {c.n}
                         </span>
                       </Link>
@@ -239,21 +240,21 @@ export default async function VaPoolPage({
               saw it, and a gated worker facing a high-value-only pool sees an
               empty page and concludes the app is broken. */}
           {gatedFromHighValue ? (
-            <div className="mb-6 rounded-[4px] border border-dashed border-[#14161A]/20 px-4 py-3">
-              <p className="text-sm leading-relaxed text-[#5B6069]">
-                <span className="font-medium text-[#14161A]">
+            <div className="mb-6 rounded-[4px] border border-dashed border-white/15 px-4 py-3">
+              <p className="text-sm leading-relaxed text-[#8A9099]">
+                <span className="font-medium text-[#F7F6F3]">
                   High-value work isn&apos;t in your pool yet.
                 </span>{" "}
                 It unlocks at a{" "}
-                <span className="font-mono tabular-nums text-[#14161A]">
+                <span className="font-mono tabular-nums text-[#F7F6F3]">
                   {settings.highValueThreshold.toFixed(1)}
                 </span>{" "}
                 rating across{" "}
-                <span className="font-mono tabular-nums text-[#14161A]">
+                <span className="font-mono tabular-nums text-[#F7F6F3]">
                   {settings.minRatedDeliveries}
                 </span>{" "}
                 rated deliveries. You have{" "}
-                <span className="font-mono tabular-nums text-[#14161A]">{profile.ratedCount}</span>.
+                <span className="font-mono tabular-nums text-[#F7F6F3]">{profile.ratedCount}</span>.
               </p>
             </div>
           ) : null}
@@ -262,10 +263,10 @@ export default async function VaPoolPage({
             /* ── one flat, complete list (a category, a filter, or the pay ranking) ── */
             <section>
               <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-[19px] font-semibold tracking-[-0.012em] text-[#14161A]">
+                <h2 className="text-[19px] font-semibold tracking-[-0.012em] text-[#F7F6F3]">
                   {flat.title}
                 </h2>
-                <span className="font-mono text-[12px] tabular-nums text-[#5B6069]">
+                <span className="font-mono text-[12px] tabular-nums text-[#8A9099]">
                   {flat.list.length} open
                 </span>
               </div>
@@ -273,7 +274,12 @@ export default async function VaPoolPage({
                 <EmptyState
                   title="Nothing here right now"
                   body="This view is empty at the moment. The rest of the board still has open work."
-                  action={<LinkButton href="/va/pool" variant="secondary">Show all open work</LinkButton>}
+                  action={
+                    <LinkButton href="/va/pool" variant="secondary" tone="night">
+                      Show all open work
+                    </LinkButton>
+                  }
+                  tone="night"
                 />
               ) : (
                 <>
@@ -283,7 +289,7 @@ export default async function VaPoolPage({
                     ))}
                   </div>
                   <p className="mt-5">
-                    <LinkButton href="/va/pool" variant="secondary">
+                    <LinkButton href="/va/pool" variant="secondary" tone="night">
                       Show all open work
                     </LinkButton>
                   </p>
@@ -301,10 +307,7 @@ export default async function VaPoolPage({
                   inGroup.length <= GROUP_CAP + 1 ? inGroup : inGroup.slice(0, GROUP_CAP);
                 return (
                   <section key={c.slug}>
-                    <div
-                      className="mb-2.5 flex items-center gap-2.5 rounded-[4px] px-3 py-2"
-                      style={{ backgroundColor: fam.tint }}
-                    >
+                    <div className="mb-2.5 flex items-center gap-2.5 rounded-[4px] bg-white/[0.03] px-3 py-2">
                       <span
                         aria-hidden
                         className="h-[11px] w-[11px] shrink-0 rounded-full"
@@ -321,7 +324,7 @@ export default async function VaPoolPage({
                           {c.name}
                         </Link>
                       </h2>
-                      <span className="ml-auto shrink-0 font-mono text-[12px] tabular-nums text-[#5B6069]">
+                      <span className="ml-auto shrink-0 font-mono text-[12px] tabular-nums text-[#8A9099]">
                         {c.n} open
                       </span>
                     </div>
@@ -332,9 +335,9 @@ export default async function VaPoolPage({
                       {inGroup.length > shown.length ? (
                         <Link
                           href={`/va/pool?cat=${c.slug}`}
-                          className="flex min-h-11 items-center gap-2 rounded-[4px] border border-dashed border-[#D5D2CB] px-3.5 py-3 font-mono text-[12px] text-[#5B6069] transition-colors duration-150 hover:border-current hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+                          className="flex min-h-11 items-center gap-2 rounded-[4px] border border-dashed border-white/15 px-3.5 py-3 font-mono text-[12px] text-[#8A9099] transition-colors duration-150 hover:border-current hover:text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
                         >
-                          <span className="font-bold tabular-nums text-[#14161A]">
+                          <span className="font-bold tabular-nums text-[#F7F6F3]">
                             +{inGroup.length - shown.length}
                           </span>
                           more in {c.name} →

@@ -43,7 +43,7 @@ export default async function FieldGuidePage({
       <p className="mb-4">
         <Link
           href={`/va/training/${slug}`}
-          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#8A9099] transition-colors duration-150 hover:text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
         >
           ← {category.name} course
         </Link>
@@ -61,15 +61,15 @@ export default async function FieldGuidePage({
         />
         Field guide
       </p>
-      <h1 className="mt-1.5 text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#14161A]">
+      <h1 className="mt-1.5 text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#F7F6F3]">
         {category.name}
       </h1>
-      <p className="mt-2 max-w-[58ch] text-[15px] leading-relaxed text-[#5B6069]">
+      <p className="mt-2 max-w-[58ch] text-[15px] leading-relaxed text-[#8A9099]">
         {guide.intro}
       </p>
 
       {/* the standard — the real dispute criteria, verbatim from the db */}
-      <div className="mt-5 rounded-[4px] px-4 py-3.5" style={{ backgroundColor: fam.tint }}>
+      <div className="mt-5 rounded-[4px] border border-white/10 bg-[#111317] px-4 py-3.5">
         <p
           className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em]"
           style={{ color: fam.hue }}
@@ -77,20 +77,20 @@ export default async function FieldGuidePage({
           What counts as delivered
         </p>
         {category.disputeCriteria ? (
-          <p className="mt-1.5 text-sm leading-relaxed text-[#14161A]">
+          <p className="mt-1.5 text-sm leading-relaxed text-[#F7F6F3]">
             {category.disputeCriteria}
           </p>
         ) : null}
-        <p className="mt-2 text-sm leading-relaxed text-[#14161A]/80">{guide.delivered}</p>
+        <p className="mt-2 text-sm leading-relaxed text-[#F7F6F3]/80">{guide.delivered}</p>
       </div>
 
       {/* method */}
       <section className="mt-7">
-        <SectionLabel as="h2" className="mb-3">
+        <SectionLabel as="h2" className="mb-3" tone="night">
           The method
         </SectionLabel>
-        <Card>
-          <ol className="divide-y divide-[#14161A]/[0.06]">
+        <Card tone="night">
+          <ol className="divide-y divide-white/[0.06]">
             {guide.method.map((m, i) => (
               <li key={i} className="flex gap-3.5 px-4 py-3.5">
                 <span
@@ -101,8 +101,8 @@ export default async function FieldGuidePage({
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-[#14161A]">{m.step}</span>
-                  <span className="mt-0.5 block text-sm leading-relaxed text-[#5B6069]">
+                  <span className="block text-sm font-semibold text-[#F7F6F3]">{m.step}</span>
+                  <span className="mt-0.5 block text-sm leading-relaxed text-[#8A9099]">
                     {m.detail}
                   </span>
                 </span>
@@ -114,35 +114,35 @@ export default async function FieldGuidePage({
 
       {/* tools */}
       <section className="mt-7">
-        <SectionLabel as="h2" className="mb-3">
+        <SectionLabel as="h2" className="mb-3" tone="night">
           The tools
         </SectionLabel>
-        <Card>
-          <dl className="divide-y divide-[#14161A]/[0.06]">
+        <Card tone="night">
+          <dl className="divide-y divide-white/[0.06]">
             {guide.tools.map((t, i) => (
               <div key={i} className="px-4 py-3">
-                <dt className="text-sm font-semibold text-[#14161A]">{t.name}</dt>
-                <dd className="mt-0.5 text-sm leading-relaxed text-[#5B6069]">{t.use}</dd>
+                <dt className="text-sm font-semibold text-[#F7F6F3]">{t.name}</dt>
+                <dd className="mt-0.5 text-sm leading-relaxed text-[#8A9099]">{t.use}</dd>
               </div>
             ))}
           </dl>
         </Card>
-        <p className="mt-2 text-xs leading-relaxed text-[#5B6069]">
+        <p className="mt-2 text-xs leading-relaxed text-[#8A9099]">
           Free tools only — no task here assumes paid software.
         </p>
       </section>
 
       {/* mistakes */}
       <section className="mt-7">
-        <SectionLabel as="h2" className="mb-3">
+        <SectionLabel as="h2" className="mb-3" tone="night">
           What fails review
         </SectionLabel>
-        <Card>
-          <dl className="divide-y divide-[#14161A]/[0.06]">
+        <Card tone="night">
+          <dl className="divide-y divide-white/[0.06]">
             {guide.mistakes.map((m, i) => (
               <div key={i} className="px-4 py-3">
-                <dt className="text-sm font-semibold text-[#14161A]">{m.mistake}</dt>
-                <dd className="mt-0.5 text-sm leading-relaxed text-[#5B6069]">{m.why}</dd>
+                <dt className="text-sm font-semibold text-[#F7F6F3]">{m.mistake}</dt>
+                <dd className="mt-0.5 text-sm leading-relaxed text-[#8A9099]">{m.why}</dd>
               </div>
             ))}
           </dl>
@@ -151,23 +151,23 @@ export default async function FieldGuidePage({
 
       {/* worked example */}
       <section className="mt-7">
-        <SectionLabel as="h2" className="mb-3">
+        <SectionLabel as="h2" className="mb-3" tone="night">
           A worked example
         </SectionLabel>
-        <Card>
+        <Card tone="night">
           <CardBody>
-            <p className="text-sm leading-[1.7] text-[#14161A]">{guide.example}</p>
+            <p className="text-sm leading-[1.7] text-[#F7F6F3]">{guide.example}</p>
           </CardBody>
         </Card>
       </section>
 
       {/* checklist */}
       <section className="mt-7">
-        <SectionLabel as="h2" className="mb-3">
+        <SectionLabel as="h2" className="mb-3" tone="night">
           Before you upload
         </SectionLabel>
-        <Card>
-          <ul className="divide-y divide-[#14161A]/[0.06]">
+        <Card tone="night">
+          <ul className="divide-y divide-white/[0.06]">
             {guide.checklist.map((c, i) => (
               <li key={i} className="flex gap-3 px-4 py-2.5">
                 <span
@@ -175,16 +175,18 @@ export default async function FieldGuidePage({
                   className="mt-[7px] h-[7px] w-[7px] shrink-0 rounded-[2px] border"
                   style={{ borderColor: fam.hue }}
                 />
-                <span className="text-sm leading-relaxed text-[#14161A]">{c}</span>
+                <span className="text-sm leading-relaxed text-[#F7F6F3]">{c}</span>
               </li>
             ))}
           </ul>
         </Card>
       </section>
 
-      <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-[#14161A]/[0.08] pt-5">
-        <LinkButton href={`/va/pool?cat=${slug}`}>See open {category.name} tasks</LinkButton>
-        <LinkButton href={`/va/training/${slug}`} variant="secondary">
+      <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-white/10 pt-5">
+        <LinkButton href={`/va/pool?cat=${slug}`} tone="night">
+          See open {category.name} tasks
+        </LinkButton>
+        <LinkButton href={`/va/training/${slug}`} variant="secondary" tone="night">
           Back to the course
         </LinkButton>
       </div>

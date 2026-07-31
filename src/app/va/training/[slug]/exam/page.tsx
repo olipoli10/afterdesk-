@@ -74,7 +74,7 @@ export default async function ExamPage({
       <p className="mb-4">
         <Link
           href={`/va/training/${slug}`}
-          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#8A9099] transition-colors duration-150 hover:text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
         >
           ← {course.title}
         </Link>
@@ -86,10 +86,10 @@ export default async function ExamPage({
       >
         Exam
       </p>
-      <h1 className="mt-1.5 text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-[#14161A]">
+      <h1 className="mt-1.5 text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-[#F7F6F3]">
         {course.title}
       </h1>
-      <p className="mt-2 max-w-[58ch] text-sm leading-relaxed text-[#5B6069]">
+      <p className="mt-2 max-w-[58ch] text-sm leading-relaxed text-[#8A9099]">
         {questions.length} questions, pass at {EXAM_PASS_SCORE}/{questions.length}. Answers
         are graded on our side — take your time, the lessons stay open in another tab, and
         reading them again mid-exam is studying, not cheating.
@@ -98,10 +98,11 @@ export default async function ExamPage({
       <div className="mt-6">
         {attemptsLeft === 0 ? (
           <EmptyState
+            tone="night"
             title="Three attempts in 24 hours"
             body="The exam reopens tomorrow. That pause is deliberate — a certificate you brute-force isn't one. The lessons are the fastest way through."
             action={
-              <LinkButton href={`/va/training/${slug}`} variant="secondary">
+              <LinkButton href={`/va/training/${slug}`} variant="secondary" tone="night">
                 Review the lessons
               </LinkButton>
             }

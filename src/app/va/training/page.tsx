@@ -36,7 +36,7 @@ function CourseCard({
   return (
     <Link
       href={`/va/training/${course.slug}`}
-      className="group flex min-w-0 flex-col rounded-[4px] border border-[#E4E2DC] bg-white px-4 py-3.5 transition-colors duration-150 hover:border-[#D5D2CB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+      className="group flex min-w-0 flex-col rounded-[4px] border border-white/10 bg-[#111317] px-4 py-3.5 transition-colors duration-150 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
     >
       <span className="flex items-center gap-1.5">
         <span
@@ -44,21 +44,21 @@ function CourseCard({
           className="h-[7px] w-[7px] shrink-0 rounded-full"
           style={{ backgroundColor: look.hue }}
         />
-        <span className="min-w-0 truncate text-[15.5px] font-semibold tracking-[-0.008em] text-[#14161A] group-hover:underline group-hover:decoration-[#14161A]/30 group-hover:underline-offset-2">
+        <span className="min-w-0 truncate text-[15.5px] font-semibold tracking-[-0.008em] text-[#F7F6F3] group-hover:underline group-hover:decoration-white/30 group-hover:underline-offset-2">
           {course.title}
         </span>
         {certified ? (
-          <span className="ml-auto shrink-0 rounded-[2px] border border-[#1B2740] px-1.5 py-[2px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#1B2740]">
+          <span className="ml-auto shrink-0 rounded-[2px] border border-[#1E7F5C]/50 bg-[#1E7F5C]/20 px-1.5 py-[2px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#3DDCA0]">
             Certified
           </span>
         ) : bestScore !== null ? (
-          <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[#5B6069]">
+          <span className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-[#8A9099]">
             best {bestScore}/12
           </span>
         ) : null}
       </span>
-      <span className="mt-1.5 text-sm leading-relaxed text-[#5B6069]">{course.tagline}</span>
-      <span className="mt-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-[#5B6069]">
+      <span className="mt-1.5 text-sm leading-relaxed text-[#8A9099]">{course.tagline}</span>
+      <span className="mt-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-[#8A9099]">
         {course.lessons.length} lessons · ~{courseMinutes(course)} min · exam + certificate
       </span>
     </Link>
@@ -102,6 +102,7 @@ export default async function AcademyHubPage() {
       <PageTitle
         title="Academy"
         sub="Free courses, real exams, a certificate for each one you pass. Everything here is the same standard your deliveries are judged against — finish a course and your first task in that category should pass review on the first try."
+        tone="night"
       />
 
       <div className="mb-6 flex flex-wrap gap-x-6 gap-y-2 rounded-[4px] bg-[#1B2740] px-4 py-3.5">
@@ -139,8 +140,8 @@ export default async function AcademyHubPage() {
                   />
                   {i === 0 ? `Start here — ${look.label}` : look.label}
                 </p>
-                <p className="text-[12px] text-[#5B6069]">{blurb}</p>
-                <span className="ml-auto font-mono text-[11px] tabular-nums text-[#5B6069]">
+                <p className="text-[12px] text-[#8A9099]">{blurb}</p>
+                <span className="ml-auto font-mono text-[11px] tabular-nums text-[#8A9099]">
                   {inTrack.length}
                 </span>
               </div>
@@ -191,12 +192,12 @@ export default async function AcademyHubPage() {
         })}
       </div>
 
-      <p className="mt-8 max-w-[62ch] text-xs leading-relaxed text-[#5B6069]">
+      <p className="mt-8 max-w-[62ch] text-xs leading-relaxed text-[#8A9099]">
         Every course is free and always will be. Certificates are earned, never bought —
         which is exactly why they mean something.{" "}
         <Link
           href="/va/pool"
-          className="font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors duration-150 hover:decoration-[#14161A]"
+          className="font-medium text-[#F7F6F3] underline decoration-white/30 underline-offset-2 transition-colors duration-150 hover:decoration-white"
         >
           The work is here when you&apos;re ready.
         </Link>

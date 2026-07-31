@@ -16,12 +16,11 @@ import {
   PageTitle,
   SectionLabel,
   formatBytes,
-  linkInline,
-  moneyPayout,
+  moneyPayoutNight,
 } from "@/components/ui";
 import { vaProfileFor } from "../../layout";
 
-const metaLabel = "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#5B6069]";
+const metaLabel = "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#8A9099]";
 
 export default async function VaTaskPage({
   params,
@@ -57,9 +56,10 @@ export default async function VaTaskPage({
     <div className="mx-auto max-w-2xl space-y-4">
       <PageTitle
         title={task.title}
+        tone="night"
         action={
           <span className="text-right">
-            <span className={`block text-lg font-medium ${moneyPayout}`}>
+            <span className={`block text-lg font-medium ${moneyPayoutNight}`}>
               {task.vaPayoutCents != null ? formatCents(task.vaPayoutCents, task.currency) : "—"}
             </span>
             <span className={metaLabel}>Your payout</span>
@@ -68,10 +68,10 @@ export default async function VaTaskPage({
       />
 
       {awaitingReview ? (
-        <Card>
+        <Card tone="night">
           <CardBody>
-            <p className="text-sm font-medium text-[#14161A]">Sent for review.</p>
-            <p className="mt-1 text-sm leading-relaxed text-[#5B6069]">
+            <p className="text-sm font-medium text-[#F7F6F3]">Sent for review.</p>
+            <p className="mt-1 text-sm leading-relaxed text-[#8A9099]">
               The operator reviews every delivery before it reaches the client. You&apos;ll see
               the outcome here.
             </p>
@@ -80,15 +80,15 @@ export default async function VaTaskPage({
       ) : null}
 
       {task.status === "qc_rejected" ? (
-        <Card>
+        <Card tone="night">
           <CardBody>
-            <p className="text-sm font-medium text-[#955710]">Changes needed</p>
+            <p className="text-sm font-medium text-[#E8A854]">Changes needed</p>
             {lastReview?.qcStatus === "rejected" && lastReview.qcComment ? (
               <>
-                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#14161A]">
+                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#F7F6F3]">
                   {lastReview.qcComment}
                 </p>
-                <p className="mt-2 text-xs leading-relaxed text-[#5B6069]">
+                <p className="mt-2 text-xs leading-relaxed text-[#8A9099]">
                   Round{" "}
                   <span className="font-mono tabular-nums">{lastReview.attemptNo}</span> of{" "}
                   <span className="font-mono tabular-nums">{settings.maxQcRounds}</span>. After{" "}
@@ -97,7 +97,7 @@ export default async function VaTaskPage({
                 </p>
               </>
             ) : (
-              <p className="mt-1 text-sm leading-relaxed text-[#5B6069]">
+              <p className="mt-1 text-sm leading-relaxed text-[#8A9099]">
                 The operator is writing up what to change — it will appear here.
               </p>
             )}
@@ -106,21 +106,21 @@ export default async function VaTaskPage({
       ) : null}
 
       {task.status === "revision_requested" ? (
-        <Card>
+        <Card tone="night">
           <CardBody>
-            <p className="text-sm font-medium text-[#955710]">Revision requested</p>
-            <p className="mt-1 text-sm leading-relaxed text-[#5B6069]">
+            <p className="text-sm font-medium text-[#E8A854]">Revision requested</p>
+            <p className="mt-1 text-sm leading-relaxed text-[#8A9099]">
               The client asked for changes after delivery.
             </p>
             {task.revisionInstructions ? (
               <>
-                <SectionLabel className="mt-3">Operator&apos;s note</SectionLabel>
-                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#14161A]">
+                <SectionLabel className="mt-3" tone="night">Operator&apos;s note</SectionLabel>
+                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#F7F6F3]">
                   {task.revisionInstructions}
                 </p>
               </>
             ) : (
-              <p className="mt-2 text-sm leading-relaxed text-[#5B6069]">
+              <p className="mt-2 text-sm leading-relaxed text-[#8A9099]">
                 The operator is writing up what to change — it will appear here.
               </p>
             )}
@@ -128,35 +128,35 @@ export default async function VaTaskPage({
         </Card>
       ) : null}
 
-      <Card>
+      <Card tone="night">
         <CardBody>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             {task.category ? (
-              <Badge className="border-[#14161A]/15 bg-transparent text-[#5B6069]">
+              <Badge className="border-white/15 bg-transparent text-[#8A9099]">
                 {task.category.name}
               </Badge>
             ) : null}
             {task.tier === "high_value" ? (
-              <Badge className="border-[#1B2740]/30 bg-[#1B2740]/[0.06] text-[#1B2740]">
+              <Badge className="border-[#1B2740] bg-[#1B2740]/60 text-[#C9CDD3]">
                 High-value
               </Badge>
             ) : null}
           </div>
-          <SectionLabel>What to do</SectionLabel>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#14161A]">
+          <SectionLabel tone="night">What to do</SectionLabel>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#F7F6F3]">
             {task.description}
           </p>
-          <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3 border-t border-[#14161A]/[0.08] pt-3 text-sm">
+          <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/[0.08] pt-3 text-sm">
             <div>
               <dt className={metaLabel}>Your deadline</dt>
-              <dd className="mt-0.5 text-[#14161A]">
+              <dd className="mt-0.5 text-[#F7F6F3]">
                 {task.vaDeadlineUtc ? <LocalTime iso={task.vaDeadlineUtc} /> : "No fixed deadline"}
               </dd>
             </div>
             {task.quantity ? (
               <div>
                 <dt className={metaLabel}>Volume</dt>
-                <dd className="mt-0.5 font-mono tabular-nums text-[#14161A]">{task.quantity}</dd>
+                <dd className="mt-0.5 font-mono tabular-nums text-[#F7F6F3]">{task.quantity}</dd>
               </div>
             ) : null}
           </dl>
@@ -164,10 +164,10 @@ export default async function VaTaskPage({
       </Card>
 
       {task.category?.disputeCriteria ? (
-        <Card>
+        <Card tone="night">
           <CardBody>
-            <SectionLabel>What counts as done</SectionLabel>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#5B6069]">
+            <SectionLabel tone="night">What counts as done</SectionLabel>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#8A9099]">
               {task.category.disputeCriteria}
             </p>
           </CardBody>
@@ -175,26 +175,26 @@ export default async function VaTaskPage({
       ) : null}
 
       {task.files.length > 0 ? (
-        <Card>
+        <Card tone="night">
           <CardBody>
-            <SectionLabel>Files to work from</SectionLabel>
-            <ul className="mt-2 divide-y divide-[#14161A]/[0.06] text-sm">
+            <SectionLabel tone="night">Files to work from</SectionLabel>
+            <ul className="mt-2 divide-y divide-white/[0.06] text-sm">
               {task.files.map((f) => (
                 <li key={f.id} className="flex items-center justify-between py-2.5">
                   {/* RULE 1: never the client's own filename — it can name them. */}
                   <a
                     href={`/api/files/${f.id}/download`}
-                    className={`truncate font-mono text-[13px] ${linkInline}`}
+                    className="truncate font-mono text-[13px] font-medium text-[#F7F6F3] underline decoration-white/30 underline-offset-2 transition-colors duration-150 hover:decoration-white"
                   >
                     {inputFileLabel(f.fileName, task.id, f.id)}
                   </a>
-                  <span className="shrink-0 pl-2 font-mono text-xs tabular-nums text-[#5B6069]">
+                  <span className="shrink-0 pl-2 font-mono text-xs tabular-nums text-[#8A9099]">
                     {formatBytes(f.sizeBytes)}
                   </span>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-xs leading-relaxed text-[#5B6069]">
+            <p className="mt-3 text-xs leading-relaxed text-[#8A9099]">
               Your access to these ends when the task leaves your hands.
             </p>
           </CardBody>
@@ -214,7 +214,7 @@ export default async function VaTaskPage({
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <Link
           href="/va"
-          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
+          className="-mx-2 inline-flex min-h-11 items-center px-2 text-sm font-medium text-[#8A9099] transition-colors duration-150 hover:text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
         >
           ← My work
         </Link>
