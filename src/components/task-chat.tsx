@@ -189,13 +189,13 @@ export function TaskChat({
       {error ? (
         <div
           role="alert"
-          className="rounded-md border border-[#D98324]/50 bg-[#D98324]/10 px-4 py-3"
+          className="rounded-md border border-[#A23B2E]/40 bg-[#A23B2E]/10 px-4 py-3"
         >
-          <p className="text-sm text-[#955710]">{error}</p>
+          <p className="text-sm text-[#8C2F23]">{error}</p>
           {fellBack ? (
             <Link
               href="/client/tasks/new?mode=form"
-              className="mt-1.5 inline-block text-sm font-medium text-[#955710] underline decoration-[#955710]/40 underline-offset-2 transition-colors duration-150 hover:decoration-[#955710]"
+              className="mt-1.5 inline-block text-sm font-medium text-[#8C2F23] underline decoration-[#8C2F23]/40 underline-offset-2 transition-colors duration-150 hover:decoration-[#8C2F23]"
             >
               Write the task out myself
             </Link>

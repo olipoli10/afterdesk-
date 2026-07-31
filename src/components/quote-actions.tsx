@@ -75,7 +75,7 @@ export function QuoteActions({ taskId }: { taskId: string }) {
           />
         </Field>
         {error ? (
-          <p role="alert" className="text-sm text-[#955710]">
+          <p role="alert" className="text-sm text-[#8C2F23]">
             {error}
           </p>
         ) : null}
@@ -102,7 +102,7 @@ export function QuoteActions({ taskId }: { taskId: string }) {
   return (
     <div className="space-y-3">
       {error ? (
-        <p role="alert" className="text-sm text-[#955710]">
+        <p role="alert" className="text-sm text-[#8C2F23]">
           {error}
         </p>
       ) : null}

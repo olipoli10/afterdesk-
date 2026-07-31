@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { FileScanStatus } from "@prisma/client";
 import { requireRole } from "@/lib/authz";
 import { taskForAdmin, taskEventsForAdmin } from "@/lib/queries/tasks";
 import { ADMIN_STATUS_LABELS, statusBadgeClass, TERMINAL_STATUSES } from "@/lib/status";
@@ -31,6 +32,24 @@ import {
 
 /** States where the task sits in a worker's hands and can be re-pooled. */
 const REASSIGNABLE = ["claimed", "submitted_for_qc", "qc_rejected", "revision_requested"];
+
+/** File-scan badge tone — green is reserved for a genuinely clean scan; a
+ *  rejected or errored recheck must never read as passed. */
+function scanStatusClass(status: FileScanStatus): string {
+  switch (status) {
+    case "clean":
+      return "bg-[#1E7F5C]/10 text-[#166049]";
+    case "pending":
+      return "bg-[#14161A]/[0.04] text-[#5B6069]";
+    case "rejected":
+    case "error":
+      return "bg-[#A23B2E]/10 text-[#8C2F23]";
+    default: {
+      const unreachable: never = status;
+      throw new Error(`Unhandled file scan status: ${unreachable}`);
+    }
+  }
+}
 
 export default async function AdminTaskDetail({
   params,
@@ -149,7 +168,7 @@ export default async function AdminTaskDetail({
                     <span className="shrink-0 rounded-[3px] bg-[#14161A]/[0.04] px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-[#5B6069]">
                       {f.kind}
                     </span>
-                    <span className="shrink-0 rounded-[3px] bg-[#1E7F5C]/10 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-[#166049]">
+                    <span className={`shrink-0 rounded-[3px] px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase ${scanStatusClass(f.scanStatus)}`}>
                       {f.scanStatus}
                     </span>
                     <a href={`/api/files/${f.id}/download`} className={`truncate ${linkInline}`}>

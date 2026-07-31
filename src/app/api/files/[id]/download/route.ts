@@ -24,7 +24,16 @@ export async function GET(
   const { id } = await params;
   const file = await prisma.file.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      fileName: true,
+      kind: true,
+      uploaderId: true,
+      storageKey: true,
+      mime: true,
+      sizeBytes: true,
+      scanStatus: true,
+      purgedAt: true,
       task: { select: { id: true, clientId: true, claimedById: true, status: true } },
       submission: { select: { qcStatus: true } },
     },

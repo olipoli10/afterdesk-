@@ -8408,7 +8408,7 @@ export const COURSES: Record<string, Course> = {
     "title": "Data cleanup",
     "track": "category",
     "tagline": "The judgement behind clean data: what to merge, what to drop, what to flag.",
-    "summary": "Data cleanup tasks are judged on one standard: every source row accounted for and the delivered file matching the requested shape. This course teaches the decisions above the mechanics — when differing rows are the same person, which record survives a merge, when to state an assumption instead of guessing, and how two overlapping exports become one defensible file. You finish able to deliver work an operator can verify in minutes.",
+    "summary": "Data cleanup tasks are judged on one standard: every source row accounted for and the delivered file matching the requested shape. This course teaches the decisions above the mechanics: when differing rows are the same person, which record survives a merge, when to state an assumption instead of guessing, and how two overlapping exports become one defensible file. You finish able to deliver work an operator can verify in minutes.",
     "outcomes": [
       "You can decide whether two differing records are the same person, and defend the call.",
       "You can account for every source row as kept, merged, or dropped with a reason.",
@@ -8428,7 +8428,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "The standard you are judged against",
-            "body": "When a client disputes a data cleanup delivery, the operator judges it against one written standard: every row from the source is accounted for — kept, merged, or dropped with a stated reason — and the delivered file matches the requested format and column order. Minor formatting preferences are not grounds for a dispute. Read that twice. It tells you exactly where the risk sits. Row accounting and requested format are hard requirements. Whether you used title case or a slightly different date style, when the brief did not specify, is a preference, and preferences cannot sink your delivery. Your protection is built in the same order: account for everything, match what was requested, and state the choices the brief left open."
+            "body": "When a client disputes a data cleanup delivery, the operator judges it against one written standard: every row from the source is accounted for as kept, merged, or dropped with a stated reason, and the delivered file matches the requested format and column order. Minor formatting preferences are not grounds for a dispute. Read that twice. It tells you exactly where the risk sits. Row accounting and requested format are hard requirements. Whether you used title case or a slightly different date style, when the brief did not specify, is a preference, and preferences cannot sink your delivery. Your protection is built in the same order: account for everything, match what was requested, and state the choices the brief left open."
           },
           {
             "heading": "Where rows silently die",
@@ -8488,7 +8488,7 @@ export const COURSES: Record<string, Course> = {
           }
         ],
         "keyPoints": [
-          "Pick one survivor rule — source authority, recency, completeness — and apply it to every merge.",
+          "Pick one survivor rule, such as source authority, recency, or completeness, and apply it to every merge.",
           "Fill survivor blanks from the dropped row; merging must never lose data.",
           "Conflicting non-blank values with no better evidence go in a conflict column, not the trash.",
           "A defensible rule is one a stranger can reapply and reach your result."
@@ -8614,7 +8614,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "The evidence clearly favors the actively maintained system. Declare it the source of truth, apply the rule uniformly, and document it so the operator can verify."
         },
         {
-          "prompt": "Same reconciliation. For 30 customers, the two exports show different email addresses, and nothing — no dates, no completeness difference, no system evidence — favors either file. What do you do with those 30?",
+          "prompt": "Same reconciliation. For 30 customers, the two exports show different email addresses, and nothing favors either file: no dates, no completeness difference, no system evidence. What do you do with those 30?",
           "options": [
             "Pick the email from the file with more total rows and move on.",
             "Drop those 30 customers; unresolvable records should not reach the client.",
@@ -8748,7 +8748,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "The sentence you are judged against",
-            "body": "Every delivery in this category is judged against one sentence. Keyed or transcribed content matches the source at normal accuracy for the stated language and source quality, and follows the requested template or timestamp scheme. Illegible or inaudible source material must be flagged, never guessed — a guessed value is a dispute ground, a flagged one is not. Read it twice. It contains three tests: does the content match the source, does the layout match the template, and did you flag what you could not read or hear. Meet all three and a delivery is defensible even when the client is difficult. Miss any one and the operator has grounds to reject."
+            "body": "Every delivery in this category is judged against one sentence. Keyed or transcribed content matches the source at normal accuracy for the stated language and source quality, and follows the requested template or timestamp scheme. Illegible or inaudible source material must be flagged, never guessed: a guessed value is a dispute ground, a flagged one is not. Read it twice. It contains three tests: does the content match the source, does the layout match the template, and did you flag what you could not read or hear. Meet all three and a delivery is defensible even when the client is difficult. Miss any one and the operator has grounds to reject."
           },
           {
             "heading": "Accuracy scales with source quality",
@@ -10220,7 +10220,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "The line you never cross",
-            "body": "The standard in this category is exact: the rebuilt or reformatted document preserves all source content exactly, in the requested template, with consistent formatting throughout. Content changes were not requested and are a dispute ground in either direction. That sentence is what we judge every delivery in this category against, so read the last part twice. Either direction means changing a word is a dispute ground, and so is dropping one. You were hired to change how the document looks. The words, the numbers, the order of ideas — those belong to the client, and they leave your hands exactly as they arrived."
+            "body": "The standard in this category is exact: the rebuilt or reformatted document preserves all source content exactly, in the requested template, with consistent formatting throughout. Content changes were not requested and are a dispute ground in either direction. That sentence is what we judge every delivery in this category against, so read the last part twice. Either direction means changing a word is a dispute ground, and so is dropping one. You were hired to change how the document looks. The words, the numbers, and the order of ideas belong to the client, and they leave your hands exactly as they arrived."
           },
           {
             "heading": "Why you do not fix typos",
@@ -10228,7 +10228,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Flag it, do not fix it",
-            "body": "Preserving an error does not mean hiding it. When you spot something that looks wrong — a typo, a total that does not add up, a duplicated paragraph — reproduce it exactly, then list it in the note you send with your delivery. Give the page, quote the exact text, and say what looks off. Do not editorialize and do not fix. The operator decides what reaches the client. A delivery with three flagged oddities reads as careful work. A delivery with three silent corrections is a content change, and a dispute ground, no matter how right you were."
+            "body": "Preserving an error does not mean hiding it. When you spot something that looks wrong, such as a typo, a total that does not add up, or a duplicated paragraph, reproduce it exactly, then list it in the note you send with your delivery. Give the page, quote the exact text, and say what looks off. Do not editorialize and do not fix. The operator decides what reaches the client. A delivery with three flagged oddities reads as careful work. A delivery with three silent corrections is a content change, and a dispute ground, no matter how right you were."
           }
         ],
         "keyPoints": [
@@ -10248,11 +10248,11 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Why hand-bolding fails at ninety pages",
-            "body": "Hand formatting means selecting a heading and making it bold, size sixteen, extra space above — by hand, two hundred times. By page 60 one heading is size fifteen, another lost its spacing, and a third is bold body text pretending to be a heading. Styles solve this structurally. Apply the heading style to every chapter title and they are identical by definition. If the template changes a heading font, one edit updates every heading at once. Styles also carry meaning: a table of contents is generated from heading styles. Hand-bolded headings are invisible to it, and your contents page comes out empty."
+            "body": "Hand formatting means selecting a heading and making it bold, size sixteen, extra space above. By hand, two hundred times. By page 60 one heading is size fifteen, another lost its spacing, and a third is bold body text pretending to be a heading. Styles solve this structurally. Apply the heading style to every chapter title and they are identical by definition. If the template changes a heading font, one edit updates every heading at once. Styles also carry meaning: a table of contents is generated from heading styles. Hand-bolded headings are invisible to it, and your contents page comes out empty."
           },
           {
             "heading": "The discipline in practice",
-            "body": "Working with styles is a habit, not a trick. Never format a heading directly; apply the template's heading style. If text refuses to look right, do not fight it with manual overrides — find which style is applied and fix the mismatch at the source. Keep manual formatting for the rare true one-off, and even then, doubt yourself first. On a 90-page rebuild, the worker who spends the first hour setting up and applying styles finishes faster and cleaner than the worker who starts formatting page one immediately. The setup is the work."
+            "body": "Working with styles is a habit, not a trick. Never format a heading directly; apply the template's heading style. If text refuses to look right, do not fight it with manual overrides. Find which style is applied and fix the mismatch at the source. Keep manual formatting for the rare true one-off, and even then, doubt yourself first. On a 90-page rebuild, the worker who spends the first hour setting up and applying styles finishes faster and cleaner than the worker who starts formatting page one immediately. The setup is the work."
           }
         ],
         "keyPoints": [
@@ -10268,7 +10268,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "The structure map",
-            "body": "Before touching page one, read the whole source and write down its structure: how many heading levels, where tables sit, what repeats, what is unusual. A simple spreadsheet works — one row per element type, one column for the template style it maps to. This takes twenty minutes on a 90-page proposal and saves hours. Every decision you make while mapping is a decision you will not have to make two hundred times while converting. Conversion done without a map is a chain of small improvised choices, and improvised choices are never consistent."
+            "body": "Before touching page one, read the whole source and write down its structure: how many heading levels, where tables sit, what repeats, what is unusual. A simple spreadsheet works: one row per element type, one column for the template style it maps to. This takes twenty minutes on a 90-page proposal and saves hours. Every decision you make while mapping is a decision you will not have to make two hundred times while converting. Conversion done without a map is a chain of small improvised choices, and improvised choices are never consistent."
           },
           {
             "heading": "Decide the hard cases once",
@@ -10300,7 +10300,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Numbering, captions, references",
-            "body": "Numbered things drift in their own way. Figure 7 follows Figure 5 because a figure was moved. Table captions switch style halfway through the document. A cross reference still says see page 42 when the content now sits on page 47. Sweep these as sequences: read only the figure numbers in order, then only the table numbers, then check every cross reference against its target. Where your tool can automate — generated numbering, reference fields — prefer automation for the same reason styles beat hand formatting: things maintained by the tool cannot drift."
+            "body": "Numbered things drift in their own way. Figure 7 follows Figure 5 because a figure was moved. Table captions switch style halfway through the document. A cross reference still says see page 42 when the content now sits on page 47. Sweep these as sequences: read only the figure numbers in order, then only the table numbers, then check every cross reference against its target. Where your tool can automate, such as generated numbering or reference fields, prefer automation for the same reason styles beat hand formatting: things maintained by the tool cannot drift."
           }
         ],
         "keyPoints": [
@@ -10344,11 +10344,11 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "The tally before upload",
-            "body": "Before uploading, run the tally: work down the structure map and confirm each item's location in the delivery. Sections in order, tables present, figures present with captions, appendices attached. Then write the delivery note. State what you verified — all sections, tables, and figures from the source are present — and list every flag: the typo on page 12, the total that does not add up, the mapping rule you chose for the third heading level. A specific note is not covering yourself; it is doing the operator's first QC pass for them, and it is why revisions come back rarely and small."
+            "body": "Before uploading, run the tally: work down the structure map and confirm each item's location in the delivery. Sections in order, tables present, figures present with captions, appendices attached. Then write the delivery note. State what you verified: all sections, tables, and figures from the source are present. List every flag: the typo on page 12, the total that does not add up, the mapping rule you chose for the third heading level. A specific note is not covering yourself; it is doing the operator's first QC pass for them, and it is why revisions come back rarely and small."
           },
           {
             "heading": "The files end with the task",
-            "body": "Client documents live inside the task and nowhere else. While working: no uploading source files to online converters, format fixers, or AI tools unless the brief explicitly says to. A proposal or price sheet is confidential business information, and seconds on someone else's server is still a leak. Work with free local tools, and if a file defeats them, flag the problem rather than route around it through the browser. After approval: delete everything — the sources, your rebuilt version, and the structure map with their section titles in it. Nothing you produced becomes a sample, a template for the next task, or a portfolio piece."
+            "body": "Client documents live inside the task and nowhere else. While working: no uploading source files to online converters, format fixers, or AI tools unless the brief explicitly says to. A proposal or price sheet is confidential business information, and seconds on someone else's server is still a leak. Work with free local tools, and if a file defeats them, flag the problem rather than route around it through the browser. After approval: delete everything, including the sources, your rebuilt version, and the structure map with their section titles in it. Nothing you produced becomes a sample, a template for the next task, or a portfolio piece."
           }
         ],
         "keyPoints": [

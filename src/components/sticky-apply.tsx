@@ -41,7 +41,7 @@ export function StickyApply({ label, href }: { label: string; href: string }) {
     >
       <Link
         href={href}
-        className="flex h-12 items-center justify-center rounded-full bg-[#14161A] text-[15px] font-medium text-[#F7F6F3]"
+        className="flex h-12 items-center justify-center rounded-full bg-[#14161A] text-[15px] font-medium text-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3]"
       >
         {label}
       </Link>

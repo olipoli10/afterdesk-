@@ -321,7 +321,7 @@ const pTl: ProtocolDict = {
       "Paano gumagana ang AfterDesk: ilalarawan mo ang task, isang operator ang magtatakda ng fixed na presyo sa loob ng apat na oras ng trabaho, gagawin ito ng beripikadong espesyalista sa magdamag, at susuriin bago mo makita. Ang buong protocol, may bersyon at petsa.",
   },
   nav: { about: "Tungkol sa amin", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
-  docket: "Operating protocol",
+  docket: "Protocol ng operasyon",
   h1: ["Isang presyo.", "Isang operator.", "Isang pamantayan."],
   deck: "Isang tao lang ang nagtatakda ng bawat presyo, review at bayad dito.",
   movement1: "Ang gabi, sa anim na yugto",
@@ -344,7 +344,7 @@ const pTl: ProtocolDict = {
       label: "Review",
       say: "Sinusuri ito ng operator. Ibinabalik hanggang tama.",
       val: `≤ ${s.maxQcRounds} ×`,
-      unit: "QC rounds",
+      unit: "Mga round ng QC",
     },
     {
       label: "Umaga",
@@ -362,7 +362,7 @@ const pTl: ProtocolDict = {
   ],
   movement2: "Dalawang kondisyon",
   detail: {
-    head: "Detail A",
+    head: "Detalye A",
     sub: "Yugto 04: ano ang pumapasa",
     criteria: [
       ["Kumpleto", "Bawat bagay na nakasaad sa brief."],
@@ -675,7 +675,7 @@ const aTl: AboutDict = {
     lit: "Tapos na ito pagsapit ng umaga.",
     cta: "Ilarawan ang task mo",
   },
-  protocolNote: "Basahin ang buong operating protocol sa",
+  protocolNote: "Basahin ang buong protocol ng operasyon sa",
   protocolLink: "Paano ito gumagana",
 };
 

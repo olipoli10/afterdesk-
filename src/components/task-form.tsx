@@ -114,7 +114,7 @@ export function TaskForm({
           </Field>
 
           {error ? (
-            <p role="alert" className="text-sm text-[#955710]">
+            <p role="alert" className="text-sm text-[#8C2F23]">
               {error}
             </p>
           ) : null}

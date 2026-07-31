@@ -27,7 +27,7 @@ export function clientLangOf(value: string | undefined | null): ClientLang {
 }
 
 type Dict = {
-  nav: { signIn: string; send: string };
+  nav: { signIn: string; send: string; client: string; workers: string };
   hero: {
     line1: string;
     line2: string;
@@ -52,6 +52,12 @@ type Dict = {
      *  hero's own animated preview (desktop-only, delayed) so the same real
      *  number is legible immediately, on every screen size, with no wait. */
     exampleTag: string;
+    /** The hero's sr-only description of the animated live task window, for
+     *  anyone who cannot see it. Takes liveWindow.taskTitle so the quoted
+     *  task matches the visible chip and the window itself; the price
+     *  ($74) and clock times stay literal data, same as everywhere else on
+     *  this page. */
+    srPreview: (title: string) => string;
   };
   /* NO CAPTION. This chapter had two in a row and both said nothing the
      picture wasn't already saying: first an invented client quote, then a
@@ -181,10 +187,19 @@ type Dict = {
      *  lists back to back don't read as the same list twice. */
     pillars: [string, string][];
   };
+  /** Copy for the public counters strip (src/components/public-counters.tsx)
+   *  under both homepage heroes. taskWord/workerWord are [singular, plural],
+   *  picked by the live count. */
+  counters: {
+    taskWord: [string, string];
+    workerWord: [string, string];
+    released: string;
+    toDate: string;
+  };
 };
 
 const en: Dict = {
-  nav: { signIn: "Sign in", send: "Send a task" },
+  nav: { signIn: "Sign in", send: "Send a task", client: "Get work done", workers: "For workers" },
   hero: {
     line1: "Describe any task.",
     line2: "Get it back done by morning.",
@@ -195,6 +210,8 @@ const en: Dict = {
     guarantee:
       "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
     exampleTag: "Example",
+    srPreview: (title) =>
+      `Product preview: a task titled “${title}” is received at 6:41 PM, priced $74 by the operator 34 minutes later, approved, done overnight by a vetted specialist, and passes review by 7:07 AM.`,
   },
   whatWeAre: {
     label: "What this is",
@@ -327,10 +344,16 @@ const en: Dict = {
       "7:07 AM · passed review · in your inbox",
     ],
   },
+  counters: {
+    taskWord: ["task delivered", "tasks delivered"],
+    workerWord: ["approved worker", "approved workers"],
+    released: "released to workers",
+    toDate: "To date,",
+  },
 };
 
 const fr: Dict = {
-  nav: { signIn: "Connexion", send: "Envoyer une tâche" },
+  nav: { signIn: "Connexion", send: "Envoyer une tâche", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   hero: {
     line1: "Décrivez n'importe quelle tâche.",
     line2: "Récupérez-la faite au matin.",
@@ -341,6 +364,8 @@ const fr: Dict = {
     guarantee:
       "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
     exampleTag: "Exemple",
+    srPreview: (title) =>
+      `Aperçu du produit : une tâche intitulée “${title}” est reçue à 18 h 41, chiffrée à $74 par l'opérateur 34 minutes plus tard, approuvée, réalisée pendant la nuit par un spécialiste vérifié, et passe la révision avant 7 h 07.`,
   },
   whatWeAre: {
     label: "Ce qu'on fait",
@@ -473,10 +498,16 @@ const fr: Dict = {
     ],
   },
   footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", work: "Travailler avec nous" },
+  counters: {
+    taskWord: ["tâche livrée", "tâches livrées"],
+    workerWord: ["spécialiste approuvé", "spécialistes approuvés"],
+    released: "reversés aux spécialistes",
+    toDate: "À ce jour,",
+  },
 };
 
 const es: Dict = {
-  nav: { signIn: "Iniciar sesión", send: "Enviar una tarea" },
+  nav: { signIn: "Iniciar sesión", send: "Enviar una tarea", client: "Haz que se haga", workers: "Para trabajadores" },
   hero: {
     line1: "Describe cualquier tarea.",
     line2: "Recíbela lista por la mañana.",
@@ -487,6 +518,8 @@ const es: Dict = {
     guarantee:
       "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
     exampleTag: "Ejemplo",
+    srPreview: (title) =>
+      `Vista previa del producto: una tarea titulada “${title}” se recibe a las 6:41 p. m., cotizada en $74 por el operador 34 minutos después, aprobada, realizada durante la noche por un especialista verificado, y pasa la revisión antes de las 7:07 a. m.`,
   },
   whatWeAre: {
     label: "Qué es esto",
@@ -619,6 +652,12 @@ const es: Dict = {
     ],
   },
   footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros" },
+  counters: {
+    taskWord: ["tarea entregada", "tareas entregadas"],
+    workerWord: ["especialista aprobado", "especialistas aprobados"],
+    released: "liberados a los especialistas",
+    toDate: "Hasta la fecha,",
+  },
 };
 
 /* Tagalog, labelled FIL. Register: conversational Filipino with the English
@@ -629,7 +668,7 @@ const es: Dict = {
    column. The task titles beside them, where the meaning lives, are fully
    translated. */
 const tl: Dict = {
-  nav: { signIn: "Mag-sign in", send: "Magpadala ng task" },
+  nav: { signIn: "Mag-sign in", send: "Magpadala ng task", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   hero: {
     line1: "Ilarawan ang kahit anong task.",
     line2: "Tapos na ito pagsapit ng umaga.",
@@ -640,6 +679,8 @@ const tl: Dict = {
     guarantee:
       "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",
     exampleTag: "Halimbawa",
+    srPreview: (title) =>
+      `Preview ng produkto: isang task na may pamagat na “${title}” ay natanggap nang 6:41 PM, pinresyuhan ng $74 ng operator 34 min pagkatapos, inaprubahan, ginawa magdamag ng beripikadong espesyalista, at pumasa sa review bago mag-7:07 AM.`,
   },
   whatWeAre: {
     label: "Ano ito",
@@ -772,6 +813,12 @@ const tl: Dict = {
     ],
   },
   footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin" },
+  counters: {
+    taskWord: ["task na naihatid", "mga task na naihatid"],
+    workerWord: ["inaprubahang espesyalista", "mga inaprubahang espesyalista"],
+    released: "napunta sa mga espesyalista",
+    toDate: "Sa ngayon,",
+  },
 };
 
 export const CLIENT_I18N: Record<ClientLang, Dict> = { en, fr, es, tl };

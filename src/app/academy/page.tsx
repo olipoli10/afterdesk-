@@ -379,7 +379,7 @@ export default async function AcademyPublicPage({
             {t.footer.signIn}
           </Link>
           <div className="basis-full border-t border-black/8 pt-4 text-[12px]">
-            <TrustLinks />
+            <TrustLinks lang={lang} />
           </div>
         </div>
       </footer>

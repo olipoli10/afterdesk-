@@ -53,7 +53,7 @@ function CourseCard({
           {course.title}
         </span>
         {certified ? (
-          <span className="ml-auto shrink-0 rounded-[2px] border border-[#1E7F5C]/50 bg-[#1E7F5C]/20 px-1.5 py-[2px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#3DDCA0]">
+          <span className="ml-auto shrink-0 rounded-[2px] border border-[#1B2740] bg-[#1B2740]/60 px-1.5 py-[2px] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#C9CDD3]">
             Certified
           </span>
         ) : bestScore !== null ? (

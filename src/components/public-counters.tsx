@@ -22,10 +22,17 @@ function bucketDollars(cents: number): string {
 export async function PublicCounters({
   tone,
   variant,
+  copy,
   className = "",
 }: {
   tone: "night" | "paper";
   variant: "strip" | "line";
+  copy: {
+    taskWord: [string, string];
+    workerWord: [string, string];
+    released: string;
+    toDate: string;
+  };
   className?: string;
 }) {
   const stats = await publicStats();
@@ -35,8 +42,8 @@ export async function PublicCounters({
 
   const n = stats.tasksDelivered.toLocaleString("en-US");
   const w = stats.approvedWorkers.toLocaleString("en-US");
-  const taskWord = stats.tasksDelivered === 1 ? "task delivered" : "tasks delivered";
-  const workerWord = stats.approvedWorkers === 1 ? "approved worker" : "approved workers";
+  const taskWord = copy.taskWord[stats.tasksDelivered === 1 ? 0 : 1];
+  const workerWord = copy.workerWord[stats.approvedWorkers === 1 ? 0 : 1];
   const released =
     stats.releasedBucketCents !== null ? bucketDollars(stats.releasedBucketCents) : null;
 
@@ -49,8 +56,8 @@ export async function PublicCounters({
             : "border-black/8 text-[#5B6069]"
         } ${className}`}
       >
-        to date — {n} {taskWord}
-        {released ? ` · ${released} released to workers` : ""} · {w} {workerWord}
+        {copy.toDate} {n} {taskWord}
+        {released ? ` · ${released} ${copy.released}` : ""} · {w} {workerWord}
       </p>
     );
   }
@@ -76,7 +83,7 @@ export async function PublicCounters({
                 suffix="+"
               />
             ),
-            l: "released to workers",
+            l: copy.released,
             money: true,
           },
         ]

@@ -5,7 +5,18 @@ import { pricingQueueCount } from "@/lib/queries/tasks";
 import { AppShell } from "@/components/app-shell";
 
 export const metadata = {
-  title: "Operator",
+  /**
+   * A plain string here would resolve to "Operator · AfterDesk" for this
+   * segment but NOT pass the "· AfterDesk" template down further: Next only
+   * carries a title template to descendants when the layout that consumes it
+   * redeclares its own template object. Sub-pages (pricing, QC, workers,
+   * tasks) still show this default verbatim until they set their own title,
+   * but once they do, this is what lets it compose correctly.
+   */
+  title: {
+    default: "Operator",
+    template: "%s · AfterDesk",
+  },
   robots: { index: false, follow: false },
 };
 

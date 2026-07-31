@@ -34,7 +34,7 @@ export function workersLangOf(value: string | undefined | null): WorkersLang {
 }
 
 type Dict = {
-  nav: { signIn: string; apply: string };
+  nav: { signIn: string; apply: string; client: string; workers: string };
   hero: {
     kill: string;
     h1: string;
@@ -74,9 +74,24 @@ type Dict = {
     english: string;
     ctaLink: (courses: number) => string;
     ctaTail: string;
+    stats: { courses: string; lessons: string; questions: string };
   };
   ch01: { label: string; h2: string; body: string; disclosure: string; bandCaption: string };
-  ch02: { label: string; h2: string; kicker: string };
+  /** The payout slip (03/05 THE SLIP). Field labels and the zero-cost list
+   *  are UI chrome, same treatment as claimCard above, and now translate. */
+  ch02: {
+    label: string;
+    h2: string;
+    kicker: string;
+    fixed: string;
+    fieldTask: string;
+    fieldClaimed: string;
+    fieldDelivered: string;
+    fieldReview: string;
+    passed: string;
+    released: string;
+    zeros: [string, string][];
+  };
   ch03: {
     label: string;
     h2: string;
@@ -105,10 +120,19 @@ type Dict = {
     freeWithAccount: string;
     correct: string;
   };
+  /** Copy for the public counters strip (src/components/public-counters.tsx)
+   *  under both homepage heroes. taskWord/workerWord are [singular, plural],
+   *  picked by the live count. */
+  counters: {
+    taskWord: [string, string];
+    workerWord: [string, string];
+    released: string;
+    toDate: string;
+  };
 };
 
 const en: Dict = {
-  nav: { signIn: "Sign in", apply: "Apply" },
+  nav: { signIn: "Sign in", apply: "Apply", client: "Get work done", workers: "For workers" },
   hero: {
     kill: "No proposals · No bidding · No commission",
     h1: "The payout is printed before you claim.",
@@ -142,6 +166,7 @@ const en: Dict = {
     english: "The courses and the exams are in English, like the work.",
     ctaLink: (n) => `See all ${n} free courses`,
     ctaTail: "· no account needed.",
+    stats: { courses: "courses", lessons: "lessons", questions: "exam questions" },
   },
   ch01: {
     label: "The pool",
@@ -155,6 +180,19 @@ const en: Dict = {
     label: "The slip",
     h2: "What comes out of the printed number.",
     kicker: "The printed number is the number you get.",
+    fixed: "Fixed",
+    fieldTask: "TASK",
+    fieldClaimed: "CLAIMED",
+    fieldDelivered: "DELIVERED",
+    fieldReview: "REVIEW",
+    passed: "PASSED",
+    released: "RELEASED",
+    zeros: [
+      ["Bidding fee", "$0.00"],
+      ["Proposal writing", "$0.00"],
+      ["Commission off your rate", "$0.00"],
+      ["Client calls", "0"],
+    ],
   },
   ch03: {
     /* "The bar" meant the quality bar, and English was the last language
@@ -198,10 +236,16 @@ const en: Dict = {
     freeWithAccount: "free with an account",
     correct: "CORRECT",
   },
+  counters: {
+    taskWord: ["task delivered", "tasks delivered"],
+    workerWord: ["approved worker", "approved workers"],
+    released: "released to workers",
+    toDate: "To date,",
+  },
 };
 
 const tl: Dict = {
-  nav: { signIn: "Mag-sign in", apply: "Mag-apply" },
+  nav: { signIn: "Mag-sign in", apply: "Mag-apply", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   hero: {
     kill: "Walang proposal · Walang bidding · Walang komisyon",
     h1: "Nakalimbag ang payout bago ka mag-claim.",
@@ -235,6 +279,7 @@ const tl: Dict = {
     english: "Nasa Ingles ang mga kurso at exam, tulad ng trabaho.",
     ctaLink: (n) => `Tingnan ang lahat ng ${n} libreng kurso`,
     ctaTail: "· hindi kailangan ng account.",
+    stats: { courses: "na kurso", lessons: "na leksyon", questions: "na tanong sa exam" },
   },
   ch01: {
     label: "Ang pool",
@@ -248,6 +293,19 @@ const tl: Dict = {
     label: "Ang slip",
     h2: "Ano ang lumalabas sa nakalimbag na numero.",
     kicker: "Ang nakalimbag na numero ang numerong makukuha mo.",
+    fixed: "Fixed",
+    fieldTask: "TASK",
+    fieldClaimed: "NA-CLAIM",
+    fieldDelivered: "NAIHATID",
+    fieldReview: "REVIEW",
+    passed: "PUMASA",
+    released: "NAPALABAS",
+    zeros: [
+      ["Bidding fee", "$0.00"],
+      ["Pagsulat ng proposal", "$0.00"],
+      ["Komisyon sa rate mo", "$0.00"],
+      ["Tawag ng client", "0"],
+    ],
   },
   ch03: {
     label: "Ang pamantayan",
@@ -288,12 +346,18 @@ const tl: Dict = {
     freeWithAccount: "libre kasama ang account",
     correct: "TAMA",
   },
+  counters: {
+    taskWord: ["task na naihatid", "mga task na naihatid"],
+    workerWord: ["inaprubahang manggagawa", "mga inaprubahang manggagawa"],
+    released: "napunta sa mga manggagawa",
+    toDate: "Sa ngayon,",
+  },
 };
 
 /* North-American French: "courriel" over "email", business register, no
    France-only idioms. */
 const fr: Dict = {
-  nav: { signIn: "Connexion", apply: "Postuler" },
+  nav: { signIn: "Connexion", apply: "Postuler", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   hero: {
     kill: "Aucune proposition · Aucune enchère · Aucune commission",
     h1: "Le montant est imprimé avant que vous preniez la tâche.",
@@ -327,6 +391,7 @@ const fr: Dict = {
     english: "Les cours et les examens sont en anglais, comme le travail.",
     ctaLink: (n) => `Voir les ${n} cours gratuits`,
     ctaTail: "· aucun compte requis.",
+    stats: { courses: "cours", lessons: "leçons", questions: "questions d'examen" },
   },
   ch01: {
     label: "Le bassin",
@@ -340,6 +405,19 @@ const fr: Dict = {
     label: "Le bordereau",
     h2: "Ce qui sort du montant imprimé.",
     kicker: "Le montant imprimé est le montant que vous recevez.",
+    fixed: "Fixe",
+    fieldTask: "TÂCHE",
+    fieldClaimed: "RÉCLAMÉE",
+    fieldDelivered: "LIVRÉE",
+    fieldReview: "RÉVISION",
+    passed: "RÉUSSIE",
+    released: "LIBÉRÉ",
+    zeros: [
+      ["Frais d'enchère", "$0.00"],
+      ["Rédaction de proposition", "$0.00"],
+      ["Commission sur votre tarif", "$0.00"],
+      ["Appels clients", "0"],
+    ],
   },
   ch03: {
     /* "La barre" was a literal translation of "the bar" and it means
@@ -384,11 +462,17 @@ const fr: Dict = {
     freeWithAccount: "gratuit avec un compte",
     correct: "CORRECT",
   },
+  counters: {
+    taskWord: ["tâche livrée", "tâches livrées"],
+    workerWord: ["travailleur approuvé", "travailleurs approuvés"],
+    released: "reversés aux travailleurs",
+    toDate: "À ce jour,",
+  },
 };
 
 /* Neutral international business Spanish — tuteo, matching the client page. */
 const es: Dict = {
-  nav: { signIn: "Iniciar sesión", apply: "Postular" },
+  nav: { signIn: "Iniciar sesión", apply: "Postular", client: "Haz que se haga", workers: "Para trabajadores" },
   hero: {
     kill: "Sin propuestas · Sin pujas · Sin comisión",
     h1: "El pago está impreso antes de que tomes la tarea.",
@@ -422,6 +506,7 @@ const es: Dict = {
     english: "Los cursos y los exámenes son en inglés, como el trabajo.",
     ctaLink: (n) => `Ver los ${n} cursos gratis`,
     ctaTail: "· sin cuenta.",
+    stats: { courses: "cursos", lessons: "lecciones", questions: "preguntas de examen" },
   },
   ch01: {
     label: "El grupo",
@@ -435,6 +520,19 @@ const es: Dict = {
     label: "El comprobante",
     h2: "Qué sale del número impreso.",
     kicker: "El número impreso es el número que recibes.",
+    fixed: "Fijo",
+    fieldTask: "TAREA",
+    fieldClaimed: "RECLAMADA",
+    fieldDelivered: "ENTREGADA",
+    fieldReview: "REVISIÓN",
+    passed: "APROBADA",
+    released: "LIBERADO",
+    zeros: [
+      ["Cuota de puja", "$0.00"],
+      ["Redacción de propuesta", "$0.00"],
+      ["Comisión sobre tu tarifa", "$0.00"],
+      ["Llamadas de cliente", "0"],
+    ],
   },
   ch03: {
     label: "El estándar",
@@ -474,6 +572,12 @@ const es: Dict = {
     keepGoingPrefix: "Sigue intentando, o toma el curso de donde viene,",
     freeWithAccount: "gratis con una cuenta",
     correct: "CORRECTO",
+  },
+  counters: {
+    taskWord: ["tarea entregada", "tareas entregadas"],
+    workerWord: ["trabajador aprobado", "trabajadores aprobados"],
+    released: "liberados a los trabajadores",
+    toDate: "Hasta la fecha,",
   },
 };
 

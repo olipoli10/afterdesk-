@@ -117,7 +117,12 @@ export default async function Home({
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
           <Wordmark tone="paper" className="text-[11px] sm:text-[13px]" />
-          <AudienceToggle side="client" tone="night" />
+          <AudienceToggle
+            side="client"
+            tone="night"
+            clientLabel={t.nav.client}
+            workersLabel={t.nav.workers}
+          />
           <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
             {/* Promoted out of the footer: this is the story page, and a story
@@ -213,12 +218,7 @@ export default async function Home({
 
           {/* The product IS the hero image — and it's ALIVE: one task's whole
               life plays in the window, then loops. */}
-          <p className="sr-only">
-            Product preview: a task titled &ldquo;Clean a 1,800-row supplier price
-            list&rdquo; is received at 6:41 PM, priced $74 by the operator 34 minutes
-            later, approved, done overnight by a vetted specialist, and passes review
-            by 7:07 AM.
-          </p>
+          <p className="sr-only">{t.hero.srPreview(t.liveWindow.taskTitle)}</p>
           {/* Phones don't get this. It and the quote slip in chapter 01 are
               both dark mono cards carrying a task name, a detail list and a
               price, and stacked vertically on a phone they scan as the same
@@ -232,7 +232,7 @@ export default async function Home({
         </div>
 
         {/* live counters — the proof, at the moment of the promise */}
-        <PublicCounters tone="night" variant="strip" className="anim-rise d-4 mt-12" />
+        <PublicCounters tone="night" variant="strip" copy={t.counters} className="anim-rise d-4 mt-12" />
       </section>
 
       {/* ── WHAT THIS IS ──────────────────────────────────────────────────
@@ -542,7 +542,7 @@ export default async function Home({
             </Link>
           </div>
           <div className="text-[12px] sm:col-span-2 sm:border-t sm:border-black/8 sm:pt-4">
-            <TrustLinks />
+            <TrustLinks lang={lang} />
           </div>
         </div>
       </footer>

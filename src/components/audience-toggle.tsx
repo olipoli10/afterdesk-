@@ -8,9 +8,13 @@ import Link from "next/link";
 export function AudienceToggle({
   side,
   tone,
+  clientLabel,
+  workersLabel,
 }: {
   side: "client" | "worker";
   tone: "night" | "paper";
+  clientLabel: string;
+  workersLabel: string;
 }) {
   const shell =
     tone === "night"
@@ -24,9 +28,10 @@ export function AudienceToggle({
     tone === "night"
       ? "text-[#8A9099] hover:text-white"
       : "text-[#5B6069] hover:text-[#14161A]";
+  const ring = tone === "night" ? "focus-visible:ring-white" : "focus-visible:ring-[#14161A]";
 
   const seg =
-    "flex min-h-11 items-center whitespace-nowrap rounded-full px-2.5 text-[11px] font-medium leading-5 transition-colors sm:px-3.5 sm:text-[13px]";
+    `flex min-h-11 items-center whitespace-nowrap rounded-full px-2.5 text-[11px] font-medium leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset sm:px-3.5 sm:text-[13px] ${ring}`;
 
   return (
     <nav
@@ -38,14 +43,14 @@ export function AudienceToggle({
         aria-current={side === "client" ? "page" : undefined}
         className={`${seg} ${side === "client" ? active : idle}`}
       >
-        Get work done
+        {clientLabel}
       </Link>
       <Link
         href="/workers"
         aria-current={side === "worker" ? "page" : undefined}
         className={`${seg} ${side === "worker" ? active : idle}`}
       >
-        For workers
+        {workersLabel}
       </Link>
     </nav>
   );

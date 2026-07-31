@@ -19,36 +19,37 @@ export default async function WorkersPage() {
   await requireRole("ADMIN");
   const settings = await getSettings();
 
-  const profiles = await prisma.vaProfile.findMany({
-    select: {
-      userId: true,
-      status: true,
-      timezone: true,
-      scoreCache: true,
-      ratedCount: true,
-      tasksCompleted: true,
-      tasksAbandoned: true,
-      deadlinesMissed: true,
-      qcRejections: true,
-      suspensionReason: true,
-      experienceSummary: true,
-      specialties: true,
-      weeklyAvailability: true,
-      portfolioUrl: true,
-      applicationSubmittedAt: true,
-      createdAt: true,
-      user: { select: { name: true, email: true } },
-    },
-    orderBy: [{ status: "asc" }, { createdAt: "asc" }],
-  });
-
   // Money owed per worker, so the payout column is real rather than derived
   // from task status.
-  const owed = await prisma.payout.groupBy({
-    by: ["vaId"],
-    where: { status: { in: ["owed", "released"] } },
-    _sum: { amountCents: true },
-  });
+  const [profiles, owed] = await Promise.all([
+    prisma.vaProfile.findMany({
+      select: {
+        userId: true,
+        status: true,
+        timezone: true,
+        scoreCache: true,
+        ratedCount: true,
+        tasksCompleted: true,
+        tasksAbandoned: true,
+        deadlinesMissed: true,
+        qcRejections: true,
+        suspensionReason: true,
+        experienceSummary: true,
+        specialties: true,
+        weeklyAvailability: true,
+        portfolioUrl: true,
+        applicationSubmittedAt: true,
+        createdAt: true,
+        user: { select: { name: true, email: true } },
+      },
+      orderBy: [{ status: "asc" }, { createdAt: "asc" }],
+    }),
+    prisma.payout.groupBy({
+      by: ["vaId"],
+      where: { status: { in: ["owed", "released"] } },
+      _sum: { amountCents: true },
+    }),
+  ]);
   const owedByVa = new Map(owed.map((o) => [o.vaId, o._sum.amountCents ?? 0]));
 
   const waiting = profiles.filter((p) =>

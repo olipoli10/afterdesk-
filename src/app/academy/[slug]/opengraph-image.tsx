@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { publicCourseFull, PUBLISHED_COURSES, academyStats } from "@/lib/academy/public";
+import { EXAM_QUESTION_COUNT } from "@/lib/academy/types";
 
 export const alt = "A free AfterDesk Academy course";
 export const size = { width: 1200, height: 630 };
@@ -23,7 +24,7 @@ export function generateStaticParams() {
 export default async function OgImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const course = publicCourseFull(slug);
-  const stats = academyStats();
+  const stats = course ? null : academyStats();
 
   return new ImageResponse(
     (
@@ -72,9 +73,9 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
           <div style={{ display: "flex", gap: 44 }}>
             {(
               [
-                [String(course?.lessonCount ?? stats.courses), "lessons"],
-                [String(course?.minutes ?? stats.minutes), "minutes"],
-                [String(stats.questionCount), "exam questions"],
+                [String(course?.lessonCount ?? stats?.courses), "lessons"],
+                [String(course?.minutes ?? stats?.minutes), "minutes"],
+                [String(EXAM_QUESTION_COUNT), "exam questions"],
               ] as [string, string][]
             ).map(([n, label]) => (
               <div key={label} style={{ display: "flex", flexDirection: "column" }}>

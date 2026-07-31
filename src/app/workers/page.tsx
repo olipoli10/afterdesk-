@@ -78,14 +78,6 @@ const LEDGER_LINES: {
   { t: "", label: "RELEASED", detail: "$66", big: true },
 ];
 
-/* The zeros are the differentiation argument, run as arithmetic. */
-const SLIP_ZEROS: [string, string][] = [
-  ["Bidding fee", "$0.00"],
-  ["Proposal writing", "$0.00"],
-  ["Commission off your rate", "$0.00"],
-  ["Client calls", "0"],
-];
-
 const NOISE = {
   backgroundImage:
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
@@ -149,7 +141,12 @@ export default async function WorkersHome({
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
           <Wordmark tone="ink" className="text-[11px] sm:text-[13px]" />
-          <AudienceToggle side="worker" tone="paper" />
+          <AudienceToggle
+            side="worker"
+            tone="paper"
+            clientLabel={t.nav.client}
+            workersLabel={t.nav.workers}
+          />
           <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/workers" current={lang} options={WORKERS_LANGS} tone="paper" />
             <Link
@@ -233,7 +230,7 @@ export default async function WorkersHome({
           </div>
         </div>
 
-        <PublicCounters tone="paper" variant="strip" className="anim-rise d-5 mt-14" />
+        <PublicCounters tone="paper" variant="strip" copy={t.counters} className="anim-rise d-5 mt-14" />
       </section>
 
       {/* ── 01/05 THE POOL ────────────────────────────────────────────── */}
@@ -340,15 +337,18 @@ export default async function WorkersHome({
                 {/* the scale, as machinery rather than bullets */}
                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 border-b border-[#14161A]/10 bg-[#F7F6F3] px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#5B6069]">
                   <span>
-                    <b className="font-medium text-[#14161A]">{stats.courses}</b> courses
+                    <b className="font-medium text-[#14161A]">{stats.courses}</b>{" "}
+                    {t.chAcademy.stats.courses}
                   </span>
                   <span className="text-[#14161A]/25">·</span>
                   <span>
-                    <b className="font-medium text-[#14161A]">{stats.lessons}</b> lessons
+                    <b className="font-medium text-[#14161A]">{stats.lessons}</b>{" "}
+                    {t.chAcademy.stats.lessons}
                   </span>
                   <span className="text-[#14161A]/25">·</span>
                   <span>
-                    <b className="font-medium text-[#14161A]">{stats.questions}</b> exam questions
+                    <b className="font-medium text-[#14161A]">{stats.questions}</b>{" "}
+                    {t.chAcademy.stats.questions}
                   </span>
                 </div>
 
@@ -449,13 +449,13 @@ export default async function WorkersHome({
                 <div className="flex items-center justify-between border-b border-[#14161A]/10 pb-3 text-[#5B6069]">
                   <span>PAYOUT #0871</span>
                   <span className="rounded bg-[#1E7F5C]/10 px-2 py-0.5 text-[10px] uppercase text-[#166049]">
-                    Fixed
+                    {t.ch02.fixed}
                   </span>
                 </div>
                 {[
-                  ["TASK", "Tag 1,200 support tickets by topic"],
-                  ["CLAIMED", "7:31 AM"],
-                  ["DELIVERED", "2:14 PM"],
+                  [t.ch02.fieldTask, "Tag 1,200 support tickets by topic"],
+                  [t.ch02.fieldClaimed, "7:31 AM"],
+                  [t.ch02.fieldDelivered, "2:14 PM"],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4 border-b border-[#14161A]/[0.06] py-2.5">
                     <span className="shrink-0 text-[#5B6069]">{k}</span>
@@ -463,12 +463,12 @@ export default async function WorkersHome({
                   </div>
                 ))}
                 <div className="flex justify-between gap-4 border-b border-[#14161A]/[0.06] py-2.5">
-                  <span className="shrink-0 text-[#5B6069]">REVIEW</span>
-                  <span className="text-right text-[#166049]">PASSED</span>
+                  <span className="shrink-0 text-[#5B6069]">{t.ch02.fieldReview}</span>
+                  <span className="text-right text-[#166049]">{t.ch02.passed}</span>
                 </div>
 
                 <div className="space-y-1.5 py-3">
-                  {SLIP_ZEROS.map(([k, v]) => (
+                  {t.ch02.zeros.map(([k, v]) => (
                     <div key={k} className="flex items-baseline gap-2 text-[#5B6069]">
                       <span className="shrink-0">{k}</span>
                       <span className="mb-[3px] flex-1 border-b border-dotted border-[#14161A]/20" />
@@ -478,7 +478,7 @@ export default async function WorkersHome({
                 </div>
 
                 <div className="flex items-baseline justify-between rounded bg-[#1E7F5C]/10 px-3 py-2.5">
-                  <span className="text-[#166049]">RELEASED</span>
+                  <span className="text-[#166049]">{t.ch02.released}</span>
                   <span className="text-[26px] font-medium tabular-nums leading-none text-[#166049]">
                     $54.00
                   </span>
@@ -624,7 +624,7 @@ export default async function WorkersHome({
       <section className="bg-[#0A0B0D] pb-16">
         <div className="mx-auto w-full max-w-[880px] px-6">
           <Reveal>
-            <PublicCounters tone="night" variant="strip" className="mb-10" />
+            <PublicCounters tone="night" variant="strip" copy={t.counters} className="mb-10" />
           </Reveal>
           <Reveal>
             <div className="relative overflow-hidden rounded-2xl bg-[#F7F6F3] px-6 py-16 text-center">
@@ -668,7 +668,7 @@ export default async function WorkersHome({
             </Link>
           </div>
           <div className="text-[12px] sm:col-span-2 sm:border-t sm:border-white/10 sm:pt-4">
-            <TrustLinks tone="night" />
+            <TrustLinks tone="night" lang={lang} />
           </div>
         </div>
       </footer>

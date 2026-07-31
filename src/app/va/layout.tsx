@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { AppShell } from "@/components/app-shell";
 
 export const metadata = {
-  title: "My work",
+  title: { default: "My work", template: "%s · AfterDesk" },
   robots: { index: false, follow: false },
 };
 

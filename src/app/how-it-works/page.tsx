@@ -439,7 +439,7 @@ export default async function HowItWorks({
       <footer className="border-t border-black/8">
         <div className="mx-auto flex w-full max-w-[900px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[12px]">
           <Wordmark tone="ink" />
-          <TrustLinks />
+          <TrustLinks lang={lang} />
         </div>
       </footer>
     </div>

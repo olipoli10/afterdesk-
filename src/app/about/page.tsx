@@ -6,6 +6,7 @@ import { Wordmark } from "@/components/logo";
 import { LangSwitch } from "@/components/lang-switch";
 import { SITE_LANGS, langAlternates } from "@/lib/i18n/langs";
 import { ABOUT_I18N, docLangOf } from "@/lib/i18n/docs";
+import { CLIENT_I18N } from "@/lib/i18n/client";
 
 /* ─────────────────────────────────────────────────────────────────────────
    ABOUT US — the origin story, told in the company's own "we" voice.
@@ -69,6 +70,12 @@ export default async function AboutPage({
           </Link>
           <div className="flex items-center gap-3 text-[13px] font-medium sm:gap-5">
             <LangSwitch path="/about" current={lang} options={SITE_LANGS} tone="paper" />
+            <Link
+              href="/login"
+              className="text-[#5B6069] transition-colors hover:text-[#14161A]"
+            >
+              {CLIENT_I18N[lang].nav.signIn}
+            </Link>
             <Link
               href="/how-it-works"
               className="text-[#5B6069] transition-colors hover:text-[#14161A]"
@@ -236,7 +243,7 @@ export default async function AboutPage({
       <footer className="border-t border-black/8">
         <div className="mx-auto flex w-full max-w-[900px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[12px]">
           <Wordmark tone="ink" />
-          <TrustLinks />
+          <TrustLinks lang={lang} />
         </div>
       </footer>
     </div>

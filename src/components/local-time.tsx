@@ -16,8 +16,8 @@ const subscribe = () => () => {};
 
 function format(iso: string | Date, dateStyle: "medium" | "short", timeZone?: string): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
-  const fmt = new Intl.DateTimeFormat(undefined, { dateStyle, timeStyle: "short", timeZone });
-  const tzFmt = new Intl.DateTimeFormat(undefined, { timeZone, timeZoneName: "short" });
+  const fmt = new Intl.DateTimeFormat("en-US", { dateStyle, timeStyle: "short", timeZone });
+  const tzFmt = new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "short" });
   const tzName = tzFmt.formatToParts(d).find((p) => p.type === "timeZoneName")?.value ?? "";
   return `${fmt.format(d)} ${tzName}`;
 }
