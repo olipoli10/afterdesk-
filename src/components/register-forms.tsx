@@ -224,12 +224,36 @@ export function LoginForm({
   googleEnabled,
   next,
   tone = "paper",
+  workerAudience = false,
 }: {
   googleEnabled: boolean;
   /** Same-origin path to return to after sign-in — already validated server-side. */
   next?: string;
   /** "glass" is the login modal's dark frosted treatment. */
   tone?: "paper" | "glass";
+  /**
+   * True when this /login was reached from a worker-side link (?audience=worker
+   * — see workers/page.tsx, academy/page.tsx, register/va/page.tsx). Hides
+   * "Continue with Google" instead of showing it.
+   *
+   * WHY: identity here resolves by email, not by which button was clicked.
+   * Better Auth's account model has no concept of "sign in as a worker" — a
+   * Google identity is permanently tied to whichever user row shares its
+   * email, and that row's role is fixed the moment it's created. VA accounts
+   * are created ONLY by the dedicated application form (registerVa, a server
+   * action that also builds the vaProfile a Google sign-up has no path to
+   * create — see the comment on VaRegisterForm below and on
+   * register/va/page.tsx). So Google sign-in can NEVER authenticate a new VA:
+   * it either creates a fresh CLIENT account (if the email is unseen) or logs
+   * into whatever existing account already owns that email — client, if
+   * that's what was there. Offering the button here was not a redirect bug,
+   * it was a real path that could only ever end on the client side; hiding it
+   * for this audience removes the false affordance instead of leaving a
+   * button that silently does something other than what it looks like it
+   * does. A specialist's only route back into their account is the same
+   * email + password they applied with.
+   */
+  workerAudience?: boolean;
 }) {
   const router = useRouter();
   const passwordId = useId();
@@ -270,11 +294,19 @@ export function LoginForm({
 
   return (
     <div className="space-y-5">
-      {googleEnabled ? (
+      {googleEnabled && !workerAudience ? (
         <>
           <GoogleButton label="Continue with Google" callbackURL={destination} />
           <OrDivider tone={tone} />
         </>
+      ) : null}
+      {workerAudience ? (
+        <p
+          className={`text-[13px] leading-relaxed ${tone === "paper" ? "text-[#5B6069]" : "text-white/55"}`}
+        >
+          Specialist accounts sign in with email and password — Google sign-in always opens a
+          client account.
+        </p>
       ) : null}
 
       <form onSubmit={onSubmit} className="space-y-4">

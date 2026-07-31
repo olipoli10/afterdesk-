@@ -41,7 +41,7 @@ export default function RegisterVaPage() {
       footer={
         <>
           Already applied?{" "}
-          <Link href="/login" className={linkInline}>
+          <Link href="/login?audience=worker" className={linkInline}>
             Sign in
           </Link>
         </>

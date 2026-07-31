@@ -39,6 +39,7 @@ export default async function LoginPage({
   const params = await searchParams;
   const next = safeNextParam(params.next);
   const applied = params.applied === "1";
+  const workerAudience = params.audience === "worker";
 
   return (
     <AuthShell
@@ -66,7 +67,7 @@ export default async function LoginPage({
           Application received — sign in to continue.
         </p>
       ) : null}
-      <LoginForm googleEnabled={googleEnabled} next={next} />
+      <LoginForm googleEnabled={googleEnabled} next={next} workerAudience={workerAudience} />
     </AuthShell>
   );
 }

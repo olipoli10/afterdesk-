@@ -28,10 +28,12 @@ export function LoginModal({
   googleEnabled,
   next,
   applied,
+  workerAudience = false,
 }: {
   googleEnabled: boolean;
   next?: string;
   applied: boolean;
+  workerAudience?: boolean;
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -116,7 +118,12 @@ export function LoginModal({
         ) : null}
 
         <div className="mt-5">
-          <LoginForm googleEnabled={googleEnabled} next={next} tone="glass" />
+          <LoginForm
+            googleEnabled={googleEnabled}
+            next={next}
+            tone="glass"
+            workerAudience={workerAudience}
+          />
         </div>
       </div>
 

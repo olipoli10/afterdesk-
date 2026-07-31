@@ -36,6 +36,14 @@ export default async function InterceptedLoginPage({
   const params = await searchParams;
   const next = safeNextParam(params.next);
   const applied = params.applied === "1";
+  const workerAudience = params.audience === "worker";
 
-  return <LoginModal googleEnabled={googleEnabled} next={next} applied={applied} />;
+  return (
+    <LoginModal
+      googleEnabled={googleEnabled}
+      next={next}
+      applied={applied}
+      workerAudience={workerAudience}
+    />
+  );
 }

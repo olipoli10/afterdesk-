@@ -42,7 +42,10 @@ export function FloatingLinks({
       <Link href="/about" className={`${base} ${pill}`}>
         {aboutLabel}
       </Link>
-      <Link href="/login" className={`${base} ${pill}`}>
+      {/* tone="paper" is only ever used on the worker homepage (see
+          src/app/workers/page.tsx) — audience=worker there hides Google
+          sign-in on /login, since Google can never open a VA account. */}
+      <Link href={tone === "paper" ? "/login?audience=worker" : "/login"} className={`${base} ${pill}`}>
         {signInLabel}
       </Link>
     </div>

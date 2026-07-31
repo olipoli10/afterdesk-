@@ -159,7 +159,7 @@ export default async function WorkersHome({
               {t.footer.about}
             </Link>
             <Link
-              href="/login"
+              href="/login?audience=worker"
               className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
             >
               {t.nav.signIn}
@@ -660,7 +660,7 @@ export default async function WorkersHome({
             <Link href="/how-it-works" className="transition-colors hover:text-white">
               {t.footer.how}
             </Link>
-            <Link href="/login" className="transition-colors hover:text-white">
+            <Link href="/login?audience=worker" className="transition-colors hover:text-white">
               {t.footer.signIn}
             </Link>
             <Link href="/" className="transition-colors hover:text-white">

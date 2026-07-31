@@ -134,7 +134,7 @@ export default async function AcademyPublicPage({
           <div className="flex items-center gap-3 sm:gap-5">
             <LangSwitch path="/academy" current={lang} options={ACADEMY_LANGS} tone="paper" />
             <Link
-              href="/login"
+              href="/login?audience=worker"
               className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
             >
               {t.nav.signIn}
@@ -375,7 +375,7 @@ export default async function AcademyPublicPage({
           <Link href="/how-it-works" className="transition-colors hover:text-[#14161A]">
             {t.footer.how}
           </Link>
-          <Link href="/login" className="ml-auto transition-colors hover:text-[#14161A]">
+          <Link href="/login?audience=worker" className="ml-auto transition-colors hover:text-[#14161A]">
             {t.footer.signIn}
           </Link>
           <div className="basis-full border-t border-black/8 pt-4 text-[12px]">
