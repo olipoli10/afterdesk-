@@ -249,8 +249,18 @@ export default async function Home({
             <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
               {t.whatWeAre.label}
             </p>
-            <h2 className="mt-3 max-w-[26ch] text-[clamp(1.5rem,3.4vw,2.1rem)] font-semibold leading-[1.15] tracking-[-0.025em] text-white">
-              {t.whatWeAre.h2}
+            {/* AfterDesk set in the wordmark's own treatment (mono,
+                uppercase, tracked — src/components/logo.tsx) so the brand
+                reads as a mark planted mid-sentence, not just another word.
+                The sentence around it drops to a paler, lighter weight in
+                the same motion, so the name is what actually pops instead
+                of everything competing at the same weight. */}
+            <h2 className="mt-3 max-w-[28ch] text-[clamp(1.3rem,2.9vw,1.85rem)] font-medium leading-[1.25] tracking-[-0.015em] text-[#9AA1AB]">
+              {t.whatWeAre.h2[0]}
+              <span className="font-mono text-[1.05em] font-bold uppercase tracking-[0.12em] text-white">
+                AfterDesk
+              </span>
+              {t.whatWeAre.h2[1]}
             </h2>
             <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.65] text-[#9AA1AB] sm:text-[16px]">
               {t.whatWeAre.intro}

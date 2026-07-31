@@ -164,7 +164,14 @@ type Dict = {
    *  one screen, not five. */
   whatWeAre: {
     label: string;
-    h2: string;
+    /** [before, after] around a literal, un-translated "AfterDesk" the JSX
+     *  inserts between them, styled like the wordmark (mono, uppercase,
+     *  tracked) so the brand name reads as a mark, not a sentence word. The
+     *  split exists because word order isn't the same across languages —
+     *  Tagalog's "Ang AfterDesk ay..." puts a word BEFORE the brand name,
+     *  which a simple prefix-strip would have missed. Brand names are data,
+     *  not voice, so neither half ever contains the word "AfterDesk" itself. */
+    h2: [string, string];
     intro: string;
     steps: [string, string][];
     /** The three guarantees, compressed. Distinct axis from `steps` above:
@@ -191,7 +198,10 @@ const en: Dict = {
   },
   whatWeAre: {
     label: "What this is",
-    h2: "AfterDesk is a task outsourcing service built around vetted specialists in the Philippines: fluent English, trained to a written standard, working while you sleep.",
+    h2: [
+      "",
+      " is a task outsourcing service built around vetted specialists in the Philippines: fluent English, trained to a written standard, working while you sleep.",
+    ],
     intro:
       "Entrepreneurs send a task, a specialist here prices it, and one rule makes it safe to try: you don't pay for work that isn't right.",
     steps: [
@@ -334,7 +344,10 @@ const fr: Dict = {
   },
   whatWeAre: {
     label: "Ce qu'on fait",
-    h2: "AfterDesk est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines : anglais courant, formés selon une norme écrite, qui travaillent pendant que vous dormez.",
+    h2: [
+      "",
+      " est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines : anglais courant, formés selon une norme écrite, qui travaillent pendant que vous dormez.",
+    ],
     intro:
       "Les entrepreneurs envoient une tâche, un spécialiste ici la chiffre, et une seule règle rend ça sûr d'essayer : vous ne payez pas pour un travail qui ne fait pas l'affaire.",
     steps: [
@@ -477,7 +490,10 @@ const es: Dict = {
   },
   whatWeAre: {
     label: "Qué es esto",
-    h2: "AfterDesk es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas: inglés fluido, formados según un estándar escrito, que trabajan mientras tú duermes.",
+    h2: [
+      "",
+      " es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas: inglés fluido, formados según un estándar escrito, que trabajan mientras tú duermes.",
+    ],
     intro:
       "Los emprendedores envían una tarea, un especialista aquí la cotiza, y una sola regla hace que sea seguro intentarlo: no pagas por un trabajo que no está bien.",
     steps: [
@@ -627,7 +643,10 @@ const tl: Dict = {
   },
   whatWeAre: {
     label: "Ano ito",
-    h2: "Ang AfterDesk ay isang task outsourcing service na binuo sa paligid ng beripikadong espesyalista sa Pilipinas: matatas sa Ingles, sinanay sa isang nakasulat na pamantayan, gumagawa habang natutulog ka.",
+    h2: [
+      "Ang ",
+      " ay isang task outsourcing service na binuo sa paligid ng beripikadong espesyalista sa Pilipinas: matatas sa Ingles, sinanay sa isang nakasulat na pamantayan, gumagawa habang natutulog ka.",
+    ],
     intro:
       "Nagpapadala ang mga negosyante ng task, ipepresyo ito ng espesyalista dito, at isang panuntunan ang gumagawa nitong ligtas subukan: hindi ka nagbabayad para sa trabahong hindi maayos.",
     steps: [
