@@ -236,7 +236,78 @@ export default async function WorkersHome({
         <PublicCounters tone="paper" variant="strip" className="anim-rise d-5 mt-14" />
       </section>
 
-      {/* ── 01/05 THE ACADEMY ─────────────────────────────────────────────
+      {/* ── 01/05 THE POOL ────────────────────────────────────────────── */}
+      <section className="relative mx-auto w-full max-w-[1120px] border-t border-black/8 px-6 pb-20 pt-16">
+        <Reveal replay>
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
+            {ch("01", t.ch01.label)}
+          </p>
+          <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
+            {t.ch01.h2}
+          </h2>
+          <p className="mt-2 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">
+            {t.ch01.body}
+          </p>
+
+          <div aria-hidden className="sheen-frame sheen-frame--paper mt-8 shadow-[0_24px_60px_-32px_rgba(20,22,26,0.35)]">
+            <div className="relative overflow-hidden rounded-2xl bg-[#F7F6F3]">
+              <div className="flex h-10 items-center justify-between border-b border-[#14161A]/10 bg-white px-4">
+                <span className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#1E7F5C]" />
+                  <span className="font-mono text-[11px] text-[#5B6069]">task_pool</span>
+                </span>
+                <span className="font-mono text-[11px] text-[#5B6069]">7:15 AM Manila</span>
+              </div>
+              <div className="bg-white text-[13px]">
+                {POOL_ROWS.map((r) => (
+                  <div
+                    key={r.task}
+                    className={`srow flex items-center gap-3 border-b border-[#14161A]/[0.06] px-4 py-[10px] last:border-0 ${
+                      r.tag === "you" ? "bg-[#F7F6F3] ring-1 ring-inset ring-[#14161A]/15" : ""
+                    }`}
+                  >
+                    <span className="truncate text-[#14161A]">{r.task}</span>
+                    <span className="ml-auto shrink-0 font-mono text-[12px] tabular-nums text-[#166049]">
+                      {r.payout}
+                    </span>
+                    <PoolChip tag={r.tag} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <p className="mt-3 font-mono text-[11px] text-[#5B6069]">{t.ch01.disclosure}</p>
+
+          {/* the day bands, absorbed: two lines, one caption, no chapter */}
+          <div className="mt-10 space-y-2">
+            {[
+              { label: "Manila", lit: (h: number) => h >= 8 && h <= 17 },
+              { label: "New York", lit: (h: number) => h >= 20 || h <= 5 },
+            ].map((row) => (
+              <div key={row.label} className="flex items-center gap-3">
+                <span className="w-[68px] shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-[#5B6069]">
+                  {row.label}
+                </span>
+                <div className="relative grid flex-1 grid-cols-[repeat(24,minmax(0,1fr))] gap-px overflow-hidden rounded bg-black/8">
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <span
+                      key={i}
+                      className={`h-5 ${row.lit(i) ? "bg-[#1B2740]" : "bg-[#14161A]/[0.06]"}`}
+                    />
+                  ))}
+                  <span
+                    aria-hidden
+                    className="band-sweep absolute inset-y-0 left-0 w-[3px] bg-[#F7F6F3] mix-blend-difference"
+                  />
+                </div>
+              </div>
+            ))}
+            <p className="pt-1 font-mono text-[11px] text-[#5B6069]">{t.ch01.bandCaption}</p>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ── 02/05 THE ACADEMY ─────────────────────────────────────────────
           The acquisition argument, in first place by the founder's call:
           free training is the reason to sign up, and word of mouth is the
           growth mechanism. A certificate mill never shows you its test — so
@@ -252,7 +323,7 @@ export default async function WorkersHome({
         <section className="relative mx-auto w-full max-w-[1120px] px-6 pb-20 pt-16">
           <Reveal replay>
             <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-              {ch("01", t.chAcademy.label)}
+              {ch("02", t.chAcademy.label)}
             </p>
             <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
               {t.chAcademy.h2}
@@ -362,77 +433,6 @@ export default async function WorkersHome({
           </Reveal>
         </section>
       ) : null}
-
-      {/* ── 02/05 THE POOL ────────────────────────────────────────────── */}
-      <section className="relative mx-auto w-full max-w-[1120px] border-t border-black/8 px-6 pb-20 pt-16">
-        <Reveal replay>
-          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-            {ch("02", t.ch01.label)}
-          </p>
-          <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-            {t.ch01.h2}
-          </h2>
-          <p className="mt-2 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">
-            {t.ch01.body}
-          </p>
-
-          <div aria-hidden className="sheen-frame sheen-frame--paper mt-8 shadow-[0_24px_60px_-32px_rgba(20,22,26,0.35)]">
-            <div className="relative overflow-hidden rounded-2xl bg-[#F7F6F3]">
-              <div className="flex h-10 items-center justify-between border-b border-[#14161A]/10 bg-white px-4">
-                <span className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#1E7F5C]" />
-                  <span className="font-mono text-[11px] text-[#5B6069]">task_pool</span>
-                </span>
-                <span className="font-mono text-[11px] text-[#5B6069]">7:15 AM Manila</span>
-              </div>
-              <div className="bg-white text-[13px]">
-                {POOL_ROWS.map((r) => (
-                  <div
-                    key={r.task}
-                    className={`srow flex items-center gap-3 border-b border-[#14161A]/[0.06] px-4 py-[10px] last:border-0 ${
-                      r.tag === "you" ? "bg-[#F7F6F3] ring-1 ring-inset ring-[#14161A]/15" : ""
-                    }`}
-                  >
-                    <span className="truncate text-[#14161A]">{r.task}</span>
-                    <span className="ml-auto shrink-0 font-mono text-[12px] tabular-nums text-[#166049]">
-                      {r.payout}
-                    </span>
-                    <PoolChip tag={r.tag} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <p className="mt-3 font-mono text-[11px] text-[#5B6069]">{t.ch01.disclosure}</p>
-
-          {/* the day bands, absorbed: two lines, one caption, no chapter */}
-          <div className="mt-10 space-y-2">
-            {[
-              { label: "Manila", lit: (h: number) => h >= 8 && h <= 17 },
-              { label: "New York", lit: (h: number) => h >= 20 || h <= 5 },
-            ].map((row) => (
-              <div key={row.label} className="flex items-center gap-3">
-                <span className="w-[68px] shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-[#5B6069]">
-                  {row.label}
-                </span>
-                <div className="relative grid flex-1 grid-cols-[repeat(24,minmax(0,1fr))] gap-px overflow-hidden rounded bg-black/8">
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <span
-                      key={i}
-                      className={`h-5 ${row.lit(i) ? "bg-[#1B2740]" : "bg-[#14161A]/[0.06]"}`}
-                    />
-                  ))}
-                  <span
-                    aria-hidden
-                    className="band-sweep absolute inset-y-0 left-0 w-[3px] bg-[#F7F6F3] mix-blend-difference"
-                  />
-                </div>
-              </div>
-            ))}
-            <p className="pt-1 font-mono text-[11px] text-[#5B6069]">{t.ch01.bandCaption}</p>
-          </div>
-        </Reveal>
-      </section>
 
       {/* ── 03/05 THE SLIP ────────────────────────────────────────────── */}
       <section className="border-t border-black/8">
