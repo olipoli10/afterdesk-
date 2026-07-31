@@ -388,7 +388,11 @@ dialog.ss-modal {
   max-height: calc(100dvh - 2rem);
 }
 dialog.ss-modal::backdrop {
-  background: rgba(10, 11, 13, 0.6);
+  background-color: rgba(10, 11, 13, 0.82);
+  background-image:
+    linear-gradient(rgba(247, 246, 243, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 246, 243, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
   backdrop-filter: blur(6px);
 }
 @media (prefers-reduced-motion: no-preference) {

@@ -20,7 +20,7 @@ import {
 
 type Turn = { role: "user" | "assistant"; content: string };
 
-// The chat speaks as "we" — it is Second Shift talking, never an "assistant".
+// The chat speaks as "we" — it is AfterDesk talking, never an "assistant".
 const OPENER =
   "Tell us what you need done — in your own words, however messy. We'll ask a couple of questions if anything's unclear, then write it up for you.";
 
@@ -126,7 +126,7 @@ export function TaskChat({
                 }
               >
                 <span className="sr-only">
-                  {t.role === "user" ? "You: " : "Second Shift: "}
+                  {t.role === "user" ? "You: " : "AfterDesk: "}
                 </span>
                 {t.content}
               </div>

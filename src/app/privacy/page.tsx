@@ -5,7 +5,7 @@ import { getSettings } from "@/lib/settings";
 export const metadata: Metadata = {
   title: "Privacy",
   description:
-    "What Second Shift collects, why, how long it is kept, and who can see it. Client and worker never learn each other’s identity — that separation is enforced in the data layer, not just the interface.",
+    "What AfterDesk collects, why, how long it is kept, and who can see it. Client and worker never learn each other’s identity — that separation is enforced in the data layer, not just the interface.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -51,8 +51,8 @@ export default async function PrivacyPage() {
           {settings.retentionDays} days. Financial, fraud-prevention and audit records may be retained longer where
           operational or legal obligations require it. For access, correction or deletion
           requests, email{" "}
-          <a className="underline" href="mailto:privacy@secondshift.co">
-            privacy@secondshift.co
+          <a className="underline" href="mailto:privacy@afterdesk.co">
+            privacy@afterdesk.co
           </a>
           .
         </p>

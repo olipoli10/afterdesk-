@@ -22,9 +22,9 @@ import type { Course } from "./types";
 export const COURSES: Record<string, Course> = {
   "va-foundations": {
     "slug": "va-foundations",
-    "title": "Working on Second Shift",
+    "title": "Working on AfterDesk",
     "track": "foundations",
-    "tagline": "How Second Shift works end to end, and the stance that keeps you earning.",
+    "tagline": "How AfterDesk works end to end, and the stance that keeps you earning.",
     "summary": "This is the course every worker should take first. It walks the full path of a task, from the moment a client posts it to the moment your payout is released, and explains the rules that hold the platform together: fixed payouts, first-come claiming, the wall between you and the client, and what QC and your record mean for the work you see. Finish it and you will know exactly what a claim commits you to.",
     "outcomes": [
       "You can trace a task from client brief to released payout.",
@@ -36,7 +36,7 @@ export const COURSES: Record<string, Course> = {
     ],
     "lessons": [
       {
-        "title": "How Second Shift Works",
+        "title": "How AfterDesk Works",
         "minutes": 4,
         "sections": [
           {
@@ -1201,7 +1201,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Your record only means something if every delivery on it is your own work. Sharing an account breaks that permanently, no matter how careful the arrangement is."
         },
         {
-          "prompt": "You use one strong password for your email, your bank, and your Second Shift account. Is that acceptable?",
+          "prompt": "You use one strong password for your email, your bank, and your AfterDesk account. Is that acceptable?",
           "options": [
             "Yes; one strong password is safer than several weak ones",
             "Yes, as long as you never write it down anywhere",
@@ -1402,15 +1402,15 @@ export const COURSES: Record<string, Course> = {
             "body": "Everything in that inbox belongs to the client. Salary conversations, unsigned contracts, a supplier dispute, a medical appointment: you will see all of it, and none of it leaves the inbox. Do not forward client mail to your own address to read later. Do not paste client email into a translator, a grammar checker or an AI assistant unless the client has written that it is allowed and named the tool. Do not screenshot anything for a portfolio, a course or a friend. When a task is done, delete local copies of attachments from your downloads folder. If someone outside asks what your client is working on, the honest answer is that you do not discuss client work. Say it once, plainly, and it is never awkward again."
           },
           {
-            "heading": "How Second Shift differs",
-            "body": "Second Shift tasks never give you a client inbox, and you never write to a client's contacts. There is no chat, no calls, no direct thread of any kind. What you may get is the flat version of this work: a set of exported messages to sort and summarise, a batch of replies to draft in a document, a template library to build, a contact list pulled out of a thread. You do the thinking, you upload the file with a note to the operator, and the operator reviews it before anyone sees it. Everything else in this course is for the inbox work you do for other clients directly, where you hold the keys. Both need the same judgement. Only one lets you press send."
+            "heading": "How AfterDesk differs",
+            "body": "AfterDesk tasks never give you a client inbox, and you never write to a client's contacts. There is no chat, no calls, no direct thread of any kind. What you may get is the flat version of this work: a set of exported messages to sort and summarise, a batch of replies to draft in a document, a template library to build, a contact list pulled out of a thread. You do the thinking, you upload the file with a note to the operator, and the operator reviews it before anyone sees it. Everything else in this course is for the inbox work you do for other clients directly, where you hold the keys. Both need the same judgement. Only one lets you press send."
           }
         ],
         "keyPoints": [
           "Your value is the sorting, not the typing. Count what you removed from their day.",
           "Ask for delegated access, not a password. Safer for the client and for you.",
           "Client mail never leaves the inbox: no forwarding, no AI tools, no screenshots, no portfolio.",
-          "On Second Shift you never touch a client inbox or contact anyone. The operator does."
+          "On AfterDesk you never touch a client inbox or contact anyone. The operator does."
         ]
       },
       {
@@ -1534,7 +1534,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "When your own voice is better",
-            "body": "Not everything should sound like your client. When you write as yourself, clearly as their assistant, use plain professional English and stop performing. Scheduling, chasing documents, confirming details and coordinating logistics are usually faster and clearer coming from you, and many clients prefer it because it protects their own name for the things that need it. Ask which of these they want in their voice and which in yours. Second Shift works on the same principle: what you upload is a draft, the operator reviews it, and nothing goes out under anyone's name until it has passed that review. The skill is knowing whose name a message needs, not proving you can imitate anyone."
+            "body": "Not everything should sound like your client. When you write as yourself, clearly as their assistant, use plain professional English and stop performing. Scheduling, chasing documents, confirming details and coordinating logistics are usually faster and clearer coming from you, and many clients prefer it because it protects their own name for the things that need it. Ask which of these they want in their voice and which in yours. AfterDesk works on the same principle: what you upload is a draft, the operator reviews it, and nothing goes out under anyone's name until it has passed that review. The skill is knowing whose name a message needs, not proving you can imitate anyone."
           }
         ],
         "keyPoints": [
@@ -1633,7 +1633,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Closing the loop out loud",
-            "body": "Finished work that nobody saw finish still costs your client attention, because they are still carrying it. When a loop closes, say so in one line in the handover: the signed contract came back from the supplier on Tuesday, filed in the shared folder, nothing needed from you. Then remove the label and mark the row done. Keep completed rows on a second tab rather than deleting them, because a month of closed loops is the clearest evidence of your value that exists, and it will be there when you ask about rates or when the client wonders what they are paying for. On Second Shift your delivery note does the same job: a short, plain statement of what is finished and what still needs a decision."
+            "body": "Finished work that nobody saw finish still costs your client attention, because they are still carrying it. When a loop closes, say so in one line in the handover: the signed contract came back from the supplier on Tuesday, filed in the shared folder, nothing needed from you. Then remove the label and mark the row done. Keep completed rows on a second tab rather than deleting them, because a month of closed loops is the clearest evidence of your value that exists, and it will be there when you ask about rates or when the client wonders what they are paying for. On AfterDesk your delivery note does the same job: a short, plain statement of what is finished and what still needs a decision."
           }
         ],
         "keyPoints": [
@@ -1725,7 +1725,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "How this reaches you here",
-            "body": "On Second Shift you do not meet the client and you do not contact their attendees. A calendar task arrives with what you need in the brief and the attached files: the schedule as it stands, the constraints, the outcome wanted. You build the result, which might be a corrected schedule, an audit table, a set of draft messages or a prep document, and you upload it with a note to the operator, who reviews it and passes it on. You never send an invitation to a third party or write to an attendee unless the brief says to and gives you the account to do it from. Working directly for another client, outside this platform, you may hold the calendar itself. The craft is identical. Only who presses send changes."
+            "body": "On AfterDesk you do not meet the client and you do not contact their attendees. A calendar task arrives with what you need in the brief and the attached files: the schedule as it stands, the constraints, the outcome wanted. You build the result, which might be a corrected schedule, an audit table, a set of draft messages or a prep document, and you upload it with a note to the operator, who reviews it and passes it on. You never send an invitation to a third party or write to an attendee unless the brief says to and gives you the account to do it from. Working directly for another client, outside this platform, you may hold the calendar itself. The craft is identical. Only who presses send changes."
           },
           {
             "heading": "A calendar is confidential",
@@ -1736,7 +1736,7 @@ export const COURSES: Record<string, Course> = {
           "Owning a calendar means answering why every meeting exists, not just booking rooms.",
           "Errors arrive with an audience; ninety-five percent correct still means a visible failure most months.",
           "Nothing is agreed until it is in the calendar entry, complete and current.",
-          "On Second Shift you build the schedule and draft the messages; the operator sends.",
+          "On AfterDesk you build the schedule and draft the messages; the operator sends.",
           "A calendar reveals deals, candidates and health; it never leaves the task."
         ]
       },
@@ -1959,8 +1959,8 @@ export const COURSES: Record<string, Course> = {
             "body": "Be explicit about which one you are doing. A message saying the meeting is off, without saying whether it will return, leaves the other person holding a slot they cannot fill and a question they now have to ask. If it is coming back, say when you will propose new times. If it is not, say so directly, and say what replaces it, if anything: a written update, a decision made elsewhere, a shorter call next month. Then do the mechanical part properly. Cancel the calendar event rather than deleting it silently, so attendees get the notice. Release rooms and equipment. Cancel associated travel where you can. Remove the holds you placed. And tell anyone downstream whose preparation is now wasted, before they finish it."
           },
           {
-            "heading": "On Second Shift you draft, not send",
-            "body": "When a Second Shift task involves a change to someone's schedule, your deliverable is the work, not the act. That means the updated schedule or calendar file, the message written and ready to send, a short list of what changed and who is affected, and any decision the operator needs to make. You upload it with a note explaining anything ambiguous and what you would recommend. You do not contact attendees, and you do not make a change you were not asked to make. Working directly for another client, outside this platform, you may be the one who sends. Even then the discipline holds: draft it fully, check the times twice, and get one confirmation from the person whose name is on the message."
+            "heading": "On AfterDesk you draft, not send",
+            "body": "When a AfterDesk task involves a change to someone's schedule, your deliverable is the work, not the act. That means the updated schedule or calendar file, the message written and ready to send, a short list of what changed and who is affected, and any decision the operator needs to make. You upload it with a note explaining anything ambiguous and what you would recommend. You do not contact attendees, and you do not make a change you were not asked to make. Working directly for another client, outside this platform, you may be the one who sends. Even then the discipline holds: draft it fully, check the times twice, and get one confirmation from the person whose name is on the message."
           }
         ],
         "keyPoints": [
@@ -1968,7 +1968,7 @@ export const COURSES: Record<string, Course> = {
           "Five parts, one apology: what changed, new times in their zone, prep status, next step.",
           "The side causing the change flexes, and nobody is asked to move twice.",
           "Say plainly whether a meeting is cancelled or returning, and release rooms and holds.",
-          "On Second Shift you deliver the draft and the changes; the operator sends."
+          "On AfterDesk you deliver the draft and the changes; the operator sends."
         ]
       },
       {
@@ -2129,7 +2129,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "A late-night call arranged well in advance is exactly where a clock shift or a diary change hides. Written reconfirmation the day before catches it."
         },
         {
-          "prompt": "A Second Shift task asks you to rebuild a client's meeting schedule and write the notes telling attendees about the changes. The attached file contains the attendees' email addresses.",
+          "prompt": "A AfterDesk task asks you to rebuild a client's meeting schedule and write the notes telling attendees about the changes. The attached file contains the attendees' email addresses.",
           "options": [
             "Send the notes to the attendees so the new schedule takes effect without delay.",
             "Deliver the rebuilt schedule and the draft notes to the operator, and contact nobody.",
@@ -2267,7 +2267,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Blurring is often reversible and cropping can miss things. A rebuilt screenshot with dummy data is the only version that is safe by default."
         },
         {
-          "prompt": "You claim a Second Shift task: draft replies to twenty exported support tickets for a client. Three of them ask about a refund policy the brief does not cover, and you cannot contact the client. What do you deliver?",
+          "prompt": "You claim a AfterDesk task: draft replies to twenty exported support tickets for a client. Three of them ask about a refund policy the brief does not cover, and you cannot contact the client. What do you deliver?",
           "options": [
             "Twenty drafts, using the refund approach you have seen most other companies apply.",
             "Seventeen drafts, plus a delivery note listing the three and asking the operator for the policy.",
@@ -2297,15 +2297,15 @@ export const COURSES: Record<string, Course> = {
             "body": "A support queue is the cheapest research the business will ever get. If eleven people this week asked where their invoice number lives, that is not eleven annoyances, it is one missing label in the interface or one missing help article. Keep a running note of repeated questions, a plain Google Sheets tab with the date, the topic and a link to the ticket. Once a month you can say, with numbers, that this one confusion cost roughly forty replies. That is the difference between someone who answers tickets and someone the business keeps. Nobody else in the company sees this pattern, because nobody else reads every message."
           },
           {
-            "heading": "How Second Shift differs",
-            "body": "Support work on Second Shift looks different from support work elsewhere, and you should know both. Elsewhere you may sit in a shared inbox and reply to customers directly under your own name. Here you never speak to a client and never speak to their customers. A support task usually means drafting replies from a ticket export, writing help articles, tagging and triaging a backlog, or building a macro library. You upload the drafts, the operator reviews them, and the client sends them. Everything in this course still applies, because the judgement is identical. The only change is that your reply passes a review step before it reaches a human, so anything uncertain goes in the note to the operator rather than into the reply."
+            "heading": "How AfterDesk differs",
+            "body": "Support work on AfterDesk looks different from support work elsewhere, and you should know both. Elsewhere you may sit in a shared inbox and reply to customers directly under your own name. Here you never speak to a client and never speak to their customers. A support task usually means drafting replies from a ticket export, writing help articles, tagging and triaging a backlog, or building a macro library. You upload the drafts, the operator reviews them, and the client sends them. Everything in this course still applies, because the judgement is identical. The only change is that your reply passes a review step before it reaches a human, so anything uncertain goes in the note to the operator rather than into the reply."
           }
         ],
         "keyPoints": [
           "You are the first person reached, and the whole company to them.",
           "Separate what you know, what you can do, and what you are guessing.",
           "Repeated questions are data. Log them and report them monthly.",
-          "On Second Shift you draft replies; the operator reviews before anything is sent."
+          "On AfterDesk you draft replies; the operator reviews before anything is sent."
         ]
       },
       {
@@ -2486,7 +2486,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Escalate safely",
-            "body": "Escalation is the most common place customer data leaks. Share the minimum needed and use approved channels only. Do not forward a customer's file to your personal email to work on later, do not paste their spreadsheet or their message into a free AI tool or an online converter to summarise it, and do not put account numbers into a group chat that half the company can read. Redact what the recipient does not need. On Second Shift the rule is absolute: client data never leaves the task. No copies after delivery, no third-party uploads unless the brief says so, and no using the work as a portfolio sample. Treat every client you ever work for the same way."
+            "body": "Escalation is the most common place customer data leaks. Share the minimum needed and use approved channels only. Do not forward a customer's file to your personal email to work on later, do not paste their spreadsheet or their message into a free AI tool or an online converter to summarise it, and do not put account numbers into a group chat that half the company can read. Redact what the recipient does not need. On AfterDesk the rule is absolute: client data never leaves the task. No copies after delivery, no third-party uploads unless the brief says so, and no using the work as a portfolio sample. Treat every client you ever work for the same way."
           }
         ],
         "keyPoints": [
@@ -2514,7 +2514,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Take the customer out",
-            "body": "The article ships to the public. The ticket does not. Remove every trace of the person who reported it: name, company, email, account number, order number, internal ticket references, and anything visible in a screenshot. Rebuild screenshots with a test account and dummy data rather than blurring real details, because blurring is often reversible and always looks careless. Never quote a customer's message, even flatteringly, without written permission. This is the same rule you follow when you deliver on Second Shift and when you build a portfolio: the client's data is theirs, and their customers never agreed to appear in your work. Anonymous by default, always."
+            "body": "The article ships to the public. The ticket does not. Remove every trace of the person who reported it: name, company, email, account number, order number, internal ticket references, and anything visible in a screenshot. Rebuild screenshots with a test account and dummy data rather than blurring real details, because blurring is often reversible and always looks careless. Never quote a customer's message, even flatteringly, without written permission. This is the same rule you follow when you deliver on AfterDesk and when you build a portfolio: the client's data is theirs, and their customers never agreed to appear in your work. Anonymous by default, always."
           },
           {
             "heading": "Prove it works",
@@ -2551,7 +2551,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "The weekly five minutes",
-            "body": "Once a week, look at your own sheet and answer three questions. Which ticket took longest and why. Which answer did I have to send twice, and should it be an article or a macro. What did I promise and not deliver. Write one line for each. Over a quarter this becomes an honest account of your work that you can hand to anyone: here is my volume, here is my response time, here are the four articles I wrote that cut the password questions in half. On Second Shift, that same habit shows up in the note you send the operator with each delivery."
+            "body": "Once a week, look at your own sheet and answer three questions. Which ticket took longest and why. Which answer did I have to send twice, and should it be an article or a macro. What did I promise and not deliver. Write one line for each. Over a quarter this becomes an honest account of your work that you can hand to anyone: here is my volume, here is my response time, here are the four articles I wrote that cut the password questions in half. On AfterDesk, that same habit shows up in the note you send the operator with each delivery."
           }
         ],
         "keyPoints": [
@@ -2854,7 +2854,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "What never goes in a note",
-            "body": "A CRM note is a business record. It can be read by the whole company, exported in a legal dispute, or shown to the buyer by accident. So it holds facts and agreements, not opinions about people, not guesses about their finances or their personal life, and nothing you would not repeat with them in the room. Never paste passwords or card details into a note; if a buyer sends them, raise it through the proper channel and keep them out of the record. On Second Shift, your channel for anything sensitive is the delivery note to the operator, never a message to the client, because you have no contact with them at all."
+            "body": "A CRM note is a business record. It can be read by the whole company, exported in a legal dispute, or shown to the buyer by accident. So it holds facts and agreements, not opinions about people, not guesses about their finances or their personal life, and nothing you would not repeat with them in the room. Never paste passwords or card details into a note; if a buyer sends them, raise it through the proper channel and keep them out of the record. On AfterDesk, your channel for anything sensitive is the delivery note to the operator, never a message to the client, because you have no contact with them at all."
           }
         ],
         "keyPoints": [
@@ -2887,7 +2887,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Say what the data cannot say",
-            "body": "Every report should end with a short data quality note, because the numbers mean little without one. Say how many deals have no close date, how many have a close date in the past, how many have no amount, and how many have no owner. Give the counts plainly and do not soften them. If the export was taken mid-import, or a stage was renamed this week, say that too. This section protects the reader from acting on a number that is thinner than it looks, and it protects you, because a figure you flagged is never a figure you hid. On Second Shift the same honesty goes into your delivery note."
+            "body": "Every report should end with a short data quality note, because the numbers mean little without one. Say how many deals have no close date, how many have a close date in the past, how many have no amount, and how many have no owner. Give the counts plainly and do not soften them. If the export was taken mid-import, or a stage was renamed this week, say that too. This section protects the reader from acting on a number that is thinner than it looks, and it protects you, because a figure you flagged is never a figure you hid. On AfterDesk the same honesty goes into your delivery note."
           }
         ],
         "keyPoints": [
@@ -2908,7 +2908,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Before you touch anything",
-            "body": "Take a full export first, every object, and keep it untouched until the work is approved. That export is your undo button, and in most CRMs it is the only one you get. Then agree the rules in writing before you apply them: what counts as stale, what happens to deals owned by someone who left, whether closing a dead deal needs a reason code. Ambiguity here is not a detail, because a sweep multiplies it by a thousand records. On Second Shift that agreement comes from the brief and from the operator, so if the brief does not settle a rule, ask before you sweep rather than after. One question costs minutes. One wrong rule costs the whole job."
+            "body": "Take a full export first, every object, and keep it untouched until the work is approved. That export is your undo button, and in most CRMs it is the only one you get. Then agree the rules in writing before you apply them: what counts as stale, what happens to deals owned by someone who left, whether closing a dead deal needs a reason code. Ambiguity here is not a detail, because a sweep multiplies it by a thousand records. On AfterDesk that agreement comes from the brief and from the operator, so if the brief does not settle a rule, ask before you sweep rather than after. One question costs minutes. One wrong rule costs the whole job."
           },
           {
             "heading": "Sort into four buckets",
@@ -2920,7 +2920,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Delivering a sweep",
-            "body": "Deliver three things. First, the before and after counts on the same measures you started with, so the improvement is a number rather than a claim. Second, the exceptions list: what you could not decide and why, with enough detail that someone else can finish it. Third, the rules you applied, written plainly, because those rules are what stops the mess returning and they usually become the client's new standard. Keep your working files inside the task. On Second Shift that means no copies on your own drive after approval, no uploads to outside tools, and nothing from that database used as an example anywhere. Their pipeline leaves your machine when the task closes."
+            "body": "Deliver three things. First, the before and after counts on the same measures you started with, so the improvement is a number rather than a claim. Second, the exceptions list: what you could not decide and why, with enough detail that someone else can finish it. Third, the rules you applied, written plainly, because those rules are what stops the mess returning and they usually become the client's new standard. Keep your working files inside the task. On AfterDesk that means no copies on your own drive after approval, no uploads to outside tools, and nothing from that database used as an example anywhere. Their pipeline leaves your machine when the task closes."
           }
         ],
         "keyPoints": [
@@ -2953,7 +2953,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Confidentiality while you work",
-            "body": "A CRM is the most sensitive file most companies own: their customers, their prices, their losses. Treat exports accordingly. Do not upload a CRM export to a spreadsheet cleaner, a deduplication website, or an AI tool to speed the job up, unless the client or the brief explicitly allows it, and on Second Shift that means the brief and nothing else. Work in the client's own environment, or in files that stay inside the task. Delete every local copy once the work is approved. Never use a real pipeline as a portfolio sample, even with names removed, because deal sizes and industries identify companies far more easily than most people expect."
+            "body": "A CRM is the most sensitive file most companies own: their customers, their prices, their losses. Treat exports accordingly. Do not upload a CRM export to a spreadsheet cleaner, a deduplication website, or an AI tool to speed the job up, unless the client or the brief explicitly allows it, and on AfterDesk that means the brief and nothing else. Work in the client's own environment, or in files that stay inside the task. Delete every local copy once the work is approved. Never use a real pipeline as a portfolio sample, even with names removed, because deal sizes and industries identify companies far more easily than most people expect."
           }
         ],
         "keyPoints": [
@@ -3135,7 +3135,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Order data is the sensitive part",
-            "body": "Catalogue work is mostly public information. Order and customer work is not. An order record carries a real person's name, home address, phone number, email and what they bought, and in some stores the last digits of a card. Treat all of it the way you would want your own address treated in a stranger's hands. Never export customer data anywhere except the file the brief asks for, never paste order details into a translator, a formatting site or an AI tool, and never keep a copy after the work is approved. On Second Shift this is not a preference: client data stays inside the task, and a tool that needs it uploaded is a tool you cannot use. If you ever see full card numbers, stop and flag it."
+            "body": "Catalogue work is mostly public information. Order and customer work is not. An order record carries a real person's name, home address, phone number, email and what they bought, and in some stores the last digits of a card. Treat all of it the way you would want your own address treated in a stranger's hands. Never export customer data anywhere except the file the brief asks for, never paste order details into a translator, a formatting site or an AI tool, and never keep a copy after the work is approved. On AfterDesk this is not a preference: client data stays inside the task, and a tool that needs it uploaded is a tool you cannot use. If you ever see full card numbers, stop and flag it."
           }
         ],
         "keyPoints": [
@@ -3196,7 +3196,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "When the source is silent",
-            "body": "Work with three buckets. Known facts, straight from the source. Reasonable consequences, which you may write. Unknowns, which you may not. Keep the unknowns in a visible list as you go: no weight given, strap material not stated, compatibility with the older model unclear. Deliver that list with the copy. On Second Shift it goes in your delivery note, plainly: fifteen descriptions written, three fields I could not source, listed here. The operator can go back to the client in a minute. What you must never do is close a gap by finding a similar product elsewhere and borrowing its numbers, because eventually you borrow a number that is wrong and it gets published under the client's name. An honest gap is cheap. A wrong specification is not."
+            "body": "Work with three buckets. Known facts, straight from the source. Reasonable consequences, which you may write. Unknowns, which you may not. Keep the unknowns in a visible list as you go: no weight given, strap material not stated, compatibility with the older model unclear. Deliver that list with the copy. On AfterDesk it goes in your delivery note, plainly: fifteen descriptions written, three fields I could not source, listed here. The operator can go back to the client in a minute. What you must never do is close a gap by finding a similar product elsewhere and borrowing its numbers, because eventually you borrow a number that is wrong and it gets published under the client's name. An honest gap is cheap. A wrong specification is not."
           }
         ],
         "keyPoints": [
@@ -3249,7 +3249,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Rules first, judgement second",
-            "body": "Sort every exception into three boxes before touching it. Things you may fix yourself, such as correcting Steet to Street or adding a house number the postcode confirms. Things you do by a stated rule, such as the store's policy of shipping the in-stock part of an order and cancelling the rest. Things that are never yours, which means anything that moves money or promises something to a customer: refunds, cancellations, free replacements, upgraded shipping, discount codes. If the store has no rule for a case, do not invent one under time pressure. Park the order, keep working, and put the case in front of whoever decides, with what you found and what the options are. On Second Shift that is your delivery note; there is nobody else to ask."
+            "body": "Sort every exception into three boxes before touching it. Things you may fix yourself, such as correcting Steet to Street or adding a house number the postcode confirms. Things you do by a stated rule, such as the store's policy of shipping the in-stock part of an order and cancelling the rest. Things that are never yours, which means anything that moves money or promises something to a customer: refunds, cancellations, free replacements, upgraded shipping, discount codes. If the store has no rule for a case, do not invent one under time pressure. Park the order, keep working, and put the case in front of whoever decides, with what you found and what the options are. On AfterDesk that is your delivery note; there is nobody else to ask."
           },
           {
             "heading": "Write it on the order",
@@ -3277,7 +3277,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "The where-is-my-order reply",
-            "body": "The customer wants one thing: to know what happens next and when. A reply that works has four parts and fits in a short paragraph. Acknowledge the order by number. State where it is in plain words, not a copied carrier code. State what you are doing and by when: we have opened an enquiry with the carrier and will come back to you by Thursday. Give one clear next step if there is one. Apologise once, briefly, and never twice in the same message. Do not promise a delivery date the carrier has not given you, and never write that it is on its way when the tracking says nothing has moved. On Second Shift you draft these and the client sends them, so write them ready to send."
+            "body": "The customer wants one thing: to know what happens next and when. A reply that works has four parts and fits in a short paragraph. Acknowledge the order by number. State where it is in plain words, not a copied carrier code. State what you are doing and by when: we have opened an enquiry with the carrier and will come back to you by Thursday. Give one clear next step if there is one. Apologise once, briefly, and never twice in the same message. Do not promise a delivery date the carrier has not given you, and never write that it is on its way when the tracking says nothing has moved. On AfterDesk you draft these and the client sends them, so write them ready to send."
           },
           {
             "heading": "Lost, late, damaged, and duties",
@@ -3335,7 +3335,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Nothing about reviews is invented",
-            "body": "You will occasionally be asked, directly or by hint, to write reviews, to post one under another name, to have friends post them, or to bury a bad one under new ones. The answer is no, every time. Fake reviews break the rules of every platform that hosts them, they are illegal in a growing number of countries, and stores are removed for them. The same goes for review gating, meaning a system that quietly routes happy customers to the public form and unhappy ones somewhere private. If a brief asks for anything in this territory, stop and flag it rather than complying. On Second Shift, say so plainly in your delivery note. Refusing protects the client from a penalty they may not have considered."
+            "body": "You will occasionally be asked, directly or by hint, to write reviews, to post one under another name, to have friends post them, or to bury a bad one under new ones. The answer is no, every time. Fake reviews break the rules of every platform that hosts them, they are illegal in a growing number of countries, and stores are removed for them. The same goes for review gating, meaning a system that quietly routes happy customers to the public form and unhappy ones somewhere private. If a brief asks for anything in this territory, stop and flag it rather than complying. On AfterDesk, say so plainly in your delivery note. Refusing protects the client from a penalty they may not have considered."
           },
           {
             "heading": "Reviews are cheap data",
@@ -3540,8 +3540,8 @@ export const COURSES: Record<string, Course> = {
             "body": "Social media splits in two. Someone decides what the business stands for, what it sells, and what it will pay to promote. That is strategy, and it usually stays with the client or their marketing lead. The other half is operations: the calendar, the drafts, the images, the scheduling, the replies, the numbers at month end. That half is a real job, and it is the one you are hired for. Being clear about the split protects you. When a client asks why sales are flat, you can show what was published, what it reached and what you recommend, without pretending you control pricing, product or the offer. When you do have an opinion on strategy, offer it as a recommendation in the report, not as a change you made on your own."
           },
           {
-            "heading": "How Second Shift tasks differ",
-            "body": "On Second Shift, social work arrives as a defined deliverable. Thirty captions for a month, a content calendar, a set of graphics, a metrics report. You download the brief and the source files, you produce the work, you upload it with a note to the operator, and QC reviews it before the client sees it. You do not hold the client's account, you do not post to a live page, and you never speak to the client directly. The operator is the only person between you and them. Everything else in this course describes work you may also do for clients outside this platform, where you often will hold access and post directly. Both are normal parts of a social media career. Keep the difference straight so you never assume access you do not have."
+            "heading": "How AfterDesk tasks differ",
+            "body": "On AfterDesk, social work arrives as a defined deliverable. Thirty captions for a month, a content calendar, a set of graphics, a metrics report. You download the brief and the source files, you produce the work, you upload it with a note to the operator, and QC reviews it before the client sees it. You do not hold the client's account, you do not post to a live page, and you never speak to the client directly. The operator is the only person between you and them. Everything else in this course describes work you may also do for clients outside this platform, where you often will hold access and post directly. Both are normal parts of a social media career. Keep the difference straight so you never assume access you do not have."
           },
           {
             "heading": "The weekly rhythm",
@@ -3554,7 +3554,7 @@ export const COURSES: Record<string, Course> = {
         ],
         "keyPoints": [
           "Strategy belongs to the client; the calendar, the drafts and the inbox belong to you.",
-          "On Second Shift you deliver files through the platform and never hold client accounts.",
+          "On AfterDesk you deliver files through the platform and never hold client accounts.",
           "Quote the shape of the work: platforms, posts per month, inbox passes, one report.",
           "Clients notice missed slots, wrong prices and unanswered complaints, not your best caption."
         ]
@@ -3753,7 +3753,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "The holding reply",
-            "body": "Escalating does not mean silence, because silence in public looks like hiding. Post one short reply that acknowledges without admitting, denying or promising. Thank you for telling us. We have passed this to the team and someone will contact you directly. Then move immediately. Screenshot the comment or message with the timestamp and the profile visible, send it to the client through the channel you agreed, say plainly that you have not answered on the substance, and propose the reply you would send once they confirm. Give them a deadline, such as needing a decision before the end of your working day. On Second Shift you raise it with the operator in your delivery note and answer for nobody. Escalating fast is a professional act, not an admission that you cannot cope."
+            "body": "Escalating does not mean silence, because silence in public looks like hiding. Post one short reply that acknowledges without admitting, denying or promising. Thank you for telling us. We have passed this to the team and someone will contact you directly. Then move immediately. Screenshot the comment or message with the timestamp and the profile visible, send it to the client through the channel you agreed, say plainly that you have not answered on the substance, and propose the reply you would send once they confirm. Give them a deadline, such as needing a decision before the end of your working day. On AfterDesk you raise it with the operator in your delivery note and answer for nobody. Escalating fast is a professional act, not an admission that you cannot cope."
           },
           {
             "heading": "Access without passwords",
@@ -3761,7 +3761,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "The content is not your portfolio",
-            "body": "Client material stays with the client. Do not upload their files, customer lists, unpublished campaigns or analytics to any third-party service or AI tool unless the brief says you may. Do not keep copies after the work is delivered. Do not post their content, screenshots of their results or their name in your own marketing without written permission, and on Second Shift not at all, because platform work is never a portfolio sample. If you want work to show, build your own project and use that. What is usually safe to describe is the shape of the work, such as running daily community management for a healthcare clinic, without naming it, showing its numbers or reproducing its posts. When you are unsure whether something is confidential, treat it as confidential and ask."
+            "body": "Client material stays with the client. Do not upload their files, customer lists, unpublished campaigns or analytics to any third-party service or AI tool unless the brief says you may. Do not keep copies after the work is delivered. Do not post their content, screenshots of their results or their name in your own marketing without written permission, and on AfterDesk not at all, because platform work is never a portfolio sample. If you want work to show, build your own project and use that. What is usually safe to describe is the shape of the work, such as running daily community management for a healthcare clinic, without naming it, showing its numbers or reproducing its posts. When you are unsure whether something is confidential, treat it as confidential and ask."
           }
         ],
         "keyPoints": [
@@ -3769,7 +3769,7 @@ export const COURSES: Record<string, Course> = {
           "Post a holding reply, screenshot it, escalate the same day with a proposed answer.",
           "Ask for delegated access under your own login; never accept a personal password.",
           "Client files never go into outside tools or AI without written permission.",
-          "Second Shift work is never a portfolio sample."
+          "AfterDesk work is never a portfolio sample."
         ]
       },
       {
@@ -3975,15 +3975,15 @@ export const COURSES: Record<string, Course> = {
             "body": "Watch four failure points and you will catch most trouble early. Handoffs, where work leaves one person and nobody confirms the next person received it. Decisions, where everyone assumed a choice was made and nobody wrote it down. Waits, where a task is technically not late but has been sitting untouched for a week. Silence, where a person you depend on has not answered in days and you tell yourself no news is good news. None of these look dramatic on the day they start. They become a missed launch three weeks later. The whole craft is noticing them in the first week, while a two-minute message still fixes them."
           },
           {
-            "heading": "Coordination on Second Shift is different",
-            "body": "Much of this course is about work you do for other clients, standing between several people and keeping them moving. On Second Shift the shape is different, and it is worth being plain about it. Here an operator has already scoped and priced the task, and you never contact the client or anyone on their team. A coordination task in the pool is normally a deliverable about coordination: build the project plan, restructure the board, write the status report, produce the meeting notes and action list from a transcript. You produce the artifact, you note anything unclear for the operator, and you deliver. The thinking is the same. The chasing is not yours to do here."
+            "heading": "Coordination on AfterDesk is different",
+            "body": "Much of this course is about work you do for other clients, standing between several people and keeping them moving. On AfterDesk the shape is different, and it is worth being plain about it. Here an operator has already scoped and priced the task, and you never contact the client or anyone on their team. A coordination task in the pool is normally a deliverable about coordination: build the project plan, restructure the board, write the status report, produce the meeting notes and action list from a transcript. You produce the artifact, you note anything unclear for the operator, and you deliver. The thinking is the same. The chasing is not yours to do here."
           }
         ],
         "keyPoints": [
           "Coordination is making other people's work arrive before someone is waiting on it.",
           "You rarely have authority. An accurate written picture is what gives you weight.",
           "Projects die at handoffs, unrecorded decisions, silent waits, and unanswered messages.",
-          "On Second Shift you produce the coordination artifact; the operator handles all client contact."
+          "On AfterDesk you produce the coordination artifact; the operator handles all client contact."
         ]
       },
       {
@@ -4197,7 +4197,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "What leaves the room",
-            "body": "Meeting material is client data. Do not record without asking, and if you want to use a transcription or an AI tool, confirm in writing that the client permits it, because that content leaves their control the moment you upload it. On Second Shift the rule is stricter and simpler. Client files never leave the task. You do not upload them to any third party service unless the brief tells you to, you do not keep copies after delivery, and you never use the notes or the board as a portfolio sample. Discretion is social as well. What someone said in frustration during a meeting does not belong in a note twelve people will read."
+            "body": "Meeting material is client data. Do not record without asking, and if you want to use a transcription or an AI tool, confirm in writing that the client permits it, because that content leaves their control the moment you upload it. On AfterDesk the rule is stricter and simpler. Client files never leave the task. You do not upload them to any third party service unless the brief tells you to, you do not keep copies after delivery, and you never use the notes or the board as a portfolio sample. Discretion is social as well. What someone said in frustration during a meeting does not belong in a note twelve people will read."
           }
         ],
         "keyPoints": [
@@ -4205,7 +4205,7 @@ export const COURSES: Record<string, Course> = {
           "Send notes the same day and invite corrections. The first written version becomes the record.",
           "Keep a permanent decision log with dates and reasons. Never rewrite old entries.",
           "Confirm permission in writing before recording or running client material through any tool.",
-          "On Second Shift, client files never leave the task and are never portfolio samples."
+          "On AfterDesk, client files never leave the task and are never portfolio samples."
         ]
       },
       {
@@ -4400,7 +4400,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "What a deck is actually for",
-            "body": "A deck is not a document. It is a visual aid for a decision or an explanation, and every slide either moves that along or gets cut. Before you open any tool, find three things in the brief: who will see this, what they should do or believe afterwards, and whether it will be presented live or read alone. Those three answers change everything downstream, including how much text belongs on a slide. On Second Shift you cannot ask the client directly. The brief is your source and your delivery note is your channel back. If the brief is silent, do not build forty slides on a silent guess. Pick the reading the brief most supports, build that, and say which reading you used. A deck built for the wrong audience is not fixable by prettier slides."
+            "body": "A deck is not a document. It is a visual aid for a decision or an explanation, and every slide either moves that along or gets cut. Before you open any tool, find three things in the brief: who will see this, what they should do or believe afterwards, and whether it will be presented live or read alone. Those three answers change everything downstream, including how much text belongs on a slide. On AfterDesk you cannot ask the client directly. The brief is your source and your delivery note is your channel back. If the brief is silent, do not build forty slides on a silent guess. Pick the reading the brief most supports, build that, and say which reading you used. A deck built for the wrong audience is not fixable by prettier slides."
           },
           {
             "heading": "Write the one sentence first",
@@ -4835,7 +4835,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Read the brief before opening Canva",
-            "body": "Before you touch a tool, get four things from the brief. Where does this end up: a printed page, a phone screen, a projector, an email. What exact size or aspect ratio that destination needs. Which brand assets exist: a logo file, hex codes, named fonts, an existing template. What done looks like, and by when. If something is missing, do not invent it quietly. On a Second Shift task you never contact the client, so we are the route: state the gap and the assumption you made in the note you send with your delivery. A named assumption is easy for us to correct. A silent one turns into a revision."
+            "body": "Before you touch a tool, get four things from the brief. Where does this end up: a printed page, a phone screen, a projector, an email. What exact size or aspect ratio that destination needs. Which brand assets exist: a logo file, hex codes, named fonts, an existing template. What done looks like, and by when. If something is missing, do not invent it quietly. On a AfterDesk task you never contact the client, so we are the route: state the gap and the assumption you made in the note you send with your delivery. A named assumption is easy for us to correct. A silent one turns into a revision."
           },
           {
             "heading": "What never leaves the task",
@@ -4961,7 +4961,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "When the brand font is not free",
-            "body": "Brand guidelines often name a font you do not have. Check Google Fonts first, because a large share of brand fonts live there and are free to install and use commercially. If it is a paid or custom licensed font, do not download it from a font sharing site. Those files are usually pirated, sometimes carry malware, and using them puts the client at legal risk as well as you. The professional move is to use the nearest free substitute, keep everything else in the layout faithful to the brand, and state plainly in your delivery note which font you substituted and why. On a Second Shift task, we pass that to the client. Silent substitution is what causes a revision three days later."
+            "body": "Brand guidelines often name a font you do not have. Check Google Fonts first, because a large share of brand fonts live there and are free to install and use commercially. If it is a paid or custom licensed font, do not download it from a font sharing site. Those files are usually pirated, sometimes carry malware, and using them puts the client at legal risk as well as you. The professional move is to use the nearest free substitute, keep everything else in the layout faithful to the brand, and state plainly in your delivery note which font you substituted and why. On a AfterDesk task, we pass that to the client. Silent substitution is what causes a revision three days later."
           }
         ],
         "keyPoints": [
@@ -5050,7 +5050,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "File names are part of the work",
-            "body": "A file called final version two updated is a small insult to the person opening it. Name files so a stranger can sort them: client or project, what the thing is, the size or version, and a date written year first so files sort in order. Use hyphens or underscores rather than spaces, keep names short, and never put anything confidential in a file name. Deliver exactly what was asked for, with no extra drafts or working files unless the brief wants them. On a Second Shift task, upload the files and use the note to tell us what is inside, which decisions you made, and anything the client needs to know. That note is what makes review fast."
+            "body": "A file called final version two updated is a small insult to the person opening it. Name files so a stranger can sort them: client or project, what the thing is, the size or version, and a date written year first so files sort in order. Use hyphens or underscores rather than spaces, keep names short, and never put anything confidential in a file name. Deliver exactly what was asked for, with no extra drafts or working files unless the brief wants them. On a AfterDesk task, upload the files and use the note to tell us what is inside, which decisions you made, and anything the client needs to know. That note is what makes review fast."
           }
         ],
         "keyPoints": [
@@ -5141,7 +5141,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Access and client data",
-            "body": "Content work hands you keys: a CMS account, a media library, sometimes analytics. Treat all of it as borrowed. Use your own named account rather than a shared login, keep the password in a password manager, turn on two-factor authentication where the client allows it, and never pass access to anyone else. Client drafts, files and screenshots stay inside the job: no uploading them to converters, cloud drives or AI tools unless the brief says so, no keeping copies once the work is approved, and no using the finished page as a portfolio sample without written permission. On Second Shift the shape is simpler. Files come with the task and go back through us. No client logins, no client contact."
+            "body": "Content work hands you keys: a CMS account, a media library, sometimes analytics. Treat all of it as borrowed. Use your own named account rather than a shared login, keep the password in a password manager, turn on two-factor authentication where the client allows it, and never pass access to anyone else. Client drafts, files and screenshots stay inside the job: no uploading them to converters, cloud drives or AI tools unless the brief says so, no keeping copies once the work is approved, and no using the finished page as a portfolio sample without written permission. On AfterDesk the shape is simpler. Files come with the task and go back through us. No client logins, no client contact."
           }
         ],
         "keyPoints": [
@@ -5375,7 +5375,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "When you are asked anyway",
-            "body": "Sooner or later someone asks for the thing that crosses the line: fifty spun articles, invented statistics, reviews written by nobody, a claim you cannot verify, links hidden from readers. Answer plainly and in writing. Say what you will not do, say why in one sentence, and offer the version you can do instead, with what it would realistically take. Most of these requests come from pressure rather than bad faith, and a concrete alternative usually ends the conversation. If it does not, decline the work. On Second Shift you never contact the client: put the problem in your delivery note so we can settle it, or release the task. Your name stays attached to your work long after any campaign is forgotten."
+            "body": "Sooner or later someone asks for the thing that crosses the line: fifty spun articles, invented statistics, reviews written by nobody, a claim you cannot verify, links hidden from readers. Answer plainly and in writing. Say what you will not do, say why in one sentence, and offer the version you can do instead, with what it would realistically take. Most of these requests come from pressure rather than bad faith, and a concrete alternative usually ends the conversation. If it does not, decline the work. On AfterDesk you never contact the client: put the problem in your delivery note so we can settle it, or release the task. Your name stays attached to your work long after any campaign is forgotten."
           }
         ],
         "keyPoints": [
@@ -5445,7 +5445,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Full-size phone photos make pages slow. Resizing and compressing before upload, with real file names and alt text, is the standard pass."
         },
         {
-          "prompt": "You claimed a Second Shift task to rewrite a client's three thousand word draft for the web. A free AI rewriter would halve your time. The brief says nothing about AI tools. What do you do?",
+          "prompt": "You claimed a AfterDesk task to rewrite a client's three thousand word draft for the web. A free AI rewriter would halve your time. The brief says nothing about AI tools. What do you do?",
           "options": [
             "Use the tool, then delete the conversation history once you are finished.",
             "Use the tool a paragraph at a time so no single upload holds the whole draft.",
@@ -5539,7 +5539,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "A source you cannot find is a source that may not exist. Deliver what you verified and say plainly what you could not confirm."
         },
         {
-          "prompt": "A Second Shift task gives you a client spreadsheet of 900 customer rows. You need a formula to flag duplicate contacts and you want help writing it. The brief says nothing about AI tools.",
+          "prompt": "A AfterDesk task gives you a client spreadsheet of 900 customer rows. You need a formula to flag duplicate contacts and you want help writing it. The brief says nothing about AI tools.",
           "options": [
             "Rebuild five invented rows with the same column structure and ask about those",
             "Upload the file to the AI tool and ask it to remove the duplicates",
@@ -5550,18 +5550,18 @@ export const COURSES: Record<string, Course> = {
           "explain": "Client data never goes into a third-party tool without explicit written permission, and silence means no. An invented sample gets you the same formula with no exposure."
         },
         {
-          "prompt": "You claimed a Second Shift transcription task. The audio is 40 minutes of a recorded meeting and you are behind schedule. An online transcription service would finish it in five minutes. The brief does not mention AI or third-party tools.",
+          "prompt": "You claimed a AfterDesk transcription task. The audio is 40 minutes of a recorded meeting and you are behind schedule. An online transcription service would finish it in five minutes. The brief does not mention AI or third-party tools.",
           "options": [
             "Use the service, since the brief did not forbid it",
             "Use the service, then delete the file from your account afterwards",
             "Use it only for the passages you genuinely cannot hear",
-            "Do not upload it. On Second Shift, silence in the brief means no"
+            "Do not upload it. On AfterDesk, silence in the brief means no"
           ],
           "correct": 3,
-          "explain": "On Second Shift the default is never. Uploading client audio to an outside service transfers client data the client never agreed to move."
+          "explain": "On AfterDesk the default is never. Uploading client audio to an outside service transfers client data the client never agreed to move."
         },
         {
-          "prompt": "For a client of your own, outside Second Shift, you drafted a newsletter with AI help, then rewrote and fact-checked it yourself. The brief said nothing about AI. The client emails and asks directly whether you used AI.",
+          "prompt": "For a client of your own, outside AfterDesk, you drafted a newsletter with AI help, then rewrote and fact-checked it yourself. The brief said nothing about AI. The client emails and asks directly whether you used AI.",
           "options": [
             "Say no, since you edited it heavily and the final words are your own",
             "Say yes, name which parts you drafted with it and how you checked them",
@@ -5616,7 +5616,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Asking whether work is good invites flattery. Asking for inconsistencies, unclear sentences and unsupported claims produces candidates you can judge for yourself."
         },
         {
-          "prompt": "A client outside Second Shift has approved uploading their documents. You ask for a summary of a 30-page report, and the summary contains a revenue figure you do not remember seeing in the document.",
+          "prompt": "A client outside AfterDesk has approved uploading their documents. You ask for a summary of a 30-page report, and the summary contains a revenue figure you do not remember seeing in the document.",
           "options": [
             "Search the document for that figure and delete it if it is not there",
             "Keep it. A summary comes from the document, so the figure must be inside",
@@ -5638,7 +5638,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Client work is not your portfolio, even with the name removed. A sample built on invented data shows the same method with nothing of the client's in it."
         },
         {
-          "prompt": "A Second Shift brief explicitly permits AI drafting for a writing task. You used it for two sections, rewrote both, and verified the figures. You are uploading your delivery with a note to the operator.",
+          "prompt": "A AfterDesk brief explicitly permits AI drafting for a writing task. You used it for two sections, rewrote both, and verified the figures. You are uploading your delivery with a note to the operator.",
           "options": [
             "Nothing about the tool. It was permitted, so it is not worth mentioning",
             "A general line saying that AI was used somewhere in the work",
@@ -5684,7 +5684,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "What the failure costs",
-            "body": "Here is how it usually goes. A list building job, forty companies, six contacts that could not be found. The model offers six plausible addresses. They look right. Three of them bounce when the client runs the campaign. The client does not conclude that a tool made a mistake. The client concludes that the work cannot be trusted, and starts checking everything, which is more expensive than doing it themselves. On Second Shift the operator reviews every delivery before the client sees it, so an invented row usually comes back to you as a revision rather than reaching the client. That protection is real, and it is not something to lean on. Deliveries that keep coming back are noticed."
+            "body": "Here is how it usually goes. A list building job, forty companies, six contacts that could not be found. The model offers six plausible addresses. They look right. Three of them bounce when the client runs the campaign. The client does not conclude that a tool made a mistake. The client concludes that the work cannot be trusted, and starts checking everything, which is more expensive than doing it themselves. On AfterDesk the operator reviews every delivery before the client sees it, so an invented row usually comes back to you as a revision rather than reaching the client. That protection is real, and it is not something to lean on. Deliveries that keep coming back are noticed."
           }
         ],
         "keyPoints": [
@@ -5713,7 +5713,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "When you cannot verify",
-            "body": "Sometimes the fact is simply not findable in the time you have. That is not a failure, it is information, and the professional move is to say so. Leave the cell blank rather than filling it. Mark the claim clearly in your draft as unverified. On Second Shift, write it in the note to the operator with your delivery: which item, what you tried, what you could not confirm. An honest gap is a small cost the operator can absorb. A confident invention is a cost that lands on the client, with your delivery attached to it."
+            "body": "Sometimes the fact is simply not findable in the time you have. That is not a failure, it is information, and the professional move is to say so. Leave the cell blank rather than filling it. Mark the claim clearly in your draft as unverified. On AfterDesk, write it in the note to the operator with your delivery: which item, what you tried, what you could not confirm. An honest gap is a small cost the operator can absorb. A confident invention is a cost that lands on the client, with your delivery attached to it."
           },
           {
             "heading": "Where the risk is highest",
@@ -5733,8 +5733,8 @@ export const COURSES: Record<string, Course> = {
         "minutes": 7,
         "sections": [
           {
-            "heading": "On Second Shift, the default is never",
-            "body": "Start with the part that has no nuance. On a Second Shift task, client files, client text, client names and client data do not go into a third-party AI tool. Not a chat assistant, not an online transcription service, not a document summariser, not a writing tool that uploads the whole file, not an image tool. The default is no. The only exception is a brief that explicitly says otherwise, in writing, in the task itself. Silence is not permission. A brief that does not mention AI is a brief that does not allow it. This is not a suspicion about you. It is the promise the client was given when they handed over their data, and everyone who touches the task keeps it."
+            "heading": "On AfterDesk, the default is never",
+            "body": "Start with the part that has no nuance. On a AfterDesk task, client files, client text, client names and client data do not go into a third-party AI tool. Not a chat assistant, not an online transcription service, not a document summariser, not a writing tool that uploads the whole file, not an image tool. The default is no. The only exception is a brief that explicitly says otherwise, in writing, in the task itself. Silence is not permission. A brief that does not mention AI is a brief that does not allow it. This is not a suspicion about you. It is the promise the client was given when they handed over their data, and everyone who touches the task keeps it."
           },
           {
             "heading": "Pasting is a transfer",
@@ -5750,15 +5750,15 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "After the task, and other clients",
-            "body": "Two more edges. When a task is delivered, delete your working copies. Downloads folder, desktop, any temporary spreadsheet, anything you sent to yourself. You keep no copy after delivery, and you do not reuse client work as a portfolio sample, on Second Shift or anywhere else. Build samples from invented data instead. Outside Second Shift, some of your own clients will actively want you to use AI. Good. Get it in writing and get it specific: which tools, which data, whether output can be reused, whether disclosure is expected. A verbal yes is worth writing down in an email and having them confirm. Permission that is not written is permission you cannot prove."
+            "body": "Two more edges. When a task is delivered, delete your working copies. Downloads folder, desktop, any temporary spreadsheet, anything you sent to yourself. You keep no copy after delivery, and you do not reuse client work as a portfolio sample, on AfterDesk or anywhere else. Build samples from invented data instead. Outside AfterDesk, some of your own clients will actively want you to use AI. Good. Get it in writing and get it specific: which tools, which data, whether output can be reused, whether disclosure is expected. A verbal yes is worth writing down in an email and having them confirm. Permission that is not written is permission you cannot prove."
           }
         ],
         "keyPoints": [
-          "On Second Shift the default is never. Silence in a brief means no.",
+          "On AfterDesk the default is never. Silence in a brief means no.",
           "Pasting into a website is sending data to a company.",
           "Ask for the method, not with the material. Rebuild it with fake rows.",
           "Delete working copies after delivery. Client work is never a portfolio sample.",
-          "Outside Second Shift, get AI permission in writing and specific."
+          "Outside AfterDesk, get AI permission in writing and specific."
         ]
       },
       {
@@ -5807,7 +5807,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Checking without exposing the work",
-            "body": "The confidentiality line applies here too, including to your own drafts, because a draft written for a client contains the client's information. On a Second Shift task, do not paste the deliverable into a tool to have it checked. Run your own checklist, read it aloud, and use the tool only on things containing nothing of the client's: a formula pattern with fake data, a general question about phrasing a comparison, a grammar question about a sentence you rewrote with invented names. When a client outside the platform has approved AI use, the same document can go in with fewer contortions, but the approval has to exist first."
+            "body": "The confidentiality line applies here too, including to your own drafts, because a draft written for a client contains the client's information. On a AfterDesk task, do not paste the deliverable into a tool to have it checked. Run your own checklist, read it aloud, and use the tool only on things containing nothing of the client's: a formula pattern with fake data, a general question about phrasing a comparison, a grammar question about a sentence you rewrote with invented names. When a client outside the platform has approved AI use, the same document can go in with fewer contortions, but the approval has to exist first."
           },
           {
             "heading": "What a machine check cannot do",
@@ -5817,7 +5817,7 @@ export const COURSES: Record<string, Course> = {
         "keyPoints": [
           "Ask it to find faults. Asking whether it is good yields flattery.",
           "It checks writing and logic. It cannot check facts.",
-          "On Second Shift, never paste the deliverable in for a check.",
+          "On AfterDesk, never paste the deliverable in for a check.",
           "Accept no change you cannot explain in your own words."
         ]
       },
@@ -5860,7 +5860,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "The brief decides",
-            "body": "Disclosure has two separate questions inside it, and people muddle them. The first is whether you were allowed to use the tool at all. That is answered by the brief and by nothing else. The second is whether, having been allowed, you should say where you used it. Handle the first question first. If the brief is silent about AI on a Second Shift task, you did not have permission to put client data into one, and the disclosure question never arises. Where a brief permits it, disclosure becomes a matter of being useful and being honest, which here are almost always the same thing."
+            "body": "Disclosure has two separate questions inside it, and people muddle them. The first is whether you were allowed to use the tool at all. That is answered by the brief and by nothing else. The second is whether, having been allowed, you should say where you used it. Handle the first question first. If the brief is silent about AI on a AfterDesk task, you did not have permission to put client data into one, and the disclosure question never arises. Where a brief permits it, disclosure becomes a matter of being useful and being honest, which here are almost always the same thing."
           },
           {
             "heading": "When disclosure matters",
@@ -5868,7 +5868,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "How to say it",
-            "body": "Say it plainly and specifically, in a sentence or two, without apology and without over-explaining. The structure that works is what you used it for, what you did yourself, and how you checked. For example: the first draft of sections two and three was AI-assisted, I rewrote and restructured both, and every figure and citation was verified against the original reports. On Second Shift, where the brief allowed AI use, that goes in the note to the operator with your delivery. The person reviewing your work benefits from knowing which parts to look at hardest, and telling them costs you nothing but a sentence."
+            "body": "Say it plainly and specifically, in a sentence or two, without apology and without over-explaining. The structure that works is what you used it for, what you did yourself, and how you checked. For example: the first draft of sections two and three was AI-assisted, I rewrote and restructured both, and every figure and citation was verified against the original reports. On AfterDesk, where the brief allowed AI use, that goes in the note to the operator with your delivery. The person reviewing your work benefits from knowing which parts to look at hardest, and telling them costs you nothing but a sentence."
           },
           {
             "heading": "Never claim it did not happen",
@@ -5900,7 +5900,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "A policy in one paragraph",
-            "body": "Here is the whole course in something you could say out loud. I use AI tools for drafting, reformatting and first-pass ideas. No client data goes into any third-party tool without written permission, and on Second Shift that permission is not given, so it does not happen. Every fact, figure, name and citation is verified against a real source before delivery. I disclose AI use where it would matter to you, and I answer directly if you ask. Whatever I deliver, I can explain, and I stand behind it. Say that, mean it, and you are ahead of most people working today, with tools or without them."
+            "body": "Here is the whole course in something you could say out loud. I use AI tools for drafting, reformatting and first-pass ideas. No client data goes into any third-party tool without written permission, and on AfterDesk that permission is not given, so it does not happen. Every fact, figure, name and citation is verified against a real source before delivery. I disclose AI use where it would matter to you, and I answer directly if you ask. Whatever I deliver, I can explain, and I stand behind it. Say that, mean it, and you are ahead of most people working today, with tools or without them."
           }
         ],
         "keyPoints": [
@@ -5940,7 +5940,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Consistency plus a clear question is fixable in one move. Eleven scattered guesses are not, and inventing a category breaks the comparison between months."
         },
         {
-          "prompt": "A claimed Second Shift task gives you sixty receipt photos to type into a spreadsheet. Typing them will take three hours. A free online tool would read them automatically if you upload the images. The brief says nothing about outside tools. What do you do?",
+          "prompt": "A claimed AfterDesk task gives you sixty receipt photos to type into a spreadsheet. Typing them will take three hours. A free online tool would read them automatically if you upload the images. The brief says nothing about outside tools. What do you do?",
           "options": [
             "Type them yourself and keep the client data inside the task, unless the brief explicitly allows an outside tool",
             "Upload them, since the tool is free and nobody is being charged for the client's data",
@@ -5951,7 +5951,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Client data never leaves the task. Silence in the brief is not permission, and disclosing the upload afterwards does not undo the disclosure."
         },
         {
-          "prompt": "You work directly for a business owner, outside Second Shift. You are raising an invoice from a timesheet that totals 18 hours. The owner emails you to bill 20 hours because two extra hours were obviously worked. The written agreement says billing follows the timesheet. What do you do?",
+          "prompt": "You work directly for a business owner, outside AfterDesk. You are raising an invoice from a timesheet that totals 18 hours. The owner emails you to bill 20 hours because two extra hours were obviously worked. The written agreement says billing follows the timesheet. What do you do?",
           "options": [
             "Bill 20 hours as instructed, since the owner decides what to bill their own customer",
             "Bill 18 hours quietly, because the signed agreement is the document that governs",
@@ -6077,18 +6077,18 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "The questions to ask before you start",
-            "body": "Before you touch a file, you need six answers. Which records am I working in, and where do they live. What is the exact period. What is the existing category list, and can I see last month's finished version. What do I do with anything I am unsure about. Who signs off. When is it due. On Second Shift these usually sit in the brief, and if one is missing you raise it with the operator rather than guessing halfway through. Working directly for a business owner, you ask once at the beginning and write the answers somewhere you can reread. Five minutes at the start saves an hour of rework at the end."
+            "body": "Before you touch a file, you need six answers. Which records am I working in, and where do they live. What is the exact period. What is the existing category list, and can I see last month's finished version. What do I do with anything I am unsure about. Who signs off. When is it due. On AfterDesk these usually sit in the brief, and if one is missing you raise it with the operator rather than guessing halfway through. Working directly for a business owner, you ask once at the beginning and write the answers somewhere you can reread. Five minutes at the start saves an hour of rework at the end."
           },
           {
-            "heading": "How this works on Second Shift",
-            "body": "On Second Shift the payout is printed before you claim, so read the brief first and decide whether the work fits the price. Once you claim, the files come down with the task. Your questions go to the operator, never to the client, because you and the client never meet. You upload the finished file with a note explaining what you did, what you assumed, and what you could not resolve. The operator reviews it before the client ever sees it, and may send it back for revision. That review is not an insult. It is a second pair of eyes on numbers, which is exactly what bookkeeping needs. Working directly for an owner, you are the only pair of eyes, so you build the checks yourself."
+            "heading": "How this works on AfterDesk",
+            "body": "On AfterDesk the payout is printed before you claim, so read the brief first and decide whether the work fits the price. Once you claim, the files come down with the task. Your questions go to the operator, never to the client, because you and the client never meet. You upload the finished file with a note explaining what you did, what you assumed, and what you could not resolve. The operator reviews it before the client ever sees it, and may send it back for revision. That review is not an insult. It is a second pair of eyes on numbers, which is exactly what bookkeeping needs. Working directly for an owner, you are the only pair of eyes, so you build the checks yourself."
           }
         ],
         "keyPoints": [
           "You prepare and organise the books. A qualified accountant advises and files.",
           "Ask the six setup questions before you start, not halfway through the file.",
           "Every number you type becomes the basis of a decision someone else makes.",
-          "On Second Shift, questions go to the operator, never to the client."
+          "On AfterDesk, questions go to the operator, never to the client."
         ]
       },
       {
@@ -6174,7 +6174,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Where the files are allowed to live",
-            "body": "Receipts and statements live in the client's own storage, not yours. On Second Shift the files arrive with the claimed task and the finished work goes back through the delivery upload, so nothing needs to sit on your machine after approval. Delete local copies once the work is approved. Client data never leaves the task: no uploading receipts, statements or customer lists to a third party service, an online converter or an AI tool, unless the brief says so explicitly. Silence is not permission. Never keep a copy as a personal reference, and never use real client documents as a portfolio sample, however well you blur the name. That rule protects the client, and it is also the only reason anyone trusts you with a bank statement."
+            "body": "Receipts and statements live in the client's own storage, not yours. On AfterDesk the files arrive with the claimed task and the finished work goes back through the delivery upload, so nothing needs to sit on your machine after approval. Delete local copies once the work is approved. Client data never leaves the task: no uploading receipts, statements or customer lists to a third party service, an online converter or an AI tool, unless the brief says so explicitly. Silence is not permission. Never keep a copy as a personal reference, and never use real client documents as a portfolio sample, however well you blur the name. That rule protects the client, and it is also the only reason anyone trusts you with a bank statement."
           }
         ],
         "keyPoints": [
@@ -6207,7 +6207,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Who presses send",
-            "body": "Sending is not always your decision. Some owners want to review every invoice before it goes out, some want you to send from their address or their software, and some want to send it themselves. Ask once and follow the answer. Where you do send, use the business's own address and a plain subject line carrying the invoice number and the amount. Attach the PDF, restate the amount and the due date in the body, and keep the message short. On Second Shift you send nothing to anyone. You prepare the invoice, deliver the file through the task with a note, and the operator handles everything downstream. You never contact a client or a client's customers."
+            "body": "Sending is not always your decision. Some owners want to review every invoice before it goes out, some want you to send from their address or their software, and some want to send it themselves. Ask once and follow the answer. Where you do send, use the business's own address and a plain subject line carrying the invoice number and the amount. Attach the PDF, restate the amount and the due date in the body, and keep the message short. On AfterDesk you send nothing to anyone. You prepare the invoice, deliver the file through the task with a note, and the operator handles everything downstream. You never contact a client or a client's customers."
           }
         ],
         "keyPoints": [
@@ -6215,7 +6215,7 @@ export const COURSES: Record<string, Course> = {
           "Never reuse or delete an invoice number. Gaps look like hidden sales.",
           "Every figure comes from a document. Only a written instruction changes a number.",
           "Send PDF, never an editable file, and keep a register of every invoice.",
-          "On Second Shift you prepare and deliver. The operator handles all sending."
+          "On AfterDesk you prepare and deliver. The operator handles all sending."
         ]
       },
       {
@@ -6334,7 +6334,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "When you are asked to bend it",
-            "body": "Sooner or later somebody asks you to move a date into the previous period, record a personal purchase as a business expense, delete a row, or just make it balance. Sometimes it comes from pressure rather than dishonesty. The answer is the same either way. You do not do it, you say so politely, and you put your reason in writing to whoever owns the books. On Second Shift you leave the source data exactly as it is and raise the instruction with the operator in your delivery note. Nothing is worth your name on falsified records, and the practical reality is that these things surface during audits and disputes, when the person who held the pen gets asked why."
+            "body": "Sooner or later somebody asks you to move a date into the previous period, record a personal purchase as a business expense, delete a row, or just make it balance. Sometimes it comes from pressure rather than dishonesty. The answer is the same either way. You do not do it, you say so politely, and you put your reason in writing to whoever owns the books. On AfterDesk you leave the source data exactly as it is and raise the instruction with the operator in your delivery note. Nothing is worth your name on falsified records, and the practical reality is that these things surface during audits and disputes, when the person who held the pen gets asked why."
           }
         ],
         "keyPoints": [
@@ -6515,15 +6515,15 @@ export const COURSES: Record<string, Course> = {
             "body": "People resist choosing because they think they are locking a door. In practice the opposite happens. A client who hires you for inbox triage discovers you can also build a clean report, and gives you the report. Focus gets you through the first door. What you do afterwards decides how many rooms you get. Also, focus is revisable. Two years in, you may find that the reporting work pays better and drains you less than the inbox work. Change the lead. Nobody is holding you to the sentence you wrote in your first month. What you cannot do is skip the choosing and expect a stranger to do it for you."
           },
           {
-            "heading": "Where Second Shift differs",
-            "body": "Inside Second Shift, you do not need a profile to get work. Tasks sit in the pool with a fixed payout printed before you claim, and you claim what you can do well. That is deliberate. It removes the selling from the earning. But the moment you look for work outside this platform, and most of you will and should, the selling comes back. This course is about that world. Treat your Second Shift record as evidence for yourself: the categories you claim most, the deliveries that passed QC first time, the work you were fastest at. That is a focus, discovered by doing. Read your own history before you write a word of a profile."
+            "heading": "Where AfterDesk differs",
+            "body": "Inside AfterDesk, you do not need a profile to get work. Tasks sit in the pool with a fixed payout printed before you claim, and you claim what you can do well. That is deliberate. It removes the selling from the earning. But the moment you look for work outside this platform, and most of you will and should, the selling comes back. This course is about that world. Treat your AfterDesk record as evidence for yourself: the categories you claim most, the deliveries that passed QC first time, the work you were fastest at. That is a focus, discovered by doing. Read your own history before you write a word of a profile."
           }
         ],
         "keyPoints": [
           "A list of twelve skills tells a client nothing; one clear focus makes you sortable",
           "Pick the overlap between what you have done repeatedly and what someone pays to remove",
           "Focus opens the first door; what you deliver afterwards opens the rest",
-          "Your Second Shift claim history is real evidence of where you are strongest",
+          "Your AfterDesk claim history is real evidence of where you are strongest",
           "Focus is revisable. Repetition, not reflection alone, confirms it"
         ]
       },
@@ -6599,7 +6599,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Price the outcome where you can",
-            "body": "Hourly pricing punishes you for getting faster, which is the strange result of billing time for work you keep improving at. Where the deliverable is well-defined, quote for the job: this report, this cleaned list, this weekly inbox routine. To do it, track your real hours for a few weeks so you know what things actually take. Then quote the job at your target rate times your honest estimate, plus room for one revision. If the client changes the scope, that is a new quote, said politely and without apology. Second Shift works this way already, which is why every task shows a fixed payout before you claim. You are seeing outcome pricing from the inside."
+            "body": "Hourly pricing punishes you for getting faster, which is the strange result of billing time for work you keep improving at. Where the deliverable is well-defined, quote for the job: this report, this cleaned list, this weekly inbox routine. To do it, track your real hours for a few weeks so you know what things actually take. Then quote the job at your target rate times your honest estimate, plus room for one revision. If the client changes the scope, that is a new quote, said politely and without apology. AfterDesk works this way already, which is why every task shows a fixed payout before you claim. You are seeing outcome pricing from the inside."
           },
           {
             "heading": "Raising your rate later",
@@ -6740,7 +6740,7 @@ export const COURSES: Record<string, Course> = {
       "You can spot red flags in a post and follow up without becoming a nuisance"
     ],
     "slug": "getting-hired",
-    "summary": "This course teaches you how to find and win virtual assistant work outside Second Shift. You will choose a focus, write a profile and application that get read, set a rate you can defend, handle interviews and test tasks, and follow up without becoming a nuisance. Every method here is plain and repeatable. There are no hacks.",
+    "summary": "This course teaches you how to find and win virtual assistant work outside AfterDesk. You will choose a focus, write a profile and application that get read, set a rate you can defend, handle interviews and test tasks, and follow up without becoming a nuisance. Every method here is plain and repeatable. There are no hacks.",
     "tagline": "Choose a focus, write what gets read, and charge what the work is worth.",
     "title": "Getting hired as a virtual assistant",
     "track": "career"
@@ -6749,7 +6749,7 @@ export const COURSES: Record<string, Course> = {
     "exam": {
       "questions": [
         {
-          "prompt": "You just delivered a data cleanup on Second Shift and QC approved it. The spreadsheet is the best work you have produced and you want a portfolio sample. What do you do?",
+          "prompt": "You just delivered a data cleanup on AfterDesk and QC approved it. The spreadsheet is the best work you have produced and you want a portfolio sample. What do you do?",
           "options": [
             "Blur the company name in a screenshot of three rows and use that as your sample.",
             "Keep the file privately and show it only to clients who ask directly, never publicly.",
@@ -6757,10 +6757,10 @@ export const COURSES: Record<string, Course> = {
             "Ask the operator in your delivery note whether the client would allow you to show it."
           ],
           "correct": 2,
-          "explain": "Client work is never a sample on Second Shift, in any form. Delete your copies after approval and demonstrate the same skill with invented data."
+          "explain": "Client work is never a sample on AfterDesk, in any form. Delete your copies after approval and demonstrate the same skill with invented data."
         },
         {
-          "prompt": "A prospective client outside Second Shift asks for a list building sample. You have never built one you are allowed to show. You have three days before they decide.",
+          "prompt": "A prospective client outside AfterDesk asks for a list building sample. You have never built one you are allowed to show. You have three days before they decide.",
           "options": [
             "Build a synthetic list for an invented company, with sources and a flagged-rows tab.",
             "Send your research brief sample and say list building uses very similar skills anyway.",
@@ -6771,7 +6771,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Three days is enough to build a proper synthetic sample. It shows the exact skill they asked about without touching anyone's confidential data."
         },
         {
-          "prompt": "A client outside Second Shift replies to your request with: sure, feel free to use our work in your portfolio. You want to show the monthly report you build for them.",
+          "prompt": "A client outside AfterDesk replies to your request with: sure, feel free to use our work in your portfolio. You want to show the monthly report you build for them.",
           "options": [
             "Take the screenshot now, since the email is written permission and that is what matters.",
             "Rebuild the report in a blank file with invented figures and publish it without replying.",
@@ -6804,7 +6804,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "One well-chosen sample framed in two lines answers their question. Sending everything hands the sorting to a busy stranger and suggests you did not read the posting."
         },
         {
-          "prompt": "The source file on your claimed Second Shift task is in a format your spreadsheet will not open. A free online converter would fix it in one minute. The brief says nothing about converters.",
+          "prompt": "The source file on your claimed AfterDesk task is in a format your spreadsheet will not open. A free online converter would fix it in one minute. The brief says nothing about converters.",
           "options": [
             "Upload it to the converter, since the service deletes files from its servers afterwards.",
             "Do not upload it. Find a way to open it locally, and flag it in your delivery note.",
@@ -6837,7 +6837,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "The skill is handling mess, so you have to create the mess yourself. Keeping the raw and cleaned versions together is what makes the sample convincing."
         },
         {
-          "prompt": "A client outside Second Shift, six months into working together, has just thanked you warmly for a delivery. You would like a testimonial you can use.",
+          "prompt": "A client outside AfterDesk, six months into working together, has just thanked you warmly for a delivery. You would like a testimonial you can use.",
           "options": [
             "Add the request to your next invoice email so it does not cost them another message.",
             "Ask them to write whatever they feel, so the result sounds authentic rather than scripted.",
@@ -6889,7 +6889,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "Why nobody can see your work",
-            "body": "Almost everything good you produce belongs to somebody else. The cleaned list, the research brief, the reformatted deck: the moment you deliver it, it is the client's property and often covered by a confidentiality clause you agreed to. On Second Shift the rule is absolute. Client work is never yours to show, not as a file, not as a screenshot, not as a redacted extract. That leaves you in a bind nobody warns you about. The people hiring you want to see work. The work you have done is the work you cannot show. Everyone serious faces this, including lawyers, accountants and agency staff. They solved it the same way you will: by building proof that was never a client's to begin with, and by keeping a record of what they did."
+            "body": "Almost everything good you produce belongs to somebody else. The cleaned list, the research brief, the reformatted deck: the moment you deliver it, it is the client's property and often covered by a confidentiality clause you agreed to. On AfterDesk the rule is absolute. Client work is never yours to show, not as a file, not as a screenshot, not as a redacted extract. That leaves you in a bind nobody warns you about. The people hiring you want to see work. The work you have done is the work you cannot show. Everyone serious faces this, including lawyers, accountants and agency staff. They solved it the same way you will: by building proof that was never a client's to begin with, and by keeping a record of what they did."
           },
           {
             "heading": "What a client is really asking",
@@ -6917,7 +6917,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "The rule in one sentence",
-            "body": "Client data never leaves the task. That is the whole doctrine and it does not bend. On Second Shift, files you download on a claimed task are for producing that delivery and nothing else. You do not upload them to a third party service, a free online converter, a translation site or an AI assistant unless the brief explicitly tells you to. You do not email them to yourself. You do not keep them once the delivery is approved. And you never use them, in any form, as a portfolio sample. Most clients outside Second Shift hold the same position even when nobody writes it down, because the data usually is not theirs either. It belongs to their customers, their patients, their suppliers. You are three steps from a person who never agreed to any of this."
+            "body": "Client data never leaves the task. That is the whole doctrine and it does not bend. On AfterDesk, files you download on a claimed task are for producing that delivery and nothing else. You do not upload them to a third party service, a free online converter, a translation site or an AI assistant unless the brief explicitly tells you to. You do not email them to yourself. You do not keep them once the delivery is approved. And you never use them, in any form, as a portfolio sample. Most clients outside AfterDesk hold the same position even when nobody writes it down, because the data usually is not theirs either. It belongs to their customers, their patients, their suppliers. You are three steps from a person who never agreed to any of this."
           },
           {
             "heading": "A screenshot is still the file",
@@ -6933,7 +6933,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Where permission fits",
-            "body": "Outside Second Shift there is a narrow path. If a client gives you written permission to show a specific piece of work, and you keep that email, you may show that piece within the limits they set. Vague permission is not permission. Verbal permission you cannot produce later is not permission. And permission from your direct contact does not cover their customers' data. On Second Shift there is no path at all. You have no contact with clients, so there is nobody to ask, and the answer is fixed anyway. Client work is never a sample. If something about a task itself is unclear, the note you send with your delivery is your channel to the operator. Use it for questions about the work, not for requests to reuse it."
+            "body": "Outside AfterDesk there is a narrow path. If a client gives you written permission to show a specific piece of work, and you keep that email, you may show that piece within the limits they set. Vague permission is not permission. Verbal permission you cannot produce later is not permission. And permission from your direct contact does not cover their customers' data. On AfterDesk there is no path at all. You have no contact with clients, so there is nobody to ask, and the answer is fixed anyway. Client work is never a sample. If something about a task itself is unclear, the note you send with your delivery is your channel to the operator. Use it for questions about the work, not for requests to reuse it."
           }
         ],
         "keyPoints": [
@@ -7074,7 +7074,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "How to ask for a testimonial",
-            "body": "Ask right after a delivery that went well, while the relief is fresh, and never in the same message as an invoice. Make it easy. Tell them exactly what would help: two or three sentences on what I did, how quickly, and whether the work needed correcting. Offer to draft something they can edit, which most busy people prefer, and keep the draft accurate and modest so editing it feels like agreeing rather than inflating. Ask explicitly what you may publish: their full name and company, or only a first name and an industry. Keep the reply. On Second Shift this route does not exist, because you have no contact with clients. Here your evidence is your own record and your certificates, and that is fine."
+            "body": "Ask right after a delivery that went well, while the relief is fresh, and never in the same message as an invoice. Make it easy. Tell them exactly what would help: two or three sentences on what I did, how quickly, and whether the work needed correcting. Offer to draft something they can edit, which most busy people prefer, and keep the draft accurate and modest so editing it feels like agreeing rather than inflating. Ask explicitly what you may publish: their full name and company, or only a first name and an industry. Keep the reply. On AfterDesk this route does not exist, because you have no contact with clients. Here your evidence is your own record and your certificates, and that is fine."
           },
           {
             "heading": "What a good testimonial says",
@@ -7086,7 +7086,7 @@ export const COURSES: Record<string, Course> = {
           "Three to five relevant certificates beat a grid of twelve badges.",
           "Ask for testimonials right after a good delivery, and offer a draft they can edit.",
           "A useful testimonial names specific behaviour, not general pleasantness.",
-          "Second Shift gives you no client contact, so your record and certificates are the evidence."
+          "AfterDesk gives you no client contact, so your record and certificates are the evidence."
         ]
       },
       {
@@ -7223,7 +7223,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Numbers are sequential and permanent. Deleting or reusing one leaves a gap that looks like something hidden, while a documented cancellation does not."
         },
         {
-          "prompt": "You are invoicing a client outside Second Shift for cleaning their customer list. What belongs on the description line?",
+          "prompt": "You are invoicing a client outside AfterDesk for cleaning their customer list. What belongs on the description line?",
           "options": [
             "The service and the volume, for example data cleanup of one contact list, three hours.",
             "A sample of the cleaned rows, so the client sees the value delivered.",
@@ -7267,7 +7267,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "The money is owed to someone else. Writing it down as a debt to yourself is what makes it get repaid instead of quietly disappearing."
         },
         {
-          "prompt": "A client you already work with outside Second Shift emails from a slightly different address, asking you to resend your bank details for a faster payment. What do you do?",
+          "prompt": "A client you already work with outside AfterDesk emails from a slightly different address, asking you to resend your bank details for a faster payment. What do you do?",
           "options": [
             "Confirm through the channel you already use with them before sending anything.",
             "Reply with the details; you have worked with this client for months.",
@@ -7278,7 +7278,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "A changed address is a reason to verify on a channel you already trust. Confirming costs a few minutes; sending details to the wrong person costs a payment."
         },
         {
-          "prompt": "A Second Shift task was approved and the payout released. You want proof of that income for your own records. What do you keep?",
+          "prompt": "A AfterDesk task was approved and the payout released. You want proof of that income for your own records. What do you keep?",
           "options": [
             "The client files, so you can show what the work involved.",
             "A copy of the delivered file, renamed so it cannot be identified.",
@@ -7319,7 +7319,7 @@ export const COURSES: Record<string, Course> = {
             "body": "Everything in this course reduces to four habits. Record every payment when it arrives, not at the end of the year. Keep work money separate from household money so the two never have to be untangled. Set aside a share of every payment for obligations before you spend anything, and build a buffer, because your income is lumpy and your bills are not. Price your time from your own costs, not from what a task looks like it is worth. Do those four and the rest is paperwork. Skip them and every month starts with a question you cannot answer. The order matters too: the record comes first, because you cannot separate, set aside, or price anything you have not measured."
           },
           {
-            "heading": "Where Second Shift fits",
+            "heading": "Where AfterDesk fits",
             "body": "On our platform the money side is deliberately simple. The payout is fixed and printed before you claim, so there is nothing to negotiate, no proposal to price, and no payment to chase. After your delivery passes QC, the payout is released. That is one client of yours behaving predictably. Everything else in your career will be less tidy: clients who pay late, clients who pay in a currency you do not hold, clients who want an invoice in a format you have never produced. This course is written for that whole picture, not only for us. And whatever you earn here counts as your income like any other. Our simplicity does not change your obligations in your own country."
           }
         ],
@@ -7327,7 +7327,7 @@ export const COURSES: Record<string, Course> = {
           "The work is one job. Running the money behind it is another.",
           "We teach concepts and questions. Country rules come from official sources only.",
           "Four habits: record, separate, set aside, price.",
-          "Second Shift pays a fixed amount after QC approval. Other clients are messier."
+          "AfterDesk pays a fixed amount after QC approval. Other clients are messier."
         ]
       },
       {
@@ -7352,7 +7352,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "When a payment does not arrive",
-            "body": "Before anyone can help you, you need the reference number, the exact amount sent, the date, and the sending method. That is why the record habit exists. When a payment is late, check the expected arrival window first, because many services quote a range and a payment inside its own window is not late. If it is genuinely overdue, contact the receiving service with the reference, and tell the payer factually and without accusation. On Second Shift, a payout question goes to us and nowhere else. With other clients, keep the conversation short and documented, and keep working only if the delay is a one-off. Repeated late payment is information about the client, not about you."
+            "body": "Before anyone can help you, you need the reference number, the exact amount sent, the date, and the sending method. That is why the record habit exists. When a payment is late, check the expected arrival window first, because many services quote a range and a payment inside its own window is not late. If it is genuinely overdue, contact the receiving service with the reference, and tell the payer factually and without accusation. On AfterDesk, a payout question goes to us and nowhere else. With other clients, keep the conversation short and documented, and keep working only if the delay is a one-off. Repeated late payment is information about the client, not about you."
           }
         ],
         "keyPoints": [
@@ -7413,7 +7413,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "What never goes in your records",
-            "body": "Your records document money, not client material. The row says what the work was in your own general words, for example data cleanup of one contact list. It does not contain the client's data, their customers, their files, or screenshots of their documents. This holds for every client and it is absolute on Second Shift: client files never leave the task, no copies are kept after approval, and nothing from a task becomes a sample. Your proof folder holds payment confirmations, invoices you issued, and your own notes. If you ever need to show what you earned, the payment record is the evidence. The work itself is never yours to show."
+            "body": "Your records document money, not client material. The row says what the work was in your own general words, for example data cleanup of one contact list. It does not contain the client's data, their customers, their files, or screenshots of their documents. This holds for every client and it is absolute on AfterDesk: client files never leave the task, no copies are kept after approval, and nothing from a task becomes a sample. Your proof folder holds payment confirmations, invoices you issued, and your own notes. If you ever need to show what you earned, the payment record is the evidence. The work itself is never yours to show."
           }
         ],
         "keyPoints": [
@@ -7508,7 +7508,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Requests from overseas clients",
-            "body": "A client abroad may ask you for something you have never seen: a tax form from their country, a declaration of where you live, a signed contractor agreement, or a business registration number. Do not fabricate anything and do not sign what you have not read. Ask the client what the document is for, then take it to your professional before returning it. If you do not have a number they are asking for, say so plainly rather than inventing one. Be careful about who is really asking, too: a request for identity documents or bank details deserves confirmation through a channel you already use with that client. On Second Shift, anything of this kind comes through us and never directly from a client."
+            "body": "A client abroad may ask you for something you have never seen: a tax form from their country, a declaration of where you live, a signed contractor agreement, or a business registration number. Do not fabricate anything and do not sign what you have not read. Ask the client what the document is for, then take it to your professional before returning it. If you do not have a number they are asking for, say so plainly rather than inventing one. Be careful about who is really asking, too: a request for identity documents or bank details deserves confirmation through a channel you already use with that client. On AfterDesk, anything of this kind comes through us and never directly from a client."
           }
         ],
         "keyPoints": [
@@ -7525,7 +7525,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "Why an invoice exists",
-            "body": "An invoice is a dated, numbered statement that a specific amount is owed for specific work. It does three jobs at once: it tells the client exactly what to pay and how, it becomes your proof that the income was earned and when, and it forms a sequence that can be checked from the outside. Even when a client pays without one, the invoice is what turns a bank transfer into a documented transaction. On Second Shift the payout is handled by the platform after QC approval, so you are not chasing anyone for payment. Whether you must still keep or issue documents for that income is a question for your revenue authority, not for us. With clients you deal with directly, the invoice is your basic instrument."
+            "body": "An invoice is a dated, numbered statement that a specific amount is owed for specific work. It does three jobs at once: it tells the client exactly what to pay and how, it becomes your proof that the income was earned and when, and it forms a sequence that can be checked from the outside. Even when a client pays without one, the invoice is what turns a bank transfer into a documented transaction. On AfterDesk the payout is handled by the platform after QC approval, so you are not chasing anyone for payment. Whether you must still keep or issue documents for that income is a question for your revenue authority, not for us. With clients you deal with directly, the invoice is your basic instrument."
           },
           {
             "heading": "What an invoice contains",
@@ -7570,7 +7570,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Fixed payouts and your real levers",
-            "body": "On Second Shift the payout is set before you see the task, so pricing is not a negotiation you can enter. That does not remove your control, it moves it. Your levers are which tasks you claim, how well a category matches your speed, and how rarely your work comes back for revision, since a revision cuts your effective rate on a payout that does not change. Track effective rate by category over a few weeks and the pattern will be obvious: some categories reward you, some do not. Claim more of the first and fewer of the second. That is pricing, done with your choices instead of your quotes, and it is the same discipline you will use everywhere else."
+            "body": "On AfterDesk the payout is set before you see the task, so pricing is not a negotiation you can enter. That does not remove your control, it moves it. Your levers are which tasks you claim, how well a category matches your speed, and how rarely your work comes back for revision, since a revision cuts your effective rate on a payout that does not change. Track effective rate by category over a few weeks and the pattern will be obvious: some categories reward you, some do not. Claim more of the first and fewer of the second. That is pricing, done with your choices instead of your quotes, and it is the same discipline you will use everywhere else."
           },
           {
             "heading": "Raising your rate elsewhere",
@@ -7725,7 +7725,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Victim lists are sold and reused. Nobody legitimate charges an advance fee to recover money, and sending documents hands them the identity they came for."
         },
         {
-          "prompt": "Someone messages you privately, says they are a Second Shift client whose task you delivered last week, and offers the same work directly at a higher rate. They ask for your bank details to set up payment.",
+          "prompt": "Someone messages you privately, says they are a AfterDesk client whose task you delivered last week, and offers the same work directly at a higher rate. They ask for your bank details to set up payment.",
           "options": [
             "Take it; the work is the same and the pay is better.",
             "Do not engage, send nothing, and report the message to us.",
@@ -7733,7 +7733,7 @@ export const COURSES: Record<string, Course> = {
             "Accept the work but keep the payments running through the platform."
           ],
           "correct": 1,
-          "explain": "Clients never contact workers on Second Shift. Anyone claiming to be one is impersonating the platform, and asking for proof only continues a conversation you should end."
+          "explain": "Clients never contact workers on AfterDesk. Anyone claiming to be one is impersonating the platform, and asking for proof only continues a conversation you should end."
         }
       ]
     },
@@ -7783,7 +7783,7 @@ export const COURSES: Record<string, Course> = {
             "body": "A common version: you are hired, the company will ship you a laptop and headset, and you need to pay a deposit or buy the equipment from their approved supplier. Sometimes they send a cheque to cover it, which you deposit and use to pay the supplier. The supplier is them. The cheque bounces a week later and the money is gone from your account. Real employers either ship equipment at their own cost, let you use what you already own, or state an allowance that arrives with your pay. Nobody legitimate needs you to route money through a supplier they chose. If a role requires software, it is either free, provided by the company, or something you already own and mentioned in your application."
           },
           {
-            "heading": "What this means for Second Shift",
+            "heading": "What this means for AfterDesk",
             "body": "We will never ask you for money. Not to join, not to be vetted, not to take an Academy course, not to sit an exam, not to receive a certificate, and not to claim a task. There is no equipment to buy from us and no deposit of any kind. Every task in the pool shows a fixed payout before you claim it, and that money moves in one direction only, from us to you after quality control approves your delivery. If anyone ever contacts you claiming to represent us and asks for a payment, a deposit or a fee, it is not us. Say no and tell us. The same test we are teaching you applies to us, and we intend to pass it every time."
           }
         ],
@@ -7791,7 +7791,7 @@ export const COURSES: Record<string, Course> = {
           "In real employment money flows toward you. Any fee before pay is the scam.",
           "Training fees, deposits, activation charges and placement fees are one shape renamed.",
           "Nobody legitimate needs you to buy equipment from a supplier they chose.",
-          "Second Shift never asks you for money, at any stage, for any reason."
+          "AfterDesk never asks you for money, at any stage, for any reason."
         ]
       },
       {
@@ -7839,7 +7839,7 @@ export const COURSES: Record<string, Course> = {
             "body": "You are allowed to ask questions, and asking them is itself a filter, because real employers answer and scammers get annoyed. Useful wording: how long should this take, and is there a scope limit. Is this sample data or live client work. Will all candidates do the same test. When will I hear back. If it runs longer than an hour, is there a fee for the test. Send it as one short, friendly message rather than a list of demands. A real hiring manager reads that as a professional protecting their time. If the reply is pressure, vagueness or a suggestion that you are not serious, you have your answer, and it arrived before you spent the afternoon."
           },
           {
-            "heading": "How Second Shift does this",
+            "heading": "How AfterDesk does this",
             "body": "We do not use unpaid test tasks. Entry runs through vetting and this Academy, and the exams you sit here are ours, not a client's work in disguise. Once you are approved, every task in the pool carries a fixed payout printed before you claim, including the first one you ever do. There is no trial period at a lower rate and no sample task you complete for free to prove yourself. If you ever see something on our platform that looks like unpaid production work, that is a bug or an impersonation, and we want to hear about it. We built it this way on purpose, because free trial work is one of the mechanisms that made remote work feel cheap, and we are not interested in reproducing it."
           }
         ],
@@ -7847,7 +7847,7 @@ export const COURSES: Record<string, Course> = {
           "The tell is not the word unpaid. It is whether they can use your output.",
           "A real test is short, identical for all candidates, and uses sample data.",
           "Asking about scope and timing filters employers. Real ones answer, scammers push back.",
-          "Second Shift has no unpaid tests. Every task shows a fixed payout first."
+          "AfterDesk has no unpaid tests. Every task shows a fixed payout first."
         ]
       },
       {
@@ -8131,7 +8131,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "The night is a choice here",
-            "body": "Second Shift has no client calls, no chat and no meetings. You claim a task from the pool at a payout printed before you claim it, you download the files, you deliver, and we handle everything on the client side. Nobody is waiting for you to be online at three in the morning. That means the night is a choice, and some people pay a health cost for an availability nobody asked for. If you work nights because another client wants overlap, because the house is finally quiet, because the connection is better then, or because you have a daytime job, those are real reasons. The rest of this course is written for you."
+            "body": "AfterDesk has no client calls, no chat and no meetings. You claim a task from the pool at a payout printed before you claim it, you download the files, you deliver, and we handle everything on the client side. Nobody is waiting for you to be online at three in the morning. That means the night is a choice, and some people pay a health cost for an availability nobody asked for. If you work nights because another client wants overlap, because the house is finally quiet, because the connection is better then, or because you have a daytime job, those are real reasons. The rest of this course is written for you."
           },
           {
             "heading": "Sleep debt arrives as errors first",

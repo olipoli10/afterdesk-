@@ -4,7 +4,7 @@ import { PolicyPage } from "@/components/policy-page";
 export const metadata: Metadata = {
   title: "Security",
   description:
-    "How Second Shift protects the files you send: uploads are inspected and scrubbed of author metadata, access ends with the task, and every delivery is reviewed by one operator before it reaches you.",
+    "How AfterDesk protects the files you send: uploads are inspected and scrubbed of author metadata, access ends with the task, and every delivery is reviewed by one operator before it reaches you.",
   alternates: { canonical: "/security" },
 };
 
@@ -48,8 +48,8 @@ export default function SecurityPage() {
         <h2 className="text-xl font-semibold">Reporting</h2>
         <p className="mt-2">
           Report a suspected vulnerability to{" "}
-          <a className="underline" href="mailto:security@secondshift.co">
-            security@secondshift.co
+          <a className="underline" href="mailto:security@afterdesk.co">
+            security@afterdesk.co
           </a>
           . Do not access other users’ data or disrupt the service while testing.
         </p>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Wordmark } from "@/components/logo";
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { Reveal } from "@/components/reveal";
@@ -122,11 +123,8 @@ export default async function CoursePublicPage({
       {/* ── NAV ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-4 px-4 sm:px-6">
-          <Link
-            href="/academy"
-            className="whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.14em] text-[#14161A] sm:text-[13px] sm:tracking-[0.22em]"
-          >
-            Second Shift
+          <Link href="/academy" className="text-[11px] sm:text-[13px]">
+            <Wordmark tone="ink" />
           </Link>
           <div className="flex items-center gap-3 sm:gap-5">
             <LangSwitch
@@ -371,7 +369,7 @@ export default async function CoursePublicPage({
       <footer className="border-t border-black/8">
         <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-4 px-6 py-8 text-[13px] text-[#5B6069]">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <span className="font-mono text-[11px] uppercase tracking-[0.14em]">Second Shift</span>
+            <Wordmark tone="ink" className="text-[11px]" />
             <Link href="/workers" className="transition-colors hover:text-[#14161A]">
               {t.footer.workers}
             </Link>

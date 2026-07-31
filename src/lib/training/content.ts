@@ -7,7 +7,7 @@
  * GENERATED from the training-guides authoring run — edit by hand freely
  * (this header is provenance, not a "do not edit" marker).
  *
- * Voice: Second Shift speaks as "we", the worker is "you". Plain strings
+ * Voice: AfterDesk speaks as "we", the worker is "you". Plain strings
  * only — no markdown; structure lives in the fields, rendering in the
  * training pages.
  */

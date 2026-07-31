@@ -20,7 +20,7 @@ import { linkInline } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to your Second Shift dashboard.",
+  description: "Sign in to your AfterDesk dashboard.",
   robots: { index: false, follow: false },
 };
 

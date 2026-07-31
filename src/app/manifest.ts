@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Second Shift",
-    short_name: "Second Shift",
+    name: "AfterDesk",
+    short_name: "AfterDesk",
     description:
       "Describe any task in plain English — priced fixed, done overnight, reviewed before it reaches you.",
     start_url: "/",

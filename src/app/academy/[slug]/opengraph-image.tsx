@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { publicCourseFull, PUBLISHED_COURSES, academyStats } from "@/lib/academy/public";
 
-export const alt = "A free Second Shift Academy course";
+export const alt = "A free AfterDesk Academy course";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -50,7 +50,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
             textTransform: "uppercase",
           }}
         >
-          <div>Second Shift</div>
+          <div>AfterDesk</div>
           <div style={{ fontSize: 19, color: "#5B6069" }}>Academy</div>
         </div>
 
@@ -64,7 +64,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
               lineHeight: 1.08,
             }}
           >
-            {course ? course.title : "Second Shift Academy"}
+            {course ? course.title : "AfterDesk Academy"}
           </div>
         </div>
 

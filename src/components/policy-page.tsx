@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { TrustLinks } from "@/components/trust-links";
+import { Wordmark } from "@/components/logo";
 
 export function PolicyPage({
   title,
@@ -15,8 +16,8 @@ export function PolicyPage({
     <div className="min-h-screen bg-[#F7F6F3] text-[#14161A]">
       <header className="border-b border-black/10">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-5">
-          <Link href="/" className="font-mono text-xs uppercase tracking-[0.2em]">
-            Second Shift
+          <Link href="/" className="text-xs">
+            <Wordmark tone="ink" />
           </Link>
           <Link href="/how-it-works" className="text-sm text-[#5B6069] hover:text-[#14161A]">
             How it works
@@ -37,10 +38,10 @@ export function PolicyPage({
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-5 py-7 text-sm">
           <TrustLinks />
           <a
-            href="mailto:support@secondshift.co"
+            href="mailto:support@afterdesk.co"
             className="text-[#5B6069] hover:text-[#14161A]"
           >
-            support@secondshift.co
+            support@afterdesk.co
           </a>
         </div>
       </footer>

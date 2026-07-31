@@ -67,7 +67,7 @@ const OUTPUT_SCHEMA = {
 } as const;
 
 const FIXED_RULES = `
-You are pricing for Second Shift, a marketplace where a human operator reviews and approves every price before a client ever sees it — you are proposing a number, not setting one.
+You are pricing for AfterDesk, a marketplace where a human operator reviews and approves every price before a client ever sees it — you are proposing a number, not setting one.
 
 REASONING METHOD, IN ORDER:
 1. Look at REFERENCE_TASKS below (already-approved similar tasks: title, description, category, final client price, final VA payout, estimated minutes). Find the ones that actually resemble this task in scope and volume — not just shared keywords.

@@ -4,7 +4,7 @@ import { PolicyPage } from "@/components/policy-page";
 export const metadata: Metadata = {
   title: "Acceptable use",
   description:
-    "What Second Shift will and will not take on. Some tasks we turn down — this page says which, and why, in plain language.",
+    "What AfterDesk will and will not take on. Some tasks we turn down — this page says which, and why, in plain language.",
   alternates: { canonical: "/acceptable-use" },
 };
 
@@ -12,7 +12,7 @@ export default function AcceptableUsePage() {
   return (
     <PolicyPage
       title="Acceptable use"
-      intro="Second Shift handles bounded administrative work. Some tasks are refused even when they can be described."
+      intro="AfterDesk handles bounded administrative work. Some tasks are refused even when they can be described."
     >
       <section>
         <h2 className="text-xl font-semibold">Not accepted</h2>

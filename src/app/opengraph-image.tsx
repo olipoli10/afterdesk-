@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Second Shift — Describe any task, get it back done by morning";
+export const alt = "AfterDesk — Describe any task, get it back done by morning";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -28,7 +28,7 @@ export default function OgImage() {
             textTransform: "uppercase",
           }}
         >
-          Second Shift
+          AfterDesk
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 72, color: "#767C86", letterSpacing: "-0.02em" }}>

@@ -4,7 +4,7 @@ import { PolicyPage } from "@/components/policy-page";
 export const metadata: Metadata = {
   title: "Terms",
   description:
-    "The operational agreement behind every Second Shift task: one fixed price approved before work starts, what the review standard covers, and how revisions, disputes and refunds work.",
+    "The operational agreement behind every AfterDesk task: one fixed price approved before work starts, what the review standard covers, and how revisions, disputes and refunds work.",
   alternates: { canonical: "/terms" },
 };
 
@@ -33,14 +33,14 @@ export default function TermsPage() {
       <section>
         <h2 className="text-xl font-semibold">Payments and refunds</h2>
         <p className="mt-2">
-          Clients purchase a deliverable from Second Shift; the worker is an independent
-          subcontractor paid by Second Shift. An upheld dispute queues a refund to the original
+          Clients purchase a deliverable from AfterDesk; the worker is an independent
+          subcontractor paid by AfterDesk. An upheld dispute queues a refund to the original
           payment method. Fraudulent chargebacks, unlawful tasks and material misrepresentation may
           result in suspension.
         </p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Who operates Second Shift</h2>
+        <h2 className="text-xl font-semibold">Who operates AfterDesk</h2>
         <p className="mt-2">
           Every price, quality review and payout decision described in these terms is made by
           one person — not a support queue, not an algorithm.
@@ -51,7 +51,7 @@ export default function TermsPage() {
         <p className="mt-2">
           Users must upload only material they are authorized to share. Workers may use task data
           only to complete the assigned work and may not contact or identify the client. On full
-          payment, the client receives the rights Second Shift can transfer in the commissioned
+          payment, the client receives the rights AfterDesk can transfer in the commissioned
           deliverable, excluding third-party materials and pre-existing tools.
         </p>
       </section>

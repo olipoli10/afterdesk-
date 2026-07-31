@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Wordmark } from "@/components/logo";
 import { cookies } from "next/headers";
 import { getSessionUser, roleHome } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
@@ -138,10 +139,7 @@ export default async function WorkersHome({
       {/* ── NAV ───────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
-          <span className="whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.14em] text-[#14161A] sm:text-[13px] sm:tracking-[0.22em]">
-            <span className="sm:hidden">SS</span>
-            <span className="hidden sm:inline">Second Shift</span>
-          </span>
+          <Wordmark tone="ink" className="text-[11px] sm:text-[13px]" />
           <AudienceToggle side="worker" tone="paper" />
           <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/workers" current={lang} options={WORKERS_LANGS} tone="paper" />
@@ -669,9 +667,7 @@ export default async function WorkersHome({
       {/* ── FOOTER ────────────────────────────────────────────────────── */}
       <footer className="border-t border-white/10 bg-[#0A0B0D] pb-20 sm:pb-0">
         <div className="mx-auto grid w-full max-w-[1120px] gap-4 px-6 py-6 sm:grid-cols-[auto_1fr] sm:items-center">
-          <span className="font-mono text-[12px] uppercase tracking-[0.22em] text-[#F7F6F3]">
-            Second Shift
-          </span>
+          <Wordmark tone="paper" className="text-[12px]" />
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[#8A9099] sm:justify-end">
             <Link href="/about" className="transition-colors hover:text-white">
               {t.footer.about}

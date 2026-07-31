@@ -80,15 +80,15 @@ export const auth = betterAuth({
       async sendVerificationOTP({ email, otp, type }) {
         const subject =
           type === "forget-password"
-            ? "Reset your Second Shift password"
-            : "Your Second Shift verification code";
+            ? "Reset your AfterDesk password"
+            : "Your AfterDesk verification code";
         await sendEmail({
           to: email,
           subject,
           text:
             `Your verification code is ${otp}\n\n` +
             `It expires in 10 minutes. If you did not request it, ignore this email.\n\n` +
-            `— Second Shift`,
+            `— AfterDesk`,
         });
       },
     }),

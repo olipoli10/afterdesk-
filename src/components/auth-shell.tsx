@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Wordmark } from "@/components/logo";
 
 /**
  * Shared frame for login / register / VA application. Landing here from the
@@ -39,11 +40,8 @@ export function AuthShell({
     <div className="flex min-h-screen flex-col bg-[#F7F6F3]">
       <header className="border-b border-[#14161A]/10 bg-[#F7F6F3]">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5">
-          <Link
-            href="/"
-            className="whitespace-nowrap font-mono text-[12px] uppercase tracking-[0.22em] text-[#14161A]"
-          >
-            Second Shift
+          <Link href="/" className="text-[12px]">
+            <Wordmark />
           </Link>
           <Link
             href="/"

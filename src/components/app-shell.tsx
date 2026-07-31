@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { NavLink } from "@/components/nav-link";
 import { SignOutButton } from "@/components/sign-out";
+import { Wordmark } from "@/components/logo";
 
 /**
  * The paper desk every logged-in app sits on. The wordmark is the same mono
@@ -32,11 +33,8 @@ export function AppShell({
         <div className={`mx-auto flex h-14 w-full ${container} items-center justify-between gap-4 px-5`}>
           <div className="flex min-w-0 items-center gap-4">
             <div className="flex shrink-0 items-center gap-3">
-              <Link
-                href="/"
-                className="whitespace-nowrap font-mono text-[12px] uppercase tracking-[0.22em] text-[#14161A]"
-              >
-                Second Shift
+              <Link href="/" className="text-[12px]">
+                <Wordmark />
               </Link>
               <span className="rounded-[3px] border border-[#14161A]/20 px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] text-[#5B6069]">
                 {areaLabel}

@@ -3,4 +3,4 @@
  * Falls back to the intended production domain; override per environment.
  */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://secondshift.co";
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://afterdesk.co";

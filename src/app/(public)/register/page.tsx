@@ -7,7 +7,7 @@ import { linkInline } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Client sign-up",
-  description: "Create a Second Shift client account — send tasks, approve a fixed price, download reviewed work.",
+  description: "Create a AfterDesk client account — send tasks, approve a fixed price, download reviewed work.",
   robots: { index: false, follow: false },
 };
 

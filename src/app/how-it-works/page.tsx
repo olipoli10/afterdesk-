@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Reveal } from "@/components/reveal";
 import { getSettings } from "@/lib/settings";
 import { TrustLinks } from "@/components/trust-links";
+import { Wordmark } from "@/components/logo";
 import { LangSwitch } from "@/components/lang-switch";
 import { SITE_LANGS, langAlternates } from "@/lib/i18n/langs";
 import { PROTOCOL_I18N, docLangOf } from "@/lib/i18n/docs";
@@ -85,11 +86,8 @@ export default async function HowItWorks({
     <div lang={lang} className="min-h-screen overflow-x-clip bg-[#F7F6F3]">
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[900px] items-center justify-between gap-3 px-6">
-          <Link
-            href="/"
-            className="whitespace-nowrap font-mono text-[12px] uppercase tracking-[0.22em] text-[#14161A]"
-          >
-            Second Shift
+          <Link href="/" className="text-[12px]">
+            <Wordmark tone="ink" />
           </Link>
           <div className="flex items-center gap-3 text-[13px] font-medium sm:gap-5">
             <LangSwitch
@@ -440,9 +438,7 @@ export default async function HowItWorks({
 
       <footer className="border-t border-black/8">
         <div className="mx-auto flex w-full max-w-[900px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[12px]">
-          <span className="font-mono uppercase tracking-[0.16em] text-[#14161A]">
-            Second Shift
-          </span>
+          <Wordmark tone="ink" />
           <TrustLinks />
         </div>
       </footer>

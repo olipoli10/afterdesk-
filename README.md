@@ -1,6 +1,6 @@
-# Second Shift
+# AfterDesk
 
-Second Shift is an operator-mediated marketplace for asynchronous administrative
+AfterDesk is an operator-mediated marketplace for asynchronous administrative
 work. Clients approve a fixed price before work starts; vetted specialists see
 only the worker payout; the operator controls identity separation, quality
 review, revisions, disputes, refunds and payouts.

@@ -1,6 +1,6 @@
-# THE PLAYBOOK — Second Shift
+# THE PLAYBOOK — AfterDesk
 
-> Distilled 29 Jul 2026 from a page-by-page expedition through linear.app, ramp.com, anthropic.com, notion.com and stripe.com (live pages + published teardowns). We steal disciplines, never skins: Second Shift stays night/paper/seam/mono.
+> Distilled 29 Jul 2026 from a page-by-page expedition through linear.app, ramp.com, anthropic.com, notion.com and stripe.com (live pages + published teardowns). We steal disciplines, never skins: AfterDesk stays night/paper/seam/mono.
 
 ## The founder's standing verdict
 
@@ -62,7 +62,7 @@ Too many words, not enough impact. Every future page change is measured against 
 
 **14. One quarantined identity element carries all the expressiveness; everything else is two-ink monochrome discipline. The tension between one loud zone and total restraint IS the brand.**
 
-> Stripe's gradient band is the only expressive element and never touches UI, tables, or pricing; Linear's glow is static atmosphere behind artifacts; Anthropic's entire logo is a wordmark with one slash. For Second Shift, the seam between night and paper is this element.
+> Stripe's gradient band is the only expressive element and never touches UI, tables, or pricing; Linear's glow is static atmosphere behind artifacts; Anthropic's entire logo is a wordmark with one slash. For AfterDesk, the seam between night and paper is this element.
 
 **15. Minimal nav, single CTA per page, dense (but bounded) footer. Promote ≤6 ideas at the top; the nav's contents are themselves a statement of priorities — putting Pricing in the top nav is a trust statement.**
 
@@ -70,7 +70,7 @@ Too many words, not enough impact. Every future page change is measured against 
 
 **16. Two audiences need a structural device, not sequential sprawl or tonal drift. Tokens stay identical across audiences; only surface and voice invert.**
 
-> Stripe serves four audiences in one 31-section scroll and bloats; Notion runs two tones with no device and its /about warmth drifted away from its AI-corporate homepage. Second Shift's toggle + seam is the device both of them lack — proven necessary by their failures.
+> Stripe serves four audiences in one 31-section scroll and bloats; Notion runs two tones with no device and its /about warmth drifted away from its AI-corporate homepage. AfterDesk's toggle + seam is the device both of them lack — proven necessary by their failures.
 
 ## Copy laws (word economy)
 
@@ -84,7 +84,7 @@ Too many words, not enough impact. Every future page change is measured against 
 
 **C3. The two-beat meter is the house sentence: beat one names the pain or the setup, beat two names the win. ≤9 words total. This is the single highest-leverage pattern for impact-per-word.**
 
-> 'Time is money. Save both.' (Ramp), 'Less tracking. More progress.' and 'You assign the tasks. Notion Agent does the work.' (Notion), 'Plan the present. Build the future.' (Linear), 'Scale the team. Shrink the paperwork.' (Ramp). Second Shift's existing 'America goes to sleep. You wake up to paid work.' already scans in this meter — the rest of the site must match it.
+> 'Time is money. Save both.' (Ramp), 'Less tracking. More progress.' and 'You assign the tasks. Notion Agent does the work.' (Notion), 'Plan the present. Build the future.' (Linear), 'Scale the team. Shrink the paperwork.' (Ramp). AfterDesk's existing 'America goes to sleep. You wake up to paid work.' already scans in this meter — the rest of the site must match it.
 
 **C4. Every sentence does exactly one of two jobs: name a benefit (≤6 words) or prove it (a number, a name, a timestamp). Any sentence doing neither is deleted.**
 
@@ -92,7 +92,7 @@ Too many words, not enough impact. Every future page change is measured against 
 
 **C5. Zero hype adjectives. 'Powerful', 'seamless', 'effortless' are absent from all five reference sites. Nouns, verbs, and numbers carry all persuasion; one precise word can carry an entire guarantee.**
 
-> Stripe's '2.9% + CA$0.30 per successful transaction' — 'successful' means you only pay when it works, one word doing a paragraph's job. Second Shift's equivalent word is 'approved'. This law is already in our brand rules; the references prove it is universal at the top tier.
+> Stripe's '2.9% + CA$0.30 per successful transaction' — 'successful' means you only pay when it works, one word doing a paragraph's job. AfterDesk's equivalent word is 'approved'. This law is already in our brand rules; the references prove it is universal at the top tier.
 
 **C6. Homepage total marketing copy budget: ~600 words. The artifacts carry the explanation; copy only names the chapters.**
 
@@ -100,7 +100,7 @@ Too many words, not enough impact. Every future page change is measured against 
 
 **C7. Directly under every price: one reassurance line of ≤8 words, ideally a triple negative. Position matters — it discharges the trust burden at the exact moment of doubt.**
 
-> Stripe: 'No setup fees, monthly fees, or hidden fees.' — 8 words, immediately beneath the number. Second Shift version: 'No subscriptions, no bidding, no surprises.'
+> Stripe: 'No setup fees, monthly fees, or hidden fees.' — 8 words, immediately beneath the number. AfterDesk version: 'No subscriptions, no bidding, no surprises.'
 
 **C8. Caption artifacts like museum exhibits, not explanations. The timestamp or label does the persuading; ≤10 words per caption.**
 
@@ -189,15 +189,15 @@ Too many words, not enough impact. Every future page change is measured against 
 
 ## Anti-patterns (what the references prove we must NOT do)
 
-- Copying the skin instead of the discipline: the dark-glow 'Linear look' and the ivory-serif 'Anthropic look' are both documented clichés now — Second Shift's night/paper/seam identity stays, and only the underlying laws transfer.
-- Proof overshoot: Ramp's 9 simultaneous counters blur into noise and its 18-quote wall loses the reader by quote 12. Second Shift: max 3-4 counters, 5-6 proof cards. Past the threshold, more proof subtracts trust.
+- Copying the skin instead of the discipline: the dark-glow 'Linear look' and the ivory-serif 'Anthropic look' are both documented clichés now — AfterDesk's night/paper/seam identity stays, and only the underlying laws transfer.
+- Proof overshoot: Ramp's 9 simultaneous counters blur into noise and its 18-quote wall loses the reader by quote 12. AfterDesk: max 3-4 counters, 5-6 proof cards. Past the threshold, more proof subtracts trust.
 - The sequential mega-scroll: Stripe's 31 sections serving four audiences in one page is the failure our two-audience toggle exists to prevent. Never let the client page grow worker sections or vice versa.
-- Fabricating proof: Notion's Fortune-100-only logos alienate small buyers, and Second Shift's honesty rules make it worse — no fake logos, no invented testimonials, no counters showing numbers that aren't real. A real $45 task beats an invented enterprise story.
+- Fabricating proof: Notion's Fortune-100-only logos alienate small buyers, and AfterDesk's honesty rules make it worse — no fake logos, no invented testimonials, no counters showing numbers that aren't real. A real $45 task beats an invented enterprise story.
 - Readability sacrificed to aesthetics: Ramp's 10px labels at 60% opacity, Stripe's weight-300 body, Linear's near-limit quaternary gray — all documented failures. On the night side keep body ≥400 weight and verify every text tint against WCAG.
-- Trend-surfing vocabulary: Ramp's 'blink of AI' and Notion's 'Think together' show how buzzwords date a site and fog a once-crystal value prop. Second Shift copy uses only timeless words: night, morning, task, price, operator.
+- Trend-surfing vocabulary: Ramp's 'blink of AI' and Notion's 'Think together' show how buzzwords date a site and fog a once-crystal value prop. AfterDesk copy uses only timeless words: night, morning, task, price, operator.
 - Footer landfill and SEO farms: Ramp's 135 links and calculator farm, Anthropic's 60+ near-duplicate columns, Stripe's 80 links — premature scale reads as fake scale. Cap the footer at ~25 real links.
-- Beautiful vagueness: Anthropic's homepage tells a first-time buyer nothing actionable and survives on brand equity Second Shift does not have. Every page must answer what it costs and how it works within one scroll.
-- Decorative sprawl: Notion's 9 pastel tints stopped meaning anything. Any accent must be derived from Second Shift's own artifacts (status stamps, diff colors) and capped at 3-4 — never an invented decorative palette.
+- Beautiful vagueness: Anthropic's homepage tells a first-time buyer nothing actionable and survives on brand equity AfterDesk does not have. Every page must answer what it costs and how it works within one scroll.
+- Decorative sprawl: Notion's 9 pastel tints stopped meaning anything. Any accent must be derived from AfterDesk's own artifacts (status stamps, diff colors) and capped at 3-4 — never an invented decorative palette.
 - Heading redundancy under stakeholder pressure: Notion's enterprise page says the same thing three ways in three sections. One idea gets one section; if a new heading restates an existing one, it is a cut, not an addition.
 - CTA nagging: Ramp repeats its demo CTA 6+ times per page. One CTA per side, repeated exactly twice (hero and bookend), never more.
 - Engineering vanity for atmosphere: Stripe built a custom WebGL engine for its gradient. The seam's hero treatment is CSS only — a one-operator company spends craft on the ledger, not on shader infrastructure.

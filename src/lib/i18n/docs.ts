@@ -84,7 +84,7 @@ const pEn: ProtocolDict = {
   meta: {
     title: "How it works — fixed-price task outsourcing, step by step",
     description:
-      "How Second Shift outsourcing works: you describe the task, one operator sets a fixed price within four working hours, a vetted specialist does it overnight, and it is reviewed before you see it. The full protocol, versioned and dated.",
+      "How AfterDesk outsourcing works: you describe the task, one operator sets a fixed price within four working hours, a vetted specialist does it overnight, and it is reviewed before you see it. The full protocol, versioned and dated.",
   },
   nav: { about: "About us", client: "Get work done", workers: "For workers" },
   docket: "Operating protocol",
@@ -162,7 +162,7 @@ const pFr: ProtocolDict = {
   meta: {
     title: "Comment ça marche — la sous-traitance à prix fixe, étape par étape",
     description:
-      "Comment fonctionne Second Shift : vous décrivez la tâche, un seul opérateur fixe un prix en quatre heures ouvrables, un spécialiste vérifié la fait pendant la nuit, et elle est contrôlée avant que vous la voyiez. Le protocole complet, versionné et daté.",
+      "Comment fonctionne AfterDesk : vous décrivez la tâche, un seul opérateur fixe un prix en quatre heures ouvrables, un spécialiste vérifié la fait pendant la nuit, et elle est contrôlée avant que vous la voyiez. Le protocole complet, versionné et daté.",
   },
   nav: { about: "Qui nous sommes", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   docket: "Protocole d'exploitation",
@@ -240,7 +240,7 @@ const pEs: ProtocolDict = {
   meta: {
     title: "Cómo funciona — subcontratación a precio fijo, paso a paso",
     description:
-      "Cómo funciona Second Shift: describes la tarea, un solo operador fija un precio en cuatro horas hábiles, un especialista verificado la hace de noche, y se revisa antes de que la veas. El protocolo completo, versionado y fechado.",
+      "Cómo funciona AfterDesk: describes la tarea, un solo operador fija un precio en cuatro horas hábiles, un especialista verificado la hace de noche, y se revisa antes de que la veas. El protocolo completo, versionado y fechado.",
   },
   nav: { about: "Quiénes somos", client: "Haz que se haga", workers: "Para trabajadores" },
   docket: "Protocolo operativo",
@@ -318,7 +318,7 @@ const pTl: ProtocolDict = {
   meta: {
     title: "Paano ito gumagana — fixed-price na outsourcing, hakbang-hakbang",
     description:
-      "Paano gumagana ang Second Shift: ilalarawan mo ang task, isang operator ang magtatakda ng fixed na presyo sa loob ng apat na oras ng trabaho, gagawin ito ng beripikadong espesyalista sa magdamag, at susuriin bago mo makita. Ang buong protocol, may bersyon at petsa.",
+      "Paano gumagana ang AfterDesk: ilalarawan mo ang task, isang operator ang magtatakda ng fixed na presyo sa loob ng apat na oras ng trabaho, gagawin ito ng beripikadong espesyalista sa magdamag, at susuriin bago mo makita. Ang buong protocol, may bersyon at petsa.",
   },
   nav: { about: "Tungkol sa amin", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   docket: "Operating protocol",
@@ -437,9 +437,9 @@ type AboutDict = {
 
 const aEn: AboutDict = {
   meta: {
-    title: "About us — why Second Shift exists",
+    title: "About us — why AfterDesk exists",
     description:
-      "Two years outsourcing work to the Philippines taught us the real problem on both sides: entrepreneurs lose hours screening resumes, and Filipino specialists too often go underpaid or unpaid. Second Shift is the fix — one fixed price, one review standard, and free training that protects the people doing the work.",
+      "Two years outsourcing work to the Philippines taught us the real problem on both sides: entrepreneurs lose hours screening resumes, and Filipino specialists too often go underpaid or unpaid. AfterDesk is the fix — one fixed price, one review standard, and free training that protects the people doing the work.",
   },
   nav: { how: "How it works", client: "Get work done", workers: "For workers" },
   kicker: "About us",
@@ -498,9 +498,9 @@ const aEn: AboutDict = {
 
 const aFr: AboutDict = {
   meta: {
-    title: "Qui nous sommes — pourquoi Second Shift existe",
+    title: "Qui nous sommes — pourquoi AfterDesk existe",
     description:
-      "Deux ans \u00E0 faire affaire avec des sp\u00E9cialistes philippins nous ont montr\u00E9 le vrai probl\u00E8me des deux c\u00F4t\u00E9s : les entrepreneurs perdent des heures \u00E0 trier des CV, et les sp\u00E9cialistes philippins sont trop souvent sous-pay\u00E9s ou pas pay\u00E9s du tout. Second Shift est la solution \u2014 un prix fixe, un standard de contr\u00F4le, et une formation gratuite qui prot\u00E8ge ceux qui font le travail.",
+      "Deux ans \u00E0 faire affaire avec des sp\u00E9cialistes philippins nous ont montr\u00E9 le vrai probl\u00E8me des deux c\u00F4t\u00E9s : les entrepreneurs perdent des heures \u00E0 trier des CV, et les sp\u00E9cialistes philippins sont trop souvent sous-pay\u00E9s ou pas pay\u00E9s du tout. AfterDesk est la solution \u2014 un prix fixe, un standard de contr\u00F4le, et une formation gratuite qui prot\u00E8ge ceux qui font le travail.",
   },
   nav: { how: "Comment \u00E7a marche", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   kicker: "Qui nous sommes",
@@ -559,9 +559,9 @@ const aFr: AboutDict = {
 
 const aEs: AboutDict = {
   meta: {
-    title: "Qui\u00E9nes somos \u2014 por qu\u00E9 existe Second Shift",
+    title: "Qui\u00E9nes somos \u2014 por qu\u00E9 existe AfterDesk",
     description:
-      "Dos a\u00F1os trabajando con especialistas filipinos nos ense\u00F1aron el problema real de ambos lados: los emprendedores pierden horas filtrando curr\u00EDculums, y los especialistas filipinos con demasiada frecuencia cobran de menos o no cobran. Second Shift es la soluci\u00F3n \u2014 un precio fijo, un est\u00E1ndar de revisi\u00F3n, y formaci\u00F3n gratuita que protege a quien hace el trabajo.",
+      "Dos a\u00F1os trabajando con especialistas filipinos nos ense\u00F1aron el problema real de ambos lados: los emprendedores pierden horas filtrando curr\u00EDculums, y los especialistas filipinos con demasiada frecuencia cobran de menos o no cobran. AfterDesk es la soluci\u00F3n \u2014 un precio fijo, un est\u00E1ndar de revisi\u00F3n, y formaci\u00F3n gratuita que protege a quien hace el trabajo.",
   },
   nav: { how: "C\u00F3mo funciona", client: "Haz que se haga", workers: "Para trabajadores" },
   kicker: "Qui\u00E9nes somos",
@@ -620,9 +620,9 @@ const aEs: AboutDict = {
 
 const aTl: AboutDict = {
   meta: {
-    title: "Tungkol sa amin \u2014 bakit umiiral ang Second Shift",
+    title: "Tungkol sa amin \u2014 bakit umiiral ang AfterDesk",
     description:
-      "Dalawang taon ng pakikipagtrabaho sa mga Pilipinong espesyalista ang nagturo sa amin ng totoong problema sa magkabilang panig: nauubos ang oras ng mga negosyante sa pagsala ng resume, at madalas kulang ang bayad o walang bayad ang mga Pilipinong espesyalista. Ang Second Shift ang sagot \u2014 isang fixed na presyo, isang pamantayan sa review, at libreng pagsasanay na nagpoprotekta sa gumagawa ng trabaho.",
+      "Dalawang taon ng pakikipagtrabaho sa mga Pilipinong espesyalista ang nagturo sa amin ng totoong problema sa magkabilang panig: nauubos ang oras ng mga negosyante sa pagsala ng resume, at madalas kulang ang bayad o walang bayad ang mga Pilipinong espesyalista. Ang AfterDesk ang sagot \u2014 isang fixed na presyo, isang pamantayan sa review, at libreng pagsasanay na nagpoprotekta sa gumagawa ng trabaho.",
   },
   nav: { how: "Paano ito gumagana", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   kicker: "Tungkol sa amin",

@@ -94,7 +94,7 @@ export function LiveOvernightDiff() {
     <div className="relative overflow-hidden rounded-2xl">
       {/* app-window chrome: this is the product, not an illustration */}
       <div className="flex h-10 items-center justify-between border-b border-white/8 bg-[#0F1011] px-4">
-        <span className="font-mono text-[11px] text-[#8A9099]">second shift · task_0447</span>
+        <span className="font-mono text-[11px] text-[#8A9099]">afterdesk · task_0447</span>
         {delivered ? (
           <span
             key={`d-${loop}`}

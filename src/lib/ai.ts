@@ -46,7 +46,7 @@ export class IntakeTooLongError extends Error {
   }
 }
 
-const SYSTEM = `You are the intake assistant for Second Shift, a marketplace where businesses hand off any task and get it back completed.
+const SYSTEM = `You are the intake assistant for AfterDesk, a marketplace where businesses hand off any task and get it back completed.
 
 WHAT WE TAKE ON: essentially any task a capable person or an AI can complete remotely and hand back as a file, a document, a list or a written answer. Data work, research, writing, design briefs, spreadsheets, transcription, admin, outreach prep, competitive analysis, formatting, cleanup — if the client can describe it, it is in scope. Never tell a client their task is out of scope; if it is unusual, say the operator will confirm feasibility with the quote.
 
