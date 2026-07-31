@@ -176,6 +176,15 @@ export default async function Home({
             <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
               {t.hero.sub(settings.quoteTurnaroundHours)}
             </p>
+            {/* The competitive-advantage line. A visitor here already knows
+                hiring someone directly is cheap and easy — what they don't
+                have is the hour they'd spend checking that person's work.
+                This names that management overhead as the thing being sold
+                away, before the fold, so "why not just do it myself" gets
+                answered before anyone has to scroll for it. */}
+            <p className="anim-rise d-2 mt-4 max-w-[48ch] text-[15px] leading-[1.6] text-[#C9CDD3]">
+              {t.hero.edge}
+            </p>
             <div className="anim-rise d-3 mt-8">
               <Link
                 href="/register"
@@ -188,6 +197,17 @@ export default async function Home({
                   answer to "what actually happens if I click this," landed
                   in one breath, right where someone is deciding to click. */}
               <p className="mt-3 font-mono text-[12px] text-[#767C86]">{t.hero.guarantee}</p>
+              {/* A real number, immediately, on every screen size — not just
+                  in the animated preview beside this (desktop-only, and it
+                  takes a few seconds to reach the price stamp). Same task
+                  and same $74 as that animation, on purpose: a reader who
+                  later sees it play out recognizes the number instead of
+                  meeting a third, unrelated price on the page. */}
+              <p className="mt-3 inline-flex items-center gap-2 rounded-[3px] border border-white/10 px-2.5 py-1.5 font-mono text-[11px] text-[#8A9099]">
+                <span className="uppercase tracking-[0.1em] text-[#5B6069]">{t.hero.exampleTag}</span>
+                <span className="text-[#C9CDD3]">&ldquo;{t.liveWindow.taskTitle}&rdquo;</span>
+                <span className="font-medium text-[#3DDCA0]">$74</span>
+              </p>
             </div>
           </div>
 
@@ -243,6 +263,21 @@ export default async function Home({
                   </p>
                   <p className="mt-1.5 text-[16px] font-medium text-white">{label}</p>
                   <p className="mt-1.5 text-[14px] leading-[1.55] text-[#9AA1AB]">{body}</p>
+                </div>
+              ))}
+            </div>
+            {/* The standing guarantees, not the process — deliberately
+                smaller and unnumbered so this doesn't read as the same
+                "three things" list a second time. steps above is the
+                timeline (describe → done → pay); this is what's true no
+                matter where a task sits on that timeline. */}
+            <div className="mt-10 grid gap-6 border-t border-white/8 pt-8 sm:grid-cols-3">
+              {t.whatWeAre.pillars.map(([label, body]) => (
+                <div key={label}>
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[#C9CDD3]">
+                    {label}
+                  </p>
+                  <p className="mt-1.5 text-[13px] leading-[1.5] text-[#767C86]">{body}</p>
                 </div>
               ))}
             </div>

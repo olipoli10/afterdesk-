@@ -32,6 +32,14 @@ type Dict = {
     line1: string;
     line2: string;
     sub: (h: number) => string;
+    /** The competitive-advantage line, between the sub-headline and the CTA.
+     *  The visitor already knows hiring a worker directly is cheap and easy
+     *  (OnlineJobs, Upwork) — what they're actually avoiding is checking the
+     *  work, chasing replies, fixing mistakes. This names that management
+     *  overhead as the thing being sold away, in one breath, before the
+     *  reader ever has to scroll to find out why this beats doing it
+     *  themselves. */
+    edge: string;
     cta: string;
     /** Sits directly under the CTA, same micro-copy convention as the
      *  Academy hero's "You can start the first course tonight." — the
@@ -39,6 +47,11 @@ type Dict = {
      *  card is authorized, not charged, and stays that way on both sides
      *  (you, and the specialist) until you approve the delivery. */
     guarantee: string;
+    /** Label on the small price-example chip right under the guarantee
+     *  line — reuses liveWindow.taskTitle and the literal "$74" from the
+     *  hero's own animated preview (desktop-only, delayed) so the same real
+     *  number is legible immediately, on every screen size, with no wait. */
+    exampleTag: string;
   };
   /* NO CAPTION. This chapter had two in a row and both said nothing the
      picture wasn't already saying: first an invented client quote, then a
@@ -154,6 +167,12 @@ type Dict = {
     h2: string;
     intro: string;
     steps: [string, string][];
+    /** The three guarantees, compressed. Distinct axis from `steps` above:
+     *  steps is the chronological process (describe → done → pay), this is
+     *  the standing promise regardless of where a task is in that process.
+     *  Kept visually smaller than the numbered steps so two "three things"
+     *  lists back to back don't read as the same list twice. */
+    pillars: [string, string][];
   };
 };
 
@@ -164,13 +183,15 @@ const en: Dict = {
     line2: "Get it back done by morning.",
     sub: (h) =>
       `Research, data, writing, spreadsheets, admin: describe it, get a fixed price within ${h} working hours, then it's done by morning.`,
+    edge: "No proposals to read. No hourly rate to negotiate. No one to manage. We check the work before you ever see it.",
     cta: "Describe your task",
     guarantee:
       "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
+    exampleTag: "Example",
   },
   whatWeAre: {
     label: "What this is",
-    h2: "AfterDesk is a task outsourcing service built around vetted specialists in the Philippines.",
+    h2: "AfterDesk is a task outsourcing service built around vetted specialists in the Philippines: fluent English, trained to a written standard, working while you sleep.",
     intro:
       "Entrepreneurs send a task, a specialist here prices it, and one rule makes it safe to try: you don't pay for work that isn't right.",
     steps: [
@@ -185,6 +206,20 @@ const en: Dict = {
       [
         "You only pay if it's right",
         "Your card is authorized through Stripe, not charged. Nothing is billed, and the specialist isn't paid, until you approve the finished work.",
+      ],
+    ],
+    pillars: [
+      [
+        "Zero direct contact",
+        "You never manage the specialist directly. Every message and file goes through an operator.",
+      ],
+      [
+        "Fixed pricing",
+        "The price is approved before work starts. It never changes based on hours worked.",
+      ],
+      [
+        "Reviewed before delivery",
+        "An operator checks every deliverable against a written standard before it reaches you.",
       ],
     ],
   },
@@ -291,13 +326,15 @@ const fr: Dict = {
     line2: "Récupérez-la faite au matin.",
     sub: (h) =>
       `Recherche, données, rédaction, tableurs, admin : décrivez-la, obtenez un prix fixe en ${h} heures ouvrables, puis c'est fait au matin.`,
+    edge: "Aucune proposition à lire. Aucun taux horaire à négocier. Personne à gérer. Nous vérifions le travail avant que vous ne le voyiez.",
     cta: "Décrivez votre tâche",
     guarantee:
       "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
+    exampleTag: "Exemple",
   },
   whatWeAre: {
     label: "Ce qu'on fait",
-    h2: "AfterDesk est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines.",
+    h2: "AfterDesk est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines : anglais courant, formés selon une norme écrite, qui travaillent pendant que vous dormez.",
     intro:
       "Les entrepreneurs envoient une tâche, un spécialiste ici la chiffre, et une seule règle rend ça sûr d'essayer : vous ne payez pas pour un travail qui ne fait pas l'affaire.",
     steps: [
@@ -312,6 +349,20 @@ const fr: Dict = {
       [
         "Vous ne payez que si c'est bon",
         "Votre carte est autorisée via Stripe, pas débitée. Rien n'est facturé, et le spécialiste n'est pas payé, tant que vous n'approuvez pas le travail livré.",
+      ],
+    ],
+    pillars: [
+      [
+        "Zéro contact direct",
+        "Vous ne gérez jamais le spécialiste directement. Chaque message et fichier passe par un opérateur.",
+      ],
+      [
+        "Prix fixe",
+        "Le prix est approuvé avant que le travail commence. Il ne change jamais selon les heures travaillées.",
+      ],
+      [
+        "Vérifié avant livraison",
+        "Un opérateur vérifie chaque livrable selon une norme écrite avant qu'il ne vous parvienne.",
       ],
     ],
   },
@@ -418,13 +469,15 @@ const es: Dict = {
     line2: "Recíbela lista por la mañana.",
     sub: (h) =>
       `Investigación, datos, redacción, hojas de cálculo, admin: descríbela, obtén un precio fijo en ${h} horas hábiles, luego está listo por la mañana.`,
+    edge: "Ninguna propuesta que leer. Ninguna tarifa por hora que negociar. Nadie a quien gestionar. Revisamos el trabajo antes de que tú lo veas.",
     cta: "Describe tu tarea",
     guarantee:
       "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
+    exampleTag: "Ejemplo",
   },
   whatWeAre: {
     label: "Qué es esto",
-    h2: "AfterDesk es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas.",
+    h2: "AfterDesk es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas: inglés fluido, formados según un estándar escrito, que trabajan mientras tú duermes.",
     intro:
       "Los emprendedores envían una tarea, un especialista aquí la cotiza, y una sola regla hace que sea seguro intentarlo: no pagas por un trabajo que no está bien.",
     steps: [
@@ -439,6 +492,20 @@ const es: Dict = {
       [
         "Solo pagas si está bien",
         "Tu tarjeta queda autorizada a través de Stripe, no cobrada. No se cobra nada, y el especialista no recibe pago, hasta que apruebas el trabajo entregado.",
+      ],
+    ],
+    pillars: [
+      [
+        "Cero contacto directo",
+        "Nunca gestionas al especialista directamente. Cada mensaje y archivo pasa por un operador.",
+      ],
+      [
+        "Precio fijo",
+        "El precio se aprueba antes de que empiece el trabajo. Nunca cambia según las horas trabajadas.",
+      ],
+      [
+        "Revisado antes de la entrega",
+        "Un operador revisa cada entregable según un estándar escrito antes de que llegue a ti.",
       ],
     ],
   },
@@ -552,13 +619,15 @@ const tl: Dict = {
     line2: "Tapos na ito pagsapit ng umaga.",
     sub: (h) =>
       `Research, data, pagsusulat, spreadsheets, admin: ilarawan ito, kumuha ng fixed na presyo sa loob ng ${h} oras ng trabaho, tapos tapos na ito pagsapit ng umaga.`,
+    edge: "Walang proposal na babasahin. Walang hourly rate na pag-uusapan. Wala kang pamamahalaan. Sinusuri namin ang trabaho bago mo pa ito makita.",
     cta: "Ilarawan ang task mo",
     guarantee:
       "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",
+    exampleTag: "Halimbawa",
   },
   whatWeAre: {
     label: "Ano ito",
-    h2: "Ang AfterDesk ay isang task outsourcing service na nakabuo sa paligid ng beripikadong espesyalista sa Pilipinas.",
+    h2: "Ang AfterDesk ay isang task outsourcing service na binuo sa paligid ng beripikadong espesyalista sa Pilipinas: matatas sa Ingles, sinanay sa isang nakasulat na pamantayan, gumagawa habang natutulog ka.",
     intro:
       "Nagpapadala ang mga negosyante ng task, ipepresyo ito ng espesyalista dito, at isang panuntunan ang gumagawa nitong ligtas subukan: hindi ka nagbabayad para sa trabahong hindi maayos.",
     steps: [
@@ -573,6 +642,20 @@ const tl: Dict = {
       [
         "Babayaran mo lang kung tama ito",
         "Naka-authorize ang card mo sa pamamagitan ng Stripe, hindi sinisingil. Walang sisingilin, at hindi babayaran ang espesyalista, hanggang sa aprubahan mo ang natapos na trabaho.",
+      ],
+    ],
+    pillars: [
+      [
+        "Zero direktang contact",
+        "Hindi mo kailanman pinamamahalaan ang espesyalista nang direkta. Dumadaan sa operator ang bawat mensahe at file.",
+      ],
+      [
+        "Fixed na presyo",
+        "Inaaprubahan ang presyo bago magsimula ang trabaho. Hindi ito nagbabago base sa oras na ginugol.",
+      ],
+      [
+        "Sinuri bago ihatid",
+        "Sinusuri ng operator ang bawat natapos na trabaho ayon sa nakasulat na pamantayan bago ito dumating sa iyo.",
       ],
     ],
   },
