@@ -14,7 +14,7 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:pool": "tsx prisma/seed-pool-dev.ts",
-    "postinstall": "patch-package"
+    "postinstall": "prisma generate && patch-package"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
