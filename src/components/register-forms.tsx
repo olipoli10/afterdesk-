@@ -11,6 +11,12 @@ import { Field, inputClass, buttonPrimary } from "@/components/ui";
 const fieldLabelClass =
   "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#5B6069]";
 
+/** The login modal's dark-glass button: inverted from buttonPrimary (light on
+ *  dark instead of dark on light) so it still reads as the primary action
+ *  against the frosted backdrop. */
+const buttonPrimaryGlass =
+  "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[#14161A] transition-colors duration-150 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-40";
+
 export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -217,10 +223,13 @@ export function VaRegisterForm() {
 export function LoginForm({
   googleEnabled,
   next,
+  tone = "paper",
 }: {
   googleEnabled: boolean;
   /** Same-origin path to return to after sign-in — already validated server-side. */
   next?: string;
+  /** "glass" is the login modal's dark frosted treatment. */
+  tone?: "paper" | "glass";
 }) {
   const router = useRouter();
   const passwordId = useId();
@@ -264,12 +273,12 @@ export function LoginForm({
       {googleEnabled ? (
         <>
           <GoogleButton label="Continue with Google" callbackURL={destination} />
-          <OrDivider />
+          <OrDivider tone={tone} />
         </>
       ) : null}
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <Field label="Email">
+        <Field label="Email" tone={tone}>
           <input
             type="email"
             required
@@ -281,13 +290,20 @@ export function LoginForm({
         </Field>
         <div>
           <div className="mb-1.5 flex items-baseline justify-between">
-            <label htmlFor={passwordId} className={fieldLabelClass}>
+            <label
+              htmlFor={passwordId}
+              className={tone === "glass" ? "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-white/55" : fieldLabelClass}
+            >
               Password
             </label>
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="min-h-11 px-2 text-[12px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className={
+                tone === "glass"
+                  ? "min-h-11 px-2 text-[12px] font-medium text-white/50 transition-colors duration-150 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+                  : "min-h-11 px-2 text-[12px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              }
               aria-pressed={show}
             >
               {show ? "Hide password" : "Show password"}
@@ -304,11 +320,15 @@ export function LoginForm({
           />
         </div>
         {error ? (
-          <p role="alert" className="text-sm text-[#8C2F23]">
+          <p role="alert" className={`text-sm ${tone === "glass" ? "text-[#FF9A8B]" : "text-[#8C2F23]"}`}>
             {error}
           </p>
         ) : null}
-        <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
+        <button
+          type="submit"
+          disabled={busy}
+          className={`${tone === "glass" ? buttonPrimaryGlass : buttonPrimary} w-full`}
+        >
           {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>

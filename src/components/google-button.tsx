@@ -52,14 +52,14 @@ export function GoogleButton({
   );
 }
 
-export function OrDivider() {
+export function OrDivider({ tone = "paper" }: { tone?: "paper" | "glass" }) {
+  const line = tone === "glass" ? "bg-white/15" : "bg-[#14161A]/10";
+  const label = tone === "glass" ? "text-white/45" : "text-[#5B6069]";
   return (
     <div className="flex items-center gap-3 py-1">
-      <span className="h-px flex-1 bg-[#14161A]/10" />
-      <span className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-[#5B6069]">
-        or
-      </span>
-      <span className="h-px flex-1 bg-[#14161A]/10" />
+      <span className={`h-px flex-1 ${line}`} />
+      <span className={`font-mono text-[10px] font-medium uppercase tracking-[0.14em] ${label}`}>or</span>
+      <span className={`h-px flex-1 ${line}`} />
     </div>
   );
 }

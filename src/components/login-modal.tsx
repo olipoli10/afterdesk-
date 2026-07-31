@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LoginForm } from "@/components/register-forms";
-import { linkInline } from "@/components/ui";
 
 /**
  * The login window. Rendered by the intercepted route (src/app/@modal/(.)
@@ -59,7 +58,7 @@ export function LoginModal({
   return (
     <dialog
       ref={dialogRef}
-      className="ss-modal fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-[420px] overflow-hidden rounded-xl border border-[#14161A]/10 bg-white shadow-[0_1px_2px_rgba(20,22,26,0.04),0_24px_64px_-24px_rgba(10,11,13,0.45)]"
+      className="ss-modal fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-[420px] overflow-hidden rounded-xl border border-white/[0.14] bg-[#14161A]/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_24px_64px_-16px_rgba(0,0,0,0.6)] backdrop-blur-2xl backdrop-saturate-150"
       onClose={close}
       onCancel={close}
       onClick={(e) => {
@@ -83,10 +82,10 @@ export function LoginModal({
       <div className="p-6 sm:p-7">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-[#5B6069]">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-white/50">
               Sign in
             </p>
-            <h1 className="mt-1.5 text-[26px] font-semibold leading-[1.1] tracking-[-0.02em] text-[#14161A]">
+            <h1 className="mt-1.5 text-[26px] font-semibold leading-[1.1] tracking-[-0.02em] text-white">
               Welcome back.
             </h1>
           </div>
@@ -94,7 +93,7 @@ export function LoginModal({
             type="button"
             onClick={close}
             aria-label="Close"
-            className="-mr-1.5 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#5B6069] transition-colors duration-150 hover:bg-[#F7F6F3] hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
+            className="-mr-1.5 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white/50 transition-colors duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
           >
             <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4" fill="none">
               <path
@@ -110,24 +109,24 @@ export function LoginModal({
         {applied ? (
           <p
             role="status"
-            className="mt-4 rounded-md border-l-[3px] border-[#166049] bg-[#166049]/[0.06] px-3 py-2.5 text-sm leading-relaxed text-[#14161A]"
+            className="mt-4 rounded-md border-l-[3px] border-[#3DDCA0] bg-[#3DDCA0]/[0.1] px-3 py-2.5 text-sm leading-relaxed text-white"
           >
             Application received — sign in to continue.
           </p>
         ) : null}
 
         <div className="mt-5">
-          <LoginForm googleEnabled={googleEnabled} next={next} />
+          <LoginForm googleEnabled={googleEnabled} next={next} tone="glass" />
         </div>
       </div>
 
-      <div className="border-t border-[#14161A]/[0.07] bg-[#FBFAF8] px-6 py-3.5 text-[13px] leading-relaxed text-[#5B6069] sm:px-7">
+      <div className="border-t border-white/10 bg-white/[0.04] px-6 py-3.5 text-[13px] leading-relaxed text-white/55 sm:px-7">
         No account yet?{" "}
-        <Link href="/register" className={linkInline}>
+        <Link href="/register" className="font-medium text-white underline decoration-white/30 underline-offset-2 transition-colors duration-150 hover:decoration-white">
           Client sign-up
         </Link>{" "}
         ·{" "}
-        <Link href="/register/va" className={linkInline}>
+        <Link href="/register/va" className="font-medium text-white underline decoration-white/30 underline-offset-2 transition-colors duration-150 hover:decoration-white">
           Specialist application
         </Link>
       </div>

@@ -103,22 +103,24 @@ export function Field({
   hint,
   children,
   group = false,
+  tone = "paper",
 }: {
   label: string;
   hint?: string;
   children: ReactNode;
   /** Use for composite controls such as the file picker; avoids nesting a button inside a label. */
   group?: boolean;
+  /** "glass" is the dark frosted treatment used by the login modal; every other surface stays "paper". */
+  tone?: "paper" | "glass";
 }) {
+  const muted = tone === "glass" ? "text-white/55" : "text-[#5B6069]";
   const content = (
     <>
-      <span className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+      <span className={`mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.1em] ${muted}`}>
         {label}
       </span>
       {children}
-      {hint ? (
-        <span className="mt-1.5 block text-xs leading-relaxed text-[#5B6069]">{hint}</span>
-      ) : null}
+      {hint ? <span className={`mt-1.5 block text-xs leading-relaxed ${muted}`}>{hint}</span> : null}
     </>
   );
 
