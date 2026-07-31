@@ -60,24 +60,30 @@ type Dict = {
   ch05: {
     label: string;
     h2: string;
-    /** RESCUED from the deleted terms block. It is the strangest and most
-     *  load-bearing fact on the site — the one thing no competitor says —
-     *  and deleting the notes block would have deleted it with them. It
-     *  belongs here anyway: this is the chapter about the seam. */
-    never: string;
     /** Vertical label on the hatched operator wall. */
     wall: string;
     /** Caption above the review artifact — EXAMPLE, outside the artifact. */
     desk: string;
-    /** These name the two things the reader is CHOOSING BETWEEN, not two
-     *  places. "There / Here" named a location, which is not what the rows
-     *  underneath compare — so the whole column read as decoration. */
-    there: string;
-    here: string;
-    /** Repeated on mobile as a key: the labels above live in a md:grid, so
-     *  the stacked pairs used to arrive with no labels at all. */
-    keyLabel: string;
-    pairs: [string, string][];
+    /**
+     * [WHICH ALTERNATIVE, what that costs you, what happens here].
+     *
+     * The first slot is the fix for the thing that made this table
+     * unreadable: a single pair of column headers ("Hiring a freelancer" /
+     * "Sending a task") sat above the rows and scrolled away after the
+     * first one, so anyone moving at reading speed met four unattributed
+     * sentences either side of a hatch. Worse, that one header was a lie of
+     * omission — the left column silently mixed a freelance marketplace
+     * (read forty proposals, hourly meters) with employing somebody
+     * (interview, onboard, manage), which are different alternatives with
+     * different costs.
+     *
+     * So every row now names its own opponent, and the label travels with
+     * the sentence it belongs to. It cannot scroll away, it needs no sticky
+     * positioning to survive a phone, and across four rows the reader sees
+     * that three different ways of getting this done all lose — which is
+     * the actual argument, and it was previously invisible.
+     */
+    pairs: [string, string, string][];
   };
   /** The trim edge. The old chapter 06 (GENERAL NOTES) restated chapters
    *  02–05 in smaller type; the two clauses that carried NEW information
@@ -135,17 +141,29 @@ const en: Dict = {
   ch05: {
     label: "The operator",
     h2: "One professional between you and the work.",
-    never: "You never meet the worker. That's the point.",
     wall: "Operator",
     desk: "Example — one review pass",
-    there: "Hiring a freelancer",
-    here: "Sending a task",
-    keyLabel: "Which side is which",
     pairs: [
-      ["Post a job. Read forty proposals.", "Describe it once. One price back in hours, not days."],
-      ["Interview, hire, onboard, manage.", "Nothing to manage. The operator runs the night."],
-      ["Hourly meters running while you sleep.", "One fixed price, approved before anything starts."],
-      ["Hope it's right in the morning.", "Reviewed by a professional before you ever see it."],
+      [
+        "Freelance site",
+        "Post the job. Read forty proposals.",
+        "Describe it once. One price back the same day.",
+      ],
+      [
+        "Hiring someone",
+        "Interview, onboard, manage, repeat.",
+        "The operator runs the night. You run nothing.",
+      ],
+      [
+        "By the hour",
+        "A meter running while you sleep.",
+        "One fixed price, approved before work starts.",
+      ],
+      [
+        "Any of them",
+        "You find out in the morning whether it's right.",
+        "A professional checked it before you ever see it.",
+      ],
     ],
   },
   close: { protocol: "Full protocol — six stages, versioned" },
@@ -200,25 +218,28 @@ const fr: Dict = {
   ch05: {
     label: "L'opérateur",
     h2: "Un professionnel entre vous et le travail.",
-    never: "Vous ne rencontrez jamais le travailleur. C'est le principe.",
     wall: "Opérateur",
     desk: "Exemple — une passe de vérification",
-    there: "Engager un pigiste",
-    here: "Envoyer une tâche",
-    keyLabel: "Quel côté est lequel",
     pairs: [
       [
+        "Site de pigistes",
         "Publier une offre. Lire quarante propositions.",
-        "Décrivez une fois. Un prix en heures, pas en jours.",
-      ],
-      ["Entrevues, embauche, intégration, gestion.", "Rien à gérer. L'opérateur mène la nuit."],
-      [
-        "Des compteurs horaires qui tournent pendant que vous dormez.",
-        "Un prix fixe, approuvé avant que ça commence.",
+        "Décrivez une fois. Un prix le jour même.",
       ],
       [
-        "Espérer que ce soit bon au matin.",
-        "Vérifié par un professionnel avant que vous le voyiez.",
+        "Embaucher",
+        "Entrevues, intégration, gestion, à recommencer.",
+        "L'opérateur mène la nuit. Vous ne gérez rien.",
+      ],
+      [
+        "À l'heure",
+        "Un compteur qui tourne pendant que vous dormez.",
+        "Un prix fixe, approuvé avant que le travail commence.",
+      ],
+      [
+        "N'importe lequel",
+        "Vous découvrez au matin si c'est bon.",
+        "Un professionnel l'a vérifié avant que vous le voyiez.",
       ],
     ],
   },
@@ -274,23 +295,29 @@ const es: Dict = {
   ch05: {
     label: "El operador",
     h2: "Un profesional entre tú y el trabajo.",
-    never: "Nunca conoces al trabajador. Ese es el punto.",
     wall: "Operador",
     desk: "Ejemplo — una pasada de revisión",
-    there: "Contratar a un freelance",
-    here: "Enviar una tarea",
-    keyLabel: "Qué lado es cuál",
     pairs: [
       [
+        "Sitio de freelance",
         "Publicas un trabajo. Lees cuarenta propuestas.",
-        "Lo describes una vez. Un precio en horas, no días.",
+        "Lo describes una vez. Un precio el mismo día.",
       ],
-      ["Entrevistar, contratar, incorporar, gestionar.", "Nada que gestionar. El operador dirige la noche."],
       [
-        "Contadores por hora corriendo mientras duermes.",
-        "Un precio fijo, aprobado antes de empezar.",
+        "Contratar",
+        "Entrevistar, incorporar, gestionar, repetir.",
+        "El operador dirige la noche. Tú no gestionas nada.",
       ],
-      ["Esperar que esté bien por la mañana.", "Revisado por un profesional antes de que lo veas."],
+      [
+        "Por hora",
+        "Un contador corriendo mientras duermes.",
+        "Un precio fijo, aprobado antes de empezar el trabajo.",
+      ],
+      [
+        "Cualquiera",
+        "Te enteras por la mañana si está bien.",
+        "Un profesional lo revisó antes de que lo vieras.",
+      ],
     ],
   },
   close: { protocol: "Protocolo completo — seis etapas, versionado" },
@@ -352,26 +379,29 @@ const tl: Dict = {
   ch05: {
     label: "Ang operator",
     h2: "Isang propesyonal sa pagitan mo at ng trabaho.",
-    never: "Hindi mo kailanman makikilala ang manggagawa. Iyon ang punto.",
     wall: "Operator",
     desk: "Halimbawa — isang pasada ng review",
-    there: "Kumuha ng freelancer",
-    here: "Magpadala ng task",
-    keyLabel: "Alin ang alin",
     pairs: [
       [
+        "Freelance site",
         "Mag-post ng job. Magbasa ng apatnapung proposal.",
-        "Isang beses mong ilarawan. Presyo sa loob ng oras, hindi araw.",
+        "Isang beses mong ilarawan. Presyo sa parehong araw.",
       ],
       [
-        "Mag-interview, mag-hire, mag-onboard, mag-manage.",
-        "Walang i-manage. Ang operator ang bahala sa gabi.",
+        "Mag-hire",
+        "Mag-interview, mag-onboard, mag-manage, ulit.",
+        "Ang operator ang bahala sa gabi. Wala kang imamanage.",
       ],
       [
+        "Kada oras",
         "Orasang tumatakbo habang natutulog ka.",
-        "Isang fixed na presyo, aprubado bago magsimula ang kahit ano.",
+        "Isang fixed na presyo, aprubado bago magsimula ang trabaho.",
       ],
-      ["Umasa na tama ito sa umaga.", "Sinuri ng propesyonal bago mo pa ito makita."],
+      [
+        "Alin man dito",
+        "Sa umaga mo pa malalaman kung tama.",
+        "Sinuri ng propesyonal bago mo pa ito makita.",
+      ],
     ],
   },
   close: { protocol: "Buong protocol — anim na yugto, may bersyon" },

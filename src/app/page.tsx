@@ -329,55 +329,23 @@ export default async function Home({
           <Reveal replay>
             <div className="plate px-5 py-10 sm:px-9 sm:py-12">
               {plateCh("04", t.ch05.label)}
+              {/* "You never meet the worker. That's the point." used to sit
+                  under this heading. It was the heading again in other words
+                  — one professional standing between you and the work IS
+                  never meeting the worker — so the reader paid for two lines
+                  and was told one thing. */}
               <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
                 {t.ch05.h2}
               </h2>
-              {/* The one sentence rescued from the deleted notes block. It is
-                  the strangest fact about this product and the only one no
-                  competitor can copy without rebuilding their company. */}
-              <p className="mt-4 max-w-[44ch] text-[18px] leading-snug tracking-[-0.01em] text-[#14161A]">
-                {t.ch05.never}
-              </p>
 
               <PaperReviewDesk caption={t.ch05.desk} />
 
+              {/* Every row names the alternative it is beating, on the row
+                  itself. The single header pair that used to sit above these
+                  scrolled out of view after the first row and never came
+                  back — see the note on ch05.pairs in src/lib/i18n/client.ts
+                  for why per-row labels replaced it rather than sticky ones. */}
               <div className="mt-12">
-                <div className="mb-2 hidden grid-cols-[1fr_2.75rem_1fr] md:grid">
-                  <span className="pr-5 text-right font-mono text-[10px] uppercase tracking-[0.16em] text-[#5B6069]">
-                    {t.ch05.there}
-                  </span>
-                  <span aria-hidden />
-                  <span className="pl-5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#5B6069]">
-                    {t.ch05.here}
-                  </span>
-                </div>
-
-                {/* mobile: the THERE/HERE labels above live inside a md:grid,
-                    so on a phone the stacked pairs used to arrive with no
-                    labels at all — four unattributed sentences either side of
-                    a hatch. This states the order once, in the same
-                    three-part grammar (muted · wall · ink) every row repeats,
-                    and absorbs the wall band that used to sit here alone. */}
-                <div className="mb-6 md:hidden">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#8A9099]">
-                    {t.ch05.keyLabel}
-                  </p>
-                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-[#5B6069]">
-                    {t.ch05.there}
-                  </p>
-                  <div
-                    aria-hidden
-                    className="hatch my-2 flex h-8 items-center justify-center"
-                  >
-                    <span className="bg-[#F7F6F3] px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B6069]">
-                      {t.ch05.wall}
-                    </span>
-                  </div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#14161A]">
-                    {t.ch05.here}
-                  </p>
-                </div>
-
                 <div className="relative">
                   {/* the wall itself — one hatched band, full height */}
                   <div
@@ -389,19 +357,28 @@ export default async function Home({
                     </span>
                   </div>
 
-                  {t.ch05.pairs.map(([there, here]) => (
+                  {t.ch05.pairs.map(([who, there, here]) => (
                     <div
-                      key={there}
-                      className="cut-row grid items-center border-b border-black/8 py-4 md:grid-cols-[1fr_2.75rem_1fr]"
+                      key={who}
+                      className="cut-row grid items-start border-b border-black/8 py-4 md:grid-cols-[1fr_2.75rem_1fr]"
                     >
-                      <p className="arrive-l text-[14px] leading-relaxed text-[#5B6069] md:pr-5 md:text-right">
-                        {there}
-                      </p>
+                      <div className="arrive-l md:pr-5 md:text-right">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#8A9099]">
+                          {who}
+                        </p>
+                        <p className="mt-1 text-[14px] leading-relaxed text-[#5B6069]">{there}</p>
+                      </div>
                       <span aria-hidden className="hatch my-3 block h-3 md:my-0 md:hidden" />
                       <span aria-hidden className="hidden md:block" />
-                      <p className="arrive-r text-[14px] leading-relaxed text-[#14161A] md:pl-5">
-                        {here}
-                      </p>
+                      <div className="arrive-r md:pl-5">
+                        {/* The brand name, not a translated string: it is the
+                            one constant in the table and the drumbeat the eye
+                            catches four times down the right-hand side. */}
+                        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#14161A]">
+                          AfterDesk
+                        </p>
+                        <p className="mt-1 text-[14px] leading-relaxed text-[#14161A]">{here}</p>
+                      </div>
                     </div>
                   ))}
                 </div>

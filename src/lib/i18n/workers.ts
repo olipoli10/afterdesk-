@@ -106,8 +106,14 @@ const en: Dict = {
     kicker: "The printed number is the number you get.",
   },
   ch03: {
-    label: "The bar",
-    h2: "The bar is why the money is real.",
+    /* "The bar" meant the quality bar, and English was the last language
+       still saying it that way — fr/es/tl had all already moved to
+       standard/estándar/pamantayan. It read as a noun with three other
+       meanings and sent at least one reader looking for a claim about
+       earning potential, which is not what this chapter is about: pass the
+       review and you are paid, and that is why the printed number holds. */
+    label: "The standard",
+    h2: "The standard is why the payout is real.",
     rowPass: "Passes review → paid.",
     rowReturned: "Not right yet → returned with notes.",
     rowFail: "Fails final review → unpaid. Rare, by design.",
