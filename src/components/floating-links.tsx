@@ -20,12 +20,16 @@ export function FloatingLinks({
   tone,
   aboutLabel,
   signInLabel,
+  signInHref,
   className = "",
 }: {
   /** "night" is the client homepage, "paper" the worker one. */
   tone: "night" | "paper";
   aboutLabel: string;
   signInLabel: string;
+  /** Where the second pill goes when a login form is the wrong answer — a
+   *  visitor who is already signed in needs their portal, not a sign-in page. */
+  signInHref?: string;
   className?: string;
 }) {
   const pill =
@@ -45,7 +49,10 @@ export function FloatingLinks({
       {/* tone="paper" is only ever used on the worker homepage (see
           src/app/workers/page.tsx) — audience=worker there hides Google
           sign-in on /login, since Google can never open a VA account. */}
-      <Link href={tone === "paper" ? "/login?audience=worker" : "/login"} className={`${base} ${pill}`}>
+      <Link
+        href={signInHref ?? (tone === "paper" ? "/login?audience=worker" : "/login")}
+        className={`${base} ${pill}`}
+      >
         {signInLabel}
       </Link>
     </div>

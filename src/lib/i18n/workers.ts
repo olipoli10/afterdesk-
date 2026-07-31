@@ -34,7 +34,10 @@ export function workersLangOf(value: string | undefined | null): WorkersLang {
 }
 
 type Dict = {
-  nav: { signIn: string; apply: string; client: string; workers: string };
+  /** `portal` replaces signIn + apply once a session exists: both of those
+   *  doors only redirect a signed-in reader back into the app, so the header
+   *  offers the one destination that is actually theirs. */
+  nav: { signIn: string; apply: string; portal: string; client: string; workers: string };
   hero: {
     kill: string;
     h1: string;
@@ -132,7 +135,7 @@ type Dict = {
 };
 
 const en: Dict = {
-  nav: { signIn: "Sign in", apply: "Apply", client: "Get work done", workers: "For workers" },
+  nav: { signIn: "Sign in", apply: "Apply", portal: "My account", client: "Get work done", workers: "For workers" },
   hero: {
     kill: "No proposals · No bidding · No commission",
     h1: "The payout is printed before you claim.",
@@ -245,7 +248,7 @@ const en: Dict = {
 };
 
 const tl: Dict = {
-  nav: { signIn: "Mag-sign in", apply: "Mag-apply", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
+  nav: { signIn: "Mag-sign in", apply: "Mag-apply", portal: "Account ko", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   hero: {
     kill: "Walang proposal · Walang bidding · Walang komisyon",
     h1: "Nakalimbag ang payout bago ka mag-claim.",
@@ -357,7 +360,7 @@ const tl: Dict = {
 /* North-American French: "courriel" over "email", business register, no
    France-only idioms. */
 const fr: Dict = {
-  nav: { signIn: "Connexion", apply: "Postuler", client: "Faire faire du travail", workers: "Pour les travailleurs" },
+  nav: { signIn: "Connexion", apply: "Postuler", portal: "Mon compte", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   hero: {
     kill: "Aucune proposition · Aucune enchère · Aucune commission",
     h1: "Le montant est imprimé avant que vous preniez la tâche.",
@@ -472,7 +475,7 @@ const fr: Dict = {
 
 /* Neutral international business Spanish — tuteo, matching the client page. */
 const es: Dict = {
-  nav: { signIn: "Iniciar sesión", apply: "Postular", client: "Haz que se haga", workers: "Para trabajadores" },
+  nav: { signIn: "Iniciar sesión", apply: "Postular", portal: "Mi cuenta", client: "Haz que se haga", workers: "Para trabajadores" },
   hero: {
     kill: "Sin propuestas · Sin pujas · Sin comisión",
     h1: "El pago está impreso antes de que tomes la tarea.",

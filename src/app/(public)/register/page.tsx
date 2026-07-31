@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { googleEnabled } from "@/lib/auth";
+import { getSessionUser, roleHome } from "@/lib/authz";
 import { AuthShell } from "@/components/auth-shell";
 import { ClientRegisterForm } from "@/components/register-forms";
 import { linkInline } from "@/components/ui";
@@ -27,7 +29,18 @@ const ASIDE = [
   },
 ];
 
-export default function RegisterClientPage() {
+export default async function RegisterClientPage() {
+  // Same guard as both /login copies (src/app/(public)/login and
+  // src/app/@modal/(.)login). Without it this is the one AuthShell page a
+  // live session can sit on, and every way out of that shell is a trapdoor:
+  // the wordmark and "← Back to site" both point at "/", which bounces a
+  // signed-in visitor straight into the portal, and the footer "Sign in"
+  // does the same. Signing up is also meaningless with a session already
+  // open — the form would only ever create a second account or fail on the
+  // duplicate email.
+  const user = await getSessionUser();
+  if (user) redirect(roleHome(user.role));
+
   return (
     <AuthShell
       kicker="Client sign-up"

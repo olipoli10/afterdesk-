@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { familyOf } from "@/lib/families";
 import { guideFor } from "@/lib/training/content";
+import { vaProfileFor } from "@/lib/queries/va-profile";
 import { Card, CardBody, LinkButton, SectionLabel } from "@/components/ui";
 
 /**
@@ -24,16 +25,19 @@ export default async function FieldGuidePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  await requireRole("VA");
+  const user = await requireRole("VA");
   const { slug } = await params;
 
   const guide = guideFor(slug);
   if (!guide) notFound();
 
-  const category = await prisma.taskCategory.findUnique({
-    where: { slug },
-    select: { name: true, disputeCriteria: true },
-  });
+  const [category, profile] = await Promise.all([
+    prisma.taskCategory.findUnique({
+      where: { slug },
+      select: { name: true, disputeCriteria: true },
+    }),
+    vaProfileFor(user.id),
+  ]);
   if (!category) notFound();
 
   const fam = familyOf(slug);
@@ -183,9 +187,13 @@ export default async function FieldGuidePage({
       </section>
 
       <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-white/10 pt-5">
-        <LinkButton href={`/va/pool?cat=${slug}`} tone="night">
-          See open {category.name} tasks
-        </LinkButton>
+        {/* The pool bounces anyone who isn't approved straight back to /va, so
+            the guide only offers the door a worker can actually walk through. */}
+        {profile?.status === "approved" ? (
+          <LinkButton href={`/va/pool?cat=${slug}`} tone="night">
+            See open {category.name} tasks
+          </LinkButton>
+        ) : null}
         <LinkButton href={`/va/training/${slug}`} variant="secondary" tone="night">
           Back to the course
         </LinkButton>

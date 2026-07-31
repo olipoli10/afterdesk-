@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getSessionUser, roleHome } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { Reveal } from "@/components/reveal";
@@ -60,13 +60,58 @@ const ORG_JSONLD = JSON.stringify({
     "Describe any task in plain English: priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
 });
 
+/**
+ * True when this request was started from one of our own pages instead of by
+ * arriving at the bare root. Someone opening the root cold — bookmark, typed
+ * address, a link from elsewhere — is opening the product; someone who clicked
+ * their way here from inside AfterDesk is ASKING for the marketing site, and
+ * that is the difference the bounce below has to respect.
+ *
+ * The referrer is the signal, and site-wide Referrer-Policy: same-origin
+ * (next.config.ts) is what makes it a trustworthy one: a referrer naming our
+ * own host can only have come from our own page. A next/link click carries it
+ * too — the router fetches the RSC payload with a plain fetch() from the page
+ * you are leaving. Do not "improve" this with the RSC or Next-URL header:
+ * neither reaches a Server Component. Flight headers are stripped before
+ * headers() (server/async-storage/request-store.js) and Next-URL is deleted
+ * for any path that cannot be intercepted (server/base-server.js), which "/"
+ * cannot. Both were measured null here, not assumed.
+ */
+async function arrivedFromInsideTheApp(): Promise<boolean> {
+  const h = await headers();
+  const host = h.get("host");
+  const referer = h.get("referer");
+  if (!host || !referer) return false;
+  // Prefix match rather than new URL(): a malformed Referer is
+  // attacker-controlled and must never be able to throw on the homepage.
+  return referer.startsWith(`https://${host}/`) || referer.startsWith(`http://${host}/`);
+}
+
 export default async function Home({
   searchParams,
 }: {
   searchParams: Promise<{ lang?: string }>;
 }) {
   const user = await getSessionUser();
-  if (user) redirect(roleHome(user.role));
+  /* This used to bounce EVERY signed-in visitor to their portal, which sealed
+     the last exit an unverified account has. Its portal is a closed door —
+     requireUser() (src/lib/authz.ts) sends any unverified session straight to
+     /verify-email — so "/" handing it to that portal turned every "← Back to
+     site" in AuthShell into a loading flash that landed on the page it was
+     clicked from. Two narrowings and the loop cannot form. An unverified
+     session is never bounced: behind the gate there is nothing for it to see,
+     so this page is its way out. A verified one is bounced only on a cold
+     arrival at the bare root — anyone who clicked through from inside the app
+     asked for the marketing site and gets it, which is the door back to
+     /about, /how-it-works and the public Academy once you are signed in. */
+  if (user?.emailVerified && !(await arrivedFromInsideTheApp())) {
+    redirect(roleHome(user.role));
+  }
+  /* The door back into the app, or nothing at all for a stranger. An
+     unverified session is pointed at the verification page rather than at
+     roleHome(): that is a door which does not open for it, and requireUser()
+     would only send it here anyway, one loading flash later. */
+  const portal = user ? (user.emailVerified ? roleHome(user.role) : "/verify-email") : undefined;
   const settings = await getSettings();
   const sp = await searchParams;
   const cookieStore = await cookies();
@@ -134,18 +179,32 @@ export default async function Home({
             >
               {t.footer.about}
             </Link>
-            <Link
-              href="/login"
-              className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
-            >
-              {t.nav.signIn}
-            </Link>
-            <Link
-              href="/register"
-              className="lift hidden min-h-11 items-center rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
-            >
-              {t.nav.send}
-            </Link>
+            {/* Signed in, this page is now reachable, so the two doors that
+                only make sense to a stranger (sign in, sign up) become the one
+                that makes sense to a customer: back to their own portal. */}
+            {portal ? (
+              <Link
+                href={portal}
+                className="lift hidden min-h-11 items-center rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
+              >
+                {t.nav.portal}
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
+                >
+                  {t.nav.signIn}
+                </Link>
+                <Link
+                  href="/register"
+                  className="lift hidden min-h-11 items-center rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
+                >
+                  {t.nav.send}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -165,32 +224,47 @@ export default async function Home({
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
         <PointerGlow />
 
-        <div className="relative mx-auto grid w-full max-w-[1120px] gap-12 px-6 pb-4 pt-10 sm:pt-28 lg:grid-cols-[1fr_420px] lg:items-center">
-          <div>
-            {/* Phone-only: the two links the header has no room for. */}
-            <FloatingLinks
-              tone="night"
-              aboutLabel={t.footer.about}
-              signInLabel={t.nav.signIn}
-              className="anim-rise mb-9"
-            />
-            <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
-              <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>
-              <span className="anim-rise d-1 block text-white">{t.hero.line2}</span>
-            </h1>
-            <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
-              {t.hero.sub(settings.quoteTurnaroundHours)}
-            </p>
-            {/* The competitive-advantage line. A visitor here already knows
-                hiring someone directly is cheap and easy — what they don't
-                have is the hour they'd spend checking that person's work.
-                This names that management overhead as the thing being sold
-                away, before the fold, so "why not just do it myself" gets
-                answered before anyone has to scroll for it. */}
-            <p className="anim-rise d-2 mt-4 max-w-[48ch] text-[15px] leading-[1.6] text-[#C9CDD3]">
-              {t.hero.edge}
-            </p>
-            <div className="anim-rise d-3 mt-8">
+        {/* Below lg this is ONE column, and the column order is the whole
+            point. A phone used to scroll 2.5 screens of uninterrupted prose
+            before it met anything that was not a sentence, so here the order
+            is headline → the product itself → the door → the explanation.
+            The two text blocks are grouped in a wrapper that is `contents` on
+            a phone (so the window can be ordered between them) and a real box
+            from lg up (so it is the left column of the two-column grid, in
+            plain DOM order, exactly as before). One copy of every string. */}
+        <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-10 sm:pt-28 lg:grid lg:grid-cols-[1fr_420px] lg:gap-12 lg:items-center">
+          <div className="contents lg:block">
+            <div className="order-1">
+              {/* Phone-only: the two links the header has no room for. */}
+              <FloatingLinks
+                tone="night"
+                aboutLabel={t.footer.about}
+                signInLabel={portal ? t.nav.portal : t.nav.signIn}
+                signInHref={portal}
+                className="anim-rise mb-9"
+              />
+              <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
+                <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>
+                <span className="anim-rise d-1 block text-white">{t.hero.line2}</span>
+              </h1>
+            </div>
+
+            <div className="order-4">
+              <p className="anim-rise d-2 mt-6 max-w-[52ch] text-[17px] leading-[1.5] text-[#9AA1AB]">
+                {t.hero.sub(settings.quoteTurnaroundHours)}
+              </p>
+              {/* The competitive-advantage line. A visitor here already knows
+                  hiring someone directly is cheap and easy — what they don't
+                  have is the hour they'd spend checking that person's work.
+                  This names that management overhead as the thing being sold
+                  away, so "why not just do it myself" gets answered before
+                  anyone has to scroll past the hero for it. */}
+              <p className="anim-rise d-2 mt-4 max-w-[48ch] text-[15px] leading-[1.6] text-[#C9CDD3]">
+                {t.hero.edge}
+              </p>
+            </div>
+
+            <div className="anim-rise d-3 order-3 mt-8">
               <Link
                 href="/register"
                 className="lift inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
@@ -202,31 +276,23 @@ export default async function Home({
                   answer to "what actually happens if I click this," landed
                   in one breath, right where someone is deciding to click. */}
               <p className="mt-3 font-mono text-[12px] text-[#767C86]">{t.hero.guarantee}</p>
-              {/* A real number, immediately, on every screen size — not just
-                  in the animated preview beside this (desktop-only, and it
-                  takes a few seconds to reach the price stamp). Same task
-                  and same $74 as that animation, on purpose: a reader who
-                  later sees it play out recognizes the number instead of
-                  meeting a third, unrelated price on the page. */}
-              <p className="mt-3 inline-flex items-center gap-2 rounded-[3px] border border-white/10 px-2.5 py-1.5 font-mono text-[11px] text-[#8A9099]">
-                <span className="uppercase tracking-[0.1em] text-[#5B6069]">{t.hero.exampleTag}</span>
-                <span className="text-[#C9CDD3]">&ldquo;{t.liveWindow.taskTitle}&rdquo;</span>
-                <span className="font-medium text-[#3DDCA0]">$74</span>
-              </p>
             </div>
           </div>
 
           {/* The product IS the hero image — and it's ALIVE: one task's whole
-              life plays in the window, then loops. */}
+              life plays in the window, then loops.
+
+              Phones used to be denied it: stacked vertically, it and the quote
+              slip in chapter 01 are both dark mono cards with a task name, a
+              field list and two buttons, so they scanned as one artifact shown
+              twice. That was the right observation and the wrong cut — the
+              phone kept the sentences and lost every picture. The window is
+              now the picture on every screen, and the duplication is settled
+              at the other end: below lg the slip drops the field rows and the
+              buttons that made it look like this card and keeps only what is
+              new there, the total. */}
           <p className="sr-only">{t.hero.srPreview(t.liveWindow.taskTitle)}</p>
-          {/* Phones don't get this. It and the quote slip in chapter 01 are
-              both dark mono cards carrying a task name, a detail list and a
-              price, and stacked vertically on a phone they scan as the same
-              artifact shown twice rather than as two different points (a
-              task's whole night here, the price object there). The slip is
-              the one that survives: it is the one carrying NEW information,
-              and it has captions under it that the window does not. */}
-          <div aria-hidden className="anim-rise d-3 hidden sm:block">
+          <div aria-hidden className="anim-rise d-3 order-2 mt-10 lg:mt-0">
             <LiveTaskWindow copy={t.liveWindow} />
           </div>
         </div>
@@ -244,9 +310,18 @@ export default async function Home({
              "wait, what is this" that has to land before anyone reads far
              enough to reach chapter 01. */}
       <section className="border-t border-white/8 bg-[#0D0E11]">
+        {/* Three reveals, not one. This block is eleven text runs deep and on
+            a phone it is the longest unbroken column on the page; wrapped in a
+            single Reveal it arrived as one wall the moment its top edge
+            crossed the threshold, which is the same as not animating at all.
+            Split at its own seams — the statement, the process, the standing
+            promises — each waits for its own turn, and the .srow rule staggers
+            the rows inside it. Reveal itself is the reduced-motion gate: it
+            only arms when motion is wanted, so this stays a plain column for
+            anyone who asked for one. */}
         <div className="mx-auto w-full max-w-[1120px] px-6 py-16 sm:py-20">
           <Reveal>
-            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
+            <p className="srow font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
               {t.whatWeAre.label}
             </p>
             {/* AfterDesk set in the wordmark's own treatment (mono,
@@ -255,42 +330,42 @@ export default async function Home({
                 The sentence around it drops to a paler, lighter weight in
                 the same motion, so the name is what actually pops instead
                 of everything competing at the same weight. */}
-            <h2 className="mt-3 max-w-[28ch] text-[clamp(1.3rem,2.9vw,1.85rem)] font-medium leading-[1.25] tracking-[-0.015em] text-[#9AA1AB]">
+            <h2 className="srow mt-3 max-w-[28ch] text-[clamp(1.3rem,2.9vw,1.85rem)] font-medium leading-[1.25] tracking-[-0.015em] text-[#9AA1AB]">
               {t.whatWeAre.h2[0]}
               <span className="font-mono text-[1.05em] font-bold uppercase tracking-[0.12em] text-white">
                 AfterDesk
               </span>
               {t.whatWeAre.h2[1]}
             </h2>
-            <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.65] text-[#9AA1AB] sm:text-[16px]">
+            <p className="srow mt-4 max-w-[62ch] text-[15px] leading-[1.65] text-[#9AA1AB] sm:text-[16px]">
               {t.whatWeAre.intro}
             </p>
-            <div className="mt-10 grid gap-8 sm:grid-cols-3 sm:gap-6">
-              {t.whatWeAre.steps.map(([label, body], i) => (
-                <div key={label}>
-                  <p className="font-mono text-[13px] tabular-nums tracking-[-0.01em] text-[#5B6069]">
-                    {String(i + 1).padStart(2, "0")}
-                  </p>
-                  <p className="mt-1.5 text-[16px] font-medium text-white">{label}</p>
-                  <p className="mt-1.5 text-[14px] leading-[1.55] text-[#9AA1AB]">{body}</p>
-                </div>
-              ))}
-            </div>
-            {/* The standing guarantees, not the process — deliberately
-                smaller and unnumbered so this doesn't read as the same
-                "three things" list a second time. steps above is the
-                timeline (describe → done → pay); this is what's true no
-                matter where a task sits on that timeline. */}
-            <div className="mt-10 grid gap-6 border-t border-white/8 pt-8 sm:grid-cols-3">
-              {t.whatWeAre.pillars.map(([label, body]) => (
-                <div key={label}>
-                  <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[#C9CDD3]">
-                    {label}
-                  </p>
-                  <p className="mt-1.5 text-[13px] leading-[1.5] text-[#767C86]">{body}</p>
-                </div>
-              ))}
-            </div>
+          </Reveal>
+          <Reveal className="mt-10 grid gap-8 sm:grid-cols-3 sm:gap-6">
+            {t.whatWeAre.steps.map(([label, body], i) => (
+              <div key={label} className="srow">
+                <p className="font-mono text-[13px] tabular-nums tracking-[-0.01em] text-[#5B6069]">
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <p className="mt-1.5 text-[16px] font-medium text-white">{label}</p>
+                <p className="mt-1.5 text-[14px] leading-[1.55] text-[#9AA1AB]">{body}</p>
+              </div>
+            ))}
+          </Reveal>
+          {/* The standing guarantees, not the process — deliberately
+              smaller and unnumbered so this doesn't read as the same
+              "three things" list a second time. steps above is the
+              timeline (describe → done → pay); this is what's true no
+              matter where a task sits on that timeline. */}
+          <Reveal className="mt-10 grid gap-6 border-t border-white/8 pt-8 sm:grid-cols-3">
+            {t.whatWeAre.pillars.map(([label, body]) => (
+              <div key={label} className="srow">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[#C9CDD3]">
+                  {label}
+                </p>
+                <p className="mt-1.5 text-[13px] leading-[1.5] text-[#767C86]">{body}</p>
+              </div>
+            ))}
           </Reveal>
         </div>
       </section>
@@ -315,13 +390,22 @@ export default async function Home({
                   <span>QUOTE #0412</span>
                   <span className="text-white">{t.ch02.fixed}</span>
                 </div>
+                {/* Below lg the SCOPE and RETURNS rows are dropped, and so are
+                    the two buttons under the total. Both are the hero window's
+                    own furniture, and on one narrow column this slip sits
+                    directly beneath that window in the scroll — with them it
+                    is the same card a second time, without them it is what it
+                    was always for: the price, alone, with its captions. */}
                 {[
-                  [t.ch02.fieldTask, t.ch02.taskValue],
-                  [t.ch02.fieldScope, t.ch02.scopeValue],
+                  [t.ch02.fieldTask, t.ch02.taskValue, ""],
+                  [t.ch02.fieldScope, t.ch02.scopeValue, "hidden lg:flex"],
                   // The RETURNS value is a literal clock time + timezone, not a word.
-                  [t.ch02.fieldReturns, "7:07 AM ET"],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-4 border-b border-white/6 py-2.5">
+                  [t.ch02.fieldReturns, "7:07 AM ET", "hidden lg:flex"],
+                ].map(([k, v, hide]) => (
+                  <div
+                    key={k}
+                    className={`justify-between gap-4 border-b border-white/6 py-2.5 ${hide || "flex"}`}
+                  >
                     <span className="shrink-0 text-[#8A9099]">{k}</span>
                     <span className="text-right text-[#C9CDD3]">{v}</span>
                   </div>
@@ -333,7 +417,7 @@ export default async function Home({
                   </span>
                 </div>
                 <p className="mt-2 text-right text-[11px] text-[#8A9099]">{t.ch02.noMeter}</p>
-                <div className="mt-5 flex gap-2">
+                <div className="mt-5 hidden gap-2 lg:flex">
                   <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
                     {t.ch02.approve}
                   </span>

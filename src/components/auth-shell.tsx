@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Wordmark } from "@/components/logo";
+import { SignOutButton } from "@/components/sign-out";
 
 /**
  * Shared frame for login / register / VA application. Landing here from the
@@ -22,6 +23,7 @@ export function AuthShell({
   footer,
   aside,
   asideTone = "paper",
+  exit = "site",
 }: {
   /** Mono eyebrow naming the door — "Sign in" / "Client sign-up" / etc. */
   kicker: string;
@@ -33,22 +35,40 @@ export function AuthShell({
   aside?: { title: string; body: string }[];
   /** "night" folds a panel of the night homepage beside the form (client register). */
   asideTone?: "night" | "paper";
+  /**
+   * How the header lets you leave. "sign-out" is for a page held open by a
+   * signed-in but unverified session (/verify-email): for that session "/" is
+   * a dead end — src/app/page.tsx redirects it to the portal and the portal's
+   * requireUser bounces it straight back here, so a link home and the wordmark
+   * both land on the page they were clicked from. Ending the session is the
+   * only exit that goes anywhere, and it lands on the site all the same.
+   */
+  exit?: "site" | "sign-out";
 }) {
   const hasAside = aside && aside.length > 0;
+  const stuck = exit === "sign-out";
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F7F6F3]">
       <header className="border-b border-[#14161A]/10 bg-[#F7F6F3]">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5">
-          <Link href="/" className="text-[12px]">
-            <Wordmark />
-          </Link>
-          <Link
-            href="/"
-            className="text-[13px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
-          >
-            ← Back to site
-          </Link>
+          {stuck ? (
+            <Wordmark className="text-[12px]" />
+          ) : (
+            <Link href="/" className="text-[12px]">
+              <Wordmark />
+            </Link>
+          )}
+          {stuck ? (
+            <SignOutButton home="/" />
+          ) : (
+            <Link
+              href="/"
+              className="text-[13px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+            >
+              ← Back to site
+            </Link>
+          )}
         </div>
       </header>
 

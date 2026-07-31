@@ -6,6 +6,7 @@ import { courseFor, courseMinutes } from "@/lib/academy/content";
 import { courseLook, nightHue } from "@/lib/academy/look";
 import { EXAM_PASS_SCORE, EXAM_QUESTION_COUNT, examWindowStart } from "@/lib/academy/types";
 import { hasGuide } from "@/lib/training/content";
+import { vaProfileFor } from "@/lib/queries/va-profile";
 import { Card, LinkButton, SectionLabel } from "@/components/ui";
 
 /**
@@ -33,7 +34,8 @@ export default async function CoursePage({
 
   const look = courseLook(course.track, course.slug);
 
-  const [category, cert, best, recentAttempts] = await Promise.all([
+  const [profile, category, cert, best, recentAttempts] = await Promise.all([
+    vaProfileFor(user.id),
     course.track === "category"
       ? prisma.taskCategory.findUnique({
           where: { slug },
@@ -56,6 +58,7 @@ export default async function CoursePage({
 
   const bestScore = best._max.score;
   const attempted = best._count > 0;
+  const approved = profile?.status === "approved";
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -224,13 +227,26 @@ export default async function CoursePage({
         </Card>
       </section>
 
-      {/* to the work */}
+      {/* to the work — the board redirects anyone unapproved, so a worker
+          who cannot claim yet gets the door that is actually open to them. */}
       {course.track === "category" && category ? (
-        <p className="mt-7 border-t border-white/[0.08] pt-5">
-          <LinkButton href={`/va/pool?cat=${slug}`} variant="secondary" tone="night">
-            See open {category.name} tasks
-          </LinkButton>
-        </p>
+        <div className="mt-7 border-t border-white/[0.08] pt-5">
+          {approved ? (
+            <LinkButton href={`/va/pool?cat=${slug}`} variant="secondary" tone="night">
+              See open {category.name} tasks
+            </LinkButton>
+          ) : (
+            <>
+              <p className="mb-3 max-w-[58ch] text-sm leading-relaxed text-[#8A9099]">
+                Claiming {category.name} work opens when your account is approved. Certificates
+                you earn here are on your profile when the operator reviews it.
+              </p>
+              <LinkButton href="/va/training" variant="secondary" tone="night">
+                Back to the Academy
+              </LinkButton>
+            </>
+          )}
+        </div>
       ) : null}
     </div>
   );

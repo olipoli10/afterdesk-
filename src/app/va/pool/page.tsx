@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { poolForVa, type VaPoolView } from "@/lib/queries/tasks";
+import { vaProfileFor } from "@/lib/queries/va-profile";
 import { familyOf, familyRank, FAMILIES } from "@/lib/families";
-import { EmptyState, LinkButton } from "@/components/ui";
+import { Card, CardBody, EmptyState, LinkButton, PageTitle } from "@/components/ui";
 import { BoardTile, duePill } from "./board-tile";
-import { vaProfileFor } from "../layout";
 
 /**
  * THE BOARD — the founder-approved pool design ("variant 3"). Not a feed of
@@ -59,6 +58,49 @@ function slugOf(t: VaPoolView): string {
   return t.category?.slug ?? "unfiled";
 }
 
+/**
+ * The pool is approved-workers-only, but ../layout.tsx shows "Available work"
+ * to every worker on purpose: it builds the portal nav once per entry and the
+ * App Router does not re-render a layout on a soft navigation between siblings,
+ * so any status-derived header outlives the status it was built from. The nav
+ * therefore carries no status and this page answers for the gate. Bouncing to
+ * /va made the header link read as a dead one ("Available work always comes
+ * back to My work") with nothing said about why, so state what is missing and
+ * always leave a working way on.
+ */
+function PoolClosed({ suspended, reason }: { suspended: boolean; reason: string | null }) {
+  return (
+    <div className="space-y-6">
+      <PageTitle title="Available work" tone="night" />
+      <Card tone="night">
+        <CardBody>
+          <p className="text-sm font-medium text-[#F7F6F3]">
+            {suspended ? "Your pool access is paused" : "The pool opens once you're approved"}
+          </p>
+          <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-[#8A9099]">
+            {suspended
+              ? "Work in the pool is open to approved workers only, and your access is paused pending review. Tasks already in your hands are on hold until the operator restores or reassigns them."
+              : "Work in the pool is open to approved workers only. Your work page shows where your application stands, and the Academy is open in the meantime."}
+          </p>
+          {suspended && reason ? (
+            <p className="mt-2 text-sm text-[#8A9099]">Reason: {reason}</p>
+          ) : null}
+          <p className="mt-4 flex flex-wrap gap-2">
+            <LinkButton href="/va" tone="night">
+              Go to my work
+            </LinkButton>
+            {suspended ? null : (
+              <LinkButton href="/va/training" variant="secondary" tone="night">
+                Open the Academy
+              </LinkButton>
+            )}
+          </p>
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
+
 export default async function VaPoolPage({
   searchParams,
 }: {
@@ -70,7 +112,14 @@ export default async function VaPoolPage({
     getSettings(),
     searchParams,
   ]);
-  if (profile?.status !== "approved") redirect("/va");
+  if (profile?.status !== "approved") {
+    return (
+      <PoolClosed
+        suspended={profile?.status === "suspended"}
+        reason={profile?.suspensionReason ?? null}
+      />
+    );
+  }
 
   const tasks = await poolForVa({
     score: profile.scoreCache,

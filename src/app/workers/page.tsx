@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
 import { FloatingLinks } from "@/components/floating-links";
 import { SampleExam } from "@/components/sample-exam";
@@ -109,8 +108,14 @@ export default async function WorkersHome({
 }: {
   searchParams: Promise<{ lang?: string }>;
 }) {
+  /* This page used to redirect every signed-in visitor to their portal. That
+     made the worker storefront unreachable for the whole duration of a
+     session — and since the worker portal signs out to /workers
+     (src/app/va/layout.tsx), a sign-out whose cookie had not cleared yet was
+     thrown straight back into the app. The storefront now renders for
+     everyone; a session only changes the account door in the chrome. */
   const user = await getSessionUser();
-  if (user) redirect(roleHome(user.role));
+  const portal = user ? roleHome(user.role) : undefined;
   const settings = await getSettings();
   const sp = await searchParams;
   const cookieStore = await cookies();
@@ -155,18 +160,33 @@ export default async function WorkersHome({
             >
               {t.footer.about}
             </Link>
-            <Link
-              href="/login?audience=worker"
-              className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
-            >
-              {t.nav.signIn}
-            </Link>
-            <Link
-              href="/register/va"
-              className="lift hidden min-h-11 items-center rounded-full bg-[#14161A] px-4 py-1.5 text-[13px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:inline-flex"
-            >
-              {t.nav.apply}
-            </Link>
+            {portal ? (
+              /* Signing in is done and applying is over, so the two doors
+                 collapse into one that leads where the reader can actually
+                 go. Without it the portal is only reachable by typing the
+                 URL. */
+              <Link
+                href={portal}
+                className="lift hidden min-h-11 items-center rounded-full bg-[#14161A] px-4 py-1.5 text-[13px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:inline-flex"
+              >
+                {t.nav.portal}
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login?audience=worker"
+                  className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
+                >
+                  {t.nav.signIn}
+                </Link>
+                <Link
+                  href="/register/va"
+                  className="lift hidden min-h-11 items-center rounded-full bg-[#14161A] px-4 py-1.5 text-[13px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:inline-flex"
+                >
+                  {t.nav.apply}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -194,7 +214,8 @@ export default async function WorkersHome({
             <FloatingLinks
               tone="paper"
               aboutLabel={t.footer.about}
-              signInLabel={t.nav.signIn}
+              signInLabel={portal ? t.nav.portal : t.nav.signIn}
+              signInHref={portal}
               className="anim-rise order-0 mb-9"
             />
             <p className="anim-rise order-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">

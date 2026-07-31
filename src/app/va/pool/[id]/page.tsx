@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { poolTaskForVa } from "@/lib/queries/tasks";
+import { vaProfileFor } from "@/lib/queries/va-profile";
 import { formatCents } from "@/lib/money";
 import { familyOf } from "@/lib/families";
 import { LocalTime } from "@/components/local-time";
@@ -10,7 +11,6 @@ import { ClaimButton } from "@/components/va-actions";
 import { Card, CardBody, EmptyState, LinkButton, SectionLabel, moneyPayoutNight } from "@/components/ui";
 import { hasGuide } from "@/lib/training/content";
 import { duePill } from "../board-tile";
-import { vaProfileFor } from "../../layout";
 
 /**
  * The pre-claim reading room. A claim release is recorded on the worker's

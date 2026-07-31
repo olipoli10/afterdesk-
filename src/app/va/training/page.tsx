@@ -5,6 +5,7 @@ import { FAMILIES } from "@/lib/families";
 import { allCourses, courseMinutes } from "@/lib/academy/content";
 import { courseLook, nightHue, TRACK_LOOK } from "@/lib/academy/look";
 import type { Course, CourseTrack } from "@/lib/academy/types";
+import { vaProfileFor } from "@/lib/queries/va-profile";
 import { PageTitle } from "@/components/ui";
 
 /**
@@ -73,7 +74,8 @@ function CourseCard({
 export default async function AcademyHubPage() {
   const user = await requireRole("VA");
 
-  const [certs, bests] = await Promise.all([
+  const [profile, certs, bests] = await Promise.all([
+    vaProfileFor(user.id),
     prisma.certification.findMany({
       where: { userId: user.id },
       select: { courseSlug: true },
@@ -84,6 +86,7 @@ export default async function AcademyHubPage() {
       _max: { score: true },
     }),
   ]);
+  const approved = profile?.status === "approved";
   const certified = new Set(certs.map((c) => c.courseSlug));
   const bestBySlug = new Map(bests.map((b) => [b.courseSlug, b._max.score ?? 0]));
 
@@ -200,11 +203,16 @@ export default async function AcademyHubPage() {
       <p className="mt-8 max-w-[62ch] text-xs leading-relaxed text-[#8A9099]">
         Every course is free and always will be. Certificates are earned, never bought —
         which is exactly why they mean something.{" "}
+        {/* The pool bounces anyone who isn't approved straight back to /va, and
+            this hub is open pre-approval on purpose — so the page it ends on is
+            the one a worker can actually walk through. */}
         <Link
-          href="/va/pool"
+          href={approved ? "/va/pool" : "/va"}
           className="font-medium text-[#F7F6F3] underline decoration-white/30 underline-offset-2 transition-colors duration-150 hover:decoration-white"
         >
-          The work is here when you&apos;re ready.
+          {approved
+            ? "The work is here when you're ready."
+            : "Your account page shows where you stand."}
         </Link>
       </p>
     </>

@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { taskForVa } from "@/lib/queries/tasks";
+import { vaProfileFor } from "@/lib/queries/va-profile";
 import { formatCents } from "@/lib/money";
 import { inputFileLabel } from "@/lib/filenames";
 import { LocalTime } from "@/components/local-time";
@@ -18,7 +19,6 @@ import {
   formatBytes,
   moneyPayoutNight,
 } from "@/components/ui";
-import { vaProfileFor } from "../../layout";
 
 const metaLabel = "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#8A9099]";
 

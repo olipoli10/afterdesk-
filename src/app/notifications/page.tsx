@@ -1,6 +1,9 @@
 import Link from "next/link";
+import type { SessionUser } from "@/lib/auth";
 import { requireUser } from "@/lib/authz";
 import { prisma } from "@/lib/db";
+import { pricingQueueCount } from "@/lib/queries/tasks";
+import { vaProfileFor } from "@/lib/queries/va-profile";
 import {
   markAllNotificationsRead,
   markNotificationRead,
@@ -25,6 +28,49 @@ function taskHref(role: "CLIENT" | "VA" | "ADMIN", taskId: string): string {
   return `/client/tasks/${taskId}`;
 }
 
+/**
+ * The header nav has to be the SAME list the role's own layout renders. This
+ * page is the one logged-in route outside /client, /va and /admin, so it
+ * inherits none of their layouts and has to rebuild the chrome by hand — and
+ * a hand-written short list drifted twice. It offered a non-approved worker
+ * "Available work", which src/app/va/pool/page.tsx bounces straight back to
+ * /va (a link that returns you to the page you left), and it dropped three of
+ * the operator's five queues along with their counts.
+ */
+async function navFor(user: SessionUser) {
+  if (user.role === "ADMIN") {
+    const [pricingCount, qcCount, workerCount] = await Promise.all([
+      pricingQueueCount(),
+      prisma.task.count({ where: { status: "submitted_for_qc" } }),
+      prisma.vaProfile.count({ where: { status: { in: ["pending_test", "pending_grading"] } } }),
+    ]);
+    return [
+      { href: "/admin", label: "Overview" },
+      { href: "/admin/pricing", label: "Pricing", badge: pricingCount },
+      { href: "/admin/qc", label: "QC", badge: qcCount },
+      { href: "/admin/workers", label: "Workers", badge: workerCount },
+      { href: "/admin/tasks", label: "All tasks" },
+    ];
+  }
+  if (user.role === "VA") {
+    const profile = await vaProfileFor(user.id);
+    return profile?.status === "approved"
+      ? [
+          { href: "/va", label: "My work" },
+          { href: "/va/pool", label: "Available work" },
+          { href: "/va/training", label: "Academy" },
+        ]
+      : [
+          { href: "/va", label: "My account" },
+          { href: "/va/training", label: "Academy" },
+        ];
+  }
+  return [
+    { href: "/client", label: "My tasks" },
+    { href: "/client/tasks/new", label: "New task" },
+  ];
+}
+
 export default async function NotificationsPage() {
   const user = await requireUser();
   const rows = await prisma.notification.findMany({
@@ -34,22 +80,7 @@ export default async function NotificationsPage() {
   });
   const unread = rows.filter((row) => !row.readAt).length;
 
-  const nav =
-    user.role === "ADMIN"
-      ? [
-          { href: "/admin", label: "Overview" },
-          { href: "/admin/tasks", label: "All tasks" },
-        ]
-      : user.role === "VA"
-        ? [
-            { href: "/va", label: "My work" },
-            { href: "/va/pool", label: "Available work" },
-            { href: "/va/training", label: "Academy" },
-          ]
-        : [
-            { href: "/client", label: "My tasks" },
-            { href: "/client/tasks/new", label: "New task" },
-          ];
+  const nav = await navFor(user);
 
   const tone = user.role === "VA" ? "night" : "paper";
   const night = tone === "night";
@@ -65,6 +96,9 @@ export default async function NotificationsPage() {
       nav={nav}
       width={user.role === "ADMIN" ? "wide" : "default"}
       tone={tone}
+      // Same rule as src/app/va/layout.tsx: a worker signing out belongs on
+      // the worker storefront, not the client one.
+      signedOutTo={user.role === "VA" ? "/workers" : "/"}
     >
       <div className="mx-auto max-w-2xl">
       <PageTitle

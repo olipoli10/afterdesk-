@@ -27,7 +27,12 @@ export function clientLangOf(value: string | undefined | null): ClientLang {
 }
 
 type Dict = {
-  nav: { signIn: string; send: string; client: string; workers: string };
+  /** `portal` replaces signIn + send once a session exists: both of those
+   *  doors only redirect a signed-in reader back into the app, so the header
+   *  offers the one destination that is actually theirs. Same key, same words
+   *  as the worker storefront (src/lib/i18n/workers.ts) — the audience toggle
+   *  swaps between the two headers and the door must not rename itself. */
+  nav: { signIn: string; send: string; portal: string; client: string; workers: string };
   hero: {
     line1: string;
     line2: string;
@@ -47,16 +52,16 @@ type Dict = {
      *  card is authorized, not charged, and stays that way on both sides
      *  (you, and the specialist) until you approve the delivery. */
     guarantee: string;
-    /** Label on the small price-example chip right under the guarantee
-     *  line — reuses liveWindow.taskTitle and the literal "$74" from the
-     *  hero's own animated preview (desktop-only, delayed) so the same real
-     *  number is legible immediately, on every screen size, with no wait. */
-    exampleTag: string;
     /** The hero's sr-only description of the animated live task window, for
      *  anyone who cannot see it. Takes liveWindow.taskTitle so the quoted
-     *  task matches the visible chip and the window itself; the price
-     *  ($74) and clock times stay literal data, same as everywhere else on
-     *  this page. */
+     *  task matches the window itself; the price ($74) and clock times stay
+     *  literal data, same as everywhere else on this page.
+     *
+     *  A small EXAMPLE chip used to restate that title and that $74 in text
+     *  right under the CTA, because the window was desktop-only and a phone
+     *  would otherwise never see a real number. The window plays on phones
+     *  now, directly under the headline, so the chip was two more lines
+     *  saying what the picture above them already said. */
     srPreview: (title: string) => string;
   };
   /* NO CAPTION. This chapter had two in a row and both said nothing the
@@ -199,7 +204,7 @@ type Dict = {
 };
 
 const en: Dict = {
-  nav: { signIn: "Sign in", send: "Send a task", client: "Get work done", workers: "For workers" },
+  nav: { signIn: "Sign in", send: "Send a task", portal: "My account", client: "Get work done", workers: "For workers" },
   hero: {
     line1: "Describe any task.",
     line2: "Get it back done by morning.",
@@ -209,7 +214,6 @@ const en: Dict = {
     cta: "Describe your task",
     guarantee:
       "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
-    exampleTag: "Example",
     srPreview: (title) =>
       `Product preview: a task titled “${title}” is received at 6:41 PM, priced $74 by the operator 34 minutes later, approved, done overnight by a vetted specialist, and passes review by 7:07 AM.`,
   },
@@ -353,7 +357,7 @@ const en: Dict = {
 };
 
 const fr: Dict = {
-  nav: { signIn: "Connexion", send: "Envoyer une tâche", client: "Faire faire du travail", workers: "Pour les travailleurs" },
+  nav: { signIn: "Connexion", send: "Envoyer une tâche", portal: "Mon compte", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   hero: {
     line1: "Décrivez n'importe quelle tâche.",
     line2: "Récupérez-la faite au matin.",
@@ -363,7 +367,6 @@ const fr: Dict = {
     cta: "Décrivez votre tâche",
     guarantee:
       "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
-    exampleTag: "Exemple",
     srPreview: (title) =>
       `Aperçu du produit : une tâche intitulée “${title}” est reçue à 18 h 41, chiffrée à $74 par l'opérateur 34 minutes plus tard, approuvée, réalisée pendant la nuit par un spécialiste vérifié, et passe la révision avant 7 h 07.`,
   },
@@ -507,7 +510,7 @@ const fr: Dict = {
 };
 
 const es: Dict = {
-  nav: { signIn: "Iniciar sesión", send: "Enviar una tarea", client: "Haz que se haga", workers: "Para trabajadores" },
+  nav: { signIn: "Iniciar sesión", send: "Enviar una tarea", portal: "Mi cuenta", client: "Haz que se haga", workers: "Para trabajadores" },
   hero: {
     line1: "Describe cualquier tarea.",
     line2: "Recíbela lista por la mañana.",
@@ -517,7 +520,6 @@ const es: Dict = {
     cta: "Describe tu tarea",
     guarantee:
       "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
-    exampleTag: "Ejemplo",
     srPreview: (title) =>
       `Vista previa del producto: una tarea titulada “${title}” se recibe a las 6:41 p. m., cotizada en $74 por el operador 34 minutos después, aprobada, realizada durante la noche por un especialista verificado, y pasa la revisión antes de las 7:07 a. m.`,
   },
@@ -668,7 +670,7 @@ const es: Dict = {
    column. The task titles beside them, where the meaning lives, are fully
    translated. */
 const tl: Dict = {
-  nav: { signIn: "Mag-sign in", send: "Magpadala ng task", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
+  nav: { signIn: "Mag-sign in", send: "Magpadala ng task", portal: "Account ko", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   hero: {
     line1: "Ilarawan ang kahit anong task.",
     line2: "Tapos na ito pagsapit ng umaga.",
@@ -678,7 +680,6 @@ const tl: Dict = {
     cta: "Ilarawan ang task mo",
     guarantee:
       "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",
-    exampleTag: "Halimbawa",
     srPreview: (title) =>
       `Preview ng produkto: isang task na may pamagat na “${title}” ay natanggap nang 6:41 PM, pinresyuhan ng $74 ng operator 34 min pagkatapos, inaprubahan, ginawa magdamag ng beripikadong espesyalista, at pumasa sa review bago mag-7:07 AM.`,
   },

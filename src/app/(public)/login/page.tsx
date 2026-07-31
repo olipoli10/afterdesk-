@@ -33,8 +33,15 @@ export default async function LoginPage({
   // comment there for why an already-authenticated visitor must never see
   // this form. This copy has to exist independently: a direct/hard
   // navigation to /login never renders the modal at all.
+  //
+  // The guard is on a VERIFIED session, not on any session at all. An
+  // unverified account owns exactly two pages: /verify-email and this form,
+  // and /verify-email's "Wrong account? Sign in again" is its only exit.
+  // Bouncing an unverified visitor to roleHome() hands them to a portal
+  // layout whose requireUser (src/lib/authz.ts) sends them straight back to
+  // /verify-email — the exit link becomes a loop with no way off it.
   const user = await getSessionUser();
-  if (user) redirect(roleHome(user.role));
+  if (user?.emailVerified) redirect(roleHome(user.role));
 
   const params = await searchParams;
   const next = safeNextParam(params.next);

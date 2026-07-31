@@ -52,9 +52,6 @@ export function AppShell({
   const container = width === "wide" ? "max-w-[1220px]" : "max-w-6xl";
   const hrefs = nav.map((n) => n.href);
   const night = tone === "night";
-  // The wordmark goes to the portal root, not "/" — for a signed-in account
-  // "/" only bounces back here (src/app/page.tsx), so link the real thing.
-  const homeHref = nav[0]?.href ?? "/";
   const hairline = night ? "border-white/8" : "border-[#14161A]/10";
 
   return (
@@ -82,7 +79,12 @@ export function AppShell({
       >
         <div className={`mx-auto flex w-full ${container} flex-wrap items-center gap-x-4 gap-y-0 px-5`}>
           <div className="flex h-14 shrink-0 items-center gap-3">
-            <Link href={homeHref} className="text-[12px]">
+            {/* The wordmark leaves the app. It used to point at nav[0], the
+                portal root — which is the page you are standing on every time
+                you look at it, so the brand read as broken (a full RSC round
+                trip, a loading flash, same route) and the app had no exit at
+                all. The portal root keeps its own nav item right below. */}
+            <Link href="/" className="text-[12px]">
               <Wordmark tone={night ? "paper" : "ink"} />
             </Link>
             {/* The area chip is redundant on a phone — the nav row right

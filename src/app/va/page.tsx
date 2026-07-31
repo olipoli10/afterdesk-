@@ -7,6 +7,7 @@ import {
   completedTasksForVa,
   returnedSubmissionsForVa,
 } from "@/lib/queries/tasks";
+import { vaProfileFor } from "@/lib/queries/va-profile";
 import { formatCents } from "@/lib/money";
 import { statusBadgeClass, vaBadgeClass, type VaProfileStatus } from "@/lib/status";
 import { LocalTime } from "@/components/local-time";
@@ -20,7 +21,6 @@ import {
   SectionLabel,
   moneyPayoutNight,
 } from "@/components/ui";
-import { vaProfileFor } from "./layout";
 
 /**
  * Honest onboarding copy: the funnel today is application → operator review.

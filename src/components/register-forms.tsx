@@ -220,6 +220,20 @@ export function VaRegisterForm() {
   );
 }
 
+/**
+ * Mirrors roleHome() in src/lib/authz.ts, which is server-only and so cannot
+ * be imported into a client bundle. Sending a fresh sign-in straight to its
+ * own portal is what pushing "/" used to achieve indirectly, minus the round
+ * trip: "/" only redirects a signed-in visitor onward, and as a soft
+ * navigation out of the login modal it re-enters the route that modal is
+ * intercepting.
+ */
+function roleHome(role: string | undefined): string {
+  if (role === "ADMIN") return "/admin";
+  if (role === "VA") return "/va";
+  return "/client";
+}
+
 export function LoginForm({
   googleEnabled,
   next,
@@ -273,10 +287,10 @@ export function LoginForm({
 
   // Open-redirect guard: only same-origin paths — never protocol-relative and
   // never backslashes (browsers normalize "/\evil.com" to "//evil.com").
-  const destination =
+  const deepLink =
     next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\")
       ? next
-      : "/";
+      : null;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -289,14 +303,18 @@ export function LoginForm({
       return;
     }
     const session = await authClient.getSession();
-    if (session.data?.user && !session.data.user.emailVerified) {
+    // `role` is a Better Auth additionalField (src/lib/auth.ts) and the client
+    // is not built with inferAdditionalFields, so it rides the session at
+    // runtime but is missing from the inferred type.
+    const user = session.data?.user as { emailVerified: boolean; role?: string } | undefined;
+    if (user && !user.emailVerified) {
       router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
       router.refresh();
       return;
     }
-    // "/" redirects to the right dashboard for the account's role;
-    // a validated deep link wins over the dashboard.
-    router.push(destination);
+    // A validated deep link wins; without one, land on this account's own
+    // dashboard directly rather than bouncing through "/".
+    router.push(deepLink ?? roleHome(user?.role));
     router.refresh();
   }
 
@@ -304,7 +322,10 @@ export function LoginForm({
     <div className="space-y-5">
       {googleEnabled && !workerAudience ? (
         <>
-          <GoogleButton label="Continue with Google" callbackURL={destination} />
+          {/* OAuth returns through a full document load and the account's role
+              is unknowable until it completes, so "/" — which redirects a
+              signed-in visitor to their portal — stays the right fallback. */}
+          <GoogleButton label="Continue with Google" callbackURL={deepLink ?? "/"} />
           <OrDivider tone={tone} />
         </>
       ) : null}
