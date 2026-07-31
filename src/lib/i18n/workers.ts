@@ -127,7 +127,7 @@ const en: Dict = {
     illustrative: "Illustrative",
     taskTitle: "Tag 1,200 support tickets by topic",
     taskDetail: "One sheet, topic per row, every ticket tagged",
-    labelPrinted: "Payout — printed",
+    labelPrinted: "Payout, printed",
     labelReleased: "Released",
     claim: "Claim",
     claimedAt: "Claimed 7:22 AM",
@@ -138,10 +138,10 @@ const en: Dict = {
     label: "The virtual assistant academy",
     h2: "Free courses. Here is the exam.",
     body: "Every course opens the day you make an account, and your certificates are on your application when we read it.",
-    caption: "One real question from the Data cleanup exam. Answer it yourself — nothing is hidden.",
+    caption: "One real question from the Data cleanup exam. Answer it yourself. Nothing is hidden.",
     english: "The courses and the exams are in English, like the work.",
     ctaLink: (n) => `See all ${n} free courses`,
-    ctaTail: "— no account needed.",
+    ctaTail: "· no account needed.",
   },
   ch01: {
     label: "The pool",
@@ -149,7 +149,7 @@ const en: Dict = {
     body: "You claim what fits you. Nobody bids against you.",
     disclosure: "Example tasks. Every price is set by hand, per task.",
     bandCaption:
-      "Your day is their night — Manila, Philippines runs 12 hours ahead of New York (13 in winter).",
+      "Your day is their night: Manila, Philippines runs 12 hours ahead of New York (13 in winter).",
   },
   ch02: {
     label: "The slip",
@@ -169,7 +169,7 @@ const en: Dict = {
     rowReturned: "Not right yet → returned with notes.",
     rowFail: "Fails final review → unpaid. Rare, by design.",
     footnote:
-      "Revisions are part of the craft, not a strike. A payout is reversed only for a clear error the review missed — rare.",
+      "Revisions are part of the craft, not a strike. A payout is reversed only for a clear error the review missed. Rare.",
   },
   ch04: {
     label: "The terms",
@@ -194,7 +194,7 @@ const en: Dict = {
   sampleExamUi: {
     pickOne: "Pick an answer",
     notThatOne: "Not that one.",
-    keepGoingPrefix: "Keep going — or take the course it comes from,",
+    keepGoingPrefix: "Keep going, or take the course it comes from,",
     freeWithAccount: "free with an account",
     correct: "CORRECT",
   },
@@ -220,7 +220,7 @@ const tl: Dict = {
     illustrative: "Halimbawa",
     taskTitle: "Tag 1,200 support tickets by topic",
     taskDetail: "One sheet, topic per row, every ticket tagged",
-    labelPrinted: "Payout — nakalimbag na",
+    labelPrinted: "Payout, nakalimbag na",
     labelReleased: "Napalabas na",
     claim: "I-claim",
     claimedAt: "Na-claim 7:22 AM",
@@ -231,10 +231,10 @@ const tl: Dict = {
     label: "Ang virtual assistant academy",
     h2: "Libreng kurso. Heto ang exam.",
     body: "Bukas ang bawat kurso sa araw na gumawa ka ng account, at nasa application mo na ang mga certificate mo kapag binasa namin ito.",
-    caption: "Isang totoong tanong mula sa Data cleanup exam. Sagutin mo mismo — walang itinatago.",
+    caption: "Isang totoong tanong mula sa Data cleanup exam. Sagutin mo mismo. Walang itinatago.",
     english: "Nasa Ingles ang mga kurso at exam, tulad ng trabaho.",
     ctaLink: (n) => `Tingnan ang lahat ng ${n} libreng kurso`,
-    ctaTail: "— hindi kailangan ng account.",
+    ctaTail: "· hindi kailangan ng account.",
   },
   ch01: {
     label: "Ang pool",
@@ -242,7 +242,7 @@ const tl: Dict = {
     body: "Kukunin mo ang bagay sa iyo. Walang makikipag-bidding sa iyo.",
     disclosure: "Mga halimbawang task. Bawat presyo ay itinatakda nang manu-mano, kada task.",
     bandCaption:
-      "Ang araw mo ay gabi nila — 12 oras na nauuna ang Maynila, Pilipinas sa New York (13 kapag taglamig).",
+      "Ang araw mo ay gabi nila: 12 oras na nauuna ang Maynila, Pilipinas sa New York (13 kapag taglamig).",
   },
   ch02: {
     label: "Ang slip",
@@ -256,7 +256,7 @@ const tl: Dict = {
     rowReturned: "Hindi pa tama → ibinabalik na may notes.",
     rowFail: "Bagsak sa huling review → walang bayad. Bihira, sadya.",
     footnote:
-      "Bahagi ng craft ang revision, hindi ito bawas sa iyo. Babawiin lang ang payout kung may malinaw na pagkakamaling nalampasan ng review — bihira.",
+      "Bahagi ng craft ang revision, hindi ito bawas sa iyo. Babawiin lang ang payout kung may malinaw na pagkakamaling nalampasan ng review. Bihira.",
   },
   ch04: {
     label: "Ang mga kondisyon",
@@ -284,7 +284,7 @@ const tl: Dict = {
   sampleExamUi: {
     pickOne: "Pumili ng sagot",
     notThatOne: "Hindi iyan.",
-    keepGoingPrefix: "Tuloy lang — o kunin ang kurso kung saan ito galing,",
+    keepGoingPrefix: "Tuloy lang, o kunin ang kurso kung saan ito galing,",
     freeWithAccount: "libre kasama ang account",
     correct: "TAMA",
   },
@@ -312,7 +312,7 @@ const fr: Dict = {
     illustrative: "Illustratif",
     taskTitle: "Tag 1,200 support tickets by topic",
     taskDetail: "One sheet, topic per row, every ticket tagged",
-    labelPrinted: "Paiement — imprimé",
+    labelPrinted: "Paiement, imprimé",
     labelReleased: "Libéré",
     claim: "Réclamer",
     claimedAt: "Réclamée 7 h 22",
@@ -323,10 +323,10 @@ const fr: Dict = {
     label: "L'académie d'adjoint virtuel",
     h2: "Des cours gratuits. Voici l'examen.",
     body: "Chaque cours s'ouvre le jour où vous créez un compte, et vos certificats sont sur votre candidature quand nous la lisons.",
-    caption: "Une vraie question de l'examen Data cleanup. Répondez vous-même — rien n'est caché.",
+    caption: "Une vraie question de l'examen Data cleanup. Répondez vous-même. Rien n'est caché.",
     english: "Les cours et les examens sont en anglais, comme le travail.",
     ctaLink: (n) => `Voir les ${n} cours gratuits`,
-    ctaTail: "— aucun compte requis.",
+    ctaTail: "· aucun compte requis.",
   },
   ch01: {
     label: "Le bassin",
@@ -334,7 +334,7 @@ const fr: Dict = {
     body: "Vous prenez ce qui vous convient. Personne n'enchérit contre vous.",
     disclosure: "Tâches à titre d'exemple. Chaque prix est fixé à la main, tâche par tâche.",
     bandCaption:
-      "Votre journée est leur nuit — Manille, aux Philippines, a 12 heures d'avance sur New York (13 en hiver).",
+      "Votre journée est leur nuit : Manille, aux Philippines, a 12 heures d'avance sur New York (13 en hiver).",
   },
   ch02: {
     label: "Le bordereau",
@@ -352,7 +352,7 @@ const fr: Dict = {
     rowReturned: "Pas encore correct → retourné avec des notes.",
     rowFail: "Échoue à la révision finale → non payé. Rare, par conception.",
     footnote:
-      "Les révisions font partie du métier, pas une faute au dossier. Un paiement n'est renversé que pour une erreur claire échappée à la révision — rare.",
+      "Les révisions font partie du métier, pas une faute au dossier. Un paiement n'est renversé que pour une erreur claire échappée à la révision. Rare.",
   },
   ch04: {
     label: "Les conditions",
@@ -380,7 +380,7 @@ const fr: Dict = {
   sampleExamUi: {
     pickOne: "Choisissez une réponse",
     notThatOne: "Pas celle-là.",
-    keepGoingPrefix: "Continuez — ou suivez le cours dont elle vient,",
+    keepGoingPrefix: "Continuez, ou suivez le cours dont elle vient,",
     freeWithAccount: "gratuit avec un compte",
     correct: "CORRECT",
   },
@@ -407,7 +407,7 @@ const es: Dict = {
     illustrative: "Ilustrativo",
     taskTitle: "Tag 1,200 support tickets by topic",
     taskDetail: "One sheet, topic per row, every ticket tagged",
-    labelPrinted: "Pago — impreso",
+    labelPrinted: "Pago, impreso",
     labelReleased: "Liberado",
     claim: "Reclamar",
     claimedAt: "Reclamada 7:22 a. m.",
@@ -418,10 +418,10 @@ const es: Dict = {
     label: "La academia de asistente virtual",
     h2: "Cursos gratis. Aquí está el examen.",
     body: "Cada curso se abre el día que creas una cuenta, y tus certificados están en tu postulación cuando la leemos.",
-    caption: "Una pregunta real del examen de Data cleanup. Respóndela tú mismo — nada está oculto.",
+    caption: "Una pregunta real del examen de Data cleanup. Respóndela tú mismo. Nada está oculto.",
     english: "Los cursos y los exámenes son en inglés, como el trabajo.",
     ctaLink: (n) => `Ver los ${n} cursos gratis`,
-    ctaTail: "— sin cuenta.",
+    ctaTail: "· sin cuenta.",
   },
   ch01: {
     label: "El grupo",
@@ -429,7 +429,7 @@ const es: Dict = {
     body: "Tomas lo que te queda bien. Nadie puja contra ti.",
     disclosure: "Tareas de ejemplo. Cada precio se fija a mano, tarea por tarea.",
     bandCaption:
-      "Tu día es su noche — Manila, Filipinas, va 12 horas por delante de Nueva York (13 en invierno).",
+      "Tu día es su noche: Manila, Filipinas, va 12 horas por delante de Nueva York (13 en invierno).",
   },
   ch02: {
     label: "El comprobante",
@@ -443,7 +443,7 @@ const es: Dict = {
     rowReturned: "Aún no está bien → devuelto con notas.",
     rowFail: "Falla la revisión final → sin pago. Poco común, por diseño.",
     footnote:
-      "Las revisiones son parte del oficio, no una falta. Un pago se revierte solo por un error claro que la revisión no vio — poco común.",
+      "Las revisiones son parte del oficio, no una falta. Un pago se revierte solo por un error claro que la revisión no vio. Poco común.",
   },
   ch04: {
     label: "Las condiciones",
@@ -471,7 +471,7 @@ const es: Dict = {
   sampleExamUi: {
     pickOne: "Elige una respuesta",
     notThatOne: "Esa no.",
-    keepGoingPrefix: "Sigue intentando — o toma el curso de donde viene,",
+    keepGoingPrefix: "Sigue intentando, o toma el curso de donde viene,",
     freeWithAccount: "gratis con una cuenta",
     correct: "CORRECTO",
   },

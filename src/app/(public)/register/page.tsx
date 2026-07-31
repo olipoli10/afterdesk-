@@ -7,7 +7,7 @@ import { linkInline } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Client sign-up",
-  description: "Create a AfterDesk client account — send tasks, approve a fixed price, download reviewed work.",
+  description: "Create a AfterDesk client account: send tasks, approve a fixed price, download reviewed work.",
   robots: { index: false, follow: false },
 };
 
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 const ASIDE = [
   {
     title: "You approve the price first",
-    body: "Send a task, get one fixed price back. Nothing starts until you approve it — decline and you owe nothing.",
+    body: "Send a task, get one fixed price back. Nothing starts until you approve it. Decline and you owe nothing.",
   },
   {
     title: "Reviewed before you see it",

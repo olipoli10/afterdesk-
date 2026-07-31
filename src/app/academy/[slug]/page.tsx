@@ -49,11 +49,11 @@ export async function generateMetadata({
   if (!course) return {};
   const stats = academyStats();
   return {
-    title: `${course.title} — free course with a certificate`,
+    title: `${course.title}: free course with a certificate`,
     description: `${course.summary} ${course.lessonCount} lessons, about ${course.minutes} minutes, then a ${stats.questionCount}-question exam. Free, with a permanent certificate.`,
     alternates: { canonical: `/academy/${slug}` },
     openGraph: {
-      title: `${course.title} — free virtual assistant course`,
+      title: `${course.title}: free virtual assistant course`,
       description: course.tagline,
       url: `${SITE_URL}/academy/${slug}`,
     },

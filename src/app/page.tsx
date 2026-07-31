@@ -57,7 +57,7 @@ const ORG_JSONLD = JSON.stringify({
   name: "AfterDesk",
   url: SITE_URL,
   description:
-    "Describe any task in plain English — priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
+    "Describe any task in plain English: priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
 });
 
 export default async function Home({

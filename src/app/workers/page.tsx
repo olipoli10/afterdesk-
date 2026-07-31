@@ -40,9 +40,9 @@ import { TrustLinks } from "@/components/trust-links";
  * differentiator and it survives truncation at ~60 characters.
  */
 export const metadata = {
-  title: "Virtual assistant work from the Philippines — the payout is printed before you claim",
+  title: "Virtual assistant work from the Philippines: the payout is printed before you claim",
   description:
-    "Remote virtual assistant work for Filipino specialists. Tasks arrive already priced — no proposals, no bidding, no commission off your rate. Free training and a certificate before you apply.",
+    "Remote virtual assistant work for Filipino specialists. Tasks arrive already priced: no proposals, no bidding, no commission off your rate. Free training and a certificate before you apply.",
   alternates: { canonical: "/workers" },
 };
 

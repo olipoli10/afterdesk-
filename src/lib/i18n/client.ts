@@ -141,7 +141,7 @@ const en: Dict = {
     line1: "Describe any task.",
     line2: "Get it back done by morning.",
     sub: (h) =>
-      `Research, data, writing, spreadsheets, admin — priced in ${h} working hours, delivered by morning.`,
+      `Research, data, writing, spreadsheets, admin: priced in ${h} working hours, delivered by morning.`,
     cta: "Describe your task",
   },
   ch01: { label: "The overnight diff" },
@@ -174,7 +174,7 @@ const en: Dict = {
       ["RESEARCH", "5 competitors' pricing pages, one sheet", "$95"],
       ["DOCS", "90-page proposal rebuilt in our template", "$75"],
     ],
-    note: "ILLUSTRATIVE — NOT A RATE CARD ·",
+    note: "ILLUSTRATIVE · NOT A RATE CARD ·",
   },
   ch04: {
     label: "The night",
@@ -193,7 +193,7 @@ const en: Dict = {
     label: "The operator",
     h2: "One professional between you and the work.",
     wall: "Operator",
-    desk: "Example — one review pass",
+    desk: "Example: one review pass",
     pairs: [
       [
         "Freelance site",
@@ -217,7 +217,7 @@ const en: Dict = {
       ],
     ],
   },
-  close: { protocol: "Full protocol — six stages, versioned" },
+  close: { protocol: "Full protocol: six stages, versioned" },
   footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us" },
   liveWindow: {
     taskTitle: "Clean a 1,800-row supplier price list",
@@ -246,7 +246,7 @@ const fr: Dict = {
     line1: "Décrivez n'importe quelle tâche.",
     line2: "Récupérez-la faite au matin.",
     sub: (h) =>
-      `Recherche, données, rédaction, tableurs, admin — prix fixe en ${h} heures ouvrables, livré au matin.`,
+      `Recherche, données, rédaction, tableurs, admin : prix fixe en ${h} heures ouvrables, livré au matin.`,
     cta: "Décrivez votre tâche",
   },
   ch01: { label: "Une nuit de différence" },
@@ -279,7 +279,7 @@ const fr: Dict = {
       ["RECHERCHE", "5 pages de prix concurrentes, une feuille", "$95"],
       ["DOCS", "Proposition de 90 pages refaite au gabarit", "$75"],
     ],
-    note: "À TITRE D'EXEMPLE — PAS UNE GRILLE DE PRIX ·",
+    note: "À TITRE D'EXEMPLE · PAS UNE GRILLE DE PRIX ·",
   },
   ch04: {
     label: "La nuit",
@@ -298,7 +298,7 @@ const fr: Dict = {
     label: "L'opérateur",
     h2: "Un professionnel entre vous et le travail.",
     wall: "Opérateur",
-    desk: "Exemple — une passe de vérification",
+    desk: "Exemple : une passe de vérification",
     pairs: [
       [
         "Site de pigistes",
@@ -322,7 +322,7 @@ const fr: Dict = {
       ],
     ],
   },
-  close: { protocol: "Protocole complet — six étapes, versionné" },
+  close: { protocol: "Protocole complet : six étapes, versionné" },
   liveWindow: {
     taskTitle: "Nettoyer une liste de prix fournisseur de 1 800 lignes",
     fieldScope: "PORTÉE",
@@ -351,7 +351,7 @@ const es: Dict = {
     line1: "Describe cualquier tarea.",
     line2: "Recíbela lista por la mañana.",
     sub: (h) =>
-      `Investigación, datos, redacción, hojas de cálculo, admin — precio fijo en ${h} horas hábiles, entregado por la mañana.`,
+      `Investigación, datos, redacción, hojas de cálculo, admin: precio fijo en ${h} horas hábiles, entregado por la mañana.`,
     cta: "Describe tu tarea",
   },
   ch01: { label: "El antes y después de una noche" },
@@ -384,7 +384,7 @@ const es: Dict = {
       ["INVESTIGACIÓN", "5 páginas de precios de la competencia, una hoja", "$95"],
       ["DOCS", "Propuesta de 90 páginas rehecha en tu plantilla", "$75"],
     ],
-    note: "ILUSTRATIVO — NO ES UNA LISTA DE PRECIOS ·",
+    note: "ILUSTRATIVO · NO ES UNA LISTA DE PRECIOS ·",
   },
   ch04: {
     label: "La noche",
@@ -403,7 +403,7 @@ const es: Dict = {
     label: "El operador",
     h2: "Un profesional entre tú y el trabajo.",
     wall: "Operador",
-    desk: "Ejemplo — una pasada de revisión",
+    desk: "Ejemplo: una pasada de revisión",
     pairs: [
       [
         "Sitio de freelance",
@@ -427,7 +427,7 @@ const es: Dict = {
       ],
     ],
   },
-  close: { protocol: "Protocolo completo — seis etapas, versionado" },
+  close: { protocol: "Protocolo completo: seis etapas, versionado" },
   liveWindow: {
     taskTitle: "Limpiar una lista de precios de proveedor de 1800 filas",
     fieldScope: "ALCANCE",
@@ -463,7 +463,7 @@ const tl: Dict = {
     line1: "Ilarawan ang kahit anong task.",
     line2: "Tapos na ito pagsapit ng umaga.",
     sub: (h) =>
-      `Research, data, pagsusulat, spreadsheets, admin — may presyo sa loob ng ${h} oras ng trabaho, hatid sa umaga.`,
+      `Research, data, pagsusulat, spreadsheets, admin: may presyo sa loob ng ${h} oras ng trabaho, hatid sa umaga.`,
     cta: "Ilarawan ang task mo",
   },
   ch01: { label: "Ang diff ng magdamag" },
@@ -496,7 +496,7 @@ const tl: Dict = {
       ["RESEARCH", "5 pricing page ng kakumpitensya, isang sheet", "$95"],
       ["DOCS", "90-pahinang proposal, ginawa sa template ninyo", "$75"],
     ],
-    note: "HALIMBAWA LANG — HINDI ITO RATE CARD ·",
+    note: "HALIMBAWA LANG · HINDI ITO RATE CARD ·",
   },
   ch04: {
     label: "Ang gabi",
@@ -515,7 +515,7 @@ const tl: Dict = {
     label: "Ang operator",
     h2: "Isang propesyonal sa pagitan mo at ng trabaho.",
     wall: "Operator",
-    desk: "Halimbawa — isang pasada ng review",
+    desk: "Halimbawa: isang pasada ng review",
     pairs: [
       [
         "Freelance site",
@@ -539,7 +539,7 @@ const tl: Dict = {
       ],
     ],
   },
-  close: { protocol: "Buong protocol — anim na yugto, may bersyon" },
+  close: { protocol: "Buong protocol: anim na yugto, may bersyon" },
   liveWindow: {
     taskTitle: "Linisin ang 1,800-row na listahan ng presyo ng supplier",
     fieldScope: "SAKLAW",

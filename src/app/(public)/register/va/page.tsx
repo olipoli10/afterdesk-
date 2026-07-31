@@ -6,7 +6,7 @@ import { linkInline } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Apply to join the pool",
-  description: "Apply to work AfterDesk tasks — the payout is printed before you claim.",
+  description: "Apply to work AfterDesk tasks: the payout is printed before you claim.",
   robots: { index: false, follow: false },
 };
 
@@ -18,11 +18,11 @@ export const metadata: Metadata = {
 const ASIDE = [
   {
     title: "The Academy opens today, not after approval",
-    body: "Twenty free courses with real exams and permanent certificates. Start tonight — every certificate you earn is on your profile when we review you.",
+    body: "Twenty free courses with real exams and permanent certificates. Start tonight: every certificate you earn is on your profile when we review you.",
   },
   {
     title: "The payout is printed before you claim",
-    body: "Every task in the pool shows what it pays and when it is due. Claim what you want — first come, first served.",
+    body: "Every task in the pool shows what it pays and when it is due. Claim what you want. First come, first served.",
   },
   {
     title: "A person reads your application",
@@ -35,7 +35,7 @@ export default function RegisterVaPage() {
     <AuthShell
       kicker="Specialist application"
       title="Apply to join the pool."
-      sub="Create your account and send your application — we review every one before the pool opens."
+      sub="Create your account and send your application. We review every one before the pool opens."
       aside={ASIDE}
       asideTone="paper"
       footer={

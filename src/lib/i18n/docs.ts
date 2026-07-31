@@ -82,7 +82,7 @@ type ProtocolDict = {
 
 const pEn: ProtocolDict = {
   meta: {
-    title: "How it works — fixed-price task outsourcing, step by step",
+    title: "How it works: fixed-price task outsourcing, step by step",
     description:
       "How AfterDesk outsourcing works: you describe the task, one operator sets a fixed price within four working hours, a vetted specialist does it overnight, and it is reviewed before you see it. The full protocol, versioned and dated.",
   },
@@ -129,14 +129,14 @@ const pEn: ProtocolDict = {
   movement2: "Two clauses",
   detail: {
     head: "Detail A",
-    sub: "Stage 04 — what passes",
+    sub: "Stage 04: what passes",
     criteria: [
       ["Complete", "Every item the brief names."],
       ["Verified", "Checked against the source files."],
       ["Clean", "Formatted, consistent, finished."],
       ["Honest", "Gaps and judgment calls flagged."],
     ],
-    verdict: "A final fail is unpaid — the worker's risk, never yours.",
+    verdict: "A final fail is unpaid. The worker's risk, never yours.",
   },
   scope: {
     head: "Not in scope",
@@ -160,7 +160,7 @@ const pEn: ProtocolDict = {
 
 const pFr: ProtocolDict = {
   meta: {
-    title: "Comment ça marche — la sous-traitance à prix fixe, étape par étape",
+    title: "Comment ça marche : la sous-traitance à prix fixe, étape par étape",
     description:
       "Comment fonctionne AfterDesk : vous décrivez la tâche, un seul opérateur fixe un prix en quatre heures ouvrables, un spécialiste vérifié la fait pendant la nuit, et elle est contrôlée avant que vous la voyiez. Le protocole complet, versionné et daté.",
   },
@@ -207,14 +207,14 @@ const pFr: ProtocolDict = {
   movement2: "Deux clauses",
   detail: {
     head: "Détail A",
-    sub: "Étape 04 — ce qui passe",
+    sub: "Étape 04 : ce qui passe",
     criteria: [
       ["Complet", "Chaque élément nommé dans la demande."],
       ["Vérifié", "Recoupé avec les fichiers sources."],
       ["Propre", "Formaté, cohérent, terminé."],
       ["Honnête", "Les trous et les jugements sont signalés."],
     ],
-    verdict: "Un échec final n'est pas payé — le risque du travailleur, jamais le vôtre.",
+    verdict: "Un échec final n'est pas payé. Le risque du travailleur, jamais le vôtre.",
   },
   scope: {
     head: "Hors périmètre",
@@ -238,7 +238,7 @@ const pFr: ProtocolDict = {
 
 const pEs: ProtocolDict = {
   meta: {
-    title: "Cómo funciona — subcontratación a precio fijo, paso a paso",
+    title: "Cómo funciona: subcontratación a precio fijo, paso a paso",
     description:
       "Cómo funciona AfterDesk: describes la tarea, un solo operador fija un precio en cuatro horas hábiles, un especialista verificado la hace de noche, y se revisa antes de que la veas. El protocolo completo, versionado y fechado.",
   },
@@ -285,14 +285,14 @@ const pEs: ProtocolDict = {
   movement2: "Dos cláusulas",
   detail: {
     head: "Detalle A",
-    sub: "Etapa 04 — qué pasa el filtro",
+    sub: "Etapa 04: qué pasa el filtro",
     criteria: [
       ["Completo", "Cada punto que nombra el encargo."],
       ["Verificado", "Contrastado con los archivos fuente."],
       ["Limpio", "Con formato, coherente, terminado."],
       ["Honesto", "Los huecos y las decisiones se señalan."],
     ],
-    verdict: "Un fallo final no se paga — el riesgo es del trabajador, nunca tuyo.",
+    verdict: "Un fallo final no se paga. El riesgo es del trabajador, nunca tuyo.",
   },
   scope: {
     head: "Fuera de alcance",
@@ -316,7 +316,7 @@ const pEs: ProtocolDict = {
 
 const pTl: ProtocolDict = {
   meta: {
-    title: "Paano ito gumagana — fixed-price na outsourcing, hakbang-hakbang",
+    title: "Paano ito gumagana: fixed-price na outsourcing, hakbang-hakbang",
     description:
       "Paano gumagana ang AfterDesk: ilalarawan mo ang task, isang operator ang magtatakda ng fixed na presyo sa loob ng apat na oras ng trabaho, gagawin ito ng beripikadong espesyalista sa magdamag, at susuriin bago mo makita. Ang buong protocol, may bersyon at petsa.",
   },
@@ -363,14 +363,14 @@ const pTl: ProtocolDict = {
   movement2: "Dalawang kondisyon",
   detail: {
     head: "Detail A",
-    sub: "Yugto 04 — ano ang pumapasa",
+    sub: "Yugto 04: ano ang pumapasa",
     criteria: [
       ["Kumpleto", "Bawat bagay na nakasaad sa brief."],
       ["Beripikado", "Sinalungat sa mga source file."],
       ["Malinis", "May format, konsistent, tapos."],
       ["Tapat", "Nakasaad ang mga kulang at ang mga pasya."],
     ],
-    verdict: "Ang huling bagsak ay hindi bayad — panganib ng manggagawa, hindi kailanman sa iyo.",
+    verdict: "Ang huling bagsak ay hindi bayad. Panganib ng manggagawa, hindi kailanman sa iyo.",
   },
   scope: {
     head: "Wala sa saklaw",
@@ -437,22 +437,23 @@ type AboutDict = {
 
 const aEn: AboutDict = {
   meta: {
-    title: "About us — why AfterDesk exists",
+    title: "About us: why AfterDesk exists",
     description:
-      "Two years outsourcing work to the Philippines taught us the real problem on both sides: entrepreneurs lose hours screening resumes, and Filipino specialists too often go underpaid or unpaid. AfterDesk is the fix — one fixed price, one review standard, and free training that protects the people doing the work.",
+      "Two years outsourcing work to the Philippines taught us the real problem on both sides: entrepreneurs lose hours screening resumes, and Filipino specialists too often go underpaid or unpaid. AfterDesk is the fix: one fixed price, one review standard, and free training that protects the people doing the work.",
   },
   nav: { how: "How it works", client: "Get work done", workers: "For workers" },
   kicker: "About us",
   h1: "We built this because the old way was broken on both ends.",
-  lede: "Two years hiring and managing Filipino specialists showed us the same thing over and over. Not a gap in the market — a market failing both sides at once.",
+  lede: "Two years hiring and managing Filipino specialists showed us the same thing over and over. Not a gap in the market. A market failing both sides at once.",
   problemHead: "What we kept running into",
   problem: [
     [
       "For entrepreneurs",
       [
-        "Forty proposals to read.",
-        "Resumes that all say the same thing.",
-        "No way to judge anyone until you have already paid them.",
+        "Hundreds of proposals that all say the same thing.",
+        "No way to know if any of them are good until you've already paid.",
+        "Screen it yourself, and it's the time you hired help to save that goes.",
+        "Pay someone $20 an hour to screen it for you, and it's money that goes instead.",
       ],
     ],
     [
@@ -498,9 +499,9 @@ const aEn: AboutDict = {
 
 const aFr: AboutDict = {
   meta: {
-    title: "Qui nous sommes — pourquoi AfterDesk existe",
+    title: "Qui nous sommes : pourquoi AfterDesk existe",
     description:
-      "Deux ans \u00E0 faire affaire avec des sp\u00E9cialistes philippins nous ont montr\u00E9 le vrai probl\u00E8me des deux c\u00F4t\u00E9s : les entrepreneurs perdent des heures \u00E0 trier des CV, et les sp\u00E9cialistes philippins sont trop souvent sous-pay\u00E9s ou pas pay\u00E9s du tout. AfterDesk est la solution \u2014 un prix fixe, un standard de contr\u00F4le, et une formation gratuite qui prot\u00E8ge ceux qui font le travail.",
+      "Deux ans \u00E0 faire affaire avec des sp\u00E9cialistes philippins nous ont montr\u00E9 le vrai probl\u00E8me des deux c\u00F4t\u00E9s : les entrepreneurs perdent des heures \u00E0 trier des CV, et les sp\u00E9cialistes philippins sont trop souvent sous-pay\u00E9s ou pas pay\u00E9s du tout. AfterDesk est la solution : un prix fixe, un standard de contr\u00F4le, et une formation gratuite qui prot\u00E8ge ceux qui font le travail.",
   },
   nav: { how: "Comment \u00E7a marche", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   kicker: "Qui nous sommes",
@@ -511,9 +512,10 @@ const aFr: AboutDict = {
     [
       "Pour les entrepreneurs",
       [
-        "Quarante propositions \u00E0 lire.",
-        "Des CV qui disent tous la m\u00EAme chose.",
-        "Aucun moyen de juger quelqu'un avant de l'avoir pay\u00E9.",
+        "Des centaines de propositions qui disent toutes la m\u00EAme chose.",
+        "Aucun moyen de savoir si elles sont bonnes avant de les avoir pay\u00E9es.",
+        "Trier \u00E7a vous-m\u00EAme, et c'est votre temps, celui que vous vouliez sauver, qui y passe.",
+        "Payer quelqu'un 20 $ de l'heure pour trier \u00E0 votre place, et c'est votre argent qui y passe.",
       ],
     ],
     [
@@ -559,9 +561,9 @@ const aFr: AboutDict = {
 
 const aEs: AboutDict = {
   meta: {
-    title: "Qui\u00E9nes somos \u2014 por qu\u00E9 existe AfterDesk",
+    title: "Qui\u00E9nes somos: por qu\u00E9 existe AfterDesk",
     description:
-      "Dos a\u00F1os trabajando con especialistas filipinos nos ense\u00F1aron el problema real de ambos lados: los emprendedores pierden horas filtrando curr\u00EDculums, y los especialistas filipinos con demasiada frecuencia cobran de menos o no cobran. AfterDesk es la soluci\u00F3n \u2014 un precio fijo, un est\u00E1ndar de revisi\u00F3n, y formaci\u00F3n gratuita que protege a quien hace el trabajo.",
+      "Dos a\u00F1os trabajando con especialistas filipinos nos ense\u00F1aron el problema real de ambos lados: los emprendedores pierden horas filtrando curr\u00EDculums, y los especialistas filipinos con demasiada frecuencia cobran de menos o no cobran. AfterDesk es la soluci\u00F3n: un precio fijo, un est\u00E1ndar de revisi\u00F3n, y formaci\u00F3n gratuita que protege a quien hace el trabajo.",
   },
   nav: { how: "C\u00F3mo funciona", client: "Haz que se haga", workers: "Para trabajadores" },
   kicker: "Qui\u00E9nes somos",
@@ -572,9 +574,10 @@ const aEs: AboutDict = {
     [
       "Para los emprendedores",
       [
-        "Cuarenta propuestas que leer.",
-        "Curr\u00EDculums que dicen todos lo mismo.",
-        "Ninguna forma de juzgar a nadie antes de haberle pagado.",
+        "Cientos de propuestas que dicen todas lo mismo.",
+        "Ninguna forma de saber si son buenas antes de haberlas pagado.",
+        "Filtrarlo t\u00FA mismo, y se te va el tiempo que quer\u00EDas ahorrar.",
+        "Pagarle a alguien $20 la hora para filtrar por ti, y se te va el dinero en su lugar.",
       ],
     ],
     [
@@ -620,9 +623,9 @@ const aEs: AboutDict = {
 
 const aTl: AboutDict = {
   meta: {
-    title: "Tungkol sa amin \u2014 bakit umiiral ang AfterDesk",
+    title: "Tungkol sa amin: bakit umiiral ang AfterDesk",
     description:
-      "Dalawang taon ng pakikipagtrabaho sa mga Pilipinong espesyalista ang nagturo sa amin ng totoong problema sa magkabilang panig: nauubos ang oras ng mga negosyante sa pagsala ng resume, at madalas kulang ang bayad o walang bayad ang mga Pilipinong espesyalista. Ang AfterDesk ang sagot \u2014 isang fixed na presyo, isang pamantayan sa review, at libreng pagsasanay na nagpoprotekta sa gumagawa ng trabaho.",
+      "Dalawang taon ng pakikipagtrabaho sa mga Pilipinong espesyalista ang nagturo sa amin ng totoong problema sa magkabilang panig: nauubos ang oras ng mga negosyante sa pagsala ng resume, at madalas kulang ang bayad o walang bayad ang mga Pilipinong espesyalista. Ang AfterDesk ang sagot: isang fixed na presyo, isang pamantayan sa review, at libreng pagsasanay na nagpoprotekta sa gumagawa ng trabaho.",
   },
   nav: { how: "Paano ito gumagana", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   kicker: "Tungkol sa amin",
@@ -633,9 +636,10 @@ const aTl: AboutDict = {
     [
       "Para sa mga negosyante",
       [
-        "Apatnapung proposal na babasahin.",
-        "Mga resume na pare-pareho ang sinasabi.",
-        "Walang paraan para husgahan ang sinuman bago mo pa siya mabayaran.",
+        "Daan-daang proposal na pare-pareho lang ang sinasabi.",
+        "Walang paraan para malaman kung maganda sila bago mo pa sila mabayaran.",
+        "I-screen mo mismo, at oras mo, ang gusto mo sanang matipid, ang mauubos.",
+        "Bayaran ang iba ng $20 kada oras para i-screen para sa iyo, at pera naman ang mauubos.",
       ],
     ],
     [
