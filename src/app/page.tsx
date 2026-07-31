@@ -225,6 +225,41 @@ export default async function Home({
         <PublicCounters tone="night" variant="strip" className="anim-rise d-4 mt-12" />
       </section>
 
+      {/* ── WHAT THIS IS ──────────────────────────────────────────────────
+             The very next thing after the hero, on purpose: what AfterDesk
+             actually IS, who does the work, and the one rule (you don't pay
+             for work that isn't right) that makes it safe to send a task to
+             a stranger. Not a numbered chapter like 01-04 below — it has no
+             number because it isn't part of that set, it's the answer to
+             "wait, what is this" that has to land before anyone reads far
+             enough to reach chapter 01. */}
+      <section className="border-t border-white/8 bg-[#0D0E11]">
+        <div className="mx-auto w-full max-w-[1120px] px-6 py-16 sm:py-20">
+          <Reveal>
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
+              {t.whatWeAre.label}
+            </p>
+            <h2 className="mt-3 max-w-[26ch] text-[clamp(1.5rem,3.4vw,2.1rem)] font-semibold leading-[1.15] tracking-[-0.025em] text-white">
+              {t.whatWeAre.h2}
+            </h2>
+            <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.65] text-[#9AA1AB] sm:text-[16px]">
+              {t.whatWeAre.intro}
+            </p>
+            <div className="mt-10 grid gap-8 sm:grid-cols-3 sm:gap-6">
+              {t.whatWeAre.steps.map(([label, body], i) => (
+                <div key={label}>
+                  <p className="font-mono text-[13px] tabular-nums tracking-[-0.01em] text-[#5B6069]">
+                    {String(i + 1).padStart(2, "0")}
+                  </p>
+                  <p className="mt-1.5 text-[16px] font-medium text-white">{label}</p>
+                  <p className="mt-1.5 text-[14px] leading-[1.55] text-[#9AA1AB]">{body}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ── THE RECEIPT ───────────────────────────────────────────────── */}
       {/* The overnight-diff artifact used to sit above this, as chapter 01.
           It was cut: the hero's own task window already plays a task's whole

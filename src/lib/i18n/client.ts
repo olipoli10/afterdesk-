@@ -148,6 +148,17 @@ type Dict = {
     stamps: [string, string, string, string, string];
     lines: [string, string, string, string, string];
   };
+  /** Right under the hero, the very next thing on the page: who we are,
+   *  what we offer, and the one rule that makes it safe to try. Three short
+   *  numbered beats, same shape as /about's `solution` array — a reader
+   *  should be able to place this company in the time it takes to scroll
+   *  one screen, not five. */
+  whatWeAre: {
+    label: string;
+    h2: string;
+    intro: string;
+    steps: [string, string][];
+  };
 };
 
 const en: Dict = {
@@ -162,6 +173,26 @@ const en: Dict = {
     cta: "Describe your task",
     guarantee:
       "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
+  },
+  whatWeAre: {
+    label: "What this is",
+    h2: "One rule: you don't pay for work that isn't right.",
+    intro:
+      "AfterDesk is a task outsourcing service built around vetted specialists in the Philippines, matched to entrepreneurs who want work off their plate without spending hours finding who to trust with it.",
+    steps: [
+      [
+        "Describe it",
+        "Plain English, any admin, data, research or writing task. A specialist here prices it and you approve before anything starts.",
+      ],
+      [
+        "It gets done",
+        "A vetted specialist in the Philippines does the work overnight, checked by an operator before it reaches you.",
+      ],
+      [
+        "You only pay if it's right",
+        "Your card is authorized, not charged. Nothing is billed, and the specialist isn't paid, until you approve the finished work.",
+      ],
+    ],
   },
   ch01: { label: "The overnight diff" },
   ch02: {
@@ -272,6 +303,26 @@ const fr: Dict = {
     guarantee:
       "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
   },
+  whatWeAre: {
+    label: "Ce qu'on fait",
+    h2: "Une seule règle : vous ne payez pas pour un travail qui ne fait pas l'affaire.",
+    intro:
+      "AfterDesk est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines, jumelés à des entrepreneurs qui veulent se débarrasser d'une tâche sans passer des heures à trouver à qui la confier.",
+    steps: [
+      [
+        "Décrivez-la",
+        "En langage clair, admin, données, recherche ou rédaction. Un spécialiste ici la chiffre et vous l'approuvez avant que quoi que ce soit commence.",
+      ],
+      [
+        "Elle se fait",
+        "Un spécialiste vérifié aux Philippines fait le travail pendant la nuit, vérifié par un opérateur avant de vous parvenir.",
+      ],
+      [
+        "Vous ne payez que si c'est bon",
+        "Votre carte est autorisée, pas débitée. Rien n'est facturé, et le spécialiste n'est pas payé, tant que vous n'approuvez pas le travail livré.",
+      ],
+    ],
+  },
   ch01: { label: "Une nuit de différence" },
   ch02: {
     label: "Un prix. Approuvé d'abord.",
@@ -380,6 +431,26 @@ const es: Dict = {
     cta: "Describe tu tarea",
     guarantee:
       "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
+  },
+  whatWeAre: {
+    label: "Qué es esto",
+    h2: "Una sola regla: no pagas por un trabajo que no está bien.",
+    intro:
+      "AfterDesk es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas, emparejados con emprendedores que quieren sacarse una tarea de encima sin pasar horas buscando en quién confiarla.",
+    steps: [
+      [
+        "Descríbela",
+        "En lenguaje claro: administración, datos, investigación o redacción. Un especialista aquí la cotiza y tú la apruebas antes de que empiece nada.",
+      ],
+      [
+        "Se hace",
+        "Un especialista verificado en Filipinas hace el trabajo durante la noche, revisado por un operador antes de llegar a ti.",
+      ],
+      [
+        "Solo pagas si está bien",
+        "Tu tarjeta queda autorizada, no cobrada. No se cobra nada, y el especialista no recibe pago, hasta que apruebas el trabajo entregado.",
+      ],
+    ],
   },
   ch01: { label: "El antes y después de una noche" },
   ch02: {
@@ -496,6 +567,26 @@ const tl: Dict = {
     cta: "Ilarawan ang task mo",
     guarantee:
       "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",
+  },
+  whatWeAre: {
+    label: "Ano ito",
+    h2: "Isang panuntunan lang: hindi ka nagbabayad para sa trabahong hindi maayos.",
+    intro:
+      "Ang AfterDesk ay isang task outsourcing service na nakabuo sa paligid ng beripikadong espesyalista sa Pilipinas, itinutugma sa mga negosyanteng gustong maalis ang task sa kanilang listahan nang hindi gumugugol ng oras sa paghahanap kung kanino ito ipagkakatiwala.",
+    steps: [
+      [
+        "Ilarawan ito",
+        "Simpleng salita, kahit anong admin, data, research o writing task. Ipepresyo ito ng espesyalista dito at aaprubahan mo bago magsimula ang kahit ano.",
+      ],
+      [
+        "Nagagawa ito",
+        "Isang beripikadong espesyalista sa Pilipinas ang gumagawa ng trabaho magdamag, sinusuri ng operator bago ito dumating sa iyo.",
+      ],
+      [
+        "Babayaran mo lang kung tama ito",
+        "Naka-authorize lang ang card mo, hindi sinisingil. Walang sisingilin, at hindi babayaran ang espesyalista, hanggang sa aprubahan mo ang natapos na trabaho.",
+      ],
+    ],
   },
   ch01: { label: "Ang diff ng magdamag" },
   ch02: {
