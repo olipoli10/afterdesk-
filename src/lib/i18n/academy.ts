@@ -29,7 +29,7 @@ type Dict = {
     cta: string;
     micro: string;
   };
-  stats: { courses: string; lessons: string; questions: string };
+  stats: { courses: string; lessons: string; questions: string; minutes: string };
   deal: {
     label: string;
     h2: string;
@@ -56,9 +56,13 @@ type Dict = {
     exam: string;
     /** The anchor into a published course page. */
     read: string;
+    /** The outcomes-section heading on a course page: what the learner gets after finishing it. */
+    afterThisCourse: string;
   };
   closing: { h2: string; body: string; cta: string; micro: string };
   footer: { workers: string; how: string; signIn: string };
+  /** Heading over a lesson's key-points recap box. */
+  remember: string;
 };
 
 const en: Dict = {
@@ -71,7 +75,7 @@ const en: Dict = {
     cta: "Create a free account",
     micro: "You can start the first course tonight.",
   },
-  stats: { courses: "courses", lessons: "lessons", questions: "exam questions" },
+  stats: { courses: "courses", lessons: "lessons", questions: "exam questions", minutes: "minutes" },
   deal: {
     label: "How it works",
     h2: "Read, sit the exam, keep the certificate.",
@@ -101,6 +105,7 @@ const en: Dict = {
     lessons: (n) => `${n} lessons`,
     exam: "exam + certificate",
     read: "Read the course",
+    afterThisCourse: "After this course",
   },
   closing: {
     h2: "The courses are free. The work is real.",
@@ -109,6 +114,7 @@ const en: Dict = {
     micro: "Already have one? Sign in and open the Academy.",
   },
   footer: { workers: "Work with us", how: "How it works", signIn: "Sign in" },
+  remember: "Remember",
 };
 
 const tl: Dict = {
@@ -121,7 +127,7 @@ const tl: Dict = {
     cta: "Gumawa ng libreng account",
     micro: "Pwede mong simulan ang unang kurso ngayong gabi.",
   },
-  stats: { courses: "na kurso", lessons: "na leksyon", questions: "na tanong sa exam" },
+  stats: { courses: "na kurso", lessons: "na leksyon", questions: "na tanong sa exam", minutes: "na minuto" },
   deal: {
     label: "Paano ito gumagana",
     h2: "Magbasa, kumuha ng exam, panatilihin ang certificate.",
@@ -151,6 +157,7 @@ const tl: Dict = {
     lessons: (n) => `${n} na leksyon`,
     exam: "exam + certificate",
     read: "Basahin ang kurso",
+    afterThisCourse: "Pagkatapos ng kursong ito",
   },
   closing: {
     h2: "Libre ang mga kurso. Totoo ang trabaho.",
@@ -159,6 +166,7 @@ const tl: Dict = {
     micro: "Meron ka na? Mag-sign in at buksan ang Academy.",
   },
   footer: { workers: "Magtrabaho kasama namin", how: "Paano ito gumagana", signIn: "Mag-sign in" },
+  remember: "Tandaan",
 };
 
 const fr: Dict = {
@@ -171,7 +179,7 @@ const fr: Dict = {
     cta: "Créer un compte gratuit",
     micro: "Vous pouvez commencer le premier cours ce soir.",
   },
-  stats: { courses: "cours", lessons: "leçons", questions: "questions d'examen" },
+  stats: { courses: "cours", lessons: "leçons", questions: "questions d'examen", minutes: "minutes" },
   deal: {
     label: "Comment ça marche",
     h2: "Lisez, passez l'examen, gardez le certificat.",
@@ -201,6 +209,7 @@ const fr: Dict = {
     lessons: (n) => `${n} leçons`,
     exam: "examen + certificat",
     read: "Lire le cours",
+    afterThisCourse: "Après ce cours",
   },
   closing: {
     h2: "Les cours sont gratuits. Le travail est réel.",
@@ -209,6 +218,7 @@ const fr: Dict = {
     micro: "Vous en avez déjà un ? Connectez-vous et ouvrez l'Académie.",
   },
   footer: { workers: "Travailler avec nous", how: "Comment ça marche", signIn: "Connexion" },
+  remember: "À retenir",
 };
 
 const es: Dict = {
@@ -221,7 +231,7 @@ const es: Dict = {
     cta: "Crear una cuenta gratis",
     micro: "Puedes empezar el primer curso esta noche.",
   },
-  stats: { courses: "cursos", lessons: "lecciones", questions: "preguntas de examen" },
+  stats: { courses: "cursos", lessons: "lecciones", questions: "preguntas de examen", minutes: "minutos" },
   deal: {
     label: "Cómo funciona",
     h2: "Lee, presenta el examen, quédate el certificado.",
@@ -251,6 +261,7 @@ const es: Dict = {
     lessons: (n) => `${n} lecciones`,
     exam: "examen + certificado",
     read: "Leer el curso",
+    afterThisCourse: "Después de este curso",
   },
   closing: {
     h2: "Los cursos son gratis. El trabajo es real.",
@@ -259,6 +270,7 @@ const es: Dict = {
     micro: "¿Ya tienes una? Inicia sesión y abre la Academia.",
   },
   footer: { workers: "Trabaja con nosotros", how: "Cómo funciona", signIn: "Iniciar sesión" },
+  remember: "Recuerda",
 };
 
 export const ACADEMY_I18N: Record<AcademyLang, Dict> = { en, fr, es, tl };

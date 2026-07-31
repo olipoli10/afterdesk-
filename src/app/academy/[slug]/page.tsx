@@ -180,7 +180,7 @@ export default async function CoursePublicPage({
           <dl className="mt-7 flex flex-wrap gap-x-9 gap-y-4">
             {[
               [String(course.lessonCount), t.stats.lessons],
-              [`~${course.minutes}`, "minutes"],
+              [`~${course.minutes}`, t.stats.minutes],
               [String(stats.questionCount), t.stats.questions],
             ].map(([n, label]) => (
               <div key={label}>
@@ -201,7 +201,7 @@ export default async function CoursePublicPage({
       {/* ── OUTCOMES ────────────────────────────────────────────────────── */}
       <section className="mx-auto w-full max-w-[760px] px-6 pt-12">
         <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5B6069]">
-          {t.deal.label === "How it works" ? "After this course" : t.deal.label}
+          {t.curriculum.afterThisCourse}
         </h2>
         <ul {...machine} className="mt-4 grid gap-2.5 sm:grid-cols-2">
           {course.outcomes.map((o, i) => (
@@ -273,7 +273,7 @@ export default async function CoursePublicPage({
                     className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em]"
                     style={{ color: look.hue }}
                   >
-                    Remember
+                    {t.remember}
                   </p>
                   <ul {...machine} className="mt-2 space-y-1.5">
                     {lesson.keyPoints.map((k, ki) => (
@@ -377,7 +377,7 @@ export default async function CoursePublicPage({
               {t.footer.how}
             </Link>
           </div>
-          <TrustLinks />
+          <TrustLinks lang={lang} />
         </div>
       </footer>
     </div>

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/authz";
 import { taskForClient } from "@/lib/queries/tasks";
+import { expireStaleQuotes } from "@/server/sweeps";
 import { getSettings } from "@/lib/settings";
 import { computeQuotedBy } from "@/lib/schedule";
 import {
@@ -33,6 +34,7 @@ export default async function ClientTaskPage({
 }) {
   const user = await requireRole("CLIENT");
   const { id } = await params;
+  await expireStaleQuotes(id);
   const task = await taskForClient(id, user.id);
   if (!task) notFound();
 

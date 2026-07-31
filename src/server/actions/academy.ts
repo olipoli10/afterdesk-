@@ -23,7 +23,7 @@ export type ExamResult =
       total: number;
       passed: boolean;
       wrong: number[];
-      corrections: { index: number; correct: number; explain: string }[] | null;
+      corrections: { prompt: string; correctText: string; explain: string }[] | null;
       certified: boolean;
       attemptsLeftToday: number;
     }
@@ -147,8 +147,8 @@ export async function submitExam(input: unknown): Promise<ExamResult> {
     wrong: [],
     corrections: committed.graded.passed
       ? committed.graded.wrong.map((index) => ({
-          index,
-          correct: questions[index].correct,
+          prompt: questions[index].prompt,
+          correctText: questions[index].options[questions[index].correct],
           explain: questions[index].explain,
         }))
       : null,

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { formatCents } from "@/lib/money";
 import { familyOf } from "@/lib/families";
-import { ClaimButton } from "@/components/va-actions";
 import { moneyPayoutNight } from "@/components/ui";
 import type { VaPoolView } from "@/lib/queries/tasks";
 
@@ -142,7 +141,7 @@ export function BoardTile({
         ) : null}
       </p>
 
-      {/* foot — payout · details · claim */}
+      {/* foot — payout · details (the sole path to claiming, so the brief is always read first) */}
       <div className="mt-auto flex items-center gap-2.5 border-t border-white/10 py-2">
         <span className="min-w-0">
           <span
@@ -168,9 +167,6 @@ export function BoardTile({
         >
           Details
         </Link>
-        <span className="shrink-0">
-          <ClaimButton taskId={task.id} variant="board" />
-        </span>
       </div>
     </div>
   );

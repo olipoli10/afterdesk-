@@ -28,7 +28,6 @@ export function PasswordFields({
   const type = show ? "text" : "password";
 
   const tooShort = password.length > 0 && password.length < minLength;
-  const mismatch = confirm.length > 0 && confirm !== password;
   const matched = confirm.length > 0 && confirm === password && !tooShort;
 
   return (
@@ -76,9 +75,7 @@ export function PasswordFields({
           onChange={(e) => onConfirmChange(e.target.value)}
         />
       </Field>
-      {mismatch ? (
-        <p role="alert" className="-mt-2 text-xs text-[#8C2F23]">Passwords do not match.</p>
-      ) : matched ? (
+      {matched ? (
         <p role="status" className="-mt-2 text-xs text-[#5B6069]">✓ Passwords match.</p>
       ) : null}
     </div>

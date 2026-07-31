@@ -65,7 +65,7 @@ export function ExamForm({
               Result
             </p>
             <p className="mt-1.5 text-[22px] font-semibold tracking-[-0.015em]">
-              Passed — {result.score}/{result.total}
+              Passed: {result.score}/{result.total}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-[#C9D2E3]">
               You are now certified in {courseTitle}. The certificate is on your profile —
@@ -78,15 +78,15 @@ export function ExamForm({
               Result
             </p>
             <p className="mt-1.5 text-[22px] font-semibold tracking-[-0.015em] text-[#14161A]">
-              {result.score}/{result.total} — not this time
+              {result.score}/{result.total}, not this time
             </p>
             {/* No per-question breakdown on a failure, on purpose: naming the
                 missed questions would let three attempts solve the whole exam
                 by elimination. The score is the signal; the lessons are the
                 remedy. */}
             <p className="mt-2 text-sm leading-relaxed text-[#5B6069]">
-              Passing is 10 of 12. We don&apos;t say which ones you missed — that would give
-              the exam away — but the lessons cover all of them.{" "}
+              Passing is 10 of 12. We don&apos;t say which ones you missed, that would give
+              the exam away, but the lessons cover all of them.{" "}
               {result.attemptsLeftToday > 0
                 ? `${result.attemptsLeftToday} attempt${result.attemptsLeftToday === 1 ? "" : "s"} left today.`
                 : "The exam reopens tomorrow — that pause is part of the design."}
@@ -101,9 +101,9 @@ export function ExamForm({
             </p>
             <ul className="mt-2 space-y-3">
               {result.corrections.map((c) => (
-                <li key={c.index} className="text-sm leading-relaxed">
+                <li key={c.prompt} className="text-sm leading-relaxed">
                   <span className="font-semibold text-[#14161A]">
-                    Q{c.index + 1} — {questions[c.index].options[c.correct]}
+                    {c.prompt}: {c.correctText}
                   </span>
                   <span className="block text-[#5B6069]">{c.explain}</span>
                 </li>
@@ -174,7 +174,9 @@ export function ExamForm({
                 ))}
               </div>
               {missing.includes(qi) ? (
-                <p className="mt-1.5 text-xs font-medium text-[#8C2F23]">Answer this one.</p>
+                <p role="alert" className="mt-1.5 text-xs font-medium text-[#8C2F23]">
+                  Answer this one.
+                </p>
               ) : null}
             </fieldset>
           </li>

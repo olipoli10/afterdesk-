@@ -135,7 +135,7 @@ export function VaRegisterForm() {
     const { error } = await authClient.signIn.email({ email, password });
     if (error) {
       // The account WAS created — land on login with context, not cold.
-      router.push("/login?applied=1");
+      router.push("/login?applied=1&audience=worker");
       return;
     }
     router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
