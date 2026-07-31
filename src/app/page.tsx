@@ -397,7 +397,7 @@ export default async function Home({
                     $68
                   </span>
                 </div>
-                <p className="mt-2 text-right text-[11px] text-[#8A9099]">{t.ch02.noMeter}</p>
+                <p className="mt-2 text-right text-[#8A9099]">{t.ch02.noMeter}</p>
                 <div className="mt-5 hidden gap-2 lg:flex">
                   <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
                     {t.ch02.approve}

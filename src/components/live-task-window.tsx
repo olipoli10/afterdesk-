@@ -181,7 +181,7 @@ export function LiveTaskWindow({ copy }: { copy: LiveTaskWindowCopy }) {
           <div
             className={`mt-4 flex items-baseline justify-between border-t border-white/8 pt-3 transition-opacity duration-500 ${s.showPrice ? "opacity-100" : "opacity-0"}`}
           >
-            <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#8A9099]">
+            <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-[#8A9099]">
               {copy.fixedPrice}
             </span>
             <span className="font-mono text-[26px] font-medium tabular-nums text-[#F7F6F3] underline decoration-[#1E7F5C] decoration-2 underline-offset-4">
