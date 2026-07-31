@@ -194,7 +194,14 @@ export default async function Home({
             later, approved, done overnight by a vetted specialist, and passes review
             by 7:07 AM.
           </p>
-          <div aria-hidden className="anim-rise d-3">
+          {/* Phones don't get this. It and the quote slip in chapter 01 are
+              both dark mono cards carrying a task name, a detail list and a
+              price, and stacked vertically on a phone they scan as the same
+              artifact shown twice rather than as two different points (a
+              task's whole night here, the price object there). The slip is
+              the one that survives: it is the one carrying NEW information,
+              and it has captions under it that the window does not. */}
+          <div aria-hidden className="anim-rise d-3 hidden sm:block">
             <LiveTaskWindow />
           </div>
         </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
 import { FloatingLinks } from "@/components/floating-links";
+import { SampleExam } from "@/components/sample-exam";
 import { cookies } from "next/headers";
 import { getSessionUser, roleHome } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
@@ -286,58 +287,13 @@ export default async function WorkersHome({
                   </span>
                 </div>
 
-                {/* the paper */}
-                <div className="px-4 py-4 sm:px-6 sm:py-5">
-                  <p className="max-w-[58ch] text-[15px] leading-[1.55] text-[#14161A] sm:text-[16px]">
-                    {sample.prompt}
-                  </p>
-                  <ol className="mt-4 grid gap-1.5">
-                    {sample.options.map((opt, i) => {
-                      const right = i === sample.correct;
-                      return (
-                        <li
-                          key={i}
-                          className={`srow flex items-start gap-3 rounded-lg border px-3 py-2.5 ${
-                            right
-                              ? "border-[#14161A]/15 bg-[#F7F6F3] shadow-[inset_0_0_0_1px_rgba(20,22,26,0.05)]"
-                              : "border-transparent"
-                          }`}
-                        >
-                          <span
-                            aria-hidden
-                            className={`mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center font-mono text-[11px] font-medium ${
-                              right
-                                ? "rounded-[5px] bg-[#14161A] text-[#F7F6F3]"
-                                : "rounded-full border border-[#14161A]/20 text-[#5B6069]"
-                            }`}
-                          >
-                            {"ABCD"[i]}
-                          </span>
-                          <span
-                            className={`min-w-0 pt-0.5 text-[14px] leading-[1.45] text-[#14161A] sm:text-[15px] ${
-                              right ? "font-medium" : ""
-                            }`}
-                          >
-                            {right ? <span className="sr-only">Correct answer: </span> : null}
-                            {opt}
-                          </span>
-                          {right ? (
-                            <span
-                              aria-hidden
-                              className="ml-auto shrink-0 pt-0.5 font-mono text-[15px] font-semibold text-[#14161A]"
-                            >
-                              ✓
-                            </span>
-                          ) : null}
-                        </li>
-                      );
-                    })}
-                  </ol>
-                  <p className="mt-3.5 border-l-2 border-[#14161A]/20 pl-3 font-mono text-[12px] leading-[1.55] text-[#5B6069]">
-                    <b className="font-semibold tracking-[0.08em] text-[#14161A]">CORRECT</b> ·{" "}
-                    {sample.explain}
-                  </p>
-                </div>
+                {/* the paper — playable, see src/components/sample-exam.tsx */}
+                <SampleExam
+                  prompt={sample.prompt}
+                  options={sample.options}
+                  correct={sample.correct}
+                  explain={sample.explain}
+                />
 
                 {/* the terms, as machine stamps — $0.00 in ink, never green.
                     Two shapes, because the four-cell version costs two rows on
@@ -377,10 +333,10 @@ export default async function WorkersHome({
             </div>
 
             <p className="sr-only">
-              Example exam question from the {sample.courseTitle} course, shown with its correct
-              answer marked and the examiner&apos;s reason. Pass mark {stats.passScore} of{" "}
-              {stats.questionCount}, {stats.attemptsPerDay} attempts per 24 hours, the certificate
-              is permanent and the cost is zero.
+              A real exam question from the {sample.courseTitle} course, answerable here without an
+              account: choose an option to see whether it is right and why. Pass mark{" "}
+              {stats.passScore} of {stats.questionCount}, {stats.attemptsPerDay} attempts per 24
+              hours, the certificate is permanent and the cost is zero.
             </p>
 
             <p className="mt-3 max-w-[62ch] font-mono text-[11px] leading-relaxed text-[#5B6069]">
