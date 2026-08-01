@@ -103,7 +103,7 @@ export function LangSwitch<T extends string>({
             href={`${path}?lang=${option.code}`}
             hrefLang={option.code}
             aria-current={option.code === current ? "true" : undefined}
-            className={`flex min-h-11 items-center rounded px-2 transition-colors duration-150 ${
+            className={`flex min-h-11 items-center whitespace-nowrap rounded px-1.5 transition-colors duration-150 ${
               option.code === current ? active : idle
             }`}
           >

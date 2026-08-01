@@ -174,7 +174,7 @@ export function Field({
    gives focus a second signal beyond the ring, which matters most on the
    long client forms where several fields sit in a column. */
 export const inputClass =
-  "w-full rounded-md border border-[#14161A]/20 bg-[#F1EFEB] px-3 py-2 text-[16px] text-[#14161A] placeholder:text-[#5B6069] focus:border-[#14161A] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14161A]/30 sm:text-sm";
+  "w-full rounded-md border border-[#14161A]/20 bg-[#E8E5DE] px-3 py-2 text-[16px] text-[#14161A] placeholder:text-[#5B6069] focus:border-[#14161A] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14161A]/30 sm:text-sm";
 
 /** Worker-portal dark equivalent — same recessed-at-rest / lighter-on-focus
  *  logic as inputClass, inverted for a dark ground. */

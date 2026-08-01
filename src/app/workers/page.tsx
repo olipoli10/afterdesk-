@@ -161,11 +161,15 @@ export default async function WorkersHome({
               Our Services
             </Link>
           </div>
-          <div className="flex items-center justify-end gap-2 sm:gap-5">
+          {/* Same fix as page.tsx's header, same reason: longer translated
+              labels here had no min-width floor and no whitespace-nowrap, so
+              a language whose text ran longer than English shrank and
+              wrapped instead of the row making room for it. */}
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5">
             <LangSwitch path="/workers" current={lang} options={WORKERS_LANGS} tone="paper" />
             <Link
               href="/about"
-              className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
+              className="hidden shrink-0 whitespace-nowrap text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
             >
               {t.footer.about}
             </Link>
@@ -176,7 +180,7 @@ export default async function WorkersHome({
                  URL. */
               <Link
                 href={portal}
-                className="lift hidden min-h-11 items-center rounded-full bg-[#14161A] px-4 py-1.5 text-[13px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:inline-flex"
+                className="lift hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-[#14161A] px-4 py-1.5 text-[13px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:inline-flex"
               >
                 {t.nav.portal}
               </Link>
@@ -184,13 +188,13 @@ export default async function WorkersHome({
               <>
                 <Link
                   href="/login?audience=worker"
-                  className="hidden text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
+                  className="hidden shrink-0 whitespace-nowrap text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
                 >
                   {t.nav.signIn}
                 </Link>
                 <Link
                   href="/register/va"
-                  className="lift hidden min-h-11 items-center rounded-full bg-[#14161A] px-4 py-1.5 text-[13px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:inline-flex"
+                  className="lift hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-[#14161A] px-4 py-1.5 text-[13px] font-medium text-[#F7F6F3] hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] sm:inline-flex"
                 >
                   {t.nav.apply}
                 </Link>

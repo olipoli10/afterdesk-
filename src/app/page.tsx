@@ -178,14 +178,24 @@ export default async function Home({
               Our Services
             </Link>
           </div>
-          <div className="flex items-center justify-end gap-2 sm:gap-5">
+          {/* gap-2/sm:gap-5 used to leave French ("Qui nous sommes",
+              "Envoyer une tâche" — longer than their English originals)
+              about ~30px short of this column's width at desktop sizes.
+              Nothing here had a min-width floor, so the shortfall landed
+              entirely on the plain-text links: flex let them shrink below
+              their own content width and their text wrapped, which grew this
+              whole row past the header's fixed h-14 and made it look broken.
+              whitespace-nowrap + shrink-0 refuses that shrink outright; the
+              tighter gap is what actually buys back the ~30px so nowrap has
+              room to hold without overflowing the column instead. */}
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5">
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
             {/* Promoted out of the footer: this is the story page, and a story
                 nobody can find is not a story. Hidden on mobile alongside Sign
                 in — the header only has room for the toggle and the CTA there. */}
             <Link
               href="/about"
-              className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
+              className="hidden shrink-0 whitespace-nowrap text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
             >
               {t.footer.about}
             </Link>
@@ -195,7 +205,7 @@ export default async function Home({
             {portal ? (
               <Link
                 href={portal}
-                className="lift hidden min-h-11 items-center rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
+                className="lift hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
               >
                 {t.nav.portal}
               </Link>
@@ -203,13 +213,13 @@ export default async function Home({
               <>
                 <Link
                   href="/login"
-                  className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
+                  className="hidden shrink-0 whitespace-nowrap text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
                 >
                   {t.nav.signIn}
                 </Link>
                 <Link
                   href="/register"
-                  className="lift hidden min-h-11 items-center rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
+                  className="lift hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
                 >
                   {t.nav.send}
                 </Link>
@@ -377,7 +387,14 @@ export default async function Home({
               {ch("01", t.ch02.label)}
             </p>
             <div className="mx-auto max-w-[420px]">
-              <div className="lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] transition-colors hover:border-white/20 hover:bg-[#15171B]">
+              {/* On a phone this card sits directly under the hero's own
+                  LiveTaskWindow — same dark mono chrome, a task name and a
+                  dollar figure, back to back in the scroll. Two artifacts
+                  that read as one repeated. The card itself is desktop-only
+                  from here; the one fact a phone still needs from it (the
+                  fixed total) moves to the plain-text line below instead of
+                  competing for the same "dark card with a price" slot. */}
+              <div className="hidden lg:block lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] transition-colors hover:border-white/20 hover:bg-[#15171B]">
                 <div className="flex items-center justify-between border-b border-white/8 pb-3 text-[#8A9099]">
                   {/* "QUOTE #0412" is a machine ID and stays literal. */}
                   <span>QUOTE #0412</span>
@@ -419,6 +436,18 @@ export default async function Home({
                   </span>
                 </div>
               </div>
+
+              {/* Mobile-only stand-in for the card above: just the number,
+                  no chrome, so it can't be mistaken for a second version of
+                  the hero window while the fixed price still lands before
+                  the captions below it. */}
+              <div className="flex items-baseline justify-between gap-4 border-b border-white/8 pb-4 font-mono text-[12px] lg:hidden">
+                <span className="text-[#8A9099]">{t.ch02.fieldTotal}</span>
+                <span className="text-[28px] font-medium tabular-nums leading-none text-white">$68</span>
+              </div>
+              <p className="mt-2 text-right font-mono text-[11px] text-[#8A9099] lg:hidden">
+                {t.ch02.noMeter}
+              </p>
 
               <div className="mt-6 grid gap-3 font-mono text-[12px] text-[#767C86] sm:grid-cols-3">
                 {t.ch02.captions.map((c) => (
