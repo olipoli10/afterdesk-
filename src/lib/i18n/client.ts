@@ -107,6 +107,14 @@ type Dict = {
   ch05: {
     label: string;
     h2: string;
+    /**
+     * Sticky legend above the rows (position: sticky, stays visible for the
+     * whole section's own scroll range — not the page's — so a reader
+     * moving at speed always has "three ways, one operator" in view, not
+     * just at the top of the table). Names the comparison itself; the rows
+     * still each name their own opponent (see the note on `pairs` below).
+     */
+    legend: string;
     /** Vertical label on the hatched operator wall. */
     wall: string;
     /** Caption above the review artifact — EXAMPLE, outside the artifact. */
@@ -291,6 +299,7 @@ const en: Dict = {
   ch05: {
     label: "The operator",
     h2: "One professional between you and the work.",
+    legend: "Comparing three ways to get this done — freelance sites, hiring someone, or one operator who runs it all.",
     wall: "Operator",
     desk: "Example: one review pass",
     pairs: [
@@ -311,8 +320,8 @@ const en: Dict = {
       ],
       [
         "Any of them",
-        "You find out in the morning whether it's right.",
-        "A professional checked it before you ever see it.",
+        "You hope it's right when you wake up.",
+        "A professional confirms it's right before you wake up.",
       ],
     ],
   },
@@ -446,6 +455,7 @@ const fr: Dict = {
   ch05: {
     label: "L'opérateur",
     h2: "Un professionnel entre vous et le travail.",
+    legend: "Comparaison de trois façons de faire ça — sites de pigistes, embauche directe, ou un seul opérateur qui gère tout.",
     wall: "Opérateur",
     desk: "Exemple : une passe de vérification",
     pairs: [
@@ -466,8 +476,8 @@ const fr: Dict = {
       ],
       [
         "N'importe lequel",
-        "Vous découvrez au matin si c'est bon.",
-        "Un professionnel l'a vérifié avant que vous le voyiez.",
+        "Vous espérez que c'est bon à votre réveil.",
+        "Un professionnel confirme que c'est bon avant votre réveil.",
       ],
     ],
   },
@@ -601,6 +611,7 @@ const es: Dict = {
   ch05: {
     label: "El operador",
     h2: "Un profesional entre tú y el trabajo.",
+    legend: "Comparando tres formas de hacer esto — sitios de freelance, contratar a alguien, o un solo operador que lo gestiona todo.",
     wall: "Operador",
     desk: "Ejemplo: una pasada de revisión",
     pairs: [
@@ -621,8 +632,8 @@ const es: Dict = {
       ],
       [
         "Cualquiera",
-        "Te enteras por la mañana si está bien.",
-        "Un profesional lo revisó antes de que lo vieras.",
+        "Esperas que esté bien al despertar.",
+        "Un profesional confirma que está bien antes de que despiertes.",
       ],
     ],
   },
@@ -763,6 +774,7 @@ const tl: Dict = {
   ch05: {
     label: "Ang operator",
     h2: "Isang propesyonal sa pagitan mo at ng trabaho.",
+    legend: "Paghahambing ng tatlong paraan para magawa ito — freelance site, pag-hire, o iisang operator na bahala sa lahat.",
     wall: "Operator",
     desk: "Halimbawa: isang pasada ng review",
     pairs: [
@@ -783,8 +795,8 @@ const tl: Dict = {
       ],
       [
         "Alin man dito",
-        "Sa umaga mo pa malalaman kung tama.",
-        "Sinuri ng propesyonal bago mo pa ito makita.",
+        "Aasa kang tama ito paggising mo.",
+        "Kinukumpirma ng propesyonal na tama ito bago ka pa gumising.",
       ],
     ],
   },

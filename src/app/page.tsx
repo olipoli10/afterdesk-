@@ -550,13 +550,19 @@ export default async function Home({
 
               <PaperReviewDesk caption={t.ch05.desk} />
 
-              {/* Every row names the alternative it is beating, on the row
-                  itself. The single header pair that used to sit above these
-                  scrolled out of view after the first row and never came
-                  back — see the note on ch05.pairs in src/lib/i18n/client.ts
-                  for why per-row labels replaced it rather than sticky ones. */}
+              {/* Each row still names its own alternative (see the note on
+                  ch05.pairs below) — that part stayed. What was missing at
+                  reading speed was the ONE framing sentence: that this is
+                  three ways of getting the same work done, not a loose list
+                  of complaints. The legend states that once and stays
+                  pinned (position: sticky, scoped to this row group's own
+                  height by its `relative` parent) so it survives the whole
+                  scroll instead of only the first row. */}
               <div className="mt-12">
                 <div className="relative">
+                  <p className="sticky top-14 z-10 mb-4 -mx-5 border-y border-black/8 bg-[#F7F6F3]/95 px-5 py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.1em] text-[#5B6069] backdrop-blur-sm sm:-mx-9 sm:px-9">
+                    {t.ch05.legend}
+                  </p>
                   {/* the wall itself — one hatched band, full height */}
                   <div
                     aria-hidden
