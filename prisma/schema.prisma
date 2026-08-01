@@ -215,6 +215,7 @@ model User {
   standingCapacityAssignments StandingCapacityAssignment[] @relation("StandingCapacityAssignmentWorker")
   accountContextNotesAuthored AccountContextNote[]         @relation("AccountContextNoteAuthor")
   standingCapacityPayouts     StandingCapacityPayout[]     @relation("StandingCapacityPayoutWorker")
+  assistantMessages           AssistantMessage[]
 }
 
 /**
@@ -1068,4 +1069,63 @@ model StandingCapacityPayout {
 
   @@unique([accountId, vaId, periodStart])
   @@index([vaId])
+}
+
+enum AssistantMessageRole {
+  user
+  assistant
+}
+
+enum AssistantCategory {
+  file_format
+  dedup_technique
+  deliverable_structure
+  research_method
+  writing_method
+  other
+}
+
+/**
+ * One row per turn (both the worker's message and the model's reply) in
+ * the AfterDesk Assistant (src/lib/assistant-ai.ts). content is scrubbed
+ * for price/PII patterns (src/lib/assistant-scrub.ts) BEFORE this row is
+ * written — the admin pattern-clustering view (src/app/admin/assistant)
+ * renders this column, so an unscrubbed row would be a new disclosure
+ * surface. clusterKey is a cheap normalize-and-truncate of a user message
+ * (lowercased, punctuation stripped, first ~8 words) used to group
+ * similar questions without any ML — assistant replies never get a
+ * clusterKey, only role: user rows do.
+ */
+model AssistantMessage {
+  id               String               @id @default(cuid())
+  vaId             String
+  va               User                 @relation(fields: [vaId], references: [id], onDelete: Cascade)
+  taskId           String
+  role             AssistantMessageRole
+  content          String
+  category         AssistantCategory?
+  clusterKey       String?
+  inputTokens      Int                  @default(0)
+  outputTokens     Int                  @default(0)
+  cacheReadTokens  Int                  @default(0)
+  requiresHumanReview Boolean           @default(false)
+  createdAt        DateTime             @default(now())
+
+  @@index([vaId, createdAt])
+  @@index([taskId])
+  @@index([clusterKey])
+}
+
+/**
+ * One row per distinct clusterKey once an admin has looked at it — exists
+ * only to track "resolved" state over time (did volume drop after the
+ * Academy doc got fixed), separate from AssistantMessage itself so marking
+ * a pattern resolved never touches the append-only conversation log.
+ */
+model AssistantPattern {
+  clusterKey   String    @id
+  category     AssistantCategory?
+  resolvedAt   DateTime?
+  resolvedById String?
+  updatedAt    DateTime  @updatedAt
 }

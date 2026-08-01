@@ -10,6 +10,8 @@ import { inputFileLabel } from "@/lib/filenames";
 import { LocalTime } from "@/components/local-time";
 import { DeliverableForm } from "@/components/deliverable-form";
 import { ReleaseButton } from "@/components/va-actions";
+import { AskAdminQuestionForm } from "@/components/ask-admin-question-form";
+import { AssistantWidget } from "@/components/assistant-widget";
 import {
   Badge,
   Card,
@@ -46,6 +48,18 @@ export default async function VaTaskPage({
     }),
   ]);
   if (!task) notFound();
+
+  // Strictly "claimed" — the assistant's own gate is narrower than
+  // canDeliver below (see sendAssistantMessage's doc comment).
+  const assistantHistoryRows =
+    task.status === "claimed"
+      ? await prisma.assistantMessage.findMany({
+          where: { vaId: user.id, taskId: id },
+          orderBy: { createdAt: "asc" },
+          take: 20,
+          select: { role: true, content: true, requiresHumanReview: true },
+        })
+      : [];
 
   const canDeliver =
     ["claimed", "qc_rejected"].includes(task.status) ||
@@ -210,6 +224,12 @@ export default async function VaTaskPage({
           isResubmission={task.status !== "claimed"}
         />
       ) : null}
+
+      {task.status === "claimed" ? (
+        <AssistantWidget taskId={task.id} initialHistory={assistantHistoryRows} />
+      ) : null}
+
+      {canDeliver ? <AskAdminQuestionForm taskId={task.id} /> : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <Link

@@ -23,13 +23,26 @@ export const metadata = {
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const user = await requireRole("ADMIN");
 
-  const [pricingCount, qcCount, workerCount, draftNoteCount, notificationCount] = await Promise.all([
-    pricingQueueCount(),
-    prisma.task.count({ where: { status: "submitted_for_qc" } }),
-    prisma.vaProfile.count({ where: { status: { in: ["pending_test", "pending_grading"] } } }),
-    prisma.accountContextNote.count({ where: { visible: false } }),
-    prisma.notification.count({ where: { userId: user.id, readAt: null } }),
-  ]);
+  const [pricingCount, qcCount, workerCount, draftNoteCount, notificationCount, assistantPatternCount] =
+    await Promise.all([
+      pricingQueueCount(),
+      prisma.task.count({ where: { status: "submitted_for_qc" } }),
+      prisma.vaProfile.count({ where: { status: { in: ["pending_test", "pending_grading"] } } }),
+      prisma.accountContextNote.count({ where: { visible: false } }),
+      prisma.notification.count({ where: { userId: user.id, readAt: null } }),
+      // Distinct unresolved question patterns, not a raw message count — the
+      // badge should read as "N things to look at," matching how every
+      // other badge here counts items needing attention, not volume.
+      prisma.assistantMessage
+        .groupBy({ by: ["clusterKey"], where: { role: "user", clusterKey: { not: null } } })
+        .then(async (groups) => {
+          if (groups.length === 0) return 0;
+          const resolved = await prisma.assistantPattern.count({
+            where: { clusterKey: { in: groups.map((g) => g.clusterKey as string) }, resolvedAt: { not: null } },
+          });
+          return groups.length - resolved;
+        }),
+    ]);
 
   return (
     <AppShell
@@ -44,6 +57,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         { href: "/admin/workers", label: "Workers", badge: workerCount },
         { href: "/admin/tasks", label: "All tasks" },
         { href: "/admin/standing-capacity", label: "Standing capacity", badge: draftNoteCount },
+        { href: "/admin/assistant", label: "Assistant", badge: assistantPatternCount },
       ]}
     >
       {children}

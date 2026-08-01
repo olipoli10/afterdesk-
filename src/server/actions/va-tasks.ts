@@ -155,6 +155,72 @@ export async function releaseTask(taskId: string): Promise<VaActionResult> {
   return { ok: true };
 }
 
+const askAdminQuestionSchema = z.object({
+  taskId: z.string(),
+  message: z.string().trim().min(5).max(1000),
+});
+
+/**
+ * The worker-side "Ask a question" — did not exist before this (only the
+ * client side, requestRevision/openDispute in client-tasks.ts, had a real
+ * contact-admin channel). Same shape: a TaskEvent the admin's existing
+ * audit-log render already displays with no new UI (src/app/admin/tasks/[id]/page.tsx
+ * — it maps every TaskEvent generically), plus a Notification to every
+ * admin. No state transition — asking a question does not move the task.
+ *
+ * This is also the real destination the new AI assistant (src/lib/assistant-ai.ts)
+ * redirects to whenever it isn't confident, and the fallback message if the
+ * Anthropic call fails — it has to be a real channel before either of those
+ * can honestly point at it.
+ */
+export async function askAdminQuestion(input: unknown): Promise<VaActionResult> {
+  const user = await requireApprovedVa();
+  const parsed = askAdminQuestionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Write your question (5–1000 characters)." };
+  }
+  const { taskId, message } = parsed.data;
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const task = await tx.task.findFirst({
+        where: { id: taskId, claimedById: user.id, status: { in: ["claimed", "qc_rejected", "revision_requested"] } },
+        select: { id: true },
+      });
+      if (!task) throw new Refused("This task isn't currently yours to ask about.");
+
+      await tx.taskEvent.create({
+        data: {
+          taskId,
+          action: "va_asked_question",
+          actorId: user.id,
+          reason: message,
+        },
+      });
+
+      const admins = await tx.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
+      if (admins.length > 0) {
+        await tx.notification.createMany({
+          data: admins.map((admin) => ({
+            userId: admin.id,
+            type: "va_question",
+            title: "A worker asked a question",
+            body: message,
+            taskId,
+          })),
+        });
+      }
+    });
+  } catch (e) {
+    const handled = surfaced(e);
+    if (handled) return handled;
+    throw e;
+  }
+
+  revalidatePath(`/va/tasks/${taskId}`);
+  return { ok: true };
+}
+
 const submitDeliverableSchema = z.object({
   taskId: z.string(),
   note: z.string().trim().max(4000).optional(),

@@ -61,6 +61,14 @@ export type Settings = {
    */
   pricingSimilarityMaxDistance: number;
   /**
+   * Worker AI assistant (src/lib/assistant-ai.ts) — messages per worker per
+   * UTC day, counted from AssistantMessage rows with role "user". A
+   * deliberate economic limit, not just abuse prevention: without it, a
+   * multi-hundred-worker pool turns this into a general free chatbot
+   * disconnected from its actual job (help on one active task).
+   */
+  assistantDailyMessageLimit: number;
+  /**
    * Standing Capacity weekly tiers — a client subscribing snapshots one of
    * these onto their StandingCapacityAccount at subscribe/renew time
    * (tierHours/weeklyClientPriceCents/weeklyVaPayoutCents on that row), so
@@ -115,6 +123,7 @@ export const SettingsSchema = z.object({
   pricingModel: z.string().min(1).max(100),
   pricingPrompt: z.string().min(20).max(20_000),
   pricingSimilarityMaxDistance: z.number().positive().max(2),
+  assistantDailyMessageLimit: z.number().int().min(1).max(500),
   standingCapacityTiers: z
     .array(
       z.object({
@@ -171,6 +180,7 @@ export const DEFAULT_SETTINGS: Settings = {
     "Given the task description, estimate a fair USD price range (low/high) for the full task. " +
     "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD.",
   pricingSimilarityMaxDistance: 0.6,
+  assistantDailyMessageLimit: 25,
   // Starting numbers, not a considered rate card — there is no admin UI to
   // edit this yet (same as every other Setting), so update the row by hand
   // in the database when real pricing is decided. A modest per-hour
