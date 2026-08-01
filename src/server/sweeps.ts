@@ -196,6 +196,34 @@ export async function purgeExpiredTaskFiles(): Promise<number> {
 }
 
 /**
+ * Rolls a Standing Capacity account into its next 7-day period once the
+ * current one has ended: resets minutesUsedThisPeriod to 0 and advances the
+ * window by exactly one week from the old boundary (not from "now"), so a
+ * sweep that runs late never shrinks the next period. Payment collection is
+ * separate and admin-tracked (StandingCapacityPayment) — this does not gate
+ * rollover on a period actually being paid; an admin who wants to stop an
+ * unpaying account uses setStandingCapacityStatus to pause it instead.
+ */
+export async function advanceStandingCapacityPeriods(): Promise<number> {
+  const due = await prisma.standingCapacityAccount.findMany({
+    where: { status: "active", currentPeriodEnd: { lt: new Date() } },
+    select: { id: true, currentPeriodEnd: true },
+    take: 100,
+  });
+  let advanced = 0;
+  for (const account of due) {
+    const nextStart = account.currentPeriodEnd;
+    const nextEnd = new Date(nextStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    await prisma.standingCapacityAccount.update({
+      where: { id: account.id },
+      data: { currentPeriodStart: nextStart, currentPeriodEnd: nextEnd, minutesUsedThisPeriod: 0 },
+    });
+    advanced += 1;
+  }
+  return advanced;
+}
+
+/**
  * Both sweeps, for the admin surfaces to call on load.
  *
  * Deferred via `after()` so the sweep runs once the response has been sent —
@@ -213,6 +241,7 @@ export async function runOperatorSweeps(): Promise<void> {
       await expireStalePayments();
       await reapOrphanFiles();
       await purgeExpiredTaskFiles();
+      await advanceStandingCapacityPeriods();
     } catch (e) {
       console.error("[sweeps] operator sweep failed:", e);
     }

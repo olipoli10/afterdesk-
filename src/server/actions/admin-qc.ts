@@ -68,6 +68,7 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
               clientId: true,
               vaPayoutCents: true,
               currency: true,
+              standingCapacityAccountId: true,
               payments: {
                 where: { status: "authorized" },
                 select: { id: true, amountCents: true, currency: true },
@@ -79,7 +80,16 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
         },
       });
       const isFirstCompletion = submission.task.firstCompletedAt === null;
-      if (submission.task.vaPayoutCents == null || submission.task.vaPayoutCents <= 0) {
+      // A Standing Capacity task was never priced per task — the block's
+      // weekly price already covers it, and the worker is paid once per
+      // period (recordWorkerPeriodPayout), not once per task. Everything
+      // below this guard is the one-off flow's own money obligation and
+      // must not run for a task that was never billed that way.
+      const isStandingCapacityTask = submission.task.standingCapacityAccountId !== null;
+      if (
+        !isStandingCapacityTask &&
+        (submission.task.vaPayoutCents == null || submission.task.vaPayoutCents <= 0)
+      ) {
         throw new Error("Approved task has no worker payout.");
       }
 
@@ -134,77 +144,82 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
         },
       });
 
-      // Approval and the money obligation are one invariant: a completed task
-      // can never exist without a payout row and an idempotent release intent.
-      const existingPayout = await tx.payout.findUnique({
-        where: {
-          taskId_vaId: { taskId: submission.taskId, vaId: submission.vaId },
-        },
-        select: { id: true, status: true },
-      });
-      if (!existingPayout) {
-        await tx.payout.create({
-          data: {
-            taskId: submission.taskId,
-            vaId: submission.vaId,
-            amountCents: submission.task.vaPayoutCents,
-            currency: submission.task.currency,
-            status: "released",
-            releasedAt: now,
+      // Approval and the money obligation are one invariant for a one-off
+      // task: a completed task can never exist without a payout row and an
+      // idempotent release intent. A Standing Capacity task skips this
+      // whole block — see isStandingCapacityTask's own comment above — the
+      // worker is paid once per period instead (recordWorkerPeriodPayout).
+      if (!isStandingCapacityTask) {
+        const existingPayout = await tx.payout.findUnique({
+          where: {
+            taskId_vaId: { taskId: submission.taskId, vaId: submission.vaId },
           },
+          select: { id: true, status: true },
         });
-      } else if (existingPayout.status !== "paid") {
-        await tx.payout.update({
-          where: { id: existingPayout.id },
-          data: {
-            amountCents: submission.task.vaPayoutCents,
-            currency: submission.task.currency,
-            status: "released",
-            releasedAt: now,
-          },
-        });
-      }
-      if (existingPayout?.status !== "paid") {
-        await tx.moneyIntent.upsert({
-          where: { idempotencyKey: `release-payout:${submission.taskId}:${submission.vaId}` },
-          create: {
-            taskId: submission.taskId,
-            kind: "release_payout",
-            amountCents: submission.task.vaPayoutCents,
-            currency: submission.task.currency,
-            idempotencyKey: `release-payout:${submission.taskId}:${submission.vaId}`,
-          },
-          update: {
-            amountCents: submission.task.vaPayoutCents,
-            currency: submission.task.currency,
-            status: "queued",
-            lastError: null,
-            processedAt: null,
-          },
-        });
-      }
+        if (!existingPayout) {
+          await tx.payout.create({
+            data: {
+              taskId: submission.taskId,
+              vaId: submission.vaId,
+              amountCents: submission.task.vaPayoutCents!,
+              currency: submission.task.currency,
+              status: "released",
+              releasedAt: now,
+            },
+          });
+        } else if (existingPayout.status !== "paid") {
+          await tx.payout.update({
+            where: { id: existingPayout.id },
+            data: {
+              amountCents: submission.task.vaPayoutCents!,
+              currency: submission.task.currency,
+              status: "released",
+              releasedAt: now,
+            },
+          });
+        }
+        if (existingPayout?.status !== "paid") {
+          await tx.moneyIntent.upsert({
+            where: { idempotencyKey: `release-payout:${submission.taskId}:${submission.vaId}` },
+            create: {
+              taskId: submission.taskId,
+              kind: "release_payout",
+              amountCents: submission.task.vaPayoutCents!,
+              currency: submission.task.currency,
+              idempotencyKey: `release-payout:${submission.taskId}:${submission.vaId}`,
+            },
+            update: {
+              amountCents: submission.task.vaPayoutCents!,
+              currency: submission.task.currency,
+              status: "queued",
+              lastError: null,
+              processedAt: null,
+            },
+          });
+        }
 
-      // The other half of the same invariant: QC approval is the moment
-      // this delivery becomes final (see decideDispute's "rejected" outcome
-      // for the case where a client complaint doesn't change that), so it's
-      // also the moment the client's held authorization turns into a real
-      // charge. Same transaction as the payout release above, on purpose —
-      // a capture and a payout release always originate from the same
-      // "this delivery is final" decision. No client payment exists for
-      // internal/test tasks, hence the guard.
-      const authorizedPayment = submission.task.payments[0];
-      if (authorizedPayment) {
-        await tx.moneyIntent.upsert({
-          where: { idempotencyKey: `capture-payment:${submission.taskId}:${authorizedPayment.id}` },
-          create: {
-            taskId: submission.taskId,
-            kind: "capture_client_payment",
-            amountCents: authorizedPayment.amountCents,
-            currency: authorizedPayment.currency,
-            idempotencyKey: `capture-payment:${submission.taskId}:${authorizedPayment.id}`,
-          },
-          update: {},
-        });
+        // The other half of the same invariant: QC approval is the moment
+        // this delivery becomes final (see decideDispute's "rejected" outcome
+        // for the case where a client complaint doesn't change that), so it's
+        // also the moment the client's held authorization turns into a real
+        // charge. Same transaction as the payout release above, on purpose —
+        // a capture and a payout release always originate from the same
+        // "this delivery is final" decision. No client payment exists for
+        // internal/test tasks, hence the guard.
+        const authorizedPayment = submission.task.payments[0];
+        if (authorizedPayment) {
+          await tx.moneyIntent.upsert({
+            where: { idempotencyKey: `capture-payment:${submission.taskId}:${authorizedPayment.id}` },
+            create: {
+              taskId: submission.taskId,
+              kind: "capture_client_payment",
+              amountCents: authorizedPayment.amountCents,
+              currency: authorizedPayment.currency,
+              idempotencyKey: `capture-payment:${submission.taskId}:${authorizedPayment.id}`,
+            },
+            update: {},
+          });
+        }
       }
       await tx.notification.createMany({
         data: [
@@ -219,7 +234,9 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
             userId: submission.vaId,
             type: "delivery_approved",
             title: "Delivery approved",
-            body: "Your payout has been released for processing.",
+            body: isStandingCapacityTask
+              ? "This delivery passed review."
+              : "Your payout has been released for processing.",
             taskId: submission.taskId,
           },
         ],

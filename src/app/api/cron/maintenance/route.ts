@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
+  advanceStandingCapacityPeriods,
   expireStalePayments,
   expireStaleQuotes,
   purgeExpiredTaskFiles,
@@ -36,13 +37,22 @@ export async function POST(request: Request) {
   if (!secret || !hasValidBearer(request.headers.get("authorization"), secret)) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
-  const [quotes, payments, orphans, purged, money, notifications] = await Promise.all([
+  const [quotes, payments, orphans, purged, capacityPeriods, money, notifications] = await Promise.all([
     run("quotes", expireStaleQuotes()),
     run("payments", expireStalePayments()),
     run("orphans", reapOrphanFiles()),
     run("purged", purgeExpiredTaskFiles()),
+    run("capacityPeriods", advanceStandingCapacityPeriods()),
     run("money", processMoneyIntents()),
     run("notifications", deliverPendingNotifications()),
   ]);
-  return NextResponse.json({ quotes, payments, orphans, purged, money, notifications });
+  return NextResponse.json({
+    quotes,
+    payments,
+    orphans,
+    purged,
+    capacityPeriods,
+    money,
+    notifications,
+  });
 }
