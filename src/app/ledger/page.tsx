@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/logo";
 import { publicLedgerPage } from "@/lib/queries/public-ledger";
+import { reliabilityStats } from "@/lib/queries/reliability";
 
 export const metadata = {
   title: "Public Ledger",
@@ -41,7 +42,16 @@ export default async function LedgerPage({
   searchParams: Promise<{ cursor?: string }>;
 }) {
   const { cursor } = await searchParams;
-  const { entries, nextCursor, totalCents } = await publicLedgerPage(cursor ?? null);
+  const [{ entries, nextCursor, totalCents }, reliability] = await Promise.all([
+    publicLedgerPage(cursor ?? null),
+    reliabilityStats(),
+  ]);
+  const pct = (n: number) => `${Math.round(n * 100)}%`;
+  const reliabilityCells = [
+    { label: "On-time delivery", value: reliability.onTimeRate },
+    { label: "Passes QC on the first try", value: reliability.qcPassRate },
+    { label: "Disputed after delivery", value: reliability.disputeRate },
+  ].filter((c) => c.value !== null);
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#F7F6F3]">
@@ -87,6 +97,19 @@ export default async function LedgerPage({
             </p>
           )}
         </div>
+
+        {reliabilityCells.length > 0 ? (
+          <div className="mt-6 grid gap-4 rounded-[8px] border border-black/8 bg-white p-6 sm:grid-cols-3">
+            {reliabilityCells.map((c) => (
+              <div key={c.label}>
+                <p className="font-mono text-[24px] font-medium tabular-nums text-[#14161A]">
+                  {pct(c.value!)}
+                </p>
+                <p className="mt-1 text-[12px] leading-[1.4] text-[#5B6069]">{c.label}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         <div className="mt-10">
           <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">

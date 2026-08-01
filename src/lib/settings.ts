@@ -57,6 +57,14 @@ export type Settings = {
    * each other.
    */
   standingCapacityTiers: { hours: number; weeklyClientPriceCents: number; weeklyVaPayoutCents: number }[];
+  /**
+   * Per-metric publish toggle for the reliability rates (src/lib/queries/reliability.ts,
+   * shown on /ledger). The numbers themselves are always computed live from
+   * real rows — this only controls whether a given one is shown publicly. If
+   * a number is bad, toggling it off is still a choice the admin makes
+   * explicitly, not something the code decides on the operator's behalf.
+   */
+  reliabilityPublic: { onTime: boolean; qcPass: boolean; dispute: boolean };
 };
 
 const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
@@ -104,6 +112,11 @@ export const SettingsSchema = z.object({
     )
     .min(1)
     .max(10),
+  reliabilityPublic: z.object({
+    onTime: z.boolean(),
+    qcPass: z.boolean(),
+    dispute: z.boolean(),
+  }),
 });
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -153,6 +166,7 @@ export const DEFAULT_SETTINGS: Settings = {
     { hours: 10, weeklyClientPriceCents: 22_000, weeklyVaPayoutCents: 15_000 },
     { hours: 20, weeklyClientPriceCents: 40_000, weeklyVaPayoutCents: 30_000 },
   ],
+  reliabilityPublic: { onTime: true, qcPass: true, dispute: true },
 };
 
 /**
