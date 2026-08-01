@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
+import { upsertClosedJobLog } from "@/lib/closed-job-log";
 
 export type QcResult =
   | { ok: true; nextId: string | null }
@@ -108,6 +109,15 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
           windowPausedAt: null,
         },
       });
+
+      // Closed Job Log — advisory-only foundation, see the doc comment on
+      // ClosedJobLog in schema.prisma. Skipped for Standing Capacity: those
+      // tasks are never priced individually (clientPriceCents/vaPayoutCents
+      // are null), so "won this job for this margin" doesn't apply the same
+      // way to a task drawn down from a recurring block.
+      if (!isStandingCapacityTask) {
+        await upsertClosedJobLog(tx, submission.taskId, { outcome: "won" });
+      }
 
       // Recompute the rolling score from source rather than incrementing a
       // cache, so it can never drift from the underlying rows.

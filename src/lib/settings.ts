@@ -69,6 +69,22 @@ export type Settings = {
    */
   assistantDailyMessageLimit: number;
   /**
+   * Closed Job Log analysis (src/lib/closed-job-analysis.ts) — advisory
+   * only, never autonomous (see the doc comment on ClosedJobLog in
+   * schema.prisma). Sonnet, not Haiku or Opus: cheaper/better reasoning
+   * trade-off than Opus for a low-frequency, admin-requested call, and a
+   * harder aggregate-pattern task than the worker assistant's single-turn
+   * method questions where Haiku is the right fit.
+   */
+  closedJobAnalysisModel: string;
+  /** Below this many total closed jobs, the analysis feature isn't offered
+   *  at all — same "honest zero state" discipline as public-stats.ts. */
+  closedJobAnalysisMinTotal: number;
+  /** A category-specific observation is withheld below this count, even
+   *  once the total floor is met — a 2-sample category would otherwise
+   *  produce a confident-sounding claim about noise. */
+  closedJobAnalysisMinPerCategory: number;
+  /**
    * Standing Capacity weekly tiers — a client subscribing snapshots one of
    * these onto their StandingCapacityAccount at subscribe/renew time
    * (tierHours/weeklyClientPriceCents/weeklyVaPayoutCents on that row), so
@@ -124,6 +140,9 @@ export const SettingsSchema = z.object({
   pricingPrompt: z.string().min(20).max(20_000),
   pricingSimilarityMaxDistance: z.number().positive().max(2),
   assistantDailyMessageLimit: z.number().int().min(1).max(500),
+  closedJobAnalysisModel: z.string().min(1).max(100),
+  closedJobAnalysisMinTotal: z.number().int().min(1).max(10000),
+  closedJobAnalysisMinPerCategory: z.number().int().min(1).max(1000),
   standingCapacityTiers: z
     .array(
       z.object({
@@ -181,6 +200,9 @@ export const DEFAULT_SETTINGS: Settings = {
     "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD.",
   pricingSimilarityMaxDistance: 0.6,
   assistantDailyMessageLimit: 25,
+  closedJobAnalysisModel: "claude-sonnet-5",
+  closedJobAnalysisMinTotal: 30,
+  closedJobAnalysisMinPerCategory: 10,
   // Starting numbers, not a considered rate card — there is no admin UI to
   // edit this yet (same as every other Setting), so update the row by hand
   // in the database when real pricing is decided. A modest per-hour

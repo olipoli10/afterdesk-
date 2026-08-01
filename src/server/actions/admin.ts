@@ -16,6 +16,7 @@ import {
   IllegalTransitionError,
 } from "@/lib/state";
 import { nextInPricingQueue } from "@/lib/queries/tasks";
+import { upsertClosedJobLog } from "@/lib/closed-job-log";
 
 const approveSchema = z.object({
   taskId: z.string(),
@@ -186,6 +187,13 @@ export async function reassignTask(input: unknown): Promise<CancelResult> {
 const cancelSchema = z.object({
   taskId: z.string(),
   reason: z.string().trim().min(3).max(2000),
+  lostReasonCategory: z.enum([
+    "deadline_at_risk",
+    "worker_unavailable",
+    "client_cancelled_no_reason",
+    "qc_failed_repeatedly",
+    "other",
+  ]),
 });
 
 export type CancelResult = { ok: true } | { ok: false; error: string };
@@ -200,7 +208,7 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
   const admin = await requireRole("ADMIN");
   const parsed = cancelSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "A cancellation reason is required." };
-  const { taskId, reason } = parsed.data;
+  const { taskId, reason, lostReasonCategory } = parsed.data;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -239,6 +247,15 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
         reason,
         data: { cancelledAt: new Date(), cancelReason: reason },
       });
+
+      // Excluded for internal practice tasks — not a real business outcome.
+      if (!task.isInternal) {
+        await upsertClosedJobLog(tx, taskId, {
+          outcome: "lost",
+          lostReasonCategory,
+          lostReasonDetail: reason,
+        });
+      }
 
       await tx.payout.updateMany({
         where: { taskId, status: { not: "paid" } },

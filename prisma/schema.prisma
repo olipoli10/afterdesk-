@@ -465,6 +465,7 @@ model Task {
   disputes     Dispute[]
   moneyIntents MoneyIntent[]
   embeddingRow TaskEmbedding?
+  closedJobLog ClosedJobLog?
 
   @@index([status])
   @@index([clientId])
@@ -1128,4 +1129,71 @@ model AssistantPattern {
   resolvedAt   DateTime?
   resolvedById String?
   updatedAt    DateTime  @updatedAt
+}
+
+enum ClosedJobOutcome {
+  won
+  lost
+}
+
+enum LostReasonCategory {
+  price_declined // client refused the quote — declined at the quote step
+  deadline_at_risk // cancelled because the deadline could not be met
+  worker_unavailable // worker went dark / never delivered
+  client_cancelled_no_reason
+  qc_failed_repeatedly // maxQcRounds exhausted, admin cancelled rather than reassign
+  expired // quote or payment window lapsed with no client action
+  other
+}
+
+/**
+ * VISION (not built in this phase — see the founder's spec): the long-run
+ * goal is that enough of these rows eventually let an AI make some pricing/QC
+ * decisions autonomously, without a human approving every one. That is
+ * explicitly NOT what this model does. This phase builds only the
+ * foundation — a structured, permanent record of every closed job — plus an
+ * on-demand ADVISORY analysis (src/lib/closed-job-analysis.ts) that
+ * observes and suggests, never decides or acts. Any future autonomy work
+ * is a separate, later decision, not an extension implied by this schema.
+ *
+ * One row per Task that reaches a final outcome (completed → won;
+ * cancelled/declined/expired → lost). `completed` is not strictly terminal
+ * (a revision or dispute can reopen it), so this is written with an upsert
+ * keyed on taskId — a reopened-then-reclosed task updates its existing row
+ * rather than erroring on the unique constraint.
+ *
+ * Deliberately minimal: everything already available via taskId (audit
+ * history in TaskEvent, bot conversations in AssistantMessage, the
+ * assigned worker's entry-exam record in ExamAttempt via task.claimedById)
+ * is read through that existing foreign key, never copied here. The three
+ * sources — this log, bot conversations, exam results — stay in separate
+ * tables permanently; see the founder's spec for why merging them risks
+ * conflating signals of different natures (a hard financial outcome, a
+ * documentation-gap signal, and a starting-skill measurement).
+ */
+model ClosedJobLog {
+  id     String           @id @default(cuid())
+  taskId String           @unique
+  task   Task             @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  outcome ClosedJobOutcome
+
+  // Cached copy of clientPriceCents - vaPayoutCents, computed once at close
+  // time — Task's own price fields remain the source of truth; this only
+  // exists so aggregate analysis doesn't recompute across hundreds of rows.
+  // Null when either price was never set (e.g. declined before pricing).
+  marginCents Int?
+
+  lostReasonCategory LostReasonCategory?
+  lostReasonDetail   String?
+
+  revisionRequestedBeforeClose Boolean @default(false)
+  qcRoundsAtClose               Int     @default(0)
+  finalRating                   Int?
+
+  closedAt  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([outcome])
+  @@index([lostReasonCategory])
 }

@@ -5,11 +5,20 @@ import { useState, useTransition } from "react";
 import { cancelTask, reassignTask } from "@/server/actions/admin";
 import { Card, CardBody, Field, inputClass, buttonDanger, buttonSecondary } from "@/components/ui";
 
+const LOST_REASON_OPTIONS: { value: string; label: string }[] = [
+  { value: "deadline_at_risk", label: "Deadline could not be met" },
+  { value: "worker_unavailable", label: "Worker went unavailable / never delivered" },
+  { value: "client_cancelled_no_reason", label: "Client cancelled, no reason given" },
+  { value: "qc_failed_repeatedly", label: "Failed QC repeatedly" },
+  { value: "other", label: "Other" },
+];
+
 /** Admin override: cancel from any non-terminal state, reason logged. */
 export function AdminCancel({ taskId }: { taskId: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
+  const [lostReasonCategory, setLostReasonCategory] = useState("deadline_at_risk");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -27,7 +36,20 @@ export function AdminCancel({ taskId }: { taskId: string }) {
   return (
     <Card className="border-[#A23B2E]/30">
       <CardBody>
-        <Field label="Cancellation reason (written to the audit log)">
+        <Field label="Reason category (Closed Job Log)">
+          <select
+            className={inputClass}
+            value={lostReasonCategory}
+            onChange={(e) => setLostReasonCategory(e.target.value)}
+          >
+            {LOST_REASON_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Cancellation reason (written to the audit log)" hint="Free-text detail — the category above is what feeds pattern analysis.">
           <input
             className={inputClass}
             value={reason}
@@ -46,7 +68,7 @@ export function AdminCancel({ taskId }: { taskId: string }) {
             onClick={() => {
               setError(null);
               startTransition(async () => {
-                const result = await cancelTask({ taskId, reason });
+                const result = await cancelTask({ taskId, reason, lostReasonCategory });
                 if (!result.ok) {
                   setError(result.error);
                   return;

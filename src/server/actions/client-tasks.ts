@@ -12,6 +12,7 @@ import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { expireStaleQuotes } from "@/server/sweeps";
 import { computeAiPricingSuggestion } from "@/lib/pricing-ai";
+import { upsertClosedJobLog } from "@/lib/closed-job-log";
 
 const submitTaskSchema = z.object({
   title: z.string().trim().min(3).max(140),
@@ -182,7 +183,7 @@ export async function declineQuote(taskId: string, reason?: string): Promise<Quo
   const user = await requireRole("CLIENT");
   const owned = await prisma.task.findFirst({
     where: { id: taskId, clientId: user.id },
-    select: { id: true },
+    select: { id: true, isInternal: true },
   });
   if (!owned) return { ok: false, error: "Task not found." };
 
@@ -203,6 +204,14 @@ export async function declineQuote(taskId: string, reason?: string): Promise<Quo
       return { ok: false, error: "This quote is no longer available — it may have expired." };
     }
     throw e;
+  }
+
+  if (!owned.isInternal) {
+    await upsertClosedJobLog(prisma, taskId, {
+      outcome: "lost",
+      lostReasonCategory: "price_declined",
+      lostReasonDetail: reason?.trim() || null,
+    });
   }
 
   revalidatePath(`/client/tasks/${taskId}`);

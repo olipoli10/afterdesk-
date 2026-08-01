@@ -5,6 +5,7 @@ import { deleteObject } from "@/lib/storage";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { getSettings } from "@/lib/settings";
 import { releaseHeldFunds } from "@/lib/escrow";
+import { upsertClosedJobLog } from "@/lib/closed-job-log";
 
 /**
  * Time-driven state changes. The authenticated maintenance endpoint runs these
@@ -26,7 +27,7 @@ export async function expireStaleQuotes(taskId?: string): Promise<number> {
       status: "quoted",
       quoteExpiresAt: { lt: new Date() },
     },
-    select: { id: true },
+    select: { id: true, isInternal: true },
   });
 
   let expired = 0;
@@ -41,6 +42,9 @@ export async function expireStaleQuotes(taskId?: string): Promise<number> {
         // Re-check under the CAS: the client may have accepted a moment ago.
         guard: { quoteExpiresAt: { lt: new Date() } },
       });
+      if (!task.isInternal) {
+        await upsertClosedJobLog(prisma, task.id, { outcome: "lost", lostReasonCategory: "expired" });
+      }
       expired++;
     } catch (e) {
       if (!(e instanceof TransitionError)) throw e;
@@ -53,7 +57,7 @@ export async function expireStaleQuotes(taskId?: string): Promise<number> {
 export async function expireStalePayments(): Promise<number> {
   const stale = await prisma.task.findMany({
     where: { status: "awaiting_payment", paymentDueAt: { lt: new Date() } },
-    select: { id: true },
+    select: { id: true, isInternal: true },
     take: 200,
   });
   let expired = 0;
@@ -67,6 +71,9 @@ export async function expireStalePayments(): Promise<number> {
         data: { expiredAt: new Date() },
         guard: { paymentDueAt: { lt: new Date() } },
       });
+      if (!task.isInternal) {
+        await upsertClosedJobLog(prisma, task.id, { outcome: "lost", lostReasonCategory: "expired" });
+      }
       expired++;
     } catch (error) {
       if (!(error instanceof TransitionError)) throw error;
