@@ -146,12 +146,20 @@ export default async function WorkersHome({
       <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
           <Wordmark tone="ink" className="text-[11px] sm:text-[13px]" />
-          <AudienceToggle
-            side="worker"
-            tone="paper"
-            clientLabel={t.nav.client}
-            workersLabel={t.nav.workers}
-          />
+          <div className="flex items-center justify-center gap-3 sm:gap-4">
+            <AudienceToggle
+              side="worker"
+              tone="paper"
+              clientLabel={t.nav.client}
+              workersLabel={t.nav.workers}
+            />
+            <Link
+              href="/services"
+              className="hidden text-[12px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] sm:block sm:text-[13px]"
+            >
+              Our Services
+            </Link>
+          </div>
           <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/workers" current={lang} options={WORKERS_LANGS} tone="paper" />
             <Link

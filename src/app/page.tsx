@@ -160,12 +160,24 @@ export default async function Home({
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
           <Wordmark tone="paper" className="text-[11px] sm:text-[13px]" />
-          <AudienceToggle
-            side="client"
-            tone="night"
-            clientLabel={t.nav.client}
-            workersLabel={t.nav.workers}
-          />
+          <div className="flex items-center justify-center gap-3 sm:gap-4">
+            <AudienceToggle
+              side="client"
+              tone="night"
+              clientLabel={t.nav.client}
+              workersLabel={t.nav.workers}
+            />
+            {/* Same nav level as the toggle, on purpose — it is not one more
+                footer link, it is the front door for every offering
+                (src/lib/offerings.ts), the toggle's binary client/worker
+                pill just has no third slot to hold it. */}
+            <Link
+              href="/services"
+              className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
+            >
+              Our Services
+            </Link>
+          </div>
           <div className="flex items-center justify-end gap-2 sm:gap-5">
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
             {/* Promoted out of the footer: this is the story page, and a story
