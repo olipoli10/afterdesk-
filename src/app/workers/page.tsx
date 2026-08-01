@@ -16,6 +16,7 @@ import { WORKERS_I18N, WORKERS_LANGS, workersLangOf } from "@/lib/i18n/workers";
 import { publicSampleQuestion, academyStats } from "@/lib/academy/public";
 import { SAMPLE_EXAM_TRANSLATIONS } from "@/lib/academy/sample-i18n";
 import { TrustLinks } from "@/components/trust-links";
+import { WORKER_SIDE_LABEL } from "@/lib/site";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The worker homepage — "THE SWITCH". The page used to explain the deal in
@@ -151,7 +152,7 @@ export default async function WorkersHome({
               side="worker"
               tone="paper"
               clientLabel={t.nav.client}
-              workersLabel={t.nav.workers}
+              workersLabel={WORKER_SIDE_LABEL}
             />
             <Link
               href="/services"

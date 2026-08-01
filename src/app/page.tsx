@@ -15,7 +15,7 @@ import { PaperInstrument } from "@/components/paper-instrument";
 import { PaperReviewDesk } from "@/components/paper-review-desk";
 import { TrustLinks } from "@/components/trust-links";
 import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, WORKER_SIDE_LABEL } from "@/lib/site";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The landing page is a picture, not an essay: a real file arriving broken at
@@ -165,7 +165,7 @@ export default async function Home({
               side="client"
               tone="night"
               clientLabel={t.nav.client}
-              workersLabel={t.nav.workers}
+              workersLabel={WORKER_SIDE_LABEL}
             />
             {/* Same nav level as the toggle, on purpose — it is not one more
                 footer link, it is the front door for every offering
