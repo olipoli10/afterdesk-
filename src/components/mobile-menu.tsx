@@ -60,7 +60,7 @@ export function MobileMenu({
     tone === "night" ? "text-[#C9CDD3] hover:text-white" : "text-[#5B6069] hover:text-[#14161A]";
 
   return (
-    <details ref={detailsRef} className={`group relative sm:hidden ${className}`}>
+    <details ref={detailsRef} className={`group relative self-start sm:hidden ${className}`}>
       <summary
         aria-label="Menu"
         className={`flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded-full border backdrop-blur-md transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 ${trigger} ${
