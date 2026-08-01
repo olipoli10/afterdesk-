@@ -70,6 +70,64 @@ export default function ServicesPage() {
             </Link>
           ))}
         </div>
+
+        {/* Not another Offering card on purpose — these aren't things a
+            client orders, they're what the OTHER side of the platform gets
+            for free. Mixing them into the grid above (client-decision
+            framing: "For a single task", "For ongoing work") would read as
+            an odd, out-of-place item to a client browsing services. A
+            separate, clearly-labeled panel says what it is without
+            confusing either audience. */}
+        <div className="mt-16 border-t border-white/8 pt-10">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
+            For specialists, not clients
+          </p>
+          <h2 className="mt-2 max-w-[36ch] text-[20px] font-semibold text-white">
+            Everything above is what a client buys. Here&apos;s what a worker gets — free, either way.
+          </h2>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            <Link
+              href="/academy"
+              className="lift group flex flex-col rounded-[10px] border border-white/10 bg-[#111317] p-6 transition-colors hover:border-white/25"
+            >
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
+                Free, no account required to preview
+              </p>
+              <h3 className="mt-2 text-[18px] font-semibold text-white">The Academy</h3>
+              <p className="mt-2 flex-1 text-[14px] leading-[1.55] text-[#9AA1AB]">
+                Real courses in data cleanup, research, writing and admin work, with real exams and a
+                certificate you keep — whether or not you ever take a task through AfterDesk. Training,
+                not a funnel.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-[#F7F6F3]">
+                See the courses
+                <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
+                  →
+                </span>
+              </span>
+            </Link>
+            <Link
+              href="/workers"
+              className="lift group flex flex-col rounded-[10px] border border-white/10 bg-[#111317] p-6 transition-colors hover:border-white/25"
+            >
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
+                Included on every active task
+              </p>
+              <h3 className="mt-2 text-[18px] font-semibold text-white">The AfterDesk Assistant</h3>
+              <p className="mt-2 flex-1 text-[14px] leading-[1.55] text-[#9AA1AB]">
+                Stuck on how to format a file or dedupe a messy list mid-task? Ask the assistant — trained
+                on the same standards QC checks against. It never sees client data, never sets a price, and
+                hands off to an operator the moment a question is genuinely task-specific.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-[#F7F6F3]">
+                See how EARN works
+                <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
+                  →
+                </span>
+              </span>
+            </Link>
+          </div>
+        </div>
       </section>
     </div>
   );

@@ -1,15 +1,17 @@
 import Link from "next/link";
 
 /**
- * The two secondary doors — About us and Sign in — as glass pills floating
- * over the hero, MOBILE ONLY.
+ * The secondary doors — About us, Our Services, and Sign in — as glass
+ * pills floating over the hero, MOBILE ONLY.
  *
- * On a wide screen both links live in the header, where there is room. On a
+ * On a wide screen these links live in the header, where there is room. On a
  * phone the header can only carry the wordmark, the audience toggle and the
- * language switch, so both were simply hidden (`hidden sm:block`) — which
- * meant a phone visitor had no way to sign in and no way to read the story
- * without hunting the footer. These put them back where a thumb reaches
- * first, without adding a fourth item to a 14px-tall header row.
+ * language switch, so they were simply hidden (`hidden sm:block`) — which
+ * meant a phone visitor had no way to sign in, no way to read the story, and
+ * (found during a later audit — "Our Services" was added to the desktop
+ * header only, never here) no way to reach the services hub at all without
+ * hunting the footer. These put them back where a thumb reaches first,
+ * without adding a fourth item to a 14px-tall header row.
  *
  * Glass, not a solid chip: the hero underneath is a grid and a glow, and a
  * translucent blurred pill lets both show through, so the pills read as
@@ -45,6 +47,9 @@ export function FloatingLinks({
     <div className={`flex flex-wrap items-center gap-2 sm:hidden ${className}`}>
       <Link href="/about" className={`${base} ${pill}`}>
         {aboutLabel}
+      </Link>
+      <Link href="/services" className={`${base} ${pill}`}>
+        Our Services
       </Link>
       {/* tone="paper" is only ever used on the worker homepage (see
           src/app/workers/page.tsx) — audience=worker there hides Google
