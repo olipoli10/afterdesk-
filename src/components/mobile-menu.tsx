@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 /**
  * A single pill that widens — not a button plus a separate dropdown panel.
  * Closed, it's a 44×44 circle (rounded-full at 44px width IS a circle);
- * open, the same box is a ~280px stadium with the nav links inside it. Only
+ * open, the same box is a ~300px stadium with the nav links inside it. Only
  * `max-width` animates, so the background (opaque, never transitioned) and
  * the geometry (fixed height, normal document flow, no `position:absolute`)
  * can't produce a frame where anything behind it shows through, and it
@@ -23,32 +23,38 @@ import { useEffect, useRef, useState } from "react";
  * narrow exception: LangSwitch keeps <details>, its dropdown genuinely is
  * a simple vertical reveal with no morph requirement.
  *
- * Labels render at a fixed 11px inside the pill regardless of language —
- * measured directly against real rendered Geist Sans text (not estimated):
- * at the normal 14px/text-sm size, English fits this pill with ~38px to
- * spare at 375px, but French/Spanish/Tagalog ("Qui nous sommes",
- * "Quiénes somos") overflow it. 11px is the smallest size with a
- * comfortable, reliable margin in every language — using one fixed size
- * for every language, instead of sizing per-locale, means this menu
- * doesn't visibly change size when someone switches language.
+ * Labels render at a fixed size inside the pill regardless of language —
+ * measured directly against real rendered Geist Sans text (not estimated),
+ * re-measured each time a link was added here. Three links (About us, Our
+ * Services, How it works) don't fit at a normal reading size in every
+ * language: French ("Comment ça marche") and Tagalog ("Paano ito
+ * gumagana") overflow the 375px budget even at 10px. 9px text with tight
+ * (4px) padding is the smallest combination that clears the budget with a
+ * real margin (~25-40px) in every language rather than a few px of luck —
+ * genuinely small for body text, a deliberate trade-off for fitting three
+ * items on one line rather than wrapping or scrolling, which read as
+ * broken in this menu's earlier two-item design pass. One fixed size for
+ * every language means this menu doesn't visibly change size when someone
+ * switches language.
  *
- * Holds only About us and Our Services — Sign in used to be a third link
- * here, but it's a frequent action for a returning visitor and sat one tap
- * deeper than it should have. It now lives next to this button instead
- * (see the wrapper in src/app/page.tsx / src/app/workers/page.tsx), not
- * inside it, so it stays reachable in a single tap. This menu keeps just
- * the two discovery links a first-time visitor doesn't need immediately.
+ * Sign in used to be a third link here, but it's a frequent action for a
+ * returning visitor and sat one tap deeper than it should have. It now
+ * lives next to this button instead (see the wrapper in
+ * src/app/page.tsx / src/app/workers/page.tsx), not inside it. This menu
+ * keeps the discovery links a first-time visitor doesn't need immediately.
  */
 export function MobileMenu({
   tone,
   aboutLabel,
   servicesLabel = "Our Services",
+  howLabel,
   className = "",
 }: {
   /** "night" is the client homepage, "paper" the worker one. */
   tone: "night" | "paper";
   aboutLabel: string;
   servicesLabel?: string;
+  howLabel: string;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -117,7 +123,7 @@ export function MobileMenu({
     <div ref={rootRef} className={`inline-block sm:hidden ${className}`}>
       <div
         ref={pillRef}
-        style={{ maxWidth: open ? "min(280px, calc(100vw - 48px))" : "44px" }}
+        style={{ maxWidth: open ? "min(300px, calc(100vw - 48px))" : "44px" }}
         className={`flex h-11 items-center overflow-hidden rounded-full border transition-[max-width] duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${pillTone}`}
       >
         <button
@@ -141,14 +147,14 @@ export function MobileMenu({
         <nav
           aria-label="More"
           inert={!open}
-          className="flex items-center gap-1 whitespace-nowrap pr-2"
+          className="flex items-center gap-px whitespace-nowrap pr-1.5"
         >
           <Link
             ref={firstLinkRef}
             href="/about"
             tabIndex={open ? 0 : -1}
             onClick={closeMenu}
-            className={`flex min-h-11 items-center rounded px-2 text-[11px] font-medium transition-colors duration-150 ${item}`}
+            className={`flex min-h-11 items-center rounded px-1 text-[9px] font-medium transition-colors duration-150 ${item}`}
           >
             {aboutLabel}
           </Link>
@@ -156,9 +162,17 @@ export function MobileMenu({
             href="/services"
             tabIndex={open ? 0 : -1}
             onClick={closeMenu}
-            className={`flex min-h-11 items-center rounded px-2 text-[11px] font-medium transition-colors duration-150 ${item}`}
+            className={`flex min-h-11 items-center rounded px-1 text-[9px] font-medium transition-colors duration-150 ${item}`}
           >
             {servicesLabel}
+          </Link>
+          <Link
+            href="/how-it-works"
+            tabIndex={open ? 0 : -1}
+            onClick={closeMenu}
+            className={`flex min-h-11 items-center rounded px-1 text-[9px] font-medium transition-colors duration-150 ${item}`}
+          >
+            {howLabel}
           </Link>
         </nav>
       </div>

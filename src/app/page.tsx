@@ -277,7 +277,7 @@ export default async function Home({
                   switcher already fill the row edge to edge), so this row
                   is the nearest place that's still permanently visible. */}
               <div className="mb-5 flex items-center justify-between sm:hidden">
-                <MobileMenu tone="night" aboutLabel={t.footer.about} />
+                <MobileMenu tone="night" aboutLabel={t.footer.about} howLabel={t.footer.how} />
                 <Link
                   href={portal ?? "/login"}
                   className="flex min-h-11 shrink-0 items-center whitespace-nowrap text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white"

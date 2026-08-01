@@ -238,7 +238,7 @@ export default async function WorkersHome({
                 spare width for it at 375px (logo + audience toggle +
                 language switcher already fill the row). */}
             <div className="order-0 mb-5 flex items-center justify-between sm:hidden">
-              <MobileMenu tone="paper" aboutLabel={t.footer.about} />
+              <MobileMenu tone="paper" aboutLabel={t.footer.about} howLabel={t.footer.how} />
               <Link
                 href={portal ?? "/login?audience=worker"}
                 className="flex min-h-11 shrink-0 items-center whitespace-nowrap text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A]"
