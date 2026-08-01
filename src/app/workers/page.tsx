@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/logo";
-import { FloatingLinks } from "@/components/floating-links";
+import { MobileMenu } from "@/components/mobile-menu";
 import { SampleExam } from "@/components/sample-exam";
 import { cookies } from "next/headers";
 import { getSessionUser, roleHome } from "@/lib/authz";
@@ -223,13 +223,14 @@ export default async function WorkersHome({
             same flex flow so `order` can interleave them with the card. */}
         <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-10 sm:pt-24 lg:grid lg:grid-cols-[1fr_460px] lg:items-center lg:gap-14">
           <div className="contents lg:block">
-            {/* Phone-only: the two links the header has no room for. */}
-            <FloatingLinks
+            {/* Phone-only: the links the header has no room for, behind
+                one compact trigger — see mobile-menu.tsx. */}
+            <MobileMenu
               tone="paper"
               aboutLabel={t.footer.about}
               signInLabel={portal ? t.nav.portal : t.nav.signIn}
               signInHref={portal}
-              className="anim-rise order-0 mb-9"
+              className="anim-rise order-0 mb-5"
             />
             <p className="anim-rise order-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">
               {t.hero.kill}

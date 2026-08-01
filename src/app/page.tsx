@@ -7,7 +7,7 @@ import { Reveal } from "@/components/reveal";
 import { AudienceToggle } from "@/components/audience-toggle";
 import { PublicCounters } from "@/components/public-counters";
 import { LiveTaskWindow } from "@/components/live-task-window";
-import { FloatingLinks } from "@/components/floating-links";
+import { MobileMenu } from "@/components/mobile-menu";
 import { PointerGlow } from "@/components/pointer-glow";
 import { LangSwitch } from "@/components/lang-switch";
 import { PaperLedgerScan } from "@/components/paper-ledger-scan";
@@ -255,13 +255,16 @@ export default async function Home({
         <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-10 sm:pt-28 lg:grid lg:grid-cols-[1fr_420px] lg:gap-12 lg:items-center">
           <div className="contents lg:block">
             <div className="order-1">
-              {/* Phone-only: the two links the header has no room for. */}
-              <FloatingLinks
+              {/* Phone-only: the links the header has no room for, behind
+                  one compact trigger instead of stacked pills — see
+                  mobile-menu.tsx for why. mb-5, not mb-9: a single 44px
+                  button doesn't need the margin a two-row pill block did. */}
+              <MobileMenu
                 tone="night"
                 aboutLabel={t.footer.about}
                 signInLabel={portal ? t.nav.portal : t.nav.signIn}
                 signInHref={portal}
-                className="anim-rise mb-9"
+                className="anim-rise mb-5"
               />
               <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
                 <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>
