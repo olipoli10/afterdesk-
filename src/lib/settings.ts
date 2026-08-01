@@ -49,6 +49,18 @@ export type Settings = {
   pricingModel: string;
   pricingPrompt: string;
   /**
+   * Cosine-distance ceiling (pgvector `<=>`, 0 = identical, ~1 = unrelated)
+   * for a reference task to count toward AI pricing precedent
+   * (src/lib/pricing-ai.ts). Below this, a reference is dropped before the
+   * model ever sees it — same "zero precedent forces confidence=low"
+   * safeguard as an empty reference list, just extended to "found nothing
+   * genuinely close" rather than only "found literally nothing". No real
+   * pricing history exists yet to calibrate this against, so 0.6 is a
+   * starting point, not a measured value — revisit once there's enough
+   * approved-task volume to check false positives/negatives against.
+   */
+  pricingSimilarityMaxDistance: number;
+  /**
    * Standing Capacity weekly tiers — a client subscribing snapshots one of
    * these onto their StandingCapacityAccount at subscribe/renew time
    * (tierHours/weeklyClientPriceCents/weeklyVaPayoutCents on that row), so
@@ -102,6 +114,7 @@ export const SettingsSchema = z.object({
   deadlineWarningHours: positiveHours,
   pricingModel: z.string().min(1).max(100),
   pricingPrompt: z.string().min(20).max(20_000),
+  pricingSimilarityMaxDistance: z.number().positive().max(2),
   standingCapacityTiers: z
     .array(
       z.object({
@@ -157,6 +170,7 @@ export const DEFAULT_SETTINGS: Settings = {
     "You are pricing an outsourced administrative task performed by a trained virtual assistant. " +
     "Given the task description, estimate a fair USD price range (low/high) for the full task. " +
     "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD.",
+  pricingSimilarityMaxDistance: 0.6,
   // Starting numbers, not a considered rate card — there is no admin UI to
   // edit this yet (same as every other Setting), so update the row by hand
   // in the database when real pricing is decided. A modest per-hour

@@ -72,7 +72,7 @@ You are pricing for AfterDesk, a marketplace where a human operator reviews and 
 REASONING METHOD, IN ORDER:
 1. Look at REFERENCE_TASKS below (already-approved similar tasks: title, description, category, final client price, final VA payout, estimated minutes). Find the ones that actually resemble this task in scope and volume — not just shared keywords.
 2. If you found close matches, anchor suggested_price on their prices, adjusted for this task's actual volume/complexity difference. Say which ones you used and how you adjusted, in reasoning.
-3. If you found NO close matches, say so explicitly in reasoning and price from first principles using the category reference notes and general judgment — and set confidence_level to "low" regardless of how sound your reasoning feels. Confidence measures PRECEDENT, not plausibility.
+3. If you found NO close matches, say so explicitly in reasoning and price from first principles using the category's market reference rate (if listed) times your own estimate of hours, plus general judgment — and set confidence_level to "low" regardless of how sound your reasoning feels. Confidence measures PRECEDENT, not plausibility. The market rate is a floor for reasoning, never a substitute for it.
 4. suggested_price (client) and suggested_va_payout (worker) are computed SEPARATELY. Never derive one from the other with a fixed formula (e.g. "payout = 30% of price") — price the client side on value/market rate, price the payout on fair compensation for the estimated work, independently.
 
 CONFIDENCE RUBRIC:
@@ -110,9 +110,20 @@ function buildUserMessage(task: {
   description: string;
   quantity: string | null;
   clientDeadlineUtc: Date | null;
-}, categories: { name: string; disputeCriteria: string | null }[], referenceTasks: ReferenceTask[]): string {
+}, categories: { name: string; disputeCriteria: string | null; referenceHourlyRateCents: number | null }[], referenceTasks: ReferenceTask[]): string {
   const categoryLines = categories
-    .map((c) => `- ${c.name}${c.disputeCriteria ? `: ${c.disputeCriteria}` : ""}`)
+    .map((c) => {
+      // Market-rate anchor, independent of historical precedent — useful
+      // most exactly when REFERENCE_TASKS is thin or empty, which is also
+      // when confidence would otherwise float on first-principles judgment
+      // alone. Not a formula input (RULE 2 still holds: this is a hint the
+      // model may weigh, never a rate multiplied into a fixed calculation).
+      const rate =
+        c.referenceHourlyRateCents != null
+          ? ` [market reference: ~$${(c.referenceHourlyRateCents / 100).toFixed(0)}/hr]`
+          : "";
+      return `- ${c.name}${rate}${c.disputeCriteria ? `: ${c.disputeCriteria}` : ""}`;
+    })
     .join("\n");
   return `NEW TASK
 Title: ${task.title}
@@ -132,10 +143,21 @@ ${JSON.stringify(referenceTasks, null, 2)}`;
  * without clientPriceCents/vaPayoutCents is not a real precedent yet, no
  * matter how similar its embedding is. Excludes the task being priced
  * itself (it may already have a row here if this is a recompute).
+ *
+ * maxDistance (settings.pricingSimilarityMaxDistance) filters in SQL, not
+ * after the fact in JS: the old top-12-no-cutoff version could hand the
+ * model 12 genuinely unrelated tasks when nothing similar existed, and
+ * resolveConfidence only floors to "low" on a literally EMPTY list — a
+ * non-empty list of weak matches could still let the model self-report
+ * "medium"/"high" on precedent that isn't really there. Filtering here
+ * means "found nothing close" and "found nothing at all" collapse to the
+ * same referenceTasks.length === 0 case resolveConfidence already handles,
+ * instead of needing a second code path.
  */
 async function findSimilarPricedTasks(
   taskId: string,
-  vector: number[]
+  vector: number[],
+  maxDistance: number
 ): Promise<ReferenceTask[]> {
   const literal = toVectorLiteral(vector);
   const rows = await prisma.$queryRaw<
@@ -156,6 +178,7 @@ async function findSimilarPricedTasks(
     WHERE te."taskId" != ${taskId}
       AND t."clientPriceCents" IS NOT NULL
       AND t."vaPayoutCents" IS NOT NULL
+      AND (te."embedding" <=> ${literal}::vector) <= ${maxDistance}
     ORDER BY te."embedding" <=> ${literal}::vector
     LIMIT ${REFERENCE_TASK_LIMIT}
   `;
@@ -211,7 +234,7 @@ export async function computeAiPricingSuggestion(taskId: string): Promise<void> 
       embed(`${task.title}\n\n${task.description}`, "query"),
       prisma.taskCategory.findMany({
         where: { active: true },
-        select: { slug: true, name: true, disputeCriteria: true },
+        select: { slug: true, name: true, disputeCriteria: true, referenceHourlyRateCents: true },
         orderBy: { sortOrder: "asc" },
       }),
     ]);
@@ -222,7 +245,11 @@ export async function computeAiPricingSuggestion(taskId: string): Promise<void> 
     // backfill step needed.
     await upsertEmbedding(taskId, vector);
 
-    const referenceTasks = await findSimilarPricedTasks(taskId, vector);
+    const referenceTasks = await findSimilarPricedTasks(
+      taskId,
+      vector,
+      settings.pricingSimilarityMaxDistance
+    );
 
     const client = new Anthropic({ timeout: 60_000, maxRetries: 1 });
     const response = await client.messages.create({
