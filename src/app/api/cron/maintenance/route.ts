@@ -6,6 +6,7 @@ import {
   expireStaleQuotes,
   purgeExpiredTaskFiles,
   reapOrphanFiles,
+  releaseDisputeWindowFunds,
 } from "@/server/sweeps";
 import { processMoneyIntents } from "@/server/money-intents";
 import { deliverPendingNotifications } from "@/server/notifications";
@@ -37,21 +38,24 @@ export async function POST(request: Request) {
   if (!secret || !hasValidBearer(request.headers.get("authorization"), secret)) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
-  const [quotes, payments, orphans, purged, capacityPeriods, money, notifications] = await Promise.all([
-    run("quotes", expireStaleQuotes()),
-    run("payments", expireStalePayments()),
-    run("orphans", reapOrphanFiles()),
-    run("purged", purgeExpiredTaskFiles()),
-    run("capacityPeriods", advanceStandingCapacityPeriods()),
-    run("money", processMoneyIntents()),
-    run("notifications", deliverPendingNotifications()),
-  ]);
+  const [quotes, payments, orphans, purged, capacityPeriods, disputeWindows, money, notifications] =
+    await Promise.all([
+      run("quotes", expireStaleQuotes()),
+      run("payments", expireStalePayments()),
+      run("orphans", reapOrphanFiles()),
+      run("purged", purgeExpiredTaskFiles()),
+      run("capacityPeriods", advanceStandingCapacityPeriods()),
+      run("disputeWindows", releaseDisputeWindowFunds()),
+      run("money", processMoneyIntents()),
+      run("notifications", deliverPendingNotifications()),
+    ]);
   return NextResponse.json({
     quotes,
     payments,
     orphans,
     purged,
     capacityPeriods,
+    disputeWindows,
     money,
     notifications,
   });

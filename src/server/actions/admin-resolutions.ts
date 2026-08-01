@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
+import { releaseHeldFunds } from "@/lib/escrow";
 
 export type ResolutionResult = { ok: true } | { ok: false; error: string };
 
@@ -155,25 +156,12 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
             revisionInstructions: null,
           },
         });
-        if (dispute.task.claimedById && dispute.task.vaPayoutCents) {
-          await tx.payout.updateMany({
-            where: { taskId, vaId: dispute.task.claimedById, status: { not: "paid" } },
-            data: { status: "released", releasedAt: now, note: null },
-          });
-          await tx.moneyIntent.upsert({
-            where: {
-              idempotencyKey: `release-payout:${taskId}:${dispute.task.claimedById}`,
-            },
-            create: {
-              taskId,
-              kind: "release_payout",
-              amountCents: dispute.task.vaPayoutCents,
-              currency: dispute.task.currency,
-              idempotencyKey: `release-payout:${taskId}:${dispute.task.claimedById}`,
-            },
-            update: { status: "queued", lastError: null, processedAt: null },
-          });
-        }
+        // The client's complaint didn't hold up, so this delivery is final
+        // right now — same "release everything" call the dispute-window
+        // sweep makes when nothing gets disputed at all (releaseHeldFunds,
+        // src/lib/escrow.ts). Captures the (still-authorized) payment
+        // immediately rather than waiting out whatever's left of the window.
+        await releaseHeldFunds(tx, taskId);
       } else if (parsed.data.outcome === "rework") {
         await transitionTask({
           tx,

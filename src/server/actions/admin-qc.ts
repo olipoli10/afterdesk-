@@ -69,12 +69,6 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
               vaPayoutCents: true,
               currency: true,
               standingCapacityAccountId: true,
-              payments: {
-                where: { status: "authorized" },
-                select: { id: true, amountCents: true, currency: true },
-                orderBy: { createdAt: "desc" },
-                take: 1,
-              },
             },
           },
         },
@@ -106,6 +100,11 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
           // re-arm the post-delivery clock.
           ...(isFirstCompletion ? { firstCompletedAt: now } : {}),
           revisionWindowEndsAt: addHours(now, settings.revisionWindowHours),
+          // Escrow: nothing is captured or released yet — see the payout
+          // block below, which now only records what's owed. The sweep
+          // (releaseDisputeWindowFunds, sweeps.ts) does the actual release
+          // once this closes with no dispute.
+          disputeWindowEndsAt: addHours(now, settings.disputeWindowHours),
           windowPausedAt: null,
         },
       });
@@ -144,11 +143,17 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
         },
       });
 
-      // Approval and the money obligation are one invariant for a one-off
-      // task: a completed task can never exist without a payout row and an
-      // idempotent release intent. A Standing Capacity task skips this
-      // whole block — see isStandingCapacityTask's own comment above — the
-      // worker is paid once per period instead (recordWorkerPeriodPayout).
+      // A completed task can never exist without a payout row — but the
+      // money doesn't move yet. QC approval used to be the moment both the
+      // worker's payout released and the client's card got captured; it is
+      // now only the moment the amount owed is recorded. The actual release
+      // (release_payout + capture_client_payment, via releaseHeldFunds in
+      // src/lib/escrow.ts) waits for disputeWindowEndsAt to close with no
+      // dispute — see releaseDisputeWindowFunds in sweeps.ts — or for
+      // decideDispute's "rejected" outcome if the client did dispute and lost.
+      // A Standing Capacity task skips this whole block — see
+      // isStandingCapacityTask's own comment above — the worker is paid once
+      // per period instead (recordWorkerPeriodPayout).
       if (!isStandingCapacityTask) {
         const existingPayout = await tx.payout.findUnique({
           where: {
@@ -163,8 +168,7 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
               vaId: submission.vaId,
               amountCents: submission.task.vaPayoutCents!,
               currency: submission.task.currency,
-              status: "released",
-              releasedAt: now,
+              status: "owed",
             },
           });
         } else if (existingPayout.status !== "paid") {
@@ -173,51 +177,9 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
             data: {
               amountCents: submission.task.vaPayoutCents!,
               currency: submission.task.currency,
-              status: "released",
-              releasedAt: now,
+              status: "owed",
+              releasedAt: null,
             },
-          });
-        }
-        if (existingPayout?.status !== "paid") {
-          await tx.moneyIntent.upsert({
-            where: { idempotencyKey: `release-payout:${submission.taskId}:${submission.vaId}` },
-            create: {
-              taskId: submission.taskId,
-              kind: "release_payout",
-              amountCents: submission.task.vaPayoutCents!,
-              currency: submission.task.currency,
-              idempotencyKey: `release-payout:${submission.taskId}:${submission.vaId}`,
-            },
-            update: {
-              amountCents: submission.task.vaPayoutCents!,
-              currency: submission.task.currency,
-              status: "queued",
-              lastError: null,
-              processedAt: null,
-            },
-          });
-        }
-
-        // The other half of the same invariant: QC approval is the moment
-        // this delivery becomes final (see decideDispute's "rejected" outcome
-        // for the case where a client complaint doesn't change that), so it's
-        // also the moment the client's held authorization turns into a real
-        // charge. Same transaction as the payout release above, on purpose —
-        // a capture and a payout release always originate from the same
-        // "this delivery is final" decision. No client payment exists for
-        // internal/test tasks, hence the guard.
-        const authorizedPayment = submission.task.payments[0];
-        if (authorizedPayment) {
-          await tx.moneyIntent.upsert({
-            where: { idempotencyKey: `capture-payment:${submission.taskId}:${authorizedPayment.id}` },
-            create: {
-              taskId: submission.taskId,
-              kind: "capture_client_payment",
-              amountCents: authorizedPayment.amountCents,
-              currency: authorizedPayment.currency,
-              idempotencyKey: `capture-payment:${submission.taskId}:${authorizedPayment.id}`,
-            },
-            update: {},
           });
         }
       }
@@ -236,7 +198,7 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
             title: "Delivery approved",
             body: isStandingCapacityTask
               ? "This delivery passed review."
-              : "Your payout has been released for processing.",
+              : `Your payout will release in ${settings.disputeWindowHours}h if the client raises no dispute.`,
             taskId: submission.taskId,
           },
         ],

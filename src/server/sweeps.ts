@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { deleteObject } from "@/lib/storage";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { getSettings } from "@/lib/settings";
+import { releaseHeldFunds } from "@/lib/escrow";
 
 /**
  * Time-driven state changes. The authenticated maintenance endpoint runs these
@@ -72,6 +73,43 @@ export async function expireStalePayments(): Promise<number> {
     }
   }
   return expired;
+}
+
+/**
+ * Escrow auto-release: a completed task whose dispute window closed with no
+ * dispute ever opened. Releases the worker's payout and enqueues the
+ * client's capture, via the same releaseHeldFunds helper decideDispute's
+ * "rejected" outcome uses (src/lib/escrow.ts) — the two are the only ways
+ * a one-off task's held money ever moves.
+ *
+ * Filtered on Payout.status: "owed" rather than a task-level flag: once
+ * released, the payout row itself is the record that this already ran, so a
+ * task a dispute already resolved (payout no longer "owed") is naturally
+ * skipped here without needing to touch disputeWindowEndsAt at all.
+ */
+export async function releaseDisputeWindowFunds(): Promise<number> {
+  const due = await prisma.task.findMany({
+    where: {
+      status: "completed",
+      disputeWindowEndsAt: { lt: new Date() },
+      payouts: { some: { status: "owed" } },
+    },
+    select: { id: true },
+    take: 200,
+  });
+  let released = 0;
+  for (const task of due) {
+    try {
+      await prisma.$transaction((tx) => releaseHeldFunds(tx, task.id));
+      released++;
+    } catch (error) {
+      // A single task's payment/payout row in an unexpected shape must not
+      // stop the rest of the batch from releasing — matches purgeExpiredTaskFiles'
+      // per-item isolation below.
+      console.error("releaseDisputeWindowFunds failed for task", task.id, error);
+    }
+  }
+  return released;
 }
 
 /**
@@ -242,6 +280,7 @@ export async function runOperatorSweeps(): Promise<void> {
       await reapOrphanFiles();
       await purgeExpiredTaskFiles();
       await advanceStandingCapacityPeriods();
+      await releaseDisputeWindowFunds();
     } catch (e) {
       console.error("[sweeps] operator sweep failed:", e);
     }

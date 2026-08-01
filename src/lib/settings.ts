@@ -18,6 +18,14 @@ export type Settings = {
   quoteValidityHours: number;
   // Client can request a revision within this window after completion.
   revisionWindowHours: number;
+  /**
+   * Escrow dispute window — how long after QC approval the client's payment
+   * stays authorized-but-not-captured and the worker's payout stays owed.
+   * Auto-releases when this closes with no dispute (releaseDisputeWindowFunds
+   * in sweeps.ts). Independent of revisionWindowHours: a revision request is
+   * a service commitment, a dispute inside this window is what gates money.
+   */
+  disputeWindowHours: number;
   maxQcRounds: number;
   /** Revision rounds a client may request before it must become a dispute. */
   maxRevisionRounds: number;
@@ -65,6 +73,7 @@ export const SettingsSchema = z.object({
   qcBufferHours: positiveHours,
   quoteValidityHours: positiveHours,
   revisionWindowHours: positiveHours,
+  disputeWindowHours: positiveHours,
   maxQcRounds: z.number().int().min(1).max(10),
   maxRevisionRounds: z.number().int().min(0).max(10),
   revisionMinRemainingHours: positiveHours,
@@ -108,6 +117,7 @@ export const DEFAULT_SETTINGS: Settings = {
   qcBufferHours: 3,
   quoteValidityHours: 72,
   revisionWindowHours: 72,
+  disputeWindowHours: 48,
   maxQcRounds: 2,
   maxRevisionRounds: 2,
   revisionMinRemainingHours: 24,

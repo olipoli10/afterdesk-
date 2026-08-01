@@ -408,6 +408,13 @@ model Task {
   claimedAt            DateTime?
   completedAt          DateTime?
   revisionWindowEndsAt DateTime?
+  // Escrow dispute window (settings.disputeWindowHours, default 48h), set at
+  // QC approval alongside revisionWindowEndsAt but tracked independently: it
+  // gates when the client's authorized payment gets captured and the
+  // worker's payout gets released (releaseDisputeWindowFunds in sweeps.ts),
+  // not when a revision can be requested. Paused/resumed by the same
+  // windowPausedAt as revisionWindowEndsAt — a dispute suspends both.
+  disputeWindowEndsAt DateTime?
   declinedAt           DateTime?
   declineReason        String?
   cancelledAt          DateTime?
