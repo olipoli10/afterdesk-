@@ -179,6 +179,12 @@ enum LedgerKind {
   correction
 }
 
+enum StandingCapacityStatus {
+  active
+  paused
+  cancelled
+}
+
 // ---------- Auth (Better Auth owns these shapes) ----------
 
 model User {
@@ -203,6 +209,12 @@ model User {
   payouts         Payout[]
   examAttempts    ExamAttempt[]
   certifications  Certification[]
+
+  // One standing capacity block per client — see StandingCapacityAccount.
+  standingCapacityAccount     StandingCapacityAccount?     @relation("StandingCapacityAccountClient")
+  standingCapacityAssignments StandingCapacityAssignment[] @relation("StandingCapacityAssignmentWorker")
+  accountContextNotesAuthored AccountContextNote[]         @relation("AccountContextNoteAuthor")
+  standingCapacityPayouts     StandingCapacityPayout[]     @relation("StandingCapacityPayoutWorker")
 }
 
 /**
@@ -420,6 +432,16 @@ model Task {
   qcRounds      Int     @default(0)
   filesVerified Boolean @default(false)
 
+  // Set only for a task submitted inside a Standing Capacity block (RULE 5 in
+  // this feature's design notes). When set: clientPriceCents/vaPayoutCents
+  // stay null (the price was already fixed at the block level, never per
+  // task), the task skips pricing/quoting/payment entirely (submitted ->
+  // claimed is a legal edge only for this case — see src/lib/state.ts), and
+  // it is claimed directly by the account's current assignment, never
+  // through the public pool.
+  standingCapacityAccountId String?
+  standingCapacityAccount   StandingCapacityAccount? @relation(fields: [standingCapacityAccountId], references: [id], onDelete: Restrict)
+
   filesPurgedAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -440,6 +462,7 @@ model Task {
   @@index([clientId])
   @@index([claimedById])
   @@index([categoryId])
+  @@index([standingCapacityAccountId])
 }
 
 /**
@@ -473,12 +496,10 @@ model TaskCategory {
  * vaPayoutCents (enforced in the retrieval query, not by anything here);
  * until then its embedding just sits here unused, which is fine — it means
  * the day it IS approved, no backfill is needed.
- *
  * A separate table rather than a column on Task: the vector only matters to
  * one query (nearest-neighbor retrieval), and keeping it off the hot Task
  * table means every ordinary Task read stays exactly as cheap as before
  * this feature existed.
- *
  * Unsupported("vector(1024)") because Prisma's schema language has no
  * native pgvector type; every read/write against this column goes through
  * $queryRaw/$executeRaw in src/lib/pricing-ai.ts. 1024 = the output
@@ -487,10 +508,10 @@ model TaskCategory {
  * matching new ones.
  */
 model TaskEmbedding {
-  taskId    String                    @id
-  task      Task                      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String                      @id
+  task      Task                        @relation(fields: [taskId], references: [id], onDelete: Cascade)
   embedding Unsupported("vector(1024)")
-  createdAt DateTime                  @default(now())
+  createdAt DateTime                    @default(now())
 }
 
 // One QC decision per submission attempt (a delivery may contain several files).
@@ -867,4 +888,169 @@ model AdminEvent {
 
   @@index([entity, entityId])
   @@index([actorId, createdAt])
+}
+
+// ---------- Standing Capacity ----------
+// The second client relationship mode, additive to the one-off task flow
+// above: a client reserves a recurring weekly block of hours at a fixed
+// price instead of pricing each task individually. Continuity lives here —
+// on the account — never in a worker's head, so who's actually assigned can
+// change without the client ever perceiving a handoff. RULE 2 (client_price
+// / va_payout never mixed, never cross-visible) and the zero-contact rule
+// apply exactly as they do everywhere else in this file, just at the weekly
+// grain instead of the task grain.
+
+/**
+ * A client's standing weekly capacity block. One per client — a client is
+ * either buying tasks one at a time or has reserved a block, not both at
+ * once. tierHours/weeklyClientPriceCents/weeklyVaPayoutCents are a SNAPSHOT
+ * taken at subscribe/renew time (see src/lib/settings.ts's
+ * standingCapacityTiers), never a live lookup — a later change to the tier
+ * price list must never silently reprice an account mid-period.
+ */
+model StandingCapacityAccount {
+  id       String @id @default(cuid())
+  clientId String @unique
+  client   User   @relation("StandingCapacityAccountClient", fields: [clientId], references: [id], onDelete: Restrict)
+
+  status StandingCapacityStatus @default(active)
+
+  tierHours              Int
+  weeklyClientPriceCents Int
+  weeklyVaPayoutCents    Int
+  currency               String @default("USD")
+
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  minutesUsedThisPeriod Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments  StandingCapacityAssignment[]
+  contextNotes AccountContextNote[]
+  preference   AccountPreference?
+  tasks        Task[]
+  payments     StandingCapacityPayment[]
+  payouts      StandingCapacityPayout[]
+
+  @@index([status])
+}
+
+/**
+ * Who is currently doing this account's work. Reassigning is: admin creates
+ * a new row (activeTo: null); the prior current row's activeTo is closed in
+ * the same transaction. A task submitted into the account routes directly
+ * to whichever row has activeTo: null at submission time — it never touches
+ * the public /va/pool. Multiple historical rows per account are expected and
+ * kept, on purpose: it's the audit trail of who has ever had access to this
+ * client's context.
+ */
+model StandingCapacityAssignment {
+  id           String                  @id @default(cuid())
+  accountId    String
+  account      StandingCapacityAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  workerId     String
+  worker       User                    @relation("StandingCapacityAssignmentWorker", fields: [workerId], references: [id], onDelete: Restrict)
+  assignedById String
+  activeFrom   DateTime                @default(now())
+  activeTo     DateTime?
+
+  @@index([accountId, activeTo])
+  @@index([workerId, activeTo])
+}
+
+/**
+ * The client's own words about their own working preferences —
+ * communication style, delivery format. Written directly by the client, no
+ * operator mediation: a client describing their own preferences cannot name
+ * a worker by construction, the same trust level as a task description.
+ */
+model AccountPreference {
+  id                 String                  @id @default(cuid())
+  accountId          String                  @unique
+  account            StandingCapacityAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  communicationStyle String?
+  deliverableFormat  String?
+  notes              String?
+  updatedAt          DateTime                @updatedAt
+}
+
+/**
+ * The running, identity-safe account history a newly-assigned worker reads
+ * to pick up the account cold, instead of asking the client to repeat
+ * itself. Append-only — a row is never edited or deleted — so nothing here
+ * can silently erase what a prior worker or operator recorded.
+ * A WORKER-authored row is always created with visible: false — a draft,
+ * queued for an operator — until an ADMIN either publishes it as-is or
+ * writes their own identity-safe rewrite and publishes that instead. This is
+ * the exact mediation src/server/actions/admin-resolutions.ts's
+ * publishRevisionInstructions already applies to a single task's revision
+ * summary, extended here to a standing relationship instead of one task.
+ * An ADMIN-authored row is visible immediately (the admin IS the operator
+ * doing the identity-safety check as they write).
+ */
+model AccountContextNote {
+  id            String                  @id @default(cuid())
+  accountId     String
+  account       StandingCapacityAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User                    @relation("AccountContextNoteAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  authorRole    Role
+  body          String
+  visible       Boolean                 @default(false)
+  publishedById String?
+  publishedAt   DateTime?
+  createdAt     DateTime                @default(now())
+
+  @@index([accountId, visible, createdAt])
+}
+
+/**
+ * A period's payment for reserved capacity, recorded the same admin-attested
+ * way a one-off task's manual payment is (src/server/actions/
+ * admin-payments.ts recordManualPayment). Real Stripe checkout for whole
+ * blocks is future work, not built in this pass — Stripe itself has no live
+ * keys configured anywhere in this app yet.
+ */
+model StandingCapacityPayment {
+  id           String                  @id @default(cuid())
+  accountId    String
+  account      StandingCapacityAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  periodStart  DateTime
+  periodEnd    DateTime
+  amountCents  Int
+  currency     String                  @default("USD")
+  method       PaymentMethod           @default(wire)
+  reference    String?
+  recordedById String
+  createdAt    DateTime                @default(now())
+
+  @@index([accountId, periodStart])
+}
+
+/**
+ * The worker-side mirror of StandingCapacityPayment: one lump sum per
+ * period to whoever actually did the work, instead of a Payout row per
+ * task (see admin-qc.ts's isStandingCapacityTask guard — a task inside a
+ * block is never priced or paid individually). Deliberately its own model
+ * rather than reusing Payout, which requires a taskId.
+ */
+model StandingCapacityPayout {
+  id           String                  @id @default(cuid())
+  accountId    String
+  account      StandingCapacityAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  vaId         String
+  va           User                    @relation("StandingCapacityPayoutWorker", fields: [vaId], references: [id], onDelete: Restrict)
+  periodStart  DateTime
+  periodEnd    DateTime
+  amountCents  Int
+  currency     String                  @default("USD")
+  method       String?
+  reference    String?
+  recordedById String
+  createdAt    DateTime                @default(now())
+
+  @@unique([accountId, vaId, periodStart])
+  @@index([vaId])
 }

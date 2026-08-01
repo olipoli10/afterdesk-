@@ -39,7 +39,11 @@ export const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   // "pricing_review" or the defensive from:["submitted","pricing_review"]
   // union those callers pass gets rejected outright by the strict from-set
   // check below, regardless of the row's real status.
-  submitted: ["pricing_review", "quoted", "cancelled"],
+  // "claimed" only for a Standing Capacity submission (src/server/actions/
+  // standing-capacity.ts): price is already fixed at the block level, so it
+  // skips pricing/quoting/payment and is claimed directly by the account's
+  // current assignment, never through the public pool.
+  submitted: ["pricing_review", "quoted", "claimed", "cancelled"],
   pricing_review: ["quoted", "cancelled"],
   // Accepting no longer publishes the task: it must be paid for first. The
   // one exception is the operator's own internal practice work, which skips

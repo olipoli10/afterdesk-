@@ -40,6 +40,15 @@ export type Settings = {
   deadlineWarningHours: number;
   pricingModel: string;
   pricingPrompt: string;
+  /**
+   * Standing Capacity weekly tiers — a client subscribing snapshots one of
+   * these onto their StandingCapacityAccount at subscribe/renew time
+   * (tierHours/weeklyClientPriceCents/weeklyVaPayoutCents on that row), so
+   * editing this list later never repricess an account mid-period. Same
+   * RULE 2 as everywhere else: two independent numbers, never derived from
+   * each other.
+   */
+  standingCapacityTiers: { hours: number; weeklyClientPriceCents: number; weeklyVaPayoutCents: number }[];
 };
 
 const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
@@ -76,6 +85,16 @@ export const SettingsSchema = z.object({
   deadlineWarningHours: positiveHours,
   pricingModel: z.string().min(1).max(100),
   pricingPrompt: z.string().min(20).max(20_000),
+  standingCapacityTiers: z
+    .array(
+      z.object({
+        hours: z.number().int().min(1).max(80),
+        weeklyClientPriceCents: z.number().int().positive(),
+        weeklyVaPayoutCents: z.number().int().positive(),
+      })
+    )
+    .min(1)
+    .max(10),
 });
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -115,6 +134,15 @@ export const DEFAULT_SETTINGS: Settings = {
     "You are pricing an outsourced administrative task performed by a trained virtual assistant. " +
     "Given the task description, estimate a fair USD price range (low/high) for the full task. " +
     "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD.",
+  // Starting numbers, not a considered rate card — there is no admin UI to
+  // edit this yet (same as every other Setting), so update the row by hand
+  // in the database when real pricing is decided. A modest per-hour
+  // discount at higher tiers, same $15/h worker rate straight through.
+  standingCapacityTiers: [
+    { hours: 5, weeklyClientPriceCents: 12_500, weeklyVaPayoutCents: 7_500 },
+    { hours: 10, weeklyClientPriceCents: 22_000, weeklyVaPayoutCents: 15_000 },
+    { hours: 20, weeklyClientPriceCents: 40_000, weeklyVaPayoutCents: 30_000 },
+  ],
 };
 
 /**
