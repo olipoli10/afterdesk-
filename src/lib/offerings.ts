@@ -1,9 +1,11 @@
 /**
  * The single list "Our Services" is built from. Add a third offering here
  * and the hub picks it up automatically — nothing about the hub page itself
- * assumes there are exactly two. English-only for now, same as several
- * other newer pages in this app (e.g. src/components/policy-page.tsx) —
- * full FR/ES/TL coverage is real follow-up work, not done in this pass.
+ * assumes there are exactly two. This file itself stays English-only on
+ * purpose (slug/href are not language, and slug is the join key) — the
+ * translated audience/title/description a visitor actually reads live in
+ * src/lib/i18n/services.ts, keyed by the same slug (see OFFERING_KEY in
+ * src/app/services/page.tsx).
  */
 export type Offering = {
   slug: string;

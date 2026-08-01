@@ -27,6 +27,11 @@ const LANG_COOKIE: Record<string, { name: string; allowed: string[] }> = {
   // switching language here still cannot flip either homepage.
   "/about": { name: "ss-lang-doc", allowed: LANGS },
   "/how-it-works": { name: "ss-lang-doc", allowed: LANGS },
+  // /services is linked from both homepage headers (see MobileMenu on
+  // src/app/page.tsx and src/app/workers/page.tsx) same as the two document
+  // pages above, so it shares their cookie and fallback chain rather than
+  // getting one of its own.
+  "/services": { name: "ss-lang-doc", allowed: LANGS },
 };
 
 export function proxy(req: NextRequest) {
@@ -58,6 +63,7 @@ export const config = {
     "/academy",
     "/about",
     "/how-it-works",
+    "/services",
     "/notifications",
     "/client/:path*",
     "/va/:path*",
