@@ -266,14 +266,25 @@ export default async function Home({
                   resolving sees the dropdown at that same partial opacity,
                   which reads as a translucent panel with the hero text
                   bleeding through it. LangSwitch, the same kind of always-
-                  on nav control, never carried this animation either. */}
-              <MobileMenu
-                tone="night"
-                aboutLabel={t.footer.about}
-                signInLabel={portal ? t.nav.portal : t.nav.signIn}
-                signInHref={portal}
-                className="mb-5"
-              />
+                  on nav control, never carried this animation either.
+
+                  Sign in sits next to the trigger, not inside it: a
+                  returning visitor uses it often enough that it shouldn't
+                  cost an extra tap the way About us / Our Services can —
+                  those are discovery links a first-time visitor doesn't
+                  need immediately. The header itself has no spare width for
+                  it at 375px (verified: logo + audience toggle + language
+                  switcher already fill the row edge to edge), so this row
+                  is the nearest place that's still permanently visible. */}
+              <div className="mb-5 flex items-center justify-between sm:hidden">
+                <MobileMenu tone="night" aboutLabel={t.footer.about} />
+                <Link
+                  href={portal ?? "/login"}
+                  className="flex min-h-11 shrink-0 items-center whitespace-nowrap text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white"
+                >
+                  {portal ? t.nav.portal : t.nav.signIn}
+                </Link>
+              </div>
               <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
                 <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>
                 <span className="anim-rise d-1 block text-white">{t.hero.line2}</span>

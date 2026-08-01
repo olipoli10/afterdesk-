@@ -229,14 +229,23 @@ export default async function WorkersHome({
                 on this same component in src/app/page.tsx for why an
                 entrance fade on an interactive dropdown anchor causes the
                 open panel to render translucent if tapped before it
-                settles. */}
-            <MobileMenu
-              tone="paper"
-              aboutLabel={t.footer.about}
-              signInLabel={portal ? t.nav.portal : t.nav.signIn}
-              signInHref={portal}
-              className="order-0 mb-5"
-            />
+                settles.
+
+                Sign in sits next to the trigger, not inside it — same
+                reasoning as src/app/page.tsx's matching comment: it's a
+                frequent action for a returning worker, unlike the two
+                discovery links left in the menu, and the header has no
+                spare width for it at 375px (logo + audience toggle +
+                language switcher already fill the row). */}
+            <div className="order-0 mb-5 flex items-center justify-between sm:hidden">
+              <MobileMenu tone="paper" aboutLabel={t.footer.about} />
+              <Link
+                href={portal ?? "/login?audience=worker"}
+                className="flex min-h-11 shrink-0 items-center whitespace-nowrap text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A]"
+              >
+                {portal ? t.nav.portal : t.nav.signIn}
+              </Link>
+            </div>
             <p className="anim-rise order-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">
               {t.hero.kill}
             </p>

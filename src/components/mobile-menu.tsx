@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 /**
  * A single pill that widens — not a button plus a separate dropdown panel.
  * Closed, it's a 44×44 circle (rounded-full at 44px width IS a circle);
- * open, the same box is a ~330px stadium with the nav links inside it. Only
+ * open, the same box is a ~280px stadium with the nav links inside it. Only
  * `max-width` animates, so the background (opaque, never transitioned) and
  * the geometry (fixed height, normal document flow, no `position:absolute`)
  * can't produce a frame where anything behind it shows through, and it
@@ -27,28 +27,28 @@ import { useEffect, useRef, useState } from "react";
  * measured directly against real rendered Geist Sans text (not estimated):
  * at the normal 14px/text-sm size, English fits this pill with ~38px to
  * spare at 375px, but French/Spanish/Tagalog ("Qui nous sommes",
- * "Quiénes somos", "Iniciar sesión") overflow it by 42-45px. 11px is the
- * smallest size with a comfortable, reliable margin (~35px) in every
- * language rather than the ~2-4px 12px left for French/Spanish — using one
- * fixed size for every language, instead of sizing per-locale, means this
- * menu doesn't visibly change size when someone switches language.
+ * "Quiénes somos") overflow it. 11px is the smallest size with a
+ * comfortable, reliable margin in every language — using one fixed size
+ * for every language, instead of sizing per-locale, means this menu
+ * doesn't visibly change size when someone switches language.
+ *
+ * Holds only About us and Our Services — Sign in used to be a third link
+ * here, but it's a frequent action for a returning visitor and sat one tap
+ * deeper than it should have. It now lives next to this button instead
+ * (see the wrapper in src/app/page.tsx / src/app/workers/page.tsx), not
+ * inside it, so it stays reachable in a single tap. This menu keeps just
+ * the two discovery links a first-time visitor doesn't need immediately.
  */
 export function MobileMenu({
   tone,
   aboutLabel,
   servicesLabel = "Our Services",
-  signInLabel,
-  signInHref,
   className = "",
 }: {
   /** "night" is the client homepage, "paper" the worker one. */
   tone: "night" | "paper";
   aboutLabel: string;
   servicesLabel?: string;
-  signInLabel: string;
-  /** Where the sign-in link goes when a login form is the wrong answer — a
-   *  visitor who is already signed in needs their portal, not a sign-in page. */
-  signInHref?: string;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -117,7 +117,7 @@ export function MobileMenu({
     <div ref={rootRef} className={`inline-block sm:hidden ${className}`}>
       <div
         ref={pillRef}
-        style={{ maxWidth: open ? "min(330px, calc(100vw - 48px))" : "44px" }}
+        style={{ maxWidth: open ? "min(280px, calc(100vw - 48px))" : "44px" }}
         className={`flex h-11 items-center overflow-hidden rounded-full border transition-[max-width] duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${pillTone}`}
       >
         <button
@@ -159,14 +159,6 @@ export function MobileMenu({
             className={`flex min-h-11 items-center rounded px-2 text-[11px] font-medium transition-colors duration-150 ${item}`}
           >
             {servicesLabel}
-          </Link>
-          <Link
-            href={signInHref ?? (tone === "paper" ? "/login?audience=worker" : "/login")}
-            tabIndex={open ? 0 : -1}
-            onClick={closeMenu}
-            className={`flex min-h-11 items-center rounded px-2 text-[11px] font-medium transition-colors duration-150 ${item}`}
-          >
-            {signInLabel}
           </Link>
         </nav>
       </div>
