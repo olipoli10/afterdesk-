@@ -252,7 +252,7 @@ export default async function Home({
             a phone (so the window can be ordered between them) and a real box
             from lg up (so it is the left column of the two-column grid, in
             plain DOM order, exactly as before). One copy of every string. */}
-        <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-10 sm:pt-28 lg:grid lg:grid-cols-[1fr_420px] lg:gap-12 lg:items-center">
+        <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-4 sm:pt-28 lg:grid lg:grid-cols-[1fr_420px] lg:gap-12 lg:items-center">
           <div className="contents lg:block">
             <div className="order-1">
               {/* Phone-only: the links the header has no room for, behind

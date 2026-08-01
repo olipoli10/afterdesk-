@@ -221,7 +221,7 @@ export default async function WorkersHome({
         {/* Mobile order puts the proof before the ask: kill · H1 · sub ·
             card · CTA. `contents` lets the copy children participate in the
             same flex flow so `order` can interleave them with the card. */}
-        <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-10 sm:pt-24 lg:grid lg:grid-cols-[1fr_460px] lg:items-center lg:gap-14">
+        <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-4 sm:pt-24 lg:grid lg:grid-cols-[1fr_460px] lg:items-center lg:gap-14">
           <div className="contents lg:block">
             {/* Phone-only: the links the header has no room for, behind
                 one compact trigger — see mobile-menu.tsx. No anim-rise
