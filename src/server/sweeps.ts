@@ -129,11 +129,24 @@ export async function purgeExpiredTaskFiles(): Promise<number> {
   });
 
   let purged = 0;
+  let failedTasks = 0;
   for (const task of tasks) {
     const results = await Promise.allSettled(
       task.files.map((file) => deleteObject(file.storageKey))
     );
-    if (results.some((result) => result.status === "rejected")) continue;
+    const rejected = results.flatMap((result, i) =>
+      result.status === "rejected" ? [{ file: task.files[i], reason: result.reason }] : []
+    );
+    if (rejected.length > 0) {
+      failedTasks += 1;
+      for (const { file, reason } of rejected) {
+        console.error(
+          `[sweeps] purgeExpiredTaskFiles: failed to delete ${file.storageKey} (file ${file.id}, task ${task.id}):`,
+          reason
+        );
+      }
+      continue;
+    }
     const now = new Date();
     await prisma.$transaction(async (tx) => {
       const result = await tx.file.updateMany({
@@ -158,6 +171,27 @@ export async function purgeExpiredTaskFiles(): Promise<number> {
     });
     purged += task.files.length;
   }
+
+  // One notification per sweep run, not per failed task — a real outage can
+  // hit every eligible task in the same run, and an admin needs to know
+  // storage deletion is broken, not read the same alert 50 times.
+  if (failedTasks > 0) {
+    const admins = await prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
+    if (admins.length > 0) {
+      await prisma.notification.createMany({
+        data: admins.map((admin) => ({
+          userId: admin.id,
+          type: "file_purge_failed",
+          title:
+            failedTasks === 1
+              ? "A task's files failed to purge"
+              : `${failedTasks} tasks' files failed to purge`,
+          body: "Storage deletion errored during the retention sweep; the files are still held past their promised purge date. See server logs for the exact error.",
+        })),
+      });
+    }
+  }
+
   return purged;
 }
 
