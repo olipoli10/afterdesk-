@@ -13,10 +13,11 @@ import type { SiteLang } from "@/lib/i18n/langs";
  * code-switching, same as footer.signIn's "Mag-sign in") since this
  * codebase has no established Tagalog legal glossary for them.
  */
-const LABELS: Record<SiteLang, [string, string, string, string, string]> = {
-  en: ["Free training for remote workers", "Security", "Privacy", "Terms", "Acceptable use"],
+const LABELS: Record<SiteLang, [string, string, string, string, string, string]> = {
+  en: ["Free training for remote workers", "Public ledger", "Security", "Privacy", "Terms", "Acceptable use"],
   fr: [
     "Formation gratuite pour travailleurs à distance",
+    "Registre public",
     "Sécurité",
     "Confidentialité",
     "Conditions",
@@ -24,15 +25,23 @@ const LABELS: Record<SiteLang, [string, string, string, string, string]> = {
   ],
   es: [
     "Formación gratuita para trabajadores remotos",
+    "Registro público",
     "Seguridad",
     "Privacidad",
     "Términos",
     "Uso aceptable",
   ],
-  tl: ["Libreng pagsasanay para sa mga remote worker", "Security", "Privacy", "Terms", "Acceptable use"],
+  tl: [
+    "Libreng pagsasanay para sa mga remote worker",
+    "Pampublikong ledger",
+    "Security",
+    "Privacy",
+    "Terms",
+    "Acceptable use",
+  ],
 };
 
-const HREFS = ["/academy", "/security", "/privacy", "/terms", "/acceptable-use"] as const;
+const HREFS = ["/academy", "/ledger", "/security", "/privacy", "/terms", "/acceptable-use"] as const;
 
 export function TrustLinks({
   tone = "paper",
