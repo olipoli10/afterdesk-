@@ -267,6 +267,15 @@ export default async function Home({
                 <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>
                 <span className="anim-rise d-1 block text-white">{t.hero.line2}</span>
               </h1>
+              {/* The comparative/management-fatigue argument, compressed into
+                  one line a fast scroller hits before the CTA — the thing
+                  someone who never scrolls past the fold still has to walk
+                  away understanding. Not "we have workers" (the reader
+                  already knows Upwork exists); the actual sell is the
+                  supervision that disappears. */}
+              <p className="anim-rise d-1 mt-5 max-w-[42ch] text-[17px] leading-[1.5] text-[#9AA1AB] sm:text-[19px]">
+                {t.hero.subtitle}
+              </p>
             </div>
 
             <div className="anim-rise d-2 order-3 mt-8">

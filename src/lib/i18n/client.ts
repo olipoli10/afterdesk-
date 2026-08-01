@@ -36,6 +36,12 @@ type Dict = {
   hero: {
     line1: string;
     line2: string;
+    /** Between the headline and the CTA — the thing a fast scroller has to
+     *  understand even if they never reach the comparator table further
+     *  down. Not "we have workers": the target reader already knows Upwork
+     *  exists. The actual sell is the management work that disappears —
+     *  checking, fixing, chasing — not access to a worker. */
+    subtitle: string;
     cta: string;
     /** Sits directly under the CTA, same micro-copy convention as the
      *  Academy hero's "You can start the first course tonight." — the
@@ -208,6 +214,8 @@ const en: Dict = {
   hero: {
     line1: "Describe any task.",
     line2: "Get it back done by morning.",
+    subtitle:
+      "Finding a worker was never the hard part. Checking their work, fixing mistakes, chasing hours — that's what we take off your plate.",
     cta: "Describe your task",
     guarantee:
       "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
@@ -218,7 +226,7 @@ const en: Dict = {
     label: "What this is",
     h2: [
       "",
-      " is a task outsourcing service built around vetted specialists in the Philippines: fluent English, trained to a written standard, working while you sleep.",
+      " is a task outsourcing service built around vetted specialists in the Philippines — fluent English, a cost base that keeps the fixed price low, and a 12-hour time zone gap that turns your evening into their workday.",
     ],
     intro:
       "Entrepreneurs send a task, a specialist here prices it, and one rule makes it safe to try: you don't pay for work that isn't right.",
@@ -364,6 +372,8 @@ const fr: Dict = {
   hero: {
     line1: "Décrivez n'importe quelle tâche.",
     line2: "Récupérez-la faite au matin.",
+    subtitle:
+      "Trouver un travailleur n'a jamais été le plus dur. Vérifier son travail, corriger ses erreurs, relancer ses heures — c'est ça qu'on retire de tes épaules.",
     cta: "Décrivez votre tâche",
     guarantee:
       "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
@@ -374,7 +384,7 @@ const fr: Dict = {
     label: "Ce qu'on fait",
     h2: [
       "",
-      " est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines : anglais courant, formés selon une norme écrite, qui travaillent pendant que vous dormez.",
+      " est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines — anglais courant, une base de coûts qui garde le prix fixe bas, et un décalage de 12 heures qui transforme votre soirée en leur journée de travail.",
     ],
     intro:
       "Les entrepreneurs envoient une tâche, un spécialiste ici la chiffre, et une seule règle rend ça sûr d'essayer : vous ne payez pas pour un travail qui ne fait pas l'affaire.",
@@ -520,6 +530,8 @@ const es: Dict = {
   hero: {
     line1: "Describe cualquier tarea.",
     line2: "Recíbela lista por la mañana.",
+    subtitle:
+      "Encontrar a alguien nunca fue lo difícil. Revisar su trabajo, corregir errores, perseguir horas — eso es lo que te quitamos de encima.",
     cta: "Describe tu tarea",
     guarantee:
       "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
@@ -530,7 +542,7 @@ const es: Dict = {
     label: "Qué es esto",
     h2: [
       "",
-      " es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas: inglés fluido, formados según un estándar escrito, que trabajan mientras tú duermes.",
+      " es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas — inglés fluido, una base de costos que mantiene bajo el precio fijo, y un desfase horario de 12 horas que convierte tu tarde en su jornada laboral.",
     ],
     intro:
       "Los emprendedores envían una tarea, un especialista aquí la cotiza, y una sola regla hace que sea seguro intentarlo: no pagas por un trabajo que no está bien.",
@@ -683,6 +695,8 @@ const tl: Dict = {
   hero: {
     line1: "Ilarawan ang kahit anong task.",
     line2: "Tapos na ito pagsapit ng umaga.",
+    subtitle:
+      "Ang paghahanap ng manggagawa hindi kailanman ang mahirap na bahagi. Ang pag-check ng trabaho nila, pag-ayos ng mali, paghabol sa oras nila — yun ang inaalis namin sa'yo.",
     cta: "Ilarawan ang task mo",
     guarantee:
       "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",
@@ -693,7 +707,7 @@ const tl: Dict = {
     label: "Ano ito",
     h2: [
       "Ang ",
-      " ay isang task outsourcing service na binuo sa paligid ng beripikadong espesyalista sa Pilipinas: matatas sa Ingles, sinanay sa isang nakasulat na pamantayan, gumagawa habang natutulog ka.",
+      " ay isang task outsourcing service na binuo sa paligid ng beripikadong espesyalista sa Pilipinas — matatas sa Ingles, mababang cost base na nagpapababa sa fixed price, at 12-oras na pagkakaiba sa oras na ginagawang working day ng gabi mo.",
     ],
     intro:
       "Nagpapadala ang mga negosyante ng task, ipepresyo ito ng espesyalista dito, at isang panuntunan ang gumagawa nitong ligtas subukan: hindi ka nagbabayad para sa trabahong hindi maayos.",
