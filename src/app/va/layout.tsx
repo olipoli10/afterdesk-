@@ -48,6 +48,12 @@ export default async function VaLayout({ children }: { children: ReactNode }) {
         // arrives certified is the whole point, and nothing in the courses is
         // client data.
         { href: "/va/training", label: "Academy" },
+        // Unconditional for the same reason the other three are: this layout
+        // must never branch on a status read here (see the note above). A
+        // worker with no standing capacity assignment just sees an empty
+        // state on the page itself, same as /va/pool does for an unapproved
+        // worker.
+        { href: "/va/standing-capacity", label: "My accounts" },
       ]}
     >
       {children}

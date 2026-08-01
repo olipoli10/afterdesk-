@@ -23,10 +23,11 @@ export const metadata = {
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const user = await requireRole("ADMIN");
 
-  const [pricingCount, qcCount, workerCount, notificationCount] = await Promise.all([
+  const [pricingCount, qcCount, workerCount, draftNoteCount, notificationCount] = await Promise.all([
     pricingQueueCount(),
     prisma.task.count({ where: { status: "submitted_for_qc" } }),
     prisma.vaProfile.count({ where: { status: { in: ["pending_test", "pending_grading"] } } }),
+    prisma.accountContextNote.count({ where: { visible: false } }),
     prisma.notification.count({ where: { userId: user.id, readAt: null } }),
   ]);
 
@@ -42,6 +43,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         { href: "/admin/qc", label: "QC", badge: qcCount },
         { href: "/admin/workers", label: "Workers", badge: workerCount },
         { href: "/admin/tasks", label: "All tasks" },
+        { href: "/admin/standing-capacity", label: "Standing capacity", badge: draftNoteCount },
       ]}
     >
       {children}
