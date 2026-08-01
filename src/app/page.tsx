@@ -258,13 +258,21 @@ export default async function Home({
               {/* Phone-only: the links the header has no room for, behind
                   one compact trigger instead of stacked pills — see
                   mobile-menu.tsx for why. mb-5, not mb-9: a single 44px
-                  button doesn't need the margin a two-row pill block did. */}
+                  button doesn't need the margin a two-row pill block did.
+                  No anim-rise here (unlike its siblings below) — inherited
+                  from the old FloatingLinks pills, but this is an
+                  interactive dropdown anchor now, not decorative content.
+                  A user who opens it while the entrance fade is still
+                  resolving sees the dropdown at that same partial opacity,
+                  which reads as a translucent panel with the hero text
+                  bleeding through it. LangSwitch, the same kind of always-
+                  on nav control, never carried this animation either. */}
               <MobileMenu
                 tone="night"
                 aboutLabel={t.footer.about}
                 signInLabel={portal ? t.nav.portal : t.nav.signIn}
                 signInHref={portal}
-                className="anim-rise mb-5"
+                className="mb-5"
               />
               <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
                 <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>

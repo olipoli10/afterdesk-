@@ -224,13 +224,18 @@ export default async function WorkersHome({
         <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-10 sm:pt-24 lg:grid lg:grid-cols-[1fr_460px] lg:items-center lg:gap-14">
           <div className="contents lg:block">
             {/* Phone-only: the links the header has no room for, behind
-                one compact trigger — see mobile-menu.tsx. */}
+                one compact trigger — see mobile-menu.tsx. No anim-rise
+                here, unlike its siblings below — see the matching comment
+                on this same component in src/app/page.tsx for why an
+                entrance fade on an interactive dropdown anchor causes the
+                open panel to render translucent if tapped before it
+                settles. */}
             <MobileMenu
               tone="paper"
               aboutLabel={t.footer.about}
               signInLabel={portal ? t.nav.portal : t.nav.signIn}
               signInHref={portal}
-              className="anim-rise order-0 mb-5"
+              className="order-0 mb-5"
             />
             <p className="anim-rise order-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">
               {t.hero.kill}
