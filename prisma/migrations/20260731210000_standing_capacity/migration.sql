@@ -1,5 +1,3 @@
-Loaded Prisma config from prisma.config.ts.
-
 -- CreateEnum
 CREATE TYPE "StandingCapacityStatus" AS ENUM ('active', 'paused', 'cancelled');
 
