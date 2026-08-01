@@ -191,6 +191,7 @@ type Dict = {
     workerWord: [string, string];
     released: string;
     toDate: string;
+    moneySaved: { label: string; timeLabel: string; note: string };
   };
 };
 
@@ -341,6 +342,11 @@ const en: Dict = {
     workerWord: ["approved worker", "approved workers"],
     released: "released to workers",
     toDate: "To date,",
+    moneySaved: {
+      label: "saved vs. market rate",
+      timeLabel: "hours handed back",
+      note: "Market rate × hours on task, minus what clients actually paid. Set per task category, floored at zero — never a modest number bragged up.",
+    },
   },
 };
 
@@ -491,6 +497,11 @@ const fr: Dict = {
     workerWord: ["spécialiste approuvé", "spécialistes approuvés"],
     released: "reversés aux spécialistes",
     toDate: "À ce jour,",
+    moneySaved: {
+      label: "économisés vs taux du marché",
+      timeLabel: "heures récupérées",
+      note: "Taux du marché × heures sur la tâche, moins ce que les clients ont réellement payé. Défini par catégorie de tâche, plancher à zéro — jamais un chiffre modeste gonflé.",
+    },
   },
 };
 
@@ -641,6 +652,11 @@ const es: Dict = {
     workerWord: ["especialista aprobado", "especialistas aprobados"],
     released: "liberados a los especialistas",
     toDate: "Hasta la fecha,",
+    moneySaved: {
+      label: "ahorrados vs. tarifa de mercado",
+      timeLabel: "horas recuperadas",
+      note: "Tarifa de mercado × horas en la tarea, menos lo que el cliente realmente pagó. Definida por categoría de tarea, con piso en cero — nunca una cifra modesta inflada.",
+    },
   },
 };
 
@@ -798,6 +814,11 @@ const tl: Dict = {
     workerWord: ["inaprubahang espesyalista", "mga inaprubahang espesyalista"],
     released: "napunta sa mga espesyalista",
     toDate: "Sa ngayon,",
+    moneySaved: {
+      label: "naipon vs presyo sa market",
+      timeLabel: "oras na nabawi",
+      note: "Presyo sa market × oras sa task, bawas sa aktwal na binayad ng kliyente. Naka-set per kategorya ng task, may floor na zero — hindi kailanman pinalaki ang isang maliit na numero.",
+    },
   },
 };
 

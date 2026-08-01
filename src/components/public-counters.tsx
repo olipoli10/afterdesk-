@@ -6,6 +6,10 @@ function bucketDollars(cents: number): string {
   return `$${Math.floor(cents / 100).toLocaleString("en-US")}+`;
 }
 
+function bucketHours(minutes: number): string {
+  return `${Math.floor(minutes / 60).toLocaleString("en-US")}+`;
+}
+
 /**
  * The public counters — real DB aggregates (see public-stats.ts for the
  * RULE 2 boundary and the money-withholding rules). The same figures appear
@@ -32,6 +36,8 @@ export async function PublicCounters({
     workerWord: [string, string];
     released: string;
     toDate: string;
+    /** Client side only — TIME SAVED / MONEY SAVED cells replace `released`. */
+    moneySaved?: { label: string; timeLabel: string; note: string };
   };
   className?: string;
 }) {
@@ -46,8 +52,27 @@ export async function PublicCounters({
   const workerWord = copy.workerWord[stats.approvedWorkers === 1 ? 0 : 1];
   const released =
     stats.releasedBucketCents !== null ? bucketDollars(stats.releasedBucketCents) : null;
+  // Client side only: MONEY SAVED / TIME SAVED replace the worker-payout
+  // figure entirely (never both on the same page — see the copy.moneySaved
+  // guard on the RULE 2 boundary in public-stats.ts's own doc comment).
+  const showSavings = tone === "night" && copy.moneySaved;
+  const moneySaved =
+    showSavings && stats.moneySavedBucketCents !== null
+      ? bucketDollars(stats.moneySavedBucketCents)
+      : null;
+  const timeSaved =
+    showSavings && stats.timeSavedBucketMinutes !== null
+      ? bucketHours(stats.timeSavedBucketMinutes)
+      : null;
 
   if (variant === "line") {
+    const moneyPart = showSavings
+      ? moneySaved
+        ? ` · ${moneySaved} ${copy.moneySaved!.label}`
+        : ""
+      : released
+        ? ` · ${released} ${copy.released}`
+        : "";
     return (
       <p
         className={`border-t font-mono text-[12px] leading-relaxed ${
@@ -57,7 +82,7 @@ export async function PublicCounters({
         } ${className}`}
       >
         {copy.toDate} {n} {taskWord}
-        {released ? ` · ${released} ${copy.released}` : ""} · {w} {workerWord}
+        {moneyPart} · {w} {workerWord}
       </p>
     );
   }
@@ -71,23 +96,52 @@ export async function PublicCounters({
   const border = tone === "night" ? "border-white/[0.08]" : "border-[#14161A]/10";
 
   /* Evidence-layer motion: figures roll up once on entry, then hold. */
-  const cells: { node: ReactNode; l: string; money?: boolean }[] = [
+  const cells: { node: ReactNode; l: string; money?: boolean; title?: string }[] = [
     { node: <RollingNumber value={stats.tasksDelivered} />, l: taskWord },
-    ...(stats.releasedBucketCents !== null
+    ...(showSavings
       ? [
-          {
-            node: (
-              <RollingNumber
-                value={Math.floor(stats.releasedBucketCents / 100)}
-                prefix="$"
-                suffix="+"
-              />
-            ),
-            l: copy.released,
-            money: true,
-          },
+          ...(timeSaved !== null
+            ? [
+                {
+                  node: (
+                    <RollingNumber value={Math.floor((stats.timeSavedBucketMinutes ?? 0) / 60)} suffix="+" />
+                  ),
+                  l: copy.moneySaved!.timeLabel,
+                },
+              ]
+            : []),
+          ...(moneySaved !== null
+            ? [
+                {
+                  node: (
+                    <RollingNumber
+                      value={Math.floor((stats.moneySavedBucketCents ?? 0) / 100)}
+                      prefix="$"
+                      suffix="+"
+                    />
+                  ),
+                  l: copy.moneySaved!.label,
+                  money: true,
+                  title: copy.moneySaved!.note,
+                },
+              ]
+            : []),
         ]
-      : []),
+      : stats.releasedBucketCents !== null
+        ? [
+            {
+              node: (
+                <RollingNumber
+                  value={Math.floor(stats.releasedBucketCents / 100)}
+                  prefix="$"
+                  suffix="+"
+                />
+              ),
+              l: copy.released,
+              money: true,
+            },
+          ]
+        : []),
     { node: <RollingNumber value={stats.approvedWorkers} />, l: workerWord },
   ];
 
@@ -96,7 +150,7 @@ export async function PublicCounters({
       className={`flex flex-wrap items-baseline justify-center gap-x-10 gap-y-2 border-y py-3.5 font-mono ${border} ${className}`}
     >
       {cells.map((c) => (
-        <span key={c.l} className="flex items-baseline gap-2.5">
+        <span key={c.l} className="flex items-baseline gap-2.5" title={c.title}>
           <span className={`text-[15px] font-medium tabular-nums ${c.money ? money : value}`}>
             {c.node}
           </span>

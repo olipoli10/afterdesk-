@@ -487,6 +487,14 @@ model TaskCategory {
    * checked against a written standard instead of judged by mood.
    */
   disputeCriteria String?
+  /**
+   * Admin-set market reference rate (cents/hour) for the public MONEY SAVED
+   * counter: (referenceHourlyRateCents/100 * hours) - clientPriceCents,
+   * floored at 0 per task. Null means this category is simply excluded from
+   * the counter rather than treated as a zero rate — an undefined comparison
+   * must never silently read as "no savings." See src/lib/queries/public-stats.ts.
+   */
+  referenceHourlyRateCents Int?
   sortOrder       Int      @default(0)
   active          Boolean  @default(true)
   createdAt       DateTime @default(now())
