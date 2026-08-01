@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 /**
  * A single pill that widens — not a button plus a separate dropdown panel.
  * Closed, it's a 44×44 circle (rounded-full at 44px width IS a circle);
- * open, the same box is a ~300px stadium with the nav links inside it. Only
+ * open, the same box is a ~315px stadium with the nav links inside it. Only
  * `max-width` animates, so the background (opaque, never transitioned) and
  * the geometry (fixed height, normal document flow, no `position:absolute`)
  * can't produce a frame where anything behind it shows through, and it
@@ -25,16 +25,13 @@ import { useEffect, useRef, useState } from "react";
  *
  * Labels render at a fixed size inside the pill regardless of language —
  * measured directly against real rendered Geist Sans text (not estimated),
- * re-measured each time a link was added here. Three links (About us, Our
- * Services, How it works) don't fit at a normal reading size in every
- * language: French ("Comment ça marche") and Tagalog ("Paano ito
- * gumagana") overflow the 375px budget even at 10px. 9px text with tight
- * (4px) padding is the smallest combination that clears the budget with a
- * real margin (~25-40px) in every language rather than a few px of luck —
- * genuinely small for body text, a deliberate trade-off for fitting three
- * items on one line rather than wrapping or scrolling, which read as
- * broken in this menu's earlier two-item design pass. One fixed size for
- * every language means this menu doesn't visibly change size when someone
+ * re-measured each time a link was added or reworded here. Three links at
+ * a normal reading size don't fit in every language even with the compact
+ * wording (src/lib/i18n/mobile-menu-compact.ts) — 10px text is the largest
+ * size that clears the 375px budget with a real margin (~19-63px
+ * depending on language) rather than a few px of luck; 11px leaves French
+ * at exactly 0px margin, too thin to ship. One fixed size for every
+ * language means this menu doesn't visibly change size when someone
  * switches language.
  *
  * Sign in used to be a third link here, but it's a frequent action for a
@@ -46,14 +43,14 @@ import { useEffect, useRef, useState } from "react";
 export function MobileMenu({
   tone,
   aboutLabel,
-  servicesLabel = "Our Services",
+  servicesLabel,
   howLabel,
   className = "",
 }: {
   /** "night" is the client homepage, "paper" the worker one. */
   tone: "night" | "paper";
   aboutLabel: string;
-  servicesLabel?: string;
+  servicesLabel: string;
   howLabel: string;
   className?: string;
 }) {
@@ -123,7 +120,7 @@ export function MobileMenu({
     <div ref={rootRef} className={`inline-block sm:hidden ${className}`}>
       <div
         ref={pillRef}
-        style={{ maxWidth: open ? "min(300px, calc(100vw - 48px))" : "44px" }}
+        style={{ maxWidth: open ? "min(315px, calc(100vw - 48px))" : "44px" }}
         className={`flex h-11 items-center overflow-hidden rounded-full border transition-[max-width] duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${pillTone}`}
       >
         <button
@@ -147,14 +144,14 @@ export function MobileMenu({
         <nav
           aria-label="More"
           inert={!open}
-          className="flex items-center gap-px whitespace-nowrap pr-1.5"
+          className="flex items-center gap-1 whitespace-nowrap pr-2"
         >
           <Link
             ref={firstLinkRef}
             href="/about"
             tabIndex={open ? 0 : -1}
             onClick={closeMenu}
-            className={`flex min-h-11 items-center rounded px-1 text-[9px] font-medium transition-colors duration-150 ${item}`}
+            className={`flex min-h-11 items-center rounded px-2 text-[10px] font-medium transition-colors duration-150 ${item}`}
           >
             {aboutLabel}
           </Link>
@@ -162,7 +159,7 @@ export function MobileMenu({
             href="/services"
             tabIndex={open ? 0 : -1}
             onClick={closeMenu}
-            className={`flex min-h-11 items-center rounded px-1 text-[9px] font-medium transition-colors duration-150 ${item}`}
+            className={`flex min-h-11 items-center rounded px-2 text-[10px] font-medium transition-colors duration-150 ${item}`}
           >
             {servicesLabel}
           </Link>
@@ -170,7 +167,7 @@ export function MobileMenu({
             href="/how-it-works"
             tabIndex={open ? 0 : -1}
             onClick={closeMenu}
-            className={`flex min-h-11 items-center rounded px-1 text-[9px] font-medium transition-colors duration-150 ${item}`}
+            className={`flex min-h-11 items-center rounded px-2 text-[10px] font-medium transition-colors duration-150 ${item}`}
           >
             {howLabel}
           </Link>

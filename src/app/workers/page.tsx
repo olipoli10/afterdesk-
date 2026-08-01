@@ -13,6 +13,7 @@ import { LiveClaimCard } from "@/components/live-claim-card";
 import { StickyApply } from "@/components/sticky-apply";
 import { LangSwitch } from "@/components/lang-switch";
 import { WORKERS_I18N, WORKERS_LANGS, workersLangOf } from "@/lib/i18n/workers";
+import { COMPACT_SERVICES_LABEL, COMPACT_HOW_LABEL } from "@/lib/i18n/mobile-menu-compact";
 import { publicSampleQuestion, academyStats } from "@/lib/academy/public";
 import { SAMPLE_EXAM_TRANSLATIONS } from "@/lib/academy/sample-i18n";
 import { TrustLinks } from "@/components/trust-links";
@@ -238,7 +239,12 @@ export default async function WorkersHome({
                 spare width for it at 375px (logo + audience toggle +
                 language switcher already fill the row). */}
             <div className="order-0 mb-5 flex items-center justify-between sm:hidden">
-              <MobileMenu tone="paper" aboutLabel={t.footer.about} howLabel={t.footer.how} />
+              <MobileMenu
+                tone="paper"
+                aboutLabel={t.footer.about}
+                servicesLabel={COMPACT_SERVICES_LABEL[lang]}
+                howLabel={COMPACT_HOW_LABEL[lang]}
+              />
               <Link
                 href={portal ?? "/login?audience=worker"}
                 className="flex min-h-11 shrink-0 items-center whitespace-nowrap text-[13px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A]"

@@ -15,6 +15,7 @@ import { PaperInstrument } from "@/components/paper-instrument";
 import { PaperReviewDesk } from "@/components/paper-review-desk";
 import { TrustLinks } from "@/components/trust-links";
 import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
+import { COMPACT_SERVICES_LABEL, COMPACT_HOW_LABEL } from "@/lib/i18n/mobile-menu-compact";
 import { SITE_URL, WORKER_SIDE_LABEL } from "@/lib/site";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -277,7 +278,12 @@ export default async function Home({
                   switcher already fill the row edge to edge), so this row
                   is the nearest place that's still permanently visible. */}
               <div className="mb-5 flex items-center justify-between sm:hidden">
-                <MobileMenu tone="night" aboutLabel={t.footer.about} howLabel={t.footer.how} />
+                <MobileMenu
+                  tone="night"
+                  aboutLabel={t.footer.about}
+                  servicesLabel={COMPACT_SERVICES_LABEL[lang]}
+                  howLabel={COMPACT_HOW_LABEL[lang]}
+                />
                 <Link
                   href={portal ?? "/login"}
                   className="flex min-h-11 shrink-0 items-center whitespace-nowrap text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white"
