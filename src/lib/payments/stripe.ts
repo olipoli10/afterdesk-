@@ -1,11 +1,12 @@
 import "server-only";
 import Stripe from "stripe";
 import { addHours } from "date-fns";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, TaskTier } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { insertLedgerEntry } from "@/lib/ledger";
+import { eligibleVaUserIds } from "@/lib/queries/va-profile";
 
 let client: Stripe | null = null;
 
@@ -196,7 +197,7 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
 
     const task = await tx.task.findUnique({
       where: { id: taskId },
-      select: { status: true, clientId: true },
+      select: { status: true, clientId: true, title: true, tier: true, isInternal: true },
     });
     if (task?.status === "expired") {
       await transitionTask({
@@ -217,6 +218,7 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
         data: { paymentDueAt: null },
         meta: { provider: "stripe", checkoutSessionId: session.id },
       });
+      await notifyEligiblePoolWorkers(tx, taskId, task);
     } else if (task?.status === "awaiting_payment") {
       await transitionTask({
         tx,
@@ -227,6 +229,7 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
         data: { paymentDueAt: null },
         meta: { provider: "stripe", checkoutSessionId: session.id },
       });
+      await notifyEligiblePoolWorkers(tx, taskId, task);
     } else if (task?.status === "cancelled") {
       // Only ever a hold at this point, never a real charge (see above) — so
       // there is nothing to refund, only an authorization to release.
@@ -273,6 +276,35 @@ async function notifyAdmins(
   if (admins.length === 0) return;
   await tx.notification.createMany({
     data: admins.map((admin) => ({ userId: admin.id, ...input })),
+  });
+}
+
+/**
+ * "New task in the pool" — found missing while auditing the full task
+ * lifecycle (the founding spec listed it; the code never sent it). Fires
+ * exactly once, the moment a task actually becomes claimable — never at
+ * quote acceptance, since the task isn't visible to anyone until payment
+ * clears. Skipped for internal tasks (the operator's own practice work —
+ * no real worker needs paging for those) and scoped to workers who can
+ * actually claim this tier right now, so a high-value task never notifies
+ * someone who'd just hit the same threshold wall claimTask enforces.
+ */
+async function notifyEligiblePoolWorkers(
+  tx: Prisma.TransactionClient,
+  taskId: string,
+  task: { title: string; tier: TaskTier; isInternal: boolean }
+) {
+  if (task.isInternal) return;
+  const workerIds = await eligibleVaUserIds(tx, task.tier);
+  if (workerIds.length === 0) return;
+  await tx.notification.createMany({
+    data: workerIds.map((userId) => ({
+      userId,
+      type: "pool_task_available",
+      title: "New task in the pool",
+      body: task.title,
+      taskId,
+    })),
   });
 }
 

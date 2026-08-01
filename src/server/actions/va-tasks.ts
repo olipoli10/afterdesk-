@@ -247,7 +247,7 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
     await prisma.$transaction(async (tx) => {
       const task = await tx.task.findFirst({
         where: { id: taskId, claimedById: user.id },
-        select: { status: true, revisionInstructions: true },
+        select: { status: true, revisionInstructions: true, title: true },
       });
       if (!task) throw new Refused("Task not found.");
       if (!["claimed", "qc_rejected", "revision_requested"].includes(task.status)) {
@@ -304,6 +304,24 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
         guard: { claimedById: user.id },
         meta: { files: fileIds.length },
       });
+
+      // Found missing while auditing the full task lifecycle — the QC
+      // queue grew with no push telling the admin it had. Same inline
+      // notifyAdmins-shape pattern already used elsewhere in this codebase
+      // (stripe.ts, sweeps.ts) rather than importing across modules for
+      // four lines.
+      const admins = await tx.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
+      if (admins.length > 0) {
+        await tx.notification.createMany({
+          data: admins.map((admin) => ({
+            userId: admin.id,
+            type: "submission_needs_qc",
+            title: "Deliverable needs QC",
+            body: task.title,
+            taskId,
+          })),
+        });
+      }
     });
   } catch (e) {
     const handled = surfaced(e);

@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
+import type { Prisma, TaskTier } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { getSettings } from "@/lib/settings";
 
 /**
  * One vaProfile read per request. Every worker page gates on this row and
@@ -27,3 +29,29 @@ export const vaProfileFor = cache(async (userId: string) =>
     },
   })
 );
+
+/**
+ * Approved workers eligible to see/claim a task of this tier — same
+ * threshold claimTask itself checks (src/server/actions/va-tasks.ts) at
+ * claim time, mirrored here so a "new task in the pool" notification never
+ * tells a worker about a high-value task they cannot actually claim yet.
+ */
+export async function eligibleVaUserIds(
+  db: Prisma.TransactionClient | typeof prisma,
+  tier: TaskTier
+): Promise<string[]> {
+  const settings = await getSettings();
+  const profiles = await db.vaProfile.findMany({
+    where: {
+      status: "approved",
+      ...(tier === "high_value"
+        ? {
+            scoreCache: { gte: settings.highValueThreshold },
+            ratedCount: { gte: settings.minRatedDeliveries },
+          }
+        : {}),
+    },
+    select: { userId: true },
+  });
+  return profiles.map((p) => p.userId);
+}
