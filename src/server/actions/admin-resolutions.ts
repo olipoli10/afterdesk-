@@ -8,6 +8,7 @@ import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { releaseHeldFunds } from "@/lib/escrow";
+import { upsertClosedJobLog } from "@/lib/closed-job-log";
 
 export type ResolutionResult = { ok: true } | { ok: false; error: string };
 
@@ -95,6 +96,7 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
               clientPriceCents: true,
               vaPayoutCents: true,
               currency: true,
+              isInternal: true,
               revisionWindowEndsAt: true,
               windowPausedAt: true,
               payments: {
@@ -199,6 +201,26 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
             cancelReason: "Client dispute upheld against the written delivery standard.",
           },
         });
+
+        // Gap found and fixed while auditing the full task-lifecycle path:
+        // cancelTask (admin.ts) already logs a "lost" outcome on cancel, but
+        // this is a SEPARATE cancellation path (dispute upheld, after a
+        // "won" row may already exist from the original QC approval in
+        // admin-qc.ts). Without this, a successfully disputed delivery
+        // would stay logged as "won" forever. No LostReasonCategory value
+        // fits "delivered, then a client complaint was upheld" precisely —
+        // "other" + a clear detail is more honest than forcing a mismatched
+        // category (e.g. qc_failed_repeatedly, which means something
+        // different: QC rounds exhausted during production, not a
+        // post-delivery dispute).
+        if (!dispute.task.isInternal) {
+          await upsertClosedJobLog(tx, taskId, {
+            outcome: "lost",
+            lostReasonCategory: "other",
+            lostReasonDetail: "Client dispute upheld after delivery.",
+          });
+        }
+
         await tx.payout.updateMany({
           where: { taskId, status: { not: "paid" } },
           data: { status: "void", note: "Client dispute upheld." },
