@@ -6,6 +6,7 @@ import {
   draftContextNotesForAdmin,
   contextNotesForAdmin,
 } from "@/lib/queries/standing-capacity";
+import { unroutedStandingTaskCounts } from "@/lib/queries/tasks";
 import { EmptyState, moneyClient, moneyPayout } from "@/components/ui";
 import { CreateAccountForm } from "@/components/standing-capacity-create-form";
 import {
@@ -25,7 +26,7 @@ export const metadata = {
 export default async function AdminStandingCapacityPage() {
   await requireRole("ADMIN");
 
-  const [accounts, settings, workers, clientsWithoutAccount] = await Promise.all([
+  const [accounts, settings, workers, clientsWithoutAccount, unrouted] = await Promise.all([
     standingCapacityAccountsForAdmin(),
     getSettings(),
     prisma.vaProfile.findMany({
@@ -38,6 +39,7 @@ export default async function AdminStandingCapacityPage() {
       orderBy: { createdAt: "desc" },
       take: 200,
     }),
+    unroutedStandingTaskCounts(),
   ]);
 
   const workerOptions = workers.map((w) => w.user);
@@ -67,6 +69,7 @@ export default async function AdminStandingCapacityPage() {
                 contextNotesForAdmin(account.id),
               ]);
               const assignee = account.assignments[0]?.worker;
+              const waiting = unrouted.get(account.id) ?? 0;
               const capacityMinutes = account.tierHours * 60;
               const usedPct = Math.min(
                 100,
@@ -111,6 +114,17 @@ export default async function AdminStandingCapacityPage() {
                       <p className="mb-2 text-[13px] text-[#14161A]">
                         {assignee ? assignee.name : "Unassigned — new tasks wait for this."}
                       </p>
+                      {/* These are excluded from the pricing queue, so this is
+                          the only place they surface. The client's minutes are
+                          already spent on them and nobody is working them. */}
+                      {waiting > 0 ? (
+                        <p className="mb-2 text-[13px] font-medium text-[#8C2F23]">
+                          {waiting === 1
+                            ? "1 task submitted and waiting to be routed."
+                            : `${waiting} tasks submitted and waiting to be routed.`}{" "}
+                          Assigning a specialist routes them immediately.
+                        </p>
+                      ) : null}
                       <ReassignForm accountId={account.id} workers={workerOptions} />
                       {assignee ? (
                         <div className="mt-2">

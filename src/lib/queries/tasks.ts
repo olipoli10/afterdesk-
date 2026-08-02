@@ -329,6 +329,7 @@ export const adminTaskSelect = {
   revisionInstructions: true,
   filesVerified: true,
   isInternal: true,
+  standingCapacityAccountId: true,
   estimatedMinutes: true,
   firstCompletedAt: true,
   paymentDueAt: true,
@@ -422,6 +423,20 @@ export async function taskForAdmin(taskId: string): Promise<AdminTaskView | null
 }
 
 /**
+ * Only one-off tasks are priced here, hence the standingCapacityAccountId
+ * filter every query in this trio shares. A standing task sits in `submitted`
+ * whenever its account has no assignee, and the queue used to select on
+ * status alone — so it appeared here looking like any other unpriced task,
+ * and pricing it started the one-off billing circuit for work the client's
+ * block already covers and whose minutes were already deducted. It belongs on
+ * the standing capacity page as work awaiting routing, not here.
+ */
+const oneOffAwaitingPricing = {
+  status: { in: ["submitted", "pricing_review"] as const },
+  standingCapacityAccountId: null,
+} satisfies Prisma.TaskWhereInput;
+
+/**
  * Pricing queue, lowest AI confidence first — those are the ones that
  * genuinely need the admin's judgment; "not yet computed" (AI pricing
  * disabled, or this one call failed) sorts with them for the same reason.
@@ -432,7 +447,7 @@ export async function taskForAdmin(taskId: string): Promise<AdminTaskView | null
  */
 export async function pricingQueue() {
   return prisma.task.findMany({
-    where: { status: { in: ["submitted", "pricing_review"] } },
+    where: oneOffAwaitingPricing,
     select: {
       id: true,
       title: true,
@@ -454,7 +469,26 @@ export async function pricingQueue() {
 }
 
 export async function pricingQueueCount(): Promise<number> {
-  return prisma.task.count({ where: { status: { in: ["submitted", "pricing_review"] } } });
+  return prisma.task.count({ where: oneOffAwaitingPricing });
+}
+
+/**
+ * Standing tasks whose account has no assignee, so they never got routed and
+ * are sitting in `submitted` with nobody working them. Excluded from the
+ * pricing queue above, they would otherwise be visible nowhere at all — the
+ * client's minutes are already spent and the brief is going nowhere. Grouped
+ * by account because the fix is always the same: assign a worker, and
+ * assignWorker routes everything pending at once.
+ */
+export async function unroutedStandingTaskCounts(): Promise<Map<string, number>> {
+  const rows = await prisma.task.groupBy({
+    by: ["standingCapacityAccountId"],
+    where: { status: "submitted", standingCapacityAccountId: { not: null } },
+    _count: { _all: true },
+  });
+  return new Map(
+    rows.flatMap((r) => (r.standingCapacityAccountId ? [[r.standingCapacityAccountId, r._count._all] as const] : []))
+  );
 }
 
 /** Next task in the pricing queue after excluding one (approve-and-advance).
@@ -463,7 +497,7 @@ export async function pricingQueueCount(): Promise<number> {
  *  silently disagree about what "next" means. */
 export async function nextInPricingQueue(excludeId: string): Promise<string | null> {
   const rows = await prisma.task.findMany({
-    where: { status: { in: ["submitted", "pricing_review"] }, id: { not: excludeId } },
+    where: { ...oneOffAwaitingPricing, id: { not: excludeId } },
     select: { id: true },
     orderBy: [
       { aiConfidence: { sort: "asc", nulls: "first" } },

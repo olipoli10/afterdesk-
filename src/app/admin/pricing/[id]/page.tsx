@@ -31,6 +31,12 @@ export default async function PricingDetailPage({
     // Already priced (or moved on) — send the admin to the full task view.
     redirect(`/admin/tasks/${task.id}`);
   }
+  // A standing task in `submitted` is unrouted work, not unpriced work: its
+  // block already paid for it. The pricing form must never open on one, not
+  // even by direct link.
+  if (task.standingCapacityAccountId) {
+    redirect(`/admin/tasks/${task.id}`);
+  }
 
   const inputFiles = task.files.filter((f) => f.kind === "input");
   const categories = await prisma.taskCategory.findMany({

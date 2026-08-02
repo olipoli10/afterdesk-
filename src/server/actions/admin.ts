@@ -64,9 +64,22 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
 
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: { clientDeadlineUtc: true },
+    select: { clientDeadlineUtc: true, standingCapacityAccountId: true },
   });
   if (!task) return { ok: false, error: "Task not found." };
+
+  // The queue no longer lists standing tasks, but this action is reachable by
+  // task id alone. Pricing one would bill a second time for work the client's
+  // block already covers, and whose minutes were already deducted at
+  // submission. A trigger refuses the transition as well; this exists so the
+  // operator reads a sentence telling them what to do instead of hitting it.
+  if (task.standingCapacityAccountId) {
+    return {
+      ok: false,
+      error:
+        "This is a standing capacity task — its price is set by the client's weekly block, so it is never quoted. It is sitting in submitted because the account has no assigned specialist; assign one on the standing capacity page and it routes automatically.",
+    };
+  }
 
   // The admin pricing step is the content gate on everything the client wrote
   // (description and quantity are VA-visible verbatim) and everything they
