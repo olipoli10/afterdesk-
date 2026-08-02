@@ -10,8 +10,25 @@ import { transitionTask, TransitionError } from "@/lib/state";
 import { insertLedgerEntry } from "@/lib/ledger";
 import { logAdminEvent } from "@/lib/audit";
 import { findPii } from "@/lib/pii-patterns";
+import { lockStandingAccount, rollForwardPeriods } from "@/lib/standing-period";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Thrown inside a transaction to abort it and surface a message, mirroring
+ * the `Refused` pattern va-tasks.ts already uses. Needed here because the
+ * capacity check moved INSIDE the transaction: it can no longer simply
+ * `return` a refusal, or the work already done in the transaction would
+ * commit alongside it.
+ */
+class Refused extends Error {}
+
+/** Same idea, but carries the remaining minutes the UI shows the client. */
+class OverCapacity extends Error {
+  constructor(readonly remainingMinutes: number) {
+    super("over-capacity");
+  }
+}
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -588,30 +605,51 @@ export async function submitStandingTask(input: unknown): Promise<SubmitStanding
     }
   }
 
-  const account = await prisma.standingCapacityAccount.findUnique({
+  // Identity only. Everything that can change under us — the period window,
+  // the counter, the status — is re-read inside the lock below. An account's
+  // id never moves, so resolving it here costs nothing and lets the lock key
+  // be the account rather than the client.
+  const accountRef = await prisma.standingCapacityAccount.findUnique({
     where: { clientId: user.id },
-    select: {
-      id: true,
-      status: true,
-      tierHours: true,
-      minutesUsedThisPeriod: true,
-    },
+    select: { id: true },
   });
-  if (!account) return { ok: false, error: "No standing capacity account found." };
-  if (account.status !== "active") return { ok: false, error: "This account is not active." };
-
-  const capacityMinutes = account.tierHours * 60;
-  const remainingMinutes = capacityMinutes - account.minutesUsedThisPeriod;
-  if (parsed.data.estimatedMinutes > remainingMinutes) {
-    return {
-      ok: false,
-      error: "This task would exceed your remaining capacity for this week.",
-      overflow: { remainingMinutes: Math.max(remainingMinutes, 0) },
-    };
-  }
+  if (!accountRef) return { ok: false, error: "No standing capacity account found." };
 
   try {
-    const task = await prisma.$transaction(async (tx) => {
+    const outcome = await prisma.$transaction(async (tx) => {
+      // The check and the write now live in ONE transaction, serialized per
+      // account. Previously the read was a separate round-trip before the
+      // transaction even opened, so two submissions read the same counter and
+      // both passed their capacity check — proven to land 660 minutes of work
+      // in a 300-minute block. Same treatment claimTask and submitExam
+      // already give their own read-then-write.
+      await lockStandingAccount(tx, accountRef.id);
+
+      const account = await tx.standingCapacityAccount.findUniqueOrThrow({
+        where: { id: accountRef.id },
+        select: {
+          id: true,
+          status: true,
+          tierHours: true,
+          currentPeriodStart: true,
+          currentPeriodEnd: true,
+          minutesUsedThisPeriod: true,
+        },
+      });
+      if (account.status !== "active") throw new Refused("This account is not active.");
+
+      // The period had never been consulted here at all: capacity was checked
+      // against whatever week the row still named, which after a period ended
+      // was a week already over — for up to an hour, until the sweep noticed.
+      // Rolling forward at the moment of use closes that window.
+      const period = await rollForwardPeriods(tx, account.id, account, new Date());
+
+      const capacityMinutes = account.tierHours * 60;
+      const remainingMinutes = capacityMinutes - period.minutesUsedThisPeriod;
+      if (parsed.data.estimatedMinutes > remainingMinutes) {
+        throw new OverCapacity(Math.max(remainingMinutes, 0));
+      }
+
       const assignee = await currentAssignee(tx as unknown as typeof prisma, account.id);
 
       const created = await tx.task.create({
@@ -662,6 +700,10 @@ export async function submitStandingTask(input: unknown): Promise<SubmitStanding
         });
       }
 
+      // Safe as a bare increment ONLY because the lock above serializes every
+      // reader of this counter, and rollForwardPeriods ran inside the same
+      // transaction — so the value being incremented is the one the capacity
+      // check was made against, for the period it was made against.
       await tx.standingCapacityAccount.update({
         where: { id: account.id },
         data: { minutesUsedThisPeriod: { increment: parsed.data.estimatedMinutes } },
@@ -672,8 +714,16 @@ export async function submitStandingTask(input: unknown): Promise<SubmitStanding
 
     revalidatePath("/client/standing-capacity");
     revalidatePath("/va");
-    return { ok: true, taskId: task.id };
+    return { ok: true, taskId: outcome.id };
   } catch (e) {
+    if (e instanceof OverCapacity) {
+      return {
+        ok: false,
+        error: "This task would exceed your remaining capacity for this week.",
+        overflow: { remainingMinutes: e.remainingMinutes },
+      };
+    }
+    if (e instanceof Refused) return { ok: false, error: e.message };
     if (e instanceof Error && e.message === "file-claim-mismatch") {
       return { ok: false, error: "One of the uploaded files could not be attached. Re-upload and try again." };
     }

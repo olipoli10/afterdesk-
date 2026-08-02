@@ -6,6 +6,7 @@ import { transitionTask, TransitionError } from "@/lib/state";
 import { getSettings } from "@/lib/settings";
 import { releaseHeldFunds } from "@/lib/escrow";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
+import { lockStandingAccount, rollForwardPeriods } from "@/lib/standing-period";
 
 /**
  * Time-driven state changes. The authenticated maintenance endpoint runs these
@@ -252,18 +253,38 @@ export async function purgeExpiredTaskFiles(): Promise<number> {
 export async function advanceStandingCapacityPeriods(): Promise<number> {
   const due = await prisma.standingCapacityAccount.findMany({
     where: { status: "active", currentPeriodEnd: { lt: new Date() } },
-    select: { id: true, currentPeriodEnd: true },
+    select: { id: true },
     take: 100,
   });
   let advanced = 0;
-  for (const account of due) {
-    const nextStart = account.currentPeriodEnd;
-    const nextEnd = new Date(nextStart.getTime() + 7 * 24 * 60 * 60 * 1000);
-    await prisma.standingCapacityAccount.update({
-      where: { id: account.id },
-      data: { currentPeriodStart: nextStart, currentPeriodEnd: nextEnd, minutesUsedThisPeriod: 0 },
+  for (const accountId of due.map((a) => a.id)) {
+    // Each account rolls in its own locked transaction, taking the same lock
+    // submitStandingTask takes. The reset used to be an unconditional write
+    // outside any lock: a submission committing between this sweep's SELECT
+    // and its UPDATE had its minutes wiped — replayed, 300 minutes of booked
+    // work vanished and the client got the block back for free. Now a
+    // submission and a rollover cannot interleave at all; whichever holds the
+    // lock finishes first, and the other reads the result.
+    const rolled = await prisma.$transaction(async (tx) => {
+      await lockStandingAccount(tx, accountId);
+      const account = await tx.standingCapacityAccount.findUnique({
+        where: { id: accountId },
+        select: {
+          status: true,
+          currentPeriodStart: true,
+          currentPeriodEnd: true,
+          minutesUsedThisPeriod: true,
+        },
+      });
+      // Re-checked under the lock: the account may have been paused, or
+      // already rolled by a submission that reached it first.
+      if (!account || account.status !== "active") return false;
+      const now = new Date();
+      if (account.currentPeriodEnd > now) return false;
+      await rollForwardPeriods(tx, accountId, account, now);
+      return true;
     });
-    advanced += 1;
+    if (rolled) advanced += 1;
   }
   return advanced;
 }
