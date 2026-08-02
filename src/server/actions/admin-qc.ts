@@ -29,6 +29,21 @@ function failed(e: unknown): QcResult | null {
 const approveSchema = z.object({
   submissionId: z.string(),
   rating: z.number().int().min(1).max(5),
+  /**
+   * RULE 1's last gate. The pricing side has carried an unconditional
+   * attestation from the start (`filesVerified` in approvePricing, admin.ts)
+   * — that is the client→worker direction. This is the worker→client
+   * direction, and it had none: the schema accepted only a submissionId and a
+   * rating, so a deliverable could be approved from the keyboard alone (1-5
+   * then Ctrl+Enter) without a single file being opened.
+   *
+   * That asymmetry mattered more than the pricing one, because the worker has
+   * a direct economic motive to break the wall: a .docx signed "contact me
+   * directly, 40% cheaper" reaches the client the moment it is approved.
+   * Metadata scrubbing (file-security.ts) cannot catch it — it strips
+   * document properties, never the visible content of the delivery.
+   */
+  identityVerified: z.boolean(),
 });
 
 /**
@@ -44,6 +59,16 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
   const admin = await requireRole("ADMIN");
   const parsed = approveSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Give the work a rating from 1 to 5." };
+
+  // Unconditional, exactly like approvePricing's: a delivery with no files
+  // still carries a free-text note that reaches the client verbatim.
+  if (!parsed.data.identityVerified) {
+    return {
+      ok: false,
+      error:
+        "Confirm you opened the delivery and checked it for the worker's name, contacts or any invitation to work directly before releasing it.",
+    };
+  }
 
   const settings = await getSettings();
   const now = new Date();

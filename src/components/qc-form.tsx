@@ -44,6 +44,7 @@ export function QcForm({
   const [rejecting, setRejecting] = useState(false);
   const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [identityVerified, setIdentityVerified] = useState(false);
   const [isPending, start] = useTransition();
   const radioRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -54,9 +55,16 @@ export function QcForm({
       setError("Rate the work from 1 to 5 before approving.");
       return;
     }
+    // Deliberately blocks the Ctrl+Enter path too: this batch-first form was
+    // designed so a whole queue could be cleared from the keyboard, and that
+    // is exactly how a signed deliverable would slip through to the client.
+    if (!identityVerified) {
+      setError("Confirm you checked the delivery for the worker's identity before releasing it.");
+      return;
+    }
     setError(null);
     start(async () => {
-      const result = await approveDeliverable({ submissionId, rating });
+      const result = await approveDeliverable({ submissionId, rating, identityVerified });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -146,6 +154,24 @@ export function QcForm({
                 never sees it.
               </p>
             </div>
+
+            {/* RULE 1's last gate, mirroring the pricing side's own
+                attestation (admin.ts approvePricing). Metadata scrubbing
+                cannot read the visible content of a delivery — only a human
+                can catch a worker who signed their work or invited the
+                client to go direct. */}
+            <label className="mt-5 flex cursor-pointer items-start gap-2.5 rounded-[6px] border border-[#14161A]/10 bg-[#14161A]/[0.02] p-3">
+              <input
+                type="checkbox"
+                checked={identityVerified}
+                onChange={(e) => setIdentityVerified(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[#14161A]"
+              />
+              <span className="text-[13px] leading-snug text-[#30343A]">
+                I opened the delivery and checked it for the worker&apos;s name, contacts, or any
+                invitation to work directly.
+              </span>
+            </label>
 
             {error ? (
               <p role="alert" className="mt-3 text-sm text-[#8C2F23]">

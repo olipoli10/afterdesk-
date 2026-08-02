@@ -33,7 +33,18 @@ async function run<T>(name: string, job: Promise<T>): Promise<T | null> {
   }
 }
 
-export async function POST(request: Request) {
+/**
+ * Vercel Cron invokes the configured path with a **GET** ("To trigger a cron
+ * job, Vercel makes an HTTP GET request", vercel.com/docs/cron-jobs), and
+ * signs it with `Authorization: Bearer $CRON_SECRET`. This route used to
+ * export POST only, so every hourly invocation since the cron was added got
+ * a 405 and NOTHING in here ever ran — no Stripe capture, no payout release,
+ * no notification email, no file purge, no Standing Capacity rollover.
+ *
+ * Both verbs are exported so the scheduler works and a manual `curl -X POST`
+ * still does too. Same auth on both paths.
+ */
+async function runMaintenance(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || !hasValidBearer(request.headers.get("authorization"), secret)) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
@@ -59,4 +70,12 @@ export async function POST(request: Request) {
     money,
     notifications,
   });
+}
+
+export async function GET(request: Request) {
+  return runMaintenance(request);
+}
+
+export async function POST(request: Request) {
+  return runMaintenance(request);
 }
