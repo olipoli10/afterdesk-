@@ -15,6 +15,7 @@ export function CreateAccountForm({
   const router = useRouter();
   const [clientId, setClientId] = useState("");
   const [tierHours, setTierHours] = useState(tiers[0]?.hours ?? 0);
+  const [isInternal, setIsInternal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, start] = useTransition();
 
@@ -22,7 +23,7 @@ export function CreateAccountForm({
     e.preventDefault();
     setError(null);
     start(async () => {
-      const result = await createStandingCapacityAccount({ clientId, tierHours });
+      const result = await createStandingCapacityAccount({ clientId, tierHours, isInternal });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -57,6 +58,20 @@ export function CreateAccountForm({
           ))}
         </select>
       </Field>
+      {/* Only settable here. The account's tasks inherit it at creation and
+          the integrity trigger freezes a task's isInternal the moment it
+          leaves submitted — and a standing task leaves it in the same
+          transaction. There is no later chance to mark this account's work
+          as practice, so it has to be decided now. */}
+      <label className="flex min-h-11 cursor-pointer items-center gap-2 text-[13px] text-[#30343A]">
+        <input
+          type="checkbox"
+          checked={isInternal}
+          onChange={(e) => setIsInternal(e.target.checked)}
+          className="h-4 w-4 accent-[#14161A]"
+        />
+        Practice account — keep its work out of public counters
+      </label>
       <button type="submit" className={buttonPrimary} disabled={isPending || !clientId}>
         {isPending ? "Opening…" : "Open account"}
       </button>

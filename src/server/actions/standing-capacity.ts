@@ -62,6 +62,18 @@ async function currentAssignee(
 const createAccountSchema = z.object({
   clientId: z.string().min(1).max(100),
   tierHours: z.number().int().positive(),
+  /**
+   * Settable at creation and never after, deliberately — the same rule
+   * Task.isInternal follows ("isInternal is frozen after pricing", the
+   * integrity trigger). An account's nature must not flip once work and
+   * money have flowed through it, because the ledger is append-only and its
+   * past entries carry whichever value was true at the time.
+   *
+   * Without this the column was inert: it was added so the account's sale and
+   * payout ledger entries could carry it, but nothing could ever set it to
+   * true, so the protection did not exist in practice.
+   */
+  isInternal: z.boolean().default(false),
 });
 
 /**
@@ -97,6 +109,7 @@ export async function createStandingCapacityAccount(input: unknown): Promise<Act
       tierHours: tier.hours,
       weeklyClientPriceCents: tier.weeklyClientPriceCents,
       weeklyVaPayoutCents: tier.weeklyVaPayoutCents,
+      isInternal: parsed.data.isInternal,
       currentPeriodStart: now,
       currentPeriodEnd: new Date(now.getTime() + WEEK_MS),
     },
@@ -631,6 +644,7 @@ export async function submitStandingTask(input: unknown): Promise<SubmitStanding
           id: true,
           status: true,
           tierHours: true,
+          isInternal: true,
           currentPeriodStart: true,
           currentPeriodEnd: true,
           minutesUsedThisPeriod: true,
@@ -660,6 +674,14 @@ export async function submitStandingTask(input: unknown): Promise<SubmitStanding
           status: "submitted",
           standingCapacityAccountId: account.id,
           estimatedMinutes: parsed.data.estimatedMinutes,
+          // Inherited at creation, and it has to be here: a standing task goes
+          // submitted -> claimed inside this very transaction, and the
+          // integrity trigger freezes isInternal once status leaves
+          // submitted/pricing_review. There is no later moment to correct it.
+          // Left to its default, an operator's own practice work counted
+          // permanently in tasksDelivered, TIME SAVED and all three published
+          // reliability rates.
+          isInternal: account.isInternal,
         },
       });
 
