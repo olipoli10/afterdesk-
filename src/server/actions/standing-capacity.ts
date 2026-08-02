@@ -192,6 +192,7 @@ export async function recordPeriodPayment(input: unknown): Promise<ActionResult>
       status: true,
       clientId: true,
       currency: true,
+      isInternal: true,
       weeklyClientPriceCents: true,
       currentPeriodStart: true,
       currentPeriodEnd: true,
@@ -219,6 +220,7 @@ export async function recordPeriodPayment(input: unknown): Promise<ActionResult>
       currency: account.currency,
       sourceKind: "standing_capacity_payment",
       sourceId: payment.id,
+      isInternal: account.isInternal,
     });
     await tx.notification.create({
       data: {
@@ -257,6 +259,7 @@ export async function recordWorkerPeriodPayout(input: unknown): Promise<ActionRe
     select: {
       id: true,
       currency: true,
+      isInternal: true,
       weeklyVaPayoutCents: true,
       currentPeriodStart: true,
       currentPeriodEnd: true,
@@ -299,6 +302,7 @@ export async function recordWorkerPeriodPayout(input: unknown): Promise<ActionRe
       currency: account.currency,
       sourceKind: "standing_capacity_payout",
       sourceId: payout.id,
+      isInternal: account.isInternal,
     });
     await tx.notification.create({
       data: {

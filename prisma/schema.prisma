@@ -932,6 +932,13 @@ model StandingCapacityAccount {
 
   status StandingCapacityStatus @default(active)
 
+  /// Same meaning as Task.isInternal: the operator's own practice account.
+  /// Without it there was no correct value to pass when writing this
+  /// account's sale and payout ledger entries, so both defaulted to
+  /// isInternal=false and cleared BOTH gates of the public ledger filter —
+  /// permanently, the table being append-only.
+  isInternal Boolean @default(false)
+
   tierHours              Int
   weeklyClientPriceCents Int
   weeklyVaPayoutCents    Int

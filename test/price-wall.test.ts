@@ -5,6 +5,7 @@ import {
   vaPoolSelect,
   vaPoolDetailSelect,
 } from "@/lib/queries/tasks";
+import { publicLedgerEntrySelect } from "@/lib/queries/public-ledger";
 
 /**
  * RULE 2 regression net — the product's load-bearing invariant.
@@ -85,5 +86,31 @@ describe("RULE 2 — the two-price wall", () => {
     const files = (vaPoolSelect as Record<string, unknown>).files;
     expect(files).toBeUndefined();
     expect(keysDeep(vaPoolSelect).has("_count")).toBe(true);
+  });
+
+  /**
+   * The public ledger is the one surface where BOTH sides' numbers were
+   * published at once, to anyone, unauthenticated. A `sale` row's amountCents
+   * is task.clientPriceCents verbatim; a `payout` row's is task.vaPayoutCents.
+   * Printing both, timestamped, handed a worker who knew their own pay the
+   * client's price and the operator's margin — and the client the reverse.
+   * Bucketing cannot protect a per-entry amount from someone who already
+   * knows the other half of the pair, so none is published at all.
+   */
+  it("the public ledger select projects no per-entry amount (RULE 2)", () => {
+    const keys = keysDeep(publicLedgerEntrySelect);
+    expect(keys.has("amountCents"), "publicLedgerEntrySelect must not select amountCents").toBe(
+      false
+    );
+    expect(keys.has("currency")).toBe(false);
+  });
+
+  it("the public ledger still proves the ledger is real — kind, category, date", () => {
+    // Guards the opposite regression: gutting the page to satisfy the rule
+    // would make it useless. It must still show that entries exist and move.
+    const keys = keysDeep(publicLedgerEntrySelect);
+    expect(keys.has("kind")).toBe(true);
+    expect(keys.has("occurredAt")).toBe(true);
+    expect(keys.has("categoryName")).toBe(true);
   });
 });

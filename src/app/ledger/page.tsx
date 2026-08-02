@@ -86,14 +86,14 @@ export default async function LedgerPage({
           <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
             Total processed to date
           </p>
-          {totalCents > 0 ? (
+          {totalCents !== null ? (
             <p className="mt-1 font-mono text-[34px] font-medium tabular-nums text-[#14161A]">
               {dollars(totalCents)}
             </p>
           ) : (
             <p className="mt-2 text-[14px] text-[#5B6069]">
-              $0 — this updates automatically the moment the first transaction settles. Nothing has
-              yet.
+              Published once enough transactions have settled that the total cannot be traced back
+              to any single one.
             </p>
           )}
         </div>
@@ -124,33 +124,26 @@ export default async function LedgerPage({
             </div>
           ) : (
             <div className="divide-y divide-black/6 rounded-[6px] border border-black/8 bg-white">
-              {entries.map((e) => {
-                const signed = DEBIT_LIKE.has(e.kind) ? -e.amountCents : e.amountCents;
-                return (
-                  <div key={e.id} className="flex items-center justify-between gap-4 px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="text-[13px] text-[#14161A]">{KIND_LABEL[e.kind] ?? e.kind}</p>
-                      <p className="mt-0.5 truncate text-[11px] text-[#8A9099]">
-                        {e.categoryName ?? "—"} ·{" "}
-                        {e.occurredAt.toLocaleString("en-US", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                          timeZone: "UTC",
-                        })}{" "}
-                        UTC
-                      </p>
-                    </div>
-                    <p
-                      className={`shrink-0 font-mono text-[13px] tabular-nums ${
-                        signed < 0 ? "text-[#8C2F23]" : "text-[#14161A]"
-                      }`}
-                    >
-                      {signed < 0 ? "−" : ""}
-                      {dollars(Math.abs(e.amountCents))}
+              {/* No per-entry amount: a `sale` row carries the client's exact
+                  price and a `payout` row the worker's exact pay, so printing
+                  both timestamped hands each side the other's number. See the
+                  RULE 2 note in queries/public-ledger.ts — the amount is not
+                  even selected, so it cannot be rendered here by accident. */}
+              {entries.map((e) => (
+                <div key={e.id} className="flex items-center justify-between gap-4 px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-[13px] text-[#14161A]">{KIND_LABEL[e.kind] ?? e.kind}</p>
+                    <p className="mt-0.5 truncate text-[11px] text-[#8A9099]">
+                      {e.categoryName ?? "—"} ·{" "}
+                      {e.occurredAt.toLocaleString("en-US", {
+                        dateStyle: "medium",
+                        timeZone: "UTC",
+                      })}{" "}
+                      UTC
                     </p>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
           {nextCursor ? (
@@ -166,5 +159,3 @@ export default async function LedgerPage({
     </div>
   );
 }
-
-const DEBIT_LIKE = new Set(["refund", "chargeback"]);

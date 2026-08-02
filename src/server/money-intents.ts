@@ -65,7 +65,22 @@ export async function processMoneyIntents(): Promise<{
         const authorized = await prisma.payment.findFirst({
           where: { taskId: intent.taskId, status: "authorized" },
           orderBy: { createdAt: "desc" },
-          select: { id: true, amountCents: true, currency: true, provider: true, providerRef: true },
+          select: {
+            id: true,
+            amountCents: true,
+            currency: true,
+            provider: true,
+            providerRef: true,
+            // Needed for the ledger entry below. The refund branch has always
+            // selected these; the sale branch never did, so every captured
+            // sale landed with isInternal defaulting to false and no category.
+            task: {
+              select: {
+                isInternal: true,
+                category: { select: { id: true, slug: true, name: true } },
+              },
+            },
+          },
         });
         if (!authorized) throw new Error("No authorized client payment exists for this task.");
         if (authorized.provider !== "stripe" || !authorized.providerRef) {
@@ -82,6 +97,13 @@ export async function processMoneyIntents(): Promise<{
           });
           // Revenue is recognized here, at actual capture, not at checkout —
           // this is the whole point of the authorize/capture split.
+          // isInternal and the category snapshot are passed for the same
+          // reason the refund branch passes them: insertLedgerEntry defaults
+          // isInternal to false and publiclyVisible to true, so an operator's
+          // own practice transaction would otherwise clear BOTH gates of the
+          // public ledger filter and inflate the public total — permanently,
+          // since the table is append-only and only a correction entry can
+          // offset it.
           await insertLedgerEntry(tx, {
             kind: "sale",
             amountCents: authorized.amountCents,
@@ -89,6 +111,10 @@ export async function processMoneyIntents(): Promise<{
             sourceKind: "stripe_checkout",
             sourceId: authorized.providerRef!,
             taskId: intent.taskId,
+            categoryId: authorized.task.category?.id,
+            categorySlug: authorized.task.category?.slug,
+            categoryName: authorized.task.category?.name,
+            isInternal: authorized.task.isInternal,
           });
           await tx.moneyIntent.update({
             where: { id: intent.id },

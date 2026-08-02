@@ -18,12 +18,51 @@ import { prisma } from "@/lib/db";
  */
 const PAGE_SIZE = 50;
 
+/**
+ * RULE 2 — why no per-entry amount is published here.
+ *
+ * This page used to select amountCents per row and render it as an exact
+ * dollar figure. That published both sides of the wall: a `sale` row carries
+ * Payment.amountCents, which is task.clientPriceCents verbatim (stripe.ts),
+ * and a `payout` row carries Payout.amountCents, which is task.vaPayoutCents
+ * verbatim (admin-qc.ts). A worker who just delivered a task knows their own
+ * payout, sees a timestamped sale beside it, and has the client's price and
+ * the platform's margin. A client does the reverse.
+ *
+ * Bucketing does not fix it. The buckets that protect the marketing counters
+ * ($500, public-stats.ts) would floor a $74 task to $0, and any bucket fine
+ * enough to stay meaningful still hands over an approximate price to someone
+ * who knows the other half of the pair. Coarsening the timestamp does not fix
+ * it either, because at launch volume there is usually only one transaction
+ * in a day. The only per-entry amount that cannot be correlated is one that
+ * is never published.
+ *
+ * What survives is the part that carries the page's actual promise: the
+ * running total, which is an aggregate over every transaction and only
+ * published once there are enough of them to hide any single one, plus the
+ * per-entry kind, category and date — enough to show the ledger is real,
+ * append-only and moving, which is what "make 'trust me' checkable" meant.
+ */
+const MIN_PUBLIC_ENTRIES = 25;
+
+/**
+ * Exported so test/price-wall.test.ts can walk it the same way it walks the
+ * role-shaped task selects: this is a RULE 2 surface, and the failure mode is
+ * one word ("amountCents: true") added to the object literal while doing
+ * something else. A comment would not have caught that; the test will.
+ */
+export const publicLedgerEntrySelect = {
+  id: true,
+  seq: true,
+  kind: true,
+  categoryName: true,
+  occurredAt: true,
+} as const;
+
 export type PublicLedgerEntry = {
   id: string;
   seq: string;
   kind: string;
-  amountCents: number;
-  currency: string;
   categoryName: string | null;
   occurredAt: Date;
 };
@@ -31,7 +70,9 @@ export type PublicLedgerEntry = {
 export type PublicLedgerPage = {
   entries: PublicLedgerEntry[];
   nextCursor: string | null;
-  totalCents: number;
+  /** null until MIN_PUBLIC_ENTRIES is reached: a total over one or two
+   *  transactions IS those transactions' amounts. */
+  totalCents: number | null;
 };
 
 // What counts toward the headline total: money that actually moved from a
@@ -41,7 +82,12 @@ export type PublicLedgerPage = {
 const CREDIT_KINDS = new Set(["sale", "chargeback_reversal"]);
 const DEBIT_KINDS = new Set(["refund", "chargeback"]);
 
-export const publicLedgerTotalCents = cache(async (): Promise<number> => {
+export const publicLedgerTotalCents = cache(async (): Promise<number | null> => {
+  const publishedEntries = await prisma.ledgerEntry.count({
+    where: { isInternal: false, publiclyVisible: true },
+  });
+  if (publishedEntries < MIN_PUBLIC_ENTRIES) return null;
+
   const rows = await prisma.ledgerEntry.groupBy({
     by: ["kind"],
     where: { isInternal: false, publiclyVisible: true },
@@ -62,15 +108,7 @@ export async function publicLedgerPage(cursorSeq: string | null): Promise<Public
     orderBy: { seq: "desc" },
     take: PAGE_SIZE + 1,
     ...(cursorSeq ? { cursor: { seq: BigInt(cursorSeq) }, skip: 1 } : {}),
-    select: {
-      id: true,
-      seq: true,
-      kind: true,
-      amountCents: true,
-      currency: true,
-      categoryName: true,
-      occurredAt: true,
-    },
+    select: publicLedgerEntrySelect,
   });
 
   const hasMore = rows.length > PAGE_SIZE;
