@@ -9,6 +9,11 @@ import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { releaseHeldFunds } from "@/lib/escrow";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
+import {
+  returnStandingMinutes,
+  restitutionMessage,
+  type StandingRestitution,
+} from "@/lib/standing-restitution";
 
 export type ResolutionResult = { ok: true } | { ok: false; error: string };
 
@@ -80,6 +85,9 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
   const now = new Date();
 
   let taskId = "";
+  // Only the "upheld" branch sets this; the other two outcomes leave the task
+  // alive, so nothing is given back and the default is what the client reads.
+  let restitution: StandingRestitution = { kind: "not_standing" };
   try {
     await prisma.$transaction(async (tx) => {
       const dispute = await tx.dispute.findUnique({
@@ -254,6 +262,7 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
             },
             update: {},
           });
+          restitution = { kind: "not_standing" };
         } else if (payment && payment.status === "authorized") {
           await tx.moneyIntent.upsert({
             where: { idempotencyKey: `cancel-upheld-dispute:${dispute.id}` },
@@ -266,6 +275,15 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
             },
             update: {},
           });
+          restitution = { kind: "not_standing" };
+        } else {
+          // No Payment row at all. Either an internal task, or — the case this
+          // branch exists for — a standing task, whose client pays at the block
+          // level and has nothing here to refund. The minutes go back instead;
+          // upholding the dispute means the delivery failed the written
+          // standard, and a standing client must not end up worse off than a
+          // one-off client who gets refunded for the same failure.
+          restitution = await returnStandingMinutes(tx, taskId);
         }
       }
 
@@ -278,11 +296,19 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
               ? "Dispute reviewed — delivery stands"
               : parsed.data.outcome === "rework"
                 ? "Dispute reviewed — rework ordered"
-                : "Dispute upheld — refund queued",
+                : restitution.kind === "not_standing"
+                  ? "Dispute upheld — refund queued"
+                  : "Dispute upheld — capacity credited",
+          // A standing client has no payment of their own to refund: the block
+          // is paid separately and this task's cost was minutes, not money.
+          // The refund line used to be printed for every upheld dispute, so
+          // they were promised a repayment that nothing in the system would
+          // ever produce.
           body:
-            parsed.data.outcome === "upheld"
-              ? "The refund is returned to the original payment method."
-              : "Open the task for the current status and next step.",
+            parsed.data.outcome !== "upheld"
+              ? "Open the task for the current status and next step."
+              : (restitutionMessage(restitution) ??
+                "The refund is returned to the original payment method."),
           taskId,
         },
       });

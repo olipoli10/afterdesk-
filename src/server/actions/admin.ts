@@ -17,6 +17,7 @@ import {
 } from "@/lib/state";
 import { nextInPricingQueue } from "@/lib/queries/tasks";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
+import { returnStandingMinutes, restitutionMessage } from "@/lib/standing-restitution";
 
 const approveSchema = z.object({
   taskId: z.string(),
@@ -315,6 +316,11 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
           update: {},
         });
       }
+      // A standing task's cost was minutes, not a Payment row, so neither
+      // branch above applies to it and nothing was giving the capacity back.
+      // The client lost the work and the week's capacity for it.
+      const restitution = await returnStandingMinutes(tx, taskId);
+      const credited = restitutionMessage(restitution);
       await tx.notification.create({
         data: {
           userId: task.clientId,
@@ -324,13 +330,17 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
               ? "Task cancelled — refund queued"
               : holdToRelease
                 ? "Task cancelled — card hold released"
-                : "Task cancelled",
+                : credited && restitution.kind === "returned"
+                  ? "Task cancelled — capacity credited"
+                  : "Task cancelled",
           body:
             refundDue > 0
               ? "The remaining received payment will be returned to its original method."
               : holdToRelease
                 ? "Your card was never charged. The hold will be released."
-                : reason,
+                : credited
+                  ? `${reason}\n\n${credited}`
+                  : reason,
           taskId,
         },
       });
