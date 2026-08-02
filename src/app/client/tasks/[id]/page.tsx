@@ -94,7 +94,7 @@ export default async function ClientTaskPage({
                 {formatCents(task.clientPriceCents, task.currency)}
               </span>
               . Work starts once your card is authorized, and nothing is
-              actually charged until you approve the delivered work.
+              actually charged until your dispute window closes.
             </p>
             <PaymentActions taskId={task.id} />
           </CardBody>

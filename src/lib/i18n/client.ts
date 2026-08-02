@@ -45,9 +45,17 @@ type Dict = {
     cta: string;
     /** Sits directly under the CTA, same micro-copy convention as the
      *  Academy hero's "You can start the first course tonight." — the
-     *  literal answer to "so what actually happens if I click this": the
-     *  card is authorized, not charged, and stays that way on both sides
-     *  (you, and the specialist) until you approve the delivery. */
+     *  literal answer to "so what actually happens if I click this".
+     *
+     *  This used to read "…until you approve the delivery", which described
+     *  a mechanism that does not exist: there is no client approval step
+     *  anywhere in the codebase. The operator approves in QC
+     *  (approveDeliverable, admin-qc.ts), and capture follows automatically
+     *  once disputeWindowEndsAt passes (releaseDisputeWindowFunds,
+     *  sweeps.ts) whether the client acts or not. The copy now states the
+     *  real guarantee — operator review, then a dispute window before any
+     *  capture — which is still a genuine promise, just an accurate one.
+     *  Keep it that way unless a real client-approval transition is built. */
     guarantee: string;
     /** The hero's sr-only description of the animated live task window, for
      *  anyone who cannot see it. Takes liveWindow.taskTitle so the quoted
@@ -218,7 +226,7 @@ const en: Dict = {
       "Finding a worker was never the hard part. Checking their work, fixing mistakes, chasing hours — that's what we take off your plate.",
     cta: "Describe your task",
     guarantee:
-      "Your card is authorized, not charged, and the specialist is only paid once you approve the work.",
+      "Your card is authorized, not charged. An operator reviews the delivery before it reaches you, and nothing is captured until your dispute window closes.",
     srPreview: (title) =>
       `Product preview: a task titled “${title}” is received at 6:41 PM, priced $74 by the operator 34 minutes later, approved, done overnight by a vetted specialist, and passes review by 7:07 AM.`,
   },
@@ -241,7 +249,7 @@ const en: Dict = {
       ],
       [
         "You only pay if it's right",
-        "Your card is authorized through Stripe, not charged. Nothing is billed, and the specialist isn't paid, until you approve the finished work.",
+        "Your card is authorized through Stripe, not charged. An operator checks the finished work against a written standard before it reaches you, and nothing is billed — and the specialist isn't paid — until your dispute window closes.",
       ],
     ],
     pillars: [
@@ -376,7 +384,7 @@ const fr: Dict = {
       "Trouver un travailleur n'a jamais été le plus dur. Vérifier son travail, corriger ses erreurs, relancer ses heures — c'est ça qu'on retire de tes épaules.",
     cta: "Décrivez votre tâche",
     guarantee:
-      "Votre carte est autorisée, pas débitée, et le spécialiste n'est payé qu'une fois que vous approuvez le travail.",
+      "Votre carte est autorisée, pas débitée. Un opérateur vérifie la livraison avant qu'elle ne vous parvienne, et rien n'est prélevé tant que votre fenêtre de contestation n'est pas écoulée.",
     srPreview: (title) =>
       `Aperçu du produit : une tâche intitulée “${title}” est reçue à 18 h 41, chiffrée à $74 par l'opérateur 34 minutes plus tard, approuvée, réalisée pendant la nuit par un spécialiste vérifié, et passe la révision avant 7 h 07.`,
   },
@@ -399,7 +407,7 @@ const fr: Dict = {
       ],
       [
         "Vous ne payez que si c'est bon",
-        "Votre carte est autorisée via Stripe, pas débitée. Rien n'est facturé, et le spécialiste n'est pas payé, tant que vous n'approuvez pas le travail livré.",
+        "Votre carte est autorisée via Stripe, pas débitée. Un opérateur vérifie le travail terminé selon une norme écrite avant qu'il ne vous parvienne, et rien n'est facturé — ni le spécialiste payé — tant que votre fenêtre de contestation n'est pas écoulée.",
       ],
     ],
     pillars: [
@@ -534,7 +542,7 @@ const es: Dict = {
       "Encontrar a alguien nunca fue lo difícil. Revisar su trabajo, corregir errores, perseguir horas — eso es lo que te quitamos de encima.",
     cta: "Describe tu tarea",
     guarantee:
-      "Tu tarjeta queda autorizada, no cobrada, y el especialista solo cobra cuando tú apruebas el trabajo.",
+      "Tu tarjeta queda autorizada, no cobrada. Un operador revisa la entrega antes de que llegue a ti, y no se cobra nada hasta que se cierra tu ventana de disputa.",
     srPreview: (title) =>
       `Vista previa del producto: una tarea titulada “${title}” se recibe a las 6:41 p. m., cotizada en $74 por el operador 34 minutos después, aprobada, realizada durante la noche por un especialista verificado, y pasa la revisión antes de las 7:07 a. m.`,
   },
@@ -557,7 +565,7 @@ const es: Dict = {
       ],
       [
         "Solo pagas si está bien",
-        "Tu tarjeta queda autorizada a través de Stripe, no cobrada. No se cobra nada, y el especialista no recibe pago, hasta que apruebas el trabajo entregado.",
+        "Tu tarjeta queda autorizada a través de Stripe, no cobrada. Un operador revisa el trabajo terminado según un estándar escrito antes de que llegue a ti, y no se cobra nada — ni el especialista recibe pago — hasta que se cierra tu ventana de disputa.",
       ],
     ],
     pillars: [
@@ -699,7 +707,7 @@ const tl: Dict = {
       "Ang paghahanap ng manggagawa hindi kailanman ang mahirap na bahagi. Ang pag-check ng trabaho nila, pag-ayos ng mali, paghabol sa oras nila — yun ang inaalis namin sa'yo.",
     cta: "Ilarawan ang task mo",
     guarantee:
-      "Naka-authorize lang ang card mo, hindi sinisingil, at babayaran lang ang espesyalista kapag na-approve mo na ang trabaho.",
+      "Naka-authorize lang ang card mo, hindi sinisingil. Sinusuri ng operator ang delivery bago ito dumating sa iyo, at walang sinisingil hangga't hindi pa tapos ang window mo para mag-dispute.",
     srPreview: (title) =>
       `Preview ng produkto: isang task na may pamagat na “${title}” ay natanggap nang 6:41 PM, pinresyuhan ng $74 ng operator 34 min pagkatapos, inaprubahan, ginawa magdamag ng beripikadong espesyalista, at pumasa sa review bago mag-7:07 AM.`,
   },
@@ -722,7 +730,7 @@ const tl: Dict = {
       ],
       [
         "Babayaran mo lang kung tama ito",
-        "Naka-authorize ang card mo sa pamamagitan ng Stripe, hindi sinisingil. Walang sisingilin, at hindi babayaran ang espesyalista, hanggang sa aprubahan mo ang natapos na trabaho.",
+        "Naka-authorize ang card mo sa pamamagitan ng Stripe, hindi sinisingil. Sinusuri ng operator ang natapos na trabaho ayon sa nakasulat na pamantayan bago ito dumating sa iyo, at walang sisingilin — at hindi babayaran ang espesyalista — hangga't hindi pa tapos ang window mo para mag-dispute.",
       ],
     ],
     pillars: [
