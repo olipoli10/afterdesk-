@@ -163,11 +163,24 @@ export async function reassignTask(input: unknown): Promise<CancelResult> {
 
   try {
     await prisma.$transaction(async (tx) => {
+      const task = await tx.task.findUnique({
+        where: { id: parsed.data.taskId },
+        select: { standingCapacityAccountId: true },
+      });
+      if (!task) throw new TransitionError("not-found");
+
+      // A standing task must never land in the public pool. It belongs to one
+      // client's private block, and any approved worker could have claimed it
+      // there — with none of the account context, and no way to be paid for it,
+      // since standing work is paid per period to the account's assignee. It
+      // goes back to `submitted` instead, where it waits for routing exactly
+      // like a task submitted with nobody assigned, and shows up in the
+      // standing capacity page's waiting-to-be-routed count.
       await transitionTask({
         tx,
         taskId: parsed.data.taskId,
         from: ["claimed", "qc_rejected", "submitted_for_qc", "revision_requested"],
-        to: "open",
+        to: task.standingCapacityAccountId ? "submitted" : "open",
         action: "admin_reassigned",
         actorId: admin.id,
         reason: parsed.data.reason,
@@ -195,6 +208,7 @@ export async function reassignTask(input: unknown): Promise<CancelResult> {
 
   revalidatePath("/admin/tasks");
   revalidatePath("/admin/workers");
+  revalidatePath("/admin/standing-capacity");
   return { ok: true };
 }
 

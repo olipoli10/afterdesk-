@@ -160,6 +160,11 @@ export async function poolForVa(opts: {
     where: {
       status: "open",
       claimedById: null,
+      // A standing task belongs to one client's private block and one
+      // assigned specialist. It must never be claimable by the pool at
+      // large: whoever claimed it would have no account context, and the
+      // per-period payout model means they would never be paid for it.
+      standingCapacityAccountId: null,
       ...(eligibleForHighValue ? {} : { tier: "standard" }),
     },
     select: vaPoolSelect,
@@ -208,6 +213,9 @@ export async function poolTaskForVa(
       id: taskId,
       status: "open",
       claimedById: null,
+      // Same exclusion as poolForVa: a gated worker must not reach a standing
+      // task by guessing its URL any more than by browsing the board.
+      standingCapacityAccountId: null,
       ...(eligibleForHighValue ? {} : { tier: "standard" }),
     },
     select: vaPoolDetailSelect,

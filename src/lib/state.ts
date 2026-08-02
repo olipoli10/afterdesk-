@@ -52,16 +52,22 @@ export const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   awaiting_payment: ["open", "expired", "cancelled"],
   declined: [],
   open: ["claimed", "expired", "cancelled"],
-  claimed: ["submitted_for_qc", "open", "expired", "cancelled"],
+  // "submitted" here is admin.ts's reassignTask exit for a Standing Capacity
+  // task: it must never re-enter the public pool (`open`), so it goes back to
+  // waiting-for-routing instead — exactly where a task sits when it is
+  // submitted with nobody assigned yet. Every non-standing task still exits
+  // through `open`; reassignTask picks the target from the row itself.
+  claimed: ["submitted_for_qc", "open", "submitted", "expired", "cancelled"],
   // `open` here is the reassignment exit when the QC rounds are exhausted:
   // the task goes back to the pool for a different worker.
-  submitted_for_qc: ["completed", "qc_rejected", "open", "cancelled"],
-  qc_rejected: ["submitted_for_qc", "open", "cancelled"],
+  submitted_for_qc: ["completed", "qc_rejected", "open", "submitted", "cancelled"],
+  qc_rejected: ["submitted_for_qc", "open", "submitted", "cancelled"],
   // `submitted_for_qc` is the worker re-delivering after a revision request.
   revision_requested: [
     "claimed",
     "submitted_for_qc",
     "open",
+    "submitted",
     "completed",
     "disputed",
     "cancelled",
