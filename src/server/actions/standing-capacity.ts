@@ -27,7 +27,14 @@ async function currentAssignee(
   accountId: string
 ): Promise<{ workerId: string } | null> {
   return db.standingCapacityAssignment.findFirst({
-    where: { accountId, activeTo: null },
+    // The status check is the second line, not the first. Suspension closes
+    // these rows (closeStandingAssignmentsForWorker, lib/standing-assignments.ts)
+    // so a suspended worker should have none left — but this resolver decides
+    // who receives a client's work and who gets paid for a period, and it used
+    // to route on activeTo alone. If a suspension path added later forgets to
+    // close, routing refuses here rather than handing tasks to someone who
+    // cannot open them.
+    where: { accountId, activeTo: null, worker: { vaProfile: { status: "approved" } } },
     select: { workerId: true },
     orderBy: { activeFrom: "desc" },
   });

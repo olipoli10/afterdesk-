@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
 import { logAdminEvent } from "@/lib/audit";
+import { closeStandingAssignmentsForWorker } from "@/lib/standing-assignments";
 
 export type AdminVaResult = { ok: true } | { ok: false; error: string };
 
@@ -138,6 +139,9 @@ export async function suspendVa(input: unknown): Promise<AdminVaResult> {
     if (result.count === 0) return false;
 
     await tx.session.deleteMany({ where: { userId: parsed.data.vaUserId } });
+    // Revoking the session without releasing the Standing Capacity account
+    // left the client's tasks routing to someone who could no longer sign in.
+    await closeStandingAssignmentsForWorker(tx, parsed.data.vaUserId, "suspended by an operator");
     await logAdminEvent({
       tx,
       actorId: admin.id,

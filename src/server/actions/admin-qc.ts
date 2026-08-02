@@ -8,6 +8,7 @@ import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
+import { closeStandingAssignmentsForWorker } from "@/lib/standing-assignments";
 
 export type QcResult =
   | { ok: true; nextId: string | null }
@@ -177,6 +178,18 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
             : {}),
         },
       });
+
+      // Same release the manual path performs (suspendVa, admin-va.ts): a
+      // suspended worker must stop being a Standing Capacity account's
+      // assignee, or the client's tasks keep routing to someone who cannot
+      // act on them.
+      if (dropsBelowFloor) {
+        await closeStandingAssignmentsForWorker(
+          tx,
+          submission.vaId,
+          `rolling score fell below the ${settings.suspensionFloor.toFixed(1)} floor`
+        );
+      }
 
       // A completed task can never exist without a payout row — but the
       // money doesn't move yet. QC approval used to be the moment both the
@@ -366,6 +379,11 @@ export async function rejectDeliverable(input: unknown): Promise<QcResult> {
         // strand someone outside the pool with no idea why — and leave them
         // holding a live session against a suspended account.
         await tx.session.deleteMany({ where: { userId: submission.vaId } });
+        await closeStandingAssignmentsForWorker(
+          tx,
+          submission.vaId,
+          `${consecutiveRejections} deliveries rejected in a row`
+        );
         await tx.notification.create({
           data: {
             userId: submission.vaId,
