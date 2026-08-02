@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireRole, requireApprovedVa } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
@@ -131,31 +132,46 @@ export async function assignWorker(input: unknown): Promise<ActionResult> {
     return { ok: false, error: "Choose an approved worker." };
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.standingCapacityAssignment.updateMany({
-      where: { accountId: account.id, activeTo: null },
-      data: { activeTo: new Date() },
-    });
-    await tx.standingCapacityAssignment.create({
-      data: { accountId: account.id, workerId: worker.id, assignedById: admin.id },
-    });
-
-    const pending = await tx.task.findMany({
-      where: { standingCapacityAccountId: account.id, status: "submitted" },
-      select: { id: true },
-    });
-    for (const task of pending) {
-      await transitionTask({
-        tx,
-        taskId: task.id,
-        from: "submitted",
-        to: "claimed",
-        action: "standing_capacity_routed",
-        actorId: admin.id,
-        data: { claimedById: worker.id, claimedAt: new Date() },
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.standingCapacityAssignment.updateMany({
+        where: { accountId: account.id, activeTo: null },
+        data: { activeTo: new Date() },
       });
+      // If this throws P2002 it is the partial unique index doing its job:
+      // another assignment landed between our updateMany and this insert.
+      // The close-then-open pair is only serialized by row locks when a row
+      // was ALREADY active — on an account with none, updateMany matches
+      // nothing, locks nothing, and two callers would both reach here.
+      await tx.standingCapacityAssignment.create({
+        data: { accountId: account.id, workerId: worker.id, assignedById: admin.id },
+      });
+
+      const pending = await tx.task.findMany({
+        where: { standingCapacityAccountId: account.id, status: "submitted" },
+        select: { id: true },
+      });
+      for (const task of pending) {
+        await transitionTask({
+          tx,
+          taskId: task.id,
+          from: "submitted",
+          to: "claimed",
+          action: "standing_capacity_routed",
+          actorId: admin.id,
+          data: { claimedById: worker.id, claimedAt: new Date() },
+        });
+      }
+    });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      return {
+        ok: false,
+        error: "Someone else just assigned a worker to this account. Reload to see who.",
+      };
     }
-  });
+    throw e;
+  }
 
   await logAdminEvent({
     actorId: admin.id,

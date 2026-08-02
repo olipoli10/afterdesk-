@@ -978,6 +978,15 @@ model StandingCapacityAssignment {
   worker       User                    @relation("StandingCapacityAssignmentWorker", fields: [workerId], references: [id], onDelete: Restrict)
   assignedById String
   activeFrom   DateTime                @default(now())
+  /**
+   * NULL = active. At most ONE row per account may be NULL, enforced by the
+   * partial unique index StandingCapacityAssignment_one_active_per_account
+   * (migration 20260802140000) — Prisma's DSL cannot express a WHERE on an
+   * index, same as Dispute_one_pending_per_task. Do not assume the two
+   * @@index lines below carry that guarantee: they are lookup indexes only,
+   * and for a while they were the only thing here, which is exactly how two
+   * concurrent assignWorker calls could both leave a row active.
+   */
   activeTo     DateTime?
 
   @@index([accountId, activeTo])

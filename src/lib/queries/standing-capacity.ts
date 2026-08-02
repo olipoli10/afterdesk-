@@ -110,9 +110,18 @@ export const adminAccountListSelect = {
   currentPeriodEnd: true,
   minutesUsedThisPeriod: true,
   client: { select: { id: true, name: true, email: true } },
+  // orderBy is load-bearing, not decoration. currentAssignee (the resolver
+  // that actually routes tasks and picks who gets paid) orders by activeFrom
+  // desc; this select used to `take: 1` with no order at all, so whenever two
+  // rows were active the admin could read one worker's name while the money
+  // and the work went to the other. The partial unique index added in
+  // migration 20260802140000 now makes two active rows impossible, but the
+  // two resolvers must agree regardless — the `payments` block below has
+  // always ordered its own `take: 1`, and this one simply didn't.
   assignments: {
     where: { activeTo: null },
     select: { worker: { select: { id: true, name: true } } },
+    orderBy: { activeFrom: "desc" as const },
     take: 1,
   },
   payments: {
