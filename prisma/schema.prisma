@@ -1059,7 +1059,13 @@ model StandingCapacityPayment {
   recordedById String
   createdAt    DateTime                @default(now())
 
-  @@index([accountId, periodStart])
+  /**
+   * Mirrors StandingCapacityPayout's own per-period key. Without it, a period
+   * recorded twice inserted a second `sale` into an append-only ledger, which
+   * cannot be taken back. Migration 20260802160000 repairs any existing
+   * duplicates before creating this.
+   */
+  @@unique([accountId, periodStart])
 }
 
 /**

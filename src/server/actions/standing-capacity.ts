@@ -10,7 +10,7 @@ import { transitionTask, TransitionError } from "@/lib/state";
 import { insertLedgerEntry } from "@/lib/ledger";
 import { logAdminEvent } from "@/lib/audit";
 import { findPii } from "@/lib/pii-patterns";
-import { lockStandingAccount, rollForwardPeriods } from "@/lib/standing-period";
+import { lockStandingAccount, rollForwardPeriods, resolveTargetPeriod } from "@/lib/standing-period";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -52,6 +52,37 @@ async function currentAssignee(
     // close, routing refuses here rather than handing tasks to someone who
     // cannot open them.
     where: { accountId, activeTo: null, worker: { vaProfile: { status: "approved" } } },
+    select: { workerId: true },
+    orderBy: { activeFrom: "desc" },
+  });
+}
+
+/**
+ * Who held this account when the given week closed — the person a payout for
+ * that week belongs to. For the current period this resolves to the same
+ * worker currentAssignee returns; it only diverges for a backdated one.
+ *
+ * Paying a past week off currentAssignee would pay whoever holds the account
+ * today for work someone else did, and the (accountId, vaId, periodStart)
+ * unique key would then permanently block paying the person who actually did
+ * it. The `approved` filter is deliberately absent here, unlike currentAssignee:
+ * that one decides who receives new work, this one decides who already earned
+ * money, and a worker suspended since is still owed the week they worked.
+ *
+ * A reassignment mid-week means two people worked it; this resolves the one
+ * who finished it. The unique key is per worker, so an operator splitting a
+ * week records the other worker as a second payout for the same period.
+ */
+async function assigneeAtPeriodEnd(
+  accountId: string,
+  periodEnd: Date
+): Promise<{ workerId: string } | null> {
+  return prisma.standingCapacityAssignment.findFirst({
+    where: {
+      accountId,
+      activeFrom: { lt: periodEnd },
+      OR: [{ activeTo: null }, { activeTo: { gte: periodEnd } }],
+    },
     select: { workerId: true },
     orderBy: { activeFrom: "desc" },
   });
@@ -226,13 +257,21 @@ export async function assignWorker(input: unknown): Promise<ActionResult> {
 const recordPeriodPaymentSchema = z.object({
   accountId: z.string().min(1).max(100),
   reference: z.string().trim().min(3).max(200),
+  /** ISO timestamp of the target week's start; omitted means the current one. */
+  periodStart: z.string().optional(),
 });
 
 /**
- * Admin-attested payment for the account's CURRENT period — mirrors
- * recordManualPayment in admin-payments.ts exactly, applied to a block
- * instead of a task. Real Stripe checkout for whole blocks is future work;
- * Stripe has no live keys configured anywhere in this app yet.
+ * Admin-attested payment for one period — mirrors recordManualPayment in
+ * admin-payments.ts exactly, applied to a block instead of a task. Real Stripe
+ * checkout for whole blocks is future work; Stripe has no live keys configured
+ * anywhere in this app yet.
+ *
+ * The period is chosen, not assumed. It used to be hard-coded to
+ * currentPeriodStart, and periods roll automatically whether or not the week
+ * was ever billed — so a week the operator did not get to before the rollover
+ * became permanently unrecordable. The client's money had arrived and no row
+ * could ever say so.
  */
 export async function recordPeriodPayment(input: unknown): Promise<ActionResult> {
   const admin = await requireRole("ADMIN");
@@ -250,17 +289,33 @@ export async function recordPeriodPayment(input: unknown): Promise<ActionResult>
       weeklyClientPriceCents: true,
       currentPeriodStart: true,
       currentPeriodEnd: true,
+      createdAt: true,
     },
   });
   if (!account) return { ok: false, error: "Account not found." };
   if (account.status !== "active") return { ok: false, error: "This account is not active." };
 
+  const period = resolveTargetPeriod(account, parsed.data.periodStart);
+  if (!period) {
+    return { ok: false, error: "That is not a period this account had. Pick one from the list." };
+  }
+
+  // The unique index added alongside this (migration 20260802160000) is the
+  // real guarantee — a duplicate would insert a second `sale` into an
+  // append-only ledger, which cannot be taken back. This check exists so the
+  // operator reads a sentence rather than a constraint violation.
+  const already = await prisma.standingCapacityPayment.findFirst({
+    where: { accountId: account.id, periodStart: period.periodStart },
+    select: { id: true },
+  });
+  if (already) return { ok: false, error: "This period is already recorded as paid." };
+
   await prisma.$transaction(async (tx) => {
     const payment = await tx.standingCapacityPayment.create({
       data: {
         accountId: account.id,
-        periodStart: account.currentPeriodStart,
-        periodEnd: account.currentPeriodEnd,
+        periodStart: period.periodStart,
+        periodEnd: period.periodEnd,
         amountCents: account.weeklyClientPriceCents,
         currency: account.currency,
         method: "wire",
@@ -281,7 +336,7 @@ export async function recordPeriodPayment(input: unknown): Promise<ActionResult>
         userId: account.clientId,
         type: "payment_received",
         title: "Standing capacity payment received",
-        body: "This period is paid.",
+        body: `The week of ${period.periodStart.toISOString().slice(0, 10)} is paid.`,
       },
     });
   });
@@ -293,15 +348,22 @@ export async function recordPeriodPayment(input: unknown): Promise<ActionResult>
 const recordWorkerPayoutSchema = z.object({
   accountId: z.string().min(1).max(100),
   reference: z.string().trim().max(200).optional(),
+  /** ISO timestamp of the target week's start; omitted means the current one. */
+  periodStart: z.string().optional(),
 });
 
 /**
- * The worker-side mirror of recordPeriodPayment: one lump sum for the
- * CURRENT period, paid to whoever is presently assigned. Deliberately
- * separate from admin-qc.ts's approveDeliverable — a period can hold
- * several approved tasks, and this pays for the period once, not once per
- * task (see the isStandingCapacityTask guard there for why no per-task
- * Payout/MoneyIntent is ever created for these tasks).
+ * The worker-side mirror of recordPeriodPayment: one lump sum for one period,
+ * paid to whoever held the account when that week closed. Deliberately
+ * separate from admin-qc.ts's approveDeliverable — a period can hold several
+ * approved tasks, and this pays for the period once, not once per task (see
+ * the isStandingCapacityTask guard there for why no per-task Payout/MoneyIntent
+ * is ever created for these tasks).
+ *
+ * Backdating matters more here than on the client side. The unique key is
+ * (accountId, vaId, periodStart), so a missed week recorded against the
+ * current period would both pay the wrong worker and burn the only slot the
+ * right one had — the week became unpayable to the person who worked it.
  */
 export async function recordWorkerPeriodPayout(input: unknown): Promise<ActionResult> {
   const admin = await requireRole("ADMIN");
@@ -317,19 +379,27 @@ export async function recordWorkerPeriodPayout(input: unknown): Promise<ActionRe
       weeklyVaPayoutCents: true,
       currentPeriodStart: true,
       currentPeriodEnd: true,
+      createdAt: true,
     },
   });
   if (!account) return { ok: false, error: "Account not found." };
 
-  const assignee = await currentAssignee(prisma, account.id);
-  if (!assignee) return { ok: false, error: "No worker is currently assigned to this account." };
+  const period = resolveTargetPeriod(account, parsed.data.periodStart);
+  if (!period) {
+    return { ok: false, error: "That is not a period this account had. Pick one from the list." };
+  }
+
+  const assignee = await assigneeAtPeriodEnd(account.id, period.periodEnd);
+  if (!assignee) {
+    return { ok: false, error: "No worker held this account during that week, so there is nothing to pay." };
+  }
 
   const existing = await prisma.standingCapacityPayout.findUnique({
     where: {
       accountId_vaId_periodStart: {
         accountId: account.id,
         vaId: assignee.workerId,
-        periodStart: account.currentPeriodStart,
+        periodStart: period.periodStart,
       },
     },
     select: { id: true },
@@ -341,8 +411,8 @@ export async function recordWorkerPeriodPayout(input: unknown): Promise<ActionRe
       data: {
         accountId: account.id,
         vaId: assignee.workerId,
-        periodStart: account.currentPeriodStart,
-        periodEnd: account.currentPeriodEnd,
+        periodStart: period.periodStart,
+        periodEnd: period.periodEnd,
         amountCents: account.weeklyVaPayoutCents,
         currency: account.currency,
         method: "wire",
@@ -363,7 +433,7 @@ export async function recordWorkerPeriodPayout(input: unknown): Promise<ActionRe
         userId: assignee.workerId,
         type: "standing_capacity_payout_recorded",
         title: "Standing capacity payout recorded",
-        body: "This period's payout has been recorded.",
+        body: `Your payout for the week of ${period.periodStart.toISOString().slice(0, 10)} has been recorded.`,
       },
     });
   });

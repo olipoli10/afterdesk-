@@ -5,7 +5,9 @@ import {
   standingCapacityAccountsForAdmin,
   draftContextNotesForAdmin,
   contextNotesForAdmin,
+  settledStandingPeriods,
 } from "@/lib/queries/standing-capacity";
+import { selectablePeriods } from "@/lib/standing-period";
 import { unroutedStandingTaskCounts } from "@/lib/queries/tasks";
 import { EmptyState, moneyClient, moneyPayout } from "@/components/ui";
 import { CreateAccountForm } from "@/components/standing-capacity-create-form";
@@ -26,7 +28,7 @@ export const metadata = {
 export default async function AdminStandingCapacityPage() {
   await requireRole("ADMIN");
 
-  const [accounts, settings, workers, clientsWithoutAccount, unrouted] = await Promise.all([
+  const [accounts, settings, workers, clientsWithoutAccount, unrouted, settledPeriods] = await Promise.all([
     standingCapacityAccountsForAdmin(),
     getSettings(),
     prisma.vaProfile.findMany({
@@ -40,6 +42,7 @@ export default async function AdminStandingCapacityPage() {
       take: 200,
     }),
     unroutedStandingTaskCounts(),
+    settledStandingPeriods(),
   ]);
 
   const workerOptions = workers.map((w) => w.user);
@@ -70,6 +73,15 @@ export default async function AdminStandingCapacityPage() {
               ]);
               const assignee = account.assignments[0]?.worker;
               const waiting = unrouted.get(account.id) ?? 0;
+              // Which weeks are recordable, and which are already settled.
+              // Periods roll automatically whether or not the week was billed,
+              // so without this list a week missed at the time stayed missed.
+              const settled = settledPeriods.get(account.id) ?? new Set<number>();
+              const periods = selectablePeriods(account).map((p) => ({
+                value: p.periodStart.toISOString(),
+                label: `${p.periodStart.toLocaleDateString()} – ${p.periodEnd.toLocaleDateString()}`,
+                settled: settled.has(p.periodStart.getTime()),
+              }));
               const capacityMinutes = account.tierHours * 60;
               const usedPct = Math.min(
                 100,
@@ -126,11 +138,15 @@ export default async function AdminStandingCapacityPage() {
                         </p>
                       ) : null}
                       <ReassignForm accountId={account.id} workers={workerOptions} />
-                      {assignee ? (
-                        <div className="mt-2">
-                          <RecordWorkerPayoutForm accountId={account.id} />
-                        </div>
-                      ) : null}
+                      {/* Shown even with nobody currently assigned. This used
+                          to be gated on `assignee`, which made a past week
+                          unpayable the moment its worker was suspended or
+                          replaced — the exact case backdating exists for. The
+                          action resolves who held the account when the chosen
+                          week closed, and says so if nobody did. */}
+                      <div className="mt-2">
+                        <RecordWorkerPayoutForm accountId={account.id} periods={periods} />
+                      </div>
                     </div>
                     <div>
                       <p className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.08em] text-[#5B6069]">
@@ -141,7 +157,7 @@ export default async function AdminStandingCapacityPage() {
                           ? `Last recorded: $${(lastPayment.amountCents / 100).toFixed(0)} (${lastPayment.reference})`
                           : "No payment recorded yet"}
                       </p>
-                      <RecordPaymentForm accountId={account.id} />
+                      <RecordPaymentForm accountId={account.id} periods={periods} />
                     </div>
                   </div>
 

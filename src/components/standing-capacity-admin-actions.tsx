@@ -76,12 +76,53 @@ export function ReassignForm({
   );
 }
 
-export function RecordPaymentForm({ accountId }: { accountId: string }) {
+/**
+ * The weeks an operator can record against, newest first, already labelled and
+ * marked as settled or not. Built server-side from selectablePeriods, so the
+ * dropdown can never offer a week the account did not actually have.
+ */
+export type PeriodOption = { value: string; label: string; settled: boolean };
+
+/** Shared by both record forms: same list, same "already recorded" marking. */
+function PeriodPicker({
+  periods,
+  value,
+  onChange,
+}: {
+  periods: PeriodOption[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Field label="Week">
+      <select className={inputClass} value={value} onChange={(e) => onChange(e.target.value)}>
+        {periods.map((p) => (
+          <option key={p.value} value={p.value}>
+            {p.label}
+            {p.settled ? " — already recorded" : ""}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+}
+
+export function RecordPaymentForm({
+  accountId,
+  periods,
+}: {
+  accountId: string;
+  periods: PeriodOption[];
+}) {
   const { run, error, isPending } = useAction();
   const [reference, setReference] = useState("");
+  const [periodStart, setPeriodStart] = useState(periods[0]?.value ?? "");
 
   return (
     <div className="flex flex-wrap items-end gap-2">
+      {/* Periods roll on their own whether or not the week was billed, so a
+          week missed at the time is only recoverable from this list. */}
+      <PeriodPicker periods={periods} value={periodStart} onChange={setPeriodStart} />
       <Field label="Payment reference">
         <input
           className={inputClass}
@@ -93,9 +134,11 @@ export function RecordPaymentForm({ accountId }: { accountId: string }) {
       <button
         className={buttonSecondary}
         disabled={isPending || reference.trim().length < 3}
-        onClick={() => run(() => recordPeriodPayment({ accountId, reference }), () => setReference(""))}
+        onClick={() =>
+          run(() => recordPeriodPayment({ accountId, reference, periodStart }), () => setReference(""))
+        }
       >
-        {isPending ? "Recording…" : "Record this period's payment"}
+        {isPending ? "Recording…" : "Record payment"}
       </button>
       {error ? (
         <p role="alert" className="w-full text-sm text-[#8C2F23]">
@@ -106,13 +149,23 @@ export function RecordPaymentForm({ accountId }: { accountId: string }) {
   );
 }
 
-export function RecordWorkerPayoutForm({ accountId }: { accountId: string }) {
+export function RecordWorkerPayoutForm({
+  accountId,
+  periods,
+}: {
+  accountId: string;
+  periods: PeriodOption[];
+}) {
   const { run, error, isPending } = useAction();
   const [reference, setReference] = useState("");
+  const [periodStart, setPeriodStart] = useState(periods[0]?.value ?? "");
   const [done, setDone] = useState(false);
 
   return (
     <div className="flex flex-wrap items-end gap-2">
+      {/* The payout goes to whoever held the account when the chosen week
+          closed, not to today's assignee — see assigneeAtPeriodEnd. */}
+      <PeriodPicker periods={periods} value={periodStart} onChange={setPeriodStart} />
       <Field label="Payout reference (optional)">
         <input
           className={inputClass}
@@ -126,7 +179,8 @@ export function RecordWorkerPayoutForm({ accountId }: { accountId: string }) {
         disabled={isPending}
         onClick={() =>
           run(
-            () => recordWorkerPeriodPayout({ accountId, reference: reference || undefined }),
+            () =>
+              recordWorkerPeriodPayout({ accountId, reference: reference || undefined, periodStart }),
             () => {
               setReference("");
               setDone(true);
@@ -134,7 +188,7 @@ export function RecordWorkerPayoutForm({ accountId }: { accountId: string }) {
           )
         }
       >
-        {isPending ? "Recording…" : "Record this period's worker payout"}
+        {isPending ? "Recording…" : "Record worker payout"}
       </button>
       {done ? <span className="text-sm text-[#166049]">Recorded.</span> : null}
       {error ? (

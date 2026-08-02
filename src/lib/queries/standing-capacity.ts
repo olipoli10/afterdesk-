@@ -129,6 +129,9 @@ export const adminAccountListSelect = {
     orderBy: { createdAt: "desc" as const },
     take: 1,
   },
+  // selectablePeriods walks back from currentPeriodStart and has to stop at
+  // the account's opening, or it would offer weeks predating the account.
+  createdAt: true,
 } as const;
 
 export async function standingCapacityAccountsForAdmin() {
@@ -136,6 +139,27 @@ export async function standingCapacityAccountsForAdmin() {
     select: adminAccountListSelect,
     orderBy: { createdAt: "desc" },
   });
+}
+
+/**
+ * Which weeks are already recorded as paid, per account. Kept out of
+ * adminAccountListSelect because `payments` there is a `take: 1` feeding the
+ * "last payment" line, and widening it would change what that line means.
+ * The period picker uses this to mark settled weeks, so an operator sees which
+ * of the recordable weeks are still outstanding instead of guessing — the
+ * whole point of letting them pick a past one.
+ */
+export async function settledStandingPeriods(): Promise<Map<string, Set<number>>> {
+  const rows = await prisma.standingCapacityPayment.findMany({
+    select: { accountId: true, periodStart: true },
+  });
+  const byAccount = new Map<string, Set<number>>();
+  for (const row of rows) {
+    const set = byAccount.get(row.accountId) ?? new Set<number>();
+    set.add(row.periodStart.getTime());
+    byAccount.set(row.accountId, set);
+  }
+  return byAccount;
 }
 
 export async function draftContextNotesForAdmin(accountId: string) {
