@@ -12,20 +12,19 @@ import "server-only";
  * platform). Same blocked string either way.
  */
 
-const CURRENCY_RE = /(?:[$€£]\s?\d[\d,.]*|\b\d[\d,.]*\s?(?:usd|dollars?|bucks)\b)/i;
-const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
-const PHONE_RE = /(?:\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
+import { findPii } from "./pii-patterns";
 
 export type ScrubResult = { ok: true } | { ok: false; reason: string };
 
 export function scrubCheck(text: string): ScrubResult {
-  if (CURRENCY_RE.test(text)) {
+  const found = findPii(text);
+  if (found === "price") {
     return {
       ok: false,
       reason: "Remove any price or dollar figure before sending — the assistant never discusses pricing.",
     };
   }
-  if (EMAIL_RE.test(text) || PHONE_RE.test(text)) {
+  if (found === "contact") {
     return {
       ok: false,
       reason: "Remove any email address or phone number before sending — never paste contact details here.",

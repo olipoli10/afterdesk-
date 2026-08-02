@@ -40,6 +40,20 @@ export type Settings = {
   highValueThreshold: number;
   suspensionFloor: number;
   minRatedDeliveries: number;
+  /**
+   * Consecutive QC rejections with no approval in between before a worker is
+   * suspended automatically.
+   *
+   * suspensionFloor cannot cover this case: the rolling score is computed
+   * only from APPROVED submissions, so a worker who has never had one keeps
+   * scoreCache = null forever and the floor check is structurally
+   * unreachable (`score !== null` in admin-qc.ts). That left the worst
+   * behaviour unpoliced — claim up to maxActiveClaims, deliver nothing
+   * usable, get rejected, let the task repool, claim again, indefinitely —
+   * while every cycle burned a real client's deadline. This counter is the
+   * floor for workers the score cannot describe yet.
+   */
+  maxConsecutiveQcRejections: number;
   minWorkerHourlyUsd: number;
   testCooldownDays: number;
   maxFileSizeMB: number;
@@ -128,6 +142,7 @@ export const SettingsSchema = z.object({
   highValueThreshold: z.number().min(1).max(5),
   suspensionFloor: z.number().min(1).max(5),
   minRatedDeliveries: z.number().int().min(1).max(100),
+  maxConsecutiveQcRejections: z.number().int().min(1).max(20),
   minWorkerHourlyUsd: z.number().positive().max(500),
   testCooldownDays: z.number().int().min(1).max(365),
   maxFileSizeMB: z.number().int().min(1).max(200),
@@ -182,6 +197,11 @@ export const DEFAULT_SETTINGS: Settings = {
   highValueThreshold: 4.0,
   suspensionFloor: 2.5,
   minRatedDeliveries: 3,
+  // Three strikes with nothing approved in between. Deliberately above
+  // maxQcRounds (2) so exhausting one task's rounds is not itself a
+  // suspension — a worker who genuinely struggles on one brief gets it
+  // repooled and keeps working; one who never lands anything does not.
+  maxConsecutiveQcRejections: 3,
   minWorkerHourlyUsd: 12,
   testCooldownDays: 30,
   // Direct uploads are buffered by the route handler. Keep the built-in

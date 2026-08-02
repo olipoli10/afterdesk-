@@ -314,10 +314,67 @@ export async function rejectDeliverable(input: unknown): Promise<QcResult> {
         meta: { round: roundsAfter, exhausted },
       });
 
+      /**
+       * The floor for workers the rolling score cannot describe.
+       *
+       * suspensionFloor (approveDeliverable, above) only ever fires when
+       * scoreCache is non-null, and scoreCache is computed exclusively from
+       * APPROVED submissions. A worker whose work is never approved keeps a
+       * null score forever, so that check could not reach them — and this
+       * branch only incremented a counter nobody acted on. The result was
+       * that the single worst pattern on the platform went unpoliced: claim
+       * up to maxActiveClaims, deliver nothing usable, get rejected, watch
+       * the task repool, claim again. Repeatable indefinitely, and every
+       * cycle spends a real client's deadline.
+       *
+       * Counted CONSECUTIVELY — rejections since the worker's last approved
+       * submission, not lifetime — so a strong worker with one bad week is
+       * not carried toward suspension by history they have already made up
+       * for. lifetime qcRejections stays as the operator's own signal.
+       */
+      const lastApproval = await tx.submission.findFirst({
+        where: { vaId: submission.vaId, qcStatus: "approved" },
+        orderBy: { reviewedAt: "desc" },
+        select: { reviewedAt: true },
+      });
+      const consecutiveRejections = await tx.submission.count({
+        where: {
+          vaId: submission.vaId,
+          qcStatus: "rejected",
+          ...(lastApproval?.reviewedAt ? { reviewedAt: { gt: lastApproval.reviewedAt } } : {}),
+        },
+      });
+      const tooManyRejections = consecutiveRejections >= settings.maxConsecutiveQcRejections;
+
       await tx.vaProfile.update({
         where: { userId: submission.vaId },
-        data: { qcRejections: { increment: 1 } },
+        data: {
+          qcRejections: { increment: 1 },
+          ...(tooManyRejections
+            ? {
+                status: "suspended" as const,
+                suspendedAt: new Date(),
+                suspensionReason: `${consecutiveRejections} deliveries rejected in a row with none approved in between.`,
+              }
+            : {}),
+        },
       });
+
+      if (tooManyRejections) {
+        // Manual suspension revokes sessions and tells the worker
+        // (suspendVa, admin-va.ts). An automatic one that did neither would
+        // strand someone outside the pool with no idea why — and leave them
+        // holding a live session against a suspended account.
+        await tx.session.deleteMany({ where: { userId: submission.vaId } });
+        await tx.notification.create({
+          data: {
+            userId: submission.vaId,
+            type: "account_suspended",
+            title: "Your account is on hold",
+            body: `${consecutiveRejections} deliveries were sent back without one being approved. Reply to support to talk it through and get back in the pool.`,
+          },
+        });
+      }
     });
   } catch (e) {
     if (e instanceof TransitionError && e.message === "already-reviewed") {

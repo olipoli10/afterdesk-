@@ -8,6 +8,7 @@ import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { insertLedgerEntry } from "@/lib/ledger";
 import { logAdminEvent } from "@/lib/audit";
+import { findPii } from "@/lib/pii-patterns";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -439,12 +440,52 @@ const preferenceSchema = z.object({
   notes: z.string().trim().max(2000).optional(),
 });
 
-/** The client's own words about their own working style — written directly,
- *  no operator mediation. See AccountPreference's doc comment for why. */
+/**
+ * The client's own words about their own working style — written directly,
+ * no operator mediation. See AccountPreference's doc comment for why.
+ *
+ * "No operator mediation" is the whole point of the field, and it is also
+ * why it needed a machine gate: these three strings are selected by
+ * workerAccountSelect (queries/standing-capacity.ts) and rendered verbatim
+ * to the assigned worker. A client typing "call me at 514-555-0199" or
+ * "email jean@acme.ca" broke RULE 1 by the simplest path in the product,
+ * and nothing checked. The one-off pipeline never had this hole because
+ * every task passes an operator before a worker sees it; Standing Capacity
+ * is the product where the client writes straight through.
+ *
+ * The check is the same one the worker's own free text has always faced on
+ * the way out (assistant-scrub.ts) — now shared from pii-patterns.ts, so
+ * both directions of the wall are held to one standard. It catches the
+ * mechanical shapes only; a name in prose still relies on the operator, and
+ * /security says so.
+ */
 export async function writeAccountPreference(input: unknown): Promise<ActionResult> {
   const user = await requireRole("CLIENT");
   const parsed = preferenceSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request." };
+
+  for (const field of [
+    parsed.data.communicationStyle,
+    parsed.data.deliverableFormat,
+    parsed.data.notes,
+  ]) {
+    if (!field) continue;
+    const found = findPii(field);
+    if (found === "contact") {
+      return {
+        ok: false,
+        error:
+          "Remove the email address or phone number. The specialist doing your work reads these notes, and the platform keeps that channel closed on purpose — anything you need to pass along goes through your operator.",
+      };
+    }
+    if (found === "price") {
+      return {
+        ok: false,
+        error:
+          "Remove the dollar figure. The specialist reads these notes and never sees what you pay.",
+      };
+    }
+  }
 
   const account = await prisma.standingCapacityAccount.findUnique({
     where: { clientId: user.id },
@@ -494,6 +535,34 @@ export async function submitStandingTask(input: unknown): Promise<SubmitStanding
   const settings = await getSettings();
   if (parsed.data.fileIds.length > settings.maxFilesPerTask) {
     return { ok: false, error: `At most ${settings.maxFilesPerTask} files per task.` };
+  }
+
+  /**
+   * A one-off task cannot reach a worker without passing approvePricing,
+   * where the operator attests to having read it for identifying details
+   * (admin.ts). A Standing Capacity task has no such stop: when a worker is
+   * assigned, this action transitions submitted → claimed in the same
+   * transaction that creates it, and vaTaskSelect projects `description`
+   * straight to them. So the brief a client types here reaches a named human
+   * with nothing in between — the same wall the one-off flow guards with an
+   * operator, guarded here by the machine check instead.
+   */
+  for (const field of [parsed.data.title, parsed.data.description]) {
+    const found = findPii(field);
+    if (found === "contact") {
+      return {
+        ok: false,
+        error:
+          "Remove the email address or phone number from your task. A specialist reads this directly, and the platform keeps that channel closed — send anything they need to reach you through your operator.",
+      };
+    }
+    if (found === "price") {
+      return {
+        ok: false,
+        error:
+          "Remove the dollar figure from your task. The specialist doing the work never sees what you pay.",
+      };
+    }
   }
 
   const account = await prisma.standingCapacityAccount.findUnique({
