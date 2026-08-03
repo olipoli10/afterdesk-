@@ -6,7 +6,12 @@ import type { Metadata } from "next";
 import { Reveal } from "@/components/reveal";
 import { LangSwitch } from "@/components/lang-switch";
 import { TrustLinks } from "@/components/trust-links";
-import { publicCourseFull, PUBLISHED_COURSES, academyStats } from "@/lib/academy/public";
+import {
+  publicCourseFull,
+  PUBLISHED_COURSES,
+  COURSE_SEO_TITLES,
+  academyStats,
+} from "@/lib/academy/public";
 import { courseLook } from "@/lib/academy/look";
 import { ACADEMY_I18N, ACADEMY_LANGS, academyLangOf } from "@/lib/i18n/academy";
 import { SITE_URL } from "@/lib/site";
@@ -49,7 +54,12 @@ export async function generateMetadata({
   if (!course) return {};
   const stats = academyStats();
   return {
-    title: `${course.title}: free course with a certificate`,
+    // Search-facing title from the per-course map: the house titles
+    // ("Research", "Writing") are invisible to anyone actually searching,
+    // who types the skill plus "virtual assistant". The H1 keeps the house
+    // title; the fallback covers a future course added before it is named
+    // in COURSE_SEO_TITLES.
+    title: COURSE_SEO_TITLES[slug] ?? `${course.title}: free course with a certificate`,
     description: `${course.summary} ${course.lessonCount} lessons, about ${course.minutes} minutes, then a ${stats.questionCount}-question exam. Free, with a permanent certificate.`,
     alternates: { canonical: `/academy/${slug}` },
     openGraph: {
@@ -76,6 +86,17 @@ export default async function CoursePublicPage({
   const stats = academyStats();
   const look = courseLook(course.track, course.slug);
   const machine = { lang: "en" as const };
+
+  /* The 8 courses that follow this one in the allowlist, wrapping around.
+     This used to be `.slice(0, 8)` on the filtered list — the same first 8
+     courses on all 20 pages, so the 11 later courses received zero links
+     from their peers and were reachable only through the hub. The cyclic
+     window gives every course exactly 8 inbound and 8 outbound peer links,
+     and the neighbours are real ones: the allowlist is ordered by track, so
+     a career course points mostly at career courses. */
+  const at = PUBLISHED_COURSES.indexOf(slug);
+  const others = PUBLISHED_COURSES.filter((s) => s !== slug);
+  const siblings = [...others.slice(at), ...others.slice(0, at)].slice(0, 8);
 
   /* Course + BreadcrumbList. Everything here is true and checkable: no
      aggregateRating (there are no ratings), no offers (there is no price),
@@ -330,9 +351,7 @@ export default async function CoursePublicPage({
           {t.curriculum.label}
         </h2>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-          {PUBLISHED_COURSES.filter((s) => s !== slug)
-            .slice(0, 8)
-            .map((s) => {
+          {siblings.map((s) => {
               const other = publicCourseFull(s);
               if (!other) return null;
               const ol = courseLook(other.track, other.slug);

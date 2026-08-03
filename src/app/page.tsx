@@ -15,6 +15,7 @@ import { PaperInstrument } from "@/components/paper-instrument";
 import { PaperReviewDesk } from "@/components/paper-review-desk";
 import { TrustLinks } from "@/components/trust-links";
 import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
+import { langAlternates } from "@/lib/i18n/langs";
 import { COMPACT_SERVICES_LABEL, COMPACT_HOW_LABEL } from "@/lib/i18n/mobile-menu-compact";
 import { SITE_URL, WORKER_SIDE_LABEL } from "@/lib/site";
 
@@ -36,9 +37,24 @@ const NOISE = {
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
 };
 
-export const metadata = {
-  alternates: { canonical: "/" },
-};
+/**
+ * Title and description come from the root layout's defaults — this page IS
+ * the default. Only the alternates are computed here: the page renders all
+ * four languages at one path via ?lang=, and langAlternates declares that
+ * fact (per-language canonicals, hreflang set, x-default on the bare path)
+ * the same way /about and /services already do. The cookie deliberately
+ * never enters this — see the helper's comment.
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  return {
+    alternates: langAlternates("/", sp.lang),
+  };
+}
 
 /**
  * The canonical Organization node. Every course page's Course.provider points

@@ -13,6 +13,7 @@ import { LiveClaimCard } from "@/components/live-claim-card";
 import { StickyApply } from "@/components/sticky-apply";
 import { LangSwitch } from "@/components/lang-switch";
 import { WORKERS_I18N, WORKERS_LANGS, workersLangOf } from "@/lib/i18n/workers";
+import { langAlternates } from "@/lib/i18n/langs";
 import { COMPACT_SERVICES_LABEL, COMPACT_HOW_LABEL } from "@/lib/i18n/mobile-menu-compact";
 import { publicSampleQuestion, academyStats } from "@/lib/academy/public";
 import { SAMPLE_EXAM_TRANSLATIONS } from "@/lib/academy/sample-i18n";
@@ -40,12 +41,24 @@ import { WORKER_SIDE_LABEL } from "@/lib/site";
  * nobody searches yet. The promise still closes the line — it is the
  * differentiator and it survives truncation at ~60 characters.
  */
-export const metadata = {
-  title: "Virtual assistant work from the Philippines: the payout is printed before you claim",
-  description:
-    "Remote virtual assistant work for Filipino specialists. Tasks arrive already priced: no proposals, no bidding, no commission off your rate. Free training and a certificate before you apply.",
-  alternates: { canonical: "/workers" },
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  return {
+    title:
+      "Virtual assistant work from the Philippines: the payout is printed before you claim",
+    description:
+      "Remote virtual assistant work for Filipino specialists. Tasks arrive already priced: no proposals, no bidding, no commission off your rate. Free training and a certificate before you apply.",
+    // Four full translations render at this one path via ?lang= — the
+    // alternates declare that, per-language canonical included, so ?lang=tl
+    // (the trust asset the audience shares around) is never read as a
+    // parameterised duplicate of the English page.
+    alternates: langAlternates("/workers", sp.lang),
+  };
+}
 
 const POOL_ROWS: {
   task: string;
@@ -698,6 +711,18 @@ export default async function WorkersHome({
                   </Link>
                 </div>
                 <p className="mt-4 font-mono text-[12px] text-[#5B6069]">{t.closing.funnel}</p>
+                {/* Always rendered — the chapter link to /academy above is
+                    gated on the sample exam loading, so this is the one body
+                    path to the training that cannot silently vanish. */}
+                <p className="mt-3 text-[14px] text-[#5B6069]">
+                  {t.closing.academyLine}{" "}
+                  <Link
+                    href="/academy"
+                    className="font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-[5px] transition-colors hover:decoration-[#14161A]"
+                  >
+                    {t.closing.academyCta}
+                  </Link>
+                </p>
               </div>
             </div>
           </Reveal>

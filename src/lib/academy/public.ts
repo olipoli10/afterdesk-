@@ -96,6 +96,44 @@ export function isPublished(slug: string): boolean {
 }
 
 /**
+ * The <title> each course page carries in search, keyed by slug.
+ *
+ * The house titles are written for someone already inside the Academy —
+ * "Research", "Writing", "CRM and Pipeline Hygiene" — and are invisible to
+ * the person actually searching, who types the skill plus "virtual
+ * assistant". These titles front-load that phrase; the H1 on the page keeps
+ * the house title, which is standard and honest as long as the <title>
+ * describes exactly what the page delivers: a complete free course with a
+ * real exam and a permanent certificate. Every claim in every line below is
+ * one of those three facts.
+ *
+ * A course missing here (a future addition) falls back to the generic
+ * pattern in generateMetadata rather than shipping without a title.
+ */
+export const COURSE_SEO_TITLES: Record<string, string> = {
+  "inbox-management": "Free inbox & email management course for virtual assistants",
+  "calendar-scheduling": "Free calendar & scheduling course for virtual assistants",
+  "customer-support": "Free customer support course for virtual assistants, with certificate",
+  "crm-pipeline": "Free CRM course for virtual assistants: cleanup & pipeline hygiene",
+  "ecommerce-ops": "Free e-commerce virtual assistant course, with certificate",
+  "social-media-ops": "Free social media management course for virtual assistants",
+  "project-coordination": "Free project coordination course for virtual assistants",
+  "slides-decks": "Free presentation & slide deck course for virtual assistants",
+  "design-basics": "Free visual design basics course for virtual assistants",
+  "seo-content-ops": "Free SEO & content operations course for virtual assistants",
+  "ai-tools": "Free AI tools course for virtual assistants, with certificate",
+  "bookkeeping-basics": "Free bookkeeping basics course for virtual assistants",
+  "getting-hired": "How to get hired as a virtual assistant: free course & certificate",
+  "portfolio-proof": "Virtual assistant portfolio without experience: free course",
+  "freelance-money": "Getting paid as a freelance virtual assistant: free course",
+  "spotting-scams": "How to spot fake job offers and online job scams: free course",
+  "night-shift-health": "Night shift health for remote workers: free course & certificate",
+  "spreadsheet-essentials": "Free spreadsheet course for virtual assistants (Google Sheets)",
+  research: "Free internet research course for virtual assistants, with certificate",
+  writing: "Free writing course for virtual assistants, with certificate",
+};
+
+/**
  * A published course WITH its teaching text — the projection the course pages
  * render from. Deliberately separate from PublicCourse so widening one cannot
  * silently widen the other, and structurally incapable of carrying an exam:

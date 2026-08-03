@@ -26,8 +26,14 @@ export const metadata: Metadata = {
     default: "Outsource admin, data & research tasks: done overnight at one fixed price",
     template: "%s · AfterDesk",
   },
+  /**
+   * Leads with the pain the buyer types — checking the work, fixing
+   * mistakes, chasing hours — which is the hero subtitle's own register,
+   * then the mechanism. "Virtual assistant service without the hiring"
+   * stays: it is the one head-term qualifier this site can honestly own.
+   */
   description:
-    "A virtual assistant service without the hiring: describe any admin, data, research or writing task in plain language, approve one fixed price, and get it back done by morning, reviewed by an operator before it reaches you. No subscription, no hourly meter.",
+    "Stop checking the work, fixing mistakes and chasing hours. Describe any admin, data, research or writing task, approve one fixed price, and get it back by morning — reviewed by an operator first. A virtual assistant service without the hiring. No subscription, no hourly meter.",
   openGraph: {
     siteName: "AfterDesk",
     type: "website",

@@ -109,7 +109,17 @@ type Dict = {
     schematic: string;
     terms: (maxClaims: number, qcRounds: number) => [string, string][];
   };
-  closing: { line1: string; line2: string; cta: string; funnel: string };
+  closing: {
+    line1: string;
+    line2: string;
+    cta: string;
+    funnel: string;
+    /** The non-conditional body path to /academy. The chapter link higher up
+     *  disappears when the sample exam fails to load; the closing one never
+     *  does, so the not-ready-yet candidate always has a next step. */
+    academyLine: string;
+    academyCta: string;
+  };
   footer: { about: string; how: string; signIn: string; sendWork: string };
   /** UI chrome for src/components/sample-exam.tsx — the "pick an answer"
    *  prompt, the miss message, and the correct-answer eyebrow. The question
@@ -230,6 +240,8 @@ const en: Dict = {
     cta: "Apply now",
     funnel:
       "Account → short application → the operator's review → the pool. Not everyone gets in. That's the point.",
+    academyLine: "Not ready to apply yet?",
+    academyCta: "Start with the free training",
   },
   footer: { about: "About us", how: "How it works", signIn: "Sign in", sendWork: "Send work instead" },
   sampleExamUi: {
@@ -340,6 +352,8 @@ const tl: Dict = {
     cta: "Mag-apply na",
     funnel:
       "Account → maikling application → review ng operator → ang pool. Hindi lahat nakakapasok. Iyon mismo ang punto.",
+    academyLine: "Hindi ka pa handang mag-apply?",
+    academyCta: "Magsimula sa libreng training",
   },
   footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", sendWork: "Magpadala ng trabaho" },
   sampleExamUi: {
@@ -456,6 +470,8 @@ const fr: Dict = {
     cta: "Postuler maintenant",
     funnel:
       "Compte → courte candidature → la révision de l'opérateur → le bassin. Tout le monde n'entre pas. C'est voulu.",
+    academyLine: "Pas encore prêt à postuler ?",
+    academyCta: "Commencez par la formation gratuite",
   },
   footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", sendWork: "Envoyer du travail" },
   sampleExamUi: {
@@ -567,6 +583,8 @@ const es: Dict = {
     cta: "Postula ahora",
     funnel:
       "Cuenta → postulación corta → la revisión del operador → el grupo. No todos entran. Ese es el punto.",
+    academyLine: "¿Aún no listo para postular?",
+    academyCta: "Empieza con la formación gratuita",
   },
   footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", sendWork: "Enviar trabajo" },
   sampleExamUi: {
