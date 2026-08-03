@@ -1,0 +1,739 @@
+/**
+ * The five trust/policy pages — Security, Privacy, Terms, Acceptable use,
+ * and the Ledger — in the same four languages and on the same shared
+ * ss-lang-doc cookie/fallback chain as /about, /how-it-works and /services
+ * (see docLangOf in ./docs and the LANG_COOKIE map in src/proxy.ts). They
+ * had no i18n at all until now: English only, regardless of which language
+ * the footer link that led here was rendered in — the exact gap a
+ * from-the-source bug report caught.
+ *
+ * TERMINOLOGY, reused verbatim from the rest of the site rather than
+ * reinvented: "opérateur"/"operador"/operator, "spécialiste"/"especialista"/
+ * espesyalista, "révision"/"revisión" for the QC review, "fenêtre de
+ * contestation"/"ventana de disputa" for the dispute window, "norme écrite"/
+ * "estándar escrito" for the written standard, "autorisée, pas débitée"/
+ * "autorizada, no cobrada" for the authorize-not-charge guarantee (all from
+ * src/lib/i18n/client.ts and docs.ts). A term with no prior translation
+ * anywhere on the site (refund, chargeback, subcontractor) gets a plain,
+ * standard business-register choice in the same voice as everything around
+ * it — never invented jargon.
+ *
+ * TAGALOG: the rest of the site's TL voice is Taglish — English nouns for
+ * specific technical/legal concepts embedded in Tagalog sentence structure
+ * (see docs.ts's own pTl: "Review" stays English even mid-Tagalog-sentence).
+ * That convention is followed here too, rather than forcing a from-scratch
+ * formal Tagalog legal glossary that risks a mistranslation. What changed
+ * from before is that these pages now render real Tagalog sentences at all
+ * — previously the fallback was the entire page in English.
+ */
+
+import type { DocLang } from "./docs";
+
+export type { DocLang };
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Shared across all four PolicyPage-wrapped pages (Security, Privacy,
+   Terms, Acceptable use): the header's "How it works" link and the
+   "Trust center · Updated …" stamp under the H1.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+export const POLICY_NAV_HOW: Record<DocLang, string> = {
+  en: "How it works",
+  fr: "Comment ça marche",
+  es: "Cómo funciona",
+  tl: "Paano ito gumagana",
+};
+
+export const POLICY_TRUST_CENTER: Record<DocLang, string> = {
+  en: "Trust center · Updated July 30, 2026",
+  fr: "Centre de confiance · Mis à jour le 30 juillet 2026",
+  es: "Centro de confianza · Actualizado el 30 de julio de 2026",
+  tl: "Sentro ng tiwala · Na-update noong Hulyo 30, 2026",
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECURITY
+   ═══════════════════════════════════════════════════════════════════════ */
+
+type SecurityDict = {
+  meta: { title: string; description: string };
+  title: string;
+  intro: string;
+  access: { h2: string; body: string };
+  files: { h2: string; body1: string; body2: string };
+  payments: { h2: string; body: string };
+  reporting: { h2: string; pre: string; post: string };
+};
+
+export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
+  en: {
+    meta: {
+      title: "Security",
+      description:
+        "How AfterDesk protects the files you send: uploads are inspected and scrubbed of author metadata, access ends with the task, and every delivery is reviewed by one operator before it reaches you.",
+    },
+    title: "Security",
+    intro:
+      "The identity wall, payment gate and quality review are enforced at the data and transaction layers—not only hidden in the interface.",
+    access: {
+      h2: "Access and identity",
+      body: "Every protected read and mutation rechecks the signed-in user, role and resource ownership. Password accounts must verify their email. Workers lose task-file access as soon as a task leaves their hands or their approval is suspended.",
+    },
+    files: {
+      h2: "Files",
+      body1: "Uploads are size-limited, signature-checked, hashed and unavailable until scanning passes. Office documents with macros, external relationships, comments, hidden sheets or embedded objects are refused. Common author metadata is removed from Office and image files. Production scanning fails closed when the malware service is unavailable.",
+      body2: "No automated system can remove identifying information written into the visible content itself. Clients and workers must remove names, contacts and account identifiers before upload; the operator performs a second content review before release.",
+    },
+    payments: {
+      h2: "Payments and audit",
+      body: "Card details are collected by Stripe. A task cannot reach the worker pool until a signed webhook confirms the approved amount. State changes, payouts, refunds and administrative decisions are recorded with idempotency controls and database-enforced invariants.",
+    },
+    reporting: {
+      h2: "Reporting",
+      pre: "Report a suspected vulnerability to",
+      post: ". Do not access other users’ data or disrupt the service while testing.",
+    },
+  },
+  fr: {
+    meta: {
+      title: "Sécurité",
+      description:
+        "Comment AfterDesk protège les fichiers que vous envoyez : les téléversements sont inspectés et nettoyés de leurs métadonnées d'auteur, l'accès prend fin avec la tâche, et chaque livraison est vérifiée par un opérateur avant de vous parvenir.",
+    },
+    title: "Sécurité",
+    intro:
+      "Le mur d'identité, la barrière de paiement et la révision qualité sont appliqués au niveau des données et des transactions — pas seulement cachés dans l'interface.",
+    access: {
+      h2: "Accès et identité",
+      body: "Chaque lecture et modification protégée revérifie l'utilisateur connecté, son rôle et la propriété de la ressource. Les comptes par mot de passe doivent vérifier leur courriel. Un travailleur perd l'accès aux fichiers d'une tâche dès qu'elle quitte ses mains ou que son approbation est suspendue.",
+    },
+    files: {
+      h2: "Fichiers",
+      body1: "Les téléversements sont limités en taille, vérifiés par signature, hachés et indisponibles tant que l'analyse n'est pas passée. Les documents Office avec macros, relations externes, commentaires, feuilles cachées ou objets intégrés sont refusés. Les métadonnées d'auteur courantes sont retirées des fichiers Office et images. En production, l'analyse échoue de façon fermée si le service antivirus est indisponible.",
+      body2: "Aucun système automatisé ne peut retirer une information identifiante écrite dans le contenu visible lui-même. Clients et travailleurs doivent retirer noms, coordonnées et identifiants de compte avant le téléversement; l'opérateur effectue une seconde révision du contenu avant la remise.",
+    },
+    payments: {
+      h2: "Paiements et audit",
+      body: "Les détails de carte sont recueillis par Stripe. Une tâche ne peut atteindre le bassin de travailleurs tant qu'un webhook signé n'a pas confirmé le montant approuvé. Les changements d'état, paiements, remboursements et décisions administratives sont enregistrés avec des contrôles d'idempotence et des invariants appliqués par la base de données.",
+    },
+    reporting: {
+      h2: "Signalement",
+      pre: "Signalez une vulnérabilité soupçonnée à",
+      post: ". N'accédez pas aux données d'autres utilisateurs et ne perturbez pas le service pendant vos tests.",
+    },
+  },
+  es: {
+    meta: {
+      title: "Seguridad",
+      description:
+        "Cómo protege AfterDesk los archivos que envías: las subidas se inspeccionan y se limpian de metadatos de autor, el acceso termina con la tarea, y cada entrega es revisada por un operador antes de llegar a ti.",
+    },
+    title: "Seguridad",
+    intro:
+      "El muro de identidad, la barrera de pago y la revisión de calidad se aplican en las capas de datos y transacciones — no solo ocultos en la interfaz.",
+    access: {
+      h2: "Acceso e identidad",
+      body: "Cada lectura y modificación protegida vuelve a verificar al usuario conectado, su rol y la propiedad del recurso. Las cuentas con contraseña deben verificar su correo. Un trabajador pierde el acceso a los archivos de una tarea en cuanto esta sale de sus manos o se suspende su aprobación.",
+    },
+    files: {
+      h2: "Archivos",
+      body1: "Las subidas tienen límite de tamaño, se verifican por firma, se calculan por hash y no están disponibles hasta pasar el escaneo. Se rechazan documentos de Office con macros, relaciones externas, comentarios, hojas ocultas u objetos incrustados. Se elimina el metadato de autor común de archivos de Office e imágenes. En producción, el escaneo falla de forma cerrada cuando el servicio antivirus no está disponible.",
+      body2: "Ningún sistema automatizado puede eliminar información identificativa escrita en el propio contenido visible. Clientes y trabajadores deben eliminar nombres, contactos e identificadores de cuenta antes de subir el archivo; el operador realiza una segunda revisión de contenido antes de la entrega.",
+    },
+    payments: {
+      h2: "Pagos y auditoría",
+      body: "Stripe recopila los datos de la tarjeta. Una tarea no puede llegar al grupo de trabajadores hasta que un webhook firmado confirme el monto aprobado. Los cambios de estado, pagos, reembolsos y decisiones administrativas se registran con controles de idempotencia e invariantes aplicados por la base de datos.",
+    },
+    reporting: {
+      h2: "Reportes",
+      pre: "Reporta una vulnerabilidad sospechada a",
+      post: ". No accedas a los datos de otros usuarios ni interrumpas el servicio mientras haces pruebas.",
+    },
+  },
+  tl: {
+    meta: {
+      title: "Seguridad",
+      description:
+        "Paano pinoprotektahan ng AfterDesk ang mga file na ipinapadala mo: sinusuri at nililinis ang mga upload sa author metadata, natatapos ang access kasabay ng task, at sinusuri ng isang operator ang bawat delivery bago ito makarating sa iyo.",
+    },
+    title: "Seguridad",
+    intro:
+      "Ang identity wall, payment gate, at quality review ay ipinapatupad sa data at transaction layer — hindi lang nakatago sa interface.",
+    access: {
+      h2: "Access at identity",
+      body: "Bawat protected na read at mutation ay muling sinusuri ang naka-sign-in na user, role, at ownership ng resource. Kailangang i-verify ng mga password account ang kanilang email. Nawawalan ng access ang isang worker sa mga file ng task sa sandaling umalis ito sa kanyang mga kamay o ma-suspend ang kanyang approval.",
+    },
+    files: {
+      h2: "Mga File",
+      body1: "May size limit ang mga upload, sini-signature-check, hina-hash, at hindi available hangga't hindi pumapasa sa scanning. Tinatanggihan ang mga Office document na may macro, external relationship, comment, hiding na sheet, o embedded object. Tinatanggal ang karaniwang author metadata sa Office at image file. Sa production, nabibigo nang closed ang scanning kapag hindi available ang malware service.",
+      body2: "Walang automated system na makakatanggal ng identifying information na nakasulat mismo sa visible na content. Kailangang tanggalin ng mga client at worker ang mga pangalan, contact, at account identifier bago mag-upload; nagsasagawa ang operator ng pangalawang content review bago i-release.",
+    },
+    payments: {
+      h2: "Mga Bayad at Audit",
+      body: "Kinokolekta ng Stripe ang mga detalye ng card. Hindi makakarating sa worker pool ang isang task hangga't hindi kinukumpirma ng naka-sign na webhook ang inaprubahang halaga. Naitatala ang mga pagbabago sa status, payout, refund, at desisyon ng admin gamit ang idempotency control at mga invariant na ipinapatupad ng database.",
+    },
+    reporting: {
+      h2: "Pag-report",
+      pre: "I-report ang pinaghihinalaang vulnerability sa",
+      post: ". Huwag i-access ang data ng ibang user o gambalain ang serbisyo habang nagtetest.",
+    },
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRIVACY
+   ═══════════════════════════════════════════════════════════════════════ */
+
+type PrivacyDict = {
+  meta: { title: string; description: string };
+  title: string;
+  intro: string;
+  processed: { h2: string; body: string };
+  used: { h2: string; body: string };
+  providers: { h2: string; body: string };
+  retention: { h2: string; pre: string; unit: string; mid: string; post: string };
+};
+
+export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
+  en: {
+    meta: {
+      title: "Privacy",
+      description:
+        "What AfterDesk collects, why, how long it is kept, and who can see it. Client and worker never learn each other’s identity — that separation is enforced in the data layer, not just the interface.",
+    },
+    title: "Privacy",
+    intro:
+      "We collect the minimum information needed to quote, perform, review, pay for and support a task.",
+    processed: {
+      h2: "Information processed",
+      body: "Account details, task briefs, uploaded files, delivery files, payment references, quality decisions, security logs and support communications. Worker applications also include experience, specialties, availability and an optional work-sample URL.",
+    },
+    used: {
+      h2: "How it is used",
+      body: "To operate the task, prevent fraud, enforce the identity boundary, provide support, satisfy financial recordkeeping and improve aggregate service quality. Task intake text may be sent to the configured AI provider to structure a draft brief; do not submit secrets that are unnecessary for quoting.",
+    },
+    providers: {
+      h2: "Service providers",
+      body: "The configured infrastructure, database and object-storage providers process service data. Stripe processes card payments, Resend delivers transactional email, and Anthropic processes AI-assisted intake when enabled. Each provider receives only the data needed for its function.",
+    },
+    retention: {
+      h2: "Retention and requests",
+      pre: "Task files are purged after the retention period shown in the task protocol, currently",
+      unit: "days",
+      mid: "Financial, fraud-prevention and audit records may be retained longer where operational or legal obligations require it. For access, correction or deletion requests, email",
+      post: ".",
+    },
+  },
+  fr: {
+    meta: {
+      title: "Confidentialité",
+      description:
+        "Ce qu'AfterDesk recueille, pourquoi, combien de temps c'est conservé, et qui peut le voir. Client et travailleur ne connaissent jamais l'identité l'un de l'autre — cette séparation est appliquée au niveau des données, pas seulement de l'interface.",
+    },
+    title: "Confidentialité",
+    intro:
+      "Nous recueillons le minimum d'information nécessaire pour chiffrer, réaliser, réviser, payer et soutenir une tâche.",
+    processed: {
+      h2: "Information traitée",
+      body: "Détails du compte, mandats de tâche, fichiers téléversés, fichiers de livraison, références de paiement, décisions de qualité, journaux de sécurité et communications de soutien. Les candidatures de travailleurs incluent aussi l'expérience, les spécialités, la disponibilité et une URL facultative d'échantillon de travail.",
+    },
+    used: {
+      h2: "Comment c'est utilisé",
+      body: "Pour réaliser la tâche, prévenir la fraude, appliquer la frontière d'identité, fournir du soutien, satisfaire aux exigences comptables et améliorer la qualité globale du service. Le texte de prise en charge d'une tâche peut être transmis au fournisseur d'IA configuré pour structurer une ébauche de mandat; ne soumettez pas de secrets inutiles au chiffrage.",
+    },
+    providers: {
+      h2: "Fournisseurs de services",
+      body: "Les fournisseurs configurés d'infrastructure, de base de données et de stockage d'objets traitent les données du service. Stripe traite les paiements par carte, Resend livre les courriels transactionnels, et Anthropic traite la prise en charge assistée par IA quand elle est activée. Chaque fournisseur ne reçoit que les données nécessaires à sa fonction.",
+    },
+    retention: {
+      h2: "Conservation et demandes",
+      pre: "Les fichiers d'une tâche sont purgés après la période de conservation indiquée dans le protocole, actuellement de",
+      unit: "jours",
+      mid: "Les dossiers financiers, de prévention de la fraude et d'audit peuvent être conservés plus longtemps lorsque des obligations opérationnelles ou légales l'exigent. Pour une demande d'accès, de correction ou de suppression, écrivez à",
+      post: ".",
+    },
+  },
+  es: {
+    meta: {
+      title: "Privacidad",
+      description:
+        "Qué recopila AfterDesk, por qué, cuánto tiempo se conserva y quién puede verlo. Cliente y trabajador nunca conocen la identidad del otro — esa separación se aplica en la capa de datos, no solo en la interfaz.",
+    },
+    title: "Privacidad",
+    intro:
+      "Recopilamos la información mínima necesaria para cotizar, realizar, revisar, pagar y dar soporte a una tarea.",
+    processed: {
+      h2: "Información procesada",
+      body: "Datos de la cuenta, encargos de tarea, archivos subidos, archivos de entrega, referencias de pago, decisiones de calidad, registros de seguridad y comunicaciones de soporte. Las solicitudes de trabajador también incluyen experiencia, especialidades, disponibilidad y una URL opcional de muestra de trabajo.",
+    },
+    used: {
+      h2: "Cómo se usa",
+      body: "Para realizar la tarea, prevenir fraude, aplicar el límite de identidad, dar soporte, cumplir con requisitos contables y mejorar la calidad agregada del servicio. El texto de admisión de una tarea puede enviarse al proveedor de IA configurado para estructurar un borrador del encargo; no envíes secretos innecesarios para cotizar.",
+    },
+    providers: {
+      h2: "Proveedores de servicio",
+      body: "Los proveedores configurados de infraestructura, base de datos y almacenamiento de objetos procesan los datos del servicio. Stripe procesa los pagos con tarjeta, Resend entrega el correo transaccional, y Anthropic procesa la admisión asistida por IA cuando está habilitada. Cada proveedor recibe solo los datos que necesita para su función.",
+    },
+    retention: {
+      h2: "Conservación y solicitudes",
+      pre: "Los archivos de una tarea se purgan después del período de conservación indicado en el protocolo, actualmente de",
+      unit: "días",
+      mid: "Los registros financieros, de prevención de fraude y de auditoría pueden conservarse más tiempo cuando lo exijan obligaciones operativas o legales. Para solicitudes de acceso, corrección o eliminación, escribe a",
+      post: ".",
+    },
+  },
+  tl: {
+    meta: {
+      title: "Privacy",
+      description:
+        "Ano ang kinokolekta ng AfterDesk, bakit, gaano katagal itinatago, at sino ang makakakita nito. Hindi kailanman malalaman ng client at worker ang identity ng isa't isa — ipinapatupad ang paghihiwalay na iyon sa data layer, hindi lang sa interface.",
+    },
+    title: "Privacy",
+    intro:
+      "Kinokolekta lang namin ang minimum na impormasyong kailangan para mag-quote, gumawa, mag-review, magbayad, at mag-suporta sa isang task.",
+    processed: {
+      h2: "Impormasyong pinoproseso",
+      body: "Mga detalye ng account, brief ng task, mga na-upload na file, mga file ng delivery, reference ng bayad, desisyon sa kalidad, security log, at komunikasyon sa suporta. Kasama rin sa aplikasyon ng worker ang karanasan, mga specialty, availability, at opsyonal na URL ng work sample.",
+    },
+    used: {
+      h2: "Paano ito ginagamit",
+      body: "Para paganahin ang task, pigilan ang fraud, ipatupad ang identity boundary, magbigay ng suporta, tuparin ang financial recordkeeping, at pahusayin ang pangkalahatang kalidad ng serbisyo. Maaaring maipadala ang teksto ng intake ng task sa naka-configure na AI provider para bumuo ng draft brief; huwag magsumite ng mga sikreto na hindi kailangan para sa pag-quote.",
+    },
+    providers: {
+      h2: "Mga Service Provider",
+      body: "Pinoproseso ng naka-configure na infrastructure, database, at object-storage provider ang data ng serbisyo. Pinoproseso ng Stripe ang mga bayad sa card, inihahatid ng Resend ang transactional email, at pinoproseso ng Anthropic ang AI-assisted intake kapag naka-enable ito. Bawat provider, tanging ang data lang na kailangan para sa gamit nito ang natatanggap.",
+    },
+    retention: {
+      h2: "Retention at mga Kahilingan",
+      pre: "Nabubura ang mga file ng task pagkatapos ng retention period na nakasaad sa protocol, kasalukuyang",
+      unit: "araw",
+      mid: "Maaaring itago nang mas matagal ang mga financial, fraud-prevention, at audit record kung kinakailangan ito ng operational o legal na obligasyon. Para sa mga kahilingan na access, correction, o deletion, mag-email sa",
+      post: ".",
+    },
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TERMS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+type TermsDict = {
+  meta: { title: string; description: string };
+  title: string;
+  intro: string;
+  scope: { h2: string; body: string };
+  review: { h2: string; body: string };
+  payments: { h2: string; body: string };
+  operator: { h2: string; body: string };
+  rights: { h2: string; body: string };
+};
+
+export const TERMS_I18N: Record<DocLang, TermsDict> = {
+  en: {
+    meta: {
+      title: "Terms",
+      description:
+        "The operational agreement behind every AfterDesk task: one fixed price approved before work starts, what the review standard covers, and how revisions, disputes and refunds work.",
+    },
+    title: "Service terms",
+    intro:
+      "These terms describe the operational agreement shown before a task is purchased: what you are buying, what one fixed price covers, and what happens when a delivery is wrong.",
+    scope: {
+      h2: "A task is a fixed scope",
+      body: "The approved brief, quantity, file set, delivery standard, deadline and fixed price form the task. Work begins only after payment confirmation. New scope requires a new quote.",
+    },
+    review: {
+      h2: "Quality review and recourse",
+      body: "The operator reviews each delivery against the written brief and category standard. Clients may use the task page to request the included revision rounds or open a dispute during the displayed review window. Disputes are decided against the written standard, not an undisclosed preference.",
+    },
+    payments: {
+      h2: "Payments and refunds",
+      body: "Clients purchase a deliverable from AfterDesk; the worker is an independent subcontractor paid by AfterDesk. An upheld dispute queues a refund to the original payment method. Fraudulent chargebacks, unlawful tasks and material misrepresentation may result in suspension.",
+    },
+    operator: {
+      h2: "Who operates AfterDesk",
+      body: "Every price, quality review and payout decision described in these terms is made by one person — not a support queue, not an algorithm.",
+    },
+    rights: {
+      h2: "Confidentiality and rights",
+      body: "Users must upload only material they are authorized to share. Workers may use task data only to complete the assigned work and may not contact or identify the client. On full payment, the client receives the rights AfterDesk can transfer in the commissioned deliverable, excluding third-party materials and pre-existing tools.",
+    },
+  },
+  fr: {
+    meta: {
+      title: "Conditions",
+      description:
+        "L'entente opérationnelle derrière chaque tâche AfterDesk : un prix fixe approuvé avant le début du travail, ce que couvre le standard de révision, et comment fonctionnent les révisions, litiges et remboursements.",
+    },
+    title: "Conditions de service",
+    intro:
+      "Ces conditions décrivent l'entente opérationnelle présentée avant l'achat d'une tâche : ce que vous achetez, ce que couvre un prix fixe, et ce qui se passe quand une livraison est incorrecte.",
+    scope: {
+      h2: "Une tâche est un périmètre fixe",
+      body: "Le mandat approuvé, la quantité, l'ensemble de fichiers, le standard de livraison, l'échéance et le prix fixe composent la tâche. Le travail commence seulement après la confirmation du paiement. Un nouveau périmètre exige un nouveau devis.",
+    },
+    review: {
+      h2: "Révision qualité et recours",
+      body: "L'opérateur vérifie chaque livraison contre le mandat écrit et le standard de la catégorie. Les clients peuvent utiliser la page de la tâche pour demander les rondes de révision incluses ou ouvrir un litige pendant la fenêtre de révision affichée. Les litiges sont tranchés contre le standard écrit, pas une préférence non divulguée.",
+    },
+    payments: {
+      h2: "Paiements et remboursements",
+      body: "Les clients achètent un livrable d'AfterDesk; le travailleur est un sous-traitant indépendant payé par AfterDesk. Un litige maintenu met en file un remboursement vers le moyen de paiement d'origine. Des rétrofacturations frauduleuses, des tâches illégales et une fausse représentation matérielle peuvent entraîner une suspension.",
+    },
+    operator: {
+      h2: "Qui exploite AfterDesk",
+      body: "Chaque prix, chaque révision qualité et chaque décision de paiement décrits dans ces conditions sont pris par une seule personne — pas une file de soutien, pas un algorithme.",
+    },
+    rights: {
+      h2: "Confidentialité et droits",
+      body: "Les utilisateurs ne doivent téléverser que du matériel qu'ils sont autorisés à partager. Les travailleurs ne peuvent utiliser les données d'une tâche que pour réaliser le travail assigné et ne peuvent contacter ou identifier le client. Sur paiement complet, le client reçoit les droits qu'AfterDesk peut transférer dans le livrable commandé, à l'exclusion du matériel de tiers et des outils préexistants.",
+    },
+  },
+  es: {
+    meta: {
+      title: "Términos",
+      description:
+        "El acuerdo operativo detrás de cada tarea de AfterDesk: un precio fijo aprobado antes de empezar el trabajo, qué cubre el estándar de revisión, y cómo funcionan las revisiones, disputas y reembolsos.",
+    },
+    title: "Términos del servicio",
+    intro:
+      "Estos términos describen el acuerdo operativo mostrado antes de comprar una tarea: qué estás comprando, qué cubre un precio fijo, y qué pasa cuando una entrega está mal.",
+    scope: {
+      h2: "Una tarea es un alcance fijo",
+      body: "El encargo aprobado, la cantidad, el conjunto de archivos, el estándar de entrega, la fecha límite y el precio fijo componen la tarea. El trabajo empieza solo tras confirmarse el pago. Un alcance nuevo requiere una cotización nueva.",
+    },
+    review: {
+      h2: "Revisión de calidad y recurso",
+      body: "El operador revisa cada entrega contra el encargo escrito y el estándar de la categoría. Los clientes pueden usar la página de la tarea para solicitar las rondas de revisión incluidas o abrir una disputa durante la ventana de revisión mostrada. Las disputas se deciden contra el estándar escrito, no una preferencia no revelada.",
+    },
+    payments: {
+      h2: "Pagos y reembolsos",
+      body: "Los clientes compran un entregable a AfterDesk; el trabajador es un subcontratista independiente pagado por AfterDesk. Una disputa confirmada pone en cola un reembolso al método de pago original. Contracargos fraudulentos, tareas ilegales y tergiversación material pueden resultar en suspensión.",
+    },
+    operator: {
+      h2: "Quién opera AfterDesk",
+      body: "Cada precio, cada revisión de calidad y cada decisión de pago descrita en estos términos la toma una sola persona — no una cola de soporte, no un algoritmo.",
+    },
+    rights: {
+      h2: "Confidencialidad y derechos",
+      body: "Los usuarios deben subir solo material que están autorizados a compartir. Los trabajadores pueden usar los datos de la tarea solo para completar el trabajo asignado y no pueden contactar o identificar al cliente. Con el pago completo, el cliente recibe los derechos que AfterDesk puede transferir en el entregable encargado, excluyendo material de terceros y herramientas preexistentes.",
+    },
+  },
+  tl: {
+    meta: {
+      title: "Terms",
+      description:
+        "Ang operational agreement sa likod ng bawat task ng AfterDesk: isang fixed na presyo na inaprubahan bago magsimula ang trabaho, kung ano ang saklaw ng review standard, at paano gumagana ang revision, dispute, at refund.",
+    },
+    title: "Mga Tuntunin ng Serbisyo",
+    intro:
+      "Inilalarawan ng mga tuntuning ito ang operational agreement na ipinapakita bago bilhin ang isang task: ano ang binibili mo, ano ang saklaw ng isang fixed na presyo, at ano ang mangyayari kapag mali ang delivery.",
+    scope: {
+      h2: "Ang isang task ay may fixed na scope",
+      body: "Binubuo ang task ng aprubadong brief, dami, set ng file, delivery standard, deadline, at fixed na presyo. Nagsisimula lang ang trabaho pagkatapos ma-kumpirma ang bayad. Kailangan ng bagong quote para sa bagong scope.",
+    },
+    review: {
+      h2: "Quality Review at Recourse",
+      body: "Sinusuri ng operator ang bawat delivery laban sa nakasulat na brief at pamantayan ng category. Puwedeng gamitin ng mga client ang task page para hilingin ang kasamang revision round o mag-open ng dispute habang bukas ang ipinapakitang review window. Napagpapasyahan ang mga dispute laban sa nakasulat na pamantayan, hindi sa hindi ipinaalam na kagustuhan.",
+    },
+    payments: {
+      h2: "Mga Bayad at Refund",
+      body: "Bumibili ang mga client ng deliverable mula sa AfterDesk; ang worker ay isang independiyenteng subcontractor na binabayaran ng AfterDesk. Ang na-uphold na dispute ay nagpapapila ng refund papunta sa orihinal na paraan ng pagbayad. Ang mapanlinlang na chargeback, ilegal na task, at material na maling representasyon ay maaaring magresulta sa suspensyon.",
+    },
+    operator: {
+      h2: "Sino ang Nag-ooperate ng AfterDesk",
+      body: "Ang bawat presyo, quality review, at desisyon sa payout na inilarawan sa mga tuntuning ito ay ginagawa ng iisang tao — hindi isang support queue, hindi isang algorithm.",
+    },
+    rights: {
+      h2: "Confidentiality at mga Karapatan",
+      body: "Dapat lang mag-upload ang mga user ng materyal na may pahintulot silang ibahagi. Puwede lang gamitin ng mga worker ang data ng task para tapusin ang inatas na trabaho at hindi sila puwedeng makipag-ugnayan o mag-identify sa client. Sa buong bayad, natatanggap ng client ang mga karapatang maipapasa ng AfterDesk sa in-commission na deliverable, hindi kasama ang materyal ng third-party at mga umiiral nang tool.",
+    },
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ACCEPTABLE USE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+type AcceptableUseDict = {
+  meta: { title: string; description: string };
+  title: string;
+  intro: string;
+  notAccepted: { h2: string; items: string[] };
+  sensitive: { h2: string; body: string };
+  enforcement: { h2: string; body: string };
+};
+
+export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
+  en: {
+    meta: {
+      title: "Acceptable use",
+      description:
+        "What AfterDesk will and will not take on. Some tasks we turn down — this page says which, and why, in plain language.",
+    },
+    title: "Acceptable use",
+    intro:
+      "AfterDesk handles bounded administrative work. Some tasks are refused even when they can be described.",
+    notAccepted: {
+      h2: "Not accepted",
+      items: [
+        "Illegal activity, fraud, impersonation, harassment or deceptive outreach.",
+        "Credential sharing, account takeovers, bypassing access controls or malware.",
+        "High-stakes legal, medical, financial or employment decisions.",
+        "Payment-card data, authentication secrets or unnecessary government identifiers.",
+        "Copyright infringement, doxxing, surveillance or re-identification of people.",
+        "Tasks requiring a worker to contact a client outside the operator channel.",
+      ],
+    },
+    sensitive: {
+      h2: "Sensitive material",
+      body: "Remove personal and confidential information not needed for the result. If a task cannot be completed without unusually sensitive data, contact support before uploading it.",
+    },
+    enforcement: {
+      h2: "Enforcement",
+      body: "The operator may refuse, cancel or pause a task that creates safety, confidentiality, legality or scope risk. A cancelled unpaid task is not charged; paid-task remedies follow the service terms and the task’s recorded status.",
+    },
+  },
+  fr: {
+    meta: {
+      title: "Utilisation acceptable",
+      description:
+        "Ce qu'AfterDesk accepte et refuse de prendre en charge. Certaines tâches sont refusées — cette page dit lesquelles, et pourquoi, en langage clair.",
+    },
+    title: "Utilisation acceptable",
+    intro:
+      "AfterDesk traite du travail administratif borné. Certaines tâches sont refusées même lorsqu'elles peuvent être décrites.",
+    notAccepted: {
+      h2: "Non accepté",
+      items: [
+        "Activité illégale, fraude, usurpation d'identité, harcèlement ou démarchage trompeur.",
+        "Partage d'identifiants, prise de contrôle de comptes, contournement des contrôles d'accès ou logiciels malveillants.",
+        "Décisions à fort enjeu en matière légale, médicale, financière ou d'emploi.",
+        "Données de carte de paiement, secrets d'authentification ou identifiants gouvernementaux non nécessaires.",
+        "Violation de droit d'auteur, doxxing, surveillance ou réidentification de personnes.",
+        "Tâches exigeant qu'un travailleur contacte un client en dehors du canal de l'opérateur.",
+      ],
+    },
+    sensitive: {
+      h2: "Matériel sensible",
+      body: "Retirez l'information personnelle et confidentielle qui n'est pas nécessaire au résultat. Si une tâche ne peut être complétée sans des données inhabituellement sensibles, contactez le soutien avant de les téléverser.",
+    },
+    enforcement: {
+      h2: "Application",
+      body: "L'opérateur peut refuser, annuler ou suspendre une tâche qui crée un risque de sécurité, de confidentialité, de légalité ou de périmètre. Une tâche annulée non payée n'est pas facturée; les recours pour une tâche payée suivent les conditions de service et le statut enregistré de la tâche.",
+    },
+  },
+  es: {
+    meta: {
+      title: "Uso aceptable",
+      description:
+        "Qué acepta y qué rechaza AfterDesk. Rechazamos algunas tareas — esta página dice cuáles, y por qué, en lenguaje claro.",
+    },
+    title: "Uso aceptable",
+    intro:
+      "AfterDesk maneja trabajo administrativo acotado. Se rechazan algunas tareas incluso cuando se pueden describir.",
+    notAccepted: {
+      h2: "No aceptado",
+      items: [
+        "Actividad ilegal, fraude, suplantación de identidad, acoso o contacto engañoso.",
+        "Compartir credenciales, toma de control de cuentas, evasión de controles de acceso o malware.",
+        "Decisiones legales, médicas, financieras o laborales de alto riesgo.",
+        "Datos de tarjeta de pago, secretos de autenticación o identificadores gubernamentales innecesarios.",
+        "Infracción de derechos de autor, doxxing, vigilancia o reidentificación de personas.",
+        "Tareas que requieran que un trabajador contacte a un cliente fuera del canal del operador.",
+      ],
+    },
+    sensitive: {
+      h2: "Material sensible",
+      body: "Elimina la información personal y confidencial que no se necesite para el resultado. Si una tarea no puede completarse sin datos inusualmente sensibles, contacta al soporte antes de subirlos.",
+    },
+    enforcement: {
+      h2: "Aplicación",
+      body: "El operador puede rechazar, cancelar o pausar una tarea que genere riesgo de seguridad, confidencialidad, legalidad o alcance. Una tarea cancelada sin pagar no se cobra; los remedios de una tarea pagada siguen los términos del servicio y el estado registrado de la tarea.",
+    },
+  },
+  tl: {
+    meta: {
+      title: "Katanggap-tanggap na Paggamit",
+      description:
+        "Kung ano ang tatanggapin at hindi tatanggapin ng AfterDesk. May mga task kaming tinatanggihan — sinasabi ng page na ito kung alin, at bakit, sa simpleng wika.",
+    },
+    title: "Katanggap-tanggap na Paggamit",
+    intro:
+      "Hinahandle ng AfterDesk ang naka-bound na administrative work. May mga task na tinatanggihan kahit ilarawan pa ito.",
+    notAccepted: {
+      h2: "Hindi Tinatanggap",
+      items: [
+        "Ilegal na aktibidad, fraud, pagpapanggap, panliligalig, o mapanlinlang na outreach.",
+        "Pagbabahagi ng credential, account takeover, pag-bypass sa access control, o malware.",
+        "High-stakes na legal, medikal, pinansyal, o employment na desisyon.",
+        "Payment-card na data, authentication secret, o hindi kailangang government identifier.",
+        "Paglabag sa copyright, doxxing, surveillance, o re-identification ng mga tao.",
+        "Mga task na nangangailangan na direktang makipag-ugnayan ang worker sa client sa labas ng channel ng operator.",
+      ],
+    },
+    sensitive: {
+      h2: "Sensitibong Materyal",
+      body: "Tanggalin ang personal at kumpidensyal na impormasyon na hindi kailangan para sa resulta. Kung hindi matatapos ang isang task nang walang di-pangkaraniwang sensitibong data, makipag-ugnayan sa suporta bago ito i-upload.",
+    },
+    enforcement: {
+      h2: "Pagpapatupad",
+      body: "Maaaring tanggihan, kanselahin, o i-pause ng operator ang isang task na lumilikha ng panganib sa kaligtasan, kumpidensyalidad, legalidad, o scope. Hindi sisingilin ang kinanselang task na hindi pa bayad; sinusunod ng mga remedyo para sa bayad na task ang service terms at ang naitalang status ng task.",
+    },
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LEDGER — its own layout, not PolicyPage, so its own strings live here.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+type LedgerDict = {
+  meta: { title: string; description: string };
+  back: string;
+  eyebrow: string;
+  h1: string;
+  lede: string;
+  totalLabel: string;
+  totalPending: string;
+  reliability: { onTime: string; qcFirstTry: string; disputed: string };
+  historyLabel: string;
+  emptyState: string;
+  emptyExample: string;
+  olderEntries: string;
+  kind: Record<string, string>;
+};
+
+export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
+  en: {
+    meta: {
+      title: "Public Ledger",
+      description:
+        "A running, append-only record of money processed through AfterDesk. No client or worker names — just the total and every entry behind it.",
+    },
+    back: "← Back",
+    eyebrow: "Public Ledger",
+    h1: "Every dollar processed, append-only.",
+    lede: "No client names, no worker names — just amounts, categories, and timestamps, written the moment each transaction settles. Entries are never edited or deleted once written; a correction is its own new entry, not an overwrite.",
+    totalLabel: "Total processed to date",
+    totalPending:
+      "Published once enough transactions have settled that the total cannot be traced back to any single one.",
+    reliability: {
+      onTime: "On-time delivery",
+      qcFirstTry: "Passes QC on the first try",
+      disputed: "Disputed after delivery",
+    },
+    historyLabel: "History",
+    emptyState:
+      "No entries yet — this list updates automatically once the first task completes.",
+    emptyExample: "example — Aug 4 · Payment processed · Data entry · $68",
+    olderEntries: "Older entries →",
+    kind: {
+      sale: "Payment processed",
+      refund: "Refund",
+      payout: "Worker payout",
+      fee: "Platform fee",
+      chargeback: "Chargeback",
+      chargeback_reversal: "Chargeback reversed",
+      correction: "Correction",
+    },
+  },
+  fr: {
+    meta: {
+      title: "Registre public",
+      description:
+        "Un registre continu, en ajout seul, de l'argent traité par AfterDesk. Aucun nom de client ou de travailleur — seulement le total et chaque écriture derrière lui.",
+    },
+    back: "← Retour",
+    eyebrow: "Registre public",
+    h1: "Chaque dollar traité, en ajout seul.",
+    lede: "Aucun nom de client, aucun nom de travailleur — seulement des montants, des catégories et des horodatages, inscrits au moment où chaque transaction se règle. Les écritures ne sont jamais modifiées ni supprimées une fois inscrites; une correction est sa propre nouvelle écriture, jamais une réécriture.",
+    totalLabel: "Total traité à ce jour",
+    totalPending:
+      "Publié une fois qu'assez de transactions se sont réglées pour que le total ne puisse être retracé jusqu'à une seule d'entre elles.",
+    reliability: {
+      onTime: "Livraison à temps",
+      qcFirstTry: "Passe la révision au premier essai",
+      disputed: "Contestée après livraison",
+    },
+    historyLabel: "Historique",
+    emptyState:
+      "Aucune écriture encore — cette liste se met à jour automatiquement dès que la première tâche est complétée.",
+    emptyExample: "exemple — 4 août · Paiement traité · Saisie de données · 68 $",
+    olderEntries: "Écritures plus anciennes →",
+    kind: {
+      sale: "Paiement traité",
+      refund: "Remboursement",
+      payout: "Paiement au travailleur",
+      fee: "Frais de plateforme",
+      chargeback: "Rétrofacturation",
+      chargeback_reversal: "Rétrofacturation annulée",
+      correction: "Correction",
+    },
+  },
+  es: {
+    meta: {
+      title: "Registro público",
+      description:
+        "Un registro continuo, de solo adición, del dinero procesado a través de AfterDesk. Sin nombres de clientes ni trabajadores — solo el total y cada entrada detrás de él.",
+    },
+    back: "← Volver",
+    eyebrow: "Registro público",
+    h1: "Cada dólar procesado, de solo adición.",
+    lede: "Sin nombres de clientes, sin nombres de trabajadores — solo montos, categorías y marcas de tiempo, escritos en el momento en que se liquida cada transacción. Las entradas nunca se editan ni se eliminan una vez escritas; una corrección es su propia entrada nueva, nunca una reescritura.",
+    totalLabel: "Total procesado a la fecha",
+    totalPending:
+      "Se publica una vez que suficientes transacciones se han liquidado como para que el total no se pueda rastrear hasta una sola de ellas.",
+    reliability: {
+      onTime: "Entrega a tiempo",
+      qcFirstTry: "Pasa la revisión al primer intento",
+      disputed: "Disputada después de la entrega",
+    },
+    historyLabel: "Historial",
+    emptyState:
+      "Aún no hay entradas — esta lista se actualiza automáticamente en cuanto se complete la primera tarea.",
+    emptyExample: "ejemplo — 4 de agosto · Pago procesado · Entrada de datos · $68",
+    olderEntries: "Entradas anteriores →",
+    kind: {
+      sale: "Pago procesado",
+      refund: "Reembolso",
+      payout: "Pago al trabajador",
+      fee: "Comisión de plataforma",
+      chargeback: "Contracargo",
+      chargeback_reversal: "Contracargo revertido",
+      correction: "Corrección",
+    },
+  },
+  tl: {
+    meta: {
+      title: "Pampublikong Ledger",
+      description:
+        "Isang tuloy-tuloy, append-only na tala ng pera na pinoproseso sa AfterDesk. Walang pangalan ng client o worker — total lang at bawat entry sa likod nito.",
+    },
+    back: "← Bumalik",
+    eyebrow: "Pampublikong Ledger",
+    h1: "Bawat dolyar na pinoseso, append-only.",
+    lede: "Walang pangalan ng client, walang pangalan ng worker — halaga, kategorya, at timestamp lang, na isinusulat sa sandaling ma-settle ang bawat transaksyon. Hindi kailanman ino-edit o binubura ang mga entry kapag naisulat na; ang isang correction ay sarili niyang bagong entry, hindi pagsulat ulit.",
+    totalLabel: "Kabuuang naiproseso hanggang ngayon",
+    totalPending:
+      "Ipinapaskil kapag sapat na ang na-settle na transaksyon para hindi na maisubaybayan ang total pabalik sa isang solong transaksyon.",
+    reliability: {
+      onTime: "On-time na delivery",
+      qcFirstTry: "Pumapasa sa QC sa unang subok",
+      disputed: "Na-dispute pagkatapos ng delivery",
+    },
+    historyLabel: "History",
+    emptyState:
+      "Wala pang entry — awtomatikong nag-a-update ang listahang ito sa sandaling matapos ang unang task.",
+    emptyExample: "halimbawa — Ago 4 · Naiprosesong bayad · Data entry · $68",
+    olderEntries: "Mas lumang entry →",
+    kind: {
+      sale: "Naiprosesong bayad",
+      refund: "Refund",
+      payout: "Payout ng worker",
+      fee: "Bayad sa platform",
+      chargeback: "Chargeback",
+      chargeback_reversal: "Naibalik na chargeback",
+      correction: "Pagwawasto",
+    },
+  },
+};

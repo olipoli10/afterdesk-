@@ -1,60 +1,67 @@
-import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { PolicyPage } from "@/components/policy-page";
+import { docLangOf } from "@/lib/i18n/docs";
+import { SECURITY_I18N } from "@/lib/i18n/legal";
+import { langAlternates } from "@/lib/i18n/langs";
 
-export const metadata: Metadata = {
-  title: "Security",
-  description:
-    "How AfterDesk protects the files you send: uploads are inspected and scrubbed of author metadata, access ends with the task, and every delivery is reviewed by one operator before it reaches you.",
-  alternates: { canonical: "/security" },
-};
+async function resolveLang(sp: { lang?: string }) {
+  const jar = await cookies();
+  return docLangOf(
+    sp.lang,
+    jar.get("ss-lang-doc")?.value,
+    jar.get("ss-lang-client")?.value,
+    jar.get("ss-lang-worker")?.value
+  );
+}
 
-export default function SecurityPage() {
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const t = SECURITY_I18N[await resolveLang(sp)];
+  return {
+    title: t.meta.title,
+    description: t.meta.description,
+    alternates: langAlternates("/security", sp.lang),
+  };
+}
+
+export default async function SecurityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const lang = await resolveLang(sp);
+  const t = SECURITY_I18N[lang];
+
   return (
-    <PolicyPage
-      title="Security"
-      intro="The identity wall, payment gate and quality review are enforced at the data and transaction layers—not only hidden in the interface."
-    >
+    <PolicyPage path="/security" lang={lang} title={t.title} intro={t.intro}>
       <section>
-        <h2 className="text-xl font-semibold">Access and identity</h2>
-        <p className="mt-2">
-          Every protected read and mutation rechecks the signed-in user, role and resource
-          ownership. Password accounts must verify their email. Workers lose task-file access as
-          soon as a task leaves their hands or their approval is suspended.
-        </p>
+        <h2 className="text-xl font-semibold">{t.access.h2}</h2>
+        <p className="mt-2">{t.access.body}</p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Files</h2>
-        <p className="mt-2">
-          Uploads are size-limited, signature-checked, hashed and unavailable until scanning
-          passes. Office documents with macros, external relationships, comments, hidden sheets
-          or embedded objects are refused. Common author metadata is removed from Office and image
-          files. Production scanning fails closed when the malware service is unavailable.
-        </p>
-        <p className="mt-2">
-          No automated system can remove identifying information written into the visible content
-          itself. Clients and workers must remove names, contacts and account identifiers before
-          upload; the operator performs a second content review before release.
-        </p>
+        <h2 className="text-xl font-semibold">{t.files.h2}</h2>
+        <p className="mt-2">{t.files.body1}</p>
+        <p className="mt-2">{t.files.body2}</p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Payments and audit</h2>
-        <p className="mt-2">
-          Card details are collected by Stripe. A task cannot reach the worker pool until a signed
-          webhook confirms the approved amount. State changes, payouts, refunds and administrative
-          decisions are recorded with idempotency controls and database-enforced invariants.
-        </p>
+        <h2 className="text-xl font-semibold">{t.payments.h2}</h2>
+        <p className="mt-2">{t.payments.body}</p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Reporting</h2>
+        <h2 className="text-xl font-semibold">{t.reporting.h2}</h2>
         <p className="mt-2">
-          Report a suspected vulnerability to{" "}
+          {t.reporting.pre}{" "}
           <a className="underline" href="mailto:security@afterdesk.co">
             security@afterdesk.co
           </a>
-          . Do not access other users’ data or disrupt the service while testing.
+          {t.reporting.post}
         </p>
       </section>
     </PolicyPage>
   );
 }
-

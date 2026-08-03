@@ -9,9 +9,13 @@ import type { SiteLang } from "@/lib/i18n/langs";
  * because "free training" is what the audience searches and what a crawler
  * should read here.
  *
- * TL keeps Security/Privacy/Terms/Acceptable use in English (Taglish
- * code-switching, same as footer.signIn's "Mag-sign in") since this
- * codebase has no established Tagalog legal glossary for them.
+ * All four languages now lead to a real translation on the other end
+ * (src/lib/i18n/legal.ts) — Security/Privacy/Terms/Acceptable use used to
+ * stay English in Tagalog specifically (no established Tagalog legal
+ * glossary), so a Filipino-labeled link opened an English-only page. Terms
+ * and Acceptable use keep short English nouns in the TL label itself
+ * (Taglish, the same register the pages' own body copy uses) rather than
+ * forcing a stiff, unfamiliar formal coinage.
  */
 const LABELS: Record<SiteLang, [string, string, string, string, string, string]> = {
   en: ["Free training for remote workers", "Public ledger", "Security", "Privacy", "Terms", "Acceptable use"],
@@ -34,10 +38,10 @@ const LABELS: Record<SiteLang, [string, string, string, string, string, string]>
   tl: [
     "Libreng pagsasanay para sa mga remote worker",
     "Pampublikong ledger",
-    "Security",
+    "Seguridad",
     "Privacy",
-    "Terms",
-    "Acceptable use",
+    "Mga Tuntunin",
+    "Katanggap-tanggap na Paggamit",
   ],
 };
 

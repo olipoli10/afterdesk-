@@ -80,7 +80,7 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
         title: "The AfterDesk Assistant",
         description:
           "Caught between two valid ways to interpret the brief? Ask the assistant — trained on the same standards QC checks against. It never sees client data, never sets a price, and hands off to an operator the moment a question is genuinely task-specific.",
-        cta: "See how EARN works",
+        cta: "See how it works",
       },
     },
   },
@@ -125,7 +125,7 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
         title: "L'assistant AfterDesk",
         description:
           "Coincé entre deux façons valables d'interpréter le mandat? Demandez à l'assistant — formé sur la même norme qu'un opérateur utilise pour vérifier chaque livrable. Il ne voit jamais les données du client, ne fixe jamais de prix, et transmet la question à un opérateur dès qu'elle est véritablement spécifique à la tâche.",
-        cta: "Voir comment fonctionne EARN",
+        cta: "Voir comment ça marche",
       },
     },
   },
@@ -170,7 +170,7 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
         title: "El Asistente de AfterDesk",
         description:
           "¿Atrapado entre dos formas válidas de interpretar las instrucciones? Pregúntale al asistente — entrenado con los mismos estándares con los que un operador revisa cada entregable. Nunca ve datos del cliente, nunca fija un precio, y deriva a un operador en el momento en que una pregunta es genuinamente específica de la tarea.",
-        cta: "Ver cómo funciona EARN",
+        cta: "Ver cómo funciona",
       },
     },
   },
@@ -215,7 +215,7 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
         title: "Ang AfterDesk Assistant",
         description:
           "Nalilito ka ba sa pagitan ng dalawang tamang paraan ng pagbasa sa brief? Tanungin ang assistant — sinanay ito gamit ang parehong pamantayan na ginagamit ng operator para suriin ang bawat trabaho. Hindi nito nakikita ang data ng kliyente, hindi ito nagtatakda ng presyo, at ipinapasa nito agad sa operator ang tanong sa sandaling ito ay talagang task-specific na.",
-        cta: "Tingnan kung paano gumagana ang EARN",
+        cta: "Tingnan kung paano ito gumagana",
       },
     },
   },

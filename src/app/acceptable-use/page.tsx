@@ -1,44 +1,59 @@
-import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { PolicyPage } from "@/components/policy-page";
+import { docLangOf } from "@/lib/i18n/docs";
+import { ACCEPTABLE_USE_I18N } from "@/lib/i18n/legal";
+import { langAlternates } from "@/lib/i18n/langs";
 
-export const metadata: Metadata = {
-  title: "Acceptable use",
-  description:
-    "What AfterDesk will and will not take on. Some tasks we turn down — this page says which, and why, in plain language.",
-  alternates: { canonical: "/acceptable-use" },
-};
+async function resolveLang(sp: { lang?: string }) {
+  const jar = await cookies();
+  return docLangOf(
+    sp.lang,
+    jar.get("ss-lang-doc")?.value,
+    jar.get("ss-lang-client")?.value,
+    jar.get("ss-lang-worker")?.value
+  );
+}
 
-export default function AcceptableUsePage() {
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const t = ACCEPTABLE_USE_I18N[await resolveLang(sp)];
+  return {
+    title: t.meta.title,
+    description: t.meta.description,
+    alternates: langAlternates("/acceptable-use", sp.lang),
+  };
+}
+
+export default async function AcceptableUsePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const lang = await resolveLang(sp);
+  const t = ACCEPTABLE_USE_I18N[lang];
+
   return (
-    <PolicyPage
-      title="Acceptable use"
-      intro="AfterDesk handles bounded administrative work. Some tasks are refused even when they can be described."
-    >
+    <PolicyPage path="/acceptable-use" lang={lang} title={t.title} intro={t.intro}>
       <section>
-        <h2 className="text-xl font-semibold">Not accepted</h2>
+        <h2 className="text-xl font-semibold">{t.notAccepted.h2}</h2>
         <ul className="mt-2 list-disc space-y-2 pl-5">
-          <li>Illegal activity, fraud, impersonation, harassment or deceptive outreach.</li>
-          <li>Credential sharing, account takeovers, bypassing access controls or malware.</li>
-          <li>High-stakes legal, medical, financial or employment decisions.</li>
-          <li>Payment-card data, authentication secrets or unnecessary government identifiers.</li>
-          <li>Copyright infringement, doxxing, surveillance or re-identification of people.</li>
-          <li>Tasks requiring a worker to contact a client outside the operator channel.</li>
+          {t.notAccepted.items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
         </ul>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Sensitive material</h2>
-        <p className="mt-2">
-          Remove personal and confidential information not needed for the result. If a task cannot
-          be completed without unusually sensitive data, contact support before uploading it.
-        </p>
+        <h2 className="text-xl font-semibold">{t.sensitive.h2}</h2>
+        <p className="mt-2">{t.sensitive.body}</p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Enforcement</h2>
-        <p className="mt-2">
-          The operator may refuse, cancel or pause a task that creates safety, confidentiality,
-          legality or scope risk. A cancelled unpaid task is not charged; paid-task remedies follow
-          the service terms and the task’s recorded status.
-        </p>
+        <h2 className="text-xl font-semibold">{t.enforcement.h2}</h2>
+        <p className="mt-2">{t.enforcement.body}</p>
       </section>
     </PolicyPage>
   );

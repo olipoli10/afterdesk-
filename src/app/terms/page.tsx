@@ -1,61 +1,64 @@
-import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { PolicyPage } from "@/components/policy-page";
+import { docLangOf } from "@/lib/i18n/docs";
+import { TERMS_I18N } from "@/lib/i18n/legal";
+import { langAlternates } from "@/lib/i18n/langs";
 
-export const metadata: Metadata = {
-  title: "Terms",
-  description:
-    "The operational agreement behind every AfterDesk task: one fixed price approved before work starts, what the review standard covers, and how revisions, disputes and refunds work.",
-  alternates: { canonical: "/terms" },
-};
+async function resolveLang(sp: { lang?: string }) {
+  const jar = await cookies();
+  return docLangOf(
+    sp.lang,
+    jar.get("ss-lang-doc")?.value,
+    jar.get("ss-lang-client")?.value,
+    jar.get("ss-lang-worker")?.value
+  );
+}
 
-export default function TermsPage() {
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const t = TERMS_I18N[await resolveLang(sp)];
+  return {
+    title: t.meta.title,
+    description: t.meta.description,
+    alternates: langAlternates("/terms", sp.lang),
+  };
+}
+
+export default async function TermsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const sp = await searchParams;
+  const lang = await resolveLang(sp);
+  const t = TERMS_I18N[lang];
+
   return (
-    <PolicyPage
-      title="Service terms"
-      intro="These terms describe the operational agreement shown before a task is purchased: what you are buying, what one fixed price covers, and what happens when a delivery is wrong."
-    >
+    <PolicyPage path="/terms" lang={lang} title={t.title} intro={t.intro}>
       <section>
-        <h2 className="text-xl font-semibold">A task is a fixed scope</h2>
-        <p className="mt-2">
-          The approved brief, quantity, file set, delivery standard, deadline and fixed price form
-          the task. Work begins only after payment confirmation. New scope requires a new quote.
-        </p>
+        <h2 className="text-xl font-semibold">{t.scope.h2}</h2>
+        <p className="mt-2">{t.scope.body}</p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Quality review and recourse</h2>
-        <p className="mt-2">
-          The operator reviews each delivery against the written brief and category standard.
-          Clients may use the task page to request the included revision rounds or open a dispute
-          during the displayed review window. Disputes are decided against the written standard,
-          not an undisclosed preference.
-        </p>
+        <h2 className="text-xl font-semibold">{t.review.h2}</h2>
+        <p className="mt-2">{t.review.body}</p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Payments and refunds</h2>
-        <p className="mt-2">
-          Clients purchase a deliverable from AfterDesk; the worker is an independent
-          subcontractor paid by AfterDesk. An upheld dispute queues a refund to the original
-          payment method. Fraudulent chargebacks, unlawful tasks and material misrepresentation may
-          result in suspension.
-        </p>
+        <h2 className="text-xl font-semibold">{t.payments.h2}</h2>
+        <p className="mt-2">{t.payments.body}</p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Who operates AfterDesk</h2>
-        <p className="mt-2">
-          Every price, quality review and payout decision described in these terms is made by
-          one person — not a support queue, not an algorithm.
-        </p>
+        <h2 className="text-xl font-semibold">{t.operator.h2}</h2>
+        <p className="mt-2">{t.operator.body}</p>
       </section>
       <section>
-        <h2 className="text-xl font-semibold">Confidentiality and rights</h2>
-        <p className="mt-2">
-          Users must upload only material they are authorized to share. Workers may use task data
-          only to complete the assigned work and may not contact or identify the client. On full
-          payment, the client receives the rights AfterDesk can transfer in the commissioned
-          deliverable, excluding third-party materials and pre-existing tools.
-        </p>
+        <h2 className="text-xl font-semibold">{t.rights.h2}</h2>
+        <p className="mt-2">{t.rights.body}</p>
       </section>
     </PolicyPage>
   );
 }
-
