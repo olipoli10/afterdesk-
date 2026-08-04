@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
 import { MobileMenu } from "@/components/mobile-menu";
 import { SampleExam } from "@/components/sample-exam";
 import { cookies } from "next/headers";
-import { getSessionUser, roleHome } from "@/lib/authz";
+import { arrivedFromInsideTheApp, getSessionUser, roleHome } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { Reveal } from "@/components/reveal";
 import { AudienceToggle } from "@/components/audience-toggle";
@@ -123,13 +124,24 @@ export default async function WorkersHome({
 }: {
   searchParams: Promise<{ lang?: string }>;
 }) {
-  /* This page used to redirect every signed-in visitor to their portal. That
-     made the worker storefront unreachable for the whole duration of a
-     session — and since the worker portal signs out to /workers
-     (src/app/va/layout.tsx), a sign-out whose cookie had not cleared yet was
-     thrown straight back into the app. The storefront now renders for
-     everyone; a session only changes the account door in the chrome. */
+  /* This page used to redirect EVERY signed-in visitor to their portal,
+     unconditionally. That made the worker storefront unreachable for the
+     whole duration of a session — and since the worker portal signs out to
+     /workers (src/app/va/layout.tsx) via a real browser navigation
+     (window.location.href, src/components/sign-out.tsx), that unconditional
+     bounce threw a just-signed-out worker straight back into the app before
+     the sign-out could ever be seen to take effect.
+     The fix is the same cold-arrival check "/" uses (src/lib/authz.ts):
+     a worker who clicks their way here from inside AfterDesk — including the
+     sign-out navigation, whose Referer names this same origin — asked for
+     the storefront and gets it; only a COLD arrival (bookmark, typed URL, a
+     link from elsewhere) with a verified session bounces straight to the
+     portal, which is the one case a worker checking the pool via a stale tab
+     or bookmark actually wants. */
   const user = await getSessionUser();
+  if (user?.emailVerified && !(await arrivedFromInsideTheApp())) {
+    redirect(roleHome(user.role));
+  }
   const portal = user ? roleHome(user.role) : undefined;
   const settings = await getSettings();
   const sp = await searchParams;

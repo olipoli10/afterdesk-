@@ -19,6 +19,35 @@ export function roleHome(role: Role): string {
 }
 
 /**
+ * True when this request was started from one of our own pages instead of by
+ * arriving at the bare root/storefront. Someone opening a public entry page
+ * cold — bookmark, typed address, a link from elsewhere — is opening the
+ * product; someone who clicked their way here from inside AfterDesk is
+ * ASKING for the marketing/storefront page, and that is the difference a
+ * signed-in bounce has to respect. Shared by `/` and `/workers` so the two
+ * doors can never drift into different behavior.
+ *
+ * The referrer is the signal, and site-wide Referrer-Policy: same-origin
+ * (next.config.ts) is what makes it a trustworthy one: a referrer naming our
+ * own host can only have come from our own page. A next/link click carries it
+ * too — the router fetches the RSC payload with a plain fetch() from the page
+ * you are leaving. Do not "improve" this with the RSC or Next-URL header:
+ * neither reaches a Server Component. Flight headers are stripped before
+ * headers() (server/async-storage/request-store.js) and Next-URL is deleted
+ * for any path that cannot be intercepted (server/base-server.js), which
+ * neither "/" nor "/workers" can. Both were measured null here, not assumed.
+ */
+export async function arrivedFromInsideTheApp(): Promise<boolean> {
+  const h = await headers();
+  const host = h.get("host");
+  const referer = h.get("referer");
+  if (!host || !referer) return false;
+  // Prefix match rather than new URL(): a malformed Referer is
+  // attacker-controlled and must never be able to throw on a public page.
+  return referer.startsWith(`https://${host}/`) || referer.startsWith(`http://${host}/`);
+}
+
+/**
  * Per-request memoized session lookup. Layouts and pages each call
  * requireRole → getSessionUser, so without cache() every navigation costs two
  * identical database session queries. cache() dedupes within a single render
