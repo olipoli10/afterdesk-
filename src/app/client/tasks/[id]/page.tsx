@@ -115,6 +115,14 @@ export default async function ClientTaskPage({
                 <>Your deliverable will appear here once it passes our quality review.</>
               )}
             </p>
+            {task.clientPriceCents != null ? (
+              <p className="mt-1 text-sm text-[#5B6069]">
+                Approved price:{" "}
+                <span className={moneyClient}>
+                  {formatCents(task.clientPriceCents, task.currency)}
+                </span>
+              </p>
+            ) : null}
           </CardBody>
         </Card>
       ) : null}
@@ -128,6 +136,14 @@ export default async function ClientTaskPage({
             <p className="mt-1 text-sm text-[#5B6069]">
               The updated delivery will appear here once it passes our quality review.
             </p>
+            {task.clientPriceCents != null ? (
+              <p className="mt-1 text-sm text-[#5B6069]">
+                Approved price:{" "}
+                <span className={moneyClient}>
+                  {formatCents(task.clientPriceCents, task.currency)}
+                </span>
+              </p>
+            ) : null}
           </CardBody>
         </Card>
       ) : null}
@@ -142,6 +158,14 @@ export default async function ClientTaskPage({
               The operator is re-checking the work against your description. You&apos;ll see
               the outcome here.
             </p>
+            {task.clientPriceCents != null ? (
+              <p className="mt-1 text-sm text-[#5B6069]">
+                Approved price:{" "}
+                <span className={moneyClient}>
+                  {formatCents(task.clientPriceCents, task.currency)}
+                </span>
+              </p>
+            ) : null}
           </CardBody>
         </Card>
       ) : null}
