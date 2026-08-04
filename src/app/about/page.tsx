@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { Reveal } from "@/components/reveal";
+import { ComparisonTable } from "@/components/comparison-table";
 import { TrustLinks } from "@/components/trust-links";
 import { Wordmark } from "@/components/logo";
 import { LangSwitch } from "@/components/lang-switch";
@@ -190,6 +191,19 @@ export default async function AboutPage({
             ))}
           </div>
         </Reveal>
+
+        {/* ── COMPARISON TABLE ─────────────────────────────────────────────
+            Placed here on purpose: it leans on vocabulary ("the operator",
+            "the Academy") the numbered list above has just defined, and it
+            reads as the verdict the reader can check against the platforms
+            they already know, not a pitch made before the mechanics are
+            shown. The one deliberate night-toned block on this paper page —
+            same #0A0B0D/#111317 tokens as the homepage's night sections and
+            this page's own closing CTA, so it reads as a second intentional
+            dark moment rather than an import. Names real platforms
+            (Fiverr/Upwork/OnlineJobs.ph) — a founder-requested exception to
+            this site's usual "categories, not brand names" rule. */}
+        <ComparisonTable t={t.comparisonTable} />
 
         {/* ── MOVEMENT III — why the training is real ───────────────────
             Ties into the one asset that proves the problem above is real:
