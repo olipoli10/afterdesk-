@@ -1,65 +1,67 @@
+import { Fragment } from "react";
+
 /* ─────────────────────────────────────────────────────────────────────────
-   THE COMPARISON TABLE — /about's comparison section.
+   THE COMPARISON MATRIX — /about's comparison section.
 
-   A real 5-column table (axis + 3 named platforms + AfterDesk, always
-   last), styled as the one deliberate NIGHT punctuation on an otherwise
+   A compact icon grid, not a table of sentences: one short verdict word
+   per cell (✓ green for an AfterDesk strength, ✗ amber for a gap the other
+   side has, a plain dash for a neutral fact) — the same ONE grid at every
+   width, no separate mobile fallback needed, because short chips don't
+   need one. Replaced the earlier sentence-per-cell table, which read fine
+   on desktop but turned into a long paragraph-per-row scroll on mobile.
+
+   Styled as the page's one deliberate NIGHT punctuation on an otherwise
    paper page — same #0A0B0D/#111317 tokens the homepage's night sections
-   and this page's own closing CTA bookend already use, so it reads as an
-   intentional second dark moment rather than an import from elsewhere.
+   and this page's own closing CTA bookend already use.
 
-   Unlike the rest of the site, this one names real platforms (Fiverr,
-   Upwork, OnlineJobs.ph) rather than generic categories — a deliberate,
-   founder-requested exception. Every claim stays true of the platform:
-   escrow and reviews are real, a pre-delivery quality check is what's
-   still missing.
-
-   Green (#1E7F5C/#3DDCA0) = AfterDesk's strengths, amber (#D98324/#E8A854)
-   = the other side's gaps — the site's existing money/attention colors,
-   reused here in a marketing context rather than an operational-status one.
-
-   Mobile: below `md`, the <table> is replaced by stacked cards (axis as a
-   heading, then each platform's answer on its own line) — same pattern
-   already proven on this page's own /about content, never a horizontal
-   scroll.
+   Names real platforms (Fiverr, Upwork, OnlineJobs.ph) — a founder-
+   requested exception to this site's usual generic-category rule. Every
+   verdict stays true of the platform: escrow and reviews are real, a
+   pre-delivery quality check is what's still missing.
    ───────────────────────────────────────────────────────────────────────── */
 
-export type ComparisonCellPart = {
-  pre: string;
-  lead: string | null;
+export type MatrixCell = {
+  label: string;
   tone: "weak" | "strong" | null;
-  post: string;
 };
 
-export type ComparisonAxis = {
+export type MatrixAxis = {
   axis: string;
   /** [Fiverr, Upwork, OnlineJobs.ph, AfterDesk] */
-  cells: [ComparisonCellPart, ComparisonCellPart, ComparisonCellPart, ComparisonCellPart];
+  cells: [MatrixCell, MatrixCell, MatrixCell, MatrixCell];
 };
 
 export type ComparisonTableDict = {
   eyebrow: string;
   heading: string;
   subline: string;
-  axisHeader: string;
   /** [Fiverr, Upwork, OnlineJobs.ph, AfterDesk] */
   channels: [string, string, string, string];
-  axes: ComparisonAxis[];
+  axes: MatrixAxis[];
   footnote: string;
 };
 
-function toneClass(tone: "weak" | "strong" | null): string {
-  if (tone === "strong") return "text-[#3DDCA0]";
-  if (tone === "weak") return "text-[#E8A854]";
-  return "";
-}
-
-function Cell({ part }: { part: ComparisonCellPart }) {
+function Chip({ cell, us }: { cell: MatrixCell; us: boolean }) {
+  const glyph = cell.tone === "strong" ? "✓" : cell.tone === "weak" ? "✗" : "–";
+  const glyphClass =
+    cell.tone === "strong" ? "text-[#3DDCA0]" : cell.tone === "weak" ? "text-[#E8A854]" : "text-[#5B6069]";
   return (
-    <>
-      {part.pre}
-      {part.lead ? <b className={`font-semibold ${toneClass(part.tone)}`}>{part.lead}</b> : null}
-      {part.post}
-    </>
+    <div
+      className={`flex aspect-square flex-col items-center justify-center gap-1 rounded px-1 text-center ${
+        us ? "bg-[#1E7F5C]/[0.12] ring-1 ring-inset ring-[#1E7F5C]/40" : "bg-white/[0.03]"
+      }`}
+    >
+      <span className={`text-[15px] leading-none sm:text-[17px] ${glyphClass}`} aria-hidden>
+        {glyph}
+      </span>
+      <span
+        className={`px-0.5 text-[9.5px] font-medium leading-[1.15] sm:text-[10.5px] ${
+          us ? "text-[#F7F6F3]" : "text-[#9AA1AB]"
+        }`}
+      >
+        {cell.label}
+      </span>
+    </div>
   );
 }
 
@@ -72,84 +74,30 @@ export function ComparisonTable({ t }: { t: ComparisonTableDict }) {
       </h2>
       <p className="mt-2.5 max-w-[52ch] text-[15px] leading-relaxed text-[#5B6069]">{t.subline}</p>
 
-      <div className="mt-7 overflow-hidden rounded-lg border border-white/8 bg-[#0A0B0D]">
-        {/* Desktop — real table, md and up */}
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[820px] border-collapse">
-            <thead>
-              <tr>
-                <th className="border-b border-white/[0.16] px-5 py-4 text-left font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#767C86]">
-                  {t.axisHeader}
-                </th>
-                {t.channels.map((c, i) => (
-                  <th
-                    key={c}
-                    className={`border-b px-5 py-4 text-left text-[16px] font-bold tracking-[-0.005em] ${
-                      i === 3
-                        ? "border-white/[0.16] bg-[#1E7F5C]/[0.12] text-[#3DDCA0]"
-                        : "border-white/[0.16] text-[#F7F6F3]"
-                    }`}
-                  >
-                    {c}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {t.axes.map((row, ri) => (
-                <tr key={row.axis} className="group">
-                  <td
-                    className={`px-5 py-[18px] text-[14px] font-semibold text-[#F7F6F3] ${
-                      ri < t.axes.length - 1 ? "border-b border-white/8" : ""
-                    }`}
-                  >
-                    {row.axis}
-                  </td>
-                  {row.cells.map((cell, ci) => (
-                    <td
-                      key={ci}
-                      className={`px-5 py-[18px] text-[14px] leading-[1.5] text-[#C9CDD3] ${
-                        ri < t.axes.length - 1 ? "border-b border-white/8" : ""
-                      } ${ci === 3 ? "border-l-2 border-l-[#1E7F5C] bg-[#1E7F5C]/[0.08]" : ""}`}
-                    >
-                      <Cell part={cell} />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="mt-7 rounded-lg border border-white/8 bg-[#0A0B0D] p-3 sm:p-4">
+        <div className="grid grid-cols-[minmax(84px,1fr)_repeat(4,minmax(0,1.15fr))] items-center gap-1.5 sm:gap-2">
+          {/* header row */}
+          <span />
+          {t.channels.map((c, i) => (
+            <span
+              key={c}
+              className={`break-words px-0.5 text-center text-[9.5px] font-semibold uppercase leading-tight tracking-[0.01em] sm:text-[11px] ${
+                i === 3 ? "text-[#3DDCA0]" : "text-[#767C86]"
+              }`}
+            >
+              {c}
+            </span>
+          ))}
 
-        {/* Mobile — stacked cards, below md, no horizontal scroll ever */}
-        <div className="p-4 md:hidden">
-          {t.axes.map((row, ri) => (
-            <div key={row.axis} className={ri > 0 ? "mt-7" : ""}>
-              <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#767C86]">
+          {t.axes.map((row) => (
+            <Fragment key={row.axis}>
+              <span className="pr-1 text-[11px] font-medium leading-[1.2] text-[#C9CDD3] sm:text-[12.5px]">
                 {row.axis}
-              </h3>
-              <div className="mt-2.5">
-                {row.cells.map((cell, ci) => (
-                  <div
-                    key={ci}
-                    className={`grid gap-0.5 border-t border-white/8 px-3.5 py-3 ${
-                      ci === 3 ? "rounded-r border-l-2 border-l-[#1E7F5C] bg-[#1E7F5C]/10" : ""
-                    }`}
-                  >
-                    <span
-                      className={`font-mono text-[10.5px] uppercase tracking-[0.1em] ${
-                        ci === 3 ? "font-semibold text-[#3DDCA0]" : "text-[#767C86]"
-                      }`}
-                    >
-                      {t.channels[ci]}
-                    </span>
-                    <span className={`text-[14px] leading-[1.45] ${ci === 3 ? "text-[#F7F6F3]" : "text-[#C9CDD3]"}`}>
-                      <Cell part={cell} />
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+              </span>
+              {row.cells.map((cell, ci) => (
+                <Chip key={`${row.axis}-${ci}`} cell={cell} us={ci === 3} />
+              ))}
+            </Fragment>
           ))}
         </div>
       </div>
