@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "crypto";
 import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -166,36 +167,33 @@ export async function isApprovedVa(userId: string): Promise<boolean> {
  * (`action:...`, `upload:...`) cannot collide with Better Auth's own
  * `<ip><path>` keys.
  *
- * Returns true when the request is allowed. Best-effort under extreme
- * concurrency (increment is atomic; a simultaneous window reset can race),
- * which matches Better Auth's own non-atomic storage fallback.
+ * A single INSERT ... ON CONFLICT does the read-decide-write in one atomic
+ * statement: Postgres serializes concurrent upserts on the same key via the
+ * row's own lock, so a burst of concurrent requests can never all observe
+ * "no live window yet" and all reset the counter to 1 the way two separate
+ * round trips (an updateMany, then a fallback upsert) could. Returns true
+ * when the request is allowed.
  */
 export async function consumeRateLimit(
   key: string,
   { window, max }: { window: number; max: number }
 ): Promise<boolean> {
-  const now = Date.now();
-  const windowStart = BigInt(now - window * 1000);
+  const now = BigInt(Date.now());
+  const windowStart = now - BigInt(window * 1000);
 
-  // Atomic increment when a live window exists for this key.
-  const updated = await prisma.rateLimit.updateMany({
-    where: { key, lastRequest: { gte: windowStart } },
-    data: { count: { increment: 1 } },
-  });
-
-  if (updated.count === 0) {
-    // No row, or the window lapsed — start a fresh one.
-    await prisma.rateLimit.upsert({
-      where: { key },
-      create: { key, count: 1, lastRequest: BigInt(now) },
-      update: { count: 1, lastRequest: BigInt(now) },
-    });
-    return true;
-  }
-
-  const row = await prisma.rateLimit.findUnique({
-    where: { key },
-    select: { count: true },
-  });
-  return (row?.count ?? 1) <= max;
+  const rows = await prisma.$queryRaw<{ count: number }[]>`
+    INSERT INTO "RateLimit" ("id", "key", "count", "lastRequest")
+    VALUES (${randomUUID()}, ${key}, 1, ${now})
+    ON CONFLICT ("key") DO UPDATE SET
+      "count" = CASE
+        WHEN "RateLimit"."lastRequest" >= ${windowStart} THEN "RateLimit"."count" + 1
+        ELSE 1
+      END,
+      "lastRequest" = CASE
+        WHEN "RateLimit"."lastRequest" >= ${windowStart} THEN "RateLimit"."lastRequest"
+        ELSE ${now}
+      END
+    RETURNING "count"
+  `;
+  return (rows[0]?.count ?? 1) <= max;
 }
