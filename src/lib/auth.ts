@@ -41,30 +41,38 @@ export const auth = betterAuth({
           },
         },
         /**
-         * Without this, Better Auth refuses to link a Google sign-in to an
-         * EXISTING local account with the same email unless that local
-         * account already has emailVerified: true — surfacing as
-         * account_not_linked at /api/auth/error. That default protects
-         * against a weak, self-reported OAuth provider hijacking an
-         * unverified signup; it does not fit Google, which independently
-         * proves the signer-in genuinely controls the inbox — proof at
-         * least as strong as our own OTP flow, and stronger than an
-         * unverified local signup ever had. trustedProviders: ["google"]
-         * is the only social provider configured here, so this is scoped
-         * to Google in practice, not a blanket relaxation — revisit if a
-         * second, less-trustworthy provider is ever added.
+         * requireLocalEmailVerified: true — deliberately reversed from an
+         * earlier version of this config. The earlier reasoning ("Google
+         * independently proves the signer-in controls the inbox, so an
+         * unverified local match is safe to auto-link") is true as far as
+         * it goes, but it answers the wrong question: it's about whether
+         * TODAY's Google sign-in is legitimate, not about who set up the
+         * pre-existing local row being linked into.
          *
-         * A successful link also flips the local account's emailVerified
-         * to true (Better Auth's own linkAccount path, not something added
-         * here) — proving ownership via Google resolves the local
-         * account's stale unverified state as a side effect, it doesn't
-         * bypass it.
+         * The attack this closes: an attacker signs up locally with a
+         * victim's email (never verifies it — they don't control that
+         * inbox) and sets a password. Nothing stops that signup; requireUser
+         * only blocks an unverified session from reaching product surfaces,
+         * it doesn't block account creation. Later the real victim signs
+         * in with Google. With auto-linking on an unverified match, Better
+         * Auth links into the attacker's row and flips it to verified — but
+         * link-account (node_modules/better-auth/dist/oauth2/link-account.mjs)
+         * never touches the row's existing password credential. The
+         * attacker's password still works on what the victim now believes
+         * is their own, freshly-verified account: a pre-account-hijack, not
+         * a false alarm Google's verification would catch.
+         *
+         * The cost of this fix: a victim in that exact scenario now hits
+         * account_not_linked at /api/auth/error on their first Google
+         * sign-in instead of being silently merged — worse UX in a rare
+         * case, but fail-closed and it surfaces a signal instead of quietly
+         * handing over an account with a spare credential still live.
          */
         account: {
           accountLinking: {
             enabled: true,
             trustedProviders: ["google"],
-            requireLocalEmailVerified: false,
+            requireLocalEmailVerified: true,
           },
         },
       }
