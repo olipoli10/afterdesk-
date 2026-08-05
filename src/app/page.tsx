@@ -1,705 +1,439 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
-import { cookies } from "next/headers";
-import { arrivedFromInsideTheApp, getSessionUser, roleHome } from "@/lib/authz";
-import { Reveal } from "@/components/reveal";
-import { AudienceToggle } from "@/components/audience-toggle";
-import { PublicCounters } from "@/components/public-counters";
-import { LiveTaskWindow } from "@/components/live-task-window";
-import { MobileMenu } from "@/components/mobile-menu";
-import { PointerGlow } from "@/components/pointer-glow";
 import { LangSwitch } from "@/components/lang-switch";
-import { PaperLedgerScan } from "@/components/paper-ledger-scan";
-import { PaperInstrument } from "@/components/paper-instrument";
-import { PaperReviewDesk } from "@/components/paper-review-desk";
+import { MobileMenu } from "@/components/mobile-menu";
+import { PublicCounters } from "@/components/public-counters";
 import { TrustLinks } from "@/components/trust-links";
-import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
-import { langAlternates } from "@/lib/i18n/langs";
-import { COMPACT_SERVICES_LABEL, COMPACT_HOW_LABEL } from "@/lib/i18n/mobile-menu-compact";
-import { SITE_URL, WORKER_SIDE_LABEL } from "@/lib/site";
+import { arrivedFromInsideTheApp, getSessionUser, roleHome } from "@/lib/authz";
+import { CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
+import { langAlternates, type SiteLang } from "@/lib/i18n/langs";
+import { COMPACT_HOW_LABEL, COMPACT_SERVICES_LABEL } from "@/lib/i18n/mobile-menu-compact";
+import { SITE_URL } from "@/lib/site";
 
-/* ─────────────────────────────────────────────────────────────────────────
-   The landing page is a picture, not an essay: a real file arriving broken at
-   night and leaving clean in the morning. Everything else is caption.
-   Palette: night #0A0B0D / surface #111317 / dusk #1B2740 / paper #F7F6F3 /
-   ink #14161A. Amber appears ONLY on damaged cells; green ONLY on fixed rows.
-   Motion: entrance rise on the hero, scroll-reveals below the fold, two
-   ambient loops (hero glow, seam nudge) — all gated on prefers-reduced-motion.
-   ───────────────────────────────────────────────────────────────────────── */
-
-/* Every visible string lives in src/lib/i18n/client.ts (EN/FR/ES). The rule:
-   the VOICE translates, the MACHINE (live artifacts, mono field labels,
-   clock times, filenames) stays English. */
-
-const NOISE = {
-  backgroundImage:
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
+type HomeCopy = {
+  nav: { services: string; how: string; about: string; signIn: string; portal: string };
+  hero: {
+    eyebrow: string;
+    line1: string;
+    line2: string;
+    body: string;
+    cta: string;
+    micro: string;
+  };
+  example: {
+    label: string;
+    title: string;
+    /** The four slot labels and the stamp are voice, not data — they translate. */
+    fieldInput: string;
+    fieldRules: string;
+    fieldReturns: string;
+    fieldReview: string;
+    qcStamp: string;
+    input: string;
+    rules: string;
+    returns: string;
+    review: string;
+    status: string;
+  };
+  fit: {
+    label: string;
+    title: string;
+    body: string;
+    cards: { title: string; body: string; output: string }[];
+  };
+  process: {
+    label: string;
+    title: string;
+    steps: { title: string; body: string }[];
+  };
+  comparison: {
+    label: string;
+    title: string;
+    body: string;
+    directTitle: string;
+    direct: string[];
+    managedTitle: string;
+    managed: string[];
+  };
+  quality: {
+    label: string;
+    title: string;
+    body: string;
+    checks: string[];
+    boundaryTitle: string;
+    boundaryBody: string;
+  };
+  close: { title: string; body: string; primary: string; secondary: string };
+  footer: { work: string; academy: string };
+  /** Copy for the live counters strip (src/components/public-counters.tsx) —
+   *  real DB aggregates; the component renders nothing below its thresholds. */
+  counters: {
+    taskWord: [string, string];
+    workerWord: [string, string];
+    released: string;
+    toDate: string;
+    moneySaved: { label: string; timeLabel: string; note: string };
+  };
 };
 
-/**
- * Title and description come from the root layout's defaults — this page IS
- * the default. Only the alternates are computed here: the page renders all
- * four languages at one path via ?lang=, and langAlternates declares that
- * fact (per-language canonicals, hreflang set, x-default on the bare path)
- * the same way /about and /services already do. The cookie deliberately
- * never enters this — see the helper's comment.
- */
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: Promise<{ lang?: string }>;
-}) {
+const COPY: Record<SiteLang, HomeCopy> = {
+  en: {
+    nav: { services: "Services", how: "How it works", about: "About", signIn: "Sign in", portal: "My account" },
+    hero: {
+      eyebrow: "Managed back-office execution",
+      line1: "Send the work.",
+      line2: "Get a reviewed deliverable.",
+      body: "AfterDesk scopes and manages bounded CRM, research, data and document work. A trained specialist completes it, and an AfterDesk operator checks it before delivery.",
+      cta: "Describe the outcome",
+      micro: "One-off tasks are scoped and priced upfront. Timing is confirmed before work starts.",
+    },
+    example: {
+      label: "Illustrative workflow",
+      title: "CRM hygiene run",
+      fieldInput: "INPUT",
+      fieldRules: "RULES",
+      fieldReturns: "RETURNS",
+      fieldReview: "REVIEW",
+      qcStamp: "QC PASSED",
+      input: "1,800-row CRM export",
+      rules: "Merge duplicates · normalize fields",
+      returns: "Clean import · exception log",
+      review: "Brief and field checks",
+      status: "Ready for delivery",
+    },
+    fit: {
+      label: "Where AfterDesk fits",
+      title: "Work that is bounded, repeatable and checkable.",
+      body: "The strongest fit is operational work with clear inputs, a defined deliverable and details that still need human judgment.",
+      cards: [
+        { title: "CRM cleanup and enrichment", body: "Normalize fields, merge duplicates, research agreed data points and flag records that need a decision.", output: "Clean import + exception log" },
+        { title: "Account research and qualification", body: "Research companies against explicit criteria, retain source links and separate uncertain findings.", output: "Structured research file" },
+        { title: "Data and document operations", body: "Compare files, validate structured information and prepare recurring reports from supplied material.", output: "Completed file + review notes" },
+      ],
+    },
+    process: {
+      label: "How it works",
+      title: "You define the result. AfterDesk manages the work.",
+      steps: [
+        { title: "Describe the deliverable", body: "Tell us what must be returned, what rules matter and what a correct result looks like." },
+        { title: "Approve scope and price", body: "An operator confirms fit, required access, timing and one fixed price for a one-off task." },
+        { title: "The work is completed", body: "A trained specialist completes the approved scope while AfterDesk manages questions and exceptions." },
+        { title: "Quality control reviews it", body: "Critical details, completeness and formatting are checked before the deliverable reaches you." },
+      ],
+    },
+    comparison: {
+      label: "After the prompt",
+      title: "AI can generate an answer. The workflow may still be yours to finish.",
+      body: "ChatGPT, Claude and other AI tools are powerful. AfterDesk is for work where you do not want to run the process and review every result yourself.",
+      directTitle: "Use AI directly when you can",
+      direct: ["provide the context and instructions", "run the steps and tools", "verify facts, fields and formatting", "repair exceptions yourself"],
+      managedTitle: "Use AfterDesk when you want",
+      managed: ["one approved scope", "managed execution", "exceptions surfaced clearly", "a checked, usable deliverable"],
+    },
+    quality: {
+      label: "Quality control",
+      title: "Review is part of delivery, not a task left for you.",
+      body: "The exact checks depend on the brief. Every completed task receives an operator review before delivery.",
+      checks: ["brief-compliance check", "field and format validation", "duplicate and consistency review", "source checks when agreed", "exception review", "final operator review"],
+      boundaryTitle: "A bounded promise",
+      boundaryBody: "AfterDesk handles remote work that can be scoped and verified. Timing depends on size, access, complexity and review requirements. High-stakes professional judgment and unsupported account access are not accepted.",
+    },
+    close: { title: "Have a workflow that keeps falling to the bottom of the list?", body: "Describe the deliverable you need. We will confirm whether it fits, how it will be reviewed, the price and the timing before work begins.", primary: "Describe the outcome", secondary: "Discuss recurring work" },
+    footer: { work: "Work with us", academy: "Academy" },
+    counters: {
+      taskWord: ["task delivered", "tasks delivered"],
+      workerWord: ["approved worker", "approved workers"],
+      released: "released to workers",
+      toDate: "To date,",
+      moneySaved: {
+        label: "saved vs. market rate",
+        timeLabel: "hours handed back",
+        note: "Market rate × hours on task, minus what clients actually paid. Set per task category, floored at zero, never a modest number bragged up.",
+      },
+    },
+  },
+  fr: {
+    nav: { services: "Services", how: "Comment ça marche", about: "À propos", signIn: "Connexion", portal: "Mon compte" },
+    hero: {
+      eyebrow: "Exécution administrative gérée",
+      line1: "Confiez le travail.",
+      line2: "Recevez un livrable vérifié.",
+      body: "AfterDesk cadre et gère des travaux délimités de CRM, de recherche, de données et de documents. Un spécialiste formé les réalise et un opérateur AfterDesk les vérifie avant livraison.",
+      cta: "Décrire le résultat",
+      micro: "Les tâches ponctuelles sont cadrées et tarifées à l'avance. Le délai est confirmé avant le début du travail.",
+    },
+    example: { label: "Flux de travail illustratif", title: "Nettoyage CRM", fieldInput: "ENTRÉE", fieldRules: "RÈGLES", fieldReturns: "LIVRAISON", fieldReview: "RÉVISION", qcStamp: "RÉVISION RÉUSSIE", input: "Export CRM de 1 800 lignes", rules: "Fusionner les doublons · normaliser les champs", returns: "Import propre · journal d'exceptions", review: "Contrôle du brief et des champs", status: "Prêt à livrer" },
+    fit: {
+      label: "Quand utiliser AfterDesk",
+      title: "Un travail délimité, répétable et vérifiable.",
+      body: "Les meilleurs cas sont les travaux opérationnels avec des entrées claires, un livrable défini et des détails qui exigent encore du jugement humain.",
+      cards: [
+        { title: "Nettoyage et enrichissement CRM", body: "Normaliser les champs, fusionner les doublons, rechercher les données convenues et signaler les dossiers à décider.", output: "Import propre + journal d'exceptions" },
+        { title: "Recherche et qualification de comptes", body: "Rechercher les entreprises selon des critères explicites, conserver les sources et isoler les résultats incertains.", output: "Fichier de recherche structuré" },
+        { title: "Opérations de données et documents", body: "Comparer des fichiers, valider des informations structurées et préparer des rapports à partir des éléments fournis.", output: "Fichier terminé + notes de contrôle" },
+      ],
+    },
+    process: { label: "Comment ça marche", title: "Vous définissez le résultat. AfterDesk gère le travail.", steps: [
+      { title: "Décrivez le livrable", body: "Précisez ce qui doit être rendu, les règles importantes et ce qui constitue un résultat correct." },
+      { title: "Approuvez le périmètre et le prix", body: "Un opérateur confirme l'adéquation, les accès, le délai et un prix fixe pour une tâche ponctuelle." },
+      { title: "Le travail est réalisé", body: "Un spécialiste formé réalise le travail approuvé pendant qu'AfterDesk gère les questions et exceptions." },
+      { title: "Le contrôle qualité le vérifie", body: "Les détails critiques, l'exhaustivité et le format sont contrôlés avant livraison." },
+    ] },
+    comparison: { label: "Après le prompt", title: "L'IA peut générer une réponse. Il peut vous rester tout le flux à terminer.", body: "ChatGPT, Claude et les autres outils d'IA sont puissants. AfterDesk sert lorsque vous ne voulez pas piloter le processus et vérifier chaque résultat vous-même.", directTitle: "Utilisez l'IA directement si vous pouvez", direct: ["fournir le contexte et les instructions", "exécuter les étapes et les outils", "vérifier les faits, champs et formats", "corriger vous-même les exceptions"], managedTitle: "Utilisez AfterDesk si vous voulez", managed: ["un périmètre approuvé", "une exécution gérée", "des exceptions clairement signalées", "un livrable vérifié et utilisable"] },
+    quality: { label: "Contrôle qualité", title: "La vérification fait partie de la livraison.", body: "Les contrôles précis dépendent du brief. Chaque tâche terminée est relue par un opérateur avant livraison.", checks: ["conformité au brief", "validation des champs et formats", "contrôle des doublons et de la cohérence", "vérification des sources si convenue", "examen des exceptions", "revue finale par l'opérateur"], boundaryTitle: "Une promesse délimitée", boundaryBody: "AfterDesk traite les travaux à distance qui peuvent être cadrés et vérifiés. Le délai dépend du volume, des accès, de la complexité et du contrôle requis. Les décisions professionnelles à haut risque et les accès non pris en charge sont refusés." },
+    close: { title: "Un flux de travail reste toujours en bas de la liste?", body: "Décrivez le livrable voulu. Nous confirmerons l'adéquation, le contrôle, le prix et le délai avant de commencer.", primary: "Décrire le résultat", secondary: "Parler d'un besoin récurrent" },
+    footer: { work: "Travailler avec nous", academy: "Académie" },
+    counters: {
+      taskWord: ["tâche livrée", "tâches livrées"],
+      workerWord: ["spécialiste approuvé", "spécialistes approuvés"],
+      released: "reversés aux spécialistes",
+      toDate: "À ce jour,",
+      moneySaved: {
+        label: "économisés vs taux du marché",
+        timeLabel: "heures récupérées",
+        note: "Taux du marché × heures sur la tâche, moins ce que les clients ont réellement payé. Défini par catégorie de tâche, plancher à zéro, jamais un chiffre modeste gonflé.",
+      },
+    },
+  },
+  es: {
+    nav: { services: "Servicios", how: "Cómo funciona", about: "Acerca de", signIn: "Iniciar sesión", portal: "Mi cuenta" },
+    hero: { eyebrow: "Ejecución administrativa gestionada", line1: "Envía el trabajo.", line2: "Recibe un entregable revisado.", body: "AfterDesk define y gestiona trabajo acotado de CRM, investigación, datos y documentos. Un especialista capacitado lo completa y un operador de AfterDesk lo revisa antes de la entrega.", cta: "Describe el resultado", micro: "Las tareas puntuales se definen y cotizan por adelantado. El plazo se confirma antes de empezar." },
+    example: { label: "Flujo ilustrativo", title: "Limpieza de CRM", fieldInput: "ENTRADA", fieldRules: "REGLAS", fieldReturns: "ENTREGA", fieldReview: "REVISIÓN", qcStamp: "QC APROBADO", input: "Exportación CRM de 1.800 filas", rules: "Fusionar duplicados · normalizar campos", returns: "Importación limpia · registro de excepciones", review: "Revisión de instrucciones y campos", status: "Listo para entregar" },
+    fit: { label: "Dónde encaja AfterDesk", title: "Trabajo acotado, repetible y verificable.", body: "El mejor encaje es el trabajo operativo con entradas claras, un entregable definido y detalles que aún requieren criterio humano.", cards: [
+      { title: "Limpieza y enriquecimiento de CRM", body: "Normalizar campos, fusionar duplicados, investigar datos acordados y señalar registros que requieren decisión.", output: "Importación limpia + excepciones" },
+      { title: "Investigación y calificación de cuentas", body: "Investigar empresas con criterios explícitos, conservar fuentes y separar resultados inciertos.", output: "Archivo de investigación estructurado" },
+      { title: "Operaciones de datos y documentos", body: "Comparar archivos, validar información estructurada y preparar informes con el material suministrado.", output: "Archivo terminado + notas de revisión" },
+    ] },
+    process: { label: "Cómo funciona", title: "Tú defines el resultado. AfterDesk gestiona el trabajo.", steps: [
+      { title: "Describe el entregable", body: "Indica qué debe devolverse, qué reglas importan y cómo es un resultado correcto." },
+      { title: "Aprueba el alcance y el precio", body: "Un operador confirma encaje, accesos, plazo y un precio fijo para la tarea puntual." },
+      { title: "Se completa el trabajo", body: "Un especialista capacitado completa el alcance mientras AfterDesk gestiona preguntas y excepciones." },
+      { title: "Control de calidad lo revisa", body: "Los detalles críticos, la integridad y el formato se comprueban antes de la entrega." },
+    ] },
+    comparison: { label: "Después del prompt", title: "La IA puede generar una respuesta. El flujo aún puede quedar en tus manos.", body: "ChatGPT, Claude y otras herramientas de IA son potentes. AfterDesk es para el trabajo cuyo proceso y revisión no quieres gestionar tú.", directTitle: "Usa IA directamente cuando puedas", direct: ["aportar contexto e instrucciones", "ejecutar los pasos y herramientas", "verificar datos, campos y formato", "corregir las excepciones"], managedTitle: "Usa AfterDesk cuando quieras", managed: ["un alcance aprobado", "ejecución gestionada", "excepciones claramente señaladas", "un entregable revisado y utilizable"] },
+    quality: { label: "Control de calidad", title: "La revisión forma parte de la entrega.", body: "Las comprobaciones dependen de las instrucciones. Cada tarea terminada recibe una revisión del operador antes de entregarse.", checks: ["cumplimiento de instrucciones", "validación de campos y formato", "revisión de duplicados y coherencia", "comprobación de fuentes cuando se acuerde", "revisión de excepciones", "revisión final del operador"], boundaryTitle: "Una promesa acotada", boundaryBody: "AfterDesk gestiona trabajo remoto que puede definirse y verificarse. El plazo depende del tamaño, acceso, complejidad y revisión. No se acepta criterio profesional de alto riesgo ni acceso no admitido a cuentas." },
+    close: { title: "¿Hay un flujo que siempre termina al final de la lista?", body: "Describe el entregable. Confirmaremos el encaje, la revisión, el precio y el plazo antes de empezar.", primary: "Describe el resultado", secondary: "Hablar de trabajo recurrente" },
+    footer: { work: "Trabaja con nosotros", academy: "Academia" },
+    counters: {
+      taskWord: ["tarea entregada", "tareas entregadas"],
+      workerWord: ["especialista aprobado", "especialistas aprobados"],
+      released: "liberados a los especialistas",
+      toDate: "Hasta la fecha,",
+      moneySaved: {
+        label: "ahorrados vs. tarifa de mercado",
+        timeLabel: "horas recuperadas",
+        note: "Tarifa de mercado × horas en la tarea, menos lo que el cliente realmente pagó. Definida por categoría de tarea, con piso en cero, nunca una cifra modesta inflada.",
+      },
+    },
+  },
+  tl: {
+    nav: { services: "Mga serbisyo", how: "Paano ito gumagana", about: "Tungkol sa amin", signIn: "Mag-sign in", portal: "Account ko" },
+    hero: { eyebrow: "Managed back-office execution", line1: "Ipadala ang trabaho.", line2: "Tumanggap ng sinuring deliverable.", body: "Sina-scope at mina-manage ng AfterDesk ang malinaw na CRM, research, data, at document work. Kinukumpleto ito ng trained specialist at sinusuri ng AfterDesk operator bago i-deliver.", cta: "Ilarawan ang resulta", micro: "Ang one-off tasks ay sina-scope at pinepresyuhan muna. Kinukumpirma ang timing bago magsimula." },
+    example: { label: "Halimbawang workflow", title: "CRM hygiene run", fieldInput: "INPUT", fieldRules: "RULES", fieldReturns: "IBABALIK", fieldReview: "REVIEW", qcStamp: "PASADO SA QC", input: "1,800-row CRM export", rules: "Pagsamahin ang duplicates · ayusin ang fields", returns: "Malinis na import · exception log", review: "Brief at field checks", status: "Handa nang i-deliver" },
+    fit: { label: "Saan bagay ang AfterDesk", title: "Trabahong malinaw, nauulit, at nasusuri.", body: "Pinakamainam ang operational work na may malinaw na input, tiyak na deliverable, at mga detalyeng kailangan pa rin ng human judgment.", cards: [
+      { title: "CRM cleanup at enrichment", body: "Ayusin ang fields, pagsamahin ang duplicates, saliksikin ang napagkasunduang data, at i-flag ang records na kailangang pagdesisyunan.", output: "Malinis na import + exception log" },
+      { title: "Account research at qualification", body: "Magsaliksik ng companies ayon sa malinaw na criteria, panatilihin ang source links, at ihiwalay ang hindi tiyak.", output: "Structured research file" },
+      { title: "Data at document operations", body: "Ihambing ang files, i-validate ang structured information, at maghanda ng reports mula sa ibinigay na materyal.", output: "Tapos na file + review notes" },
+    ] },
+    process: { label: "Paano ito gumagana", title: "Ikaw ang nagtatakda ng resulta. AfterDesk ang namamahala sa trabaho.", steps: [
+      { title: "Ilarawan ang deliverable", body: "Sabihin kung ano ang dapat ibalik, aling rules ang mahalaga, at ano ang tamang resulta." },
+      { title: "Aprubahan ang scope at presyo", body: "Kinukumpirma ng operator ang fit, access, timing, at isang fixed price para sa one-off task." },
+      { title: "Kinukumpleto ang trabaho", body: "Kinukumpleto ng trained specialist ang scope habang mina-manage ng AfterDesk ang questions at exceptions." },
+      { title: "Sinusuri ng quality control", body: "Tinitingnan ang mahahalagang detalye, completeness, at formatting bago i-deliver." },
+    ] },
+    comparison: { label: "Pagkatapos ng prompt", title: "Kayang gumawa ng sagot ng AI. Pero maaaring ikaw pa rin ang tatapos ng workflow.", body: "Makapangyarihan ang ChatGPT, Claude, at ibang AI tools. Para ang AfterDesk sa trabahong ayaw mong ikaw pa ang magpatakbo at magsuri ng bawat resulta.", directTitle: "Gamitin ang AI nang direkta kung kaya mong", direct: ["ibigay ang context at instructions", "patakbuhin ang steps at tools", "i-verify ang facts, fields, at format", "ayusin ang exceptions"], managedTitle: "Gamitin ang AfterDesk kung gusto mo ng", managed: ["isang approved scope", "managed execution", "malinaw na exceptions", "sinuri at magagamit na deliverable"] },
+    quality: { label: "Quality control", title: "Bahagi ng delivery ang review.", body: "Nakadepende sa brief ang eksaktong checks. Bawat natapos na task ay sinusuri ng operator bago i-deliver.", checks: ["brief-compliance check", "field at format validation", "duplicate at consistency review", "source checks kapag napagkasunduan", "exception review", "final operator review"], boundaryTitle: "Malinaw na hangganan", boundaryBody: "Remote work lang na kayang i-scope at i-verify ang hinahawakan ng AfterDesk. Nakadepende ang timing sa laki, access, complexity, at review. Hindi tinatanggap ang high-risk professional judgment o unsupported account access." },
+    close: { title: "May workflow bang laging napupunta sa dulo ng listahan?", body: "Ilarawan ang deliverable. Kukumpirmahin namin ang fit, review, presyo, at timing bago magsimula.", primary: "Ilarawan ang resulta", secondary: "Pag-usapan ang recurring work" },
+    footer: { work: "Magtrabaho sa amin", academy: "Academy" },
+    counters: {
+      taskWord: ["task na naihatid", "mga task na naihatid"],
+      workerWord: ["inaprubahang espesyalista", "mga inaprubahang espesyalista"],
+      released: "napunta sa mga espesyalista",
+      toDate: "Sa ngayon,",
+      moneySaved: {
+        label: "naipon vs presyo sa market",
+        timeLabel: "oras na nabawi",
+        note: "Presyo sa market × oras sa task, bawas sa aktwal na binayad ng kliyente. Naka-set per kategorya ng task, may floor na zero, hindi kailanman pinalaki ang isang maliit na numero.",
+      },
+    },
+  },
+};
+
+const HOME_META: Record<SiteLang, { title: string; description: string }> = {
+  en: {
+    title: "Managed back-office execution for data, research and CRM work",
+    description:
+      "AfterDesk scopes, manages and reviews bounded CRM, research, data and document work. Approve the scope and price, then receive a checked, usable deliverable.",
+  },
+  fr: {
+    title: "Exécution administrative gérée pour le CRM, la recherche et les données",
+    description:
+      "AfterDesk cadre, gère et vérifie des travaux délimités de CRM, recherche, données et documents. Approuvez le périmètre et le prix, puis recevez un livrable utilisable.",
+  },
+  es: {
+    title: "Ejecución administrativa gestionada para CRM, investigación y datos",
+    description:
+      "AfterDesk define, gestiona y revisa trabajo acotado de CRM, investigación, datos y documentos. Aprueba el alcance y el precio, y recibe un entregable utilizable.",
+  },
+  tl: {
+    title: "Managed back-office execution para sa CRM, research, at data work",
+    description:
+      "Sina-scope, mina-manage, at sinusuri ng AfterDesk ang bounded CRM, research, data, at document work. Aprubahan ang scope at presyo, saka tumanggap ng magagamit na deliverable.",
+  },
+};
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
   const sp = await searchParams;
-  return {
-    alternates: langAlternates("/", sp.lang),
-  };
+  // Metadata language comes from ?lang= ONLY, never the cookie — the bare "/"
+  // URL is declared to crawlers as the EN/x-default rendering (langAlternates),
+  // so a cookie-carrying visitor must not flip its indexed title. The PAGE
+  // renders in the cookie language; the metadata describes the URL.
+  const lang = clientLangOf(sp.lang);
+  return { ...HOME_META[lang], alternates: langAlternates("/", sp.lang) };
 }
 
-/**
- * The canonical Organization node. Every course page's Course.provider points
- * at this @id rather than restating the org, so there is exactly one place
- * that describes the company and no chance of two nodes disagreeing.
- *
- * Nothing here is aspirational: no aggregateRating (there are no ratings), no
- * sameAs (there are no profiles yet), no logo until a real one is exported to
- * public/. Structured data that claims more than the business has is worse
- * than none.
- */
 const ORG_JSONLD = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": `${SITE_URL}/#organization`,
   name: "AfterDesk",
   url: SITE_URL,
-  description:
-    "Describe any task in plain language: priced fixed, done overnight by a vetted specialist, reviewed before it reaches you.",
+  description: "Managed back-office execution for repeatable data, research and document workflows.",
 });
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ lang?: string }>;
-}) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
   const user = await getSessionUser();
-  /* This used to bounce EVERY signed-in visitor to their portal, which sealed
-     the last exit an unverified account has. Its portal is a closed door —
-     requireUser() (src/lib/authz.ts) sends any unverified session straight to
-     /verify-email — so "/" handing it to that portal turned every "← Back to
-     site" in AuthShell into a loading flash that landed on the page it was
-     clicked from. Two narrowings and the loop cannot form. An unverified
-     session is never bounced: behind the gate there is nothing for it to see,
-     so this page is its way out. A verified one is bounced only on a cold
-     arrival at the bare root — anyone who clicked through from inside the app
-     asked for the marketing site and gets it, which is the door back to
-     /about, /how-it-works and the public Academy once you are signed in. */
-  if (user?.emailVerified && !(await arrivedFromInsideTheApp())) {
-    redirect(roleHome(user.role));
-  }
-  /* The door back into the app, or nothing at all for a stranger. An
-     unverified session is pointed at the verification page rather than at
-     roleHome(): that is a door which does not open for it, and requireUser()
-     would only send it here anyway, one loading flash later. */
+  if (user?.emailVerified && !(await arrivedFromInsideTheApp())) redirect(roleHome(user.role));
+
   const portal = user ? (user.emailVerified ? roleHome(user.role) : "/verify-email") : undefined;
   const sp = await searchParams;
-  const cookieStore = await cookies();
-  const lang = clientLangOf(sp.lang ?? cookieStore.get("ss-lang-client")?.value);
-  const t = CLIENT_I18N[lang];
-  /* Four chapters. Two were cut, for the same reason both times — they
-     restated what a neighbour already showed. The old 06/06 was a GENERAL
-     NOTES block summarising the chapters above it (its two genuinely new
-     clauses, retention and refusals, now live on /how-it-works); the old
-     01/05 was the overnight-diff artifact, which repeated the hero's own
-     task window. */
-  const ch = (n: string, label: string) => (
-    <>
-      {n}
-      <span className="opacity-50">/04</span> · {label}
-    </>
-  );
-  /* On the paper half the chapter number is a drawing number: it grows a
-     leader line out to the plate edge, the way a plate is called out on a
-     drawing set. Zero words, all structure. */
-  const plateCh = (n: string, label: string) => (
-    <p className="mb-3 flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-      <span className="whitespace-nowrap">{ch(n, label)}</span>
-      <i aria-hidden className="chapter-leader" />
-    </p>
-  );
-  /* The published range is COMPUTED from the rows that are actually shown —
-     never typed by hand, so it can never drift from the evidence above it.
-     The rows themselves are guarded against colliding with the worker page
-     (see the note in src/lib/i18n/client.ts), which is what keeps the margin
-     underivable across the two pages. */
-  const amounts = t.ch03.rows
-    .map(([, , price]) => Number(price.replace(/[^0-9.]/g, "")))
-    .filter((n) => Number.isFinite(n) && n > 0);
-  const ledgerRange = amounts.length
-    ? `$${Math.min(...amounts)}–$${Math.max(...amounts)}`
-    : "";
+  const jar = await cookies();
+  const lang = clientLangOf(sp.lang ?? jar.get("ss-lang-client")?.value);
+  const t = COPY[lang];
 
   return (
-    /* lang on the subtree: the root <html> is en, and screen readers must
-       switch voice for the translated copy. */
-    <div lang={lang} className="overflow-x-clip bg-[#0A0B0D]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: ORG_JSONLD }}
-      />
-      {/* ── NAV — sticky, blurred ─────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
-        <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
-          <Wordmark tone="paper" className="text-[11px] sm:text-[13px]" />
-          <div className="flex items-center justify-center gap-3 sm:gap-4">
-            <AudienceToggle
-              side="client"
-              tone="night"
-              clientLabel={t.nav.client}
-              workersLabel={WORKER_SIDE_LABEL}
-            />
-            {/* Same nav level as the toggle, on purpose — it is not one more
-                footer link, it is the front door for every offering
-                (src/lib/offerings.ts), the toggle's binary client/worker
-                pill just has no third slot to hold it. */}
-            <Link
-              href="/services"
-              className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
-            >
-              Our Services
-            </Link>
-          </div>
-          {/* gap-2/sm:gap-5 used to leave French ("Qui nous sommes",
-              "Envoyer une tâche" — longer than their English originals)
-              about ~30px short of this column's width at desktop sizes.
-              Nothing here had a min-width floor, so the shortfall landed
-              entirely on the plain-text links: flex let them shrink below
-              their own content width and their text wrapped, which grew this
-              whole row past the header's fixed h-14 and made it look broken.
-              whitespace-nowrap + shrink-0 refuses that shrink outright; the
-              tighter gap is what actually buys back the ~30px so nowrap has
-              room to hold without overflowing the column instead. */}
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5">
+    <div lang={lang} className="min-h-screen overflow-x-clip bg-[#0A0B0D] text-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ORG_JSONLD }} />
+
+      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/92 backdrop-blur-md">
+        <div className="mx-auto flex min-h-16 w-full max-w-[1120px] items-center justify-between gap-3 px-4 sm:px-6">
+          <Link href="/" aria-label="AfterDesk home"><Wordmark tone="paper" /></Link>
+          <nav aria-label="Primary" className="hidden items-center gap-6 text-[13px] font-medium md:flex">
+            <Link href="/services" className="text-[#9AA1AB] transition-colors hover:text-white">{t.nav.services}</Link>
+            <Link href="/how-it-works" className="text-[#9AA1AB] transition-colors hover:text-white">{t.nav.how}</Link>
+            <Link href="/about" className="text-[#9AA1AB] transition-colors hover:text-white">{t.nav.about}</Link>
+          </nav>
+          <div className="flex items-center gap-2 sm:gap-3">
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
-            {/* Promoted out of the footer: this is the story page, and a story
-                nobody can find is not a story. Hidden on mobile alongside Sign
-                in — the header only has room for the toggle and the CTA there. */}
-            <Link
-              href="/about"
-              className="hidden shrink-0 whitespace-nowrap text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
-            >
-              {t.footer.about}
-            </Link>
-            {/* Signed in, this page is now reachable, so the two doors that
-                only make sense to a stranger (sign in, sign up) become the one
-                that makes sense to a customer: back to their own portal. */}
-            {portal ? (
-              <Link
-                href={portal}
-                className="lift hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
-              >
-                {t.nav.portal}
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="hidden shrink-0 whitespace-nowrap text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
-                >
-                  {t.nav.signIn}
-                </Link>
-                <Link
-                  href="/register"
-                  className="lift hidden min-h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-[#F7F6F3] px-4 py-1.5 text-[13px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_6px_24px_rgba(247,246,243,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:inline-flex"
-                >
-                  {t.nav.send}
-                </Link>
-              </>
-            )}
+            <Link href={portal ?? "/login"} className="hidden min-h-11 items-center px-2 text-[13px] font-medium text-[#9AA1AB] hover:text-white sm:inline-flex">{portal ? t.nav.portal : t.nav.signIn}</Link>
+            <Link href="/register" className="inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-4 text-[13px] font-semibold text-[#14161A] transition-transform hover:-translate-y-0.5 hover:bg-white">{t.hero.cta}</Link>
           </div>
         </div>
       </header>
 
-      {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        {/* ambient glow + film grain */}
-        <div aria-hidden className="night-grid pointer-events-none absolute inset-0" />
-        <div
-          aria-hidden
-          className="hero-glow glow-dusk pointer-events-none absolute -top-48 left-[2%] h-[640px] w-[900px]"
-        />
-        <div
-          aria-hidden
-          className="glow-drift glow-dusk pointer-events-none absolute right-[0%] top-[20%] h-[480px] w-[640px]"
-        />
-        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
-        <PointerGlow />
-
-        {/* Below lg this is ONE column, and the column order is the whole
-            point. A phone used to scroll 2.5 screens of uninterrupted prose
-            before it met anything that was not a sentence, so here the order
-            is headline → the product itself → the door → the explanation.
-            The two text blocks are grouped in a wrapper that is `contents` on
-            a phone (so the window can be ordered between them) and a real box
-            from lg up (so it is the left column of the two-column grid, in
-            plain DOM order, exactly as before). One copy of every string. */}
-        <div className="relative mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-4 pt-4 sm:pt-28 lg:grid lg:grid-cols-[1fr_420px] lg:gap-12 lg:items-center">
-          <div className="contents lg:block">
-            <div className="order-1">
-              {/* Phone-only: the links the header has no room for, behind
-                  one compact trigger instead of stacked pills — see
-                  mobile-menu.tsx for why. mb-5, not mb-9: a single 44px
-                  button doesn't need the margin a two-row pill block did.
-                  No anim-rise here (unlike its siblings below) — inherited
-                  from the old FloatingLinks pills, but this is an
-                  interactive dropdown anchor now, not decorative content.
-                  A user who opens it while the entrance fade is still
-                  resolving sees the dropdown at that same partial opacity,
-                  which reads as a translucent panel with the hero text
-                  bleeding through it. LangSwitch, the same kind of always-
-                  on nav control, never carried this animation either.
-
-                  Sign in sits next to the trigger, not inside it: a
-                  returning visitor uses it often enough that it shouldn't
-                  cost an extra tap the way About us / Our Services can —
-                  those are discovery links a first-time visitor doesn't
-                  need immediately. The header itself has no spare width for
-                  it at 375px (verified: logo + audience toggle + language
-                  switcher already fill the row edge to edge), so this row
-                  is the nearest place that's still permanently visible. */}
-              <div className="mb-5 flex items-center justify-between sm:hidden">
-                <MobileMenu
-                  tone="night"
-                  aboutLabel={t.footer.about}
-                  servicesLabel={COMPACT_SERVICES_LABEL[lang]}
-                  howLabel={COMPACT_HOW_LABEL[lang]}
-                />
-                <Link
-                  href={portal ?? "/login"}
-                  className="flex min-h-11 shrink-0 items-center whitespace-nowrap text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white"
-                >
-                  {portal ? t.nav.portal : t.nav.signIn}
-                </Link>
+      <main>
+        <section className="relative overflow-hidden border-b border-white/8">
+          <div aria-hidden className="night-grid pointer-events-none absolute inset-0" />
+          <div aria-hidden className="glow-dusk pointer-events-none absolute -left-32 -top-48 h-[620px] w-[760px] opacity-60" />
+          <div className="relative mx-auto grid w-full max-w-[1120px] gap-10 px-6 pb-20 pt-8 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:py-28">
+            <div>
+              {/* md:hidden, not sm:hidden — the primary header nav only appears
+                  at md, so this fallback must cover the 640-767px band too. The
+                  sign-in link inside it hides at sm+ where the header already
+                  shows its own. */}
+              <div className="mb-8 flex items-center justify-between md:hidden">
+                <MobileMenu tone="night" aboutLabel={t.nav.about} servicesLabel={COMPACT_SERVICES_LABEL[lang]} howLabel={COMPACT_HOW_LABEL[lang]} />
+                <Link href={portal ?? "/login"} className="inline-flex min-h-11 items-center text-[12px] font-medium text-[#9AA1AB] sm:hidden">{portal ? t.nav.portal : t.nav.signIn}</Link>
               </div>
-              <h1 className="max-w-[17ch] text-[clamp(2.75rem,6.5vw,5rem)] font-semibold leading-[1.01] tracking-[-0.035em]">
-                <span className="anim-rise block text-[#767C86]">{t.hero.line1}</span>
-                <span className="anim-rise d-1 block text-white">{t.hero.line2}</span>
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#8A9099]">{t.hero.eyebrow}</p>
+              <h1 className="mt-5 max-w-[14ch] text-[clamp(2.7rem,6.5vw,5rem)] font-semibold leading-[0.98] tracking-[-0.045em]">
+                <span className="block text-[#8A9099]">{t.hero.line1}</span>
+                <span className="block text-white">{t.hero.line2}</span>
               </h1>
-              {/* The comparative/management-fatigue argument, compressed into
-                  one line a fast scroller hits before the CTA — the thing
-                  someone who never scrolls past the fold still has to walk
-                  away understanding. Not "we have workers" (the reader
-                  already knows Upwork exists); the actual sell is the
-                  supervision that disappears. */}
-              <p className="anim-rise d-1 mt-5 max-w-[42ch] text-[17px] leading-[1.5] text-[#9AA1AB] sm:text-[19px]">
-                {t.hero.subtitle}
-              </p>
-            </div>
-
-            <div className="anim-rise d-2 order-3 mt-8">
-              <Link
-                href="/register"
-                className="lift inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                {t.hero.cta}
-              </Link>
-              {/* Same micro-copy slot the Academy hero uses under its own
-                  CTA ("You can start the first course tonight."): the literal
-                  answer to "what actually happens if I click this," landed
-                  in one breath, right where someone is deciding to click. The
-                  shield is the one glyph on the page that means "protected,"
-                  reused nowhere else, so it never has to compete for what it
-                  points at. */}
-              <p className="mt-3 flex items-start gap-1.5 font-mono text-[12px] text-[#767C86]">
-                <svg viewBox="0 0 16 16" fill="none" className="mt-[1px] h-3.5 w-3.5 shrink-0 text-[#5B6069]" aria-hidden>
-                  <path
-                    d="M8 1.5 13.5 3.5V7.5C13.5 11 11.2 13.3 8 14.5C4.8 13.3 2.5 11 2.5 7.5V3.5L8 1.5Z"
-                    stroke="currentColor"
-                    strokeWidth="1.3"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                {t.hero.guarantee}
-              </p>
-            </div>
-          </div>
-
-          {/* The product IS the hero image — and it's ALIVE: one task's whole
-              life plays in the window, then loops.
-
-              Phones used to be denied it: stacked vertically, it and the quote
-              slip in chapter 01 are both dark mono cards with a task name, a
-              field list and two buttons, so they scanned as one artifact shown
-              twice. That was the right observation and the wrong cut — the
-              phone kept the sentences and lost every picture. The window is
-              now the picture on every screen, and the duplication is settled
-              at the other end: below lg the slip drops the field rows and the
-              buttons that made it look like this card and keeps only what is
-              new there, the total. */}
-          <p className="sr-only">{t.hero.srPreview(t.liveWindow.taskTitle)}</p>
-          <div aria-hidden className="anim-rise d-3 order-2 mt-10 lg:mt-0">
-            <LiveTaskWindow copy={t.liveWindow} />
-          </div>
-        </div>
-
-        {/* live counters — the proof, at the moment of the promise */}
-        <PublicCounters tone="night" variant="strip" copy={t.counters} className="anim-rise d-4 mt-12" />
-      </section>
-
-      {/* ── WHAT THIS IS ──────────────────────────────────────────────────
-             The very next thing after the hero, on purpose: what AfterDesk
-             actually IS, who does the work, and the one rule (you don't pay
-             for work that isn't right) that makes it safe to send a task to
-             a stranger. Not a numbered chapter like 01-04 below — it has no
-             number because it isn't part of that set, it's the answer to
-             "wait, what is this" that has to land before anyone reads far
-             enough to reach chapter 01. */}
-      <section className="border-t border-white/8 bg-[#0D0E11]">
-        {/* Three reveals, not one. This block is eleven text runs deep and on
-            a phone it is the longest unbroken column on the page; wrapped in a
-            single Reveal it arrived as one wall the moment its top edge
-            crossed the threshold, which is the same as not animating at all.
-            Split at its own seams — the statement, the process, the standing
-            promises — each waits for its own turn, and the .srow rule staggers
-            the rows inside it. Reveal itself is the reduced-motion gate: it
-            only arms when motion is wanted, so this stays a plain column for
-            anyone who asked for one. */}
-        <div className="mx-auto w-full max-w-[1120px] px-6 py-16 sm:py-20">
-          <Reveal>
-            <p className="srow font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
-              {t.whatWeAre.label}
-            </p>
-            {/* AfterDesk set in the wordmark's own treatment (mono,
-                uppercase, tracked — src/components/logo.tsx) so the brand
-                reads as a mark planted mid-sentence, not just another word.
-                The sentence around it drops to a paler, lighter weight in
-                the same motion, so the name is what actually pops instead
-                of everything competing at the same weight. */}
-            <h2 className="srow mt-3 max-w-[28ch] text-[clamp(1.3rem,2.9vw,1.85rem)] font-medium leading-[1.25] tracking-[-0.015em] text-[#9AA1AB]">
-              {t.whatWeAre.h2[0]}
-              <span className="font-mono text-[1.05em] font-bold uppercase tracking-[0.12em] text-white">
-                AfterDesk
-              </span>
-              {t.whatWeAre.h2[1]}
-            </h2>
-            <p className="srow mt-4 max-w-[62ch] text-[15px] leading-[1.65] text-[#9AA1AB] sm:text-[16px]">
-              {t.whatWeAre.intro}
-            </p>
-          </Reveal>
-          <Reveal className="mt-10 grid gap-8 sm:grid-cols-3 sm:gap-6">
-            {t.whatWeAre.steps.map(([label, body], i) => (
-              <div key={label} className="srow">
-                <p className="font-mono text-[13px] tabular-nums tracking-[-0.01em] text-[#5B6069]">
-                  {String(i + 1).padStart(2, "0")}
-                </p>
-                <p className="mt-1.5 text-[16px] font-medium text-white">{label}</p>
-                <p className="mt-1.5 text-[14px] leading-[1.55] text-[#9AA1AB]">{body}</p>
+              <p className="mt-6 max-w-[54ch] text-[17px] leading-[1.6] text-[#B1B6BE] sm:text-[19px]">{t.hero.body}</p>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Link href="/register" className="inline-flex min-h-12 items-center rounded-full bg-[#F7F6F3] px-6 text-[15px] font-semibold text-[#14161A] transition-transform hover:-translate-y-0.5 hover:bg-white">{t.hero.cta}</Link>
+                <Link href="/how-it-works" className="inline-flex min-h-12 items-center text-[14px] font-medium text-[#C9CDD3] underline decoration-white/25 underline-offset-4 hover:decoration-white">{t.nav.how}</Link>
               </div>
-            ))}
-          </Reveal>
-        </div>
-      </section>
+              <p className="mt-4 max-w-[62ch] font-mono text-[12px] leading-[1.6] text-[#767C86]">{t.hero.micro}</p>
+            </div>
 
-      {/* ── THE RECEIPT ───────────────────────────────────────────────── */}
-      {/* The overnight-diff artifact used to sit above this, as chapter 01.
-          It was cut: the hero's own task window already plays a task's whole
-          life, so a second looping before/after demo restated the promise a
-          third time (headline, window, diff) and cost most of a phone screen
-          to do it. The receipt below is the first thing that adds NEW
-          information — the price — so it opens the set now. */}
-      <section className="border-t border-white/8">
-        <div className="mx-auto w-full max-w-[1120px] px-6 py-24">
-          <Reveal>
-            <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">
-              {ch("01", t.ch02.label)}
-            </p>
-            <div className="mx-auto max-w-[420px]">
-              {/* On a phone this card sits directly under the hero's own
-                  LiveTaskWindow — same dark mono chrome, a task name and a
-                  dollar figure, back to back in the scroll. Two artifacts
-                  that read as one repeated. The card itself is desktop-only
-                  from here; the one fact a phone still needs from it (the
-                  fixed total) moves to the plain-text line below instead of
-                  competing for the same "dark card with a price" slot. */}
-              <div className="hidden lg:block lift rounded-xl border border-white/10 bg-[#111317] p-5 font-mono text-[12px] transition-colors hover:border-white/20 hover:bg-[#15171B]">
-                <div className="flex items-center justify-between border-b border-white/8 pb-3 text-[#8A9099]">
-                  {/* "QUOTE #0412" is a machine ID and stays literal. */}
-                  <span>QUOTE #0412</span>
-                  <span className="text-white">{t.ch02.fixed}</span>
-                </div>
-                {/* Below lg the SCOPE and RETURNS rows are dropped, and so are
-                    the two buttons under the total. Both are the hero window's
-                    own furniture, and on one narrow column this slip sits
-                    directly beneath that window in the scroll — with them it
-                    is the same card a second time, without them it is what it
-                    was always for: the price, alone, with its captions. */}
-                {[
-                  [t.ch02.fieldTask, t.ch02.taskValue, ""],
-                  [t.ch02.fieldScope, t.ch02.scopeValue, "hidden lg:flex"],
-                  // The RETURNS value is a literal clock time + timezone, not a word.
-                  [t.ch02.fieldReturns, "7:07 AM ET", "hidden lg:flex"],
-                ].map(([k, v, hide]) => (
-                  <div
-                    key={k}
-                    className={`justify-between gap-4 border-b border-white/6 py-2.5 ${hide || "flex"}`}
-                  >
-                    <span className="shrink-0 text-[#8A9099]">{k}</span>
-                    <span className="text-right text-[#C9CDD3]">{v}</span>
-                  </div>
+            <div className="rounded-xl border border-white/12 bg-[#111317] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.32)]">
+              <div className="flex items-center justify-between border-b border-white/8 pb-4 font-mono text-[10px] uppercase tracking-[0.12em] text-[#8A9099]">
+                <span>{t.example.label}</span><span>WF-CRM-01</span>
+              </div>
+              <h2 className="mt-5 text-[20px] font-semibold text-white">{t.example.title}</h2>
+              <dl className="mt-5 divide-y divide-white/8 text-[13px]">
+                {[[t.example.fieldInput, t.example.input], [t.example.fieldRules, t.example.rules], [t.example.fieldReturns, t.example.returns], [t.example.fieldReview, t.example.review]].map(([key, value]) => (
+                  <div key={key} className="grid grid-cols-[72px_1fr] gap-4 py-3"><dt className="font-mono text-[10px] tracking-[0.1em] text-[#767C86]">{key}</dt><dd className="text-[#C9CDD3]">{value}</dd></div>
                 ))}
-                <div className="flex items-baseline justify-between pt-4">
-                  <span className="text-[#8A9099]">{t.ch02.fieldTotal}</span>
-                  <span className="text-[32px] font-medium tabular-nums leading-none text-white">
-                    $68
-                  </span>
-                </div>
-                <p className="mt-2 text-right text-[#8A9099]">{t.ch02.noMeter}</p>
-                <div className="mt-5 hidden gap-2 lg:flex">
-                  <span className="flex-1 rounded bg-[#F7F6F3] py-2 text-center text-[11px] text-[#14161A]">
-                    {t.ch02.approve}
-                  </span>
-                  <span className="flex-1 rounded border border-white/15 py-2 text-center text-[11px] text-[#8A9099]">
-                    {t.ch02.askQuestion}
-                  </span>
-                </div>
-              </div>
-
-              {/* Mobile-only stand-in for the card above: just the number,
-                  no chrome, so it can't be mistaken for a second version of
-                  the hero window while the fixed price still lands before
-                  the captions below it. */}
-              <div className="flex items-baseline justify-between gap-4 border-b border-white/8 pb-4 font-mono text-[12px] lg:hidden">
-                <span className="text-[#8A9099]">{t.ch02.fieldTotal}</span>
-                <span className="text-[28px] font-medium tabular-nums leading-none text-white">$68</span>
-              </div>
-              <p className="mt-2 text-right font-mono text-[11px] text-[#8A9099] lg:hidden">
-                {t.ch02.noMeter}
-              </p>
-
-              <div className="mt-6 grid gap-3 font-mono text-[12px] text-[#767C86] sm:grid-cols-3">
-                {t.ch02.captions.map((c) => (
-                  <p key={c} className="srow">
-                    {c}
-                  </p>
-                ))}
+              </dl>
+              <div className="mt-5 flex items-center justify-between rounded-md border border-[#1E7F5C]/30 bg-[#1E7F5C]/10 px-4 py-3">
+                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#79C7A8]">{t.example.qcStamp}</span><span className="text-[12px] text-[#C9CDD3]">{t.example.status}</span>
               </div>
             </div>
-          </Reveal>
-          {/* The standing guarantees, not the process — deliberately smaller
-              and unnumbered so it never reads as a "three things" list a
-              second time next to the numbered chapters. Sits right under the
-              receipt on purpose: the price just proved the rule (one fixed
-              number, no meter), so this is the moment to name the three
-              things that stay true no matter where a task sits on its own
-              timeline, before the reader moves on to how the pool works. */}
-          <Reveal className="mx-auto mt-10 grid max-w-[720px] gap-6 border-t border-white/8 pt-8 sm:grid-cols-3">
-            {t.whatWeAre.pillars.map(([label, body]) => (
-              <div key={label} className="srow">
-                <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[#C9CDD3]">
-                  {label}
-                </p>
-                <p className="mt-1.5 text-[13px] leading-[1.5] text-[#767C86]">{body}</p>
-              </div>
-            ))}
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── 03/06 THE INDEX PLATE (paper) ─────────────────────────────
-             The flat table becomes a printed bill of materials that scans
-             itself: nothing carries a price until the operator passes over
-             it. The range under it is computed from the rows above it. */}
-      <section className="relative overflow-hidden bg-[#F7F6F3]">
-        <PointerGlow tone="paper" />
-        <div className="relative mx-auto w-full max-w-[920px] px-4 py-16 sm:px-6 sm:py-24">
-          <Reveal replay>
-            <div className="plate px-5 py-10 sm:px-9 sm:py-12">
-              {plateCh("02", t.ch03.label)}
-              <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-                {t.ch03.h2}
-              </h2>
-              <PaperLedgerScan
-                rows={t.ch03.rows}
-                note={t.ch03.note}
-                range={ledgerRange}
-              />
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── 04/06 THE INSTRUMENT (paper) ──────────────────────────────
-             The decorative sweep is retired. The band becomes a measured
-             24-hour ruler with a needle at the real New York clock, and the
-             four stations light only while the needle is inside them — with
-             an explicit idle state, because a lit station would otherwise
-             imply work is underway when it is not. */}
-      <section className="relative overflow-hidden border-t border-black/8 bg-[#F7F6F3]">
-        <PointerGlow tone="paper" />
-        <div className="relative mx-auto w-full max-w-[1120px] px-4 py-16 sm:px-6 sm:py-24">
-          <Reveal replay>
-            <div className="plate px-5 py-10 sm:px-9 sm:py-12">
-              {plateCh("03", t.ch04.label)}
-              <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-                {t.ch04.h2}
-              </h2>
-              <PaperInstrument
-                laneYou={t.ch04.laneYou}
-                laneThem={t.ch04.laneThem}
-                note={t.ch04.note}
-                steps={t.ch04.steps}
-              />
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── 05/06 THE SECTION CUT (paper) ─────────────────────────────
-             The artifact demonstrates the review; the wall states the rule.
-             THERE and HERE are drawn as an architectural section with a 45°
-             hatched OPERATOR band between them: facing statements arrive
-             from their own side, decelerate, and stop dead at the hatch.
-             Nothing crosses it — that used to be a sentence, and the
-             sentence is now deleted because the picture says it. */}
-      <section className="relative overflow-hidden border-t border-black/8 bg-[#F7F6F3]">
-        <div className="relative mx-auto w-full max-w-[920px] px-4 py-16 sm:px-6 sm:py-24">
-          <Reveal replay>
-            <div className="plate px-5 py-10 sm:px-9 sm:py-12">
-              {plateCh("04", t.ch05.label)}
-              {/* "You never meet the worker. That's the point." used to sit
-                  under this heading. It was the heading again in other words
-                  — one professional standing between you and the work IS
-                  never meeting the worker — so the reader paid for two lines
-                  and was told one thing. */}
-              <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-[#14161A]">
-                {t.ch05.h2}
-              </h2>
-
-              <PaperReviewDesk caption={t.ch05.desk} />
-
-              {/* Each row still names its own alternative (see the note on
-                  ch05.pairs below) — that part stayed. What was missing at
-                  reading speed was the ONE framing sentence: that this is
-                  three ways of getting the same work done, not a loose list
-                  of complaints. The legend states that once and stays
-                  pinned (position: sticky, scoped to this row group's own
-                  height by its `relative` parent) so it survives the whole
-                  scroll instead of only the first row. */}
-              <div className="mt-12">
-                <div className="relative">
-                  <p className="sticky top-14 z-10 mb-4 -mx-5 border-y border-black/8 bg-[#F7F6F3]/95 px-5 py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.1em] text-[#5B6069] backdrop-blur-sm sm:-mx-9 sm:px-9">
-                    {t.ch05.legend}
-                  </p>
-                  {/* the wall itself — one hatched band, full height */}
-                  <div
-                    aria-hidden
-                    className="hatch absolute inset-y-0 left-1/2 hidden w-[2.75rem] -translate-x-1/2 items-center justify-center md:flex"
-                  >
-                    <span className="hatch-label bg-[#F7F6F3] px-1 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B6069]">
-                      {t.ch05.wall}
-                    </span>
-                  </div>
-
-                  {t.ch05.pairs.map(([who, there, here]) => (
-                    <div
-                      key={who}
-                      className="cut-row grid items-start border-b border-black/8 py-4 md:grid-cols-[1fr_2.75rem_1fr]"
-                    >
-                      <div className="arrive-l md:pr-5 md:text-right">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#8A9099]">
-                          {who}
-                        </p>
-                        <p className="mt-1 text-[14px] leading-relaxed text-[#5B6069]">{there}</p>
-                      </div>
-                      <span aria-hidden className="hatch my-3 block h-3 md:my-0 md:hidden" />
-                      <span aria-hidden className="hidden md:block" />
-                      <div className="arrive-r md:pl-5">
-                        {/* The brand name, not a translated string: it is the
-                            one constant in the table and the drumbeat the eye
-                            catches four times down the right-hand side. */}
-                        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#14161A]">
-                          AfterDesk
-                        </p>
-                        <p className="mt-1 text-[14px] leading-relaxed text-[#14161A]">{here}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── CLOSING — the sheet is trimmed, the night resumes ──────────
-             The paper half ends on a real trim edge with crop marks instead
-             of just stopping, and the ink block inherits the same drafting
-             frame inverted: paper-coloured corner ticks, a white hairline
-             grid. Green stays money-only — it never touches this CTA.
-
-             The GENERAL NOTES chapter that used to sit above this is gone.
-             Four of its six clauses restated chapters 02–05 in smaller type;
-             the two that carried new information (retention, refusals) are
-             §06 and NOT IN SCOPE on the protocol page, so this is a pointer
-             to the document rather than a sixth chapter repeating it. */}
-      <section className="bg-[#F7F6F3] pb-16">
-        <div className="mx-auto w-full max-w-[920px] px-4 sm:px-6">
-          <p className="mb-8 text-right font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
-            <Link
-              href="/how-it-works"
-              className="transition-colors hover:text-[#14161A]"
-            >
-              {t.close.protocol} <span aria-hidden>→</span>
-            </Link>
-          </p>
-          <div aria-hidden className="trim-line mb-12 hidden sm:block" />
-          <Reveal>
-            <div className="plate plate--ink relative overflow-hidden bg-[#0A0B0D] px-6 py-16 text-center">
-              <div
-                aria-hidden
-                className="hero-glow glow-dusk pointer-events-none absolute -top-24 left-1/2 h-[360px] w-[600px] -translate-x-1/2"
-              />
-              <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={NOISE} />
-              <div className="relative">
-                <h2 className="text-[30px] font-semibold tracking-[-0.02em]">
-                  <span className="block text-[#767C86]">{t.hero.line1}</span>
-                  <span className="block text-white">{t.hero.line2}</span>
-                </h2>
-                <div className="mt-7">
-                  <Link
-                    href="/register"
-                    className="lift inline-flex min-h-11 items-center rounded-full bg-[#F7F6F3] px-5 py-2.5 text-[15px] font-medium text-[#14161A] hover:bg-white hover:shadow-[0_10px_36px_rgba(247,246,243,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    {t.hero.cta}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── FOOTER ────────────────────────────────────────────────────── */}
-      <footer className="border-t border-black/8 bg-[#F7F6F3]">
-        <div className="mx-auto grid w-full max-w-[1120px] gap-4 px-6 py-6 sm:grid-cols-[auto_1fr] sm:items-center">
-          <Wordmark tone="ink" className="text-[12px]" />
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-[#5B6069] sm:justify-end">
-            <Link href="/about" className="transition-colors hover:text-[#14161A]">
-              {t.footer.about}
-            </Link>
-            <Link href="/how-it-works" className="transition-colors hover:text-[#14161A]">
-              {t.footer.how}
-            </Link>
-            <Link href="/login" className="transition-colors hover:text-[#14161A]">
-              {t.footer.signIn}
-            </Link>
-            <Link href="/workers" className="transition-colors hover:text-[#14161A]">
-              {t.footer.work}
-            </Link>
           </div>
-          <div className="text-[12px] sm:col-span-2 sm:border-t sm:border-black/8 sm:pt-4">
-            <TrustLinks lang={lang} />
+          {/* Live counters — real DB aggregates, the proof at the moment of the
+              promise. The component renders nothing until the ledger is deep
+              enough to be meaningful (>=10 tasks, >=5 workers), so this stays
+              armed rather than showing a fabricated number. */}
+          <div className="relative mx-auto w-full max-w-[1120px] px-6 pb-14">
+            <PublicCounters tone="night" variant="strip" copy={t.counters} />
           </div>
-        </div>
+        </section>
+
+        <section className="bg-[#F7F6F3] text-[#14161A]">
+          <div className="mx-auto w-full max-w-[1120px] px-6 py-20 sm:py-24">
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">{t.fit.label}</p>
+            <div className="mt-4 grid gap-5 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+              <h2 className="max-w-[18ch] text-[clamp(2rem,4vw,3.25rem)] font-semibold leading-[1.05] tracking-[-0.035em]">{t.fit.title}</h2>
+              <p className="max-w-[56ch] text-[16px] leading-[1.65] text-[#5B6069]">{t.fit.body}</p>
+            </div>
+            <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-black/10 bg-black/10 lg:grid-cols-3">
+              {t.fit.cards.map((card) => <article key={card.title} className="flex flex-col bg-white p-6"><h3 className="text-[18px] font-semibold">{card.title}</h3><p className="mt-3 flex-1 text-[14px] leading-[1.6] text-[#5B6069]">{card.body}</p><p className="mt-6 border-t border-black/8 pt-4 font-mono text-[11px] uppercase tracking-[0.08em] text-[#5B6069]">{card.output}</p></article>)}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-white/8 bg-[#0A0B0D]">
+          <div className="mx-auto w-full max-w-[1120px] px-6 py-20 sm:py-24">
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#8A9099]">{t.process.label}</p>
+            <h2 className="mt-4 max-w-[18ch] text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em]">{t.process.title}</h2>
+            <ol className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {t.process.steps.map((step, index) => <li key={step.title}><p className="font-mono text-[12px] tabular-nums text-[#767C86]">{String(index + 1).padStart(2, "0")}</p><h3 className="mt-3 text-[17px] font-semibold">{step.title}</h3><p className="mt-2 text-[14px] leading-[1.6] text-[#9AA1AB]">{step.body}</p></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section className="bg-[#F7F6F3] text-[#14161A]">
+          <div className="mx-auto w-full max-w-[1000px] px-6 py-20 sm:py-24">
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">{t.comparison.label}</p>
+            <h2 className="mt-4 max-w-[23ch] text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em]">{t.comparison.title}</h2>
+            <p className="mt-5 max-w-[68ch] text-[16px] leading-[1.65] text-[#5B6069]">{t.comparison.body}</p>
+            <div className="mt-10 grid overflow-hidden rounded-xl border border-black/10 sm:grid-cols-2">
+              {[[t.comparison.directTitle, t.comparison.direct, "bg-white"], [t.comparison.managedTitle, t.comparison.managed, "bg-[#14161A] text-white"]].map(([title, items, cls]) => (
+                <article key={title as string} className={`p-6 sm:p-8 ${cls}`}><h3 className="text-[17px] font-semibold">{title as string}</h3><ul className="mt-5 space-y-3">{(items as string[]).map((item) => <li key={item} className="flex gap-3 text-[14px] leading-[1.5]"><span aria-hidden className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[#1E7F5C]" />{item}</li>)}</ul></article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-black/8 bg-white text-[#14161A]">
+          <div className="mx-auto grid w-full max-w-[1120px] gap-12 px-6 py-20 sm:py-24 lg:grid-cols-[1fr_0.9fr]">
+            <div><p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#5B6069]">{t.quality.label}</p><h2 className="mt-4 max-w-[20ch] text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em]">{t.quality.title}</h2><p className="mt-5 max-w-[58ch] text-[16px] leading-[1.65] text-[#5B6069]">{t.quality.body}</p></div>
+            <div><ul className="grid gap-px overflow-hidden rounded-lg border border-black/10 bg-black/10 sm:grid-cols-2">{t.quality.checks.map((check) => <li key={check} className="flex min-h-20 items-center gap-3 bg-[#F7F6F3] p-4 text-[14px]"><span aria-hidden className="font-mono text-[#1E7F5C]">✓</span>{check}</li>)}</ul><div className="mt-6 border-l-2 border-[#14161A] pl-5"><h3 className="font-semibold">{t.quality.boundaryTitle}</h3><p className="mt-2 text-[13px] leading-[1.6] text-[#5B6069]">{t.quality.boundaryBody}</p></div></div>
+          </div>
+        </section>
+
+        <section className="border-t border-white/8 bg-[#0A0B0D]">
+          <div className="mx-auto w-full max-w-[900px] px-6 py-20 text-center sm:py-24"><h2 className="text-[clamp(2rem,4.5vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.035em]">{t.close.title}</h2><p className="mx-auto mt-5 max-w-[58ch] text-[16px] leading-[1.65] text-[#9AA1AB]">{t.close.body}</p><div className="mt-8 flex flex-wrap justify-center gap-4"><Link href="/register" className="inline-flex min-h-12 items-center rounded-full bg-[#F7F6F3] px-6 text-[15px] font-semibold text-[#14161A] hover:bg-white">{t.close.primary}</Link><Link href="/services/standing-capacity" className="inline-flex min-h-12 items-center rounded-full border border-white/20 px-6 text-[15px] font-semibold text-white hover:border-white/40">{t.close.secondary}</Link></div></div>
+        </section>
+      </main>
+
+      <footer className="border-t border-white/8 bg-[#0A0B0D]">
+        <div className="mx-auto grid w-full max-w-[1120px] gap-5 px-6 py-8 sm:grid-cols-[auto_1fr] sm:items-center"><Wordmark tone="paper" /><nav aria-label="Company" className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] sm:justify-end"><Link href="/about" className="inline-flex min-h-11 items-center text-[#9AA1AB] hover:text-white">{t.nav.about}</Link><Link href="/how-it-works" className="inline-flex min-h-11 items-center text-[#9AA1AB] hover:text-white">{t.nav.how}</Link><Link href="/services" className="inline-flex min-h-11 items-center text-[#9AA1AB] hover:text-white">{t.nav.services}</Link><Link href="/workers" className="inline-flex min-h-11 items-center text-[#9AA1AB] hover:text-white">{t.footer.work}</Link><Link href="/academy" className="inline-flex min-h-11 items-center text-[#9AA1AB] hover:text-white">{t.footer.academy}</Link></nav><div className="text-[12px] sm:col-span-2 sm:border-t sm:border-white/8 sm:pt-4"><TrustLinks lang={lang} tone="night" /></div></div>
       </footer>
     </div>
   );

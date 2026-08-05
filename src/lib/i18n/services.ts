@@ -30,12 +30,6 @@ type Dict = {
   intro: string;
   learnMore: string;
   offerings: { oneOff: OfferingCopy; standingCapacity: OfferingCopy };
-  forSpecialists: {
-    eyebrow: string;
-    h2: string;
-    academy: { eyebrow: string; title: string; description: string; cta: string };
-    assistant: { eyebrow: string; title: string; description: string; cta: string };
-  };
 };
 
 export const SERVICES_I18N: Record<ServicesLang, Dict> = {
@@ -43,44 +37,26 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     meta: {
       title: "Our Services",
       description:
-        "Every way to get work done through AfterDesk: a single task with a fixed price, or standing weekly capacity.",
+        "Managed CRM, research, data and document work: one-off deliverables with an upfront price, or reserved weekly capacity for recurring work.",
     },
-    header: { signIn: "Sign in", getStarted: "Get started" },
+    header: { signIn: "Sign in", getStarted: "Describe the outcome" },
     eyebrow: "Our Services",
-    h1: "One team. Two ways to send it work.",
+    h1: "One-off deliverables or recurring capacity.",
     intro:
-      "Every offering below runs on the same rule: you never manage a specialist directly, and an operator checks the work before it reaches you.",
+      "Choose a scoped one-off task when the deliverable is defined. Use standing capacity when a recurring stream of bounded work needs reserved weekly time. Either way, you never manage a specialist directly: an operator runs every request, and every completed task is reviewed before delivery.",
     learnMore: "Learn more",
     offerings: {
       oneOff: {
         audience: "For a single task, no commitment",
-        title: "One-off task",
+        title: "Scoped one-off work",
         description:
-          "Describe any task in plain language, get a fixed price, approve it, and get it back done by morning, reviewed by an operator before it reaches you.",
+          "Describe the deliverable, rules and source material. An operator confirms fit, timing and one fixed price before work begins, then reviews the completed result before delivery.",
       },
       standingCapacity: {
         audience: "For ongoing, recurring work",
         title: "Standing capacity",
         description:
-          "Reserve a block of hours every week at one fixed price. Submit tasks as they come up all week, with a running account history so a new specialist never starts cold.",
-      },
-    },
-    forSpecialists: {
-      eyebrow: "For specialists, not clients",
-      h2: "Everything above is what a client buys. Here's what a worker gets, free, either way.",
-      academy: {
-        eyebrow: "Free, no account required to preview",
-        title: "The Academy",
-        description:
-          "Real courses in data cleanup, research, writing and admin work, with real exams and a certificate you keep, whether or not you ever take a task through AfterDesk. Training, not a funnel.",
-        cta: "See the courses",
-      },
-      assistant: {
-        eyebrow: "Included on every active task",
-        title: "The AfterDesk Assistant",
-        description:
-          "Caught between two valid ways to interpret the brief? Ask the assistant, trained on the same standards QC checks against. It never sees client data, never sets a price, and hands off to an operator the moment a question is genuinely task-specific.",
-        cta: "See how it works",
+          "Reserve a block of managed hours every week for recurring, bounded work. Account preferences and task history carry forward, and each completed task still receives quality control.",
       },
     },
   },
@@ -88,44 +64,26 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     meta: {
       title: "Nos services",
       description:
-        "Toutes les façons de confier votre travail à AfterDesk : une tâche unique à prix fixe, ou une capacité hebdomadaire permanente.",
+        "Travaux gérés de CRM, recherche, données et documents : livrables ponctuels à prix convenu ou capacité hebdomadaire réservée.",
     },
-    header: { signIn: "Connexion", getStarted: "Commencer" },
+    header: { signIn: "Connexion", getStarted: "Décrire le résultat" },
     eyebrow: "Nos services",
-    h1: "Une équipe. Deux façons de lui envoyer du travail.",
+    h1: "Livrables ponctuels ou capacité récurrente.",
     intro:
-      "Chaque offre ci-dessous repose sur la même règle : vous ne gérez jamais un spécialiste directement, et un opérateur vérifie le travail avant qu'il ne vous parvienne.",
+      "Choisissez une tâche ponctuelle lorsque le livrable est défini. Utilisez la capacité permanente lorsqu'un flux récurrent de travail délimité exige du temps réservé chaque semaine. Dans les deux cas, vous ne gérez jamais un spécialiste directement : un opérateur pilote chaque demande, et chaque tâche terminée est vérifiée avant livraison.",
     learnMore: "En savoir plus",
     offerings: {
       oneOff: {
         audience: "Pour une tâche unique, sans engagement",
-        title: "Tâche ponctuelle",
+        title: "Travail ponctuel cadré",
         description:
-          "Décrivez n'importe quelle tâche en langage clair, obtenez un prix fixe, approuvez-le, et récupérez le travail terminé dès le lendemain matin, vérifié par un opérateur avant qu'il ne vous parvienne.",
+          "Décrivez le livrable, les règles et les sources. Un opérateur confirme l'adéquation, le délai et un prix fixe avant le début, puis vérifie le résultat avant livraison.",
       },
       standingCapacity: {
         audience: "Pour un travail continu et récurrent",
         title: "Capacité permanente",
         description:
-          "Réservez un bloc d'heures chaque semaine à un prix fixe unique. Soumettez vos tâches au fil de la semaine, avec un historique de compte continu pour qu'un nouveau spécialiste ne parte jamais de zéro.",
-      },
-    },
-    forSpecialists: {
-      eyebrow: "Pour les spécialistes, pas pour les clients",
-      h2: "Tout ce qui précède, c'est ce qu'achète un client. Voici ce qu'obtient un travailleur, gratuitement, dans tous les cas.",
-      academy: {
-        eyebrow: "Gratuit, aucun compte requis pour un aperçu",
-        title: "L'Académie",
-        description:
-          "De vrais cours en nettoyage de données, en recherche, en rédaction et en travail administratif, avec de vrais examens et un certificat que vous conservez, que vous effectuiez ou non une tâche via AfterDesk. De la formation, pas un entonnoir de vente.",
-        cta: "Voir les cours",
-      },
-      assistant: {
-        eyebrow: "Inclus sur chaque tâche active",
-        title: "L'assistant AfterDesk",
-        description:
-          "Coincé entre deux façons valables d'interpréter le mandat? Demandez à l'assistant, formé sur la même norme qu'un opérateur utilise pour vérifier chaque livrable. Il ne voit jamais les données du client, ne fixe jamais de prix, et transmet la question à un opérateur dès qu'elle est véritablement spécifique à la tâche.",
-        cta: "Voir comment ça marche",
+          "Réservez chaque semaine un bloc d'heures gérées pour un travail récurrent et délimité. Les préférences et l'historique du compte sont conservés, et chaque tâche reste soumise au contrôle qualité.",
       },
     },
   },
@@ -133,44 +91,26 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     meta: {
       title: "Nuestros servicios",
       description:
-        "Todas las formas de completar tu trabajo a través de AfterDesk: una tarea puntual a precio fijo, o capacidad semanal fija.",
+        "Trabajo gestionado de CRM, investigación, datos y documentos: entregables puntuales con precio previo o capacidad semanal reservada.",
     },
-    header: { signIn: "Iniciar sesión", getStarted: "Comenzar" },
+    header: { signIn: "Iniciar sesión", getStarted: "Describe el resultado" },
     eyebrow: "Nuestros servicios",
-    h1: "Un equipo. Dos maneras de enviarle trabajo.",
+    h1: "Entregables puntuales o capacidad recurrente.",
     intro:
-      "Cada oferta a continuación se rige por la misma regla: nunca gestionas a un especialista directamente, y un operador revisa el trabajo antes de que llegue a ti.",
+      "Elige una tarea puntual cuando el entregable esté definido. Usa capacidad fija cuando un flujo recurrente de trabajo acotado necesite tiempo reservado cada semana. En ambos casos nunca gestionas a un especialista directamente: un operador dirige cada solicitud y cada tarea terminada se revisa antes de entregarse.",
     learnMore: "Más información",
     offerings: {
       oneOff: {
         audience: "Para una tarea puntual, sin compromiso",
-        title: "Tarea puntual",
+        title: "Trabajo puntual definido",
         description:
-          "Describe cualquier tarea en lenguaje sencillo, obtén un precio fijo, apruébalo y recíbela terminada por la mañana, revisada por un operador antes de que llegue a ti.",
+          "Describe el entregable, las reglas y las fuentes. Un operador confirma el encaje, el plazo y un precio fijo antes de empezar, y revisa el resultado antes de entregarlo.",
       },
       standingCapacity: {
         audience: "Para trabajo continuo y recurrente",
         title: "Capacidad fija",
         description:
-          "Reserva un bloque de horas cada semana a un precio fijo. Envía tareas a medida que surjan durante toda la semana, con un historial de cuenta continuo para que un nuevo especialista nunca empiece de cero.",
-      },
-    },
-    forSpecialists: {
-      eyebrow: "Para especialistas, no para clientes",
-      h2: "Todo lo anterior es lo que compra un cliente. Esto es lo que recibe un trabajador, gratis, en cualquier caso.",
-      academy: {
-        eyebrow: "Gratis, sin necesidad de cuenta para ver una vista previa",
-        title: "La Academia",
-        description:
-          "Cursos reales de limpieza de datos, investigación, redacción y trabajo administrativo, con exámenes reales y un certificado que conservas, sin importar si alguna vez haces una tarea a través de AfterDesk. Formación, no un embudo.",
-        cta: "Ver los cursos",
-      },
-      assistant: {
-        eyebrow: "Incluido en cada tarea activa",
-        title: "El Asistente de AfterDesk",
-        description:
-          "¿Atrapado entre dos formas válidas de interpretar las instrucciones? Pregúntale al asistente, entrenado con los mismos estándares con los que un operador revisa cada entregable. Nunca ve datos del cliente, nunca fija un precio, y deriva a un operador en el momento en que una pregunta es genuinamente específica de la tarea.",
-        cta: "Ver cómo funciona",
+          "Reserva un bloque de horas gestionadas cada semana para trabajo recurrente y acotado. Las preferencias y el historial se conservan, y cada tarea sigue pasando por control de calidad.",
       },
     },
   },
@@ -178,45 +118,172 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     meta: {
       title: "Ang Aming Mga Serbisyo",
       description:
-        "Lahat ng paraan para matapos ang trabaho gamit ang AfterDesk: isang task na may fixed na presyo, o standing weekly capacity.",
+        "Managed CRM, research, data, at document work: one-off deliverables na may upfront na presyo o reserved weekly capacity.",
     },
-    header: { signIn: "Mag-sign in", getStarted: "Magsimula na" },
+    header: { signIn: "Mag-sign in", getStarted: "Ilarawan ang resulta" },
     eyebrow: "Ang Aming Mga Serbisyo",
-    h1: "Isang team. Dalawang paraan para ipadala rito ang trabaho.",
+    h1: "One-off na deliverable o recurring capacity.",
     intro:
-      "Iisang patakaran ang sinusunod ng bawat offering sa ibaba: hindi mo direktang mina-manage ang isang espesyalista, at sinusuri ng operator ang trabaho bago ito makarating sa'yo.",
+      "Pumili ng one-off task kapag malinaw ang deliverable. Gamitin ang standing capacity kapag may recurring at bounded work na nangangailangan ng reserved time kada linggo. Sa parehong paraan, hindi mo kailanman dinidirekta ang specialist: operator ang namamahala sa bawat request, at sinusuri ang bawat natapos na task bago i-deliver.",
     learnMore: "Alamin pa",
     offerings: {
       oneOff: {
         audience: "Para sa iisang task, walang commitment",
-        title: "One-off na Task",
+        title: "Scoped one-off work",
         description:
-          "Ilarawan ang kahit anong task gamit ang simpleng wika, makakuha ng fixed na presyo, i-approve ito, at matatanggap mo itong tapos na sa umaga, sinuri ng operator bago ito makarating sa'yo.",
+          "Ilarawan ang deliverable, rules, at source material. Kinukumpirma ng operator ang fit, timing, at fixed price bago magsimula, at sinusuri ang resulta bago i-deliver.",
       },
       standingCapacity: {
         audience: "Para sa patuloy at paulit-ulit na trabaho",
         title: "Standing Capacity",
         description:
-          "Mag-reserve ng ilang oras kada linggo sa iisang fixed na presyo. Mag-submit ng mga task sa buong linggo sa tuwing kakailanganin ito, kasama ang patuloy na account history para hindi na magsisimula nang blangko ang bagong espesyalista.",
+          "Mag-reserve ng managed hours kada linggo para sa recurring at bounded work. Nananatili ang account preferences at task history, at dumadaan pa rin sa quality control ang bawat task.",
       },
     },
-    forSpecialists: {
-      eyebrow: "Para sa mga espesyalista, hindi sa mga kliyente",
-      h2: "Ang lahat sa itaas ay ang binibili ng kliyente. Narito naman ang natatanggap ng manggagawa, libre, kahit alin sa dalawa.",
-      academy: {
-        eyebrow: "Libre, hindi kailangan ng account para mag-preview",
-        title: "Ang Academy",
-        description:
-          "Tunay na mga course tungkol sa data cleanup, research, writing, at admin work, may tunay na exams at certificate na mapapasaiyo, kumuha ka man ng task sa AfterDesk o hindi. Training ito, hindi funnel.",
-        cta: "Tingnan ang mga course",
-      },
-      assistant: {
-        eyebrow: "Kasama sa bawat aktibong task",
-        title: "Ang AfterDesk Assistant",
-        description:
-          "Nalilito ka ba sa pagitan ng dalawang tamang paraan ng pagbasa sa brief? Tanungin ang assistant, sinanay ito gamit ang parehong pamantayan na ginagamit ng operator para suriin ang bawat trabaho. Hindi nito nakikita ang data ng kliyente, hindi ito nagtatakda ng presyo, at ipinapasa nito agad sa operator ang tanong sa sandaling ito ay talagang task-specific na.",
-        cta: "Tingnan kung paano ito gumagana",
-      },
+  },
+};
+
+type StandingDict = {
+  meta: { title: string; description: string };
+  header: { services: string; signIn: string; cta: string };
+  eyebrow: string;
+  h1: string;
+  intro: string;
+  setup: string;
+  week: string;
+  tiers: string[];
+  pillars: { title: string; body: string }[];
+  fit: { eyebrow: string; h2: string; items: string[] };
+  pricing: { eyebrow: string; h2: string; body: string };
+};
+
+export const STANDING_I18N: Record<ServicesLang, StandingDict> = {
+  en: {
+    meta: {
+      title: "Standing Capacity",
+      description:
+        "Reserve managed weekly hours for recurring, bounded data, research and document work, with quality control on every completed task.",
+    },
+    header: { services: "Services", signIn: "Sign in", cta: "Discuss capacity" },
+    eyebrow: "Standing capacity",
+    h1: "Reserved weekly capacity for recurring work.",
+    intro:
+      "Reserve a block of managed hours for a recurring stream of bounded back-office work. Requests draw down the weekly allocation, account context carries forward, and each completed task is reviewed before delivery.",
+    setup:
+      "Operator-assisted setup. Billing and allocation are confirmed with you; this is not a self-serve subscription checkout.",
+    week: "/week",
+    tiers: [
+      "A small, recurring operational backlog.",
+      "A steady stream of data, research or document work.",
+      "Reserved capacity for a larger recurring workload.",
+    ],
+    pillars: [
+      { title: "Reserved managed hours", body: "One weekly allocation covers approved work inside the block. It is a capacity service, not outcome pricing." },
+      { title: "Account context carries forward", body: "Preferences, instructions and task history stay with the account even when staffing changes." },
+      { title: "Quality control remains included", body: "Each completed task still receives an operator review before it reaches you." },
+    ],
+    fit: {
+      eyebrow: "Good fit",
+      h2: "A recurring queue with clear boundaries.",
+      items: ["CRM and spreadsheet maintenance", "Defined account or market research", "Recurring data and document preparation", "Work that can be estimated, completed remotely and checked"],
+    },
+    pricing: {
+      eyebrow: "Not the same as outcome pricing",
+      h2: "You are reserving capacity.",
+      body: "Usage is recorded against a weekly hour block. If a request exceeds the remaining allocation, it can wait for the next block, be scoped separately as a one-off task, or move to a larger tier.",
+    },
+  },
+  fr: {
+    meta: {
+      title: "Capacité permanente",
+      description:
+        "Réservez des heures gérées chaque semaine pour un travail récurrent et délimité de données, recherche et documents, avec contrôle qualité.",
+    },
+    header: { services: "Services", signIn: "Connexion", cta: "Discuter de la capacité" },
+    eyebrow: "Capacité permanente",
+    h1: "Une capacité hebdomadaire réservée pour le travail récurrent.",
+    intro:
+      "Réservez un bloc d'heures gérées pour un flux récurrent de travail administratif délimité. Les demandes utilisent l'allocation hebdomadaire, le contexte du compte est conservé et chaque tâche terminée est vérifiée avant livraison.",
+    setup:
+      "Mise en place assistée par un opérateur. La facturation et l'allocation sont confirmées avec vous; il ne s'agit pas d'un abonnement libre-service.",
+    week: "/semaine",
+    tiers: ["Un petit arriéré opérationnel récurrent.", "Un flux régulier de données, recherche ou documents.", "Une capacité réservée pour une charge récurrente plus importante."],
+    pillars: [
+      { title: "Heures gérées réservées", body: "Une allocation hebdomadaire couvre le travail approuvé dans le bloc. C'est un service de capacité, pas une tarification au résultat." },
+      { title: "Le contexte du compte est conservé", body: "Les préférences, instructions et l'historique restent avec le compte même lorsque l'affectation change." },
+      { title: "Le contrôle qualité reste inclus", body: "Chaque tâche terminée est toujours vérifiée par un opérateur avant de vous parvenir." },
+    ],
+    fit: {
+      eyebrow: "Bonne adéquation",
+      h2: "Une file récurrente aux limites claires.",
+      items: ["Maintenance de CRM et de feuilles de calcul", "Recherche de comptes ou de marché bien définie", "Préparation récurrente de données et documents", "Travail estimable, réalisable à distance et vérifiable"],
+    },
+    pricing: {
+      eyebrow: "Différent d'un prix au résultat",
+      h2: "Vous réservez de la capacité.",
+      body: "L'utilisation est comptabilisée dans un bloc d'heures hebdomadaire. Si une demande dépasse le solde, elle peut attendre le bloc suivant, être chiffrée comme tâche ponctuelle ou passer à un palier supérieur.",
+    },
+  },
+  es: {
+    meta: {
+      title: "Capacidad fija",
+      description:
+        "Reserva horas gestionadas cada semana para trabajo recurrente y acotado de datos, investigación y documentos, con control de calidad.",
+    },
+    header: { services: "Servicios", signIn: "Iniciar sesión", cta: "Hablar de capacidad" },
+    eyebrow: "Capacidad fija",
+    h1: "Capacidad semanal reservada para trabajo recurrente.",
+    intro:
+      "Reserva un bloque de horas gestionadas para un flujo recurrente de trabajo administrativo acotado. Las solicitudes consumen la asignación semanal, el contexto de la cuenta se conserva y cada tarea terminada se revisa antes de entregarse.",
+    setup:
+      "Configuración asistida por un operador. La facturación y la asignación se confirman contigo; no es una suscripción de autoservicio.",
+    week: "/semana",
+    tiers: ["Un pequeño trabajo operativo pendiente y recurrente.", "Un flujo constante de datos, investigación o documentos.", "Capacidad reservada para una carga recurrente mayor."],
+    pillars: [
+      { title: "Horas gestionadas reservadas", body: "Una asignación semanal cubre el trabajo aprobado dentro del bloque. Es un servicio de capacidad, no precio por resultado." },
+      { title: "El contexto de la cuenta continúa", body: "Las preferencias, instrucciones y el historial permanecen con la cuenta aunque cambie la asignación." },
+      { title: "El control de calidad sigue incluido", body: "Cada tarea terminada recibe una revisión de un operador antes de llegar a ti." },
+    ],
+    fit: {
+      eyebrow: "Buen encaje",
+      h2: "Una cola recurrente con límites claros.",
+      items: ["Mantenimiento de CRM y hojas de cálculo", "Investigación definida de cuentas o mercados", "Preparación recurrente de datos y documentos", "Trabajo estimable, remoto y verificable"],
+    },
+    pricing: {
+      eyebrow: "No es precio por resultado",
+      h2: "Estás reservando capacidad.",
+      body: "El uso se registra contra un bloque semanal de horas. Si una solicitud supera la asignación restante, puede esperar al siguiente bloque, cotizarse como tarea puntual o pasar a un nivel mayor.",
+    },
+  },
+  tl: {
+    meta: {
+      title: "Standing Capacity",
+      description:
+        "Mag-reserve ng managed hours kada linggo para sa recurring at bounded data, research, at document work na may quality control.",
+    },
+    header: { services: "Mga serbisyo", signIn: "Mag-sign in", cta: "Pag-usapan ang capacity" },
+    eyebrow: "Standing capacity",
+    h1: "Reserved weekly capacity para sa recurring work.",
+    intro:
+      "Mag-reserve ng managed hours para sa recurring at bounded back-office work. Ibinabawas ang requests sa weekly allocation, nananatili ang account context, at sinusuri ang bawat natapos na task bago i-deliver.",
+    setup:
+      "Operator-assisted ang setup. Kinukumpirma sa iyo ang billing at allocation; hindi ito self-serve subscription checkout.",
+    week: "/linggo",
+    tiers: ["Maliit at recurring na operational backlog.", "Tuloy-tuloy na data, research, o document work.", "Reserved capacity para sa mas malaking recurring workload."],
+    pillars: [
+      { title: "Reserved managed hours", body: "Saklaw ng isang weekly allocation ang aprubadong work sa loob ng block. Capacity service ito, hindi outcome pricing." },
+      { title: "Nananatili ang account context", body: "Kasama ng account ang preferences, instructions, at task history kahit magbago ang assignment." },
+      { title: "Kasama pa rin ang quality control", body: "Sinusuri pa rin ng operator ang bawat natapos na task bago ito makarating sa iyo." },
+    ],
+    fit: {
+      eyebrow: "Magandang fit",
+      h2: "Recurring queue na may malinaw na boundaries.",
+      items: ["CRM at spreadsheet maintenance", "Defined account o market research", "Recurring data at document preparation", "Work na kayang i-estimate, tapusin remotely, at suriin"],
+    },
+    pricing: {
+      eyebrow: "Iba sa outcome pricing",
+      h2: "Capacity ang nire-reserve mo.",
+      body: "Itinatala ang usage laban sa weekly hour block. Kapag lumampas ang request sa natitirang allocation, puwede itong maghintay sa susunod na block, i-scope bilang one-off task, o lumipat sa mas malaking tier.",
     },
   },
 };

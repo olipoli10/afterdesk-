@@ -108,22 +108,20 @@ export default async function HowItWorks({
             >
               {t.nav.client}
             </Link>
-            <Link
-              href="/workers"
-              className="hidden text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
-            >
-              {t.nav.workers}
-            </Link>
           </div>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-[900px] px-6 pb-24 pt-14 sm:pt-20">
-        {/* ── THE DOCKET ────────────────────────────────────────────────── */}
+        {/* ── THE DOCKET — version and date derive from the LAST revisions
+            row, the same table rendered at the bottom of this page, so the
+            docket can never disagree with the page's own change history. */}
         <p className="flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5B6069]">
-          <span className="whitespace-nowrap">{t.docket} · v1</span>
+          <span className="whitespace-nowrap">
+            {t.docket} · v{t.revisions.rows[t.revisions.rows.length - 1][0].replace(/^0+/, "")}
+          </span>
           <i aria-hidden className="h-px flex-auto bg-[#14161A]/12" />
-          <span className="whitespace-nowrap">2026-07-30</span>
+          <span className="whitespace-nowrap">{t.revisions.rows[t.revisions.rows.length - 1][1]}</span>
         </p>
 
         {/* ── THE OPENING STATEMENT — the largest thing on the page ──────

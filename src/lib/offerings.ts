@@ -21,7 +21,7 @@ export const OFFERINGS: Offering[] = [
     title: "One-off task",
     audience: "For a single task, no commitment",
     description:
-      "Describe any task in plain language, get a fixed price, approve it, and get it back done by morning — reviewed by an operator before it reaches you.",
+      "Describe a bounded deliverable, approve one fixed price and timing, then receive completed work after operator review.",
     href: "/",
   },
   {
@@ -29,7 +29,7 @@ export const OFFERINGS: Offering[] = [
     title: "Standing capacity",
     audience: "For ongoing, recurring work",
     description:
-      "Reserve a block of hours every week at one fixed price. Submit tasks as they come up all week, with a running account history so a new specialist never starts cold.",
+      "Reserve a block of managed hours every week for recurring, bounded work. Account preferences and task history carry forward, and each completed task still receives quality control.",
     href: "/services/standing-capacity",
   },
 ];

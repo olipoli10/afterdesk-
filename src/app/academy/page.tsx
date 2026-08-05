@@ -41,17 +41,20 @@ export async function generateMetadata({
   searchParams: Promise<{ lang?: string }>;
 }): Promise<Metadata> {
   const sp = await searchParams;
+  // Course count computed, never typed: adding a 30th course must update the
+  // indexed title on the next build instead of silently falsifying it.
+  const courseCount = academyStats().courses;
   return {
-    title: "Free virtual assistant training: 29 courses, real exams, permanent certificates",
+    title: `Free virtual assistant training: ${courseCount} courses, real exams, permanent certificates`,
     description:
-      "Free VA training for Filipino remote workers: 29 courses with written lessons, real exams and a certificate that stays yours. Inbox, calendar, data, research, writing, admin, and the career itself. No paid tier, no certificate fee, ever.",
+      `Free VA training for Filipino remote workers: ${courseCount} courses with written lessons, real exams and a certificate that stays yours. Inbox, calendar, data, research, writing, admin, AI tools, and the career itself. No paid tier, no certificate fee, ever.`,
     // Matches every other multi-language page (/, /about, /how-it-works,
     // /workers, /services, /security, /privacy, /terms, /acceptable-use,
     // /ledger) — this page renders all four languages at one path via
     // ?lang=, so it needs the same canonical + hreflang set they all get.
     alternates: langAlternates("/academy", sp.lang),
     openGraph: {
-      title: "Free virtual assistant training: 29 courses with real exams",
+      title: `Free virtual assistant training: ${courseCount} courses with real exams`,
       description:
         "Free VA courses, real exams, certificates that stay yours. Open before you are approved.",
       url: `${SITE_URL}/academy`,
@@ -160,6 +163,8 @@ export default async function AcademyPublicPage({
           </div>
         </div>
       </header>
+
+      <main>
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-black/8">
@@ -314,24 +319,6 @@ export default async function AcademyPublicPage({
                       {c.summary}
                     </p>
 
-                    {/* The lesson list is the proof the course is real. */}
-                    <ol
-                      {...machine}
-                      className="mt-3.5 space-y-1 border-t border-[#14161A]/[0.08] pt-3.5"
-                    >
-                      {c.lessonTitles.map((title, i) => (
-                        <li key={i} className="flex gap-2.5 text-[13px] leading-relaxed">
-                          <span
-                            aria-hidden
-                            className="font-mono text-[11px] tabular-nums text-[#9AA1AB]"
-                          >
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <span className="min-w-0 text-[#14161A]">{title}</span>
-                        </li>
-                      ))}
-                    </ol>
-
                     <p className="mt-3.5 flex flex-wrap items-center gap-x-2 border-t border-[#14161A]/[0.08] pt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[#5B6069]">
                       <span>
                         {t.curriculum.lessons(c.lessonCount)} · ~{c.minutes} min ·{" "}
@@ -378,6 +365,8 @@ export default async function AcademyPublicPage({
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────────────────── */}
+      </main>
+
       <footer className="border-t border-black/8">
         <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center gap-x-6 gap-y-3 px-6 py-8 text-[13px] text-[#5B6069]">
           <Wordmark tone="ink" className="text-[11px]" />

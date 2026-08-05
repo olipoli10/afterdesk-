@@ -333,14 +333,14 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Terms",
       description:
-        "The operational agreement behind every AfterDesk task: one fixed price approved before work starts, what the review standard covers, and how revisions, disputes and refunds work.",
+        "The operational agreement behind AfterDesk work: approved scope or capacity, review standards, revisions, disputes and refunds.",
     },
     title: "Service terms",
     intro:
-      "These terms describe the operational agreement shown before a task is purchased: what you are buying, what one fixed price covers, and what happens when a delivery is wrong.",
+      "These terms describe the operational agreement shown before work is purchased: what you are buying, the difference between a one-off task and a weekly capacity allocation, and what happens when a delivery is wrong.",
     scope: {
       h2: "A task is a fixed scope",
-      body: "The approved brief, quantity, file set, delivery standard, deadline and fixed price form the task. Work begins only after payment confirmation. New scope requires a new quote.",
+      body: "For one-off work, the approved brief, quantity, file set, delivery standard, deadline and fixed price form the task. Standing-capacity work is governed by the weekly allocation shown in the account. Work begins only after payment confirmation. New one-off scope requires a new quote.",
     },
     review: {
       h2: "Quality review and recourse",
@@ -351,8 +351,8 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
       body: "Clients purchase a deliverable from AfterDesk; the worker is an independent subcontractor paid by AfterDesk. An upheld dispute queues a refund to the original payment method. Fraudulent chargebacks, unlawful tasks and material misrepresentation may result in suspension.",
     },
     operator: {
-      h2: "Who operates AfterDesk",
-      body: "Every price, quality review and payout decision described in these terms is made by one person: not a support queue, not an algorithm.",
+      h2: "How AfterDesk operates",
+      body: "Pricing, quality review, dispute and payout decisions are owned by an authorized AfterDesk operator through the recorded task workflow. Internal tools may assist the process, but responsibility for those decisions remains with AfterDesk.",
     },
     rights: {
       h2: "Confidentiality and rights",
@@ -363,14 +363,14 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Conditions",
       description:
-        "L'entente opérationnelle derrière chaque tâche AfterDesk : un prix fixe approuvé avant le début du travail, ce que couvre le standard de révision, et comment fonctionnent les révisions, litiges et remboursements.",
+        "L'entente opérationnelle derrière le travail AfterDesk : périmètre et prix des tâches ponctuelles, capacité hebdomadaire, révision, litiges et remboursements.",
     },
     title: "Conditions de service",
     intro:
-      "Ces conditions décrivent l'entente opérationnelle présentée avant l'achat d'une tâche : ce que vous achetez, ce que couvre un prix fixe, et ce qui se passe quand une livraison est incorrecte.",
+      "Ces conditions décrivent l'entente opérationnelle présentée avant l'achat : ce que vous achetez, la différence entre une tâche ponctuelle et une capacité hebdomadaire, et ce qui se passe quand une livraison est incorrecte.",
     scope: {
       h2: "Une tâche est un périmètre fixe",
-      body: "Le mandat approuvé, la quantité, l'ensemble de fichiers, le standard de livraison, l'échéance et le prix fixe composent la tâche. Le travail commence seulement après la confirmation du paiement. Un nouveau périmètre exige un nouveau devis.",
+      body: "Pour un travail ponctuel, le mandat approuvé, la quantité, l'ensemble de fichiers, le standard de livraison, l'échéance et le prix fixe composent la tâche. La capacité permanente est régie par l'allocation hebdomadaire affichée dans le compte. Le travail commence seulement après la confirmation du paiement. Un nouveau périmètre ponctuel exige un nouveau devis.",
     },
     review: {
       h2: "Révision qualité et recours",
@@ -381,8 +381,8 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
       body: "Les clients achètent un livrable d'AfterDesk; le travailleur est un sous-traitant indépendant payé par AfterDesk. Un litige maintenu met en file un remboursement vers le moyen de paiement d'origine. Des rétrofacturations frauduleuses, des tâches illégales et une fausse représentation matérielle peuvent entraîner une suspension.",
     },
     operator: {
-      h2: "Qui exploite AfterDesk",
-      body: "Chaque prix, chaque révision qualité et chaque décision de paiement décrits dans ces conditions sont pris par une seule personne : pas une file de soutien, pas un algorithme.",
+      h2: "Comment AfterDesk fonctionne",
+      body: "Les décisions de prix, de contrôle qualité, de litige et de paiement relèvent d'un opérateur AfterDesk autorisé dans le flux de tâche enregistré. Des outils internes peuvent aider, mais la responsabilité reste chez AfterDesk.",
     },
     rights: {
       h2: "Confidentialité et droits",
@@ -393,14 +393,14 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Términos",
       description:
-        "El acuerdo operativo detrás de cada tarea de AfterDesk: un precio fijo aprobado antes de empezar el trabajo, qué cubre el estándar de revisión, y cómo funcionan las revisiones, disputas y reembolsos.",
+        "El acuerdo operativo de AfterDesk: alcance y precio de tareas puntuales, capacidad semanal, revisión, disputas y reembolsos.",
     },
     title: "Términos del servicio",
     intro:
-      "Estos términos describen el acuerdo operativo mostrado antes de comprar una tarea: qué estás comprando, qué cubre un precio fijo, y qué pasa cuando una entrega está mal.",
+      "Estos términos describen el acuerdo operativo mostrado antes de comprar: qué compras, la diferencia entre una tarea puntual y capacidad semanal, y qué pasa cuando una entrega está mal.",
     scope: {
       h2: "Una tarea es un alcance fijo",
-      body: "El encargo aprobado, la cantidad, el conjunto de archivos, el estándar de entrega, la fecha límite y el precio fijo componen la tarea. El trabajo empieza solo tras confirmarse el pago. Un alcance nuevo requiere una cotización nueva.",
+      body: "Para un trabajo puntual, el encargo aprobado, la cantidad, el conjunto de archivos, el estándar de entrega, la fecha límite y el precio fijo componen la tarea. El trabajo de capacidad permanente se rige por la asignación semanal mostrada en la cuenta. El trabajo empieza solo tras confirmarse el pago. Un alcance puntual nuevo requiere una cotización nueva.",
     },
     review: {
       h2: "Revisión de calidad y recurso",
@@ -411,8 +411,8 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
       body: "Los clientes compran un entregable a AfterDesk; el trabajador es un subcontratista independiente pagado por AfterDesk. Una disputa confirmada pone en cola un reembolso al método de pago original. Contracargos fraudulentos, tareas ilegales y tergiversación material pueden resultar en suspensión.",
     },
     operator: {
-      h2: "Quién opera AfterDesk",
-      body: "Cada precio, cada revisión de calidad y cada decisión de pago descrita en estos términos la toma una sola persona: no una cola de soporte, no un algoritmo.",
+      h2: "Cómo opera AfterDesk",
+      body: "Las decisiones de precio, revisión de calidad, disputas y pagos pertenecen a un operador autorizado de AfterDesk dentro del flujo registrado. Las herramientas internas pueden ayudar, pero la responsabilidad permanece en AfterDesk.",
     },
     rights: {
       h2: "Confidencialidad y derechos",
@@ -423,14 +423,14 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Terms",
       description:
-        "Ang operational agreement sa likod ng bawat task ng AfterDesk: isang fixed na presyo na inaprubahan bago magsimula ang trabaho, kung ano ang saklaw ng review standard, at paano gumagana ang revision, dispute, at refund.",
+        "Ang operational agreement ng AfterDesk: scope at presyo ng one-off work, weekly capacity, review, dispute, at refund.",
     },
     title: "Mga Tuntunin ng Serbisyo",
     intro:
-      "Inilalarawan ng mga tuntuning ito ang operational agreement na ipinapakita bago bilhin ang isang task: ano ang binibili mo, ano ang saklaw ng isang fixed na presyo, at ano ang mangyayari kapag mali ang delivery.",
+      "Inilalarawan ng mga tuntuning ito ang operational agreement bago bumili: ano ang binibili mo, ang pagkakaiba ng one-off task at weekly capacity, at ano ang mangyayari kapag mali ang delivery.",
     scope: {
       h2: "Ang isang task ay may fixed na scope",
-      body: "Binubuo ang task ng aprubadong brief, dami, set ng file, delivery standard, deadline, at fixed na presyo. Nagsisimula lang ang trabaho pagkatapos ma-kumpirma ang bayad. Kailangan ng bagong quote para sa bagong scope.",
+      body: "Para sa one-off work, binubuo ang task ng aprubadong brief, dami, set ng file, delivery standard, deadline, at fixed na presyo. Ang standing-capacity work ay saklaw ng weekly allocation na ipinapakita sa account. Nagsisimula lang ang trabaho pagkatapos ma-kumpirma ang bayad. Kailangan ng bagong quote para sa bagong one-off scope.",
     },
     review: {
       h2: "Quality Review at Recourse",
@@ -441,8 +441,8 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
       body: "Bumibili ang mga client ng deliverable mula sa AfterDesk; ang worker ay isang independiyenteng subcontractor na binabayaran ng AfterDesk. Ang na-uphold na dispute ay nagpapapila ng refund papunta sa orihinal na paraan ng pagbayad. Ang mapanlinlang na chargeback, ilegal na task, at material na maling representasyon ay maaaring magresulta sa suspensyon.",
     },
     operator: {
-      h2: "Sino ang Nag-ooperate ng AfterDesk",
-      body: "Ang bawat presyo, quality review, at desisyon sa payout na inilarawan sa mga tuntuning ito ay ginagawa ng iisang tao: hindi isang support queue, hindi isang algorithm.",
+      h2: "Paano Nag-ooperate ang AfterDesk",
+      body: "Ang pricing, quality review, dispute, at payout decisions ay pag-aari ng authorized AfterDesk operator sa recorded task workflow. Maaaring tumulong ang internal tools, pero nananatili sa AfterDesk ang responsibilidad.",
     },
     rights: {
       h2: "Confidentiality at mga Karapatan",
@@ -598,7 +598,6 @@ type LedgerDict = {
   reliability: { onTime: string; qcFirstTry: string; disputed: string };
   historyLabel: string;
   emptyState: string;
-  emptyExample: string;
   olderEntries: string;
   kind: Record<string, string>;
 };
@@ -608,12 +607,12 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Public Ledger",
       description:
-        "A running, append-only record of money processed through AfterDesk. No client or worker names: just the total and every entry behind it.",
+        "A privacy-protected record of settled AfterDesk transaction events, corrections and reliability data when enough activity exists to publish safely.",
     },
     back: "← Back",
     eyebrow: "Public Ledger",
-    h1: "Every dollar processed, append-only.",
-    lede: "No client names, no worker names: just amounts, categories, and timestamps, written the moment each transaction settles. Entries are never edited or deleted once written; a correction is its own new entry, not an overwrite.",
+    h1: "A public transaction record, without customer identities.",
+    lede: "Published entries show transaction type, category and settlement date without client or worker names. The underlying record is append-only: corrections are recorded as new entries rather than overwrites. This page is a privacy-protected history, not an independent audit of the database hash chain.",
     totalLabel: "Total processed to date",
     totalPending:
       "Published once enough transactions have settled that the total cannot be traced back to any single one.",
@@ -625,7 +624,6 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     historyLabel: "History",
     emptyState:
       "No entries yet. This list updates automatically once the first task completes.",
-    emptyExample: "example: Aug 4 · Payment processed · Data entry · $68",
     olderEntries: "Older entries →",
     kind: {
       sale: "Payment processed",
@@ -641,12 +639,12 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Registre public",
       description:
-        "Un registre continu, en ajout seul, de l'argent traité par AfterDesk. Aucun nom de client ou de travailleur : seulement le total et chaque écriture derrière lui.",
+        "Un registre protégé des transactions réglées d'AfterDesk : écritures, corrections et données de fiabilité, publiées lorsque l'activité suffit pour le faire sans risque.",
     },
     back: "← Retour",
     eyebrow: "Registre public",
-    h1: "Chaque dollar traité, en ajout seul.",
-    lede: "Aucun nom de client, aucun nom de travailleur : seulement des montants, des catégories et des horodatages, inscrits au moment où chaque transaction se règle. Les écritures ne sont jamais modifiées ni supprimées une fois inscrites; une correction est sa propre nouvelle écriture, jamais une réécriture.",
+    h1: "Un registre public de transactions, sans identité client.",
+    lede: "Les écritures publiées indiquent le type, la catégorie et la date de règlement sans nom de client ni de travailleur. Le registre sous-jacent est en ajout seul : les corrections deviennent de nouvelles écritures. Cette page est un historique protégé, pas un audit indépendant de la chaîne de hachage.",
     totalLabel: "Total traité à ce jour",
     totalPending:
       "Publié une fois qu'assez de transactions se sont réglées pour que le total ne puisse être retracé jusqu'à une seule d'entre elles.",
@@ -658,7 +656,6 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     historyLabel: "Historique",
     emptyState:
       "Aucune écriture encore. Cette liste se met à jour automatiquement dès que la première tâche est complétée.",
-    emptyExample: "exemple : 4 août · Paiement traité · Saisie de données · 68 $",
     olderEntries: "Écritures plus anciennes →",
     kind: {
       sale: "Paiement traité",
@@ -674,12 +671,12 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Registro público",
       description:
-        "Un registro continuo, de solo adición, del dinero procesado a través de AfterDesk. Sin nombres de clientes ni trabajadores: solo el total y cada entrada detrás de él.",
+        "Un registro protegido de las transacciones liquidadas de AfterDesk: entradas, correcciones y datos de fiabilidad, publicados cuando hay actividad suficiente para hacerlo con seguridad.",
     },
     back: "← Volver",
     eyebrow: "Registro público",
-    h1: "Cada dólar procesado, de solo adición.",
-    lede: "Sin nombres de clientes, sin nombres de trabajadores: solo montos, categorías y marcas de tiempo, escritos en el momento en que se liquida cada transacción. Las entradas nunca se editan ni se eliminan una vez escritas; una corrección es su propia entrada nueva, nunca una reescritura.",
+    h1: "Un registro público de transacciones, sin identidades.",
+    lede: "Las entradas publicadas muestran tipo, categoría y fecha de liquidación sin nombres de clientes ni trabajadores. El registro subyacente es de solo adición: las correcciones se añaden como entradas nuevas. Esta página es un historial protegido, no una auditoría independiente de la cadena hash.",
     totalLabel: "Total procesado a la fecha",
     totalPending:
       "Se publica una vez que suficientes transacciones se han liquidado como para que el total no se pueda rastrear hasta una sola de ellas.",
@@ -691,7 +688,6 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     historyLabel: "Historial",
     emptyState:
       "Aún no hay entradas. Esta lista se actualiza automáticamente en cuanto se complete la primera tarea.",
-    emptyExample: "ejemplo: 4 de agosto · Pago procesado · Entrada de datos · $68",
     olderEntries: "Entradas anteriores →",
     kind: {
       sale: "Pago procesado",
@@ -707,12 +703,12 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Pampublikong Ledger",
       description:
-        "Isang tuloy-tuloy, append-only na tala ng pera na pinoproseso sa AfterDesk. Walang pangalan ng client o worker: total lang at bawat entry sa likod nito.",
+        "Isang protektadong tala ng mga settled na transaksyon ng AfterDesk: mga entry, correction, at reliability data, inilalathala kapag sapat na ang aktibidad para gawin ito nang ligtas.",
     },
     back: "← Bumalik",
     eyebrow: "Pampublikong Ledger",
-    h1: "Bawat dolyar na pinoseso, append-only.",
-    lede: "Walang pangalan ng client, walang pangalan ng worker: halaga, kategorya, at timestamp lang, na isinusulat sa sandaling ma-settle ang bawat transaksyon. Hindi kailanman ino-edit o binubura ang mga entry kapag naisulat na; ang isang correction ay sarili niyang bagong entry, hindi pagsulat ulit.",
+    h1: "Public transaction record na walang client identity.",
+    lede: "Ipinapakita ng published entries ang transaction type, category, at settlement date nang walang pangalan ng client o worker. Append-only ang underlying record: bagong entry ang correction, hindi overwrite. Protected history ang page na ito, hindi independent audit ng database hash chain.",
     totalLabel: "Kabuuang naiproseso hanggang ngayon",
     totalPending:
       "Ipinapaskil kapag sapat na ang na-settle na transaksyon para hindi na maisubaybayan ang total pabalik sa isang solong transaksyon.",
@@ -724,7 +720,6 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     historyLabel: "History",
     emptyState:
       "Wala pang entry. Awtomatikong nag-a-update ang listahang ito sa sandaling matapos ang unang task.",
-    emptyExample: "halimbawa: Ago 4 · Naiprosesong bayad · Data entry · $68",
     olderEntries: "Mas lumang entry →",
     kind: {
       sale: "Naiprosesong bayad",

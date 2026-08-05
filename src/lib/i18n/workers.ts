@@ -149,7 +149,7 @@ const en: Dict = {
   hero: {
     kill: "No proposals · No bidding · No commission",
     h1: "The payout is printed before you claim.",
-    sub: "Overnight, tasks land priced. Pass review, get paid.",
+    sub: "Tasks arrive with a defined scope and printed payout. Pass review, get paid.",
     cta: "Apply to join the pool",
     micro: "Short application. Real vetting. The pool stays small on purpose.",
     cardCaption: "Example. Every task is priced by hand before it appears.",
@@ -264,7 +264,7 @@ const tl: Dict = {
   hero: {
     kill: "Walang proposal · Walang bidding · Walang komisyon",
     h1: "Nakalimbag ang payout bago ka mag-claim.",
-    sub: "Magdamag, dumarating ang mga task na may presyo. Pumasa sa review, may bayad.",
+    sub: "Dumarating ang mga task na may malinaw na scope at payout. Pumasa sa review, may bayad.",
     cta: "Mag-apply sa pool",
     micro: "Maikling application. Totoong pagsala. Sadyang maliit ang pool.",
     cardCaption: "Halimbawa. Bawat task ay presyado nang manu-mano bago lumabas.",
@@ -378,7 +378,7 @@ const fr: Dict = {
   hero: {
     kill: "Aucune proposition · Aucune enchère · Aucune commission",
     h1: "Le montant est imprimé avant que vous preniez la tâche.",
-    sub: "La nuit, les tâches arrivent déjà chiffrées. Passez la révision, vous êtes payé.",
+    sub: "Les tâches arrivent avec un périmètre défini et un montant imprimé. Passez la révision, vous êtes payé.",
     cta: "Postuler au bassin",
     micro: "Candidature courte. Vraie sélection. Le bassin reste petit, exprès.",
     cardCaption: "Exemple. Chaque tâche est chiffrée à la main avant d'apparaître.",
@@ -495,7 +495,7 @@ const es: Dict = {
   hero: {
     kill: "Sin propuestas · Sin pujas · Sin comisión",
     h1: "El pago está impreso antes de que tomes la tarea.",
-    sub: "De noche llegan tareas ya con precio. Pasa la revisión y cobras.",
+    sub: "Las tareas llegan con alcance y pago definidos. Pasa la revisión y cobras.",
     cta: "Postula al grupo",
     micro: "Postulación corta. Selección real. El grupo se mantiene pequeño a propósito.",
     cardCaption: "Ejemplo. Cada tarea se cotiza a mano antes de aparecer.",

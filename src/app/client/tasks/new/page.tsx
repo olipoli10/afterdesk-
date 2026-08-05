@@ -23,11 +23,11 @@ export default async function NewTaskPage({
   return (
     <div className="mx-auto max-w-2xl">
       <PageTitle
-        title={useChat ? "What do you need done?" : "Describe your task"}
+        title={useChat ? "What result do you need delivered?" : "Describe the deliverable"}
         sub={
           useChat
-            ? "Say it however it comes out. We'll shape it into a brief, then you approve one fixed price before anything starts."
-            : "Plain language. You'll get one fixed price to approve before anything starts."
+            ? "Describe the result in your own words. We'll structure it into a brief for you to review, then confirm fit, timing and one fixed price before anything starts."
+            : "Define the output, rules, source material and what a correct result looks like. You'll receive one fixed price to approve before anything starts."
         }
         action={
           aiEnabled ? (
@@ -40,6 +40,17 @@ export default async function NewTaskPage({
           ) : null
         }
       />
+
+      {useChat ? (
+        <p className="-mt-2 mb-5 text-[12px] leading-[1.55] text-[#5B6069]">
+          AI helps structure this intake conversation; it does not complete your task. Review the
+          brief before submitting and do not include unnecessary sensitive information. See our{" "}
+          <Link href="/privacy" className="underline decoration-[#5B6069]/40 underline-offset-2">
+            privacy policy
+          </Link>
+          .
+        </p>
+      ) : null}
 
       {useChat ? (
         <TaskChat

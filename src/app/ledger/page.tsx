@@ -95,7 +95,7 @@ export default async function LedgerPage({
         </div>
       </header>
 
-      <section className="mx-auto w-full max-w-[720px] px-6 py-16 sm:py-24">
+      <main className="mx-auto w-full max-w-[720px] px-6 py-16 sm:py-24">
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#767C86]">
           {t.eyebrow}
         </p>
@@ -137,9 +137,6 @@ export default async function LedgerPage({
           {entries.length === 0 ? (
             <div className="rounded-[6px] border border-dashed border-[#14161A]/20 p-6 text-center text-[13px] text-[#5B6069]">
               {t.emptyState}
-              <p className="mt-2 rounded border border-dashed border-[#14161A]/15 bg-[#F7F6F3] px-3 py-2 font-mono text-[11px] text-[#8A9099]">
-                {t.emptyExample}
-              </p>
             </div>
           ) : (
             <div className="divide-y divide-black/6 rounded-[6px] border border-black/8 bg-white">
@@ -174,7 +171,7 @@ export default async function LedgerPage({
             </Link>
           ) : null}
         </div>
-      </section>
+      </main>
     </div>
   );
 }

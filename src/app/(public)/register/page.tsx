@@ -9,23 +9,23 @@ import { linkInline } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Client sign-up",
-  description: "Create a AfterDesk client account: send tasks, approve a fixed price, download reviewed work.",
+  description: "Create an AfterDesk client account: describe a deliverable, approve a fixed price and download reviewed work.",
   robots: { index: false, follow: false },
 };
 
 /* The night homepage's promise, folded beside the paper form. */
 const ASIDE = [
   {
-    title: "You approve the price first",
-    body: "Send a task, get one fixed price back. Nothing starts until you approve it. Decline and you owe nothing.",
+    title: "Scope and price come first",
+    body: "Describe the deliverable, receive one fixed price for a one-off task, and approve it before work begins.",
   },
   {
     title: "Reviewed before you see it",
     body: "Every delivery is checked against your brief before it reaches you. You get the corrected version, not the first attempt.",
   },
   {
-    title: "No subscription",
-    body: "No retainer, no minimum, no seat fees. You pay per task, at the price you approved.",
+    title: "One-off work needs no subscription",
+    body: "Use a one-off task without a retainer or minimum, or discuss reserved weekly capacity for recurring work.",
   },
 ];
 
@@ -45,7 +45,7 @@ export default async function RegisterClientPage() {
     <AuthShell
       kicker="Client sign-up"
       title="Create your account."
-      sub="Send tasks, approve a fixed price, download reviewed work."
+      sub="Describe deliverables, approve one-off pricing, and download reviewed work."
       aside={ASIDE}
       asideTone="night"
       footer={

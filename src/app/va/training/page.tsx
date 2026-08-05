@@ -101,7 +101,7 @@ export default async function AcademyHubPage() {
    */
   const TRACKS: { track: Exclude<CourseTrack, "category">; blurb: string }[] = [
     { track: "foundations", blurb: "How to work here, whatever you work on." },
-    { track: "craft", blurb: "The jobs a virtual assistant is hired to do — anywhere, not only here." },
+    { track: "craft", blurb: "The jobs a virtual assistant is hired to do, anywhere, not only here." },
     { track: "career", blurb: "Getting hired, getting paid, and lasting in this work." },
   ];
 
@@ -109,7 +109,7 @@ export default async function AcademyHubPage() {
     <>
       <PageTitle
         title="Academy"
-        sub="Free courses, real exams, a certificate for each one you pass. Everything here is the same standard your deliveries are judged against — finish a course and your first task in that category should pass review on the first try."
+        sub="Free courses, real exams, a certificate for each one you pass. Everything here is the same standard your deliveries are judged against: finish a course and your first task in that category should pass review on the first try."
         tone="night"
       />
 
@@ -125,7 +125,7 @@ export default async function AcademyHubPage() {
           hours of it
         </p>
         <p className="text-[12px] text-[#9AA9C4]">
-          Pass an exam at 10/12 to earn its certificate — it stays on your profile for good.
+          Pass an exam at 10/12 to earn its certificate. It stays on your profile for good.
         </p>
       </div>
 
@@ -146,7 +146,7 @@ export default async function AcademyHubPage() {
                     className="h-[3px] w-4 shrink-0 rounded-[2px]"
                     style={{ backgroundColor: nightHue(look) }}
                   />
-                  {i === 0 ? `Start here — ${look.label}` : look.label}
+                  {i === 0 ? `Start here: ${look.label}` : look.label}
                 </p>
                 <p className="text-[12px] text-[#8A9099]">{blurb}</p>
                 <span className="ml-auto font-mono text-[11px] tabular-nums text-[#8A9099]">
@@ -201,7 +201,7 @@ export default async function AcademyHubPage() {
       </div>
 
       <p className="mt-8 max-w-[62ch] text-xs leading-relaxed text-[#8A9099]">
-        Every course is free and always will be. Certificates are earned, never bought —
+        Every course is free and always will be. Certificates are earned, never bought,
         which is exactly why they mean something.{" "}
         {/* The pool bounces anyone who isn't approved straight back to /va, and
             this hub is open pre-approval on purpose — so the page it ends on is

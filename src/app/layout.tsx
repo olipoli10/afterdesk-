@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import { SITE_URL } from "@/lib/site";
+import { siteLangOf } from "@/lib/i18n/langs";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,25 +17,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  /**
-   * The default title is the HOMEPAGE title, and it leads with the category
-   * nouns a buyer types — "outsource admin tasks", "data entry", "virtual
-   * assistant" — rather than with the brand, which nobody searches yet. The
-   * promise still closes the line; the brand rides the template on every
-   * other page.
-   */
   title: {
-    default: "Outsource admin, data & research tasks: done overnight at one fixed price",
+    default: "Managed back-office execution for data, research and CRM work",
     template: "%s · AfterDesk",
   },
-  /**
-   * Leads with the pain the buyer types — checking the work, fixing
-   * mistakes, chasing hours — which is the hero subtitle's own register,
-   * then the mechanism. "Virtual assistant service without the hiring"
-   * stays: it is the one head-term qualifier this site can honestly own.
-   */
   description:
-    "Stop checking the work, fixing mistakes and chasing hours. Describe any admin, data, research or writing task, approve one fixed price, and get it back by morning — reviewed by an operator first. A virtual assistant service without the hiring. No subscription, no hourly meter.",
+    "AfterDesk scopes, manages and reviews bounded CRM, research, data and document work. Approve the scope and price, then receive a checked, usable deliverable.",
   openGraph: {
     siteName: "AfterDesk",
     type: "website",
@@ -48,7 +37,7 @@ export const viewport: Viewport = {
   themeColor: "#0A0B0D",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
   modal,
 }: Readonly<{
@@ -58,9 +47,11 @@ export default function RootLayout({
    *  window over whatever `children` already is. */
   modal: React.ReactNode;
 }>) {
+  const lang = siteLangOf((await headers()).get("x-site-lang"));
+
   return (
     <html
-      lang="en"
+      lang={lang}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

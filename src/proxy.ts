@@ -20,6 +20,7 @@ const DOC_PATHS = [
   "/about",
   "/how-it-works",
   "/services",
+  "/services/standing-capacity",
   "/security",
   "/privacy",
   "/terms",
@@ -41,11 +42,25 @@ const LANG_COOKIE: Record<string, { name: string; allowed: string[] }> = {
 export function proxy(req: NextRequest) {
   const headers = new Headers(req.headers);
   headers.set("x-pathname", req.nextUrl.pathname);
-  const res = NextResponse.next({ request: { headers } });
 
   const rule = LANG_COOKIE[req.nextUrl.pathname];
+  const explicitLang = req.nextUrl.searchParams.get("lang");
+  const validExplicitLang = explicitLang && LANGS.includes(explicitLang) ? explicitLang : null;
+  const resolvedLang = validExplicitLang ?? (
+    rule?.name === "ss-lang-client"
+      ? req.cookies.get("ss-lang-client")?.value
+      : rule?.name === "ss-lang-worker"
+        ? req.cookies.get("ss-lang-worker")?.value
+        : rule?.name === "ss-lang-doc"
+          ? req.cookies.get("ss-lang-doc")?.value ?? req.cookies.get("ss-lang-client")?.value ?? req.cookies.get("ss-lang-worker")?.value
+          : null
+  );
+  headers.set("x-site-lang", resolvedLang && LANGS.includes(resolvedLang) ? resolvedLang : "en");
+
+  const res = NextResponse.next({ request: { headers } });
+
   if (rule) {
-    const lang = req.nextUrl.searchParams.get("lang");
+    const lang = explicitLang;
     if (lang && rule.allowed.includes(lang)) {
       const cookieOpts = {
         path: "/",
@@ -94,6 +109,7 @@ export const config = {
     "/about",
     "/how-it-works",
     "/services",
+    "/services/standing-capacity",
     "/security",
     "/privacy",
     "/terms",

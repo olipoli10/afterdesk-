@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth-shell";
 import { VaRegisterForm } from "@/components/register-forms";
 import { linkInline } from "@/components/ui";
+import { academyStats } from "@/lib/academy/public";
 
 export const metadata: Metadata = {
   title: "Apply to join the pool",
@@ -18,7 +19,9 @@ export const metadata: Metadata = {
 const ASIDE = [
   {
     title: "The Academy opens today, not after approval",
-    body: "Twenty free courses with real exams and permanent certificates. Start tonight: every certificate you earn is on your profile when we review you.",
+    // Course count computed, never typed — the "Twenty" this replaced had
+    // already silently gone stale against the 29 courses an account gets.
+    body: `${academyStats().courses} free courses with real exams and permanent certificates. Start tonight: every certificate you earn is on your profile when we review you.`,
   },
   {
     title: "The payout is printed before you claim",

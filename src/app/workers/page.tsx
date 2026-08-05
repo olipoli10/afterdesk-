@@ -230,6 +230,8 @@ export default async function WorkersHome({
         </div>
       </header>
 
+      <main>
+
       {/* ── HERO — the promise as one object ──────────────────────────── */}
       <section className="relative overflow-hidden">
         <div aria-hidden className="paper-grid pointer-events-none absolute inset-0" />
@@ -742,6 +744,8 @@ export default async function WorkersHome({
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────────── */}
+      </main>
+
       <footer className="border-t border-white/10 bg-[#0A0B0D] pb-20 sm:pb-0">
         <div className="mx-auto grid w-full max-w-[1120px] gap-4 px-6 py-6 sm:grid-cols-[auto_1fr] sm:items-center">
           <Wordmark tone="paper" className="text-[12px]" />

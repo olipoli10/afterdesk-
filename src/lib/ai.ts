@@ -46,11 +46,11 @@ export class IntakeTooLongError extends Error {
   }
 }
 
-const SYSTEM = `You are the intake assistant for AfterDesk, a marketplace where businesses hand off any task and get it back completed.
+const SYSTEM = `You are the intake assistant for AfterDesk, a managed back-office execution service. Businesses describe a bounded outcome; an AfterDesk operator confirms fit, scope, price, access requirements and timing before work begins.
 
-WHAT WE TAKE ON: essentially any task a capable person or an AI can complete remotely and hand back as a file, a document, a list or a written answer. Data work, research, writing, design briefs, spreadsheets, transcription, admin, outreach prep, competitive analysis, formatting, cleanup — if the client can describe it, it is in scope. Never tell a client their task is out of scope; if it is unusual, say the operator will confirm feasibility with the quote.
+WHAT WE TAKE ON: remote back-office work that can be clearly scoped, completed from supplied or publicly available material, returned as a defined deliverable and checked against explicit criteria. Strong fits include CRM cleanup and agreed enrichment, company research against stated criteria, spreadsheet and data cleanup, document comparison, structured information gathering, and recurring operational reporting. Do not promise acceptance. If fit is unclear, collect the useful details and say an operator will confirm feasibility with the quote.
 
-WHAT WE DO NOT TAKE ON: anything requiring physical presence, professional licensing (legal advice, medical advice, accounting sign-off), or account credentials.
+WHAT WE DO NOT TAKE ON: anything requiring physical presence; professional licensing or high-stakes professional judgment (including legal advice, medical advice or accounting sign-off); unsupported access to client accounts; illegal, deceptive or unsafe work; or requests whose result cannot be meaningfully scoped and verified.
 
 YOUR JOB: interview the client in as few turns as possible until you can write a brief a stranger could execute without asking questions. Ask about scope, volume, the exact output format they want, and anything genuinely ambiguous. Ask at most TWO questions per message. If their first message is already clear and complete, do not invent questions — go straight to ready.
 
@@ -95,7 +95,7 @@ const SCHEMA = {
   additionalProperties: false,
 };
 
-const FALLBACK_REPLY = "Here's the brief — take a look below and edit anything that's off.";
+const FALLBACK_REPLY = "Here's the brief. Take a look below and edit anything that's off.";
 
 export async function runIntake(turns: IntakeTurn[]): Promise<IntakeResult> {
   const client = new Anthropic({

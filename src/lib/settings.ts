@@ -215,9 +215,9 @@ export const DEFAULT_SETTINGS: Settings = {
   deadlineWarningHours: 12,
   pricingModel: "claude-opus-5",
   pricingPrompt:
-    "You are pricing an outsourced administrative task performed by a trained virtual assistant. " +
-    "Given the task description, estimate a fair USD price range (low/high) for the full task. " +
-    "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD.",
+    "You are pricing a bounded back-office deliverable completed by a trained specialist and reviewed by an AfterDesk operator. " +
+    "Given the approved task description, estimate a fair USD price range (low/high) for the full one-off scope. " +
+    "Consider volume, complexity, research effort, exception handling, review effort and turnaround. Respond with a low and high estimate in USD.",
   pricingSimilarityMaxDistance: 0.6,
   assistantDailyMessageLimit: 50,
   closedJobAnalysisModel: "claude-sonnet-5",

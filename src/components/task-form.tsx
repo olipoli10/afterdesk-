@@ -50,7 +50,7 @@ export function TaskForm({
     <Card>
       <CardBody>
         <form onSubmit={onSubmit} className="space-y-5">
-          <Field label="Title" hint="A short handle for the task.">
+          <Field label="Deliverable title" hint="A short handle for the result you want returned.">
             <input
               required
               minLength={3}
@@ -63,15 +63,15 @@ export function TaskForm({
           </Field>
 
           <Field
-            label="Describe the task"
-            hint="Plain language. What needs to be done, what the output should look like, anything the specialist must know."
+            label="Deliverable, rules and definition of done"
+            hint="State the required output, source material, rules, fields or formatting, checks that matter, and how uncertain cases should be handled."
           >
             <textarea
               required
               minLength={10}
               rows={7}
               className={inputClass}
-              placeholder="e.g. The attached export has ~4,000 contacts. Merge duplicates, fix casing on names, flag rows with missing emails, and return a clean XLSX in the same column order."
+              placeholder="e.g. Return a clean XLSX in the same column order. Merge contacts on email, normalize names, retain source links for enriched fields, and place uncertain or missing records in an exception tab."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -100,8 +100,8 @@ export function TaskForm({
           </div>
 
           <Field
-            label="Input files (optional)"
-            hint="The data the task operates on — an export, a list, a spreadsheet."
+            label="Source files (optional)"
+            hint="The material the work operates on: an export, list, spreadsheet or document set."
             group
           >
             <FileUpload
@@ -124,7 +124,7 @@ export function TaskForm({
               {isPending ? "Submitting…" : "Submit task"}
             </button>
             <span className="text-xs text-[#5B6069]">
-              You&apos;ll receive one fixed price to approve — nothing starts before you do.
+              You&apos;ll receive one fixed price to approve. Nothing starts before you do.
             </span>
           </div>
         </form>

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "AfterDesk — Describe any task, get it back done by morning";
+export const alt = "AfterDesk: Send the work. Get a reviewed deliverable.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -32,15 +32,15 @@ export default function OgImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 72, color: "#767C86", letterSpacing: "-0.02em" }}>
-            Describe any task.
+            Send the work.
           </div>
           <div style={{ fontSize: 72, color: "#F7F6F3", letterSpacing: "-0.02em" }}>
-            Get it back done by morning.
+            Get a reviewed deliverable.
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontSize: 22, color: "#767C86" }}>
-            One fixed price. Approved before anything starts.
+            Scope approved upfront. Quality control before delivery.
           </div>
           <div
             style={{

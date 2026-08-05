@@ -73,7 +73,7 @@ export async function sendIntakeTurn(input: unknown): Promise<IntakeActionResult
     return {
       ok: false,
       kind: "unavailable",
-      error: "The assistant isn't set up yet — write your task out instead.",
+      error: "The chat isn't set up yet. Write your task out instead.",
     };
   }
 
@@ -99,7 +99,7 @@ export async function sendIntakeTurn(input: unknown): Promise<IntakeActionResult
       ok: false,
       kind: "limit",
       error:
-        "You've used the assistant a lot in a short time. Give it an hour, or write your task out yourself — that always works.",
+        "You've sent a lot of messages in a short time. Give it an hour, or write your task out yourself: that always works.",
     };
   }
 
@@ -144,7 +144,7 @@ export async function sendIntakeTurn(input: unknown): Promise<IntakeActionResult
     return {
       ok: false,
       kind: "unavailable",
-      error: "The assistant is unavailable right now — write the task out yourself instead.",
+      error: "The chat is unavailable right now. Write the task out yourself instead.",
     };
   }
 }

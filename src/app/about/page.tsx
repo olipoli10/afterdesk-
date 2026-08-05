@@ -89,12 +89,6 @@ export default async function AboutPage({
             >
               {t.nav.client}
             </Link>
-            <Link
-              href="/workers"
-              className="hidden text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
-            >
-              {t.nav.workers}
-            </Link>
           </div>
         </div>
       </header>
@@ -202,13 +196,16 @@ export default async function AboutPage({
             this page's own closing CTA, so it reads as a second intentional
             dark moment rather than an import. Names real platforms
             (Fiverr/Upwork/OnlineJobs.ph) — a founder-requested exception to
-            this site's usual "categories, not brand names" rule. */}
+            this site's usual "categories, not brand names" rule. Every cell
+            must stay defensible as stated: competitor verdicts describe the
+            structural model (who reviews, who pays when), never a quality
+            judgment presented as fact. */}
         <ComparisonTable t={t.comparisonTable} />
 
         {/* ── MOVEMENT III — why the training is real ───────────────────
-            Ties into the one asset that proves the problem above is real:
-            the scam course, which is free to anyone whether or not they
-            ever claim a task here. */}
+            Ties into the AI course: proof the Academy trains for the work
+            as it exists now, free to anyone whether or not they ever claim
+            a task here. */}
         <hr className="mt-16 border-0 border-t border-[#14161A]/12" />
         <p className="mt-5 max-w-[46ch] font-mono text-[11px] uppercase tracking-[0.18em] text-[#5B6069]">
           {t.trainingHead}
@@ -217,7 +214,7 @@ export default async function AboutPage({
           <p className="max-w-[58ch] text-[17px] leading-[1.6] text-[#14161A]">
             {t.trainingA}
             <Link
-              href="/academy/spotting-scams"
+              href="/academy/ai-tools"
               className="font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors hover:decoration-[#14161A]"
             >
               {t.trainingLink}

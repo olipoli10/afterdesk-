@@ -22,7 +22,7 @@ type Turn = { role: "user" | "assistant"; content: string };
 
 // The chat speaks as "we" — it is AfterDesk talking, never an "assistant".
 const OPENER =
-  "Tell us what you need done — in your own words, however messy. We'll ask a couple of questions if anything's unclear, then write it up for you.";
+  "Tell us what you need returned, the source material involved, the rules that matter, and what a correct result looks like. We'll ask questions if anything is unclear, then structure a brief for you to review.";
 
 export function TaskChat({
   maxFileSizeMB,
@@ -157,7 +157,7 @@ export function TaskChat({
               rows={2}
               className={`${inputClass} resize-none`}
               aria-label="Describe your task"
-              placeholder="e.g. I need our supplier list rebuilt from 40 PDF invoices…"
+              placeholder="e.g. Return a clean CRM import with duplicates merged, required fields normalized, sources noted, and uncertain records in an exception log…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -206,7 +206,7 @@ export function TaskChat({
       {draft ? (
         <Card className="border-[#14161A]/20">
           <CardBody>
-            <SectionLabel as="h2">Your brief — edit anything before sending</SectionLabel>
+            <SectionLabel as="h2">Your brief: edit anything before sending</SectionLabel>
             <div className="mt-4 space-y-4">
               <Field label="Title">
                 <input
@@ -215,7 +215,7 @@ export function TaskChat({
                   onChange={(e) => setDraft({ ...draft, title: e.target.value })}
                 />
               </Field>
-              <Field label="The task">
+              <Field label="Deliverable, rules and definition of done">
                 <textarea
                   rows={7}
                   className={inputClass}
@@ -235,7 +235,7 @@ export function TaskChat({
                   label="Deadline"
                   hint={
                     draft.deadlineHint
-                      ? `You said: “${draft.deadlineHint}” — set the exact time (${timezone}).`
+                      ? `You said: “${draft.deadlineHint}”. Set the exact time (${timezone}).`
                       : `Optional. Your local time (${timezone}).`
                   }
                 >
@@ -249,7 +249,7 @@ export function TaskChat({
               </div>
               <Field
                 label="Files"
-                hint="Anything the task works on — an export, a list, documents."
+                hint="Source material the work operates on: an export, a list, spreadsheets or documents."
                 group
               >
                 <FileUpload
@@ -269,7 +269,7 @@ export function TaskChat({
                   Keep talking
                 </button>
                 <span className="text-xs text-[#5B6069]">
-                  You&apos;ll get one fixed price to approve — nothing starts before you do.
+                  You&apos;ll get one fixed price to approve. Nothing starts before you do.
                 </span>
               </div>
             </div>

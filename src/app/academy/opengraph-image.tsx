@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { academyStats } from "@/lib/academy/public";
 
-export const alt = "AfterDesk Academy — free virtual assistant training with real exams";
+export const alt = "AfterDesk Academy: free virtual assistant training with real exams";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

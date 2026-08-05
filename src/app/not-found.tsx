@@ -30,7 +30,7 @@ export default async function NotFound() {
   const user = await getSessionUser();
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0B0D] px-6">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0B0D] px-6">
       <div aria-hidden className="night-grid--center pointer-events-none absolute inset-0" />
       <div className="plate plate--ink relative w-full max-w-[420px] px-7 py-10 text-center sm:px-9">
         <span className="inline-block border border-[#F7F6F3]/25 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.22em] text-[#F7F6F3]">
@@ -62,6 +62,6 @@ export default async function NotFound() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
