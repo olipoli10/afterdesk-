@@ -7,7 +7,7 @@ import { addHours } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { requireRole } from "@/lib/authz";
+import { requireRole, consumeRateLimit } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { expireStaleQuotes } from "@/server/sweeps";
@@ -28,8 +28,17 @@ export type SubmitTaskResult =
   | { ok: true; taskId: string }
   | { ok: false; error: string };
 
+// Per user per hour — each submission unconditionally triggers a real
+// Anthropic + Voyage pricing call (computeAiPricingSuggestion below), so an
+// unbounded loop here is an unbounded API bill, not just noise.
+const SUBMIT_TASK_RATE = { window: 3600, max: 20 };
+
 export async function submitTask(input: unknown): Promise<SubmitTaskResult> {
   const user = await requireRole("CLIENT");
+  const allowed = await consumeRateLimit(`task:submit:${user.id}`, SUBMIT_TASK_RATE);
+  if (!allowed) {
+    return { ok: false, error: "Too many tasks submitted recently. Try again in a while." };
+  }
   const parsed = submitTaskSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: "Please provide a title (3+ chars) and a description (10+ chars)." };
@@ -179,8 +188,15 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
   return { ok: true };
 }
 
+const declineReasonSchema = z.string().trim().max(4000).optional();
+
 export async function declineQuote(taskId: string, reason?: string): Promise<QuoteActionResult> {
   const user = await requireRole("CLIENT");
+  const parsedReason = declineReasonSchema.safeParse(reason);
+  if (!parsedReason.success) {
+    return { ok: false, error: "That reason is too long — keep it under 4,000 characters." };
+  }
+  const cleanReason = parsedReason.data || undefined;
   const owned = await prisma.task.findFirst({
     where: { id: taskId, clientId: user.id },
     select: { id: true, isInternal: true },
@@ -196,8 +212,8 @@ export async function declineQuote(taskId: string, reason?: string): Promise<Quo
       to: "declined",
       action: "client_declined_quote",
       actorId: user.id,
-      reason: reason?.trim() || undefined,
-      data: { declinedAt: new Date(), declineReason: reason?.trim() || null },
+      reason: cleanReason,
+      data: { declinedAt: new Date(), declineReason: cleanReason || null },
     });
   } catch (e) {
     if (e instanceof TransitionError) {
@@ -210,7 +226,7 @@ export async function declineQuote(taskId: string, reason?: string): Promise<Quo
     await upsertClosedJobLog(prisma, taskId, {
       outcome: "lost",
       lostReasonCategory: "price_declined",
-      lostReasonDetail: reason?.trim() || null,
+      lostReasonDetail: cleanReason || null,
     });
   }
 

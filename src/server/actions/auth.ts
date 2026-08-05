@@ -16,7 +16,12 @@ const registerVaSchema = z.object({
   experienceSummary: z.string().trim().min(40).max(2000),
   specialties: z.string().trim().min(10).max(500),
   weeklyAvailability: z.string().trim().min(3).max(200),
-  portfolioUrl: z.union([z.literal(""), z.string().trim().url().max(500)]).optional(),
+  // http(s) only — this is stored and later rendered as a clickable link on
+  // the admin's "Open work sample" review, so javascript:/data: URLs would
+  // be stored-XSS, not just a validation nicety.
+  portfolioUrl: z
+    .union([z.literal(""), z.string().trim().url({ protocol: /^https?$/ }).max(500)])
+    .optional(),
 });
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
