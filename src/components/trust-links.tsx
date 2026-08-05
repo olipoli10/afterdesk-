@@ -16,12 +16,18 @@ import type { SiteLang } from "@/lib/i18n/langs";
  * and Acceptable use keep short English nouns in the TL label itself
  * (Taglish, the same register the pages' own body copy uses) rather than
  * forcing a stiff, unfamiliar formal coinage.
+ *
+ * Public ledger link WITHDRAWN 2026-08-05, temporarily: a first-time visitor
+ * hitting "No entries yet" reads as no traction, not as transparency. The
+ * route, page, DB triggers and queries are untouched — only the promotion is
+ * paused. Reinstate the href+label pair below once /ledger clears its own
+ * publication floor (MIN_PUBLIC_ENTRIES in public-ledger.ts, currently 25)
+ * so the page has something real to show the moment it's linked again.
  */
-const LABELS: Record<SiteLang, [string, string, string, string, string, string]> = {
-  en: ["Free training for remote workers", "Public ledger", "Security", "Privacy", "Terms", "Acceptable use"],
+const LABELS: Record<SiteLang, [string, string, string, string, string]> = {
+  en: ["Free training for remote workers", "Security", "Privacy", "Terms", "Acceptable use"],
   fr: [
     "Formation gratuite pour travailleurs à distance",
-    "Registre public",
     "Sécurité",
     "Confidentialité",
     "Conditions",
@@ -29,7 +35,6 @@ const LABELS: Record<SiteLang, [string, string, string, string, string, string]>
   ],
   es: [
     "Formación gratuita para trabajadores remotos",
-    "Registro público",
     "Seguridad",
     "Privacidad",
     "Términos",
@@ -37,7 +42,6 @@ const LABELS: Record<SiteLang, [string, string, string, string, string, string]>
   ],
   tl: [
     "Libreng pagsasanay para sa mga remote worker",
-    "Pampublikong ledger",
     "Seguridad",
     "Privacy",
     "Mga Tuntunin",
@@ -45,7 +49,7 @@ const LABELS: Record<SiteLang, [string, string, string, string, string, string]>
   ],
 };
 
-const HREFS = ["/academy", "/ledger", "/security", "/privacy", "/terms", "/acceptable-use"] as const;
+const HREFS = ["/academy", "/security", "/privacy", "/terms", "/acceptable-use"] as const;
 
 export function TrustLinks({
   tone = "paper",
