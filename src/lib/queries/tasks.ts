@@ -555,3 +555,185 @@ export async function taskEventsForAdmin(taskId: string) {
     orderBy: { createdAt: "asc" },
   });
 }
+
+/**
+ * The client-facing execution report — the role-shaped TaskEvent variant this
+ * file's comment above has been reserving.
+ *
+ * WHY A WHITELIST AND NOT A FILTER. Every other role boundary in this file is
+ * enforced by omitting columns from a select. That is not enough here: the
+ * risk is not a column, it is a ROW. TaskEvent is the audit log for the whole
+ * platform, worker questions and payout bookkeeping and file scans included,
+ * and new action strings get added to it whenever a feature lands. A blocklist
+ * would silently start showing the paying client every future internal event
+ * the day someone adds one. So an action must be named in TIMELINE below to be
+ * shown at all, and anything unrecognised is dropped. Adding an event to the
+ * audit log can never, by itself, publish it.
+ *
+ * WHAT IS DELIBERATELY NOT SELECTED. `actorId` identifies the worker and is
+ * the whole of RULE 1. `reason` is free text written by the operator to the
+ * worker (QC comments) or by the worker to the operator (questions), and can
+ * name either party. `meta` carries internal counters. None of the three is
+ * projected, so no UI mistake downstream can surface them.
+ */
+export type TimelineTone = "normal" | "review" | "flag";
+
+/**
+ * Exported so test/client-timeline.test.ts can pin the exact key set. Adding a
+ * key here is the dangerous act this feature has, and it must not be possible
+ * to do it absent-mindedly while working on something else.
+ */
+export const CLIENT_TIMELINE_LABELS: Record<string, { label: string; tone: TimelineTone }> = {
+  // Intake and price. entered_pricing_queue is omitted on purpose: it fires in
+  // the same transaction as client_submitted and would render as a duplicate
+  // row at an identical timestamp.
+  client_submitted: { label: "You submitted the task", tone: "normal" },
+  client_submitted_standing_task: { label: "You submitted the task", tone: "normal" },
+  admin_quoted: { label: "We sent you a fixed price", tone: "normal" },
+  client_accepted_quote: { label: "You approved the price", tone: "normal" },
+  client_declined_quote: { label: "You declined the price", tone: "flag" },
+  quote_expired: { label: "The price lapsed before it was answered", tone: "flag" },
+
+  // Money. Wording matches the escrow reality: authorization is not a charge.
+  client_payment_received: { label: "Your card was authorized, not charged", tone: "normal" },
+  admin_recorded_payment: { label: "We recorded your payment", tone: "normal" },
+  payment_window_expired: { label: "The payment window closed", tone: "flag" },
+  // late_client_payment_recovered is deliberately absent: fulfillCheckout
+  // writes it and client_payment_received back to back in ONE transaction
+  // (stripe.ts, the task?.status === "expired" branch), so keying it would
+  // print the same sentence twice at the same timestamp.
+
+  // Execution. Never a name, never a count of who, and never an article that
+  // implies the client could reach them.
+  va_claimed: { label: "A trained specialist picked up the work", tone: "normal" },
+  standing_capacity_routed: {
+    label: "The work was routed to your assigned specialist",
+    tone: "normal",
+  },
+  va_released: { label: "Returned to the pool for a different specialist", tone: "flag" },
+  admin_reassigned: { label: "Reassigned to a different specialist", tone: "flag" },
+  va_submitted_deliverable: { label: "Delivered to our reviewer, not to you", tone: "review" },
+
+  // Review. This is the part of the record the report exists for.
+  admin_qc_rejected: { label: "Our reviewer sent it back for corrections", tone: "review" },
+  admin_qc_rejected_exhausted: {
+    label: "Sent back again and reassigned to a different specialist",
+    tone: "review",
+  },
+  admin_qc_approved: { label: "Passed review and was released to you", tone: "review" },
+
+  // After delivery.
+  client_requested_revision: { label: "You asked for a revision", tone: "flag" },
+  admin_published_revision_instructions: {
+    label: "We issued the revision instructions",
+    tone: "normal",
+  },
+  client_opened_dispute: { label: "You raised a dispute", tone: "flag" },
+  admin_rejected_dispute: {
+    label: "Dispute reviewed, the work was found to meet the written standard",
+    tone: "review",
+  },
+  admin_ordered_dispute_rework: { label: "Dispute reviewed, rework ordered", tone: "review" },
+  admin_upheld_dispute: { label: "We upheld your dispute", tone: "review" },
+  admin_cancelled: { label: "We cancelled the task", tone: "flag" },
+  standing_minutes_returned: {
+    label: "Your reserved minutes were credited back",
+    tone: "normal",
+  },
+  retention_files_purged: {
+    label: "Your files reached the end of the retention window and were deleted",
+    tone: "normal",
+  },
+};
+
+/**
+ * Exported so a test can assert the projection itself, not just its output:
+ * the leak this guards against is a column being added here, which no
+ * fixture-driven test would catch.
+ */
+export const clientTimelineEventSelect = {
+  action: true,
+  createdAt: true,
+} satisfies Prisma.TaskEventSelect;
+
+/**
+ * The whitelist itself, as a pure function so it can be tested without a
+ * database. `Object.hasOwn` rather than a plain lookup on purpose: `action` is
+ * an unconstrained String column, and a bare `TIMELINE[action]` returns a
+ * truthy inherited member for "constructor", "toString" or "__proto__" — which
+ * would push an entry with an undefined label straight onto a client's page.
+ */
+export function clientTimelineEntries(
+  rows: { action: string; createdAt: Date }[]
+): { at: Date; label: string; tone: TimelineTone }[] {
+  return rows.flatMap((r) =>
+    Object.hasOwn(CLIENT_TIMELINE_LABELS, r.action)
+      ? [
+          {
+            at: r.createdAt,
+            label: CLIENT_TIMELINE_LABELS[r.action].label,
+            tone: CLIENT_TIMELINE_LABELS[r.action].tone,
+          },
+        ]
+      : []
+  );
+}
+
+export type ExecutionReport = {
+  entries: { at: Date; label: string; tone: TimelineTone }[];
+  /** Deliveries our reviewer sent back before one passed. */
+  sentBack: number;
+  /**
+   * Review decisions actually recorded (approved + rejected). Deliberately
+   * NOT the raw submission count: a worker who re-uploads before anyone has
+   * looked has their pending row flipped to `superseded` (submitDeliverable),
+   * and counting those would inflate the number of reviews we claim to have
+   * performed. Task.qcRounds is wrong for the same class of reason in the
+   * other direction: it is reset to 0 on repool and on reassignment, so it
+   * understates. Understating on the one page whose purpose is proof is the
+   * worst of the three options.
+   */
+  reviewed: number;
+  /** The written standard the delivery was judged against, if the category has one. */
+  standard: string | null;
+  categoryName: string | null;
+};
+
+export async function executionReportForClient(
+  taskId: string,
+  clientId: string
+): Promise<ExecutionReport | null> {
+  // Ownership is part of the WHERE clause, same as taskForClient — no
+  // cross-client read is possible even with a guessed task id.
+  const task = await prisma.task.findFirst({
+    where: { id: taskId, clientId },
+    select: { id: true, category: { select: { name: true, disputeCriteria: true } } },
+  });
+  if (!task) return null;
+
+  const [rows, submissions] = await Promise.all([
+    prisma.taskEvent.findMany({
+      where: { taskId },
+      select: clientTimelineEventSelect,
+      orderBy: { createdAt: "asc" },
+    }),
+    // Counted by outcome rather than read as rows: the client learns how many
+    // times the work was returned, never who returned it or what was said.
+    prisma.submission.groupBy({
+      by: ["qcStatus"],
+      where: { taskId },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const countOf = (status: string) =>
+    submissions.find((s) => s.qcStatus === status)?._count._all ?? 0;
+
+  return {
+    entries: clientTimelineEntries(rows),
+    sentBack: countOf("rejected"),
+    reviewed: countOf("approved") + countOf("rejected"),
+    standard: task.category?.disputeCriteria ?? null,
+    categoryName: task.category?.name ?? null,
+  };
+}
