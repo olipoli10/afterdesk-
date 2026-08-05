@@ -102,6 +102,7 @@ export default async function AcademyHubPage() {
   const TRACKS: { track: Exclude<CourseTrack, "category">; blurb: string }[] = [
     { track: "foundations", blurb: "How to work here, whatever you work on." },
     { track: "craft", blurb: "The jobs a virtual assistant is hired to do, anywhere, not only here." },
+    { track: "ai", blurb: "Using AI tools to a professional standard, without putting client data at risk." },
     { track: "career", blurb: "Getting hired, getting paid, and lasting in this work." },
   ];
 

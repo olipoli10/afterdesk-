@@ -77,8 +77,17 @@ export const PUBLISHED_COURSES: readonly string[] = [
   "slides-decks",
   "design-basics",
   "seo-content-ops",
-  "ai-tools",
   "bookkeeping-basics",
+  // working with AI — all published on purpose. None of it restates the QC
+  // grading spec (that is what the withheld category courses do), it is
+  // general professional skill, and it is the section a 2026 reader comes
+  // looking for. Kept adjacent so the peer-link ring wires them together.
+  "ai-tools",
+  "ai-sanctioned-use",
+  "ai-grounding",
+  "ai-prompting-advanced",
+  "ai-accuracy-at-scale",
+  "ai-agents-and-actions",
   // the career — the reason this is a school and not a funnel
   "getting-hired",
   "portfolio-proof",
@@ -122,6 +131,15 @@ export const COURSE_SEO_TITLES: Record<string, string> = {
   "design-basics": "Free visual design basics course for virtual assistants",
   "seo-content-ops": "Free SEO & content operations course for virtual assistants",
   "ai-tools": "Free AI tools course for virtual assistants, with certificate",
+  // The AI set keeps the "virtual assistant" modifier for the same reason
+  // every other title does: it is the phrase this audience actually searches.
+  // "AI for virtual assistants" is a real query; "prompt engineering" is a
+  // crowded one owned by developer sites.
+  "ai-sanctioned-use": "Using AI safely with client data: free course for virtual assistants",
+  "ai-grounding": "Stop AI inventing facts: free grounding course for virtual assistants",
+  "ai-prompting-advanced": "Free advanced AI prompting course for virtual assistants",
+  "ai-accuracy-at-scale": "Checking AI accuracy on large files: free course for virtual assistants",
+  "ai-agents-and-actions": "Free AI agents & automation safety course for virtual assistants",
   "bookkeeping-basics": "Free bookkeeping basics course for virtual assistants",
   "getting-hired": "How to get hired as a virtual assistant: free course & certificate",
   "portfolio-proof": "Virtual assistant portfolio without experience: free course",

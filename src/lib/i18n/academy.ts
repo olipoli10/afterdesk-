@@ -48,6 +48,8 @@ type Dict = {
     foundationsNote: string;
     craft: string;
     craftNote: string;
+    ai: string;
+    aiNote: string;
     career: string;
     careerNote: string;
     byWork: string;
@@ -98,6 +100,8 @@ const en: Dict = {
     foundationsNote: "Take these first: they apply to every kind of task.",
     craft: "The toolkit",
     craftNote: "The jobs a virtual assistant is hired to do, anywhere, not only here.",
+    ai: "Working with AI",
+    aiNote: "Using the tools to a professional standard, and knowing exactly where client data may not go.",
     career: "The career",
     careerNote: "Getting hired, getting paid, and lasting in this work.",
     byWork: "One per kind of work",
@@ -150,6 +154,8 @@ const tl: Dict = {
     foundationsNote: "Kunin muna ito: gamit ito sa lahat ng uri ng task.",
     craft: "Ang toolkit",
     craftNote: "Ang mga trabahong kinukuha sa isang virtual assistant, kahit saan, hindi lang dito.",
+    ai: "Pagtatrabaho gamit ang AI",
+    aiNote: "Paggamit ng mga tool sa propesyonal na antas, at pag-alam kung saan hindi puwedeng dalhin ang data ng kliyente.",
     career: "Ang karera",
     careerNote: "Pagkuha ng trabaho, pagsingil, at pagtagal sa gawaing ito.",
     byWork: "Isa bawat uri ng trabaho",
@@ -202,6 +208,8 @@ const fr: Dict = {
     foundationsNote: "À faire en premier : elles servent à tous les types de tâches.",
     craft: "La boîte à outils",
     craftNote: "Les tâches pour lesquelles on engage un adjoint virtuel, partout, pas seulement ici.",
+    ai: "Travailler avec l'IA",
+    aiNote: "Utiliser les outils à un niveau professionnel, et savoir exactement où les données du client ne peuvent pas aller.",
     career: "La carrière",
     careerNote: "Se faire engager, se faire payer, et durer dans ce métier.",
     byWork: "Un par type de travail",
@@ -254,6 +262,8 @@ const es: Dict = {
     foundationsNote: "Toma estos primero: sirven para todo tipo de tarea.",
     craft: "La caja de herramientas",
     craftNote: "Los trabajos para los que se contrata a un asistente virtual, en cualquier lugar, no solo aquí.",
+    ai: "Trabajar con IA",
+    aiNote: "Usar las herramientas a nivel profesional, y saber exactamente dónde no pueden ir los datos del cliente.",
     career: "La carrera",
     careerNote: "Conseguir trabajo, cobrar, y durar en este oficio.",
     byWork: "Uno por tipo de trabajo",

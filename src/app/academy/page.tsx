@@ -47,7 +47,7 @@ export async function generateMetadata({
   return {
     title: `Free virtual assistant training: ${courseCount} courses, real exams, permanent certificates`,
     description:
-      `Free VA training for Filipino remote workers: ${courseCount} courses with written lessons, real exams and a certificate that stays yours. Inbox, calendar, data, research, writing, admin, AI tools, and the career itself. No paid tier, no certificate fee, ever.`,
+      `Free VA training for Filipino remote workers: ${courseCount} courses with written lessons, real exams and a certificate that stays yours. Six full courses on working with AI, plus inbox, calendar, data, research, writing, admin and the career itself. No paid tier, no certificate fee, ever.`,
     // Matches every other multi-language page (/, /about, /how-it-works,
     // /workers, /services, /security, /privacy, /terms, /acceptable-use,
     // /ledger) — this page renders all four languages at one path via
@@ -75,8 +75,10 @@ export default async function AcademyPublicPage({
   const courses = publicCourses();
   const stats = academyStats();
 
-  /* Four groups, in the order a reader should meet them: how the platform
-     works, the trade's toolkit, the career itself, then one per kind of work. */
+  /* Five groups, in the order a reader should meet them: how the platform
+     works, the trade's toolkit, working with AI, the career itself, then one
+     per kind of work. AI sits third on purpose: it is the section a 2026
+     reader is looking for, and it used to be one card buried in the toolkit. */
   const groups: { name: string; note: string; list: typeof courses }[] = [
     {
       name: t.curriculum.foundations,
@@ -87,6 +89,11 @@ export default async function AcademyPublicPage({
       name: t.curriculum.craft,
       note: t.curriculum.craftNote,
       list: courses.filter((c) => c.track === "craft"),
+    },
+    {
+      name: t.curriculum.ai,
+      note: t.curriculum.aiNote,
+      list: courses.filter((c) => c.track === "ai"),
     },
     {
       name: t.curriculum.career,

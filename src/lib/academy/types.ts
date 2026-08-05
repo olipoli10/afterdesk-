@@ -7,21 +7,29 @@
  */
 
 /**
- * Four tracks, and the split is the Academy's argument.
+ * Five tracks, and the split is the Academy's argument.
  *
  *  foundations — how to work HERE. Take these first.
  *  category    — one per task kind in the pool; each teaches the exact standard
  *                that kind of delivery is judged against.
  *  craft       — the virtual-assistant toolkit: inbox, calendar, support, CRM,
- *                storefronts, decks, AI. Work a VA does anywhere, not only here.
+ *                storefronts, decks. Work a VA does anywhere, not only here.
+ *  ai          — working with AI tools to a professional standard: what is
+ *                permitted, grounding, prompting past the first draft,
+ *                measuring accuracy on a batch, and tools that ACT.
  *  career      — the profession itself: getting hired, proving your work,
  *                money and records, spotting scams, surviving the night shift.
  *
- * The last two exist because the founder's goal is to be the reference for
+ * `ai` was split out of `craft` deliberately. It began as one card among
+ * twelve, which is why no worker-facing page named it; a school that claims
+ * to train AI-capable specialists has to show that training as its own
+ * section, not bury it beside "slides and decks".
+ *
+ * The last three exist because the founder's goal is to be the reference for
  * Filipino VAs, not an onboarding funnel — a school that only teaches its own
  * chores is a funnel. Teaching the whole career is the reputation.
  */
-export type CourseTrack = "foundations" | "category" | "craft" | "career";
+export type CourseTrack = "foundations" | "category" | "craft" | "ai" | "career";
 
 export type LessonSection = { heading: string; body: string };
 

@@ -174,7 +174,7 @@ const en: Dict = {
   chAcademy: {
     label: "The virtual assistant academy",
     h2: "Free courses. Here is the exam.",
-    body: "Every course opens the day you make an account, and your certificates are on your application when we read it.",
+    body: "Every course opens the day you make an account, and your certificates are on your application when we read it. Six of them are on working with AI: what you are allowed to use, how to stop a model inventing facts, and how to check a run of 500 rows instead of one.",
     caption: "One real question from the Data cleanup exam. Answer it yourself. Nothing is hidden.",
     english: "The courses and the exams are in English, like the work.",
     ctaLink: (n) => `See all ${n} free courses`,
@@ -289,7 +289,7 @@ const tl: Dict = {
   chAcademy: {
     label: "Ang virtual assistant academy",
     h2: "Libreng kurso. Heto ang exam.",
-    body: "Bukas ang bawat kurso sa araw na gumawa ka ng account, at nasa application mo na ang mga certificate mo kapag binasa namin ito.",
+    body: "Bukas ang bawat kurso sa araw na gumawa ka ng account, at nasa application mo na ang mga certificate mo kapag binasa namin ito. Anim dito ay tungkol sa pagtatrabaho gamit ang AI: kung ano ang puwede mong gamitin, paano pigilan ang modelong mag-imbento ng facts, at paano suriin ang 500 rows sa halip na isa.",
     caption: "Isang totoong tanong mula sa Data cleanup exam. Sagutin mo mismo. Walang itinatago.",
     english: "Nasa Ingles ang mga kurso at exam, tulad ng trabaho.",
     ctaLink: (n) => `Tingnan ang lahat ng ${n} libreng kurso`,
@@ -403,7 +403,7 @@ const fr: Dict = {
   chAcademy: {
     label: "L'académie d'adjoint virtuel",
     h2: "Des cours gratuits. Voici l'examen.",
-    body: "Chaque cours s'ouvre le jour où vous créez un compte, et vos certificats sont sur votre candidature quand nous la lisons.",
+    body: "Chaque cours s'ouvre le jour où vous créez un compte, et vos certificats sont sur votre candidature quand nous la lisons. Six d'entre eux portent sur le travail avec l'IA : ce que vous avez le droit d'utiliser, comment empêcher un modèle d'inventer des faits, et comment vérifier 500 lignes plutôt qu'une.",
     caption: "Une vraie question de l'examen Data cleanup. Répondez vous-même. Rien n'est caché.",
     english: "Les cours et les examens sont en anglais, comme le travail.",
     ctaLink: (n) => `Voir les ${n} cours gratuits`,
@@ -520,7 +520,7 @@ const es: Dict = {
   chAcademy: {
     label: "La academia de asistente virtual",
     h2: "Cursos gratis. Aquí está el examen.",
-    body: "Cada curso se abre el día que creas una cuenta, y tus certificados están en tu postulación cuando la leemos.",
+    body: "Cada curso se abre el día que creas una cuenta, y tus certificados están en tu postulación cuando la leemos. Seis de ellos tratan sobre trabajar con IA: qué puedes usar, cómo evitar que un modelo invente datos, y cómo revisar 500 filas en lugar de una.",
     caption: "Una pregunta real del examen de Data cleanup. Respóndela tú mismo. Nada está oculto.",
     english: "Los cursos y los exámenes son en inglés, como el trabajo.",
     ctaLink: (n) => `Ver los ${n} cursos gratis`,

@@ -41,10 +41,24 @@ const CRAFT: Family = {
   tint: "#EFE9E2",
 };
 
+/**
+ * AI sits beside craft in warmth but reads clearly apart from it: a deeper,
+ * cooler teal that collides with nothing reserved (green is money, red is
+ * deadline urgency, amber is returned work, sienna is the toolkit). Solved to
+ * the same contrast band as the work families, 6.9:1 on paper.
+ */
+const AI: Family = {
+  key: "ai",
+  label: "Working with AI",
+  hue: "#1F5E63",
+  tint: "#E3EDED",
+};
+
 export const TRACK_LOOK: Record<Exclude<CourseTrack, "category">, Family> = {
   foundations: FOUNDATIONS,
   career: CAREER,
   craft: CRAFT,
+  ai: AI,
 };
 
 export function courseLook(track: CourseTrack, slug: string): Family {

@@ -503,9 +503,9 @@ const aEn: AboutDict = {
   ],
   trainingHead: "Why specialist training is part of the operating system",
   trainingA:
-    "Standards only work when people can apply them. The Academy teaches data handling, research, process compliance and ",
-  trainingLink: "responsible AI tool use",
-  trainingB: ". Courses and exams are available to specialists whether or not they receive work through AfterDesk.",
+    "Standards only work when people can apply them. The Academy runs six full courses on ",
+  trainingLink: "working with AI",
+  trainingB: ", covering where a model invents facts, how to check a run of hundreds of rows rather than one, and exactly where client data may never go. Courses and exams are available to specialists whether or not they receive work through AfterDesk.",
   bookend: {
     dim: "Describe the deliverable.",
     lit: "Get completed, reviewed work.",
@@ -631,9 +631,9 @@ const aFr: AboutDict = {
   ],
   trainingHead: "Pourquoi la formation des spécialistes fait partie du système",
   trainingA:
-    "Les normes ne fonctionnent que si les gens savent les appliquer. L'Académie enseigne le traitement des données, la recherche, la conformité des processus et ",
-  trainingLink: "l'utilisation responsable des outils d'IA",
-  trainingB: ". Les cours et examens restent accessibles aux spécialistes, qu'ils reçoivent ou non du travail par AfterDesk.",
+    "Les normes ne fonctionnent que si les gens savent les appliquer. L'Académie donne six cours complets sur le ",
+  trainingLink: "travail avec l'IA",
+  trainingB: ", couvrant les endroits où un modèle invente des faits, comment vérifier une série de centaines de lignes plutôt qu'une seule, et exactement où les données du client ne peuvent jamais aller. Les cours et examens restent accessibles aux spécialistes, qu'ils reçoivent ou non du travail par AfterDesk.",
   bookend: {
     dim: "Décrivez le livrable.",
     lit: "Recevez un travail terminé et vérifié.",
@@ -763,9 +763,9 @@ const aEs: AboutDict = {
   ],
   trainingHead: "Por qué la formación de especialistas forma parte del sistema",
   trainingA:
-    "Los estándares solo funcionan cuando las personas saben aplicarlos. La Academia enseña manejo de datos, investigación, cumplimiento de procesos y ",
-  trainingLink: "uso responsable de herramientas de IA",
-  trainingB: ". Los cursos y exámenes están disponibles aunque el especialista no reciba trabajo mediante AfterDesk.",
+    "Los estándares solo funcionan cuando las personas saben aplicarlos. La Academia imparte seis cursos completos sobre ",
+  trainingLink: "trabajar con IA",
+  trainingB: ", que cubren dónde un modelo inventa datos, cómo revisar una serie de cientos de filas en lugar de una, y exactamente dónde nunca pueden ir los datos del cliente. Los cursos y exámenes están disponibles aunque el especialista no reciba trabajo mediante AfterDesk.",
   bookend: {
     dim: "Describe el entregable.",
     lit: "Recibe trabajo terminado y revisado.",
@@ -890,9 +890,9 @@ const aTl: AboutDict = {
   ],
   trainingHead: "Bakit bahagi ng operating system ang specialist training",
   trainingA:
-    "Gumagana lang ang standards kapag marunong ang mga tao na gamitin ang mga ito. Itinuturo ng Academy ang data handling, research, process compliance, at ",
-  trainingLink: "responsableng paggamit ng AI tools",
-  trainingB: ". Available ang courses at exams kahit hindi makatanggap ng work sa AfterDesk ang specialist.",
+    "Gumagana lang ang standards kapag marunong ang mga tao na gamitin ang mga ito. May anim na buong kurso ang Academy tungkol sa ",
+  trainingLink: "pagtatrabaho gamit ang AI",
+  trainingB: ", saklaw kung saan nag-iimbento ng facts ang isang modelo, paano suriin ang daan-daang rows sa halip na isa, at kung saan talaga hindi puwedeng dalhin ang data ng kliyente. Available ang courses at exams kahit hindi makatanggap ng work sa AfterDesk ang specialist.",
   bookend: {
     dim: "Ilarawan ang deliverable.",
     lit: "Tumanggap ng completed at reviewed na work.",

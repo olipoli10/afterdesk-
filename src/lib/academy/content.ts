@@ -4,15 +4,20 @@ import type { Course } from "./types";
 /**
  * THE CURRICULUM.
  *
- * Four tracks: foundations (how to work here), the toolkit (the jobs a virtual
- * assistant is hired to do anywhere), the career (getting hired, getting paid,
- * lasting), and one course per kind of work in the pool.
+ * Five tracks: foundations (how to work here), the toolkit (the jobs a virtual
+ * assistant is hired to do anywhere), working with AI, the career (getting
+ * hired, getting paid, lasting), and one course per kind of work in the pool.
  *
- * GENERATED from the authoring runs, then validated — every exam is exactly 12
+ * GENERATED from the authoring runs, then validated: every exam is exactly 12
  * questions of 4 options with one correct answer, no duplicate options, no
- * markdown, and the answer positions are checked for the flat distribution that
- * would make an exam guessable. Edit by hand freely; this note is provenance,
- * not a lock.
+ * markdown, and the answer positions are checked against the flat distribution
+ * that would make an exam guessable. Edit by hand freely; this note is
+ * provenance, not a lock.
+ *
+ * HOUSE RULES the whole corpus holds to, and a new course must too: no em
+ * dashes, no markdown, no newlines inside a body, no contractions in the
+ * teaching voice, and no AI product is ever named (the text says "a language
+ * model", "the model", "the tool"). Non-AI tools are named freely.
  *
  * server-only: every course carries its exam's ANSWER KEY. This module must
  * never be imported by a client component. Public surfaces read the narrow
@@ -1960,7 +1965,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "On AfterDesk you draft, not send",
-            "body": "When a AfterDesk task involves a change to someone's schedule, your deliverable is the work, not the act. That means the updated schedule or calendar file, the message written and ready to send, a short list of what changed and who is affected, and any decision the operator needs to make. You upload it with a note explaining anything ambiguous and what you would recommend. You do not contact attendees, and you do not make a change you were not asked to make. Working directly for another client, outside this platform, you may be the one who sends. Even then the discipline holds: draft it fully, check the times twice, and get one confirmation from the person whose name is on the message."
+            "body": "When an AfterDesk task involves a change to someone's schedule, your deliverable is the work, not the act. That means the updated schedule or calendar file, the message written and ready to send, a short list of what changed and who is affected, and any decision the operator needs to make. You upload it with a note explaining anything ambiguous and what you would recommend. You do not contact attendees, and you do not make a change you were not asked to make. Working directly for another client, outside this platform, you may be the one who sends. Even then the discipline holds: draft it fully, check the times twice, and get one confirmation from the person whose name is on the message."
           }
         ],
         "keyPoints": [
@@ -2129,7 +2134,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "A late-night call arranged well in advance is exactly where a clock shift or a diary change hides. Written reconfirmation the day before catches it."
         },
         {
-          "prompt": "A AfterDesk task asks you to rebuild a client's meeting schedule and write the notes telling attendees about the changes. The attached file contains the attendees' email addresses.",
+          "prompt": "An AfterDesk task asks you to rebuild a client's meeting schedule and write the notes telling attendees about the changes. The attached file contains the attendees' email addresses.",
           "options": [
             "Send the notes to the attendees so the new schedule takes effect without delay.",
             "Deliver the rebuilt schedule and the draft notes to the operator, and contact nobody.",
@@ -2267,7 +2272,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Blurring is often reversible and cropping can miss things. A rebuilt screenshot with dummy data is the only version that is safe by default."
         },
         {
-          "prompt": "You claim a AfterDesk task: draft replies to twenty exported support tickets for a client. Three of them ask about a refund policy the brief does not cover, and you cannot contact the client. What do you deliver?",
+          "prompt": "You claim an AfterDesk task: draft replies to twenty exported support tickets for a client. Three of them ask about a refund policy the brief does not cover, and you cannot contact the client. What do you deliver?",
           "options": [
             "Twenty drafts, using the refund approach you have seen most other companies apply.",
             "Seventeen drafts, plus a delivery note listing the three and asking the operator for the policy.",
@@ -4835,7 +4840,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Read the brief before opening Canva",
-            "body": "Before you touch a tool, get four things from the brief. Where does this end up: a printed page, a phone screen, a projector, an email. What exact size or aspect ratio that destination needs. Which brand assets exist: a logo file, hex codes, named fonts, an existing template. What done looks like, and by when. If something is missing, do not invent it quietly. On a AfterDesk task you never contact the client, so we are the route: state the gap and the assumption you made in the note you send with your delivery. A named assumption is easy for us to correct. A silent one turns into a revision."
+            "body": "Before you touch a tool, get four things from the brief. Where does this end up: a printed page, a phone screen, a projector, an email. What exact size or aspect ratio that destination needs. Which brand assets exist: a logo file, hex codes, named fonts, an existing template. What done looks like, and by when. If something is missing, do not invent it quietly. On an AfterDesk task you never contact the client, so we are the route: state the gap and the assumption you made in the note you send with your delivery. A named assumption is easy for us to correct. A silent one turns into a revision."
           },
           {
             "heading": "What never leaves the task",
@@ -4961,7 +4966,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "When the brand font is not free",
-            "body": "Brand guidelines often name a font you do not have. Check Google Fonts first, because a large share of brand fonts live there and are free to install and use commercially. If it is a paid or custom licensed font, do not download it from a font sharing site. Those files are usually pirated, sometimes carry malware, and using them puts the client at legal risk as well as you. The professional move is to use the nearest free substitute, keep everything else in the layout faithful to the brand, and state plainly in your delivery note which font you substituted and why. On a AfterDesk task, we pass that to the client. Silent substitution is what causes a revision three days later."
+            "body": "Brand guidelines often name a font you do not have. Check Google Fonts first, because a large share of brand fonts live there and are free to install and use commercially. If it is a paid or custom licensed font, do not download it from a font sharing site. Those files are usually pirated, sometimes carry malware, and using them puts the client at legal risk as well as you. The professional move is to use the nearest free substitute, keep everything else in the layout faithful to the brand, and state plainly in your delivery note which font you substituted and why. On an AfterDesk task, we pass that to the client. Silent substitution is what causes a revision three days later."
           }
         ],
         "keyPoints": [
@@ -5050,7 +5055,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "File names are part of the work",
-            "body": "A file called final version two updated is a small insult to the person opening it. Name files so a stranger can sort them: client or project, what the thing is, the size or version, and a date written year first so files sort in order. Use hyphens or underscores rather than spaces, keep names short, and never put anything confidential in a file name. Deliver exactly what was asked for, with no extra drafts or working files unless the brief wants them. On a AfterDesk task, upload the files and use the note to tell us what is inside, which decisions you made, and anything the client needs to know. That note is what makes review fast."
+            "body": "A file called final version two updated is a small insult to the person opening it. Name files so a stranger can sort them: client or project, what the thing is, the size or version, and a date written year first so files sort in order. Use hyphens or underscores rather than spaces, keep names short, and never put anything confidential in a file name. Deliver exactly what was asked for, with no extra drafts or working files unless the brief wants them. On an AfterDesk task, upload the files and use the note to tell us what is inside, which decisions you made, and anything the client needs to know. That note is what makes review fast."
           }
         ],
         "keyPoints": [
@@ -5445,7 +5450,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Full-size phone photos make pages slow. Resizing and compressing before upload, with real file names and alt text, is the standard pass."
         },
         {
-          "prompt": "You claimed a AfterDesk task to rewrite a client's three thousand word draft for the web. A free AI rewriter would halve your time. The brief says nothing about AI tools. What do you do?",
+          "prompt": "You claimed an AfterDesk task to rewrite a client's three thousand word draft for the web. A free AI rewriter would halve your time. The brief says nothing about AI tools. What do you do?",
           "options": [
             "Use the tool, then delete the conversation history once you are finished.",
             "Use the tool a paragraph at a time so no single upload holds the whole draft.",
@@ -5539,7 +5544,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "A source you cannot find is a source that may not exist. Deliver what you verified and say plainly what you could not confirm."
         },
         {
-          "prompt": "A AfterDesk task gives you a client spreadsheet of 900 customer rows. You need a formula to flag duplicate contacts and you want help writing it. The brief says nothing about AI tools.",
+          "prompt": "An AfterDesk task gives you a client spreadsheet of 900 customer rows. You need a formula to flag duplicate contacts and you want help writing it. The brief says nothing about AI tools.",
           "options": [
             "Rebuild five invented rows with the same column structure and ask about those",
             "Upload the file to the AI tool and ask it to remove the duplicates",
@@ -5550,7 +5555,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Client data never goes into a third-party tool without explicit written permission, and silence means no. An invented sample gets you the same formula with no exposure."
         },
         {
-          "prompt": "You claimed a AfterDesk transcription task. The audio is 40 minutes of a recorded meeting and you are behind schedule. An online transcription service would finish it in five minutes. The brief does not mention AI or third-party tools.",
+          "prompt": "You claimed an AfterDesk transcription task. The audio is 40 minutes of a recorded meeting and you are behind schedule. An online transcription service would finish it in five minutes. The brief does not mention AI or third-party tools.",
           "options": [
             "Use the service, since the brief did not forbid it",
             "Use the service, then delete the file from your account afterwards",
@@ -5638,7 +5643,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Client work is not your portfolio, even with the name removed. A sample built on invented data shows the same method with nothing of the client's in it."
         },
         {
-          "prompt": "A AfterDesk brief explicitly permits AI drafting for a writing task. You used it for two sections, rewrote both, and verified the figures. You are uploading your delivery with a note to the operator.",
+          "prompt": "An AfterDesk brief explicitly permits AI drafting for a writing task. You used it for two sections, rewrote both, and verified the figures. You are uploading your delivery with a note to the operator.",
           "options": [
             "Nothing about the tool. It was permitted, so it is not worth mentioning",
             "A general line saying that AI was used somewhere in the work",
@@ -5733,8 +5738,8 @@ export const COURSES: Record<string, Course> = {
         "minutes": 7,
         "sections": [
           {
-            "heading": "On AfterDesk, the default is never",
-            "body": "Start with the part that has no nuance. On a AfterDesk task, client files, client text, client names and client data do not go into a third-party AI tool. Not a chat assistant, not an online transcription service, not a document summariser, not a writing tool that uploads the whole file, not an image tool. The default is no. The only exception is a brief that explicitly says otherwise, in writing, in the task itself. Silence is not permission. A brief that does not mention AI is a brief that does not allow it. This is not a suspicion about you. It is the promise the client was given when they handed over their data, and everyone who touches the task keeps it."
+            "heading": "The line is the data, not the tool",
+            "body": "Start with the part that has no nuance. On an AfterDesk task, client files, client text, client names and client data do not go into a third-party AI tool. Not a chat assistant you signed up for, not an online transcription service, not a document summariser, not an image tool. That rule protects the data, not your skill. AI skill is welcome here and these courses teach it. There are three lanes where the tools are open to you: anything built on your own invented material, the AfterDesk assistant inside a task you have claimed, and a brief that names a tool in writing for a named purpose. Silence in a brief is still not permission. This is not a suspicion about you. It is the promise the client was given when they handed over their data."
           },
           {
             "heading": "Pasting is a transfer",
@@ -5746,7 +5751,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "How to get help without sending data",
-            "body": "Almost everything you want from the tool can be had without the data. You need the method, not the material. Rebuild the shape of the problem with invented content: the same column headers renamed, four fake rows, a made-up company called Acme with made-up figures. Ask about the technique in the abstract. How do I match two lists on partial names. How do I structure a comparison table for a supplier review. What is a clean way to phrase a bad-news paragraph. Then apply the answer to the real file yourself. This costs an extra three minutes and removes the risk completely. Build the habit while the stakes are low, so that under deadline pressure your hands do the safe thing automatically."
+            "body": "Almost everything you want from the tool can be had without the data. You need the method, not the material. On a task you have claimed, the AfterDesk assistant is built for exactly this: it never sees the task record, the client, the files or the price, only what you type into it. Outside it, rebuild the shape of the problem with invented content: the same column headers renamed, four fake rows, a made-up company called Acme with made-up figures. Ask about the technique in the abstract. How do I match two lists on partial names. What is a clean way to phrase a bad-news paragraph. Then apply the answer to the real file yourself. This costs three minutes and removes the risk completely."
           },
           {
             "heading": "After the task, and other clients",
@@ -5754,7 +5759,7 @@ export const COURSES: Record<string, Course> = {
           }
         ],
         "keyPoints": [
-          "On AfterDesk the default is never. Silence in a brief means no.",
+          "The rule protects client data, not your skill. Silence in a brief means no.",
           "Pasting into a website is sending data to a company.",
           "Ask for the method, not with the material. Rebuild it with fake rows.",
           "Delete working copies after delivery. Client work is never a portfolio sample.",
@@ -5807,7 +5812,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "Checking without exposing the work",
-            "body": "The confidentiality line applies here too, including to your own drafts, because a draft written for a client contains the client's information. On a AfterDesk task, do not paste the deliverable into a tool to have it checked. Run your own checklist, read it aloud, and use the tool only on things containing nothing of the client's: a formula pattern with fake data, a general question about phrasing a comparison, a grammar question about a sentence you rewrote with invented names. When a client outside the platform has approved AI use, the same document can go in with fewer contortions, but the approval has to exist first."
+            "body": "The confidentiality line applies here too, including to your own drafts, because a draft written for a client contains the client's information. On an AfterDesk task, do not paste the deliverable into a third-party tool to have it checked, and do not paste it into the AfterDesk assistant either: that assistant is for method, not for reading the client's work. Run your own checklist, read it aloud, and use a tool only on things containing nothing of the client's: a formula pattern with fake data, a general question about phrasing a comparison, a grammar question about a sentence you rewrote with invented names. When a client outside the platform has approved AI use, the same document can go in with fewer contortions, but the approval has to exist first."
           },
           {
             "heading": "What a machine check cannot do",
@@ -5817,7 +5822,7 @@ export const COURSES: Record<string, Course> = {
         "keyPoints": [
           "Ask it to find faults. Asking whether it is good yields flattery.",
           "It checks writing and logic. It cannot check facts.",
-          "On AfterDesk, never paste the deliverable in for a check.",
+          "Never paste the client deliverable into any tool for a check.",
           "Accept no change you cannot explain in your own words."
         ]
       },
@@ -5860,7 +5865,7 @@ export const COURSES: Record<string, Course> = {
         "sections": [
           {
             "heading": "The brief decides",
-            "body": "Disclosure has two separate questions inside it, and people muddle them. The first is whether you were allowed to use the tool at all. That is answered by the brief and by nothing else. The second is whether, having been allowed, you should say where you used it. Handle the first question first. If the brief is silent about AI on a AfterDesk task, you did not have permission to put client data into one, and the disclosure question never arises. Where a brief permits it, disclosure becomes a matter of being useful and being honest, which here are almost always the same thing."
+            "body": "Disclosure has two separate questions inside it, and people muddle them. The first is whether you were allowed to put client data into the tool at all. That is answered by the brief and by nothing else. The second is whether, having been allowed, you should say where you used it. Handle the first question first. If the brief is silent about AI on an AfterDesk task, you did not have permission to put client data into an outside tool, and that half of the disclosure question never arises. Where a brief permits it, disclosure becomes a matter of being useful and being honest, which here are almost always the same thing."
           },
           {
             "heading": "When disclosure matters",
@@ -5900,7 +5905,7 @@ export const COURSES: Record<string, Course> = {
           },
           {
             "heading": "A policy in one paragraph",
-            "body": "Here is the whole course in something you could say out loud. I use AI tools for drafting, reformatting and first-pass ideas. No client data goes into any third-party tool without written permission, and on AfterDesk that permission is not given, so it does not happen. Every fact, figure, name and citation is verified against a real source before delivery. I disclose AI use where it would matter to you, and I answer directly if you ask. Whatever I deliver, I can explain, and I stand behind it. Say that, mean it, and you are ahead of most people working today, with tools or without them."
+            "body": "Here is the whole course in something you could say out loud. I use AI tools for drafting, reformatting and first-pass ideas, and I am fluent with them. No client data goes into an outside tool without written permission, and where I have no permission I rebuild the problem with invented data instead. Every fact, figure, name and citation is verified against a real source before delivery. I disclose AI use where it would matter to you, and I answer directly if you ask. Whatever I deliver, I can explain, and I stand behind it. Say that, mean it, and you are ahead of most people working today, with tools or without them."
           }
         ],
         "keyPoints": [
@@ -5923,7 +5928,7 @@ export const COURSES: Record<string, Course> = {
     "summary": "AI can genuinely speed up drafting, summarising, reformatting and first-pass formulas, and it can also invent facts, leak client data and cost you a client in a single delivery. This course teaches where the line sits, how to verify what a model produces, what never goes into a third-party tool, and how to prompt, check and disclose like a professional. Everything you deliver stays yours.",
     "tagline": "Real speed from AI, without the invented facts or the leaked client data.",
     "title": "AI tools, used responsibly",
-    "track": "craft"
+    "track": "ai"
   },
   "bookkeeping-basics": {
     "exam": {
@@ -7278,7 +7283,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "A changed address is a reason to verify on a channel you already trust. Confirming costs a few minutes; sending details to the wrong person costs a payment."
         },
         {
-          "prompt": "A AfterDesk task was approved and the payout released. You want proof of that income for your own records. What do you keep?",
+          "prompt": "An AfterDesk task was approved and the payout released. You want proof of that income for your own records. What do you keep?",
           "options": [
             "The client files, so you can show what the work involved.",
             "A copy of the delivered file, renamed so it cannot be identified.",
@@ -7725,7 +7730,7 @@ export const COURSES: Record<string, Course> = {
           "explain": "Victim lists are sold and reused. Nobody legitimate charges an advance fee to recover money, and sending documents hands them the identity they came for."
         },
         {
-          "prompt": "Someone messages you privately, says they are a AfterDesk client whose task you delivered last week, and offers the same work directly at a higher rate. They ask for your bank details to set up payment.",
+          "prompt": "Someone messages you privately, says they are an AfterDesk client whose task you delivered last week, and offers the same work directly at a higher rate. They ask for your bank details to set up payment.",
           "options": [
             "Take it; the work is the same and the pay is better.",
             "Do not engage, send nothing, and report the message to us.",
@@ -10789,6 +10794,2050 @@ export const COURSES: Record<string, Course> = {
           ],
           "correct": 2,
           "explain": "The sheet contradicts itself, so the brief cannot be followed for that item. Complete what is covered, hold the ambiguous item, and give the operator a ten-second decision."
+        }
+      ]
+    }
+  },
+  "ai-accuracy-at-scale": {
+    "slug": "ai-accuracy-at-scale",
+    "title": "Accuracy on a batch, not a row",
+    "track": "ai",
+    "tagline": "Prove a run of five hundred rows with a rubric and a sample.",
+    "summary": "Checking one row proves that one row is correct. It proves nothing about the four hundred and ninety-nine behind it. This course teaches the measurement that does prove something: a rubric written before you look, a random sample of fixed size, hand-scoring that records disagreements, and a threshold that decides whether the run ships. You finish able to state your error rate and defend it.",
+    "outcomes": [
+      "You can explain why one clean spot check says almost nothing about five hundred rows.",
+      "You can write a rubric that decides what correct means before you see any output.",
+      "You can draw a random sample of the right size instead of the first rows.",
+      "You can hand-score a sample and record every disagreement rather than resolving it silently.",
+      "You can set an error threshold and decide whether a run is deliverable.",
+      "You can report your method to the operator so the review can be targeted."
+    ],
+    "lessons": [
+      {
+        "title": "Why one spot check proves nothing",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The row you checked is correct",
+            "body": "You ran a batch of 500 rows and you opened row seven. The category is right, the evidence quotes real text, nothing is blank. You feel better. What you have learned is that row seven is correct. That is the whole finding. A spot check is a sample of size one, and a sample of size one carries almost no information about the 499 rows you did not open. The feeling it produces is out of all proportion to the fact it establishes. This is not a small mistake in judgement. It is the single most common way a batch job leaves your hands with dozens of wrong rows inside it."
+          },
+          {
+            "heading": "Make the arithmetic intuitive",
+            "body": "Put a number on it. Suppose 5 percent of your 500 rows are wrong, which is 25 broken rows sitting in the file. You open one row at random. The chance it is one of the broken ones is 5 in 100, so 95 times out of 100 you see a clean row and conclude the run is fine. Open ten rows and you still miss the problem about 60 times out of 100. Open twenty and you catch it roughly two times in three. Even twenty rows, hand-checked, leaves a real chance that 25 wrong rows walk out of the door. One row leaves a near certainty."
+          },
+          {
+            "heading": "Errors are not spread evenly",
+            "body": "The arithmetic above assumes errors are scattered at random. They usually are not, and that makes casual checking worse rather than better. A model handles the plain rows and fails the awkward ones: the vendor with two trading names, the date written without a year, the address that is really two addresses in one cell. Those rows are not distributed evenly through the file. They cluster wherever the source is messy, and messy sources are often sorted, so the awkward rows sit together. If you check the first twenty rows of a file sorted by date, you have checked the twenty oldest and tidiest records. You have measured the easy end and called it the run."
+          },
+          {
+            "heading": "Fluent output hides its own errors",
+            "body": "There is a second reason spot checking fails here, and it is not about counting. A wrong row produced by a model does not look wrong. It has the same shape, the same tone, the same confident formatting as the 480 correct rows around it. A category that is plausible but not the one the brief defined reads exactly like a category that is right. An invented quote in an evidence column reads better than a real one, because real source text is usually clumsy. When you scan a sheet for errors, you are scanning for something that looks out of place, and nothing looks out of place. Polish proves nothing."
+          },
+          {
+            "heading": "Measure the run, not your mood",
+            "body": "So the discipline this course teaches is a replacement, not an addition. You are not being asked to spot check more carefully. You are being asked to stop treating a feeling of confidence as evidence, and to produce a number instead: this run was scored against a written rubric on 50 randomly drawn rows, and 4 of them failed. That sentence can be checked by someone who was not there. Your confidence cannot. Everything that follows is the machinery for producing that sentence honestly, in an order that stops you from bending it: rubric first, sample second, scoring third, verdict last. Do it in that order and the number means something."
+          }
+        ],
+        "keyPoints": [
+          "A spot check is a sample of size one. It proves one row.",
+          "Five percent bad means one row misses the problem ninety-five times in a hundred.",
+          "Errors cluster in the awkward rows, and awkward rows are rarely at the top.",
+          "A wrong row from a model looks exactly like a right one.",
+          "Replace confidence with a number someone else can check."
+        ]
+      },
+      {
+        "title": "Write the rubric before you look",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Grade before you see the answer",
+            "body": "The rubric is the written definition of what a correct row looks like, and it has one hard requirement: you write it before you look at any output. This is not ceremony. If you open the file first, you will read what the model produced and your idea of correct will quietly re-shape itself around what you see. A category you would have called wrong at nine in the evening looks defensible at two in the morning, because it is already there, it is already formatted, and the deadline is close. Written first, the rubric is a standard. Written after, it is a description of the thing you were going to deliver anyway."
+          },
+          {
+            "heading": "A rubric is a list of checks",
+            "body": "Keep it concrete. A rubric is not a paragraph about quality; it is a short list of tests that can be run against a single row, each answerable yes or no by a person looking at that row and its source. For a 500-row categorization task the list might read: the category is one of the seven named in the brief, the category matches the written definition of that bucket, the evidence column quotes text that actually appears in the source row, the vendor name is copied exactly and not reworded, no required field is empty. Five checks. A person can apply those to a row in under a minute, fifty times in an hour."
+          },
+          {
+            "heading": "One row, one verdict",
+            "body": "Score each sampled row as pass or fail, and nothing in between. The temptation is to invent partial credit: this row is mostly right, the category is fine and only the evidence is thin, call it three out of five. Partial credit destroys the measurement, because a rate built from half marks cannot be projected onto the run and cannot be defended to anyone. If a row fails one check, the row fails. That sounds harsh until you remember what you are measuring: whether this deliverable can go out. A client does not receive a row that is three fifths correct. They receive a wrong row, and a wrong row costs the same as any other."
+          },
+          {
+            "heading": "Name the failures you expect",
+            "body": "Before you score, write down the failure codes you expect to see, four or five of them, in plain words: wrong bucket, evidence not present in the source, name reworded, field left blank, row skipped entirely. This costs two minutes and pays for itself twice. First, it forces you to think about how this particular batch could go wrong, which sharpens the checks themselves. Second, it means that when you find failures you are recording a code rather than writing a fresh sentence each time, and codes can be counted. Four failures with three sharing one code is a finding. Four failures described in four different sentences is just a bad feeling."
+          },
+          {
+            "heading": "Freeze the rubric, then run",
+            "body": "Once the rubric is written, stop editing it. Save it, date it, and treat it as fixed for this run. If scoring reveals that a check was badly worded, you may rewrite it, but then you rescore every row in the sample against the new version, starting from the first one. That rule exists because the alternative is invisible: a rubric loosened at row eleven, tightened at row thirty, and quietly forgotten at row forty-eight produces a rate that measures your fatigue rather than the batch. Rescoring twelve rows is cheap. A rate nobody can reproduce is worthless. Keep the old version as well, because the operator may want to see what changed and why."
+          }
+        ],
+        "keyPoints": [
+          "Write the rubric before opening the output. Otherwise correct means whatever you produced.",
+          "A rubric is per-row yes or no checks, not a paragraph about quality.",
+          "Pass or fail. Partial credit cannot be projected onto five hundred rows.",
+          "Pre-write four or five failure codes so failures can be counted, not described.",
+          "Freeze the rubric. If you change it, rescore the sample from row one."
+        ]
+      },
+      {
+        "title": "Draw a sample you can defend",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The first twenty rows are not a sample",
+            "body": "Almost every file you receive arrives in some order: by date, by vendor, by whatever the export tool did. That order is information, and it is working against you. The first twenty rows of a file sorted by date are the twenty oldest records, usually entered when the system was new and the data entry was careful. The first twenty rows of a vendor export are often the largest accounts, which are the ones with complete records. Checking the top of the file is comfortable because it is one scroll away, and that comfort is exactly the problem. You are not sampling the run. You are sampling the tidiest corner of it."
+          },
+          {
+            "heading": "Interesting rows are not a sample either",
+            "body": "The opposite habit is just as wrong and feels far more diligent. You scan the sheet, your eye stops on the strange ones, and you check those: the blank-looking cell, the row with a category you did not expect, the vendor name in all capitals. Hunting for problems this way is a useful activity and you should do it. It is not a measurement, and you must not report it as one. A hand-picked set of odd rows tells you the worst the batch can do, not how often the batch does it. Keep the two apart in your own head and in your notes: one is a sample, the other is a hunt."
+          },
+          {
+            "heading": "Randomize with a helper column",
+            "body": "In a spreadsheet the mechanics take one minute. Add a helper column beside your rows and put a random number in it with the RAND function, filled down the full 500 rows. Then copy that column and paste it back over itself as values, which freezes the numbers so they stop changing every time the sheet recalculates. Sort the whole sheet by that column, smallest first, and take the top 50 rows. That is your sample. Record the row identifiers somewhere separate before you start scoring, so the sample stays fixed even if the sheet gets re-sorted later. Delete the helper column from anything you deliver. It is your working tool, not the client's."
+          },
+          {
+            "heading": "Pull fifty, and know what fifty says",
+            "body": "Thirty is the floor for any run worth measuring, and 50 is a sensible working number for a batch of a few hundred rows. Going from 50 to 100 buys you real precision, but it also doubles the slowest part of the job, so spend that time only when the deliverable deserves it. Understand what a clean sample does and does not say. If you score 50 rows and find zero failures, you may not say the run is perfect. You may say there were no failures in 50 rows, which is consistent with a true error rate of up to roughly 6 percent, which on 500 rows is about 30 bad rows. Zero is not zero."
+          },
+          {
+            "heading": "A new run needs a new sample",
+            "body": "When the rate comes back bad and you change the instruction and run the batch again, you must draw a fresh random sample from the new output. Reusing the same 50 rows is the most natural mistake in this whole method, and it is fatal, because those are the rows you looked at hardest and, often, the rows your instruction change was aimed at. A second score on the same 50 rows measures how well you patched a known list. It says nothing about the 450 you have still never opened. New run, new draw, every time. Keep both samples in your notes so the improvement can be seen rather than claimed."
+          }
+        ],
+        "keyPoints": [
+          "Files arrive sorted. The top of the file is the tidiest corner.",
+          "Hand-picked odd rows are a hunt, not a measurement. Keep them separate.",
+          "Random column, paste as values, sort, take the top fifty rows.",
+          "Fifty rows with zero failures still allows roughly six percent bad.",
+          "Every re-run gets a fresh draw. Rescoring old rows measures your patching."
+        ]
+      },
+      {
+        "title": "Score by hand, record disagreements",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "Score against the rubric, not memory",
+            "body": "Open the rubric beside the sample and work check by check, row by row. It is slower than reading the row and forming an impression, and the slowness is the point. Working from the written checks, you will fail rows that look fine, which is the whole reason the rubric exists. Do not hold the checks in your head. Fifty rows times five checks is two hundred and fifty small decisions, and by decision one hundred and eighty your memory of check three has drifted toward whatever the last few rows contained. Read the check. Apply the check. Move on. A rubric consulted only at the start is a rubric you stopped using."
+          },
+          {
+            "heading": "Check the source, not the output",
+            "body": "For most checks you cannot decide by looking at the delivered row alone. If the check says the evidence column quotes text that actually appears in the source, then you must open the source record and look for that text. This is where invented content is caught, and it is the check people skip because it is the one that takes real time. Budget for it. A 50-row sample where you verified 50 source records is a measurement. A 50-row sample where you read 50 output rows and thought they seemed reasonable is the spot check from lesson one, wearing better clothes. Plausibility is not a check. Presence in the source is."
+          },
+          {
+            "heading": "Record the code, not a feeling",
+            "body": "For every failure, write three things in your scoring sheet: the row identifier, the failure code, and one short sentence naming what was wrong. Row 218, evidence not present, quoted phrase about a delayed shipment does not appear anywhere in the source note. That takes fifteen seconds, and it is the raw material for everything in lesson six, because a pile of failures with codes attached will tell you whether you have one instruction problem or five unrelated accidents. Vague records cost you later. Several rows looked off is a note you cannot act on tomorrow morning, and it is certainly not something an operator can use to target a review."
+          },
+          {
+            "heading": "Do not resolve a disagreement silently",
+            "body": "Some rows will not fit either verdict. The rubric says the category must match the written definition, and this row is a training company that also sells software, and the definition genuinely does not settle it. The pull in that moment, especially at four in the morning with a deadline, is to make a call and move on. Do not. Mark the row undecided, write one line about which two readings are in play, and keep scoring. Undecided rows are not failures and they are not passes; they are a third pile, and lesson seven is about why that pile is often the most valuable thing you produce. Resolved silently, it disappears."
+          },
+          {
+            "heading": "Score every row you drew",
+            "body": "Score all 50. The temptation to stop early comes in two flavours and both are wrong. The first is stopping because the first fifteen rows all passed and the run is obviously fine, which throws away the part of the sample where the awkward rows were waiting. The second is stopping because the first eight rows failed and you already know you have to redo it, which leaves you unable to say how bad the run was or whether your fix helped. If you truly must abandon a score partway, write down that you scored 22 of 50 and stopped, and never report the partial count as a rate. A partial sample is not a sample."
+          }
+        ],
+        "keyPoints": [
+          "Read each check for each row. A rubric consulted once is abandoned.",
+          "Verify evidence against the source record. Plausibility is not a check.",
+          "Log row identifier, failure code, one sentence. Vague notes cannot be acted on.",
+          "Rows the rubric cannot decide go in a third pile, marked undecided.",
+          "Score the whole sample. A partial score is never reported as a rate."
+        ]
+      },
+      {
+        "title": "Read the rate, set the line",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Turn the count into a rate",
+            "body": "Four failures in a 50-row sample is 8 percent. On a run of 500 rows that projects to about 40 wrong rows in the file you were about to deliver. Do the projection out loud and in writing, because the two forms land very differently. Four failures sounds like a small tidy-up. Forty wrong rows in a client deliverable sounds like what it is. This is the single most useful arithmetic in the course and it takes ten seconds: failures divided by sample size, multiplied by the size of the run. Write the projected count in your notes beside the percentage, and use the count when you talk about the run."
+          },
+          {
+            "heading": "The rate is an estimate, not a fact",
+            "body": "Your 8 percent is a measurement of 50 rows, not a property of the batch. Draw a different 50 rows and you might have found two failures, or seven. With a sample that size, four failures is comfortably consistent with a true rate anywhere from about 3 percent to about 17 percent, which is 15 to 85 wrong rows. That range is not a reason to distrust the method; it is a reason to be honest about what the number is. When you are deciding whether to ship, plan against the unfavourable end of the range rather than the middle. When you are reporting, give the count and the sample size so the reader can judge the range too."
+          },
+          {
+            "heading": "Set the threshold from the consequence",
+            "body": "There is no universal acceptable error rate, because the cost of a wrong row is not universal. A wrong email address in a 500-contact outreach list produces a bounce, a wasted send, and possibly a message to a stranger; the tolerable rate there is effectively zero and those fields must be checked individually. A judgement column of topic tags on the same 500 rows, which the client will sort and eyeball anyway, can survive a few percent. Decide which fields in this deliverable are zero tolerance, usually money, dates, names, and anything used to contact a person, and which are judgement fields. Then write one threshold per class into your rubric, before scoring."
+          },
+          {
+            "heading": "The threshold ends the discussion",
+            "body": "Scoring is supposed to end in a verdict, not a conversation. You wrote 2 percent on judgement fields and zero on contact fields. You measured 8 percent. The run is not deliverable. That is the entire decision and it should take no time at all. What must not happen next is the compromise that feels reasonable at five in the morning: repairing the four rows you found, delivering the file, and mentioning in the note that a few rows needed fixing. You measured 8 percent and you fixed four rows. The other thirty-six are still sitting in the file. The rate has not moved, and the note is now misleading."
+          },
+          {
+            "heading": "The line does not move after the score",
+            "body": "Write the threshold into the rubric in the same sitting as the checks, before any output exists to argue with. Once you have a rate and a deadline, every threshold looks negotiable, and the negotiation always runs the same direction. Nobody has ever tightened a threshold at four in the morning. If you genuinely believe the line you set was wrong, that belongs in a note to the operator explaining why, not in a quiet edit to your own scoring sheet before delivering. The whole value of a written threshold is that it was decided by a version of you who had nothing to lose by being strict."
+          }
+        ],
+        "keyPoints": [
+          "Failures over sample size, times run size. Report the projected count.",
+          "Four in fifty is consistent with roughly three to seventeen percent.",
+          "Zero tolerance on money, dates, names, contacts. Judgement fields can carry more.",
+          "Threshold plus rate equals a verdict, not a discussion.",
+          "Set the line before scoring. Nobody ever tightens it afterwards."
+        ]
+      },
+      {
+        "title": "Fix the instruction, not the rows",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "Patching your sample fixes nothing",
+            "body": "The rate came back at 8 percent and you have the four failing rows in front of you, each one repairable in about a minute. Repairing them is the wrong move, and it is wrong in a specific way that is worth naming. Those four rows are not the problem; they are the four you happened to draw. Behind them stand roughly thirty-six rows you never opened, produced by the same instruction and failing in the same way. Fixing the sample changes your file by four rows and changes the true error rate by almost nothing, while destroying your ability to measure it again. You have edited the evidence. The run is still broken."
+          },
+          {
+            "heading": "Read the failures for a pattern",
+            "body": "This is where the failure codes earn their keep. Lay the four failures side by side and ask one question: do they share a cause? Three of them coded wrong bucket, all three involving companies that both train and sell software, is not four accidents. It is one instruction that never told the model what to do when a vendor spans two buckets. That is a five-line fix in the instruction, and it will move all thirty or so of the same rows across the whole run. Four failures with four unrelated codes is a different situation, usually meaning the task is a poor fit for batch work, and the last section here covers what to do then."
+          },
+          {
+            "heading": "Change one thing, then run it all again",
+            "body": "When you find a pattern, change the instruction to address it, and change one thing at a time. Then re-run the entire batch, not just the rows that failed. Running only the failures leaves you with a file assembled from two different instructions, which is impossible to describe honestly in a delivery note and impossible for anyone to reproduce. After the re-run, draw a new random sample and score it against the same frozen rubric. You now have two numbers, 8 percent and, say, 2 percent, and the improvement is a measurement rather than a hope. Two rounds like this is normal. Budget for them when you claim the task."
+          },
+          {
+            "heading": "Carve out what cannot be automated",
+            "body": "Some failures are not instruction problems at all. If 60 of the 500 rows have a missing country field, no wording will conjure the country out of a blank, and every attempt will produce a confident guess, which is worse than a blank. The right move is to carve those rows out and handle them as their own small job: fill them by hand from the source where the answer exists, and list them as unresolved where it does not. Sixty rows done by hand is an hour of honest work. Sixty rows filled by a confident guess is sixty errors that look like data, and they are the kind QC finds and the client remembers."
+          },
+          {
+            "heading": "Know when to stop and work by hand",
+            "body": "If two rounds of instruction changes have not brought the rate under your threshold, stop. Do not start a third round at five in the morning with three hours left. At that point the honest reading is that this task is not a batch task tonight, and you have two choices: do the work by hand at a pace you know you can hold, or, if the remaining time cannot cover it, tell the operator now rather than at the deadline. Both of those are recoverable. Delivering a run you measured at 8 percent while calling it checked is not, because it will be checked again by someone who did not build it."
+          }
+        ],
+        "keyPoints": [
+          "Repairing the sampled failures edits your evidence and leaves the run broken.",
+          "Three failures sharing one code is one instruction problem, not three accidents.",
+          "Change one thing, re-run everything, draw a new sample, rescore.",
+          "Blank source fields cannot be automated. Carve them out and work by hand.",
+          "Two rounds without hitting the threshold means stop and tell the operator."
+        ]
+      },
+      {
+        "title": "The disagreements are the findings",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Undecidable rows are not your failure",
+            "body": "Three rows in your sample of 50 could not be scored, because the rubric genuinely did not settle them. It is easy to read that as a defect in your rubric, and sometimes it is. More often it is something better. The rubric could not decide because the brief could not decide, and the brief could not decide because the client has never had to state a rule for this case. A vendor that both trains staff and sells the software they train on has no home in a bucket list written by someone thinking about ordinary vendors. You did not fail to categorize it. You found the edge of the client's own definition."
+          },
+          {
+            "heading": "Three in fifty means thirty in five hundred",
+            "body": "Project the undecided pile exactly as you project the failures. Three undecided rows in a sample of 50 implies roughly 30 rows across the run sitting in the same ambiguity. That number matters more than it looks. Thirty rows is not an edge case; it is 6 percent of the deliverable resting on a rule nobody has written. Whatever you decide for those rows, you are deciding for thirty of them, silently, on behalf of a client you will never speak to. Doing that quietly is how a delivery passes review and then produces a complaint two weeks later, when someone downstream sorts by category and finds a group they do not recognize."
+          },
+          {
+            "heading": "Group them, do not list them",
+            "body": "Do not hand over three row numbers and a shrug. Name the class instead. A vendor that sells both training and the software it trains people on, where the bucket definitions treat those as separate, is something a person can make one decision about. Rows 218, 344 and 401 are unclear is not. Grouping also checks you: if you can state the class in one sentence, you understand the ambiguity, and if you cannot, you probably have three unrelated problems rather than one pattern. Once the class is named, filter the full file and count how many rows belong to it. A named class with a count is a decision request."
+          },
+          {
+            "heading": "Send the question up, not sideways",
+            "body": "You never contact the client, so the question travels through the operator, and it has to arrive complete enough to answer without a second exchange. Four parts: the class in one sentence, the count of affected rows, the default you applied in the meantime, and what would change if the decision goes the other way. If dual vendors belong in Software rather than Training, roughly 30 rows move and the category totals shift by about 6 percent. That short paragraph turns a vague worry into a question with a yes or no answer, and it is the difference between a targeted review and a task sent back for clarification."
+          },
+          {
+            "heading": "Apply a default, and label it",
+            "body": "Do not deliver blanks while you wait. Blanks in a category column read as unfinished work, and they force whoever opens the file to guess what happened. Choose the more defensible reading, apply it consistently to every row in the class, and label those rows so the decision can be reversed in one pass. A flag column with a single value, dual vendor default, lets an operator or a client filter all 30 rows and change them together in a minute if the call goes the other way. The rule is simple: never leave a hole, never hide a choice. A labelled default is a decision anyone can undo."
+          }
+        ],
+        "keyPoints": [
+          "The rubric could not decide because the brief never had to. That is a finding.",
+          "Three undecided in fifty is about thirty rows across the run.",
+          "Name the class in one sentence. Row numbers alone cannot be answered.",
+          "Send the class, the count, your default, and what a decision would change.",
+          "Never leave blanks. Apply a labelled default that can be reversed in one pass."
+        ]
+      },
+      {
+        "title": "Report the method with the delivery",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "A checkable rate beats a confident claim",
+            "body": "The operator reviewing your 500 rows was not there while you built them and cannot re-derive the whole file. What they can do, in five minutes, is take your rubric, pick three of your sampled rows, and see whether your scoring holds. That is why the method travels with the delivery. A note saying the file has been checked gives the reviewer nothing to act on, so they must either trust you or open rows at random, which puts them back in lesson one. A note saying which 50 rows you scored, against which checks, with which result, turns their review into a short verification. Checkable beats confident, every time."
+          },
+          {
+            "heading": "Put six items in the note",
+            "body": "Six items, in this order, and it fits in a short paragraph. What you produced and how, in one sentence. The rubric, attached or pasted, with its checks and thresholds. The sample: how many rows, how they were drawn, and the row identifiers. The result: the number of failures, their codes, and the rate. The verdict against your threshold. The undecided classes with their counts and the defaults you applied. Six items, perhaps 150 words, and every one of them is a fact rather than a reassurance. Write it as you go rather than at the end, because the details you need are exactly the ones that evaporate once the file is finished."
+          },
+          {
+            "heading": "Point the reviewer at the right rows",
+            "body": "Give the operator the row identifiers of your sample and of every failure you found and repaired. This feels like handing over the evidence against yourself. It is the opposite. A reviewer with a list of rows can check the places where problems actually were, confirm your repairs, and approve. A reviewer with no list opens rows at random, and random rows in a 500-row file mostly look fine, so the review either passes on a false impression or drags on while they hunt. Targeted review is faster for them and safer for you, and it is the only version of review that reliably catches anything. Blind review catches little and takes longer."
+          },
+          {
+            "heading": "Say what tool did what",
+            "body": "State plainly which parts of the work were produced with a tool and which were done by hand, because a reviewer reads a machine-produced column differently from a typed one, and they should. Two standing rules govern this. Client data does not go into third-party or consumer tools: not a chat assistant you signed up for, not an online transcription site, not a document summariser. Our own in-product assistant, available on a task you have claimed, is sanctioned for method questions; it does not see the task record, the client, the files, or the price, only what you type. A brief may grant written permission for a named external tool for a named purpose. Silence is not permission."
+          },
+          {
+            "heading": "Understate rather than round down",
+            "body": "When you write the rate, write the number you measured, not the impression you want to leave. A few rows needed correction is not a rate, and it will read, correctly, as an attempt to avoid one. Measured 8 percent on 50 rows, changed the instruction, re-ran, measured 2 percent on a fresh 50 is a stronger delivery note than any adjective, and it is stronger precisely because it admits the first number. Nobody is grading you on a perfect first run. You are being trusted with 500 rows on the strength of one thing: that the number you report is the number you found. Overstate your certainty once and that is gone."
+          }
+        ],
+        "keyPoints": [
+          "Ship the method with the file. A checked claim gives the reviewer nothing.",
+          "Six items: what you ran, rubric, sample, result, verdict, undecided classes.",
+          "Hand over the sampled and failed row identifiers. Blind review catches little.",
+          "Client data stays out of outside tools. A brief may grant named written permission.",
+          "Report the rate you measured, including the bad first one."
+        ]
+      }
+    ],
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You finish a 500-row categorization at three in the morning with two hours to spare. You open rows 1, 2 and 3, and all three are perfect. The file looks clean. What does that tell you about the run?",
+          "options": [
+            "The run is clean, since three consecutive correct rows show the output is consistent.",
+            "Nothing useful, so skip checking entirely and rely on the operator's review to catch problems.",
+            "Almost nothing about the other 497 rows, so you still need a rubric and a random sample.",
+            "The run is clean at the top of the file, so check the last three rows as well."
+          ],
+          "correct": 2,
+          "explain": "A handful of adjacent rows is a sample of size one in disguise, and the top of a sorted file is usually its tidiest corner."
+        },
+        {
+          "prompt": "You have run a batch of 400 vendor records and the output is sitting open in front of you. You have not written down what correct means yet. The deadline is in four hours. What do you do first?",
+          "options": [
+            "Close the output, write the per-row checks and thresholds, then reopen it and sample.",
+            "Read twenty rows first to see what good looks like, then write the rubric around it.",
+            "Skip the rubric, because with four hours left, scoring rows one by one is a better use of time.",
+            "Write the rubric after scoring, so it describes the standard the work actually met."
+          ],
+          "correct": 0,
+          "explain": "A standard written after you see the output is a description of what you produced. Deciding correct in advance is what stops you grading toward your own result."
+        },
+        {
+          "prompt": "Your rubric is written and you need 50 rows out of 500 to score. The sheet is sorted by date. Your eye has already caught four odd-looking rows near the bottom. How do you draw the sample?",
+          "options": [
+            "Take the first 50 rows, since the file order is arbitrary and 50 rows is 50 rows.",
+            "Add a random number column, freeze it as values, sort by it, and take the top 50.",
+            "Take the four odd rows plus 46 others you pick to cover different vendors.",
+            "Take rows 1 to 25 and 476 to 500, so both ends of the file are covered."
+          ],
+          "correct": 1,
+          "explain": "A sample has to be drawn without your judgement touching it. Odd rows are worth hunting separately, but a hunt measures the worst case, not the run."
+        },
+        {
+          "prompt": "You score 50 randomly drawn rows out of 600 against your rubric and find zero failures. You are writing the delivery note and want to say something true about the batch. What can you claim?",
+          "options": [
+            "The batch is error free, since a properly drawn random sample found nothing wrong.",
+            "Nothing, because a sample can never support a statement about rows you did not open.",
+            "That the error rate is under one percent, since zero in fifty rounds down to zero.",
+            "No failures in 50 rows, which still allows roughly 6 percent bad, about 36 rows."
+          ],
+          "correct": 3,
+          "explain": "A clean sample bounds the error rate, it does not eliminate it. Reporting that bound honestly is what makes the rest of your numbers believable."
+        },
+        {
+          "prompt": "You are on row 31 of your 50-row score. A vendor both trains staff and sells the software, and your bucket definitions genuinely do not settle which category applies. It is four in the morning. What do you do?",
+          "options": [
+            "Pick the category that fits best, mark the row a pass, and keep scoring.",
+            "Mark it undecided, write one line naming the two readings, and continue scoring.",
+            "Mark it a failure, since a row the rubric cannot decide is not a correct row.",
+            "Stop scoring and rewrite the bucket definitions so the row can be judged."
+          ],
+          "correct": 1,
+          "explain": "Rows the rubric cannot settle are a third pile, not a verdict you owe immediately. Resolving them silently deletes the most useful thing the sample produced."
+        },
+        {
+          "prompt": "Your sample of 50 rows out of 500 returns four failures, three of them sharing one failure code. You have three hours left, and each failing row would take about a minute to repair. What is the right next move?",
+          "options": [
+            "Change the instruction that caused the shared code, re-run all 500, and draw a fresh sample.",
+            "Repair the four failing rows and deliver, noting that a few rows needed correction.",
+            "Repair the four rows and rescore the same 50 to confirm the rate has improved.",
+            "Deliver as it stands and let the operator's review find whatever else is wrong."
+          ],
+          "correct": 0,
+          "explain": "The four rows you found stand for about forty you did not. Fixing the sample edits your evidence while leaving the run at the same error rate."
+        },
+        {
+          "prompt": "You changed one line of the instruction, re-ran the whole batch, and the output looks better. Your original sample of 50 row identifiers is still saved in your notes. How do you measure the new run?",
+          "options": [
+            "Rescore the same 50 rows, so the before and after comparison uses identical rows.",
+            "Rescore only the rows that failed last time, since the rest already passed.",
+            "Skip rescoring, because a single targeted change cannot make the output worse than before.",
+            "Draw a new random sample of 50 from the new output and score it against the frozen rubric."
+          ],
+          "correct": 3,
+          "explain": "The old sample is the set you looked at hardest and aimed your fix at. A new run has to be measured on rows you have never opened."
+        },
+        {
+          "prompt": "A 500-row contact list is due in two hours. Your sample shows 2 percent of email addresses malformed and 6 percent of the free-text industry tags arguably wrong. Which reading of that result is right?",
+          "options": [
+            "Both are under ten percent, so the file is deliverable with a note about the tags.",
+            "The email rate fails a zero-tolerance field and blocks delivery, while the tag rate is judged against your written threshold.",
+            "The tags matter more, since 6 percent is three times the email rate.",
+            "Neither number matters until the operator sets an acceptable rate for this client."
+          ],
+          "correct": 1,
+          "explain": "The cost of a wrong row is not the same in every column. Contact fields reach a real person, so their tolerable rate is effectively zero."
+        },
+        {
+          "prompt": "A 500-row batch would go much faster through a free online tool you have used before. The brief says nothing about outside tools, and the rows contain the client's customer names. Two hours are left. What do you do?",
+          "options": [
+            "Strip the names first, then paste the rows into the tool, since anonymized data is not client data.",
+            "Use the tool, then delete the uploaded rows from it once the delivery is accepted.",
+            "Keep the client rows inside the task and use only tools the brief or the platform sanctions.",
+            "Use the tool and disclose it in the delivery note, so the operator can judge."
+          ],
+          "correct": 2,
+          "explain": "The protected thing is the data, not the skill. Client rows leave the task only when a brief names the tool and the purpose in writing."
+        },
+        {
+          "prompt": "Halfway through a claimed task you are unsure how to phrase a categorization instruction so it handles vendors spanning two buckets. You want help thinking it through without losing time. What is the sanctioned route?",
+          "options": [
+            "Ask the in-product assistant a method question, typing no client rows or identifying details.",
+            "Paste three real vendor rows into the in-product assistant so the advice fits the actual data.",
+            "Ask a consumer chat tool the same question, since the question itself is not client data.",
+            "Guess, and explain your reasoning in the delivery note so the operator can correct it."
+          ],
+          "correct": 0,
+          "explain": "The assistant on a claimed task is sanctioned for method, and it sees only what you type. What you type still must not carry client content."
+        },
+        {
+          "prompt": "Three of your 50 sampled rows were undecided, all for the same reason. You have filtered the full file and found 34 rows in that class. You are writing the delivery note now. What goes in it?",
+          "options": [
+            "The three row numbers from the sample, marked unclear, so the operator can look at them.",
+            "The class in one sentence, the count of 34, the default you applied, and what a decision would change.",
+            "Nothing, because ambiguity in the source is the client's problem and the operator will notice it.",
+            "A recommendation that the client rewrite the bucket definitions before ordering this task again."
+          ],
+          "correct": 1,
+          "explain": "A named class with a count is a question someone can answer in one pass. Three loose row numbers force a second exchange you cannot have."
+        },
+        {
+          "prompt": "Your run measured 8 percent, you changed the instruction, re-ran, and a fresh sample measured 2 percent against a 3 percent threshold. You are writing the delivery note with twenty minutes left. What do you write?",
+          "options": [
+            "That the file has been checked and is accurate, which is the operator's real question.",
+            "The final 2 percent only, since reporting the failed first attempt invites doubt about the work.",
+            "A summary of the categories delivered, leaving the checking method for the operator to ask about.",
+            "Both rates, the rubric, the sample sizes and row identifiers, the verdict, and the undecided classes."
+          ],
+          "correct": 3,
+          "explain": "The method is what makes the number checkable, and the discarded first run is what makes the second one credible. Hidden work reads as unverified work."
+        }
+      ]
+    }
+  },
+  "ai-agents-and-actions": {
+    "slug": "ai-agents-and-actions",
+    "title": "When the tool acts, not just answers",
+    "track": "ai",
+    "tagline": "An answer you can discard, an action has already happened: run accordingly.",
+    "summary": "More tools now do things instead of describing them: they click, send, rename and overwrite. This course teaches the discipline that keeps an acting tool from costing you a night of work: write scope, dry runs, checkpoints, action logs, a limited first run, and a recovery plan written in advance. Finish it and you will never hand a tool the whole file again.",
+    "outcomes": [
+      "You can tell a wrong answer from a wrong action, and price both.",
+      "You can set write scope so a tool reads widely and touches little.",
+      "You can force a dry run and read its list for wrong targets.",
+      "You can place checkpoints and batch a run so failures stay cheap.",
+      "You can read an action log and tell a partial run from a complete one.",
+      "You can write a recovery plan and disclose what an automated step touched."
+    ],
+    "lessons": [
+      {
+        "title": "A wrong action cannot be discarded",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "An answer is only a draft",
+            "body": "When a tool answers you, nothing has happened yet. It produced text on a screen, and you are still the only person who has seen it. You can read it, disagree with it, delete it, and start again, and the world outside your window is unchanged. That is the tool most of these courses have taught you to use: a thing that proposes, while you dispose. Its worst failure is a confident paragraph that is wrong, and the cost of that failure is the two minutes you spend checking it against the source. A bad answer is caught by reading. Nothing else is required."
+          },
+          {
+            "heading": "An action is already a fact",
+            "body": "An acting tool is different in kind, not in degree. It clicks the button, sends the message, renames the file, overwrites the cell, archives the thread. By the time you read what it did, the doing is finished. Forty-five suppliers received an email that named the wrong project. A column of 1,200 phone numbers was overwritten with a reformatted version that dropped the leading zero. You cannot un-send, and the reformatted column no longer holds the original values to compare against. The mistake is not larger because the tool is worse. It is larger because your review arrived after the event instead of before it. That single change of order is the whole subject of this course."
+          },
+          {
+            "heading": "You are already using acting tools",
+            "body": "You do not need to think of yourself as automating anything for this to apply. A browser tool that fills a form and presses submit is acting. An assistant that has been connected to a mailbox and can archive, label or reply is acting. An automation that watches a folder and, at one step, asks a model what to do with each file is acting. A spreadsheet add-on that offers to tidy 4,000 rows for you is acting. Even a bulk rename utility with no model in it at all is acting, and it fails in exactly the same way. The question is never whether the tool is intelligent. The question is whether it can change something you would have to repair."
+          },
+          {
+            "heading": "Ask one question before you connect",
+            "body": "Before you let any tool act on an AfterDesk task, ask one question and answer it out loud: what can this thing change, and who sees the change first? If the answer is that it can only change a copy on your own machine, and you see the result before anyone else, you are in safe territory. If the answer involves a live inbox, a shared drive, a published page, or the client's own file, you have left safe territory and the rest of this course applies in full. Most workers skip this question because the tool made the offer sound small. Read the permissions screen instead of the marketing sentence. The permissions screen is the honest one."
+          }
+        ],
+        "keyPoints": [
+          "A wrong answer costs two minutes of reading. A wrong action costs a repair.",
+          "Acting tools click, send, rename and overwrite. The doing finishes before your review.",
+          "Intelligence is not the test. The test is whether it changes something you must repair.",
+          "Ask what the tool can change, and who sees the change first."
+        ]
+      },
+      {
+        "title": "Read everything, write nothing",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Reading is cheap, writing is expensive",
+            "body": "Separate what a tool reads from what a tool writes, and treat the two as different permissions with different prices. Reading is almost free in repair terms: a tool that scans 900 emails and tells you which 40 mention a refund has changed nothing, and if its list is wrong you simply discard the list. Writing is where money moves. The same tool, given permission to label or archive, can bury 40 threads the client needed on Monday. When you set a tool up, the read side can be generous and the write side must be mean. Give it plenty to look at. Give it almost nothing to touch. That asymmetry is where the cost actually sits."
+          },
+          {
+            "heading": "The default write scope is nothing",
+            "body": "Start every configuration at zero writes and add back only what the task requires, one permission at a time, saying out loud what each one buys you. A tool asking for full access to a drive so that it can read three files is asking for more than the job needs. If the interface offers a read-only mode, take it, run the whole job in that mode, and see how much of the work you can actually finish yourself from what it found. Often the answer is all of it: the tool finds the 40 rows, and you edit the 40 rows by hand in four minutes. That is not a failure of automation. That is automation doing the expensive half and leaving you the safe half."
+          },
+          {
+            "heading": "Sending is a write you cannot recall",
+            "body": "People classify writes as edits to files and forget the loudest write of all. A message leaving an account is a write into somebody else's inbox, and it is the one write no undo button reaches. The same is true of a calendar invitation, a form submission, a comment posted on a shared document, and a status change that triggers a notification to six people. Ask of every step: does this produce something a human being outside this task will see? If yes, that step never runs unattended, ever, on any task. On AfterDesk the point is sharper still, because you do not contact clients at all. A tool acting in your name does not get a permission you do not have."
+          },
+          {
+            "heading": "Write to a new place, not over the old",
+            "body": "When a write is genuinely needed, aim it at somewhere new. A new column beside the old one, a new sheet, a new folder, a new file with a suffix: these are additive writes, and an additive write is recoverable because the original is still sitting there for comparison. Overwriting in place is the destructive one, and it is destructive even when the result is correct, because you have lost the ability to prove it is correct. Configure the tool to output to a separate file whenever the option exists. If the option does not exist, make the copy yourself first and point the tool at the copy. Twenty seconds of setup buys you the only evidence you will have."
+          },
+          {
+            "heading": "Reading is cheap, but not with client data",
+            "body": "Cheap refers to repair cost, not to permission. Client data does not go into third-party or consumer tools at all, read-only or not: not a chat assistant you signed up for, not an online transcription site, not a document summariser, not an image tool. The confidentiality promise we made the client covers looking, not only changing. Two things do open the door. A brief can grant scoped, written permission to use a named tool for a named purpose. The assistant inside AfterDesk is sanctioned on a task you have claimed: it cannot see the task record, the client, the files or the price, and what you type into it is scrubbed of personal detail before storage. Silence in a brief is still not permission."
+          }
+        ],
+        "keyPoints": [
+          "Read scope can be generous. Write scope must be mean.",
+          "Start at zero writes and add back one permission at a time.",
+          "Sending is a write into another person's inbox. No undo reaches it.",
+          "Write to a new column, sheet or file. Never overwrite in place.",
+          "Client data stays out of outside tools, reading included. Silence is not permission."
+        ]
+      },
+      {
+        "title": "Make the tool show its plan",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Ask what it would do",
+            "body": "Before any run that writes, get the tool to produce the list of what it intends to touch, without touching it. Many tools have this built in and call it a preview, a test run, a simulation or a dry run. Where it does not exist, you can usually build it: point the write at a scratch file instead of the real one, or set the step to output the target names into a column rather than acting on them. The list is the point. A tool that cannot tell you what it plans to do is a tool you cannot supervise, and on a claimed task with a deadline, an unsupervised run is a coin flip you are paying for."
+          },
+          {
+            "heading": "Check the count before the contents",
+            "body": "The first thing to read in a dry run list is its length, and you read it against a number you worked out yourself beforehand. You believed roughly 60 invoices in the folder were unpaid. The preview says 214. Stop. Something in the filter is wider than you meant, and if you had run it you would have restamped 154 paid invoices at three in the morning. The reverse is just as informative: a preview of 3 when you expected 60 means the filter is looking at the wrong field, or the dates are text and not dates. Predict the number, then compare. A count you cannot explain is a stop, not a curiosity."
+          },
+          {
+            "heading": "Read the edges, not the middle",
+            "body": "Nobody reads 214 lines properly at 2am, so read the parts where errors live. Read the first five entries: they show whether the tool started where you thought. Read the last five: they show whether it stopped where you thought, or ran off the end of the data into empty rows. Then hunt for the entries that should not be there at all, which is a different mental act from checking that the right ones are present. Sort the list and look for the odd one: the file with a different extension, the row with a blank name, the address that is internal rather than external. Presence is easy to verify. Wrong presence is what actually costs you."
+          },
+          {
+            "heading": "Verify five by hand",
+            "body": "Take five entries from the preview at random, not the first five, and check them yourself against the source. Open the invoice and confirm it really is unpaid. Open the two rows the tool says are duplicates and confirm they are the same customer and not two brothers at one address. Five hand checks take four minutes and they test the thing a preview cannot test: whether the tool's idea of the criterion matches yours. If one of the five is wrong, the run is not eight percent wrong, it is wrong in a way you do not yet understand, and the correct next step is to find the pattern, not to fix the one."
+          },
+          {
+            "heading": "Ask the assistant how, not what",
+            "body": "If you do not know how to force a preview out of a particular tool, that is a method question, and the assistant inside AfterDesk on a task you have claimed is the right place for it. Describe the mechanism, not the material: how do I get a bulk rename utility to output a list of proposed names instead of renaming, is a good question. The client, the file names, the company and the price stay out of it. That assistant sees only what you type, and what you type is scrubbed of personal detail before it is stored, which is exactly why you keep the client out of the sentence in the first place."
+          }
+        ],
+        "keyPoints": [
+          "No preview, no run. Build one if the tool does not offer it.",
+          "Predict the count first. A number you cannot explain is a stop.",
+          "Read the first five, the last five, and anything that should not be listed.",
+          "Hand check five random entries against the source before the tool writes.",
+          "Method questions go to the in-product assistant. The client stays out of the sentence."
+        ]
+      },
+      {
+        "title": "Put checkpoints where failure is cheap",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "A chain fails silently in the middle",
+            "body": "Three steps chained together feel like one action, and that is the trap. Step one pulls 300 rows from a sheet. Step two asks a model to classify each row. Step three writes the classification back and moves the file. If step two starts guessing at row 90 because a column arrived empty, steps one and three both report success, and the failure is buried inside a green result. Chains do not warn you. They finish. The only thing that turns a silent failure into a caught one is a place in the chain where a human being looks before the next step runs, and the value of that place depends entirely on where you put it."
+          },
+          {
+            "heading": "Checkpoint before the first irreversible step",
+            "body": "The rule is short: the checkpoint goes immediately before the first step that cannot be undone, and as early as possible after the step most likely to be wrong. Those two pulls usually agree. Judgment steps are the ones that get things wrong, and sending, publishing and overwriting are the ones that cannot be undone, so the gap between them is where your eyes belong. Concretely: let the tool draft 45 supplier emails into a drafts folder and stop. Let it produce the renamed list and stop. Let it write classifications into a new column and stop. You then spend six minutes reading, and press the last button yourself."
+          },
+          {
+            "heading": "A checkpoint you always approve is decoration",
+            "body": "A checkpoint is only real if you have a criterion that could fail it. If you look at the screen, feel that it seems fine, and click continue every time, you have built a delay, not a control. Decide in advance what would make you stop: more than two of my twenty samples are wrong, any row targets a different company, the count differs from my estimate by more than ten percent, any output is empty. Write those numbers down before the run, because after the run, with the deadline close, every result looks acceptable. The purpose of a written threshold is to protect the tired version of you from the confident version of you."
+          },
+          {
+            "heading": "Batch the work so stopping is possible",
+            "body": "You cannot check what has already finished, so shape the run to give you places to stand. A job of 400 files split into batches of 50 gives you eight natural checkpoints and costs perhaps ten extra minutes. A job of 400 run in one pass gives you one outcome and no choices. Batching also changes what a failure costs: a bad rule caught after batch one damages 50 files, and you still hold 350 clean ones. Do not batch everything out of habit, because on a 30 row task the overhead is silly. Batch when the run is long, when the rule is new, or when the target is the client's own file rather than your copy."
+          }
+        ],
+        "keyPoints": [
+          "Chains report success while failing in the middle. They finish, they do not warn.",
+          "Put the checkpoint after the judgment step and before the irreversible one.",
+          "Write the stop threshold before the run. Deadline pressure makes everything look fine.",
+          "Batch long or new runs. One bad rule then damages fifty files, not four hundred."
+        ]
+      },
+      {
+        "title": "Read the log, not the summary",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The summary is a claim",
+            "body": "When a run finishes, the tool tells you something short and encouraging: completed, 214 items processed, done. That sentence is written by the same thing that did the work, and it reports intention as if it were outcome. The log is different. The log is the list of individual operations with times, targets and results, and it is the only place where a run tells you the truth about itself. Find it before you need it: most tools keep it under history, activity, runs or executions, and finding it in a panic after something went wrong is much harder than finding it while everything is calm. Read the log every time, even when nothing seems wrong."
+          },
+          {
+            "heading": "Three questions the log answers",
+            "body": "Read a log for three things, in this order. What was touched: the actual targets, by name, not the count. In what order: because order tells you where a run turned, and an operation at 03:14 that follows a different pattern from the ones at 03:12 is the moment something changed. And what the result of each was: succeeded, skipped, failed, retried. Skipped is the word people miss. A skipped item is not a done item, and a log of 214 lines where 19 say skipped is a delivery with 19 holes in it. Write those three answers into your own notes as you read. You will need them for the delivery note anyway."
+          },
+          {
+            "heading": "Partial runs look like complete ones",
+            "body": "The most expensive log to misread is the one from a run that stopped early. A connection dropped, a limit was hit, the laptop slept at 4am, and the tool processed 138 of 214 and then simply ended. The folder looks busy. The sheet looks changed. Nothing announces the gap. So verify completion by arithmetic instead of by feel: count the lines in the log, count the items you expected, and confirm the last item in the log is the last item in your source. If those numbers do not match, you have a partial run. A partial run is more dangerous than a failed one, because a failed one is obvious."
+          },
+          {
+            "heading": "Never restart a partial run blindly",
+            "body": "The instinct after a partial run is to press the button again, and that instinct doubles the damage. Running again from the top can process the first 138 items a second time, which means 138 duplicate rows, 138 second messages, or 138 files renamed twice into names that no longer match anything. Before restarting, use the log to find the exact last item that succeeded, then restrict the second run to what comes after it. If the tool cannot be restricted, finish the remainder by hand, even if that means 76 rows at four in the morning. Slow and correct is a delivery. Fast and doubled is a correction, and corrections cost more than the hour you saved."
+          },
+          {
+            "heading": "Keep the log until the window closes",
+            "body": "Save the log, or a screenshot of it, until the task has passed review and the dispute window has closed. It is small, it costs nothing to keep, and it is the only document that can answer a question asked three days later: did the rename touch the archive folder, or not? Keep it somewhere task-related and delete it with everything else when the task is finally closed. Do not paste it into anything outside the task, because a log is full of file names, addresses and account details, and it is client data like any other file. If the operator asks what happened, you quote from it. You do not forward it."
+          }
+        ],
+        "keyPoints": [
+          "The summary reports intention. The log reports outcome. Read the log.",
+          "Ask the log what was touched, in what order, with what result.",
+          "Skipped is not done. Nineteen skips is nineteen holes in your delivery.",
+          "Confirm completion by arithmetic. A partial run looks exactly like a finished one.",
+          "Never restart from the top. Restrict the second run to what remains."
+        ]
+      },
+      {
+        "title": "Work on a copy, then a subset",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "The first run never touches everything",
+            "body": "Blast radius is the amount of the world a run can damage, and you control it with two dials: what the run points at, and how much of it. Both start small. The first run of any new rule points at a copy, and covers a subset. Twenty rows out of 1,200. Five files out of 400. One folder out of nine. Then you inspect the twenty rows by hand, all of them, which takes four minutes and tells you more than an hour of thinking about the configuration would. Only after the small run is clean do you widen, and you widen in steps. Nobody has ever regretted a first run that was too small."
+          },
+          {
+            "heading": "Make the copy before the tool opens",
+            "body": "Copy first, connect second. The moment a tool has access to a live file, the window for making a clean copy has closed, because you can no longer be sure what you are copying. So duplicate the source file, give the duplicate a name you cannot confuse at 3am, something like invoices_WORKING_v1 rather than invoices copy, and keep the original untouched in its own folder for the whole task. This is the same rule these courses teach for a destructive formula or a find and replace, applied to a tool that does the destroying for you. The original file stays attached to the claimed task as well, which means a clean copy is always one download away."
+          },
+          {
+            "heading": "Some targets cannot be copied",
+            "body": "Copies work for files. They do not exist for a live mailbox, a shared calendar, a folder other people are working in tonight, a published page, or a records system the client uses while you sleep. For those, the only dial you have left is size, and the discipline changes shape: you take the smallest possible slice, you do it during a window where nobody else is likely working, and you check the result immediately rather than at the end. If a tool wants to act across a whole live inbox in one pass, the correct answer is that this is not a job for an unattended run. Do it in batches you watch, or do it by hand."
+          },
+          {
+            "heading": "Widen in steps you can survive",
+            "body": "After a clean run of twenty, do not jump to 1,200. Go to a hundred, then to the rest, and inspect between each widening, because a rule can be perfect on twenty rows and break on the hundred and third where a field is empty. Each step should be a size whose failure you could repair inside the time you have left. That is the real test: if this batch goes wrong, can I fix it by hand before the deadline? If the answer is no, the batch is too big, regardless of how confident you feel after the last one. Confidence grows faster than correctness, which is why the sizes are decided by arithmetic and not by mood."
+          }
+        ],
+        "keyPoints": [
+          "Two dials control damage: what the run points at, and how much.",
+          "Copy the file before the tool touches it. Afterwards a clean copy is uncertain.",
+          "Mailboxes, calendars and live systems have no copy. Slice small and watch.",
+          "Widen in steps whose failure you could repair by hand before the deadline."
+        ]
+      },
+      {
+        "title": "Write the undo before you run",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Undo is a plan, not a button",
+            "body": "Write the recovery plan before the run, in three or four sentences, in the same notes where you keep your working record. Not the idea of a recovery plan: the actual steps, in order, that return the world to how it was. If a plan cannot be written in three sentences, it is not a plan, it is a hope. The value of writing it first is that you write it while calm, with time in hand, before anything has gone wrong. At 4am with 76 broken rows and two hours to the deadline, you will not invent a good recovery. You will follow one or improvise a worse one."
+          },
+          {
+            "heading": "Four questions the plan answers",
+            "body": "Answer four questions in writing. Where is the clean original, by exact file name and location? What exactly would I do to restore it, step by step, and how long does that take? How would I even notice that this went wrong, and what would I look at? And what does the tool itself offer: a version history, a trash folder with a retention period, an undo that lasts thirty seconds? Answering the last one before the run matters, because a version history you discover afterwards is luck. A version history you confirmed beforehand is a plan. Four sentences. Two minutes. It is the cheapest insurance in this entire course."
+          },
+          {
+            "heading": "Some things have no undo",
+            "body": "Be honest about the cases where recovery does not exist. A sent message is gone. A submitted form is gone. A deleted item past its retention period is gone. An overwritten cell in a file with no version history is gone, and so is the original value you would need to prove what it was. A notification that fired has already been seen. For these, there is no recovery plan to write, and the absence of one is itself the decision: a step with no undo does not run unattended, does not run on a first pass, and often does not run at all, because your hand on the button is the only control that exists."
+          },
+          {
+            "heading": "Test the undo on the copy",
+            "body": "A plan you have never executed is still a guess, so try it once while nothing is at stake. Make the copy, break it deliberately, and restore it using your own written steps. You will learn two things in five minutes: whether the steps actually work, and how long they truly take. Workers routinely estimate a fifteen minute recovery for something that takes an hour, and that error is what turns a manageable accident into a missed deadline. If the restore takes longer than the time you have left after a failure, the run is too big, and you shrink it. The plan is not a document. It is a measurement."
+          },
+          {
+            "heading": "When it goes wrong, stop first",
+            "body": "The first move after discovering damage is to stop the tool and stop yourself. Do not run a correcting pass, do not try a clever reverse operation, do not delete the evidence of what happened. Disconnect or pause the automation so nothing continues while you think. Then read the log and write down what was actually affected, by name and count, because that list is what your recovery and your delivery note both depend on. Then restore from your original. Then redo the work at whatever pace the remaining time allows, by hand if necessary. Panic repairs are the reason a five minute problem becomes a rejected delivery. Stop, read, restore, redo."
+          }
+        ],
+        "keyPoints": [
+          "Write the undo in three sentences before the run, while you are calm.",
+          "Name the clean original, the restore steps, the alarm, and the tool's own history.",
+          "Sent, submitted and overwritten without history: no undo exists. Never run those unattended.",
+          "Test the restore once on a copy. Measure the time, do not estimate it.",
+          "After damage: stop, read the log, restore, redo. Never a panic correcting pass."
+        ]
+      },
+      {
+        "title": "Tell the operator what ran",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Disclosure is part of the delivery",
+            "body": "An operator reviewing your work against a written standard needs to know how it was produced, because that changes what they check. A file a person edited row by row and a file a script rewrote in one pass carry different risks: the first fails in scattered places, the second fails in the same way 1,200 times. Saying that an automated step ran is not an admission of laziness, and nobody here thinks less of a worker who automates well. What damages you is a reviewer discovering it themselves, from a pattern in the output you did not mention. Disclosed automation is a method. Undisclosed automation is a surprise, and surprises fail review."
+          },
+          {
+            "heading": "Four lines the operator can act on",
+            "body": "Keep the disclosure to four lines. What ran, in plain words: a rename step, a classification step, a deduplication formula. What it touched, with numbers: 1,182 rows in the working copy, not the original file. What you verified afterwards, and how: twenty randomly chosen rows checked against the source, plus every row the log marked skipped. And what remains uncertain, if anything: nineteen rows the step could not classify, left blank and flagged on a second tab. That is a delivery note an operator can review in ninety seconds. Vague reassurance costs them ten minutes and costs you their patience, which is a currency you spend more slowly than you think."
+          },
+          {
+            "heading": "Say what you checked, not that you checked",
+            "body": "There is a large difference between I verified the output and I opened twenty rows chosen at random and compared each against the source file. The first is a feeling. The second is a method the operator can trust or repeat. Name the sample size, name how you picked it, name what you compared against, and name what you found, including nothing. Reviewed carefully is the weakest sentence in any delivery note, because every worker writes it, including the ones who did not. Specific verification is also what protects you when something slips through later: a note recording exactly what you checked shows the gap was outside your stated method, not inside it."
+          },
+          {
+            "heading": "Name the tool and the permission",
+            "body": "If the brief granted scoped, written permission to use a named external tool for a named purpose, say in your note that you used it, for that purpose only, and nothing beyond it. If no such permission was granted, then no client data went outside the task, and your note should be able to say so plainly: all processing was local to my machine. That single sentence answers the question an operator would otherwise have to ask. The assistant inside AfterDesk sits outside this entirely, since it never receives the client's files or identity, but you can still mention that you checked a method with it if that explains a choice you made."
+          },
+          {
+            "heading": "Report the accident before it is found",
+            "body": "If an automated step went wrong and you repaired it, say so, with the same four lines: what ran, what it touched, what you did to fix it, and what you verified afterwards. This feels like handing the operator a reason to reject you. It is the opposite. A worker who reports a caught mistake with a count and a fix is a worker whose clean deliveries can be believed, and that is the whole basis of the record you are building here. The alternative is the same mistake found at review, or worse, by the client, with your note claiming everything was fine. One of those costs you a correction. The other costs you the work."
+          }
+        ],
+        "keyPoints": [
+          "Disclosed automation is a method. Undisclosed automation is a surprise that fails review.",
+          "Four lines: what ran, what it touched, what you verified, what stays uncertain.",
+          "Reviewed carefully means nothing. Name the sample, the source and the finding.",
+          "Say all processing was local, or name the tool the brief permitted.",
+          "Report a caught and repaired mistake. It is what makes clean work believable."
+        ]
+      }
+    ],
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You set an automation to mark unpaid invoices in a 1,200 row sheet. You expected around 60. The preview lists 214 targets, and the deadline is in three hours. What do you do?",
+          "options": [
+            "Run it: 214 is plausible, since you only estimated 60 from memory anyway.",
+            "Run it on the first 60 rows listed, since that matches your estimate.",
+            "Stop, work out why the filter selected 214, and fix the rule before any write.",
+            "Run it and correct the wrongly marked rows afterwards, since marking is easy to reverse."
+          ],
+          "correct": 2,
+          "explain": "A count you cannot explain means the rule is not the rule you meant. Investigate before writing, not after, because the write is the part you cannot discard."
+        },
+        {
+          "prompt": "Your rename step reports done. The log shows 138 lines for a folder of 214 files, and the last line is 40 minutes old. Two hours remain before the deadline. What do you do?",
+          "options": [
+            "Treat it as a partial run, find the last successful file in the log, and process only what follows.",
+            "Run the step again from the top; finished files will simply be renamed to the same names.",
+            "Deliver the folder and note that the tool reported the run as complete.",
+            "Delete the 138 renamed files and start the whole run again for a clean result."
+          ],
+          "correct": 0,
+          "explain": "A tool reporting success is a claim; the log is the evidence. Restarting from the top renames finished files twice and doubles the damage."
+        },
+        {
+          "prompt": "A 45-vendor chase is due in four hours. An automation can draft and send each follow-up email from the client's account in one pass. The brief says nothing about automation. What do you do?",
+          "options": [
+            "Let it send all 45, then read the sent folder and correct anything wrong with a second email.",
+            "Send the first five automatically, and if those look right, release the remaining forty.",
+            "Send them automatically but keep the log so the operator can see exactly what went out.",
+            "Let it draft all 45 into drafts, read them yourself, and send only after checking each one."
+          ],
+          "correct": 3,
+          "explain": "A message that has left the account cannot be recalled, so the human checkpoint belongs before sending, not after. Drafting is reversible; sending is not."
+        },
+        {
+          "prompt": "You are about to point a cleanup tool at the client's 1,200 row master file. It is 2am and you have already spent an hour on the configuration. What is the right next move?",
+          "options": [
+            "Point it at the master file; the original stays downloadable from the claimed task anyway.",
+            "Run it on the master file, but only after saving a screenshot of the current sheet.",
+            "Duplicate the file, run on twenty rows of the duplicate, and inspect all twenty by hand.",
+            "Run the full file, then compare the result against the original download afterwards."
+          ],
+          "correct": 2,
+          "explain": "A first run belongs on a copy and on a subset small enough to check completely by hand. Redownloading later is recovery, not prevention."
+        },
+        {
+          "prompt": "A transcription task is running long. A free website will transcribe the client's 40-minute recording in three minutes if you upload the file. The brief does not mention tools at all. What do you do?",
+          "options": [
+            "Upload it, then delete the file from the site and clear your account history afterwards.",
+            "Keep transcribing with tools that run on your own machine, and flag the timing in your note.",
+            "Upload only the first ten minutes, since a partial recording is not really the client's data.",
+            "Upload it and ask the operator afterwards to confirm that the site was acceptable."
+          ],
+          "correct": 1,
+          "explain": "Client data leaves the task only when a brief names the tool and the purpose in writing. Silence is not permission, and a partial file is still client data."
+        },
+        {
+          "prompt": "You cannot work out how to make a bulk rename utility list its proposed names instead of renaming, and the task is due in five hours. Where do you take the question, and how do you ask it?",
+          "options": [
+            "Ask the in-product assistant on your claimed task, describing the mechanism with no client detail in it.",
+            "Paste the client's file list into a consumer chat tool so the answer fits your exact files.",
+            "Skip the preview entirely, since a rename utility is simple enough to run directly.",
+            "Ask in a public forum, including a screenshot of the folder so people can see the problem."
+          ],
+          "correct": 0,
+          "explain": "The sanctioned assistant is for method questions on a claimed task, and it should never need the client's material to answer how a tool works."
+        },
+        {
+          "prompt": "A three-step chain pulls 300 rows, asks a model to classify each one, then writes the results back and archives the source file. Where do you put your one human checkpoint?",
+          "options": [
+            "At the very end, so you can review the finished output in one sitting.",
+            "Before step one, to confirm the 300 rows were pulled from the right sheet.",
+            "Nowhere; a checkpoint in the middle of a chain wastes the time automation saves.",
+            "Between the classification and the write, so you read the judgments before anything changes."
+          ],
+          "correct": 3,
+          "explain": "Checkpoints belong after the step most likely to be wrong and before the first step that cannot be undone. Judgment is the risky step here."
+        },
+        {
+          "prompt": "You are about to run a step that deletes 300 duplicate rows from a live records system the client uses during their day. The system has no trash folder and no version history. What do you do first?",
+          "options": [
+            "Run it now while the client is asleep, since nobody will be using the system.",
+            "Run it on all 300 and keep the log, which records exactly which rows were removed.",
+            "Export a full copy of the records first, then delete in small batches you watch.",
+            "Skip the deletion and deliver the duplicates flagged instead, since deletion is never allowed."
+          ],
+          "correct": 2,
+          "explain": "Where the system offers no undo, you build one before acting and keep every batch small enough to repair by hand. A log records loss; it does not restore it."
+        },
+        {
+          "prompt": "You used a formula-driven script to reformat 1,182 rows on your working copy, checked twenty at random, and everything passed. The delivery is ready. What goes in the note to the operator?",
+          "options": [
+            "That a script reformatted 1,182 rows on a copy, and that twenty random rows were checked against the source.",
+            "Nothing about the method; the operator reviews the output, not how it was produced.",
+            "That the file was reviewed carefully and the formatting is consistent throughout.",
+            "A full copy of the script, so the operator can rerun it themselves if needed."
+          ],
+          "correct": 0,
+          "explain": "How the work was produced changes what a reviewer checks, and naming the sample you verified is worth more than any reassuring adjective."
+        },
+        {
+          "prompt": "Your preview looked fine, so you ran a classification step on the first batch of 50 files. Checking your samples, two out of twenty are classified wrongly. Four hours remain. What do you do?",
+          "options": [
+            "Fix the two by hand and let the remaining 350 run, since ninety percent is acceptable.",
+            "Stop, work out what the two have in common, and fix the rule before running anything further.",
+            "Run the rest and check a larger sample at the end, when you can see the whole set.",
+            "Rerun the same batch, since the step may classify them correctly on a second attempt."
+          ],
+          "correct": 1,
+          "explain": "Two wrong samples are not a ten percent error rate, they are a pattern you have not identified yet. Find the cause before widening the run."
+        },
+        {
+          "prompt": "A tool that would sort three spreadsheets asks for full edit access to the entire client drive during setup. It is the only way it offers to connect, and you are two hours in. What do you do?",
+          "options": [
+            "Grant it, then remove the access as soon as the three spreadsheets are finished.",
+            "Grant it, but move the other files into a subfolder first so they are out of the way.",
+            "Grant it and note in your delivery that the tool had wider access than the task needed.",
+            "Do not connect it; download the three files, work on copies, and deliver from there."
+          ],
+          "correct": 3,
+          "explain": "Write scope is set by what the task needs, not by what the tool demands. Access wider than the job is a risk you are not paid to carry."
+        },
+        {
+          "prompt": "At 4am you discover an automated step overwrote the phone column on 76 rows of your working copy with a broken format. The delivery is due in two hours. What is your first move?",
+          "options": [
+            "Run a second automated pass designed to reverse the formatting on those 76 rows.",
+            "Reconstruct the 76 numbers from the surrounding rows and deliver on time.",
+            "Stop the tool, read the log to list what was affected, then restore from your clean original.",
+            "Deliver the file and note that some phone numbers may be formatted differently."
+          ],
+          "correct": 2,
+          "explain": "The first move after damage is to stop and establish exactly what was touched. A correcting pass built in a panic usually adds a second problem."
+        }
+      ]
+    }
+  },
+  "ai-grounding": {
+    "slug": "ai-grounding",
+    "title": "Grounding a model in your sources",
+    "track": "ai",
+    "tagline": "Make the model answer from text you supply, then check it fast.",
+    "summary": "Most people ask a model what it knows, then spend an hour proving the answer wrong. Grounding is the alternative: you supply the text, and the model is allowed to answer only from it. This course teaches how to hand over a corpus, demand a locator on every extracted fact, spot the lines that drifted outside it, and sample the result. Verification becomes a spot check, not a redo.",
+    "outcomes": [
+      "You can tell the difference between a model recalling and a model reading.",
+      "You can supply a corpus so the model has no room left to invent.",
+      "You can demand a locator on every extracted fact and check it in seconds.",
+      "You can spot the tells that a claim came from outside the supplied source.",
+      "You can spot-check an extraction with the right sample and act on the failure rate.",
+      "You can report a source that is wrong, stale or self-contradictory instead of smoothing it."
+    ],
+    "lessons": [
+      {
+        "title": "Ask the document, not the model",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Two questions that look alike",
+            "body": "There are two questions you can put to a language model, and on the screen they look almost identical. The first is what do you know about supplier payment terms in this industry. The second is what does this contract, supplied below, say about payment terms. The first draws on everything the model absorbed in training, blended together, undated, impossible to trace. The second draws on four thousand words sitting in front of it. Same tool, same session, completely different risk. The first answer has to be researched from scratch before you can use it. The second answer can be confirmed by reading one paragraph. Almost every task you claim can be rewritten from the first shape into the second."
+          },
+          {
+            "heading": "Recall fails without a warning",
+            "body": "When a model answers from memory it is producing text that fits the question, and fitting is not the same property as being true. It will name a payment term of thirty days because thirty days is the most common thing to write there, not because your contract says thirty. Nothing in the output marks the difference. You get one confident sentence, correctly punctuated, in the same voice it uses when it is right. So every fact in a recall answer arrives as a job for you: find the real source, read it, confirm or correct. That is the whole task again, performed twice. Recall saves you no time at all on anything you are accountable for."
+          },
+          {
+            "heading": "Reading is a smaller job",
+            "body": "A grounded answer is different in kind. The material is in front of the model, the answer is supposed to be a transformation of that material, and you already hold the source. When it tells you the payment term is forty-five days from invoice date, you open your own file, search for the word invoice, and you are finished in twelve seconds. You are not researching. You are matching one claim against one place. That is the whole promise of grounding, and it is why this course sits where it does in the curriculum. The model does not become honest. Your ability to catch it becomes cheap enough that you actually do it, every time, on every row."
+          },
+          {
+            "heading": "Say it out loud in the prompt",
+            "body": "Grounding is not automatic because you happened to paste something. You have to instruct it. The sentence that does the work is blunt: answer only from the text below, and if the text does not contain the answer, write not in the document. Put the material after that instruction, clearly fenced with a line reading SOURCE BEGINS and a line reading SOURCE ENDS, so it is obvious where your own words stop. Then ask your question. Without that instruction the model is free to blend what it just read with what it already carried, and it will, because blending usually produces a better-sounding answer. You are trading a smooth answer for a checkable one. Take that trade every time."
+          },
+          {
+            "heading": "What this buys you tonight",
+            "body": "Consider a task with a 60-page policy manual and eleven questions the client wants answered from it. Ungrounded, you would ask the model, receive eleven fluent paragraphs, and then read the manual anyway to confirm each one, which is the original task plus an hour of typing. Grounded, you supply the relevant chapters, demand a page and a short quote with every answer, and then verify eleven quotes by searching for them. The second version finishes in half the time and is more accurate than working by hand, because searching for an exact phrase never gets tired at four in the morning. The speed comes from the checking being cheap. Nothing else."
+          }
+        ],
+        "keyPoints": [
+          "Recall answers must be researched. Grounded answers only need matching.",
+          "Say it explicitly: answer only from the text below.",
+          "Fence your source so the model knows where your words end.",
+          "Grounding does not make the model honest. It makes catching it cheap."
+        ]
+      },
+      {
+        "title": "Paste the text, not a description",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "A description is an invitation",
+            "body": "The commonest mistake is describing the material instead of supplying it. I have a client onboarding email, write me a follow-up that references the discount we mentioned. The model has no email. It has your six-word sketch of an email, and it will fill the rest with the most typical onboarding email in existence, complete with a discount percentage you never mentioned. Every gap you leave gets filled with an average. That is not carelessness on the tool's part, it is what generation does when nothing constrains it. If the material exists and you are permitted to use it, supply it in full. If you cannot supply it, understand that you have asked for an invention and treat the output as one."
+          },
+          {
+            "heading": "Check the lane before you paste",
+            "body": "Grounding only works on material the model is holding, so the first question on any AfterDesk task is what you are permitted to hand over. Client files, client text and client data do not go into third-party tools. That is the promise the client was given, and silence in a brief is not permission. Three lanes are open to you. A brief can grant written permission naming a tool and a purpose, and that named material is then yours to supply. Material that is public, invented, or your own is always available. And the AfterDesk assistant inside a task you have claimed is built for method questions: it never sees the task record, the client, the files or the price, only what you type. Check the lane, then ground."
+          },
+          {
+            "heading": "Paste enough, and paste it whole",
+            "body": "When you are permitted to supply the material, supply all of the part that matters. Half a table is worse than no table, because the model will answer from the visible half and speak about the whole. Do not trim the boring rows. Do not remove the header row, which is the thing that tells it what column three means. Do not supply page 4 and describe pages 5 and 6 in a sentence, because that sentence then becomes the source for pages 5 and 6, and it is your paraphrase rather than the document. If the passage runs long, that is a chunking problem and lesson seven handles it. It is never a reason to summarise a source before the model has read it."
+          },
+          {
+            "heading": "Fence it and name it",
+            "body": "Put a visible boundary around the material. A line reading SOURCE BEGINS above it and a line reading SOURCE ENDS below it is enough, and it does two jobs. It tells the model which text is material and which text is instruction, which stops it treating a sentence written inside a contract as an order to follow. And it gives you something to point at: answer only from what falls between SOURCE BEGINS and SOURCE ENDS. If you supply more than one document, name each one, Document A, Document B, with a line saying what it is and what date it carries. Named documents are what make locators possible later, because a fact can then be tagged to Document B rather than to nothing."
+          },
+          {
+            "heading": "Keep the shape of the data",
+            "body": "Text that arrives as a table should stay a table. When you copy forty rows out of a spreadsheet and they land as one run-on paragraph, the model loses the column boundaries and starts guessing which value belongs to which field, which produces errors that are wrong in a way that is very hard to see. Paste as tab-separated or comma-separated lines, one record per line, and check that the first three lines still look like records before you continue. The same applies to headings in a long document: leave them in, because they are the locators you will ask for later. Formatting is not decoration here. It is the skeleton the model uses to know where things are."
+          }
+        ],
+        "keyPoints": [
+          "A description gets filled with averages. Paste the material itself.",
+          "Check the lane first: permission, public, invented, or the in-product assistant.",
+          "Never summarise a source before the model has read it.",
+          "Fence the source so instruction and material cannot be confused.",
+          "Paste rows as rows. A flattened table produces invisible errors."
+        ]
+      },
+      {
+        "title": "Demand a locator for every fact",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "A fact needs an address",
+            "body": "An extracted fact with no address attached is not much better than a guess, because you cannot tell the two apart. Suppose the model returns 45 findings from a 30-page audit report and every line reads like a finding. To check them you would reread the report, which is exactly the work you were trying to compress. Now suppose every line carries a page number and eight words quoted from the source. Checking one line is a search and a glance, roughly ten seconds. Checking all 45 is under ten minutes, and you would have spent longer than that reading the report once. The locator is not bureaucracy. It is the thing that converts verification from rereading into matching."
+          },
+          {
+            "heading": "Name the locator you want",
+            "body": "A locator is whatever lets you land on the exact spot in seconds. In a paginated document it is the page number, plus the section heading if the page is dense. In a spreadsheet it is the row number and the column header, and if the file has a stable identifier column, that identifier instead, because row numbers shift the moment someone sorts. In an email thread it is the sender and the date. In a transcript it is the timestamp. In a web page you were permitted to use, it is the heading above the paragraph. State which kind you want in the prompt, in the same sentence as the task. Vague requests for sources produce vague sources, which are worse than none because they look like diligence."
+          },
+          {
+            "heading": "Make it quote, not paraphrase",
+            "body": "Ask for a short exact quote alongside the locator, five to fifteen words, copied verbatim. This is the strongest single technique in the course and it works for a mechanical reason. A quote can be searched. You take the phrase, press find in the original file, and either it is there or it is not, and no judgement enters into that test. A paraphrase cannot be tested this way, because you have to read the surrounding text and decide whether it is a fair rendering, which is slow and arguable. Demand verbatim and say so plainly: quote the exact words from the source, do not tidy them. Tidied quotes are the ones that fail your search, and a failed search is a finding worth having."
+          },
+          {
+            "heading": "Put it in a table",
+            "body": "Ask for the output as rows with fixed columns: the claim, the locator, the quote, and a confidence field if the task warrants one. A table forces a locator for every single item, because an empty cell is visibly wrong in a way that a missing citation inside a paragraph is not. It also makes your own check mechanical. You work down the locator column instead of through prose. And it hands the operator a delivery that can be reviewed at speed, which matters when your work is read against a written standard before the client ever sees it. Ask for tab-separated rows if you intend to paste the result into a sheet, and name the columns in the prompt exactly as you want them."
+          },
+          {
+            "heading": "Refuse a bare answer",
+            "body": "The habit that makes this stick is refusing to accept output that lacks locators, even when you are in a hurry and the answer looks right. If you asked for page numbers and half the rows have none, do not fill them in yourself and do not let them through. Send it back: every row needs a page and a quote, write not in the document where you cannot find one. Rows that come back still bare are the rows to distrust first when you spot-check. Over a few tasks you will notice something useful. The items a model cannot locate are, far more often than chance, the items it invented. An empty locator column is a confession, and you should read it as one."
+          }
+        ],
+        "keyPoints": [
+          "A fact with no address cannot be checked faster than it can be redone.",
+          "Name the locator you want: page, row, heading, timestamp.",
+          "Demand a verbatim quote. A quote can be searched. A paraphrase cannot.",
+          "Ask for a table. Empty cells are visible. Missing citations are not.",
+          "Rows that arrive without locators are the rows most likely invented."
+        ]
+      },
+      {
+        "title": "Spot the moment it left the text",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Smoothness is the tell",
+            "body": "Real documents are lumpy. They contradict themselves between sections, they use the same word for two different things, they leave a clause hanging, and they contain a sentence clearly written by somebody who was angry at four in the afternoon. When your extraction reads as though one calm person wrote it with a style guide open, something has been smoothed. Watch for output where every finding has the same length and the same grammatical shape, where three different departments suddenly share one vocabulary, or where a messy handwritten form turns into tidy title case. Smoothness is the sign that generation has taken over from reading. Go and look at the source for two of the smoothest lines. If those are paraphrases, the rest are too."
+          },
+          {
+            "heading": "A confident answer to a gap",
+            "body": "The second tell is a complete answer to something the document does not address. You ask what the notice period is for termination and receive a clean sentence about ninety days, when the contract you supplied covers renewal and pricing and never mentions notice at all. Nothing in the reply signals the absence. The model produced the shape of an answer because a question was asked, and answering is what it does. This is why you should read your own questions before you read the answers, and mark the ones you already suspect the document may not cover. Those are the answers to check first. A document that answers everything you ask is rarer than a model that will pretend it does."
+          },
+          {
+            "heading": "Round numbers are suspicious",
+            "body": "Real figures from real files are ugly. Invoices land on 4,287.60. Headcounts come out at 143. Percentages sit at 37.4. When your extraction is full of 5,000 and 20 percent and half the customers, look hard, because roundness is a signature of generation. The same goes for dates that all fall on the first of the month, ranges that run neatly from 2020 to 2024, and counts that arrive as a tidy 100. None of this proves anything by itself, since real round numbers exist and a contract really can say 30 days. It is a flag telling you where to spend your checking. Take every suspiciously round figure and search the source for it. That is five minutes of work and it catches the worst errors."
+          },
+          {
+            "heading": "Words the file never used",
+            "body": "Skim the output for vocabulary that does not belong to the source. A warehouse operations log does not contain the phrase key stakeholders. A supplier writing a hurried email does not say pursuant to. When a term shows up in your extraction that you never saw in the material, search the source for that exact word. If it is absent, the sentence containing it was written rather than read, and everything around it deserves the same suspicion. This tell is easy to use because it costs one search. It is also the tell that survives when you are tired, since you do not need to hold the whole document in your head. You only need to notice that a word feels imported, then check whether it is."
+          },
+          {
+            "heading": "The half-grounded answer is the dangerous one",
+            "body": "The output that harms you is not the obviously invented one. It is the answer where nine details are lifted correctly from the source and the tenth is not, sitting in the same sentence, in the same voice, beside a locator that points to a real page. The correct nine buy your trust and the tenth rides in behind them. This is precisely why you check individual rows rather than judging the output as a whole. Judging as a whole means judging the average, and the average of a grounded extraction is good. What reaches the client is one wrong number in one row. So never write that the extraction looks right. Write which rows you opened, and what you found in them."
+          }
+        ],
+        "keyPoints": [
+          "Real sources are lumpy. Uniform, tidy output means something was smoothed.",
+          "A clean answer to a question the document ignores is generated.",
+          "Round numbers are a flag for where to spend your checking.",
+          "Search for words that feel imported. An absent word marks a written sentence.",
+          "Nine correct details buy trust for the tenth. Check rows, not impressions."
+        ]
+      },
+      {
+        "title": "Make it say not in the document",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Give it a way to fail",
+            "body": "A model will answer every question you ask, because that is the default behaviour and nothing in your request tells it otherwise. If you leave no acceptable way to fail, it will succeed at all costs, and the cost is invention. So give it an exit and make the exit explicit. The instruction is one clause: if the answer is not stated in the source, write not in the document and nothing else. That clause changes the output more than any amount of careful phrasing elsewhere in the prompt, because it converts a gap from something to be papered over into a legitimate result. You are not asking the tool to be modest. You are giving refusal somewhere to go."
+          },
+          {
+            "heading": "Say what a non-answer looks like",
+            "body": "Be specific about the form the refusal takes, because a vague permission to say you do not know produces hedged prose instead of a clear blank. Fix the exact string: write NOT IN DOCUMENT in the claim column and leave the quote column empty. Fixed strings are searchable, countable and sortable, which means you can filter a 200-row extraction down to the twelve gaps in one move and hand the operator a precise count. Forbid the middle ground as well: no inference, no likely, no the document implies. If a fact requires two steps of reasoning across two pages, you want that flagged rather than silently performed. Inference belongs to you, because you are the one accountable for it."
+          },
+          {
+            "heading": "Test it with a question that must fail",
+            "body": "Before you trust a grounded run, slip in one question you already know the source cannot answer. Ask a 12-page catering contract for the supplier's VAT registration number when you have read it and know it is not there. If the reply is not in the document, the grounding is holding and you can proceed with the rest. If it produces a plausible number, you have learned that everything else in that run is suspect, and you learned it in thirty seconds instead of at QC. Run this check whenever you change how you are asking, and whenever a document is unusually long. It is the cheapest single test in this course, and almost nobody does it."
+          },
+          {
+            "heading": "Never seeing a refusal is a warning",
+            "body": "Track how often the refusal actually appears. Across a real working week of grounded extractions from real documents, some questions will simply not be answerable, because documents are incomplete and people forget to write things down. If you have run thirty extractions and never once seen not in the document, that is not a run of luck. Either your instruction is not landing, or your questions are so soft that anything counts as an answer, or the tool is filling gaps and you are not catching it. A model that refuses sometimes is a model whose other answers mean something. A model that always answers has told you nothing about any of them."
+          },
+          {
+            "heading": "Deliver the gap, do not fill it",
+            "body": "The last step is yours, and it is the one that bends under deadline pressure. When the extraction comes back with nine gaps out of sixty, you deliver nine gaps. You do not use the industry norm, you do not carry a value down from the row above, and you do not insert a general figure because an empty cell looks unfinished. In your note to the operator, name them: rows 12, 19 and 44 have no stated payment term in the source, and I searched the document for term, days and net. That note is one minute of typing. It tells the operator exactly what to check and what to ask the client, and it is the difference between an honest delivery and a quiet fabrication."
+          }
+        ],
+        "keyPoints": [
+          "A model with no way to fail will invent rather than refuse.",
+          "Fix the exact refusal string so gaps are countable and searchable.",
+          "Plant one unanswerable question. A plausible answer condemns the whole run.",
+          "A tool that never refuses is not telling you anything.",
+          "Deliver nine honest gaps. Name them in the note to the operator."
+        ]
+      },
+      {
+        "title": "Spot-check a grounded extraction",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "Sampling replaces rereading",
+            "body": "Once every row carries a locator and a quote, you no longer verify by rereading the source. You verify by sampling, the way a factory checks a batch. The logic is simple. A grounded extraction either has a systematic problem, which shows up quickly in any sample, or it is broadly sound with occasional slips, which a sample of the right size will also surface. What sampling cannot do is guarantee that every row is correct, and you should never claim that it does. What it gives you is a defensible statement: I opened fourteen of the ninety rows, chosen across the whole document, and all fourteen matched the source at the stated locator. That sentence is worth far more to an operator than a confident nothing."
+          },
+          {
+            "heading": "Decide how many rows to open",
+            "body": "For a run under 30 rows, check all of them, because the whole check takes under ten minutes and sampling saves you nothing worth having. Between 30 and 200 rows, check about fifteen, and add more when the task is high stakes: money, legal terms, medical detail, anything the client will act on directly. Above 200 rows, twenty to twenty-five well-chosen rows will tell you what you need. These numbers are not statistics, they are a working floor built for the hours you actually have on a night shift. Adjust upward when one error would be expensive, and never adjust below ten on an extraction you did not read in full. Ten seconds a row is the budget you are working inside."
+          },
+          {
+            "heading": "Never take the first ten",
+            "body": "The first rows are the worst possible sample, and everybody takes them because they sit at the top of the screen. Early rows come from the beginning of the document, where the material is freshest and the model performs best. They are also the rows most people check, which means anything wrong there was likely to be found anyway. Choose deliberately instead. Take a few from the middle, a few from the very end, every row with a suspiciously round number, every row whose quote is unusually short, every row about money, and the rows whose locators cluster on a single page, because a page carrying twelve findings is either very dense or partly invented. Pick the rows an error would hide in."
+          },
+          {
+            "heading": "Let the failure rate decide",
+            "body": "The result tells you what to do next, and the thresholds are worth memorising. Zero failures in fifteen means proceed, deliver, and state in your note what you sampled. One failure means fix that row, then check fifteen more, because one is either bad luck or the first sign of a pattern and you cannot yet tell which. Two or more failures in fifteen means stop sampling. The extraction is not trustworthy at row level, so either check the whole thing by hand or discard it and rerun with a tighter prompt and smaller chunks. Do not deliver a file where you found two wrong rows and fixed exactly those two. You did not fix the file. You fixed the two you happened to see."
+          },
+          {
+            "heading": "Record the check in the note",
+            "body": "Write down what you did, in the delivery note, in one or two lines. Grounded extraction from the supplied document, every row carries a page and a quote, I verified fifteen of eighty-eight rows chosen from the middle and the end plus all currency rows, and all fifteen matched. That note does three things. It tells the operator reviewing your work exactly where the risk sits and where it does not. It protects you if an error turns up later in a row you did not sample, because you stated your method honestly instead of implying you had read everything. And it makes you actually run the check, because writing a false sentence is much harder than skipping a silent one."
+          }
+        ],
+        "keyPoints": [
+          "Under 30 rows, check them all. Above 200, check 20 to 25.",
+          "The first ten rows are the sample an error hides from.",
+          "Zero in fifteen, proceed. One, check fifteen more. Two, stop.",
+          "Fixing the two rows you found does not fix the file.",
+          "State your sample in the delivery note. It protects the operator and you."
+        ]
+      },
+      {
+        "title": "Long documents and honest chunking",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "The middle goes soft",
+            "body": "When you hand over a very long document in one piece, the quality of the reading is not even across it. The beginning and the end are handled well. The middle is where facts thin out, where a section quietly gets skipped, and where the model starts describing what a document of this kind usually says. You can watch this happen. Ask for findings from a 90-page report and count how many come from pages 30 to 60. If the answer is two, you did not get an extraction of the middle, you got an extraction of the edges. Do not fight this with a sterner instruction. Fight it by making each piece of material small enough that there is no soft middle."
+          },
+          {
+            "heading": "Cut on the document's own seams",
+            "body": "Chunk where the document already divides itself. A chapter, a numbered section, one vendor's block, one month of transactions, one meeting inside a transcript. Cutting at an arbitrary word count is what splits a table from its header row, or a clause from the definition three lines above that gives it meaning, and the model will then answer confidently from the half it can see. Keep each chunk to something you could read yourself in a couple of minutes. Repeat the same instruction, the same question list and the same output columns for every chunk without editing them in between, because a prompt you improved halfway through produces two incompatible halves of one deliverable."
+          },
+          {
+            "heading": "Never summarise a summary",
+            "body": "The tempting shortcut with twelve chunks is to summarise each one, then summarise the twelve summaries into a final answer. Do not. Each pass strips the specific and keeps the general, because that is what compression does, and the specific is exactly what the client is paying for. The invoice number survives one pass and dies in the second. The one sentence where the supplier admits the delay was theirs becomes performance issues were discussed. What you deliver then reads well and contains nothing anyone can act on. Extract from each chunk directly into the same final table, locators intact, and let the table run long. A long table with real detail beats a tidy paragraph every time."
+          },
+          {
+            "heading": "Carry the address through every chunk",
+            "body": "Chunking breaks locators unless you repair them yourself. If you supply pages 40 to 55 as chunk six, the model will number them from one and hand you page 3, which points at nothing in the client's file. Tell it the real range in the prompt: this is pages 40 to 55 of the source, cite the true page number. Then label the chunk in your working file so you can trace any row back to it. When you paste rows from twelve chunks into one sheet, keep a column recording which chunk each row came from. That column costs nothing and saves the hour you would otherwise spend hunting for one row's origin when the operator asks about it."
+          },
+          {
+            "heading": "Check the seams and the totals",
+            "body": "Two things go wrong at assembly. Duplicates, because an item near a boundary appears in two chunks, sometimes worded differently enough that you do not notice. And gaps, because one chunk was pasted twice and another never ran at all. So run two mechanical checks before you deliver. Sort the assembled table by locator and look for the same fact appearing under two different page numbers. Then confirm that every chunk you planned actually contributed rows, and that the pages covered run continuously from the first to the last with nothing missing between them. This takes four minutes on a 200-row file. A missing chunk is the failure most likely to reach QC, because everything that is present looks fine."
+          }
+        ],
+        "keyPoints": [
+          "Long inputs go soft in the middle. Small chunks have no middle.",
+          "Cut on the document's own seams, never on a word count.",
+          "A summary of a summary keeps the general and kills the specific.",
+          "Tell each chunk its true page range, or the locators point nowhere.",
+          "Check for duplicate rows at boundaries and for chunks that never ran."
+        ]
+      },
+      {
+        "title": "When grounding does not save you",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Faithful to a wrong source",
+            "body": "Grounding guarantees one thing only: that the answer matches the material you supplied. It says nothing about whether the material is right. If the client's price list carries a typo and shows a product at 1,290 pesos instead of 12,900, a perfectly grounded extraction will carry that typo through with a locator and a verbatim quote, and every check you run will pass. Your spot-check confirms the quote, not the world. So keep a second question running quietly while you work: does this number make sense beside the others. A price ten times below its neighbours, a date before the company existed, a total that does not match its parts. Grounding protects you against invention, not against error."
+          },
+          {
+            "heading": "Old and true is still wrong",
+            "body": "A document can be accurate and useless at the same time. A rate card from 2022, a staff list from before two people left, a policy superseded by a memo you were never given. The model has no way to know any of this, and it will answer from what it holds with complete confidence, because inside the supplied text the fact is true. Your defence is to check the date on every source before you use it, and to look for a version number or a revision line. When you cannot establish how current something is, say so in the delivery note: the source document carries no date, figures are as stated in it. That is one sentence, and it moves a real risk from hidden to visible."
+          },
+          {
+            "heading": "When the source fights itself",
+            "body": "Long documents contradict themselves regularly. Page 4 says invoices are due in 30 days, appendix B says 45, and both are inside the file you were given. Ask a model for the payment term and it will hand you one of them, usually the one it met first, and the contradiction disappears without a trace. Guard against this by asking in a form that surfaces conflict: list every place the source states a payment term, with page and quote, even where they agree. Now you get two rows instead of one, and the problem is visible. Then do not resolve it. Choosing between them is a decision about the client's own business, and you have no way to know which version governs."
+          },
+          {
+            "heading": "Scans corrupt before reasoning starts",
+            "body": "Some material is unreliable before anyone reasons about it at all. A scanned invoice where an 8 reads as a 3. A table inside a document that flattens when copied, so the value from column four lands under column two. A screenshot pasted as text. A transcript where automatic captions guessed at a name. Grounding cannot help here, because the corrupted version has become the source, and the extraction will be faithful to the corruption. Check these against the original image with your own eyes, not against the text you pasted, and check the awkward cases specifically: currency columns, anything with a leading zero, names, and rows near a page break. If you cannot read it reliably, say so rather than transcribing your best guess."
+          },
+          {
+            "heading": "Flag it, keep your hands off",
+            "body": "When the material is wrong, stale or self-contradictory, your job is to report it precisely and stop. Not to correct it from general knowledge, not to pick the version that seems more sensible, and not to leave it out because it complicates an otherwise clean deliverable. Write it into the note: page 4 states 30 days, appendix B states 45, both quoted in rows 12 and 13, and I have not chosen between them. The operator reviews your delivery against a written standard before the client sees it, and a flagged contradiction is something they can settle in one message. A silently resolved one becomes a wrong number inside a client's system, found in a month, traced back to your delivery."
+          }
+        ],
+        "keyPoints": [
+          "Grounding proves the answer matches the source. It does not prove the source.",
+          "Check the date and version of every document before you work from it.",
+          "Ask where a fact is stated, plural. Contradictions only appear when you look.",
+          "Scans and copied tables corrupt before reasoning starts. Check against the image.",
+          "Report the conflict. Choosing between two client versions is not your call."
+        ]
+      }
+    ],
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You have 90 minutes left on a task asking what the client's supplier contract says about late delivery penalties. The contract is open on your screen. How should you put the question?",
+          "options": [
+            "Ask what contracts in this industry typically say, then check that answer against the file",
+            "Ask from memory and label the result as general industry guidance for the operator",
+            "Supply the permitted contract text, instruct it to answer only from that text, then ask",
+            "Ask from memory, since the model has read thousands of contracts and yours is standard"
+          ],
+          "correct": 2,
+          "explain": "An answer drawn from memory has to be researched from scratch. An answer drawn from text you supplied only has to be matched against it."
+        },
+        {
+          "prompt": "A brief grants written permission to use a named tool on a 6-page client policy document. It is three in the morning and describing the document in two sentences would be much faster than supplying it. What do you give the tool?",
+          "options": [
+            "The document in full, between clear source markers, then your questions against it",
+            "A careful two-sentence description, since your description is faithful to what the document says",
+            "The first page in full, plus a description of the rest, which covers the important part",
+            "A description now, then a check of the answer against the document afterwards"
+          ],
+          "correct": 0,
+          "explain": "Every gap you leave in a description gets filled with an average. Supplying the material itself is what removes the room to invent."
+        },
+        {
+          "prompt": "A task gives you 40 pages of client meeting minutes to extract action items from. The brief says nothing about AI tools. An online summarising site would read the whole file in one upload. Do you use it?",
+          "options": [
+            "Yes, because grounding the tool on the real file is the safer way to use it",
+            "Yes, but only the pages with no names on them, since the rest is not personal data",
+            "Yes, then delete the file from that site once the extraction is finished",
+            "No. Silence in a brief is not permission to move client data anywhere"
+          ],
+          "correct": 3,
+          "explain": "Grounding is a technique, not a permission. The data is what is protected, and only a written grant in the brief moves that line."
+        },
+        {
+          "prompt": "The model returns 45 findings from an audit report you were permitted to supply. Every line reads like a real finding. Rereading the report would take ninety minutes and you have two hours left. What now?",
+          "options": [
+            "Deliver the 45 findings with a note saying they came from the supplied report",
+            "Reread the whole report, since that is the only honest way to be certain",
+            "Rerun asking for a page and a short exact quote on every line, then sample",
+            "Ask the model whether its own findings are accurate and deliver if it confirms them"
+          ],
+          "correct": 2,
+          "explain": "A locator and a verbatim quote turn checking from rereading into searching. That is what makes verification fit inside the time you actually have."
+        },
+        {
+          "prompt": "You plant a test question, asking a supplied 12-page catering contract for the supplier's VAT registration number, which you have read the contract and know is absent. The model returns a plausible twelve-digit number. What does that tell you?",
+          "options": [
+            "Nothing much, since the number is correctly formatted and may well be right",
+            "The whole run is unreliable, so rerun with an explicit instruction to write not in the document",
+            "Only that one line is wrong, so delete it and keep the rest of the extraction",
+            "Ask the model to confirm the number appears in the contract, and keep it if so"
+          ],
+          "correct": 1,
+          "explain": "A fabricated answer to a planted gap means the grounding is not holding. That condemns the rows you did not check, not just this one."
+        },
+        {
+          "prompt": "You have a grounded 88-row extraction, every row carrying a page number and a quote, and twenty minutes to check it. The rows at the top of the table are the easiest to reach. Which rows do you open?",
+          "options": [
+            "The first fifteen, carefully, which is a fair sample of how the work was done",
+            "Every row, glanced at quickly, rather than a few rows examined properly",
+            "Rows from the middle and the end, plus every round number and every currency row",
+            "Five rows, since every row already carries a quote and quotes are reliable"
+          ],
+          "correct": 2,
+          "explain": "Early rows are where the model performs best and where an error is least likely to be hiding. Choose the rows that would conceal one."
+        },
+        {
+          "prompt": "You sampled fifteen rows of a 120-row grounded extraction. Two quotes do not appear anywhere in the source. You fix those two rows, and the delivery is due in forty minutes. What is the right move?",
+          "options": [
+            "Stop sampling, then either check the whole file by hand or rerun it with tighter chunks",
+            "Deliver, since the two errors you found have now been corrected",
+            "Check five more rows, and deliver if all five of those pass",
+            "Deliver with a note saying the extraction may carry a small margin of error"
+          ],
+          "correct": 0,
+          "explain": "Two failures in fifteen describes the file, not those two rows. Fixing what you happened to see does not fix what you did not."
+        },
+        {
+          "prompt": "A 90-page transcript must become a list of every commitment anyone made, with the speaker named. You split it into nine chunks and now hold nine sets of results. How do you combine them?",
+          "options": [
+            "Summarise each chunk, then summarise the nine summaries into one final list",
+            "Keep only the strongest commitments from each chunk so the deliverable stays readable",
+            "Ask the tool to merge the nine outputs into one polished narrative",
+            "Extract from each chunk straight into one table, with speaker and timestamp intact"
+          ],
+          "correct": 3,
+          "explain": "Each pass of compression keeps the general and drops the specific. The specific detail is exactly what the client is paying to receive."
+        },
+        {
+          "prompt": "You supplied pages 40 to 55 of a report as your sixth chunk. Its rows come back citing pages 2, 5 and 11, and you are assembling nine chunks into a single sheet. What do you do?",
+          "options": [
+            "Leave the numbers, since the quotes are still verbatim and can be searched",
+            "Rerun the chunk stating its true page range, and add a column recording the chunk",
+            "Add 39 to every page number by hand, which is arithmetic you can do quickly",
+            "Delete the page column, since the quotes alone let anyone find the passage"
+          ],
+          "correct": 1,
+          "explain": "A locator that points at nothing in the client's file is worse than none, because it looks like diligence and wastes the reviewer's time."
+        },
+        {
+          "prompt": "A grounded extraction from the client's price list shows one product at 1,290 pesos while every comparable product sits near 12,900. The page number and the quote both check out against the file. How do you deliver it?",
+          "options": [
+            "Corrected to 12,900, since the pattern makes the intended price obvious",
+            "Exactly as extracted and silent, since the row is verified against the source",
+            "As stated in the source, with the anomaly flagged in your note to the operator",
+            "With the row removed, since a figure you doubt should not reach the client"
+          ],
+          "correct": 2,
+          "explain": "Grounding proves the answer matches the source, not that the source is correct. An anomaly is something to report, not something to quietly repair."
+        },
+        {
+          "prompt": "Page 4 of a supplied contract states invoices are due in 30 days. Appendix B states 45. The client asked for one payment term and your sheet has one cell for it. What goes in the cell?",
+          "options": [
+            "Both, with page and quote for each, and a line saying you did not choose",
+            "30 days, since the main body of a contract normally overrides an appendix",
+            "45 days, since the appendix is more specific and was probably written later",
+            "An average of 37 days, with a note that the source is inconsistent"
+          ],
+          "correct": 0,
+          "explain": "Which version governs is a decision about the client's own business. A flagged contradiction is settled in one message. A hidden one surfaces in a month."
+        },
+        {
+          "prompt": "Mid-task you cannot remember how to phrase an extraction so that every row carries a locator. The client spreadsheet is open in front of you and your deadline is in an hour. Where do you ask?",
+          "options": [
+            "A consumer assistant, with three real rows pasted so the answer fits your data",
+            "A consumer assistant, with only the column headers, since headers are not client data",
+            "Nowhere. Guess a phrasing and check the output harder to compensate",
+            "The AfterDesk assistant on the claimed task, describing no client content at all"
+          ],
+          "correct": 3,
+          "explain": "Method questions do not need the material. The in-product assistant is sanctioned for exactly this and never sees the task record, the files or the client."
+        }
+      ]
+    }
+  },
+  "ai-prompting-advanced": {
+    "slug": "ai-prompting-advanced",
+    "title": "Prompting past the first draft",
+    "track": "ai",
+    "tagline": "A prompt that worked once is luck; this course turns it into method.",
+    "summary": "You wrote a prompt on Tuesday, it produced something usable, and on Thursday the same prompt produced mush. This course teaches the tier above basic prompting: examples instead of adjectives, a fixed output shape, long tasks broken into checked steps, constraints an operator could verify, and a personal prompt library you version. By the end a good prompt stops being a lucky night and becomes a tool you own.",
+    "outcomes": [
+      "You can tell a prompt that got an answer from a prompt you can run again.",
+      "You can teach a model your target output with two or three worked examples.",
+      "You can specify a fixed output shape that drops into the delivery template unchanged.",
+      "You can split a long task into steps with a checkpoint after each one.",
+      "You can write constraints another person can check instead of adjectives nobody can.",
+      "You can keep a versioned prompt library and prove each edit against frozen test cases."
+    ],
+    "lessons": [
+      {
+        "title": "A prompt is not a process",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "One good answer proves nothing",
+            "body": "On Tuesday you asked for a summary of a 12-page policy and got something you could almost paste. On Thursday you asked again, worded slightly differently, and got four paragraphs of nothing. Nothing changed except your typing. That is the whole problem with treating a prompt as a conversation: the good result lived in a chat window, and the chat window is gone. A process is different. A process is a written instruction you can hand to yourself next week, run on a different task, and get output within the same narrow range. Getting an answer is a Tuesday event. Building something you can run again is the work this course is about."
+          },
+          {
+            "heading": "Save the exact words you sent",
+            "body": "The moment a prompt works, the useful object is not the output. It is the input. Copy the exact text you sent, every word of it, into a plain file before you close the window. People rewrite it from memory later and lose the part that was doing the work, usually a small clause like list only the rows where the amount is blank. Memory smooths prompts into something reasonable and useless. Alongside the text, save one line saying what task it was for and what the output looked like when it went well. Two minutes of copying on a good night saves an hour of rebuilding on a bad one."
+          },
+          {
+            "heading": "Three parts survive, one does not",
+            "body": "Look at any prompt that worked and you will find four things in it: the situation, the job, the rules, and the material. The first three are reusable. The fourth is not. The situation, the job and the rules are your asset, and they should be written once and kept. The material is whatever you were working on that night: the 60 rows, the meeting notes, the draft. It changes every task and it never belongs in the saved version. Separating them is the single move that turns a prompt into a process. What you keep is a form with a hole in it. What you paste in each time is the thing that fills the hole."
+          },
+          {
+            "heading": "Where the material is allowed to go",
+            "body": "That hole is exactly where the confidentiality rule bites. Client material does not go into third-party or consumer AI tools: not a chat assistant you signed up for yourself, not an online transcription site, not a document summarizer, not an image tool. AfterDesk provides its own assistant inside a task you have claimed. It is sanctioned. It cannot see the task record, the client identity, the files or the price; it sees only what you type, and what you type is scrubbed for personal data before storage. So ask it method questions freely. A brief can also grant written permission to use a named external tool for a named purpose, and that permission is real. Silence in a brief is not permission."
+          }
+        ],
+        "keyPoints": [
+          "A result you cannot reproduce next week is luck, not method.",
+          "Save the exact text you sent, not a remembered version of it.",
+          "Situation, job and rules are reusable; the material never is.",
+          "Client material stays out of outside tools; the in-product assistant is sanctioned.",
+          "A brief can grant named permission in writing. Silence cannot."
+        ]
+      },
+      {
+        "title": "Show examples instead of adjectives",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Adjectives are opinions, examples are specifications",
+            "body": "Ask for a professional summary and you will get whatever the model averaged professional to mean. Ask for a concise one and you may get 40 words or 400. Adjectives are opinions and every reader holds a different one. An example is a specification. If you paste two finished summaries that look exactly like what you want, length, tone, ordering, and the way numbers are written, you have removed the argument. The model does not have to guess your taste; it can see it. This is the difference between describing a house and showing a photograph of it. On a 40-item task, that difference is the difference between one pass and three."
+          },
+          {
+            "heading": "Two or three, paired input and output",
+            "body": "The format matters. An example is a pair: the raw input on one side, the finished output on the other, so the model can see the transformation rather than only the destination. Two pairs is usually enough. Three is better when the task has a wrinkle, and one is risky because a single example gets copied too literally, including its subject matter. Keep the pairs short. A 300-word example teaches no more than a 60-word one and buries the pattern. If your task has an obvious edge case, spend your third example on it: an input where a field is missing, and an output showing exactly how you want the gap handled."
+          },
+          {
+            "heading": "Where your examples come from",
+            "body": "The best examples are the client's own approved past work, because they encode a house style nobody wrote down. Read the previous delivery that passed review and lift the shape of it: the ordering, the phrasing of headings, the level of detail. But that material is the client's, and it does not leave for an outside tool. If you are working inside the sanctioned assistant, or under a brief that names an external tool in writing, you have a lane. Otherwise, build the example yourself. Invent a fictional company, fictional numbers, fictional names, and write the input and the finished output by hand. An invented example teaches the same shape and carries none of the client."
+          },
+          {
+            "heading": "Your examples are also your trap",
+            "body": "Examples are copied, which is the point and also the danger. If both of your examples happen to be about restaurants, expect restaurant vocabulary to bleed into a task about dental clinics. If both examples run to three bullet points, expect three every time, even when the source only supports two. Vary what should vary and hold constant only what you actually want held. When output starts coming back subtly wrong in the same way every run, suspect your examples before you suspect the model. The fix is usually one word in one example. Read your examples the way an operator will read your delivery: assume everything in them is an instruction, because to the model it is."
+          }
+        ],
+        "keyPoints": [
+          "Adjectives are opinions. An example is a specification the model can copy.",
+          "Pair raw input with finished output so the transformation is visible.",
+          "Two examples is usually enough; spend a third on the edge case.",
+          "Client work stays in sanctioned lanes; otherwise invent a fictional example.",
+          "Everything in an example is an instruction, including its subject matter."
+        ]
+      },
+      {
+        "title": "Demand the same shape every time",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Prose costs you the rework",
+            "body": "You asked for a competitor summary and received four paragraphs. The delivery template wants six columns: company, product, price, currency, source URL, date checked. Now you spend 25 minutes reading prose and retyping it into cells, which is the exact work you were trying to avoid, plus a fresh chance to mistype. The problem was never the model. You asked for information and got information; you needed a shape. Naming the shape in the prompt costs one extra sentence and removes the retyping entirely. Specify the columns, their order, the format of dates, the format of currency, and what goes in a cell when the answer is missing. Then the output pastes in."
+          },
+          {
+            "heading": "Name the columns and their order",
+            "body": "Write the header row into the prompt exactly as it appears in the delivery file, in the same order, spelled the same way. If the template says Date checked, do not write Date verified and reconcile later. Order matters more than it looks: a sheet whose columns arrive in a different sequence every run cannot be pasted, only rebuilt. State the separator too, whether you want tab-separated rows you can paste into Google Sheets or a plain table. And state one rule for missing values, such as writing the word unavailable rather than leaving a blank, because blanks and spaces and the word none in the same column will cost you a sort later."
+          },
+          {
+            "heading": "Pin the formats that drift",
+            "body": "Some fields drift on their own unless you nail them down. Dates are the worst: 03/04/2026 means two different days depending on who reads it, so say the format you want and give an example of it, such as 2026-03-04. Currency drifts next: decide whether you want 1250 or 1,250 or PHP 1,250.00, and say so. Then names, phone numbers, and anything with a country code. Percentages need a decision about the sign. Say it once in the prompt and the whole run comes back consistent; leave it unsaid and you will be find-and-replacing at four in the morning across 200 rows. A column that is consistently wrong is fixable in one pass. A column that is inconsistently right is not."
+          },
+          {
+            "heading": "Forbid the friendly extras",
+            "body": "Left alone, a model likes to open with here is the table you requested and close with let me know if you want changes. It likes to add a summary row you did not ask for, or a footnote explaining its reasoning. All of it is polite and all of it breaks a paste. Say what you do not want as plainly as what you do: no introduction, no closing sentence, no summary row, no commentary, output the rows and nothing else. It feels rude to write. It is not rude, it is a specification, and it saves you deleting the same two sentences 30 times a week. Check the first run to confirm the ban held."
+          },
+          {
+            "heading": "Shape is not accuracy",
+            "body": "A perfectly shaped table is still a table of claims. Structured output makes checking faster, because a fixed column order means your eye knows where to look, but it also makes wrong output look finished. That is a real risk on a night shift at hour six. Treat the shape as a delivery convenience and nothing more. Every value in every cell still needs the same verification it needed when it arrived as prose: the source checked, the figure traceable, the unavailable earned. Polish proves nothing. If anything, budget more checking time on well-shaped output than on messy output, because messy output warns you and neat output does not."
+          }
+        ],
+        "keyPoints": [
+          "Ask for a shape, not just information, or you retype the answer.",
+          "Copy the template header row into the prompt, same words, same order.",
+          "Pin dates, currency and missing values explicitly; they drift on their own.",
+          "Ban the greeting, the closing line and the unrequested summary row.",
+          "A neat table is still unverified. Polish proves nothing."
+        ]
+      },
+      {
+        "title": "Break long tasks into checkpoints",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "One giant request fails silently",
+            "body": "You paste 60 pages of transcript and ask for a themed summary with quotes and action items in one go. What comes back is coherent, and you have no idea where it went wrong. Long requests fail in the middle, quietly. The model loses the thread around item 30, invents a theme to cover the gap, and finishes confidently. Nothing in the output flags the seam. If you find the error at all, you find it after delivery, and you cannot repair one step without rerunning everything. A decomposed task fails loudly and locally instead. Step three comes back wrong, you fix step three, and steps one and two are still good. That is the entire argument."
+          },
+          {
+            "heading": "Put a checkpoint where a mistake compounds",
+            "body": "Checkpoints are not evenly spaced. They go at the joints where one step's output becomes the next step's input, because that is where an error stops being an error and starts being a foundation. Extracting a list of themes is a joint: if the theme list is wrong, every quote you sort under it is wrong too. Grouping 200 rows into categories is a joint. Deciding which of 45 vendors are in scope is a joint. Formatting the final table is not a joint, because a formatting mistake is visible and cheap. Ask one question of each step: if this comes out wrong, does the next step multiply it? If yes, you stop and look before continuing."
+          },
+          {
+            "heading": "A checkpoint means you actually look",
+            "body": "A checkpoint is not a pause. It is you reading the intermediate output against the source with your own eyes, then deciding to continue, correct, or restart the step. Ten themes came back; open the transcript and confirm that theme seven appears in it at all. Forty-five vendors were classified; check five by hand, chosen from different parts of the list, not the first five. If the check fails, fix the step and rerun from there, not from the top. Write your correction into the step's instruction so the same failure does not return next task. Checking three intermediate outputs for two minutes each is cheaper than one correction request, and far cheaper than a delivery an operator sends back."
+          },
+          {
+            "heading": "Do not chop what does not need chopping",
+            "body": "Decomposition has a cost. Five steps means five prompts to write, five outputs to read, and five chances to mistype something between them. A task that takes one clean pass should stay one clean pass. Rewriting a single 200-word paragraph does not need a pipeline. The signal to break a task up is scale or dependency: many items, or a step whose result the next step relies on. Below that, splitting is ceremony. The honest test is whether you could check the whole output in one sitting without losing your place. If you can, run it whole. If you cannot, that is not a bigger prompt problem, it is a decomposition problem, and the fix is steps."
+          }
+        ],
+        "keyPoints": [
+          "One giant request fails in the middle, quietly, with nothing marking the seam.",
+          "Checkpoints belong at joints where one step feeds the next.",
+          "A checkpoint means reading the intermediate output against the source yourself.",
+          "Fix and rerun the failing step, not the whole chain.",
+          "Small single-pass tasks do not need a pipeline. Splitting costs time."
+        ]
+      },
+      {
+        "title": "Write constraints somebody can check",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "Concise is not a constraint",
+            "body": "Concise, professional, thorough, natural: none of these can be checked. Two people reading the same paragraph will disagree about whether it is concise, and you will disagree with yourself at hour seven. A checkable constraint has a number, a list, or a rule that produces the same verdict from any reader. Under 40 words is checkable. Exactly three sentences is checkable. Only the five categories named below is checkable. No adjectives before the company name is checkable. The test is simple: could an operator who has never spoken to you hold your output against the constraint and get a yes or a no without asking your opinion? If not, rewrite the constraint until they could."
+          },
+          {
+            "heading": "Closed lists beat sensible judgement",
+            "body": "Categorize these 200 support tickets sensibly produces categories that shift halfway down the file, merge, and multiply. You end up with Billing, Billing issue, and Payments as three separate buckets. Name the list instead: use exactly these five categories, billing, access, bug, feature request, other, and put anything that does not fit into other. Now the output is countable and the disagreements are visible. A closed list also gives you an escape hatch that is honest, which is what other is for. Without one, ambiguous items get forced into the nearest category and the error hides. With one, they collect in a pile you can look at and ask the operator about."
+          },
+          {
+            "heading": "Say what to do with the gap",
+            "body": "Most constraint failures are not about the normal case. They are about the row where the information is not there. Say in advance what should happen: if the price is not published, write unavailable, do not estimate. If the transcript does not name a speaker, write speaker unknown rather than guessing from context. If a quote would exceed 25 words, cut from the end and mark it with an ellipsis. Unstated, a model will fill the gap with something reasonable, and reasonable is exactly how invented data enters a file. The rule from your research training holds here without change. Nothing goes in a cell that no source put there. Write that rule into the prompt itself."
+          },
+          {
+            "heading": "Then check the constraint yourself",
+            "body": "A constraint in a prompt is a request, not a guarantee. Under 40 words comes back at 46 often enough that you should count. So build the check into your own routine: run the output, then verify the constraint on a sample before you look at anything else. If you asked for five categories, sort the column and see how many distinct values appear. If you asked for 40 words, check the three longest entries. This takes a minute and it catches the failure that would otherwise reach the operator. Writing checkable constraints is only half the value. The other half is that you can now check them in a minute instead of rereading everything."
+          }
+        ],
+        "keyPoints": [
+          "If two readers can disagree, it is not a constraint.",
+          "Numbers and closed lists produce the same verdict from any reader.",
+          "Name the categories, including an honest other, before you ask for sorting.",
+          "State what to write when the information is missing, or invention fills it.",
+          "A constraint is a request. Verify it on a sample yourself."
+        ]
+      },
+      {
+        "title": "Know when to start clean",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "You are now arguing with a machine",
+            "body": "The pattern is familiar. The first answer was close, so you said no, shorter. It got shorter and lost a column. You said keep the column. It came back with the column and the old length. Twenty minutes and eleven messages later, you are negotiating. Notice what has happened: every wrong answer is still in the conversation, and the model is weighing all of it, including its own mistakes. You are no longer giving instructions, you are correcting a moving target. That feeling of being in an argument is a real signal, not frustration to push through. When you notice it, stop replying. The next section is what to do instead."
+          },
+          {
+            "heading": "Three corrections, then rewrite",
+            "body": "Give yourself a rule you can follow when tired, because judgement is the first thing a night shift takes. Three corrections is a good limit. If the output is still not right after three, do not send a fourth. Open a fresh conversation and write a new prompt that includes everything you learned from the failed one. The three corrections were not wasted; they told you which instructions were missing. Fold them in as constraints at the start rather than as complaints at the end. A clean start with a better prompt usually lands in one try, and it takes less time than the fourth correction would have. Counting to three is easier than deciding each time."
+          },
+          {
+            "heading": "When staying in the thread is right",
+            "body": "Iterating in place is not always wrong. It is the right move when the output is fundamentally correct and you are adding, not repairing. Now do the same for the remaining 30 rows. Now add a column for the date checked. Those build on a good foundation and the accumulated context helps you. The distinction is direction. If your messages are additive, stay. If your messages are corrective, and especially if you are correcting the same thing twice, the context is now working against you, because the wrong version is sitting in it as an example. Additive means the thread is an asset. Corrective means the thread has become the problem."
+          },
+          {
+            "heading": "Harvest the thread before you close it",
+            "body": "Before you abandon a bad conversation, take one minute and write down what it taught you. Usually it is one or two sentences: the model kept including the header row, so say exclude the header. It kept expanding abbreviations, so say leave abbreviations as written. Those sentences are the improvement, and they belong in your saved prompt, not only in the fresh conversation you are about to start. Most people restart, get a good result, and never update the file, so the same argument happens again next week. The whole point of a bad thread is that it is diagnostic. Pay yourself for the twenty minutes by keeping what they bought."
+          }
+        ],
+        "keyPoints": [
+          "A bad thread carries its own wrong answers forward as examples.",
+          "Three corrections is the limit. After that, start clean.",
+          "Additive messages justify staying; corrective messages mean the thread is the problem.",
+          "Fold the corrections into the opening prompt, not the end of the argument.",
+          "Write down what the failed thread taught you before closing it."
+        ]
+      },
+      {
+        "title": "Build a prompt library you own",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "A folder beats a memory",
+            "body": "Your library does not need software. One folder, one plain text file per prompt, named for what it does: vendor-table-from-notes, meeting-recap-6-bullets, invoice-fields-to-columns. Inside each file, four things: the prompt text, one line saying what it is for, one line saying what good output looks like, and the date you last changed it. That is the whole system. People skip this because a chat history feels like a library, but chat histories are unsearchable, unlabeled and eventually gone. Twelve well-named files beat 300 conversations. After three months you will reach for the folder before you reach for a blank prompt box, and that is when the compounding starts."
+          },
+          {
+            "heading": "Client-free is the whole discipline",
+            "body": "This is the rule that makes the library safe to keep: no client material inside it. No real company names, no real contacts, no numbers lifted from a delivered file, no fragment of a brief pasted in for context. Your saved prompt holds the situation, the job, the rules and your invented examples. It never holds the material. Written this way, the library is yours, it travels with you across every client you will ever serve, and there is nothing in it you would mind an operator reading. Written the other way, it is a copy of confidential work sitting in a folder on your laptop for a year. Same folder, entirely different object."
+          },
+          {
+            "heading": "Version by keeping the old one",
+            "body": "Versioning sounds technical and is not. When you change a prompt meaningfully, do not overwrite it. Copy the file, add v2 to the name, and edit the copy. Keep v1 until v2 has survived a few real tasks. At the top of v2, write one line: what you changed and why, such as added the no-summary-row rule after the operator flagged an extra line. Six weeks later, when v2 turns out to be worse in a way you did not anticipate, v1 is still sitting there and you lose ten seconds instead of an evening. The note matters as much as the file. A prompt with no history of changes cannot be reasoned about, only rewritten."
+          },
+          {
+            "heading": "Write down what it is not for",
+            "body": "The line people never write is the most useful one. Under each prompt, note the boundary: this works for meeting notes under 2,000 words, not for full transcripts. This handles vendor lists where the source is a table, not free text. Six months on, you will not remember why the summarizer produced nonsense that one night, and without the note you will assume the prompt is broken and rewrite it. It was not broken. It was used outside its range. Scope notes also stop you from stretching a prompt onto a task it half fits, which is where most bad output comes from. A prompt that says what it cannot do is a prompt you can trust."
+          },
+          {
+            "heading": "Prune the library twice a year",
+            "body": "A library that only grows becomes a pile. Twice a year, open the folder and read every file. Delete the ones you have not used in six months, because a prompt you never reach for is noise between you and the three you actually need. Merge near-duplicates into one prompt with a variable line. Promote the two or three you use weekly to the top by renaming them so they sort first. Twenty files you know cold beat sixty you have to search. This half hour also does something quieter: rereading your own prompts shows you the habits you have picked up, and usually one of them is worth removing."
+          }
+        ],
+        "keyPoints": [
+          "One folder, one file per prompt, named for what it does.",
+          "No client material in the library, ever. Invented examples only.",
+          "Copy to v2 rather than overwriting, and note what changed.",
+          "Record what each prompt is not for; scope notes prevent false blame.",
+          "Prune twice a year. Twenty known files beat sixty searched."
+        ]
+      },
+      {
+        "title": "Prove the change with frozen tests",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "Better is a feeling until you measure",
+            "body": "You edited a prompt at two in the morning, ran it once, liked the result, and saved it. That is the whole basis for calling it better. Two things could have happened: your edit improved the prompt, or that particular input was easy. You cannot tell from one run. Worse, the edit that fixed the length may have quietly broken the date format, and you will not find out until an operator does. This is the point where prompting stops being a knack and becomes work you can defend. Not because measurement is virtuous, but because you will keep editing prompts for years and you need a way to stop making them worse."
+          },
+          {
+            "heading": "Freeze five inputs and their right answers",
+            "body": "Build a test set once. Five invented inputs is enough, and they must be invented, because this file lives outside any task. Make them cover the range: two ordinary cases, one with a missing field, one that is unusually long, one with an edge you have been burned by before. For each, write the output you would accept, by hand, once. That hand-written answer is the known-good. It takes about an hour to build and you never build it again. Freeze it, meaning you do not quietly edit an input because the new prompt struggles with it. The moment the test set moves to suit the prompt, it stops measuring anything."
+          },
+          {
+            "heading": "Change one thing, then rerun all five",
+            "body": "Edit one thing at a time. Add the missing-value rule, or tighten the word limit, or replace an example, but not all three in one sitting. Then rerun all five test inputs, not the one that prompted the change. Score each against your known-good answer with a plain pass or fail, and write the result next to the version number. Now you can see the shape of the edit: four passes and one new failure is not an improvement, it is a trade, and you should know which trade you took. One thing at a time is slower on the night and much faster over a month, because when something breaks you know exactly which change did it."
+          },
+          {
+            "heading": "The same input can give different answers",
+            "body": "One thing to expect: run the same prompt on the same input twice and the wording will differ. That is normal and it is why you score against a standard rather than comparing the two outputs letter by letter. Your known-good answer is not a target the model must match exactly. It is a description of what an acceptable answer contains: these six columns, this date format, under 40 words, unavailable where the source is silent. Score whether the run satisfies that description. If a change makes results pass on some runs and fail on others, that is not a pass. Reliability is part of what you are testing, and an unreliable prompt is a prompt you will babysit forever."
+          },
+          {
+            "heading": "Testing does not replace checking",
+            "body": "A prompt that passes five frozen tests is a prompt you can start with. It is not a prompt you can deliver from unchecked. The test set proves the instruction behaves on inputs you already understand; the task in front of you is an input you have never seen, and it is real. Every row still gets the verification the standard requires, and the operator still reviews the work against a written standard before the client sees any of it. What testing buys you is a better first draft and fewer surprises, not permission to stop looking. The specialist who tests prompts and still checks output is the one whose deliveries pass review the first time."
+          }
+        ],
+        "keyPoints": [
+          "One good run is not evidence. It may have been an easy input.",
+          "Five invented inputs with hand-written known-good answers, built once and frozen.",
+          "Change one thing, then rerun every test, not just the failing one.",
+          "Score against a description of acceptable output, not word-for-word matching.",
+          "A tested prompt is a better first draft, never an unchecked delivery."
+        ]
+      }
+    ],
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You need the model to match a client's house style for a weekly recap, and the last three approved recaps are sitting in the task files. The brief says nothing about outside tools. Your shift ends in two hours. What do you do?",
+          "options": [
+            "Paste the three approved recaps into a consumer AI tool; they are already approved work.",
+            "Skip examples entirely and describe the style in adjectives instead, to stay safe.",
+            "Study the approved recaps yourself, then build invented examples that carry the same shape.",
+            "Use the approved recaps as examples externally, since silence in the brief allows it."
+          ],
+          "correct": 2,
+          "explain": "The data is what is protected, not the technique. Learn the shape from approved work, then teach it with invented examples that contain no client material."
+        },
+        {
+          "prompt": "The delivery template has six columns in a fixed order and a date format of 2026-03-04. You are about to prompt for 45 vendor rows. The task is due in three hours. What goes into the prompt?",
+          "options": [
+            "The exact header row, in order, the date format with an example, and a rule for missing values.",
+            "A request for a clear, well-organized table you can tidy afterwards.",
+            "Nothing about format; fixing 45 rows by hand takes only twenty minutes.",
+            "The column names only, since order is easy to rearrange in the sheet."
+          ],
+          "correct": 0,
+          "explain": "Naming the shape costs one sentence and removes the retyping. Order, date format and the missing-value rule are the three things that drift without instruction."
+        },
+        {
+          "prompt": "It is 3am. You have sent four corrections to the same conversation and the output keeps trading one fixed problem for a returning one. You are tired and the task is due at 6am. What now?",
+          "options": [
+            "Send a firmer, more detailed correction; the model is close to getting it.",
+            "Deliver the best version so far and note the problem for the operator.",
+            "Switch to a different tool and paste the conversation across.",
+            "Write down what the four corrections taught you, then start clean with those rules built in."
+          ],
+          "correct": 3,
+          "explain": "A thread carrying its own wrong answers works against you. The corrections were diagnostic, so fold them into a fresh opening prompt instead of arguing further."
+        },
+        {
+          "prompt": "A brief asks for a short blurb for each of 60 products. You are writing the prompt and want the blurbs to come back usable on the first pass. Which instruction serves you best?",
+          "options": [
+            "Keep each blurb concise and professional in tone.",
+            "Write blurbs of a reasonable length that match the brand voice.",
+            "Write 25 to 35 words per blurb, one sentence, no adjectives before the product name.",
+            "Make the blurbs punchy but not too short, and avoid sounding generic."
+          ],
+          "correct": 2,
+          "explain": "A constraint that two readers could argue about is not a constraint. Numbers and named rules give the same verdict to anyone who checks."
+        },
+        {
+          "prompt": "You are summarizing a 60-page transcript into themes, then sorting quotes under each theme, then writing action items. You have four hours. Where does the checkpoint belong?",
+          "options": [
+            "At the end, where you can review the whole deliverable in one reading.",
+            "After the theme list, because every quote you sort afterwards inherits its errors.",
+            "After the action items, since those are what the client reads first.",
+            "Nowhere; checkpoints slow a long task and you are already tight on time."
+          ],
+          "correct": 1,
+          "explain": "Checkpoints go at joints where one step becomes the next step's foundation. A wrong theme list makes every sorted quote wrong and costs a full rerun."
+        },
+        {
+          "prompt": "A prompt you built for a vendor comparison worked beautifully, and it currently contains the client's company name and three of their real vendor rows as examples. You want to keep it. What do you save?",
+          "options": [
+            "The situation, job and rules, with the real rows replaced by invented equivalents.",
+            "The whole prompt as written; it is on your own laptop, not shared anywhere.",
+            "The whole prompt with the company name removed but the real rows kept.",
+            "Nothing; prompts built on client work cannot be reused at all."
+          ],
+          "correct": 0,
+          "explain": "The library is yours only if nothing client-owned lives in it. Invented examples teach the same shape and carry none of the confidential material."
+        },
+        {
+          "prompt": "You edited a saved prompt to fix a word-count problem, ran it once on the current task, and the output looked right. You want to make the edit permanent. What is the missing step?",
+          "options": [
+            "Nothing; one clean run on a real task is the strongest evidence available.",
+            "Run it twice more on the same task input to confirm the result.",
+            "Rerun the whole frozen test set and check nothing else broke.",
+            "Ask the operator to confirm the new version before you save it."
+          ],
+          "correct": 2,
+          "explain": "One run cannot separate a better prompt from an easy input, and a fix in one place often breaks another. The frozen set catches both."
+        },
+        {
+          "prompt": "A brief states in writing that you may use a named online transcription service for the two supplied audio files, and nothing else. Halfway through you also want that service to summarize the client's strategy document. Do you?",
+          "options": [
+            "Yes; the brief already approved that tool, so its scope covers the whole task.",
+            "Yes, as long as you remove names from the document first.",
+            "Yes, but note it in your delivery message so the operator knows.",
+            "No; the permission names one tool for one purpose, and the document is outside it."
+          ],
+          "correct": 3,
+          "explain": "Scoped permission is scoped. A named tool for a named purpose does not extend to other material, and silence about that material is not approval."
+        },
+        {
+          "prompt": "Your saved prompt uses two examples, both about restaurants. Running it on a batch of 30 dental clinics, every output mentions menus or seating in some form. The batch is due in an hour. What do you fix?",
+          "options": [
+            "Add a line telling the model to ignore the subject matter of the examples.",
+            "Rewrite the examples so their subject matter varies, since examples are read as instructions.",
+            "Delete the examples and describe the output in careful adjectives instead.",
+            "Keep the prompt and edit the 30 outputs by hand this once."
+          ],
+          "correct": 1,
+          "explain": "Everything inside an example is copied, including topic and vocabulary. Vary what should vary so only the shape you actually want is held constant."
+        },
+        {
+          "prompt": "Your prompt returns a price for all 45 vendors, but you know from checking that 6 of those vendors publish no price at all. The table looks complete and you are behind schedule. What does this tell you?",
+          "options": [
+            "The prompt found prices your own checking missed, so trust the fuller table.",
+            "The six vendors probably changed their pages between your check and the run.",
+            "The gap was filled with something plausible, so those six cells are invented and must be marked unavailable.",
+            "Nothing is wrong; a complete column is what the delivery template asks for."
+          ],
+          "correct": 2,
+          "explain": "A model fills silence with something reasonable unless told otherwise. Reasonable inference presented as a finding is fabrication, and a complete-looking column hides it well."
+        },
+        {
+          "prompt": "You are mid-task and unsure how to phrase a prompt that returns tab-separated rows. You have claimed the task. It is 2am and there is nobody to ask. What is the sanctioned move?",
+          "options": [
+            "Ask the in-product assistant a method question, described generally, with no client material in it.",
+            "Paste two rows of the client's file into an outside tool so the question is concrete.",
+            "Guess a phrasing and correct the output afterwards; asking wastes time you do not have.",
+            "Wait until the next shift and ask another specialist how they usually word it."
+          ],
+          "correct": 0,
+          "explain": "The in-product assistant exists for exactly this and sees only what you type. Keep the question about method, and the client material stays where it belongs."
+        },
+        {
+          "prompt": "A prompt that has worked for six months suddenly produces nonsense on tonight's task. You are tempted to rewrite it from scratch before the 6am deadline. What do you check first?",
+          "options": [
+            "Whether the model has changed, since that explains most sudden failures.",
+            "Whether a colleague edited the shared copy of the prompt.",
+            "Nothing; rewrite it now and investigate after the deadline passes.",
+            "Your scope note, to see whether tonight's input falls outside what the prompt covers."
+          ],
+          "correct": 3,
+          "explain": "Most prompts that suddenly fail were used outside their range rather than broken. That is why every saved prompt carries a note about what it does not handle."
+        }
+      ]
+    }
+  },
+  "ai-sanctioned-use": {
+    "slug": "ai-sanctioned-use",
+    "title": "The sanctioned AI path",
+    "track": "ai",
+    "tagline": "Exactly which AI tools you may use, on which work, and when.",
+    "summary": "Most workers guess at the AI rule, and the guess is usually either too loose or too fearful. This course draws the real map: the three lanes where these tools are open to you, the one thing that never moves, and how to get help without ever sending a client's data anywhere. You will finish knowing exactly what you are allowed to do, and able to prove it.",
+    "outcomes": [
+      "You can name the three lanes where AI use is open to you.",
+      "You can tell client data apart from material you invented yourself.",
+      "You can rebuild a problem with fake rows and still get real help.",
+      "You can read a brief and decide whether it grants tool permission.",
+      "You can record permitted tool use so a reviewer knows where to look.",
+      "You can get written AI permission from your own clients outside AfterDesk."
+    ],
+    "lessons": [
+      {
+        "title": "Why the rule exists at all",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "A client handed over data on a promise",
+            "body": "Before any rule makes sense, hold the scene in your head. A client uploads a spreadsheet with 2,400 customer rows: names, phone numbers, what each person bought and when. They do not know you. They never will. They handed that file over because we told them it stays inside the task, seen only by the person doing the work and the operator reviewing it. That sentence is the product. Everything you are about to read is the machinery that keeps it true. The rule is not a judgement about your character, and it is not a fear of new tools. It is a promise somebody else made in your name, and you are the one holding it."
+          },
+          {
+            "heading": "The data moves, the skill does not",
+            "body": "The mistake almost everyone makes is to read the rule as a ban on tools. It is not. Read the promise again and notice what it protects: the data. A language model is a piece of software you can become genuinely good at using, and being good at it makes you faster, clearer and more employable. We want that. These courses exist to teach it. What we do not want is that client's 2,400 rows sitting on some company's servers in another country because it saved you forty minutes. Separate the two ideas and the policy becomes easy to hold in your head. Your skill goes wherever you go. Their data stays where they put it."
+          },
+          {
+            "heading": "Pasting is sending",
+            "body": "It helps to stop thinking of a paste as a keystroke. When you paste a customer list into a website, you have transferred that file to a company you have no contract with. It may be stored. It may be read by staff reviewing quality. On free tiers it is often used to improve the product. None of that requires anyone to behave badly, and none of it appears on your screen. The breach happened at the moment of transfer, not at the moment something visibly goes wrong. This is why the question is never whether the tool seems trustworthy or how careful its marketing sounds. The question is whether the data was yours to move. It was not."
+          },
+          {
+            "heading": "What the review layer does not cover",
+            "body": "An operator reads every delivery before the client sees it, and that catches a great many mistakes: a wrong total, a missing column, a paragraph that reads badly, a formula that broke on row 400. It cannot catch this one. Once a file has left your machine for a third-party service, no review reverses it. There is nothing in the delivery for the operator to see, and nothing anyone can undo afterwards. That asymmetry is why this is one of the few rules on the platform with no gradient and no second chance. Almost everything else here is a skill you build over months. This is a line you simply do not cross, from your first task onward."
+          },
+          {
+            "heading": "Trusted, not watched",
+            "body": "We are not scanning your screen and we are not going to. This policy works because you understand it, not because anyone is checking. That is a deliberate choice, and it puts the weight on you. A worker who understands why the line sits where it does will make the right call on the one strange task at four in the morning where no written rule quite fits. A worker following a list of banned websites will not. So the aim of this course is not compliance. It is that you could explain the whole policy to another worker in your own words, including the large parts of it that let you use these tools freely."
+          }
+        ],
+        "keyPoints": [
+          "The client handed over data on a promise. You hold that promise.",
+          "The rule protects the data, not your skill. AI skill is welcome here.",
+          "Pasting into a website is a transfer. The transfer is the breach.",
+          "Review catches wrong totals. It cannot reverse a file that already left.",
+          "Nobody watches your screen. That is why understanding beats memorising rules."
+        ]
+      },
+      {
+        "title": "The three lanes that are open",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Lane one is your own material",
+            "body": "The first lane is everything that contains nothing of the client's. General questions about method. Your own writing. Practice files you invented. A formula problem built from fake rows. How does a lookup across two sheets work, what is a polite way to phrase a chase, explain what this function actually does. Use whatever tool you like, as often as you like, on your own account and in your own time. Nothing in this lane needs permission, because there is no client data in it to protect. This is also the lane where you build the skill, and the workers who get fast are the ones who practise here deliberately instead of only reaching for a tool when a deadline is burning."
+          },
+          {
+            "heading": "Lane two is the assistant on a claimed task",
+            "body": "The second lane is our own assistant, available inside a task you have claimed. It is sanctioned: you do not need anything in the brief to use it. It works because of what it does not have. It cannot see the task record, who the client is, the files you downloaded, or the payout. It sees only what you type into it, and what you type is scrubbed for personal data before it is stored. So it is a method assistant, not a work assistant. Ask it how to approach a 45-vendor chase, what a formula does line by line, how to structure a long report. The next lesson covers exactly what it is good for and where it stops."
+          },
+          {
+            "heading": "Lane three is written permission in a brief",
+            "body": "The third lane is a brief that names an outside tool for a named purpose. This happens, and it is real permission. A client may hold their own account with a transcription service and want you to use it. A brief may say the audio file may be uploaded to a named service to produce a transcript. That sentence is scoped: that tool, that file, that purpose. It does not extend to a different tool, a different file, or a different task next week. Read what was granted and stay inside it exactly. Permission written for one thing does not stretch to cover the thing beside it, however similar the two look at two in the morning."
+          },
+          {
+            "heading": "Silence is not a fourth lane",
+            "body": "Most briefs say nothing at all about AI. That is not a gap for you to fill with your own judgement, and it is not tacit approval because nobody objected. A brief that is silent has granted nothing, so the default holds: no client data in a third-party tool. Workers talk themselves past this in a predictable way. The task is dull, the tool would take ten minutes instead of two hours, and nobody would ever know. All of that can be true and the answer does not change. The default is no. If you genuinely believe the brief intended to allow something and failed to say so, that is a question for the operator, not a decision for you."
+          },
+          {
+            "heading": "One question decides which lane you are in",
+            "body": "You do not need to memorise a policy document. You need one question, asked before you type. Does what I am about to send contain anything of the client's? If the answer is no, you are in lane one and any tool is open to you. If the answer is yes and you are inside a claimed task, our own assistant is there, and you still type method rather than material. If the answer is yes and you want an outside tool, the brief must name it in writing. There is no fourth answer. Asking that question takes two seconds and it resolves every situation in this course, including the ones nobody thought to write down."
+          }
+        ],
+        "keyPoints": [
+          "Lane one: nothing of the client's in it. Any tool, freely.",
+          "Lane two: our assistant on a claimed task. Sanctioned without a brief.",
+          "Lane three: a brief naming a tool for a named purpose.",
+          "Silence in a brief grants nothing at all. The default is no.",
+          "One question before typing: does this contain anything of the client's."
+        ]
+      },
+      {
+        "title": "What the in-product assistant sees",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "It only sees what you type",
+            "body": "The assistant sits inside a task you have claimed, which leads people to assume it can read the task. It cannot. It has no access to the brief, the client's identity, the files you downloaded, or the payout on the task. The window is empty until you fill it. That design is deliberate, and it is what makes the assistant sanctioned: there is nothing for it to leak, because nothing was handed to it. The practical consequence surprises people. You cannot ask it what does this brief mean, because it has never seen the brief. You have to describe your situation yourself, in your own words, without the client's details, and that constraint is the whole point."
+          },
+          {
+            "heading": "What you type is scrubbed before storage",
+            "body": "Anything you type is checked for personal data before it is stored, so names, email addresses, phone numbers and similar identifiers are removed. This is a safety net, not a licence. It exists to catch the ordinary human slip at the end of a long shift, when a real surname comes out of your fingers because you have been staring at it for two hours. It is not a reason to paste a customer list and let the system clean up behind you. A scrubber removes identifiers. It cannot remove the fact that one business has 2,400 customers across three provinces, because that is not a name, it is a shape. You type method, not material."
+          },
+          {
+            "heading": "Use it for method, not for the work",
+            "body": "The assistant earns its place on questions that begin with how. How do I approach a reconciliation when two date formats are mixed in one column. What does this formula do, step by step. What is a sensible order for checking a 40-page document. Is there a faster way to compare two lists on partial names. What should a delivery note contain when three rows could not be resolved. These are questions about the craft, and the answers hold regardless of whose file you happen to be holding. You take the method back to the real file and do the work yourself. That loop is available on every task you have claimed, at three in the morning, with nobody else awake to ask."
+          },
+          {
+            "heading": "Never paste the deliverable in",
+            "body": "One hard edge inside a sanctioned tool. Do not paste your finished deliverable in to have it checked. The deliverable is built out of the client's information, and putting it into any tool, ours included, moves client material somewhere it does not belong. This catches careful people, because it feels harmless: the work is your own writing, you built it, and you only want a second read before upload. It is still their data wearing your sentences. Check your delivery the way the rest of these courses teach. Reread the brief line by line, open the file cold in a fresh window, read the numbers aloud. If a phrasing problem is nagging at you, rebuild the sentence with invented names first."
+          },
+          {
+            "heading": "It is not the operator",
+            "body": "The assistant answers questions about method. It does not answer questions about this task. It cannot tell you whether the brief permits something, whether a missing file will arrive, whether a two-hour overrun is acceptable, or what the operator expects in an ambiguous case. It has no standing to grant permission and no view of the task at all, so any answer it produces about the rules is a guess wearing the clothes of an answer. Those questions go to the operator through the task, where a person who can actually see what you are looking at will answer them. Keep the two straight. Craft questions to the assistant, task questions to the operator, always."
+          }
+        ],
+        "keyPoints": [
+          "It sees only what you type. Not the brief, files, client or payout.",
+          "Scrubbing is a safety net for slips, never a licence to paste.",
+          "Ask how, not what. Method transfers. Material stays inside the task.",
+          "Never paste your finished deliverable in for a check, even here.",
+          "It cannot grant permission. Task questions go to the operator."
+        ]
+      },
+      {
+        "title": "Rebuild the problem with fake rows",
+        "minutes": 9,
+        "sections": [
+          {
+            "heading": "You need the method, not the material",
+            "body": "Almost every question you want to ask has nothing to do with whose data it is. If you are stuck matching two lists where the names do not align exactly, the difficulty is the partial match, not the client. Strip the client out and the question survives intact. This is the technique that makes the whole policy livable, because it means you are never choosing between getting help and protecting data. You rebuild the shape of the problem out of material you invented, ask about the shape, and apply the answer to the real file yourself. It costs about three minutes. It removes the risk completely, and the answer is usually better, because a small clean example is easier to reason about."
+          },
+          {
+            "heading": "Rename the headers, invent the rows",
+            "body": "Start with structure. Write out the column headers, renamed if a header itself gives something away, so Client Deal Value becomes Amount and Q3 Pipeline becomes Stage. Note the data type of each column and the row count in round terms: about 900 rows, not 912. Then invent four to six rows using obviously fake content. Acme Trading, Northwind Foods, Bright Path Clinic, with figures you made up on the spot. Never lightly edit real rows, because a changed surname sitting beside a real address is still a real address. Build the sample from nothing. The test to hold is this: if what you typed leaked tomorrow, the client would not appear in it, and neither would any real person."
+          },
+          {
+            "heading": "Carry the quirks across, not the content",
+            "body": "This is the step people skip, and it is the step that makes the technique work. What makes your real file hard is never the clean rows. It is the trailing spaces, the two date formats mixed in one column, the region spelled three different ways, the blank cell in the middle, the number stored as text. Put every one of those quirks into your invented sample. If the real file has a name with an apostrophe and a suffix, invent one. If two rows are duplicates except for capitalisation, duplicate two. A fake sample made only of tidy rows produces an answer that collapses the moment you run it on the real 912 rows, and the three minutes bought you nothing."
+          },
+          {
+            "heading": "A worked example, start to finish",
+            "body": "You have a client file of 612 donation records and you must flag every row where the donor email contains no part of the donor surname. You do not paste it. You type this instead: two columns, Full Name and Email, about 600 rows, Google Sheets. Then six invented rows. Maria Santos with maria.s at an example address, Juan Dela Cruz with jdc1988 at another, a surname with an apostrophe against a blank email, one row with a trailing space after the surname, one duplicate differing only in capitals. Ask for a formula that flags non-matches and handles blanks. Test it against your six rows, where you already know every correct verdict. Then run it on the real file yourself."
+          },
+          {
+            "heading": "The same trick works for writing",
+            "body": "Text problems rebuild just as cleanly. Say you need a firm paragraph telling a supplier that two deadlines were missed while keeping the relationship warm. Do not paste the client's email chain. Describe the situation in generic terms instead: a supplier has missed two deadlines, the tone must stay warm, ninety words maximum, one clear request, no apology. Ask for three versions of that paragraph, then write the real one yourself using whichever structure works best. The same approach covers a bad-news message, a summary structure, or eight subject line options. What you are borrowing is shape and register. What you never borrow is a sentence carrying a real name, a real figure or a real complaint."
+          }
+        ],
+        "keyPoints": [
+          "Strip the client out. The difficulty is the shape, not the data.",
+          "Rename headers and invent rows. Never lightly edit real ones.",
+          "Carry the quirks across: mixed dates, blanks, trailing spaces, duplicates.",
+          "Test the answer on your fake rows before touching the real file.",
+          "Writing problems rebuild too. Borrow structure, never real sentences."
+        ]
+      },
+      {
+        "title": "Reading a brief for permission",
+        "minutes": 7,
+        "sections": [
+          {
+            "heading": "What real permission looks like",
+            "body": "Written permission names three things: the tool, the material, and the purpose. The audio file may be uploaded to a named transcription service to produce a transcript. The product photographs may be processed in a named image tool for background removal. The draft may be run through a named grammar service before delivery. Each of those sentences tells you exactly what may leave the task and where it may go. Notice what they are not. They are not enthusiasm about technology, they are not a client who sounds modern, and they are not a line asking for the work to be efficient. If you cannot point at the sentence and read it aloud to somebody else, you do not have permission."
+          },
+          {
+            "heading": "Permission is scoped, not general",
+            "body": "A grant covers what it says and nothing standing beside it. If the brief permits uploading the audio file for transcription, that does not cover uploading the interview notes to a summariser afterwards. If it names one tool, a different tool doing the same job is not covered, even when it is clearly better. If it was granted on last week's task from the same client, it does not carry over, because the client agreed to it once, for that piece of work. This feels pedantic until you picture the conversation where a client asks which of their files went where. A narrow answer you can point to is a short conversation. A broad answer you reasoned your way into is not."
+          },
+          {
+            "heading": "Silence means the default",
+            "body": "Most briefs will say nothing at all. Silence is not permission. It is also not an oversight for you to correct with your own judgement, because a client who was never asked cannot be assumed to have agreed. This matters most on the tasks where an outside tool would obviously help: sixty receipt photos to type, a two-hour recording to transcribe, a scanned document to convert. Those are exactly where the temptation is strongest, and exactly where a client would most want to have been asked first. Do the work by hand inside the task, or raise it with the operator before you start. The slow path is always available. The unauthorised one is not, however tired you are."
+          },
+          {
+            "heading": "When the brief is ambiguous, ask",
+            "body": "Some briefs sit in between. Use any tools you like to speed this up. The client is comfortable with modern software. Feel free to automate where it helps. None of those names a tool or names the material, so none of them is the permission this course describes, and none of them is obviously a refusal either. Guessing in either direction wastes something. Ask the operator through the task, in one specific message: I would like to upload the audio file to a named transcription service, may I, or should I transcribe it by hand. Specific questions come back in minutes. A vague question about whether AI is allowed comes back slowly, because the operator has to work out what you meant."
+          },
+          {
+            "heading": "Do not guess while the clock runs",
+            "body": "The dangerous moment is not when you read an ambiguous brief. It is three hours later, with two hours left, when no answer has come back and the manual path no longer fits inside the time. Which is why the question goes in first, before you build a plan around an answer you do not have. Read the brief for permission at the same time you read it for the deliverable, in the first ten minutes after claiming. If the answer arrives and it is no, you still have the whole night to do it the slow way. Ask at the last hour and you have quietly built a situation where the wrong choice is the only one left."
+          }
+        ],
+        "keyPoints": [
+          "Real permission names the tool, the material and the purpose.",
+          "A grant is scoped. It does not carry to another tool or task.",
+          "Silence means the default holds, especially where a tool would obviously help.",
+          "Ambiguous brief: ask the operator one specific question through the task.",
+          "Ask in the first ten minutes, not with two hours left."
+        ]
+      },
+      {
+        "title": "What counts as client data",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Names are the easy half",
+            "body": "Start with the obvious list, then keep walking outward. Client data includes names, email addresses, phone numbers, home addresses, invoices, bank details, salaries, customer lists, internal documents, contracts, and anything pulled out of their systems. Most workers get all of that right. The failures happen further out, in material that does not look like personal data at all: a company name paired with a problem, an unreleased product, prices never published, a row count, a file name, a screenshot with something visible in the corner. Those are the cases this lesson exists for. If you only remember the obvious list, you will be careful with the customer file and careless with everything sitting around it."
+          },
+          {
+            "heading": "A company name is data",
+            "body": "The client's own identity is confidential, and it is confidential in combination with everything else you happen to know. Typing which supplier keeps missing deadlines for a named company is a disclosure even though no person appears in it, because you have told a third party that this business has a supplier problem. The same holds for a company behind on receivables, one restructuring a team, one whose product is late. Businesses are entitled to have problems privately, and that privacy is part of what they are paying for. So describe the situation, never the party. A supplier missing deadlines is a method question. A named company missing deadlines is that company's business, told to someone who was never asked."
+          },
+          {
+            "heading": "Numbers can identify as surely as names",
+            "body": "Detail identifies without naming. A dental clinic in Cebu with 2,400 active patients across two locations is a small enough set that anybody motivated could narrow it down in an afternoon. So is a family business exporting one product to three countries. This is why removing names is not anonymising: the shape of a data set can be as identifying as any field inside it. When you rebuild a problem for a question, round and blur on purpose. About 600 rows rather than 612. A clinic rather than a dental clinic in Cebu. Three regions rather than the three real ones. You lose nothing useful, because that specificity was never what made the question hard."
+          },
+          {
+            "heading": "Check the edges of every screenshot",
+            "body": "Screenshots leak far more than the thing you meant to show. A browser tab title carrying the client's company name. A bookmarks bar with their portal on it. An open window behind. An email preview sliding in at the corner. A file path along the bottom of a spreadsheet showing which folder the file lives in. A taskbar revealing which of their systems you have open. Before any screenshot goes anywhere at all, look at every edge of it rather than the middle where your problem sits. Better still, do not screenshot the real file. Reproduce the situation in a blank sheet with six invented rows and screenshot that, and the question of what leaked stops existing."
+          },
+          {
+            "heading": "File names travel further than files",
+            "body": "A file name is content. Something like AcmeTrading_Q3_Layoffs_FINAL tells a stranger the company, the period and the decision, and it keeps telling them from inside a folder listing, a chat message, a support ticket or a screenshot, long after everyone stopped thinking about the file itself. So when you refer to a file in any question, rename it or describe it generically: the spreadsheet, the source file, the export. The same care applies to sheet tab names, header rows and any email subject line you quote. Then ask the test that settles all of this. If the client read a transcript of everything I typed today, would they be comfortable? If you have to think, the answer is no."
+          }
+        ],
+        "keyPoints": [
+          "The obvious list is the easy half. Failures happen further out.",
+          "A company name plus a problem is a disclosure, with nobody named.",
+          "Round and blur: about 600 rows, a clinic, three regions.",
+          "Check every edge of a screenshot. Better still, screenshot an invented file.",
+          "File names carry the company, the period and the decision. Rename them."
+        ]
+      },
+      {
+        "title": "Record what you used",
+        "minutes": 6,
+        "sections": [
+          {
+            "heading": "Tell the reviewer where to look hardest",
+            "body": "When a brief permitted a tool and you used it, say so in the delivery note. The reason is practical rather than ceremonial. An operator reviewing your work has limited time and must decide where to spend it. Telling them the transcript came from the permitted service and that you corrected forty timestamps by hand aims their attention exactly where errors are most likely to be sitting. That makes the review faster and any correction smaller, which is good for both of you. A note that hides the tool does the opposite: attention spreads evenly, the risky part is missed, and the client finds it. Nobody wins that. Point at the soft spot yourself."
+          },
+          {
+            "heading": "What a good record contains",
+            "body": "Three parts, two sentences, no apology. What you used the tool for, what you did yourself afterwards, and how you checked it. For example: the audio was transcribed with the service named in the brief, I corrected the speaker labels and every figure against the recording, and the two passages I could not hear clearly are marked in yellow. That gives the reviewer the tool, the scope, your work, and the exact rows to open first. Compare it with a general line saying AI was used somewhere in the work. That sentence hands nobody anything to act on, and it makes a careful worker sound vague. Specific is shorter, and it reads as confidence, because it is."
+          },
+          {
+            "heading": "Record the gaps as carefully as the tool",
+            "body": "The same note carries whatever did not resolve. Six addresses you could not verify. Three rows where the source was unreadable. A formula you tested against twenty hand-checked rows that still fails on one shape you have described. Leave those cells blank rather than filled, and list them plainly: which item, what you tried, what you could not confirm. An honest gap costs the operator a few minutes. A confident invention costs the client, and it costs the trust behind every delivery you make after it. That is true whether a tool was involved or not, and it is doubly true when one was, because that is the first place an experienced reviewer looks."
+          },
+          {
+            "heading": "Never blame the tool afterwards",
+            "body": "When a task comes back with two wrong dates that came out of a draft you never checked, there is one answer that protects you, and it is not that the tool produced them. You chose to use it. You read the output. You decided it was good enough and you delivered it under your own name. So the revision note says the dates were wrong, here they are corrected against the source documents, and I failed to verify them before delivery. That sentence costs you nothing you had not already lost, and it buys back the thing that matters, which is that your account of your own work can be believed. The record exists to make you trustworthy, not to spread blame."
+          }
+        ],
+        "keyPoints": [
+          "Disclose a permitted tool so the reviewer knows where to look hardest.",
+          "Three parts: what the tool did, what you did, how you checked.",
+          "List unresolved items plainly. A blank cell beats an invented one.",
+          "Own the miss. The tool delivered nothing. You did."
+        ]
+      },
+      {
+        "title": "Your own clients and AI",
+        "minutes": 8,
+        "sections": [
+          {
+            "heading": "Outside AfterDesk, the client sets the rule",
+            "body": "Work you take directly is governed by whatever you and that client agree, and many of them will actively want AI in the process. For some, that is the reason they hired you. Nothing in this course tells you to refuse. What it does tell you is that the agreement has to exist, has to be written, and has to be specific, because you are now doing the job the operator does for you here. You decide what may leave, on the client's behalf, with nobody standing behind you to check. The habits you build inside a task are the ones that keep you out of trouble outside it. The lanes are the same. Only the person granting permission changes."
+          },
+          {
+            "heading": "Get it in writing, and get it specific",
+            "body": "A verbal yes on a call is not nothing, but it is not something you can point to eight months later when a question comes up. Send an email after the call and ask them to confirm it. Cover four points. Which tools may be used. Which material may go into them, and which never may, such as customer lists or financial records. Whether the output may be reused for other clients or belongs to them alone. Whether they want AI use disclosed on the work itself. Their answers will surprise you in both directions: some permit far more than you expected, some draw a harder line than we do. Either way, you now know, and so do they."
+          },
+          {
+            "heading": "Ask what their own clients were promised",
+            "body": "A client can only give away what is theirs. If they run an agency, their own customers may have signed something that forbids exactly what you are about to do, and your client may not have read it recently. One question handles this. Do any of your customers have confidentiality terms that would cover this material? Asking it marks you as the professional in the conversation, and it moves the decision to the person entitled to make it. The same applies to anything covered by health, legal or financial confidentiality rules in their country. When the answer comes back uncertain, take the path you already know: work on invented material and move nothing of theirs."
+          },
+          {
+            "heading": "Disclose where the answer would matter",
+            "body": "Two separate questions live inside disclosure, and people muddle them constantly. First, were you allowed. That is settled by the agreement and by nothing else. Second, having been allowed, should you say where you used it. Say it where a reasonable client's decision would change if they knew: anything published under their own name, anything they sign, original research they are paying for, anything touching money, law or health. Say it less for the mechanics. Nobody needs to be told you reformatted dates or drafted a formula you then tested on twenty rows. And if anyone asks you directly, the answer is the truth, plainly, even when it is awkward and even when you suspect it costs you the work."
+          },
+          {
+            "heading": "One paragraph you can say out loud",
+            "body": "Here is the whole policy in something you could tell a stranger. I am good with these tools and I use them for drafting, reformatting and working out method. Confidential material does not go into any tool that has not been approved in writing for that purpose, and inside a marketplace task it does not go into an outside tool at all. When I need help, I rebuild the problem with invented data and ask about that. Every fact I deliver is checked against a real source, and I say where a tool was involved whenever that would matter to you. Say that, mean it, and you will be trusted with better work than the person who says nothing."
+          }
+        ],
+        "keyPoints": [
+          "Outside AfterDesk you decide what leaves. That is the operator's job, alone.",
+          "Get four things in writing: tools, material, reuse, disclosure.",
+          "Ask whether their own customers signed terms covering this material.",
+          "Permission and disclosure are separate questions. Answer them in that order.",
+          "A direct question about AI gets a direct answer. Always."
+        ]
+      }
+    ],
+    "exam": {
+      "questions": [
+        {
+          "prompt": "You claimed a task with a 70-minute recording to transcribe. The brief lists the deliverable and the deadline and says nothing about tools. A free transcription site would finish it in four minutes. Six hours remain. What do you do?",
+          "options": [
+            "Upload it, since a brief that says nothing has not actually forbidden anything",
+            "Upload only the first ten minutes, since a partial file is not the whole recording",
+            "Transcribe it yourself inside the task, or ask the operator before you start",
+            "Upload it and name the site in your delivery note so the review stays honest"
+          ],
+          "correct": 2,
+          "explain": "Silence in a brief grants nothing, and disclosing a transfer afterwards does not undo it. The default holds until permission is written down."
+        },
+        {
+          "prompt": "It is two in the morning on a claimed task and your 900-word summary reads clumsily. The in-product assistant is right there. You want a second opinion on the writing before you upload. What do you do?",
+          "options": [
+            "Rebuild the awkward paragraph with invented names and ask about that phrasing instead",
+            "Paste the summary in, since the assistant is sanctioned and stores nothing identifying",
+            "Paste it in with the client's company name replaced by the word Company throughout",
+            "Ask the assistant to read the task record and judge the summary against the brief"
+          ],
+          "correct": 0,
+          "explain": "A deliverable is made of the client's material even when the sentences are yours. Sanctioned does not mean their data may move into it."
+        },
+        {
+          "prompt": "Last week a brief from this client permitted uploading their audio to a named transcription service. Tonight's task from the same client holds three more recordings, and the brief mentions no tools at all. The deadline is tight. What do you do?",
+          "options": [
+            "Use the service again, since this client already agreed to it for this kind of file",
+            "Use it for two recordings and transcribe the third by hand as a reasonable compromise",
+            "Use a different transcription service, since the client clearly has no objection to transcription",
+            "Transcribe by hand, and ask the operator whether that permission was meant to apply here"
+          ],
+          "correct": 3,
+          "explain": "Permission is scoped to the task and purpose it was written for. A grant from last week does not carry into tonight's files."
+        },
+        {
+          "prompt": "You want to ask a general question about a stubborn pivot table. The fastest way to show the problem is a screenshot of the sheet you have open, with the client's file name sitting in the title bar. What do you do?",
+          "options": [
+            "Screenshot the sheet and crop out the title bar before you send anything",
+            "Screenshot it for the in-product assistant, which strips personal data before storing it",
+            "Rebuild the pivot in a blank sheet with six invented rows and screenshot that",
+            "Rename the file first so the title bar shows something neutral, then screenshot"
+          ],
+          "correct": 2,
+          "explain": "Cropping and renaming still leave the client's real values on the screen. An invented rebuild removes the question of what leaked entirely."
+        },
+        {
+          "prompt": "You are drafting a firm message about two missed deadlines and you want help with the tone. You type a question that names the supplier and the client company, but no individual person anywhere in it. Is that a problem?",
+          "options": [
+            "No, because no person is named and businesses are not personal data",
+            "Yes, because naming the company alongside its problem discloses that company's situation",
+            "No, because a tone question is useless without knowing the industry involved",
+            "Yes, but only if the finished message leaves the client's own organisation"
+          ],
+          "correct": 1,
+          "explain": "Identifying a business and pairing it with a difficulty is a disclosure. Describe the situation, never the party, and the question still works."
+        },
+        {
+          "prompt": "A brief says the client is comfortable with modern software and wants the work done efficiently. You would like to run 300 scanned pages through an outside conversion tool. Eight hours remain on the clock. What do you do?",
+          "options": [
+            "Treat it as permission, since the client explicitly invited efficient modern methods",
+            "Run ten pages through first, to test whether the tool is even worth asking about",
+            "Convert by hand and say nothing, since an ambiguous brief is the operator's problem",
+            "Ask the operator now, naming the tool and the files, and start converting by hand meanwhile"
+          ],
+          "correct": 3,
+          "explain": "A brief that names no tool and no material has granted nothing. A specific question asked early keeps both paths open to you."
+        },
+        {
+          "prompt": "The brief permitted a named image tool for background removal. You ran 40 product photos through it, fixed six by hand, and are writing the delivery note with twenty minutes left. What belongs in that note?",
+          "options": [
+            "The tool, the 40 photos it handled, the six you fixed by hand, and how you checked",
+            "Nothing, since the brief already permitted the tool and the operator can read the brief",
+            "One line saying AI was used somewhere in the preparation of the images",
+            "The full settings you used, so the operator can reproduce your process exactly"
+          ],
+          "correct": 0,
+          "explain": "A specific record aims the reviewer at the likeliest errors. Vagueness gives nobody anything to act on and costs you the same sentence."
+        },
+        {
+          "prompt": "It is your day off. You want to get faster at cleaning messy spreadsheets, so you build a practice file of 200 invented rows with mixed date formats and ask a tool to walk you through fixing them. Is this allowed?",
+          "options": [
+            "No, because spreadsheet cleaning is client work and practising it rehearses a disclosure",
+            "Only if you first check that no former client used a similar column layout",
+            "Yes, because nothing in the file belongs to a client and skill building is encouraged",
+            "Only inside a claimed task, where the in-product assistant is the sanctioned route"
+          ],
+          "correct": 2,
+          "explain": "The rule protects client data, not your skill. A file you invented contains nothing of anyone's, so there is nothing left to protect."
+        },
+        {
+          "prompt": "You need help with a matching formula. You carefully remove every name, but you plan to write that the file holds 2,417 patient records for a two-location dental clinic in Cebu. What should you change before sending it?",
+          "options": [
+            "Nothing, since removing the names is exactly what anonymising a data set means",
+            "Replace the city with a neighbouring one, so the detail stays useful but wrong",
+            "Nothing, because a formula question needs the real row count to be answered properly",
+            "Round it to about 2,400 rows and drop the clinic type and the city entirely"
+          ],
+          "correct": 3,
+          "explain": "Detail can identify as surely as a name does. None of that specificity was ever what made the matching question hard."
+        },
+        {
+          "prompt": "A client of your own, outside AfterDesk, says on a call that you should use AI freely for their newsletter drafts. You are pleased. The call ends and you open the first draft. What do you do first?",
+          "options": [
+            "Start drafting, since a direct instruction from the client is the permission you needed",
+            "Email a short summary of what was agreed and ask them to confirm it in writing",
+            "Start drafting, and mention the tool in the footer of every newsletter you deliver",
+            "Ask their agency contact to countersign the arrangement before you begin any work"
+          ],
+          "correct": 1,
+          "explain": "A verbal yes is real but unprovable. Written and specific permission is what protects both of you when someone asks about it later."
+        },
+        {
+          "prompt": "Half an hour into a claimed task you cannot tell whether the brief wants the summary at 300 words or 800. The in-product assistant answers instantly and confidently when you ask what the brief probably means. What do you do?",
+          "options": [
+            "Follow its answer, since it is the sanctioned tool for questions on a claimed task",
+            "Split the difference at 500 words and note the ambiguity in your delivery note",
+            "Ignore it here and ask the operator through the task, since it never saw the brief",
+            "Write both versions and let the operator pick whichever one they want at review"
+          ],
+          "correct": 2,
+          "explain": "The assistant answers questions about method and has no view of the task. Only the operator can resolve what the brief actually means."
+        },
+        {
+          "prompt": "A task returns for revision. Three figures in your report are wrong. They came from a permitted tool's output that you never checked against the source, and you are annoyed the tool got them wrong. What goes in the revision note?",
+          "options": [
+            "The corrected figures, the source you checked them against, and that you failed to verify them",
+            "The corrected figures, plus a note that the permitted tool produced the original errors",
+            "The corrected figures only, since the correction is the thing that actually matters now",
+            "The corrected figures and a line saying tool-assisted work carries a small margin of error"
+          ],
+          "correct": 0,
+          "explain": "The tool did not deliver anything under your name. Owning the missed check is what keeps your account of your own work believable."
         }
       ]
     }

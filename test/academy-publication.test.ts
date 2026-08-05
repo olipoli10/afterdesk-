@@ -35,7 +35,7 @@ const WITHHELD = [
 
 describe("the publication line", () => {
   it("publishes exactly the courses named on the allowlist", () => {
-    expect(PUBLISHED_COURSES).toHaveLength(20);
+    expect(PUBLISHED_COURSES).toHaveLength(25);
     expect(new Set(PUBLISHED_COURSES).size).toBe(PUBLISHED_COURSES.length);
   });
 
