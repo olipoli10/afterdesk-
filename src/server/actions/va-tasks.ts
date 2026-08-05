@@ -46,9 +46,27 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
 
       const task = await tx.task.findUnique({
         where: { id: taskId },
-        select: { tier: true },
+        select: { tier: true, category: { select: { slug: true, name: true } } },
       });
       if (!task) throw new Refused("This task is no longer available.");
+
+      // Category certification, when the operator has switched it on. A course
+      // slug IS the category slug (data-cleanup, research, writing...), so the
+      // certificate for a kind of work is evidence for that kind of work
+      // specifically. Checked inside the claim transaction rather than by
+      // filtering the pool: a worker who passes the exam in another tab can
+      // claim immediately, and one who sees a task they cannot take is told
+      // which exam opens it instead of watching it silently disappear.
+      if (settings.requireCategoryCertification && task.category) {
+        const certified = await tx.certification.count({
+          where: { userId: user.id, courseSlug: task.category.slug },
+        });
+        if (certified === 0) {
+          throw new Refused(
+            `${task.category.name} work opens up once you pass its Academy exam. The course is free and you can take it now.`
+          );
+        }
+      }
 
       // A worker who already failed this task out of QC cannot pick it up
       // again — the reassignment exists to put fresh eyes on it.

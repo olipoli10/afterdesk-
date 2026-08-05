@@ -20,8 +20,12 @@ export default async function WorkersPage() {
   const settings = await getSettings();
 
   // Money owed per worker, so the payout column is real rather than derived
-  // from task status.
-  const [profiles, owed] = await Promise.all([
+  // from task status. Certifications are loaded alongside because /workers
+  // promises the applicant "your certificates are on your application when we
+  // read it" — a promise this page did not keep until now: it never queried
+  // the table, so the reviewer decided blind on the one signal the Academy
+  // exists to produce.
+  const [profiles, owed, certs, categories] = await Promise.all([
     prisma.vaProfile.findMany({
       select: {
         userId: true,
@@ -49,8 +53,23 @@ export default async function WorkersPage() {
       where: { status: { in: ["owed", "released"] } },
       _sum: { amountCents: true },
     }),
+    prisma.certification.findMany({
+      select: { userId: true, courseSlug: true, earnedAt: true },
+      orderBy: { earnedAt: "asc" },
+    }),
+    // The real category list, not a copy: a course slug matches a pool
+    // category exactly (data-cleanup, research, writing...), so reading the
+    // table means this marking cannot drift when a category is added.
+    prisma.taskCategory.findMany({ select: { slug: true } }),
   ]);
+  const CATEGORY_COURSES = new Set(categories.map((c) => c.slug));
   const owedByVa = new Map(owed.map((o) => [o.vaId, o._sum.amountCents ?? 0]));
+  const certsByVa = new Map<string, { courseSlug: string; earnedAt: Date }[]>();
+  for (const c of certs) {
+    const list = certsByVa.get(c.userId) ?? [];
+    list.push({ courseSlug: c.courseSlug, earnedAt: c.earnedAt });
+    certsByVa.set(c.userId, list);
+  }
 
   const waiting = profiles.filter((p) =>
     ["pending_test", "pending_grading"].includes(p.status)
@@ -121,6 +140,39 @@ export default async function WorkersPage() {
                       ) : null}
                     </div>
                   ) : null}
+                  {/* The certificates the applicant was told you would see.
+                      Category-course certificates are listed first and marked,
+                      because those are the ones that map 1:1 onto a pool
+                      category: a data-cleanup certificate is evidence for
+                      data-cleanup work specifically. */}
+                  <div className="mt-3 max-w-2xl text-sm">
+                    <p className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+                      Academy certificates
+                    </p>
+                    {(certsByVa.get(p.userId) ?? []).length === 0 ? (
+                      <p className="mt-1 text-[#5B6069]">None earned yet.</p>
+                    ) : (
+                      <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                        {(certsByVa.get(p.userId) ?? []).map((c) => {
+                          const isCategory = CATEGORY_COURSES.has(c.courseSlug);
+                          return (
+                            <li
+                              key={c.courseSlug}
+                              title={`Earned ${c.earnedAt.toISOString().slice(0, 10)}`}
+                              className={`rounded-full border px-2.5 py-1 font-mono text-[11px] ${
+                                isCategory
+                                  ? "border-[#1E7F5C]/40 bg-[#1E7F5C]/10 text-[#166049]"
+                                  : "border-black/12 bg-black/[0.03] text-[#5B6069]"
+                              }`}
+                            >
+                              {c.courseSlug}
+                              {isCategory ? " ✓" : ""}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
                 </div>
 
                 <dl className="flex shrink-0 gap-5 text-sm">

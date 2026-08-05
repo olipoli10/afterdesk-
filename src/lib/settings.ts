@@ -38,6 +38,19 @@ export type Settings = {
   retentionDays: number;
   scoreWindow: number;
   highValueThreshold: number;
+  /**
+   * When true, a worker may only claim a task in a category they hold the
+   * matching Academy certificate for (course slug === category slug).
+   *
+   * DEFAULT FALSE, and that is a business decision, not an oversight. Turning
+   * it on retroactively locks every already-approved worker out of the pool
+   * until they sit the exams, which would stop delivery dead. Flip it once
+   * the approved pool actually holds the certificates: /admin/workers now
+   * shows each worker's certificates, so the state is visible before the
+   * switch is thrown. The pool UI states the requirement either way, so a
+   * worker is never surprised by it.
+   */
+  requireCategoryCertification: boolean;
   suspensionFloor: number;
   minRatedDeliveries: number;
   /**
@@ -140,6 +153,7 @@ export const SettingsSchema = z.object({
   retentionDays: z.number().int().min(1).max(3650),
   scoreWindow: z.number().int().min(1).max(100),
   highValueThreshold: z.number().min(1).max(5),
+  requireCategoryCertification: z.boolean(),
   suspensionFloor: z.number().min(1).max(5),
   minRatedDeliveries: z.number().int().min(1).max(100),
   maxConsecutiveQcRejections: z.number().int().min(1).max(20),
@@ -195,6 +209,7 @@ export const DEFAULT_SETTINGS: Settings = {
   retentionDays: 90,
   scoreWindow: 10,
   highValueThreshold: 4.0,
+  requireCategoryCertification: false,
   suspensionFloor: 2.5,
   minRatedDeliveries: 3,
   // Three strikes with nothing approved in between. Deliberately above

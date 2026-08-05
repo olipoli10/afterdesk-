@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/authz";
+import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { poolTaskForVa } from "@/lib/queries/tasks";
 import { vaProfileFor } from "@/lib/queries/va-profile";
@@ -68,6 +69,16 @@ export default async function PoolTaskPage({
   const fam = familyOf(task.category?.slug);
   const due = duePill(task.vaDeadlineUtc);
   const guide = task.category && hasGuide(task.category.slug) ? task.category.slug : null;
+
+  // Certification state is read whether or not the gate is switched on, so the
+  // requirement is visible on the page a worker decides from rather than
+  // arriving as a refusal after they tap claim.
+  const certified = task.category
+    ? (await prisma.certification.count({
+        where: { userId: user.id, courseSlug: task.category.slug },
+      })) > 0
+    : true;
+  const certBlocks = settings.requireCategoryCertification && !certified;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -215,13 +226,33 @@ export default async function PoolTaskPage({
             </div>
           ) : null}
 
-          {/* the one action */}
-          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
-            <ClaimButton taskId={task.id} label="Claim this task" />
-            <span className="text-xs leading-relaxed text-[#8A9099]">
-              First come, first served. Releasing a claimed task is recorded on your record.
-            </span>
-          </div>
+          {/* the one action, or the exam that unlocks it */}
+          {certBlocks && task.category ? (
+            <div className="mt-5 rounded-[4px] border border-[#D98324]/40 bg-[#D98324]/[0.08] px-4 py-3.5">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[#E8A854]">
+                Certificate needed
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-[#F7F6F3]">
+                {task.category.name} work opens up once you pass its Academy exam. The course
+                is free, it is open right now, and the certificate is yours permanently.
+              </p>
+              <p className="mt-2.5">
+                <Link
+                  href={`/va/training/${task.category.slug}`}
+                  className="font-medium text-[#F7F6F3] underline decoration-white/30 underline-offset-2 transition-colors duration-150 hover:decoration-white"
+                >
+                  Open the {task.category.name} course
+                </Link>
+              </p>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
+              <ClaimButton taskId={task.id} label="Claim this task" />
+              <span className="text-xs leading-relaxed text-[#8A9099]">
+                First come, first served. Releasing a claimed task is recorded on your record.
+              </span>
+            </div>
+          )}
         </CardBody>
       </Card>
     </div>
