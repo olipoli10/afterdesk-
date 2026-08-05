@@ -17,6 +17,7 @@ import { TrustLinks } from "@/components/trust-links";
 import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
 import { langAlternates, type SiteLang } from "@/lib/i18n/langs";
 import { COMPACT_SERVICES_LABEL, COMPACT_HOW_LABEL } from "@/lib/i18n/mobile-menu-compact";
+import { getSettings } from "@/lib/settings";
 import { SITE_URL, WORKER_SIDE_LABEL } from "@/lib/site";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -116,6 +117,11 @@ export default async function Home({
   const cookieStore = await cookies();
   const lang = clientLangOf(sp.lang ?? cookieStore.get("ss-lang-client")?.value);
   const t = CLIENT_I18N[lang];
+  // The dispute-window figure in the hero guarantee comes from the LIVE
+  // setting, never a typed number: the published promise can never drift
+  // from the value sweeps.ts actually enforces. Same rule /how-it-works
+  // follows for every figure on the protocol page.
+  const settings = await getSettings();
   const ch = (n: string, label: string) => (
     <>
       {n}
@@ -272,7 +278,7 @@ export default async function Home({
                     strokeLinejoin="round"
                   />
                 </svg>
-                {t.hero.guarantee}
+                {t.hero.guarantee(settings.disputeWindowHours)}
               </p>
             </div>
           </div>
@@ -485,7 +491,11 @@ export default async function Home({
 
               <div className="mt-12">
                 <div className="relative">
-                  <p className="sticky top-14 z-10 mb-4 -mx-5 border-y border-black/8 bg-[#F7F6F3]/95 px-5 py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.1em] text-[#5B6069] backdrop-blur-sm sm:-mx-9 sm:px-9">
+                  {/* Sentence case at 13px, not 11px uppercase: this line
+                      carries the frame for every pair below it, and all-caps
+                      tracked-out 11px is the one line a fast reader skips —
+                      which leaves the pairs reading as loose fragments. */}
+                  <p className="sticky top-14 z-10 mb-4 -mx-5 border-y border-black/8 bg-[#F7F6F3]/95 px-5 py-2.5 text-center text-[13px] font-medium leading-snug text-[#14161A] backdrop-blur-sm sm:-mx-9 sm:px-9">
                     {t.ch05.legend}
                   </p>
                   {/* the wall itself — one hatched band, full height */}
@@ -529,6 +539,16 @@ export default async function Home({
       {/* ── CLOSING — the sheet is trimmed, the night resumes ────────── */}
       <section className="bg-[#F7F6F3] pb-16">
         <div className="mx-auto w-full max-w-[920px] px-4 sm:px-6">
+          {/* What we refuse, stated before the last CTA. A page that only
+              makes promises reads as less trustworthy than one that draws a
+              boundary — and this reader is about to hand business files to
+              someone they will never meet. Kept true to the NOT IN SCOPE
+              list on /how-it-works. */}
+          <Reveal className="mb-10 border-t border-black/8 pt-8">
+            <p className="max-w-[68ch] text-[14px] leading-[1.6] text-[#5B6069]">
+              {t.close.limits}
+            </p>
+          </Reveal>
           <p className="mb-8 text-right font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6069]">
             <Link
               href="/how-it-works"

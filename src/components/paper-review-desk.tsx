@@ -100,7 +100,11 @@ export function PaperReviewDesk({ caption }: { caption: string }) {
 
   return (
     <div ref={ref} className="mt-7">
-      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#5B6069]">
+      {/* Prose, not a mono label: this diagram is the page's single best
+          proof (a delivery being REJECTED and sent back before the client
+          ever sees it) and as bare status chips it read as decorative UI.
+          The caption is the sentence that makes the picture legible. */}
+      <p className="mb-3 max-w-[64ch] text-[14px] leading-[1.55] text-[#5B6069]">
         {caption}
       </p>
       <div className="cast border border-black/12 bg-[#F7F6F3] px-4 py-4 sm:px-6 sm:py-5">

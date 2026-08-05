@@ -39,9 +39,11 @@ type Dict = {
     subtitle: string;
     cta: string;
     /** The literal answer to "what happens if I click this" — states the
-     *  REAL mechanism (authorize, operator review, capture only after the
-     *  dispute window). Keep accurate to sweeps.ts/admin-qc.ts. */
-    guarantee: string;
+     *  REAL mechanism (authorize, review by a DIFFERENT person, capture only
+     *  after the dispute window). Takes the live disputeWindowHours so the
+     *  published number can never drift from the enforced one, same rule the
+     *  protocol page follows. Keep accurate to sweeps.ts/admin-qc.ts. */
+    guarantee: (disputeHours: number) => string;
     /** sr-only description of the animated task window for anyone who
      *  cannot see it. Framed as illustrative — the window is a demo. */
     srPreview: (title: string) => string;
@@ -98,7 +100,14 @@ type Dict = {
     /** [WHICH ALTERNATIVE, what that costs you, what happens here]. */
     pairs: [string, string, string][];
   };
-  close: { protocol: string };
+  close: {
+    protocol: string;
+    /** What we turn down. A page that only makes promises reads as less
+     *  trustworthy than one that draws a boundary, and the reader is being
+     *  asked to hand business files to a stranger. Must stay true to the
+     *  NOT IN SCOPE list on /how-it-works (docs.ts scope.items). */
+    limits: string;
+  };
   footer: { about: string; how: string; signIn: string; work: string; services: string };
   liveWindow: {
     taskTitle: string;
@@ -134,12 +143,12 @@ const en: Dict = {
   nav: { signIn: "Sign in", send: "Describe the outcome", portal: "My account", client: "Get work done", workers: "For workers" },
   hero: {
     line1: "Send the work.",
-    line2: "Get a reviewed deliverable.",
+    line2: "Get it back checked.",
     subtitle:
-      "Finding a worker was never the hard part. Checking their work, fixing mistakes, chasing hours: that's what we take off your plate.",
+      "Finding someone was never the hard part. Checking their work was. A trained specialist does your job, then a different person here checks it against a written standard before you ever see it.",
     cta: "Describe the outcome",
-    guarantee:
-      "Your card is authorized, not charged. An operator reviews the delivery before it reaches you, and nothing is captured until your dispute window closes.",
+    guarantee: (h) =>
+      `Your card is authorized, not charged. The specialist who does your work cannot send it to you: a separate reviewer has to pass it first. Your card is only charged ${h} hours after that, so you have time to reject it.`,
     srPreview: (title) =>
       `Illustrative product preview: a task titled “${title}” is received in the evening, priced by the operator, approved, completed by a vetted specialist, and passes operator review before delivery.`,
     previewLabel: "Illustrative · product preview",
@@ -148,36 +157,36 @@ const en: Dict = {
     label: "What this is",
     h2: [
       "",
-      " is a managed execution service for bounded back-office work: data, research, documents and operations, completed by trained specialists and checked by an operator before delivery.",
+      " is the person in the middle. You send a job with a clear finish line: clean this list, research these companies, pull the dates out of these contracts. A trained specialist does it. Then a different person here checks it before it reaches you.",
     ],
     intro:
-      "You describe the deliverable, an operator prices it, and one rule makes it safe to try: nothing is charged until the work passes review and your dispute window closes.",
+      "You never pick, brief or chase the specialist yourself, and you never receive their first attempt: it has to pass a review first.",
     steps: [
       [
-        "Describe the deliverable",
-        "Plain language: what must be returned, what rules matter, what a correct result looks like. An operator prices it and you approve before anything starts.",
+        "Describe what you need back",
+        "Plain language: what must be returned, what rules matter, what a correct result looks like. We price it and you approve before anything starts.",
       ],
       [
-        "It gets done",
-        "A trained specialist completes the approved scope while AfterDesk manages questions and exceptions along the way.",
+        "A trained specialist does the work",
+        "When they hit something your instructions did not cover, they ask us, never you. We sort it out and note it for you.",
       ],
       [
-        "Checked before you pay",
-        "Your card is authorized through Stripe, not charged. An operator checks the finished work against a written standard, and nothing is billed (and the specialist isn't paid) until your dispute window closes.",
+        "Someone else checks it before you see it",
+        "Not the person who did it. A separate reviewer scores it against a written standard and sends it back if it fails. You only ever receive work that passed.",
       ],
     ],
     pillars: [
       [
-        "Zero direct contact",
-        "You never manage the specialist directly. Every message and file goes through an operator.",
+        "You never meet the specialist",
+        "No interviews, no managing, no chasing. Every message and file goes through us.",
       ],
       [
-        "Fixed pricing",
-        "The price is approved before work starts. It never changes based on hours worked.",
+        "The price is fixed first",
+        "You approve one number before work starts. It never moves with hours worked.",
       ],
       [
-        "Reviewed before delivery",
-        "An operator checks every deliverable against a written standard before it reaches you.",
+        "Nobody gets paid until you are satisfied",
+        "Not AfterDesk, and not the specialist. That is why the review is real: we both carry the cost of getting it wrong.",
       ],
     ],
   },
@@ -202,7 +211,7 @@ const en: Dict = {
   },
   ch03: {
     label: "The ledger",
-    h2: "Bounded work, priced before it starts.",
+    h2: "Jobs with a clear finish line. Priced before anyone starts.",
     rows: [
       ["DATA", "4,000 duplicate CRM contacts merged, exceptions logged", "$85"],
       ["RESEARCH", "300 target accounts researched to your criteria, sources kept", "$140"],
@@ -229,9 +238,9 @@ const en: Dict = {
   ch05: {
     label: "The operator",
     h2: "One professional between you and the work.",
-    legend: "Comparing four ways to get this done: AI tools, freelance sites, hiring someone, or one operator who runs it all.",
+    legend: "Four ways people handle this today, and what each one costs you in time.",
     wall: "Operator",
-    desk: "Example: one review pass",
+    desk: "Sometimes the first version fails. When it does, the reviewer sends it back and you never see that attempt: you only receive the version that passed.",
     pairs: [
       [
         "AI tools",
@@ -246,7 +255,7 @@ const en: Dict = {
       [
         "Hiring someone",
         "Interview, onboard, manage, repeat.",
-        "The operator runs the process. You run nothing.",
+        "You write the brief once and approve the price. We run everything after that.",
       ],
       [
         "By the hour",
@@ -255,7 +264,11 @@ const en: Dict = {
       ],
     ],
   },
-  close: { protocol: "Full protocol: six stages, versioned" },
+  close: {
+    protocol: "Full protocol: six stages, versioned",
+    limits:
+      "Not everything fits. We turn down live calls, anything that needs your identity to cross, high-stakes legal, medical or financial judgment, and anything we cannot check against a source. If your job does not fit, we say so before you pay anything.",
+  },
   footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us", services: "Our Services" },
   liveWindow: {
     taskTitle: "Clean a 1,800-row supplier price list",
@@ -293,12 +306,12 @@ const fr: Dict = {
   nav: { signIn: "Connexion", send: "Décrire le résultat", portal: "Mon compte", client: "Faire faire du travail", workers: "Pour les travailleurs" },
   hero: {
     line1: "Confiez le travail.",
-    line2: "Recevez un livrable vérifié.",
+    line2: "Recevez-le déjà vérifié.",
     subtitle:
-      "Trouver un travailleur n'a jamais été le plus dur. Vérifier son travail, corriger ses erreurs, relancer ses heures : c'est ça qu'on retire de vos épaules.",
+      "Trouver quelqu'un n'a jamais été le plus dur. Vérifier son travail, oui. Un spécialiste formé fait votre tâche, puis une autre personne ici la vérifie selon une norme écrite avant que vous la voyiez.",
     cta: "Décrire le résultat",
-    guarantee:
-      "Votre carte est autorisée, pas débitée. Un opérateur vérifie la livraison avant qu'elle ne vous parvienne, et rien n'est prélevé tant que votre fenêtre de contestation n'est pas écoulée.",
+    guarantee: (h) =>
+      `Votre carte est autorisée, pas débitée. Le spécialiste qui fait votre travail ne peut pas vous l'envoyer : un réviseur distinct doit d'abord l'approuver. Votre carte n'est débitée que ${h} heures plus tard, vous avez donc le temps de refuser.`,
     srPreview: (title) =>
       `Aperçu illustratif du produit : une tâche intitulée « ${title} » est reçue en soirée, chiffrée par l'opérateur, approuvée, réalisée par un spécialiste vérifié, et passe la révision de l'opérateur avant livraison.`,
     previewLabel: "Illustration · aperçu du produit",
@@ -307,36 +320,36 @@ const fr: Dict = {
     label: "Ce qu'on fait",
     h2: [
       "",
-      " est un service d'exécution gérée pour le travail administratif délimité : données, recherche, documents et opérations, réalisés par des spécialistes formés et vérifiés par un opérateur avant livraison.",
+      " est la personne au milieu. Vous envoyez une tâche avec une ligne d'arrivée claire : nettoyer cette liste, rechercher ces entreprises, sortir les dates de ces contrats. Un spécialiste formé la fait. Puis une autre personne ici la vérifie avant qu'elle vous parvienne.",
     ],
     intro:
-      "Vous décrivez le livrable, un opérateur le chiffre, et une seule règle rend l'essai sûr : rien n'est facturé tant que le travail n'a pas passé la révision et que votre fenêtre de contestation n'est pas écoulée.",
+      "Vous n'avez jamais à choisir, encadrer ou relancer le spécialiste vous-même, et vous ne recevez jamais sa première tentative : elle doit d'abord passer une révision.",
     steps: [
       [
-        "Décrivez le livrable",
-        "En langage clair : ce qui doit être rendu, les règles importantes, ce qui constitue un résultat correct. Un opérateur le chiffre et vous approuvez avant que quoi que ce soit commence.",
+        "Décrivez ce que vous voulez recevoir",
+        "En langage clair : ce qui doit être rendu, les règles importantes, ce qui constitue un résultat correct. On le chiffre et vous approuvez avant que quoi que ce soit commence.",
       ],
       [
-        "Le travail se fait",
-        "Un spécialiste formé réalise le travail approuvé pendant qu'AfterDesk gère les questions et les exceptions en chemin.",
+        "Un spécialiste formé fait le travail",
+        "Quand il tombe sur quelque chose que vos instructions ne couvraient pas, il nous le demande à nous, jamais à vous. On règle ça et on vous le note.",
       ],
       [
-        "Vérifié avant de payer",
-        "Votre carte est autorisée via Stripe, pas débitée. Un opérateur vérifie le travail terminé selon une norme écrite, et rien n'est facturé (ni le spécialiste payé) tant que votre fenêtre de contestation n'est pas écoulée.",
+        "Une autre personne le vérifie avant vous",
+        "Pas celle qui l'a fait. Un réviseur distinct l'évalue selon une norme écrite et le renvoie s'il échoue. Vous ne recevez que du travail qui a passé.",
       ],
     ],
     pillars: [
       [
-        "Zéro contact direct",
-        "Vous ne gérez jamais le spécialiste directement. Chaque message et fichier passe par un opérateur.",
+        "Vous ne rencontrez jamais le spécialiste",
+        "Aucune entrevue, aucune gestion, aucune relance. Chaque message et fichier passe par nous.",
       ],
       [
-        "Prix fixe",
-        "Le prix est approuvé avant que le travail commence. Il ne change jamais selon les heures travaillées.",
+        "Le prix est fixé d'abord",
+        "Vous approuvez un seul montant avant que le travail commence. Il ne bouge jamais selon les heures travaillées.",
       ],
       [
-        "Vérifié avant livraison",
-        "Un opérateur vérifie chaque livrable selon une norme écrite avant qu'il ne vous parvienne.",
+        "Personne n'est payé tant que vous n'êtes pas satisfait",
+        "Ni AfterDesk, ni le spécialiste. C'est pour ça que la révision est réelle : on porte tous les deux le coût de se tromper.",
       ],
     ],
   },
@@ -361,7 +374,7 @@ const fr: Dict = {
   },
   ch03: {
     label: "Le registre",
-    h2: "Un travail délimité, chiffré avant de commencer.",
+    h2: "Des tâches avec une ligne d'arrivée claire. Chiffrées avant que quiconque commence.",
     rows: [
       ["DONNÉES", "4 000 contacts CRM dédoublonnés, exceptions notées", "$85"],
       ["RECHERCHE", "300 comptes cibles étudiés selon vos critères, sources conservées", "$140"],
@@ -388,9 +401,9 @@ const fr: Dict = {
   ch05: {
     label: "L'opérateur",
     h2: "Un professionnel entre vous et le travail.",
-    legend: "Comparaison de quatre façons de faire ça : outils d'IA, sites de pigistes, embauche directe, ou un seul opérateur qui gère tout.",
+    legend: "Quatre façons de gérer ça aujourd'hui, et ce que chacune vous coûte en temps.",
     wall: "Opérateur",
-    desk: "Exemple : une passe de vérification",
+    desk: "Parfois la première version échoue. Le réviseur la renvoie alors, et vous ne voyez jamais cette tentative : vous ne recevez que la version qui a passé.",
     pairs: [
       [
         "Outils d'IA",
@@ -405,7 +418,7 @@ const fr: Dict = {
       [
         "Embaucher",
         "Entrevues, intégration, gestion, à recommencer.",
-        "L'opérateur mène le processus. Vous ne gérez rien.",
+        "Vous écrivez le mandat une fois et approuvez le prix. On mène tout le reste.",
       ],
       [
         "À l'heure",
@@ -414,7 +427,11 @@ const fr: Dict = {
       ],
     ],
   },
-  close: { protocol: "Protocole complet : six étapes, versionné" },
+  close: {
+    protocol: "Protocole complet : six étapes, versionné",
+    limits:
+      "Tout ne convient pas. On refuse les appels en direct, tout ce qui exige que votre identité circule, les décisions légales, médicales ou financières à enjeu élevé, et tout ce qu'on ne peut pas vérifier contre une source. Si votre tâche ne convient pas, on vous le dit avant que vous payiez quoi que ce soit.",
+  },
   liveWindow: {
     taskTitle: "Nettoyer une liste de prix fournisseur de 1 800 lignes",
     fieldScope: "PORTÉE",
@@ -452,12 +469,12 @@ const es: Dict = {
   nav: { signIn: "Iniciar sesión", send: "Describe el resultado", portal: "Mi cuenta", client: "Haz que se haga", workers: "Para trabajadores" },
   hero: {
     line1: "Envía el trabajo.",
-    line2: "Recibe un entregable revisado.",
+    line2: "Recíbelo ya revisado.",
     subtitle:
-      "Encontrar a alguien nunca fue lo difícil. Revisar su trabajo, corregir errores, perseguir horas: eso es lo que te quitamos de encima.",
+      "Encontrar a alguien nunca fue lo difícil. Revisar su trabajo sí. Un especialista capacitado hace tu tarea, y después otra persona aquí la revisa contra un estándar escrito antes de que tú la veas.",
     cta: "Describe el resultado",
-    guarantee:
-      "Tu tarjeta queda autorizada, no cobrada. Un operador revisa la entrega antes de que llegue a ti, y no se cobra nada hasta que se cierra tu ventana de disputa.",
+    guarantee: (h) =>
+      `Tu tarjeta queda autorizada, no cobrada. El especialista que hace tu trabajo no puede enviártelo: un revisor distinto tiene que aprobarlo primero. Tu tarjeta se cobra ${h} horas después de eso, así que tienes tiempo de rechazarlo.`,
     srPreview: (title) =>
       `Vista previa ilustrativa del producto: una tarea titulada “${title}” se recibe por la tarde, cotizada por el operador, aprobada, realizada por un especialista verificado, y pasa la revisión del operador antes de la entrega.`,
     previewLabel: "Ilustrativo · vista previa del producto",
@@ -466,36 +483,36 @@ const es: Dict = {
     label: "Qué es esto",
     h2: [
       "",
-      " es un servicio de ejecución gestionada para trabajo administrativo acotado: datos, investigación, documentos y operaciones, realizados por especialistas capacitados y revisados por un operador antes de la entrega.",
+      " es la persona en el medio. Envías una tarea con una meta clara: limpiar esta lista, investigar estas empresas, sacar las fechas de estos contratos. Un especialista capacitado la hace. Después otra persona aquí la revisa antes de que llegue a ti.",
     ],
     intro:
-      "Describes el entregable, un operador lo cotiza, y una sola regla hace que sea seguro intentarlo: no se cobra nada hasta que el trabajo pasa la revisión y se cierra tu ventana de disputa.",
+      "Nunca eliges, instruyes ni persigues al especialista tú mismo, y nunca recibes su primer intento: primero tiene que pasar una revisión.",
     steps: [
       [
-        "Describe el entregable",
-        "En lenguaje claro: qué debe devolverse, qué reglas importan, cómo es un resultado correcto. Un operador lo cotiza y tú apruebas antes de que empiece nada.",
+        "Describe lo que quieres recibir",
+        "En lenguaje claro: qué debe devolverse, qué reglas importan, cómo es un resultado correcto. Lo cotizamos y tú apruebas antes de que empiece nada.",
       ],
       [
-        "Se hace",
-        "Un especialista capacitado completa el alcance aprobado mientras AfterDesk gestiona preguntas y excepciones en el camino.",
+        "Un especialista capacitado hace el trabajo",
+        "Cuando se topa con algo que tus instrucciones no cubrían, nos pregunta a nosotros, nunca a ti. Lo resolvemos y te lo anotamos.",
       ],
       [
-        "Revisado antes de pagar",
-        "Tu tarjeta queda autorizada a través de Stripe, no cobrada. Un operador revisa el trabajo terminado según un estándar escrito, y no se cobra nada (ni el especialista recibe pago) hasta que se cierra tu ventana de disputa.",
+        "Otra persona lo revisa antes que tú",
+        "No la que lo hizo. Un revisor distinto lo evalúa contra un estándar escrito y lo devuelve si falla. Solo recibes trabajo que pasó.",
       ],
     ],
     pillars: [
       [
-        "Cero contacto directo",
-        "Nunca gestionas al especialista directamente. Cada mensaje y archivo pasa por un operador.",
+        "Nunca conoces al especialista",
+        "Sin entrevistas, sin gestionar, sin perseguir. Cada mensaje y archivo pasa por nosotros.",
       ],
       [
-        "Precio fijo",
-        "El precio se aprueba antes de que empiece el trabajo. Nunca cambia según las horas trabajadas.",
+        "El precio se fija primero",
+        "Apruebas un solo número antes de que empiece el trabajo. Nunca se mueve según las horas trabajadas.",
       ],
       [
-        "Revisado antes de la entrega",
-        "Un operador revisa cada entregable según un estándar escrito antes de que llegue a ti.",
+        "Nadie cobra hasta que estés satisfecho",
+        "Ni AfterDesk, ni el especialista. Por eso la revisión es real: los dos cargamos con el costo de equivocarnos.",
       ],
     ],
   },
@@ -520,7 +537,7 @@ const es: Dict = {
   },
   ch03: {
     label: "El registro",
-    h2: "Trabajo acotado, cotizado antes de empezar.",
+    h2: "Tareas con una meta clara. Cotizadas antes de que nadie empiece.",
     rows: [
       ["DATOS", "4.000 contactos CRM duplicados fusionados, excepciones anotadas", "$85"],
       ["INVESTIGACIÓN", "300 cuentas objetivo investigadas según tus criterios, con fuentes", "$140"],
@@ -547,9 +564,9 @@ const es: Dict = {
   ch05: {
     label: "El operador",
     h2: "Un profesional entre tú y el trabajo.",
-    legend: "Comparando cuatro formas de hacer esto: herramientas de IA, sitios de freelance, contratar a alguien, o un solo operador que lo gestiona todo.",
+    legend: "Cuatro formas de resolver esto hoy, y lo que cada una te cuesta en tiempo.",
     wall: "Operador",
-    desk: "Ejemplo: una pasada de revisión",
+    desk: "A veces la primera versión falla. Cuando pasa, el revisor la devuelve y tú nunca ves ese intento: solo recibes la versión que pasó.",
     pairs: [
       [
         "Herramientas de IA",
@@ -564,7 +581,7 @@ const es: Dict = {
       [
         "Contratar",
         "Entrevistar, incorporar, gestionar, repetir.",
-        "El operador dirige el proceso. Tú no gestionas nada.",
+        "Escribes el encargo una vez y apruebas el precio. Nosotros dirigimos todo lo demás.",
       ],
       [
         "Por hora",
@@ -573,7 +590,11 @@ const es: Dict = {
       ],
     ],
   },
-  close: { protocol: "Protocolo completo: seis etapas, versionado" },
+  close: {
+    protocol: "Protocolo completo: seis etapas, versionado",
+    limits:
+      "No todo encaja. Rechazamos llamadas en vivo, cualquier cosa que exija que tu identidad circule, decisiones legales, médicas o financieras de alto riesgo, y todo lo que no podamos verificar contra una fuente. Si tu tarea no encaja, te lo decimos antes de que pagues nada.",
+  },
   liveWindow: {
     taskTitle: "Limpiar una lista de precios de proveedor de 1800 filas",
     fieldScope: "ALCANCE",
@@ -614,12 +635,12 @@ const tl: Dict = {
   nav: { signIn: "Mag-sign in", send: "Ilarawan ang resulta", portal: "Account ko", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
   hero: {
     line1: "Ipadala ang trabaho.",
-    line2: "Tumanggap ng sinuring deliverable.",
+    line2: "Balik ito na sinuri na.",
     subtitle:
-      "Ang paghahanap ng manggagawa hindi kailanman ang mahirap na bahagi. Ang pag-check ng trabaho nila, pag-ayos ng mali, paghabol sa oras nila: yun ang inaalis namin sa'yo.",
+      "Ang paghahanap ng tao hindi kailanman ang mahirap na bahagi. Ang pag-check ng trabaho nila, oo. May trained specialist na gumagawa ng task mo, tapos ibang tao dito ang sumusuri nito ayon sa nakasulat na pamantayan bago mo pa ito makita.",
     cta: "Ilarawan ang resulta",
-    guarantee:
-      "Naka-authorize lang ang card mo, hindi sinisingil. Sinusuri ng operator ang delivery bago ito dumating sa iyo, at walang sinisingil hangga't hindi pa tapos ang window mo para mag-dispute.",
+    guarantee: (h) =>
+      `Naka-authorize lang ang card mo, hindi sinisingil. Ang specialist na gumawa ng trabaho mo ay hindi ito puwedeng ipadala sa iyo: kailangan muna itong ipasa ng ibang reviewer. Sisingilin lang ang card mo ${h} oras pagkatapos noon, kaya may oras ka pang tumanggi.`,
     srPreview: (title) =>
       `Halimbawang preview ng produkto: isang task na “${title}” ay natanggap sa gabi, pinresyuhan ng operator, inaprubahan, ginawa ng beripikadong espesyalista, at pumasa sa review ng operator bago i-deliver.`,
     previewLabel: "Halimbawa · preview ng produkto",
@@ -628,36 +649,36 @@ const tl: Dict = {
     label: "Ano ito",
     h2: [
       "Ang ",
-      " ay isang managed execution service para sa malinaw na back-office work: data, research, documents, at operations, ginagawa ng trained specialists at sinusuri ng operator bago i-deliver.",
+      " ang tao sa gitna. Magpapadala ka ng task na may malinaw na finish line: linisin ang listahang ito, saliksikin ang mga kumpanyang ito, kunin ang mga petsa sa mga kontratang ito. Trained specialist ang gagawa nito. Tapos ibang tao dito ang susuri bago ito dumating sa iyo.",
     ],
     intro:
-      "Ilalarawan mo ang deliverable, ipepresyo ito ng operator, at isang panuntunan ang gumagawa nitong ligtas subukan: walang sisingilin hangga't hindi pumapasa sa review ang trabaho at hindi sarado ang dispute window mo.",
+      "Hindi mo kailanman pipiliin, bi-brief o hahabulin ang specialist mismo, at hindi mo natatanggap ang unang tangka niya: kailangan muna itong makapasa sa review.",
     steps: [
       [
-        "Ilarawan ang deliverable",
-        "Simpleng salita: ano ang dapat ibalik, aling rules ang mahalaga, ano ang tamang resulta. Ipepresyo ito ng operator at aaprubahan mo bago magsimula ang kahit ano.",
+        "Ilarawan kung ano ang gusto mong matanggap",
+        "Simpleng salita: ano ang dapat ibalik, aling rules ang mahalaga, ano ang tamang resulta. Pipresyuhan namin ito at aaprubahan mo bago magsimula ang kahit ano.",
       ],
       [
-        "Nagagawa ito",
-        "Kinukumpleto ng trained specialist ang aprubadong scope habang mina-manage ng AfterDesk ang questions at exceptions sa daan.",
+        "Trained specialist ang gumagawa ng trabaho",
+        "Kapag may nakita siyang hindi saklaw ng instructions mo, sa amin siya nagtatanong, hindi sa iyo. Inaayos namin ito at nino-note para sa iyo.",
       ],
       [
-        "Sinuri bago ka magbayad",
-        "Naka-authorize ang card mo sa Stripe, hindi sinisingil. Sinusuri ng operator ang natapos na trabaho ayon sa nakasulat na pamantayan, at walang sisingilin (at hindi babayaran ang espesyalista) hangga't hindi pa tapos ang dispute window mo.",
+        "Ibang tao ang sumusuri bago ka",
+        "Hindi ang gumawa nito. Ibang reviewer ang nag-e-evaluate nito ayon sa nakasulat na pamantayan at ibinabalik ito kapag bumagsak. Trabahong pumasa lang ang natatanggap mo.",
       ],
     ],
     pillars: [
       [
-        "Zero direktang contact",
-        "Hindi mo kailanman pinamamahalaan ang espesyalista nang direkta. Dumadaan sa operator ang bawat mensahe at file.",
+        "Hindi mo kailanman makikilala ang specialist",
+        "Walang interview, walang pamamahala, walang paghabol. Dumadaan sa amin ang bawat mensahe at file.",
       ],
       [
-        "Fixed na presyo",
-        "Inaaprubahan ang presyo bago magsimula ang trabaho. Hindi ito nagbabago base sa oras na ginugol.",
+        "Nauuna ang presyo",
+        "Isang numero ang aaprubahan mo bago magsimula ang trabaho. Hindi ito gumagalaw base sa oras na ginugol.",
       ],
       [
-        "Sinuri bago ihatid",
-        "Sinusuri ng operator ang bawat natapos na trabaho ayon sa nakasulat na pamantayan bago ito dumating sa iyo.",
+        "Walang binabayaran hangga't hindi ka satisfied",
+        "Hindi ang AfterDesk, hindi rin ang specialist. Kaya totoo ang review: pareho kaming may pasanin kapag namali.",
       ],
     ],
   },
@@ -682,7 +703,7 @@ const tl: Dict = {
   },
   ch03: {
     label: "Ang talaan",
-    h2: "Malinaw na trabaho, presyado bago magsimula.",
+    h2: "Mga task na may malinaw na finish line. Presyado bago pa may magsimula.",
     rows: [
       ["DATA", "4,000 dobleng CRM contacts pinagsama, may exception log", "$85"],
       ["RESEARCH", "300 target accounts sinaliksik ayon sa criteria mo, may sources", "$140"],
@@ -709,9 +730,9 @@ const tl: Dict = {
   ch05: {
     label: "Ang operator",
     h2: "Isang propesyonal sa pagitan mo at ng trabaho.",
-    legend: "Paghahambing ng apat na paraan: AI tools, freelance site, pag-hire, o iisang operator na bahala sa lahat.",
+    legend: "Apat na paraan ng paggawa nito ngayon, at kung magkano ang halaga ng bawat isa sa oras mo.",
     wall: "Operator",
-    desk: "Halimbawa: isang pasada ng review",
+    desk: "Minsan bumabagsak ang unang bersyon. Kapag nangyari iyon, ibinabalik ito ng reviewer at hindi mo na nakikita ang tangkang iyon: ang bersyong pumasa lang ang natatanggap mo.",
     pairs: [
       [
         "AI tools",
@@ -726,7 +747,7 @@ const tl: Dict = {
       [
         "Mag-hire",
         "Mag-interview, mag-onboard, mag-manage, ulit.",
-        "Ang operator ang bahala sa proseso. Wala kang imamanage.",
+        "Isang beses mong isusulat ang brief at aaprubahan ang presyo. Kami na ang bahala sa lahat pagkatapos.",
       ],
       [
         "Kada oras",
@@ -735,7 +756,11 @@ const tl: Dict = {
       ],
     ],
   },
-  close: { protocol: "Buong protocol: anim na yugto, may bersyon" },
+  close: {
+    protocol: "Buong protocol: anim na yugto, may bersyon",
+    limits:
+      "Hindi lahat bagay sa amin. Tinatanggihan namin ang live calls, anumang nangangailangan na dumaan ang pagkakakilanlan mo, high-stakes na legal, medical o financial na desisyon, at anumang hindi namin masusuri laban sa isang source. Kung hindi bagay ang task mo, sasabihin namin bago ka pa magbayad ng kahit ano.",
+  },
   liveWindow: {
     taskTitle: "Linisin ang 1,800-row na listahan ng presyo ng supplier",
     fieldScope: "SAKLAW",
