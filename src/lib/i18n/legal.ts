@@ -74,7 +74,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     },
     title: "Security",
     intro:
-      "The identity wall, payment gate and quality review are enforced at the data and transaction layers—not only hidden in the interface.",
+      "The identity wall, payment gate and quality review are enforced at the data and transaction layers, not only hidden in the interface.",
     access: {
       h2: "Access and identity",
       body: "Every protected read and mutation rechecks the signed-in user, role and resource ownership. Password accounts must verify their email. Workers lose task-file access as soon as a task leaves their hands or their approval is suspended.",
@@ -102,7 +102,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     },
     title: "Sécurité",
     intro:
-      "Le mur d'identité, la barrière de paiement et la révision qualité sont appliqués au niveau des données et des transactions — pas seulement cachés dans l'interface.",
+      "Le mur d'identité, la barrière de paiement et la révision qualité sont appliqués au niveau des données et des transactions, pas seulement cachés dans l'interface.",
     access: {
       h2: "Accès et identité",
       body: "Chaque lecture et modification protégée revérifie l'utilisateur connecté, son rôle et la propriété de la ressource. Les comptes par mot de passe doivent vérifier leur courriel. Un travailleur perd l'accès aux fichiers d'une tâche dès qu'elle quitte ses mains ou que son approbation est suspendue.",
@@ -130,7 +130,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     },
     title: "Seguridad",
     intro:
-      "El muro de identidad, la barrera de pago y la revisión de calidad se aplican en las capas de datos y transacciones — no solo ocultos en la interfaz.",
+      "El muro de identidad, la barrera de pago y la revisión de calidad se aplican en las capas de datos y transacciones, no solo ocultos en la interfaz.",
     access: {
       h2: "Acceso e identidad",
       body: "Cada lectura y modificación protegida vuelve a verificar al usuario conectado, su rol y la propiedad del recurso. Las cuentas con contraseña deben verificar su correo. Un trabajador pierde el acceso a los archivos de una tarea en cuanto esta sale de sus manos o se suspende su aprobación.",
@@ -158,7 +158,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     },
     title: "Seguridad",
     intro:
-      "Ang identity wall, payment gate, at quality review ay ipinapatupad sa data at transaction layer — hindi lang nakatago sa interface.",
+      "Ang identity wall, payment gate, at quality review ay ipinapatupad sa data at transaction layer, hindi lang nakatago sa interface.",
     access: {
       h2: "Access at identity",
       body: "Bawat protected na read at mutation ay muling sinusuri ang naka-sign-in na user, role, at ownership ng resource. Kailangang i-verify ng mga password account ang kanilang email. Nawawalan ng access ang isang worker sa mga file ng task sa sandaling umalis ito sa kanyang mga kamay o ma-suspend ang kanyang approval.",
@@ -199,7 +199,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacy",
       description:
-        "What AfterDesk collects, why, how long it is kept, and who can see it. Client and worker never learn each other’s identity — that separation is enforced in the data layer, not just the interface.",
+        "What AfterDesk collects, why, how long it is kept, and who can see it. Client and worker never learn each other’s identity. That separation is enforced in the data layer, not just the interface.",
     },
     title: "Privacy",
     intro:
@@ -228,7 +228,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Confidentialité",
       description:
-        "Ce qu'AfterDesk recueille, pourquoi, combien de temps c'est conservé, et qui peut le voir. Client et travailleur ne connaissent jamais l'identité l'un de l'autre — cette séparation est appliquée au niveau des données, pas seulement de l'interface.",
+        "Ce qu'AfterDesk recueille, pourquoi, combien de temps c'est conservé, et qui peut le voir. Client et travailleur ne connaissent jamais l'identité l'un de l'autre. Cette séparation est appliquée au niveau des données, pas seulement de l'interface.",
     },
     title: "Confidentialité",
     intro:
@@ -257,7 +257,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacidad",
       description:
-        "Qué recopila AfterDesk, por qué, cuánto tiempo se conserva y quién puede verlo. Cliente y trabajador nunca conocen la identidad del otro — esa separación se aplica en la capa de datos, no solo en la interfaz.",
+        "Qué recopila AfterDesk, por qué, cuánto tiempo se conserva y quién puede verlo. Cliente y trabajador nunca conocen la identidad del otro. Esa separación se aplica en la capa de datos, no solo en la interfaz.",
     },
     title: "Privacidad",
     intro:
@@ -286,7 +286,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacy",
       description:
-        "Ano ang kinokolekta ng AfterDesk, bakit, gaano katagal itinatago, at sino ang makakakita nito. Hindi kailanman malalaman ng client at worker ang identity ng isa't isa — ipinapatupad ang paghihiwalay na iyon sa data layer, hindi lang sa interface.",
+        "Ano ang kinokolekta ng AfterDesk, bakit, gaano katagal itinatago, at sino ang makakakita nito. Hindi kailanman malalaman ng client at worker ang identity ng isa't isa. Ipinapatupad ang paghihiwalay na iyon sa data layer, hindi lang sa interface.",
     },
     title: "Privacy",
     intro:
@@ -352,7 +352,7 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     operator: {
       h2: "Who operates AfterDesk",
-      body: "Every price, quality review and payout decision described in these terms is made by one person — not a support queue, not an algorithm.",
+      body: "Every price, quality review and payout decision described in these terms is made by one person: not a support queue, not an algorithm.",
     },
     rights: {
       h2: "Confidentiality and rights",
@@ -382,7 +382,7 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     operator: {
       h2: "Qui exploite AfterDesk",
-      body: "Chaque prix, chaque révision qualité et chaque décision de paiement décrits dans ces conditions sont pris par une seule personne — pas une file de soutien, pas un algorithme.",
+      body: "Chaque prix, chaque révision qualité et chaque décision de paiement décrits dans ces conditions sont pris par une seule personne : pas une file de soutien, pas un algorithme.",
     },
     rights: {
       h2: "Confidentialité et droits",
@@ -412,7 +412,7 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     operator: {
       h2: "Quién opera AfterDesk",
-      body: "Cada precio, cada revisión de calidad y cada decisión de pago descrita en estos términos la toma una sola persona — no una cola de soporte, no un algoritmo.",
+      body: "Cada precio, cada revisión de calidad y cada decisión de pago descrita en estos términos la toma una sola persona: no una cola de soporte, no un algoritmo.",
     },
     rights: {
       h2: "Confidencialidad y derechos",
@@ -442,7 +442,7 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     operator: {
       h2: "Sino ang Nag-ooperate ng AfterDesk",
-      body: "Ang bawat presyo, quality review, at desisyon sa payout na inilarawan sa mga tuntuning ito ay ginagawa ng iisang tao — hindi isang support queue, hindi isang algorithm.",
+      body: "Ang bawat presyo, quality review, at desisyon sa payout na inilarawan sa mga tuntuning ito ay ginagawa ng iisang tao: hindi isang support queue, hindi isang algorithm.",
     },
     rights: {
       h2: "Confidentiality at mga Karapatan",
@@ -469,7 +469,7 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
     meta: {
       title: "Acceptable use",
       description:
-        "What AfterDesk will and will not take on. Some tasks we turn down — this page says which, and why, in plain language.",
+        "What AfterDesk will and will not take on. Some tasks we turn down. This page says which, and why, in plain language.",
     },
     title: "Acceptable use",
     intro:
@@ -498,7 +498,7 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
     meta: {
       title: "Utilisation acceptable",
       description:
-        "Ce qu'AfterDesk accepte et refuse de prendre en charge. Certaines tâches sont refusées — cette page dit lesquelles, et pourquoi, en langage clair.",
+        "Ce qu'AfterDesk accepte et refuse de prendre en charge. Certaines tâches sont refusées. Cette page dit lesquelles, et pourquoi, en langage clair.",
     },
     title: "Utilisation acceptable",
     intro:
@@ -527,7 +527,7 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
     meta: {
       title: "Uso aceptable",
       description:
-        "Qué acepta y qué rechaza AfterDesk. Rechazamos algunas tareas — esta página dice cuáles, y por qué, en lenguaje claro.",
+        "Qué acepta y qué rechaza AfterDesk. Rechazamos algunas tareas. Esta página dice cuáles, y por qué, en lenguaje claro.",
     },
     title: "Uso aceptable",
     intro:
@@ -556,7 +556,7 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
     meta: {
       title: "Katanggap-tanggap na Paggamit",
       description:
-        "Kung ano ang tatanggapin at hindi tatanggapin ng AfterDesk. May mga task kaming tinatanggihan — sinasabi ng page na ito kung alin, at bakit, sa simpleng wika.",
+        "Kung ano ang tatanggapin at hindi tatanggapin ng AfterDesk. May mga task kaming tinatanggihan. Sinasabi ng page na ito kung alin, at bakit, sa simpleng wika.",
     },
     title: "Katanggap-tanggap na Paggamit",
     intro:
@@ -608,12 +608,12 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Public Ledger",
       description:
-        "A running, append-only record of money processed through AfterDesk. No client or worker names — just the total and every entry behind it.",
+        "A running, append-only record of money processed through AfterDesk. No client or worker names: just the total and every entry behind it.",
     },
     back: "← Back",
     eyebrow: "Public Ledger",
     h1: "Every dollar processed, append-only.",
-    lede: "No client names, no worker names — just amounts, categories, and timestamps, written the moment each transaction settles. Entries are never edited or deleted once written; a correction is its own new entry, not an overwrite.",
+    lede: "No client names, no worker names: just amounts, categories, and timestamps, written the moment each transaction settles. Entries are never edited or deleted once written; a correction is its own new entry, not an overwrite.",
     totalLabel: "Total processed to date",
     totalPending:
       "Published once enough transactions have settled that the total cannot be traced back to any single one.",
@@ -624,8 +624,8 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     },
     historyLabel: "History",
     emptyState:
-      "No entries yet — this list updates automatically once the first task completes.",
-    emptyExample: "example — Aug 4 · Payment processed · Data entry · $68",
+      "No entries yet. This list updates automatically once the first task completes.",
+    emptyExample: "example: Aug 4 · Payment processed · Data entry · $68",
     olderEntries: "Older entries →",
     kind: {
       sale: "Payment processed",
@@ -641,12 +641,12 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Registre public",
       description:
-        "Un registre continu, en ajout seul, de l'argent traité par AfterDesk. Aucun nom de client ou de travailleur — seulement le total et chaque écriture derrière lui.",
+        "Un registre continu, en ajout seul, de l'argent traité par AfterDesk. Aucun nom de client ou de travailleur : seulement le total et chaque écriture derrière lui.",
     },
     back: "← Retour",
     eyebrow: "Registre public",
     h1: "Chaque dollar traité, en ajout seul.",
-    lede: "Aucun nom de client, aucun nom de travailleur — seulement des montants, des catégories et des horodatages, inscrits au moment où chaque transaction se règle. Les écritures ne sont jamais modifiées ni supprimées une fois inscrites; une correction est sa propre nouvelle écriture, jamais une réécriture.",
+    lede: "Aucun nom de client, aucun nom de travailleur : seulement des montants, des catégories et des horodatages, inscrits au moment où chaque transaction se règle. Les écritures ne sont jamais modifiées ni supprimées une fois inscrites; une correction est sa propre nouvelle écriture, jamais une réécriture.",
     totalLabel: "Total traité à ce jour",
     totalPending:
       "Publié une fois qu'assez de transactions se sont réglées pour que le total ne puisse être retracé jusqu'à une seule d'entre elles.",
@@ -657,8 +657,8 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     },
     historyLabel: "Historique",
     emptyState:
-      "Aucune écriture encore — cette liste se met à jour automatiquement dès que la première tâche est complétée.",
-    emptyExample: "exemple — 4 août · Paiement traité · Saisie de données · 68 $",
+      "Aucune écriture encore. Cette liste se met à jour automatiquement dès que la première tâche est complétée.",
+    emptyExample: "exemple : 4 août · Paiement traité · Saisie de données · 68 $",
     olderEntries: "Écritures plus anciennes →",
     kind: {
       sale: "Paiement traité",
@@ -674,12 +674,12 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Registro público",
       description:
-        "Un registro continuo, de solo adición, del dinero procesado a través de AfterDesk. Sin nombres de clientes ni trabajadores — solo el total y cada entrada detrás de él.",
+        "Un registro continuo, de solo adición, del dinero procesado a través de AfterDesk. Sin nombres de clientes ni trabajadores: solo el total y cada entrada detrás de él.",
     },
     back: "← Volver",
     eyebrow: "Registro público",
     h1: "Cada dólar procesado, de solo adición.",
-    lede: "Sin nombres de clientes, sin nombres de trabajadores — solo montos, categorías y marcas de tiempo, escritos en el momento en que se liquida cada transacción. Las entradas nunca se editan ni se eliminan una vez escritas; una corrección es su propia entrada nueva, nunca una reescritura.",
+    lede: "Sin nombres de clientes, sin nombres de trabajadores: solo montos, categorías y marcas de tiempo, escritos en el momento en que se liquida cada transacción. Las entradas nunca se editan ni se eliminan una vez escritas; una corrección es su propia entrada nueva, nunca una reescritura.",
     totalLabel: "Total procesado a la fecha",
     totalPending:
       "Se publica una vez que suficientes transacciones se han liquidado como para que el total no se pueda rastrear hasta una sola de ellas.",
@@ -690,8 +690,8 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     },
     historyLabel: "Historial",
     emptyState:
-      "Aún no hay entradas — esta lista se actualiza automáticamente en cuanto se complete la primera tarea.",
-    emptyExample: "ejemplo — 4 de agosto · Pago procesado · Entrada de datos · $68",
+      "Aún no hay entradas. Esta lista se actualiza automáticamente en cuanto se complete la primera tarea.",
+    emptyExample: "ejemplo: 4 de agosto · Pago procesado · Entrada de datos · $68",
     olderEntries: "Entradas anteriores →",
     kind: {
       sale: "Pago procesado",
@@ -707,12 +707,12 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Pampublikong Ledger",
       description:
-        "Isang tuloy-tuloy, append-only na tala ng pera na pinoproseso sa AfterDesk. Walang pangalan ng client o worker — total lang at bawat entry sa likod nito.",
+        "Isang tuloy-tuloy, append-only na tala ng pera na pinoproseso sa AfterDesk. Walang pangalan ng client o worker: total lang at bawat entry sa likod nito.",
     },
     back: "← Bumalik",
     eyebrow: "Pampublikong Ledger",
     h1: "Bawat dolyar na pinoseso, append-only.",
-    lede: "Walang pangalan ng client, walang pangalan ng worker — halaga, kategorya, at timestamp lang, na isinusulat sa sandaling ma-settle ang bawat transaksyon. Hindi kailanman ino-edit o binubura ang mga entry kapag naisulat na; ang isang correction ay sarili niyang bagong entry, hindi pagsulat ulit.",
+    lede: "Walang pangalan ng client, walang pangalan ng worker: halaga, kategorya, at timestamp lang, na isinusulat sa sandaling ma-settle ang bawat transaksyon. Hindi kailanman ino-edit o binubura ang mga entry kapag naisulat na; ang isang correction ay sarili niyang bagong entry, hindi pagsulat ulit.",
     totalLabel: "Kabuuang naiproseso hanggang ngayon",
     totalPending:
       "Ipinapaskil kapag sapat na ang na-settle na transaksyon para hindi na maisubaybayan ang total pabalik sa isang solong transaksyon.",
@@ -723,8 +723,8 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     },
     historyLabel: "History",
     emptyState:
-      "Wala pang entry — awtomatikong nag-a-update ang listahang ito sa sandaling matapos ang unang task.",
-    emptyExample: "halimbawa — Ago 4 · Naiprosesong bayad · Data entry · $68",
+      "Wala pang entry. Awtomatikong nag-a-update ang listahang ito sa sandaling matapos ang unang task.",
+    emptyExample: "halimbawa: Ago 4 · Naiprosesong bayad · Data entry · $68",
     olderEntries: "Mas lumang entry →",
     kind: {
       sale: "Naiprosesong bayad",

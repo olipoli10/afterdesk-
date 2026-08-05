@@ -223,7 +223,7 @@ const en: Dict = {
     line1: "Describe any task.",
     line2: "Get it back done by morning.",
     subtitle:
-      "Finding a worker was never the hard part. Checking their work, fixing mistakes, chasing hours — that's what we take off your plate.",
+      "Finding a worker was never the hard part. Checking their work, fixing mistakes, chasing hours: that's what we take off your plate.",
     cta: "Describe your task",
     guarantee:
       "Your card is authorized, not charged. An operator reviews the delivery before it reaches you, and nothing is captured until your dispute window closes.",
@@ -234,7 +234,7 @@ const en: Dict = {
     label: "What this is",
     h2: [
       "",
-      " is a task outsourcing service built around vetted specialists in the Philippines — fluent English, a cost base that keeps the fixed price low, and a 12-hour time zone gap that turns your evening into their workday.",
+      " is a task outsourcing service built around vetted specialists in the Philippines: fluent English, a cost base that keeps the fixed price low, and a 12-hour time zone gap that turns your evening into their workday.",
     ],
     intro:
       "Entrepreneurs send a task, a specialist here prices it, and one rule makes it safe to try: you don't pay for work that isn't right.",
@@ -249,7 +249,7 @@ const en: Dict = {
       ],
       [
         "You only pay if it's right",
-        "Your card is authorized through Stripe, not charged. An operator checks the finished work against a written standard before it reaches you, and nothing is billed — and the specialist isn't paid — until your dispute window closes.",
+        "Your card is authorized through Stripe, not charged. An operator checks the finished work against a written standard before it reaches you, and nothing is billed (and the specialist isn't paid) until your dispute window closes.",
       ],
     ],
     pillars: [
@@ -315,7 +315,7 @@ const en: Dict = {
   ch05: {
     label: "The operator",
     h2: "One professional between you and the work.",
-    legend: "Comparing three ways to get this done — freelance sites, hiring someone, or one operator who runs it all.",
+    legend: "Comparing three ways to get this done: freelance sites, hiring someone, or one operator who runs it all.",
     wall: "Operator",
     desk: "Example: one review pass",
     pairs: [
@@ -370,7 +370,7 @@ const en: Dict = {
     moneySaved: {
       label: "saved vs. market rate",
       timeLabel: "hours handed back",
-      note: "Market rate × hours on task, minus what clients actually paid. Set per task category, floored at zero — never a modest number bragged up.",
+      note: "Market rate × hours on task, minus what clients actually paid. Set per task category, floored at zero, never a modest number bragged up.",
     },
   },
 };
@@ -381,7 +381,7 @@ const fr: Dict = {
     line1: "Décrivez n'importe quelle tâche.",
     line2: "Récupérez-la faite au matin.",
     subtitle:
-      "Trouver un travailleur n'a jamais été le plus dur. Vérifier son travail, corriger ses erreurs, relancer ses heures — c'est ça qu'on retire de tes épaules.",
+      "Trouver un travailleur n'a jamais été le plus dur. Vérifier son travail, corriger ses erreurs, relancer ses heures : c'est ça qu'on retire de tes épaules.",
     cta: "Décrivez votre tâche",
     guarantee:
       "Votre carte est autorisée, pas débitée. Un opérateur vérifie la livraison avant qu'elle ne vous parvienne, et rien n'est prélevé tant que votre fenêtre de contestation n'est pas écoulée.",
@@ -392,7 +392,7 @@ const fr: Dict = {
     label: "Ce qu'on fait",
     h2: [
       "",
-      " est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines — anglais courant, une base de coûts qui garde le prix fixe bas, et un décalage de 12 heures qui transforme votre soirée en leur journée de travail.",
+      " est un service de sous-traitance de tâches bâti autour de spécialistes vérifiés aux Philippines : anglais courant, une base de coûts qui garde le prix fixe bas, et un décalage de 12 heures qui transforme votre soirée en leur journée de travail.",
     ],
     intro:
       "Les entrepreneurs envoient une tâche, un spécialiste ici la chiffre, et une seule règle rend ça sûr d'essayer : vous ne payez pas pour un travail qui ne fait pas l'affaire.",
@@ -407,7 +407,7 @@ const fr: Dict = {
       ],
       [
         "Vous ne payez que si c'est bon",
-        "Votre carte est autorisée via Stripe, pas débitée. Un opérateur vérifie le travail terminé selon une norme écrite avant qu'il ne vous parvienne, et rien n'est facturé — ni le spécialiste payé — tant que votre fenêtre de contestation n'est pas écoulée.",
+        "Votre carte est autorisée via Stripe, pas débitée. Un opérateur vérifie le travail terminé selon une norme écrite avant qu'il ne vous parvienne, et rien n'est facturé (ni le spécialiste payé) tant que votre fenêtre de contestation n'est pas écoulée.",
       ],
     ],
     pillars: [
@@ -473,7 +473,7 @@ const fr: Dict = {
   ch05: {
     label: "L'opérateur",
     h2: "Un professionnel entre vous et le travail.",
-    legend: "Comparaison de trois façons de faire ça — sites de pigistes, embauche directe, ou un seul opérateur qui gère tout.",
+    legend: "Comparaison de trois façons de faire ça : sites de pigistes, embauche directe, ou un seul opérateur qui gère tout.",
     wall: "Opérateur",
     desk: "Exemple : une passe de vérification",
     pairs: [
@@ -528,7 +528,7 @@ const fr: Dict = {
     moneySaved: {
       label: "économisés vs taux du marché",
       timeLabel: "heures récupérées",
-      note: "Taux du marché × heures sur la tâche, moins ce que les clients ont réellement payé. Défini par catégorie de tâche, plancher à zéro — jamais un chiffre modeste gonflé.",
+      note: "Taux du marché × heures sur la tâche, moins ce que les clients ont réellement payé. Défini par catégorie de tâche, plancher à zéro, jamais un chiffre modeste gonflé.",
     },
   },
 };
@@ -539,7 +539,7 @@ const es: Dict = {
     line1: "Describe cualquier tarea.",
     line2: "Recíbela lista por la mañana.",
     subtitle:
-      "Encontrar a alguien nunca fue lo difícil. Revisar su trabajo, corregir errores, perseguir horas — eso es lo que te quitamos de encima.",
+      "Encontrar a alguien nunca fue lo difícil. Revisar su trabajo, corregir errores, perseguir horas: eso es lo que te quitamos de encima.",
     cta: "Describe tu tarea",
     guarantee:
       "Tu tarjeta queda autorizada, no cobrada. Un operador revisa la entrega antes de que llegue a ti, y no se cobra nada hasta que se cierra tu ventana de disputa.",
@@ -550,7 +550,7 @@ const es: Dict = {
     label: "Qué es esto",
     h2: [
       "",
-      " es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas — inglés fluido, una base de costos que mantiene bajo el precio fijo, y un desfase horario de 12 horas que convierte tu tarde en su jornada laboral.",
+      " es un servicio de subcontratación de tareas construido alrededor de especialistas verificados en Filipinas: inglés fluido, una base de costos que mantiene bajo el precio fijo, y un desfase horario de 12 horas que convierte tu tarde en su jornada laboral.",
     ],
     intro:
       "Los emprendedores envían una tarea, un especialista aquí la cotiza, y una sola regla hace que sea seguro intentarlo: no pagas por un trabajo que no está bien.",
@@ -565,7 +565,7 @@ const es: Dict = {
       ],
       [
         "Solo pagas si está bien",
-        "Tu tarjeta queda autorizada a través de Stripe, no cobrada. Un operador revisa el trabajo terminado según un estándar escrito antes de que llegue a ti, y no se cobra nada — ni el especialista recibe pago — hasta que se cierra tu ventana de disputa.",
+        "Tu tarjeta queda autorizada a través de Stripe, no cobrada. Un operador revisa el trabajo terminado según un estándar escrito antes de que llegue a ti, y no se cobra nada (ni el especialista recibe pago) hasta que se cierra tu ventana de disputa.",
       ],
     ],
     pillars: [
@@ -631,7 +631,7 @@ const es: Dict = {
   ch05: {
     label: "El operador",
     h2: "Un profesional entre tú y el trabajo.",
-    legend: "Comparando tres formas de hacer esto — sitios de freelance, contratar a alguien, o un solo operador que lo gestiona todo.",
+    legend: "Comparando tres formas de hacer esto: sitios de freelance, contratar a alguien, o un solo operador que lo gestiona todo.",
     wall: "Operador",
     desk: "Ejemplo: una pasada de revisión",
     pairs: [
@@ -686,7 +686,7 @@ const es: Dict = {
     moneySaved: {
       label: "ahorrados vs. tarifa de mercado",
       timeLabel: "horas recuperadas",
-      note: "Tarifa de mercado × horas en la tarea, menos lo que el cliente realmente pagó. Definida por categoría de tarea, con piso en cero — nunca una cifra modesta inflada.",
+      note: "Tarifa de mercado × horas en la tarea, menos lo que el cliente realmente pagó. Definida por categoría de tarea, con piso en cero, nunca una cifra modesta inflada.",
     },
   },
 };
@@ -704,7 +704,7 @@ const tl: Dict = {
     line1: "Ilarawan ang kahit anong task.",
     line2: "Tapos na ito pagsapit ng umaga.",
     subtitle:
-      "Ang paghahanap ng manggagawa hindi kailanman ang mahirap na bahagi. Ang pag-check ng trabaho nila, pag-ayos ng mali, paghabol sa oras nila — yun ang inaalis namin sa'yo.",
+      "Ang paghahanap ng manggagawa hindi kailanman ang mahirap na bahagi. Ang pag-check ng trabaho nila, pag-ayos ng mali, paghabol sa oras nila: yun ang inaalis namin sa'yo.",
     cta: "Ilarawan ang task mo",
     guarantee:
       "Naka-authorize lang ang card mo, hindi sinisingil. Sinusuri ng operator ang delivery bago ito dumating sa iyo, at walang sinisingil hangga't hindi pa tapos ang window mo para mag-dispute.",
@@ -715,7 +715,7 @@ const tl: Dict = {
     label: "Ano ito",
     h2: [
       "Ang ",
-      " ay isang task outsourcing service na binuo sa paligid ng beripikadong espesyalista sa Pilipinas — matatas sa Ingles, mababang cost base na nagpapababa sa fixed price, at 12-oras na pagkakaiba sa oras na ginagawang working day ng gabi mo.",
+      " ay isang task outsourcing service na binuo sa paligid ng beripikadong espesyalista sa Pilipinas: matatas sa Ingles, mababang cost base na nagpapababa sa fixed price, at 12-oras na pagkakaiba sa oras na ginagawang working day ng gabi mo.",
     ],
     intro:
       "Nagpapadala ang mga negosyante ng task, ipepresyo ito ng espesyalista dito, at isang panuntunan ang gumagawa nitong ligtas subukan: hindi ka nagbabayad para sa trabahong hindi maayos.",
@@ -730,7 +730,7 @@ const tl: Dict = {
       ],
       [
         "Babayaran mo lang kung tama ito",
-        "Naka-authorize ang card mo sa pamamagitan ng Stripe, hindi sinisingil. Sinusuri ng operator ang natapos na trabaho ayon sa nakasulat na pamantayan bago ito dumating sa iyo, at walang sisingilin — at hindi babayaran ang espesyalista — hangga't hindi pa tapos ang window mo para mag-dispute.",
+        "Naka-authorize ang card mo sa pamamagitan ng Stripe, hindi sinisingil. Sinusuri ng operator ang natapos na trabaho ayon sa nakasulat na pamantayan bago ito dumating sa iyo, at walang sisingilin (at hindi babayaran ang espesyalista) hangga't hindi pa tapos ang window mo para mag-dispute.",
       ],
     ],
     pillars: [
@@ -796,7 +796,7 @@ const tl: Dict = {
   ch05: {
     label: "Ang operator",
     h2: "Isang propesyonal sa pagitan mo at ng trabaho.",
-    legend: "Paghahambing ng tatlong paraan para magawa ito — freelance site, pag-hire, o iisang operator na bahala sa lahat.",
+    legend: "Paghahambing ng tatlong paraan para magawa ito: freelance site, pag-hire, o iisang operator na bahala sa lahat.",
     wall: "Operator",
     desk: "Halimbawa: isang pasada ng review",
     pairs: [
@@ -851,7 +851,7 @@ const tl: Dict = {
     moneySaved: {
       label: "naipon vs presyo sa market",
       timeLabel: "oras na nabawi",
-      note: "Presyo sa market × oras sa task, bawas sa aktwal na binayad ng kliyente. Naka-set per kategorya ng task, may floor na zero — hindi kailanman pinalaki ang isang maliit na numero.",
+      note: "Presyo sa market × oras sa task, bawas sa aktwal na binayad ng kliyente. Naka-set per kategorya ng task, may floor na zero, hindi kailanman pinalaki ang isang maliit na numero.",
     },
   },
 };

@@ -547,7 +547,7 @@ const aEn: AboutDict = {
           {
             label: "Academy-trained",
             tone: "strong",
-            detail: "free courses, real exams, and permanent certificates — before any task",
+            detail: "free courses, real exams, and permanent certificates issued before any task",
           },
         ],
       },
@@ -562,7 +562,7 @@ const aEn: AboutDict = {
       },
     ],
     footnote:
-      "Every platform here is good at what it's built for — this just shows where each one actually sits, so you can pick what fits.",
+      "Every platform here is good at what it's built for. This just shows where each one actually sits, so you can pick what fits.",
   },
 };
 
@@ -694,7 +694,7 @@ const aFr: AboutDict = {
       },
     ],
     footnote:
-      "Chaque plateforme ici est bonne dans ce pour quoi elle a \u00E9t\u00E9 con\u00E7ue \u2014 ceci montre simplement o\u00F9 chacune se situe r\u00E9ellement, pour que vous choisissiez selon vos besoins.",
+      "Chaque plateforme ici est bonne dans ce pour quoi elle a \u00E9t\u00E9 con\u00E7ue. Ceci montre simplement o\u00F9 chacune se situe r\u00E9ellement, pour que vous choisissiez selon vos besoins.",
   },
 };
 
@@ -821,7 +821,7 @@ const aEs: AboutDict = {
         ],
       },
     ],
-    footnote: "Cada plataforma aqu\u00ED es buena en lo suyo \u2014 esto solo muestra d\u00F3nde se ubica cada una, para que elijas lo que te sirve.",
+    footnote: "Cada plataforma aqu\u00ED es buena en lo suyo. Esto solo muestra d\u00F3nde se ubica cada una, para que elijas lo que te sirve.",
   },
 };
 
@@ -953,7 +953,7 @@ const aTl: AboutDict = {
       },
     ],
     footnote:
-      "Magaling ang bawat platform dito sa dapat nilang gawin — ipinapakita lang nito kung saan talaga sila nakaposisyon, para mapili mo kung ano ang bagay sa'yo.",
+      "Magaling ang bawat platform dito sa dapat nilang gawin. Ipinapakita lang nito kung saan talaga sila nakaposisyon, para mapili mo kung ano ang bagay sa'yo.",
   },
 };
 
