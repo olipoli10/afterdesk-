@@ -61,6 +61,15 @@ export async function generateMetadata({
     // in COURSE_SEO_TITLES.
     title: COURSE_SEO_TITLES[slug] ?? `${course.title}: free course with a certificate`,
     description: `${course.summary} ${course.lessonCount} lessons, about ${course.minutes} minutes, then a ${stats.questionCount}-question exam. Free, with a permanent certificate.`,
+    // Deliberately no langAlternates()/hreflang here, unlike every other
+    // multi-language page — two reasons, not an oversight. (1) `dynamic =
+    // "force-static"` above means this route is pre-rendered per-slug only
+    // (generateStaticParams has no lang axis); reading `searchParams` in
+    // generateMetadata would make the route dynamic and fight that. (2) the
+    // lesson bodies stay English in every locale (see the file-top comment)
+    // — only the page's own chrome translates, so the ?lang= variants are
+    // near-duplicate content that hreflang entries would be wrong to claim
+    // as separate indexable translations of each other.
     alternates: { canonical: `/academy/${slug}` },
     openGraph: {
       title: `${course.title}: free virtual assistant course`,

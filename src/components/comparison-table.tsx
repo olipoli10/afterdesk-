@@ -80,11 +80,13 @@ function toneColor(tone: MatrixCell["tone"], strongColor: string, weakColor: str
   return neutralColor;
 }
 
-function Chip({ cell, us }: { cell: MatrixCell; us: boolean }) {
+function Chip({ cell, us, axis, channel }: { cell: MatrixCell; us: boolean; axis: string; channel: string }) {
   const glyph = cell.tone === "strong" ? "✓" : cell.tone === "weak" ? "✗" : "–";
   const glyphClass = toneColor(cell.tone, "text-[#3DDCA0]", "text-[#E8A854]", "text-[#5B6069]");
   return (
     <div
+      role="img"
+      aria-label={`${axis}, ${channel}: ${cell.label}`}
       className={`flex aspect-square flex-col items-center justify-center gap-1 rounded px-1 text-center ${
         us ? "bg-[#1E7F5C]/[0.12] ring-1 ring-inset ring-[#1E7F5C]/40" : "bg-white/[0.03]"
       }`}
@@ -92,7 +94,10 @@ function Chip({ cell, us }: { cell: MatrixCell; us: boolean }) {
       <span className={`text-[15px] leading-none ${glyphClass}`} aria-hidden>
         {glyph}
       </span>
-      <span className={`px-0.5 text-[9.5px] font-medium leading-[1.15] ${us ? "text-[#F7F6F3]" : "text-[#9AA1AB]"}`}>
+      <span
+        aria-hidden
+        className={`px-0.5 text-[9.5px] font-medium leading-[1.15] ${us ? "text-[#F7F6F3]" : "text-[#9AA1AB]"}`}
+      >
         {cell.label}
       </span>
     </div>
@@ -127,7 +132,13 @@ export function ComparisonTable({ t }: { t: ComparisonTableDict }) {
               <Fragment key={row.axis}>
                 <span className="pr-1 text-[11px] font-medium leading-[1.2] text-[#C9CDD3]">{row.axis}</span>
                 {row.cells.map((cell, ci) => (
-                  <Chip key={`${row.axis}-${ci}`} cell={cell} us={ci === 3} />
+                  <Chip
+                    key={`${row.axis}-${ci}`}
+                    cell={cell}
+                    us={ci === 3}
+                    axis={row.axis}
+                    channel={t.channels[ci]}
+                  />
                 ))}
               </Fragment>
             ))}

@@ -7,6 +7,7 @@ import { LangSwitch } from "@/components/lang-switch";
 import { publicCourses, academyStats, isPublished } from "@/lib/academy/public";
 import { courseLook } from "@/lib/academy/look";
 import { ACADEMY_I18N, ACADEMY_LANGS, academyLangOf } from "@/lib/i18n/academy";
+import { langAlternates } from "@/lib/i18n/langs";
 import { SITE_URL } from "@/lib/site";
 import { TrustLinks } from "@/components/trust-links";
 
@@ -34,18 +35,29 @@ import { TrustLinks } from "@/components/trust-links";
  * openGraph deliberately sets ONLY what differs from the root layout —
  * overriding siteName/type/locale here would drop them from the merge.
  */
-export const metadata: Metadata = {
-  title: "Free virtual assistant training: 29 courses, real exams, permanent certificates",
-  description:
-    "Free VA training for Filipino remote workers: 29 courses with written lessons, real exams and a certificate that stays yours. Inbox, calendar, data, research, writing, admin, and the career itself. No paid tier, no certificate fee, ever.",
-  alternates: { canonical: "/academy" },
-  openGraph: {
-    title: "Free virtual assistant training: 29 courses with real exams",
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  return {
+    title: "Free virtual assistant training: 29 courses, real exams, permanent certificates",
     description:
-      "Free VA courses, real exams, certificates that stay yours. Open before you are approved.",
-    url: `${SITE_URL}/academy`,
-  },
-};
+      "Free VA training for Filipino remote workers: 29 courses with written lessons, real exams and a certificate that stays yours. Inbox, calendar, data, research, writing, admin, and the career itself. No paid tier, no certificate fee, ever.",
+    // Matches every other multi-language page (/, /about, /how-it-works,
+    // /workers, /services, /security, /privacy, /terms, /acceptable-use,
+    // /ledger) — this page renders all four languages at one path via
+    // ?lang=, so it needs the same canonical + hreflang set they all get.
+    alternates: langAlternates("/academy", sp.lang),
+    openGraph: {
+      title: "Free virtual assistant training: 29 courses with real exams",
+      description:
+        "Free VA courses, real exams, certificates that stay yours. Open before you are approved.",
+      url: `${SITE_URL}/academy`,
+    },
+  };
+}
 
 export default async function AcademyPublicPage({
   searchParams,
