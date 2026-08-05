@@ -3,6 +3,7 @@ import {
   CLIENT_TIMELINE_LABELS,
   clientTimelineEntries,
   clientTimelineEventSelect,
+  executionSummary,
 } from "@/lib/queries/tasks";
 
 /**
@@ -145,6 +146,59 @@ describe("RULE 1 — the client execution report", () => {
       { action: "admin_qc_approved", createdAt: b },
     ]);
     expect(entries.map((e) => e.at)).toEqual([a, b]);
+  });
+
+  /**
+   * These four cases are the ones an adversarial review actually caught in the
+   * first cut of this feature, where the counts came from Submission.qcStatus
+   * and the headline had no way to know whether anything had passed.
+   */
+  describe("the headline arithmetic never claims a review that did not happen", () => {
+    const a = (...actions: string[]) => actions.map((action) => ({ action }));
+
+    it("a task sent back and not yet re-delivered has NOT passed", () => {
+      // The bug: sentBack=1 with zero approvals used to print "before it
+      // passed our review" while the page above said "Work is underway".
+      const s = executionSummary(a("va_submitted_deliverable", "admin_qc_rejected"));
+      expect(s).toEqual({ sentBack: 1, passed: false });
+    });
+
+    it("does not count a reassignment as a reviewer sending work back", () => {
+      // reassignTask flips pending submissions to qcStatus "rejected" with a
+      // comment that says it is "a reassignment, not a quality strike", so the
+      // Submission table cannot tell the two apart. The audit log can.
+      const s = executionSummary(
+        a("va_claimed", "va_submitted_deliverable", "admin_reassigned", "va_claimed",
+          "va_submitted_deliverable", "admin_qc_approved")
+      );
+      expect(s).toEqual({ sentBack: 0, passed: true });
+    });
+
+    it("counts only send-backs that happened BEFORE the work first passed", () => {
+      // A revision after delivery can be sent back again. Folding those in
+      // would make "before it passed our review" false about events that
+      // happened after it passed.
+      const s = executionSummary(
+        a("admin_qc_rejected", "admin_qc_approved", "client_requested_revision",
+          "va_submitted_deliverable", "admin_qc_rejected", "admin_qc_approved")
+      );
+      expect(s).toEqual({ sentBack: 1, passed: true });
+    });
+
+    it("counts an exhausted-rounds send-back, which is still a reviewer saying no", () => {
+      const s = executionSummary(
+        a("admin_qc_rejected", "admin_qc_rejected_exhausted", "admin_qc_approved")
+      );
+      expect(s).toEqual({ sentBack: 2, passed: true });
+    });
+
+    it("a task that never reached review has nothing to report", () => {
+      expect(executionSummary(a("client_submitted", "admin_quoted"))).toEqual({
+        sentBack: 0,
+        passed: false,
+      });
+      expect(executionSummary([])).toEqual({ sentBack: 0, passed: false });
+    });
   });
 
   describe("every label is safe to print to a paying client", () => {

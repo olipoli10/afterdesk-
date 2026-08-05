@@ -24,10 +24,21 @@ const DOT: Record<string, string> = {
   normal: "bg-[#14161A]/20",
 };
 
-function headline(sentBack: number, reviewed: number): string | null {
-  // Nothing has been through review yet, so there is no outcome to state and
-  // the timeline below still carries the honest partial story.
-  if (reviewed === 0) return null;
+/**
+ * The past tense is only ever used about something that actually happened.
+ * `passed` is a separate input from `sentBack` precisely because the two come
+ * apart: a task sitting in qc_rejected has been sent back and has NOT passed,
+ * and the client sees "Work is underway" on the same page. Saying "before it
+ * passed our review" there would be a plain falsehood on the one card whose
+ * entire purpose is to be checkable.
+ */
+export function headline(sentBack: number, passed: boolean): string | null {
+  if (!passed) {
+    if (sentBack === 0) return null;
+    if (sentBack === 1)
+      return "Sent back once for corrections. It has not passed our review yet.";
+    return `Sent back ${sentBack} times for corrections. It has not passed our review yet.`;
+  }
   if (sentBack === 0) return "Passed our review on the first delivery.";
   if (sentBack === 1) return "Sent back once for corrections before it passed our review.";
   return `Sent back ${sentBack} times for corrections before it passed our review.`;
@@ -36,7 +47,7 @@ function headline(sentBack: number, reviewed: number): string | null {
 export function ExecutionReportCard({ report }: { report: ExecutionReport }) {
   if (report.entries.length === 0) return null;
 
-  const head = headline(report.sentBack, report.reviewed);
+  const head = headline(report.sentBack, report.passed);
 
   return (
     <Card className="mb-4">

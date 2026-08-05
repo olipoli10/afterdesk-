@@ -611,13 +611,18 @@ export const CLIENT_TIMELINE_LABELS: Record<string, { label: string; tone: Timel
     tone: "normal",
   },
   va_released: { label: "Returned to the pool for a different specialist", tone: "flag" },
-  admin_reassigned: { label: "Reassigned to a different specialist", tone: "flag" },
+  // "Reopened", not "reassigned": reassignTask clears claimedById and sends
+  // the task back to `open` (or to `submitted` for standing capacity). At the
+  // instant this event is written nobody holds the work, and nobody is
+  // guaranteed to pick it up, so naming a new specialist would be a claim the
+  // product has not yet made good on.
+  admin_reassigned: { label: "Reopened for a different specialist", tone: "flag" },
   va_submitted_deliverable: { label: "Delivered to our reviewer, not to you", tone: "review" },
 
   // Review. This is the part of the record the report exists for.
   admin_qc_rejected: { label: "Our reviewer sent it back for corrections", tone: "review" },
   admin_qc_rejected_exhausted: {
-    label: "Sent back again and reassigned to a different specialist",
+    label: "Our reviewer sent it back again and reopened it for a different specialist",
     tone: "review",
   },
   admin_qc_approved: { label: "Passed review and was released to you", tone: "review" },
@@ -629,11 +634,17 @@ export const CLIENT_TIMELINE_LABELS: Record<string, { label: string; tone: Timel
     tone: "normal",
   },
   client_opened_dispute: { label: "You raised a dispute", tone: "flag" },
+  // Not "met the written standard": TaskCategory.disputeCriteria is nullable,
+  // and an unfiled task has no category at all, so this row would assert a
+  // written standard that does not exist for that task.
   admin_rejected_dispute: {
-    label: "Dispute reviewed, the work was found to meet the written standard",
+    label: "We reviewed your dispute and let the delivery stand",
     tone: "review",
   },
-  admin_ordered_dispute_rework: { label: "Dispute reviewed, rework ordered", tone: "review" },
+  admin_ordered_dispute_rework: {
+    label: "We reviewed your dispute and ordered rework",
+    tone: "review",
+  },
   admin_upheld_dispute: { label: "We upheld your dispute", tone: "review" },
   admin_cancelled: { label: "We cancelled the task", tone: "flag" },
   standing_minutes_returned: {
@@ -681,23 +692,53 @@ export function clientTimelineEntries(
 
 export type ExecutionReport = {
   entries: { at: Date; label: string; tone: TimelineTone }[];
-  /** Deliveries our reviewer sent back before one passed. */
+  /** Times our reviewer sent a delivery back BEFORE one first passed. */
   sentBack: number;
-  /**
-   * Review decisions actually recorded (approved + rejected). Deliberately
-   * NOT the raw submission count: a worker who re-uploads before anyone has
-   * looked has their pending row flipped to `superseded` (submitDeliverable),
-   * and counting those would inflate the number of reviews we claim to have
-   * performed. Task.qcRounds is wrong for the same class of reason in the
-   * other direction: it is reset to 0 on repool and on reassignment, so it
-   * understates. Understating on the one page whose purpose is proof is the
-   * worst of the three options.
-   */
-  reviewed: number;
+  /** True once a delivery has actually cleared review. */
+  passed: boolean;
   /** The written standard the delivery was judged against, if the category has one. */
   standard: string | null;
   categoryName: string | null;
 };
+
+/** Written only by rejectDeliverable, which is a real reviewer decision. */
+const QC_SENT_BACK = new Set(["admin_qc_rejected", "admin_qc_rejected_exhausted"]);
+
+/**
+ * The arithmetic behind the headline, derived from the audit log rather than
+ * from Submission rows. Pure and exported so it can be tested directly.
+ *
+ * COUNTING FROM EVENTS IS THE WHOLE POINT, and three wrong sources were tried
+ * before this one:
+ *
+ *  - Submission.qcStatus === "rejected" OVERCOUNTS. reassignTask flips every
+ *    pending submission to "rejected" when an unresponsive worker is taken off
+ *    a task (admin.ts), with a qcComment that says in so many words "a
+ *    reassignment, not a quality strike". Counting those tells the client a
+ *    reviewer rejected work that no reviewer ever opened.
+ *  - Task.qcRounds UNDERCOUNTS: it is reset to 0 on repool and on reassignment.
+ *  - Submission.attemptNo OVERCOUNTS: it also counts the worker replacing
+ *    their own upload before anyone reviewed it.
+ *
+ * Only rejectDeliverable writes the two QC_SENT_BACK actions, so an event
+ * count is exactly the number of times a reviewer looked and said no.
+ *
+ * Rejections are counted only BEFORE the first approval. After a delivery has
+ * passed, the client can request a revision, which can be sent back again;
+ * folding those into the same number would make "before it passed our review"
+ * literally false about events that happened after it passed.
+ */
+export function executionSummary(rows: { action: string }[]): {
+  sentBack: number;
+  passed: boolean;
+} {
+  const firstPass = rows.findIndex((r) => r.action === "admin_qc_approved");
+  const beforeFirstPass = firstPass === -1 ? rows : rows.slice(0, firstPass);
+  return {
+    sentBack: beforeFirstPass.filter((r) => QC_SENT_BACK.has(r.action)).length,
+    passed: firstPass !== -1,
+  };
+}
 
 export async function executionReportForClient(
   taskId: string,
@@ -711,28 +752,17 @@ export async function executionReportForClient(
   });
   if (!task) return null;
 
-  const [rows, submissions] = await Promise.all([
-    prisma.taskEvent.findMany({
-      where: { taskId },
-      select: clientTimelineEventSelect,
-      orderBy: { createdAt: "asc" },
-    }),
-    // Counted by outcome rather than read as rows: the client learns how many
-    // times the work was returned, never who returned it or what was said.
-    prisma.submission.groupBy({
-      by: ["qcStatus"],
-      where: { taskId },
-      _count: { _all: true },
-    }),
-  ]);
-
-  const countOf = (status: string) =>
-    submissions.find((s) => s.qcStatus === status)?._count._all ?? 0;
+  // One read. The Submission table is deliberately NOT consulted: see
+  // executionSummary for why every count it could offer is wrong here.
+  const rows = await prisma.taskEvent.findMany({
+    where: { taskId },
+    select: clientTimelineEventSelect,
+    orderBy: { createdAt: "asc" },
+  });
 
   return {
     entries: clientTimelineEntries(rows),
-    sentBack: countOf("rejected"),
-    reviewed: countOf("approved") + countOf("rejected"),
+    ...executionSummary(rows),
     standard: task.category?.disputeCriteria ?? null,
     categoryName: task.category?.name ?? null,
   };
