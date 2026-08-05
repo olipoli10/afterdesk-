@@ -219,7 +219,7 @@ export const DEFAULT_SETTINGS: Settings = {
     "Given the task description, estimate a fair USD price range (low/high) for the full task. " +
     "Consider volume, complexity, research effort and turnaround. Respond with a low and high estimate in USD.",
   pricingSimilarityMaxDistance: 0.6,
-  assistantDailyMessageLimit: 25,
+  assistantDailyMessageLimit: 50,
   closedJobAnalysisModel: "claude-sonnet-5",
   closedJobAnalysisMinTotal: 30,
   closedJobAnalysisMinPerCategory: 10,
