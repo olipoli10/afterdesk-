@@ -1,0 +1,179 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { requireRole } from "@/lib/authz";
+import { getSettings } from "@/lib/settings";
+import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
+import { aiSuggestionColumns, pricePlan } from "@/lib/ai-work-engine/pricing";
+import { editPlanInputSchema } from "@/lib/ai-work-engine/schemas";
+
+/**
+ * The admin's plan edit. THE VERSIONING RULE LIVES HERE: an edit never
+ * mutates an existing version — it inserts version N+1 with parentVersionId
+ * pointing at what it changed and editedByAdminId saying who. That is the
+ * audit trail the founder asked for ("what the AI proposed / what the admin
+ * changed / what was sent"), obtained structurally instead of by logging.
+ *
+ * Re-pricing an edited version runs ONLY the deterministic engine
+ * (pricePlan) — never a paid model call. Editing quantities must cost
+ * keystrokes, not tokens.
+ */
+
+/**
+ * Validation lives in editPlanInputSchema (ai-work-engine/schemas.ts),
+ * colocated with the generation schemas whose output this form round-trips —
+ * the caps MUST stay aligned or an unchanged AI sentence blocks every save
+ * (found live; pinned by test).
+ */
+export type EditPlanResult = { ok: true; newVersion: number } | { ok: false; error: string };
+
+/** Thrown inside the transaction to abort with a specific message. */
+class Refused extends Error {}
+
+export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
+  const admin = await requireRole("ADMIN");
+  const parsed = editPlanInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Check the plan fields and try again.",
+    };
+  }
+  const { taskId, baseVersionId, editNote, deliverableDescription, assumptions, exclusions, steps } =
+    parsed.data;
+
+  const settings = await getSettings();
+  const rates = {
+    workerHourlyUsd: Math.max(COST_CATALOG.workerHourlyUsdBase, settings.minWorkerHourlyUsd),
+  };
+  // Deterministic only — zero model calls on an edit, by design.
+  const priced = pricePlan(
+    steps.map((s) => ({
+      executor: s.executor,
+      estimatedMinutesOptimistic: s.estimatedMinutesOptimistic,
+      estimatedMinutesLikely: s.estimatedMinutesLikely,
+      estimatedMinutesConservative: s.estimatedMinutesConservative,
+      estimatedAiCostCents: s.estimatedAiCostCents,
+      estimatedToolUnits: s.estimatedToolUnits,
+      tool: s.tool,
+    })),
+    rates
+  );
+
+  let newVersionNumber = 0;
+  try {
+    await prisma.$transaction(async (tx) => {
+      const task = await tx.task.findUnique({
+        where: { id: taskId },
+        select: { status: true },
+      });
+      if (!task) throw new Refused("Task not found.");
+      /**
+       * THE LOCK. Once the task has left the pricing stage the plan under
+       * the quote is what the client is deciding on (and after acceptance,
+       * what the snapshot recorded). Editing it would desynchronize the
+       * quote from its own basis — a new price needs a fresh quote cycle,
+       * which is the existing product rule ("every submission is priced
+       * fresh"), not a new one.
+       */
+      if (!["submitted", "pricing_review"].includes(task.status)) {
+        throw new Refused(
+          "This task has already been quoted. The plan behind a live quote is locked; cancel and re-quote to change it."
+        );
+      }
+
+      const base = await tx.taskExecutionPlanVersion.findUnique({
+        where: { id: baseVersionId },
+        select: { taskId: true, version: true },
+      });
+      if (!base || base.taskId !== taskId) {
+        throw new Refused("That plan version does not belong to this task.");
+      }
+
+      const latest = await tx.taskExecutionPlanVersion.findFirst({
+        where: { taskId },
+        orderBy: { version: "desc" },
+        select: { version: true },
+      });
+      // Only the HEAD may be edited. The P2002 handler below only catches
+      // two saves in the same instant; without this check a tab opened
+      // before someone else's v2 silently supersedes it with a v3 built on
+      // v1's content, and the fork is invisible (adversarial review).
+      if (latest && base.version !== latest.version) {
+        throw new Refused("Someone else just edited this plan. Reload and try again.");
+      }
+      newVersionNumber = (latest?.version ?? 0) + 1;
+
+      await tx.taskExecutionPlanVersion.create({
+        data: {
+          taskId,
+          version: newVersionNumber,
+          source: "admin_edited",
+          parentVersionId: baseVersionId,
+          editedByAdminId: admin.id,
+          editNote: editNote || null,
+          deliverableDescription,
+          assumptions,
+          exclusions,
+          internalCostLikelyCents: priced.internalCostLikelyCents,
+          internalCostConservativeCents: priced.internalCostConservativeCents,
+          suggestedPriceCents: priced.suggestedPriceCents,
+          suggestedVaPayoutCents: priced.suggestedVaPayoutCents,
+          calibration: priced.calibration,
+          steps: {
+            create: steps.map((s, i) => ({
+              order: i + 1,
+              title: s.title,
+              description: s.description,
+              executor: s.executor,
+              humanRole: s.humanRole,
+              tool: s.tool,
+              estimatedMinutesOptimistic: s.estimatedMinutesOptimistic,
+              estimatedMinutesLikely: s.estimatedMinutesLikely,
+              estimatedMinutesConservative: s.estimatedMinutesConservative,
+              estimatedAiCostCents: s.estimatedAiCostCents,
+              estimatedToolUnits: s.estimatedToolUnits,
+              verificationMethod: s.verificationMethod,
+              acceptanceCriteria: s.acceptanceCriteria,
+              riskLevel: s.riskLevel,
+              riskNote: s.riskNote,
+              dependsOnOrder: s.dependsOnOrder,
+            })),
+          },
+        },
+      });
+
+      // The refreshed preview on the SAME aiXxx columns the queue and the
+      // pricing form already read — still suggestion-side only (RULE 3):
+      // clientPriceCents/vaPayoutCents/quotedAt remain approvePricing's.
+      // updateMany with the status predicate re-asserts the edit lock AT
+      // WRITE TIME: the read above holds no row lock, so approvePricing can
+      // commit pricing_review→quoted between the check and here — in that
+      // race the count comes back 0 and the whole edit rolls back instead
+      // of stacking a version on a live quote (adversarial review).
+      const updated = await tx.task.updateMany({
+        where: { id: taskId, status: { in: ["submitted", "pricing_review"] } },
+        data: aiSuggestionColumns(priced),
+      });
+      if (updated.count === 0) {
+        throw new Refused(
+          "This task has already been quoted. The plan behind a live quote is locked; cancel and re-quote to change it."
+        );
+      }
+    });
+  } catch (e) {
+    if (e instanceof Refused) return { ok: false, error: e.message };
+    // Two concurrent edits raced to the same version number and one lost the
+    // (taskId, version) unique constraint; everything rolled back — retry.
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      return { ok: false, error: "Someone else just edited this plan. Reload and try again." };
+    }
+    throw e;
+  }
+
+  revalidatePath(`/admin/pricing/${taskId}`);
+  revalidatePath("/admin/pricing");
+  return { ok: true, newVersion: newVersionNumber };
+}

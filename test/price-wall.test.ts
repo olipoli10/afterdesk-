@@ -83,6 +83,32 @@ describe("RULE 2 — the two-price wall", () => {
     expect(keys.has("note")).toBe(false);
   });
 
+  it("no role-shaped select grew to carry the work engine (Phase 1A)", () => {
+    // Classification, plan versions, critiques and internal costs are
+    // admin-only; the client's scope block rides on quotedScopeForClient, a
+    // separate sanitized projection, and the snapshot is written, never
+    // selected into these payloads. The worker has no engine surface at all.
+    const ENGINE = [
+      "aiClassification",
+      "planVersions",
+      "quotedPlanVersion",
+      "quotedPlanVersionId",
+      "acceptanceSnapshot",
+      "internalCostLikelyCents",
+      "internalCostConservativeCents",
+      "critique",
+    ] as const;
+    for (const [name, select] of [
+      ["clientTaskSelect", clientTaskSelect],
+      ...WORKER_SELECTS,
+    ] as [string, unknown][]) {
+      const keys = keysDeep(select);
+      for (const forbidden of ENGINE) {
+        expect(keys.has(forbidden), `${name} must not select ${forbidden}`).toBe(false);
+      }
+    }
+  });
+
   it("each side still selects its OWN price — the wall is not just an empty select", () => {
     expect(keysDeep(clientTaskSelect).has("clientPriceCents")).toBe(true);
     expect(keysDeep(vaTaskSelect).has("vaPayoutCents")).toBe(true);

@@ -30,6 +30,14 @@ const approveSchema = z.object({
   // is what makes "is this payout fair" answerable.
   categoryId: z.string().min(1),
   estimatedMinutes: z.coerce.number().int().min(1).max(100000),
+  /**
+   * The execution-plan version the admin was viewing when they approved —
+   * becomes Task.quotedPlanVersionId, the basis the quote's scope block and
+   * the acceptance snapshot record. Optional: a task priced without the
+   * work engine (pipeline failure, pre-engine task) quotes plan-less,
+   * exactly as before Phase 1A.
+   */
+  planVersionId: z.string().optional(),
 });
 
 export type ApproveResult =
@@ -52,7 +60,7 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
         : "Invalid form data.",
     };
   }
-  const { taskId, tier, filesVerified, categoryId, estimatedMinutes } = parsed.data;
+  const { taskId, tier, filesVerified, categoryId, estimatedMinutes, planVersionId } = parsed.data;
 
   let clientPriceCents: number;
   let vaPayoutCents: number;
@@ -95,12 +103,29 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
   }
 
   const settings = await getSettings();
-  const effectiveHourlyUsd = (vaPayoutCents / 100) / (estimatedMinutes / 60);
-  if (effectiveHourlyUsd < settings.minWorkerHourlyUsd) {
+  // Integer-cents comparison: the float division form rejected its own exact
+  // boundary (payout $147.00 at $15.75/h over 560 min divides to
+  // 15.749999999999998). payout/h >= floor  <=>  payoutCents·60 >= minCents·minutes.
+  const minHourlyCents = Math.round(settings.minWorkerHourlyUsd * 100);
+  if (vaPayoutCents * 60 < minHourlyCents * estimatedMinutes) {
+    const effectiveHourlyUsd = (vaPayoutCents / 100) / (estimatedMinutes / 60);
     return {
       ok: false,
       error: `That payout is about $${effectiveHourlyUsd.toFixed(2)}/hour. Raise it to at least $${settings.minWorkerHourlyUsd.toFixed(2)}/hour for the estimate.`,
     };
+  }
+
+  // The quoted plan version must actually belong to this task — a forged or
+  // stale id must fail loudly here, not become a quote whose scope block
+  // renders another task's plan.
+  if (planVersionId) {
+    const version = await prisma.taskExecutionPlanVersion.findUnique({
+      where: { id: planVersionId },
+      select: { taskId: true },
+    });
+    if (!version || version.taskId !== taskId) {
+      return { ok: false, error: "That plan version does not belong to this task. Reload and re-approve." };
+    }
   }
   const now = new Date();
   const quoteExpiresAt = addHours(now, settings.quoteValidityHours);
@@ -125,6 +150,10 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
         quotedAt: now,
         quoteExpiresAt,
         vaDeadlineUtc,
+        // The plan version this quote is built on — the same unchecked-FK
+        // mechanism as claimedById in claimTask. Null clears any stale link
+        // when a task is approved plan-less.
+        quotedPlanVersionId: planVersionId ?? null,
       },
       // RULE 2: never persist raw prices in TaskEvent.meta — the authoritative
       // values live on the Task row behind the role-shaped selects, and meta

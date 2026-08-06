@@ -56,11 +56,16 @@ export function PricingForm({
   fileCount,
   categories,
   aiSuggestion,
+  planVersionId = null,
 }: {
   taskId: string;
   fileCount: number;
   categories: { id: string; name: string }[];
   aiSuggestion: AiSuggestion | null;
+  /** The latest execution-plan version shown above this form, if the work
+   *  engine produced one — recorded on the quote at approval so the scope
+   *  block and the acceptance snapshot know their basis. */
+  planVersionId?: string | null;
 }) {
   const router = useRouter();
   const [clientPrice, setClientPrice] = useState(() => usdString(aiSuggestion?.priceCents ?? null));
@@ -99,6 +104,7 @@ export function PricingForm({
         categoryId,
         estimatedMinutes,
         filesVerified,
+        planVersionId: planVersionId ?? undefined,
       });
       if (!result.ok) {
         setError(result.error);

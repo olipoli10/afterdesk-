@@ -415,7 +415,7 @@ model Task {
   // worker's payout gets released (releaseDisputeWindowFunds in sweeps.ts),
   // not when a revision can be requested. Paused/resumed by the same
   // windowPausedAt as revisionWindowEndsAt — a dispute suspends both.
-  disputeWindowEndsAt DateTime?
+  disputeWindowEndsAt  DateTime?
   declinedAt           DateTime?
   declineReason        String?
   cancelledAt          DateTime?
@@ -450,6 +450,18 @@ model Task {
   standingCapacityAccountId String?
   standingCapacityAccount   StandingCapacityAccount? @relation(fields: [standingCapacityAccountId], references: [id], onDelete: Restrict)
 
+  /**
+   * The execution-plan version the quote was built on, set by approvePricing
+   * in the same transitionTask data write as the prices (the unchecked-input
+   * mechanism state.ts documents for exactly this: setting an FK scalar
+   * atomically with the status CAS). Null for tasks priced without the AI
+   * work engine — a failed pipeline or a pre-engine task quotes exactly as
+   * before, plan-less. RULE 3 note: the engine itself never writes this
+   * column; only the admin's approval does.
+   */
+  quotedPlanVersionId String?
+  quotedPlanVersion   TaskExecutionPlanVersion? @relation("QuotedPlanVersion", fields: [quotedPlanVersionId], references: [id], onDelete: SetNull)
+
   filesPurgedAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -467,6 +479,11 @@ model Task {
   embeddingRow TaskEmbedding?
   closedJobLog ClosedJobLog?
 
+  // AI work engine (Phase 1A) — suggestion-side data only, admin-facing.
+  aiClassification   TaskAiClassification?
+  planVersions       TaskExecutionPlanVersion[] @relation("TaskPlanVersions")
+  acceptanceSnapshot TaskAcceptanceSnapshot?
+
   @@index([status])
   @@index([clientId])
   @@index([claimedById])
@@ -480,15 +497,15 @@ model Task {
  * that benefits from a category must not choose it.
  */
 model TaskCategory {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  name            String
+  id                       String   @id @default(cuid())
+  slug                     String   @unique
+  name                     String
   /**
    * What counts as delivered, and the tolerated error margin. Shown to the
    * client at quote time and to the worker before they claim, so a dispute is
    * checked against a written standard instead of judged by mood.
    */
-  disputeCriteria String?
+  disputeCriteria          String?
   /**
    * Admin-set market reference rate (cents/hour) for the public MONEY SAVED
    * counter: (referenceHourlyRateCents/100 * hours) - clientPriceCents,
@@ -497,10 +514,10 @@ model TaskCategory {
    * must never silently read as "no savings." See src/lib/queries/public-stats.ts.
    */
   referenceHourlyRateCents Int?
-  sortOrder       Int      @default(0)
-  active          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  sortOrder                Int      @default(0)
+  active                   Boolean  @default(true)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   tasks Task[]
 }
@@ -533,13 +550,13 @@ model TaskEmbedding {
 
 // One QC decision per submission attempt (a delivery may contain several files).
 model Submission {
-  id          String    @id @default(cuid())
-  taskId      String
-  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  vaId        String
-  va          User      @relation(fields: [vaId], references: [id], onDelete: Restrict)
-  attemptNo   Int
-  note        String?
+  id              String    @id @default(cuid())
+  taskId          String
+  task            Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  vaId            String
+  va              User      @relation(fields: [vaId], references: [id], onDelete: Restrict)
+  attemptNo       Int
+  note            String?
   /**
    * Closed-schema delivery metrics, hardcoded per category in
    * src/lib/delivery-metrics.ts and validated by zod on write AND on read.
@@ -550,11 +567,11 @@ model Submission {
    * this column. An empty object would read as "zero records handled".
    */
   deliveryMetrics Json?
-  qcStatus    QcStatus  @default(pending)
-  qcComment   String?
-  rating      Int? // 1-5, set at QC approval
-  submittedAt DateTime  @default(now())
-  reviewedAt  DateTime?
+  qcStatus        QcStatus  @default(pending)
+  qcComment       String?
+  rating          Int? // 1-5, set at QC approval
+  submittedAt     DateTime  @default(now())
+  reviewedAt      DateTime?
 
   files File[]
 
@@ -1130,19 +1147,19 @@ enum AssistantCategory {
  * clusterKey, only role: user rows do.
  */
 model AssistantMessage {
-  id               String               @id @default(cuid())
-  vaId             String
-  va               User                 @relation(fields: [vaId], references: [id], onDelete: Cascade)
-  taskId           String
-  role             AssistantMessageRole
-  content          String
-  category         AssistantCategory?
-  clusterKey       String?
-  inputTokens      Int                  @default(0)
-  outputTokens     Int                  @default(0)
-  cacheReadTokens  Int                  @default(0)
-  requiresHumanReview Boolean           @default(false)
-  createdAt        DateTime             @default(now())
+  id                  String               @id @default(cuid())
+  vaId                String
+  va                  User                 @relation(fields: [vaId], references: [id], onDelete: Cascade)
+  taskId              String
+  role                AssistantMessageRole
+  content             String
+  category            AssistantCategory?
+  clusterKey          String?
+  inputTokens         Int                  @default(0)
+  outputTokens        Int                  @default(0)
+  cacheReadTokens     Int                  @default(0)
+  requiresHumanReview Boolean              @default(false)
+  createdAt           DateTime             @default(now())
 
   @@index([vaId, createdAt])
   @@index([taskId])
@@ -1156,11 +1173,11 @@ model AssistantMessage {
  * a pattern resolved never touches the append-only conversation log.
  */
 model AssistantPattern {
-  clusterKey   String    @id
+  clusterKey   String             @id
   category     AssistantCategory?
   resolvedAt   DateTime?
   resolvedById String?
-  updatedAt    DateTime  @updatedAt
+  updatedAt    DateTime           @updatedAt
 }
 
 enum ClosedJobOutcome {
@@ -1187,13 +1204,11 @@ enum LostReasonCategory {
  * on-demand ADVISORY analysis (src/lib/closed-job-analysis.ts) that
  * observes and suggests, never decides or acts. Any future autonomy work
  * is a separate, later decision, not an extension implied by this schema.
- *
  * One row per Task that reaches a final outcome (completed → won;
  * cancelled/declined/expired → lost). `completed` is not strictly terminal
  * (a revision or dispute can reopen it), so this is written with an upsert
  * keyed on taskId — a reopened-then-reclosed task updates its existing row
  * rather than erroring on the unique constraint.
- *
  * Deliberately minimal: everything already available via taskId (audit
  * history in TaskEvent, bot conversations in AssistantMessage, the
  * assigned worker's entry-exam record in ExamAttempt via task.claimedById)
@@ -1204,9 +1219,9 @@ enum LostReasonCategory {
  * documentation-gap signal, and a starting-skill measurement).
  */
 model ClosedJobLog {
-  id     String           @id @default(cuid())
-  taskId String           @unique
-  task   Task             @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  id      String           @id @default(cuid())
+  taskId  String           @unique
+  task    Task             @relation(fields: [taskId], references: [id], onDelete: Restrict)
   outcome ClosedJobOutcome
 
   // Cached copy of clientPriceCents - vaPayoutCents, computed once at close
@@ -1219,8 +1234,8 @@ model ClosedJobLog {
   lostReasonDetail   String?
 
   revisionRequestedBeforeClose Boolean @default(false)
-  qcRoundsAtClose               Int     @default(0)
-  finalRating                   Int?
+  qcRoundsAtClose              Int     @default(0)
+  finalRating                  Int?
 
   closedAt  DateTime
   createdAt DateTime @default(now())
@@ -1228,4 +1243,264 @@ model ClosedJobLog {
 
   @@index([outcome])
   @@index([lostReasonCategory])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AI WORK ENGINE — Phase 1A (moteur de devis et de planification)
+//
+// Tout ce qui suit est du côté SUGGESTION du produit : visible par l'admin
+// seulement, jamais projeté dans un select client ou travailleur (épinglé par
+// test/price-wall.test.ts). RULE 3 vaut pour l'ensemble : aucun de ces
+// enregistrements ne touche clientPriceCents/vaPayoutCents/quotedAt — seule
+// approvePricing écrit ces trois-là, après un clic humain. La seule exception
+// délibérée est TaskAcceptanceSnapshot, qui n'est pas une suggestion mais le
+// CONTRAT : la copie immuable de ce que le client a vu et accepté.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Niveau de vérification que le brief exige, estimé à la classification.
+enum AiVerificationLevel {
+  light
+  standard
+  rigorous
+}
+
+/// Voie de devis recommandée. `auto` est VOLONTAIREMENT ABSENT : le devis
+/// automatique Niveau 1 est interdit en code tant qu'aucun workflow n'a une
+/// erreur d'estimation mesurée sur de vraies exécutions (décision fondateur,
+/// Phase 1A ajustement 5). L'ajouter plus tard est une migration additive
+/// d'une ligne — l'omettre aujourd'hui est ce qui rend l'interdit structurel
+/// plutôt que disciplinaire.
+enum QuoteTier {
+  assisted
+  manual
+}
+
+enum PlanVersionSource {
+  ai_generated
+  admin_edited
+}
+
+enum PlanStepExecutor {
+  ai
+  human
+  deterministic_code
+}
+
+/// Qui, côté humain, porte l'étape. Prévu AVANT que le rôle réviseur existe
+/// (il n'y a que CLIENT/VA/ADMIN aujourd'hui) pour que sa création future ne
+/// demande aucune migration du plan : une étape `reviewer` est simplement
+/// exécutée par l'ADMIN tant que le rôle dédié n'est pas construit.
+enum PlanStepHumanRole {
+  worker
+  specialist
+  reviewer
+  admin
+}
+
+enum PlanStepRiskLevel {
+  low
+  medium
+  high
+}
+
+enum CritiqueSeverity {
+  none
+  minor
+  major
+  blocking
+}
+
+/// Honnêteté du chiffrage. `uncalibrated` = les constantes du catalogue de
+/// coûts sont des points de départ jamais confrontés à une exécution réelle ;
+/// c'est la SEULE valeur que la Phase 1A produit, codée en dur, et l'admin la
+/// voit en bandeau. Les deux autres existent pour que le jour où la boucle
+/// estimation/réalité tourne, le passage soit une donnée, pas une migration.
+enum CostCalibration {
+  uncalibrated
+  partial
+  calibrated
+}
+
+/// Étape 1 du pipeline : la lecture structurée du brief. Un enregistrement par
+/// tâche, écrasé si le pipeline est relancé (upsert) — contrairement aux
+/// versions de plan, la classification n'a pas d'historique à préserver : elle
+/// ne porte aucune décision humaine.
+model TaskAiClassification {
+  id     String @id @default(cuid())
+  taskId String @unique
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// Slug deviné, même contrat que Task.aiSuggestedCategorySlug : un slug
+  /// inventé ou périmé ne surligne rien dans l'UI, ne bloque jamais.
+  categorySlugGuess   String?
+  objective           String
+  deliverableFormat   String
+  requiredFields      String[]
+  quantityInterpreted Int?
+  geography           String[]
+  verificationLevel   AiVerificationLevel
+  sourceRequirements  String[]
+  sensitiveData       Boolean
+  requiredAccess      String[]
+  missingInformation  String[]
+  assumptions         String[]
+  quoteTier           QuoteTier
+  /// Même plancher serveur que le pricing existant : zéro tâche de référence
+  /// comparable force "low", peu importe l'auto-évaluation du modèle.
+  confidence          AiConfidence
+  model               String
+  rawOutput           Json?
+  computedAt          DateTime            @default(now())
+}
+
+/// Une version du plan d'exécution. APPEND-ONLY : une version n'est jamais
+/// mutée après création — une édition admin insère la version N+1 avec
+/// parentVersionId pointant sur ce qu'elle modifie, ce qui donne gratuitement
+/// la piste d'audit « ce que l'IA a proposé / ce que l'admin a changé ».
+/// L'immuabilité est tenue par la logique applicative et les tests (le trigger
+/// SQL est réservé au snapshot d'acceptation, qui est un contrat).
+///
+/// Le résultat du CALCUL DÉTERMINISTE de coûts pour cette version est stocké
+/// ici même (internalCost / suggested) : chaque version porte son chiffrage,
+/// donc l'écart entre la proposition IA et la version éditée par l'admin est
+/// une soustraction, pas une reconstruction.
+model TaskExecutionPlanVersion {
+  id     String @id @default(cuid())
+  taskId String
+  task   Task   @relation("TaskPlanVersions", fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// Monotone par tâche ; l'unicité est la vraie protection contre une
+  /// course entre deux éditions simultanées.
+  version Int
+  source  PlanVersionSource
+
+  parentVersionId String?
+  parentVersion   TaskExecutionPlanVersion?  @relation("PlanVersionLineage", fields: [parentVersionId], references: [id], onDelete: SetNull)
+  childVersions   TaskExecutionPlanVersion[] @relation("PlanVersionLineage")
+
+  /// Précédent TaskEvent.actorId : une chaîne nue, pas une FK — l'audit
+  /// n'impose pas de jointure et ne bloque jamais une suppression de compte.
+  editedByAdminId String?
+  editNote        String?
+
+  deliverableDescription String
+  assumptions            String[]
+  exclusions             String[]
+
+  // ── Chiffrage déterministe de CETTE version (audit) ──
+  internalCostLikelyCents       Int
+  internalCostConservativeCents Int
+  suggestedPriceCents           Int
+  suggestedVaPayoutCents        Int
+  calibration                   CostCalibration
+
+  /// Null pour une version admin_edited : aucun modèle n'a produit celle-là.
+  model     String?
+  rawOutput Json?
+  createdAt DateTime @default(now())
+
+  steps    TaskExecutionPlanStep[]
+  critique TaskExecutionPlanCritique?
+
+  quotedOnTasks Task[]                   @relation("QuotedPlanVersion")
+  snapshots     TaskAcceptanceSnapshot[]
+
+  @@unique([taskId, version])
+}
+
+model TaskExecutionPlanStep {
+  id            String                   @id @default(cuid())
+  planVersionId String
+  planVersion   TaskExecutionPlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+
+  order       Int
+  title       String
+  description String
+  executor    PlanStepExecutor
+  /// Renseigné seulement quand executor = human.
+  humanRole   PlanStepHumanRole?
+  /// Vocabulaire libre résolu par le catalogue de coûts ; un outil inconnu
+  /// coûte zéro et c'est précisément un des drapeaux de la critique.
+  tool        String?
+
+  estimatedMinutesOptimistic   Int
+  estimatedMinutesLikely       Int
+  estimatedMinutesConservative Int
+  estimatedAiCostCents         Int @default(0)
+  estimatedToolUnits           Int @default(0)
+
+  verificationMethod String
+  acceptanceCriteria String[]
+  riskLevel          PlanStepRiskLevel
+  riskNote           String?
+  /// Ordres (champ `order`) des étapes préalables — des entiers plutôt que
+  /// des FK pour rester trivialement copiable d'une version à la suivante.
+  dependsOnOrder     Int[]
+
+  @@unique([planVersionId, order])
+}
+
+/// Étape critique, CONDITIONNELLE (jamais systématique — décision fondateur,
+/// ajustement 1) : shouldCritique() dans src/lib/ai-work-engine/critique.ts
+/// est la fonction pure qui décide, et elle est testée table par table.
+/// Anthropic seulement en Phase 1A (ajustement 2) ; `provider` existe pour
+/// qu'un second fournisseur soit une valeur de colonne, pas une migration.
+model TaskExecutionPlanCritique {
+  id            String                   @id @default(cuid())
+  planVersionId String                   @unique
+  planVersion   TaskExecutionPlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+
+  provider          String           @default("anthropic")
+  model             String
+  missingSteps      String[]
+  wrongToolFlags    String[]
+  timeRiskFlags     String[]
+  securityRiskFlags String[]
+  overallAssessment String
+  severity          CritiqueSeverity
+  rawOutput         Json?
+  computedAt        DateTime         @default(now())
+}
+
+/// LE CONTRAT. Créé dans la transaction même de acceptQuote : la copie figée
+/// de tout ce que le client a vu au moment où il a cliqué Accepter — prix,
+/// périmètre, quantité, livrable, hypothèses, exclusions, standard de litige,
+/// et la politique de correction (les settings de fenêtres, figés, parce que
+/// l'admin peut les changer ensuite et que le contrat du client ne doit pas
+/// bouger avec eux).
+///
+/// IMMUABLE PAR TRIGGER Postgres (UPDATE et DELETE refusés), même mécanique
+/// que le grand livre (second_shift_ledger_immutable). planVersionId nullable :
+/// une tâche tarifée sans plan (échec du pipeline, tarification manuelle)
+/// produit quand même un contrat complet — le contrat ne dépend pas du moteur.
+model TaskAcceptanceSnapshot {
+  id     String @id @default(cuid())
+  taskId String @unique
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Restrict)
+
+  planVersionId String?
+  planVersion   TaskExecutionPlanVersion? @relation(fields: [planVersionId], references: [id], onDelete: Restrict)
+
+  clientPriceCents  Int
+  currency          String
+  title             String
+  description       String
+  quantity          String?
+  clientDeadlineUtc DateTime?
+
+  deliverableDescription String?
+  assumptions            String[]
+  exclusions             String[]
+  /// Le texte du standard au moment T — la catégorie peut être rééditée
+  /// ensuite, le contrat non.
+  disputeCriteria        String?
+
+  // ── La politique de correction acceptée, figée ──
+  revisionWindowHours Int
+  maxRevisionRounds   Int
+  disputeWindowHours  Int
+
+  /// Précédent TaskEvent.actorId : chaîne nue, pas de FK.
+  acceptedByUserId String
+  createdAt        DateTime @default(now())
 }

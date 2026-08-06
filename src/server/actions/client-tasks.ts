@@ -12,6 +12,7 @@ import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { expireStaleQuotes } from "@/server/sweeps";
 import { computeAiPricingSuggestion } from "@/lib/pricing-ai";
+import { buildAcceptanceSnapshot } from "@/lib/ai-work-engine/client-scope";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
 
 const submitTaskSchema = z.object({
@@ -161,20 +162,72 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
   try {
     const now = new Date();
     const settings = await getSettings();
-    await transitionTask({
-      taskId,
-      from: "quoted",
-      to: owned.isInternal ? "open" : "awaiting_payment",
-      action: "client_accepted_quote",
-      actorId: user.id,
-      // Time bound inside the compare-and-swap: a quote that expires between
-      // the sweep and this write cannot be accepted by a racing request.
-      guard: { OR: [{ quoteExpiresAt: null }, { quoteExpiresAt: { gt: new Date() } }] },
-      data: {
-        acceptedAt: now,
-        paymentDueAt: owned.isInternal ? null : addHours(now, settings.paymentWindowHours),
-      },
-      meta: { paymentRequired: !owned.isInternal },
+    /**
+     * One transaction for the acceptance AND its contract record. The
+     * TaskAcceptanceSnapshot is the immutable copy of everything the client
+     * saw at this exact moment — price, scope, quantity, deliverable,
+     * assumptions, exclusions, the dispute standard, and the correction
+     * windows IN FORCE RIGHT NOW (the admin can change settings later; the
+     * client's contract must not move with them). Splitting these writes
+     * would allow an accepted task with no contract on record, which is the
+     * one state this feature exists to make impossible. The row itself is
+     * UPDATE/DELETE-protected by a Postgres trigger, same mechanism as the
+     * ledger.
+     */
+    await prisma.$transaction(async (tx) => {
+      await transitionTask({
+        tx,
+        taskId,
+        from: "quoted",
+        to: owned.isInternal ? "open" : "awaiting_payment",
+        action: "client_accepted_quote",
+        actorId: user.id,
+        // Time bound inside the compare-and-swap: a quote that expires between
+        // the sweep and this write cannot be accepted by a racing request.
+        guard: { OR: [{ quoteExpiresAt: null }, { quoteExpiresAt: { gt: new Date() } }] },
+        data: {
+          acceptedAt: now,
+          paymentDueAt: owned.isInternal ? null : addHours(now, settings.paymentWindowHours),
+        },
+        meta: { paymentRequired: !owned.isInternal },
+      });
+
+      const accepted = await tx.task.findUniqueOrThrow({
+        where: { id: taskId },
+        select: {
+          title: true,
+          description: true,
+          quantity: true,
+          clientPriceCents: true,
+          currency: true,
+          clientDeadlineUtc: true,
+          quotedPlanVersionId: true,
+          category: { select: { disputeCriteria: true } },
+          quotedPlanVersion: {
+            select: { deliverableDescription: true, assumptions: true, exclusions: true },
+          },
+        },
+      });
+      // Defensive: quoted -> accepted implies a price exists; if it somehow
+      // does not, refuse the acceptance rather than record a priceless
+      // contract. The transaction rolls the transition back too.
+      if (accepted.clientPriceCents === null) {
+        throw new TransitionError("accepted a task with no price");
+      }
+
+      await tx.taskAcceptanceSnapshot.create({
+        data: buildAcceptanceSnapshot({
+          taskId,
+          acceptedByUserId: user.id,
+          task: { ...accepted, clientPriceCents: accepted.clientPriceCents },
+          quotedPlanVersion: accepted.quotedPlanVersion,
+          settings: {
+            revisionWindowHours: settings.revisionWindowHours,
+            maxRevisionRounds: settings.maxRevisionRounds,
+            disputeWindowHours: settings.disputeWindowHours,
+          },
+        }),
+      });
     });
   } catch (e) {
     if (e instanceof TransitionError) {

@@ -7,6 +7,7 @@ import {
   latestPaymentStatusForClient,
 } from "@/lib/queries/tasks";
 import { expireStaleQuotes } from "@/server/sweeps";
+import { quotedScopeForClient } from "@/lib/queries/plan";
 import { getSettings } from "@/lib/settings";
 import { computeQuotedBy } from "@/lib/schedule";
 import {
@@ -78,6 +79,10 @@ export default async function ClientTaskPage({
   const report = await executionReportForClient(id, user.id);
   const cancelledPaymentStatus =
     cs === "cancelled" ? await latestPaymentStatusForClient(id, user.id) : null;
+  // The scope the quote is based on — a sanitized allowlist projection of
+  // the admin-approved plan version, never the plan itself. Null for a task
+  // quoted without the work engine; the card renders exactly as before.
+  const quotedScope = cs === "quote_ready" ? await quotedScopeForClient(id, user.id) : null;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -113,6 +118,47 @@ export default async function ClientTaskPage({
                 Valid until <LocalTime iso={task.quoteExpiresAt} />
               </p>
             ) : null}
+
+            {/* What this price covers — from the operator-approved plan,
+                projected through an allowlist and sanitized. Accepting the
+                quote freezes exactly this into the acceptance record. */}
+            {quotedScope ? (
+              <div className="mt-4 rounded-[4px] bg-[#14161A]/[0.02] px-3 py-2.5">
+                <p className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+                  What this price covers
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-[#14161A]">
+                  {quotedScope.deliverable}
+                </p>
+                {quotedScope.assumptions.length > 0 ? (
+                  <div className="mt-2">
+                    <p className="text-xs font-medium text-[#5B6069]">Working assumptions</p>
+                    <ul className="mt-0.5 list-disc pl-4 text-sm leading-relaxed text-[#14161A]">
+                      {quotedScope.assumptions.map((a) => (
+                        <li key={a}>{a}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {quotedScope.exclusions.length > 0 ? (
+                  <div className="mt-2">
+                    <p className="text-xs font-medium text-[#5B6069]">Not included</p>
+                    <ul className="mt-0.5 list-disc pl-4 text-sm leading-relaxed text-[#14161A]">
+                      {quotedScope.exclusions.map((x) => (
+                        <li key={x}>{x}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                <p className="mt-2 border-t border-[#14161A]/[0.06] pt-2 text-xs leading-relaxed text-[#5B6069]">
+                  Includes review before delivery, and up to {settings.maxRevisionRounds}{" "}
+                  correction {settings.maxRevisionRounds === 1 ? "round" : "rounds"} within{" "}
+                  {settings.revisionWindowHours} hours if the delivery misses the accepted brief.
+                  Anything we cannot find is marked unavailable, never invented.
+                </p>
+              </div>
+            ) : null}
+
             <div className="mt-4">
               <QuoteActions taskId={task.id} />
             </div>
