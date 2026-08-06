@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { cancelTask, reassignTask } from "@/server/actions/admin";
 import { Card, CardBody, Field, inputClass, buttonDanger, buttonSecondary } from "@/components/ui";
 
-const LOST_REASON_OPTIONS: { value: string; label: string }[] = [
+export const LOST_REASON_OPTIONS: { value: string; label: string }[] = [
   { value: "deadline_at_risk", label: "Deadline could not be met" },
   { value: "worker_unavailable", label: "Worker went unavailable / never delivered" },
   { value: "client_cancelled_no_reason", label: "Client cancelled, no reason given" },

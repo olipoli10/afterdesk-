@@ -14,6 +14,7 @@ import {
   moneyClient,
   moneyPayout,
 } from "@/components/ui";
+import { LOST_REASON_OPTIONS } from "@/components/admin-cancel";
 
 function parseUsd(v: string): number | null {
   const cleaned = v.replace(/[$,\s]/g, "");
@@ -73,6 +74,7 @@ export function PricingForm({
   const [error, setError] = useState<string | null>(null);
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [lostReasonCategory, setLostReasonCategory] = useState("deadline_at_risk");
   const [isPending, startTransition] = useTransition();
 
   const untouched =
@@ -257,6 +259,19 @@ export function PricingForm({
 
         {showCancel ? (
           <div className="mt-4 space-y-2 border-t border-[#14161A]/[0.06] pt-4">
+            <Field label="Reason category (Closed Job Log)">
+              <select
+                className={inputClass}
+                value={lostReasonCategory}
+                onChange={(e) => setLostReasonCategory(e.target.value)}
+              >
+                {LOST_REASON_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <Field label="Rejection reason (logged, required)">
               <input
                 className={inputClass}
@@ -271,7 +286,11 @@ export function PricingForm({
                 onClick={() => {
                   setError(null);
                   startTransition(async () => {
-                    const result = await cancelTask({ taskId, reason: cancelReason });
+                    const result = await cancelTask({
+                      taskId,
+                      reason: cancelReason,
+                      lostReasonCategory,
+                    });
                     if (!result.ok) {
                       setError(result.error);
                       return;
