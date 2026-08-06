@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { addHours } from "date-fns";
 import { prisma } from "@/lib/db";
+import { after } from "next/server";
 import { requireRole } from "@/lib/authz";
+import { QUALITY_POLICY_VERSION } from "@/lib/operational-intelligence/policy";
+import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
+import { stopAllOpenSessions } from "@/server/work-sessions";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
@@ -27,9 +31,35 @@ function failed(e: unknown): QcResult | null {
   return null;
 }
 
+/**
+ * Phase 1C — the structured QC record. Optional on the wire (the decision
+ * must never be blocked by telemetry), but the form always sends it. Raw
+ * counts by severity; no composite score exists, so no critical error can
+ * hide behind an average.
+ */
+const qualityCountsSchema = z
+  .object({
+    totalUnits: z.number().int().min(0).max(1_000_000).nullable(),
+    unitsChecked: z.number().int().min(0).max(1_000_000).nullable(),
+    unitsCorrect: z.number().int().min(0).max(1_000_000).nullable(),
+    unitsIncomplete: z.number().int().min(0).max(1_000_000).nullable(),
+    unitsUnverifiable: z.number().int().min(0).max(1_000_000).nullable(),
+    criticalErrorCount: z.number().int().min(0).max(100_000),
+    majorErrorCount: z.number().int().min(0).max(100_000),
+    minorErrorCount: z.number().int().min(0).max(100_000),
+    duplicateCount: z.number().int().min(0).max(100_000),
+    invalidSourceCount: z.number().int().min(0).max(100_000),
+    missingSourceCount: z.number().int().min(0).max(100_000),
+    formattingErrorCount: z.number().int().min(0).max(100_000),
+    correctedByReviewerCount: z.number().int().min(0).max(100_000),
+    reviewerNotes: z.string().trim().max(4000).nullable(),
+  })
+  .optional();
+
 const approveSchema = z.object({
   submissionId: z.string(),
   rating: z.number().int().min(1).max(5),
+  quality: qualityCountsSchema,
   /**
    * RULE 1's last gate. The pricing side has carried an unconditional
    * attestation from the start (`filesVerified` in approvePricing, admin.ts)
@@ -73,6 +103,7 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
 
   const settings = await getSettings();
   const now = new Date();
+  let taskIdForHooks = "";
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -101,6 +132,53 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
         },
       });
       const isFirstCompletion = submission.task.firstCompletedAt === null;
+      taskIdForHooks = submission.taskId;
+
+      /**
+       * Phase 1C — one structured record per QC pass, in the SAME
+       * transaction as the decision. reviewSequence follows the
+       * Submission.attemptNo motif: count within the transaction, unique
+       * composite, P2002 impossible here because the pending-claim above
+       * already serialized this submission's review.
+       */
+      {
+        const attemptRow = await tx.submission.findUniqueOrThrow({
+          where: { id: parsed.data.submissionId },
+          select: { attemptNo: true, deliveryMetrics: true, task: { select: { workflowRun: { select: { id: true } } } } },
+        });
+        const reviewSequence =
+          (await tx.taskQualityReview.count({
+            where: { submissionId: parsed.data.submissionId },
+          })) + 1;
+        const q = parsed.data.quality;
+        await tx.taskQualityReview.create({
+          data: {
+            taskId: submission.taskId,
+            workflowRunId: attemptRow.task.workflowRun?.id ?? null,
+            submissionId: parsed.data.submissionId,
+            reviewSequence,
+            reviewerId: admin.id,
+            attemptNo: attemptRow.attemptNo,
+            rubricVersion: QUALITY_POLICY_VERSION,
+            outcome: "approved",
+            totalUnits: q?.totalUnits ?? null,
+            unitsChecked: q?.unitsChecked ?? null,
+            unitsCorrect: q?.unitsCorrect ?? null,
+            unitsIncomplete: q?.unitsIncomplete ?? null,
+            unitsUnverifiable: q?.unitsUnverifiable ?? null,
+            criticalErrorCount: q?.criticalErrorCount ?? 0,
+            majorErrorCount: q?.majorErrorCount ?? 0,
+            minorErrorCount: q?.minorErrorCount ?? 0,
+            duplicateCount: q?.duplicateCount ?? 0,
+            invalidSourceCount: q?.invalidSourceCount ?? 0,
+            missingSourceCount: q?.missingSourceCount ?? 0,
+            formattingErrorCount: q?.formattingErrorCount ?? 0,
+            correctedByReviewerCount: q?.correctedByReviewerCount ?? 0,
+            categoryMetrics: attemptRow.deliveryMetrics ?? undefined,
+            reviewerNotes: q?.reviewerNotes ?? null,
+          },
+        });
+      }
       // A Standing Capacity task was never priced per task — the block's
       // weekly price already covers it, and the worker is paid once per
       // period (recordWorkerPeriodPayout), not once per task. Everything
@@ -207,8 +285,9 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
           where: {
             taskId_vaId: { taskId: submission.taskId, vaId: submission.vaId },
           },
-          select: { id: true, status: true },
+          select: { id: true, status: true, amountCents: true },
         });
+        const roundsSoFar = await tx.submission.count({ where: { taskId: submission.taskId } });
         if (!existingPayout) {
           await tx.payout.create({
             data: {
@@ -220,6 +299,27 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
             },
           });
         } else if (existingPayout.status !== "paid") {
+          /**
+           * Phase 1C — the re-arm OVERWRITES amountCents in place, so this
+           * event is the only durable record of the previous engagement.
+           * Without it, no scalar can honestly claim to be a historical
+           * cumulative (and none does: workerPayout* on the actual is a
+           * partition of CURRENT amounts; history is these events).
+           */
+          if (existingPayout.amountCents !== submission.task.vaPayoutCents!) {
+            await tx.taskEvent.create({
+              data: {
+                taskId: submission.taskId,
+                action: "payout_amount_rearmed",
+                actorId: admin.id,
+                meta: {
+                  from: existingPayout.amountCents,
+                  to: submission.task.vaPayoutCents!,
+                  round: roundsSoFar,
+                },
+              },
+            });
+          }
           await tx.payout.update({
             where: { id: existingPayout.id },
             data: {
@@ -261,6 +361,11 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
     throw e;
   }
 
+  // Phase 1C — the reviewer's own open timer closes with the decision, and
+  // the operational record catches up off the request path.
+  await stopAllOpenSessions(taskIdForHooks, admin.id, new Date());
+  after(() => recomputeOperationalIntelligence(taskIdForHooks, "qc_approved"));
+
   revalidatePath("/admin/qc");
   revalidatePath("/admin");
   const nextId = await nextInQcQueue();
@@ -270,6 +375,7 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
 const rejectSchema = z.object({
   submissionId: z.string(),
   comment: z.string().trim().min(5).max(4000),
+  quality: qualityCountsSchema,
 });
 
 /**
@@ -290,6 +396,7 @@ export async function rejectDeliverable(input: unknown): Promise<QcResult> {
 
   const settings = await getSettings();
   const now = new Date();
+  let rejectTaskIdForHooks = "";
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -301,8 +408,55 @@ export async function rejectDeliverable(input: unknown): Promise<QcResult> {
 
       const submission = await tx.submission.findUniqueOrThrow({
         where: { id: parsed.data.submissionId },
-        select: { taskId: true, vaId: true, task: { select: { qcRounds: true } } },
+        select: {
+          taskId: true,
+          vaId: true,
+          attemptNo: true,
+          deliveryMetrics: true,
+          task: { select: { qcRounds: true, workflowRun: { select: { id: true } } } },
+        },
       });
+      rejectTaskIdForHooks = submission.taskId;
+
+      /**
+       * Phase 1C — the rejection is a QC pass too. Same structured record,
+       * outcome "rejected"; a workflow whose rejections were invisible would
+       * look better calibrated than it is.
+       */
+      {
+        const reviewSequence =
+          (await tx.taskQualityReview.count({
+            where: { submissionId: parsed.data.submissionId },
+          })) + 1;
+        const q = parsed.data.quality;
+        await tx.taskQualityReview.create({
+          data: {
+            taskId: submission.taskId,
+            workflowRunId: submission.task.workflowRun?.id ?? null,
+            submissionId: parsed.data.submissionId,
+            reviewSequence,
+            reviewerId: admin.id,
+            attemptNo: submission.attemptNo,
+            rubricVersion: QUALITY_POLICY_VERSION,
+            outcome: "rejected",
+            totalUnits: q?.totalUnits ?? null,
+            unitsChecked: q?.unitsChecked ?? null,
+            unitsCorrect: q?.unitsCorrect ?? null,
+            unitsIncomplete: q?.unitsIncomplete ?? null,
+            unitsUnverifiable: q?.unitsUnverifiable ?? null,
+            criticalErrorCount: q?.criticalErrorCount ?? 0,
+            majorErrorCount: q?.majorErrorCount ?? 0,
+            minorErrorCount: q?.minorErrorCount ?? 0,
+            duplicateCount: q?.duplicateCount ?? 0,
+            invalidSourceCount: q?.invalidSourceCount ?? 0,
+            missingSourceCount: q?.missingSourceCount ?? 0,
+            formattingErrorCount: q?.formattingErrorCount ?? 0,
+            correctedByReviewerCount: q?.correctedByReviewerCount ?? 0,
+            categoryMetrics: submission.deliveryMetrics ?? undefined,
+            reviewerNotes: q?.reviewerNotes ?? null,
+          },
+        });
+      }
 
       const roundsAfter = submission.task.qcRounds + 1;
       const exhausted = roundsAfter >= settings.maxQcRounds;
@@ -326,6 +480,31 @@ export async function rejectDeliverable(input: unknown): Promise<QcResult> {
           : { qcRounds: roundsAfter },
         meta: { round: roundsAfter, exhausted },
       });
+
+      if (exhausted) {
+        /**
+         * Phase 1C (adversarial finding): a payout created at an EARLIER
+         * approval survived this repool as a ghost "owed" row — the next
+         * worker's approval then created a second one, the cost stats summed
+         * both, and escrow's release (filtered on the CURRENT claimant)
+         * could never touch the first. The documented money rule is already
+         * "the ousted worker is not paid"; this makes the table say it.
+         */
+        const ghosted = await tx.payout.updateMany({
+          where: { taskId: submission.taskId, vaId: submission.vaId, status: { not: "paid" } },
+          data: { status: "void" },
+        });
+        if (ghosted.count > 0) {
+          await tx.taskEvent.create({
+            data: {
+              taskId: submission.taskId,
+              action: "payout_voided_on_repool",
+              actorId: admin.id,
+              meta: { vaId: submission.vaId, count: ghosted.count },
+            },
+          });
+        }
+      }
 
       /**
        * The floor for workers the rolling score cannot describe.
@@ -402,6 +581,9 @@ export async function rejectDeliverable(input: unknown): Promise<QcResult> {
     if (handled) return handled;
     throw e;
   }
+
+  await stopAllOpenSessions(rejectTaskIdForHooks, admin.id, new Date());
+  after(() => recomputeOperationalIntelligence(rejectTaskIdForHooks, "qc_rejected"));
 
   revalidatePath("/admin/qc");
   revalidatePath("/admin");

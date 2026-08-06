@@ -7,6 +7,8 @@ import { ADMIN_STATUS_LABELS, statusBadgeClass, TERMINAL_STATUSES } from "@/lib/
 import { isAllowedTransition } from "@/lib/state";
 import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
+import { EstimatedVsActual } from "@/components/estimated-vs-actual";
+import { operationalComparisonForAdmin } from "@/lib/queries/operational-intelligence";
 import { AdminCancel, AdminReturnToPool } from "@/components/admin-cancel";
 import {
   ManualPaymentForm,
@@ -66,6 +68,7 @@ export default async function AdminTaskDetail({
   // Null for every task quoted without an executable plan, which is most of
   // them: the panel simply does not render.
   const execution = await executionForAdmin(id);
+  const operational = await operationalComparisonForAdmin(id);
   const isTerminal = TERMINAL_STATUSES.includes(task.status);
   const canReassign = REASSIGNABLE.includes(task.status) && task.claimedBy != null;
   // `completed` is non-terminal (dispute window) but cannot be cancelled —
@@ -192,6 +195,8 @@ export default async function AdminTaskDetail({
           </CardBody>
         </Card>
       ) : null}
+
+      <EstimatedVsActual data={operational} />
 
       {execution ? (
         <div className="mb-4">

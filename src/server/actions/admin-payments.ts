@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
 import { requireRole } from "@/lib/authz";
 import { insertLedgerEntry } from "@/lib/ledger";
 import { transitionTask, TransitionError } from "@/lib/state";
@@ -120,6 +121,7 @@ export async function recordManualPayment(input: unknown): Promise<MoneyActionRe
     throw error;
   }
 
+  after(() => recomputeOperationalIntelligence(parsed.data.taskId, "manual_payment_recorded"));
   revalidatePath(`/admin/tasks/${parsed.data.taskId}`);
   revalidatePath("/admin/tasks");
   revalidatePath("/client");
@@ -249,6 +251,7 @@ export async function recordManualRefund(input: unknown): Promise<MoneyActionRes
     });
 
     if (!result) return { ok: false, error: "This refund is no longer awaiting action." };
+    after(() => recomputeOperationalIntelligence(result.taskId, "manual_refund_recorded"));
     revalidatePath(`/admin/tasks/${result.taskId}`);
     revalidatePath("/client");
     return { ok: true };
@@ -400,6 +403,7 @@ export async function markPayoutPaid(input: unknown): Promise<MoneyActionResult>
     };
   }
   if (!result) return { ok: false, error: "This payout was already settled or voided." };
+  after(() => recomputeOperationalIntelligence(result.taskId, "payout_paid"));
   revalidatePath(`/admin/tasks/${result.taskId}`);
   revalidatePath("/admin/workers");
   revalidatePath("/va");

@@ -14,7 +14,9 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:pool": "tsx prisma/seed-pool-dev.ts",
-    "postinstall": "prisma generate && patch-package"
+    "postinstall": "prisma generate && patch-package",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "db:backfill-operational": "tsx --require ./scripts/register-server-only.cjs scripts/backfill-operational-actuals.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

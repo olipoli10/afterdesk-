@@ -12,6 +12,11 @@ import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { expireStaleQuotes } from "@/server/sweeps";
 import { computeAiPricingSuggestion } from "@/lib/pricing-ai";
+import { createOperationalBaseline } from "@/server/operational-baseline";
+import {
+  recomputeOpenRepeatWindowsForClient,
+  recomputeOperationalIntelligence,
+} from "@/server/operational-actuals";
 import { buildAcceptanceSnapshot } from "@/lib/ai-work-engine/client-scope";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
 
@@ -228,6 +233,15 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
           },
         }),
       });
+
+      /**
+       * Phase 1C: the internal baseline, in the SAME transaction as the
+       * contract. Acceptance is the last instant Task.estimatedMinutes and
+       * vaPayoutCents still carry the QUOTED values (finishRun overwrites
+       * both at handover), and a contract without its baseline would make
+       * every future estimated-vs-actual comparison unreconstructable.
+       */
+      await createOperationalBaseline(tx, { taskId, acceptedAt: now });
     });
   } catch (e) {
     if (e instanceof TransitionError) {
@@ -235,6 +249,12 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
     }
     throw e;
   }
+
+  // Phase 1C — this acceptance may flip an earlier task's open repeat
+  // window to true, and this task's own actual can now exist (its baseline
+  // just did). Both run off the request path.
+  after(() => recomputeOpenRepeatWindowsForClient(user.id));
+  after(() => recomputeOperationalIntelligence(taskId, "quote_accepted"));
 
   revalidatePath(`/client/tasks/${taskId}`);
   revalidatePath("/client");
@@ -386,6 +406,7 @@ export async function requestRevision(input: unknown): Promise<QuoteActionResult
     throw error;
   }
 
+  after(() => recomputeOperationalIntelligence(parsed.data.taskId, "client_revision_requested"));
   revalidatePath(`/client/tasks/${parsed.data.taskId}`);
   revalidatePath("/client");
   revalidatePath("/admin");
@@ -470,6 +491,7 @@ export async function openDispute(input: unknown): Promise<QuoteActionResult> {
     throw error;
   }
 
+  after(() => recomputeOperationalIntelligence(parsed.data.taskId, "dispute_opened"));
   revalidatePath(`/client/tasks/${parsed.data.taskId}`);
   revalidatePath("/client");
   revalidatePath("/admin");

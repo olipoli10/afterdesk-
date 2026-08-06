@@ -10,6 +10,7 @@ import {
   type CritiqueOutput,
   type PlanOutput,
 } from "@/lib/ai-work-engine/schemas";
+import { usageFromResponse, type StageResult } from "@/lib/ai-work-engine/stage-usage";
 
 /**
  * Stage 4: the adversarial critique. CONDITIONAL, never systematic (founder
@@ -74,7 +75,7 @@ export async function runCritique(input: {
   quantity: string | null;
   classification: ClassificationOutput;
   plan: PlanOutput;
-}): Promise<{ output: CritiqueOutput; model: string; raw: unknown } | null> {
+}): Promise<StageResult<CritiqueOutput>> {
   const settings = await getSettings();
   const client = new Anthropic({ timeout: 90_000, maxRetries: 1 });
 
@@ -101,14 +102,16 @@ ${JSON.stringify(input.plan, null, 2)}`,
     ],
   });
 
+  const usage = usageFromResponse(settings.pricingModel, response);
+
   if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") {
     console.error("[work-engine] critique unusable", { stopReason: response.stop_reason });
-    return null;
+    return { result: null, usage, failure: `stop_reason=${response.stop_reason}` };
   }
   const text = response.content.find((b): b is Anthropic.TextBlock => b.type === "text")?.text;
   if (!text) {
     console.error("[work-engine] critique returned no text block");
-    return null;
+    return { result: null, usage, failure: "no text block" };
   }
 
   let raw: unknown;
@@ -116,7 +119,7 @@ ${JSON.stringify(input.plan, null, 2)}`,
     raw = JSON.parse(text);
   } catch {
     console.error("[work-engine] critique output is not JSON");
-    return null;
+    return { result: null, usage, failure: "output is not JSON" };
   }
 
   const parsed = critiqueOutputSchema.safeParse(raw);
@@ -124,8 +127,8 @@ ${JSON.stringify(input.plan, null, 2)}`,
     console.error("[work-engine] critique output failed validation", {
       issues: parsed.error.issues.slice(0, 3),
     });
-    return null;
+    return { result: null, usage, failure: "failed zod validation" };
   }
 
-  return { output: parsed.data, model: settings.pricingModel, raw };
+  return { result: { output: parsed.data, raw }, usage, failure: null };
 }

@@ -5,6 +5,7 @@ import {
   classificationOutputSchema,
   type ClassificationOutput,
 } from "@/lib/ai-work-engine/schemas";
+import { usageFromResponse, type StageResult } from "@/lib/ai-work-engine/stage-usage";
 
 /**
  * Stage 1: the structured reading of the brief. Fast extraction, not deep
@@ -37,7 +38,7 @@ export async function runClassification(input: {
   description: string;
   quantity: string | null;
   categories: { slug: string; name: string; disputeCriteria: string | null }[];
-}): Promise<{ output: ClassificationOutput; model: string; raw: unknown } | null> {
+}): Promise<StageResult<ClassificationOutput>> {
   const client = new Anthropic({ timeout: 60_000, maxRetries: 1 });
 
   const categoryLines = input.categories
@@ -63,22 +64,28 @@ ${categoryLines || "none configured"}`,
     ],
   });
 
-  if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") return null;
+  // The call was BILLED whatever happens below: usage is captured before
+  // any usability check, so failure paths account for their tokens too.
+  const usage = usageFromResponse(CLASSIFY_MODEL, response);
+
+  if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") {
+    return { result: null, usage, failure: `stop_reason=${response.stop_reason}` };
+  }
   const text = response.content.find((b): b is Anthropic.TextBlock => b.type === "text")?.text;
-  if (!text) return null;
+  if (!text) return { result: null, usage, failure: "no text block" };
 
   let raw: unknown;
   try {
     raw = JSON.parse(text);
   } catch {
-    return null;
+    return { result: null, usage, failure: "output is not JSON" };
   }
 
   // Re-validated with zod even though the API constrained the shape: the
   // zod layer carries the bounds (lengths, ranges, cross-field rules) the
   // structured-outputs subset cannot express.
   const parsed = classificationOutputSchema.safeParse(raw);
-  if (!parsed.success) return null;
+  if (!parsed.success) return { result: null, usage, failure: "failed zod validation" };
 
-  return { output: parsed.data, model: CLASSIFY_MODEL, raw };
+  return { result: { output: parsed.data, raw }, usage, failure: null };
 }

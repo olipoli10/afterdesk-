@@ -8,6 +8,8 @@ import { formatMetricsForClient, qcChecks } from "@/lib/delivery-metrics";
 import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
 import { QcForm } from "@/components/qc-form";
+import { WorkSessionTimer } from "@/components/work-session-timer";
+import { openSessionFor } from "@/server/work-sessions";
 import {
   Card,
   CardBody,
@@ -24,7 +26,7 @@ export default async function QcReviewPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireRole("ADMIN");
+  const qcAdmin = await requireRole("ADMIN");
   const { id } = await params;
 
   // The operator's highest-frequency drill-down: task, settings and the
@@ -66,6 +68,8 @@ export default async function QcReviewPage({
   // card is simply absent, which is also what the client would get.
   const metricRows = formatMetricsForClient(submission.deliveryMetrics);
   const metricChecks = qcChecks(submission.deliveryMetrics);
+
+  const reviewerSession = await openSessionFor(task.id, qcAdmin.id, "reviewer");
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -244,6 +248,26 @@ export default async function QcReviewPage({
           </CardBody>
         </Card>
       ) : null}
+
+      {/* Phase 1C — the reviewer's timer. The reviewer IS the admin today;
+          the session records role "reviewer", phase "qc", and closes
+          automatically with the decision. */}
+      <div className="mb-4">
+        <WorkSessionTimer
+          taskId={task.id}
+          scope="reviewer"
+          initialSession={
+            reviewerSession
+              ? {
+                  id: reviewerSession.id,
+                  status: reviewerSession.status as "active" | "paused",
+                  accumulatedSeconds: reviewerSession.accumulatedSeconds,
+                  lastResumedAt: reviewerSession.lastResumedAt?.toISOString() ?? null,
+                }
+              : null
+          }
+        />
+      </div>
 
       <QcForm
         submissionId={submission.id}

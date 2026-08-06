@@ -119,14 +119,26 @@ export async function processMoneyIntents(): Promise<{
         if (authorized.provider !== "stripe" || !authorized.providerRef) {
           throw new Error("Non-Stripe payment cannot be auto-captured.");
         }
-        await captureStripePayment({
+        const captured = await captureStripePayment({
           paymentIntentId: authorized.providerRef,
           idempotencyKey: intent.idempotencyKey,
         });
         await prisma.$transaction(async (tx) => {
           await tx.payment.update({
             where: { id: authorized.id },
-            data: { status: "received", receivedAt: new Date() },
+            data: {
+              status: "received",
+              receivedAt: new Date(),
+              /**
+               * Phase 1C — the REAL amount Stripe captured, which this call
+               * site used to receive and throw away. `amountCents` stays
+               * the authorized figure and the ledger stays the source of
+               * recognized revenue; this column exists for reconciliation,
+               * and a mismatch surfaces as CAPTURE_AMOUNT_MISMATCH on the
+               * operational actual instead of vanishing.
+               */
+              capturedAmountCents: captured.amountReceived,
+            },
           });
           // Revenue is recognized here, at actual capture, not at checkout —
           // this is the whole point of the authorize/capture split.
@@ -139,7 +151,10 @@ export async function processMoneyIntents(): Promise<{
           // offset it.
           await insertLedgerEntry(tx, {
             kind: "sale",
-            amountCents: authorized.amountCents,
+            // The CAPTURED amount, not the authorized one: on a partial
+            // capture the two diverge, the ledger is append-only, and a
+            // permanently overstated public total is not correctable.
+            amountCents: captured.amountReceived ?? authorized.amountCents,
             currency: authorized.currency,
             sourceKind: "stripe_checkout",
             sourceId: authorized.providerRef!,

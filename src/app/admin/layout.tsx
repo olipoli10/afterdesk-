@@ -59,6 +59,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         { href: "/admin/standing-capacity", label: "Standing capacity", badge: draftNoteCount },
         { href: "/admin/assistant", label: "Assistant", badge: assistantPatternCount },
         { href: "/admin/closed-jobs", label: "Closed jobs" },
+        { href: "/admin/calibration", label: "Calibration" },
       ]}
     >
       {children}

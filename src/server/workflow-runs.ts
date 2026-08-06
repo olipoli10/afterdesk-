@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
@@ -313,6 +314,19 @@ async function pauseRunForExhaustedStep(input: {
   });
   if (!run) return;
 
+  // Phase 1C: a pause that writes ONLY run columns was invisible to the
+  // operational staleness sweep (which watches events, payments, payouts
+  // and sessions). The journal entry makes the pause a fact the
+  // intelligence layer can see - and gives the audit log the stop it was
+  // missing anyway.
+  await prisma.taskEvent.create({
+    data: {
+      taskId: run.taskId,
+      action: "workflow_run_paused",
+      meta: { order: input.order, primitiveId: input.primitiveId, attempts: input.attempts },
+    },
+  });
+
   await notifyAdmins({
     type: "workflow_step_exhausted",
     title: "Automated processing stopped",
@@ -616,50 +630,67 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
             input,
             costCeilingMicros: 0,
             recordInvocation: async (record) => {
-              await prisma.taskToolInvocation.upsert({
-                where: {
-                  stepRunId_operationKey_attempt: {
-                    stepRunId: step.id,
-                    operationKey: record.operationKey,
-                    attempt: step.attempts,
-                  },
-                },
-                create: {
-                  stepRunId: step.id,
-                  primitiveId: primitive.id,
-                  operationKey: record.operationKey,
-                  attempt: step.attempts,
-                  providerIdempotencyKey: record.providerIdempotencyKey,
-                  provider: record.provider,
-                  model: record.model,
-                  inputTokens: record.inputTokens,
-                  outputTokens: record.outputTokens,
-                  cacheReadTokens: record.cacheReadTokens,
-                  cacheWriteTokens: record.cacheWriteTokens,
-                  searchCount: record.searchCount,
-                  costMicros: record.costMicros,
-                  durationMs: record.durationMs,
-                  ok: record.ok,
-                  error: record.error,
-                },
-                update: {},
-              });
-              // Split at the point of record: searches are billed per query
-              // by the provider, tokens by volume, and an operator reading
-              // "we spent X" needs to know which lever moves it.
-              const toolMicros = searchCostMicros(record.searchCount);
-              const aiMicros = Math.max(0, record.costMicros - toolMicros);
-              await prisma.taskWorkflowRun.update({
-                where: { id: run.id },
-                data: {
-                  actualAiCostMicros: { increment: aiMicros },
-                  actualToolCostMicros: { increment: toolMicros },
-                },
-              });
-              await prisma.taskWorkflowStepRun.update({
-                where: { id: step.id },
-                data: { actualCostMicros: { increment: record.costMicros } },
-              });
+              /**
+               * Phase 1C - ONE transaction, and the counters move ONLY when
+               * the invocation row is newly created. The previous shape
+               * (upsert, then two unconditional increments as separate
+               * statements) had two real failure modes: a crash after the
+               * upsert left a billed invocation the run counters never
+               * learned about, and a replayed (stepRunId, operationKey,
+               * attempt) deduplicated the row while incrementing the
+               * counters a second time.
+               */
+              try {
+                await prisma.$transaction(async (tx) => {
+                  await tx.taskToolInvocation.create({
+                    data: {
+                      stepRunId: step.id,
+                      primitiveId: primitive.id,
+                      operationKey: record.operationKey,
+                      attempt: step.attempts,
+                      providerIdempotencyKey: record.providerIdempotencyKey,
+                      provider: record.provider,
+                      model: record.model,
+                      inputTokens: record.inputTokens,
+                      outputTokens: record.outputTokens,
+                      cacheReadTokens: record.cacheReadTokens,
+                      cacheWriteTokens: record.cacheWriteTokens,
+                      searchCount: record.searchCount,
+                      costMicros: record.costMicros,
+                      durationMs: record.durationMs,
+                      ok: record.ok,
+                      error: record.error,
+                    },
+                  });
+                  // Split at the point of record: searches are billed per
+                  // query by the provider, tokens by volume, and an operator
+                  // reading "we spent X" needs to know which lever moves it.
+                  const toolMicros = searchCostMicros(record.searchCount);
+                  const aiMicros = Math.max(0, record.costMicros - toolMicros);
+                  await tx.taskWorkflowRun.update({
+                    where: { id: run.id },
+                    data: {
+                      actualAiCostMicros: { increment: aiMicros },
+                      actualToolCostMicros: { increment: toolMicros },
+                    },
+                  });
+                  await tx.taskWorkflowStepRun.update({
+                    where: { id: step.id },
+                    data: { actualCostMicros: { increment: record.costMicros } },
+                  });
+                });
+              } catch (error) {
+                if (
+                  error instanceof Prisma.PrismaClientKnownRequestError &&
+                  error.code === "P2002"
+                ) {
+                  // Same attempt already recorded - the transaction rolled
+                  // back whole, so neither the row nor the counters moved.
+                  // A replay is a no-op, never a double count.
+                  return;
+                }
+                throw error;
+              }
             },
             writeArtifact: async (spec) =>
               writeArtifact({
@@ -698,6 +729,11 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
           !(await finishClaimedStep(step, {
             status: "done",
             finishedAt: new Date(),
+            // Phase 1C: the input side, so estimate-vs-actual can see what
+            // each step was FED, not only what it produced. This column
+            // existed since 1B and was never written - a dead column is a
+            // promise that looks like a datum.
+            inputSummary: { rowsIn: input.rows.length, unitsTotal: input.unitsTotal },
             outputSummary: result.summary,
             leaseExpiresAt: null,
             lockedAt: null,
@@ -845,7 +881,19 @@ export async function finishRun(runId: string): Promise<void> {
         status: "paused",
         unitsTotal,
         unitsResolvedAutomatically: Math.max(0, unitsTotal - unitsRemaining),
+        // Phase 1C: drafted vs verified as COLUMNS even on the paused
+        // branch - an over-budget pause was precisely where the residual
+        // numbers used to evaporate into prose.
+        unitsPrefilled: payload?.rows.length ?? 0,
+        unitsVerifiedByMachine: payload?.rows.filter((r) => r.status === "verified").length ?? 0,
         pausedReason: `Residual work is worth $${(residual.payoutCents / 100).toFixed(2)} but the quote reserved $${(reservedBudgetCents / 100).toFixed(2)}.`,
+      },
+    });
+    await prisma.taskEvent.create({
+      data: {
+        taskId: run.taskId,
+        action: "workflow_run_paused",
+        meta: { reason: "over_budget", unitsRemaining, unitsTotal },
       },
     });
     await notifyAdmins({
@@ -905,6 +953,10 @@ export async function finishRun(runId: string): Promise<void> {
           finishedAt: new Date(),
           unitsTotal,
           unitsResolvedAutomatically: Math.max(0, unitsTotal - unitsRemaining),
+          // Phase 1C: the drafted/verified distinction, queryable at last -
+          // the "0 of 12 already filled in" incident lived in prose only.
+          unitsPrefilled: payload?.rows.length ?? 0,
+          unitsVerifiedByMachine: payload?.rows.filter((r) => r.status === "verified").length ?? 0,
         },
       });
 

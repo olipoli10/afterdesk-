@@ -5,6 +5,9 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireApprovedVa } from "@/lib/authz";
+import { after } from "next/server";
+import { stopAllOpenSessions } from "@/server/work-sessions";
+import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
 import { getSettings } from "@/lib/settings";
 import { metricsSchemaFor } from "@/lib/delivery-metrics";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
@@ -392,6 +395,16 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
     throw e;
   }
 
+  /**
+   * Phase 1C — submission closes the submitter's own open timer, AFTER the
+   * transaction: the core uses the global client, and calling it from
+   * inside the tx callback held one pool connection while waiting for a
+   * second (adversarial finding: N concurrent submits ≥ pool size = mutual
+   * stall). Post-commit ordering is also the honest one — a rolled-back
+   * submission must not have closed anything.
+   */
+  await stopAllOpenSessions(taskId, user.id, new Date());
+  after(() => recomputeOperationalIntelligence(taskId, "deliverable_submitted"));
   revalidatePath("/va");
   revalidatePath(`/va/tasks/${taskId}`);
   revalidatePath("/admin/qc");

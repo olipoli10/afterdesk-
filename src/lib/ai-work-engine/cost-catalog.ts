@@ -1,5 +1,10 @@
 import "server-only";
 import { PLAN_TOOLS } from "@/lib/ai-work-engine/schemas";
+// The catalog's VERSION lives in the dependency-free policy module (client
+// components and pure tests read it); re-exported here so server code that
+// already imports the catalog gets the version from the same place. Bump it
+// whenever a number in COST_CATALOG changes observable pricing output.
+export { COST_CATALOG_VERSION } from "@/lib/operational-intelligence/policy";
 
 /**
  * THE COST CATALOG. Every number the deterministic pricing engine uses that

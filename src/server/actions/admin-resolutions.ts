@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
 import { addMilliseconds, addHours } from "date-fns";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
@@ -320,6 +322,7 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
     throw error;
   }
 
+  after(() => recomputeOperationalIntelligence(taskId, "dispute_decided"));
   revalidatePath(`/admin/tasks/${taskId}`);
   revalidatePath(`/client/tasks/${taskId}`);
   revalidatePath(`/va/tasks/${taskId}`);

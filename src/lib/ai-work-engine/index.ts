@@ -10,27 +10,45 @@ import { runCritique, shouldCritique } from "@/lib/ai-work-engine/critique";
 import { aiSuggestionColumns, pricePlan, type PricingStepInput } from "@/lib/ai-work-engine/pricing";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { floorConfidenceForCritique, resolveConfidence } from "@/lib/ai-work-engine/confidence";
-import { currentPrimitiveVersion, type PlanOutput } from "@/lib/ai-work-engine/schemas";
+import {
+  classificationOutputSchema,
+  currentPrimitiveVersion,
+  type ClassificationOutput,
+  type PlanOutput,
+} from "@/lib/ai-work-engine/schemas";
+import {
+  claimAiOperation,
+  engineOperationKey,
+  failAiOperation,
+  recordSupersededUsage,
+  reserveAiOperation,
+  succeedAiOperation,
+  SupersededOperationError,
+} from "@/server/ai-operations";
 import type { Prisma } from "@prisma/client";
 
 /**
- * THE WORK ENGINE PIPELINE — Phase 1A. Replaces the single-call pricing
- * suggestion with: classify → plan → deterministic price → conditional
- * critique. Fired from the same after() hook in submitTask, under the same
- * two disciplines the single-call version established:
+ * THE WORK ENGINE PIPELINE — Phase 1A shape, Phase 1C accounting. Three
+ * stages (classify → plan → conditional critique), each wrapped in a DURABLE
+ * AI OPERATION: reserved before the call under a deterministic key, claimed
+ * by CAS with a lease, closed fenced, with every billed provider call
+ * recorded as an append-only AiUsage attempt — including the failure paths,
+ * which are paid calls too.
  *
- *  - RULE 3: writes ONLY the aiXxx columns on Task plus the engine's own
- *    tables. No path to clientPriceCents / vaPayoutCents / quotedAt — those
- *    stay exclusively approvePricing's, after a human click.
+ * The operation keys derive from the RUN, never from a count:
+ * `engine:{taskId}:{runKey}:{stage}`. The initial automatic pipeline always
+ * uses runKey "initial", so a duplicated after(), a crash-and-retrigger or
+ * two concurrent submissions all land on the SAME three logical operations
+ * and the CAS decides who executes. A future deliberate re-run must mint its
+ * own explicit runKey in the action that requests it — it gets fresh
+ * operations by construction, not by counter.
+ *
+ *  - RULE 3 unchanged: writes ONLY the aiXxx columns on Task plus the
+ *    engine's own tables.
  *  - NEVER THROWS to the caller: any stage failing writes what already
- *    succeeded, logs, and stops. A pipeline failure must never be a
- *    task-submission failure, and the admin prices manually exactly as if
- *    the engine did not exist. aiComputedAt stays null in that case, which
- *    the pricing queue already renders as "not computed — price manually".
- *
- * Stage failures are deliberately not retried here: the pricing queue is
- * not latency-sensitive and a transient provider error surfaces to the
- * admin as a manually-priced task, the always-correct fallback.
+ *    succeeded, marks its operation failed (with its billed usage), logs,
+ *    and stops. The admin prices manually exactly as if the engine did not
+ *    exist.
  */
 
 /**
@@ -59,8 +77,19 @@ function planStepsToPricingInput(plan: PlanOutput): PricingStepInput[] {
   }));
 }
 
-export async function runWorkEngine(taskId: string): Promise<void> {
+export async function runWorkEngine(
+  taskId: string,
+  options?: {
+    /**
+     * "initial" for the automatic pipeline. A deliberate future re-run
+     * action mints its own key (e.g. `rerun:${cuid}`) so it can never
+     * collide with, or be deduplicated against, the initial run.
+     */
+    runKey?: string;
+  }
+): Promise<void> {
   if (!aiEnabled || !embeddingsEnabled) return;
+  const runKey = options?.runKey ?? "initial";
 
   try {
     const task = await prisma.task.findUnique({
@@ -78,8 +107,8 @@ export async function runWorkEngine(taskId: string): Promise<void> {
 
     if (engineSkipsTask(task)) return;
 
-    // Idempotency: submitTask fires this once, but a crash-and-retry or a
-    // future manual re-run must not stack duplicate v1 plans.
+    // Idempotency after full success: a plan on record means the pipeline
+    // finished. (Mid-pipeline recovery is the operations' job below.)
     const existingPlan = await prisma.taskExecutionPlanVersion.findFirst({
       where: { taskId },
       select: { id: true },
@@ -98,8 +127,7 @@ export async function runWorkEngine(taskId: string): Promise<void> {
 
     // Stored BEFORE any model call: even if everything downstream fails,
     // this task's embedding is on record and becomes a reference for the
-    // next task the moment it is approved. Same reasoning as the original
-    // single-call pricer.
+    // next task the moment it is approved.
     await upsertEmbedding(taskId, vector);
 
     const referenceTasks = await findSimilarPricedTasks(
@@ -108,190 +136,366 @@ export async function runWorkEngine(taskId: string): Promise<void> {
       settings.pricingSimilarityMaxDistance
     );
 
-    // ── Stage 1: classification ──
-    const classified = await runClassification({
-      title: task.title,
-      description: task.description,
-      quantity: task.quantity,
-      categories,
+    // ── Stage 1: classification, as a durable operation ──
+    const classifyKey = engineOperationKey(taskId, runKey, "classify");
+    await reserveAiOperation({ taskId, purpose: "classification", operationKey: classifyKey });
+
+    let classificationOutput: ClassificationOutput | null = null;
+
+    const classifyOp = await prisma.aiOperation.findUnique({
+      where: { operationKey: classifyKey },
+      select: { status: true },
     });
-    if (!classified) {
-      console.error("[work-engine] classification failed", { taskId });
-      return;
+    if (classifyOp?.status === "succeeded") {
+      /**
+       * A previous invocation classified and then died before the plan. The
+       * result is on record; re-running the stage would bill a second call
+       * for an answer we already own. rawOutput IS the model's JSON, so it
+       * re-validates through the same schema the live path uses.
+       */
+      const stored = await prisma.taskAiClassification.findUnique({
+        where: { taskId },
+        select: { rawOutput: true },
+      });
+      const revalidated = classificationOutputSchema.safeParse(stored?.rawOutput);
+      if (revalidated.success) {
+        classificationOutput = revalidated.data;
+      } else {
+        /**
+         * PERMANENT wedge, said out loud: the operation is `succeeded` so no
+         * claim will ever run this stage again, and the stored rawOutput no
+         * longer passes the (presumably tightened) schema. Every retrigger
+         * lands here. The task prices manually — the always-correct
+         * fallback — but the log must say "permanent", not hint at a
+         * transient hiccup.
+         */
+        console.error(
+          "[work-engine] classification succeeded but its stored output no longer validates; " +
+            "this pipeline is PERMANENTLY stalled for this task and it will be priced manually",
+          { taskId, runKey }
+        );
+        return;
+      }
     }
 
-    // The same server-side floor the single-call pricer had: confidence
-    // measures PRECEDENT. Zero close reference tasks forces "low" no matter
-    // what the model self-reported.
-    const baseConfidence = resolveConfidence(classified.output.confidence, referenceTasks.length);
+    if (classificationOutput === null) {
+      const claim = await claimAiOperation(classifyKey);
+      if (!claim) {
+        // Another invocation holds the lease, or attempts are exhausted.
+        // Either way this invocation stops; it never waits and never forks
+        // a second provider call for the same logical operation.
+        console.warn("[work-engine] classify operation not claimable", { taskId, runKey });
+        return;
+      }
 
-    await prisma.taskAiClassification.upsert({
+      let classified: Awaited<ReturnType<typeof runClassification>>;
+      try {
+        classified = await runClassification({
+          title: task.title,
+          description: task.description,
+          quantity: task.quantity,
+          categories,
+        });
+      } catch (error) {
+        // No response arrived at all — nothing billable to record, and if a
+        // call WAS emitted before the death, the operation's attempt count
+        // exceeding its usage rows surfaces it as AI_ATTEMPT_UNACCOUNTED.
+        await failAiOperation({
+          claim,
+          taskId,
+          purpose: "classification",
+          usage: null,
+          error: String(error).slice(0, 500),
+        });
+        throw error;
+      }
+
+      if (!classified.result) {
+        await failAiOperation({
+          claim,
+          taskId,
+          purpose: "classification",
+          usage: classified.usage,
+          error: classified.failure ?? "unusable output",
+        });
+        console.error("[work-engine] classification failed", {
+          taskId,
+          failure: classified.failure,
+        });
+        return;
+      }
+
+      const output = classified.result.output;
+      const baseConfidence = resolveConfidence(output.confidence, referenceTasks.length);
+      const raw = classified.result.raw;
+
+      const columns = {
+        categorySlugGuess: output.category_slug_guess,
+        objective: output.objective,
+        deliverableFormat: output.deliverable_format,
+        requiredFields: output.required_fields,
+        quantityInterpreted: output.quantity_interpreted,
+        geography: output.geography,
+        verificationLevel: output.verification_level,
+        sourceRequirements: output.source_requirements,
+        sensitiveData: output.sensitive_data,
+        requiredAccess: output.required_access,
+        missingInformation: output.missing_information,
+        assumptions: output.assumptions,
+        quoteTier: output.quote_tier,
+        confidence: baseConfidence,
+        model: classified.usage?.model ?? "unknown",
+        rawOutput: raw as Prisma.InputJsonValue,
+      };
+
+      try {
+        await succeedAiOperation({
+          claim,
+          taskId,
+          purpose: "classification",
+          usage: classified.usage,
+          writeResult: async (tx) => {
+            const row = await tx.taskAiClassification.upsert({
+              where: { taskId },
+              create: { taskId, ...columns },
+              update: { ...columns, computedAt: new Date() },
+              select: { id: true },
+            });
+            return { resultKind: "taskAiClassification", resultId: row.id, value: row };
+          },
+        });
+      } catch (error) {
+        if (error instanceof SupersededOperationError) {
+          // The lease moved on mid-call. The successor owns the pipeline;
+          // this invocation's only remaining duty is the money it spent.
+          await recordSupersededUsage(claim, taskId, "classification", classified.usage);
+          return;
+        }
+        throw error;
+      }
+      classificationOutput = output;
+    }
+
+    const classificationRow = await prisma.taskAiClassification.findUniqueOrThrow({
       where: { taskId },
-      create: {
-        taskId,
-        categorySlugGuess: classified.output.category_slug_guess,
-        objective: classified.output.objective,
-        deliverableFormat: classified.output.deliverable_format,
-        requiredFields: classified.output.required_fields,
-        quantityInterpreted: classified.output.quantity_interpreted,
-        geography: classified.output.geography,
-        verificationLevel: classified.output.verification_level,
-        sourceRequirements: classified.output.source_requirements,
-        sensitiveData: classified.output.sensitive_data,
-        requiredAccess: classified.output.required_access,
-        missingInformation: classified.output.missing_information,
-        assumptions: classified.output.assumptions,
-        quoteTier: classified.output.quote_tier,
-        confidence: baseConfidence,
-        model: classified.model,
-        rawOutput: classified.raw as Prisma.InputJsonValue,
-      },
-      update: {
-        categorySlugGuess: classified.output.category_slug_guess,
-        objective: classified.output.objective,
-        deliverableFormat: classified.output.deliverable_format,
-        requiredFields: classified.output.required_fields,
-        quantityInterpreted: classified.output.quantity_interpreted,
-        geography: classified.output.geography,
-        verificationLevel: classified.output.verification_level,
-        sourceRequirements: classified.output.source_requirements,
-        sensitiveData: classified.output.sensitive_data,
-        requiredAccess: classified.output.required_access,
-        missingInformation: classified.output.missing_information,
-        assumptions: classified.output.assumptions,
-        quoteTier: classified.output.quote_tier,
-        confidence: baseConfidence,
-        model: classified.model,
-        rawOutput: classified.raw as Prisma.InputJsonValue,
-        computedAt: new Date(),
-      },
+      select: { confidence: true },
     });
+    const baseConfidence = classificationRow.confidence;
 
-    // ── Stage 2: plan ──
-    const planned = await runPlanGeneration({
-      title: task.title,
-      description: task.description,
-      quantity: task.quantity,
-      classification: classified.output,
-      categories,
-      referenceTasks,
-    });
-    if (!planned) {
-      console.error("[work-engine] plan generation failed", { taskId });
+    // ── Stage 2: plan, as a durable operation ──
+    const planKey = engineOperationKey(taskId, runKey, "plan");
+    await reserveAiOperation({ taskId, purpose: "planning", operationKey: planKey });
+    const planClaim = await claimAiOperation(planKey);
+    if (!planClaim) {
+      console.warn("[work-engine] plan operation not claimable", { taskId, runKey });
       return;
     }
+
+    let planned: Awaited<ReturnType<typeof runPlanGeneration>>;
+    try {
+      planned = await runPlanGeneration({
+        title: task.title,
+        description: task.description,
+        quantity: task.quantity,
+        classification: classificationOutput,
+        categories,
+        referenceTasks,
+      });
+    } catch (error) {
+      await failAiOperation({
+        claim: planClaim,
+        taskId,
+        purpose: "planning",
+        usage: null,
+        error: String(error).slice(0, 500),
+      });
+      throw error;
+    }
+
+    if (!planned.result) {
+      await failAiOperation({
+        claim: planClaim,
+        taskId,
+        purpose: "planning",
+        usage: planned.usage,
+        error: planned.failure ?? "unusable output",
+      });
+      console.error("[work-engine] plan generation failed", { taskId, failure: planned.failure });
+      return;
+    }
+
+    const plannedOutput = planned.result.output;
 
     // ── Stage 3: deterministic pricing (pure code, no model) ──
     const rates = {
       workerHourlyUsd: Math.max(COST_CATALOG.workerHourlyUsdBase, settings.minWorkerHourlyUsd),
     };
-    const priced = pricePlan(planStepsToPricingInput(planned.output), rates);
+    const priced = pricePlan(planStepsToPricingInput(plannedOutput), rates);
 
-    const planVersion = await prisma.taskExecutionPlanVersion.create({
-      data: {
+    let planVersion: { id: string };
+    try {
+      planVersion = await succeedAiOperation({
+        claim: planClaim,
         taskId,
-        version: 1,
-        source: "ai_generated",
-        deliverableDescription: planned.output.deliverable_description,
-        assumptions: planned.output.assumptions,
-        exclusions: planned.output.exclusions,
-        internalCostLikelyCents: priced.internalCostLikelyCents,
-        internalCostConservativeCents: priced.internalCostConservativeCents,
-        suggestedPriceCents: priced.suggestedPriceCents,
-        suggestedVaPayoutCents: priced.suggestedVaPayoutCents,
-        calibration: priced.calibration,
-        model: planned.model,
-        rawOutput: planned.raw as Prisma.InputJsonValue,
-        steps: {
-          create: planned.output.steps.map((s, i) => ({
-            order: i + 1,
-            title: s.title,
-            description: s.description,
-            executor: s.executor,
-            humanRole: s.human_role,
-            tool: s.tool,
-            /**
-             * The primitive is the MODEL's choice, made before the quote.
-             * The VERSION is the CODE's stamp, taken from the registry
-             * vocabulary at the moment this plan version is written and
-             * frozen with it. A later registry bump leaves this row pinned to
-             * the behaviour the client accepted, and the compiler hands the
-             * step to a person rather than silently running the new one.
-             * currentPrimitiveVersion returns null for an id the vocabulary
-             * does not have, so an invented primitive is unrunnable by
-             * construction.
-             */
-            primitiveId: s.primitive_id,
-            primitiveVersion: currentPrimitiveVersion(s.primitive_id),
-            fixedMinutes: s.fixed_minutes,
-            secondsPerUnit: s.seconds_per_unit,
-            estimatedMinutesOptimistic: s.estimated_minutes_optimistic,
-            estimatedMinutesLikely: s.estimated_minutes_likely,
-            estimatedMinutesConservative: s.estimated_minutes_conservative,
-            estimatedAiCostCents: s.estimated_ai_cost_cents,
-            estimatedToolUnits: s.estimated_tool_units,
-            verificationMethod: s.verification_method,
-            acceptanceCriteria: s.acceptance_criteria,
-            riskLevel: s.risk_level,
-            riskNote: s.risk_note,
-            dependsOnOrder: s.depends_on_order,
-          })),
+        purpose: "planning",
+        usage: planned.usage,
+        writeResult: async (tx) => {
+          const created = await tx.taskExecutionPlanVersion.create({
+            data: {
+              taskId,
+              version: 1,
+              source: "ai_generated",
+              deliverableDescription: plannedOutput.deliverable_description,
+              assumptions: plannedOutput.assumptions,
+              exclusions: plannedOutput.exclusions,
+              internalCostLikelyCents: priced.internalCostLikelyCents,
+              internalCostConservativeCents: priced.internalCostConservativeCents,
+              suggestedPriceCents: priced.suggestedPriceCents,
+              suggestedVaPayoutCents: priced.suggestedVaPayoutCents,
+              calibration: priced.calibration,
+              model: planned.usage?.model ?? null,
+              rawOutput: planned.result!.raw as Prisma.InputJsonValue,
+              steps: {
+                create: plannedOutput.steps.map((s, i) => ({
+                  order: i + 1,
+                  title: s.title,
+                  description: s.description,
+                  executor: s.executor,
+                  humanRole: s.human_role,
+                  tool: s.tool,
+                  /**
+                   * The primitive is the MODEL's choice, made before the
+                   * quote. The VERSION is the CODE's stamp, frozen with this
+                   * plan version. A later registry bump leaves this row
+                   * pinned to the behaviour the client accepted, and the
+                   * compiler hands the step to a person rather than silently
+                   * running the new one.
+                   */
+                  primitiveId: s.primitive_id,
+                  primitiveVersion: currentPrimitiveVersion(s.primitive_id),
+                  fixedMinutes: s.fixed_minutes,
+                  secondsPerUnit: s.seconds_per_unit,
+                  estimatedMinutesOptimistic: s.estimated_minutes_optimistic,
+                  estimatedMinutesLikely: s.estimated_minutes_likely,
+                  estimatedMinutesConservative: s.estimated_minutes_conservative,
+                  estimatedAiCostCents: s.estimated_ai_cost_cents,
+                  estimatedToolUnits: s.estimated_tool_units,
+                  verificationMethod: s.verification_method,
+                  acceptanceCriteria: s.acceptance_criteria,
+                  riskLevel: s.risk_level,
+                  riskNote: s.risk_note,
+                  dependsOnOrder: s.depends_on_order,
+                })),
+              },
+            },
+            select: { id: true },
+          });
+          return { resultKind: "planVersion", resultId: created.id, value: created };
         },
-      },
-    });
+      });
+    } catch (error) {
+      if (error instanceof SupersededOperationError) {
+        await recordSupersededUsage(planClaim, taskId, "planning", planned.usage);
+        return;
+      }
+      throw error;
+    }
 
-    // ── Stage 4: conditional critique ──
+    // ── Stage 4: conditional critique, as a durable operation ──
     let critiqueSeverity: "none" | "minor" | "major" | "blocking" | null = null;
     let critiqueSummary: string | null = null;
     let critiqueTriggered = false;
     if (
       shouldCritique({
-        classification: classified.output,
+        classification: classificationOutput,
         categoryHasDisputeCriteria: categories.some(
-          (c) => c.slug === classified.output.category_slug_guess && c.disputeCriteria !== null
+          (c) => c.slug === classificationOutput.category_slug_guess && c.disputeCriteria !== null
         ),
-        hasHighRiskStep: planned.output.steps.some((s) => s.risk_level === "high"),
+        hasHighRiskStep: plannedOutput.steps.some((s) => s.risk_level === "high"),
         internalCostConservativeCents: priced.internalCostConservativeCents,
       })
     ) {
       critiqueTriggered = true;
-      const critiqued = await runCritique({
-        title: task.title,
-        description: task.description,
-        quantity: task.quantity,
-        classification: classified.output,
-        plan: planned.output,
-      });
-      if (critiqued) {
-        critiqueSeverity = critiqued.output.severity;
-        critiqueSummary = critiqued.output.overall_assessment;
-        await prisma.taskExecutionPlanCritique.create({
-          data: {
-            planVersionId: planVersion.id,
-            provider: "anthropic",
-            model: critiqued.model,
-            missingSteps: critiqued.output.missing_steps,
-            wrongToolFlags: critiqued.output.wrong_tool_flags,
-            timeRiskFlags: critiqued.output.time_risk_flags,
-            securityRiskFlags: critiqued.output.security_risk_flags,
-            overallAssessment: critiqued.output.overall_assessment,
-            severity: critiqued.output.severity,
-            rawOutput: critiqued.raw as Prisma.InputJsonValue,
-          },
-        });
+      const critiqueOpKey = engineOperationKey(taskId, runKey, "critique");
+      await reserveAiOperation({ taskId, purpose: "critique", operationKey: critiqueOpKey });
+      const critiqueClaim = await claimAiOperation(critiqueOpKey);
+      if (critiqueClaim) {
+        let critiqued: Awaited<ReturnType<typeof runCritique>> | null = null;
+        try {
+          critiqued = await runCritique({
+            title: task.title,
+            description: task.description,
+            quantity: task.quantity,
+            classification: classificationOutput,
+            plan: plannedOutput,
+          });
+        } catch (error) {
+          await failAiOperation({
+            claim: critiqueClaim,
+            taskId,
+            purpose: "critique",
+            usage: null,
+            error: String(error).slice(0, 500),
+          });
+          console.error("[work-engine] critique threw; continuing without it", { taskId });
+        }
+        if (critiqued && critiqued.result) {
+          const output = critiqued.result.output;
+          critiqueSeverity = output.severity;
+          critiqueSummary = output.overall_assessment;
+          try {
+            await succeedAiOperation({
+              claim: critiqueClaim,
+              taskId,
+              purpose: "critique",
+              usage: critiqued.usage,
+              writeResult: async (tx) => {
+                const row = await tx.taskExecutionPlanCritique.create({
+                  data: {
+                    planVersionId: planVersion.id,
+                    provider: "anthropic",
+                    model: critiqued!.usage?.model ?? "unknown",
+                    missingSteps: output.missing_steps,
+                    wrongToolFlags: output.wrong_tool_flags,
+                    timeRiskFlags: output.time_risk_flags,
+                    securityRiskFlags: output.security_risk_flags,
+                    overallAssessment: output.overall_assessment,
+                    severity: output.severity,
+                    rawOutput: critiqued!.result!.raw as Prisma.InputJsonValue,
+                  },
+                  select: { id: true },
+                });
+                return { resultKind: "planCritique", resultId: row.id, value: row };
+              },
+            });
+          } catch (error) {
+            if (error instanceof SupersededOperationError) {
+              await recordSupersededUsage(critiqueClaim, taskId, "critique", critiqued.usage);
+            } else {
+              throw error;
+            }
+          }
+        } else if (critiqued && !critiqued.result) {
+          await failAiOperation({
+            claim: critiqueClaim,
+            taskId,
+            purpose: "critique",
+            usage: critiqued.usage,
+            error: critiqued.failure ?? "unusable output",
+          });
+          console.error("[work-engine] critique failed; continuing without it", { taskId });
+        }
       } else {
-        console.error("[work-engine] critique failed; continuing without it", { taskId });
+        console.warn("[work-engine] critique operation not claimable", { taskId, runKey });
       }
     }
 
     const finalConfidence = floorConfidenceForCritique(baseConfidence, critiqueSeverity);
 
     // ── The existing aiXxx surface, so approvePricing and the queue change
-    //    shape not at all. Mapping documented in the plan: low = price at the
-    //    likely cost, high = price at the conservative cost, suggestion = the
-    //    conservative-based recommendation.
+    //    shape not at all. ──
     const reasoning = [
-      `Plan v1: ${planned.output.steps.length} steps, ~${Math.round(priced.estimatedMinutesLikelyTotal / 60)}h likely.`,
+      `Plan v1: ${plannedOutput.steps.length} steps, ~${Math.round(priced.estimatedMinutesLikelyTotal / 60)}h likely.`,
       `Internal cost $${(priced.internalCostLikelyCents / 100).toFixed(0)} likely / $${(priced.internalCostConservativeCents / 100).toFixed(0)} conservative (uncalibrated catalog).`,
       // "Not triggered" and "triggered but failed" are different admin
       // signals: the first means the engine judged it unnecessary, the
@@ -311,7 +515,7 @@ export async function runWorkEngine(taskId: string): Promise<void> {
         ...aiSuggestionColumns(priced),
         aiReasoning: reasoning,
         aiConfidence: finalConfidence,
-        aiSuggestedCategorySlug: classified.output.category_slug_guess,
+        aiSuggestedCategorySlug: classificationOutput.category_slug_guess,
         aiComputedAt: new Date(),
       },
     });

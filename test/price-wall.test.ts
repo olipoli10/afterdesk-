@@ -116,6 +116,29 @@ describe("RULE 2 — the two-price wall", () => {
       "stepRuns",
       "handoffReason",
       "pausedReason",
+      // Phase 1C — operational intelligence. ALL of it is admin-only: the
+      // baseline carries internal costs and margins, the actual carries the
+      // two gross margins and recognized revenue, the sessions carry another
+      // worker's measured time, the reviews carry the error taxonomy, and
+      // the profile carries the recommendation. One relation name appearing
+      // in a role-shaped select is a breach.
+      "operationalBaseline",
+      "operationalActual",
+      "workSessions",
+      "qualityReviews",
+      "aiOperations",
+      "recognizedRevenueMicros",
+      "grossMarginBookedMeteredMicros",
+      "grossMarginAllInModeledMicros",
+      "grossMarginBookedMeteredBps",
+      "grossMarginAllInModeledBps",
+      "bookedAndMeteredCostMicros",
+      "allInCostWithModeledMicros",
+      "workerPayoutNetIncurredCents",
+      "workerPayoutCurrentLiabilityCents",
+      "estimatedInternalCostLikelyCents",
+      "recommendation",
+      "calibrationLevel",
     ] as const;
     for (const [name, select] of [
       ["clientTaskSelect", clientTaskSelect],
@@ -221,4 +244,35 @@ describe("the worker's residual brief carries no money and no engine internals",
   it("scopes the read to the claimant and to statuses that allow files", () => {
     expect(workerRead).toContain("VA_FILE_ACCESS_STATUSES");
   });
+});
+
+/**
+ * The keysDeep check above walks the EXPORTED select objects — but
+ * src/lib/queries/tasks.ts also builds selects inline (the leak reviewer's
+ * finding), and an inline `operationalActual: { select: ... }` added to a
+ * client query while doing something else would sail past the object walk.
+ * So the whole file is pinned at the source: none of the Phase 1C relation
+ * names may appear anywhere in it. Admin surfaces read the 1C relations
+ * through src/lib/queries/operational-intelligence.ts, never through here.
+ */
+describe("the shared task-query file contains no operational-intelligence relations", () => {
+  const source = readFileSync(join(__dirname, "..", "src/lib/queries/tasks.ts"), "utf8");
+
+  it("the pin is not vacuous — the file still is the role-facing query file", () => {
+    expect(source).toContain("clientTaskSelect");
+    expect(source).toContain("vaPayoutCents");
+  });
+
+  for (const relation of [
+    "operationalBaseline",
+    "operationalActual",
+    "workSessions",
+    "qualityReviews",
+    "aiOperations",
+    "acceptanceSnapshotForCalibration",
+  ]) {
+    it(`never mentions ${relation}`, () => {
+      expect(source).not.toContain(relation);
+    });
+  }
 });

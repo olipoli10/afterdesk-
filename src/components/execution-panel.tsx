@@ -5,7 +5,7 @@ import type { ExecutionForAdmin } from "@/lib/queries/execution";
 
 /**
  * THE OPERATOR'S VIEW OF ONE RUN. Admin-only, and the only place any of this
- * renders — real costs, step errors, primitives, the reserved budget and the
+ * renders — metered costs, step errors, primitives, the reserved budget and the
  * residual arithmetic all live here and nowhere else.
  *
  * Numbers lead, words caption. Every figure is measured, not estimated: the

@@ -9,6 +9,7 @@ import {
   type ClassificationOutput,
   type PlanOutput,
 } from "@/lib/ai-work-engine/schemas";
+import { usageFromResponse, type StageResult } from "@/lib/ai-work-engine/stage-usage";
 import type { ReferenceTask } from "@/lib/ai-work-engine/references";
 
 /**
@@ -84,7 +85,7 @@ export async function runPlanGeneration(input: {
   classification: ClassificationOutput;
   categories: { slug: string; name: string; disputeCriteria: string | null }[];
   referenceTasks: ReferenceTask[];
-}): Promise<{ output: PlanOutput; model: string; raw: unknown } | null> {
+}): Promise<StageResult<PlanOutput>> {
   const settings = await getSettings();
   const client = new Anthropic({ timeout: 120_000, maxRetries: 1 });
 
@@ -118,19 +119,23 @@ ${JSON.stringify(input.referenceTasks, null, 2)}`,
     ],
   });
 
-  if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") return null;
+  const usage = usageFromResponse(settings.pricingModel, response);
+
+  if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") {
+    return { result: null, usage, failure: `stop_reason=${response.stop_reason}` };
+  }
   const text = response.content.find((b): b is Anthropic.TextBlock => b.type === "text")?.text;
-  if (!text) return null;
+  if (!text) return { result: null, usage, failure: "no text block" };
 
   let raw: unknown;
   try {
     raw = JSON.parse(text);
   } catch {
-    return null;
+    return { result: null, usage, failure: "output is not JSON" };
   }
 
   const parsed = planOutputSchema.safeParse(raw);
-  if (!parsed.success) return null;
+  if (!parsed.success) return { result: null, usage, failure: "failed zod validation" };
 
-  return { output: parsed.data, model: settings.pricingModel, raw };
+  return { result: { output: parsed.data, raw }, usage, failure: null };
 }

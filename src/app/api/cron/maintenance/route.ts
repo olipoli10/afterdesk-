@@ -1,5 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { closeStaleWorkSessions } from "@/server/work-sessions";
+import {
+  closeExpiredRepeatWindows,
+  recomputeStaleOperationalActuals,
+} from "@/server/operational-actuals";
 import {
   abandonStalledWorkflowRuns,
   advanceStandingCapacityPeriods,
@@ -62,6 +67,9 @@ async function runMaintenance(request: Request) {
     notifications,
     stalledRuns,
     workflows,
+    staleSessions,
+    repeatWindows,
+    staleActuals,
   ] = await Promise.all([
     run("quotes", expireStaleQuotes()),
     run("payments", expireStalePayments()),
@@ -79,6 +87,12 @@ async function runMaintenance(request: Request) {
     // The safety net behind the after() fast path: picks up runs whose
     // process died, whose step backed off, or whose lease expired.
     run("workflows", processWorkflowRuns()),
+    // Phase 1C — intelligence hygiene: forgotten timers close with capped
+    // seconds, expired repeat windows resolve to an honest false, and any
+    // task whose sources moved after its actual gets recomputed.
+    run("staleSessions", closeStaleWorkSessions()),
+    run("repeatWindows", closeExpiredRepeatWindows()),
+    run("staleActuals", recomputeStaleOperationalActuals()),
   ]);
   return NextResponse.json({
     quotes,
@@ -88,6 +102,9 @@ async function runMaintenance(request: Request) {
     capacityPeriods,
     disputeWindows,
     money,
+    staleSessions,
+    repeatWindows,
+    staleActuals,
     notifications,
     stalledRuns,
     workflows,

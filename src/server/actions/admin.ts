@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
 import { z } from "zod";
 import { addHours } from "date-fns";
 import { prisma } from "@/lib/db";
@@ -398,6 +400,7 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
     throw e;
   }
 
+  after(() => recomputeOperationalIntelligence(taskId, "admin_cancelled"));
   revalidatePath("/admin/pricing");
   revalidatePath("/admin/tasks");
   revalidatePath("/admin");

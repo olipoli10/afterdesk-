@@ -45,7 +45,42 @@ export function QcForm({
   const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [identityVerified, setIdentityVerified] = useState(false);
+  const [showTally, setShowTally] = useState(false);
+  // Phase 1C — the structured QC tally. Counts by severity, no composite
+  // score, so a critical error can never hide behind an average. Optional
+  // on the wire; always sent when touched.
+  const [tally, setTally] = useState({
+    unitsChecked: "",
+    totalUnits: "",
+    criticalErrorCount: "0",
+    majorErrorCount: "0",
+    minorErrorCount: "0",
+    duplicateCount: "0",
+    invalidSourceCount: "0",
+    missingSourceCount: "0",
+    formattingErrorCount: "0",
+    correctedByReviewerCount: "0",
+    reviewerNotes: "",
+  });
   const [isPending, start] = useTransition();
+
+  const num = (v: string) => (v === "" ? 0 : Number(v));
+  const qualityPayload = () => ({
+    totalUnits: tally.totalUnits === "" ? null : Number(tally.totalUnits),
+    unitsChecked: tally.unitsChecked === "" ? null : Number(tally.unitsChecked),
+    unitsCorrect: null,
+    unitsIncomplete: null,
+    unitsUnverifiable: null,
+    criticalErrorCount: num(tally.criticalErrorCount),
+    majorErrorCount: num(tally.majorErrorCount),
+    minorErrorCount: num(tally.minorErrorCount),
+    duplicateCount: num(tally.duplicateCount),
+    invalidSourceCount: num(tally.invalidSourceCount),
+    missingSourceCount: num(tally.missingSourceCount),
+    formattingErrorCount: num(tally.formattingErrorCount),
+    correctedByReviewerCount: num(tally.correctedByReviewerCount),
+    reviewerNotes: tally.reviewerNotes.trim() || null,
+  });
   const radioRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const lastRound = qcRound + 1 >= maxQcRounds;
@@ -64,7 +99,7 @@ export function QcForm({
     }
     setError(null);
     start(async () => {
-      const result = await approveDeliverable({ submissionId, rating, identityVerified });
+      const result = await approveDeliverable({ submissionId, rating, identityVerified, quality: qualityPayload() });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -155,6 +190,63 @@ export function QcForm({
               </p>
             </div>
 
+            {/* Phase 1C — the structured tally. Collapsed so the batch
+                keyboard flow stays untouched; the counts land on
+                TaskQualityReview and feed calibration. */}
+            <div className="mt-5">
+              <button
+                type="button"
+                className="text-sm font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+                onClick={() => setShowTally((v) => !v)}
+              >
+                {showTally ? "Hide quality tally" : "Quality tally (errors found)…"}
+              </button>
+              {showTally ? (
+                <div className="mt-3 space-y-3 rounded-[6px] border border-[#14161A]/10 p-3">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {(
+                      [
+                        ["unitsChecked", "Units checked"],
+                        ["totalUnits", "Units total"],
+                        ["criticalErrorCount", "Critical errors"],
+                        ["majorErrorCount", "Major errors"],
+                        ["minorErrorCount", "Minor errors"],
+                        ["duplicateCount", "Duplicates"],
+                        ["invalidSourceCount", "Invalid sources"],
+                        ["missingSourceCount", "Missing sources"],
+                        ["formattingErrorCount", "Formatting"],
+                        ["correctedByReviewerCount", "Corrected by you"],
+                      ] as const
+                    ).map(([key, label]) => (
+                      <Field key={key} label={label}>
+                        <input
+                          inputMode="numeric"
+                          className={inputClass}
+                          value={tally[key]}
+                          onChange={(e) =>
+                            setTally((t) => ({ ...t, [key]: e.target.value.replace(/\D/g, "") }))
+                          }
+                        />
+                      </Field>
+                    ))}
+                  </div>
+                  <Field label="Reviewer notes (internal)">
+                    <textarea
+                      rows={2}
+                      className={inputClass}
+                      value={tally.reviewerNotes}
+                      onChange={(e) => setTally((t) => ({ ...t, reviewerNotes: e.target.value }))}
+                    />
+                  </Field>
+                  {num(tally.criticalErrorCount) > 0 ? (
+                    <p className="text-sm text-[#955710]">
+                      Critical errors are recorded as such — no score averages them away.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+
             {/* RULE 1's last gate, mirroring the pricing side's own
                 attestation (admin.ts approvePricing). Metadata scrubbing
                 cannot read the visible content of a delivery — only a human
@@ -228,7 +320,7 @@ export function QcForm({
                 onClick={() =>
                   start(async () => {
                     setError(null);
-                    const result = await rejectDeliverable({ submissionId, comment });
+                    const result = await rejectDeliverable({ submissionId, comment, quality: qualityPayload() });
                     if (!result.ok) {
                       setError(result.error);
                       return;

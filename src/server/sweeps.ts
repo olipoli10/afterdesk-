@@ -1,6 +1,11 @@
 import "server-only";
 import { after } from "next/server";
 import { prisma } from "@/lib/db";
+import { closeStaleWorkSessions } from "@/server/work-sessions";
+import {
+  closeExpiredRepeatWindows,
+  recomputeStaleOperationalActuals,
+} from "@/server/operational-actuals";
 import { deleteObject } from "@/lib/storage";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { getSettings } from "@/lib/settings";
@@ -321,6 +326,13 @@ export async function runOperatorSweeps(): Promise<void> {
       // operator page load; the one state where waiting costs real money
       // must not be the exception.
       await abandonStalledWorkflowRuns();
+      // Phase 1C — the intelligence layer's own self-healing, same
+      // opportunistic pattern: forgotten timers close with capped seconds,
+      // expired repeat windows resolve to an honest false, and any task
+      // whose sources moved after its actual gets recomputed.
+      await closeStaleWorkSessions();
+      await closeExpiredRepeatWindows();
+      await recomputeStaleOperationalActuals();
     } catch (e) {
       console.error("[sweeps] operator sweep failed:", e);
     }

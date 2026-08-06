@@ -13,6 +13,8 @@ import { ReleaseButton } from "@/components/va-actions";
 import { AskAdminQuestionForm } from "@/components/ask-admin-question-form";
 import { AssistantWidget } from "@/components/assistant-widget";
 import { HumanPackagePanel } from "@/components/human-package";
+import { WorkSessionTimer } from "@/components/work-session-timer";
+import { openSessionFor } from "@/server/work-sessions";
 import { humanPackageForVa } from "@/lib/queries/execution";
 import {
   Badge,
@@ -38,7 +40,7 @@ export default async function VaTaskPage({
   if (profile?.status !== "approved") redirect("/va");
 
   // The lookups are independent — never pay the waterfall.
-  const [task, settings, lastReview, humanPackage] = await Promise.all([
+  const [task, settings, lastReview, humanPackage, openSession] = await Promise.all([
     taskForVa(id, user.id),
     getSettings(),
     // The operator's most recent note on this worker's deliveries — the only
@@ -52,6 +54,8 @@ export default async function VaTaskPage({
     // narrow query rather than a widening of vaTaskSelect, for the same
     // reason latestPaymentStatusForClient is separate on the client side.
     humanPackageForVa(id, user.id),
+    // Phase 1C — the worker's own open timer, for the panel below.
+    openSessionFor(id, user.id, "worker"),
   ]);
   if (!task) notFound();
 
@@ -195,6 +199,34 @@ export default async function VaTaskPage({
       ) : null}
 
       {humanPackage ? <HumanPackagePanel pkg={humanPackage} /> : null}
+
+      {/* Phase 1C — the visible work timer. Explicit verbs only; nothing
+          else is tracked, and the panel says so to the worker. */}
+      {canDeliver || task.status === "claimed" ? (
+        <div className="mb-4">
+          <WorkSessionTimer
+            taskId={task.id}
+            scope="worker"
+            night
+            initialSession={
+              openSession
+                ? {
+                    id: openSession.id,
+                    status: openSession.status as "active" | "paused",
+                    accumulatedSeconds: openSession.accumulatedSeconds,
+                    lastResumedAt: openSession.lastResumedAt?.toISOString() ?? null,
+                  }
+                : null
+            }
+          />
+          {openSession ? (
+            <p className="mt-2 text-xs text-[#F7F6F3]/70">
+              Your timer is {openSession.status === "active" ? "running" : "paused"} — submitting
+              the delivery closes it at that moment.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {task.files.length > 0 ? (
         <Card tone="night">

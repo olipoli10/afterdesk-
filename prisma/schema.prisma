@@ -512,6 +512,14 @@ model Task {
   workflowRun      TaskWorkflowRun?
   humanWorkPackage TaskHumanWorkPackage?
 
+  // Operational intelligence (Phase 1C) — admin-only, all of it, pinned out
+  // of every client and worker select by price-wall.test.ts.
+  operationalBaseline TaskOperationalBaseline?
+  operationalActual   TaskOperationalActual?
+  workSessions        TaskWorkSession[]
+  qualityReviews      TaskQualityReview[]
+  aiOperations        AiOperation[]
+
   @@index([status])
   @@index([clientId])
   @@index([claimedById])
@@ -602,6 +610,14 @@ model Submission {
   reviewedAt      DateTime?
 
   files File[]
+
+  /// Phase 1C — un enregistrement STRUCTURÉ par passage de QC. Pas de
+  /// @unique sur submissionId : le garde applicatif (updateMany sur
+  /// qcStatus "pending") garantit déjà une décision unique aujourd'hui, et
+  /// une seconde opinion ou un ré-examen sur litige sont des faits qu'on
+  /// voudra journaliser sans migration destructive. reviewSequence suit le
+  /// motif attemptNo ci-dessus.
+  qualityReviews TaskQualityReview[]
 
   @@unique([taskId, attemptNo])
   @@index([qcStatus])
@@ -770,8 +786,22 @@ model AiUsage {
   /// qu'à l'affichage.
   costMicros       Int     @default(0)
 
+  /**
+   * PHASE 1C — the durable-operation attachment. One AiUsage row per
+   * PROVIDER CALL ACTUALLY EMITTED, append-only, NEVER deduplicated: if two
+   * calls were really made and billed, two rows exist and both costs count.
+   * A partial unique index on (operationId, attempt) — SQL-only, WHERE
+   * operationId IS NOT NULL — makes an accidental same-attempt double write
+   * a hard P2002, which is a BUG to surface, never a condition to swallow.
+   * Intake rows predate operations and keep both fields null.
+   */
+  operationId String?
+  operation   AiOperation? @relation(fields: [operationId], references: [id], onDelete: Restrict)
+  attempt     Int?
+
   @@index([userId, createdAt])
   @@index([taskId])
+  @@index([operationId])
 }
 
 // Manual payment tracking history (no payment processing).
@@ -809,6 +839,16 @@ model Payment {
   checkoutSessionId String?       @unique
   status            PaymentStatus @default(pending)
   receivedAt        DateTime?
+  /**
+   * PHASE 1C — what Stripe actually captured, from `amount_received`. Until
+   * now that value was returned by captureStripePayment and thrown away at
+   * the call site. `amountCents` remains what was authorized; the ledger
+   * remains the source of recognized revenue; this column exists for
+   * reconciliation, and a mismatch with amountCents raises
+   * CAPTURE_AMOUNT_MISMATCH on the operational actual. Null for manual
+   * wires and for captures made before this column existed.
+   */
+  capturedAmountCents Int?
   note              String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
@@ -1608,6 +1648,11 @@ model TaskAcceptanceSnapshot {
 
   /// Phase 1B — l'exécution de ce contrat, s'il y en a une.
   workflowRun TaskWorkflowRun?
+
+  /// Phase 1C — les estimations internes figées au même instant que le
+  /// contrat, dans leur propre table : les coûts et marges n'ont rien à
+  /// faire dans un enregistrement dont le rôle est « ce que le client a vu ».
+  operationalBaseline TaskOperationalBaseline?
 }
 
 // ---------- Phase 1B : exécution du plan accepté ----------
@@ -1687,6 +1732,14 @@ model TaskWorkflowRun {
   /// split.exceptions. Les deux alimentent le calcul du résiduel.
   unitsTotal                 Int?
   unitsResolvedAutomatically Int?
+
+  /// PHASE 1C — drafted vs verified, persisted as COLUMNS. Until now the
+  /// distinction lived only as prose inside the human package copy (the
+  /// "0 of 12 already filled in" incident), which made it unqueryable.
+  /// `unitsPrefilled` = rows the machine drafted at all;
+  /// `unitsVerifiedByMachine` = rows that cleared the two-source bar.
+  unitsPrefilled         Int?
+  unitsVerifiedByMachine Int?
 
   /// Coûts RÉELS, en microdollars entiers (1 $ = 1 000 000).
   actualAiCostMicros   Int @default(0)
@@ -1864,4 +1917,501 @@ model TaskHumanWorkPackage {
   createdAt DateTime @default(now())
 
   @@index([taskId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 1C — OPERATIONAL INTELLIGENCE
+//
+// Every model below is ADMIN-ONLY data. None of it is ever projected into a
+// client or worker select; price-wall.test.ts pins the relation names out of
+// every role-shaped query. The three-axis rule that governs the whole layer:
+// the EXECUTION key describes what is done (fragmenting on primitive change
+// is correct), the PRICING and QUALITY policy versions describe how it was
+// priced and graded (changing them must never fragment operational history —
+// they stratify, as columns).
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Same lease/CAS vocabulary as MoneyIntent and TaskWorkflowStepRun — the
+/// third copy of the motif, kept deliberately identical.
+enum AiOperationStatus {
+  reserved
+  running
+  succeeded
+  failed
+  abandoned
+}
+
+enum WorkSessionRole {
+  worker
+  reviewer
+  admin_operator
+}
+
+enum WorkSessionPhase {
+  residual_work
+  qc
+  revision
+  manual_fallback
+}
+
+enum WorkSessionStatus {
+  active
+  paused
+  completed
+  abandoned
+}
+
+enum WorkSessionSource {
+  timer
+  manual_correction
+  system_recovery
+}
+
+enum QualityReviewOutcome {
+  approved
+  revision_required
+  rejected
+}
+
+/// Phase 1C calibration levels — four values, deliberately NOT the Phase-1A
+/// CostCalibration enum (three values): 1C-β bridges pricing onto this one.
+enum CalibrationLevel {
+  uncalibrated
+  early_signal
+  partially_calibrated
+  calibrated
+}
+
+/// Failure provenance, derived in code (outcome-class.ts) with a fixed
+/// precedence. Commercial success rates count all eight classes; technical
+/// reliability excludes the three purely external interruptions
+/// (client_cancelled, admin_cancelled, payment_failure).
+enum TaskOutcomeClass {
+  disputed
+  payment_failure
+  client_cancelled
+  admin_cancelled
+  worker_failure
+  provider_failure
+  workflow_failure
+  workflow_success
+}
+
+enum CalibrationStratumDimension {
+  pricing
+  quality
+}
+
+/**
+ * THE DURABLE RESERVATION for one logical AI operation of the quote
+ * pipeline (classification, plan, critique). Created BEFORE the provider
+ * call, claimed by CAS with a lease, closed FENCED on lockedBy (the
+ * Phase-1B runner lesson: a zombie whose lease expired must never mark the
+ * operation succeeded over its successor). operationKey is deterministic
+ * from what exists before any result does — engine:{taskId}:{runKey}:{stage},
+ * never a count+1.
+ */
+model AiOperation {
+  id     String  @id @default(cuid())
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// classification | planning | critique (intake/assistant have no ops yet)
+  purpose      String
+  operationKey String            @unique
+  status       AiOperationStatus @default(reserved)
+
+  attempts       Int       @default(0)
+  lockedAt       DateTime?
+  /// The fencing token. Every terminal write carries it in the WHERE.
+  lockedBy       String?
+  leaseExpiresAt DateTime?
+  nextAttemptAt  DateTime?
+  lastError      String?
+
+  /// Attached AFTER the business row exists: ("planVersion", cuid). The
+  /// result points back to the operation, never the other way around.
+  resultKind String?
+  resultId   String?
+
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  usages AiUsage[]
+
+  @@index([taskId])
+  @@index([status, nextAttemptAt])
+}
+
+/**
+ * THE INTERNAL BASELINE — the estimates exactly as they existed at
+ * acceptance, before execution rewrites anything (workflow-runs.ts
+ * overwrites Task.estimatedMinutes and vaPayoutCents at handover, so this
+ * row is the only durable record of the quoted pair). Created in the SAME
+ * transaction as TaskAcceptanceSnapshot; immutable by its own Postgres
+ * trigger (a NEW function — no existing trigger is CREATE OR REPLACEd).
+ *
+ * Three provenances, never blended:
+ *  - planned*        — derived from the accepted plan's own steps;
+ *  - estimated*      — the quote as it was actually computed;
+ *  - modeled*AtQuote — catalog constants that entered the price without
+ *                      being in the plan. The flat 20 reviewer minutes of
+ *                      pricing.ts is NOT a plan fact, and naming it as one
+ *                      would make "the plan was wrong" and "the policy
+ *                      ignores the plan" indistinguishable forever.
+ */
+model TaskOperationalBaseline {
+  id         String                 @id @default(cuid())
+  taskId     String                 @unique
+  task       Task                   @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  snapshotId String                 @unique
+  snapshot   TaskAcceptanceSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Restrict)
+
+  planVersionId String?
+  /// For the repeat-window recompute and nothing else. Never rendered.
+  clientId      String
+
+  executionWorkflowKey  String?
+  executionWorkflowHash String?
+  executionKeyVersion   Int
+  pricingPolicyVersion  String
+  qualityPolicyVersion  String
+  costCatalogVersion    String
+
+  categoryId          String?
+  unitsRequested      Int?
+  verificationLevel   String?
+  sensitiveData       Boolean?
+  requiredAccessCount Int?
+
+  // ── From the accepted plan (null when the task was quoted without one) ──
+  plannedWorkerMinutes      Int?
+  plannedReviewerMinutes    Int?
+  plannedAutomatedStepCount Int?
+  plannedHumanStepCount     Int?
+
+  // ── From the quote as computed ──
+  estimatedInternalCostLikelyCents       Int?
+  estimatedInternalCostConservativeCents Int?
+  estimatedWorkerPayoutCents             Int?
+  estimatedWorkerMinutesAtQuote          Int?
+  clientPriceCents                       Int
+
+  // ── Modeled constants that entered the price (catalog, not plan) ──
+  modeledReviewerMinutesAtQuote Int
+  modeledReworkReservePctBps    Int
+  modeledStripeFeePctBps        Int
+  modeledStripeFeeFixedCents    Int
+  modeledTargetMarginBps        Int
+
+  calibrationLevelAtQuote       String?
+  clientPriorCompletedTaskCount Int
+  repeatWindowEndsAt            DateTime
+
+  dataQualityFlags String[]
+  createdAt        DateTime @default(now())
+
+  @@index([clientId, repeatWindowEndsAt])
+  @@index([executionWorkflowKey])
+}
+
+/**
+ * EXPLICIT WORK SESSIONS — the only time measurement in the product. No
+ * keyboard, mouse, screen or activity tracking of any kind: the user
+ * starts, pauses, resumes and stops their own visible timer, timestamps are
+ * server-side, and abandoned sessions are closed by a sweep with capped
+ * seconds rather than silently growing. One OPEN session per
+ * (task, user, role) — a partial unique index in the migration (SQL only:
+ * Prisma cannot express partial uniques, same caveat as the HNSW index).
+ */
+model TaskWorkSession {
+  id            String  @id @default(cuid())
+  taskId        String
+  task          Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workflowRunId String?
+
+  /// Bare string, the editedByAdminId precedent — sessions are telemetry.
+  userId String
+  role   WorkSessionRole
+  phase  WorkSessionPhase
+  status WorkSessionStatus @default(active)
+
+  startedAt     DateTime  @default(now())
+  /// Set on resume; accumulation on pause/stop = now − (lastResumedAt ?? startedAt).
+  lastResumedAt DateTime?
+  endedAt       DateTime?
+
+  accumulatedSeconds Int               @default(0)
+  source             WorkSessionSource @default(timer)
+  attemptNo          Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+  @@index([userId, status])
+}
+
+/**
+ * ONE STRUCTURED RECORD PER QC PASS. Raw counts by severity — no composite
+ * score in 1C-α, so no critical error can ever hide behind a 95%.
+ * reviewSequence follows the Submission.attemptNo motif; today the
+ * application guard (updateMany on qcStatus "pending") makes it always 1,
+ * and a future second opinion or dispute re-examination appends rather than
+ * overwrites. rubricVersion IS the quality policy version.
+ */
+model TaskQualityReview {
+  id            String     @id @default(cuid())
+  taskId        String
+  task          Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workflowRunId String?
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  reviewSequence Int
+  /// Bare string (editedByAdminId precedent). The reviewer IS an admin
+  /// today — Role has no REVIEWER; the plan-side enum is pre-provisioned.
+  reviewerId     String
+  attemptNo      Int
+  rubricVersion  String
+  outcome        QualityReviewOutcome
+
+  totalUnits        Int?
+  unitsChecked      Int?
+  unitsCorrect      Int?
+  unitsIncomplete   Int?
+  unitsUnverifiable Int?
+
+  criticalErrorCount       Int @default(0)
+  majorErrorCount          Int @default(0)
+  minorErrorCount          Int @default(0)
+  duplicateCount           Int @default(0)
+  invalidSourceCount       Int @default(0)
+  missingSourceCount       Int @default(0)
+  formattingErrorCount     Int @default(0)
+  correctedByReviewerCount Int @default(0)
+
+  /// Validated by the SAME zod schemas as Submission.deliveryMetrics.
+  categoryMetrics Json?
+  reviewerNotes   String?
+  createdAt       DateTime @default(now())
+
+  @@unique([submissionId, reviewSequence])
+  @@index([taskId])
+  @@index([reviewerId])
+}
+
+/**
+ * THE CURRENT PROJECTION of a task's estimated-vs-actual record. Entirely
+ * recomputable from source tables; upserted under a per-task advisory lock;
+ * every significant change leaves an append-only
+ * operational_actual_recomputed TaskEvent with before/after hashes — the
+ * projection can be overwritten, the history of WHY it changed cannot.
+ *
+ * ALL MONEY AGGREGATES ARE BigInt: Prisma Int is 32-bit signed and
+ * 2 147 483 647 micros is only $2,147.48 — a $500 payout in micros already
+ * overflows it. Costs are named by PROVENANCE (booked / metered / modeled);
+ * nothing here may ever be labeled a "real" reconciled provider cost.
+ */
+model TaskOperationalActual {
+  id     String @id @default(cuid())
+  taskId String @unique
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  snapshotId            String?
+  workflowRunId         String?
+  executionWorkflowKey  String?
+  executionWorkflowHash String?
+  pricingPolicyVersion  String?
+  qualityPolicyVersion  String?
+
+  outcomeClass TaskOutcomeClass?
+  deliveredAt  DateTime?
+
+  executionStartedAt      DateTime?
+  executionFinishedAt     DateTime?
+  automatedElapsedSeconds Int?
+  workerActiveSeconds     Int?
+  reviewerActiveSeconds   Int?
+  revisionActiveSeconds   Int?
+
+  unitsRequested             Int?
+  unitsDiscovered            Int?
+  unitsPrefilled             Int?
+  unitsResolvedAutomatically Int?
+  unitsSentToHuman           Int?
+  unitsResolvedByHuman       Int?
+  unitsUnresolved            Int?
+  unitsCorrectedByReviewer   Int?
+  automatedUnitRateBps       Int?
+  exceptionRateBps           Int?
+
+  // ── metered: measured quantity × OUR tariff table — not a bill ──
+  aiCostMeteredMicros   BigInt @default(0)
+  toolCostMeteredMicros BigInt @default(0)
+
+  // ── modeled: assumptions, flagged on dataQualityFlags ──
+  reviewerLaborModeledFromMeasuredTimeMicros BigInt?
+  paymentFeeModeledMicros                    BigInt?
+
+  // ── booked: real obligations recorded in our own tables ──
+  workerPayoutCurrentLiabilityCents Int @default(0)
+  workerPayoutPaidCents             Int @default(0)
+  workerPayoutVoidedCents           Int @default(0)
+  /// liability + paid. NOT a historical cumulative — amounts can be
+  /// re-armed in place; history lives in payout_amount_rearmed events.
+  workerPayoutNetIncurredCents      Int @default(0)
+
+  bookedAndMeteredCostMicros BigInt @default(0)
+  modeledCostAddonMicros     BigInt @default(0)
+  allInCostWithModeledMicros BigInt @default(0)
+
+  /// Null until money was actually received. An authorization is NOT revenue.
+  recognizedRevenueMicros BigInt?
+
+  grossMarginBookedMeteredMicros BigInt?
+  grossMarginBookedMeteredBps    Int?
+  grossMarginAllInModeledMicros  BigInt?
+  grossMarginAllInModeledBps     Int?
+  costVarianceMicros             BigInt?
+
+  revisionRounds                  Int?
+  passedQcFirstAttempt            Boolean?
+  criticalErrorCount              Int?
+  totalErrorCount                 Int?
+  disputeOpened                   Boolean  @default(false)
+  clientRevisionRequested         Boolean  @default(false)
+  /// Revealed preference, NEVER labeled satisfaction: delivered, zero
+  /// corrections asked, no dispute, window expired.
+  clientAcceptedWithoutCorrection Boolean?
+  /// Tri-state with honest censoring: null while the 90-day window is open.
+  repeatWithin90Days              Boolean?
+
+  eligibleForReliabilityStatistics         Boolean @default(false)
+  eligibleForCostAndPerformanceCalibration Boolean @default(false)
+  eligibleForMarginStatistics              Boolean @default(false)
+
+  metricsCompletenessBps Int      @default(0)
+  dataQualityFlags       String[]
+
+  /// The cheap aggregate snapshot of every mutable source, re-taken under
+  /// the advisory lock — counts alone cannot see an in-place mutation.
+  inputFingerprint   String
+  computedAt         DateTime
+  computationVersion Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([executionWorkflowKey])
+  @@index([outcomeClass])
+}
+
+/**
+ * THE DERIVED PROFILE per execution workflow key — fully rebuilt on every
+ * recompute, never incremental, so it can never diverge from the actuals.
+ * Cost/performance distributions POOL across policy versions (a token costs
+ * what it costs); QC metrics and estimate-variances live in the STRATA
+ * table, per policy version. Recommendations read the ACTIVE policy's
+ * stratum only and go null rather than fall back on pooled numbers.
+ */
+model WorkflowCalibrationProfile {
+  id                    String  @id @default(cuid())
+  executionWorkflowKey  String  @unique
+  executionWorkflowHash String
+  executionKeyVersion   Int
+  categoryId            String?
+  primitiveSignature    String
+
+  sampleSizeReliability    Int @default(0)
+  sampleSizeCostPerf       Int @default(0)
+  sampleSizeMargin         Int @default(0)
+  sampleSizeRepeatResolved Int @default(0)
+  sampleSizeRecent         Int @default(0)
+
+  calibrationLevel       CalibrationLevel @default(uncalibrated)
+  metricsCompletenessBps Int?
+
+  commercialSuccessRateBps    Int?
+  technicalReliabilityRateBps Int?
+  firstPassQcRateBps          Int?
+  disputeRateBps              Int?
+  revisionRateBps             Int?
+  criticalErrorRateBps        Int?
+  noCorrectionRateBps         Int?
+  repeatWithin90dRateBps      Int?
+
+  medianAutomatedUnitRateBps Int?
+  p25AutomatedUnitRateBps    Int?
+  p75AutomatedUnitRateBps    Int?
+  medianExceptionRateBps     Int?
+
+  medianAiCostPerUnitMicros   BigInt?
+  p75AiCostPerUnitMicros      BigInt?
+  medianToolCostPerUnitMicros BigInt?
+
+  medianWorkerSecondsPerException Int?
+  p75WorkerSecondsPerException    Int?
+  medianReviewerSecondsPerUnit    Int?
+
+  medianAllInCostMicros BigInt?
+  p25AllInCostMicros    BigInt?
+  p75AllInCostMicros    BigInt?
+  p90AllInCostMicros    BigInt?
+
+  medianGrossMarginAllInBps Int?
+  p25GrossMarginAllInBps    Int?
+
+  /// Per-outcome-class counts, closed vocabulary — survivorship bias made
+  /// visible instead of filtered out.
+  outcomeCounts Json?
+
+  pricingPolicyVersions String[]
+  qualityPolicyVersions String[]
+
+  driftFlags                String[]
+  recommendation            Json?
+  recommendationGeneratedAt DateTime?
+
+  lastExecutionAt    DateTime?
+  lastComputedAt     DateTime
+  computationVersion Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  strata WorkflowCalibrationStratum[]
+
+  @@index([calibrationLevel])
+}
+
+/// Policy-stratified metrics: dimension "quality" per rubric version,
+/// dimension "pricing" per pricing policy version. Typed columns, no
+/// generic key-value blob for the load-bearing numbers.
+model WorkflowCalibrationStratum {
+  id            String                      @id @default(cuid())
+  profileId     String
+  profile       WorkflowCalibrationProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  dimension     CalibrationStratumDimension
+  policyVersion String
+  n             Int
+
+  // quality dimension
+  firstPassQcRateBps    Int?
+  criticalErrorRateBps  Int?
+  revisionRateBps       Int?
+  errorCountsBySeverity Json?
+
+  // pricing dimension — estimate-vs-actual only makes sense within one
+  // policy, plus the cost distribution the recommendation prices from.
+  medianCostVarianceBps   Int?
+  medianPayoutVarianceBps Int?
+  allInCostP75Micros      BigInt?
+  allInCostP90Micros      BigInt?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([profileId, dimension, policyVersion])
 }
