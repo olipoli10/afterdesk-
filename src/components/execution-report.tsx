@@ -95,9 +95,23 @@ export function ExecutionReportCard({ report }: { report: ExecutionReport }) {
                 </div>
               ))}
             </dl>
+            {/* ATTRIBUTED, in both sentences, on purpose. The earlier wording
+                said the figures were "checked by our reviewer" and that a
+                field marked unavailable "was searched for and is not published
+                anywhere". Neither is enforced: approveDeliverable requires a
+                rating and the identity attestation, not a check of the
+                numbers, and nothing in this product consults a public source.
+                qcChecks exists precisely because a reviewer cannot verify that
+                a search happened. Only the release gate is a code guarantee,
+                so only the release gate is stated flatly. */}
             <p className="mt-2 text-xs leading-relaxed text-[#5B6069]">
-              Reported by the specialist and checked by our reviewer before release. A field
-              marked unavailable was searched for and is not published anywhere.
+              These are the specialist&apos;s own figures for the work, published only after
+              our reviewer approved the delivery.
+              {report.metricsFromRevision ? (
+                <> They describe the revised version you now have.</>
+              ) : null}{" "}
+              A field marked unavailable is one they searched for and reported as not
+              publicly available.
             </p>
           </div>
         ) : null}

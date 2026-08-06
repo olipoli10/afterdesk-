@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma, type PaymentStatus } from "@prisma/client";
+import { Prisma, type PaymentStatus, type TaskStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { formatMetricsForClient, type MetricRow } from "@/lib/delivery-metrics";
 import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";
@@ -723,6 +723,14 @@ export type ExecutionReport = {
    * property added to the JSON later cannot surface here by default.
    */
   metrics: MetricRow[] | null;
+  /**
+   * True when the figures come from a delivery that passed AFTER a revision,
+   * not from the one the headline describes. Without this the card can read
+   * "Passed our review on the first delivery" directly above numbers from a
+   * later, revised version, and both sentences are individually true while
+   * the pairing misleads.
+   */
+  metricsFromRevision: boolean;
   /** The written standard the delivery was judged against, if the category has one. */
   standard: string | null;
   categoryName: string | null;
@@ -767,14 +775,36 @@ const QC_SENT_BACK = new Set(["admin_qc_rejected", "admin_qc_rejected_exhausted"
 export function executionSummary(rows: { action: string }[]): {
   sentBack: number;
   passed: boolean;
+  approvals: number;
 } {
   const firstPass = rows.findIndex((r) => r.action === "admin_qc_approved");
   const beforeFirstPass = firstPass === -1 ? rows : rows.slice(0, firstPass);
   return {
     sentBack: beforeFirstPass.filter((r) => QC_SENT_BACK.has(r.action)).length,
     passed: firstPass !== -1,
+    // More than one approval means the client asked for a revision after
+    // delivery and the revised version passed too. The headline describes the
+    // FIRST pass; the figures describe the version the client actually holds,
+    // which is the latest. Both are true and they are about different
+    // deliveries, so the card has to say which is which.
+    approvals: rows.filter((r) => r.action === "admin_qc_approved").length,
   };
 }
+
+/**
+ * Task states in which an approved delivery still stands.
+ *
+ * `passed` alone answers "was this ever approved", which is not the same
+ * question as "does that approval still hold". decideDispute's upheld branch
+ * (admin-resolutions.ts) cancels the task, voids the payout and refunds the
+ * client, but never touches the Submission row or the audit event, so a
+ * refunded task would otherwise keep showing "Passed our review" with the
+ * delivery figures directly above "Your payment was refunded". Same for a
+ * task sent back into rework: the operator has formally found the delivery
+ * deficient, and its numbers must not stay on the client's page while it is
+ * being redone.
+ */
+export const APPROVAL_STANDS: TaskStatus[] = ["completed"];
 
 export async function executionReportForClient(
   taskId: string,
@@ -784,7 +814,11 @@ export async function executionReportForClient(
   // cross-client read is possible even with a guessed task id.
   const task = await prisma.task.findFirst({
     where: { id: taskId, clientId },
-    select: { id: true, category: { select: { name: true, disputeCriteria: true } } },
+    select: {
+      id: true,
+      status: true,
+      category: { select: { name: true, disputeCriteria: true } },
+    },
   });
   if (!task) return null;
 
@@ -806,15 +840,22 @@ export async function executionReportForClient(
    *  (2) The Submission row is filtered on qcStatus "approved" — the same
    *      filter clientTaskSelect.submissions already applies to the files.
    *
-   * Either gate missing means no numbers at all. A pending, superseded or
+   *  (3) The task must still be in a state where that approval stands. See
+   *      APPROVAL_STANDS: an upheld dispute cancels and refunds without ever
+   *      revoking the submission, so gates (1) and (2) both keep passing on a
+   *      task the operator has already ruled against.
+   *
+   * Any gate missing means no numbers at all. A pending, superseded or
    * rejected attempt's claim must never reach the client: an inflated count on
    * a delivery that got sent back is precisely what QC exists to catch, and
    * publishing it would turn the proof card into the vehicle for the lie.
    */
   let metrics: MetricRow[] | null = null;
-  if (summary.passed) {
+  if (summary.passed && APPROVAL_STANDS.includes(task.status)) {
     const approved = await prisma.submission.findFirst({
       where: approvedSubmissionMetricsWhere(taskId),
+      // The latest approval, because that is the version the client actually
+      // holds. When it is not the first, the card says so.
       orderBy: { reviewedAt: "desc" },
       select: { deliveryMetrics: true },
     });
@@ -823,8 +864,10 @@ export async function executionReportForClient(
 
   return {
     entries: clientTimelineEntries(rows),
-    ...summary,
+    sentBack: summary.sentBack,
+    passed: summary.passed,
     metrics,
+    metricsFromRevision: metrics !== null && summary.approvals > 1,
     standard: task.category?.disputeCriteria ?? null,
     categoryName: task.category?.name ?? null,
   };

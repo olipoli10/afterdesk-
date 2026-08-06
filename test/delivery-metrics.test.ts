@@ -15,7 +15,11 @@ import {
   researchMetricsSchema,
   type MetricsCategory,
 } from "@/lib/delivery-metrics";
-import { approvedSubmissionMetricsWhere, executionSummary } from "@/lib/queries/tasks";
+import {
+  APPROVAL_STANDS,
+  approvedSubmissionMetricsWhere,
+  executionSummary,
+} from "@/lib/queries/tasks";
 
 /**
  * RULE 1 net for the CONTENT half of the execution report.
@@ -338,6 +342,41 @@ describe("delivery metrics — never visible before the delivery passed review",
     expect(executionSummary(a("va_submitted_deliverable", "admin_qc_rejected")).passed).toBe(
       false
     );
+  });
+
+  it("counts approvals, so a revised delivery can be told apart from the first", () => {
+    // The headline is about the first pass; the figures are about the version
+    // the client holds. When those are different deliveries the card says so.
+    expect(executionSummary(a("admin_qc_approved")).approvals).toBe(1);
+    expect(
+      executionSummary(
+        a("admin_qc_approved", "client_requested_revision", "admin_qc_approved")
+      )
+    ).toEqual({ sentBack: 0, passed: true, approvals: 2 });
+  });
+
+  it("an approval that no longer stands must not keep publishing figures", () => {
+    // decideDispute's upheld branch cancels the task, voids the payout and
+    // refunds the client, but never revokes the Submission or the audit event
+    // (verified: admin-resolutions.ts contains no submission write). So both
+    // the passed gate and the approved filter keep saying yes on a task the
+    // operator already ruled against. Only the task's CURRENT status can tell
+    // "was this ever approved" apart from "does that approval still hold".
+    expect(APPROVAL_STANDS).toEqual(["completed"]);
+    for (const status of [
+      "cancelled", // dispute upheld, client refunded
+      "disputed", // dispute open, undecided
+      "revision_requested", // operator ordered rework
+      "submitted_for_qc", // the revision is back under review
+      "qc_rejected",
+      "open",
+      "claimed",
+    ]) {
+      expect(
+        APPROVAL_STANDS.includes(status as (typeof APPROVAL_STANDS)[number]),
+        `${status} must not publish delivery figures`
+      ).toBe(false);
+    }
   });
 
   it("the passed gate and the submission filter are independent", () => {

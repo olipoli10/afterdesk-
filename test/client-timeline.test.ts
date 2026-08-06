@@ -160,7 +160,7 @@ describe("RULE 1 — the client execution report", () => {
       // The bug: sentBack=1 with zero approvals used to print "before it
       // passed our review" while the page above said "Work is underway".
       const s = executionSummary(a("va_submitted_deliverable", "admin_qc_rejected"));
-      expect(s).toEqual({ sentBack: 1, passed: false });
+      expect(s).toEqual({ sentBack: 1, passed: false, approvals: 0 });
     });
 
     it("does not count a reassignment as a reviewer sending work back", () => {
@@ -171,7 +171,7 @@ describe("RULE 1 — the client execution report", () => {
         a("va_claimed", "va_submitted_deliverable", "admin_reassigned", "va_claimed",
           "va_submitted_deliverable", "admin_qc_approved")
       );
-      expect(s).toEqual({ sentBack: 0, passed: true });
+      expect(s).toEqual({ sentBack: 0, passed: true, approvals: 1 });
     });
 
     it("counts only send-backs that happened BEFORE the work first passed", () => {
@@ -182,22 +182,23 @@ describe("RULE 1 — the client execution report", () => {
         a("admin_qc_rejected", "admin_qc_approved", "client_requested_revision",
           "va_submitted_deliverable", "admin_qc_rejected", "admin_qc_approved")
       );
-      expect(s).toEqual({ sentBack: 1, passed: true });
+      expect(s).toEqual({ sentBack: 1, passed: true, approvals: 2 });
     });
 
     it("counts an exhausted-rounds send-back, which is still a reviewer saying no", () => {
       const s = executionSummary(
         a("admin_qc_rejected", "admin_qc_rejected_exhausted", "admin_qc_approved")
       );
-      expect(s).toEqual({ sentBack: 2, passed: true });
+      expect(s).toEqual({ sentBack: 2, passed: true, approvals: 1 });
     });
 
     it("a task that never reached review has nothing to report", () => {
       expect(executionSummary(a("client_submitted", "admin_quoted"))).toEqual({
         sentBack: 0,
         passed: false,
+        approvals: 0,
       });
-      expect(executionSummary([])).toEqual({ sentBack: 0, passed: false });
+      expect(executionSummary([])).toEqual({ sentBack: 0, passed: false, approvals: 0 });
     });
   });
 
