@@ -5,19 +5,40 @@ import { cancelStripeAuthorization, captureStripePayment, refundStripePayment } 
 
 const MAX_ATTEMPTS = 5;
 
+/**
+ * How long a runner may hold an intent before another one may take it over.
+ * Generous relative to a Stripe round trip, because taking an intent away
+ * from a runner that is merely slow would double-call the provider; Stripe
+ * deduplicates on our idempotency key, but the window should still be rare.
+ */
+const LEASE_MS = 5 * 60 * 1000;
+
 export async function processMoneyIntents(): Promise<{
   completed: number;
   failed: number;
   manual: number;
+  recovered: number;
 }> {
+  const now = new Date();
+  /**
+   * The recovery half of the WHERE clause is the fix for a real defect: this
+   * query used to select only `queued` and `failed`, so an intent moved to
+   * `processing` by a runner that then crashed was invisible to every
+   * subsequent run — stranded forever, with no alert and no operator signal.
+   * A `processing` row whose lease has expired is now reclaimable.
+   */
   const intents = await prisma.moneyIntent.findMany({
     where: {
-      status: { in: ["queued", "failed"] },
       attempts: { lt: MAX_ATTEMPTS },
+      OR: [
+        { status: { in: ["queued", "failed"] } },
+        { status: "processing", leaseExpiresAt: { lt: now } },
+      ],
     },
     orderBy: { createdAt: "asc" },
     take: 25,
   });
+  let recovered = 0;
   let completed = 0;
   let failed = 0;
   let manual = 0;
@@ -30,15 +51,27 @@ export async function processMoneyIntents(): Promise<{
       continue;
     }
 
+    // The claim repeats the same predicate as the selection, so two runners
+    // racing on the same expired lease cannot both win it.
     const claimed = await prisma.moneyIntent.updateMany({
       where: {
         id: intent.id,
-        status: { in: ["queued", "failed"] },
         attempts: { lt: MAX_ATTEMPTS },
+        OR: [
+          { status: { in: ["queued", "failed"] } },
+          { status: "processing", leaseExpiresAt: { lt: new Date() } },
+        ],
       },
-      data: { status: "processing", attempts: { increment: 1 }, lastError: null },
+      data: {
+        status: "processing",
+        attempts: { increment: 1 },
+        lastError: null,
+        lockedAt: new Date(),
+        leaseExpiresAt: new Date(Date.now() + LEASE_MS),
+      },
     });
     if (claimed.count === 0) continue;
+    if (intent.status === "processing") recovered++;
 
     try {
       if (intent.kind === "void_payout") {
@@ -251,10 +284,15 @@ export async function processMoneyIntents(): Promise<{
         data: {
           status: "failed",
           lastError: error instanceof Error ? error.message.slice(0, 1000) : "Unknown error",
+          // Released explicitly: a `failed` row is retryable on its status
+          // alone, and leaving a stale lease on it would misread as "someone
+          // is working on this" to anyone looking at the table.
+          lockedAt: null,
+          leaseExpiresAt: null,
         },
       });
     }
   }
 
-  return { completed, failed, manual };
+  return { completed, failed, manual, recovered };
 }

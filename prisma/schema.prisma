@@ -814,7 +814,20 @@ model MoneyIntent {
   processedAt    DateTime?
   createdAt      DateTime          @default(now())
 
+  /// BAIL. processMoneyIntents ne sélectionnait que les lignes `queued` ou
+  /// `failed` : une ligne passée en `processing` par un runner qui plantait
+  /// ensuite restait bloquée POUR TOUJOURS — invisible à toutes les
+  /// exécutions suivantes, sans alerte et sans reprise possible.
+  ///
+  /// Le bail borne cette indisponibilité : une ligne `processing` dont le
+  /// bail est expiré redevient réclamable. Le rejeu reste sûr côté
+  /// fournisseur parce que chaque appel Stripe passe `idempotencyKey`, sur
+  /// laquelle Stripe déduplique.
+  leaseExpiresAt DateTime?
+  lockedAt       DateTime?
+
   @@index([status, createdAt])
+  @@index([leaseExpiresAt])
 }
 
 model Dispute {
