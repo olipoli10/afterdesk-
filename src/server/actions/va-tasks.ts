@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireApprovedVa } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
+import { metricsSchemaFor } from "@/lib/delivery-metrics";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
 
 export type VaActionResult = { ok: true } | { ok: false; error: string };
@@ -243,6 +244,11 @@ const submitDeliverableSchema = z.object({
   taskId: z.string(),
   note: z.string().trim().max(4000).optional(),
   fileIds: z.array(z.string()).max(20).default([]),
+  /**
+   * Shape-checked INSIDE the transaction against the task's own category, not
+   * here: the payload cannot be trusted to name which schema should judge it.
+   */
+  metrics: z.unknown().optional(),
 });
 
 /**
@@ -255,7 +261,7 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
   const user = await requireApprovedVa();
   const parsed = submitDeliverableSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid submission." };
-  const { taskId, note, fileIds } = parsed.data;
+  const { taskId, note, fileIds, metrics } = parsed.data;
 
   if (fileIds.length === 0 && !note?.trim()) {
     return { ok: false, error: "Attach the finished work, or write your answer in the note." };
@@ -265,7 +271,12 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
     await prisma.$transaction(async (tx) => {
       const task = await tx.task.findFirst({
         where: { id: taskId, claimedById: user.id },
-        select: { status: true, revisionInstructions: true, title: true },
+        select: {
+          status: true,
+          revisionInstructions: true,
+          title: true,
+          category: { select: { slug: true } },
+        },
       });
       if (!task) throw new Refused("Task not found.");
       if (!["claimed", "qc_rejected", "revision_requested"].includes(task.status)) {
@@ -273,6 +284,30 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
       }
       if (task.status === "revision_requested" && !task.revisionInstructions) {
         throw new Refused("The operator is still preparing the revision instructions.");
+      }
+
+      /**
+       * Delivery metrics, for the two categories that have a shape. Judged
+       * against the TASK's category read above, never against whatever
+       * category the submitted blob claims to be, so a worker cannot pick the
+       * laxer of the two schemas by relabelling their payload.
+       *
+       * A category with no schema stores nothing, and rejects a payload that
+       * tries anyway: silently dropping it would let a worker believe they had
+       * reported numbers the client will never see.
+       */
+      const metricsSchema = metricsSchemaFor(task.category?.slug);
+      let deliveryMetrics: Prisma.InputJsonValue | undefined;
+      if (metricsSchema) {
+        const checked = metricsSchema.safeParse(metrics);
+        if (!checked.success) {
+          throw new Refused(
+            checked.error.issues[0]?.message ?? "Check the delivery numbers and try again."
+          );
+        }
+        deliveryMetrics = checked.data;
+      } else if (metrics !== undefined) {
+        throw new Refused("This task does not take delivery numbers.");
       }
 
       // Anything still pending is superseded by this delivery, so the QC queue
@@ -293,6 +328,7 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
           vaId: user.id,
           attemptNo: previous + 1,
           note: note?.trim() || null,
+          ...(deliveryMetrics ? { deliveryMetrics } : {}),
         },
       });
 
@@ -359,5 +395,8 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
   revalidatePath("/va");
   revalidatePath(`/va/tasks/${taskId}`);
   revalidatePath("/admin/qc");
+  // The reviewer's own detail page now carries the delivery numbers, so a
+  // re-delivery has to invalidate it too, not just the queue listing.
+  revalidatePath(`/admin/qc/${taskId}`);
   return { ok: true };
 }

@@ -1,6 +1,7 @@
 import "server-only";
-import { Prisma } from "@prisma/client";
+import { Prisma, type PaymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { formatMetricsForClient, type MetricRow } from "@/lib/delivery-metrics";
 import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";
 
 /**
@@ -83,6 +84,26 @@ export async function taskForClient(
     where: { id: taskId, clientId },
     select: clientTaskSelect,
   });
+}
+
+/**
+ * The single field the "cancelled" panel needs to tell a client the truth
+ * about their money. Deliberately a separate narrow query rather than an
+ * addition to clientTaskSelect above: that select is the RULE 2 security
+ * boundary and price-wall.test.ts pins its shape, so it is not the place to
+ * grow an ad-hoc field for one panel. Ownership is enforced in the WHERE
+ * clause, same pattern as taskForClient.
+ */
+export async function latestPaymentStatusForClient(
+  taskId: string,
+  clientId: string
+): Promise<PaymentStatus | null> {
+  const payment = await prisma.payment.findFirst({
+    where: { taskId, task: { clientId } },
+    orderBy: { createdAt: "desc" },
+    select: { status: true },
+  });
+  return payment?.status ?? null;
 }
 
 // ---------- VA ----------
@@ -696,10 +717,25 @@ export type ExecutionReport = {
   sentBack: number;
   /** True once a delivery has actually cleared review. */
   passed: boolean;
+  /**
+   * Pre-formatted label/value pairs from the approved delivery, or null. Never
+   * raw stored data: formatMetricsForClient is an allowlist projection, so a
+   * property added to the JSON later cannot surface here by default.
+   */
+  metrics: MetricRow[] | null;
   /** The written standard the delivery was judged against, if the category has one. */
   standard: string | null;
   categoryName: string | null;
 };
+
+/**
+ * Pinned as a named const so a test can assert the filter itself. Changing
+ * "approved" to "pending" here would publish an unreviewed worker's claims to
+ * the paying client, and no fixture-driven test would necessarily catch it.
+ */
+export function approvedSubmissionMetricsWhere(taskId: string) {
+  return { taskId, qcStatus: "approved" as const };
+}
 
 /** Written only by rejectDeliverable, which is a real reviewer decision. */
 const QC_SENT_BACK = new Set(["admin_qc_rejected", "admin_qc_rejected_exhausted"]);
@@ -752,17 +788,43 @@ export async function executionReportForClient(
   });
   if (!task) return null;
 
-  // One read. The Submission table is deliberately NOT consulted: see
-  // executionSummary for why every count it could offer is wrong here.
+  // The counts come from here and nowhere else: see executionSummary for why
+  // every number the Submission table could offer is wrong.
   const rows = await prisma.taskEvent.findMany({
     where: { taskId },
     select: clientTimelineEventSelect,
     orderBy: { createdAt: "asc" },
   });
+  const summary = executionSummary(rows);
+
+  /**
+   * TWO INDEPENDENT GATES on the delivery numbers, and they are not redundant.
+   *
+   *  (1) summary.passed requires an admin_qc_approved event in the audit log.
+   *      It is the same source the headline above the numbers reads, so the
+   *      figures and the sentence can never disagree with each other.
+   *  (2) The Submission row is filtered on qcStatus "approved" — the same
+   *      filter clientTaskSelect.submissions already applies to the files.
+   *
+   * Either gate missing means no numbers at all. A pending, superseded or
+   * rejected attempt's claim must never reach the client: an inflated count on
+   * a delivery that got sent back is precisely what QC exists to catch, and
+   * publishing it would turn the proof card into the vehicle for the lie.
+   */
+  let metrics: MetricRow[] | null = null;
+  if (summary.passed) {
+    const approved = await prisma.submission.findFirst({
+      where: approvedSubmissionMetricsWhere(taskId),
+      orderBy: { reviewedAt: "desc" },
+      select: { deliveryMetrics: true },
+    });
+    metrics = formatMetricsForClient(approved?.deliveryMetrics ?? null);
+  }
 
   return {
     entries: clientTimelineEntries(rows),
-    ...executionSummary(rows),
+    ...summary,
+    metrics,
     standard: task.category?.disputeCriteria ?? null,
     categoryName: task.category?.name ?? null,
   };

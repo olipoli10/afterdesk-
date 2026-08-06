@@ -79,6 +79,29 @@ export function ExecutionReportCard({ report }: { report: ExecutionReport }) {
           </div>
         ) : null}
 
+        {/* Above the fold on purpose: this is the substance the card was
+            missing, not a detail. It is only ever populated for a delivery
+            that actually passed review, gated twice in the query. */}
+        {report.metrics ? (
+          <div className="mt-3 rounded-[4px] bg-[#14161A]/[0.02] px-3 py-2.5">
+            <p className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[#5B6069]">
+              What was covered
+            </p>
+            <dl className="mt-1.5 divide-y divide-[#14161A]/[0.06] text-sm">
+              {report.metrics.map((r) => (
+                <div key={r.label} className="flex items-baseline justify-between gap-3 py-1.5">
+                  <dt className="text-[#5B6069]">{r.label}</dt>
+                  <dd className="shrink-0 font-mono tabular-nums text-[#14161A]">{r.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-2 text-xs leading-relaxed text-[#5B6069]">
+              Reported by the specialist and checked by our reviewer before release. A field
+              marked unavailable was searched for and is not published anywhere.
+            </p>
+          </div>
+        ) : null}
+
         <details className="group mt-3 border-t border-[#14161A]/[0.06] pt-3">
           <summary className="-mx-1 cursor-pointer list-none px-1 py-1 text-sm font-medium text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]/30">
             <span className="underline decoration-[#14161A]/25 underline-offset-4 group-open:decoration-transparent">

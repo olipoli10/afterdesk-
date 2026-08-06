@@ -218,6 +218,7 @@ export default async function VaTaskPage({
       {canDeliver ? (
         <DeliverableForm
           taskId={task.id}
+          categorySlug={task.category?.slug ?? null}
           maxFileSizeMB={settings.maxFileSizeMB}
           maxFiles={settings.maxFilesPerTask}
           allowedExtensions={settings.allowedExtensions}
