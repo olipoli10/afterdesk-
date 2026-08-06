@@ -540,6 +540,16 @@ model Submission {
   va          User      @relation(fields: [vaId], references: [id], onDelete: Restrict)
   attemptNo   Int
   note        String?
+  /**
+   * Closed-schema delivery metrics, hardcoded per category in
+   * src/lib/delivery-metrics.ts and validated by zod on write AND on read.
+   * Integers and fixed enums only, never free text: unlike `note`, this is
+   * shown to the paying client once the delivery has been approved, so the
+   * RULE 1 argument that keeps `note` unprojected has to be structural here.
+   * NULL means the category has no metrics schema, or the delivery predates
+   * this column. An empty object would read as "zero records handled".
+   */
+  deliveryMetrics Json?
   qcStatus    QcStatus  @default(pending)
   qcComment   String?
   rating      Int? // 1-5, set at QC approval

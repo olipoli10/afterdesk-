@@ -1,0 +1,31 @@
+-- Le rapport d'exécution client montre le PROCESSUS (combien de fois la
+-- livraison a été renvoyée, à quelle heure chaque étape s'est produite, contre
+-- quel standard écrit) mais rien sur le CONTENU livré. Le client payant n'a
+-- donc aucun chiffre vérifiable : combien d'enregistrements ont réellement été
+-- traités, combien de champs ont été trouvés, combien ont été marqués
+-- indisponibles après une vraie recherche — soit exactement ce que les deux
+-- disputeCriteria disent qu'on adjuge.
+--
+-- Le seul canal existant était Submission.note, du texte libre écrit par le
+-- travailleur à l'opérateur. Ce champ n'est délibérément PAS projeté dans
+-- clientTaskSelect : du texte libre peut porter un nom ou une invitation à
+-- prendre contact directement, ce qui casserait la RÈGLE 1. On ne pouvait donc
+-- pas s'en servir, et il fallait un second canal, de forme fermée.
+--
+-- D'où cette colonne : un objet JSON dont la forme est figée dans le code
+-- (src/lib/delivery-metrics.ts), validée par zod à l'écriture ET à la lecture,
+-- et qui ne contient que des entiers et des énumérations fermées. Aucune
+-- chaîne libre ne peut y entrer, donc aucune chaîne libre ne peut en sortir
+-- vers le client.
+--
+-- JSONB et non deux tables : deux catégories seulement (research,
+-- list-building) ont un schéma, et ce codebase fige déjà ce genre de contenu
+-- dans un fichier typé plutôt que dans une table configurable — voir
+-- disputeCriteria et le contenu de l'Académie.
+--
+-- Nullable, sans DEFAULT : NULL veut dire « cette catégorie n'a pas de
+-- métriques » ou « livraison antérieure à cette fonctionnalité ». Un objet
+-- vide par défaut se lirait comme « zéro enregistrement traité », une
+-- affirmation fausse sur toutes les livraisons déjà en base.
+ALTER TABLE "Submission"
+  ADD COLUMN IF NOT EXISTS "deliveryMetrics" JSONB;

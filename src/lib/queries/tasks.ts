@@ -1,6 +1,7 @@
 import "server-only";
-import { Prisma } from "@prisma/client";
+import { Prisma, type PaymentStatus, type TaskStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { formatMetricsForClient, type MetricRow } from "@/lib/delivery-metrics";
 import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";
 
 /**
@@ -83,6 +84,26 @@ export async function taskForClient(
     where: { id: taskId, clientId },
     select: clientTaskSelect,
   });
+}
+
+/**
+ * The single field the "cancelled" panel needs to tell a client the truth
+ * about their money. Deliberately a separate narrow query rather than an
+ * addition to clientTaskSelect above: that select is the RULE 2 security
+ * boundary and price-wall.test.ts pins its shape, so it is not the place to
+ * grow an ad-hoc field for one panel. Ownership is enforced in the WHERE
+ * clause, same pattern as taskForClient.
+ */
+export async function latestPaymentStatusForClient(
+  taskId: string,
+  clientId: string
+): Promise<PaymentStatus | null> {
+  const payment = await prisma.payment.findFirst({
+    where: { taskId, task: { clientId } },
+    orderBy: { createdAt: "desc" },
+    select: { status: true },
+  });
+  return payment?.status ?? null;
 }
 
 // ---------- VA ----------
@@ -554,4 +575,300 @@ export async function taskEventsForAdmin(taskId: string) {
     where: { taskId },
     orderBy: { createdAt: "asc" },
   });
+}
+
+/**
+ * The client-facing execution report — the role-shaped TaskEvent variant this
+ * file's comment above has been reserving.
+ *
+ * WHY A WHITELIST AND NOT A FILTER. Every other role boundary in this file is
+ * enforced by omitting columns from a select. That is not enough here: the
+ * risk is not a column, it is a ROW. TaskEvent is the audit log for the whole
+ * platform, worker questions and payout bookkeeping and file scans included,
+ * and new action strings get added to it whenever a feature lands. A blocklist
+ * would silently start showing the paying client every future internal event
+ * the day someone adds one. So an action must be named in TIMELINE below to be
+ * shown at all, and anything unrecognised is dropped. Adding an event to the
+ * audit log can never, by itself, publish it.
+ *
+ * WHAT IS DELIBERATELY NOT SELECTED. `actorId` identifies the worker and is
+ * the whole of RULE 1. `reason` is free text written by the operator to the
+ * worker (QC comments) or by the worker to the operator (questions), and can
+ * name either party. `meta` carries internal counters. None of the three is
+ * projected, so no UI mistake downstream can surface them.
+ */
+export type TimelineTone = "normal" | "review" | "flag";
+
+/**
+ * Exported so test/client-timeline.test.ts can pin the exact key set. Adding a
+ * key here is the dangerous act this feature has, and it must not be possible
+ * to do it absent-mindedly while working on something else.
+ */
+export const CLIENT_TIMELINE_LABELS: Record<string, { label: string; tone: TimelineTone }> = {
+  // Intake and price. entered_pricing_queue is omitted on purpose: it fires in
+  // the same transaction as client_submitted and would render as a duplicate
+  // row at an identical timestamp.
+  client_submitted: { label: "You submitted the task", tone: "normal" },
+  client_submitted_standing_task: { label: "You submitted the task", tone: "normal" },
+  admin_quoted: { label: "We sent you a fixed price", tone: "normal" },
+  client_accepted_quote: { label: "You approved the price", tone: "normal" },
+  client_declined_quote: { label: "You declined the price", tone: "flag" },
+  quote_expired: { label: "The price lapsed before it was answered", tone: "flag" },
+
+  // Money. Wording matches the escrow reality: authorization is not a charge.
+  client_payment_received: { label: "Your card was authorized, not charged", tone: "normal" },
+  admin_recorded_payment: { label: "We recorded your payment", tone: "normal" },
+  payment_window_expired: { label: "The payment window closed", tone: "flag" },
+  // late_client_payment_recovered is deliberately absent: fulfillCheckout
+  // writes it and client_payment_received back to back in ONE transaction
+  // (stripe.ts, the task?.status === "expired" branch), so keying it would
+  // print the same sentence twice at the same timestamp.
+
+  // Execution. Never a name, never a count of who, and never an article that
+  // implies the client could reach them.
+  va_claimed: { label: "A trained specialist picked up the work", tone: "normal" },
+  standing_capacity_routed: {
+    label: "The work was routed to your assigned specialist",
+    tone: "normal",
+  },
+  va_released: { label: "Returned to the pool for a different specialist", tone: "flag" },
+  // "Reopened", not "reassigned": reassignTask clears claimedById and sends
+  // the task back to `open` (or to `submitted` for standing capacity). At the
+  // instant this event is written nobody holds the work, and nobody is
+  // guaranteed to pick it up, so naming a new specialist would be a claim the
+  // product has not yet made good on.
+  admin_reassigned: { label: "Reopened for a different specialist", tone: "flag" },
+  va_submitted_deliverable: { label: "Delivered to our reviewer, not to you", tone: "review" },
+
+  // Review. This is the part of the record the report exists for.
+  admin_qc_rejected: { label: "Our reviewer sent it back for corrections", tone: "review" },
+  admin_qc_rejected_exhausted: {
+    label: "Our reviewer sent it back again and reopened it for a different specialist",
+    tone: "review",
+  },
+  admin_qc_approved: { label: "Passed review and was released to you", tone: "review" },
+
+  // After delivery.
+  client_requested_revision: { label: "You asked for a revision", tone: "flag" },
+  admin_published_revision_instructions: {
+    label: "We issued the revision instructions",
+    tone: "normal",
+  },
+  client_opened_dispute: { label: "You raised a dispute", tone: "flag" },
+  // Not "met the written standard": TaskCategory.disputeCriteria is nullable,
+  // and an unfiled task has no category at all, so this row would assert a
+  // written standard that does not exist for that task.
+  admin_rejected_dispute: {
+    label: "We reviewed your dispute and let the delivery stand",
+    tone: "review",
+  },
+  admin_ordered_dispute_rework: {
+    label: "We reviewed your dispute and ordered rework",
+    tone: "review",
+  },
+  admin_upheld_dispute: { label: "We upheld your dispute", tone: "review" },
+  admin_cancelled: { label: "We cancelled the task", tone: "flag" },
+  standing_minutes_returned: {
+    label: "Your reserved minutes were credited back",
+    tone: "normal",
+  },
+  retention_files_purged: {
+    label: "Your files reached the end of the retention window and were deleted",
+    tone: "normal",
+  },
+};
+
+/**
+ * Exported so a test can assert the projection itself, not just its output:
+ * the leak this guards against is a column being added here, which no
+ * fixture-driven test would catch.
+ */
+export const clientTimelineEventSelect = {
+  action: true,
+  createdAt: true,
+} satisfies Prisma.TaskEventSelect;
+
+/**
+ * The whitelist itself, as a pure function so it can be tested without a
+ * database. `Object.hasOwn` rather than a plain lookup on purpose: `action` is
+ * an unconstrained String column, and a bare `TIMELINE[action]` returns a
+ * truthy inherited member for "constructor", "toString" or "__proto__" — which
+ * would push an entry with an undefined label straight onto a client's page.
+ */
+export function clientTimelineEntries(
+  rows: { action: string; createdAt: Date }[]
+): { at: Date; label: string; tone: TimelineTone }[] {
+  return rows.flatMap((r) =>
+    Object.hasOwn(CLIENT_TIMELINE_LABELS, r.action)
+      ? [
+          {
+            at: r.createdAt,
+            label: CLIENT_TIMELINE_LABELS[r.action].label,
+            tone: CLIENT_TIMELINE_LABELS[r.action].tone,
+          },
+        ]
+      : []
+  );
+}
+
+export type ExecutionReport = {
+  entries: { at: Date; label: string; tone: TimelineTone }[];
+  /** Times our reviewer sent a delivery back BEFORE one first passed. */
+  sentBack: number;
+  /** True once a delivery has actually cleared review. */
+  passed: boolean;
+  /**
+   * Pre-formatted label/value pairs from the approved delivery, or null. Never
+   * raw stored data: formatMetricsForClient is an allowlist projection, so a
+   * property added to the JSON later cannot surface here by default.
+   */
+  metrics: MetricRow[] | null;
+  /**
+   * True when the figures come from a delivery that passed AFTER a revision,
+   * not from the one the headline describes. Without this the card can read
+   * "Passed our review on the first delivery" directly above numbers from a
+   * later, revised version, and both sentences are individually true while
+   * the pairing misleads.
+   */
+  metricsFromRevision: boolean;
+  /** The written standard the delivery was judged against, if the category has one. */
+  standard: string | null;
+  categoryName: string | null;
+};
+
+/**
+ * Pinned as a named const so a test can assert the filter itself. Changing
+ * "approved" to "pending" here would publish an unreviewed worker's claims to
+ * the paying client, and no fixture-driven test would necessarily catch it.
+ */
+export function approvedSubmissionMetricsWhere(taskId: string) {
+  return { taskId, qcStatus: "approved" as const };
+}
+
+/** Written only by rejectDeliverable, which is a real reviewer decision. */
+const QC_SENT_BACK = new Set(["admin_qc_rejected", "admin_qc_rejected_exhausted"]);
+
+/**
+ * The arithmetic behind the headline, derived from the audit log rather than
+ * from Submission rows. Pure and exported so it can be tested directly.
+ *
+ * COUNTING FROM EVENTS IS THE WHOLE POINT, and three wrong sources were tried
+ * before this one:
+ *
+ *  - Submission.qcStatus === "rejected" OVERCOUNTS. reassignTask flips every
+ *    pending submission to "rejected" when an unresponsive worker is taken off
+ *    a task (admin.ts), with a qcComment that says in so many words "a
+ *    reassignment, not a quality strike". Counting those tells the client a
+ *    reviewer rejected work that no reviewer ever opened.
+ *  - Task.qcRounds UNDERCOUNTS: it is reset to 0 on repool and on reassignment.
+ *  - Submission.attemptNo OVERCOUNTS: it also counts the worker replacing
+ *    their own upload before anyone reviewed it.
+ *
+ * Only rejectDeliverable writes the two QC_SENT_BACK actions, so an event
+ * count is exactly the number of times a reviewer looked and said no.
+ *
+ * Rejections are counted only BEFORE the first approval. After a delivery has
+ * passed, the client can request a revision, which can be sent back again;
+ * folding those into the same number would make "before it passed our review"
+ * literally false about events that happened after it passed.
+ */
+export function executionSummary(rows: { action: string }[]): {
+  sentBack: number;
+  passed: boolean;
+  approvals: number;
+} {
+  const firstPass = rows.findIndex((r) => r.action === "admin_qc_approved");
+  const beforeFirstPass = firstPass === -1 ? rows : rows.slice(0, firstPass);
+  return {
+    sentBack: beforeFirstPass.filter((r) => QC_SENT_BACK.has(r.action)).length,
+    passed: firstPass !== -1,
+    // More than one approval means the client asked for a revision after
+    // delivery and the revised version passed too. The headline describes the
+    // FIRST pass; the figures describe the version the client actually holds,
+    // which is the latest. Both are true and they are about different
+    // deliveries, so the card has to say which is which.
+    approvals: rows.filter((r) => r.action === "admin_qc_approved").length,
+  };
+}
+
+/**
+ * Task states in which an approved delivery still stands.
+ *
+ * `passed` alone answers "was this ever approved", which is not the same
+ * question as "does that approval still hold". decideDispute's upheld branch
+ * (admin-resolutions.ts) cancels the task, voids the payout and refunds the
+ * client, but never touches the Submission row or the audit event, so a
+ * refunded task would otherwise keep showing "Passed our review" with the
+ * delivery figures directly above "Your payment was refunded". Same for a
+ * task sent back into rework: the operator has formally found the delivery
+ * deficient, and its numbers must not stay on the client's page while it is
+ * being redone.
+ */
+export const APPROVAL_STANDS: TaskStatus[] = ["completed"];
+
+export async function executionReportForClient(
+  taskId: string,
+  clientId: string
+): Promise<ExecutionReport | null> {
+  // Ownership is part of the WHERE clause, same as taskForClient — no
+  // cross-client read is possible even with a guessed task id.
+  const task = await prisma.task.findFirst({
+    where: { id: taskId, clientId },
+    select: {
+      id: true,
+      status: true,
+      category: { select: { name: true, disputeCriteria: true } },
+    },
+  });
+  if (!task) return null;
+
+  // The counts come from here and nowhere else: see executionSummary for why
+  // every number the Submission table could offer is wrong.
+  const rows = await prisma.taskEvent.findMany({
+    where: { taskId },
+    select: clientTimelineEventSelect,
+    orderBy: { createdAt: "asc" },
+  });
+  const summary = executionSummary(rows);
+
+  /**
+   * TWO INDEPENDENT GATES on the delivery numbers, and they are not redundant.
+   *
+   *  (1) summary.passed requires an admin_qc_approved event in the audit log.
+   *      It is the same source the headline above the numbers reads, so the
+   *      figures and the sentence can never disagree with each other.
+   *  (2) The Submission row is filtered on qcStatus "approved" — the same
+   *      filter clientTaskSelect.submissions already applies to the files.
+   *
+   *  (3) The task must still be in a state where that approval stands. See
+   *      APPROVAL_STANDS: an upheld dispute cancels and refunds without ever
+   *      revoking the submission, so gates (1) and (2) both keep passing on a
+   *      task the operator has already ruled against.
+   *
+   * Any gate missing means no numbers at all. A pending, superseded or
+   * rejected attempt's claim must never reach the client: an inflated count on
+   * a delivery that got sent back is precisely what QC exists to catch, and
+   * publishing it would turn the proof card into the vehicle for the lie.
+   */
+  let metrics: MetricRow[] | null = null;
+  if (summary.passed && APPROVAL_STANDS.includes(task.status)) {
+    const approved = await prisma.submission.findFirst({
+      where: approvedSubmissionMetricsWhere(taskId),
+      // The latest approval, because that is the version the client actually
+      // holds. When it is not the first, the card says so.
+      orderBy: { reviewedAt: "desc" },
+      select: { deliveryMetrics: true },
+    });
+    metrics = formatMetricsForClient(approved?.deliveryMetrics ?? null);
+  }
+
+  return {
+    entries: clientTimelineEntries(rows),
+    sentBack: summary.sentBack,
+    passed: summary.passed,
+    metrics,
+    metricsFromRevision: metrics !== null && summary.approvals > 1,
+    standard: task.category?.disputeCriteria ?? null,
+    categoryName: task.category?.name ?? null,
+  };
 }

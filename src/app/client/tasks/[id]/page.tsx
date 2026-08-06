@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/authz";
-import { taskForClient } from "@/lib/queries/tasks";
+import { taskForClient, executionReportForClient } from "@/lib/queries/tasks";
 import { expireStaleQuotes } from "@/server/sweeps";
 import { getSettings } from "@/lib/settings";
 import { computeQuotedBy } from "@/lib/schedule";
@@ -15,6 +15,7 @@ import { LocalTime } from "@/components/local-time";
 import { QuoteActions } from "@/components/quote-actions";
 import { PaymentActions } from "@/components/payment-actions";
 import { ClientResolutionActions } from "@/components/client-resolution-actions";
+import { ExecutionReportCard } from "@/components/execution-report";
 import {
   Badge,
   Card,
@@ -40,6 +41,9 @@ export default async function ClientTaskPage({
 
   const cs = clientStatusOf(task.status);
   const settings = await getSettings();
+  // Ownership is re-checked inside the query rather than trusted from the read
+  // above, so this stays safe if it is ever reused on another page.
+  const report = await executionReportForClient(id, user.id);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -305,6 +309,8 @@ export default async function ClientTaskPage({
           </CardBody>
         </Card>
       ) : null}
+
+      {report ? <ExecutionReportCard report={report} /> : null}
 
       {task.files.length > 0 ? (
         <Card>

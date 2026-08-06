@@ -73,6 +73,16 @@ describe("RULE 2 — the two-price wall", () => {
     }
   });
 
+  it("clientTaskSelect did not grow to carry the delivery metrics", () => {
+    // The metrics ride on executionReportForClient, a separate narrow query
+    // gated on an approved submission. Growing this select instead would put
+    // them behind the generic client payload, where the approval gate does
+    // not apply and a pending attempt's claims would leak.
+    const keys = keysDeep(clientTaskSelect);
+    expect(keys.has("deliveryMetrics")).toBe(false);
+    expect(keys.has("note")).toBe(false);
+  });
+
   it("each side still selects its OWN price — the wall is not just an empty select", () => {
     expect(keysDeep(clientTaskSelect).has("clientPriceCents")).toBe(true);
     expect(keysDeep(vaTaskSelect).has("vaPayoutCents")).toBe(true);
