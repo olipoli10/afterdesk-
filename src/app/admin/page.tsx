@@ -17,6 +17,10 @@ export default async function AdminOverview() {
       .reduce((sum, g) => sum + g._count._all, 0);
 
   const pricing = countOf(["submitted", "pricing_review"]);
+  // A paid task the engine is still working on. It spends real money while it
+  // sits here, and it is the one state that can stall on an operator decision,
+  // so it gets its own tile rather than being folded into "in progress".
+  const processing = countOf(["ai_processing"]);
   const tiles = [
     { label: "Needs pricing", value: pricing, href: "/admin/pricing", accent: pricing > 0 },
     {
@@ -24,6 +28,12 @@ export default async function AdminOverview() {
       value: countOf(["quoted"]),
       href: "/admin/tasks?status=quoted",
       accent: false,
+    },
+    {
+      label: "Automated processing",
+      value: processing,
+      href: "/admin/tasks?status=ai_processing",
+      accent: processing > 0,
     },
     {
       label: "Open in pool",

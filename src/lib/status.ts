@@ -45,6 +45,7 @@ export const ADMIN_STATUS_LABELS: Record<TaskStatus, string> = {
   disputed: "Disputed",
   cancelled: "Cancelled",
   expired: "Expired",
+  ai_processing: "Automated processing",
 };
 
 /**
@@ -73,6 +74,11 @@ export function clientStatusOf(status: TaskStatus): ClientStatus {
       return "quote_ready";
     case "awaiting_payment":
       return "awaiting_payment";
+    // ai_processing joins the same bucket as the pool and the QC loop, and
+    // that is the whole point: the client paid and the work is under way.
+    // Which parts a machine did is internal mechanics, exactly like who
+    // claimed it and how many QC rounds it took. No new client-facing copy.
+    case "ai_processing":
     case "open":
     case "claimed":
     case "submitted_for_qc":
@@ -155,6 +161,9 @@ export function statusBadgeClass(status: TaskStatus, night = false): string {
       return night ? N_WAIT : T_WAIT;
     case "open":
       return night ? N_OPEN : T_OPEN;
+    // In flight and nobody's move to make: the same dusk tone as `claimed`,
+    // which is the other "work is happening, wait" state.
+    case "ai_processing":
     case "claimed":
       return night ? N_DUSK : T_DUSK;
     case "qc_rejected":

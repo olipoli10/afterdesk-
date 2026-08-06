@@ -1,12 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
 import { insertLedgerEntry } from "@/lib/ledger";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { logAdminEvent } from "@/lib/audit";
+import { notifyEligiblePoolWorkers } from "@/server/pool-notifications";
+import { hasExecutableContract, startWorkflow } from "@/server/workflow-runs";
 
 export type MoneyActionResult = { ok: true } | { ok: false; error: string };
 
@@ -20,6 +23,11 @@ export async function recordManualPayment(input: unknown): Promise<MoneyActionRe
   const parsed = manualPaymentSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Enter the bank or invoice reference." };
 
+  const taskId = parsed.data.taskId;
+  // Decided inside the transaction, acted on after it commits: a run must
+  // never start against a payment that then rolls back.
+  let automate = false;
+
   try {
     await prisma.$transaction(async (tx) => {
       const task = await tx.task.findUnique({
@@ -31,6 +39,10 @@ export async function recordManualPayment(input: unknown): Promise<MoneyActionRe
           clientPriceCents: true,
           currency: true,
           isInternal: true,
+          // Needed by the pool notification: it scopes to the workers who can
+          // actually claim this tier right now.
+          title: true,
+          tier: true,
           category: { select: { id: true, slug: true, name: true } },
         },
       });
@@ -62,11 +74,18 @@ export async function recordManualPayment(input: unknown): Promise<MoneyActionRe
         categoryName: task.category?.name,
         isInternal: task.isInternal,
       });
+      /**
+       * PHASE 1B — a wire payment routes exactly like a card one. Without
+       * this, a task paid by transfer would skip automated processing
+       * entirely and quietly become the one payment method that never gets
+       * the machine's help.
+       */
+      automate = await hasExecutableContract(tx, task.id);
       await transitionTask({
         tx,
         taskId: task.id,
         from: "awaiting_payment",
-        to: "open",
+        to: automate ? "ai_processing" : "open",
         action: "admin_recorded_payment",
         actorId: admin.id,
         data: { paymentDueAt: null },
@@ -77,11 +96,17 @@ export async function recordManualPayment(input: unknown): Promise<MoneyActionRe
           userId: task.clientId,
           type: "payment_received",
           title: "Payment received",
-          body: "Your task is now available to the worker pool.",
+          body: automate
+            ? "Your task has started processing."
+            : "Your task is now available to the worker pool.",
           taskId: task.id,
         },
       });
+      // The pool notification belongs at the moment the task is actually
+      // claimable. On the automated path that is the end of the run.
+      if (!automate) await notifyEligiblePoolWorkers(tx, task.id, task);
     });
+    if (automate) after(() => startWorkflow(taskId));
   } catch (error) {
     if (error instanceof TransitionError) {
       return { ok: false, error: "This task is no longer awaiting payment." };

@@ -15,7 +15,7 @@ import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { shouldCritique, type CritiqueTriggerInput } from "@/lib/ai-work-engine/critique";
 import { floorConfidenceForCritique, resolveConfidence } from "@/lib/ai-work-engine/confidence";
 import { engineSkipsTask } from "@/lib/ai-work-engine";
-import { QUOTE_TIERS } from "@/lib/ai-work-engine/schemas";
+import { QUOTE_TIERS, editStepInputSchema } from "@/lib/ai-work-engine/schemas";
 import {
   clientScopeFromPlanVersion,
   sanitizeClientText,
@@ -268,6 +268,9 @@ describe("string caps are abuse guards, not style hints", () => {
           executor: "human",
           human_role: "worker",
           tool: "manual",
+          primitive_id: null,
+          fixed_minutes: 10,
+          seconds_per_unit: 60,
           estimated_minutes_optimistic: 10,
           estimated_minutes_likely: 20,
           estimated_minutes_conservative: 30,
@@ -326,6 +329,9 @@ describe("the edit form accepts everything the generator may produce", () => {
           executor: "human",
           humanRole: "worker",
           tool: s(200),
+          primitiveId: null,
+          fixedMinutes: 15,
+          secondsPerUnit: 120,
           estimatedMinutesOptimistic: 10,
           estimatedMinutesLikely: 20,
           estimatedMinutesConservative: 30,
@@ -350,6 +356,9 @@ describe("the edit form accepts everything the generator may produce", () => {
       executor: "human",
       humanRole: null,
       tool: null,
+      primitiveId: null,
+      fixedMinutes: null,
+      secondsPerUnit: null,
       estimatedMinutesOptimistic: 1,
       estimatedMinutesLikely: 2,
       estimatedMinutesConservative: 3,
@@ -362,6 +371,79 @@ describe("the edit form accepts everything the generator may produce", () => {
       dependsOnOrder: [],
     });
     expect(result.success).toBe(false);
+  });
+
+  it("refuses a human step that claims an executable primitive", () => {
+    // The compiler would ignore it, but a plan that says a person runs
+    // build.csv is a plan whose own shape is wrong, and the admin editing it
+    // should be told at save time rather than discovering it at execution.
+    const base = {
+      title: "t",
+      description: "d",
+      executor: "human" as const,
+      humanRole: "worker" as const,
+      tool: null,
+      fixedMinutes: 10,
+      secondsPerUnit: 30,
+      estimatedMinutesOptimistic: 1,
+      estimatedMinutesLikely: 2,
+      estimatedMinutesConservative: 3,
+      estimatedAiCostCents: 0,
+      estimatedToolUnits: 0,
+      verificationMethod: "v",
+      acceptanceCriteria: [],
+      riskLevel: "low" as const,
+      riskNote: null,
+      dependsOnOrder: [],
+    };
+    expect(editStepInputSchema.safeParse({ ...base, primitiveId: "build.csv" }).success).toBe(false);
+    expect(editStepInputSchema.safeParse({ ...base, primitiveId: null }).success).toBe(true);
+  });
+
+  /**
+   * THE THREE-WAY CONTRACT: the schema decides what a saved step must contain,
+   * the editor decides what it sends, and the query decides what it can show.
+   * All three are edited by hand in three different files, and nothing but
+   * this test connects them.
+   *
+   * It exists because adding primitiveId, fixedMinutes and secondsPerUnit to
+   * the schema silently killed the entire admin plan editor: the form never
+   * sent them, so every save failed validation, and no unit test noticed
+   * because each file was individually correct.
+   */
+  const editorSource = readFileSync(join(__dirname, "..", "src/components/plan-review.tsx"), "utf8");
+  const savePayload = editorSource.slice(
+    editorSource.indexOf("steps: steps.map((s) => ({"),
+    editorSource.indexOf("if (!result.ok)")
+  );
+  const schemaKeys = Object.keys(
+    (editStepInputSchema as unknown as { def: { shape: Record<string, unknown> } }).def.shape
+  );
+
+  it("the schema shape is actually readable, so the next two tests mean something", () => {
+    // A zod internals change would otherwise turn both into vacuous passes.
+    expect(schemaKeys).toContain("primitiveId");
+    expect(schemaKeys.length).toBeGreaterThan(10);
+    expect(savePayload.length).toBeGreaterThan(200);
+  });
+
+  it("the plan editor sends every field the edit schema requires", () => {
+    for (const key of schemaKeys) {
+      expect(savePayload, `plan-review.tsx save() is missing "${key}"`).toContain(`${key}:`);
+    }
+  });
+
+  it("the admin query reads back every field the editor has to round-trip", () => {
+    // A field the editor sends but the query never selects is worse than a
+    // missing one: the form renders it blank and the next save erases it.
+    const querySource = readFileSync(join(__dirname, "..", "src/lib/queries/plan.ts"), "utf8");
+    const select = querySource.slice(
+      querySource.indexOf("export const planStepSelect"),
+      querySource.indexOf("const planVersionSelect")
+    );
+    for (const key of schemaKeys) {
+      expect(select, `planStepSelect is missing "${key}"`).toContain(`${key}:`);
+    }
   });
 });
 

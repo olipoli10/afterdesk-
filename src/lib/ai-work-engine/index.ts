@@ -10,7 +10,7 @@ import { runCritique, shouldCritique } from "@/lib/ai-work-engine/critique";
 import { aiSuggestionColumns, pricePlan, type PricingStepInput } from "@/lib/ai-work-engine/pricing";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { floorConfidenceForCritique, resolveConfidence } from "@/lib/ai-work-engine/confidence";
-import type { PlanOutput } from "@/lib/ai-work-engine/schemas";
+import { currentPrimitiveVersion, type PlanOutput } from "@/lib/ai-work-engine/schemas";
 import type { Prisma } from "@prisma/client";
 
 /**
@@ -210,6 +210,21 @@ export async function runWorkEngine(taskId: string): Promise<void> {
             executor: s.executor,
             humanRole: s.human_role,
             tool: s.tool,
+            /**
+             * The primitive is the MODEL's choice, made before the quote.
+             * The VERSION is the CODE's stamp, taken from the registry
+             * vocabulary at the moment this plan version is written and
+             * frozen with it. A later registry bump leaves this row pinned to
+             * the behaviour the client accepted, and the compiler hands the
+             * step to a person rather than silently running the new one.
+             * currentPrimitiveVersion returns null for an id the vocabulary
+             * does not have, so an invented primitive is unrunnable by
+             * construction.
+             */
+            primitiveId: s.primitive_id,
+            primitiveVersion: currentPrimitiveVersion(s.primitive_id),
+            fixedMinutes: s.fixed_minutes,
+            secondsPerUnit: s.seconds_per_unit,
             estimatedMinutesOptimistic: s.estimated_minutes_optimistic,
             estimatedMinutesLikely: s.estimated_minutes_likely,
             estimatedMinutesConservative: s.estimated_minutes_conservative,

@@ -36,6 +36,7 @@ export type CostCatalog = {
   minimumPriceCents: number;
   minimumMargin: number;
   critiqueCostThresholdCents: number;
+  minimumResidualMinutes: number;
   toolUnitCostCents: Record<string, number>;
 };
 
@@ -79,6 +80,16 @@ export const COST_CATALOG: CostCatalog = {
    * triggered (one of several triggers — see shouldCritique). Uncalibrated.
    */
   critiqueCostThresholdCents: 15_000,
+
+  /**
+   * THE DIGNITY FLOOR. No residual mandate is ever costed below this, even at
+   * zero remaining units. Someone still opens the file, reads the brief,
+   * checks what the machine produced and signs their name to the delivery —
+   * and the platform's own promise is that a person reviews every delivery.
+   * A near-empty residual is the case where an automatic calculation is most
+   * tempted to pay nothing, which is exactly when it must not. Uncalibrated.
+   */
+  minimumResidualMinutes: 20,
 
   /**
    * Per-unit cost of each tool the plan vocabulary allows. An unknown tool

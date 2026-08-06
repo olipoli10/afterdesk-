@@ -49,8 +49,24 @@ export const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   // one exception is the operator's own internal practice work, which skips
   // the payment gate structurally (guarded on isInternal in the action).
   quoted: ["awaiting_payment", "open", "declined", "expired", "cancelled"],
-  awaiting_payment: ["open", "expired", "cancelled"],
+  // "open" is KEPT alongside "ai_processing": it is the degraded path, and it
+  // is the only path for a task with no executable plan (no plan at all, a
+  // plan whose every step compiled to human, the AI key absent). That case is
+  // the majority today and behaves exactly as it did before Phase 1B.
+  awaiting_payment: ["ai_processing", "open", "expired", "cancelled"],
   declined: [],
+  /**
+   * The machine block of an accepted plan is running. The only forward exit is
+   * "open": in Phase 1B a person always finishes and always delivers, so a run
+   * never reaches QC on its own. That is not a limitation to route around
+   * later by adding an edge — Submission requires a vaId that the payout, the
+   * rating, the worker score and RULE 1 all depend on, and a "system"
+   * submission would break four mechanisms to save one step.
+   *
+   * "expired" and "cancelled" are the safety exits: a run stuck long enough to
+   * threaten the Stripe authorisation window is abandoned rather than left.
+   */
+  ai_processing: ["open", "expired", "cancelled"],
   open: ["claimed", "expired", "cancelled"],
   // "submitted" here is admin.ts's reassignTask exit for a Standing Capacity
   // task: it must never re-enter the public pool (`open`), so it goes back to

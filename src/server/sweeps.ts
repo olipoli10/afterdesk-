@@ -7,6 +7,7 @@ import { getSettings } from "@/lib/settings";
 import { releaseHeldFunds } from "@/lib/escrow";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
 import { lockStandingAccount, rollForwardPeriods } from "@/lib/standing-period";
+import { releaseToPoolWithoutAutomation } from "@/server/workflow-runs";
 
 /**
  * Time-driven state changes. The authenticated maintenance endpoint runs these
@@ -127,7 +128,11 @@ export async function releaseDisputeWindowFunds(): Promise<number> {
 export async function reapOrphanFiles(): Promise<number> {
   const cutoff = new Date(Date.now() - ORPHAN_FILE_TTL_HOURS * 3600 * 1000);
   const orphans = await prisma.file.findMany({
-    where: { taskId: null, createdAt: { lt: cutoff } },
+    // Machine-produced artifacts are attached to their task at creation, so
+    // they are never orphans. The explicit exclusion is belt and braces: a
+    // sweep that reaped a run's own candidate file mid-flight would delete
+    // the very thing a worker is about to be handed.
+    where: { taskId: null, kind: { not: "artifact" }, createdAt: { lt: cutoff } },
     select: { id: true, storageKey: true },
     take: 200,
   });
@@ -309,8 +314,71 @@ export async function runOperatorSweeps(): Promise<void> {
       await purgeExpiredTaskFiles();
       await advanceStandingCapacityPeriods();
       await releaseDisputeWindowFunds();
+      // ai_processing is the only time-driven state holding a live card
+      // authorisation, and until now its ONLY caller was the maintenance
+      // cron — a route this repo has already caught silently returning 405
+      // for an unknown stretch. Every sibling sweep self-heals on any
+      // operator page load; the one state where waiting costs real money
+      // must not be the exception.
+      await abandonStalledWorkflowRuns();
     } catch (e) {
       console.error("[sweeps] operator sweep failed:", e);
     }
   });
+}
+
+/** A run allowed to sit this long is abandoned to the human path. */
+const STALLED_RUN_HOURS = 6;
+
+/**
+ * ai_processing is outside expireStalePayments' reach: that sweep only looks
+ * at `awaiting_payment`. Without this one, a run wedged by a provider outage
+ * would hold an authorized card indefinitely, and the Stripe authorisation
+ * window (about seven days, and not tracked anywhere in this codebase) would
+ * quietly run out on a task nobody was watching.
+ *
+ * The exit is deliberately the generous one: the task goes to the pool with
+ * its ORIGINAL quoted payout, not a residual computed from partial work. A
+ * worker asked to pick up an abandoned run is doing the whole job.
+ */
+export async function abandonStalledWorkflowRuns(): Promise<number> {
+  const cutoff = new Date(Date.now() - STALLED_RUN_HOURS * 3600 * 1000);
+  const stalled = await prisma.task.findMany({
+    where: { status: "ai_processing", updatedAt: { lt: cutoff } },
+    select: { id: true },
+    take: 50,
+  });
+
+  let abandoned = 0;
+  for (const task of stalled) {
+    try {
+      await prisma.taskWorkflowRun.updateMany({
+        // `paused` belongs here too. A run paused on an over-budget residual
+        // or on step exhaustion is precisely the kind that sits for six
+        // hours; leaving it out stamped the task `open` while its run row
+        // still read `paused` with no finishedAt, which is a contradiction an
+        // operator then has to unpick from the execution panel.
+        where: { taskId: task.id, status: { in: ["running", "compiling", "paused"] } },
+        data: { status: "abandoned", finishedAt: new Date(), pausedReason: "Stalled; released to the pool." },
+      });
+      await releaseToPoolWithoutAutomation(task.id, "automated processing stalled");
+      abandoned++;
+    } catch (error) {
+      /**
+       * ONE POISONED TASK MUST NOT BLOCK THE BATCH.
+       *
+       * Rethrowing here aborted the whole loop, so a single task whose
+       * Postgres payment guard now refuses `ai_processing -> open` — an
+       * authorisation that lapsed or was charged back during the run, which
+       * is a real possibility over a multi-hour residency — stranded every
+       * other stalled task behind it. purgeExpiredTaskFiles and
+       * releaseDisputeWindowFunds both isolate per item; this one now does
+       * too, and the failure is logged rather than silently swallowed.
+       */
+      if (!(error instanceof TransitionError)) {
+        console.error("[sweeps] could not release stalled run", { taskId: task.id, error });
+      }
+    }
+  }
+  return abandoned;
 }

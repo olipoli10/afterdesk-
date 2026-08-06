@@ -11,6 +11,10 @@ const FILTERS: (TaskStatus | "all")[] = [
   "all",
   "pricing_review",
   "quoted",
+  // A task the engine is working on is already paid for and is spending real
+  // money on searches and model calls. Leaving it out of the filters meant the
+  // only way to find one was the 200-row "All" list.
+  "ai_processing",
   "open",
   "claimed",
   "submitted_for_qc",

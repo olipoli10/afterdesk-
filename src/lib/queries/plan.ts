@@ -18,6 +18,13 @@ export const planStepSelect = {
   executor: true,
   humanRole: true,
   tool: true,
+  // The execution contract. The admin edits primitiveId directly, so it has
+  // to be READ here too: the editor round-trips what it was given, and a
+  // column missing from this select is a column the next saved version loses.
+  primitiveId: true,
+  primitiveVersion: true,
+  fixedMinutes: true,
+  secondsPerUnit: true,
   estimatedMinutesOptimistic: true,
   estimatedMinutesLikely: true,
   estimatedMinutesConservative: true,

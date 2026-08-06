@@ -12,6 +12,8 @@ import { DeliverableForm } from "@/components/deliverable-form";
 import { ReleaseButton } from "@/components/va-actions";
 import { AskAdminQuestionForm } from "@/components/ask-admin-question-form";
 import { AssistantWidget } from "@/components/assistant-widget";
+import { HumanPackagePanel } from "@/components/human-package";
+import { humanPackageForVa } from "@/lib/queries/execution";
 import {
   Badge,
   Card,
@@ -35,8 +37,8 @@ export default async function VaTaskPage({
   const profile = await vaProfileFor(user.id);
   if (profile?.status !== "approved") redirect("/va");
 
-  // The three lookups are independent — never pay the waterfall.
-  const [task, settings, lastReview] = await Promise.all([
+  // The lookups are independent — never pay the waterfall.
+  const [task, settings, lastReview, humanPackage] = await Promise.all([
     taskForVa(id, user.id),
     getSettings(),
     // The operator's most recent note on this worker's deliveries — the only
@@ -46,6 +48,10 @@ export default async function VaTaskPage({
       select: { qcComment: true, qcStatus: true, attemptNo: true, reviewedAt: true },
       orderBy: { attemptNo: "desc" },
     }),
+    // Present only when a machine block ran before this worker. A separate
+    // narrow query rather than a widening of vaTaskSelect, for the same
+    // reason latestPaymentStatusForClient is separate on the client side.
+    humanPackageForVa(id, user.id),
   ]);
   if (!task) notFound();
 
@@ -187,6 +193,8 @@ export default async function VaTaskPage({
           </CardBody>
         </Card>
       ) : null}
+
+      {humanPackage ? <HumanPackagePanel pkg={humanPackage} /> : null}
 
       {task.files.length > 0 ? (
         <Card tone="night">

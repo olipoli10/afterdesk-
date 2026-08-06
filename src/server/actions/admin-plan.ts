@@ -7,7 +7,7 @@ import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { aiSuggestionColumns, pricePlan } from "@/lib/ai-work-engine/pricing";
-import { editPlanInputSchema } from "@/lib/ai-work-engine/schemas";
+import { currentPrimitiveVersion, editPlanInputSchema } from "@/lib/ai-work-engine/schemas";
 
 /**
  * The admin's plan edit. THE VERSIONING RULE LIVES HERE: an edit never
@@ -130,6 +130,13 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
               executor: s.executor,
               humanRole: s.humanRole,
               tool: s.tool,
+              // Re-stamped from the registry on every edit, never taken from
+              // the form: an admin may change WHICH primitive a step uses,
+              // never which version of it runs.
+              primitiveId: s.primitiveId,
+              primitiveVersion: currentPrimitiveVersion(s.primitiveId),
+              fixedMinutes: s.fixedMinutes,
+              secondsPerUnit: s.secondsPerUnit,
               estimatedMinutesOptimistic: s.estimatedMinutesOptimistic,
               estimatedMinutesLikely: s.estimatedMinutesLikely,
               estimatedMinutesConservative: s.estimatedMinutesConservative,

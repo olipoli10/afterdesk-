@@ -34,6 +34,7 @@ export async function GET(
       sizeBytes: true,
       scanStatus: true,
       purgedAt: true,
+      artifactVisibility: true,
       task: { select: { id: true, clientId: true, claimedById: true, status: true } },
       submission: { select: { qcStatus: true } },
     },
@@ -59,6 +60,9 @@ export async function GET(
         allowed = file.submission?.qcStatus === "approved";
         downloadName = deliverableFileLabel(file.fileName, taskId, file.id);
       }
+      // kind === "artifact" falls through: a machine's working file is never
+      // a client's to read. It reaches them only by becoming a deliverable a
+      // worker submitted and an operator approved.
     }
   } else if (user.role === "VA") {
     const activeForVa =
@@ -74,6 +78,17 @@ export async function GET(
         allowed = true;
         // RULE 1: the client's filename can identify them.
         downloadName = inputFileLabel(file.fileName, taskId, file.id);
+      } else if (file.kind === "artifact") {
+        /**
+         * A machine-produced file is readable by the worker only if it was
+         * explicitly marked for them. Being attached to the run is not
+         * enough: intermediate payloads and raw search dumps are internal,
+         * and an artifact whose visibility is null is refused rather than
+         * guessed at.
+         */
+        allowed =
+          file.artifactVisibility === "worker_after_claim" ||
+          file.artifactVisibility === "deliverable_candidate";
       }
     }
   }

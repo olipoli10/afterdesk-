@@ -1,12 +1,14 @@
 import "server-only";
+import { after } from "next/server";
 import Stripe from "stripe";
 import { addHours } from "date-fns";
-import type { Prisma, TaskTier } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { insertLedgerEntry } from "@/lib/ledger";
-import { eligibleVaUserIds } from "@/lib/queries/va-profile";
+import { notifyEligiblePoolWorkers } from "@/server/pool-notifications";
+import { hasExecutableContract, startWorkflow } from "@/server/workflow-runs";
 
 let client: Stripe | null = null;
 
@@ -170,6 +172,14 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
     throw new Error("Stripe Checkout session is missing authorized payment details.");
   }
 
+  /**
+   * Set inside the transaction, acted on after it commits. Starting a run
+   * inside the payment transaction would hold it open across model calls; a
+   * run started before the commit could also observe a payment that then
+   * rolls back.
+   */
+  let startedWorkflowFor: string | null = null;
+
   await prisma.$transaction(async (tx) => {
     // Claim the pending payment row. A redelivered webhook becomes a no-op.
     const payment = await tx.payment.findUnique({
@@ -199,6 +209,22 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
       where: { id: taskId },
       select: { status: true, clientId: true, title: true, tier: true, isInternal: true },
     });
+    /**
+     * PHASE 1B — where a paid task goes next.
+     *
+     * With an executable accepted plan it enters `ai_processing` and the
+     * machine block runs before anyone is asked to do anything. Without one it
+     * goes straight to `open`, which is what every task did before Phase 1B
+     * and what the majority still do.
+     *
+     * The pool notification only fires on the direct path: a task entering
+     * ai_processing is NOT claimable yet, and telling workers about it would
+     * page them for work they cannot take. It is sent at the end of the run
+     * instead (src/server/workflow-runs.ts finishRun).
+     */
+    const automate = task ? await hasExecutableContract(tx, taskId) : false;
+    const afterPayment = automate ? ("ai_processing" as const) : ("open" as const);
+
     if (task?.status === "expired") {
       await transitionTask({
         tx,
@@ -213,23 +239,25 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
         tx,
         taskId,
         from: "awaiting_payment",
-        to: "open",
+        to: afterPayment,
         action: "client_payment_received",
         data: { paymentDueAt: null },
         meta: { provider: "stripe", checkoutSessionId: session.id },
       });
-      await notifyEligiblePoolWorkers(tx, taskId, task);
+      if (!automate) await notifyEligiblePoolWorkers(tx, taskId, task);
+      startedWorkflowFor = automate ? taskId : null;
     } else if (task?.status === "awaiting_payment") {
       await transitionTask({
         tx,
         taskId,
         from: "awaiting_payment",
-        to: "open",
+        to: afterPayment,
         action: "client_payment_received",
         data: { paymentDueAt: null },
         meta: { provider: "stripe", checkoutSessionId: session.id },
       });
-      await notifyEligiblePoolWorkers(tx, taskId, task);
+      if (!automate) await notifyEligiblePoolWorkers(tx, taskId, task);
+      startedWorkflowFor = automate ? taskId : null;
     } else if (task?.status === "cancelled") {
       // Only ever a hold at this point, never a real charge (see above) — so
       // there is nothing to refund, only an authorization to release.
@@ -253,10 +281,25 @@ export async function fulfillCheckout(session: Stripe.Checkout.Session): Promise
           taskId,
         },
       });
-    } else if (task?.status !== "open" && task?.status !== "claimed") {
+    } else if (
+      task?.status !== "open" &&
+      task?.status !== "claimed" &&
+      task?.status !== "ai_processing"
+    ) {
       throw new TransitionError(`Paid task cannot be fulfilled from ${task?.status ?? "missing"}.`);
     }
   });
+
+  /**
+   * The fast path. The cron is the guarantee; this is what makes a task the
+   * client just paid for start moving within seconds instead of within the
+   * hour. It cannot throw into the webhook: startWorkflow swallows its own
+   * failures and the run stays in the database for the next tick either way.
+   */
+  const runFor = startedWorkflowFor;
+  if (runFor) {
+    after(() => startWorkflow(runFor));
+  }
 }
 
 function stripePaymentIntentId(
@@ -280,33 +323,13 @@ async function notifyAdmins(
 }
 
 /**
- * "New task in the pool" — found missing while auditing the full task
- * lifecycle (the founding spec listed it; the code never sent it). Fires
- * exactly once, the moment a task actually becomes claimable — never at
- * quote acceptance, since the task isn't visible to anyone until payment
- * clears. Skipped for internal tasks (the operator's own practice work —
- * no real worker needs paging for those) and scoped to workers who can
- * actually claim this tier right now, so a high-value task never notifies
- * someone who'd just hit the same threshold wall claimTask enforces.
+ * "New task in the pool" moved to src/server/pool-notifications.ts.
+ *
+ * It used to live here, private, called from the two payment paths that moved
+ * a task to `open`. Phase 1B adds a third route to `open` (the end of an
+ * automated run), and a task reaching the pool with nobody told is a task
+ * nobody claims — so the helper is shared instead of copied.
  */
-async function notifyEligiblePoolWorkers(
-  tx: Prisma.TransactionClient,
-  taskId: string,
-  task: { title: string; tier: TaskTier; isInternal: boolean }
-) {
-  if (task.isInternal) return;
-  const workerIds = await eligibleVaUserIds(tx, task.tier);
-  if (workerIds.length === 0) return;
-  await tx.notification.createMany({
-    data: workerIds.map((userId) => ({
-      userId,
-      type: "pool_task_available",
-      title: "New task in the pool",
-      body: task.title,
-      taskId,
-    })),
-  });
-}
 
 /** Reconciles refunds created outside the app, including Stripe Dashboard actions. */
 export async function reconcileStripeRefunds(charge: Stripe.Charge): Promise<void> {

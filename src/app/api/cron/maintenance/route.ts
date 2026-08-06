@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
+  abandonStalledWorkflowRuns,
   advanceStandingCapacityPeriods,
   expireStalePayments,
   expireStaleQuotes,
@@ -9,6 +10,7 @@ import {
   releaseDisputeWindowFunds,
 } from "@/server/sweeps";
 import { processMoneyIntents } from "@/server/money-intents";
+import { processWorkflowRuns } from "@/server/workflow-runs";
 import { deliverPendingNotifications } from "@/server/notifications";
 
 export const runtime = "nodejs";
@@ -49,17 +51,35 @@ async function runMaintenance(request: Request) {
   if (!secret || !hasValidBearer(request.headers.get("authorization"), secret)) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
-  const [quotes, payments, orphans, purged, capacityPeriods, disputeWindows, money, notifications] =
-    await Promise.all([
-      run("quotes", expireStaleQuotes()),
-      run("payments", expireStalePayments()),
-      run("orphans", reapOrphanFiles()),
-      run("purged", purgeExpiredTaskFiles()),
-      run("capacityPeriods", advanceStandingCapacityPeriods()),
-      run("disputeWindows", releaseDisputeWindowFunds()),
-      run("money", processMoneyIntents()),
-      run("notifications", deliverPendingNotifications()),
-    ]);
+  const [
+    quotes,
+    payments,
+    orphans,
+    purged,
+    capacityPeriods,
+    disputeWindows,
+    money,
+    notifications,
+    stalledRuns,
+    workflows,
+  ] = await Promise.all([
+    run("quotes", expireStaleQuotes()),
+    run("payments", expireStalePayments()),
+    run("orphans", reapOrphanFiles()),
+    run("purged", purgeExpiredTaskFiles()),
+    run("capacityPeriods", advanceStandingCapacityPeriods()),
+    run("disputeWindows", releaseDisputeWindowFunds()),
+    run("money", processMoneyIntents()),
+    run("notifications", deliverPendingNotifications()),
+    // Before advancing anything: a run that has sat too long is abandoned to
+    // the human path. `ai_processing` is outside expireStalePayments' reach,
+    // so without this a stuck run would hold an authorized card past its
+    // window with nothing watching.
+    run("stalledRuns", abandonStalledWorkflowRuns()),
+    // The safety net behind the after() fast path: picks up runs whose
+    // process died, whose step backed off, or whose lease expired.
+    run("workflows", processWorkflowRuns()),
+  ]);
   return NextResponse.json({
     quotes,
     payments,
@@ -69,6 +89,8 @@ async function runMaintenance(request: Request) {
     disputeWindows,
     money,
     notifications,
+    stalledRuns,
+    workflows,
   });
 }
 

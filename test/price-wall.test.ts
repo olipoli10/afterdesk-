@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   clientTaskSelect,
@@ -97,6 +99,23 @@ describe("RULE 2 — the two-price wall", () => {
       "internalCostLikelyCents",
       "internalCostConservativeCents",
       "critique",
+      // Phase 1B — execution internals. The worker reads a scoped brief from
+      // TaskHumanWorkPackage through its own narrow query, never by widening
+      // these, and the client has no execution surface at all. The cost
+      // fields are the sharpest of the set: reservedBudgetCents IS the quoted
+      // payout, so putting it on a client payload would breach RULE 2 as
+      // squarely as vaPayoutCents itself.
+      "workflowRun",
+      "workflowRuns",
+      "actualAiCostMicros",
+      "actualToolCostMicros",
+      "actualCostMicros",
+      "costMicros",
+      "reservedBudgetCents",
+      "invocations",
+      "stepRuns",
+      "handoffReason",
+      "pausedReason",
     ] as const;
     for (const [name, select] of [
       ["clientTaskSelect", clientTaskSelect],
@@ -148,5 +167,58 @@ describe("RULE 2 — the two-price wall", () => {
     expect(keys.has("kind")).toBe(true);
     expect(keys.has("occurredAt")).toBe(true);
     expect(keys.has("categoryName")).toBe(true);
+  });
+});
+
+/**
+ * The Phase 1B worker read builds its select inline instead of exporting an
+ * object, so it is pinned at the source. It was the only role boundary in the
+ * repo with no regression net at all: `computedPayoutCents` and
+ * `reservedBudgetCents` sit one line apart in the same model, and this file's
+ * own thesis is that the failure mode is a word added to an object literal
+ * while doing something else. `reservedBudgetCents` IS the pre-automation
+ * quoted payout, so putting it on any payload alongside a client figure would
+ * breach RULE 2 as squarely as `vaPayoutCents` itself.
+ */
+describe("the worker's residual brief carries no money and no engine internals", () => {
+  const source = readFileSync(join(__dirname, "..", "src/lib/queries/execution.ts"), "utf8");
+  const workerRead = source.slice(
+    source.indexOf("export async function humanPackageForVa"),
+    source.indexOf("executionForAdmin")
+  );
+
+  it("the slice really is the worker read, so the checks below are not vacuous", () => {
+    expect(workerRead).toContain("claimedById: vaId");
+    expect(workerRead).toContain("objective: true");
+    expect(workerRead.length).toBeGreaterThan(400);
+  });
+
+  for (const column of [
+    "computedPayoutCents",
+    "reservedBudgetCents",
+    "clientPriceCents",
+    "actualAiCostMicros",
+    "actualToolCostMicros",
+    "costMicros",
+    "automatedStepCount",
+    "pausedReason",
+    "primitiveId",
+  ]) {
+    it(`never selects ${column}`, () => {
+      expect(workerRead).not.toMatch(new RegExp(`${column}\\s*:\\s*true`));
+    });
+  }
+
+  it("still filters artifacts by visibility, so machine state stays hidden", () => {
+    // Dropping this filter hands the worker payload.json, which is raw engine
+    // state including every cost the run recorded.
+    expect(workerRead).toContain("artifactVisibility");
+    expect(workerRead).toContain('"worker_after_claim"');
+    expect(workerRead).toContain('"deliverable_candidate"');
+    expect(workerRead).not.toContain('"admin_only"');
+  });
+
+  it("scopes the read to the claimant and to statuses that allow files", () => {
+    expect(workerRead).toContain("VA_FILE_ACCESS_STATUSES");
   });
 });

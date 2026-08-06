@@ -27,15 +27,20 @@ enum Role {
   ADMIN
 }
 
-// 14 states: the spec's original 12 plus awaiting_payment and disputed, both
-// approved by the operator when the prepayment + dispute model was added.
-// Do not add states without telling the operator.
+// 15 states: the spec's original 12, plus awaiting_payment and disputed (both
+// approved by the operator when the prepayment + dispute model was added), plus
+// ai_processing (Phase 1B). Do not add states without telling the operator.
 enum TaskStatus {
   submitted
   pricing_review
   quoted
   awaiting_payment // client accepted; task is NOT in the pool until paid
   declined
+  /// Paid, and the machine block of the accepted plan is running. The task is
+  /// NOT claimable here: `open` keeps meaning "a human may claim this". A task
+  /// with no executable plan skips this state entirely and goes straight to
+  /// `open`, exactly as before Phase 1B.
+  ai_processing
   open
   claimed
   submitted_for_qc
@@ -75,6 +80,24 @@ enum VaStatus {
 enum FileKind {
   input
   deliverable
+  /// PHASE 1B — produit par le moteur, jamais téléversé. La route d'upload
+  /// HTTP ne peut pas en créer (elle exige un rôle CLIENT ou VA) ; seul
+  /// createArtifactFile côté serveur le peut.
+  artifact
+}
+
+/// PHASE 1B — qui a le droit de voir un artefact. Une relation au workflow ne
+/// suffit pas : un fichier de travail interne et un candidat au livrable
+/// vivent dans la même table et n'ont pas la même audience.
+enum WorkflowArtifactVisibility {
+  /// Sortie intermédiaire. L'admin seulement, jamais le worker ni le client.
+  admin_only
+  /// Joint au paquet humain : visible au worker UNE FOIS la tâche réclamée.
+  worker_after_claim
+  /// Le fichier candidat que le worker termine et livre. Visible au worker
+  /// après réclamation, et jamais au client tel quel : il n'atteint le client
+  /// qu'en devenant un livrable approuvé par le QC.
+  deliverable_candidate
 }
 
 enum FileScanStatus {
@@ -484,6 +507,11 @@ model Task {
   planVersions       TaskExecutionPlanVersion[] @relation("TaskPlanVersions")
   acceptanceSnapshot TaskAcceptanceSnapshot?
 
+  // Execution (Phase 1B) — admin-facing, plus the residual brief the worker
+  // reads after claiming. Never projected into a client select.
+  workflowRun      TaskWorkflowRun?
+  humanWorkPackage TaskHumanWorkPackage?
+
   @@index([status])
   @@index([clientId])
   @@index([claimedById])
@@ -605,11 +633,25 @@ model File {
   createdAt    DateTime       @default(now())
   purgedAt     DateTime?
 
+  /// PHASE 1B — rattachement RÉEL au workflow qui a produit le fichier, au
+  /// lieu d'un tableau d'identifiants sans intégrité référentielle : un
+  /// artefact ne peut pas pointer vers un run supprimé ni appartenir à un
+  /// autre workflow. Null pour les fichiers client et les livrables worker.
+  workflowRunId     String?
+  workflowRun       TaskWorkflowRun?     @relation(fields: [workflowRunId], references: [id], onDelete: SetNull)
+  workflowStepRunId String?
+  workflowStepRun   TaskWorkflowStepRun? @relation(fields: [workflowStepRunId], references: [id], onDelete: SetNull)
+  /// PHASE 1B — l'audience de l'artefact, explicite. Null pour tout ce qui
+  /// n'est pas kind=artifact ; la route de téléchargement refuse un artefact
+  /// dont la visibilité est nulle plutôt que de deviner.
+  artifactVisibility WorkflowArtifactVisibility?
+
   accessLogs FileAccessLog[]
 
   @@index([taskId])
   @@index([uploaderId])
   @@index([scanStatus])
+  @@index([workflowRunId])
 }
 
 model FileAccessLog {
@@ -707,7 +749,29 @@ model AiUsage {
   stopReason      String?
   createdAt       DateTime @default(now())
 
+  /// PHASE 1B — mesure des appels qui NE SONT PAS rattachés à une étape de
+  /// workflow : intake, classification, planification, critique, assistant.
+  /// Ces trois derniers arrivent avant qu'un plan accepté existe, donc ils ne
+  /// peuvent pas porter de stepRunId et n'ont rien à faire dans
+  /// TaskToolInvocation. Constat de l'audit : jusqu'ici le poste le plus cher
+  /// du produit (Opus 5, thinking adaptatif, deux fois par tâche) ne mesurait
+  /// rien du tout.
+  ///
+  /// Tous nullables ou avec défaut : les lignes d'intake déjà en base restent
+  /// valides sans backfill, et `purpose` par défaut les décrit correctement
+  /// puisque l'intake était le seul écrivain avant cette colonne.
+  taskId           String?
+  purpose          String  @default("intake")
+  provider         String  @default("anthropic")
+  cacheWriteTokens Int     @default(0)
+  /// En MICRODOLLARS entiers (1 $ = 1 000 000). Un appel de classification
+  /// coûte ~5 000 micros, soit un demi-cent : en cents entiers il serait
+  /// arrondi à 0 ou à 1 et la somme serait fausse. Les cents n'apparaissent
+  /// qu'à l'affichage.
+  costMicros       Int     @default(0)
+
   @@index([userId, createdAt])
+  @@index([taskId])
 }
 
 // Manual payment tracking history (no payment processing).
@@ -1417,6 +1481,7 @@ model TaskExecutionPlanVersion {
 
   quotedOnTasks Task[]                   @relation("QuotedPlanVersion")
   snapshots     TaskAcceptanceSnapshot[]
+  workflowRuns  TaskWorkflowRun[]
 
   @@unique([taskId, version])
 }
@@ -1436,6 +1501,27 @@ model TaskExecutionPlanStep {
   /// coûte zéro et c'est précisément un des drapeaux de la critique.
   tool        String?
 
+  /// PHASE 1B — la primitive exécutable à laquelle l'étape s'engage, et la
+  /// version de cette primitive AU MOMENT OÙ LA VERSION DE PLAN A ÉTÉ ÉCRITE.
+  /// Les deux sont figées ici : si le registre publie plus tard une v2, un
+  /// plan déjà accepté reste épinglé à la v1 et le compilateur bascule
+  /// l'étape en travail humain plutôt que de lui appliquer en silence un
+  /// comportement que le client n'a jamais accepté. Le modèle choisit l'id,
+  /// AVANT le devis ; le CODE estampille la version.
+  primitiveId      String?
+  primitiveVersion Int?
+
+  /// PHASE 1B — l'effort humain décomposé. `fixedMinutes` ne dépend pas du
+  /// volume (ouvrir les fichiers, lire le brief, relecture finale),
+  /// `secondsPerUnit` est le coût par unité. Les trois estimations PERT
+  /// ci-dessous chiffrent le plan COMPLET au devis et ne bougent pas : cette
+  /// décomposition ne sert qu'à chiffrer le RÉSIDUEL une fois que la machine
+  /// a résolu une partie des unités. En secondes parce que le travail par
+  /// ligne descend couramment sous la minute, et en entier parce que la
+  /// chaîne qui mène au payout ne doit contenir aucun flottant.
+  fixedMinutes   Int?
+  secondsPerUnit Int?
+
   estimatedMinutesOptimistic   Int
   estimatedMinutesLikely       Int
   estimatedMinutesConservative Int
@@ -1449,6 +1535,9 @@ model TaskExecutionPlanStep {
   /// Ordres (champ `order`) des étapes préalables — des entiers plutôt que
   /// des FK pour rester trivialement copiable d'une version à la suivante.
   dependsOnOrder     Int[]
+
+  /// Phase 1B — les exécutions de cette étape (une par run).
+  stepRuns TaskWorkflowStepRun[]
 
   @@unique([planVersionId, order])
 }
@@ -1516,4 +1605,263 @@ model TaskAcceptanceSnapshot {
   /// Précédent TaskEvent.actorId : chaîne nue, pas de FK.
   acceptedByUserId String
   createdAt        DateTime @default(now())
+
+  /// Phase 1B — l'exécution de ce contrat, s'il y en a une.
+  workflowRun TaskWorkflowRun?
+}
+
+// ---------- Phase 1B : exécution du plan accepté ----------
+
+enum TaskWorkflowRunStatus {
+  /// Compilation en cours (état transitoire, écrit puis remplacé dans la
+  /// même transaction — visible seulement si le processus meurt pendant).
+  compiling
+  /// Des étapes machine restent à exécuter.
+  running
+  /// Le bloc machine est terminé, le paquet humain est publié.
+  awaiting_human
+  /// Arrêté et en attente d'une décision admin (budget dépassé, étape
+  /// épuisée). Ne reprend jamais tout seul.
+  paused
+  /// Abandonné : la tâche est repartie en travail humain intégral.
+  abandoned
+  done
+}
+
+enum TaskWorkflowStepStatus {
+  /// Ses dépendances ne sont pas encore satisfaites.
+  pending
+  /// Exécutable maintenant.
+  ready
+  /// Réclamée par un runner qui détient un bail.
+  running
+  done
+  /// A échoué et sera reprise après `nextAttemptAt`, jusqu'à MAX_ATTEMPTS.
+  failed
+  /// Le compilateur l'a classée humaine : elle rejoint le paquet résiduel.
+  handed_to_human
+}
+
+enum WorkflowExecutionMode {
+  automated
+  human
+}
+
+/// UNE EXÉCUTION PAR CONTRAT ACCEPTÉ.
+///
+/// L'unicité porte sur `snapshotId`, pas sur `taskId` : ce qui s'exécute est
+/// un contrat, pas une tâche. Les deux ont la même cardinalité aujourd'hui
+/// (TaskAcceptanceSnapshot.taskId est déjà @unique) mais l'énoncé juste est
+/// celui-là, et la FK vers le contrat devient explicite.
+model TaskWorkflowRun {
+  id String @id @default(cuid())
+
+  /// Le contrat exécuté. Restrict : un snapshot ne disparaît pas sous un run.
+  snapshotId String                 @unique
+  snapshot   TaskAcceptanceSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Restrict)
+
+  /// @unique aussi, et les deux contraintes sont voulues. `snapshotId` porte
+  /// la vérité sémantique (un run exécute un CONTRAT) ; `taskId` porte la
+  /// garantie opérationnelle (jamais deux runs sur une tâche). Elles sont
+  /// équivalentes aujourd'hui puisque TaskAcceptanceSnapshot.taskId est
+  /// @unique — et si elles cessaient de l'être, la base refuserait au lieu de
+  /// laisser passer.
+  taskId String @unique
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// Copié depuis le snapshot à la compilation. Redondant avec
+  /// snapshot.planVersionId et c'est voulu : le run affirme lui-même quelle
+  /// version il exécute, donc une lecture du run seul suffit à l'audit.
+  planVersionId String
+  planVersion   TaskExecutionPlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Restrict)
+
+  status TaskWorkflowRunStatus @default(compiling)
+
+  /// Compte des étapes après compilation — la répartition machine/humain
+  /// calculée en CODE, jamais annoncée par un modèle.
+  automatedStepCount Int @default(0)
+  humanStepCount     Int @default(0)
+
+  /// Unités (lignes, enregistrements) du mandat. `unitsTotal` vient de la
+  /// classification ; `unitsResolvedAutomatically` est rempli par
+  /// split.exceptions. Les deux alimentent le calcul du résiduel.
+  unitsTotal                 Int?
+  unitsResolvedAutomatically Int?
+
+  /// Coûts RÉELS, en microdollars entiers (1 $ = 1 000 000).
+  actualAiCostMicros   Int @default(0)
+  actualToolCostMicros Int @default(0)
+
+  /// Renseigné quand status = paused : ce que l'admin doit trancher.
+  pausedReason String?
+
+  compiledAt DateTime?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  steps         TaskWorkflowStepRun[]
+  humanPackage  TaskHumanWorkPackage?
+  artifacts     File[]
+
+  @@index([status])
+  @@index([taskId])
+}
+
+/// UNE LIGNE PAR ÉTAPE COMPILÉE, machine ou humaine.
+model TaskWorkflowStepRun {
+  id    String          @id @default(cuid())
+  runId String
+  run   TaskWorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  /// L'étape du plan accepté dont celle-ci est l'exécution. Restrict : le
+  /// plan est le contrat, il ne s'efface pas sous son exécution.
+  planStepId String
+  planStep   TaskExecutionPlanStep @relation(fields: [planStepId], references: [id], onDelete: Restrict)
+
+  order Int
+
+  /// Recopiés depuis l'étape de plan au moment de la compilation, pour que la
+  /// lecture d'un run n'ait jamais à re-résoudre le contrat.
+  primitiveId      String?
+  primitiveVersion Int?
+  executionMode    WorkflowExecutionMode
+  status           TaskWorkflowStepStatus @default(pending)
+
+  /// Pourquoi cette étape est humaine (`human_step`, `no_primitive`,
+  /// `unknown_primitive`, `primitive_version_changed`, `depends_on_human`).
+  /// Null pour une étape automatisée. C'est ce que la console admin affiche.
+  handoffReason String?
+
+  /// BAIL ET REPRISE. `status = running` seul ne suffit pas : un runner qui
+  /// meurt après avoir réclamé laisserait l'étape bloquée pour toujours —
+  /// exactement le défaut corrigé sur MoneyIntent. Une étape `running` dont
+  /// le bail est expiré est réclamable par un autre runner.
+  attempts       Int       @default(0)
+  lockedAt       DateTime?
+  /// Identifiant de l'invocation détentrice. Diagnostic seulement : c'est le
+  /// bail, pas ce champ, qui décide qui peut réclamer.
+  lockedBy       String?
+  leaseExpiresAt DateTime?
+  /// Backoff déterministe : l'étape n'est pas re-sélectionnée avant cette
+  /// date. Sans ce champ, un échec transitoire est réessayé en boucle serrée
+  /// à chaque tick de cron.
+  nextAttemptAt  DateTime?
+  lastError      String?
+
+  /// Résumés bornés, pour la console admin. Jamais la sortie complète : les
+  /// données vivent dans les artefacts.
+  inputSummary  Json?
+  outputSummary Json?
+
+  /// Coût réel de cette étape, en microdollars entiers.
+  actualCostMicros Int @default(0)
+
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  invocations TaskToolInvocation[]
+  artifacts   File[]
+
+  @@unique([runId, order])
+  @@index([status, nextAttemptAt])
+  @@index([leaseExpiresAt])
+}
+
+/// UNE LIGNE PAR TENTATIVE D'INVOCATION. Append-only : une tentative ratée
+/// reste inscrite, parce que c'est elle qui a coûté de l'argent.
+///
+/// Trois identifiants distincts, à ne pas confondre :
+///   - `operationKey` : la clé LOGIQUE STABLE de l'opération. Identique d'une
+///     tentative à l'autre. C'est elle qui dit « c'est le même travail ».
+///   - `attempt` : le numéro de tentative. C'est lui qui rend deux lignes
+///     distinctes pour la même opération.
+///   - `providerIdempotencyKey` : la clé transmise au fournisseur externe,
+///     QUAND il en accepte une. Nullable, parce que tous n'en acceptent pas.
+///
+/// Ce que cette table NE prétend PAS garantir : qu'un fournisseur externe ne
+/// facturera jamais deux fois. Si un appel aboutit chez le fournisseur puis
+/// que le processus meurt avant l'écriture, la reprise rappellera. Sans clé
+/// d'idempotence côté fournisseur, cet appel est facturé deux fois et la
+/// seule chose que nous puissions faire honnêtement est de l'avoir écrit.
+model TaskToolInvocation {
+  id        String              @id @default(cuid())
+  stepRunId String
+  stepRun   TaskWorkflowStepRun @relation(fields: [stepRunId], references: [id], onDelete: Cascade)
+
+  primitiveId String
+  operationKey String
+  attempt      Int
+  providerIdempotencyKey String?
+
+  provider String
+  model    String?
+
+  inputTokens      Int @default(0)
+  outputTokens     Int @default(0)
+  cacheReadTokens  Int @default(0)
+  cacheWriteTokens Int @default(0)
+  /// Recherches web facturées à l'unité par le fournisseur.
+  searchCount      Int @default(0)
+  /// En microdollars entiers, calculé en code depuis une table de tarifs —
+  /// jamais un chiffre annoncé par un modèle.
+  costMicros       Int @default(0)
+
+  durationMs Int     @default(0)
+  ok         Boolean
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@unique([stepRunId, operationKey, attempt])
+  @@index([stepRunId])
+}
+
+/// LE MANDAT RÉSIDUEL REMIS À UN HUMAIN.
+///
+/// Ce n'est PAS une tâche enfant et ce n'est pas réclamable en soi : la tâche
+/// reste une, le bassin la voit une fois, le QC la voit une fois, le payout
+/// est unique. Cette table ne fait que remplacer le brief générique par un
+/// brief réduit quand il en existe un.
+///
+/// IMMUABLE DÈS LA RÉCLAMATION : un trigger Postgres refuse tout UPDATE dès
+/// que la tâche porte un `claimedById`. Un travailleur ne peut pas voir son
+/// mandat, son payout ou sa liste d'unités changer sous lui après avoir
+/// accepté le travail.
+model TaskHumanWorkPackage {
+  id    String          @id @default(cuid())
+  runId String          @unique
+  run   TaskWorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  /// @unique : un run est déjà unique par tâche, donc un paquet l'est aussi.
+  /// La contrainte est portée par la base plutôt que déduite, pour qu'aucun
+  /// chemin ne puisse publier deux mandats résiduels sur la même tâche.
+  taskId String @unique
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  /// La version de plan dont ce paquet dérive — le contrat, encore.
+  planVersionId String
+
+  /// Texte remis au travailleur. Assaini par le même sanitiseur que le
+  /// périmètre client : pas de tiret cadratin, longueur bornée.
+  objective         String
+  whatIsAlreadyDone String
+  instructions      String
+  checklist         String[]
+
+  /// Le compte qui justifie le payout.
+  unitsRemaining Int
+  unitsTotal     Int
+
+  /// Minutes calculées par residual.ts : fixe + (par-unité × restantes).
+  estimatedMinutes Int
+  /// Le payout du résiduel, déterministe, écrit avant l'entrée au bassin.
+  computedPayoutCents Int
+  /// Le vaPayoutCents approuvé au devis — le budget de référence, conservé
+  /// pour que l'écart reste auditable après coup.
+  reservedBudgetCents Int
+
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
 }

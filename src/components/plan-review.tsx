@@ -3,6 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { editPlanVersion } from "@/server/actions/admin-plan";
+// From the vocabulary module, NOT from schemas.ts: this is a client component
+// and schemas.ts is server-only, so importing it here would fail the build.
+import { PLAN_PRIMITIVE_IDS } from "@/lib/ai-work-engine/primitive-vocabulary";
 import {
   Badge,
   Card,
@@ -33,6 +36,10 @@ export type PlanStepView = {
   executor: "ai" | "human" | "deterministic_code";
   humanRole: "worker" | "specialist" | "reviewer" | "admin" | null;
   tool: string | null;
+  primitiveId: string | null;
+  primitiveVersion: number | null;
+  fixedMinutes: number | null;
+  secondsPerUnit: number | null;
   estimatedMinutesOptimistic: number;
   estimatedMinutesLikely: number;
   estimatedMinutesConservative: number;
@@ -126,6 +133,9 @@ type EditableStep = {
   executor: (typeof EXECUTORS)[number];
   humanRole: (typeof HUMAN_ROLES)[number] | "";
   tool: string;
+  primitiveId: string;
+  fixedMinutes: string;
+  secondsPerUnit: string;
   optimistic: string;
   likely: string;
   conservative: string;
@@ -145,6 +155,9 @@ function toEditable(s: PlanStepView): EditableStep {
     executor: s.executor,
     humanRole: s.humanRole ?? "",
     tool: s.tool ?? "",
+    primitiveId: s.primitiveId ?? "",
+    fixedMinutes: s.fixedMinutes === null ? "" : String(s.fixedMinutes),
+    secondsPerUnit: s.secondsPerUnit === null ? "" : String(s.secondsPerUnit),
     optimistic: String(s.estimatedMinutesOptimistic),
     likely: String(s.estimatedMinutesLikely),
     conservative: String(s.estimatedMinutesConservative),
@@ -164,6 +177,9 @@ const BLANK_STEP: EditableStep = {
   executor: "human",
   humanRole: "worker",
   tool: "",
+  primitiveId: "",
+  fixedMinutes: "",
+  secondsPerUnit: "",
   optimistic: "0",
   likely: "0",
   conservative: "0",
@@ -219,6 +235,15 @@ export function PlanReview({ data }: { data: PlanReviewData }) {
           executor: s.executor,
           humanRole: s.executor === "human" ? (s.humanRole || "worker") : null,
           tool: s.tool || null,
+          // A human step may never claim a primitive (the schema rejects it),
+          // so demoting a step to human clears the primitive rather than
+          // leaving a stale id behind for the compiler to trip over.
+          primitiveId: s.executor === "human" ? null : (s.primitiveId || null),
+          // Empty means "no decomposition", which the residual reads as a
+          // signal to fall back to the full PERT estimate. Zero would mean
+          // "this step genuinely costs nothing", which is a different claim.
+          fixedMinutes: s.fixedMinutes === "" ? null : Number(s.fixedMinutes),
+          secondsPerUnit: s.secondsPerUnit === "" ? null : Number(s.secondsPerUnit),
           estimatedMinutesOptimistic: Number(s.optimistic || 0),
           estimatedMinutesLikely: Number(s.likely || 0),
           estimatedMinutesConservative: Number(s.conservative || 0),
@@ -364,6 +389,12 @@ export function PlanReview({ data }: { data: PlanReviewData }) {
                         </p>
                         <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] text-[#5B6069]">
                           <span>{EXECUTOR_LABEL[s.executor]}{s.humanRole ? ` (${s.humanRole})` : ""}</span>
+                          {/* The primitive is the difference between a step
+                              the engine runs and one a person does. It is not
+                              a detail: it is the whole execution contract. */}
+                          {s.primitiveId ? (
+                            <span className="text-[#166049]">· {s.primitiveId}</span>
+                          ) : null}
                           {s.tool ? <span>· {s.tool}</span> : null}
                           <span className="tabular-nums">
                             · {s.estimatedMinutesLikely}m ({s.estimatedMinutesOptimistic}-{s.estimatedMinutesConservative})
@@ -463,6 +494,49 @@ export function PlanReview({ data }: { data: PlanReviewData }) {
                     <Field label="Description">
                       <textarea rows={2} className={inputClass} value={s.description} onChange={(e) => setStep(i, { description: e.target.value })} />
                     </Field>
+                    {/*
+                      The execution contract. The primitive is what decides
+                      whether the engine runs this step or hands it to a
+                      person, and the two decomposition fields are what the
+                      residual payout is computed from. Editing a plan without
+                      them would silently turn an automatable plan into an
+                      entirely human one.
+                    */}
+                    <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                      <Field label="Primitive (machine steps only)">
+                        <select
+                          className={inputClass}
+                          value={s.primitiveId}
+                          disabled={s.executor === "human"}
+                          onChange={(e) => setStep(i, { primitiveId: e.target.value })}
+                        >
+                          <option value="">none (stays human)</option>
+                          {PLAN_PRIMITIVE_IDS.map((p) => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Fixed human min.">
+                        <input
+                          inputMode="numeric"
+                          className={inputClass}
+                          placeholder="blank = use PERT"
+                          disabled={s.executor !== "human"}
+                          value={s.fixedMinutes}
+                          onChange={(e) => setStep(i, { fixedMinutes: e.target.value.replace(/\D/g, "") })}
+                        />
+                      </Field>
+                      <Field label="Human sec. per unit">
+                        <input
+                          inputMode="numeric"
+                          className={inputClass}
+                          placeholder="blank = use PERT"
+                          disabled={s.executor !== "human"}
+                          value={s.secondsPerUnit}
+                          onChange={(e) => setStep(i, { secondsPerUnit: e.target.value.replace(/\D/g, "") })}
+                        />
+                      </Field>
+                    </div>
                     <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-5">
                       <Field label="Min (opt.)">
                         <input inputMode="numeric" className={inputClass} value={s.optimistic} onChange={(e) => setStep(i, { optimistic: e.target.value.replace(/\D/g, "") })} />

@@ -14,6 +14,8 @@ import {
   PayoutForm,
 } from "@/components/admin-money-actions";
 import { RecheckFileButton } from "@/components/admin-file-actions";
+import { ExecutionPanel } from "@/components/execution-panel";
+import { executionForAdmin } from "@/lib/queries/execution";
 import {
   DisputeDecisionForm,
   RevisionInstructionsForm,
@@ -61,6 +63,9 @@ export default async function AdminTaskDetail({
   const task = await taskForAdmin(id);
   if (!task) notFound();
   const events = await taskEventsForAdmin(id);
+  // Null for every task quoted without an executable plan, which is most of
+  // them: the panel simply does not render.
+  const execution = await executionForAdmin(id);
   const isTerminal = TERMINAL_STATUSES.includes(task.status);
   const canReassign = REASSIGNABLE.includes(task.status) && task.claimedBy != null;
   // `completed` is non-terminal (dispute window) but cannot be cancelled —
@@ -186,6 +191,12 @@ export default async function AdminTaskDetail({
             </ul>
           </CardBody>
         </Card>
+      ) : null}
+
+      {execution ? (
+        <div className="mb-4">
+          <ExecutionPanel run={execution} />
+        </div>
       ) : null}
 
       <Card className="mb-4">

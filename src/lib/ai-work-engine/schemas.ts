@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { PLAN_PRIMITIVE_IDS } from "@/lib/ai-work-engine/primitive-vocabulary";
 
 /**
  * THE SHAPES OF EVERY MODEL OUTPUT IN THE WORK ENGINE.
@@ -52,6 +53,39 @@ export const CONFIDENCE_LEVELS = ["low", "medium", "high"] as const;
 export const PLAN_TOOLS = ["web_search", "internal_script", "spreadsheet", "manual"] as const;
 
 export const MAX_PLAN_STEPS = 12;
+
+/**
+ * THE EXECUTABLE PRIMITIVES — the closed vocabulary a plan may commit to.
+ *
+ * The map is id → CURRENT VERSION. Both are frozen onto the step when the
+ * plan version is written, and the compiler will only execute a step whose
+ * pinned version still matches this table (Phase 1B). Bump a version here the
+ * moment a primitive's OBSERVABLE BEHAVIOUR changes, and every already
+ * accepted plan pinned to the old version degrades to human work instead of
+ * silently getting the new behaviour. A contract the client accepted is not a
+ * place to ship an upgrade.
+ *
+ * `primitive_id` is chosen by the PLANNER, before the quote. Nothing
+ * re-derives it after acceptance: the compiler is pure code and a model never
+ * gets to reinterpret a signed plan. `primitive_version` is NOT chosen by the
+ * model — the code stamps it from this table at write time.
+ *
+ * The registry (src/lib/ai-work-engine/registry.ts) must implement exactly
+ * these ids at exactly these versions; a test pins the two together, the same
+ * way PLAN_TOOLS is pinned to the cost catalog.
+ */
+/**
+ * The table itself lives in primitive-vocabulary.ts, which imports NOTHING —
+ * this file is server-only, and the admin plan editor is a client component
+ * that has to render the list in a <select>. Re-exported here so that every
+ * server-side import site keeps reading it from the schema module.
+ */
+export {
+  PLAN_PRIMITIVES,
+  PLAN_PRIMITIVE_IDS,
+  currentPrimitiveVersion,
+  type PlanPrimitiveId,
+} from "@/lib/ai-work-engine/primitive-vocabulary";
 
 // ── Stage 1: classification ──
 
@@ -121,6 +155,22 @@ export const planStepOutputSchema = z
     // An off-vocabulary tool is priced at zero and critique-flagged — a
     // plan must never die in validation because of a weird tool string.
     tool: z.string().max(200).nullable(),
+    /**
+     * The executable primitive this step commits to, or null for work no
+     * primitive covers. An id outside PLAN_PRIMITIVES parses fine here and
+     * is treated as null by the compiler: an invented id must degrade to
+     * human work, never crash a plan the client is waiting on.
+     */
+    primitive_id: z.string().max(120).nullable(),
+    /**
+     * Human effort split into its two real components, so the residual after
+     * automation can be costed honestly. A 15-minute set-up cost does not
+     * shrink because only 2 of 80 rows are left. Seconds (not minutes) per
+     * unit because per-row work is routinely under a minute, and an integer
+     * keeps the whole chain to the payout free of floats.
+     */
+    fixed_minutes: z.number().int().min(0).max(6000).nullable(),
+    seconds_per_unit: z.number().int().min(0).max(36_000).nullable(),
     estimated_minutes_optimistic: z.number().int().min(0).max(6000),
     estimated_minutes_likely: z.number().int().min(0).max(6000),
     estimated_minutes_conservative: z.number().int().min(0).max(6000),
@@ -154,6 +204,16 @@ export const planStepOutputSchema = z
         message: "A human step needs a human role.",
       });
     }
+    // A human step cannot name a primitive: primitives are what the machine
+    // does. Left as a parse error rather than a silent strip so the prompt
+    // and the schema cannot drift apart unnoticed.
+    if (s.executor === "human" && s.primitive_id !== null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["primitive_id"],
+        message: "A human step cannot claim an executable primitive.",
+      });
+    }
   });
 
 export const planOutputSchema = z.object({
@@ -178,6 +238,11 @@ const PLAN_STEP_JSON_SCHEMA = {
       anyOf: [{ type: "string", enum: [...STEP_HUMAN_ROLES] }, { type: "null" }],
     },
     tool: { type: ["string", "null"] },
+    primitive_id: {
+      anyOf: [{ type: "string", enum: [...PLAN_PRIMITIVE_IDS] }, { type: "null" }],
+    },
+    fixed_minutes: { type: ["number", "null"] },
+    seconds_per_unit: { type: ["number", "null"] },
     estimated_minutes_optimistic: { type: "number" },
     estimated_minutes_likely: { type: "number" },
     estimated_minutes_conservative: { type: "number" },
@@ -195,6 +260,9 @@ const PLAN_STEP_JSON_SCHEMA = {
     "executor",
     "human_role",
     "tool",
+    "primitive_id",
+    "fixed_minutes",
+    "seconds_per_unit",
     "estimated_minutes_optimistic",
     "estimated_minutes_likely",
     "estimated_minutes_conservative",
@@ -238,6 +306,13 @@ export const editStepInputSchema = z
     executor: z.enum(STEP_EXECUTORS),
     humanRole: z.enum(STEP_HUMAN_ROLES).nullable(),
     tool: z.string().trim().max(200).nullable(),
+    // The admin may change which primitive a step commits to. The VERSION is
+    // never in this payload: the code re-stamps it from PLAN_PRIMITIVES when
+    // it writes the new plan version, so an edit can never pin a version the
+    // registry does not currently implement.
+    primitiveId: z.string().trim().max(120).nullable(),
+    fixedMinutes: z.coerce.number().int().min(0).max(6000).nullable(),
+    secondsPerUnit: z.coerce.number().int().min(0).max(36_000).nullable(),
     estimatedMinutesOptimistic: z.coerce.number().int().min(0).max(6000),
     estimatedMinutesLikely: z.coerce.number().int().min(0).max(6000),
     estimatedMinutesConservative: z.coerce.number().int().min(0).max(6000),
@@ -269,6 +344,13 @@ export const editStepInputSchema = z
         code: "custom",
         path: ["humanRole"],
         message: "A human step needs a human role.",
+      });
+    }
+    if (s.executor === "human" && s.primitiveId !== null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["primitiveId"],
+        message: "A human step cannot claim an executable primitive.",
       });
     }
   });
