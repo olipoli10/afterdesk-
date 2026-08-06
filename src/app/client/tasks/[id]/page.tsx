@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
+import type { PaymentStatus } from "@prisma/client";
 import { requireRole } from "@/lib/authz";
-import { taskForClient, executionReportForClient } from "@/lib/queries/tasks";
+import {
+  taskForClient,
+  executionReportForClient,
+  latestPaymentStatusForClient,
+} from "@/lib/queries/tasks";
 import { expireStaleQuotes } from "@/server/sweeps";
 import { getSettings } from "@/lib/settings";
 import { computeQuotedBy } from "@/lib/schedule";
@@ -28,6 +33,33 @@ import {
   moneyClient,
 } from "@/components/ui";
 
+/**
+ * The 48h capture window and the 72h dispute window are misaligned, so a
+ * dispute can still land on a task whose payment was already captured. A
+ * task cancelled from that state was charged and then refunded, not "never
+ * charged" — this picks the sentence that matches what actually happened to
+ * the money instead of assuming the payment was still just a hold.
+ */
+function cancelledPaymentNote(status: PaymentStatus | null): string {
+  switch (status) {
+    case "authorized":
+      return "Your card was authorized but never charged.";
+    case "received":
+    case "partially_refunded":
+    case "refunded":
+    case "chargeback":
+      return "Your payment was refunded.";
+    case "pending":
+    case "cancelled":
+    case null:
+      return "You were not charged.";
+    default: {
+      const unreachable: never = status;
+      throw new Error(`Unhandled payment status: ${unreachable}`);
+    }
+  }
+}
+
 export default async function ClientTaskPage({
   params,
 }: {
@@ -44,6 +76,8 @@ export default async function ClientTaskPage({
   // Ownership is re-checked inside the query rather than trusted from the read
   // above, so this stays safe if it is ever reused on another page.
   const report = await executionReportForClient(id, user.id);
+  const cancelledPaymentStatus =
+    cs === "cancelled" ? await latestPaymentStatusForClient(id, user.id) : null;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -225,7 +259,8 @@ export default async function ClientTaskPage({
                   on <LocalTime iso={task.cancelledAt} dateStyle="short" />
                 </>
               ) : null}
-              . You were not charged. If you still need it done, submit it again.
+              . {cancelledPaymentNote(cancelledPaymentStatus)} If you still need it done, submit
+              it again.
             </p>
             <div className="mt-3">
               <LinkButton href="/client/tasks/new" variant="secondary">
