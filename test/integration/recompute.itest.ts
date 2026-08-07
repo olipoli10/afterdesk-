@@ -74,6 +74,118 @@ describe("an in-place mutation with NO count change is detected", () => {
     expect(await eventsFor(task.id)).toHaveLength(2);
   });
 
+  it("A TOOL INVOCATION SETTLED IN PLACE CHANGES THE FINGERPRINT (1D-alpha0)", async () => {
+    /**
+     * The gap this closes. TaskToolInvocation was absent from
+     * fingerprintSources entirely: provider spend was visible only through
+     * run.actualAiCostMicros, so an invocation edited WITHOUT moving that
+     * counter left the actual stale forever.
+     *
+     * The scenario is real in this slice: an attempt recorded as
+     * `dispatched_then_cancelled` with an unknown cost is later settled to a
+     * measured amount. Same row, same row COUNT, new facts.
+     */
+    const { task, snapshot } = await createAcceptedTask();
+    const planVersion = await prisma.taskExecutionPlanVersion.create({
+      data: {
+        taskId: task.id,
+        version: 1,
+        source: "ai_generated",
+        rawOutput: {},
+        deliverableDescription: "a file",
+        internalCostLikelyCents: 3_000,
+        internalCostConservativeCents: 4_000,
+        suggestedPriceCents: 10_000,
+        suggestedVaPayoutCents: 2_000,
+        calibration: "uncalibrated",
+      },
+      select: { id: true },
+    });
+    const planStep = await prisma.taskExecutionPlanStep.create({
+      data: {
+        planVersionId: planVersion.id,
+        order: 1,
+        title: "machine step",
+        description: "d",
+        executor: "ai",
+        acceptanceCriteria: [],
+        estimatedMinutesOptimistic: 0,
+        estimatedMinutesLikely: 0,
+        estimatedMinutesConservative: 0,
+        verificationMethod: "operator check",
+        riskLevel: "low",
+        dependsOnOrder: [],
+      },
+      select: { id: true },
+    });
+    const run = await prisma.taskWorkflowRun.create({
+      data: {
+        snapshotId: snapshot.id,
+        taskId: task.id,
+        planVersionId: planVersion.id,
+        status: "running",
+      },
+      select: { id: true },
+    });
+    const stepRun = await prisma.taskWorkflowStepRun.create({
+      data: {
+        runId: run.id,
+        planStepId: planStep.id,
+        order: 1,
+        executionMode: "automated",
+        status: "running",
+      },
+      select: { id: true },
+    });
+    const invocation = await prisma.taskToolInvocation.create({
+      data: {
+        stepRunId: stepRun.id,
+        primitiveId: "research.web_search",
+        operationKey: "op-1",
+        attempt: 1,
+        provider: "anthropic",
+        costMicros: 0,
+        ok: false,
+        dispatchState: "dispatched_then_cancelled",
+        errorClass: "timeout",
+      },
+      select: { id: true },
+    });
+
+    await computeTaskOperationalActual(task.id, "seed");
+    const before = await prisma.taskOperationalActual.findUniqueOrThrow({
+      where: { taskId: task.id },
+      select: { inputFingerprint: true, dataQualityFlags: true },
+    });
+    // The uncertainty is announced rather than hidden behind a zero.
+    expect(before.dataQualityFlags).toContain("SPEND_UNCERTAIN");
+
+    const countBefore = await prisma.taskToolInvocation.count({
+      where: { stepRun: { run: { taskId: task.id } } },
+    });
+
+    // Settle it in place. No row arrives, no row leaves.
+    await prisma.taskToolInvocation.update({
+      where: { id: invocation.id },
+      data: { dispatchState: "settled", costMicros: 42_000, ok: true, errorClass: null },
+    });
+
+    expect(
+      await prisma.taskToolInvocation.count({
+        where: { stepRun: { run: { taskId: task.id } } },
+      })
+    ).toBe(countBefore);
+
+    const second = await computeTaskOperationalActual(task.id, "settle");
+    expect(second.outcome).toBe("written");
+    const after = await prisma.taskOperationalActual.findUniqueOrThrow({
+      where: { taskId: task.id },
+      select: { inputFingerprint: true, dataQualityFlags: true },
+    });
+    expect(after.inputFingerprint).not.toBe(before.inputFingerprint);
+    expect(after.dataQualityFlags).not.toContain("SPEND_UNCERTAIN");
+  });
+
   it("capturedAmountCents differing from the authorized amount flags the mismatch", async () => {
     const { task } = await createAcceptedTask({ clientPriceCents: 87_000 });
     await prisma.payment.create({

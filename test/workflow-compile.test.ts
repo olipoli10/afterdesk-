@@ -188,6 +188,70 @@ describe("the registry implements exactly the planner's vocabulary", () => {
     }
   });
 
+  it("PLAN_PRIMITIVE_MODES matches REGISTRY entry by entry (1D-alpha0)", async () => {
+    /**
+     * The pin that makes the compiler's mode check real. registry.ts is
+     * `server-only` and compile.ts is pure, so the compiler cannot import the
+     * registry and had to be handed the same facts in an import-free table.
+     * Two tables mean drift, so drift is what this test forbids.
+     */
+    const { REGISTRY } = await import("@/lib/ai-work-engine/registry");
+    const { PLAN_PRIMITIVE_MODES } = await import(
+      "@/lib/ai-work-engine/primitive-vocabulary"
+    );
+    expect(Object.keys(PLAN_PRIMITIVE_MODES).sort()).toEqual(Object.keys(REGISTRY).sort());
+    for (const [id, p] of Object.entries(REGISTRY)) {
+      expect(
+        PLAN_PRIMITIVE_MODES[id as keyof typeof PLAN_PRIMITIVE_MODES],
+        `${id} mode drifted between the registry and the compiler's table`
+      ).toBe(p.mode);
+    }
+  });
+
+  it("the compiler really refuses a non-executable mode, not just in a comment", async () => {
+    /**
+     * registry.ts claimed since 1B that "the compiler refuses any step whose
+     * primitive is not READ or PREPARE". It did not: compile.ts never
+     * imported REGISTRY and contained no mode check at all. This proves the
+     * refusal exists by driving the predicate the compiler actually calls.
+     */
+    const { primitiveModeOf, EXECUTABLE_PRIMITIVE_MODES } = await import(
+      "@/lib/ai-work-engine/primitive-vocabulary"
+    );
+    expect(primitiveModeOf("research.web_search")).toBe("READ");
+    expect(primitiveModeOf("build.csv")).toBe("PREPARE");
+    // An id with no declared mode cannot be executed.
+    expect(primitiveModeOf("crm.write_contacts")).toBeNull();
+    expect(EXECUTABLE_PRIMITIVE_MODES).toEqual(["READ", "PREPARE"]);
+    expect(EXECUTABLE_PRIMITIVE_MODES).not.toContain("WRITE");
+
+    const source = readFileSync(
+      join(__dirname, "..", "src/lib/ai-work-engine/compile.ts"),
+      "utf8"
+    );
+    expect(source).toContain("primitiveModeOf");
+    expect(source).toContain("EXECUTABLE_PRIMITIVE_MODES");
+  });
+
+  it("a billable primitive declares a spend cap and a pure one declares zero", async () => {
+    // The type already forbids the mismatch; this pins the VALUES so a cap
+    // cannot be quietly raised to something unbounded.
+    const { REGISTRY } = await import("@/lib/ai-work-engine/registry");
+    for (const [id, p] of Object.entries(REGISTRY)) {
+      if (p.billable) {
+        expect(p.maxCostMicrosPerAttempt, `${id} must cap its spend`).toBeGreaterThan(0);
+        // The ceiling of the ceiling: $5 for one attempt of one step is beyond
+        // anything this registry should ever hold, whatever the model.
+        expect(p.maxCostMicrosPerAttempt, `${id} cap is implausibly high`).toBeLessThanOrEqual(5_000_000);
+      } else {
+        expect(p.maxCostMicrosPerAttempt, `${id} is pure and must not spend`).toBe(0);
+      }
+    }
+    // The three pure primitives are exactly the ones with no provider.
+    const pure = Object.values(REGISTRY).filter((p) => !p.billable).map((p) => p.id).sort();
+    expect(pure).toEqual(["build.csv", "normalize.contact_fields", "split.exceptions"]);
+  });
+
   it("the registry source declares no WRITE tier at all", async () => {
     // Not a disabled tier, an absent one: adding WRITE later must be a
     // deliberate act that also changes the compiler.

@@ -46,8 +46,20 @@ describe("normalisation formats, and refuses to invent", () => {
   it("adds a scheme and trims a trailing slash, but never guesses a host", () => {
     expect(normalizeUrl("clinic.ca/")).toBe("https://clinic.ca");
     expect(normalizeUrl("https://Clinic.CA/about/")).toBe("https://clinic.ca/about");
-    expect(normalizeUrl("not a url at all")).toBe("not a url at all");
     expect(normalizeUrl("")).toBe("");
+  });
+
+  it("drops anything it cannot prove is an http(s) URL (1D-alpha0)", () => {
+    /**
+     * CHANGED DELIBERATELY. This used to return the raw string, which is how
+     * `javascript:alert(1)` reached the `website` column of the CSV handed to
+     * the client, where a spreadsheet makes it clickable. An unparseable value
+     * now becomes "" and then null, so the row goes to a person instead of
+     * carrying prose (or a payload) into a deliverable.
+     */
+    expect(normalizeUrl("not a url at all")).toBe("");
+    expect(normalizeUrl("javascript:alert(1)")).toBe("");
+    expect(normalizeUrl("call the receptionist")).toBe("");
   });
 
   it("turns a value that normalises to nothing into null, not an empty cell", () => {

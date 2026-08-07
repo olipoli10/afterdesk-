@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
-import { embed, embeddingsEnabled } from "@/lib/embeddings";
+import { embedWithUsage, embeddingsEnabled } from "@/lib/embeddings";
 import { aiEnabled } from "@/lib/ai";
 import { findSimilarPricedTasks, upsertEmbedding } from "@/lib/ai-work-engine/references";
 import { runClassification } from "@/lib/ai-work-engine/classify";
@@ -116,14 +116,35 @@ export async function runWorkEngine(
     if (existingPlan) return;
 
     const settings = await getSettings();
-    const [vector, categories] = await Promise.all([
-      embed(`${task.title}\n\n${task.description}`, "query"),
+    const [embedding, categories] = await Promise.all([
+      embedWithUsage(`${task.title}\n\n${task.description}`, "query"),
       prisma.taskCategory.findMany({
         where: { active: true },
         select: { slug: true, name: true, disputeCriteria: true },
         orderBy: { sortOrder: "asc" },
       }),
     ]);
+    const vector = embedding.vector;
+
+    /**
+     * 1D-alpha0: the embedding provider stops being an invisible paying
+     * vendor. This call site is the ONLY one in the repo, and it has a taskId
+     * in scope, so the attribution is real rather than assigned for
+     * convenience. `costMicros` stays 0 on purpose: no verified Voyage rate
+     * exists here, and the actual flags the omission rather than pretending
+     * the call was free. See src/lib/embeddings.ts for the full statement.
+     */
+    await prisma.aiUsage.create({
+      data: {
+        userId: "work-engine",
+        taskId,
+        purpose: "embedding",
+        provider: embedding.usage.provider,
+        model: embedding.usage.model,
+        inputTokens: embedding.usage.totalTokens ?? 0,
+        costMicros: 0,
+      },
+    });
 
     // Stored BEFORE any model call: even if everything downstream fails,
     // this task's embedding is on record and becomes a reference for the

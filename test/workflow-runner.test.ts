@@ -95,6 +95,67 @@ describe("the durable-step motif keeps what MoneyIntent lacked", () => {
   });
 });
 
+/**
+ * 1D-alpha0 pins. These are SOURCE-level because the behaviours they protect
+ * are wiring, and wiring is exactly what a refactor drops silently: a
+ * classification module nobody calls, a reservation nobody takes, a counter
+ * nobody updates. Each of the three was a real defect found by audit.
+ */
+describe("the runner acts on the failure class, it does not merely store it", () => {
+  it("classifies inside the catch and lets the class decide exhaustion", () => {
+    // The defect this forbids: storing errorClass on the invocation row while
+    // the retry decision still treats a permanent 401 like a transient 429.
+    expect(runner).toContain("classifyProviderError");
+    expect(runner).toMatch(/classified\.pauseRunImmediately/);
+    expect(runner).toMatch(/!classified\.retryable/);
+  });
+
+  it("honours the provider's Retry-After over our own curve", () => {
+    expect(runner).toMatch(/classified\.retryAfterSeconds !== null/);
+  });
+});
+
+describe("spend is reserved before the call, never checked after it", () => {
+  it("reserves against the run budget and pauses instead of failing", () => {
+    expect(runner).toContain("reserveSpend");
+    expect(runner).toContain("pauseRunForBudget");
+    // The dead `costCeilingMicros: 0` of 1B must not come back.
+    expect(runner).not.toMatch(/costCeilingMicros:\s*0\s*,/);
+    expect(runner).toMatch(/costCeilingMicros: reservation\?\.grantedMicros/);
+  });
+
+  it("resolves the hold in the same transaction as the invocation row", () => {
+    expect(runner).toContain("settleHold");
+    // An uncertain outcome keeps its reservation: only these two states
+    // resolve it, and neither of them is a guess.
+    expect(runner).toMatch(/dispatchState === "settled"/);
+    expect(runner).toMatch(/dispatchState === "cancelled_before_dispatch"/);
+  });
+
+  it("freezes the budget from the accepted plan, not from the client price", () => {
+    expect(runner).toContain("deriveRunBudgetMicros");
+    expect(runner).toContain("BUDGET_POLICY_VERSION");
+    // The provenance rule: a percentage of the price would authorise more
+    // machine spend on an expensive mandate than on an identical cheap one.
+    expect(runner).not.toMatch(/runAutomationBudgetMicros[^\n]*clientPriceCents/);
+  });
+});
+
+describe("an in-flight handoff keeps the run counters true", () => {
+  it("routes every handoff through the counter-aware helper", () => {
+    // automatedStepCount feeds computeResidual, which decides what the worker
+    // is paid. A step that becomes human work while still counted as
+    // automated overstates the machine's contribution.
+    expect(runner).toContain("async function handOffStepToHuman");
+    expect(runner).toMatch(/automatedStepCount: \{ decrement/);
+    expect(runner).toMatch(/humanStepCount: \{ increment/);
+    // No raw handoff update may bypass it.
+    const rawHandoffs = runner.match(/status: "handed_to_human"/g) ?? [];
+    // One inside the helper, one in the compile-time step creation ternary.
+    expect(rawHandoffs.length).toBeLessThanOrEqual(2);
+  });
+});
+
 describe("the payment guard survived the new state", () => {
   it("covers both statuses that can now reach the pool", () => {
     // Inserting ai_processing between payment and the pool made the original

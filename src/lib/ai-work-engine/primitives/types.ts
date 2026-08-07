@@ -14,6 +14,9 @@
  * Pure types, no server-only: the pure primitives are unit-tested directly.
  */
 
+import type { FieldExceptionCause } from "@/lib/ai-work-engine/exception-cause";
+import type { ProviderErrorClass } from "@/lib/ai-work-engine/provider-error";
+
 export type RowStatus =
   /** Two independent sources agree. Ready to deliver. */
   | "verified"
@@ -36,6 +39,14 @@ export type WorkflowRow = {
   status: RowStatus;
   /** Why a person needs to look, in plain words. Null when verified. */
   reviewReason: string | null;
+  /**
+   * The same answer, machine-readable, one entry per unresolved field. Added
+   * in 1D-alpha0 ALONGSIDE the prose, not instead of it: the worker reads the
+   * sentence, the operator queries the causes, and neither is a good
+   * substitute for the other. Absent on verified rows and on payloads written
+   * by split.exceptions@1.
+   */
+  exceptionCauses?: FieldExceptionCause[];
   /**
    * Raw evidence gathered by research.web_search, before anything is extracted
    * from it. The handoff between the two model primitives: research finds and
@@ -97,6 +108,21 @@ export type InvocationRecord = {
   durationMs: number;
   ok: boolean;
   error: string | null;
+  /**
+   * 1D-alpha0. What we actually KNOW about this attempt's spend. Not derived
+   * from `ok`: a call can fail after being dispatched and billed, and a call
+   * can be refused before dispatch and cost nothing. See the enum's comment in
+   * schema.prisma for why the two unknown states never release their budget.
+   */
+  dispatchState:
+    | "settled"
+    | "cancelled_before_dispatch"
+    | "dispatched_then_cancelled"
+    | "unaccounted";
+  errorClass: ProviderErrorClass | null;
+  httpStatus: number | null;
+  startedAt: Date;
+  finishedAt: Date;
 };
 
 export type ArtifactSpec = {

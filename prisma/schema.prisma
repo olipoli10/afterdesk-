@@ -1745,6 +1745,28 @@ model TaskWorkflowRun {
   actualAiCostMicros   Int @default(0)
   actualToolCostMicros Int @default(0)
 
+  /// PHASE 1D-α0 — LE PLAFOND D'AUTOMATISATION, ET SA PROVENANCE.
+  ///
+  /// Gelé À LA COMPILATION, dans la transaction qui crée ce run, jamais
+  /// recalculé ensuite. Sa source est la somme des `estimatedAiCostCents` des
+  /// étapes du plan ACCEPTÉ (TaskExecutionPlanStep), c'est-à-dire la même
+  /// grandeur que `computeInternalCostCents` a déjà fait entrer dans le prix
+  /// que le client a signé.
+  ///
+  /// Ce n'est PAS une fraction du prix client. Dériver un plafond de dépense
+  /// d'un prix reviendrait à autoriser plus de dépense sur un mandat cher que
+  /// sur un mandat identique moins cher, alors que c'est le TRAVAIL qui décide
+  /// de ce que la machine peut coûter.
+  ///
+  /// `null` = aucune étape machine, donc aucune dépense autorisée. Un plafond
+  /// absent n'a jamais voulu dire « illimité » ici, contrairement au
+  /// `costCeilingMicros: 0` de 1B qui portait exactement ce sens et n'était lu
+  /// par personne.
+  runAutomationBudgetMicros Int?
+  /// Version de la règle de dérivation. Change quand la provenance change, ce
+  /// qui rend une comparaison historique honnête.
+  budgetPolicyVersion       String?
+
   /// Renseigné quand status = paused : ce que l'admin doit trancher.
   pausedReason String?
 
@@ -1756,6 +1778,7 @@ model TaskWorkflowRun {
   steps         TaskWorkflowStepRun[]
   humanPackage  TaskHumanWorkPackage?
   artifacts     File[]
+  budgetHolds   WorkflowBudgetHold[]
 
   @@index([status])
   @@index([taskId])
@@ -1866,8 +1889,110 @@ model TaskToolInvocation {
   error      String?
   createdAt  DateTime @default(now())
 
+  /// PHASE 1D-α0 — la classification d'échec, pour que la politique de rejeu
+  /// dépende de la cause. Avant, un `catch` unique rejouait un 401 permanent
+  /// exactement comme un 429 transitoire.
+  errorClass ProviderErrorClass?
+  httpStatus Int?
+
+  /// PHASE 1D-α0 — L'ÉTAT DE DÉPENSE, ET POURQUOI IL NE SE DÉDUIT PAS DE `ok`.
+  ///
+  /// Un AbortSignal prouve que NOUS avons cessé d'attendre. Il ne prouve pas
+  /// que le fournisseur n'a rien facturé : la requête peut avoir été émise,
+  /// traitée et facturée pendant que nous raccrochions. Écrire un coût de zéro
+  /// dans ce cas serait fabriquer un zéro, exactement ce que la loi
+  /// d'affichage de 1C interdit partout ailleurs.
+  ///
+  /// L'incertitude est donc un état, pas une absence.
+  dispatchState InvocationDispatchState @default(settled)
+
+  /// Bornes réelles de l'appel. `durationMs` ne dit pas QUAND, et des
+  /// percentiles de latence en ont besoin.
+  startedAt  DateTime?
+  finishedAt DateTime?
+
   @@unique([stepRunId, operationKey, attempt])
   @@index([stepRunId])
+  /// Requêté par le rapport de dépense incertaine.
+  @@index([dispatchState])
+}
+
+/// PHASE 1D-α0 — taxonomie d'échec fournisseur (src/lib/ai-work-engine/
+/// provider-error.ts). Les classes permanentes ne sont JAMAIS rejouées comme
+/// des transitoires.
+enum ProviderErrorClass {
+  auth
+  quota
+  rate_limit
+  timeout
+  bad_request
+  provider_5xx
+  unknown
+}
+
+/// PHASE 1D-α0 — ce que l'on sait réellement de la dépense d'une tentative.
+///
+/// `settled` : réponse reçue, usage lu, coût mesuré.
+/// `cancelled_before_dispatch` : rien n'a été émis, coût nul et certain.
+/// `dispatched_then_cancelled` : émis puis abandonné, usage INCONNU.
+/// `unaccounted` : échec sans réponse exploitable, usage INCONNU.
+///
+/// Les deux derniers gardent leur réservation budgétaire active : tant qu'on
+/// ne sait pas, on suppose que c'est facturé. Sous-estimer une dépense est
+/// précisément le défaut qui la laisse dériver.
+enum InvocationDispatchState {
+  settled
+  cancelled_before_dispatch
+  dispatched_then_cancelled
+  unaccounted
+}
+
+/// PHASE 1D-α0 — LA RÉSERVATION BUDGÉTAIRE.
+///
+/// Pourquoi une table plutôt qu'une comparaison. Le contrôle évident
+/// (`dépensé + estimation <= plafond`) est faux dès que deux tentatives se
+/// chevauchent, et elles le peuvent : un bail expiré est repris par un second
+/// passage pendant que le premier appel est encore en vol. Les deux lisent la
+/// même dépense, les deux concluent qu'il reste de la place, les deux
+/// dépensent.
+///
+/// Une réservation rend la place PRISE avant l'appel. Le pire cas de la
+/// tentative est retenu sous verrou consultatif, puis converti en dépense
+/// réelle (`settled`) ou relâché (`released`) si rien n'a été émis. Un hold
+/// dont l'issue est inconnue n'est jamais relâché.
+model WorkflowBudgetHold {
+  id String @id @default(cuid())
+
+  runId String
+  run   TaskWorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  stepRunId    String
+  attempt      Int
+  /// Clé logique de l'opération, pour rattacher le hold à son invocation.
+  operationKey String
+
+  /// Le PIRE cas de cette tentative, en microdollars. Jamais une moyenne :
+  /// une réservation optimiste ne réserve rien.
+  amountMicros Int
+
+  status WorkflowBudgetHoldStatus @default(held)
+
+  /// La dépense réellement constatée à la conversion. Null tant que `held`.
+  settledMicros Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Une tentative réserve une fois. Un rejeu de la même tentative retombe
+  /// sur le même hold au lieu d'en créer un second.
+  @@unique([stepRunId, attempt, operationKey])
+  @@index([runId, status])
+}
+
+enum WorkflowBudgetHoldStatus {
+  held
+  settled
+  released
 }
 
 /// LE MANDAT RÉSIDUEL REMIS À UN HUMAIN.

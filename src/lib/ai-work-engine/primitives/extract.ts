@@ -2,7 +2,11 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { getSettings } from "@/lib/settings";
-import { costMicrosFor } from "@/lib/ai-work-engine/tool-cost";
+import {
+  approxTokens,
+  meteredCall,
+  worstCaseMicros,
+} from "@/lib/ai-work-engine/metered-call";
 import type {
   PrimitiveContext,
   PrimitiveResult,
@@ -23,6 +27,9 @@ import type {
  */
 
 const MAX_TOKENS = 16_000;
+
+/** Cancelled here, below the registry's 140 s guard for this primitive. */
+const CALL_TIMEOUT_MS = 120_000;
 
 /** No maxItems/minItems in the wire schema: the structured-outputs subset
  *  rejects them (found live in Phase 1A). zod carries every bound. */
@@ -101,9 +108,10 @@ export async function runExtractStructuredRows(
   ctx: PrimitiveContext
 ): Promise<PrimitiveResult> {
   const settings = await getSettings();
-  const client = new Anthropic({ timeout: 120_000, maxRetries: 1 });
+  // maxRetries: 0 for the same reason as research.ts — an SDK-internal retry
+  // bills twice under one invocation row.
+  const client = new Anthropic({ timeout: CALL_TIMEOUT_MS, maxRetries: 0 });
   const model = settings.pricingModel;
-  const started = Date.now();
   const operationKey = `extract:${ctx.snapshotId}:${ctx.order}`;
 
   const evidence = ctx.input.rows.flatMap((r) => r.evidence ?? []);
@@ -120,74 +128,56 @@ export async function runExtractStructuredRows(
     };
   }
 
-  let response: Anthropic.Message;
-  try {
-    response = await client.messages.create({
-      model,
-      max_tokens: MAX_TOKENS,
-      system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-      output_config: { format: { type: "json_schema", schema: EXTRACT_JSON_SCHEMA } },
-      messages: [
-        {
-          role: "user",
-          content: `FIELDS REQUESTED (use exactly these names)
+  const userContent = `FIELDS REQUESTED (use exactly these names)
 ${requestedFields.join("\n")}
 
 1. SOURCE URLS (${evidence.length}) — the only urls you may cite
 ${JSON.stringify(evidence.slice(0, 200), null, 1).slice(0, 60_000)}
 
 2. RESEARCH FINDINGS — where the values are
-${narrative.slice(0, 60_000) || "(none reported)"}`,
-        },
-      ],
-    });
-  } catch (error) {
-    await ctx.recordInvocation({
-      operationKey,
-      provider: "anthropic",
-      model,
-      providerIdempotencyKey: null,
-      inputTokens: 0,
-      outputTokens: 0,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      searchCount: 0,
-      costMicros: 0,
-      durationMs: Date.now() - started,
-      ok: false,
-      error: error instanceof Error ? error.message.slice(0, 500) : "Unknown error",
-    });
-    throw error;
-  }
+${narrative.slice(0, 60_000) || "(none reported)"}`;
 
-  const usage = response.usage;
-  const costMicros = costMicrosFor(model, {
-    inputTokens: usage?.input_tokens ?? 0,
-    outputTokens: usage?.output_tokens ?? 0,
-    cacheReadTokens: usage?.cache_read_input_tokens ?? 0,
-    cacheWriteTokens: usage?.cache_creation_input_tokens ?? 0,
+  const outcome = await meteredCall<Anthropic.Message>(ctx, {
+    operationKey,
+    model,
+    timeoutMs: CALL_TIMEOUT_MS,
+    reservedMicros: worstCaseMicros({
+      model,
+      maxOutputTokens: MAX_TOKENS,
+      approxInputTokens: approxTokens(SYSTEM) + approxTokens(userContent),
+      // No tool is declared on this call, deliberately: the model that reads
+      // untrusted web text has no verb available to it.
+      maxSearches: 0,
+    }),
+    call: async (signal) => {
+      const message = await client.messages.create(
+        {
+          model,
+          max_tokens: MAX_TOKENS,
+          system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+          output_config: { format: { type: "json_schema", schema: EXTRACT_JSON_SCHEMA } },
+          messages: [{ role: "user", content: userContent }],
+        },
+        { signal }
+      );
+      return { value: message, usage: message.usage };
+    },
   });
+
+  if (!outcome.ok) throw outcome.error;
+  const response = outcome.value;
 
   const refused = response.stop_reason === "refusal" || response.stop_reason === "max_tokens";
   const text = response.content.find((b): b is Anthropic.TextBlock => b.type === "text")?.text;
 
-  await ctx.recordInvocation({
-    operationKey,
-    provider: "anthropic",
-    model,
-    providerIdempotencyKey: null,
-    inputTokens: usage?.input_tokens ?? 0,
-    outputTokens: usage?.output_tokens ?? 0,
-    cacheReadTokens: usage?.cache_read_input_tokens ?? 0,
-    cacheWriteTokens: usage?.cache_creation_input_tokens ?? 0,
-    searchCount: 0,
-    costMicros,
-    durationMs: Date.now() - started,
-    ok: !refused && Boolean(text),
-    error: refused ? `stop_reason=${response.stop_reason}` : text ? null : "no text block",
-  });
-
   if (refused || !text) {
+    /**
+     * The call SUCCEEDED and was billed; the OUTPUT is what is unusable.
+     * meteredCall already wrote the settled cost, so this branch must not
+     * record a second row for the same attempt: the unique index on
+     * (stepRunId, operationKey, attempt) would reject it, and the money is
+     * already correctly on record.
+     */
     throw new Error(`extract.structured_rows produced nothing usable (${response.stop_reason})`);
   }
 
@@ -240,7 +230,8 @@ ${narrative.slice(0, 60_000) || "(none reported)"}`,
       rowsOut: rows.length,
       evidenceItems: evidence.length,
       unseenSourcesDropped: droppedSources,
-      costMicros,
+      // From the invocation record, so summary and billed row agree.
+      costMicros: outcome.record.costMicros,
     },
   };
 }

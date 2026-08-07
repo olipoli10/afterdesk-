@@ -135,6 +135,52 @@ async function fingerprintSources(db: Db, taskId: string): Promise<string> {
     _count: { _all: true },
     _sum: { costMicros: true },
   });
+  /**
+   * 1D-alpha0 — TOOL INVOCATIONS ENTER THE FINGERPRINT.
+   *
+   * They were absent entirely: the recompute saw provider spend only through
+   * `run.actualAiCostMicros`, so anything that changed an invocation WITHOUT
+   * moving that counter was invisible and the actual never recomputed.
+   *
+   * That gap stopped being hypothetical in this slice. An attempt recorded as
+   * `dispatched_then_cancelled` can later be settled to a measured amount, and
+   * an operator can reclassify an error. Both mutate a row IN PLACE, neither
+   * changes the row count, and neither necessarily moves the run totals.
+   *
+   * So the aggregate is built to catch mutation, not arrival. This model has
+   * no `updatedAt`, so the sums and the per-state counts carry that job: a
+   * settled amount moves `_sum`, a dispatch state or error class moves the
+   * grouped counts.
+   */
+  const invocations = await db.taskToolInvocation.aggregate({
+    where: { stepRun: { run: { taskId } } },
+    _count: { _all: true },
+    _sum: { costMicros: true, durationMs: true, searchCount: true },
+    _max: { finishedAt: true },
+  });
+  const invocationStates = await db.taskToolInvocation.groupBy({
+    by: ["dispatchState"],
+    where: { stepRun: { run: { taskId } } },
+    _count: { _all: true },
+  });
+  const invocationErrors = await db.taskToolInvocation.groupBy({
+    by: ["errorClass"],
+    where: { stepRun: { run: { taskId } } },
+    _count: { _all: true },
+  });
+  /**
+   * WorkflowBudgetHold is deliberately NOT a fingerprint source, and the
+   * reason is worth writing down because it looks like an omission.
+   *
+   * The fingerprint answers one question: has anything the computation READS
+   * changed. Holds are read by the runner, not by this computation: no column
+   * of TaskOperationalActual is derived from them. Adding them would trigger
+   * recomputes that find nothing different and write nothing, which is the
+   * same "no reader" mistake as an unused column, just pointed the other way.
+   *
+   * The provider spend that DOES reach the actual arrives through the
+   * invocation rows above and through the run counters, and both are covered.
+   */
   return canonicalHash({
     task,
     events,
@@ -148,6 +194,15 @@ async function fingerprintSources(db: Db, taskId: string): Promise<string> {
     run,
     ops,
     usage,
+    invocations,
+    // Sorted explicitly: groupBy order is not guaranteed, and an unordered
+    // array would make the hash flap with nothing having changed.
+    invocationStates: [...invocationStates]
+      .map((s) => ({ state: String(s.dispatchState), n: s._count._all }))
+      .sort((a, b) => a.state.localeCompare(b.state)),
+    invocationErrors: [...invocationErrors]
+      .map((s) => ({ cls: String(s.errorClass ?? "none"), n: s._count._all }))
+      .sort((a, b) => a.cls.localeCompare(b.cls)),
   });
 }
 
@@ -310,6 +365,32 @@ async function loadAndAssemble(taskId: string, now: Date): Promise<AssembledActu
     where: { taskId, operationId: { not: null } },
   });
   if ((opsAgg._sum.attempts ?? 0) > usageWithOp) flags.add("AI_ATTEMPT_UNACCOUNTED");
+
+  /**
+   * 1D-alpha0 — TWO COSTS WE KNOW WE ARE MISSING, SAID OUT LOUD.
+   *
+   * EMBEDDING_COST_UNPRICED: the embedding provider is billed and recorded,
+   * but no verified rate exists in the catalog, so its row carries 0. Rather
+   * than let that zero read as "free", the actual says the total is short by
+   * an unpriced component.
+   *
+   * SPEND_UNCERTAIN: at least one attempt was dispatched and then abandoned,
+   * or failed with no usable response. The provider may or may not have
+   * billed it. Its budget hold stays reserved and the cost total is a floor,
+   * not a measurement.
+   */
+  const unpricedEmbeddings = await prisma.aiUsage.count({
+    where: { taskId, purpose: "embedding", costMicros: 0 },
+  });
+  if (unpricedEmbeddings > 0) flags.add("EMBEDDING_COST_UNPRICED");
+
+  const uncertainSpend = await prisma.taskToolInvocation.count({
+    where: {
+      stepRun: { run: { taskId } },
+      dispatchState: { in: ["dispatched_then_cancelled", "unaccounted"] },
+    },
+  });
+  if (uncertainSpend > 0) flags.add("SPEND_UNCERTAIN");
 
   const breakdown = computeCostBreakdown({
     aiInvocationMicros: BigInt(run?.actualAiCostMicros ?? 0),

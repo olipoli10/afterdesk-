@@ -2,6 +2,14 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { classifyProviderError } from "@/lib/ai-work-engine/provider-error";
+import {
+  BUDGET_POLICY_VERSION,
+  deriveRunBudgetMicros,
+  releaseHold,
+  reserveSpend,
+  settleHold,
+} from "@/server/workflow-budget";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
@@ -198,6 +206,11 @@ export async function compileWorkflowForTask(
       primitiveId: true,
       primitiveVersion: true,
       dependsOnOrder: true,
+      // 1D-alpha0: the provenance of the automation budget. This is the
+      // planner's own per-step figure, already stamped into the accepted plan
+      // version and already inside computeInternalCostCents, so the ceiling
+      // derives from something the client's price was built on.
+      estimatedAiCostCents: true,
     },
   });
   if (planSteps.length === 0) return null;
@@ -217,6 +230,30 @@ export async function compileWorkflowForTask(
     requiredAccessCount: task.aiClassification?.requiredAccess.length ?? 0,
   });
 
+  /**
+   * THE BUDGET IS FROZEN HERE, ONCE, AND NEVER RECOMPUTED.
+   *
+   * Only the steps that actually compiled to `automated` contribute: a step
+   * the gate or the topology sent to a person will not spend, so counting its
+   * planned model cost would hand the run budget it has no use for.
+   */
+  const automatedPlanned = compiled.steps
+    .filter((s) => s.executionMode === "automated")
+    .map((s) => {
+      const planStep = planSteps.find((p) => p.id === s.planStepId);
+      if (!planStep) return null;
+      // The registry's reviewed cap for this exact primitive, so the floor
+      // below can guarantee one attempt of every step the compiler produced.
+      const primitive = resolvePrimitive(s.primitiveId, s.primitiveVersion);
+      return {
+        estimatedAiCostCents: planStep.estimatedAiCostCents,
+        maxCostMicrosPerAttempt: primitive?.maxCostMicrosPerAttempt ?? 0,
+      };
+    })
+    .filter((p): p is { estimatedAiCostCents: number; maxCostMicrosPerAttempt: number } =>
+      p !== null
+    );
+
   const run = await prisma.taskWorkflowRun.create({
     data: {
       snapshotId: snapshot.id,
@@ -225,6 +262,8 @@ export async function compileWorkflowForTask(
       status: compiled.fullyHuman ? "awaiting_human" : "running",
       automatedStepCount: compiled.automatedStepCount,
       humanStepCount: compiled.humanStepCount,
+      runAutomationBudgetMicros: deriveRunBudgetMicros(automatedPlanned),
+      budgetPolicyVersion: BUDGET_POLICY_VERSION,
       compiledAt: new Date(),
       startedAt: compiled.fullyHuman ? null : new Date(),
       steps: {
@@ -335,6 +374,51 @@ async function pauseRunForExhaustedStep(input: {
   });
 }
 
+/**
+ * The run reached its automation ceiling. Same mechanics as an exhausted step
+ * (idempotent pause, journal entry, operator notification), different reason:
+ * this is not a failure to retry, it is a decision that belongs to a person.
+ * The work already produced survives, and releasing the mandate to the pool
+ * pays the worker the full quoted amount.
+ */
+async function pauseRunForBudget(
+  runId: string,
+  taskId: string,
+  refusal: { reason: string; ceilingMicros: number | null; committedMicros: number; requestedMicros: number }
+): Promise<void> {
+  const ceiling = refusal.ceilingMicros;
+  const reason =
+    refusal.reason === "no_budget_defined"
+      ? "No automation budget was frozen for this run, so no billable step may start."
+      : `Automation budget reached: ${refusal.committedMicros} of ${ceiling ?? 0} microdollars committed, next step needs ${refusal.requestedMicros}.`;
+
+  const paused = await prisma.taskWorkflowRun.updateMany({
+    where: { id: runId, status: { in: ["running", "compiling"] } },
+    data: { status: "paused", pausedReason: reason },
+  });
+  if (paused.count === 0) return;
+
+  await prisma.taskEvent.create({
+    data: {
+      taskId,
+      action: "workflow_run_paused",
+      meta: {
+        reason: "automation_budget",
+        ceilingMicros: ceiling,
+        committedMicros: refusal.committedMicros,
+        requestedMicros: refusal.requestedMicros,
+      },
+    },
+  });
+
+  await notifyAdmins({
+    type: "workflow_over_budget",
+    title: "Automated processing stopped at its budget",
+    body: `Task ${taskId}: the run reached its automation budget and paused before spending more. Nothing is lost; releasing it to the pool pays the worker the full quoted amount.`,
+    taskId,
+  });
+}
+
 async function finishClaimedStep(
   step: ClaimedStep,
   data: Record<string, unknown>
@@ -359,6 +443,52 @@ async function finishClaimedStep(
  * automatable set has no dependency on anything outside itself, so ordinal
  * order already respects every real dependency.
  */
+/**
+ * HAND ONE STEP TO A PERSON, AND KEEP THE RUN'S COUNTERS TRUE.
+ *
+ * The bug this exists to fix: the in-flight handoff paths flipped the STEP to
+ * `handed_to_human` but never moved `automatedStepCount` / `humanStepCount` on
+ * the run. Those two are not display fields — `computeResidual` reads
+ * `automatedStepCount` in `finishRun` as the evidence that the machine reduced
+ * the work, and a residual computed from an inflated count pays a worker for
+ * automation that did not happen. A step that quietly became human work while
+ * still being counted as automated is money, not bookkeeping.
+ *
+ * Both writes go in ONE transaction, and the counter only moves when the step
+ * update actually changed a row, so a replay cannot decrement twice.
+ */
+async function handOffStepToHuman(
+  stepRunId: string,
+  runId: string,
+  reason: string
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const moved = await tx.taskWorkflowStepRun.updateMany({
+      where: {
+        id: stepRunId,
+        status: { notIn: ["done", "handed_to_human"] },
+        executionMode: "automated",
+      },
+      data: {
+        status: "handed_to_human",
+        executionMode: "human",
+        handoffReason: reason,
+        leaseExpiresAt: null,
+        lockedAt: null,
+        lockedBy: null,
+      },
+    });
+    if (moved.count === 0) return;
+    await tx.taskWorkflowRun.update({
+      where: { id: runId },
+      data: {
+        automatedStepCount: { decrement: moved.count },
+        humanStepCount: { increment: moved.count },
+      },
+    });
+  });
+}
+
 async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
   const now = new Date();
 
@@ -409,18 +539,11 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
        * recovery branch further down could only ever be reached by a step
        * that had already resolved.
        */
-      await prisma.taskWorkflowStepRun.updateMany({
-        where: { id: candidate.id, status: { notIn: ["done", "handed_to_human"] } },
-        data: {
-          status: "handed_to_human",
-          executionMode: "human",
-          handoffReason:
-            "The primitive changed or was withdrawn after this plan was accepted; a person does this step.",
-          leaseExpiresAt: null,
-          lockedAt: null,
-          lockedBy: null,
-        },
-      });
+      await handOffStepToHuman(
+        candidate.id,
+        runId,
+        "The primitive changed or was withdrawn after this plan was accepted; a person does this step."
+      );
       continue;
     }
     /**
@@ -582,17 +705,21 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
       const primitive = resolvePrimitive(step.primitiveId, step.primitiveVersion);
       if (!primitive) {
         // Unreachable via claimNextStep, but a run must never spin on a step
-        // it cannot resolve.
-        await finishClaimedStep(step, {
-          status: "handed_to_human",
-          executionMode: "human",
-          handoffReason: "The primitive is no longer available.",
-          leaseExpiresAt: null,
-          lockedAt: null,
-          lockedBy: null,
-        });
+        // it cannot resolve. Goes through the counter-aware helper for the
+        // same reason as the other handoff: a step that becomes human work
+        // while still counted as automated inflates the residual reduction.
+        await handOffStepToHuman(step.id, run.id, "The primitive is no longer available.");
         continue;
       }
+
+      /**
+       * Declared OUTSIDE the try so the catch can give the reservation back.
+       * A throw before the provider call (a missing key builds no client) has
+       * reserved money that was never spent, and the failure path is exactly
+       * where that must be noticed.
+       */
+      let reservation: Awaited<ReturnType<typeof reserveSpend>> | null = null;
+      let recordedAnInvocation = false;
 
       try {
         // Bounded to strictly earlier steps: a replay must read its
@@ -610,6 +737,69 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
             classification?.requiredFields ?? []
           );
 
+        /**
+         * THE BUDGET IS TAKEN BEFORE THE CALL, NOT CHECKED AFTER IT.
+         *
+         * Pure primitives declare no capability and reserve nothing: they have
+         * no provider and cannot spend, so putting them through a reservation
+         * would be ceremony. Everything that CAN bill reserves its worst case
+         * first, and a refusal pauses the run for an operator rather than
+         * failing the step, because "we ran out of money" is a decision, not
+         * an error to retry.
+         */
+        reservation = primitive.billable
+          ? await reserveSpend({
+              runId: run.id,
+              stepRunId: step.id,
+              attempt: step.attempts,
+              operationKey: `${primitive.id}:${run.snapshotId}:${step.order}`,
+              worstCaseMicros: primitive.maxCostMicrosPerAttempt,
+            })
+          : null;
+
+        if (reservation && !reservation.ok) {
+          /**
+           * A BUDGET REFUSAL IS NOT AN ATTEMPT.
+           *
+           * claimNextStep already incremented `attempts` and took the lease
+           * before we got here. Leaving both in place would charge the step a
+           * retry credit for a call that never happened, and would strand it
+           * `running` under a lease nobody holds, so an operator who raises
+           * the budget finds a step that can no longer be claimed.
+           *
+           * The step goes back to `pending` with its attempt refunded. It is
+           * exactly where it was before this invocation touched it.
+           */
+          await prisma.taskWorkflowStepRun.updateMany({
+            where: { id: step.id, lockedBy: step.lockedBy },
+            data: {
+              status: "pending",
+              attempts: { decrement: 1 },
+              leaseExpiresAt: null,
+              lockedAt: null,
+              lockedBy: null,
+            },
+          });
+          await pauseRunForBudget(run.id, run.task.id, reservation);
+          break;
+        }
+
+        /**
+         * A RESERVED HOLD THAT NEVER BECAME A CALL MUST BE GIVEN BACK.
+         *
+         * A primitive can return without ever calling `recordInvocation`:
+         * extract.structured_rows exits early and successfully when there is
+         * no evidence to structure, and a throw before the provider call
+         * (a missing API key builds no client) does the same. The reservation
+         * would then sit `held` for the life of the run, counting against
+         * every later step, and the run would pause reporting a budget it
+         * never spent. `releaseHold` had no production caller at all.
+         *
+         * Tracked by a flag rather than by re-querying: the invocation row is
+         * written inside a transaction that may still roll back on P2002, and
+         * "did the primitive dispatch anything" is a question about THIS
+         * invocation, not about the table.
+         */
         const result = await withTimeout(
           primitive.run({
             taskId: run.task.id,
@@ -628,8 +818,15 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
               quantityInterpreted: classification?.quantityInterpreted ?? null,
             },
             input,
-            costCeilingMicros: 0,
+            /**
+             * 1D-alpha0: the real remaining allowance, not the literal `0`
+             * that meant "unbounded" and was read by nothing. Zero here now
+             * means a pure step that may not spend at all, which is exactly
+             * what the three pure primitives are.
+             */
+            costCeilingMicros: reservation?.grantedMicros ?? 0,
             recordInvocation: async (record) => {
+              recordedAnInvocation = true;
               /**
                * Phase 1C - ONE transaction, and the counters move ONLY when
                * the invocation row is newly created. The previous shape
@@ -660,8 +857,39 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
                       durationMs: record.durationMs,
                       ok: record.ok,
                       error: record.error,
+                      // 1D-alpha0: what we know about the failure, and what
+                      // we know about the spend. Neither is derivable from
+                      // `ok`, which is why both are stored.
+                      errorClass: record.errorClass,
+                      httpStatus: record.httpStatus,
+                      dispatchState: record.dispatchState,
+                      startedAt: record.startedAt,
+                      finishedAt: record.finishedAt,
                     },
                   });
+                  /**
+                   * The reservation is resolved in the SAME transaction as the
+                   * invocation row. A crash between the two would otherwise
+                   * leave either a billed call whose hold still blocks the
+                   * budget forever, or a released hold with no record of the
+                   * money.
+                   *
+                   * Only a `settled` dispatch releases the difference. The two
+                   * uncertain states keep their full worst case reserved,
+                   * because we do not know what the provider billed and
+                   * guessing downward is how a ceiling stops being one.
+                   */
+                  if (reservation !== null && reservation.ok) {
+                    const holdId = reservation.holdId;
+                    if (record.dispatchState === "settled") {
+                      await settleHold(tx, holdId, record.costMicros);
+                    } else if (record.dispatchState === "cancelled_before_dispatch") {
+                      await tx.workflowBudgetHold.updateMany({
+                        where: { id: holdId, status: "held" },
+                        data: { status: "released", settledMicros: 0 },
+                      });
+                    }
+                  }
                   // Split at the point of record: searches are billed per
                   // query by the provider, tokens by volume, and an operator
                   // reading "we spent X" needs to know which lever moves it.
@@ -706,6 +934,12 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
           primitive.id
         );
 
+        // Nothing was dispatched, so nothing was billed. Give the room back
+        // rather than let a phantom hold squeeze every later step.
+        if (reservation !== null && reservation.ok && !recordedAnInvocation) {
+          await releaseHold(reservation.holdId);
+        }
+
         /**
          * Payload first, THEN the status write, and never the reverse: a step
          * marked done whose payload never landed would make its successor
@@ -745,17 +979,55 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         }
         steps++;
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message.slice(0, 1000) : "Unknown error";
-        const exhausted = step.attempts >= primitive.maxAttempts;
+        /**
+         * 1D-alpha0 — THE FAILURE IS CLASSIFIED, AND THE CLASSIFICATION IS
+         * ACTED ON. Storing the class on the invocation row without changing
+         * behaviour would have left the original defect intact under a nicer
+         * label: one catch treating a permanent 401 exactly like a transient
+         * 429, burning three attempts and nine minutes of backoff on a key
+         * that will never work.
+         *
+         * Two things change with the class:
+         *  - a PERMANENT failure (auth, quota, bad_request) is not retried at
+         *    all. The run pauses now, an operator is told now, and the mandate
+         *    reaches a person nine minutes earlier;
+         *  - a rate limit honours the provider's own Retry-After instead of
+         *    our fixed curve, because the provider knows when it will accept
+         *    us again and we do not.
+         */
+        const classified = classifyProviderError(error);
+        // The same release as the success path: a throw BEFORE the provider
+        // call (no API key, a bad argument) reserved money it never spent.
+        if (reservation !== null && reservation.ok && !recordedAnInvocation) {
+          await releaseHold(reservation.holdId);
+        }
+        /**
+         * `classified.message` is the REDACTED, bounded form. Recomputing a
+         * raw slice here would put an unbounded provider echo — which can
+         * quote our request, and our request carries the client's brief —
+         * into `lastError` and into `pausedReason`, both of which are
+         * re-displayed in the admin console.
+         */
+        const message = classified.message;
+        // Permanent failures are exhausted on the spot: a further attempt
+        // sends the identical request to the identical refusal.
+        const exhausted =
+          step.attempts >= primitive.maxAttempts ||
+          classified.pauseRunImmediately ||
+          !classified.retryable;
+
+        const backoff =
+          classified.retryAfterSeconds !== null
+            ? classified.retryAfterSeconds * 1000
+            : backoffMs(step.attempts);
 
         const stillOurs = await finishClaimedStep(step, {
           status: "failed",
-          lastError: message,
+          lastError: `[${classified.errorClass}] ${message}`,
           leaseExpiresAt: null,
           lockedAt: null,
           lockedBy: null,
-          nextAttemptAt: exhausted ? null : new Date(Date.now() + backoffMs(step.attempts)),
+          nextAttemptAt: exhausted ? null : new Date(Date.now() + backoff),
         });
         // Someone else owns the step now, and their attempt may well succeed.
         // Recording our failure over their claim would be a lie.
@@ -767,7 +1039,9 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
             order: step.order,
             primitiveId: primitive.id,
             attempts: step.attempts,
-            message,
+            message: classified.retryable
+              ? message
+              : `${message} (${classified.errorClass}: not retryable, stopped without burning further attempts)`,
           });
           return { steps, finished: false };
         }

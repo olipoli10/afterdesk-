@@ -28,6 +28,7 @@ const EMBEDDING_MODEL = "voyage-3";
 
 type VoyageResponse = {
   data: { embedding: number[] }[];
+  usage?: { total_tokens?: number };
 };
 
 /**
@@ -37,10 +38,43 @@ type VoyageResponse = {
  * slightly and mixing the types up measurably hurts retrieval quality —
  * this is the one parameter callers must get right.
  */
-export async function embed(
+/**
+ * 1D-alpha0 — WHAT AN EMBEDDING CALL ACTUALLY COST, AND WHAT WE DO NOT KNOW.
+ *
+ * The audit found Voyage to be a PAYING provider that was completely invisible
+ * to the operational record: `embed()` returned a vector and nothing else, no
+ * caller wrote a usage row, and the intelligence layer therefore reported a
+ * cost that omitted it entirely.
+ *
+ * Two halves, and only one of them can be honest today.
+ *
+ * MEASURABLE: the call happened, against a named provider and model, on behalf
+ * of a specific task. `embed()` now reports that, and the one caller that has
+ * a taskId in scope records it.
+ *
+ * NOT MEASURABLE: what it cost. No verified Voyage rate exists in this repo,
+ * and inventing one would put a fabricated number into a table whose whole
+ * purpose is that its numbers are real. So `costMicros` stays 0 AND the actual
+ * carries EMBEDDING_COST_UNPRICED, which is the same discipline the display
+ * layer already applies: a gap shows as a gap with a reason, never as a zero
+ * that reads like a measurement.
+ *
+ * To close it: add a verified per-million-token rate to tool-cost.ts and
+ * compute here. Until then the flag is the honest statement.
+ */
+export type EmbeddingUsage = {
+  provider: "voyage";
+  model: string;
+  /** Reported by the provider when it does. Null when it does not. */
+  totalTokens: number | null;
+};
+
+export type EmbeddingResult = { vector: number[]; usage: EmbeddingUsage };
+
+export async function embedWithUsage(
   text: string,
   inputType: "document" | "query"
-): Promise<number[]> {
+): Promise<EmbeddingResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20_000);
   try {
@@ -68,10 +102,26 @@ export async function embed(
         `Voyage returned an unexpected embedding shape (length ${vector?.length ?? "none"}).`
       );
     }
-    return vector;
+    return {
+      vector,
+      usage: {
+        provider: "voyage",
+        model: EMBEDDING_MODEL,
+        totalTokens:
+          typeof json.usage?.total_tokens === "number" ? json.usage.total_tokens : null,
+      },
+    };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+/** Vector only, for callers with no task to attribute the call to. */
+export async function embed(
+  text: string,
+  inputType: "document" | "query"
+): Promise<number[]> {
+  return (await embedWithUsage(text, inputType)).vector;
 }
 
 /** pgvector's literal syntax for $queryRaw/$executeRaw: '[0.1,0.2,...]'. */

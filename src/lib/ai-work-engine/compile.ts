@@ -1,5 +1,9 @@
 import { resolveTopology, type TopologyStep } from "@/lib/ai-work-engine/topology";
 import { PLAN_PRIMITIVES } from "@/lib/ai-work-engine/schemas";
+import {
+  EXECUTABLE_PRIMITIVE_MODES,
+  primitiveModeOf,
+} from "@/lib/ai-work-engine/primitive-vocabulary";
 
 /**
  * PLAN TO WORKFLOW. Entirely deterministic: no model call, no network, no
@@ -65,6 +69,8 @@ export const HANDOFF_REASONS = {
   primitive_version_changed:
     "The primitive changed since this plan was accepted; the accepted behaviour is no longer available.",
   depends_on_human: "Depends on a step a person must do first.",
+  mode_not_executable:
+    "The named primitive is not declared READ or PREPARE; only those run automatically.",
 } as const;
 
 /**
@@ -113,7 +119,24 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
 
   const compiled: CompiledStep[] = steps.map((s) => {
     const decision = byOrder.get(s.order);
-    const automatable = decision?.automatable === true;
+    /**
+     * THE MODE CHECK, WHICH USED TO BE A COMMENT.
+     *
+     * registry.ts has asserted since 1B that the compiler refuses any step
+     * whose primitive is not READ or PREPARE. It never did: this file cannot
+     * import REGISTRY (that module is `server-only`, this one is pure by
+     * design), so the assertion protected nothing and the first WRITE
+     * primitive anyone added would simply have run.
+     *
+     * PLAN_PRIMITIVE_MODES carries the same fact in an import-free module, so
+     * the refusal is real. A primitive whose mode is unknown or outside the
+     * executable set becomes human work like every other thing this compiler
+     * cannot prove runnable.
+     */
+    const mode = primitiveModeOf(s.primitiveId);
+    const modeAllowed =
+      s.primitiveId === null || (mode !== null && EXECUTABLE_PRIMITIVE_MODES.includes(mode));
+    const automatable = decision?.automatable === true && modeAllowed;
     return {
       planStepId: s.planStepId,
       order: s.order,
@@ -123,8 +146,14 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       executionMode: automatable ? "automated" : "human",
       handoffReason: automatable
         ? null
-        : (decision?.reason && HANDOFF_REASONS[decision.reason]) ||
-          HANDOFF_REASONS.no_primitive,
+        : // The topology's own verdict wins when it has one: "not in the
+          // registry" and "depends on a human step" are more useful to an
+          // operator than a generic mode refusal, and an unknown id has no
+          // declared mode by definition. The mode reason is reserved for the
+          // case it actually describes: a step the topology WOULD have
+          // automated, refused because its primitive is not READ or PREPARE.
+          (decision?.reason && HANDOFF_REASONS[decision.reason]) ||
+          (!modeAllowed ? HANDOFF_REASONS.mode_not_executable : HANDOFF_REASONS.no_primitive),
     };
   });
 
