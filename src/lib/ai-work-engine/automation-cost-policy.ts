@@ -6,8 +6,13 @@ import type { PlanPrimitiveId } from "@/lib/ai-work-engine/primitive-vocabulary"
  * NO IMPORTS BEYOND A TYPE, deliberately, same reason as
  * primitive-vocabulary.ts: pricing.ts must read this table without pulling the
  * provider SDK into its module graph, and the admin console is a client
- * component. registry.ts reads its per-attempt caps from here too, so there is
- * one place these numbers live and a test pins the two together.
+ * component. registry.ts declares no amount at all — a number there would be a
+ * third source, and it is the one the runner used to read at execution time.
+ *
+ * The registry does still declare `maxAttempts`, an operational judgement
+ * about how often a primitive is worth replaying, and ac3 states an attempt
+ * budget of its own. A test pins the two together so they cannot silently
+ * disagree; the runner obeys the CONTRACT's figure, never the registry's.
  *
  * ── TWO NUMBERS, NOT ONE ──
  *
@@ -39,6 +44,26 @@ export type PrimitiveCost = {
   expectedMicros: number;
   /** The most one attempt may reserve, in microdollars. Never prices. */
   maxPerAttemptMicros: number;
+  /**
+   * HOW MANY ATTEMPTS THIS POLICY FUNDS.
+   *
+   * Absent on ac1 and ac2, and that absence is read as ONE — a policy that
+   * never named a retry budget funded exactly one attempt, which is precisely
+   * what those two versions did.
+   *
+   * The field exists because the ceiling and the runner used to disagree. The
+   * ceiling funded a single worst-case attempt per step while the registry
+   * declared `maxAttempts: 2` for research, so a transient provider error —
+   * classified `provider_5xx`, therefore retryable — had its retry refused by
+   * the budget. The taxonomy said retry, the money said no, and the run
+   * paused six hours before the stall sweep handed the mandate to a person.
+   *
+   * A retry that the accepted contract does not fund is a retry that must not
+   * be promised. So the number becomes contractual, frozen per step at quote
+   * time exactly like the per-attempt cost, and the runner obeys the frozen
+   * value rather than whatever the registry says today.
+   */
+  maxAttempts?: number;
 };
 
 export type CeilingRule = {
@@ -111,12 +136,59 @@ export const AUTOMATION_COST_POLICIES = {
       absoluteCapMicros: 20_000_000,
     },
   },
+
+  /**
+   * ac3 — the first policy that funds the retries the runner is allowed to
+   * make. Same per-attempt figures as ac2; what changes is that the number of
+   * attempts is now stated rather than assumed.
+   *
+   * ac1 and ac2 stay untouched. Neither of them ever named a retry budget, so
+   * both funded one attempt, and that is the honest reading of anything quoted
+   * against them — not a number retro-fitted to match today's runner.
+   *
+   * The attempt counts mirror what the registry declares today (research 2,
+   * extract 3). They are copied into the policy rather than read from the
+   * registry at runtime, because the registry is deploy-time code and this
+   * number has to survive on the contract.
+   *
+   * ── WHAT THE CEILING RULE NOW MEANS, WHICH IS NOT WHAT IT MEANT ──
+   *
+   * The rule below is byte-identical to ac2's, but the quantity it bounds is
+   * not. It used to cap one worst-case PASS; it now caps the whole retry
+   * budget. On the canonical research + extract plan that moves the point
+   * where automation survives from a $9.00 internal cost to $19.50, so
+   * mandates between those two figures are now quoted as fully human work.
+   *
+   * That is a real tightening, stated here rather than discovered later. It is
+   * also the conservative direction and it happens BEFORE the quote, where a
+   * refusal is still free: the alternative is selling automation whose retries
+   * we cannot pay for, which is the defect ac3 exists to end. Loosening the
+   * share is a separate risk decision and needs its own version.
+   */
+  ac3: {
+    perPrimitive: {
+      "research.web_search": {
+        expectedMicros: 500_000,
+        maxPerAttemptMicros: 3_000_000,
+        maxAttempts: 2,
+      },
+      "extract.structured_rows": {
+        expectedMicros: 250_000,
+        maxPerAttemptMicros: 600_000,
+        maxAttempts: 3,
+      },
+    },
+    ceilingRule: {
+      maxShareOfInternalCostBps: 4_000,
+      absoluteCapMicros: 20_000_000,
+    },
+  },
 } as const satisfies Record<string, AutomationCostPolicy>;
 
 export type AutomationCostPolicyVersion = keyof typeof AUTOMATION_COST_POLICIES;
 
 /** The version NEW quotes are built with. Accepted contracts never read it. */
-export const CURRENT_AUTOMATION_COST_POLICY: AutomationCostPolicyVersion = "ac2";
+export const CURRENT_AUTOMATION_COST_POLICY: AutomationCostPolicyVersion = "ac3";
 
 export function policyFor(version: string): AutomationCostPolicy | null {
   return Object.hasOwn(AUTOMATION_COST_POLICIES, version)
@@ -140,6 +212,60 @@ export function primitiveCostUnder(
   if (policy === null) return null;
   const table = policy.perPrimitive as Record<string, PrimitiveCost | undefined>;
   return Object.hasOwn(table, primitiveId) ? (table[primitiveId] ?? null) : null;
+}
+
+/**
+ * How many attempts a policy funds for one primitive.
+ *
+ * A version that never named the number funded ONE. That is not a default
+ * chosen for convenience: it is what ac1 and ac2 actually paid for, and
+ * pretending otherwise would retro-fit a retry budget onto contracts that were
+ * never quoted with one.
+ */
+export function attemptsUnder(version: string, primitiveId: string | null): number {
+  const cost = primitiveCostUnder(version, primitiveId);
+  if (cost === null) return 0;
+  return cost.maxAttempts ?? 1;
+}
+
+/**
+ * HOW MANY ATTEMPTS AN ACCEPTED STEP MAY ACTUALLY MAKE, AT RUNTIME.
+ *
+ * Lives here rather than in the runner for two reasons: it is a question about
+ * contract economics, and this module has no imports, so it can be tested
+ * without standing up a database.
+ *
+ * For a BILLABLE step the answer comes from the contract and from nowhere
+ * else. The registry's `maxAttempts` is deploy-time code, and consulting it
+ * here is what broke this: it declared two attempts for research while the
+ * accepted ceiling funded one, so a transient provider error was classified
+ * retryable and its retry was then refused for want of budget. The run paused
+ * having done nothing wrong.
+ *
+ * Taking the smaller of the two would look like a tidy compromise and is the
+ * same mistake wearing the other face: a deploy that lowered the registry
+ * figure would silently WITHDRAW an attempt the client already paid for. The
+ * point of freezing a number is that neither direction moves.
+ *
+ * A step that CANNOT bill reserves nothing, so no contractual figure exists
+ * for it and none is needed. There the registry's operational judgement is the
+ * only bound there ever was, and it still applies.
+ */
+export function attemptsAllowedForStep(
+  primitive: { billable: boolean; maxAttempts: number },
+  maxAttemptsAtQuote: number | null
+): number {
+  if (!primitive.billable) return primitive.maxAttempts;
+  /**
+   * Null is a contract quoted before attempts were funded explicitly. Every
+   * policy of that era set money aside for one worst-case pass per step, so
+   * ONE is the fact about what it paid for, not a convenience default.
+   *
+   * Older contracts still carry no frozen per-attempt cost either, and those
+   * never reach this function: a billable step with no frozen ceiling is
+   * handed to a person before any attempt is made.
+   */
+  return maxAttemptsAtQuote ?? 1;
 }
 
 /**

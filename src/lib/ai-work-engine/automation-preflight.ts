@@ -1,4 +1,5 @@
 import {
+  attemptsUnder,
   effectiveConservativeMicros,
   effectiveExpectedMicros,
   policyFor,
@@ -50,12 +51,26 @@ export type PreflightStepResult = {
   /** Frozen at quote time. Null for a step that will not bill. */
   expectedCostMicrosAtQuote: bigint | null;
   maxCostMicrosPerAttemptAtQuote: bigint | null;
+  /**
+   * How many attempts THIS CONTRACT funds for this step. Frozen exactly like
+   * the per-attempt cost: the runner obeys it and never the registry's
+   * current `maxAttempts`, so a deploy cannot promise a retry the accepted
+   * contract never paid for, nor withdraw one it did.
+   */
+  maxAttemptsAtQuote: number | null;
 };
 
 export type PreflightResult = {
   steps: PreflightStepResult[];
   expectedAutomationCostMicros: bigint;
+  /** One worst-case attempt of each remaining billable step. */
   conservativeAutomationCostMicros: bigint;
+  /**
+   * EVERY attempt the contract funds: Σ(perAttempt × attempts). Deliberately
+   * NOT the same number as `conservative`, and larger than it whenever any
+   * step funds more than one try. Conflating the two is what left the runner
+   * promising a retry the budget refused.
+   */
   automationSpendCeilingMicros: bigint;
   policyVersion: string;
   /** How many steps the economic rule took the automation away from. */
@@ -115,6 +130,7 @@ export function runAutomationPreflight(input: {
         demotedForBudget: true,
         expectedCostMicrosAtQuote: null,
         maxCostMicrosPerAttemptAtQuote: null,
+        maxAttemptsAtQuote: null,
       })),
       expectedAutomationCostMicros: 0n,
       conservativeAutomationCostMicros: 0n,
@@ -135,7 +151,8 @@ export function runAutomationPreflight(input: {
 
     let expected = 0n;
     let conservative = 0n;
-    const perStep = new Map<number, { expected: bigint; max: bigint }>();
+    let fundedAllAttempts = 0n;
+    const perStep = new Map<number, { expected: bigint; max: bigint; attempts: number }>();
 
     for (const step of billable) {
       const cost = primitiveCostUnder(input.policyVersion, step.primitiveId);
@@ -160,19 +177,34 @@ export function runAutomationPreflight(input: {
       // policy does not.
       const stepExpected = effectiveExpectedMicros(planMicros, BigInt(cost.expectedMicros));
       const stepMax = effectiveConservativeMicros(planMicros, BigInt(cost.maxPerAttemptMicros));
+      const stepAttempts = attemptsUnder(input.policyVersion, step.primitiveId);
       expected += stepExpected;
       conservative += stepMax;
-      perStep.set(step.order, { expected: stepExpected, max: stepMax });
+      // The ceiling funds every attempt the contract allows, not just the
+      // first. BigInt throughout: a many-step plan at several dollars an
+      // attempt passes the Int range faster than it looks.
+      fundedAllAttempts += stepMax * BigInt(stepAttempts);
+      perStep.set(step.order, { expected: stepExpected, max: stepMax, attempts: stepAttempts });
     }
 
     /**
-     * The ceiling must cover one worst-case attempt of every remaining step,
-     * or the run would reserve, be refused and pause having done nothing. It
-     * may exceed the expected cost — that is the risk the policy accepts — but
-     * it is never below the conservative sum, which is the arithmetic minimum
-     * for the plan to be executable at all.
+     * THE CEILING FUNDS EVERY ATTEMPT THE CONTRACT AUTHORISES, not just the
+     * first one of each step.
+     *
+     * Funding only the first left the runner in an impossible position: a
+     * transient provider error is classified retryable, the contract allows a
+     * second try, and the reservation refused it because the money for that
+     * try was never set aside. The run paused and the stall sweep handed the
+     * mandate to a person six hours later, over an error the system was
+     * designed to absorb.
+     *
+     * So this is deliberately NOT `conservative`. That figure answers "what
+     * does one pass cost at worst"; this one answers "what may this contract
+     * spend before we stop", and the second is the number the reservation has
+     * to respect. The ordering expected <= conservative <= ceiling holds by
+     * construction: every attempt count is at least one.
      */
-    const needed = conservative;
+    const needed = fundedAllAttempts;
     const fits = needed <= allowed || billable.length === 0;
 
     if (fits) {
@@ -188,6 +220,7 @@ export function runAutomationPreflight(input: {
             demotedForBudget: wasDemoted,
             expectedCostMicrosAtQuote: frozen?.expected ?? null,
             maxCostMicrosPerAttemptAtQuote: frozen?.max ?? null,
+            maxAttemptsAtQuote: frozen?.attempts ?? null,
           };
         }),
         expectedAutomationCostMicros: expected,
@@ -203,9 +236,14 @@ export function runAutomationPreflight(input: {
     const victim = [...billable]
       .filter((s) => perStep.has(s.order))
       .sort((a, b) => {
-      const am = perStep.get(a.order)?.max ?? 0n;
-      const bm = perStep.get(b.order)?.max ?? 0n;
-      if (am !== bm) return bm > am ? 1 : -1;
+        // Rank on what the step can actually spend under this contract, which
+        // is its per-attempt worst case times the attempts it funds — the same
+        // quantity the ceiling is built from. Ranking on one attempt would
+        // sometimes drop a cheap-but-thrice-funded step and leave the plan
+        // still over budget.
+        const am = (perStep.get(a.order)?.max ?? 0n) * BigInt(perStep.get(a.order)?.attempts ?? 0);
+        const bm = (perStep.get(b.order)?.max ?? 0n) * BigInt(perStep.get(b.order)?.attempts ?? 0);
+        if (am !== bm) return bm > am ? 1 : -1;
         return b.order - a.order;
       })[0];
     /**

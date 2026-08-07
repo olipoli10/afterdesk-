@@ -1609,6 +1609,20 @@ model TaskExecutionPlanStep {
   /// ne doit pas exiger une migration de type pour la dépasser.
   expectedCostMicrosAtQuote      BigInt?
   maxCostMicrosPerAttemptAtQuote BigInt?
+  /// COMBIEN DE TENTATIVES CE CONTRAT FINANCE POUR CETTE ÉTAPE.
+  ///
+  /// Gelé exactement comme le coût par tentative, et pour la même raison. Le
+  /// registre déclarait `maxAttempts: 2` pour la recherche pendant que le
+  /// plafond ne finançait qu'une seule tentative : une erreur fournisseur
+  /// transitoire était classée rejouable, puis son rejeu était refusé par le
+  /// budget, et le run se mettait en pause jusqu'au balayage des six heures.
+  ///
+  /// Le runner lit CETTE valeur et jamais le registre courant : un déploiement
+  /// ne peut donc ni promettre un rejeu que le contrat accepté n'a pas payé,
+  /// ni retirer un rejeu qu'il avait payé.
+  ///
+  /// Int et non BigInt : c'est un compte de tentatives, pas un montant.
+  maxAttemptsAtQuote             Int?
   /// Provenance seulement. Jamais relue pour décider d'un montant.
   automationCostPolicyVersion    String?
   /// Vrai quand le preflight économique a retiré l'automatisation de cette

@@ -6,6 +6,8 @@ import {
   settleHold,
   unresolvedHoldMicros,
 } from "@/server/workflow-budget";
+import { attemptsAllowedForStep, policyFor } from "@/lib/ai-work-engine/automation-cost-policy";
+import { resolvePrimitive } from "@/lib/ai-work-engine/registry";
 import { createClient, createTask } from "./fixtures";
 
 /**
@@ -19,6 +21,7 @@ async function acceptedContract(input?: {
   ceiling?: bigint | null;
   policy?: string;
   maxAtQuote?: bigint | null;
+  attemptsAtQuote?: number | null;
   linkPlan?: boolean;
 }) {
   const client = await createClient();
@@ -29,7 +32,8 @@ async function acceptedContract(input?: {
   });
   const step = await makePlanStep(
     planVersion.id,
-    input?.maxAtQuote === undefined ? 2_000_000n : input.maxAtQuote
+    input?.maxAtQuote === undefined ? 2_000_000n : input.maxAtQuote,
+    input?.attemptsAtQuote
   );
   const snapshot = await prisma.taskAcceptanceSnapshot.create({
     data: {
@@ -87,7 +91,11 @@ async function makePlanVersion(
   });
 }
 
-async function makePlanStep(planVersionId: string, maxAtQuote: bigint | null) {
+async function makePlanStep(
+  planVersionId: string,
+  maxAtQuote: bigint | null,
+  attemptsAtQuote?: number | null
+) {
   return prisma.taskExecutionPlanStep.create({
     data: {
       planVersionId,
@@ -105,6 +113,7 @@ async function makePlanStep(planVersionId: string, maxAtQuote: bigint | null) {
       primitiveId: "research.web_search",
       primitiveVersion: 1,
       maxCostMicrosPerAttemptAtQuote: maxAtQuote,
+      maxAttemptsAtQuote: attemptsAtQuote === undefined ? null : attemptsAtQuote,
       expectedCostMicrosAtQuote: maxAtQuote === null ? null : 500_000n,
       automationCostPolicyVersion: "ac1",
     },
@@ -112,8 +121,11 @@ async function makePlanStep(planVersionId: string, maxAtQuote: bigint | null) {
   });
 }
 
-async function makeRun(ceilingMicros: bigint | null) {
-  const c = await acceptedContract({ ceiling: ceilingMicros ?? undefined });
+async function makeRun(
+  ceilingMicros: bigint | null,
+  contract?: Parameters<typeof acceptedContract>[0]
+) {
+  const c = await acceptedContract({ ceiling: ceilingMicros ?? undefined, ...contract });
   const run = await prisma.taskWorkflowRun.create({
     data: {
       snapshotId: c.snapshotId,
@@ -429,5 +441,190 @@ describe("AN ACCEPTED CONTRACT'S ECONOMICS ARE APPEND-ONLY", () => {
       worstCaseMicros: 4_000_000n,
     });
     expect(overA.ok).toBe(false);
+  });
+});
+
+/**
+ * THE ATTEMPT COUNT IS PART OF THE CONTRACT, EXACTLY LIKE THE COST.
+ *
+ * These reproduce the closeout blocker end to end. The registry declared two
+ * attempts for research while the spend ceiling funded one: a transient
+ * provider error was classified retryable, the reservation for its retry was
+ * refused, and the run paused until the six-hour stall sweep handed the mandate
+ * to a person. The ceiling now funds every attempt the quote allowed, and the
+ * count that was allowed is frozen on the step.
+ */
+describe("A CONTRACT FUNDS ITS OWN RETRIES, AT ITS OWN NUMBERS", () => {
+  /** Contract A: $3.00 per attempt, two attempts, so a $6.00 ceiling. */
+  const contractA = { maxAtQuote: 3_000_000n, attemptsAtQuote: 2, policy: "ac3" };
+
+  it("freezes cost AND attempts, and a later policy moves neither", async () => {
+    const a = await makeRun(6_000_000n, contractA);
+
+    const frozen = await prisma.taskExecutionPlanStep.findFirstOrThrow({
+      where: { planVersionId: a.planVersionId },
+      select: { maxCostMicrosPerAttemptAtQuote: true, maxAttemptsAtQuote: true },
+    });
+    expect(frozen.maxCostMicrosPerAttemptAtQuote).toBe(3_000_000n);
+    expect(frozen.maxAttemptsAtQuote).toBe(2);
+
+    // The contract's own two numbers multiply out to the ceiling it carries.
+    // A ceiling that did not is a contract funding a different number of
+    // attempts than its steps claim.
+    const run = await prisma.taskWorkflowRun.findFirstOrThrow({
+      where: { id: a.runId },
+      select: { runAutomationBudgetMicros: true },
+    });
+    expect(run.runAutomationBudgetMicros).toBe(
+      frozen.maxCostMicrosPerAttemptAtQuote! * BigInt(frozen.maxAttemptsAtQuote!)
+    );
+
+    // A later release quotes at $4.00 with four attempts. A NEW version, never
+    // an edit of the one A was quoted under.
+    await acceptedContract({
+      ceiling: 16_000_000n,
+      policy: "ac_future",
+      maxAtQuote: 4_000_000n,
+      attemptsAtQuote: 4,
+    });
+
+    const reRead = await prisma.taskExecutionPlanStep.findFirstOrThrow({
+      where: { planVersionId: a.planVersionId },
+      select: { maxCostMicrosPerAttemptAtQuote: true, maxAttemptsAtQuote: true },
+    });
+    expect(reRead.maxCostMicrosPerAttemptAtQuote).toBe(3_000_000n);
+    expect(reRead.maxAttemptsAtQuote).toBe(2);
+  });
+
+  it("survives the policy being removed from the code entirely", async () => {
+    /**
+     * `ac_gone` resolves to nothing — the state a deleted policy version would
+     * leave behind. A's economics are on its own rows, so the disappearance
+     * changes neither the amount nor the number of tries it may make.
+     */
+    const a = await makeRun(6_000_000n, { ...contractA, policy: "ac_gone" });
+    expect(policyFor("ac_gone")).toBeNull();
+
+    const frozen = await prisma.taskExecutionPlanStep.findFirstOrThrow({
+      where: { planVersionId: a.planVersionId },
+      select: { maxCostMicrosPerAttemptAtQuote: true, maxAttemptsAtQuote: true },
+    });
+    expect(frozen.maxCostMicrosPerAttemptAtQuote).toBe(3_000_000n);
+    expect(frozen.maxAttemptsAtQuote).toBe(2);
+
+    const r = await reserveSpend({
+      runId: a.runId,
+      stepRunId: a.stepRunId,
+      attempt: 1,
+      operationKey: "after-removal",
+      worstCaseMicros: 3_000_000n,
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it("an UNCERTAIN first attempt keeps its hold and the retry is still funded", async () => {
+    /**
+     * The heart of it. Attempt 1 ends with an outcome we cannot classify — an
+     * abort proves we stopped waiting, not that the provider stopped billing —
+     * so its $3.00 stays reserved. The retry must still fit, and it does only
+     * because the ceiling was built as cost x attempts.
+     */
+    const a = await makeRun(6_000_000n, contractA);
+
+    const first = await reserveSpend({
+      runId: a.runId,
+      stepRunId: a.stepRunId,
+      attempt: 1,
+      operationKey: "attempt-1",
+      worstCaseMicros: 3_000_000n,
+    });
+    expect(first.ok).toBe(true);
+    // Deliberately neither settled nor released: the uncertain state.
+    expect(await unresolvedHoldMicros(a.runId)).toBe(3_000_000n);
+
+    const second = await reserveSpend({
+      runId: a.runId,
+      stepRunId: a.stepRunId,
+      attempt: 2,
+      operationKey: "attempt-2",
+      worstCaseMicros: 3_000_000n,
+    });
+    expect(second.ok).toBe(true);
+    expect(await unresolvedHoldMicros(a.runId)).toBe(6_000_000n);
+
+    /**
+     * The two halves have to agree, and this is where that is checked against
+     * a real row rather than against a fixture constant: the number of
+     * reservations the money allows must equal the number of attempts the
+     * runner will make. They are computed by different code from different
+     * columns, and if they ever diverge the run either strands a funded
+     * attempt or promises one it cannot pay for.
+     */
+    const row = await prisma.taskExecutionPlanStep.findFirstOrThrow({
+      where: { planVersionId: a.planVersionId },
+      select: { primitiveId: true, primitiveVersion: true, maxAttemptsAtQuote: true },
+    });
+    const primitive = resolvePrimitive(row.primitiveId, row.primitiveVersion);
+    expect(primitive).not.toBeNull();
+    expect(attemptsAllowedForStep(primitive!, row.maxAttemptsAtQuote)).toBe(2);
+
+    /**
+     * And a THIRD attempt is refused, because contract A funded two. The
+     * refusal is the honest one: it comes from the money, and the runner's
+     * attempt cap stops at the same number for the same reason.
+     */
+    const third = await reserveSpend({
+      runId: a.runId,
+      stepRunId: a.stepRunId,
+      attempt: 3,
+      operationKey: "attempt-3",
+      worstCaseMicros: 3_000_000n,
+    });
+    expect(third.ok).toBe(false);
+    if (!third.ok) expect(third.committedMicros).toBe(6_000_000n);
+  });
+
+  it("would have refused the SECOND attempt under the old one-attempt ceiling", async () => {
+    // The blocker itself, reproduced: same contract, ceiling funding one pass.
+    const a = await makeRun(3_000_000n, contractA);
+    const first = await reserveSpend({
+      runId: a.runId,
+      stepRunId: a.stepRunId,
+      attempt: 1,
+      operationKey: "old-1",
+      worstCaseMicros: 3_000_000n,
+    });
+    expect(first.ok).toBe(true);
+    const retry = await reserveSpend({
+      runId: a.runId,
+      stepRunId: a.stepRunId,
+      attempt: 2,
+      operationKey: "old-2",
+      worstCaseMicros: 3_000_000n,
+    });
+    expect(retry.ok).toBe(false);
+  });
+
+  it("two concurrent reservations never exceed the funded ceiling", async () => {
+    /**
+     * The advisory lock, on the number that now matters. Both calls read the
+     * same committed total if they overlap, so a comparison would let both
+     * through; the hold makes the room TAKEN before either provider call goes
+     * out. Three attempts race for a ceiling that funds two.
+     */
+    const a = await makeRun(6_000_000n, contractA);
+    const results = await Promise.all(
+      [1, 2, 3].map((attempt) =>
+        reserveSpend({
+          runId: a.runId,
+          stepRunId: a.stepRunId,
+          attempt,
+          operationKey: `race-${attempt}`,
+          worstCaseMicros: 3_000_000n,
+        })
+      )
+    );
+    expect(results.filter((r) => r.ok).length).toBe(2);
+    expect(await unresolvedHoldMicros(a.runId)).toBe(6_000_000n);
   });
 });

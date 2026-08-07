@@ -1,0 +1,15 @@
+-- COMBIEN DE TENTATIVES LE CONTRAT ACCEPTÉ FINANCE, PAR ÉTAPE.
+--
+-- Additif et nullable. Le registre déclarait deux tentatives pour la recherche
+-- pendant que le plafond de dépense n'en finançait qu'une : une erreur
+-- fournisseur transitoire était classée rejouable, son rejeu était refusé par
+-- le budget, et le run se mettait en pause jusqu'au balayage des six heures.
+--
+-- La valeur est gelée au devis exactement comme `maxCostMicrosPerAttemptAtQuote`
+-- et le runner ne lit qu'elle. Un contrat antérieur n'a pas cette colonne
+-- remplie et ne doit pas l'être : aucune version de politique antérieure n'a
+-- jamais nommé de budget de rejeu, donc toutes finançaient une tentative, et
+-- écrire 1 partout aujourd'hui inventerait une provenance. Le code lit
+-- l'absence comme « une seule tentative », ce qui est le fait et non une
+-- valeur par défaut de commodité.
+ALTER TABLE "TaskExecutionPlanStep" ADD COLUMN "maxAttemptsAtQuote" INTEGER;

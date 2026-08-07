@@ -214,6 +214,7 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
               expectedCostMicrosAtQuote: frozen.get(i + 1)?.expectedCostMicrosAtQuote ?? null,
               maxCostMicrosPerAttemptAtQuote:
                 frozen.get(i + 1)?.maxCostMicrosPerAttemptAtQuote ?? null,
+              maxAttemptsAtQuote: frozen.get(i + 1)?.maxAttemptsAtQuote ?? null,
               automationCostPolicyVersion: preflight.policyVersion,
               demotedForBudget: frozen.get(i + 1)?.demotedForBudget ?? false,
               fixedMinutes: s.fixedMinutes,

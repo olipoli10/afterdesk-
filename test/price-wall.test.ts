@@ -148,6 +148,10 @@ describe("RULE 2 — the two-price wall", () => {
       // are RULE 2 breaches by a different door.
       "expectedCostMicrosAtQuote",
       "maxCostMicrosPerAttemptAtQuote",
+      // The funded retry budget belongs with them: combined with the
+      // per-attempt cap it discloses the whole ceiling, and on its own it
+      // tells a worker how much rework the platform paid to absorb.
+      "maxAttemptsAtQuote",
       "expectedAutomationCostMicros",
       "conservativeAutomationCostMicros",
       "automationSpendCeilingMicros",
@@ -292,9 +296,72 @@ describe("the shared task-query file contains no operational-intelligence relati
     "automationSpendCeilingMicros",
     "runAutomationBudgetMicros",
     "maxCostMicrosPerAttemptAtQuote",
+    "maxAttemptsAtQuote",
   ]) {
     it(`never mentions ${relation}`, () => {
       expect(source).not.toContain(relation);
     });
   }
+});
+
+/**
+ * AN INTERNAL TASK IS NOT PAID WORK, SO IT MUST NOT BE CLAIMABLE.
+ *
+ * The database's pool guard EXEMPTS internal tasks from the "a task in the pool
+ * has a positive payout" invariant, correctly: nobody is paid for one. That
+ * exemption is exactly why the read side has to exclude them — the one row
+ * shape the trigger deliberately allows into `open` with no payout is the one
+ * shape a worker must never be offered.
+ *
+ * The pool queries are pinned in the integration suite against a real row. Here
+ * we pin the CLAIM, which is the check that actually binds: the action takes a
+ * task id from the request, so a task the board never listed is still claimable
+ * by anyone holding its id.
+ */
+describe("the claim refuses work that carries no per-task payout", () => {
+  const source = readFileSync(join(__dirname, "..", "src/server/actions/va-tasks.ts"), "utf8");
+  const claim = source.slice(
+    source.indexOf("export async function claimTask"),
+    source.indexOf("export async function releaseTask")
+  );
+
+  it("the slice really is the claim, so the checks below are not vacuous", () => {
+    expect(claim).toContain('to: "claimed"');
+    expect(claim.length).toBeGreaterThan(400);
+  });
+
+  it("reads both exemption flags and refuses on either", () => {
+    expect(claim).toContain("isInternal: true");
+    expect(claim).toContain("standingCapacityAccountId: true");
+    expect(claim).toMatch(/task\.isInternal \|\| task\.standingCapacityAccountId !== null/);
+  });
+
+  it("refuses INSIDE the transaction, where the compare-and-swap happens", () => {
+    // A check outside it is advisory: the row could change between the read
+    // and the swap. Every other guard in this action is inside for the same
+    // reason, and this one has to be too.
+    const guardAt = claim.indexOf("task.isInternal ||");
+    const txAt = claim.indexOf("prisma.$transaction");
+    const transitionAt = claim.indexOf("transitionTask");
+    expect(txAt).toBeGreaterThan(-1);
+    expect(guardAt).toBeGreaterThan(txAt);
+    expect(guardAt).toBeLessThan(transitionAt);
+  });
+});
+
+/**
+ * The pool queries themselves, pinned at the source for the same reason the
+ * file above pins the others: the failure mode is a WHERE clause losing one
+ * line during an unrelated edit, and both the list and the detail read need it.
+ */
+describe("both pool reads exclude internal tasks", () => {
+  const source = readFileSync(join(__dirname, "..", "src/lib/queries/tasks.ts"), "utf8");
+
+  it("names isInternal: false exactly where standingCapacityAccountId: null is named", () => {
+    const internal = source.match(/isInternal: false/g) ?? [];
+    // poolForVa and poolTaskForVa. Hiding the list without closing the detail
+    // page leaves the task reachable by URL, which is the same exposure with an
+    // extra step.
+    expect(internal.length).toBeGreaterThanOrEqual(2);
+  });
 });

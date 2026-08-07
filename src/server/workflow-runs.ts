@@ -14,6 +14,7 @@ import { transitionTask, TransitionError } from "@/lib/state";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { compileDecisions, type CompileStepInput } from "@/lib/ai-work-engine/compile";
 import { resolvePrimitive } from "@/lib/ai-work-engine/registry";
+import { attemptsAllowedForStep } from "@/lib/ai-work-engine/automation-cost-policy";
 import { computeResidual, type ResidualStepInput } from "@/lib/ai-work-engine/residual";
 import { searchCostMicros } from "@/lib/ai-work-engine/tool-cost";
 import { buildHumanPackageCopy } from "@/lib/ai-work-engine/human-package-copy";
@@ -327,6 +328,15 @@ type ClaimedStep = {
    */
   maxCostMicrosPerAttemptAtQuote: bigint | null;
   /**
+   * HOW MANY ATTEMPTS THIS CONTRACT FUNDED FOR THIS STEP.
+   *
+   * Same provenance and same rule as the ceiling above. Null on a contract
+   * accepted before the funded-retry correction, which is read as ONE: no
+   * policy before it ever named a retry budget, so none of them funded a
+   * second try.
+   */
+  maxAttemptsAtQuote: number | null;
+  /**
    * THE FENCING TOKEN. Every write that ends this step carries it in the
    * WHERE clause, so an invocation whose lease has already expired and been
    * taken by someone else cannot finish on top of the new holder. See the
@@ -560,7 +570,9 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
       nextAttemptAt: true,
       lastError: true,
       // The frozen economics travel with the step, from the accepted plan.
-      planStep: { select: { maxCostMicrosPerAttemptAtQuote: true } },
+      planStep: {
+        select: { maxCostMicrosPerAttemptAtQuote: true, maxAttemptsAtQuote: true },
+      },
     },
   });
 
@@ -611,7 +623,11 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
      * The run stayed `running` forever and occupied one of the ten slots
      * processWorkflowRuns takes per tick, so enough of them stall the queue.
      */
-    if (candidate.attempts >= primitive.maxAttempts) {
+    const attemptsAllowed = attemptsAllowedForStep(
+      primitive,
+      candidate.planStep.maxAttemptsAtQuote
+    );
+    if (candidate.attempts >= attemptsAllowed) {
       await prisma.taskWorkflowStepRun.updateMany({
         where: { id: candidate.id, status: { notIn: ["done", "handed_to_human"] } },
         data: {
@@ -641,7 +657,7 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
     const claimed = await prisma.taskWorkflowStepRun.updateMany({
       where: {
         id: candidate.id,
-        attempts: { lt: primitive.maxAttempts },
+        attempts: { lt: attemptsAllowed },
         OR: [
           { status: { in: ["pending", "ready"] } },
           // The backoff belongs in the CLAIM, not only in the selection above.
@@ -675,6 +691,7 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
       primitiveVersion: candidate.primitiveVersion,
       attempts: candidate.attempts + 1,
       maxCostMicrosPerAttemptAtQuote: candidate.planStep.maxCostMicrosPerAttemptAtQuote,
+      maxAttemptsAtQuote: candidate.planStep.maxAttemptsAtQuote,
       lockedBy,
     };
   }
@@ -1087,7 +1104,7 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         // Permanent failures are exhausted on the spot: a further attempt
         // sends the identical request to the identical refusal.
         const exhausted =
-          step.attempts >= primitive.maxAttempts ||
+          step.attempts >= attemptsAllowedForStep(primitive, step.maxAttemptsAtQuote) ||
           classified.pauseRunImmediately ||
           !classified.retryable;
 

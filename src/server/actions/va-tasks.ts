@@ -50,9 +50,30 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
 
       const task = await tx.task.findUnique({
         where: { id: taskId },
-        select: { tier: true, category: { select: { slug: true, name: true } } },
+        select: {
+          tier: true,
+          isInternal: true,
+          standingCapacityAccountId: true,
+          category: { select: { slug: true, name: true } },
+        },
       });
       if (!task) throw new Refused("This task is no longer available.");
+
+      /**
+       * THE SAME TWO EXCLUSIONS THE POOL QUERY APPLIES, RE-ASSERTED WHERE THE
+       * CLAIM ACTUALLY HAPPENS.
+       *
+       * Filtering the list is a display decision; this is the one that binds.
+       * The claim takes a task id from the request, so a task the board never
+       * showed is still claimable by anyone who has its id — and both kinds
+       * here would be claimed for no pay: an internal task has no worker
+       * payout at all (which is exactly why the database payout guard exempts
+       * it), and a standing task is paid through its client's weekly block to
+       * an assigned specialist, not per task to whoever arrives first.
+       */
+      if (task.isInternal || task.standingCapacityAccountId !== null) {
+        throw new Refused("This task is no longer available.");
+      }
 
       // Category certification, when the operator has switched it on. A course
       // slug IS the category slug (data-cleanup, research, writing...), so the

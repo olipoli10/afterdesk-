@@ -499,6 +499,7 @@ export async function runWorkEngine(
                     demotedByOrder.get(i + 1)?.expectedCostMicrosAtQuote ?? null,
                   maxCostMicrosPerAttemptAtQuote:
                     demotedByOrder.get(i + 1)?.maxCostMicrosPerAttemptAtQuote ?? null,
+                  maxAttemptsAtQuote: demotedByOrder.get(i + 1)?.maxAttemptsAtQuote ?? null,
                   automationCostPolicyVersion: preflight.policyVersion,
                   demotedForBudget: demotedByOrder.get(i + 1)?.demotedForBudget ?? false,
                   fixedMinutes: s.fixed_minutes,

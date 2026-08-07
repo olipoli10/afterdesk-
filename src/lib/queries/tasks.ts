@@ -181,6 +181,20 @@ export async function poolForVa(opts: {
     where: {
       status: "open",
       claimedById: null,
+      /**
+       * AN INTERNAL TASK IS NOT PAID WORK AND MUST NOT REACH THE BOARD.
+       *
+       * The database already refuses to let a commercial task enter `open`
+       * without a payout, and it EXEMPTS internal tasks from that check
+       * precisely because nobody is paid for them. Which means the one row
+       * shape the payout guard deliberately allows through is the one shape
+       * the board must not show: an internal task carries no worker payout, so
+       * a worker who claimed it would do the work for nothing.
+       *
+       * Belt to the database's braces, and they guard different things. The
+       * trigger protects the amount; this protects who may see the task.
+       */
+      isInternal: false,
       // A standing task belongs to one client's private block and one
       // assigned specialist. It must never be claimable by the pool at
       // large: whoever claimed it would have no account context, and the
@@ -234,8 +248,11 @@ export async function poolTaskForVa(
       id: taskId,
       status: "open",
       claimedById: null,
-      // Same exclusion as poolForVa: a gated worker must not reach a standing
-      // task by guessing its URL any more than by browsing the board.
+      // Same two exclusions as poolForVa, for the same reason twice over: a
+      // worker must not reach an internal or a standing task by guessing its
+      // URL any more than by browsing the board. Filtering only the list would
+      // hide these tasks without making them unreachable.
+      isInternal: false,
       standingCapacityAccountId: null,
       ...(eligibleForHighValue ? {} : { tier: "standard" }),
     },

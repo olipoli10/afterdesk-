@@ -156,6 +156,28 @@ describe("spend is reserved before the call, never checked after it", () => {
     expect(runner).toContain("step.maxCostMicrosPerAttemptAtQuote === null");
     expect(runner).toContain("no per-attempt cost frozen at quote time");
   });
+
+  /**
+   * A RETRY THE CONTRACT DID NOT FUND IS A RETRY THAT MUST NOT BE PROMISED.
+   *
+   * The registry declared two attempts for research while the ceiling funded
+   * one, so a transient provider error was classified retryable and its retry
+   * was then refused for want of budget. The run paused having done nothing
+   * wrong, and the six-hour stall sweep gave the mandate to a person.
+   */
+  it("bounds retries by the frozen contract value, never by the registry", () => {
+    // BOTH exhaustion checks — the claim loop and the failure handler — go
+    // through the same rule, so a step cannot be exhausted by one and still
+    // claimable under the other. The rule's own behaviour is tested directly
+    // in automation-cost-policy.test.ts; what is pinned here is that this file
+    // routes every decision through it.
+    const reads = runner.match(/attemptsAllowedForStep\(/g) ?? [];
+    expect(reads.length).toBe(2);
+    expect(runner).toContain('import { attemptsAllowedForStep }');
+    // And no comparison reaches past it to the registry's current number.
+    expect(runner).not.toMatch(/attempts\s*>=\s*primitive\.maxAttempts/);
+    expect(runner).not.toMatch(/attempts:\s*\{\s*lt:\s*primitive\.maxAttempts\s*\}/);
+  });
 });
 
 describe("an unknown payout is never published as zero", () => {

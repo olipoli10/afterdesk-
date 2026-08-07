@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
+import { poolForVa, poolTaskForVa } from "@/lib/queries/tasks";
 import { createClient, createTask } from "./fixtures";
 
 /**
@@ -155,5 +156,59 @@ describe("a task already in the pool cannot become invalid afterwards", () => {
     await expect(
       prisma.task.update({ where: { id: task.id }, data: { title: "renamed" } })
     ).resolves.toBeTruthy();
+  });
+});
+
+/**
+ * THE ONE ROW SHAPE THE PAYOUT GUARD LETS THROUGH IS THE ONE THE BOARD MUST
+ * NOT SHOW.
+ *
+ * An internal task is exempt from the payout invariant above precisely because
+ * nobody is paid for it. So the exemption that makes the trigger correct also
+ * makes an internal task in the pool the worst possible listing: a worker who
+ * claimed it would do the work for nothing. The database says the row is legal;
+ * the pool query has to say it is not theirs to see.
+ *
+ * Written directly to the table, bypassing every server action, which is the
+ * whole point: this proves the READ refuses it, not that some writer avoided
+ * creating it.
+ */
+describe("an internal task never reaches the worker pool", () => {
+  /** Fully eligible, so nothing but isInternal can explain an absence. */
+  const eligible = {
+    score: 5,
+    ratedCount: 100,
+    highValueThreshold: 4,
+    minRatedDeliveries: 3,
+  };
+
+  it("is invisible on the board even though the database accepted it", async () => {
+    const internal = await setOpenWith({
+      vaPayoutCents: null,
+      estimatedMinutes: null,
+      isInternal: true,
+    });
+    // Not vacuous: an ordinary commercial task written the same way IS listed,
+    // so an empty result would not pass this test by accident.
+    const commercial = await setOpenWith({ vaPayoutCents: 2_000, estimatedMinutes: 60 });
+
+    const pool = await poolForVa(eligible);
+    const ids = pool.map((t) => t.id);
+    expect(ids).toContain(commercial.id);
+    expect(ids).not.toContain(internal.id);
+  });
+
+  it("is unreachable by its own id, not merely hidden from the list", async () => {
+    // Filtering only the list would leave the detail page open to anyone who
+    // guessed or kept the URL, which is the same task with an extra step.
+    const internal = await setOpenWith({
+      vaPayoutCents: null,
+      estimatedMinutes: null,
+      isInternal: true,
+    });
+    const commercial = await setOpenWith({ vaPayoutCents: 2_000, estimatedMinutes: 60 });
+
+    expect(await poolTaskForVa(internal.id, eligible)).toBeNull();
+    expect(await poolTaskForVa(commercial.id, eligible)).not.toBeNull();
   });
 });
