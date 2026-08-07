@@ -46,27 +46,26 @@ type PrimitiveCore = {
 };
 
 /**
- * 1D-alpha0 — CAN THIS PRIMITIVE SPEND MONEY, AND HOW MUCH AT MOST.
+ * 1D-alpha0 — CAN THIS PRIMITIVE SPEND MONEY.
  *
- * The registry could not tell a pure primitive from a billed one: that
- * distinction lived only as an implementation accident (whether the file
+ * That is ALL the registry says about cost, and the restraint is deliberate.
+ * The registry could not previously tell a pure primitive from a billed one:
+ * the distinction lived only as an implementation accident (whether the file
  * happened to import the SDK), which is why the budget ceiling introduced in
  * 1B had nowhere to attach and stayed a dead `0` for a whole phase.
  *
- * `maxCostMicrosPerAttempt` is a property of the WORK, decided in reviewed
- * code: "one research pass is not worth more than this to us". The adapter
- * computes its own worst case from the model and the token caps; the runner
- * reserves the SMALLER of the two, so neither a tariff change nor a prompt
- * change can quietly raise what a step may cost.
+ * The AMOUNT lives in two other places, and neither of them is here:
  *
- * The coupling is carried by the TYPE, not by a comment: a pure primitive
- * that declared a budget does not compile, and a billed one that forgot to
- * declare a ceiling does not compile either.
+ *   - for a NEW quote, automation-cost-policy.ts, versioned and never edited
+ *     in place;
+ *   - for an ACCEPTED contract, TaskExecutionPlanStep.maxCostMicrosPerAttemptAtQuote,
+ *     frozen before the client signed.
+ *
+ * A number here would be a third source, and it is exactly the one the runner
+ * used to read at execution time — which is how a deploy changed what an
+ * already-signed contract could spend.
  */
-type PurePrimitive = { billable: false; maxCostMicrosPerAttempt: 0 };
-type BillablePrimitive = { billable: true; maxCostMicrosPerAttempt: number };
-
-export type Primitive = PrimitiveCore & (PurePrimitive | BillablePrimitive);
+export type Primitive = PrimitiveCore & { billable: boolean };
 
 const define = (p: Primitive): Primitive => p;
 
@@ -83,23 +82,6 @@ export const REGISTRY: Record<PlanPrimitiveId, Primitive> = {
     // budget is tighter than for the pure steps.
     maxAttempts: 2,
     billable: true,
-    /**
-     * $2.00, and the number is arithmetic rather than a feeling.
-     *
-     * A server-side search tool loops INSIDE one request: each result set it
-     * fetches is re-sent as input on the next turn, so input grows with the
-     * square of the search count. At the dearest model rate, 12 searches
-     * accumulate roughly 316k input tokens ($1.58), plus 12k output tokens
-     * ($0.30), plus 12 billed queries ($0.12).
-     *
-     * The first version of this cap said $0.50, counting only the prompt WE
-     * wrote. That is below the floor of a full research pass, so the
-     * reservation was not a ceiling: the call ran, cost more than was held,
-     * and the overrun was only noticed by the NEXT reservation, after the
-     * money was gone. worstCaseMicros now models the same accumulation, and
-     * meteredCall refuses when its estimate exceeds what was granted.
-     */
-    maxCostMicrosPerAttempt: 2_000_000,
     run: runResearchWebSearch,
   }),
   "extract.structured_rows": define({
@@ -112,13 +94,6 @@ export const REGISTRY: Record<PlanPrimitiveId, Primitive> = {
     timeoutMs: 140_000,
     maxAttempts: 3,
     billable: true,
-    /**
-     * $0.60. No search loop here (the call declares no tools at all), so the
-     * input is bounded by what we send: the two 60k-character slices of
-     * evidence and narrative, about 30k tokens ($0.15), plus 16k output
-     * tokens at the dearest rate ($0.40).
-     */
-    maxCostMicrosPerAttempt: 600_000,
     run: runExtractStructuredRows,
   }),
   "normalize.contact_fields": define({
@@ -133,7 +108,6 @@ export const REGISTRY: Record<PlanPrimitiveId, Primitive> = {
     // Pure code: no provider, no network, no spend. The literal types make
     // this an assertion the compiler checks, not a claim in a comment.
     billable: false,
-    maxCostMicrosPerAttempt: 0,
     run: runNormalizeContactFields,
   }),
   "split.exceptions": define({
@@ -148,7 +122,6 @@ export const REGISTRY: Record<PlanPrimitiveId, Primitive> = {
     // Pure code: no provider, no network, no spend. The literal types make
     // this an assertion the compiler checks, not a claim in a comment.
     billable: false,
-    maxCostMicrosPerAttempt: 0,
     run: runSplitExceptions,
   }),
   "build.csv": define({
@@ -163,7 +136,6 @@ export const REGISTRY: Record<PlanPrimitiveId, Primitive> = {
     // Pure code: no provider, no network, no spend. The literal types make
     // this an assertion the compiler checks, not a claim in a comment.
     billable: false,
-    maxCostMicrosPerAttempt: 0,
     run: runBuildCsv,
   }),
 };

@@ -209,7 +209,16 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
           quotedPlanVersionId: true,
           category: { select: { disputeCriteria: true } },
           quotedPlanVersion: {
-            select: { deliverableDescription: true, assumptions: true, exclusions: true },
+            select: {
+              deliverableDescription: true,
+              assumptions: true,
+              exclusions: true,
+              // Frozen economics, copied onto the contract verbatim.
+              expectedAutomationCostMicros: true,
+              conservativeAutomationCostMicros: true,
+              automationSpendCeilingMicros: true,
+              automationCostPolicyVersion: true,
+            },
           },
         },
       });

@@ -53,6 +53,14 @@ const CALL_TIMEOUT_MS = 180_000;
  */
 const MAX_SEARCHES_PER_INVOCATION = 12;
 
+/**
+ * The two client-controlled terms of the prompt, bounded so the per-attempt
+ * cost ceiling frozen at quote time cannot be exceeded by input length alone.
+ * Exported because the policy's arithmetic is checked against them by test.
+ */
+export const MAX_DESCRIPTION_CHARS_IN_PROMPT = 4_000;
+export const MAX_TARGETS_IN_PROMPT = 120;
+
 const BLOCKED_DOMAINS = [
   "linkedin.com",
   "www.linkedin.com",
@@ -95,24 +103,46 @@ export async function runResearchWebSearch(ctx: PrimitiveContext): Promise<Primi
 
   const targets =
     ctx.input.rows.length > 0
-      ? ctx.input.rows.map((r) => r.unitKey)
+      ? ctx.input.rows.slice(0, MAX_TARGETS_IN_PROMPT).map((r) => r.unitKey)
       : [];
 
+  /**
+   * THE PROMPT IS BOUNDED, AND THE BOUND IS PART OF THE COST CONTRACT.
+   *
+   * `Task.description` accepts up to 20,000 characters, and this call used to
+   * interpolate all of it. That made the prompt a CLIENT-CONTROLLED input to
+   * a per-attempt cost ceiling frozen at quote time: a long brief pushed the
+   * computed worst case past the frozen cap, meteredCall refused before
+   * dispatch, the refusal classified as `unknown` and retried, and the run
+   * paused after exhausting its attempts. A mandate could fail to automate
+   * for no reason but the length of its own description.
+   *
+   * So the two unbounded terms are capped here, and the caps are what the
+   * policy's per-attempt figure is computed against
+   * (test/automation-cost-policy.test.ts pins the two together). The full
+   * description remains on the task for a person to read; what is bounded is
+   * how much of it is worth paying to re-send on every search turn.
+   */
+  const briefExcerpt =
+    ctx.brief.description.length > MAX_DESCRIPTION_CHARS_IN_PROMPT
+      ? `${ctx.brief.description.slice(0, MAX_DESCRIPTION_CHARS_IN_PROMPT)}\n[truncated; the operator has the full brief]`
+      : ctx.brief.description;
+
   const userContent = `BRIEF
-Title: ${ctx.brief.title}
-Objective: ${ctx.brief.objective}
+Title: ${ctx.brief.title.slice(0, 200)}
+Objective: ${ctx.brief.objective.slice(0, 1_000)}
 Volume requested: ${ctx.brief.quantityInterpreted ?? ctx.brief.quantity ?? "not specified"}
-Geography: ${ctx.brief.geography.join(", ") || "not specified"}
-Fields wanted for each unit: ${ctx.brief.requiredFields.join(", ") || "not specified"}
+Geography: ${ctx.brief.geography.join(", ").slice(0, 500) || "not specified"}
+Fields wanted for each unit: ${ctx.brief.requiredFields.join(", ").slice(0, 500) || "not specified"}
 
 ${
   targets.length > 0
-    ? `UNITS TO RESEARCH (in this order)\n${targets.map((t, i) => `${i + 1}. ${t}`).join("\n")}`
+    ? `UNITS TO RESEARCH (in this order)\n${targets.map((t, i) => `${i + 1}. ${t.slice(0, 120)}`).join("\n")}`
     : `No unit list was supplied. Identify units matching the objective and geography yourself, in a sensible order, and name each one clearly.`
 }
 
-Full client description, for context only:
-${ctx.brief.description}`;
+Client description, for context only:
+${briefExcerpt}`;
 
   /**
    * 1D-alpha0: the call, its deadline, its cancellation, its cost and its

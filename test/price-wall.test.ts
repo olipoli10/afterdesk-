@@ -139,6 +139,23 @@ describe("RULE 2 — the two-price wall", () => {
       "estimatedInternalCostLikelyCents",
       "recommendation",
       "calibrationLevel",
+      // Phase 1D-alpha0 — the automation economics. Every one of these is an
+      // internal cost or an internal risk appetite: what a machine step is
+      // expected to cost us, the most one attempt may burn, and how much
+      // exposure the business will carry on this mandate. A client seeing the
+      // ceiling learns our margin structure; a worker seeing it learns what
+      // the platform spends on the job they are being paid a share of. Both
+      // are RULE 2 breaches by a different door.
+      "expectedCostMicrosAtQuote",
+      "maxCostMicrosPerAttemptAtQuote",
+      "expectedAutomationCostMicros",
+      "conservativeAutomationCostMicros",
+      "automationSpendCeilingMicros",
+      "automationCostPolicyVersion",
+      "runAutomationBudgetMicros",
+      "budgetPolicyVersion",
+      "budgetHolds",
+      "demotedForBudget",
     ] as const;
     for (const [name, select] of [
       ["clientTaskSelect", clientTaskSelect],
@@ -270,6 +287,11 @@ describe("the shared task-query file contains no operational-intelligence relati
     "qualityReviews",
     "aiOperations",
     "acceptanceSnapshotForCalibration",
+    // Phase 1D-alpha0 automation economics: internal cost and internal risk
+    // appetite, admin-only by construction.
+    "automationSpendCeilingMicros",
+    "runAutomationBudgetMicros",
+    "maxCostMicrosPerAttemptAtQuote",
   ]) {
     it(`never mentions ${relation}`, () => {
       expect(source).not.toContain(relation);

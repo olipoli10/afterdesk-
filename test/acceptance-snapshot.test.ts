@@ -30,6 +30,10 @@ const INPUT = {
     deliverableDescription: "An Excel file of 200 qualified firms — verified fields included",
     assumptions: ["Public sources only", "English-language sources"],
     exclusions: ["Phone verification by calling"],
+    expectedAutomationCostMicros: 750_000n,
+    conservativeAutomationCostMicros: 2_600_000n,
+    automationSpendCeilingMicros: 2_600_000n,
+    automationCostPolicyVersion: "ac1",
   },
   settings: { revisionWindowHours: 72, maxRevisionRounds: 2, disputeWindowHours: 48 },
 };

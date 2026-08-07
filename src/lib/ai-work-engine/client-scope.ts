@@ -81,6 +81,17 @@ export type AcceptanceSnapshotInput = {
     deliverableDescription: string;
     assumptions: string[];
     exclusions: string[];
+    /**
+     * The frozen automation economics of the version being accepted. Copied
+     * onto the contract VERBATIM, in the same transaction: the compiler reads
+     * the ceiling from the snapshot and never recomputes it, which is what
+     * stops a later deploy from changing what an already-signed mandate may
+     * spend. Null on a plan written before this correction.
+     */
+    expectedAutomationCostMicros: bigint | null;
+    conservativeAutomationCostMicros: bigint | null;
+    automationSpendCeilingMicros: bigint | null;
+    automationCostPolicyVersion: string | null;
   } | null;
   settings: {
     revisionWindowHours: number;
@@ -119,6 +130,16 @@ export function buildAcceptanceSnapshot(input: AcceptanceSnapshotInput) {
     revisionWindowHours: input.settings.revisionWindowHours,
     maxRevisionRounds: input.settings.maxRevisionRounds,
     disputeWindowHours: input.settings.disputeWindowHours,
+    /**
+     * Verbatim, never recomputed. An inequality between these and the plan
+     * version's own aggregates would mean the contract and the plan disagree
+     * about what the machine may spend, so a test asserts they match exactly.
+     */
+    expectedAutomationCostMicros: input.quotedPlanVersion?.expectedAutomationCostMicros ?? null,
+    conservativeAutomationCostMicros:
+      input.quotedPlanVersion?.conservativeAutomationCostMicros ?? null,
+    automationSpendCeilingMicros: input.quotedPlanVersion?.automationSpendCeilingMicros ?? null,
+    automationCostPolicyVersion: input.quotedPlanVersion?.automationCostPolicyVersion ?? null,
     acceptedByUserId: input.acceptedByUserId,
   };
 }

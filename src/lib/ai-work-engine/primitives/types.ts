@@ -159,8 +159,16 @@ export type PrimitiveContext = {
   };
   /** Output of the previous step, or an empty payload for the first. */
   input: WorkflowPayload;
-  /** Budget ceiling for this step, in microdollars. Zero means unbounded. */
-  costCeilingMicros: number;
+  /**
+   * What this step may spend, in microdollars. ZERO MEANS "MAY NOT SPEND",
+   * never "unbounded": the 1B sense of a zero ceiling is exactly the defect
+   * this phase removed, and it must not creep back through a comment.
+   *
+   * BigInt, like every microdollar amount on the financial path: the Prisma
+   * Int ceiling is $2,147.48 and the type must not assume today's primitives
+   * are the expensive ones.
+   */
+  costCeilingMicros: bigint;
   recordInvocation: (record: InvocationRecord) => Promise<void>;
   writeArtifact: (spec: ArtifactSpec) => Promise<{ fileId: string }>;
 };

@@ -233,22 +233,26 @@ describe("the registry implements exactly the planner's vocabulary", () => {
     expect(source).toContain("EXECUTABLE_PRIMITIVE_MODES");
   });
 
-  it("a billable primitive declares a spend cap and a pure one declares zero", async () => {
-    // The type already forbids the mismatch; this pins the VALUES so a cap
-    // cannot be quietly raised to something unbounded.
+  it("the registry says WHETHER a primitive bills, and never HOW MUCH", async () => {
+    /**
+     * The amount deliberately does not live here. For a NEW quote it comes
+     * from automation-cost-policy.ts; for an ACCEPTED contract it comes from
+     * the plan step frozen before the client signed. A third number in the
+     * registry is exactly what the runner used to read at execution time,
+     * which is how a deploy changed what a signed contract could spend.
+     */
     const { REGISTRY } = await import("@/lib/ai-work-engine/registry");
-    for (const [id, p] of Object.entries(REGISTRY)) {
-      if (p.billable) {
-        expect(p.maxCostMicrosPerAttempt, `${id} must cap its spend`).toBeGreaterThan(0);
-        // The ceiling of the ceiling: $5 for one attempt of one step is beyond
-        // anything this registry should ever hold, whatever the model.
-        expect(p.maxCostMicrosPerAttempt, `${id} cap is implausibly high`).toBeLessThanOrEqual(5_000_000);
-      } else {
-        expect(p.maxCostMicrosPerAttempt, `${id} is pure and must not spend`).toBe(0);
-      }
-    }
-    // The three pure primitives are exactly the ones with no provider.
+    const source = readFileSync(
+      join(__dirname, "..", "src/lib/ai-work-engine/registry.ts"),
+      "utf8"
+    );
+    // No DECLARED amount. The word may appear in prose explaining where the
+    // number actually lives; what must not exist is a field holding one.
+    expect(source).not.toMatch(/maxCostMicrosPerAttempt\s*:/);
+
+    const billable = Object.values(REGISTRY).filter((p) => p.billable).map((p) => p.id).sort();
     const pure = Object.values(REGISTRY).filter((p) => !p.billable).map((p) => p.id).sort();
+    expect(billable).toEqual(["extract.structured_rows", "research.web_search"]);
     expect(pure).toEqual(["build.csv", "normalize.contact_fields", "split.exceptions"]);
   });
 

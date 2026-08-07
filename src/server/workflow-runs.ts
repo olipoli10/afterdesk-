@@ -5,7 +5,6 @@ import { Prisma } from "@prisma/client";
 import { classifyProviderError } from "@/lib/ai-work-engine/provider-error";
 import {
   BUDGET_POLICY_VERSION,
-  deriveRunBudgetMicros,
   releaseHold,
   reserveSpend,
   settleHold,
@@ -130,9 +129,33 @@ export async function releaseToPoolWithoutAutomation(
    */
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: { status: true, title: true, tier: true, isInternal: true },
+    select: {
+      status: true,
+      title: true,
+      tier: true,
+      isInternal: true,
+      standingCapacityAccountId: true,
+      vaPayoutCents: true,
+      estimatedMinutes: true,
+    },
   });
   if (!task || task.status !== "ai_processing") return;
+
+  // The degraded exit publishes to the pool too, so it carries the same
+  // refusal. A task released "as quoted" with no quoted amount is the exact
+  // shape of the defect.
+  if (
+    await handoverBlockedForUnknownPayout({
+      id: taskId,
+      vaPayoutCents: task.vaPayoutCents,
+      estimatedMinutes: task.estimatedMinutes,
+      isInternal: task.isInternal,
+      standingCapacityAccountId: task.standingCapacityAccountId,
+    })
+  ) {
+    return;
+  }
+
   const audience = await resolvePoolAudience(taskId, task);
 
   try {
@@ -174,7 +197,15 @@ export async function compileWorkflowForTask(
       id: true,
       isInternal: true,
       standingCapacityAccountId: true,
-      acceptanceSnapshot: { select: { id: true, planVersionId: true } },
+      acceptanceSnapshot: {
+        select: {
+          id: true,
+          planVersionId: true,
+          // The frozen ceiling. Read, never recomputed.
+          automationSpendCeilingMicros: true,
+          automationCostPolicyVersion: true,
+        },
+      },
       aiClassification: { select: { sensitiveData: true, requiredAccess: true } },
       workflowRun: { select: { id: true, automatedStepCount: true } },
     },
@@ -206,11 +237,16 @@ export async function compileWorkflowForTask(
       primitiveId: true,
       primitiveVersion: true,
       dependsOnOrder: true,
-      // 1D-alpha0: the provenance of the automation budget. This is the
-      // planner's own per-step figure, already stamped into the accepted plan
-      // version and already inside computeInternalCostCents, so the ceiling
-      // derives from something the client's price was built on.
+      /**
+       * The step's economics, FROZEN AT QUOTE TIME. The runner reserves
+       * against `maxCostMicrosPerAttemptAtQuote` and never opens the policy
+       * table, so a later policy change cannot move what this contract may
+       * spend. Null on a plan accepted before this correction: such a step
+       * compiles to human work, fail-closed.
+       */
       estimatedAiCostCents: true,
+      maxCostMicrosPerAttemptAtQuote: true,
+      demotedForBudget: true,
     },
   });
   if (planSteps.length === 0) return null;
@@ -231,28 +267,17 @@ export async function compileWorkflowForTask(
   });
 
   /**
-   * THE BUDGET IS FROZEN HERE, ONCE, AND NEVER RECOMPUTED.
+   * THE CEILING IS COPIED FROM THE CONTRACT, NOT COMPUTED HERE.
    *
-   * Only the steps that actually compiled to `automated` contribute: a step
-   * the gate or the topology sent to a person will not spend, so counting its
-   * planned model cost would hand the run budget it has no use for.
+   * The previous version derived it at this exact point from the CURRENT
+   * registry caps. Compilation runs after payment, so a deploy that raised a
+   * cap raised the budget of mandates already sold. The number now comes from
+   * the acceptance snapshot, which froze it before the client signed.
+   *
+   * Null for a contract accepted before this correction: no ceiling means no
+   * billable step may start, and reserveSpend refuses against it. That is
+   * fail-closed by design, not an oversight.
    */
-  const automatedPlanned = compiled.steps
-    .filter((s) => s.executionMode === "automated")
-    .map((s) => {
-      const planStep = planSteps.find((p) => p.id === s.planStepId);
-      if (!planStep) return null;
-      // The registry's reviewed cap for this exact primitive, so the floor
-      // below can guarantee one attempt of every step the compiler produced.
-      const primitive = resolvePrimitive(s.primitiveId, s.primitiveVersion);
-      return {
-        estimatedAiCostCents: planStep.estimatedAiCostCents,
-        maxCostMicrosPerAttempt: primitive?.maxCostMicrosPerAttempt ?? 0,
-      };
-    })
-    .filter((p): p is { estimatedAiCostCents: number; maxCostMicrosPerAttempt: number } =>
-      p !== null
-    );
 
   const run = await prisma.taskWorkflowRun.create({
     data: {
@@ -262,7 +287,7 @@ export async function compileWorkflowForTask(
       status: compiled.fullyHuman ? "awaiting_human" : "running",
       automatedStepCount: compiled.automatedStepCount,
       humanStepCount: compiled.humanStepCount,
-      runAutomationBudgetMicros: deriveRunBudgetMicros(automatedPlanned),
+      runAutomationBudgetMicros: snapshot.automationSpendCeilingMicros,
       budgetPolicyVersion: BUDGET_POLICY_VERSION,
       compiledAt: new Date(),
       startedAt: compiled.fullyHuman ? null : new Date(),
@@ -292,6 +317,15 @@ type ClaimedStep = {
   primitiveId: string | null;
   primitiveVersion: number | null;
   attempts: number;
+  /**
+   * THE PER-ATTEMPT CEILING, FROZEN WHEN THE CLIENT ACCEPTED.
+   *
+   * Carried from TaskExecutionPlanStep, never read from the current policy
+   * table. Null on a contract accepted before this correction, and on a step
+   * the economic preflight demoted: either way the step cannot bill and the
+   * runner hands it to a person.
+   */
+  maxCostMicrosPerAttemptAtQuote: bigint | null;
   /**
    * THE FENCING TOKEN. Every write that ends this step carries it in the
    * WHERE clause, so an invocation whose lease has already expired and been
@@ -384,13 +418,18 @@ async function pauseRunForExhaustedStep(input: {
 async function pauseRunForBudget(
   runId: string,
   taskId: string,
-  refusal: { reason: string; ceilingMicros: number | null; committedMicros: number; requestedMicros: number }
+  refusal: {
+    reason: string;
+    ceilingMicros: bigint | null;
+    committedMicros: bigint;
+    requestedMicros: bigint;
+  }
 ): Promise<void> {
   const ceiling = refusal.ceilingMicros;
   const reason =
     refusal.reason === "no_budget_defined"
       ? "No automation budget was frozen for this run, so no billable step may start."
-      : `Automation budget reached: ${refusal.committedMicros} of ${ceiling ?? 0} microdollars committed, next step needs ${refusal.requestedMicros}.`;
+      : `Automation budget reached: ${refusal.committedMicros} of ${ceiling ?? 0n} microdollars committed, next step needs ${refusal.requestedMicros}.`;
 
   const paused = await prisma.taskWorkflowRun.updateMany({
     where: { id: runId, status: { in: ["running", "compiling"] } },
@@ -404,9 +443,10 @@ async function pauseRunForBudget(
       action: "workflow_run_paused",
       meta: {
         reason: "automation_budget",
-        ceilingMicros: ceiling,
-        committedMicros: refusal.committedMicros,
-        requestedMicros: refusal.requestedMicros,
+        // Serialised: Prisma Json cannot hold a BigInt.
+        ceilingMicros: ceiling === null ? null : ceiling.toString(),
+        committedMicros: refusal.committedMicros.toString(),
+        requestedMicros: refusal.requestedMicros.toString(),
       },
     },
   });
@@ -509,7 +549,19 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
   const steps = await prisma.taskWorkflowStepRun.findMany({
     where: { runId, executionMode: "automated" },
     orderBy: { order: "asc" },
-    select: { id: true, order: true, primitiveId: true, primitiveVersion: true, attempts: true, status: true, leaseExpiresAt: true, nextAttemptAt: true, lastError: true },
+    select: {
+      id: true,
+      order: true,
+      primitiveId: true,
+      primitiveVersion: true,
+      attempts: true,
+      status: true,
+      leaseExpiresAt: true,
+      nextAttemptAt: true,
+      lastError: true,
+      // The frozen economics travel with the step, from the accepted plan.
+      planStep: { select: { maxCostMicrosPerAttemptAtQuote: true } },
+    },
   });
 
   const candidates = [];
@@ -622,6 +674,7 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
       primitiveId: candidate.primitiveId,
       primitiveVersion: candidate.primitiveVersion,
       attempts: candidate.attempts + 1,
+      maxCostMicrosPerAttemptAtQuote: candidate.planStep.maxCostMicrosPerAttemptAtQuote,
       lockedBy,
     };
   }
@@ -747,13 +800,35 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
          * failing the step, because "we ran out of money" is a decision, not
          * an error to retry.
          */
+        /**
+         * THE FROZEN VALUE, NOT THE CURRENT ONE.
+         *
+         * `step.maxCostMicrosPerAttemptAtQuote` was written on the plan step
+         * before the client accepted. Reading `primitive.maxCostMicrosPerAttempt`
+         * here — which the previous version did — is exactly how a deploy
+         * changed what an already-signed contract could spend.
+         *
+         * A billable step with no frozen value is a contract accepted before
+         * this correction, or one the preflight demoted. It cannot be priced
+         * honestly, so it is not run: the step goes to a person, which is the
+         * fallback 1B established for everything the compiler cannot prove.
+         */
+        if (primitive.billable && step.maxCostMicrosPerAttemptAtQuote === null) {
+          await handOffStepToHuman(
+            step.id,
+            run.id,
+            "This step carries no per-attempt cost frozen at quote time, so its spend cannot be bounded against the accepted contract; a person does it."
+          );
+          continue;
+        }
+
         reservation = primitive.billable
           ? await reserveSpend({
               runId: run.id,
               stepRunId: step.id,
               attempt: step.attempts,
               operationKey: `${primitive.id}:${run.snapshotId}:${step.order}`,
-              worstCaseMicros: primitive.maxCostMicrosPerAttempt,
+              worstCaseMicros: step.maxCostMicrosPerAttemptAtQuote!,
             })
           : null;
 
@@ -824,7 +899,7 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
              * means a pure step that may not spend at all, which is exactly
              * what the three pure primitives are.
              */
-            costCeilingMicros: reservation?.grantedMicros ?? 0,
+            costCeilingMicros: reservation?.grantedMicros ?? 0n,
             recordInvocation: async (record) => {
               recordedAnInvocation = true;
               /**
@@ -882,11 +957,11 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
                   if (reservation !== null && reservation.ok) {
                     const holdId = reservation.holdId;
                     if (record.dispatchState === "settled") {
-                      await settleHold(tx, holdId, record.costMicros);
+                      await settleHold(tx, holdId, BigInt(record.costMicros));
                     } else if (record.dispatchState === "cancelled_before_dispatch") {
                       await tx.workflowBudgetHold.updateMany({
                         where: { id: holdId, status: "held" },
-                        data: { status: "released", settledMicros: 0 },
+                        data: { status: "released", settledMicros: 0n },
                       });
                     }
                   }
@@ -1065,6 +1140,72 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
   }
 }
 
+/**
+ * A PAYOUT THAT IS NOT KNOWN IS NOT A PAYOUT OF ZERO.
+ *
+ * `vaPayoutCents ?? 0` was a fail-OPEN, and its cascade was silent all the way
+ * down: on a fully human mandate `reductionProven` is false, so the residual
+ * pins the payout to the reserve; a reserve of 0 gives 0 minutes; and
+ * `payoutClearsHourlyFloor` returns true for zero minutes, so the hourly floor
+ * never fires and `overBudget` (0 > 0) never fires either. The mandate reaches
+ * the pool at $0.00 for 0 minutes with nothing raising a hand.
+ *
+ * No path produces that null today — approvePricing always writes both, and
+ * nothing ever sets them back to null — but the guarantee was a convention,
+ * not a construction, and the failure it guards is invisible.
+ *
+ * THERE IS NO AUTHORITATIVE FALLBACK. The acceptance snapshot carries the
+ * client price, not the payout. `TaskExecutionPlanVersion.suggestedVaPayoutCents`
+ * is a SUGGESTION the admin may have overridden, so reading it would publish a
+ * number the operator did not choose. `Task.vaPayoutCents` is the only
+ * depository of the accepted amount. When it is missing, an operator decides;
+ * this function refuses to guess, and says so.
+ */
+async function handoverBlockedForUnknownPayout(task: {
+  id: string;
+  vaPayoutCents: number | null;
+  estimatedMinutes: number | null;
+  isInternal: boolean;
+  standingCapacityAccountId?: string | null;
+}): Promise<boolean> {
+  // Internal practice tasks and Standing Capacity mandates are not paid per
+  // task: the first is never paid, the second is covered by its weekly block.
+  if (task.isInternal || (task.standingCapacityAccountId ?? null) !== null) return false;
+  if (
+    task.vaPayoutCents !== null &&
+    task.vaPayoutCents > 0 &&
+    task.estimatedMinutes !== null &&
+    task.estimatedMinutes > 0
+  ) {
+    return false;
+  }
+
+  await prisma.taskEvent.create({
+    data: {
+      taskId: task.id,
+      action: "workflow_handover_blocked",
+      reason: "unknown_payout",
+      meta: {
+        vaPayoutCents: task.vaPayoutCents,
+        estimatedMinutes: task.estimatedMinutes,
+      },
+    },
+  });
+  await notifyAdmins({
+    type: "workflow_handover_blocked",
+    title: "Handover blocked: the payout is not known",
+    body: `Task ${task.id} finished automated processing but has no usable payout or effort estimate, so it was NOT published to the pool. An unknown payout is not a payout of zero, and there is no authoritative amount to fall back on. Re-price the task to release it.`,
+    taskId: task.id,
+  });
+  console.error("[workflow] handover blocked: payout unknown", {
+    taskId: task.id,
+    vaPayoutCents: task.vaPayoutCents,
+    estimatedMinutes: task.estimatedMinutes,
+  });
+  return true;
+}
+
+
 // ── Handover to a person ──────────────────────────────────────────────────
 
 
@@ -1089,6 +1230,7 @@ export async function finishRun(runId: string): Promise<void> {
           title: true,
           tier: true,
           isInternal: true,
+          standingCapacityAccountId: true,
           status: true,
           vaPayoutCents: true,
           estimatedMinutes: true,
@@ -1098,6 +1240,18 @@ export async function finishRun(runId: string): Promise<void> {
     },
   });
   if (!run || run.task.status !== "ai_processing") return;
+
+  if (
+    await handoverBlockedForUnknownPayout({
+      id: run.task.id,
+      vaPayoutCents: run.task.vaPayoutCents,
+      estimatedMinutes: run.task.estimatedMinutes,
+      isInternal: run.task.isInternal,
+      standingCapacityAccountId: run.task.standingCapacityAccountId,
+    })
+  ) {
+    return;
+  }
 
   const settings = await getSettings();
   const payload = await loadLatestPayload(runId);
@@ -1130,6 +1284,13 @@ export async function finishRun(runId: string): Promise<void> {
     estimatedMinutesConservative: s.estimatedMinutesConservative,
   }));
 
+  /**
+   * Non-null by construction: handoverBlockedForUnknownPayout returned false,
+   * which for a commercial task means both figures are present and positive.
+   * An internal or Standing Capacity task is exempt there and legitimately
+   * carries no per-task payout, so it falls back to zero here — for those, a
+   * zero reserve is a fact, not a missing measurement.
+   */
   const reservedBudgetCents = run.task.vaPayoutCents ?? 0;
   const residual = computeResidual({
     steps: residualSteps,

@@ -173,7 +173,7 @@ export async function meteredCall<T>(
    * carries. The old 1B sense of "0 = unbounded" is exactly the defect this
    * phase exists to remove, and it must not survive inside its replacement.
    */
-  if (ctx.costCeilingMicros <= 0 || spec.reservedMicros > ctx.costCeilingMicros) {
+  if (ctx.costCeilingMicros <= 0n || BigInt(spec.reservedMicros) > ctx.costCeilingMicros) {
     const record: InvocationRecord = {
       operationKey: spec.operationKey,
       provider: "anthropic",

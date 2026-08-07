@@ -31,6 +31,7 @@ export async function createTask(input?: {
   status?: string;
   clientPriceCents?: number;
   vaPayoutCents?: number;
+  estimatedMinutes?: number | null;
   claimedById?: string | null;
 }) {
   const clientId = input?.clientId ?? (await createClient()).id;
@@ -42,6 +43,13 @@ export async function createTask(input?: {
       status: (input?.status ?? "submitted") as never,
       clientPriceCents: input?.clientPriceCents ?? 10_000,
       vaPayoutCents: input?.vaPayoutCents ?? 2_000,
+      /**
+       * A commercial task in the pool must carry a positive effort estimate
+       * (second_shift_pool_task_is_payable). The default belongs in the
+       * fixture rather than in each test: a task with a payout and no minutes
+       * is not a shape the product ever produces.
+       */
+      estimatedMinutes: input?.estimatedMinutes ?? 60,
       claimedById: input?.claimedById ?? null,
     },
     select: { id: true, clientId: true },

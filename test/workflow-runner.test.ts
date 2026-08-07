@@ -132,12 +132,52 @@ describe("spend is reserved before the call, never checked after it", () => {
     expect(runner).toMatch(/dispatchState === "cancelled_before_dispatch"/);
   });
 
-  it("freezes the budget from the accepted plan, not from the client price", () => {
-    expect(runner).toContain("deriveRunBudgetMicros");
-    expect(runner).toContain("BUDGET_POLICY_VERSION");
-    // The provenance rule: a percentage of the price would authorise more
-    // machine spend on an expensive mandate than on an identical cheap one.
+  it("COPIES the ceiling from the accepted contract and derives nothing", () => {
+    /**
+     * The defect this forbids, in the exact shape it had: the ceiling was
+     * computed HERE, at compile time, from the registry's current caps.
+     * Compile runs after payment, so raising a cap in a deploy raised the
+     * budget of mandates already sold.
+     */
+    expect(runner).toContain("runAutomationBudgetMicros: snapshot.automationSpendCeilingMicros");
+    expect(runner).not.toContain("deriveRunBudgetMicros");
+    // And the reservation uses the value frozen on the plan step, never a
+    // current registry or policy figure.
+    expect(runner).toContain("worstCaseMicros: step.maxCostMicrosPerAttemptAtQuote");
+    expect(runner).not.toMatch(/worstCaseMicros: primitive\./);
+    // A percentage of the price would authorise more machine spend on an
+    // expensive mandate than on an identical cheap one.
     expect(runner).not.toMatch(/runAutomationBudgetMicros[^\n]*clientPriceCents/);
+  });
+
+  it("hands a billable step with no frozen ceiling to a person", () => {
+    // A contract accepted before this correction carries no frozen figure, so
+    // its spend cannot be bounded against what the client actually signed.
+    expect(runner).toContain("step.maxCostMicrosPerAttemptAtQuote === null");
+    expect(runner).toContain("no per-attempt cost frozen at quote time");
+  });
+});
+
+describe("an unknown payout is never published as zero", () => {
+  it("refuses the handover on both publishing paths", () => {
+    // `?? 0` published $0.00 for 0 minutes with no alarm anywhere: the hourly
+    // floor returns true at zero minutes and overBudget (0 > 0) is false.
+    expect(runner).toContain("handoverBlockedForUnknownPayout");
+    expect(runner).toContain("workflow_handover_blocked");
+    const calls = runner.match(/await handoverBlockedForUnknownPayout\(/g) ?? [];
+    expect(calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("promises no automatic recovery, because no authoritative amount exists", () => {
+    // The snapshot carries the client price, not the payout, and
+    // suggestedVaPayoutCents is a suggestion the admin may have overridden.
+    expect(runner).toContain("THERE IS NO AUTHORITATIVE FALLBACK");
+    /**
+     * The column is named in prose to explain why it is refused, so the pin
+     * is on the shape that would actually USE it: a Prisma select. Reading it
+     * would publish a number the operator never chose.
+     */
+    expect(runner).not.toMatch(/suggestedVaPayoutCents:\s*true/);
   });
 });
 

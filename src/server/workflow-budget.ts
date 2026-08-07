@@ -39,73 +39,43 @@ import { prisma } from "@/lib/db";
  */
 
 /**
- * Version of the derivation rule. Bump when the PROVENANCE changes, so a
- * historical comparison is not silently comparing two different definitions.
+ * Provenance of the ceiling RULE, recorded on the run. It says which release
+ * of the preflight produced the number; it is never read to decide an amount.
+ * Bump it when the rule changes so a historical comparison is not silently
+ * comparing two different definitions.
  */
-export const BUDGET_POLICY_VERSION = "budget_v1";
+export const BUDGET_POLICY_VERSION = "budget_v2";
 
 /**
- * The ceiling for a run, derived from the ACCEPTED PLAN and nothing else.
+ * THE CEILING IS NOT DERIVED HERE. IT IS COPIED FROM THE ACCEPTED CONTRACT.
  *
- * Source: the sum of `estimatedAiCostCents` over the plan steps that compiled
- * to automated execution. That number was produced by the planner, stamped
- * into the plan version, and already went into `computeInternalCostCents`,
- * which is what the client's price was built from. So the ceiling is a figure
- * the client already paid against, not a new invention.
+ * The previous version of this file computed it at COMPILE time as
+ * `max(sum of registry caps, planned × headroom)`. Compile runs after payment,
+ * and the registry is deploy-time code, so raising a cap in a release raised
+ * the budget of mandates that had already been sold. `budgetPolicyVersion`
+ * stayed the same, so nothing said it had happened.
  *
- * NOT derived from clientPriceCents. A percentage of the price would authorise
- * more machine spend on an expensive mandate than on an identical cheap one,
- * which gets the causality backwards: the work decides what the machine may
- * cost, and the price is downstream of the work.
+ * The ceiling is now computed once, by the ECONOMIC PREFLIGHT, before the
+ * quote is shown (src/lib/ai-work-engine/automation-preflight.ts), written on
+ * the plan version, and copied verbatim onto TaskAcceptanceSnapshot at
+ * acceptance. This module only reads it.
  *
- * The multiplier is the honest part of the estimate. The planner's per-step
- * figure is a guess made before the work, so a run that reaches exactly its
- * estimate and stops would pause constantly for normal variance. Two times the
- * plan, floored at a value that lets a single small step run at all, is the
- * headroom; beyond that an admin decides, which is what `pausedReason` and the
- * admin notification already exist for.
+ * There is deliberately no `deriveRunBudgetMicros` any more. Its absence is
+ * the enforcement: there is no function here that could turn current code into
+ * a bigger budget for an existing contract.
  */
-export const BUDGET_HEADROOM_MULTIPLIER = 2;
-
-/**
- * THE FLOOR IS DERIVED FROM THE WORK, NOT FROM A CONSTANT.
- *
- * A fixed floor was wrong in a way that only arithmetic exposes. The planner's
- * `estimated_ai_cost_cents` is a model's guess made before the work; it
- * routinely says twenty cents for a step whose worst case is two dollars.
- * Doubling twenty cents gives a ceiling that cannot pay for ONE attempt of the
- * first step, so the run would reserve, be refused, and pause having done
- * nothing at all. A budget that guarantees a pause is not a budget.
- *
- * So the floor is the sum of one worst-case attempt of every billable step the
- * compiler actually produced. That is the least a run must be allowed to spend
- * to have any chance of finishing, and it comes from the registry's reviewed
- * caps rather than from a model's estimate.
- */
-export function deriveRunBudgetMicros(
-  automatedSteps: { estimatedAiCostCents: number; maxCostMicrosPerAttempt?: number }[]
-): number | null {
-  // No machine steps means no machine spend is authorised. Null is a real
-  // answer here, not a missing one, and reserveSpend refuses against it.
-  if (automatedSteps.length === 0) return null;
-  const plannedCents = automatedSteps.reduce(
-    (sum, s) => sum + Math.max(0, s.estimatedAiCostCents),
-    0
-  );
-  const plannedMicros = plannedCents * 10_000;
-  const oneAttemptEach = automatedSteps.reduce(
-    (sum, s) => sum + Math.max(0, s.maxCostMicrosPerAttempt ?? 0),
-    0
-  );
-  return Math.max(oneAttemptEach, plannedMicros * BUDGET_HEADROOM_MULTIPLIER);
+export function ceilingFromSnapshot(snapshot: {
+  automationSpendCeilingMicros: bigint | null;
+}): bigint | null {
+  return snapshot.automationSpendCeilingMicros;
 }
 
 export type ReservationRefusal = {
   ok: false;
   reason: "no_budget_defined" | "would_exceed_budget";
-  ceilingMicros: number | null;
-  committedMicros: number;
-  requestedMicros: number;
+  ceilingMicros: bigint | null;
+  committedMicros: bigint;
+  requestedMicros: bigint;
 };
 
 export type ReservationGrant = {
@@ -116,8 +86,7 @@ export type ReservationGrant = {
    * primitive's cost ceiling, so the adapter can refuse a call it can already
    * prove is too expensive rather than discovering it afterwards.
    */
-  grantedMicros: number;
-  remainingAfterMicros: number;
+  grantedMicros: bigint;
 };
 
 /**
@@ -130,7 +99,13 @@ export async function reserveSpend(input: {
   stepRunId: string;
   attempt: number;
   operationKey: string;
-  worstCaseMicros: number;
+  /**
+   * THE FROZEN VALUE FROM THE ACCEPTED PLAN STEP, never a figure read from the
+   * current policy table. The caller is responsible for that provenance, and
+   * an accepted contract whose step carries no frozen value never reaches
+   * here: it compiles to human work instead.
+   */
+  worstCaseMicros: bigint;
 }): Promise<ReservationGrant | ReservationRefusal> {
   return prisma.$transaction(async (tx) => {
     /**
@@ -155,7 +130,7 @@ export async function reserveSpend(input: {
         ok: false as const,
         reason: "no_budget_defined" as const,
         ceilingMicros: null,
-        committedMicros: 0,
+        committedMicros: 0n,
         requestedMicros: input.worstCaseMicros,
       };
     }
@@ -176,7 +151,6 @@ export async function reserveSpend(input: {
         ok: true as const,
         holdId: existing.id,
         grantedMicros: existing.amountMicros,
-        remainingAfterMicros: 0,
       };
     }
 
@@ -186,7 +160,7 @@ export async function reserveSpend(input: {
         ok: false as const,
         reason: "no_budget_defined" as const,
         ceilingMicros: null,
-        committedMicros: 0,
+        committedMicros: 0n,
         requestedMicros: input.worstCaseMicros,
       };
     }
@@ -201,8 +175,14 @@ export async function reserveSpend(input: {
       where: { runId: input.runId, status: "held" },
       _sum: { amountMicros: true },
     });
-    const spent = run.actualAiCostMicros + run.actualToolCostMicros;
-    const committed = spent + (heldAgg._sum.amountMicros ?? 0);
+    /**
+     * BigInt end to end. `actualAiCostMicros` and `actualToolCostMicros` are
+     * still Int columns (they count what ONE run spent, well inside the
+     * range), but they are widened here so no step of the comparison happens
+     * in floating point or in a narrower type than the ceiling.
+     */
+    const spent = BigInt(run.actualAiCostMicros) + BigInt(run.actualToolCostMicros);
+    const committed = spent + (heldAgg._sum.amountMicros ?? 0n);
 
     if (committed + input.worstCaseMicros > ceiling) {
       return {
@@ -229,7 +209,6 @@ export async function reserveSpend(input: {
       ok: true as const,
       holdId: hold.id,
       grantedMicros: input.worstCaseMicros,
-      remainingAfterMicros: ceiling - committed - input.worstCaseMicros,
     };
   });
 }
@@ -242,11 +221,11 @@ export async function reserveSpend(input: {
 export async function settleHold(
   tx: Prisma.TransactionClient,
   holdId: string,
-  actualMicros: number
+  actualMicros: bigint
 ): Promise<void> {
   await tx.workflowBudgetHold.updateMany({
     where: { id: holdId, status: "held" },
-    data: { status: "settled", settledMicros: Math.max(0, actualMicros) },
+    data: { status: "settled", settledMicros: actualMicros < 0n ? 0n : actualMicros },
   });
 }
 
@@ -258,7 +237,7 @@ export async function settleHold(
 export async function releaseHold(holdId: string): Promise<void> {
   await prisma.workflowBudgetHold.updateMany({
     where: { id: holdId, status: "held" },
-    data: { status: "released", settledMicros: 0 },
+    data: { status: "released", settledMicros: 0n },
   });
 }
 
@@ -266,10 +245,10 @@ export async function releaseHold(holdId: string): Promise<void> {
  * Holds whose outcome was never resolved, for the admin report. These are the
  * calls we are not sure about, expressed as money rather than as a shrug.
  */
-export async function unresolvedHoldMicros(runId: string): Promise<number> {
+export async function unresolvedHoldMicros(runId: string): Promise<bigint> {
   const agg = await prisma.workflowBudgetHold.aggregate({
     where: { runId, status: "held" },
     _sum: { amountMicros: true },
   });
-  return agg._sum.amountMicros ?? 0;
+  return agg._sum.amountMicros ?? 0n;
 }

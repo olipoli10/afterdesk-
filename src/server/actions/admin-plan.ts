@@ -8,6 +8,8 @@ import { getSettings } from "@/lib/settings";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { aiSuggestionColumns, pricePlan } from "@/lib/ai-work-engine/pricing";
 import { currentPrimitiveVersion, editPlanInputSchema } from "@/lib/ai-work-engine/schemas";
+import { CURRENT_AUTOMATION_COST_POLICY } from "@/lib/ai-work-engine/automation-cost-policy";
+import { runAutomationPreflight } from "@/lib/ai-work-engine/automation-preflight";
 
 /**
  * The admin's plan edit. THE VERSIONING RULE LIVES HERE: an edit never
@@ -49,18 +51,77 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
     workerHourlyUsd: Math.max(COST_CATALOG.workerHourlyUsdBase, settings.minWorkerHourlyUsd),
   };
   // Deterministic only — zero model calls on an edit, by design.
-  const priced = pricePlan(
-    steps.map((s) => ({
-      executor: s.executor,
-      estimatedMinutesOptimistic: s.estimatedMinutesOptimistic,
-      estimatedMinutesLikely: s.estimatedMinutesLikely,
-      estimatedMinutesConservative: s.estimatedMinutesConservative,
+  const pricingInput = steps.map((s) => ({
+    executor: s.executor,
+    estimatedMinutesOptimistic: s.estimatedMinutesOptimistic,
+    estimatedMinutesLikely: s.estimatedMinutesLikely,
+    estimatedMinutesConservative: s.estimatedMinutesConservative,
+    estimatedAiCostCents: s.estimatedAiCostCents,
+    estimatedToolUnits: s.estimatedToolUnits,
+    tool: s.tool,
+  }));
+  const rawPriced = pricePlan(pricingInput, rates);
+
+  /**
+   * THE SAME ECONOMIC PREFLIGHT AS THE AI PIPELINE, FOR THE SAME REASON.
+   *
+   * An admin edit produces a plan version the client can accept, so it needs
+   * the same frozen economics: without them every step compiles to human at
+   * runtime (fail-closed), and an operator who carefully chose a primitive
+   * would watch it silently do nothing.
+   *
+   * Deterministic and model-free, like the rest of this action.
+   */
+  const preflight = runAutomationPreflight({
+    steps: steps.map((s, i) => ({
+      order: i + 1,
+      primitiveId: s.primitiveId,
+      primitiveVersion: currentPrimitiveVersion(s.primitiveId),
+      automatable: s.executor !== "human" && s.primitiveId !== null,
       estimatedAiCostCents: s.estimatedAiCostCents,
-      estimatedToolUnits: s.estimatedToolUnits,
-      tool: s.tool,
     })),
-    rates
-  );
+    internalCostCents: rawPriced.internalCostConservativeCents,
+    policyVersion: CURRENT_AUTOMATION_COST_POLICY,
+  });
+  const frozen = new Map(preflight.steps.map((s) => [s.order, s]));
+
+  /**
+   * Re-price on the demoted plan, and never downward. A demoted step becomes a
+   * person's work, but the planner gave machine steps no human minutes, so
+   * pricing the demoted plan on those minutes shrinks the payout for a job
+   * that just got bigger. Every money figure therefore takes the larger of the
+   * two: demotion may raise a quote, never lower one.
+   */
+  const priced =
+    preflight.demotedCount === 0
+      ? rawPriced
+      : (() => {
+          const onDemoted = pricePlan(
+            pricingInput.map((step, i) =>
+              frozen.get(i + 1)?.demotedForBudget
+                ? { ...step, executor: "human" as const, estimatedAiCostCents: 0 }
+                : step
+            ),
+            rates
+          );
+          const up = (a: number, b: number) => (a > b ? a : b);
+          return {
+            ...onDemoted,
+            internalCostLikelyCents: up(
+              rawPriced.internalCostLikelyCents,
+              onDemoted.internalCostLikelyCents
+            ),
+            internalCostConservativeCents: up(
+              rawPriced.internalCostConservativeCents,
+              onDemoted.internalCostConservativeCents
+            ),
+            suggestedPriceCents: up(rawPriced.suggestedPriceCents, onDemoted.suggestedPriceCents),
+            suggestedVaPayoutCents: up(
+              rawPriced.suggestedVaPayoutCents,
+              onDemoted.suggestedVaPayoutCents
+            ),
+          };
+        })();
 
   let newVersionNumber = 0;
   try {
@@ -122,6 +183,17 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
           suggestedPriceCents: priced.suggestedPriceCents,
           suggestedVaPayoutCents: priced.suggestedVaPayoutCents,
           calibration: priced.calibration,
+          /**
+           * The frozen economics of this edited version. Writing them here is
+           * what makes an admin edit acceptable at all: a version without them
+           * hands every billable step to a person at runtime, so an operator
+           * who deliberately chose a primitive would watch it do nothing while
+           * the mandate was still priced as if the machine had run.
+           */
+          expectedAutomationCostMicros: preflight.expectedAutomationCostMicros,
+          conservativeAutomationCostMicros: preflight.conservativeAutomationCostMicros,
+          automationSpendCeilingMicros: preflight.automationSpendCeilingMicros,
+          automationCostPolicyVersion: preflight.policyVersion,
           steps: {
             create: steps.map((s, i) => ({
               order: i + 1,
@@ -130,11 +202,20 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
               executor: s.executor,
               humanRole: s.humanRole,
               tool: s.tool,
-              // Re-stamped from the registry on every edit, never taken from
-              // the form: an admin may change WHICH primitive a step uses,
-              // never which version of it runs.
-              primitiveId: s.primitiveId,
-              primitiveVersion: currentPrimitiveVersion(s.primitiveId),
+              /**
+               * From the PREFLIGHT, not from the form. The version is still
+               * the code's stamp, never the admin's; and when the economic
+               * rule demoted a step, the stored plan must say so, otherwise
+               * the price describes a demoted plan while the steps still
+               * claim their primitive.
+               */
+              primitiveId: frozen.get(i + 1)?.primitiveId ?? null,
+              primitiveVersion: frozen.get(i + 1)?.primitiveVersion ?? null,
+              expectedCostMicrosAtQuote: frozen.get(i + 1)?.expectedCostMicrosAtQuote ?? null,
+              maxCostMicrosPerAttemptAtQuote:
+                frozen.get(i + 1)?.maxCostMicrosPerAttemptAtQuote ?? null,
+              automationCostPolicyVersion: preflight.policyVersion,
+              demotedForBudget: frozen.get(i + 1)?.demotedForBudget ?? false,
               fixedMinutes: s.fixedMinutes,
               secondsPerUnit: s.secondsPerUnit,
               estimatedMinutesOptimistic: s.estimatedMinutesOptimistic,

@@ -1511,6 +1511,24 @@ model TaskExecutionPlanVersion {
   suggestedVaPayoutCents        Int
   calibration                   CostCalibration
 
+  /// PHASE 1D-α0 (correctif) — les agrégats économiques de l'automatisation,
+  /// calculés par le preflight AVANT le devis et recopiés à l'identique sur
+  /// TaskAcceptanceSnapshot à l'acceptation, dans la même transaction.
+  ///
+  /// Invariants imposés en code et testés :
+  ///   expectedAutomationCostMicros     >= 0
+  ///   conservativeAutomationCostMicros >= expectedAutomationCostMicros
+  ///   automationSpendCeilingMicros     >= conservativeAutomationCostMicros
+  ///
+  /// Le plafond PEUT dépasser le coût attendu — c'est le risque que la
+  /// politique économique accepte — mais il ne peut jamais être sous le
+  /// scénario conservateur, qui est le minimum arithmétique pour que le plan
+  /// soit exécutable une seule fois.
+  expectedAutomationCostMicros     BigInt?
+  conservativeAutomationCostMicros BigInt?
+  automationSpendCeilingMicros     BigInt?
+  automationCostPolicyVersion      String?
+
   /// Null pour une version admin_edited : aucun modèle n'a produit celle-là.
   model     String?
   rawOutput Json?
@@ -1567,6 +1585,35 @@ model TaskExecutionPlanStep {
   estimatedMinutesConservative Int
   estimatedAiCostCents         Int @default(0)
   estimatedToolUnits           Int @default(0)
+
+  /// PHASE 1D-α0 (correctif) — L'ÉCONOMIE DE CETTE ÉTAPE, GRAVÉE AU DEVIS.
+  ///
+  /// Une version de politique seule ne suffisait pas : une version est une
+  /// PROVENANCE, pas une source de vérité. Si la politique change ou disparaît,
+  /// un contrat qui ne stocke qu'un pointeur voit son économie bouger. Les
+  /// valeurs elles-mêmes sont donc matérialisées ici, avant l'acceptation.
+  ///
+  /// À l'exécution, une tâche acceptée lit CES colonnes et n'ouvre jamais la
+  /// table de politique. Supprimer entièrement une politique du code ne change
+  /// donc ni le budget, ni la réservation, ni le comportement d'un contrat
+  /// déjà signé.
+  ///
+  /// NULLABLES ET JAMAIS RÉTRO-REMPLIES : un contrat accepté avant ce
+  /// correctif n'avait pas ces valeurs au moment de sa signature, et les
+  /// reconstruire aujourd'hui inventerait une provenance. Une étape acceptée
+  /// sans valeur gelée compile en HUMAIN, fail-closed.
+  ///
+  /// BigInt et non Int : le plafond Int de Prisma est de 2 147 483 647 micros,
+  /// soit 2 147,48 $. Le type ne se choisit pas sur l'hypothèse que les
+  /// primitives d'aujourd'hui coûtent quelques dollars — une primitive future
+  /// ne doit pas exiger une migration de type pour la dépasser.
+  expectedCostMicrosAtQuote      BigInt?
+  maxCostMicrosPerAttemptAtQuote BigInt?
+  /// Provenance seulement. Jamais relue pour décider d'un montant.
+  automationCostPolicyVersion    String?
+  /// Vrai quand le preflight économique a retiré l'automatisation de cette
+  /// étape AVANT le devis, plutôt qu'après paiement.
+  demotedForBudget               Boolean @default(false)
 
   verificationMethod String
   acceptanceCriteria String[]
@@ -1643,6 +1690,18 @@ model TaskAcceptanceSnapshot {
   disputeWindowHours  Int
 
   /// Précédent TaskEvent.actorId : chaîne nue, pas de FK.
+  /// PHASE 1D-α0 (correctif) — LE CONTRAT PORTE SON PROPRE PLAFOND.
+  ///
+  /// Copie exacte des agrégats de la version de plan finale, écrite dans la
+  /// MÊME transaction que l'acceptation. Le compilateur lit le plafond ici et
+  /// ne le recalcule jamais depuis le registre courant : c'était le défaut
+  /// exact que ce correctif supprime, où un déploiement postérieur relevait
+  /// rétroactivement le budget de mandats déjà vendus.
+  expectedAutomationCostMicros     BigInt?
+  conservativeAutomationCostMicros BigInt?
+  automationSpendCeilingMicros     BigInt?
+  automationCostPolicyVersion      String?
+
   acceptedByUserId String
   createdAt        DateTime @default(now())
 
@@ -1762,9 +1821,19 @@ model TaskWorkflowRun {
   /// absent n'a jamais voulu dire « illimité » ici, contrairement au
   /// `costCeilingMicros: 0` de 1B qui portait exactement ce sens et n'était lu
   /// par personne.
-  runAutomationBudgetMicros Int?
-  /// Version de la règle de dérivation. Change quand la provenance change, ce
-  /// qui rend une comparaison historique honnête.
+  /// PHASE 1D-α0 (correctif) — COPIÉ DEPUIS LE SNAPSHOT, JAMAIS RECALCULÉ.
+  ///
+  /// La version précédente dérivait ce plafond à la compilation, qui tourne
+  /// APRÈS le paiement, en lisant les plafonds du registre courant : un
+  /// déploiement relevait donc rétroactivement le budget de mandats déjà
+  /// vendus. Il est maintenant recopié tel quel depuis
+  /// TaskAcceptanceSnapshot.automationSpendCeilingMicros.
+  ///
+  /// BigInt : le plafond Int de Prisma (2 147,48 $) est exactement le
+  /// débordement identifié en Phase 1C.
+  runAutomationBudgetMicros BigInt?
+  /// Provenance de la politique en vigueur au devis. Jamais relue pour
+  /// décider d'un montant.
   budgetPolicyVersion       String?
 
   /// Renseigné quand status = paused : ce que l'admin doit trancher.
@@ -1972,13 +2041,15 @@ model WorkflowBudgetHold {
   operationKey String
 
   /// Le PIRE cas de cette tentative, en microdollars. Jamais une moyenne :
-  /// une réservation optimiste ne réserve rien.
-  amountMicros Int
+  /// une réservation optimiste ne réserve rien. BigInt comme tout montant en
+  /// micros : une primitive future ne doit pas exiger une migration de type
+  /// pour dépasser le plafond Int de 2 147,48 $.
+  amountMicros BigInt
 
   status WorkflowBudgetHoldStatus @default(held)
 
   /// La dépense réellement constatée à la conversion. Null tant que `held`.
-  settledMicros Int?
+  settledMicros BigInt?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

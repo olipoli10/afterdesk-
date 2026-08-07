@@ -17,6 +17,10 @@ import {
   type PlanOutput,
 } from "@/lib/ai-work-engine/schemas";
 import {
+  CURRENT_AUTOMATION_COST_POLICY,
+} from "@/lib/ai-work-engine/automation-cost-policy";
+import { runAutomationPreflight } from "@/lib/ai-work-engine/automation-preflight";
+import {
   claimAiOperation,
   engineOperationKey,
   failAiOperation,
@@ -63,6 +67,51 @@ export function engineSkipsTask(task: {
   isInternal: boolean;
 }): boolean {
   return task.standingCapacityAccountId !== null || task.isInternal;
+}
+
+/**
+ * RE-PRICE A DEMOTED PLAN, AND NEVER DOWNWARD.
+ *
+ * When the economic preflight takes the automation away from a step, that
+ * work does not vanish: it becomes a person's. But the planner gave machine
+ * steps essentially no human minutes, so re-pricing the demoted plan on those
+ * minutes produces a SMALLER internal cost, a smaller price and a smaller
+ * payout — for a job that just got bigger. Underpaying a worker because a
+ * model wrote a zero is the exact failure the residual engine was built to
+ * refuse, and it must not come back in through the quote.
+ *
+ * So the recalculation happens, and then every money figure takes the LARGER
+ * of the two. Demotion may raise a quote; it may never lower one. The
+ * remaining imperfection is stated plainly rather than hidden: a client can
+ * pay for automation the preflight then declined to run, which is the
+ * conservative direction and is visible in the plan's own demotedForBudget
+ * flags.
+ */
+function reprice(
+  raw: ReturnType<typeof pricePlan>,
+  steps: PricingStepInput[],
+  demoted: Map<number, { demotedForBudget: boolean }>,
+  rates: { workerHourlyUsd: number }
+): ReturnType<typeof pricePlan> {
+  const onDemotedPlan = pricePlan(
+    steps.map((step, i) =>
+      demoted.get(i + 1)?.demotedForBudget
+        ? { ...step, executor: "human" as const, estimatedAiCostCents: 0 }
+        : step
+    ),
+    rates
+  );
+  const up = (a: number, b: number) => (a > b ? a : b);
+  return {
+    ...onDemotedPlan,
+    internalCostLikelyCents: up(raw.internalCostLikelyCents, onDemotedPlan.internalCostLikelyCents),
+    internalCostConservativeCents: up(
+      raw.internalCostConservativeCents,
+      onDemotedPlan.internalCostConservativeCents
+    ),
+    suggestedPriceCents: up(raw.suggestedPriceCents, onDemotedPlan.suggestedPriceCents),
+    suggestedVaPayoutCents: up(raw.suggestedVaPayoutCents, onDemotedPlan.suggestedVaPayoutCents),
+  };
 }
 
 function planStepsToPricingInput(plan: PlanOutput): PricingStepInput[] {
@@ -351,7 +400,46 @@ export async function runWorkEngine(
     const rates = {
       workerHourlyUsd: Math.max(COST_CATALOG.workerHourlyUsdBase, settings.minWorkerHourlyUsd),
     };
-    const priced = pricePlan(planStepsToPricingInput(plannedOutput), rates);
+    /**
+     * THE ECONOMIC PREFLIGHT, BEFORE ANYTHING IS PERSISTED.
+     *
+     * Sequence, in memory, one write at the end: price the raw plan, ask the
+     * preflight what it would cost to run and whether the economic rule will
+     * carry that risk, demote what it will not, then RE-PRICE the demoted plan
+     * so the quote describes the work that will actually happen.
+     *
+     * Never "persist then correct until affordable": a plan version that
+     * exists is one other code can already read, and repairing it afterwards
+     * opens a window where the stored price does not match the stored plan.
+     */
+    const rawPriced = pricePlan(planStepsToPricingInput(plannedOutput), rates);
+    const preflight = runAutomationPreflight({
+      steps: plannedOutput.steps.map((s, i) => ({
+        order: i + 1,
+        primitiveId: s.primitive_id,
+        primitiveVersion: currentPrimitiveVersion(s.primitive_id),
+        // The topology's own verdict is not available here (the compiler runs
+        // later), so the preflight is conservative: any step the planner marked
+        // machine-executable is treated as billable. Over-reserving at quote
+        // time is safe; under-reserving is what this correction removes.
+        automatable: s.executor !== "human" && s.primitive_id !== null,
+        estimatedAiCostCents: s.estimated_ai_cost_cents,
+      })),
+      internalCostCents: rawPriced.internalCostConservativeCents,
+      policyVersion: CURRENT_AUTOMATION_COST_POLICY,
+    });
+
+    /**
+     * Re-price on the DEMOTED plan. A step the preflight took the automation
+     * away from is human work now, and its cost, its minutes and therefore the
+     * client's price all change. Pricing the raw plan and storing the demoted
+     * one would sell automation that was already decided against.
+     */
+    const demotedByOrder = new Map(preflight.steps.map((s) => [s.order, s]));
+    const priced =
+      preflight.demotedCount === 0
+        ? rawPriced
+        : reprice(rawPriced, planStepsToPricingInput(plannedOutput), demotedByOrder, rates);
 
     let planVersion: { id: string };
     try {
@@ -374,6 +462,13 @@ export async function runWorkEngine(
               suggestedPriceCents: priced.suggestedPriceCents,
               suggestedVaPayoutCents: priced.suggestedVaPayoutCents,
               calibration: priced.calibration,
+              // The frozen economics of this plan version. Copied verbatim
+              // onto the acceptance snapshot later, in the same transaction
+              // as the acceptance itself.
+              expectedAutomationCostMicros: preflight.expectedAutomationCostMicros,
+              conservativeAutomationCostMicros: preflight.conservativeAutomationCostMicros,
+              automationSpendCeilingMicros: preflight.automationSpendCeilingMicros,
+              automationCostPolicyVersion: preflight.policyVersion,
               model: planned.usage?.model ?? null,
               rawOutput: planned.result!.raw as Prisma.InputJsonValue,
               steps: {
@@ -392,8 +487,20 @@ export async function runWorkEngine(
                    * compiler hands the step to a person rather than silently
                    * running the new one.
                    */
-                  primitiveId: s.primitive_id,
-                  primitiveVersion: currentPrimitiveVersion(s.primitive_id),
+                  primitiveId: demotedByOrder.get(i + 1)?.primitiveId ?? null,
+                  primitiveVersion: demotedByOrder.get(i + 1)?.primitiveVersion ?? null,
+                  /**
+                   * The step's own economics, frozen. The runner reserves
+                   * against THIS number and never reads the policy table, so
+                   * a later policy change cannot move what this contract may
+                   * spend.
+                   */
+                  expectedCostMicrosAtQuote:
+                    demotedByOrder.get(i + 1)?.expectedCostMicrosAtQuote ?? null,
+                  maxCostMicrosPerAttemptAtQuote:
+                    demotedByOrder.get(i + 1)?.maxCostMicrosPerAttemptAtQuote ?? null,
+                  automationCostPolicyVersion: preflight.policyVersion,
+                  demotedForBudget: demotedByOrder.get(i + 1)?.demotedForBudget ?? false,
                   fixedMinutes: s.fixed_minutes,
                   secondsPerUnit: s.seconds_per_unit,
                   estimatedMinutesOptimistic: s.estimated_minutes_optimistic,
