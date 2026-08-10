@@ -6,6 +6,11 @@ import type { SiteLang } from "@/lib/i18n/langs";
  * /academy had exactly ONE inbound internal link on the whole site — an
  * audit found the platform's largest asset was very nearly an orphan.
  * Anchor text carries the category noun rather than the product name,
+ * The label used to read "Free training for remote workers" — chosen because
+ * that phrase is what the audience searches. On a client page it named the
+ * other audience in the footer of every visit, so the brand name carries the
+ * link here; /workers and /academy keep the searchable phrasing where the
+ * people searching it actually land. The original reasoning follows:
  * because "free training" is what the audience searches and what a crawler
  * should read here.
  *
@@ -25,23 +30,23 @@ import type { SiteLang } from "@/lib/i18n/langs";
  * so the page has something real to show the moment it's linked again.
  */
 const LABELS: Record<SiteLang, [string, string, string, string, string]> = {
-  en: ["Free training for remote workers", "Security", "Privacy", "Terms", "Acceptable use"],
+  en: ["AfterDesk Academy", "Security", "Privacy", "Terms", "Acceptable use"],
   fr: [
-    "Formation gratuite pour travailleurs à distance",
+    "Académie AfterDesk",
     "Sécurité",
     "Confidentialité",
     "Conditions",
     "Utilisation acceptable",
   ],
   es: [
-    "Formación gratuita para trabajadores remotos",
+    "Academia AfterDesk",
     "Seguridad",
     "Privacidad",
     "Términos",
     "Uso aceptable",
   ],
   tl: [
-    "Libreng pagsasanay para sa mga remote worker",
+    "AfterDesk Academy",
     "Seguridad",
     "Privacy",
     "Mga Tuntunin",

@@ -12,13 +12,24 @@ function bucketHours(minutes: number): string {
 
 /**
  * The public counters — real DB aggregates (see public-stats.ts for the
- * RULE 2 boundary and the money-withholding rules). The same figures appear
- * on both homepages so a visitor toggling between them sees both sides
- * reading the same ledger.
+ * RULE 2 boundary and the money-withholding rules).
  *
- * Render guard: a zero ledger is worse than no ledger — nothing renders until
- * at least one task has been delivered. The money cell renders only once the
- * ledger is deep enough that no individual payout is derivable from it.
+ * The two sides read DIFFERENT cells of the same ledger, and deliberately: the
+ * worker side gets the headcount and the payout total, the client side gets
+ * tasks delivered plus time and money saved. Each figure is the proof that
+ * side is actually shopping for, and neither has any business seeing the
+ * other's. What both sides always share is `tasksDelivered`, which is the one
+ * number that means the same thing to everyone.
+ *
+ * Render guard: a thin ledger is worse than no ledger — nothing renders below
+ * ten delivered tasks. The money cell renders only once the ledger is deep
+ * enough that no individual payout is derivable from it.
+ *
+ * The five-approved-workers half of that guard applies ONLY to the side that
+ * shows a headcount. Gating the client strip on it would suppress the client's
+ * proof over a number the client is deliberately not allowed to see: five
+ * hundred delivered tasks and four approved workers would render nothing at
+ * all, for a reason no reader of that page could ever discover.
  *
  * Green-on-night rule: #1E7F5C text never sits directly on a night surface —
  * on `night` tone the money figure is paper text with a green underline.
@@ -33,8 +44,21 @@ export async function PublicCounters({
   variant: "strip" | "line";
   copy: {
     taskWord: [string, string];
-    workerWord: [string, string];
-    released: string;
+    /**
+     * WORKER SIDE ONLY, both of them.
+     *
+     * A headcount and a payout total are the proof that matters to someone
+     * deciding whether to work here. On the client side they are the wrong
+     * ledger entirely: "47 specialists approved" answers a question the client
+     * never asked and files the page as a marketplace of people, which is the
+     * one reading the positioning cannot carry. AfterDesk sells a finished
+     * outcome and owns how it gets made.
+     *
+     * Optional rather than blank strings, so the client dictionary simply does
+     * not carry them and the cells cannot render with placeholder wording.
+     */
+    workerWord?: [string, string];
+    released?: string;
     toDate: string;
     /** Client side only — TIME SAVED / MONEY SAVED cells replace `released`. */
     moneySaved?: { label: string; timeLabel: string; note: string };
@@ -43,13 +67,18 @@ export async function PublicCounters({
 }) {
   const stats = await publicStats();
   // Tiny seed numbers hurt trust and can expose individual activity. Publish
-  // only once both sides have enough real depth to be meaningful.
-  if (stats.tasksDelivered < 10 || stats.approvedWorkers < 5) return null;
+  // only once the ledger has enough real depth to be meaningful.
+  if (stats.tasksDelivered < 10) return null;
+  // The headcount depth rule guards the headcount, and nothing else: with four
+  // approved workers the cell is withheld, not the whole strip.
+  const showWorkforce = copy.workerWord && stats.approvedWorkers >= 5;
 
   const n = stats.tasksDelivered.toLocaleString("en-US");
   const w = stats.approvedWorkers.toLocaleString("en-US");
   const taskWord = copy.taskWord[stats.tasksDelivered === 1 ? 0 : 1];
-  const workerWord = copy.workerWord[stats.approvedWorkers === 1 ? 0 : 1];
+  const workerWord = showWorkforce
+    ? copy.workerWord![stats.approvedWorkers === 1 ? 0 : 1]
+    : null;
   const released =
     stats.releasedBucketCents !== null ? bucketDollars(stats.releasedBucketCents) : null;
   // Client side only: MONEY SAVED / TIME SAVED replace the worker-payout
@@ -70,9 +99,10 @@ export async function PublicCounters({
       ? moneySaved
         ? ` · ${moneySaved} ${copy.moneySaved!.label}`
         : ""
-      : released
+      : released && copy.released
         ? ` · ${released} ${copy.released}`
         : "";
+    const workerPart = workerWord ? ` · ${w} ${workerWord}` : "";
     return (
       <p
         className={`border-t font-mono text-[12px] leading-relaxed ${
@@ -82,8 +112,9 @@ export async function PublicCounters({
         } ${className}`}
       >
         {copy.toDate} {n} {taskWord}
-        {moneyPart} · {w} {workerWord}
-      </p>
+        {moneyPart}
+        {workerPart}
+</p>
     );
   }
 
@@ -127,7 +158,7 @@ export async function PublicCounters({
               ]
             : []),
         ]
-      : stats.releasedBucketCents !== null
+      : stats.releasedBucketCents !== null && copy.released
         ? [
             {
               node: (
@@ -142,7 +173,9 @@ export async function PublicCounters({
             },
           ]
         : []),
-    { node: <RollingNumber value={stats.approvedWorkers} />, l: workerWord },
+    ...(workerWord
+      ? [{ node: <RollingNumber value={stats.approvedWorkers} />, l: workerWord }]
+      : []),
   ];
 
   return (

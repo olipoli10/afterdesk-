@@ -15,7 +15,11 @@ import { type SiteLang } from "./langs";
 
 export const COMPACT_SERVICES_LABEL: Record<SiteLang, string> = {
   en: "Our Services",
-  fr: "Produits",
+  // "Produits" until the repositioning: the hub sells finished work, not
+  // products, and it was the one compact label that named the wrong thing.
+  // "Services" is the same eight characters, so the measured fit below is
+  // unchanged.
+  fr: "Services",
   es: "Servicios",
   tl: "Serbisyo",
 };

@@ -125,40 +125,43 @@ describe("Standing Capacity is unpublished from the public storefront", () => {
     expect(proxy).toContain('"/services"');
   });
 
-  /**
-   * The four-language card copy is deliberately retained. It is the expensive
-   * half of restoring the offer and costs nothing to keep; the card is gone
-   * because offerings.ts no longer lists it, not because the words were
-   * deleted.
-   */
   it("every offering in the list has copy to render, in all four languages", () => {
     /**
-     * offerings.ts now says "Add a third offering here and the hub picks it up
-     * automatically" and, two lines below, "To bring it back: restore this
-     * row". Both invitations are real, and the hub resolves copy through
-     * OFFERING_KEY — a Record<string, ...>, so TypeScript types the lookup as
-     * always-defined and a slug with no mapping compiles cleanly, then crashes
-     * at render on `copy.audience`.
+     * The hub used to resolve copy through a Record<string, ...> keyed by slug.
+     * TypeScript types that lookup as always-defined, so a row added to
+     * offerings.ts with no copy compiled cleanly and crashed at render on
+     * `copy.audience`. The dict is now a fixed-length tuple joined by index.
      *
-     * The invitation is this change's doing; the guard belongs with it.
+     * That tuple catches a SHORT LANGUAGE at build time and nothing else. It
+     * cannot see offerings.ts, which is typed Offering[]; indexing a 4-tuple
+     * with a plain number is always-defined while noUncheckedIndexedAccess is
+     * off, so a fifth row over there compiles and crashes at render exactly
+     * like the old Record did. This assertion is the only guard for that case,
+     * which is why it compares the two lengths rather than just checking that
+     * each card has text.
      */
-    const KEYS: Record<string, "oneOff" | "standingCapacity"> = {
-      "one-off": "oneOff",
-      "standing-capacity": "standingCapacity",
-    };
-    for (const offering of OFFERINGS) {
-      const key = KEYS[offering.slug];
-      expect(key, `offerings.ts lists "${offering.slug}" with no copy key`).toBeDefined();
-      for (const [lang, dict] of Object.entries(SERVICES_I18N)) {
-        expect(dict.offerings[key], `${lang} has no copy for ${offering.slug}`).toBeDefined();
-      }
+    for (const [lang, dict] of Object.entries(SERVICES_I18N)) {
+      expect(dict.offerings.length, `${lang} has a different number of cards`).toBe(
+        OFFERINGS.length
+      );
+      dict.offerings.forEach((copy, i) => {
+        expect(copy.title.length, `${lang} card ${i} has no title`).toBeGreaterThan(0);
+        expect(copy.description.length, `${lang} card ${i} has no description`).toBeGreaterThan(0);
+      });
     }
   });
 
-  it("the card copy is preserved for a future rebuild", () => {
-    for (const dict of Object.values(SERVICES_I18N)) {
-      expect(dict.offerings.standingCapacity.title.length).toBeGreaterThan(0);
-    }
+  it("the standing-capacity page body is still preserved for a future rebuild", () => {
+    /**
+     * The CARD copy is gone, and deliberately: /services is now organised by
+     * kind of work, so a purchasing arrangement would not be a card in that
+     * list even if the offer returned. What is worth keeping is the page
+     * body — four languages of it, the expensive half of a rebuild — and that
+     * is still in services.ts under STANDING_I18N.
+     */
+    const source = read("src/lib/i18n/services.ts");
+    expect(source).toContain("STANDING_I18N");
+    expect(source).toMatch(/NO CONSUMER TODAY, AND KEPT ON PURPOSE/);
   });
 });
 

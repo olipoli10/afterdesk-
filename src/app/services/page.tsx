@@ -7,11 +7,6 @@ import { OFFERINGS } from "@/lib/offerings";
 import { SITE_LANGS, langAlternates } from "@/lib/i18n/langs";
 import { SERVICES_I18N, docLangOf } from "@/lib/i18n/services";
 
-const OFFERING_KEY: Record<string, "oneOff" | "standingCapacity"> = {
-  "one-off": "oneOff",
-  "standing-capacity": "standingCapacity",
-};
-
 async function resolveLang(sp: { lang?: string }) {
   const jar = await cookies();
   return docLangOf(sp.lang, jar.get("ss-lang-doc")?.value, jar.get("ss-lang-client")?.value, jar.get("ss-lang-worker")?.value);
@@ -56,8 +51,15 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
         <div
           className={`mt-12 grid gap-6 ${OFFERINGS.length > 1 ? "lg:grid-cols-2" : "max-w-[560px]"}`}
         >
-          {OFFERINGS.map((offering) => {
-            const copy = t.offerings[OFFERING_KEY[offering.slug]];
+          {OFFERINGS.map((offering, i) => {
+            // Index join, not a slug lookup. The tuple type on the dict forces
+            // every LANGUAGE to carry four cards, but it cannot force this list
+            // to hold four rows: OFFERINGS is Offering[], and indexing a tuple
+            // with a plain number types as always-defined while
+            // noUncheckedIndexedAccess is off. A fifth row here would still
+            // compile and crash at render, so the guard for THAT is the runtime
+            // length assertion in test/standing-capacity-unpublished.test.ts.
+            const copy = t.offerings[i];
             return (
               <Link key={offering.slug} href={offering.href} className="group flex min-h-[280px] flex-col rounded-xl border border-white/12 bg-[#111317] p-7 transition-transform hover:-translate-y-1 hover:border-white/25">
                 <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#767C86]">{copy.audience}</p>

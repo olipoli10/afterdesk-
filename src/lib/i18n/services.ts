@@ -30,123 +30,175 @@ type Dict = {
   intro: string;
   learnMore: string;
   /**
-   * `standingCapacity` is KEPT although nothing renders it today: the offer was
-   * unpublished from the storefront (src/lib/offerings.ts no longer lists it,
-   * and the page 307s to /services), not deleted. Four languages of card copy
-   * are the expensive half of bringing it back, so they stay here rather than
-   * being retyped later.
+   * Joined to src/lib/offerings.ts BY INDEX. The previous shape keyed copy by
+   * slug through a Record whose lookup TypeScript treats as always-defined, so
+   * a row added there with no copy here compiled and then crashed at render.
+   *
+   * The tuple below fixes half of that, and only half: it makes a card missing
+   * from any ONE LANGUAGE a compile error. It cannot see offerings.ts, which is
+   * typed Offering[], so a fifth row added there still compiles. The two lists
+   * are held to the same length by a runtime assertion in
+   * test/standing-capacity-unpublished.test.ts.
    */
-  offerings: { oneOff: OfferingCopy; standingCapacity: OfferingCopy };
+  offerings: [OfferingCopy, OfferingCopy, OfferingCopy, OfferingCopy];
 };
 
 export const SERVICES_I18N: Record<ServicesLang, Dict> = {
   en: {
     meta: {
-      title: "Our Services",
+      title: "What we deliver: finished admin work at a fixed price",
       description:
-        "Managed CRM, research, data and document work: describe the deliverable, approve one fixed price before anything starts, and receive a result checked against a written standard.",
+        "Data and CRM, research and lists, documents, coordination. Describe the result, approve one fixed price before anything starts, and receive work checked against a written standard.",
     },
-    header: { signIn: "Sign in", getStarted: "Describe the outcome" },
-    eyebrow: "Our Services",
-    h1: "Defined deliverables, priced before we start.",
+    header: { signIn: "Sign in", getStarted: "Request a fixed-price quote" },
+    eyebrow: "What we deliver",
+    h1: "The kinds of work we finish.",
     intro:
-      "Send a scoped task whenever the deliverable is defined. You never manage a specialist directly: an operator runs every request, and every completed task is reviewed before delivery.",
-    learnMore: "Learn more",
-    offerings: {
-      oneOff: {
-        audience: "For a single task, no commitment",
-        title: "Scoped one-off work",
+      "Four families, and they are the ones the platform actually takes. Describe a result in any of them and you get a written scope and one fixed price to approve. AfterDesk manages the execution and checks the finished work against the approved standard. Not everything fits, and we say so before you pay.",
+    learnMore: "Get a quote",
+    offerings: [
+      {
+        audience: "Records that have to be right",
+        title: "Data & CRM",
         description:
-          "Describe the deliverable, rules and source material. An operator confirms fit, timing and one fixed price before work begins, then reviews the completed result before delivery.",
+          "Cleaning, deduplication, entry and reconciliation across exports and CRM records. Exceptions are listed, never quietly guessed.",
       },
-      standingCapacity: {
-        audience: "For ongoing, recurring work",
-        title: "Standing capacity",
+      {
+        audience: "Finding and checking, to written criteria",
+        title: "Research & lists",
         description:
-          "Reserve a block of managed hours every week for recurring, bounded work. Account preferences and task history carry forward, and each completed task still receives quality control.",
+          "Company and contact research, list building and analysis. Every value keeps the source it came from, and anything we cannot find is marked unavailable.",
       },
-    },
+      {
+        audience: "Long files turned into something usable",
+        title: "Documents",
+        description:
+          "Key terms and dates pulled out, documents rebuilt to your template, drafts written to a brief.",
+      },
+      {
+        audience: "The recurring back-office chores",
+        title: "Coordination",
+        description:
+          "Bounded administrative coordination: checking, compiling and keeping records in step.",
+      },
+    ],
   },
   fr: {
     meta: {
-      title: "Nos services",
+      title: "Ce qu'on livre : du travail administratif fini à prix fixe",
       description:
-        "Travaux gérés de CRM, recherche, données et documents : décrivez le livrable, approuvez un prix fixe avant tout démarrage, recevez un résultat vérifié contre un standard écrit.",
+        "Données et CRM, recherche et listes, documents, coordination. Décrivez le résultat, approuvez un prix fixe avant que rien ne commence, et recevez un travail vérifié contre une norme écrite.",
     },
-    header: { signIn: "Connexion", getStarted: "Décrire le résultat" },
-    eyebrow: "Nos services",
-    h1: "Des livrables définis, chiffrés avant de commencer.",
+    header: { signIn: "Connexion", getStarted: "Demander un prix fixe" },
+    eyebrow: "Ce qu'on livre",
+    h1: "Les genres de travaux qu'on finit.",
     intro:
-      "Envoyez une tâche dès que le livrable est défini. Vous ne gérez jamais un spécialiste directement : un opérateur pilote chaque demande, et chaque tâche terminée est vérifiée avant livraison.",
-    learnMore: "En savoir plus",
-    offerings: {
-      oneOff: {
-        audience: "Pour une tâche unique, sans engagement",
-        title: "Travail ponctuel cadré",
+      "Quatre familles, et ce sont celles que la plateforme prend réellement. Décrivez un résultat dans l'une d'elles et vous obtenez un périmètre écrit et un prix fixe à approuver. AfterDesk pilote l'exécution et vérifie le travail fini contre la norme approuvée. Tout ne rentre pas, et on le dit avant que vous payiez.",
+    learnMore: "Obtenir un prix",
+    offerings: [
+      {
+        audience: "Des données qui doivent être justes",
+        title: "Données et CRM",
         description:
-          "Décrivez le livrable, les règles et les sources. Un opérateur confirme l'adéquation, le délai et un prix fixe avant le début, puis vérifie le résultat avant livraison.",
+          "Nettoyage, dédoublonnage, saisie et rapprochement d'exports et de fiches CRM. Les exceptions sont listées, jamais devinées en silence.",
       },
-      standingCapacity: {
-        audience: "Pour un travail continu et récurrent",
-        title: "Capacité permanente",
+      {
+        audience: "Chercher et vérifier, selon des critères écrits",
+        title: "Recherche et listes",
         description:
-          "Réservez chaque semaine un bloc d'heures gérées pour un travail récurrent et délimité. Les préférences et l'historique du compte sont conservés, et chaque tâche reste soumise au contrôle qualité.",
+          "Recherche d'entreprises et de contacts, constitution de listes, analyse. Chaque valeur conserve sa source, et ce qu'on ne trouve pas est marqué introuvable.",
       },
-    },
+      {
+        audience: "De longs fichiers rendus exploitables",
+        title: "Documents",
+        description:
+          "Dates et clauses clés extraites, documents reconstruits dans votre gabarit, rédactions sur mandat.",
+      },
+      {
+        audience: "Les tâches administratives récurrentes",
+        title: "Coordination",
+        description:
+          "Coordination administrative délimitée : vérifier, compiler et tenir les dossiers à jour.",
+      },
+    ],
   },
   es: {
     meta: {
-      title: "Nuestros servicios",
+      title: "Lo que entregamos: trabajo administrativo terminado a precio fijo",
       description:
-        "Trabajo gestionado de CRM, investigación, datos y documentos: describe el entregable, aprueba un precio fijo antes de empezar y recibe un resultado revisado contra un estándar escrito.",
+        "Datos y CRM, investigación y listas, documentos, coordinación. Describe el resultado, aprueba un precio fijo antes de que empiece nada, y recibe trabajo revisado contra un estándar escrito.",
     },
-    header: { signIn: "Iniciar sesión", getStarted: "Describe el resultado" },
-    eyebrow: "Nuestros servicios",
-    h1: "Entregables definidos, con precio antes de empezar.",
+    header: { signIn: "Iniciar sesión", getStarted: "Pedir un precio fijo" },
+    eyebrow: "Lo que entregamos",
+    h1: "Los tipos de trabajo que terminamos.",
     intro:
-      "Envía una tarea en cuanto el entregable esté definido. Nunca gestionas a un especialista directamente: un operador dirige cada solicitud y cada tarea terminada se revisa antes de entregarse.",
-    learnMore: "Más información",
-    offerings: {
-      oneOff: {
-        audience: "Para una tarea puntual, sin compromiso",
-        title: "Trabajo puntual definido",
+      "Cuatro familias, y son las que la plataforma toma de verdad. Describe un resultado en cualquiera de ellas y obtienes un alcance escrito y un precio fijo que aprobar. AfterDesk gestiona la ejecución y revisa el trabajo terminado contra el estándar aprobado. No todo encaja, y lo decimos antes de que pagues.",
+    learnMore: "Pedir precio",
+    offerings: [
+      {
+        audience: "Datos que tienen que estar bien",
+        title: "Datos y CRM",
         description:
-          "Describe el entregable, las reglas y las fuentes. Un operador confirma el encaje, el plazo y un precio fijo antes de empezar, y revisa el resultado antes de entregarlo.",
+          "Limpieza, deduplicación, carga y conciliación de exportaciones y fichas de CRM. Las excepciones se listan, nunca se adivinan en silencio.",
       },
-      standingCapacity: {
-        audience: "Para trabajo continuo y recurrente",
-        title: "Capacidad fija",
+      {
+        audience: "Buscar y verificar, con criterios escritos",
+        title: "Investigación y listas",
         description:
-          "Reserva un bloque de horas gestionadas cada semana para trabajo recurrente y acotado. Las preferencias y el historial se conservan, y cada tarea sigue pasando por control de calidad.",
+          "Investigación de empresas y contactos, armado de listas y análisis. Cada dato conserva su fuente, y lo que no se encuentra se marca como no disponible.",
       },
-    },
+      {
+        audience: "Archivos largos vueltos utilizables",
+        title: "Documentos",
+        description:
+          "Fechas y cláusulas clave extraídas, documentos rehechos en tu plantilla, borradores escritos sobre encargo.",
+      },
+      {
+        audience: "Las tareas administrativas recurrentes",
+        title: "Coordinación",
+        description:
+          "Coordinación administrativa acotada: revisar, compilar y mantener los registros al día.",
+      },
+    ],
   },
   tl: {
     meta: {
-      title: "Ang Aming Mga Serbisyo",
+      title: "Ang inihahatid namin: tapos nang admin na trabaho sa fixed na presyo",
       description:
-        "Managed CRM, research, data, at document work: ilarawan ang deliverable, aprubahan ang isang fixed na presyo bago magsimula, at tanggapin ang resultang sinuri laban sa nakasulat na pamantayan.",
+        "Data at CRM, research at listahan, dokumento, koordinasyon. Ilarawan ang resulta, aprubahan ang isang fixed na presyo bago magsimula ang kahit ano, at tanggapin ang trabahong sinuri laban sa nakasulat na pamantayan.",
     },
-    header: { signIn: "Mag-sign in", getStarted: "Ilarawan ang resulta" },
-    eyebrow: "Ang Aming Mga Serbisyo",
-    h1: "Malinaw na deliverable, may presyo bago magsimula.",
+    header: { signIn: "Mag-sign in", getStarted: "Humingi ng fixed na presyo" },
+    eyebrow: "Ang inihahatid namin",
+    h1: "Ang mga uri ng trabahong tinatapos namin.",
     intro:
-      "Magpadala ng task kapag malinaw na ang deliverable. Hindi mo kailanman dinidirekta ang specialist: operator ang namamahala sa bawat request, at sinusuri ang bawat natapos na task bago i-deliver.",
-    learnMore: "Alamin pa",
-    offerings: {
-      oneOff: {
-        audience: "Para sa iisang task, walang commitment",
-        title: "Scoped one-off work",
+      "Apat na pamilya, at ito ang talagang tinatanggap ng platform. Ilarawan ang isang resulta sa alinman sa mga ito at makakakuha ka ng nakasulat na scope at isang fixed na presyong aaprubahan. Ang AfterDesk ang namamahala sa execution at sumusuri sa tapos nang trabaho laban sa aprubadong pamantayan. Hindi lahat kasya, at sinasabi namin ito bago ka magbayad.",
+    learnMore: "Humingi ng presyo",
+    offerings: [
+      {
+        audience: "Mga record na dapat tama",
+        title: "Data at CRM",
         description:
-          "Ilarawan ang deliverable, rules, at source material. Kinukumpirma ng operator ang fit, timing, at fixed price bago magsimula, at sinusuri ang resulta bago i-deliver.",
+          "Paglilinis, deduplication, pag-encode at reconciliation ng mga export at CRM record. Nakalista ang mga exception, hindi basta hinuhulaan.",
       },
-      standingCapacity: {
-        audience: "Para sa patuloy at paulit-ulit na trabaho",
-        title: "Standing Capacity",
+      {
+        audience: "Paghahanap at pagsusuri, ayon sa nakasulat na pamantayan",
+        title: "Research at listahan",
         description:
-          "Mag-reserve ng managed hours kada linggo para sa recurring at bounded work. Nananatili ang account preferences at task history, at dumadaan pa rin sa quality control ang bawat task.",
+          "Research ng kumpanya at kontak, paggawa ng listahan, at analysis. May sanggunian ang bawat halaga, at minamarkahang hindi matagpuan ang hindi namin makita.",
       },
-    },
+      {
+        audience: "Mahahabang file na ginagawang magamit",
+        title: "Mga dokumento",
+        description:
+          "Mahahalagang petsa at termino na hinahango, dokumentong muling binubuo sa template mo, draft na isinusulat ayon sa brief.",
+      },
+      {
+        audience: "Ang paulit-ulit na gawaing administratibo",
+        title: "Koordinasyon",
+        description:
+          "Limitadong administratibong koordinasyon: pagsusuri, pag-iipon, at pagpapanatiling updated ng mga record.",
+      },
+    ],
   },
 };
 

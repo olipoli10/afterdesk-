@@ -4,11 +4,11 @@ import { Wordmark } from "@/components/logo";
 import { cookies } from "next/headers";
 import { arrivedFromInsideTheApp, getSessionUser, roleHome } from "@/lib/authz";
 import { Reveal } from "@/components/reveal";
-import { AudienceToggle } from "@/components/audience-toggle";
 import { PublicCounters } from "@/components/public-counters";
 import { LiveTaskWindow } from "@/components/live-task-window";
 import { MobileMenu } from "@/components/mobile-menu";
 import { PointerGlow } from "@/components/pointer-glow";
+import { SITE_URL } from "@/lib/site";
 import { LangSwitch } from "@/components/lang-switch";
 import { PaperLedgerScan } from "@/components/paper-ledger-scan";
 import { PaperInstrument } from "@/components/paper-instrument";
@@ -18,7 +18,6 @@ import { CLIENT_I18N, CLIENT_LANGS, clientLangOf } from "@/lib/i18n/client";
 import { langAlternates, type SiteLang } from "@/lib/i18n/langs";
 import { COMPACT_SERVICES_LABEL, COMPACT_HOW_LABEL } from "@/lib/i18n/mobile-menu-compact";
 import { getSettings } from "@/lib/settings";
-import { SITE_URL, WORKER_SIDE_LABEL } from "@/lib/site";
 
 /* ─────────────────────────────────────────────────────────────────────────
    The landing page is a picture, not an essay: a real file arriving broken in
@@ -49,24 +48,24 @@ const NOISE = {
  *  in the cookie language; the metadata describes the URL. */
 const HOME_META: Record<SiteLang, { title: string; description: string }> = {
   en: {
-    title: "Managed back-office execution for data, research and CRM work",
+    title: "Finished admin work at a fixed price: data, research, documents",
     description:
-      "AfterDesk scopes, manages and reviews bounded CRM, research, data and document work. Approve the scope and price, then receive a checked, usable deliverable.",
+      "AfterDesk delivers finished administrative work for one fixed price you approve before anything starts. We define the scope, manage the execution, and check the result against a written standard.",
   },
   fr: {
-    title: "Exécution administrative gérée pour le CRM, la recherche et les données",
+    title: "Du travail administratif fini à prix fixe : données, recherche, documents",
     description:
-      "AfterDesk cadre, gère et vérifie des travaux délimités de CRM, recherche, données et documents. Approuvez le périmètre et le prix, puis recevez un livrable utilisable.",
+      "AfterDesk livre du travail administratif fini pour un prix fixe approuvé avant que rien ne commence. Nous définissons le périmètre, gérons l'exécution et vérifions le résultat contre une norme écrite.",
   },
   es: {
-    title: "Ejecución administrativa gestionada para CRM, investigación y datos",
+    title: "Trabajo administrativo terminado a precio fijo: datos, investigación, documentos",
     description:
-      "AfterDesk define, gestiona y revisa trabajo acotado de CRM, investigación, datos y documentos. Aprueba el alcance y el precio, y recibe un entregable utilizable.",
+      "AfterDesk entrega trabajo administrativo terminado por un precio fijo que apruebas antes de que empiece nada. Definimos el alcance, gestionamos la ejecución y verificamos el resultado contra una norma escrita.",
   },
   tl: {
-    title: "Managed back-office execution para sa CRM, research, at data work",
+    title: "Tapos nang admin na trabaho sa fixed na presyo: data, research, dokumento",
     description:
-      "Sina-scope, mina-manage, at sinusuri ng AfterDesk ang bounded CRM, research, data, at document work. Aprubahan ang scope at presyo, saka tumanggap ng magagamit na deliverable.",
+      "Naghahatid ang AfterDesk ng tapos nang admin na trabaho sa isang fixed na presyo na inaaprubahan mo bago magsimula ang kahit ano. Kami ang nagtatakda ng scope, namamahala sa execution, at sumusuri sa resulta laban sa nakasulat na pamantayan.",
   },
 };
 
@@ -96,7 +95,7 @@ const ORG_JSONLD = JSON.stringify({
   "@id": `${SITE_URL}/#organization`,
   name: "AfterDesk",
   url: SITE_URL,
-  description: "Managed back-office execution for repeatable data, research and document workflows.",
+  description: "Finished administrative work at a fixed price, for data, research and document work.",
 });
 
 export default async function Home({
@@ -161,20 +160,32 @@ export default async function Home({
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center justify-between gap-2 px-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-6">
           <Wordmark tone="paper" className="text-[11px] sm:text-[13px]" />
+          {/*
+            THE CLIENT HEADER NO LONGER OFFERS A SECOND AUDIENCE.
+
+            It used to open with an AudienceToggle whose two halves were "Get
+            work done" and "EARN". A buyer met the recruiting side of the
+            business in the second link of the first screen, before the product
+            had been explained — which reads as a two-sided marketplace, and
+            that is the category this page is trying to leave.
+
+            Specialists are not hidden: the footer still carries the door, and
+            /workers keeps its own storefront untouched. What changed is that
+            the client corridor now spends its nav on the client's own three
+            questions.
+          */}
           <div className="flex items-center justify-center gap-3 sm:gap-4">
-            <AudienceToggle
-              side="client"
-              tone="night"
-              clientLabel={t.nav.client}
-              workersLabel={WORKER_SIDE_LABEL}
-            />
-            {/* Same nav level as the toggle, on purpose — it is the front door
-                for every offering (src/lib/offerings.ts). */}
             <Link
               href="/services"
               className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
             >
               {t.footer.services}
+            </Link>
+            <Link
+              href="/how-it-works"
+              className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
+            >
+              {t.footer.how}
             </Link>
           </div>
           <div className="flex items-center justify-end gap-1.5 sm:gap-2.5">

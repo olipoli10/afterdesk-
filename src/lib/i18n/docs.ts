@@ -83,14 +83,14 @@ type ProtocolDict = {
 
 const pEn: ProtocolDict = {
   meta: {
-    title: "How managed task execution works, step by step",
+    title: "How it works: defined scope, fixed price, checked delivery",
     description:
       "Define the deliverable, approve the scope and price, then AfterDesk manages execution and quality control before delivery. The full operating protocol, versioned and dated.",
   },
   nav: { about: "About us", client: "Get work done" },
   docket: "Operating protocol",
   h1: ["Defined scope.", "Managed execution.", "Reviewed delivery."],
-  deck: "The approved brief, price and review standard follow the task from intake to delivery.",
+  deck: "Define the result, approve one fixed price, receive it checked. Below, the same task in the six stages we run internally. The approved brief, price and review standard follow it from intake to delivery.",
   movement1: "One task, in six stages",
   lanes: ["You", "AfterDesk", "Execution"],
   stages: (s) => [
@@ -103,7 +103,7 @@ const pEn: ProtocolDict = {
     },
     {
       label: "Execute",
-      say: "A trained specialist completes the approved scope.",
+      say: "AfterDesk runs the approved scope, and chooses the most dependable method for it.",
       val: "0",
       unit: "Contact",
     },
@@ -154,6 +154,7 @@ const pEn: ProtocolDict = {
     rows: [
       ["01", "2026-07-30", "First published."],
       ["02", "2026-08-05", "Repositioned around bounded deliverables; timing qualified as working hours."],
+      ["03", "2026-08-10", "Execution stage restated: AfterDesk owns the approved scope and chooses the method for it."],
     ],
   },
   bookend: {
@@ -165,14 +166,14 @@ const pEn: ProtocolDict = {
 
 const pFr: ProtocolDict = {
   meta: {
-    title: "Comment fonctionne l'exécution gérée, étape par étape",
+    title: "Comment ça marche : périmètre défini, prix fixe, livraison vérifiée",
     description:
       "Définissez le livrable, approuvez le périmètre et le prix, puis AfterDesk gère l'exécution et le contrôle qualité avant livraison. Le protocole complet, versionné et daté.",
   },
   nav: { about: "Qui nous sommes", client: "Faire faire du travail" },
   docket: "Protocole d'exploitation",
   h1: ["Cadre défini.", "Exécution gérée.", "Livraison vérifiée."],
-  deck: "Le brief approuvé, le prix et la norme de contrôle suivent la tâche du début à la livraison.",
+  deck: "Définissez le résultat, approuvez un prix fixe, recevez-le vérifié. Ci-dessous, la même tâche dans les six étapes que nous exécutons en interne. Le brief approuvé, le prix et la norme de contrôle la suivent de la prise en charge à la livraison.",
   movement1: "Une tâche, en six étapes",
   lanes: ["Vous", "AfterDesk", "Exécution"],
   stages: (s) => [
@@ -185,7 +186,7 @@ const pFr: ProtocolDict = {
     },
     {
       label: "Exécution",
-      say: "Un spécialiste formé réalise le travail approuvé.",
+      say: "AfterDesk réalise le périmètre approuvé et choisit la méthode la plus fiable pour le faire.",
       val: "0",
       unit: "Contact",
     },
@@ -236,6 +237,7 @@ const pFr: ProtocolDict = {
     rows: [
       ["01", "2026-07-30", "Première publication."],
       ["02", "2026-08-05", "Recentré sur les livrables délimités; délai qualifié en heures ouvrables."],
+      ["03", "2026-08-10", "Étape d'exécution reformulée : AfterDesk porte le périmètre approuvé et en choisit la méthode."],
     ],
   },
   bookend: {
@@ -247,14 +249,14 @@ const pFr: ProtocolDict = {
 
 const pEs: ProtocolDict = {
   meta: {
-    title: "Cómo funciona la ejecución gestionada, paso a paso",
+    title: "Cómo funciona: alcance definido, precio fijo, entrega verificada",
     description:
       "Define el entregable, aprueba el alcance y el precio, y AfterDesk gestiona la ejecución y el control de calidad antes de la entrega. El protocolo completo, versionado y fechado.",
   },
   nav: { about: "Quiénes somos", client: "Haz que se haga" },
   docket: "Protocolo operativo",
   h1: ["Alcance definido.", "Ejecución gestionada.", "Entrega revisada."],
-  deck: "Las instrucciones aprobadas, el precio y el estándar de revisión acompañan la tarea hasta la entrega.",
+  deck: "Define el resultado, aprueba un precio fijo, recíbelo revisado. Abajo, la misma tarea en las seis etapas que ejecutamos internamente. Las instrucciones aprobadas, el precio y el estándar de revisión la acompañan hasta la entrega.",
   movement1: "Una tarea, en seis etapas",
   lanes: ["Tú", "AfterDesk", "Ejecución"],
   stages: (s) => [
@@ -267,7 +269,7 @@ const pEs: ProtocolDict = {
     },
     {
       label: "Ejecución",
-      say: "Un especialista capacitado completa el alcance aprobado.",
+      say: "AfterDesk ejecuta el alcance aprobado y elige el método más fiable para hacerlo.",
       val: "0",
       unit: "Contacto",
     },
@@ -318,6 +320,7 @@ const pEs: ProtocolDict = {
     rows: [
       ["01", "2026-07-30", "Primera publicación."],
       ["02", "2026-08-05", "Reenfocado en entregables acotados; plazo calificado en horas hábiles."],
+      ["03", "2026-08-10", "Etapa de ejecución reformulada: AfterDesk sostiene el alcance aprobado y elige el método."],
     ],
   },
   bookend: {
@@ -329,7 +332,7 @@ const pEs: ProtocolDict = {
 
 const pTl: ProtocolDict = {
   meta: {
-    title: "Paano gumagana ang managed execution, hakbang-hakbang",
+    title: "Paano gumagana: tiyak na scope, fixed na presyo, sinuring delivery",
     description:
       "I-define ang deliverable, aprubahan ang scope at presyo, at mina-manage ng AfterDesk ang execution at quality control bago i-deliver. Ang buong protocol, may bersyon at petsa.",
   },
@@ -349,7 +352,7 @@ const pTl: ProtocolDict = {
     },
     {
       label: "Execution",
-      say: "Kinukumpleto ng trained specialist ang approved scope.",
+      say: "Isinasagawa ng AfterDesk ang approved scope, at pinipili nito ang pinaka-maaasahang paraan para dito.",
       val: "0",
       unit: "Kontak",
     },
@@ -400,6 +403,7 @@ const pTl: ProtocolDict = {
     rows: [
       ["01", "2026-07-30", "Unang inilathala."],
       ["02", "2026-08-05", "Ini-refocus sa bounded deliverables; ang timing ay naka-qualify sa working hours."],
+      ["03", "2026-08-10", "Muling isinaad ang execution stage: hawak ng AfterDesk ang aprubadong scope at pumipili ng paraan."],
     ],
   },
   bookend: {
@@ -456,9 +460,9 @@ type AboutDict = {
 
 const aEn: AboutDict = {
   meta: {
-    title: "About us: why AfterDesk exists",
+    title: "About AfterDesk: finished work, not hired time",
     description:
-      "AfterDesk exists to close the gap between requesting remote business work and receiving a completed, reviewed deliverable.",
+      "AfterDesk exists to close the gap between asking for administrative work and receiving a finished, checked deliverable.",
   },
   nav: { how: "How it works", client: "Get work done" },
   kicker: "About us",
@@ -486,7 +490,7 @@ const aEn: AboutDict = {
   bridge: ["Access to people and tools was not missing.", "Accountability for completion was."],
   solutionHead: "The operating idea",
   solutionLede:
-    "AfterDesk is a managed task service for bounded remote work. The approved brief and review standard stay attached to the task from scope to delivery.",
+    "AfterDesk delivers finished administrative work at a fixed price. The approved brief and review standard stay attached to the task from scope to delivery.",
   solution: [
     [
       "Defined scope",
@@ -498,7 +502,7 @@ const aEn: AboutDict = {
     ],
     [
       "Reviewed delivery",
-      "Every completed task receives an operator review before the deliverable reaches the client.",
+      "Every completed task is checked against the approved standard before the deliverable reaches the client.",
     ],
   ],
   trainingHead: "Why specialist training is part of the operating system",
@@ -538,45 +542,58 @@ const aEn: AboutDict = {
     eyebrow: "Comparative",
     heading: "How this actually compares",
     subline: "What changes between the models, not which brand you have heard of.",
-    channels: ["Fiverr", "Upwork", "OnlineJobs.ph", "AfterDesk"],
+    channels: ["DIY with AI tools", "Freelance marketplace", "Hourly staffing", "AfterDesk"],
     axes: [
       {
-        axis: "Review before you pay",
+        axis: "Who manages the execution",
         cells: [
-          { label: "After the fact", tone: "weak", detail: "you judge the delivery yourself; disputes come after the money" },
-          { label: "After the fact", tone: "weak", detail: "escrow exists, but you are still the reviewer" },
-          { label: "None", tone: "weak", detail: "a job board: payment and quality are between you and your hire" },
+          { label: "You", tone: "weak", detail: "you write the prompts, run the steps and decide when it is done" },
+          { label: "You", tone: "weak", detail: "you choose, brief and supervise whoever takes it" },
+          { label: "You", tone: "weak", detail: "you direct the time you are buying" },
           {
-            label: "Built in",
+            label: "AfterDesk",
             tone: "strong",
-            detail: "an operator checks every delivery first, and nothing is charged until your review window closes",
+            detail: "we choose the method, run it, and handle what the brief did not cover",
           },
         ],
       },
       {
-        axis: "Your effort",
+        axis: "What the price is attached to",
         cells: [
-          { label: "High", tone: "weak", detail: "you write the brief, judge the result, fix it yourself" },
-          { label: "High", tone: "weak", detail: "same, plus interviews" },
-          { label: "Maximal", tone: "weak", detail: "you hire, train, and supervise a remote employee" },
+          { label: "Usage", tone: null, detail: "tokens, seats or subscriptions, whatever the work turns out to need" },
+          { label: "A bid", tone: null, detail: "agreed per engagement, renegotiated when scope moves" },
+          { label: "Time", tone: null, detail: "hours, whether or not they produced the outcome" },
           {
-            label: "Minimal",
+            label: "The outcome",
             tone: "strong",
-            detail: "you describe it, approve a price, receive verified work",
+            detail: "one fixed price for a written scope, approved before work starts",
+          },
+        ],
+      },
+      {
+        axis: "Who owns the finished result",
+        cells: [
+          { label: "You", tone: "weak", detail: "the output is yours to verify and fix" },
+          { label: "You", tone: "weak", detail: "if it is wrong, correcting it is your problem" },
+          { label: "You", tone: "weak", detail: "you bought time; the result stays your responsibility" },
+          {
+            label: "AfterDesk",
+            tone: "strong",
+            detail: "checked against the approved standard before delivery, and ours to put right",
           },
         ],
       },
     ],
     footnote:
-      "Every platform here is good at what it's built for. This just shows where each one actually sits, so you can pick what fits.",
+      "Every one of these is good at what it is built for, and the differences above are structural, not judgements about price, speed or quality. This shows which model puts the finished result on your desk and which puts it on ours.",
   },
 };
 
 const aFr: AboutDict = {
   meta: {
-    title: "Qui nous sommes : pourquoi AfterDesk existe",
+    title: "À propos d'AfterDesk : du travail fini, pas du temps loué",
     description:
-      "AfterDesk existe pour combler l'écart entre une demande de travail à distance et la réception d'un livrable terminé et vérifié.",
+      "AfterDesk existe pour combler l'écart entre une demande de travail administratif et la réception d'un livrable fini et vérifié.",
   },
   nav: { how: "Comment \u00E7a marche", client: "Faire faire du travail" },
   kicker: "Qui nous sommes",
@@ -604,7 +621,7 @@ const aFr: AboutDict = {
   bridge: ["L'accès aux personnes et aux outils ne manquait pas.", "La responsabilité de terminer le travail, oui."],
   solutionHead: "L'idée opérationnelle",
   solutionLede:
-    "AfterDesk est un service de tâches gérées pour le travail à distance délimité. Le brief et la norme de contrôle suivent la tâche du cadrage à la livraison.",
+    "AfterDesk livre du travail administratif fini à prix fixe. Le brief et la norme de contrôle suivent la tâche du cadrage à la livraison.",
   solution: [
     [
       "Cadre défini",
@@ -616,7 +633,7 @@ const aFr: AboutDict = {
     ],
     [
       "Livraison vérifiée",
-      "Chaque tâche terminée reçoit une revue par un opérateur avant d'être livrée au client.",
+      "Chaque tâche terminée est vérifiée selon la norme approuvée avant d'être livrée au client.",
     ],
   ],
   trainingHead: "Pourquoi la formation des spécialistes fait partie du système",
@@ -635,49 +652,46 @@ const aFr: AboutDict = {
     eyebrow: "Comparatif",
     heading: "Ce que \u00E7a donne, concr\u00E8tement",
     subline: "Ce qui change d'un modèle à l'autre, pas la marque dont vous avez entendu parler.",
-    channels: ["Fiverr", "Upwork", "OnlineJobs.ph", "AfterDesk"],
+    channels: ["Le faire soi-même avec l'IA", "Place de marché freelance", "Personnel à l'heure", "AfterDesk"],
     axes: [
       {
-        axis: "Contr\u00F4le avant paiement",
+        axis: "Qui pilote l'exécution",
         cells: [
-          { label: "Apr\u00E8s coup", tone: "weak", detail: "vous jugez la livraison vous-m\u00EAme; le litige vient apr\u00E8s l'argent" },
-          { label: "Apr\u00E8s coup", tone: "weak", detail: "il y a un s\u00E9questre, mais le r\u00E9viseur, c'est encore vous" },
-          {
-            label: "Aucun",
-            tone: "weak",
-            detail: "un babillard d'offres : le paiement et la qualit\u00E9 restent entre vous et votre embauche",
-          },
-          {
-            label: "Int\u00E9gr\u00E9",
-            tone: "strong",
-            detail: "un op\u00E9rateur v\u00E9rifie chaque livraison d'abord, et rien n'est factur\u00E9 avant la fin de votre fen\u00EAtre de r\u00E9vision",
-          },
+          { label: "Vous", tone: "weak", detail: "vous écrivez les prompts, enchaînez les étapes et décidez quand c'est fini" },
+          { label: "Vous", tone: "weak", detail: "vous choisissez, briefez et supervisez la personne qui prend le travail" },
+          { label: "Vous", tone: "weak", detail: "vous dirigez le temps que vous achetez" },
+          { label: "AfterDesk", tone: "strong", detail: "nous choisissons la méthode, l'exécutons et traitons ce que le mandat n'avait pas prévu" },
         ],
       },
       {
-        axis: "Effort",
+        axis: "À quoi le prix est attaché",
         cells: [
-          { label: "\u00C9lev\u00E9", tone: "weak", detail: "vous r\u00E9digez le brief, jugez le r\u00E9sultat, corrigez vous-m\u00EAme" },
-          { label: "\u00C9lev\u00E9", tone: "weak", detail: "pareil, plus les entrevues" },
-          { label: "Maximal", tone: "weak", detail: "vous embauchez, formez et supervisez un employ\u00E9 \u00E0 distance" },
-          {
-            label: "Minimal",
-            tone: "strong",
-            detail: "vous d\u00E9crivez, approuvez un prix, recevez un travail v\u00E9rifi\u00E9",
-          },
+          { label: "À l'usage", tone: null, detail: "jetons, sièges ou abonnements, selon ce que le travail exige" },
+          { label: "À une offre", tone: null, detail: "convenue par mandat, renégociée dès que le périmètre bouge" },
+          { label: "Au temps", tone: null, detail: "des heures, qu'elles produisent le résultat ou non" },
+          { label: "Au résultat", tone: "strong", detail: "un prix fixe pour un périmètre écrit, approuvé avant tout démarrage" },
+        ],
+      },
+      {
+        axis: "À qui appartient le résultat fini",
+        cells: [
+          { label: "À vous", tone: "weak", detail: "la sortie est à vous à vérifier et à corriger" },
+          { label: "À vous", tone: "weak", detail: "si c'est faux, la correction est votre problème" },
+          { label: "À vous", tone: "weak", detail: "vous avez acheté du temps ; le résultat reste votre responsabilité" },
+          { label: "À AfterDesk", tone: "strong", detail: "vérifié contre le standard approuvé avant livraison, et à nous de le reprendre" },
         ],
       },
     ],
     footnote:
-      "Chaque plateforme ici est bonne dans ce pour quoi elle a \u00E9t\u00E9 con\u00E7ue. Ceci montre simplement o\u00F9 chacune se situe r\u00E9ellement, pour que vous choisissiez selon vos besoins.",
+      "Chacun de ces modèles est bon dans ce pour quoi il est conçu, et les différences ci-dessus sont structurelles, pas des jugements sur le prix, la vitesse ou la qualité. Le tableau montre lequel dépose le résultat fini sur votre bureau, et lequel le dépose sur le nôtre.",
   },
 };
 
 const aEs: AboutDict = {
   meta: {
-    title: "Qui\u00E9nes somos: por qu\u00E9 existe AfterDesk",
+    title: "Sobre AfterDesk: trabajo terminado, no tiempo contratado",
     description:
-      "AfterDesk existe para cerrar la brecha entre solicitar trabajo empresarial remoto y recibir un entregable terminado y revisado.",
+      "AfterDesk existe para cerrar la brecha entre pedir trabajo administrativo y recibir un entregable terminado y revisado.",
   },
   nav: { how: "C\u00F3mo funciona", client: "Haz que se haga" },
   kicker: "Qui\u00E9nes somos",
@@ -705,7 +719,7 @@ const aEs: AboutDict = {
   bridge: ["No faltaba acceso a personas y herramientas.", "Faltaba responsabilidad por completar el trabajo."],
   solutionHead: "La idea operativa",
   solutionLede:
-    "AfterDesk es un servicio de tareas gestionadas para trabajo remoto acotado. Las instrucciones y el estándar de revisión siguen a la tarea desde el alcance hasta la entrega.",
+    "AfterDesk entrega trabajo administrativo terminado a precio fijo. Las instrucciones y el estándar de revisión siguen a la tarea desde el alcance hasta la entrega.",
   solution: [
     [
       "Alcance definido",
@@ -717,7 +731,7 @@ const aEs: AboutDict = {
     ],
     [
       "Entrega revisada",
-      "Cada tarea terminada recibe una revisión del operador antes de llegar al cliente.",
+      "Cada tarea terminada se verifica contra el estándar aprobado antes de llegar al cliente.",
     ],
   ],
   trainingHead: "Por qué la formación de especialistas forma parte del sistema",
@@ -736,44 +750,46 @@ const aEs: AboutDict = {
     eyebrow: "Comparativa",
     heading: "C\u00F3mo se compara esto en realidad",
     subline: "Lo que cambia entre los modelos, no la marca que ya conoces.",
-    channels: ["Fiverr", "Upwork", "OnlineJobs.ph", "AfterDesk"],
+    channels: ["Hacerlo tú con IA", "Mercado de freelancers", "Personal por horas", "AfterDesk"],
     axes: [
       {
-        axis: "Revisi\u00F3n antes de pagar",
+        axis: "Quién gestiona la ejecución",
         cells: [
-          { label: "Despu\u00E9s del hecho", tone: "weak", detail: "t\u00FA juzgas la entrega; la disputa llega despu\u00E9s del dinero" },
-          { label: "Despu\u00E9s del hecho", tone: "weak", detail: "hay dep\u00F3sito en garant\u00EDa, pero el revisor sigues siendo t\u00FA" },
-          { label: "Ninguna", tone: "weak", detail: "un portal de empleo: pago y calidad quedan entre t\u00FA y tu contratado" },
-          {
-            label: "Integrada",
-            tone: "strong",
-            detail: "un operador revisa cada entrega primero, y no se cobra nada hasta que cierra tu ventana de revisi\u00F3n",
-          },
+          { label: "Tú", tone: "weak", detail: "escribes los prompts, ejecutas los pasos y decides cuándo está listo" },
+          { label: "Tú", tone: "weak", detail: "eliges, informas y supervisas a quien lo tome" },
+          { label: "Tú", tone: "weak", detail: "diriges el tiempo que estás comprando" },
+          { label: "AfterDesk", tone: "strong", detail: "elegimos el método, lo ejecutamos y resolvemos lo que el encargo no cubría" },
         ],
       },
       {
-        axis: "Esfuerzo",
+        axis: "A qué va atado el precio",
         cells: [
-          { label: "Alto", tone: "weak", detail: "escribes el brief, eval\u00FAas el resultado, lo corriges t\u00FA mismo" },
-          { label: "Alto", tone: "weak", detail: "igual, m\u00E1s entrevistas" },
-          { label: "M\u00E1ximo", tone: "weak", detail: "contratas, capacitas y supervisas a un empleado remoto" },
-          {
-            label: "Mínimo",
-            tone: "strong",
-            detail: "lo describes, apruebas un precio, recibes trabajo verificado",
-          },
+          { label: "Al uso", tone: null, detail: "tokens, licencias o suscripciones, según lo que el trabajo requiera" },
+          { label: "A una oferta", tone: null, detail: "acordada por encargo y renegociada cuando cambia el alcance" },
+          { label: "Al tiempo", tone: null, detail: "horas, produzcan o no el resultado" },
+          { label: "Al resultado", tone: "strong", detail: "un precio fijo por un alcance escrito, aprobado antes de empezar" },
+        ],
+      },
+      {
+        axis: "De quién es el resultado terminado",
+        cells: [
+          { label: "Tuyo", tone: "weak", detail: "la salida es tuya para verificar y corregir" },
+          { label: "Tuyo", tone: "weak", detail: "si está mal, corregirlo es tu problema" },
+          { label: "Tuyo", tone: "weak", detail: "compraste tiempo; el resultado sigue siendo tu responsabilidad" },
+          { label: "De AfterDesk", tone: "strong", detail: "revisado contra el estándar aprobado antes de entregarse, y nuestro para rehacerlo" },
         ],
       },
     ],
-    footnote: "Cada plataforma aqu\u00ED es buena en lo suyo. Esto solo muestra d\u00F3nde se ubica cada una, para que elijas lo que te sirve.",
+    footnote:
+      "Cada uno de estos modelos es bueno para aquello para lo que fue creado, y las diferencias de arriba son estructurales, no juicios sobre precio, velocidad o calidad. Esto muestra qué modelo deja el resultado terminado en tu escritorio y cuál lo deja en el nuestro.",
   },
 };
 
 const aTl: AboutDict = {
   meta: {
-    title: "Tungkol sa amin: bakit umiiral ang AfterDesk",
+    title: "Tungkol sa AfterDesk: tapos na trabaho, hindi inupahang oras",
     description:
-      "Umiiral ang AfterDesk para punan ang pagitan ng pag-request ng remote business work at pagtanggap ng completed at reviewed na deliverable.",
+      "Umiiral ang AfterDesk para punan ang pagitan ng pag-request ng admin na trabaho at pagtanggap ng tapos at sinuring deliverable.",
   },
   nav: { how: "Paano ito gumagana", client: "Ipagawa ang trabaho" },
   kicker: "Tungkol sa amin",
@@ -801,7 +817,7 @@ const aTl: AboutDict = {
   bridge: ["Hindi kulang ang access sa tao at tools.", "Ang kulang ay accountability sa pagkumpleto."],
   solutionHead: "Ang operating idea",
   solutionLede:
-    "Ang AfterDesk ay managed task service para sa bounded remote work. Kasama ng task ang approved brief at review standard mula scope hanggang delivery.",
+    "Naghahatid ang AfterDesk ng tapos nang administratibong trabaho sa fixed na presyo. Kasama ng task ang approved brief at review standard mula scope hanggang delivery.",
   solution: [
     [
       "Malinaw na scope",
@@ -813,7 +829,7 @@ const aTl: AboutDict = {
     ],
     [
       "Sinuring delivery",
-      "Bawat natapos na task ay nire-review ng operator bago makarating sa client.",
+      "Bawat natapos na task ay sinusuri laban sa aprubadong pamantayan bago makarating sa client.",
     ],
   ],
   trainingHead: "Bakit bahagi ng operating system ang specialist training",
@@ -832,41 +848,38 @@ const aTl: AboutDict = {
     eyebrow: "Paghahambing",
     heading: "Ito ang totoong paghahambing",
     subline: "Ang pagkakaiba ng mga modelo, hindi kung anong brand ang narinig mo na.",
-    channels: ["Fiverr", "Upwork", "OnlineJobs.ph", "AfterDesk"],
+    channels: ["DIY gamit ang AI tools", "Freelance marketplace", "Staffing kada oras", "AfterDesk"],
     axes: [
       {
-        axis: "Review bago magbayad",
+        axis: "Sino ang namamahala sa execution",
         cells: [
-          { label: "Pagkatapos na", tone: "weak", detail: "ikaw ang susuri sa delivery; dumarating ang dispute pagkatapos ng pera" },
-          { label: "Pagkatapos na", tone: "weak", detail: "may escrow, pero ikaw pa rin ang reviewer" },
-          {
-            label: "Wala",
-            tone: "weak",
-            detail: "job board ito: ang bayad at kalidad ay nasa pagitan mo at ng hire mo",
-          },
-          {
-            label: "Built in",
-            tone: "strong",
-            detail: "sinusuri muna ng operator ang bawat delivery, at walang sisingilin hangga't hindi sarado ang review window mo",
-          },
+          { label: "Ikaw", tone: "weak", detail: "ikaw ang sumusulat ng prompt, nagpapatakbo ng bawat hakbang, at nagdedesisyon kung tapos na" },
+          { label: "Ikaw", tone: "weak", detail: "ikaw ang pumipili, nagbi-brief at nagsu-supervise sa kukuha nito" },
+          { label: "Ikaw", tone: "weak", detail: "ikaw ang nagdidirekta sa oras na binibili mo" },
+          { label: "AfterDesk", tone: "strong", detail: "kami ang pumipili ng paraan, nagpapatakbo nito, at humahawak sa hindi nasakop ng brief" },
         ],
       },
       {
-        axis: "Effort",
+        axis: "Saan nakakabit ang presyo",
         cells: [
-          { label: "Mataas", tone: "weak", detail: "ikaw ang gagawa ng brief, ikaw ang susuri sa resulta, at ikaw din ang mag-aayos kung mali" },
-          { label: "Mataas", tone: "weak", detail: "pareho rin, may dagdag pang interviews" },
-          { label: "Pinakamataas", tone: "weak", detail: "ikaw ang mag-hire, mag-train, at mag-supervise ng remote employee" },
-          {
-            label: "Minimal",
-            tone: "strong",
-            detail: "ilalarawan mo lang ang kailangan, aaprubahan ang presyo, tapos matatanggap mo na ang verified na trabaho",
-          },
+          { label: "Sa paggamit", tone: null, detail: "tokens, seats o subscription, depende sa kailangan ng trabaho" },
+          { label: "Sa bid", tone: null, detail: "napagkasunduan kada engagement, muling pinag-uusapan kapag nagbago ang scope" },
+          { label: "Sa oras", tone: null, detail: "oras, nakagawa man ito ng resulta o hindi" },
+          { label: "Sa resulta", tone: "strong", detail: "isang fixed na presyo para sa nakasulat na scope, aprubado bago magsimula" },
+        ],
+      },
+      {
+        axis: "Kanino ang tapos na resulta",
+        cells: [
+          { label: "Sa iyo", tone: "weak", detail: "ikaw ang magbe-verify at magtatama ng output" },
+          { label: "Sa iyo", tone: "weak", detail: "kung mali, ikaw ang may problema sa pag-aayos" },
+          { label: "Sa iyo", tone: "weak", detail: "oras ang binili mo; sa iyo pa rin ang resulta" },
+          { label: "Sa AfterDesk", tone: "strong", detail: "sinusuri laban sa aprubadong pamantayan bago ihatid, at amin itong ayusin" },
         ],
       },
     ],
     footnote:
-      "Magaling ang bawat platform dito sa dapat nilang gawin. Ipinapakita lang nito kung saan talaga sila nakaposisyon, para mapili mo kung ano ang bagay sa'yo.",
+      "Mahusay ang bawat modelong ito sa layuning pinaggawaan nito, at ang mga pagkakaiba sa itaas ay structural, hindi paghatol sa presyo, bilis o kalidad. Ipinapakita nito kung aling modelo ang naglalagay ng tapos na resulta sa mesa mo at alin ang naglalagay nito sa amin.",
   },
 };
 

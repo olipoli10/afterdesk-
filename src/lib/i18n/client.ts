@@ -31,9 +31,15 @@ export function clientLangOf(value: string | undefined | null): ClientLang {
 
 type Dict = {
   /** `portal` replaces signIn + send once a session exists. Same key, same
-   *  words as the worker storefront — the audience toggle swaps between the
-   *  two headers and the door must not rename itself. */
-  nav: { signIn: string; send: string; portal: string; client: string; workers: string };
+   *  words as the worker storefront, so the door does not rename itself
+   *  between the two sides.
+   *
+   *  `client` and `workers` used to sit here for the audience toggle. That
+   *  toggle is gone from this header: a client landing on a page that offers
+   *  to switch them to the worker side is being told, above the fold, that
+   *  this is a two-sided marketplace. /about, /how-it-works and /workers each
+   *  read their own dictionary, so nothing else lost a label. */
+  nav: { signIn: string; send: string; portal: string };
   hero: {
     line1: string;
     line2: string;
@@ -54,7 +60,6 @@ type Dict = {
      *  ILLUSTRATIVE note. */
     previewLabel: string;
   };
-  ch01: { label: string };
   ch02: {
     label: string;
     noMeter: string;
@@ -132,55 +137,92 @@ type Dict = {
     steps: [string, string][];
     pillars: [string, string][];
   };
+  /**
+   * No `workerWord`, no `released`, and their absence is the point.
+   *
+   * A headcount of approved people and a total paid out are the WORKER side's
+   * proof. Here they answer a question the client never asked and file the
+   * page as a marketplace of people, which is the one reading this
+   * positioning cannot carry. The component types both as optional
+   * (public-counters.tsx), so leaving them out of this dictionary is what
+   * removes the cells — not a blank string, which would still render a label.
+   */
   counters: {
     taskWord: [string, string];
-    workerWord: [string, string];
-    released: string;
     toDate: string;
     moneySaved: { label: string; timeLabel: string; note: string };
   };
 };
 
 const en: Dict = {
-  nav: { signIn: "Sign in", send: "Describe the outcome", portal: "My account", client: "Get work done", workers: "For workers" },
+  nav: { signIn: "Sign in", send: "Request a fixed-price quote", portal: "My account" },
   hero: {
-    line1: "Send the work.",
-    line2: "Get it back checked.",
+    /**
+     * WHAT, THEN THE BUYING MODEL. In six words, before the fold.
+     *
+     * The previous pair — "Send the work. / Get it back checked." — sold the
+     * mechanism: someone does it, someone else checks. Read cold it landed as
+     * a better-supervised VA agency, which is the category this business is
+     * not in.
+     *
+     * The alternative tested against it was "Describe the result. / Get it
+     * back finished." It lost on three measurable counts, not on taste. At
+     * 1440px the h1 box is 604px wide: its two lines measure 691px and 707px,
+     * so BOTH wrap and the hero grows to four visual lines at every width
+     * (178px on mobile against 133px here). It repeats the sub-hero's own
+     * opening words verbatim one line below itself. And "describe what you
+     * want, get it back done" is the stock pitch of an AI agent product — the
+     * second reading this rewrite has to avoid.
+     *
+     * This pair keeps the shipped rhythm exactly: one line wraps, three
+     * visual lines, same height as before.
+     */
+    line1: "Finished admin work.",
+    line2: "One fixed price.",
     subtitle:
-      "Finding someone was never the hard part. Checking their work was. A trained specialist does your job, then a different person here checks it against a written standard before you ever see it.",
-    cta: "Describe the outcome",
+      "Describe the result you need. AfterDesk defines the scope, sets one fixed price, manages the execution and verifies the finished delivery.",
+    cta: "Request a fixed-price quote",
     guarantee: (h) =>
-      `Your card is authorized, not charged. The specialist who does your work cannot send it to you: a separate reviewer has to pass it first. Your card is only charged ${h} hours after that, so you have time to reject it.`,
+      `Your card is authorized, not charged. Nothing reaches you until it has passed our review against the approved standard, and your card is charged only ${h} hours after that, so you have time to reject it.`,
     srPreview: (title) =>
-      `Illustrative product preview: a task titled “${title}” is received in the evening, priced by the operator, approved, completed by a vetted specialist, and passes operator review before delivery.`,
+      `Illustrative product preview: a task titled “${title}” is received in the evening, scoped and priced, approved by the client, completed, and checked against the approved standard before delivery.`,
     previewLabel: "Illustrative · product preview",
   },
   whatWeAre: {
     label: "What this is",
     h2: [
       "",
-      " is the person in the middle. You send a job with a clear finish line: clean this list, research these companies, pull the dates out of these contracts. A trained specialist does it. Then a different person here checks it before it reaches you.",
+      " delivers finished administrative work. You describe the result you need: clean this list, research these companies, pull the dates out of these contracts. We define the scope, quote one fixed price, and own the work until it is done and checked.",
     ],
+    /**
+     * THE METHOD SENTENCE, AND THE LIMIT OF WHAT IT MAY CLAIM.
+     *
+     * It says AfterDesk chooses the method. It does NOT say the method is
+     * automation, does not say people only handle exceptions, and does not
+     * imply a fleet of specialised providers being selected between. Today the
+     * dependable way is usually a person working to a written standard, and
+     * this sentence stays true on the day that changes.
+     */
     intro:
-      "You never pick, brief or chase the specialist yourself, and you never receive their first attempt: it has to pass a review first.",
+      "The method depends on the work. AfterDesk chooses and manages the most dependable way to complete the approved scope, and answers for the result either way.",
     steps: [
       [
-        "Describe what you need back",
-        "Plain language: what must be returned, what rules matter, what a correct result looks like. We price it and you approve before anything starts.",
+        "Define",
+        "Plain language: what must come back, what rules matter, what a correct result looks like. We turn that into a written scope.",
       ],
       [
-        "A trained specialist does the work",
-        "When they hit something your instructions did not cover, they ask us, never you. We sort it out and note it for you.",
+        "Approve",
+        "One fixed price for that scope, before anything starts. It does not move with the hours the work turns out to take.",
       ],
       [
-        "Someone else checks it before you see it",
-        "Not the person who did it. A separate reviewer scores it against a written standard and sends it back if it fails. You only ever receive work that passed.",
+        "Receive",
+        "Every delivery is checked against the approved standard before it reaches you. Work that fails goes back; you receive the version that passed.",
       ],
     ],
     pillars: [
       [
-        "You never meet the specialist",
-        "No interviews, no managing, no chasing. Every message and file goes through us.",
+        "You manage nobody",
+        "No interviews, no briefing rounds, no chasing. Questions about the work come to us, never to you.",
       ],
       [
         "The price is fixed first",
@@ -212,7 +254,6 @@ const en: Dict = {
       ],
     ],
   },
-  ch01: { label: "The overnight diff" },
   ch02: {
     label: "One price. Approved first.",
     noMeter: "Fixed for this task. Not hourly.",
@@ -244,45 +285,62 @@ const en: Dict = {
     ],
     note: "ILLUSTRATIVE · NOT A RATE CARD ·",
   },
+  /**
+   * THE TIMELINE STOPPED BEING A MAP.
+   *
+   * This section was "The night", two lanes labelled New York and Manila with
+   * a line explaining the twelve-hour offset. It sold the gap between two
+   * economies — the labour-arbitrage story — and it put the client on one side
+   * of a border and the work on the other. The lanes are now the two parties
+   * to the transaction, which is what the client is actually buying into.
+   */
   ch04: {
-    label: "The night",
-    h2: "One example evening, end to end.",
-    laneYou: "New York",
-    laneThem: "Manila",
-    note: "Manila runs 12 hours ahead of New York (13 in winter)",
+    label: "End to end",
+    h2: "One task, from request to delivery.",
+    laneYou: "You",
+    laneThem: "AfterDesk",
+    note: "Timings are illustrative; the confirmed date is on your quote",
     steps: [
-      ["6:41 PM", "You describe the deliverable."],
-      ["7:15 PM", "One fixed price. You approve it."],
-      ["Overnight", "A trained specialist completes the scope."],
-      ["7:07 AM", "Operator review, then delivery."],
+      ["Step 1", "You describe the result you need."],
+      ["Step 2", "One fixed price for a written scope. You approve it."],
+      ["Step 3", "AfterDesk runs the approved scope."],
+      ["Step 4", "Checked against the standard, then delivered."],
     ],
   },
+  /**
+   * BUYING MODELS, NOT BRANDS — AND ONLY DIFFERENCES WE CAN DEFEND.
+   *
+   * The earlier version named Fiverr-shaped competitors and, worse, the /about
+   * table beside it rated them on price, speed and vetting. Those are claims
+   * about other companies that nothing in this business measures, and naming
+   * marketplaces filed AfterDesk as a fourth marketplace.
+   *
+   * Each row now carries ONE structural difference that is true by
+   * construction here: who manages the execution and owns the result, what the
+   * price is attached to, and who checks the work before the buyer sees it.
+   * Nothing about anyone's speed, quality or rates.
+   */
   ch05: {
-    label: "The operator",
-    h2: "One professional between you and the work.",
-    legend: "Four ways people handle this today, and what each one costs you in time.",
-    wall: "Operator",
-    desk: "Sometimes the first version fails. When it does, the reviewer sends it back and you never see that attempt: you only receive the version that passed.",
+    label: "The comparison",
+    h2: "What changes between the models.",
+    legend: "Three other ways to get this done, and what each leaves on your desk.",
+    wall: "AfterDesk",
+    desk: "Sometimes the first version fails the standard. When it does it goes back, and you never see that attempt: you receive the version that passed.",
     pairs: [
       [
-        "AI tools",
-        "You prompt, run the steps, and verify every result yourself.",
-        "One approved scope, checked by an operator before it reaches you.",
+        "Do it yourself with AI tools",
+        "You write the prompts, run the steps and check every result. The output is yours to verify.",
+        "One approved scope. We run it, handle what goes wrong, and check it before it reaches you.",
       ],
       [
-        "Freelance site",
-        "Post the job. Read forty proposals.",
-        "Describe it once. One fixed price to approve.",
+        "Freelance marketplace",
+        "You choose, brief and supervise. If the result is wrong, it is your problem to fix.",
+        "You choose nobody and brief once. We own the finished result and answer for it.",
       ],
       [
-        "Hiring someone",
-        "Interview, onboard, manage, repeat.",
-        "You write the brief once and approve the price. We run everything after that.",
-      ],
-      [
-        "By the hour",
-        "A meter running while you wait.",
-        "One fixed price, approved before work starts.",
+        "Hourly staffing",
+        "You buy time. Whether it produced the outcome is still your question.",
+        "You buy the outcome. One fixed price, approved before work starts.",
       ],
     ],
   },
@@ -304,17 +362,22 @@ const en: Dict = {
     askQuestion: "Ask a question",
     stamps: ["Intake", "Quote ready", "In progress", "In review", "Delivered"],
     lines: [
-      "6:41 PM · task received",
-      "7:15 PM · priced by the operator",
-      "7:22 PM · approved · claimed by a vetted specialist",
-      "5:58 AM · delivered · operator review in progress",
-      "7:07 AM · passed review · in your inbox",
+      "6:41 PM · result described",
+      "7:15 PM · scope written · one fixed price",
+      "7:22 PM · approved · execution under way",
+      "5:58 AM · complete · checked against the standard",
+      "7:07 AM · passed · in your inbox",
     ],
   },
+  /**
+   * Nothing renders until the thresholds are crossed (public-counters.tsx),
+   * which is exactly why this is settled NOW: the day it switches itself on,
+   * nobody will be rereading this rewrite. A client-facing "47 specialists
+   * approved" would publish a headcount and file the page as a marketplace,
+   * months later and with no one watching.
+   */
   counters: {
     taskWord: ["task delivered", "tasks delivered"],
-    workerWord: ["approved worker", "approved workers"],
-    released: "released to workers",
     toDate: "To date,",
     moneySaved: {
       label: "saved vs. market rate",
@@ -325,45 +388,45 @@ const en: Dict = {
 };
 
 const fr: Dict = {
-  nav: { signIn: "Connexion", send: "Décrire le résultat", portal: "Mon compte", client: "Faire faire du travail", workers: "Pour les travailleurs" },
+  nav: { signIn: "Connexion", send: "Demander un prix fixe", portal: "Mon compte" },
   hero: {
-    line1: "Confiez le travail.",
-    line2: "Recevez-le déjà vérifié.",
+    line1: "Du travail administratif fini.",
+    line2: "Un prix fixe.",
     subtitle:
-      "Trouver quelqu'un n'a jamais été le plus dur. Vérifier son travail, oui. Un spécialiste formé fait votre tâche, puis une autre personne ici la vérifie selon une norme écrite avant que vous la voyiez.",
-    cta: "Décrire le résultat",
+      "Décrivez le résultat dont vous avez besoin. AfterDesk définit le périmètre, fixe un prix unique, pilote l'exécution et vérifie la livraison terminée.",
+    cta: "Demander un prix fixe",
     guarantee: (h) =>
-      `Votre carte est autorisée, pas débitée. Le spécialiste qui fait votre travail ne peut pas vous l'envoyer : un réviseur distinct doit d'abord l'approuver. Votre carte n'est débitée que ${h} heures plus tard, vous avez donc le temps de refuser.`,
+      `Votre carte est autorisée, pas débitée. Rien ne vous parvient avant d'avoir passé notre révision selon la norme approuvée, et votre carte n'est débitée que ${h} heures plus tard, vous avez donc le temps de refuser.`,
     srPreview: (title) =>
-      `Aperçu illustratif du produit : une tâche intitulée « ${title} » est reçue en soirée, chiffrée par l'opérateur, approuvée, réalisée par un spécialiste vérifié, et passe la révision de l'opérateur avant livraison.`,
+      `Aperçu illustratif du produit : une tâche intitulée « ${title} » est reçue en soirée, cadrée et chiffrée, approuvée par le client, réalisée, puis vérifiée selon la norme approuvée avant livraison.`,
     previewLabel: "Illustration · aperçu du produit",
   },
   whatWeAre: {
     label: "Ce qu'on fait",
     h2: [
       "",
-      " est la personne au milieu. Vous envoyez une tâche avec une ligne d'arrivée claire : nettoyer cette liste, rechercher ces entreprises, sortir les dates de ces contrats. Un spécialiste formé la fait. Puis une autre personne ici la vérifie avant qu'elle vous parvienne.",
+      " livre du travail administratif fini. Vous décrivez le résultat voulu : nettoyer cette liste, rechercher ces entreprises, sortir les dates de ces contrats. Nous définissons le périmètre, chiffrons un prix fixe, et nous portons le travail jusqu'à ce qu'il soit fait et vérifié.",
     ],
     intro:
-      "Vous n'avez jamais à choisir, encadrer ou relancer le spécialiste vous-même, et vous ne recevez jamais sa première tentative : elle doit d'abord passer une révision.",
+      "La méthode dépend du travail. AfterDesk choisit et pilote la façon la plus fiable de réaliser le périmètre approuvé, et répond du résultat dans tous les cas.",
     steps: [
       [
-        "Décrivez ce que vous voulez recevoir",
-        "En langage clair : ce qui doit être rendu, les règles importantes, ce qui constitue un résultat correct. On le chiffre et vous approuvez avant que quoi que ce soit commence.",
+        "Définir",
+        "En langage clair : ce qui doit être rendu, les règles importantes, ce qui constitue un résultat correct. On en fait un périmètre écrit.",
       ],
       [
-        "Un spécialiste formé fait le travail",
-        "Quand il tombe sur quelque chose que vos instructions ne couvraient pas, il nous le demande à nous, jamais à vous. On règle ça et on vous le note.",
+        "Approuver",
+        "Un prix fixe pour ce périmètre, avant que rien ne commence. Il ne bouge pas selon les heures que le travail finit par prendre.",
       ],
       [
-        "Une autre personne le vérifie avant vous",
-        "Pas celle qui l'a fait. Un réviseur distinct l'évalue selon une norme écrite et le renvoie s'il échoue. Vous ne recevez que du travail qui a passé.",
+        "Recevoir",
+        "Chaque livraison est vérifiée selon la norme approuvée avant de vous parvenir. Ce qui échoue repart, et vous recevez la version qui a passé.",
       ],
     ],
     pillars: [
       [
-        "Vous ne rencontrez jamais le spécialiste",
-        "Aucune entrevue, aucune gestion, aucune relance. Chaque message et fichier passe par nous.",
+        "Vous ne gérez personne",
+        "Aucune entrevue, aucun encadrement, aucune relance. Les questions sur le travail nous reviennent, jamais à vous.",
       ],
       [
         "Le prix est fixé d'abord",
@@ -375,7 +438,6 @@ const fr: Dict = {
       ],
     ],
   },
-  ch01: { label: "Une nuit de différence" },
   ch02: {
     label: "Un prix. Approuvé d'abord.",
     noMeter: "Fixe pour cette tâche. Pas à l'heure.",
@@ -408,44 +470,39 @@ const fr: Dict = {
     note: "À TITRE D'EXEMPLE · PAS UNE GRILLE DE PRIX ·",
   },
   ch04: {
-    label: "La nuit",
-    h2: "Une soirée d'exemple, du début à la fin.",
-    laneYou: "New York",
-    laneThem: "Manille",
-    note: "Manille a 12 heures d'avance sur New York (13 en hiver)",
+    label: "De bout en bout",
+    h2: "Une tâche, de la demande à la livraison.",
+    laneYou: "Vous",
+    laneThem: "AfterDesk",
+    note: "Étapes illustratives ; la date confirmée figure sur votre devis",
     steps: [
-      ["6:41 PM", "Vous décrivez le livrable."],
-      ["7:15 PM", "Un prix fixe. Vous l'approuvez."],
-      ["La nuit", "Un spécialiste formé réalise le travail."],
-      ["7:07 AM", "Révision par l'opérateur, puis livraison."],
+      ["Étape 1", "Vous décrivez le résultat voulu."],
+      ["Étape 2", "Un prix fixe pour un périmètre écrit. Vous l'approuvez."],
+      ["Étape 3", "AfterDesk réalise le périmètre approuvé."],
+      ["Étape 4", "Vérifié selon la norme, puis livré."],
     ],
   },
   ch05: {
-    label: "L'opérateur",
-    h2: "Un professionnel entre vous et le travail.",
-    legend: "Quatre façons de gérer ça aujourd'hui, et ce que chacune vous coûte en temps.",
-    wall: "Opérateur",
-    desk: "Parfois la première version échoue. Le réviseur la renvoie alors, et vous ne voyez jamais cette tentative : vous ne recevez que la version qui a passé.",
+    label: "La comparaison",
+    h2: "Ce qui change d'un modèle à l'autre.",
+    legend: "Trois autres façons de faire faire ça, et ce que chacune vous laisse sur le bureau.",
+    wall: "AfterDesk",
+    desk: "Parfois la première version échoue à la norme. Elle repart alors, et vous ne voyez jamais cette tentative : vous recevez la version qui a passé.",
     pairs: [
       [
-        "Outils d'IA",
-        "Vous écrivez les prompts, menez les étapes et vérifiez chaque résultat vous-même.",
-        "Un travail approuvé, vérifié par un opérateur avant de vous parvenir.",
+        "Le faire soi-même avec l'IA",
+        "Vous écrivez les prompts, menez les étapes et vérifiez chaque résultat. La sortie est à vous de valider.",
+        "Un seul périmètre approuvé. On l'exécute, on gère ce qui déraille, et on le vérifie avant qu'il vous parvienne.",
       ],
       [
-        "Site de pigistes",
-        "Publier une offre. Lire quarante propositions.",
-        "Décrivez une fois. Un prix fixe à approuver.",
+        "Place de marché de pigistes",
+        "Vous choisissez, briefez et supervisez. Si le résultat est mauvais, c'est à vous de le corriger.",
+        "Vous ne choisissez personne et briefez une fois. On porte le résultat fini et on en répond.",
       ],
       [
-        "Embaucher",
-        "Entrevues, intégration, gestion, à recommencer.",
-        "Vous écrivez le mandat une fois et approuvez le prix. On mène tout le reste.",
-      ],
-      [
-        "À l'heure",
-        "Un compteur qui tourne pendant que vous attendez.",
-        "Un prix fixe, approuvé avant que le travail commence.",
+        "Personnel à l'heure",
+        "Vous achetez du temps. Savoir s'il a produit le résultat reste votre question.",
+        "Vous achetez le résultat. Un prix fixe, approuvé avant que le travail commence.",
       ],
     ],
   },
@@ -467,17 +524,15 @@ const fr: Dict = {
     stamps: ["Réception", "Prix prêt", "En cours", "En révision", "Livré"],
     lines: [
       "18 h 41 · tâche reçue",
-      "19 h 15 · prix fixé par l'opérateur",
-      "19 h 22 · approuvé · pris en charge par un spécialiste vérifié",
-      "5 h 58 · livré · révision par l'opérateur en cours",
+      "19 h 15 · périmètre écrit · un prix fixe",
+      "19 h 22 · approuvé · exécution en cours",
+      "5 h 58 · terminé · vérifié selon la norme",
       "7 h 07 · révision réussie · dans votre boîte de réception",
     ],
   },
   footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", work: "Travailler avec nous", services: "Nos services" },
   counters: {
     taskWord: ["tâche livrée", "tâches livrées"],
-    workerWord: ["spécialiste approuvé", "spécialistes approuvés"],
-    released: "reversés aux spécialistes",
     toDate: "À ce jour,",
     moneySaved: {
       label: "économisés vs taux du marché",
@@ -488,45 +543,45 @@ const fr: Dict = {
 };
 
 const es: Dict = {
-  nav: { signIn: "Iniciar sesión", send: "Describe el resultado", portal: "Mi cuenta", client: "Haz que se haga", workers: "Para trabajadores" },
+  nav: { signIn: "Iniciar sesión", send: "Pedir un precio fijo", portal: "Mi cuenta" },
   hero: {
-    line1: "Envía el trabajo.",
-    line2: "Recíbelo ya revisado.",
+    line1: "Trabajo administrativo terminado.",
+    line2: "Un precio fijo.",
     subtitle:
-      "Encontrar a alguien nunca fue lo difícil. Revisar su trabajo sí. Un especialista capacitado hace tu tarea, y después otra persona aquí la revisa contra un estándar escrito antes de que tú la veas.",
-    cta: "Describe el resultado",
+      "Describe el resultado que necesitas. AfterDesk define el alcance, fija un precio único, gestiona la ejecución y verifica la entrega terminada.",
+    cta: "Pedir un precio fijo",
     guarantee: (h) =>
-      `Tu tarjeta queda autorizada, no cobrada. El especialista que hace tu trabajo no puede enviártelo: un revisor distinto tiene que aprobarlo primero. Tu tarjeta se cobra ${h} horas después de eso, así que tienes tiempo de rechazarlo.`,
+      `Tu tarjeta queda autorizada, no cobrada. Nada te llega antes de pasar nuestra revisión contra el estándar aprobado, y tu tarjeta se cobra solo ${h} horas después de eso, así que tienes tiempo de rechazarlo.`,
     srPreview: (title) =>
-      `Vista previa ilustrativa del producto: una tarea titulada “${title}” se recibe por la tarde, cotizada por el operador, aprobada, realizada por un especialista verificado, y pasa la revisión del operador antes de la entrega.`,
+      `Vista previa ilustrativa del producto: una tarea titulada “${title}” se recibe por la tarde, se acota y se cotiza, la aprueba el cliente, se realiza, y se verifica contra el estándar aprobado antes de la entrega.`,
     previewLabel: "Ilustrativo · vista previa del producto",
   },
   whatWeAre: {
     label: "Qué es esto",
     h2: [
       "",
-      " es la persona en el medio. Envías una tarea con una meta clara: limpiar esta lista, investigar estas empresas, sacar las fechas de estos contratos. Un especialista capacitado la hace. Después otra persona aquí la revisa antes de que llegue a ti.",
+      " entrega trabajo administrativo terminado. Tú describes el resultado que necesitas: limpiar esta lista, investigar estas empresas, sacar las fechas de estos contratos. Nosotros definimos el alcance, cotizamos un precio fijo y sostenemos el trabajo hasta que esté hecho y revisado.",
     ],
     intro:
-      "Nunca eliges, instruyes ni persigues al especialista tú mismo, y nunca recibes su primer intento: primero tiene que pasar una revisión.",
+      "El método depende del trabajo. AfterDesk elige y gestiona la forma más fiable de completar el alcance aprobado, y responde por el resultado en cualquier caso.",
     steps: [
       [
-        "Describe lo que quieres recibir",
-        "En lenguaje claro: qué debe devolverse, qué reglas importan, cómo es un resultado correcto. Lo cotizamos y tú apruebas antes de que empiece nada.",
+        "Definir",
+        "En lenguaje claro: qué debe devolverse, qué reglas importan, cómo es un resultado correcto. Lo convertimos en un alcance escrito.",
       ],
       [
-        "Un especialista capacitado hace el trabajo",
-        "Cuando se topa con algo que tus instrucciones no cubrían, nos pregunta a nosotros, nunca a ti. Lo resolvemos y te lo anotamos.",
+        "Aprobar",
+        "Un precio fijo para ese alcance, antes de que empiece nada. No se mueve con las horas que el trabajo acabe tomando.",
       ],
       [
-        "Otra persona lo revisa antes que tú",
-        "No la que lo hizo. Un revisor distinto lo evalúa contra un estándar escrito y lo devuelve si falla. Solo recibes trabajo que pasó.",
+        "Recibir",
+        "Cada entrega se verifica contra el estándar aprobado antes de llegarte. Lo que falla vuelve atrás, y recibes la versión que pasó.",
       ],
     ],
     pillars: [
       [
-        "Nunca conoces al especialista",
-        "Sin entrevistas, sin gestionar, sin perseguir. Cada mensaje y archivo pasa por nosotros.",
+        "No gestionas a nadie",
+        "Sin entrevistas, sin instrucciones, sin perseguir. Las preguntas sobre el trabajo nos llegan a nosotros, nunca a ti.",
       ],
       [
         "El precio se fija primero",
@@ -538,7 +593,6 @@ const es: Dict = {
       ],
     ],
   },
-  ch01: { label: "El antes y después de una noche" },
   ch02: {
     label: "Un precio. Aprobado primero.",
     noMeter: "Fijo para esta tarea. No por hora.",
@@ -571,44 +625,39 @@ const es: Dict = {
     note: "ILUSTRATIVO · NO ES UNA LISTA DE PRECIOS ·",
   },
   ch04: {
-    label: "La noche",
-    h2: "Una tarde de ejemplo, de principio a fin.",
-    laneYou: "Nueva York",
-    laneThem: "Manila",
-    note: "Manila va 12 horas por delante de Nueva York (13 en invierno)",
+    label: "De principio a fin",
+    h2: "Una tarea, de la solicitud a la entrega.",
+    laneYou: "Tú",
+    laneThem: "AfterDesk",
+    note: "Pasos ilustrativos; la fecha confirmada aparece en tu presupuesto",
     steps: [
-      ["6:41 PM", "Describes el entregable."],
-      ["7:15 PM", "Un precio fijo. Lo apruebas."],
-      ["De noche", "Un especialista capacitado completa el alcance."],
-      ["7:07 AM", "Revisión del operador, y entrega."],
+      ["Paso 1", "Describes el resultado que necesitas."],
+      ["Paso 2", "Un precio fijo para un alcance escrito. Lo apruebas."],
+      ["Paso 3", "AfterDesk ejecuta el alcance aprobado."],
+      ["Paso 4", "Verificado contra el estándar, y entregado."],
     ],
   },
   ch05: {
-    label: "El operador",
-    h2: "Un profesional entre tú y el trabajo.",
-    legend: "Cuatro formas de resolver esto hoy, y lo que cada una te cuesta en tiempo.",
-    wall: "Operador",
-    desk: "A veces la primera versión falla. Cuando pasa, el revisor la devuelve y tú nunca ves ese intento: solo recibes la versión que pasó.",
+    label: "La comparación",
+    h2: "Qué cambia de un modelo a otro.",
+    legend: "Otras tres formas de hacer esto, y lo que cada una te deja en el escritorio.",
+    wall: "AfterDesk",
+    desk: "A veces la primera versión no pasa el estándar. Cuando pasa eso vuelve atrás, y nunca ves ese intento: recibes la versión que pasó.",
     pairs: [
       [
-        "Herramientas de IA",
-        "Tú escribes los prompts, ejecutas los pasos y verificas cada resultado.",
-        "Un alcance aprobado, revisado por un operador antes de llegar a ti.",
+        "Hacerlo tú con IA",
+        "Tú escribes los prompts, ejecutas los pasos y revisas cada resultado. La salida es tuya para validar.",
+        "Un solo alcance aprobado. Lo ejecutamos, resolvemos lo que falla y lo revisamos antes de que te llegue.",
       ],
       [
-        "Sitio de freelance",
-        "Publicas un trabajo. Lees cuarenta propuestas.",
-        "Lo describes una vez. Un precio fijo para aprobar.",
+        "Mercado de freelancers",
+        "Tú eliges, instruyes y supervisas. Si el resultado está mal, es tuyo el problema de arreglarlo.",
+        "No eliges a nadie y explicas una vez. Sostenemos el resultado terminado y respondemos por él.",
       ],
       [
-        "Contratar",
-        "Entrevistar, incorporar, gestionar, repetir.",
-        "Escribes el encargo una vez y apruebas el precio. Nosotros dirigimos todo lo demás.",
-      ],
-      [
-        "Por hora",
-        "Un contador corriendo mientras esperas.",
-        "Un precio fijo, aprobado antes de empezar el trabajo.",
+        "Personal por horas",
+        "Compras tiempo. Si produjo el resultado sigue siendo tu pregunta.",
+        "Compras el resultado. Un precio fijo, aprobado antes de que empiece el trabajo.",
       ],
     ],
   },
@@ -630,17 +679,15 @@ const es: Dict = {
     stamps: ["Recepción", "Precio listo", "En curso", "En revisión", "Entregado"],
     lines: [
       "6:41 p. m. · tarea recibida",
-      "7:15 p. m. · precio fijado por el operador",
-      "7:22 p. m. · aprobado · asignado a un especialista verificado",
-      "5:58 a. m. · entregado · revisión del operador en curso",
+      "7:15 p. m. · alcance escrito · un precio fijo",
+      "7:22 p. m. · aprobado · ejecución en curso",
+      "5:58 a. m. · completado · verificado contra el estándar",
       "7:07 a. m. · pasó la revisión · en tu bandeja de entrada",
     ],
   },
   footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros", services: "Nuestros servicios" },
   counters: {
     taskWord: ["tarea entregada", "tareas entregadas"],
-    workerWord: ["especialista aprobado", "especialistas aprobados"],
-    released: "liberados a los especialistas",
     toDate: "Hasta la fecha,",
     moneySaved: {
       label: "ahorrados vs. tarifa de mercado",
@@ -654,45 +701,45 @@ const es: Dict = {
    loanwords the market actually speaks (task, review, approve, fixed), never
    textbook Filipino. */
 const tl: Dict = {
-  nav: { signIn: "Mag-sign in", send: "Ilarawan ang resulta", portal: "Account ko", client: "Ipagawa ang trabaho", workers: "Para sa manggagawa" },
+  nav: { signIn: "Mag-sign in", send: "Humingi ng fixed na presyo", portal: "Account ko" },
   hero: {
-    line1: "Ipadala ang trabaho.",
-    line2: "Balik ito na sinuri na.",
+    line1: "Tapos nang admin na trabaho.",
+    line2: "Isang fixed na presyo.",
     subtitle:
-      "Ang paghahanap ng tao hindi kailanman ang mahirap na bahagi. Ang pag-check ng trabaho nila, oo. May trained specialist na gumagawa ng task mo, tapos ibang tao dito ang sumusuri nito ayon sa nakasulat na pamantayan bago mo pa ito makita.",
-    cta: "Ilarawan ang resulta",
+      "Ilarawan ang resultang kailangan mo. Tinutukoy ng AfterDesk ang scope, nagtatakda ng iisang fixed na presyo, namamahala sa execution, at sinusuri ang tapos nang delivery.",
+    cta: "Humingi ng fixed na presyo",
     guarantee: (h) =>
-      `Naka-authorize lang ang card mo, hindi sinisingil. Ang specialist na gumawa ng trabaho mo ay hindi ito puwedeng ipadala sa iyo: kailangan muna itong ipasa ng ibang reviewer. Sisingilin lang ang card mo ${h} oras pagkatapos noon, kaya may oras ka pang tumanggi.`,
+      `Naka-authorize lang ang card mo, hindi sinisingil. Walang nakakarating sa iyo hangga't hindi ito pumapasa sa aming review laban sa aprubadong pamantayan, at sisingilin lang ang card mo ${h} oras pagkatapos noon, kaya may oras ka pang tumanggi.`,
     srPreview: (title) =>
-      `Halimbawang preview ng produkto: isang task na “${title}” ay natanggap sa gabi, pinresyuhan ng operator, inaprubahan, ginawa ng beripikadong espesyalista, at pumasa sa review ng operator bago i-deliver.`,
+      `Halimbawang preview ng produkto: isang task na “${title}” ay natanggap sa gabi, tinukoy ang scope at pinresyuhan, inaprubahan ng kliyente, ginawa, at sinuri laban sa aprubadong pamantayan bago i-deliver.`,
     previewLabel: "Halimbawa · preview ng produkto",
   },
   whatWeAre: {
     label: "Ano ito",
     h2: [
       "Ang ",
-      " ang tao sa gitna. Magpapadala ka ng task na may malinaw na finish line: linisin ang listahang ito, saliksikin ang mga kumpanyang ito, kunin ang mga petsa sa mga kontratang ito. Trained specialist ang gagawa nito. Tapos ibang tao dito ang susuri bago ito dumating sa iyo.",
+      " ay naghahatid ng tapos nang administratibong trabaho. Inilalarawan mo ang resultang kailangan mo: linisin ang listahang ito, saliksikin ang mga kumpanyang ito, kunin ang mga petsa sa mga kontratang ito. Kami ang tumutukoy ng scope, nagpepresyo nang fixed, at kami ang may hawak nito hanggang tapos at nasuri na.",
     ],
     intro:
-      "Hindi mo kailanman pipiliin, bi-brief o hahabulin ang specialist mismo, at hindi mo natatanggap ang unang tangka niya: kailangan muna itong makapasa sa review.",
+      "Nakadepende sa trabaho ang paraan. Ang AfterDesk ang pumipili at namamahala sa pinaka-maaasahang paraan para tapusin ang aprubadong scope, at kami ang sumasagot sa resulta anuman ang paraan.",
     steps: [
       [
-        "Ilarawan kung ano ang gusto mong matanggap",
-        "Simpleng salita: ano ang dapat ibalik, aling rules ang mahalaga, ano ang tamang resulta. Pipresyuhan namin ito at aaprubahan mo bago magsimula ang kahit ano.",
+        "Tukuyin",
+        "Simpleng salita: ano ang dapat ibalik, aling rules ang mahalaga, ano ang tamang resulta. Ginagawa namin itong nakasulat na scope.",
       ],
       [
-        "Trained specialist ang gumagawa ng trabaho",
-        "Kapag may nakita siyang hindi saklaw ng instructions mo, sa amin siya nagtatanong, hindi sa iyo. Inaayos namin ito at nino-note para sa iyo.",
+        "Aprubahan",
+        "Isang fixed na presyo para sa scope na iyon, bago magsimula ang kahit ano. Hindi ito gumagalaw base sa oras na kinakain ng trabaho.",
       ],
       [
-        "Ibang tao ang sumusuri bago ka",
-        "Hindi ang gumawa nito. Ibang reviewer ang nag-e-evaluate nito ayon sa nakasulat na pamantayan at ibinabalik ito kapag bumagsak. Trabahong pumasa lang ang natatanggap mo.",
+        "Tanggapin",
+        "Bawat delivery ay sinusuri laban sa aprubadong pamantayan bago ito makarating sa iyo. Ang bumabagsak ay bumabalik, at ang natatanggap mo ay ang bersyong pumasa.",
       ],
     ],
     pillars: [
       [
-        "Hindi mo kailanman makikilala ang specialist",
-        "Walang interview, walang pamamahala, walang paghabol. Dumadaan sa amin ang bawat mensahe at file.",
+        "Wala kang pinamamahalaang tao",
+        "Walang interview, walang pag-brief, walang paghabol. Sa amin dumarating ang mga tanong tungkol sa trabaho, hindi sa iyo.",
       ],
       [
         "Nauuna ang presyo",
@@ -704,7 +751,6 @@ const tl: Dict = {
       ],
     ],
   },
-  ch01: { label: "Ang diff ng magdamag" },
   ch02: {
     label: "Isang presyo. Aprubado muna.",
     noMeter: "Fixed para sa task na ito. Hindi kada oras.",
@@ -737,44 +783,39 @@ const tl: Dict = {
     note: "HALIMBAWA LANG · HINDI ITO RATE CARD ·",
   },
   ch04: {
-    label: "Ang gabi",
-    h2: "Isang halimbawang gabi, mula simula hanggang dulo.",
-    laneYou: "New York",
-    laneThem: "Maynila",
-    note: "12 oras na nauuna ang Maynila sa New York (13 kapag taglamig)",
+    label: "Simula hanggang dulo",
+    h2: "Isang task, mula request hanggang delivery.",
+    laneYou: "Ikaw",
+    laneThem: "AfterDesk",
+    note: "Ilustratibo ang mga hakbang; nasa quote mo ang kumpirmadong petsa",
     steps: [
-      ["6:41 PM", "Ilalarawan mo ang deliverable."],
-      ["7:15 PM", "Isang fixed na presyo. Aaprubahan mo."],
-      ["Magdamag", "Kukumpletuhin ng trained specialist ang saklaw."],
-      ["7:07 AM", "Review ng operator, tapos delivery."],
+      ["Hakbang 1", "Ilalarawan mo ang resultang kailangan mo."],
+      ["Hakbang 2", "Isang fixed na presyo para sa nakasulat na scope. Aaprubahan mo."],
+      ["Hakbang 3", "Isinasagawa ng AfterDesk ang aprubadong scope."],
+      ["Hakbang 4", "Sinuri laban sa pamantayan, tapos inihatid."],
     ],
   },
   ch05: {
-    label: "Ang operator",
-    h2: "Isang propesyonal sa pagitan mo at ng trabaho.",
-    legend: "Apat na paraan ng paggawa nito ngayon, at kung magkano ang halaga ng bawat isa sa oras mo.",
-    wall: "Operator",
-    desk: "Minsan bumabagsak ang unang bersyon. Kapag nangyari iyon, ibinabalik ito ng reviewer at hindi mo na nakikita ang tangkang iyon: ang bersyong pumasa lang ang natatanggap mo.",
+    label: "Ang paghahambing",
+    h2: "Ano ang nagbabago sa bawat modelo.",
+    legend: "Tatlong ibang paraan para maipagawa ito, at kung ano ang naiiwan sa mesa mo ng bawat isa.",
+    wall: "AfterDesk",
+    desk: "Minsan hindi pumapasa ang unang bersyon sa pamantayan. Kapag nangyari iyon, bumabalik ito at hindi mo na nakikita ang tangkang iyon: ang bersyong pumasa ang natatanggap mo.",
     pairs: [
       [
-        "AI tools",
-        "Ikaw ang magpo-prompt, magpapatakbo ng steps, at magve-verify ng bawat resulta.",
-        "Isang aprubadong saklaw, sinuri ng operator bago dumating sa iyo.",
+        "Gawin mo mismo gamit ang AI",
+        "Ikaw ang sumusulat ng prompts, nagpapatakbo ng hakbang, at sumusuri ng bawat resulta. Sa iyo ang pagpapatunay ng output.",
+        "Isang aprubadong scope. Kami ang nagpapatakbo, humahawak sa nagkakamali, at sumusuri bago ito makarating sa iyo.",
       ],
       [
-        "Freelance site",
-        "Mag-post ng job. Magbasa ng apatnapung proposal.",
-        "Isang beses mong ilarawan. Isang fixed na presyo na aaprubahan.",
+        "Freelance marketplace",
+        "Ikaw ang pumipili, nagbi-brief at nagbabantay. Kapag mali ang resulta, problema mo itong ayusin.",
+        "Wala kang pipiliin at isang beses ka lang magbi-brief. Kami ang may hawak ng tapos nang resulta at kami ang sumasagot.",
       ],
       [
-        "Mag-hire",
-        "Mag-interview, mag-onboard, mag-manage, ulit.",
-        "Isang beses mong isusulat ang brief at aaprubahan ang presyo. Kami na ang bahala sa lahat pagkatapos.",
-      ],
-      [
-        "Kada oras",
-        "Orasang tumatakbo habang naghihintay ka.",
-        "Isang fixed na presyo, aprubado bago magsimula ang trabaho.",
+        "Hourly staffing",
+        "Oras ang binibili mo. Kung nakabuo ba ito ng resulta, tanong mo pa rin iyon.",
+        "Ang resulta ang binibili mo. Isang fixed na presyo, aprubado bago magsimula ang trabaho.",
       ],
     ],
   },
@@ -796,17 +837,15 @@ const tl: Dict = {
     stamps: ["Natanggap", "Presyo handa na", "Isinasagawa", "Sinusuri", "Naihatid"],
     lines: [
       "6:41 PM · natanggap ang task",
-      "7:15 PM · pinresyuhan ng operator",
-      "7:22 PM · inaprubahan · kinuha ng beripikadong espesyalista",
-      "5:58 AM · naihatid · isinasagawa ang review ng operator",
+      "7:15 PM · nakasulat na scope · isang fixed na presyo",
+      "7:22 PM · inaprubahan · isinasagawa na",
+      "5:58 AM · tapos na · sinuri laban sa pamantayan",
       "7:07 AM · pumasa sa review · nasa inbox mo na",
     ],
   },
   footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin", services: "Mga serbisyo" },
   counters: {
     taskWord: ["task na naihatid", "mga task na naihatid"],
-    workerWord: ["inaprubahang espesyalista", "mga inaprubahang espesyalista"],
-    released: "napunta sa mga espesyalista",
     toDate: "Sa ngayon,",
     moneySaved: {
       label: "naipon vs presyo sa market",
