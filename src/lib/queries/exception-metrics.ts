@@ -76,6 +76,21 @@ type StoredRow = {
  * fingerprint entry of its own, and the payload is already the append-only
  * record of what each step produced.
  */
+/**
+ * Cross-client admin telemetry. May contain client-defined field names.
+ * Never use as AI/provider/client context.
+ *
+ * This is the one function in the repo whose return value mixes free text
+ * originating from several different clients into a single object: `byField`
+ * aggregates unresolved field names across every mandate. Inside an operator's
+ * dashboard that is exactly what it is for. Anywhere else it is a channel for
+ * one client's wording to reach another client's processing, which is the
+ * boundary references.ts was rewritten to hold.
+ *
+ * `test/data-isolation.test.ts` enforces the restriction by import path rather
+ * than by this comment: only admin pages may reach this module, and widening
+ * that has to be a deliberate edit to the allowlist.
+ */
 export async function exceptionMetricsForAdmin(): Promise<ExceptionMetrics> {
   const runs = await prisma.taskWorkflowRun.findMany({
     where: {
