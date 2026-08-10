@@ -46,7 +46,16 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
         <h1 className="mt-4 max-w-[21ch] text-[clamp(2.4rem,5.5vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.04em]">{t.h1}</h1>
         <p className="mt-6 max-w-[64ch] text-[17px] leading-[1.65] text-[#A9AFB8]">{t.intro}</p>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+        {/*
+          Two columns only when there are two offerings. The grid was written
+          for the one-off / standing-capacity pair; with standing capacity
+          unpublished a fixed two-column grid leaves a half-width card floating
+          against dead space. Driven by the list rather than hardcoded, so
+          restoring the offer restores the layout.
+        */}
+        <div
+          className={`mt-12 grid gap-6 ${OFFERINGS.length > 1 ? "lg:grid-cols-2" : "max-w-[560px]"}`}
+        >
           {OFFERINGS.map((offering) => {
             const copy = t.offerings[OFFERING_KEY[offering.slug]];
             return (

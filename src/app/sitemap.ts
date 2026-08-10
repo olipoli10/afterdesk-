@@ -19,7 +19,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/about",
     "/how-it-works",
     "/services",
-    "/services/standing-capacity",
     "/ledger",
     "/security",
     "/privacy",

@@ -45,12 +45,21 @@ export default async function StandingCapacityPage() {
 
   if (!account) {
     return (
+      /*
+        Reached only by URL: the nav entry appears once an account exists. The
+        empty state used to pitch the offer and link to the public page, and
+        both are gone with the storefront. It deliberately does NOT say the
+        offer is closed: an operator can still open an account from the admin
+        screen, so a client who has just agreed to one by phone would read a
+        denial of the thing they were promised. Clients WITH an account see
+        everything below, unchanged.
+      */
       <EmptyState
-        title="No standing capacity account yet"
-        body="Standing capacity is a recurring weekly block of hours, set up by an operator. Ask us about it from Our Services."
+        title="No standing capacity account"
+        body="Nothing is set up on this account yet. Send a one-off task instead: you describe the result, approve one fixed price, and receive it verified."
         action={
-          <LinkButton href="/services/standing-capacity" variant="secondary">
-            Learn how it works
+          <LinkButton href="/client/tasks/new" variant="secondary">
+            Describe a task
           </LinkButton>
         }
       />

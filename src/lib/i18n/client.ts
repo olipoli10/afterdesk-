@@ -11,8 +11,10 @@
  *
  * CLAIM RULES (post-repositioning, do not regress): no "any task", no
  * "by morning"/"done overnight" as a promise, no cost-base/labor-arbitrage
- * framing, no absolute "no hourly meter" (standing capacity sells weekly
- * hours), and every demo artifact is visibly labelled illustrative. The
+ * framing, no absolute "no hourly meter" (the standing-capacity storefront is
+ * unpublished, but live accounts still bill weekly hours, so the absolute
+ * would be false while any of them exists), and every demo artifact is
+ * visibly labelled illustrative. The
  * guarantee copy states the REAL mechanism: operator review, then a dispute
  * window before any capture.
  */

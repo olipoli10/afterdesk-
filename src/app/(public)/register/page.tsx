@@ -25,7 +25,7 @@ const ASIDE = [
   },
   {
     title: "One-off work needs no subscription",
-    body: "Use a one-off task without a retainer or minimum, or discuss reserved weekly capacity for recurring work.",
+    body: "Use a one-off task without a retainer or minimum. You approve one fixed price per deliverable before anything starts.",
   },
 ];
 

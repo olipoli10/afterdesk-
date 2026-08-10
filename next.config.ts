@@ -28,6 +28,34 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  /**
+   * STANDING CAPACITY IS UNPUBLISHED, NOT DELETED.
+   *
+   * The public page sold "5h / 10h / 20h per week" and said so plainly: "It is
+   * a capacity service, not outcome pricing." That is the honest description
+   * of what the schema bills (tierHours x weeklyClientPriceCents, drawn down
+   * in minutes), and it is the one thing the client positioning cannot carry:
+   * AfterDesk sells finished outcomes, not blocks of labour. Rewording the
+   * page would have been a lie about the invoice.
+   *
+   * So the storefront closes and everything behind it stays: the schema, the
+   * billing, /client/standing-capacity, the admin screens, the server actions
+   * and every existing account keep working untouched.
+   *
+   * TEMPORARY (307), deliberately. A permanent redirect tells search engines
+   * to forget the URL and is the wrong signal for an offer that may come back
+   * as recurring fixed-price outcomes. Restoring it is this entry plus the
+   * offerings.ts row.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/services/standing-capacity",
+        destination: "/services",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {

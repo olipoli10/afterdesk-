@@ -29,6 +29,13 @@ type Dict = {
   h1: string;
   intro: string;
   learnMore: string;
+  /**
+   * `standingCapacity` is KEPT although nothing renders it today: the offer was
+   * unpublished from the storefront (src/lib/offerings.ts no longer lists it,
+   * and the page 307s to /services), not deleted. Four languages of card copy
+   * are the expensive half of bringing it back, so they stay here rather than
+   * being retyped later.
+   */
   offerings: { oneOff: OfferingCopy; standingCapacity: OfferingCopy };
 };
 
@@ -37,13 +44,13 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     meta: {
       title: "Our Services",
       description:
-        "Managed CRM, research, data and document work: one-off deliverables with an upfront price, or reserved weekly capacity for recurring work.",
+        "Managed CRM, research, data and document work: describe the deliverable, approve one fixed price before anything starts, and receive a result checked against a written standard.",
     },
     header: { signIn: "Sign in", getStarted: "Describe the outcome" },
     eyebrow: "Our Services",
-    h1: "One-off deliverables or recurring capacity.",
+    h1: "Defined deliverables, priced before we start.",
     intro:
-      "Choose a scoped one-off task when the deliverable is defined. Use standing capacity when a recurring stream of bounded work needs reserved weekly time. Either way, you never manage a specialist directly: an operator runs every request, and every completed task is reviewed before delivery.",
+      "Send a scoped task whenever the deliverable is defined. You never manage a specialist directly: an operator runs every request, and every completed task is reviewed before delivery.",
     learnMore: "Learn more",
     offerings: {
       oneOff: {
@@ -64,13 +71,13 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     meta: {
       title: "Nos services",
       description:
-        "Travaux gérés de CRM, recherche, données et documents : livrables ponctuels à prix convenu ou capacité hebdomadaire réservée.",
+        "Travaux gérés de CRM, recherche, données et documents : décrivez le livrable, approuvez un prix fixe avant tout démarrage, recevez un résultat vérifié contre un standard écrit.",
     },
     header: { signIn: "Connexion", getStarted: "Décrire le résultat" },
     eyebrow: "Nos services",
-    h1: "Livrables ponctuels ou capacité récurrente.",
+    h1: "Des livrables définis, chiffrés avant de commencer.",
     intro:
-      "Choisissez une tâche ponctuelle lorsque le livrable est défini. Utilisez la capacité permanente lorsqu'un flux récurrent de travail délimité exige du temps réservé chaque semaine. Dans les deux cas, vous ne gérez jamais un spécialiste directement : un opérateur pilote chaque demande, et chaque tâche terminée est vérifiée avant livraison.",
+      "Envoyez une tâche dès que le livrable est défini. Vous ne gérez jamais un spécialiste directement : un opérateur pilote chaque demande, et chaque tâche terminée est vérifiée avant livraison.",
     learnMore: "En savoir plus",
     offerings: {
       oneOff: {
@@ -91,13 +98,13 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     meta: {
       title: "Nuestros servicios",
       description:
-        "Trabajo gestionado de CRM, investigación, datos y documentos: entregables puntuales con precio previo o capacidad semanal reservada.",
+        "Trabajo gestionado de CRM, investigación, datos y documentos: describe el entregable, aprueba un precio fijo antes de empezar y recibe un resultado revisado contra un estándar escrito.",
     },
     header: { signIn: "Iniciar sesión", getStarted: "Describe el resultado" },
     eyebrow: "Nuestros servicios",
-    h1: "Entregables puntuales o capacidad recurrente.",
+    h1: "Entregables definidos, con precio antes de empezar.",
     intro:
-      "Elige una tarea puntual cuando el entregable esté definido. Usa capacidad fija cuando un flujo recurrente de trabajo acotado necesite tiempo reservado cada semana. En ambos casos nunca gestionas a un especialista directamente: un operador dirige cada solicitud y cada tarea terminada se revisa antes de entregarse.",
+      "Envía una tarea en cuanto el entregable esté definido. Nunca gestionas a un especialista directamente: un operador dirige cada solicitud y cada tarea terminada se revisa antes de entregarse.",
     learnMore: "Más información",
     offerings: {
       oneOff: {
@@ -118,13 +125,13 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     meta: {
       title: "Ang Aming Mga Serbisyo",
       description:
-        "Managed CRM, research, data, at document work: one-off deliverables na may upfront na presyo o reserved weekly capacity.",
+        "Managed CRM, research, data, at document work: ilarawan ang deliverable, aprubahan ang isang fixed na presyo bago magsimula, at tanggapin ang resultang sinuri laban sa nakasulat na pamantayan.",
     },
     header: { signIn: "Mag-sign in", getStarted: "Ilarawan ang resulta" },
     eyebrow: "Ang Aming Mga Serbisyo",
-    h1: "One-off na deliverable o recurring capacity.",
+    h1: "Malinaw na deliverable, may presyo bago magsimula.",
     intro:
-      "Pumili ng one-off task kapag malinaw ang deliverable. Gamitin ang standing capacity kapag may recurring at bounded work na nangangailangan ng reserved time kada linggo. Sa parehong paraan, hindi mo kailanman dinidirekta ang specialist: operator ang namamahala sa bawat request, at sinusuri ang bawat natapos na task bago i-deliver.",
+      "Magpadala ng task kapag malinaw na ang deliverable. Hindi mo kailanman dinidirekta ang specialist: operator ang namamahala sa bawat request, at sinusuri ang bawat natapos na task bago i-deliver.",
     learnMore: "Alamin pa",
     offerings: {
       oneOff: {
@@ -157,6 +164,16 @@ type StandingDict = {
   pricing: { eyebrow: string; h2: string; body: string };
 };
 
+/**
+ * NO CONSUMER TODAY, AND KEPT ON PURPOSE.
+ *
+ * Its only reader was the public standing-capacity page, deleted when the
+ * offer was unpublished (the path itself is left unwritten here on purpose:
+ * the depublication test sweeps src/ for it and should keep finding nothing). These four language versions are the whole
+ * page body — the expensive half of bringing the offer back — so they stay
+ * with the card copy above rather than being retyped later. Delete them only
+ * as a deliberate decision that the offer is not returning.
+ */
 export const STANDING_I18N: Record<ServicesLang, StandingDict> = {
   en: {
     meta: {

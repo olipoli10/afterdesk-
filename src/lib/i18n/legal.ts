@@ -356,11 +356,11 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Terms",
       description:
-        "The operational agreement behind AfterDesk work: approved scope or capacity, review standards, revisions, disputes and refunds.",
+        "The operational agreement behind AfterDesk work: approved scope, review standards, revisions, disputes and refunds.",
     },
     title: "Service terms",
     intro:
-      "These terms describe the operational agreement shown before work is purchased: what you are buying, the difference between a one-off task and a weekly capacity allocation, and what happens when a delivery is wrong.",
+      "These terms describe the operational agreement shown before work is purchased: what you are buying, and what happens when a delivery is wrong. Accounts opened under the earlier standing-capacity arrangement remain governed by the allocation shown in the account.",
     scope: {
       h2: "A task is a fixed scope",
       body: "For one-off work, the approved brief, quantity, file set, delivery standard, deadline and fixed price form the task. Standing-capacity work is governed by the weekly allocation shown in the account. Work begins only after payment confirmation. New one-off scope requires a new quote.",
@@ -386,11 +386,11 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Conditions",
       description:
-        "L'entente opérationnelle derrière le travail AfterDesk : périmètre et prix des tâches ponctuelles, capacité hebdomadaire, révision, litiges et remboursements.",
+        "L'entente opérationnelle derrière le travail AfterDesk : périmètre et prix des tâches ponctuelles, révision, litiges et remboursements.",
     },
     title: "Conditions de service",
     intro:
-      "Ces conditions décrivent l'entente opérationnelle présentée avant l'achat : ce que vous achetez, la différence entre une tâche ponctuelle et une capacité hebdomadaire, et ce qui se passe quand une livraison est incorrecte.",
+      "Ces conditions décrivent l'entente opérationnelle présentée avant l'achat : ce que vous achetez et ce qui se passe quand une livraison est incorrecte. Les comptes ouverts sous l'ancienne formule de capacité permanente restent régis par l'allocation affichée dans le compte.",
     scope: {
       h2: "Une tâche est un périmètre fixe",
       body: "Pour un travail ponctuel, le mandat approuvé, la quantité, l'ensemble de fichiers, le standard de livraison, l'échéance et le prix fixe composent la tâche. La capacité permanente est régie par l'allocation hebdomadaire affichée dans le compte. Le travail commence seulement après la confirmation du paiement. Un nouveau périmètre ponctuel exige un nouveau devis.",
@@ -416,11 +416,11 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Términos",
       description:
-        "El acuerdo operativo de AfterDesk: alcance y precio de tareas puntuales, capacidad semanal, revisión, disputas y reembolsos.",
+        "El acuerdo operativo de AfterDesk: alcance y precio de tareas puntuales, revisión, disputas y reembolsos.",
     },
     title: "Términos del servicio",
     intro:
-      "Estos términos describen el acuerdo operativo mostrado antes de comprar: qué compras, la diferencia entre una tarea puntual y capacidad semanal, y qué pasa cuando una entrega está mal.",
+      "Estos términos describen el acuerdo operativo mostrado antes de comprar: qué compras y qué pasa cuando una entrega está mal. Las cuentas abiertas bajo el esquema anterior de capacidad fija siguen rigiéndose por la asignación mostrada en la cuenta.",
     scope: {
       h2: "Una tarea es un alcance fijo",
       body: "Para un trabajo puntual, el encargo aprobado, la cantidad, el conjunto de archivos, el estándar de entrega, la fecha límite y el precio fijo componen la tarea. El trabajo de capacidad permanente se rige por la asignación semanal mostrada en la cuenta. El trabajo empieza solo tras confirmarse el pago. Un alcance puntual nuevo requiere una cotización nueva.",
@@ -446,11 +446,11 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Terms",
       description:
-        "Ang operational agreement ng AfterDesk: scope at presyo ng one-off work, weekly capacity, review, dispute, at refund.",
+        "Ang operational agreement ng AfterDesk: scope at presyo ng one-off work, review, dispute, at refund.",
     },
     title: "Mga Tuntunin ng Serbisyo",
     intro:
-      "Inilalarawan ng mga tuntuning ito ang operational agreement bago bumili: ano ang binibili mo, ang pagkakaiba ng one-off task at weekly capacity, at ano ang mangyayari kapag mali ang delivery.",
+      "Inilalarawan ng mga tuntuning ito ang operational agreement bago bumili: ano ang binibili mo at ano ang mangyayari kapag mali ang delivery. Ang mga account na binuksan sa dating standing-capacity na ayos ay patuloy na pinamamahalaan ng allocation na nakalagay sa account.",
     scope: {
       h2: "Ang isang task ay may fixed na scope",
       body: "Para sa one-off work, binubuo ang task ng aprubadong brief, dami, set ng file, delivery standard, deadline, at fixed na presyo. Ang standing-capacity work ay saklaw ng weekly allocation na ipinapakita sa account. Nagsisimula lang ang trabaho pagkatapos ma-kumpirma ang bayad. Kailangan ng bagong quote para sa bagong one-off scope.",

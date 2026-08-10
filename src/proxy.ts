@@ -13,14 +13,13 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 const LANGS = ["en", "fr", "es", "tl"];
 
-// The seven DOCUMENT pages — linked from both homepage footers/nav, owned by
+// The eight DOCUMENT pages — linked from both homepage footers/nav, owned by
 // neither audience — share one cookie and a fallback chain (doc → client →
 // worker → en, see docLangOf in src/lib/i18n/docs.ts).
 const DOC_PATHS = [
   "/about",
   "/how-it-works",
   "/services",
-  "/services/standing-capacity",
   "/security",
   "/privacy",
   "/terms",
@@ -109,7 +108,6 @@ export const config = {
     "/about",
     "/how-it-works",
     "/services",
-    "/services/standing-capacity",
     "/security",
     "/privacy",
     "/terms",
