@@ -113,7 +113,7 @@ ${JSON.stringify(input.classification, null, 2)}
 ACTIVE CATEGORIES (slug (name): the written delivery standard)
 ${categoryLines || "none configured"}
 
-REFERENCE_TASKS (${input.referenceTasks.length} similar already-approved tasks — use their scope and estimated minutes to calibrate your time estimates; their prices are historical context, not your output)
+REFERENCE_TASKS (${input.referenceTasks.length} comparable past mandates, MEASUREMENTS ONLY — no brief text from them is available to you, by design. Use their units, estimated minutes and measured worker/reviewer minutes to calibrate your own estimates; their prices are historical context, not your output. A null means that mandate was never measured on that axis, not a zero.)
 ${JSON.stringify(input.referenceTasks, null, 2)}`,
       },
     ],
