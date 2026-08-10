@@ -13,11 +13,12 @@ export const LOST_REASON_OPTIONS: { value: string; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-/** Admin override: cancel from any non-terminal state, reason logged. */
+/** Admin override: cancel from any non-terminal state. The reason stays internal. */
 export function AdminCancel({ taskId }: { taskId: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
+  const [clientMessage, setClientMessage] = useState("");
   const [lostReasonCategory, setLostReasonCategory] = useState("deadline_at_risk");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -49,11 +50,34 @@ export function AdminCancel({ taskId }: { taskId: string }) {
             ))}
           </select>
         </Field>
-        <Field label="Cancellation reason (written to the audit log)" hint="Free-text detail — the category above is what feeds pattern analysis.">
+        {/*
+          TWO FIELDS, AND THE LABELS ARE THE WHOLE POINT.
+
+          These used to be one. The internal reason was the client's entire
+          cancellation email whenever no money had moved, while this label
+          promised it was written to the audit log. Whatever an operator types
+          about margin, capacity or a worker now stops here.
+        */}
+        <Field
+          label="Internal reason (required, audit log only, never sent)"
+          hint="Free-text detail — the category above is what feeds pattern analysis."
+        >
           <input
             className={inputClass}
+            maxLength={2000}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
+          />
+        </Field>
+        <Field
+          label="Message to the client (optional)"
+          hint="Sent verbatim, under the refund or capacity line. Leave empty to send only that."
+        >
+          <input
+            className={inputClass}
+            maxLength={500}
+            value={clientMessage}
+            onChange={(e) => setClientMessage(e.target.value)}
           />
         </Field>
         {error ? (
@@ -68,7 +92,12 @@ export function AdminCancel({ taskId }: { taskId: string }) {
             onClick={() => {
               setError(null);
               startTransition(async () => {
-                const result = await cancelTask({ taskId, reason, lostReasonCategory });
+                const result = await cancelTask({
+                  taskId,
+                  reason,
+                  clientMessage: clientMessage.trim() || undefined,
+                  lostReasonCategory,
+                });
                 if (!result.ok) {
                   setError(result.error);
                   return;

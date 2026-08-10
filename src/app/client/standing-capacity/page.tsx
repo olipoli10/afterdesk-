@@ -19,7 +19,14 @@ export const metadata = {
  * false here — this account was never billed per task.
  */
 const STANDING_STATUS_LABELS: Partial<Record<TaskStatus, string>> = {
+  // "Waiting for assignment" was the honest word here and stays: nothing runs
+  // until an operator routes the task, so anything suggesting work in flight
+  // would be a promise the account cannot keep.
   submitted: "Waiting for assignment",
+  // Reachable: a QC round that runs out of attempts, or a specialist releasing
+  // the task, sends it to `open` (admin-qc.ts, va-tasks.ts) with no standing
+  // exemption. The client's honest view of that state is the same one.
+  open: "Waiting for assignment",
   claimed: "In progress",
   submitted_for_qc: "In review",
   qc_rejected: "In progress",
@@ -125,8 +132,18 @@ export default async function StandingCapacityPage() {
                     {task.estimatedMinutes ? ` · ~${task.estimatedMinutes} min` : ""}
                   </p>
                 </div>
+                {/*
+                  NO RAW ENUM CAN REACH THE CLIENT.
+
+                  This fell back to `task.status`, which prints the database
+                  value itself — "awaiting_payment", "ai_processing",
+                  "pricing_review". The comment above argues those states are
+                  unreachable for a standing task, and that is true today; the
+                  fallback existed precisely for the day it stops being true,
+                  and it chose to leak internals rather than say less.
+                */}
                 <span className="shrink-0 font-mono text-[11px] uppercase tracking-[0.08em] text-[#5B6069]">
-                  {STANDING_STATUS_LABELS[task.status] ?? task.status}
+                  {STANDING_STATUS_LABELS[task.status] ?? "In progress"}
                 </span>
               </div>
             ))}

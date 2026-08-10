@@ -79,6 +79,7 @@ export function PricingForm({
   const [error, setError] = useState<string | null>(null);
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [rejectClientMessage, setRejectClientMessage] = useState("");
   const [lostReasonCategory, setLostReasonCategory] = useState("deadline_at_risk");
   const [isPending, startTransition] = useTransition();
 
@@ -278,11 +279,26 @@ export function PricingForm({
                 ))}
               </select>
             </Field>
-            <Field label="Rejection reason (logged, required)">
+            {/*
+              The label said "logged" and the string was mailed to the client.
+              At the pricing stage nothing has been paid, so this note WAS the
+              whole rejection email. Split, and both labels now state where the
+              text actually goes.
+            */}
+            <Field label="Internal reason (required, audit log only, never sent)">
               <input
                 className={inputClass}
+                maxLength={2000}
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
+              />
+            </Field>
+            <Field label="Message to the client (optional, sent verbatim)">
+              <input
+                className={inputClass}
+                maxLength={500}
+                value={rejectClientMessage}
+                onChange={(e) => setRejectClientMessage(e.target.value)}
               />
             </Field>
             <div className="flex gap-2">
@@ -295,6 +311,7 @@ export function PricingForm({
                     const result = await cancelTask({
                       taskId,
                       reason: cancelReason,
+                      clientMessage: rejectClientMessage.trim() || undefined,
                       lostReasonCategory,
                     });
                     if (!result.ok) {

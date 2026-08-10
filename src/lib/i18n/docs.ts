@@ -513,10 +513,31 @@ const aEn: AboutDict = {
   },
   protocolNote: "Read the full operating protocol at",
   protocolLink: "How it works",
+  /**
+   * THREE AXES WERE REMOVED, NOT REWORDED: Speed, Vetting and Price.
+   *
+   * They asserted things about other companies that we cannot substantiate.
+   * "Slow" for a job board, "Low" and "Cheapest wage" for two marketplaces —
+   * competitive claims about someone else's pricing and delivery speed, with
+   * no measurement behind them anywhere in this business.
+   *
+   * Vetting went for a second reason on top of that one: its AfterDesk cell
+   * ("Academy-trained... an operator reading every application") sold the
+   * client on the quality of our worker recruitment. That is an argument for
+   * buying access to vetted people, which is precisely what this service is
+   * not.
+   *
+   * What survives describes MECHANISMS, and only ones this repo enforces:
+   * whether a delivery is checked before money moves (the QC gate is
+   * structural here, not a policy) and how much of the work lands on the
+   * buyer. The table still needs rebuilding around the alternatives clients
+   * actually weigh; that is a positioning decision, deliberately not made in
+   * this pass.
+   */
   comparisonTable: {
     eyebrow: "Comparative",
     heading: "How this actually compares",
-    subline: "Five things that matter more than which platform you've heard of.",
+    subline: "What changes between the models, not which brand you have heard of.",
     channels: ["Fiverr", "Upwork", "OnlineJobs.ph", "AfterDesk"],
     axes: [
       {
@@ -543,37 +564,6 @@ const aEn: AboutDict = {
             tone: "strong",
             detail: "you describe it, approve a price, receive verified work",
           },
-        ],
-      },
-      {
-        axis: "Speed",
-        cells: [
-          { label: "Variable", tone: null, detail: "depends on the freelancer you find" },
-          { label: "Variable", tone: null, detail: "hiring cycle" },
-          { label: "Slow", tone: "weak", detail: "recruiting, then a training ramp-up" },
-          { label: "Scoped", tone: "strong", detail: "timing confirmed after scope; reviewed before delivery" },
-        ],
-      },
-      {
-        axis: "Vetting",
-        cells: [
-          { label: "Self-serve", tone: null, detail: "profiles and reviews; you weigh them yourself" },
-          { label: "Self-serve", tone: null, detail: "same" },
-          { label: "Yours to do", tone: "weak", detail: "you screen every candidate yourself" },
-          {
-            label: "Academy-trained",
-            tone: "strong",
-            detail: "free courses with real exams, an operator reading every application, and a review of every delivery",
-          },
-        ],
-      },
-      {
-        axis: "Price",
-        cells: [
-          { label: "Low", tone: null, detail: "but you also pay for your own correction time" },
-          { label: "Low", tone: null, detail: "same" },
-          { label: "Cheapest wage", tone: null, detail: "but a huge hidden cost in your management time" },
-          { label: "Fixed, as approved", tone: "strong", detail: "you pay more per task, but that's the whole point" },
         ],
       },
     ],
@@ -644,7 +634,7 @@ const aFr: AboutDict = {
   comparisonTable: {
     eyebrow: "Comparatif",
     heading: "Ce que \u00E7a donne, concr\u00E8tement",
-    subline: "Cinq choses qui comptent plus que la plateforme dont vous avez entendu parler.",
+    subline: "Ce qui change d'un modèle à l'autre, pas la marque dont vous avez entendu parler.",
     channels: ["Fiverr", "Upwork", "OnlineJobs.ph", "AfterDesk"],
     axes: [
       {
@@ -675,37 +665,6 @@ const aFr: AboutDict = {
             tone: "strong",
             detail: "vous d\u00E9crivez, approuvez un prix, recevez un travail v\u00E9rifi\u00E9",
           },
-        ],
-      },
-      {
-        axis: "Vitesse",
-        cells: [
-          { label: "Variable", tone: null, detail: "selon le freelance que vous trouvez" },
-          { label: "Variable", tone: null, detail: "cycle d'embauche" },
-          { label: "Lent", tone: "weak", detail: "recrutement, puis une mont\u00E9e en comp\u00E9tence" },
-          { label: "Cadré", tone: "strong", detail: "délai confirmé après cadrage; contrôle avant livraison" },
-        ],
-      },
-      {
-        axis: "V\u00E9rification",
-        cells: [
-          { label: "Autonome", tone: null, detail: "profils et avis; c'est vous qui les pesez" },
-          { label: "Autonome", tone: null, detail: "pareil" },
-          { label: "\u00C0 votre charge", tone: "weak", detail: "vous filtrez chaque candidat vous-m\u00EAme" },
-          {
-            label: "Form\u00E9s \u00E0 l'Acad\u00E9mie",
-            tone: "strong",
-            detail: "cours gratuits avec de vrais examens, un op\u00E9rateur qui lit chaque candidature, et une r\u00E9vision de chaque livraison",
-          },
-        ],
-      },
-      {
-        axis: "Prix",
-        cells: [
-          { label: "Bas", tone: null, detail: "mais vous payez aussi votre propre temps de correction" },
-          { label: "Bas", tone: null, detail: "pareil" },
-          { label: "Salaire le plus bas", tone: null, detail: "mais un co\u00FBt cach\u00E9 \u00E9norme en temps de gestion" },
-          { label: "Fixe, tel qu'approuv\u00E9", tone: "strong", detail: "plus cher par t\u00E2che, mais c'est tout l'argument" },
         ],
       },
     ],
@@ -776,7 +735,7 @@ const aEs: AboutDict = {
   comparisonTable: {
     eyebrow: "Comparativa",
     heading: "C\u00F3mo se compara esto en realidad",
-    subline: "Cinco cosas que importan m\u00E1s que la plataforma que ya conoces.",
+    subline: "Lo que cambia entre los modelos, no la marca que ya conoces.",
     channels: ["Fiverr", "Upwork", "OnlineJobs.ph", "AfterDesk"],
     axes: [
       {
@@ -803,37 +762,6 @@ const aEs: AboutDict = {
             tone: "strong",
             detail: "lo describes, apruebas un precio, recibes trabajo verificado",
           },
-        ],
-      },
-      {
-        axis: "Rapidez",
-        cells: [
-          { label: "Variable", tone: null, detail: "depende del freelancer que encuentres" },
-          { label: "Variable", tone: null, detail: "ciclo de contrataci\u00F3n" },
-          { label: "Lento", tone: "weak", detail: "reclutamiento y luego una curva de capacitaci\u00F3n" },
-          { label: "Definido", tone: "strong", detail: "plazo confirmado después del alcance; revisión antes de entregar" },
-        ],
-      },
-      {
-        axis: "Verificaci\u00F3n",
-        cells: [
-          { label: "Por tu cuenta", tone: null, detail: "perfiles y rese\u00F1as; t\u00FA los eval\u00FAas" },
-          { label: "Por tu cuenta", tone: null, detail: "lo mismo" },
-          { label: "Te toca a ti", tone: "weak", detail: "t\u00FA eval\u00FAas a cada candidato" },
-          {
-            label: "Formados en la Academia",
-            tone: "strong",
-            detail: "cursos gratis con ex\u00E1menes reales, un operador que lee cada postulaci\u00F3n y una revisi\u00F3n de cada entrega",
-          },
-        ],
-      },
-      {
-        axis: "Precio",
-        cells: [
-          { label: "Bajo", tone: null, detail: "pero tambi\u00E9n pagas con tu propio tiempo de correcci\u00F3n" },
-          { label: "Bajo", tone: null, detail: "lo mismo" },
-          { label: "Sueldo m\u00E1s bajo", tone: null, detail: "pero un costo oculto enorme en tu tiempo de gesti\u00F3n" },
-          { label: "Fijo, seg\u00FAn lo aprobado", tone: "strong", detail: "m\u00E1s por tarea, pero esa es la propuesta" },
         ],
       },
     ],
@@ -903,7 +831,7 @@ const aTl: AboutDict = {
   comparisonTable: {
     eyebrow: "Paghahambing",
     heading: "Ito ang totoong paghahambing",
-    subline: "Limang bagay na mas mahalaga kaysa sa kung anong platform ang narinig mo na.",
+    subline: "Ang pagkakaiba ng mga modelo, hindi kung anong brand ang narinig mo na.",
     channels: ["Fiverr", "Upwork", "OnlineJobs.ph", "AfterDesk"],
     axes: [
       {
@@ -934,37 +862,6 @@ const aTl: AboutDict = {
             tone: "strong",
             detail: "ilalarawan mo lang ang kailangan, aaprubahan ang presyo, tapos matatanggap mo na ang verified na trabaho",
           },
-        ],
-      },
-      {
-        axis: "Bilis",
-        cells: [
-          { label: "Nag-iiba", tone: null, detail: "depende sa freelancer na mahanap mo" },
-          { label: "Nag-iiba", tone: null, detail: "may hiring cycle pa" },
-          { label: "Mabagal", tone: "weak", detail: "mangre-recruit ka muna, tapos may training ramp-up pa" },
-          { label: "Scoped", tone: "strong", detail: "timing confirmed pagkatapos ng scope; reviewed bago i-deliver" },
-        ],
-      },
-      {
-        axis: "Pag-vet",
-        cells: [
-          { label: "Ikaw ang bahala", tone: null, detail: "profiles at reviews; ikaw ang magtitimbang" },
-          { label: "Ikaw ang bahala", tone: null, detail: "pareho rin" },
-          { label: "Sa'yo ang trabaho", tone: "weak", detail: "ikaw mismo ang magsusuri sa bawat kandidato" },
-          {
-            label: "Academy-trained",
-            tone: "strong",
-            detail: "libreng courses na may tunay na exams, operator na nagbabasa ng bawat application, at review sa bawat delivery",
-          },
-        ],
-      },
-      {
-        axis: "Presyo",
-        cells: [
-          { label: "Mababa", tone: null, detail: "pero babayaran mo rin ang oras mong gugulin sa pag-aayos" },
-          { label: "Mababa", tone: null, detail: "pareho rin" },
-          { label: "Pinakamababang sweldo", tone: null, detail: "pero malaking hidden cost sa oras mong gugulin sa pangangasiwa" },
-          { label: "Fixed, ayon sa inaprubahan", tone: "strong", detail: "mas mahal bawat task, pero iyan ang pitch namin" },
         ],
       },
     ],

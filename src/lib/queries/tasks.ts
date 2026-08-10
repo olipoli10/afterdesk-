@@ -25,6 +25,10 @@ export const clientTaskSelect = {
   description: true,
   quantity: true,
   status: true,
+  // Not a price and not an identity: it only says which circuit paid for this
+  // task, so the client screens can stop describing a standing task as one
+  // waiting for a quote it will never receive.
+  standingCapacityAccountId: true,
   currency: true,
   clientPriceCents: true,
   clientDeadlineUtc: true,
@@ -80,6 +84,14 @@ export async function taskForClient(
   clientId: string
 ): Promise<ClientTaskView | null> {
   // Ownership is part of the WHERE clause — no cross-client IDOR possible.
+  //
+  // Standing tasks are DELIBERATELY still readable here. Filtering them out
+  // looked like the tidy fix for the "We're pricing your task" lie and was a
+  // worse bug: this page is the only surface that renders delivery downloads,
+  // the revision and dispute controls, and it is where the "your reviewed
+  // delivery is ready" email points. Excluding them handed standing clients a
+  // 404 in place of the work they paid for. The lie is fixed where it was
+  // told — in the status mapping below — not by hiding the task.
   return prisma.task.findFirst({
     where: { id: taskId, clientId },
     select: clientTaskSelect,
@@ -648,7 +660,7 @@ export const CLIENT_TIMELINE_LABELS: Record<string, { label: string; tone: Timel
     label: "The work was routed to your assigned specialist",
     tone: "normal",
   },
-  va_released: { label: "Returned to the pool for a different specialist", tone: "flag" },
+  va_released: { label: "Reopened for a different specialist", tone: "flag" },
   // "Reopened", not "reassigned": reassignTask clears claimedById and sends
   // the task back to `open` (or to `submitted` for standing capacity). At the
   // instant this event is written nobody holds the work, and nobody is

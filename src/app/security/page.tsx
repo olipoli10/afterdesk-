@@ -44,6 +44,10 @@ export default async function SecurityPage({
         <p className="mt-2">{t.access.body}</p>
       </section>
       <section>
+        <h2 className="text-xl font-semibold">{t.automation.h2}</h2>
+        <p className="mt-2">{t.automation.body}</p>
+      </section>
+      <section>
         <h2 className="text-xl font-semibold">{t.files.h2}</h2>
         <p className="mt-2">{t.files.body1}</p>
         <p className="mt-2">{t.files.body2}</p>

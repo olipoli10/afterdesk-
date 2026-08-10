@@ -60,6 +60,13 @@ type SecurityDict = {
   title: string;
   intro: string;
   access: { h2: string; body: string };
+  /**
+   * Added when the execution engine went live. The page described a world
+   * where only people touched the work, and a reader could reasonably conclude
+   * that nothing left AfterDesk and Stripe. Automated steps now start on the
+   * payment webhook, before any human sees the task.
+   */
+  automation: { h2: string; body: string };
   files: { h2: string; body1: string; body2: string };
   payments: { h2: string; body: string };
   reporting: { h2: string; pre: string; post: string };
@@ -79,6 +86,10 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
       h2: "Access and identity",
       body: "Every protected read and mutation rechecks the signed-in user, role and resource ownership. Password accounts must verify their email. Workers lose task-file access as soon as a task leaves their hands or their approval is suspended.",
     },
+    automation: {
+      h2: "Automated processing",
+      body: "Some tasks run automated steps after payment, before a person is involved. Those steps are restricted to an allowlist held in our code: they can read, search and prepare, and none of them can send a message, sign in anywhere, buy anything or write into a client's system. Each research step is capped at a fixed number of searches and is blocked from a named list of data-broker and profile-scraping domains. Each contract carries its own spending ceiling, fixed when you approved the price and unchangeable afterwards, and the run stops and alerts an operator rather than exceed it. Whatever produced the work, the delivery is still reviewed before it is released to you.",
+    },
     files: {
       h2: "Files",
       body1: "Uploads are size-limited, signature-checked, hashed and unavailable until scanning passes. Office documents with macros, external relationships, comments, hidden sheets or embedded objects are refused. Common author metadata is removed from Office and image files. Production scanning fails closed when the malware service is unavailable.",
@@ -86,7 +97,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     },
     payments: {
       h2: "Payments and audit",
-      body: "Card details are collected by Stripe. A task cannot reach the worker pool until a signed webhook confirms the approved amount. State changes, payouts, refunds and administrative decisions are recorded with idempotency controls and database-enforced invariants.",
+      body: "Card details are collected by Stripe. No work on a task begins until the approved amount is confirmed as received, by a signed payment webhook or by an operator recording a transfer. State changes, payouts, refunds and administrative decisions are recorded with idempotency controls and database-enforced invariants.",
     },
     reporting: {
       h2: "Reporting",
@@ -107,6 +118,10 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
       h2: "Accès et identité",
       body: "Chaque lecture et modification protégée revérifie l'utilisateur connecté, son rôle et la propriété de la ressource. Les comptes par mot de passe doivent vérifier leur courriel. Un travailleur perd l'accès aux fichiers d'une tâche dès qu'elle quitte ses mains ou que son approbation est suspendue.",
     },
+    automation: {
+      h2: "Traitement automatisé",
+      body: "Certaines tâches exécutent des étapes automatisées après le paiement, avant toute intervention humaine. Ces étapes sont limitées à une liste blanche inscrite dans notre code : elles peuvent lire, chercher et préparer, et aucune ne peut envoyer un message, se connecter quelque part, acheter quoi que ce soit ni écrire dans le système d'un client. Chaque étape de recherche est plafonnée à un nombre fixe de requêtes et bloquée sur une liste nommée de domaines de courtiers de données et de profils aspirés. Chaque contrat porte son propre plafond de dépense, fixé au moment où vous avez approuvé le prix et immuable ensuite ; l'exécution s'arrête et alerte un opérateur plutôt que de le dépasser. Quelle que soit la méthode, la livraison est révisée avant de vous être remise.",
+    },
     files: {
       h2: "Fichiers",
       body1: "Les téléversements sont limités en taille, vérifiés par signature, hachés et indisponibles tant que l'analyse n'est pas passée. Les documents Office avec macros, relations externes, commentaires, feuilles cachées ou objets intégrés sont refusés. Les métadonnées d'auteur courantes sont retirées des fichiers Office et images. En production, l'analyse échoue de façon fermée si le service antivirus est indisponible.",
@@ -114,7 +129,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     },
     payments: {
       h2: "Paiements et audit",
-      body: "Les détails de carte sont recueillis par Stripe. Une tâche ne peut atteindre le bassin de travailleurs tant qu'un webhook signé n'a pas confirmé le montant approuvé. Les changements d'état, paiements, remboursements et décisions administratives sont enregistrés avec des contrôles d'idempotence et des invariants appliqués par la base de données.",
+      body: "Les détails de carte sont recueillis par Stripe. Aucun travail ne commence sur une tâche tant que le montant approuvé n'est pas confirmé comme reçu, par un webhook de paiement signé ou par un opérateur qui enregistre un virement. Les changements d'état, paiements, remboursements et décisions administratives sont enregistrés avec des contrôles d'idempotence et des invariants appliqués par la base de données.",
     },
     reporting: {
       h2: "Signalement",
@@ -135,6 +150,10 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
       h2: "Acceso e identidad",
       body: "Cada lectura y modificación protegida vuelve a verificar al usuario conectado, su rol y la propiedad del recurso. Las cuentas con contraseña deben verificar su correo. Un trabajador pierde el acceso a los archivos de una tarea en cuanto esta sale de sus manos o se suspende su aprobación.",
     },
+    automation: {
+      h2: "Procesamiento automatizado",
+      body: "Algunas tareas ejecutan pasos automatizados después del pago, antes de que intervenga una persona. Esos pasos se limitan a una lista blanca escrita en nuestro código: pueden leer, buscar y preparar, y ninguno puede enviar un mensaje, iniciar sesión en ningún sitio, comprar nada ni escribir en el sistema de un cliente. Cada paso de investigación tiene un tope fijo de búsquedas y está bloqueado para una lista nombrada de dominios de intermediarios de datos y de perfiles extraídos. Cada contrato lleva su propio límite de gasto, fijado cuando aprobaste el precio e inalterable después; la ejecución se detiene y avisa a un operador antes que superarlo. Sea cual sea el método, la entrega se revisa antes de llegar a ti.",
+    },
     files: {
       h2: "Archivos",
       body1: "Las subidas tienen límite de tamaño, se verifican por firma, se calculan por hash y no están disponibles hasta pasar el escaneo. Se rechazan documentos de Office con macros, relaciones externas, comentarios, hojas ocultas u objetos incrustados. Se elimina el metadato de autor común de archivos de Office e imágenes. En producción, el escaneo falla de forma cerrada cuando el servicio antivirus no está disponible.",
@@ -142,7 +161,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     },
     payments: {
       h2: "Pagos y auditoría",
-      body: "Stripe recopila los datos de la tarjeta. Una tarea no puede llegar al grupo de trabajadores hasta que un webhook firmado confirme el monto aprobado. Los cambios de estado, pagos, reembolsos y decisiones administrativas se registran con controles de idempotencia e invariantes aplicados por la base de datos.",
+      body: "Stripe recopila los datos de la tarjeta. Ningún trabajo comienza en una tarea hasta que el monto aprobado se confirma como recibido, por un webhook de pago firmado o por un operador que registra una transferencia. Los cambios de estado, pagos, reembolsos y decisiones administrativas se registran con controles de idempotencia e invariantes aplicados por la base de datos.",
     },
     reporting: {
       h2: "Reportes",
@@ -163,6 +182,10 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
       h2: "Access at identity",
       body: "Bawat protected na read at mutation ay muling sinusuri ang naka-sign-in na user, role, at ownership ng resource. Kailangang i-verify ng mga password account ang kanilang email. Nawawalan ng access ang isang worker sa mga file ng task sa sandaling umalis ito sa kanyang mga kamay o ma-suspend ang kanyang approval.",
     },
+    automation: {
+      h2: "Automated na pagproseso",
+      body: "May mga task na nagpapatakbo ng automated na hakbang pagkatapos ng bayad, bago pa may taong sumali. Nakakulong ang mga hakbang na ito sa allowlist na nasa aming code: nakakabasa, nakakahanap at nakakapaghanda sila, at wala ni isa sa kanila ang makakapagpadala ng mensahe, makaka-sign in kahit saan, makakabili ng kahit ano, o makakasulat sa sistema ng kliyente. May takdang bilang ng paghahanap ang bawat research step at naka-block ito sa isang nakalistang mga domain ng data broker at scraped na profile. May sariling spending ceiling ang bawat kontrata, itinakda noong inaprubahan mo ang presyo at hindi na mababago; humihinto ang run at nag-a-alerto sa operator sa halip na lumampas. Anuman ang gumawa, sinusuri pa rin ang delivery bago ito ipadala sa iyo.",
+    },
     files: {
       h2: "Mga File",
       body1: "May size limit ang mga upload, sini-signature-check, hina-hash, at hindi available hangga't hindi pumapasa sa scanning. Tinatanggihan ang mga Office document na may macro, external relationship, comment, hiding na sheet, o embedded object. Tinatanggal ang karaniwang author metadata sa Office at image file. Sa production, nabibigo nang closed ang scanning kapag hindi available ang malware service.",
@@ -170,7 +193,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     },
     payments: {
       h2: "Mga Bayad at Audit",
-      body: "Kinokolekta ng Stripe ang mga detalye ng card. Hindi makakarating sa worker pool ang isang task hangga't hindi kinukumpirma ng naka-sign na webhook ang inaprubahang halaga. Naitatala ang mga pagbabago sa status, payout, refund, at desisyon ng admin gamit ang idempotency control at mga invariant na ipinapatupad ng database.",
+      body: "Kinokolekta ng Stripe ang mga detalye ng card. Walang trabahong nagsisimula sa isang task hangga't hindi nakumpirmang natanggap ang inaprubahang halaga, sa pamamagitan ng signed payment webhook o ng operator na nagtala ng transfer. Naitatala ang mga pagbabago sa status, payout, refund, at desisyon ng admin gamit ang idempotency control at mga invariant na ipinapatupad ng database.",
     },
     reporting: {
       h2: "Pag-report",
@@ -199,28 +222,28 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacy",
       description:
-        "What AfterDesk collects, why, how long it is kept, and who can see it. Client and worker never learn each other’s identity. That separation is enforced in the data layer, not just the interface.",
+        "What AfterDesk collects, why, how long it is kept, and who can see it. The service is built so that client and worker do not learn each other's identity, and that separation is enforced in the data layer, not just the interface.",
     },
     title: "Privacy",
     intro:
-      "We collect the minimum information needed to quote, perform, review, pay for and support a task.",
+      "We aim to collect no more than is needed to quote, perform, review, pay for and support a task.",
     processed: {
       h2: "Information processed",
       body: "Account details, task briefs, uploaded files, delivery files, payment references, quality decisions, security logs and support communications. Worker applications also include experience, specialties, availability and an optional work-sample URL.",
     },
     used: {
       h2: "How it is used",
-      body: "To operate the task, prevent fraud, enforce the identity boundary, provide support, satisfy financial recordkeeping and improve aggregate service quality. Task intake text may be sent to the configured AI provider to structure a draft brief; do not submit secrets that are unnecessary for quoting.",
+      body: "To operate the task, prevent fraud, enforce the identity boundary, provide support, satisfy financial recordkeeping and improve aggregate service quality. Automated systems and AI providers are used across the task, not only at intake: to structure a draft brief, to classify and plan the work and prepare a price for an operator to approve, and — on some tasks after payment — to perform steps of the work itself, including automated web searches whose queries are derived from your brief. Human specialists carry out the work that automation cannot, and every delivery is reviewed by AfterDesk before it reaches you. Do not submit secrets that are unnecessary for the task.",
     },
     providers: {
       h2: "Service providers",
-      body: "The configured infrastructure, database and object-storage providers process service data. Stripe processes card payments, Resend delivers transactional email, and Anthropic processes AI-assisted intake when enabled. Each provider receives only the data needed for its function.",
+      body: "The configured infrastructure, database and object-storage providers process service data. Stripe processes card payments and Resend delivers transactional email. Anthropic processes the task text for intake, classification, planning, pricing preparation and, where a task is automated, execution steps; those steps can run web searches through that provider's own search tool. Voyage AI converts a task's title and description into a numeric representation used to find comparable past tasks when preparing a price. Google processes sign-in for accounts that choose it. A task's title travels to Stripe as the payment line item, and text a specialist types into our internal assistant is processed by Anthropic. Each provider receives only the data needed for its function.",
     },
     retention: {
       h2: "Retention and requests",
-      pre: "Task files are purged after the retention period shown in the task protocol, currently",
+      pre: "Uploaded and delivered task files are purged after the retention period shown in the task protocol, currently",
       unit: "days",
-      mid: "Financial, fraud-prevention and audit records may be retained longer where operational or legal obligations require it. For access, correction or deletion requests, email",
+      mid: "The task record itself — its brief, its history and the numeric representation used for price comparison — is kept beyond that period, and a past task's title and description can be shown to our AI provider as a pricing reference when a later task looks similar. Financial, fraud-prevention and audit records may be retained longer where operational or legal obligations require it. For access, correction or deletion requests, email",
       post: ".",
     },
   },
@@ -228,28 +251,28 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Confidentialité",
       description:
-        "Ce qu'AfterDesk recueille, pourquoi, combien de temps c'est conservé, et qui peut le voir. Client et travailleur ne connaissent jamais l'identité l'un de l'autre. Cette séparation est appliquée au niveau des données, pas seulement de l'interface.",
+        "Ce qu'AfterDesk recueille, pourquoi, combien de temps c'est conservé, et qui peut le voir. Le service est conçu pour que client et travailleur ne connaissent pas l'identité l'un de l'autre, et cette séparation est appliquée au niveau des données, pas seulement de l'interface.",
     },
     title: "Confidentialité",
     intro:
-      "Nous recueillons le minimum d'information nécessaire pour chiffrer, réaliser, réviser, payer et soutenir une tâche.",
+      "Nous visons à ne recueillir rien de plus que ce qui est nécessaire pour chiffrer, réaliser, réviser, payer et soutenir une tâche.",
     processed: {
       h2: "Information traitée",
       body: "Détails du compte, mandats de tâche, fichiers téléversés, fichiers de livraison, références de paiement, décisions de qualité, journaux de sécurité et communications de soutien. Les candidatures de travailleurs incluent aussi l'expérience, les spécialités, la disponibilité et une URL facultative d'échantillon de travail.",
     },
     used: {
       h2: "Comment c'est utilisé",
-      body: "Pour réaliser la tâche, prévenir la fraude, appliquer la frontière d'identité, fournir du soutien, satisfaire aux exigences comptables et améliorer la qualité globale du service. Le texte de prise en charge d'une tâche peut être transmis au fournisseur d'IA configuré pour structurer une ébauche de mandat; ne soumettez pas de secrets inutiles au chiffrage.",
+      body: "Pour réaliser la tâche, prévenir la fraude, appliquer la frontière d'identité, fournir du soutien, satisfaire aux obligations comptables et améliorer la qualité globale du service. Des systèmes automatisés et des fournisseurs d'IA interviennent tout au long de la tâche, pas seulement à la prise en charge : pour structurer un brouillon de brief, pour classer et planifier le travail et préparer un prix qu'un opérateur approuve, et — sur certaines tâches, après paiement — pour exécuter des étapes du travail, y compris des recherches web automatisées dont les requêtes dérivent de votre brief. Des spécialistes humains réalisent ce que l'automatisation ne peut pas faire, et chaque livraison est révisée par AfterDesk avant de vous parvenir. N'envoyez pas de secrets inutiles à la tâche.",
     },
     providers: {
       h2: "Fournisseurs de services",
-      body: "Les fournisseurs configurés d'infrastructure, de base de données et de stockage d'objets traitent les données du service. Stripe traite les paiements par carte, Resend livre les courriels transactionnels, et Anthropic traite la prise en charge assistée par IA quand elle est activée. Chaque fournisseur ne reçoit que les données nécessaires à sa fonction.",
+      body: "Les fournisseurs configurés d'infrastructure, de base de données et de stockage d'objets traitent les données du service. Stripe traite les paiements par carte et Resend achemine les courriels transactionnels. Anthropic traite le texte de la tâche pour la prise en charge, la classification, la planification, la préparation du prix et, lorsqu'une tâche est automatisée, des étapes d'exécution ; ces étapes peuvent lancer des recherches web via l'outil de recherche de ce même fournisseur. Voyage AI convertit le titre et la description d'une tâche en représentation numérique servant à retrouver des tâches comparables lors de la préparation d'un prix. Google traite la connexion des comptes qui la choisissent. Le titre d'une tâche est transmis à Stripe comme libellé de paiement, et le texte qu'un spécialiste saisit dans notre assistant interne est traité par Anthropic. Chaque fournisseur ne reçoit que les données nécessaires à sa fonction.",
     },
     retention: {
       h2: "Conservation et demandes",
-      pre: "Les fichiers d'une tâche sont purgés après la période de conservation indiquée dans le protocole, actuellement de",
+      pre: "Les fichiers téléversés et livrés sont purgés après la période de conservation indiquée dans le protocole, actuellement de",
       unit: "jours",
-      mid: "Les dossiers financiers, de prévention de la fraude et d'audit peuvent être conservés plus longtemps lorsque des obligations opérationnelles ou légales l'exigent. Pour une demande d'accès, de correction ou de suppression, écrivez à",
+      mid: "Le dossier de la tâche lui-même — son brief, son historique et la représentation numérique servant à la comparaison de prix — est conservé au-delà de cette période, et le titre et la description d'une tâche passée peuvent être montrés à notre fournisseur d'IA comme référence de prix lorsqu'une tâche ultérieure lui ressemble. Les dossiers financiers, de prévention de la fraude et d'audit peuvent être conservés plus longtemps lorsque des obligations opérationnelles ou légales l'exigent. Pour une demande d'accès, de correction ou de suppression, écrivez à",
       post: ".",
     },
   },
@@ -257,28 +280,28 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacidad",
       description:
-        "Qué recopila AfterDesk, por qué, cuánto tiempo se conserva y quién puede verlo. Cliente y trabajador nunca conocen la identidad del otro. Esa separación se aplica en la capa de datos, no solo en la interfaz.",
+        "Qué recopila AfterDesk, por qué, cuánto tiempo se conserva y quién puede verlo. El servicio está diseñado para que cliente y trabajador no conozcan la identidad del otro, y esa separación se aplica en la capa de datos, no solo en la interfaz.",
     },
     title: "Privacidad",
     intro:
-      "Recopilamos la información mínima necesaria para cotizar, realizar, revisar, pagar y dar soporte a una tarea.",
+      "Buscamos no recopilar más de lo necesario para cotizar, realizar, revisar, pagar y dar soporte a una tarea.",
     processed: {
       h2: "Información procesada",
       body: "Datos de la cuenta, encargos de tarea, archivos subidos, archivos de entrega, referencias de pago, decisiones de calidad, registros de seguridad y comunicaciones de soporte. Las solicitudes de trabajador también incluyen experiencia, especialidades, disponibilidad y una URL opcional de muestra de trabajo.",
     },
     used: {
       h2: "Cómo se usa",
-      body: "Para realizar la tarea, prevenir fraude, aplicar el límite de identidad, dar soporte, cumplir con requisitos contables y mejorar la calidad agregada del servicio. El texto de admisión de una tarea puede enviarse al proveedor de IA configurado para estructurar un borrador del encargo; no envíes secretos innecesarios para cotizar.",
+      body: "Para realizar la tarea, prevenir fraude, aplicar el límite de identidad, dar soporte, cumplir con registros financieros y mejorar la calidad general del servicio. Se usan sistemas automatizados y proveedores de IA a lo largo de la tarea, no solo en la recepción: para estructurar un borrador del brief, para clasificar y planificar el trabajo y preparar un precio que un operador aprueba, y — en algunas tareas, tras el pago — para ejecutar pasos del trabajo, incluidas búsquedas web automatizadas cuyas consultas derivan de tu brief. Los especialistas humanos hacen lo que la automatización no puede, y cada entrega es revisada por AfterDesk antes de llegar a ti. No envíes secretos innecesarios para la tarea.",
     },
     providers: {
       h2: "Proveedores de servicio",
-      body: "Los proveedores configurados de infraestructura, base de datos y almacenamiento de objetos procesan los datos del servicio. Stripe procesa los pagos con tarjeta, Resend entrega el correo transaccional, y Anthropic procesa la admisión asistida por IA cuando está habilitada. Cada proveedor recibe solo los datos que necesita para su función.",
+      body: "Los proveedores configurados de infraestructura, base de datos y almacenamiento de objetos procesan los datos del servicio. Stripe procesa los pagos con tarjeta y Resend entrega el correo transaccional. Anthropic procesa el texto de la tarea para recepción, clasificación, planificación, preparación del precio y, cuando una tarea se automatiza, pasos de ejecución; esos pasos pueden lanzar búsquedas web mediante la herramienta de búsqueda del propio proveedor. Voyage AI convierte el título y la descripción de una tarea en una representación numérica que sirve para encontrar tareas comparables al preparar un precio. Google procesa el inicio de sesión de las cuentas que lo eligen. El título de una tarea viaja a Stripe como concepto del pago, y el texto que un especialista escribe en nuestro asistente interno lo procesa Anthropic. Cada proveedor recibe solo los datos necesarios para su función.",
     },
     retention: {
       h2: "Conservación y solicitudes",
-      pre: "Los archivos de una tarea se purgan después del período de conservación indicado en el protocolo, actualmente de",
+      pre: "Los archivos subidos y entregados se purgan después del período de conservación indicado en el protocolo, actualmente de",
       unit: "días",
-      mid: "Los registros financieros, de prevención de fraude y de auditoría pueden conservarse más tiempo cuando lo exijan obligaciones operativas o legales. Para solicitudes de acceso, corrección o eliminación, escribe a",
+      mid: "El registro de la tarea en sí — su brief, su historial y la representación numérica usada para comparar precios — se conserva más allá de ese período, y el título y la descripción de una tarea pasada pueden mostrarse a nuestro proveedor de IA como referencia de precio cuando una tarea posterior se le parece. Los registros financieros, de prevención de fraude y de auditoría pueden conservarse más tiempo cuando lo exijan obligaciones operativas o legales. Para solicitudes de acceso, corrección o eliminación, escribe a",
       post: ".",
     },
   },
@@ -286,28 +309,28 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacy",
       description:
-        "Ano ang kinokolekta ng AfterDesk, bakit, gaano katagal itinatago, at sino ang makakakita nito. Hindi kailanman malalaman ng client at worker ang identity ng isa't isa. Ipinapatupad ang paghihiwalay na iyon sa data layer, hindi lang sa interface.",
+        "Ano ang kinokolekta ng AfterDesk, bakit, gaano katagal itinatago, at sino ang makakakita nito. Dinisenyo ang serbisyo upang hindi malaman ng client at worker ang identity ng isa't isa, at ipinapatupad ang paghihiwalay na iyon sa data layer, hindi lang sa interface.",
     },
     title: "Privacy",
     intro:
-      "Kinokolekta lang namin ang minimum na impormasyong kailangan para mag-quote, gumawa, mag-review, magbayad, at mag-suporta sa isang task.",
+      "Layunin naming huwag mangolekta ng higit pa sa kailangan para mag-quote, gumawa, mag-review, magbayad, at mag-suporta sa isang task.",
     processed: {
       h2: "Impormasyong pinoproseso",
       body: "Mga detalye ng account, brief ng task, mga na-upload na file, mga file ng delivery, reference ng bayad, desisyon sa kalidad, security log, at komunikasyon sa suporta. Kasama rin sa aplikasyon ng worker ang karanasan, mga specialty, availability, at opsyonal na URL ng work sample.",
     },
     used: {
       h2: "Paano ito ginagamit",
-      body: "Para paganahin ang task, pigilan ang fraud, ipatupad ang identity boundary, magbigay ng suporta, tuparin ang financial recordkeeping, at pahusayin ang pangkalahatang kalidad ng serbisyo. Maaaring maipadala ang teksto ng intake ng task sa naka-configure na AI provider para bumuo ng draft brief; huwag magsumite ng mga sikreto na hindi kailangan para sa pag-quote.",
+      body: "Para paganahin ang task, pigilan ang fraud, ipatupad ang identity boundary, magbigay ng suporta, tuparin ang financial recordkeeping at pahusayin ang pangkalahatang kalidad ng serbisyo. Gumagamit ng automated systems at AI providers sa buong task, hindi lang sa intake: para bumuo ng draft brief, para i-classify at planuhin ang trabaho at maghanda ng presyong inaaprubahan ng operator, at — sa ilang task, pagkatapos ng bayad — para magsagawa ng mga hakbang ng trabaho, kasama ang automated web searches na ang mga query ay galing sa iyong brief. Ginagawa ng human specialists ang hindi kayang i-automate, at sinusuri ng AfterDesk ang bawat delivery bago ito makarating sa iyo. Huwag magpadala ng sikreto na hindi kailangan ng task.",
     },
     providers: {
       h2: "Mga Service Provider",
-      body: "Pinoproseso ng naka-configure na infrastructure, database, at object-storage provider ang data ng serbisyo. Pinoproseso ng Stripe ang mga bayad sa card, inihahatid ng Resend ang transactional email, at pinoproseso ng Anthropic ang AI-assisted intake kapag naka-enable ito. Bawat provider, tanging ang data lang na kailangan para sa gamit nito ang natatanggap.",
+      body: "Pinoproseso ng naka-configure na infrastructure, database, at object-storage provider ang data ng serbisyo. Pinoproseso ng Stripe ang card payments at ng Resend ang transactional email. Pinoproseso ng Anthropic ang teksto ng task para sa intake, classification, planning, paghahanda ng presyo, at — kapag automated ang task — mga hakbang ng execution; maaaring magpatakbo ang mga hakbang na ito ng web search sa pamamagitan ng sariling search tool ng provider na iyon. Kino-convert ng Voyage AI ang pamagat at deskripsyon ng task sa numeric na representasyon na ginagamit para maghanap ng katulad na nakaraang task kapag naghahanda ng presyo. Pinoproseso ng Google ang sign-in para sa mga account na pipili nito. Napupunta sa Stripe ang pamagat ng task bilang payment line item, at pinoproseso ng Anthropic ang tekstong ini-type ng specialist sa aming internal assistant. Tumatanggap lamang ang bawat provider ng datos na kailangan ng kanyang gawain.",
     },
     retention: {
       h2: "Retention at mga Kahilingan",
-      pre: "Nabubura ang mga file ng task pagkatapos ng retention period na nakasaad sa protocol, kasalukuyang",
+      pre: "Nabubura ang mga na-upload at naihatid na file ng task pagkatapos ng retention period na nakasaad sa protocol, kasalukuyang",
       unit: "araw",
-      mid: "Maaaring itago nang mas matagal ang mga financial, fraud-prevention, at audit record kung kinakailangan ito ng operational o legal na obligasyon. Para sa mga kahilingan na access, correction, o deletion, mag-email sa",
+      mid: "Ang record mismo ng task — ang brief, ang kasaysayan nito, at ang numeric na representasyong ginagamit sa paghahambing ng presyo — ay itinatago lampas sa panahong iyon, at maaaring ipakita sa aming AI provider ang pamagat at deskripsyon ng nakaraang task bilang sanggunian sa presyo kapag may kahawig itong bagong task. Maaaring itago nang mas matagal ang mga financial, fraud-prevention, at audit record kung kinakailangan ito ng operational o legal na obligasyon. Para sa mga kahilingan na access, correction, o deletion, mag-email sa",
       post: ".",
     },
   },
@@ -344,15 +367,15 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     review: {
       h2: "Quality review and recourse",
-      body: "The operator reviews each delivery against the written brief and category standard. Clients may use the task page to request the included revision rounds or open a dispute during the displayed review window. Disputes are decided against the written standard, not an undisclosed preference.",
+      body: "The operator reviews each delivery against the written brief and category standard. Review means a check against that standard; it is not a warranty that a delivery is free of every error or complete beyond what the standard requires. Clients may use the task page to request the included revision rounds or open a dispute during the displayed review window. Disputes are decided against the written standard, not an undisclosed preference, and the recourse is the revision or refund described in these terms.",
     },
     payments: {
       h2: "Payments and refunds",
-      body: "Clients purchase a deliverable from AfterDesk; the worker is an independent subcontractor paid by AfterDesk. An upheld dispute queues a refund to the original payment method. Fraudulent chargebacks, unlawful tasks and material misrepresentation may result in suspension.",
+      body: "Clients purchase a deliverable from AfterDesk, not hours of work or access to an individual; anyone performing part of it is an independent subcontractor engaged and paid by AfterDesk. An upheld dispute queues a refund to the original payment method. Fraudulent chargebacks, unlawful tasks and material misrepresentation may result in suspension.",
     },
     operator: {
       h2: "How AfterDesk operates",
-      body: "Pricing, quality review, dispute and payout decisions are owned by an authorized AfterDesk operator through the recorded task workflow. Internal tools may assist the process, but responsibility for those decisions remains with AfterDesk.",
+      body: "AfterDesk chooses and manages how an approved scope is carried out, and may use software, automation, AI providers and independent specialists to do it. Responsibility for the result stays with AfterDesk whatever the method. Pricing, quality review, dispute and payout decisions are owned by an authorized AfterDesk operator through the recorded task workflow.",
     },
     rights: {
       h2: "Confidentiality and rights",
@@ -374,15 +397,15 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     review: {
       h2: "Révision qualité et recours",
-      body: "L'opérateur vérifie chaque livraison contre le mandat écrit et le standard de la catégorie. Les clients peuvent utiliser la page de la tâche pour demander les rondes de révision incluses ou ouvrir un litige pendant la fenêtre de révision affichée. Les litiges sont tranchés contre le standard écrit, pas une préférence non divulguée.",
+      body: "L'opérateur vérifie chaque livraison contre le mandat écrit et le standard de la catégorie. La révision est un contrôle contre ce standard ; ce n'est pas une garantie qu'une livraison soit exempte de toute erreur ou complète au-delà de ce que le standard exige. Le client peut, depuis la page de la tâche, demander les rondes de correction incluses ou ouvrir un litige pendant la fenêtre affichée. Les litiges sont tranchés contre le standard écrit, pas contre une préférence non divulguée, et le recours est la correction ou le remboursement décrits aux présentes.",
     },
     payments: {
       h2: "Paiements et remboursements",
-      body: "Les clients achètent un livrable d'AfterDesk; le travailleur est un sous-traitant indépendant payé par AfterDesk. Un litige maintenu met en file un remboursement vers le moyen de paiement d'origine. Des rétrofacturations frauduleuses, des tâches illégales et une fausse représentation matérielle peuvent entraîner une suspension.",
+      body: "Les clients achètent un livrable d'AfterDesk, pas des heures de travail ni l'accès à une personne; quiconque en réalise une partie est un sous-traitant indépendant engagé et payé par AfterDesk. Un litige maintenu met en file un remboursement vers le moyen de paiement d'origine. Des rétrofacturations frauduleuses, des tâches illégales et une fausse représentation matérielle peuvent entraîner une suspension.",
     },
     operator: {
       h2: "Comment AfterDesk fonctionne",
-      body: "Les décisions de prix, de contrôle qualité, de litige et de paiement relèvent d'un opérateur AfterDesk autorisé dans le flux de tâche enregistré. Des outils internes peuvent aider, mais la responsabilité reste chez AfterDesk.",
+      body: "AfterDesk choisit et gère la façon dont un mandat approuvé est réalisé, et peut recourir à des logiciels, à l'automatisation, à des fournisseurs d'IA et à des spécialistes indépendants pour y arriver. La responsabilité du résultat demeure celle d'AfterDesk, quelle que soit la méthode. Les décisions de prix, de contrôle qualité, de litige et de paiement relèvent d'un opérateur AfterDesk autorisé, via le flux de tâche enregistré.",
     },
     rights: {
       h2: "Confidentialité et droits",
@@ -404,15 +427,15 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     review: {
       h2: "Revisión de calidad y recurso",
-      body: "El operador revisa cada entrega contra el encargo escrito y el estándar de la categoría. Los clientes pueden usar la página de la tarea para solicitar las rondas de revisión incluidas o abrir una disputa durante la ventana de revisión mostrada. Las disputas se deciden contra el estándar escrito, no una preferencia no revelada.",
+      body: "El operador revisa cada entrega contra el encargo escrito y el estándar de la categoría. La revisión es un control contra ese estándar; no es una garantía de que la entrega esté libre de todo error ni de que sea completa más allá de lo que el estándar exige. El cliente puede, desde la página de la tarea, pedir las rondas de corrección incluidas o abrir una disputa durante la ventana mostrada. Las disputas se deciden contra el estándar escrito, no contra una preferencia no divulgada, y el recurso es la corrección o el reembolso descritos aquí.",
     },
     payments: {
       h2: "Pagos y reembolsos",
-      body: "Los clientes compran un entregable a AfterDesk; el trabajador es un subcontratista independiente pagado por AfterDesk. Una disputa confirmada pone en cola un reembolso al método de pago original. Contracargos fraudulentos, tareas ilegales y tergiversación material pueden resultar en suspensión.",
+      body: "Los clientes compran un entregable a AfterDesk, no horas de trabajo ni acceso a una persona; quien realice parte de él es un subcontratista independiente contratado y pagado por AfterDesk. Una disputa confirmada pone en cola un reembolso al método de pago original. Contracargos fraudulentos, tareas ilegales y tergiversación material pueden resultar en suspensión.",
     },
     operator: {
       h2: "Cómo opera AfterDesk",
-      body: "Las decisiones de precio, revisión de calidad, disputas y pagos pertenecen a un operador autorizado de AfterDesk dentro del flujo registrado. Las herramientas internas pueden ayudar, pero la responsabilidad permanece en AfterDesk.",
+      body: "AfterDesk elige y gestiona cómo se lleva a cabo un encargo aprobado, y puede usar software, automatización, proveedores de IA y especialistas independientes para hacerlo. La responsabilidad del resultado sigue siendo de AfterDesk, sea cual sea el método. Las decisiones de precio, revisión de calidad, disputas y pagos pertenecen a un operador autorizado de AfterDesk a través del flujo de tarea registrado.",
     },
     rights: {
       h2: "Confidencialidad y derechos",
@@ -434,15 +457,15 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     review: {
       h2: "Quality Review at Recourse",
-      body: "Sinusuri ng operator ang bawat delivery laban sa nakasulat na brief at pamantayan ng category. Puwedeng gamitin ng mga client ang task page para hilingin ang kasamang revision round o mag-open ng dispute habang bukas ang ipinapakitang review window. Napagpapasyahan ang mga dispute laban sa nakasulat na pamantayan, hindi sa hindi ipinaalam na kagustuhan.",
+      body: "Sinusuri ng operator ang bawat delivery laban sa nakasulat na brief at pamantayan ng kategorya. Ang review ay pagsusuri laban sa pamantayang iyon; hindi ito garantiya na walang anumang mali ang delivery o kumpleto ito lampas sa hinihingi ng pamantayan. Maaaring gamitin ng kliyente ang task page para hilingin ang kasamang revision rounds o magbukas ng dispute sa loob ng ipinapakitang window. Ang mga dispute ay pinapasyahan laban sa nakasulat na pamantayan, hindi sa hindi ipinaalam na kagustuhan, at ang recourse ay ang revision o refund na nakasaad dito.",
     },
     payments: {
       h2: "Mga Bayad at Refund",
-      body: "Bumibili ang mga client ng deliverable mula sa AfterDesk; ang worker ay isang independiyenteng subcontractor na binabayaran ng AfterDesk. Ang na-uphold na dispute ay nagpapapila ng refund papunta sa orihinal na paraan ng pagbayad. Ang mapanlinlang na chargeback, ilegal na task, at material na maling representasyon ay maaaring magresulta sa suspensyon.",
+      body: "Bumibili ang mga client ng deliverable mula sa AfterDesk, hindi oras ng trabaho o access sa isang tao; sinumang gumagawa ng bahagi nito ay independiyenteng subcontractor na kinuha at binabayaran ng AfterDesk. Ang na-uphold na dispute ay nagpapapila ng refund papunta sa orihinal na paraan ng pagbayad. Ang mapanlinlang na chargeback, ilegal na task, at material na maling representasyon ay maaaring magresulta sa suspensyon.",
     },
     operator: {
       h2: "Paano Nag-ooperate ang AfterDesk",
-      body: "Ang pricing, quality review, dispute, at payout decisions ay pag-aari ng authorized AfterDesk operator sa recorded task workflow. Maaaring tumulong ang internal tools, pero nananatili sa AfterDesk ang responsibilidad.",
+      body: "Ang AfterDesk ang pumipili at namamahala kung paano isasagawa ang inaprubahang scope, at maaari nitong gamitin ang software, automation, AI providers at independent na specialist para gawin ito. Nananatili sa AfterDesk ang pananagutan sa resulta anuman ang paraan. Ang pricing, quality review, dispute, at payout decisions ay pag-aari ng authorized na AfterDesk operator sa pamamagitan ng naitalang task workflow.",
     },
     rights: {
       h2: "Confidentiality at mga Karapatan",
@@ -482,12 +505,12 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
         "High-stakes legal, medical, financial or employment decisions.",
         "Payment-card data, authentication secrets or unnecessary government identifiers.",
         "Copyright infringement, doxxing, surveillance or re-identification of people.",
-        "Tasks requiring a worker to contact a client outside the operator channel.",
+        "Work that would require reaching you, or anyone else, outside the operator channel.",
       ],
     },
     sensitive: {
       h2: "Sensitive material",
-      body: "Remove personal and confidential information not needed for the result. If a task cannot be completed without unusually sensitive data, contact support before uploading it.",
+      body: "Remove personal and confidential information not needed for the result. If a task cannot be completed without unusually sensitive data, contact support before uploading it. We only accept research about people that seeks business contact details already published, and we cite the source each value came from. We refuse work that profiles private individuals, and our automated research is blocked from a named list of data-broker and profile-scraping domains.",
     },
     enforcement: {
       h2: "Enforcement",
@@ -511,12 +534,12 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
         "Décisions à fort enjeu en matière légale, médicale, financière ou d'emploi.",
         "Données de carte de paiement, secrets d'authentification ou identifiants gouvernementaux non nécessaires.",
         "Violation de droit d'auteur, doxxing, surveillance ou réidentification de personnes.",
-        "Tâches exigeant qu'un travailleur contacte un client en dehors du canal de l'opérateur.",
+        "Travail qui exigerait de vous joindre, ou de joindre quiconque, en dehors du canal de l'opérateur.",
       ],
     },
     sensitive: {
       h2: "Matériel sensible",
-      body: "Retirez l'information personnelle et confidentielle qui n'est pas nécessaire au résultat. Si une tâche ne peut être complétée sans des données inhabituellement sensibles, contactez le soutien avant de les téléverser.",
+      body: "Retirez l'information personnelle et confidentielle qui n'est pas nécessaire au résultat. Si une tâche ne peut être complétée sans des données inhabituellement sensibles, contactez le soutien avant de les téléverser. Nous n'acceptons de recherche sur des personnes que pour des coordonnées professionnelles déjà publiées, et nous citons la source de chaque valeur. Nous refusons le travail qui profile des particuliers, et notre recherche automatisée est bloquée sur une liste nommée de domaines de courtiers de données et de profils aspirés.",
     },
     enforcement: {
       h2: "Application",
@@ -540,12 +563,12 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
         "Decisiones legales, médicas, financieras o laborales de alto riesgo.",
         "Datos de tarjeta de pago, secretos de autenticación o identificadores gubernamentales innecesarios.",
         "Infracción de derechos de autor, doxxing, vigilancia o reidentificación de personas.",
-        "Tareas que requieran que un trabajador contacte a un cliente fuera del canal del operador.",
+        "Trabajo que exigiría contactarte, o contactar a cualquiera, fuera del canal del operador.",
       ],
     },
     sensitive: {
       h2: "Material sensible",
-      body: "Elimina la información personal y confidencial que no se necesite para el resultado. Si una tarea no puede completarse sin datos inusualmente sensibles, contacta al soporte antes de subirlos.",
+      body: "Elimina la información personal y confidencial que no se necesite para el resultado. Si una tarea no puede completarse sin datos inusualmente sensibles, contacta al soporte antes de subirlos. Solo aceptamos investigación sobre personas que busque datos de contacto profesional ya publicados, y citamos la fuente de cada valor. Rechazamos el trabajo que perfila a particulares, y nuestra investigación automatizada está bloqueada para una lista nombrada de dominios de intermediarios de datos y de perfiles extraídos.",
     },
     enforcement: {
       h2: "Aplicación",
@@ -569,12 +592,12 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
         "High-stakes na legal, medikal, pinansyal, o employment na desisyon.",
         "Payment-card na data, authentication secret, o hindi kailangang government identifier.",
         "Paglabag sa copyright, doxxing, surveillance, o re-identification ng mga tao.",
-        "Mga task na nangangailangan na direktang makipag-ugnayan ang worker sa client sa labas ng channel ng operator.",
+        "Trabahong mangangailangang makaabot sa iyo, o kaninuman, sa labas ng channel ng operator.",
       ],
     },
     sensitive: {
       h2: "Sensitibong Materyal",
-      body: "Tanggalin ang personal at kumpidensyal na impormasyon na hindi kailangan para sa resulta. Kung hindi matatapos ang isang task nang walang di-pangkaraniwang sensitibong data, makipag-ugnayan sa suporta bago ito i-upload.",
+      body: "Tanggalin ang personal at kumpidensyal na impormasyon na hindi kailangan para sa resulta. Kung hindi matatapos ang isang task nang walang di-pangkaraniwang sensitibong data, makipag-ugnayan sa suporta bago ito i-upload. Tinatanggap lang namin ang pagsasaliksik tungkol sa mga tao na naghahanap ng business contact details na nakalathala na, at binabanggit namin ang pinagkunan ng bawat halaga. Tinatanggihan namin ang trabahong nagpo-profile ng pribadong indibidwal, at naka-block ang aming automated research sa nakalistang mga domain ng data broker at profile-scraping.",
     },
     enforcement: {
       h2: "Pagpapatupad",

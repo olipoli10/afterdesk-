@@ -235,8 +235,21 @@ const en: Dict = {
     ],
   },
   closing: {
-    line1: "America goes to sleep.",
-    line2: "You wake up to paid work.",
+    /**
+     * THE CLOSING LINE IS NO LONGER ABOUT TIMEZONES.
+     *
+     * It read "America goes to sleep. / You wake up to paid work." — the
+     * labour-arbitrage pitch, in the four languages, and burned into the
+     * shared OG image of this page. It sold the gap between two economies
+     * rather than anything AfterDesk actually does differently.
+     *
+     * What replaces it is the real difference and it is verifiable in the
+     * product: the amount is fixed and shown before the decision, and it
+     * cannot move afterwards (frozen at claim by a database trigger). The
+     * mechanism is untouched — first come, first served, exactly as before.
+     */
+    line1: "No bidding. No proposals.",
+    line2: "The payout is printed before you claim.",
     cta: "Apply now",
     funnel:
       "Account → short application → the operator's review → the pool. Not everyone gets in. That's the point.",
@@ -347,8 +360,8 @@ const tl: Dict = {
     ],
   },
   closing: {
-    line1: "Natutulog na ang Amerika.",
-    line2: "Gumigising ka sa may bayad na trabaho.",
+    line1: "Walang bidding. Walang proposal.",
+    line2: "Nakalimbag ang bayad bago mo i-claim.",
     cta: "Mag-apply na",
     funnel:
       "Account → maikling application → review ng operator → ang pool. Hindi lahat nakakapasok. Iyon mismo ang punto.",
@@ -465,8 +478,8 @@ const fr: Dict = {
     ],
   },
   closing: {
-    line1: "L'Amérique s'endort.",
-    line2: "Vous vous réveillez avec du travail payé.",
+    line1: "Aucune enchère, aucune proposition.",
+    line2: "Le montant est affiché avant que vous preniez la tâche.",
     cta: "Postuler maintenant",
     funnel:
       "Compte → courte candidature → la révision de l'opérateur → le bassin. Tout le monde n'entre pas. C'est voulu.",
@@ -578,8 +591,8 @@ const es: Dict = {
     ],
   },
   closing: {
-    line1: "América se va a dormir.",
-    line2: "Tú despiertas con trabajo pagado.",
+    line1: "Sin subastas ni propuestas.",
+    line2: "El pago está impreso antes de que la tomes.",
     cta: "Postula ahora",
     funnel:
       "Cuenta → postulación corta → la revisión del operador → el grupo. No todos entran. Ese es el punto.",

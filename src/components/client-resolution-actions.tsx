@@ -84,7 +84,7 @@ export function ClientResolutionActions({
         />
       </Field>
       <p className="text-xs leading-relaxed text-[#5B6069]">
-        Your note goes to the operator, not directly to the worker. Remove personal contact
+        Your note goes to the operator, not directly to the specialist. Remove personal contact
         details; the operator writes an identity-safe instruction if rework is needed.
       </p>
       {error ? <p role="alert" className="text-sm text-[#8C2F23]">{error}</p> : null}

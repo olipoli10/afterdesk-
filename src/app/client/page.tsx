@@ -28,6 +28,7 @@ const SECTION_TITLES: Record<ClientStatus, string> = {
   quote_ready: "Action needed — your price is ready",
   awaiting_payment: "Awaiting your payment",
   being_priced: "Being priced",
+  awaiting_routing: "Waiting to be scheduled",
   in_progress: "In progress",
   revision_in_progress: "Revision in progress",
   under_review: "Under review",
@@ -40,7 +41,7 @@ const SECTION_TITLES: Record<ClientStatus, string> = {
 const SECTION_ORDER = Object.keys(SECTION_TITLES) as ClientStatus[];
 
 function TaskRow({ task }: { task: ClientTaskView }) {
-  const cs = clientStatusOf(task.status);
+  const cs = clientStatusOf(task.status, task.standingCapacityAccountId !== null);
   return (
     <Link
       href={`/client/tasks/${task.id}`}
@@ -89,7 +90,7 @@ export default async function ClientDashboard() {
 
   const grouped = new Map<ClientStatus, ClientTaskView[]>();
   for (const t of tasks) {
-    const cs = clientStatusOf(t.status);
+    const cs = clientStatusOf(t.status, t.standingCapacityAccountId !== null);
     grouped.set(cs, [...(grouped.get(cs) ?? []), t]);
   }
 

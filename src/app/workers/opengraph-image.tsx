@@ -1,10 +1,23 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "AfterDesk — America goes to sleep. You wake up to paid work.";
+export const alt = "AfterDesk — The payout is printed before you claim.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/** The paper card — the worker side of the seam. */
+/**
+ * The paper card — the specialist side of the seam.
+ *
+ * This image used to read "America goes to sleep. / You wake up to paid work."
+ * It is the single most-travelled surface on the site: every share of
+ * /workers, on any platform, rendered that sentence, and it defined AfterDesk
+ * by a labour-arbitrage story — one timezone asleep, another working cheaper.
+ * A client who followed a shared link met that framing before anything else.
+ *
+ * The replacement keeps the real differentiator, which is not geography: the
+ * amount is fixed and visible BEFORE the decision to take the work. That is
+ * true of the product as built (the payout is frozen at claim by a database
+ * trigger) and it is the thing specialists actually come for.
+ */
 export default function OgImage() {
   return new ImageResponse(
     (
@@ -32,15 +45,15 @@ export default function OgImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 72, color: "#8A9099", letterSpacing: "-0.02em" }}>
-            America goes to sleep.
+            No bidding.
           </div>
           <div style={{ fontSize: 72, color: "#14161A", letterSpacing: "-0.02em" }}>
-            You wake up to paid work.
+            The payout is printed before you claim.
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontSize: 22, color: "#5B6069" }}>
-            No proposals. No bidding. The payout is printed on every task.
+            Scope, deadline and payout, visible before you take the work.
           </div>
           <div
             style={{

@@ -72,7 +72,7 @@ export default async function ClientTaskPage({
   const task = await taskForClient(id, user.id);
   if (!task) notFound();
 
-  const cs = clientStatusOf(task.status);
+  const cs = clientStatusOf(task.status, task.standingCapacityAccountId !== null);
   const settings = await getSettings();
   // Ownership is re-checked inside the query rather than trusted from the read
   // above, so this stays safe if it is ever reused on another page.
@@ -101,6 +101,24 @@ export default async function ClientTaskPage({
               <LocalTime iso={computeQuotedBy(new Date(), settings)} />. Prices are prepared
               personally during our review hours — you&apos;ll see the number here and can
               approve or decline it.
+            </p>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {/*
+        A standing task is never quoted: its cost was minutes already drawn
+        from the weekly block at submission, and approvePricing refuses to
+        price one. It used to land in the card above and promise a fixed price
+        that was never coming.
+      */}
+      {cs === "awaiting_routing" ? (
+        <Card className="mb-4">
+          <CardBody>
+            <p className="text-sm font-medium text-[#14161A]">This is queued on your weekly block.</p>
+            <p className="mt-1 text-sm text-[#5B6069]">
+              It draws on the capacity you already hold, so there is no separate price to
+              approve. We will schedule it and you will see it move here.
             </p>
           </CardBody>
         </Card>
@@ -374,7 +392,7 @@ export default async function ClientTaskPage({
             </ul>
             <p className="mt-3 border-t border-[#14161A]/[0.06] pt-3 font-mono text-xs text-[#5B6069]">
               Something not right? Use the review controls below. Your note goes to the
-              operator and never directly to the worker.
+              operator and never directly to the specialist.
             </p>
             {task.status === "completed" &&
             task.revisionWindowEndsAt &&

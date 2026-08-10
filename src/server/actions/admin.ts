@@ -75,7 +75,9 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
 
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: { clientDeadlineUtc: true, standingCapacityAccountId: true },
+    // clientId is here for the "your price is ready" notification below, which
+    // is the only moment the client is told a quote exists.
+    select: { clientDeadlineUtc: true, standingCapacityAccountId: true, clientId: true },
   });
   if (!task) return { ok: false, error: "Task not found." };
 
@@ -136,7 +138,9 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
     : null;
 
   try {
+    await prisma.$transaction(async (tx) => {
     await transitionTask({
+      tx,
       taskId,
       from: ["submitted", "pricing_review"],
       to: "quoted",
@@ -161,6 +165,36 @@ export async function approvePricing(input: unknown): Promise<ApproveResult> {
       // values live on the Task row behind the role-shaped selects, and meta
       // has no role-shaping of its own.
       meta: { tier, priced: true },
+    });
+
+    /**
+     * THE CLIENT IS TOLD THEIR PRICE IS READY.
+     *
+     * This is the one step of the service the client has to act on, and until
+     * now nothing announced it: the quote appeared on the dashboard and the
+     * client learned about it only by going to look. Every other state change
+     * they care about (payment received, delivery approved, cancellation)
+     * already notifies; the one that asks them to decide did not.
+     *
+     * RULE 2 holds: the amount is NOT in the body. Notifications are relayed
+     * verbatim by email, and a price in an email subject line is a price
+     * sitting in an inbox forever, outside the role-shaped reads that are
+     * supposed to be the only place it is rendered. The client signs in to see
+     * the number, which is also where the scope and the accept/decline
+     * controls live.
+     *
+     * Inside the transaction on purpose: a quote nobody was told about is the
+     * defect being fixed, so the two facts commit together or not at all.
+     */
+    await tx.notification.create({
+      data: {
+        userId: task.clientId,
+        type: "quote_ready",
+        title: "Your fixed price is ready",
+        body: "Sign in to review the scope and approve or decline it. Nothing starts until you approve.",
+        taskId,
+      },
+    });
     });
   } catch (e) {
     if (e instanceof TransitionError) {
@@ -245,7 +279,28 @@ export async function reassignTask(input: unknown): Promise<CancelResult> {
 
 const cancelSchema = z.object({
   taskId: z.string(),
+  /**
+   * INTERNAL. Goes to the audit log, the closed-job log, the void note on the
+   * payouts and the cancelReason column. It is NEVER sent to the client.
+   *
+   * It used to be. When a cancellation carried neither a refund nor a card
+   * hold — the ordinary case at the pricing stage, where nothing has been paid
+   * yet — this string WAS the body of the client's notification, and
+   * notifications are relayed verbatim by email. Both forms that collect it
+   * promise the opposite in their own labels ("logged", "written to the audit
+   * log"), so an operator typing "margin too thin" or "no worker for this"
+   * mailed it to the client believing it stayed inside.
+   */
   reason: z.string().trim().min(3).max(2000),
+  /**
+   * OPTIONAL, AND THE ONLY THING THE CLIENT READS.
+   *
+   * Written deliberately for them, in a field labelled as such. Absent, the
+   * client gets the neutral sentence below and nothing about our reasoning —
+   * which is the correct default: the operator has to CHOOSE to say something,
+   * rather than discover afterwards that a private note was published.
+   */
+  clientMessage: z.string().trim().max(500).optional(),
   lostReasonCategory: z.enum([
     "deadline_at_risk",
     "worker_unavailable",
@@ -267,7 +322,7 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
   const admin = await requireRole("ADMIN");
   const parsed = cancelSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "A cancellation reason is required." };
-  const { taskId, reason, lostReasonCategory } = parsed.data;
+  const { taskId, reason, clientMessage, lostReasonCategory } = parsed.data;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -378,14 +433,36 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
                 : credited && restitution.kind === "returned"
                   ? "Task cancelled — capacity credited"
                   : "Task cancelled",
-          body:
+          /**
+           * THE MONEY FACT FIRST, THEN ONLY WHAT WAS WRITTEN FOR THE CLIENT.
+           *
+           * `reason` is gone from every branch. Two of them never carried it;
+           * the other two did, and those are precisely the cancellations where
+           * no money moved — the pricing-stage rejection, where an operator's
+           * private note was the entire message the client received.
+           *
+           * What remains is true in all four cases and says the thing the
+           * client needs: what happened to their money or their capacity.
+           * Anything beyond that is opt-in, written knowingly in a field that
+           * says so.
+           */
+          body: [
             refundDue > 0
               ? "The remaining received payment will be returned to its original method."
               : holdToRelease
                 ? "Your card was never charged. The hold will be released."
                 : credited
-                  ? `${reason}\n\n${credited}`
-                  : reason,
+                  ? credited
+                  : payment
+                    // A payment exists but is neither refundable nor on hold:
+                    // it was already refunded in full before the cancellation.
+                    // Telling that client they were never charged is false.
+                    ? "Any payment already made on this task has been returned."
+                    : "You have not been charged for this task.",
+            clientMessage,
+          ]
+            .filter(Boolean)
+            .join("\n\n"),
           taskId,
         },
       });

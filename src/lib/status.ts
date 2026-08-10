@@ -55,6 +55,15 @@ export const ADMIN_STATUS_LABELS: Record<TaskStatus, string> = {
  */
 export type ClientStatus =
   | "being_priced"
+  /**
+   * Standing capacity only. A standing task waits in `submitted` until an
+   * operator routes it to the account's specialist; it is never quoted, and
+   * approvePricing refuses to price one. Mapping it to "being_priced" — which
+   * is what happened before this bucket existed — told the client a fixed
+   * price was coming for work their weekly block had already paid for in
+   * minutes.
+   */
+  | "awaiting_routing"
   | "quote_ready"
   | "awaiting_payment"
   | "in_progress"
@@ -65,11 +74,15 @@ export type ClientStatus =
   | "cancelled"
   | "expired";
 
-export function clientStatusOf(status: TaskStatus): ClientStatus {
+export function clientStatusOf(
+  status: TaskStatus,
+  /** True when the task draws on a standing capacity block rather than a quote. */
+  isStanding = false
+): ClientStatus {
   switch (status) {
     case "submitted":
     case "pricing_review":
-      return "being_priced";
+      return isStanding ? "awaiting_routing" : "being_priced";
     case "quoted":
       return "quote_ready";
     case "awaiting_payment":
@@ -106,6 +119,7 @@ export function clientStatusOf(status: TaskStatus): ClientStatus {
 
 export const CLIENT_STATUS_LABELS: Record<ClientStatus, string> = {
   being_priced: "Being priced",
+  awaiting_routing: "Waiting to be scheduled",
   quote_ready: "Quote ready",
   awaiting_payment: "Awaiting your payment",
   in_progress: "In progress",
@@ -186,6 +200,7 @@ export function statusBadgeClass(status: TaskStatus, night = false): string {
 export function clientBadgeClass(cs: ClientStatus): string {
   switch (cs) {
     case "being_priced":
+    case "awaiting_routing":
       return T_WAIT;
     case "quote_ready":
     case "awaiting_payment":

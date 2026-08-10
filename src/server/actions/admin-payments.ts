@@ -97,9 +97,23 @@ export async function recordManualPayment(input: unknown): Promise<MoneyActionRe
           userId: task.clientId,
           type: "payment_received",
           title: "Payment received",
-          body: automate
-            ? "Your task has started processing."
-            : "Your task is now available to the worker pool.",
+          /**
+           * NEITHER BRANCH NAMES THE MECHANISM.
+           *
+           * The second branch used to read "Your task is now available to the
+           * worker pool." Notifications are relayed VERBATIM by email
+           * (server/notifications.ts sends `title` as the subject and `body` as
+           * the text), so every manually-recorded payment told the client that
+           * their work sits in a pool waiting for someone to claim it.
+           *
+           * The client bought a finished result; which route produces it is
+           * ours to manage and ours to answer for. Both branches now state the
+           * same true thing at the level the client actually cares about — the
+           * money arrived and the work is moving — which is exactly the
+           * decision lib/status.ts already made for the on-screen labels
+           * ("Which parts a machine did is internal mechanics").
+           */
+          body: "Execution has been scheduled. We will let you know when the reviewed work is ready.",
           taskId: task.id,
         },
       });

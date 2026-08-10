@@ -184,9 +184,29 @@ const en: Dict = {
         "The price is fixed first",
         "You approve one number before work starts. It never moves with hours worked.",
       ],
+      /**
+       * THE STANDARD IS WRITTEN, NOT A FEELING — AND NOBODY ELSE'S PAY IS THE
+       * CLIENT'S BUSINESS.
+       *
+       * This read "Nobody gets paid until you are satisfied / Not AfterDesk,
+       * and not the specialist." Two problems in one pillar.
+       *
+       * "Satisfied" replaced the mechanism the product actually runs on with a
+       * subjective test we never agreed to: disputes are decided against the
+       * category's written criteria (/terms says so), not against how the
+       * client feels on the day. Publishing the softer promise on the home
+       * page and the harder one in the terms is the wrong way round, and the
+       * gap is exactly where a dispute lives.
+       *
+       * The second half told the client that a third party is paid per task,
+       * which is internal mechanics they neither buy nor need.
+       *
+       * What is left is the real, verifiable sequence: authorize on approval,
+       * review before release, capture only after the window closes.
+       */
       [
-        "Nobody gets paid until you are satisfied",
-        "Not AfterDesk, and not the specialist. That is why the review is real: we both carry the cost of getting it wrong.",
+        "You are not billed until your review window closes",
+        "Your card is authorized before work starts, never charged then. It is charged only after the delivery has passed our review and your dispute window has closed.",
       ],
     ],
   },
@@ -348,8 +368,8 @@ const fr: Dict = {
         "Vous approuvez un seul montant avant que le travail commence. Il ne bouge jamais selon les heures travaillées.",
       ],
       [
-        "Personne n'est payé tant que vous n'êtes pas satisfait",
-        "Ni AfterDesk, ni le spécialiste. C'est pour ça que la révision est réelle : on porte tous les deux le coût de se tromper.",
+        "Rien ne vous est facturé avant la fin de votre fenêtre de révision",
+        "Votre carte est autorisée avant le début du travail, jamais débitée à ce moment-là. Elle ne l'est qu'après la révision de la livraison et la fermeture de votre fenêtre de contestation.",
       ],
     ],
   },
@@ -511,8 +531,8 @@ const es: Dict = {
         "Apruebas un solo número antes de que empiece el trabajo. Nunca se mueve según las horas trabajadas.",
       ],
       [
-        "Nadie cobra hasta que estés satisfecho",
-        "Ni AfterDesk, ni el especialista. Por eso la revisión es real: los dos cargamos con el costo de equivocarnos.",
+        "No se te cobra hasta que cierre tu ventana de revisión",
+        "Tu tarjeta se autoriza antes de que empiece el trabajo, nunca se cobra en ese momento. Solo se cobra después de que la entrega pase nuestra revisión y se cierre tu ventana de disputa.",
       ],
     ],
   },
@@ -677,8 +697,8 @@ const tl: Dict = {
         "Isang numero ang aaprubahan mo bago magsimula ang trabaho. Hindi ito gumagalaw base sa oras na ginugol.",
       ],
       [
-        "Walang binabayaran hangga't hindi ka satisfied",
-        "Hindi ang AfterDesk, hindi rin ang specialist. Kaya totoo ang review: pareho kaming may pasanin kapag namali.",
+        "Hindi ka sisingilin hangga't bukas ang iyong review window",
+        "Ina-authorize ang card mo bago magsimula ang trabaho, hindi sinisingil doon. Sisingilin lang matapos makapasa sa review ang delivery at magsara ang iyong dispute window.",
       ],
     ],
   },
