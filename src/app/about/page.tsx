@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Reveal } from "@/components/reveal";
 import { ComparisonTable } from "@/components/comparison-table";
 import { TrustLinks } from "@/components/trust-links";
+import { SpecialistLink } from "@/components/specialist-link";
 import { Wordmark } from "@/components/logo";
 import { LangSwitch } from "@/components/lang-switch";
 import { SITE_LANGS, langAlternates } from "@/lib/i18n/langs";
@@ -254,7 +255,10 @@ export default async function AboutPage({
       <footer className="border-t border-black/8">
         <div className="mx-auto flex w-full max-w-[900px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[12px]">
           <Wordmark tone="ink" />
-          <TrustLinks lang={lang} />
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <TrustLinks lang={lang} />
+            <SpecialistLink lang={lang} />
+          </div>
         </div>
       </footer>
     </div>

@@ -11,17 +11,26 @@ import { Fragment } from "react";
    cell's `label`+`tone` feeds the mobile chip; `label`+`detail` feeds the
    desktop sentence — one data source, never two lists to keep in sync.
 
-   Five axes, not six — the sixth ("if the seller used AI") read as
-   redundant once the other five already make the same point.
-
    Styled as the page's one deliberate NIGHT punctuation on an otherwise
    paper page — same #0A0B0D/#111317 tokens the homepage's night sections
    and this page's own closing CTA bookend already use.
 
-   Names real platforms (Fiverr, Upwork, OnlineJobs.ph) — a founder-
-   requested exception to this site's usual generic-category rule. Every
-   verdict stays true of the platform: escrow and reviews are real, a
-   pre-delivery quality check is what's still missing.
+   ── THE COLUMNS ARE BUYING MODELS, NOT BRANDS ──
+
+   This table used to name real platforms (Fiverr, Upwork, OnlineJobs.ph) and
+   rate them. The repositioning replaced them with the four ways a buyer can
+   get this work done, because rating other companies on price and vetting
+   made claims nothing here measures, and naming marketplaces filed AfterDesk
+   as a fourth marketplace.
+
+   That swap is also what broke the mobile layout, and the failure is worth
+   recording because it is not obvious from either change alone: the mobile
+   grid was sized for SHORT BRAND NAMES and was then fed DESCRIPTIVE PHRASES.
+   Measured on production at 375px, each channel column was 50px wide while
+   the word "MARKETPLACE" alone renders 71px at 9.5px — so the header spilled
+   21px past its own track and physically overlapped "HOURLY STAFFING" by
+   14px. Neither the copy change nor the grid was wrong by itself; the pairing
+   was never re-measured.
    ───────────────────────────────────────────────────────────────────────── */
 
 export type MatrixCell = {
@@ -48,14 +57,41 @@ export type ComparisonTableDict = {
   footnote: string;
 };
 
-/** "OnlineJobs.ph" and "AfterDesk" have no natural space to wrap on — left to
- *  the browser they break mid-word ("ONLINEJ/OBS.PH"). Both names are
- *  identical across all four site languages (brand names, not translated),
- *  so a fixed break point here is safe everywhere, not just in English. */
+/** "AfterDesk" has no natural space to wrap on — left to the browser it breaks
+ *  mid-word. The name is identical across all four site languages (a brand
+ *  name, not translated), so a fixed break point here is safe everywhere, not
+ *  just in English. The OnlineJobs.ph entry beside it went with the brands. */
 const HEADER_BREAKS: Record<string, [string, string]> = {
-  "OnlineJobs.ph": ["Online", "Jobs.ph"],
   AfterDesk: ["After", "Desk"],
 };
+
+/**
+ * THE MOBILE GRID'S TRACK WIDTHS, IN PIXELS, AND WHY THEY ARE PIXELS.
+ *
+ * They used to be fractions (`minmax(0,1.15fr)`), which is what allowed a
+ * column to become 50px and a 71px word to spill out of it: a fraction always
+ * "fits" by definition, so nothing could ever report that the text did not.
+ *
+ * Fixed tracks make the requirement legible instead. `CHANNEL` is sized from
+ * the longest UNBREAKABLE word across all four languages, measured in the
+ * page's own Geist at the size below ("MARKETPLACE", the worst case in both
+ * English and Tagalog: 82px at 11px), plus breathing room. `AXIS` holds the
+ * row labels, which are short sentences and wrap freely.
+ *
+ * ── WHY 11px AND A SCROLL, RATHER THAN SMALLER TEXT ──
+ *
+ * Four readable columns do not fit any phone width: at 320px the content box
+ * is ~272px, and even the old 9.5px needs ~404px to stop overlapping. So the
+ * choice was between shrinking the type further and letting the TABLE scroll.
+ * Shrinking loses twice: it is already below comfortable reading size, and it
+ * would only buy back a few pixels. Scrolling costs one gesture, on one
+ * element, and buys back enough room to make the type BIGGER than it was.
+ *
+ * Only the table scrolls. The page must not, which the tests assert.
+ */
+const MOBILE_TRACKS = { axis: 104, channel: 88, gap: 6 } as const;
+const MOBILE_MIN_WIDTH =
+  MOBILE_TRACKS.axis + MOBILE_TRACKS.channel * 4 + MOBILE_TRACKS.gap * 4;
 
 function ChannelHeader({ name, className }: { name: string; className: string }) {
   const parts = HEADER_BREAKS[name];
@@ -115,14 +151,39 @@ export function ComparisonTable({ t }: { t: ComparisonTableDict }) {
 
       <div className="mt-7 overflow-hidden rounded-lg border border-white/8 bg-[#0A0B0D]">
         {/* Mobile — compact chip grid, below md */}
-        <div className="p-3 md:hidden">
-          <div className="grid grid-cols-[minmax(76px,1fr)_repeat(4,minmax(0,1.15fr))] items-center gap-1.5">
-            <span />
+        <div
+          /**
+           * Focusable and labelled BECAUSE it scrolls. A scroll container that
+           * only a pointer can reach is unreachable for a keyboard user, and
+           * this one holds the comparison the whole section exists to make.
+           * `tabIndex` plus a role and a name is the standard pairing browsers
+           * and screen readers both understand.
+           */
+          role="group"
+          aria-label={t.heading}
+          tabIndex={0}
+          className="overflow-x-auto p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#3DDCA0] md:hidden"
+        >
+          <div
+            className="grid items-center gap-1.5"
+            style={{
+              minWidth: MOBILE_MIN_WIDTH,
+              gridTemplateColumns: `${MOBILE_TRACKS.axis}px repeat(4, ${MOBILE_TRACKS.channel}px)`,
+            }}
+          >
+            {/**
+             * The axis column is STICKY. Scrolling four columns is only usable
+             * if the row label stays put; without this the reader arrives at
+             * "AfterDesk" having lost which question the tick answers. It
+             * carries the panel's own background so the chips pass behind it
+             * rather than through it.
+             */}
+            <span className="sticky left-0 z-10 bg-[#0A0B0D]" />
             {t.channels.map((c, i) => (
               <ChannelHeader
                 key={c}
                 name={c}
-                className={`px-0.5 text-center text-[9.5px] font-semibold uppercase leading-tight tracking-[0.01em] ${
+                className={`px-0.5 text-center text-[11px] font-semibold uppercase leading-[1.2] tracking-[0.01em] ${
                   i === 3 ? "text-[#3DDCA0]" : "text-[#767C86]"
                 }`}
               />
@@ -130,7 +191,9 @@ export function ComparisonTable({ t }: { t: ComparisonTableDict }) {
 
             {t.axes.map((row) => (
               <Fragment key={row.axis}>
-                <span className="pr-1 text-[11px] font-medium leading-[1.2] text-[#C9CDD3]">{row.axis}</span>
+                <span className="sticky left-0 z-10 bg-[#0A0B0D] pr-2 text-[11px] font-medium leading-[1.2] text-[#C9CDD3]">
+                  {row.axis}
+                </span>
                 {row.cells.map((cell, ci) => (
                   <Chip
                     key={`${row.axis}-${ci}`}

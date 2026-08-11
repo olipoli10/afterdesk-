@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Wordmark } from "@/components/logo";
 import { LangSwitch } from "@/components/lang-switch";
 import { TrustLinks } from "@/components/trust-links";
+import { SpecialistLink } from "@/components/specialist-link";
 import { OFFERINGS } from "@/lib/offerings";
 import { SITE_LANGS, langAlternates } from "@/lib/i18n/langs";
 import { SERVICES_I18N, docLangOf } from "@/lib/i18n/services";
@@ -74,7 +75,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
       </main>
 
       <footer className="border-t border-white/8">
-        <div className="mx-auto grid w-full max-w-[1120px] gap-4 px-6 py-7 sm:grid-cols-[auto_1fr] sm:items-center"><Wordmark tone="paper" /><div className="text-[12px] sm:justify-self-end"><TrustLinks tone="night" lang={lang} /></div></div>
+        <div className="mx-auto grid w-full max-w-[1120px] gap-4 px-6 py-7 sm:grid-cols-[auto_1fr] sm:items-center"><Wordmark tone="paper" /><div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] sm:justify-self-end"><TrustLinks tone="night" lang={lang} /><SpecialistLink lang={lang} tone="night" /></div></div>
       </footer>
     </div>
   );
