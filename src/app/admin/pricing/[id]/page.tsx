@@ -222,6 +222,11 @@ export default async function PricingDetailPage({
                 assumptions: planReview.classification.assumptions,
                 quoteTier: planReview.classification.quoteTier,
                 confidence: planReview.classification.confidence,
+                // LOT C intake framing (null on pre-LOT-C classifications).
+                sourceShape: planReview.classification.sourceShape,
+                verificationExpectation: planReview.classification.verificationExpectation,
+                outputFormatCode: planReview.classification.outputFormatCode,
+                recurrence: planReview.classification.recurrence,
               }
             : null,
           version: planReview.latestVersion

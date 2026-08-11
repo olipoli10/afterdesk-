@@ -78,6 +78,35 @@ is already done: it is in the classification and in these acceptance criteria.
 file" are not work, they are planning, and planning is finished by the time this
 plan is read.
 
+INTAKE FRAMING — the classification's source_shape, verification_expectation,
+output_format_code and recurrence are ROUTING FACTS, not suggestions:
+- source_shape "existing_file": the machine block starts by ingesting the
+  referenced attachment (fileId from the ATTACHED FILES list). Nothing else
+  counts as a file.
+- source_shape "pasted_targets": the units are written in the brief text.
+  There is NO file, so there is NO ingest step — ingest reads attachments
+  only. Structuring a pasted list into rows is work the plan does honestly
+  (extraction or a person), never by pretending the brief is a file.
+- source_shape "build_list": the units must be found. Plan the research chain
+  (research.web_search, then web.fetch when page text is needed, then
+  extraction and pure-code structuring) with human corroboration at the end.
+- source_shape "mixed": plan each source by its own rule above; when the
+  source is genuinely unclear, that is missing information and human work.
+- verification_expectation sizes the HUMAN verification step: "official_source"
+  means the person checks every delivered unit against the official source;
+  "two_independent_sources" means the person corroborates each unit across two
+  independent sources; "best_available" means best effort with sources cited.
+  It never adds automated verification — corroboration stays human, and units
+  that cannot meet the bar go to the exceptions file, never silently into the
+  deliverable.
+- output_format_code "csv"/"xlsx": the machine block ends with the matching
+  build primitive. "table_in_message" or "other": the final artifact is the
+  human step's to produce — plan no build primitive for a format none exists
+  for.
+- recurrence "recurring": plan ONE occurrence only. The repetition is a
+  commercial arrangement the operator decides; a plan never schedules future
+  runs and never multiplies its estimates by an imagined number of cycles.
+
 HOW TO PLAN:
 - 1 to ${MAX_PLAN_STEPS} steps, each a real unit of work with a checkable output.
 - executor per step: "ai" only for candidate generation, structuring, deduplication or drafting that a model plus the listed tools can genuinely do; "deterministic_code" for pure file/data operations a script performs (counting, deduplicating, format checks, workbook generation); "human" for judgment, corroboration and anything the standards require a person to verify.

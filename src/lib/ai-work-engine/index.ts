@@ -19,6 +19,7 @@ import { aiSuggestionColumns, pricePlan, type PricingStepInput } from "@/lib/ai-
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { floorConfidenceForCritique, resolveConfidence } from "@/lib/ai-work-engine/confidence";
 import {
+  applyIntakeFraming,
   classificationOutputSchema,
   currentPrimitiveVersion,
   type ClassificationOutput,
@@ -242,6 +243,19 @@ export async function runWorkEngine(
       settings.pricingSimilarityMaxDistance
     );
 
+    /**
+     * COMMERCIAL READINESS, LOTS A+C: the attachment manifest, built ONCE over
+     * the exact file set the query above loaded (scanned, unpurged,
+     * createdAt-ordered — the same set the acceptance freeze pins later).
+     * Both model stages receive only the provider-safe lines (ref, name,
+     * kind, size — never ids, never content): the classifier so source_shape
+     * is grounded in what actually exists, the planner so ingest refs are
+     * real. This module keeps the full manifest to resolve refs back to
+     * fileIds at persist time.
+     */
+    const attachmentManifest = buildAttachmentManifest(task.files);
+    const attachmentLines = plannerAttachmentLines(attachmentManifest);
+
     // ── Stage 1: classification, as a durable operation ──
     const classifyKey = engineOperationKey(taskId, runKey, "classify");
     await reserveAiOperation({ taskId, purpose: "classification", operationKey: classifyKey });
@@ -265,7 +279,10 @@ export async function runWorkEngine(
       });
       const revalidated = classificationOutputSchema.safeParse(stored?.rawOutput);
       if (revalidated.success) {
-        classificationOutput = revalidated.data;
+        // LOT C: the framing gate applies on the resume path too (a pre-LOT-C
+        // rawOutput gets the schema's conservative defaults, then the same
+        // tightening) — both paths must hand downstream the same framed tier.
+        classificationOutput = applyIntakeFraming(revalidated.data);
       } else {
         /**
          * PERMANENT wedge, said out loud: the operation is `succeeded` so no
@@ -301,6 +318,7 @@ export async function runWorkEngine(
           description: task.description,
           quantity: task.quantity,
           categories,
+          attachmentLines,
         });
       } catch (error) {
         // No response arrived at all — nothing billable to record, and if a
@@ -331,7 +349,17 @@ export async function runWorkEngine(
         return;
       }
 
-      const output = classified.result.output;
+      /**
+       * LOT C: the code-enforced half of the intake framing, applied to the
+       * model output BEFORE anything reads it. A recurring ask or an
+       * artifact no primitive produces is forced to the manual tier here —
+       * in code, not in the prompt — so shouldCritique, the persisted row
+       * and the admin screen all see the same framed tier, and a prompt
+       * drift can never relax the gate. rawOutput stays the model's own
+       * JSON: the row records what the model said, the columns record what
+       * the platform decided.
+       */
+      const output = applyIntakeFraming(classified.result.output);
       const baseConfidence = resolveConfidence(output.confidence, referenceTasks.length);
       const raw = classified.result.raw;
 
@@ -350,6 +378,12 @@ export async function runWorkEngine(
         assumptions: output.assumptions,
         quoteTier: output.quote_tier,
         confidence: baseConfidence,
+        // LOT C: the intake framing, persisted so the admin screen and the
+        // Level-2 measurement read the same distinctions the planner routed on.
+        sourceShape: output.source_shape,
+        verificationExpectation: output.verification_expectation,
+        outputFormatCode: output.output_format_code,
+        recurrence: output.recurrence,
         model: classified.usage?.model ?? "unknown",
         rawOutput: raw as Prisma.InputJsonValue,
       };
@@ -430,19 +464,6 @@ export async function runWorkEngine(
       return;
     }
 
-    /**
-     * COMMERCIAL READINESS, LOT A: the planner finally SEES the attachments.
-     *
-     * The manifest is built once, here, over the exact file set the query
-     * above loaded (scanned, unpurged, createdAt-ordered — the same set the
-     * acceptance freeze pins later). The planner receives only the
-     * provider-safe lines (ref, name, kind, size — never ids, never
-     * content); this module keeps the full manifest to resolve refs back to
-     * real fileIds at persist time below. Same-name files are fine: the ref
-     * is positional, not textual.
-     */
-    const attachmentManifest = buildAttachmentManifest(task.files);
-
     let planned: Awaited<ReturnType<typeof runPlanGeneration>>;
     try {
       planned = await runPlanGeneration({
@@ -452,7 +473,7 @@ export async function runWorkEngine(
         classification: classificationOutput,
         categories,
         referenceTasks,
-        attachmentLines: plannerAttachmentLines(attachmentManifest),
+        attachmentLines,
       });
     } catch (error) {
       await failAiOperation({

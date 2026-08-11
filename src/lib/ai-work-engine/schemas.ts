@@ -1,6 +1,12 @@
 import "server-only";
 import { z } from "zod";
 import { PLAN_PRIMITIVE_IDS } from "@/lib/ai-work-engine/primitive-vocabulary";
+import {
+  OUTPUT_FORMAT_CODES,
+  RECURRENCES,
+  SOURCE_SHAPES,
+  VERIFICATION_EXPECTATIONS,
+} from "@/lib/ai-work-engine/intake-framing";
 
 /**
  * THE SHAPES OF EVERY MODEL OUTPUT IN THE WORK ENGINE.
@@ -87,6 +93,23 @@ export {
   type PlanPrimitiveId,
 } from "@/lib/ai-work-engine/primitive-vocabulary";
 
+/**
+ * LOT C: the intake-framing vocabulary lives in its own import-free module
+ * (client components render its labels), re-exported here so server code
+ * keeps one import site for every model-output shape.
+ */
+export {
+  SOURCE_SHAPES,
+  VERIFICATION_EXPECTATIONS,
+  OUTPUT_FORMAT_CODES,
+  RECURRENCES,
+  applyIntakeFraming,
+  type SourceShape,
+  type VerificationExpectation,
+  type OutputFormatCode,
+  type Recurrence,
+} from "@/lib/ai-work-engine/intake-framing";
+
 // ── Stage 1: classification ──
 
 export const classificationOutputSchema = z.object({
@@ -104,6 +127,25 @@ export const classificationOutputSchema = z.object({
   assumptions: z.array(z.string().max(1500)).max(10),
   quote_tier: z.enum(QUOTE_TIERS),
   confidence: z.enum(CONFIDENCE_LEVELS),
+  /**
+   * LOT C — the intake framing, REQUIRED of every new classification at the
+   * API level (see the JSON schema's `required`) but DEFAULTED here, because
+   * this same zod schema re-validates stored rawOutput on the pipeline's
+   * resume path. A classification recorded before LOT C would otherwise
+   * become the documented permanent wedge. The defaults are chosen so they
+   * can only tighten, never relax:
+   *   - "mixed" tells the planner the source is unclear, its most cautious
+   *     reading;
+   *   - "best_available" is the LOWEST verification promise — a default may
+   *     never promise the client more than they asked;
+   *   - "other" forces the manual quote tier via applyIntakeFraming;
+   *   - "one_off" reads nothing extra into an old brief, and no automatic
+   *     path exists for a recurring task to slip through anyway.
+   */
+  source_shape: z.enum(SOURCE_SHAPES).default("mixed"),
+  verification_expectation: z.enum(VERIFICATION_EXPECTATIONS).default("best_available"),
+  output_format_code: z.enum(OUTPUT_FORMAT_CODES).default("other"),
+  recurrence: z.enum(RECURRENCES).default("one_off"),
 });
 export type ClassificationOutput = z.infer<typeof classificationOutputSchema>;
 
@@ -124,6 +166,10 @@ export const CLASSIFICATION_JSON_SCHEMA = {
     assumptions: { type: "array", items: { type: "string" } },
     quote_tier: { type: "string", enum: [...QUOTE_TIERS] },
     confidence: { type: "string", enum: [...CONFIDENCE_LEVELS] },
+    source_shape: { type: "string", enum: [...SOURCE_SHAPES] },
+    verification_expectation: { type: "string", enum: [...VERIFICATION_EXPECTATIONS] },
+    output_format_code: { type: "string", enum: [...OUTPUT_FORMAT_CODES] },
+    recurrence: { type: "string", enum: [...RECURRENCES] },
   },
   required: [
     "category_slug_guess",
@@ -140,6 +186,10 @@ export const CLASSIFICATION_JSON_SCHEMA = {
     "assumptions",
     "quote_tier",
     "confidence",
+    "source_shape",
+    "verification_expectation",
+    "output_format_code",
+    "recurrence",
   ],
   additionalProperties: false,
 } as const;

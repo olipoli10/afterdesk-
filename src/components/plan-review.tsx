@@ -3,9 +3,19 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { editPlanVersion } from "@/server/actions/admin-plan";
-// From the vocabulary module, NOT from schemas.ts: this is a client component
+// From the vocabulary modules, NOT from schemas.ts: this is a client component
 // and schemas.ts is server-only, so importing it here would fail the build.
 import { PLAN_PRIMITIVE_IDS, primitiveReadsFiles } from "@/lib/ai-work-engine/primitive-vocabulary";
+import {
+  OUTPUT_FORMAT_LABELS,
+  RECURRENCE_LABELS,
+  SOURCE_SHAPE_LABELS,
+  VERIFICATION_EXPECTATION_LABELS,
+  type OutputFormatCode,
+  type Recurrence,
+  type SourceShape,
+  type VerificationExpectation,
+} from "@/lib/ai-work-engine/intake-framing";
 import {
   Badge,
   Card,
@@ -70,6 +80,16 @@ export type PlanReviewData = {
     assumptions: string[];
     quoteTier: "assisted" | "manual";
     confidence: "low" | "medium" | "high";
+    /**
+     * LOT C intake framing — null on classifications recorded before it.
+     * Loosely typed as strings on purpose: the closed vocabulary lives in
+     * intake-framing.ts and an unknown value renders as itself rather than
+     * crashing the pricing screen.
+     */
+    sourceShape: string | null;
+    verificationExpectation: string | null;
+    outputFormatCode: string | null;
+    recurrence: string | null;
   } | null;
   version: {
     id: string;
@@ -353,6 +373,55 @@ export function PlanReview({ data }: { data: PlanReviewData }) {
                 </dd>
               </div>
             </dl>
+            {/* LOT C: the intake framing — the four routing facts the planner
+                received. Recurring and operator-decided formats are the two
+                the firewall forces to manual, so they render as warnings. */}
+            {data.classification.sourceShape ? (
+              <dl className="mt-3 grid grid-cols-2 gap-3 border-t border-[#14161A]/[0.06] pt-3 text-sm sm:grid-cols-4">
+                <div>
+                  <dt className="text-xs text-[#5B6069]">Source of units</dt>
+                  <dd className="text-[#14161A]">
+                    {SOURCE_SHAPE_LABELS[data.classification.sourceShape as SourceShape] ??
+                      data.classification.sourceShape}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#5B6069]">Client expects</dt>
+                  <dd className="text-[#14161A]">
+                    {VERIFICATION_EXPECTATION_LABELS[
+                      data.classification.verificationExpectation as VerificationExpectation
+                    ] ?? data.classification.verificationExpectation}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#5B6069]">Output format</dt>
+                  <dd
+                    className={
+                      data.classification.outputFormatCode === "other"
+                        ? "font-medium text-[#955710]"
+                        : "text-[#14161A]"
+                    }
+                  >
+                    {OUTPUT_FORMAT_LABELS[
+                      data.classification.outputFormatCode as OutputFormatCode
+                    ] ?? data.classification.outputFormatCode}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#5B6069]">Recurrence</dt>
+                  <dd
+                    className={
+                      data.classification.recurrence === "recurring"
+                        ? "font-medium text-[#955710]"
+                        : "text-[#14161A]"
+                    }
+                  >
+                    {RECURRENCE_LABELS[data.classification.recurrence as Recurrence] ??
+                      data.classification.recurrence}
+                  </dd>
+                </div>
+              </dl>
+            ) : null}
             {data.classification.missingInformation.length > 0 ? (
               <div className="mt-3 rounded-[4px] bg-[#D98324]/[0.08] px-3 py-2.5">
                 <p className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-[#955710]">

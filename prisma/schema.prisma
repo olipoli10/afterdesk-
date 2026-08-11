@@ -1473,6 +1473,23 @@ model TaskAiClassification {
   /// Même plancher serveur que le pricing existant : zéro tâche de référence
   /// comparable force "low", peu importe l'auto-évaluation du modèle.
   confidence          AiConfidence
+
+  /// LOT C — LE CADRAGE INTAKE, quatre distinctions à vocabulaire fermé
+  /// (src/lib/ai-work-engine/intake-framing.ts, comme dataClass : le
+  /// vocabulaire vit dans le code, la colonne est un String nullable).
+  /// Null = classifié avant LOT C. quoteTier ci-dessus porte déjà la
+  /// version CADRÉE : récurrent ou format "other" → "manual", forcé en
+  /// code (applyIntakeFraming), jamais par le prompt.
+  /// existing_file | pasted_targets | build_list | mixed
+  sourceShape             String?
+  /// best_available | two_independent_sources | official_source
+  verificationExpectation String?
+  /// csv | xlsx | table_in_message | other
+  outputFormatCode        String?
+  /// one_off | recurring — récurrent = arrangement commercial décidé par
+  /// l'opérateur ; rien ne réactive Standing Capacity automatiquement.
+  recurrence              String?
+
   model               String
   rawOutput           Json?
   computedAt          DateTime            @default(now())
