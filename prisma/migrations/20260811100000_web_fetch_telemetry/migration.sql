@@ -1,0 +1,11 @@
+-- PHASE 1E-β1 — WEB COMPLETION, la seule migration de la tranche. Additive.
+--
+-- Une colonne : le compte de fetches web rapporté par le fournisseur
+-- (usage.server_tool_use.web_fetch_requests) sur chaque appel facturé. Le prix
+-- documenté d'un fetch est 0 $ (les tokens portent le coût), donc cette
+-- colonne est de la télémétrie — taux de succès fetch, troncation de
+-- candidats, porte bulk β3 — jamais une entrée de facturation à elle seule.
+--
+-- Le DEFAULT 0 est un fait, pas un zéro fabriqué : aucune ligne écrite avant
+-- cette phase n'a pu compter un fetch, parce qu'aucun outil fetch n'existait.
+ALTER TABLE "TaskToolInvocation" ADD COLUMN "fetchCount" INTEGER NOT NULL DEFAULT 0;

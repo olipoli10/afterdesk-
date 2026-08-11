@@ -2034,6 +2034,12 @@ model TaskToolInvocation {
   cacheWriteTokens Int @default(0)
   /// Recherches web facturées à l'unité par le fournisseur.
   searchCount      Int @default(0)
+  /// PHASE 1E-β1 — fetches web comptés par le fournisseur
+  /// (usage.server_tool_use.web_fetch_requests). Prix documenté : 0 $ pièce,
+  /// les tokens portent le coût — télémétrie (taux de succès fetch, porte
+  /// bulk β3), jamais une entrée de facturation à elle seule. Le défaut 0
+  /// est un FAIT pour toute ligne antérieure : aucun outil fetch n'existait.
+  fetchCount       Int @default(0)
   /// En microdollars entiers, calculé en code depuis une table de tarifs —
   /// jamais un chiffre annoncé par un modèle.
   costMicros       Int @default(0)

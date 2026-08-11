@@ -79,6 +79,9 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
       primitiveVersion: currentPrimitiveVersion(s.primitiveId),
       automatable: s.executor !== "human" && s.primitiveId !== null,
       estimatedAiCostCents: s.estimatedAiCostCents,
+      // 1E-beta1: same edges the compiler will read at execution, so an
+      // admin-edited plan demotes consumers with their producers too.
+      dependsOnOrder: s.dependsOnOrder,
     })),
     internalCostCents: rawPriced.internalCostConservativeCents,
     policyVersion: CURRENT_AUTOMATION_COST_POLICY,

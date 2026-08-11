@@ -471,6 +471,10 @@ export async function runWorkEngine(
         // time is safe; under-reserving is what this correction removes.
         automatable: s.executor !== "human" && s.primitive_id !== null,
         estimatedAiCostCents: s.estimated_ai_cost_cents,
+        // 1E-beta1: the plan's own edges, so an economic demotion takes every
+        // transitive consumer with it and the quote never prices a machine
+        // step whose producer this preflight just handed to a person.
+        dependsOnOrder: s.depends_on_order,
       })),
       internalCostCents: rawPriced.internalCostConservativeCents,
       policyVersion: CURRENT_AUTOMATION_COST_POLICY,

@@ -19,7 +19,7 @@ import { primitiveReachOf } from "@/lib/ai-work-engine/primitive-vocabulary";
 import { DATA_CLASSES, type DataClass } from "@/lib/ai-work-engine/data-class";
 import { attemptsAllowedForStep } from "@/lib/ai-work-engine/automation-cost-policy";
 import { computeResidual, type ResidualStepInput } from "@/lib/ai-work-engine/residual";
-import { searchCostMicros } from "@/lib/ai-work-engine/tool-cost";
+import { fetchCostMicros, searchCostMicros } from "@/lib/ai-work-engine/tool-cost";
 import { buildHumanPackageCopy } from "@/lib/ai-work-engine/human-package-copy";
 import { emptyPayload } from "@/lib/ai-work-engine/primitives/types";
 import { loadLatestPayload, persistPayload, writeArtifact } from "@/server/workflow-artifacts";
@@ -1071,6 +1071,7 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
                       cacheReadTokens: record.cacheReadTokens,
                       cacheWriteTokens: record.cacheWriteTokens,
                       searchCount: record.searchCount,
+                      fetchCount: record.fetchCount,
                       costMicros: record.costMicros,
                       durationMs: record.durationMs,
                       ok: record.ok,
@@ -1111,7 +1112,11 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
                   // Split at the point of record: searches are billed per
                   // query by the provider, tokens by volume, and an operator
                   // reading "we spent X" needs to know which lever moves it.
-                  const toolMicros = searchCostMicros(record.searchCount);
+                  // Fetches carry a documented $0 per-request price, so the
+                  // term is a recorded assumption that keeps the split honest
+                  // the day the price stops being zero.
+                  const toolMicros =
+                    searchCostMicros(record.searchCount) + fetchCostMicros(record.fetchCount);
                   const aiMicros = Math.max(0, record.costMicros - toolMicros);
                   await tx.taskWorkflowRun.update({
                     where: { id: run.id },

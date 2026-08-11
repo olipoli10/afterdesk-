@@ -263,7 +263,9 @@ describe("the registry implements exactly the planner's vocabulary", () => {
      * which is how a pin stops protecting anything. What matters about a pure
      * primitive is stated directly instead: it cannot spend.
      */
-    expect(billable).toEqual(["extract.structured_rows", "research.web_search"]);
+    // 1E-beta1 added web.fetch: a THIRD capability that can spend, deliberate
+    // edit here as the pin demands, priced by ac4 and funded ONE attempt.
+    expect(billable).toEqual(["extract.structured_rows", "research.web_search", "web.fetch"]);
     expect(pure.length).toBe(Object.keys(REGISTRY).length - billable.length);
     for (const id of pure) {
       expect(REGISTRY[id as keyof typeof REGISTRY].billable).toBe(false);

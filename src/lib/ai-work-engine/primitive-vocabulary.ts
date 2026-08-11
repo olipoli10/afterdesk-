@@ -97,6 +97,17 @@ export const PLAN_PRIMITIVES = {
   "data.schema_map": 1,
   /** Write a minimal XLSX workbook: headers and values, one sheet. */
   "build.xlsx": 1,
+
+  /* ───────────────────── 1E-beta1: web completion ───────────────────── */
+
+  /**
+   * Read the full text of pages research.web_search already cited. Anthropic
+   * server-side tool, bounded by frozen params (maxFetches, maxContentTokens)
+   * enforced as API parameters. Text and HTML only: the 1E-beta1 probe proved
+   * `max_content_tokens` does not bound PDF consumption, so binary content is
+   * refused at harvest and PDF work stays a person's until phase gamma.
+   */
+  "web.fetch": 1,
 } as const;
 
 export type PlanPrimitiveId = keyof typeof PLAN_PRIMITIVES;
@@ -136,6 +147,7 @@ export const PLAN_PRIMITIVE_MODES = {
   "data.compare": "PREPARE",
   "data.schema_map": "PREPARE",
   "build.xlsx": "PREPARE",
+  "web.fetch": "READ",
 } as const satisfies Record<PlanPrimitiveId, "READ" | "PREPARE">;
 
 export type PlanPrimitiveMode = (typeof PLAN_PRIMITIVE_MODES)[PlanPrimitiveId];
@@ -173,6 +185,17 @@ export const PLAN_PRIMITIVE_REACH = {
   "data.compare": "local",
   "data.schema_map": "local",
   "build.xlsx": "local",
+  /**
+   * web.fetch is `provider` FOREVER, and the temptation this note refuses is
+   * real: the fetch is initiated by our code, so "it is this machine's step"
+   * reads plausibly. Reach is not about who initiates — it is about whether
+   * the INPUT leaves this machine, and a fetched URL (plus the bounded brief
+   * beside it) leaves. Declaring it `local` would hand it client file bytes
+   * (workflow-runs.ts gates on `local`) and exempt it from the mixing rule
+   * and the class gate in one stroke. test/capability-substrate.test.ts pins
+   * this entry by value.
+   */
+  "web.fetch": "provider",
 } as const satisfies Record<PlanPrimitiveId, "provider" | "local">;
 
 export type PlanPrimitiveReach = (typeof PLAN_PRIMITIVE_REACH)[PlanPrimitiveId];

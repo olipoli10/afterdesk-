@@ -10,6 +10,7 @@ import {
 } from "@/lib/ai-work-engine/primitives/pure";
 import { runResearchWebSearch } from "@/lib/ai-work-engine/primitives/research";
 import { runExtractStructuredRows } from "@/lib/ai-work-engine/primitives/extract";
+import { runWebFetch } from "@/lib/ai-work-engine/primitives/fetch";
 import {
   runBuildCsvV2,
   runBuildXlsx,
@@ -282,6 +283,30 @@ export const REGISTRY: Record<PlanPrimitiveId, Primitive> = {
     maxAttempts: 3,
     billable: false,
     run: runBuildXlsx,
+  }),
+
+  /* ───────────────────── 1E-beta1: web completion ───────────────────── */
+
+  "web.fetch": define({
+    id: "web.fetch",
+    version: PLAN_PRIMITIVES["web.fetch"],
+    displayName: "Read the cited pages",
+    mode: "READ",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 200_000,
+    /**
+     * ONE attempt, and the number is the probe's, not a preference. The
+     * provider's content bound does not apply to binary content
+     * (.scratch/probe-web-fetch-results-2.json: a 444 KB PDF billed 53,754
+     * input tokens under a 2,000-token bound), so a disguised binary is the
+     * one place a fetch attempt can overrun its reservation. Funding a single
+     * attempt caps that residual at one overrun per mandate; ac4's comment
+     * carries the arithmetic. Raising this is an ac5 decision, not a tweak.
+     */
+    maxAttempts: 1,
+    billable: true,
+    run: runWebFetch,
   }),
 };
 

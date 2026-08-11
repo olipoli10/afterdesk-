@@ -1,6 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { getSettings } from "@/lib/settings";
+import { BLOCKED_PROVIDER_TARGET_DOMAINS } from "@/lib/net/domain-policy";
 import {
   approxTokens,
   meteredCall,
@@ -61,16 +62,15 @@ const MAX_SEARCHES_PER_INVOCATION = 12;
 export const MAX_DESCRIPTION_CHARS_IN_PROMPT = 4_000;
 export const MAX_TARGETS_IN_PROMPT = 120;
 
-const BLOCKED_DOMAINS = [
-  "linkedin.com",
-  "www.linkedin.com",
-  // Aggregators that resell scraped contact data: citing them would let a
-  // delivery claim a source it cannot stand behind.
-  "rocketreach.co",
-  "zoominfo.com",
-  "apollo.io",
-  "signalhire.com",
-];
+/**
+ * 1E-beta1: the list moved to src/lib/net/domain-policy.ts so web.fetch and
+ * this capability consume ONE set of entries with one matching semantics. The
+ * entries are byte-identical to what this file carried since 1B, so the API
+ * parameter below is unchanged and research.web_search@1 keeps its accepted
+ * behaviour. test/domain-policy.test.ts pins both the entries and this
+ * import, so the two capabilities cannot drift apart again.
+ */
+const BLOCKED_DOMAINS = BLOCKED_PROVIDER_TARGET_DOMAINS;
 
 const SYSTEM = `You research public facts for AfterDesk and you CITE EVERYTHING.
 
@@ -171,7 +171,9 @@ ${briefExcerpt}`;
               type: "web_search_20260209",
               name: "web_search",
               max_uses: MAX_SEARCHES_PER_INVOCATION,
-              blocked_domains: BLOCKED_DOMAINS,
+              // Spread only because the SDK's parameter type is mutable; the
+              // ENTRIES are the shared policy constant, pinned by test.
+              blocked_domains: [...BLOCKED_DOMAINS],
             },
           ],
           messages: [{ role: "user", content: userContent }],

@@ -1,6 +1,6 @@
 import "server-only";
 import type Anthropic from "@anthropic-ai/sdk";
-import { costMicrosFor, searchCostMicros } from "@/lib/ai-work-engine/tool-cost";
+import { costMicrosFor, fetchCostMicros, searchCostMicros } from "@/lib/ai-work-engine/tool-cost";
 import { classifyProviderError } from "@/lib/ai-work-engine/provider-error";
 import type { InvocationRecord, PrimitiveContext } from "@/lib/ai-work-engine/primitives/types";
 
@@ -79,6 +79,20 @@ export function worstCaseMicros(input: {
   maxOutputTokens: number;
   approxInputTokens: number;
   maxSearches: number;
+  /**
+   * 1E-beta1, both zero for every pre-beta caller so their arithmetic is
+   * byte-identical to what their contracts were quoted against. A fetch loop
+   * has the same shape as the search loop — every fetched page re-enters as
+   * INPUT on each later turn of the same call — with one difference that is
+   * the whole reason `maxFetchContentTokens` must be a PROVIDER-ENFORCED
+   * parameter rather than a local estimate: a search result set is shaped by
+   * the provider (the 4,000-token pin above holds), while a page's size is
+   * chosen by whoever owns the page. The pin holds for TEXT; the beta1 probe
+   * proved PDFs escape it, which is why web.fetch refuses binary content at
+   * harvest and why ac4's cap carries headroom above this formula.
+   */
+  maxFetches?: number;
+  maxFetchContentTokens?: number;
 }): number {
   /**
    * The search loop re-sends its accumulated context, so the input grows
@@ -86,15 +100,29 @@ export function worstCaseMicros(input: {
    * and it is the term that turns a $0.5 estimate into the real number.
    */
   const searchTurns = input.maxSearches;
+  const fetchTurns = input.maxFetches ?? 0;
+  const fetchTokens = input.maxFetchContentTokens ?? 0;
   const accumulatedSearchTokens =
     TOKENS_PER_SEARCH_RESULT_SET * ((searchTurns * (searchTurns + 1)) / 2);
+  /**
+   * Separate triangulars when only one tool is present; when a single call
+   * carries BOTH, the safe order-independent bound is (perSearchSet·S +
+   * perFetch·F)·(S+F), which dominates every interleaving. No beta1 caller
+   * combines them — research is search-only, web.fetch is fetch-only — but
+   * the formula must not quietly under-reserve the first caller that does.
+   */
+  const accumulatedToolTokens =
+    searchTurns > 0 && fetchTurns > 0
+      ? (TOKENS_PER_SEARCH_RESULT_SET * searchTurns + fetchTokens * fetchTurns) *
+        (searchTurns + fetchTurns)
+      : accumulatedSearchTokens + fetchTokens * ((fetchTurns * (fetchTurns + 1)) / 2);
   const generation = costMicrosFor(input.model, {
-    inputTokens: Math.ceil(input.approxInputTokens * 1.2) + accumulatedSearchTokens,
+    inputTokens: Math.ceil(input.approxInputTokens * 1.2) + accumulatedToolTokens,
     outputTokens: input.maxOutputTokens,
     cacheReadTokens: 0,
     cacheWriteTokens: 0,
   });
-  return generation + searchCostMicros(input.maxSearches);
+  return generation + searchCostMicros(input.maxSearches) + fetchCostMicros(fetchTurns);
 }
 
 /** Rough token count. Four characters per token is the usual approximation. */
@@ -110,6 +138,7 @@ function usageToRecord(
   startedAt: Date
 ): InvocationRecord {
   const searchCount = usage?.server_tool_use?.web_search_requests ?? 0;
+  const fetchCount = usage?.server_tool_use?.web_fetch_requests ?? 0;
   const tokens = {
     inputTokens: usage?.input_tokens ?? 0,
     outputTokens: usage?.output_tokens ?? 0,
@@ -126,7 +155,9 @@ function usageToRecord(
     providerIdempotencyKey: null,
     ...tokens,
     searchCount,
-    costMicros: costMicrosFor(model, tokens) + searchCostMicros(searchCount),
+    fetchCount,
+    costMicros:
+      costMicrosFor(model, tokens) + searchCostMicros(searchCount) + fetchCostMicros(fetchCount),
     durationMs,
     ok: true,
     error: null,
@@ -184,6 +215,7 @@ export async function meteredCall<T>(
       cacheReadTokens: 0,
       cacheWriteTokens: 0,
       searchCount: 0,
+      fetchCount: 0,
       costMicros: 0,
       durationMs: 0,
       ok: false,
@@ -244,6 +276,7 @@ export async function meteredCall<T>(
       cacheReadTokens: 0,
       cacheWriteTokens: 0,
       searchCount: 0,
+      fetchCount: 0,
       // NOT a claim that the call was free. `dispatchState` carries what we
       // actually know, and the reservation is what protects the ceiling.
       costMicros: 0,

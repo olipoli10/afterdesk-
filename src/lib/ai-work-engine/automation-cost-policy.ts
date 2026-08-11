@@ -183,12 +183,76 @@ export const AUTOMATION_COST_POLICIES = {
       absoluteCapMicros: 20_000_000,
     },
   },
+
+  /**
+   * ac4 — 1E-beta1 — prices web.fetch. The research and extract rows are
+   * byte-identical to ac3's, so a research+extract-only mandate quotes to the
+   * cent what it quoted yesterday; the only change a client can observe is
+   * that a plan may now contain a fetch step, priced by the new row.
+   *
+   * ── THE FETCH FIGURES ARE PROBE ARITHMETIC, NOT ESTIMATES OF VIRTUE ──
+   *
+   * The empirical probe (2026-08-11, .scratch/probe-web-fetch-results*.json)
+   * established two facts this row is built on:
+   *
+   *   1. `max_content_tokens` IS enforced on text/HTML — a long page came
+   *      back truncated to ~1,400 tokens under a 2,000 bound;
+   *   2. it is NOT enforced on binary content — a 444 KB PDF returned
+   *      complete under the same bound and billed 53,754 input tokens
+   *      (~117 tokens/KB of PDF).
+   *
+   * TEXT worst case at the schema maxima (maxFetches 3, maxContentTokens
+   * 10,000, dearest model rate): each fetched page re-enters as input on
+   * every later turn, so 10,000 × (3·4/2) = 60,000 accumulated tokens
+   * ($0.30) + bounded prompt re-sent per turn (~$0.05) + 4,000 output tokens
+   * ($0.10) + $0 per fetch ≈ $0.45.
+   *
+   * RESIDUAL: a binary served from an extensionless URL evades the candidate
+   * filter, and its size is the page owner's choice. At the probe's measured
+   * density three 1 MB disguised binaries cost ≈ $3.75 in one attempt. The
+   * cap is set ABOVE that residual, the primitive funds exactly ONE attempt
+   * (registry.ts carries the same probe reasoning), and the harvest refuses
+   * binary content so the overrun can never recur on a retry it does not
+   * have. Beyond ~1 MB × 3 the context window starts failing the turn before
+   * the money is spent. The one invariant this residual can still break —
+   * settled above held on a single attempt — is exactly what the
+   * settle-over-hold telemetry watches.
+   *
+   * EXPECTED is derived, then doubled, then marked uncalibrated: a typical
+   * 3-fetch pass over ~2,500-token pages accumulates ~15,000 tokens ($0.08)
+   * + prompt + output ≈ $0.15, doubled for the honesty that no live run has
+   * measured it yet. The beta2 measurement window recalibrates it against
+   * real invocation rows.
+   */
+  ac4: {
+    perPrimitive: {
+      "research.web_search": {
+        expectedMicros: 500_000,
+        maxPerAttemptMicros: 3_000_000,
+        maxAttempts: 2,
+      },
+      "extract.structured_rows": {
+        expectedMicros: 250_000,
+        maxPerAttemptMicros: 600_000,
+        maxAttempts: 3,
+      },
+      "web.fetch": {
+        expectedMicros: 300_000,
+        maxPerAttemptMicros: 4_000_000,
+        maxAttempts: 1,
+      },
+    },
+    ceilingRule: {
+      maxShareOfInternalCostBps: 4_000,
+      absoluteCapMicros: 20_000_000,
+    },
+  },
 } as const satisfies Record<string, AutomationCostPolicy>;
 
 export type AutomationCostPolicyVersion = keyof typeof AUTOMATION_COST_POLICIES;
 
 /** The version NEW quotes are built with. Accepted contracts never read it. */
-export const CURRENT_AUTOMATION_COST_POLICY: AutomationCostPolicyVersion = "ac3";
+export const CURRENT_AUTOMATION_COST_POLICY: AutomationCostPolicyVersion = "ac4";
 
 export function policyFor(version: string): AutomationCostPolicy | null {
   return Object.hasOwn(AUTOMATION_COST_POLICIES, version)

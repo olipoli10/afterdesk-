@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   ALLOWED_URL_PORTS,
@@ -241,5 +241,85 @@ describe("no direct outbound fetch may enter the work engine unguarded", () => {
       offenders,
       `Direct outbound HTTP appeared in the work engine. Route it through a module that applies src/lib/net/url-safety.ts (and, before the first real fetch, the pinned-DNS layer that guard is written for).\n${offenders.join("\n")}`
     ).toEqual([]);
+  });
+});
+
+/**
+ * 1E-beta1 WIDENS THE SCAN TO ALL OF src/. The engine-only walk above stays
+ * (zero tolerance there), but the most plausible home for a future direct
+ * fetch layer is src/lib/net or src/server — exactly the directories the old
+ * scan never visited. So: every file under src/ is walked, and direct HTTP is
+ * an ALLOWLIST of named files, each there for a reason a reviewer can check.
+ * A new fetch( anywhere else fails the build and forces the conversation.
+ *
+ * web.fetch itself is deliberately NOT in this list: it reaches the web
+ * through the provider's server-side tool via the SDK, and our process opens
+ * no socket to any target — which is why url-safety.ts stays a dormant
+ * decision core even after beta1 ships.
+ */
+describe("direct outbound HTTP anywhere in src/ is an allowlist", () => {
+  const SRC_DIR = join(__dirname, "..", "src");
+
+  /** Files whose fetch( is reviewed and legitimate: first-party API calls
+   *  (mail, embeddings) and browser-side uploads. None of them takes a URL
+   *  derived from client text or model output. authz.ts is deliberately NOT
+   *  here: its only "fetch(" was a word in a comment, and an allowlist entry
+   *  bought by prose would have exempted the auth module — the worst possible
+   *  file — from this scan forever. */
+  const DIRECT_HTTP_ALLOWLIST = [
+    join("src", "components", "file-upload.tsx"),
+    join("src", "components", "payment-actions.tsx"),
+    join("src", "components", "quote-actions.tsx"),
+    join("src", "lib", "email.ts"),
+    join("src", "lib", "embeddings.ts"),
+  ];
+
+  /**
+   * Comment-stripped view of a source file. Both checks below run on CODE:
+   * a `fetch(` in prose must neither flag a file as an offender nor satisfy
+   * the vacuity check — the latter is how a stale comment could keep a dead
+   * allowlist entry alive while a real call slipped in beside it. Whole-line
+   * `//` comments only, so "https://…" inside string literals survives.
+   */
+  const codeOnly = (source: string) =>
+    source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
+
+  function walkAll(dir: string): string[] {
+    return readdirSync(dir).flatMap((entry) => {
+      const full = join(dir, entry);
+      return statSync(full).isDirectory()
+        ? walkAll(full)
+        : /\.tsx?$/.test(entry)
+          ? [full]
+          : [];
+    });
+  }
+
+  it("no file outside the allowlist contains fetch(, axios or undici", () => {
+    const offenders: string[] = [];
+    for (const file of walkAll(SRC_DIR)) {
+      const source = codeOnly(readFileSync(file, "utf8"));
+      if (!/\bfetch\s*\(|\baxios\b|from "undici"|require\("undici"\)/.test(source)) continue;
+      const rel = relative(join(__dirname, ".."), file);
+      if (!DIRECT_HTTP_ALLOWLIST.includes(rel)) offenders.push(rel);
+    }
+    expect(
+      offenders,
+      "Direct outbound HTTP appeared outside the reviewed allowlist. If this " +
+        "is the future direct-fetch layer, it must consume url-safety.ts AND " +
+        "domain-policy.ts and prove per-redirect revalidation before joining " +
+        "the list; if it is anything else, it probably belongs behind an " +
+        "existing client.\n" +
+        offenders.join("\n")
+    ).toEqual([]);
+  });
+
+  it("is not vacuous: the allowlisted files exist and really do call out, in CODE", () => {
+    for (const rel of DIRECT_HTTP_ALLOWLIST) {
+      const source = codeOnly(readFileSync(join(__dirname, "..", rel), "utf8"));
+      expect(/\bfetch\s*\(|\baxios\b/.test(source), `${rel} no longer calls out; prune it`).toBe(
+        true
+      );
+    }
   });
 });

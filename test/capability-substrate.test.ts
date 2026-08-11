@@ -554,6 +554,25 @@ describe("a local inspection result is not an external-provider authorization", 
     expect(PROVIDER_IDS.length).toBeGreaterThanOrEqual(1);
   });
 
+  it("the provider-reach entries are pinned BY VALUE, not only derived from the table", () => {
+    /**
+     * Every reach loop in this file iterates PROVIDER_IDS, which is DERIVED
+     * from the table — so a single edit flipping an entry to "local" would
+     * silently drop it out of every provider assertion while simultaneously
+     * handing it client file handles (the runner gates on "local"), exempting
+     * it from the mixing rule and from the class gate. The three entries that
+     * send data to a provider are therefore named here, by value: changing
+     * one is a deliberate act that fails this line first. web.fetch's own
+     * table comment claims exactly this pin; this is where the claim is true.
+     */
+    expect(PLAN_PRIMITIVE_REACH["research.web_search"]).toBe("provider");
+    expect(PLAN_PRIMITIVE_REACH["extract.structured_rows"]).toBe("provider");
+    expect(PLAN_PRIMITIVE_REACH["web.fetch"]).toBe("provider");
+    // And the fetch capability never reads a client attachment: reach says
+    // where input GOES, this list says what input it may TAKE.
+    expect(FILE_READING_PRIMITIVE_IDS).not.toContain("web.fetch");
+  });
+
   it("the inspector cannot express an authorization at all", () => {
     /**
      * It has no vocabulary for one. The module names no reach, no capability
@@ -767,8 +786,19 @@ describe("provider clients form a closed set whose closure never reaches the loc
     join("src", "lib", "ai-work-engine", "stage-usage.ts"),
     join("src", "lib", "ai-work-engine", "primitives", "extract.ts"),
     join("src", "lib", "ai-work-engine", "primitives", "research.ts"),
+    // 1E-beta1: the fetch adapter. Its closure is deliberately tiny —
+    // domain-policy (pure), metered-call, settings, types — and the walk
+    // below is what keeps it that way.
+    join("src", "lib", "ai-work-engine", "primitives", "fetch.ts"),
   ];
-  const FORBIDDEN_IN_CLOSURE = ["file-inspection", "data-class"];
+  /**
+   * `codecs` joined the forbidden set in 1E-beta1: a provider-client module
+   * whose closure could parse client file BYTES would be one convenience
+   * re-export away from putting spreadsheet content into a prompt. The
+   * mixing rule refuses that at plan level; this makes it unreachable at
+   * module level too.
+   */
+  const FORBIDDEN_IN_CLOSURE = ["file-inspection", "data-class", "codecs"];
   const ROOT2 = join(__dirname, "..");
 
   function walkDir(dir: string): string[] {

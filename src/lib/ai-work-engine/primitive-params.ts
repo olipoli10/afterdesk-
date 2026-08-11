@@ -228,6 +228,30 @@ const buildXlsx = buildCsv.extend({
 });
 
 /**
+ * web.fetch — the two numbers the client's acceptance freezes, both enforced
+ * as PROVIDER API PARAMETERS (max_uses, max_content_tokens), never as prompt
+ * requests. The schema MAXIMA are load-bearing: ac4's per-attempt ceiling is
+ * computed against them (test/automation-cost-policy.test.ts pins the
+ * arithmetic), so raising either maximum is an economic change that requires
+ * a new policy version, not a schema tweak.
+ *
+ * The fetch TARGETS are deliberately NOT params. They are discovered at run
+ * time from the evidence research.web_search recorded, exactly as extract's
+ * inputs are runtime data: frozen params pin what may be spent and how far it
+ * may reach; the payload carries what it is spent on. A URL list here would
+ * be a list the planner model writes, and a param the planner writes is a
+ * param the planner can widen.
+ */
+const webFetch = z.object({
+  /** Pages one invocation may fetch. The beta1 bound is deliberately small. */
+  maxFetches: z.number().int().min(1).max(3).default(3),
+  /** Provider-side truncation per fetched page, in tokens. Text only: the
+   *  1E-beta1 probe proved PDFs escape this bound, which is why harvest
+   *  refuses binary content outright. */
+  maxContentTokens: z.number().int().min(1_000).max(10_000).default(10_000),
+});
+
+/**
  * The five original primitives take no parameters and must keep taking none:
  * they are pinned inside accepted contracts, and adding a required parameter
  * would be a behaviour change wearing a version that says otherwise.
@@ -250,6 +274,7 @@ export const PRIMITIVE_PARAM_SCHEMAS = {
   "data.compare": dataCompare,
   "data.schema_map": dataSchemaMap,
   "build.xlsx": buildXlsx,
+  "web.fetch": webFetch,
 } as const;
 
 export type PrimitiveParamsFor<K extends keyof typeof PRIMITIVE_PARAM_SCHEMAS> = z.infer<
@@ -267,6 +292,7 @@ export type DataCompareParams = z.infer<typeof dataCompare>;
 export type DataSchemaMapParams = z.infer<typeof dataSchemaMap>;
 export type BuildCsvParams = z.infer<typeof buildCsv>;
 export type BuildXlsxParams = z.infer<typeof buildXlsx>;
+export type WebFetchParams = z.infer<typeof webFetch>;
 
 /**
  * Parse a step's frozen params against its capability.

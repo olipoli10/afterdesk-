@@ -59,6 +59,15 @@ const FALLBACK_RATE: Rate = RATES["claude-opus-5"];
 /** USD per web search, list price. */
 const SEARCH_USD = 0.01;
 
+/**
+ * USD per web fetch. Anthropic's documented price IS zero — "no additional
+ * charges beyond standard token costs", verified 2026-08-11 — so this zero is
+ * a recorded list price, not an unknown resolving to free. The line exists so
+ * the assumption is visible and so a future price change is a one-constant
+ * edit that every reservation and every settlement picks up together.
+ */
+const FETCH_USD = 0;
+
 function rateFor(model: string): Rate {
   if (Object.hasOwn(RATES, model)) return RATES[model];
   // Tolerate a dated suffix (claude-haiku-4-5-20251001) by longest prefix.
@@ -82,6 +91,10 @@ export function costMicrosFor(model: string, tokens: TokenCounts): number {
 
 export function searchCostMicros(searchCount: number): number {
   return Math.ceil(Math.max(0, searchCount) * SEARCH_USD * MICROS_PER_USD);
+}
+
+export function fetchCostMicros(fetchCount: number): number {
+  return Math.ceil(Math.max(0, fetchCount) * FETCH_USD * MICROS_PER_USD);
 }
 
 /** For display only. Never used in a comparison or a stored amount. */

@@ -22,6 +22,13 @@ import {
   MAX_DESCRIPTION_CHARS_IN_PROMPT,
   MAX_TARGETS_IN_PROMPT,
 } from "@/lib/ai-work-engine/primitives/research";
+import {
+  MAX_CANDIDATE_URLS_IN_PROMPT,
+  MAX_CANDIDATE_URL_CHARS,
+  MAX_FIELDS_CHARS_IN_PROMPT,
+  MAX_OBJECTIVE_CHARS_IN_PROMPT,
+} from "@/lib/ai-work-engine/primitives/fetch";
+import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
 
 const step = (over: Partial<PreflightStep> = {}): PreflightStep => ({
   order: 1,
@@ -29,6 +36,7 @@ const step = (over: Partial<PreflightStep> = {}): PreflightStep => ({
   primitiveVersion: 1,
   automatable: true,
   estimatedAiCostCents: 25,
+  dependsOnOrder: [],
   ...over,
 });
 
@@ -108,7 +116,37 @@ describe("a policy is a historical record, not a mutable setting", () => {
       maxPerAttemptMicros: 600_000,
       maxAttempts: 3,
     });
-    expect(CURRENT_AUTOMATION_COST_POLICY).toBe("ac3");
+    // ac3 also never priced a fetch: web.fetch postdates it, and a quote
+    // built on ac3 must keep funding zero attempts of it forever.
+    expect(attemptsUnder("ac3", "web.fetch")).toBe(0);
+  });
+
+  it("ac4 prices web.fetch and copies research and extract forward unchanged", () => {
+    /**
+     * The research and extract rows are pinned EQUAL to ac3's on purpose: a
+     * research+extract-only mandate must quote to the cent under ac4 what it
+     * quoted under ac3, so the only observable change is that a plan may now
+     * carry a fetch step.
+     */
+    expect(AUTOMATION_COST_POLICIES.ac4.perPrimitive["research.web_search"]).toEqual(
+      AUTOMATION_COST_POLICIES.ac3.perPrimitive["research.web_search"]
+    );
+    expect(AUTOMATION_COST_POLICIES.ac4.perPrimitive["extract.structured_rows"]).toEqual(
+      AUTOMATION_COST_POLICIES.ac3.perPrimitive["extract.structured_rows"]
+    );
+    /**
+     * The fetch row is probe arithmetic (see the ac4 comment): ONE funded
+     * attempt because the provider's content bound exempts binary content,
+     * so a disguised binary is the one overrun a retry must not repeat; a
+     * cap above the measured residual; an expected figure that is derived,
+     * doubled and explicitly uncalibrated until beta2 measures it.
+     */
+    expect(AUTOMATION_COST_POLICIES.ac4.perPrimitive["web.fetch"]).toEqual({
+      expectedMicros: 300_000,
+      maxPerAttemptMicros: 4_000_000,
+      maxAttempts: 1,
+    });
+    expect(CURRENT_AUTOMATION_COST_POLICY).toBe("ac4");
   });
 
   it("a version that never named a retry budget funded exactly ONE attempt", () => {
@@ -187,6 +225,110 @@ describe("the frozen ceiling actually covers the runtime worst case", () => {
       maxSearches: 0,
     });
     expect(BigInt(worst)).toBeLessThanOrEqual(cap);
+  });
+
+  it("a maximal bounded fetch call fits under the ac4 cap AT THE SCHEMA MAXIMA", () => {
+    /**
+     * Computed against the zod schema's MAXIMA, not its defaults, because the
+     * bounds are per-step params rather than code constants: the largest
+     * values the schema will freeze are the largest values an accepted
+     * contract can carry, and the cap must cover exactly those. Raising
+     * either maximum without a new policy version fails here on purpose.
+     */
+    const maxParams = parsePrimitiveParams("web.fetch", {
+      maxFetches: 3,
+      maxContentTokens: 10_000,
+    });
+    expect(maxParams).not.toBe(null);
+    expect(parsePrimitiveParams("web.fetch", { maxFetches: 4 })).toBe(null);
+    expect(parsePrimitiveParams("web.fetch", { maxContentTokens: 10_001 })).toBe(null);
+
+    const cap = BigInt(
+      AUTOMATION_COST_POLICIES.ac4.perPrimitive["web.fetch"]!.maxPerAttemptMicros
+    );
+    // The largest prompt the bounds allow: system + labels + defanged brief
+    // fields at their caps + the full candidate list at the URL length cap.
+    const maximalChars =
+      2_000 +
+      MAX_OBJECTIVE_CHARS_IN_PROMPT +
+      MAX_FIELDS_CHARS_IN_PROMPT +
+      MAX_CANDIDATE_URLS_IN_PROMPT * (MAX_CANDIDATE_URL_CHARS + 5);
+    const worst = worstCaseMicros({
+      model: "claude-opus-5",
+      maxOutputTokens: 4_000,
+      approxInputTokens: approxTokens("x".repeat(maximalChars)),
+      maxSearches: 0,
+      maxFetches: 3,
+      maxFetchContentTokens: 10_000,
+    });
+    expect(BigInt(worst)).toBeLessThanOrEqual(cap);
+    /**
+     * And the headroom is REAL, not incidental: the gap above the text worst
+     * case is what absorbs the probe-measured residual (a disguised binary
+     * escapes max_content_tokens; three 1 MB binaries at the measured ~117
+     * tokens/KB cost ≈ $3.75 in one attempt). If this margin shrinks below
+     * that, the residual stops being covered and the cap is a fiction.
+     */
+    expect(BigInt(worst) * 4n).toBeLessThanOrEqual(cap);
+  });
+
+  it("the fetch worst case is search-shaped: pre-beta callers are unchanged", () => {
+    /**
+     * The fetch terms default to zero, so every reservation computed before
+     * beta1 is byte-identical arithmetic — the ac1-ac3 pins above stay true
+     * of the running code, not merely of the table.
+     */
+    const before = worstCaseMicros({
+      model: "claude-opus-5",
+      maxOutputTokens: 12_000,
+      approxInputTokens: 5_000,
+      maxSearches: 12,
+    });
+    const withZeroFetch = worstCaseMicros({
+      model: "claude-opus-5",
+      maxOutputTokens: 12_000,
+      approxInputTokens: 5_000,
+      maxSearches: 12,
+      maxFetches: 0,
+      maxFetchContentTokens: 0,
+    });
+    expect(withZeroFetch).toBe(before);
+  });
+
+  it("a call combining search AND fetch reserves the interleaved bound, not the sum", () => {
+    /**
+     * No beta1 caller combines the two tools, and the first one that does
+     * must not quietly under-reserve: every fetched page can re-enter on
+     * every SEARCH turn too, so the safe bound is (searchSet·S + page·F) ×
+     * (S+F), which dominates the two separate triangulars.
+     */
+    const combined = worstCaseMicros({
+      model: "claude-opus-5",
+      maxOutputTokens: 4_000,
+      approxInputTokens: 1_000,
+      maxSearches: 2,
+      maxFetches: 2,
+      maxFetchContentTokens: 10_000,
+    });
+    const searchOnly = worstCaseMicros({
+      model: "claude-opus-5",
+      maxOutputTokens: 4_000,
+      approxInputTokens: 1_000,
+      maxSearches: 2,
+    });
+    const fetchOnly = worstCaseMicros({
+      model: "claude-opus-5",
+      maxOutputTokens: 4_000,
+      approxInputTokens: 1_000,
+      maxSearches: 0,
+      maxFetches: 2,
+      maxFetchContentTokens: 10_000,
+    });
+    // Strictly MORE than the two calls priced separately, even though the
+    // separate figures each count their own prompt and output: the cross
+    // terms (pages re-entering on search turns and vice versa) are real
+    // input the sum of triangulars never counts.
+    expect(combined).toBeGreaterThan(searchOnly + fetchOnly);
   });
 });
 
@@ -438,6 +580,187 @@ describe("the preflight decides the ceiling before the quote", () => {
 });
 
 /**
+ * 1E-beta1 — THE DEMOTION RESPECTS THE PLAN'S OWN DEPENDENCY GRAPH.
+ *
+ * The compiler has always applied topology rule 3 at EXECUTION time: a step
+ * whose producer is not automatable is not automatable. The preflight did
+ * not, so an economic demotion could leave the QUOTE pricing a machine
+ * consumer whose machine producer this very preflight had just removed —
+ * the client would pay machine economics for work the compiler was always
+ * going to hand to a person. These tests pin the two properties that close
+ * that: leaf-most victims first, and a cascade on every demotion.
+ */
+describe("the preflight demotes consumers with their producers", () => {
+  it("under ac4, the fetch step dies BEFORE the research that feeds it", () => {
+    /**
+     * The canonical beta1 chain, priced so exactly one of the two must go:
+     * research funds $6.00 (3.00 x 2), fetch funds $4.00 (4.00 x 1). Ranked
+     * on spend alone the victim would be research — the producer — leaving a
+     * quoted fetch step whose candidate URLs nothing will ever write. Ranked
+     * leaf-most-first, fetch goes, research survives, and the plan keeps the
+     * half that still works alone.
+     */
+    const out = runAutomationPreflight({
+      steps: [
+        step({ order: 1, primitiveId: "research.web_search", estimatedAiCostCents: 10 }),
+        step({
+          order: 2,
+          primitiveId: "web.fetch",
+          estimatedAiCostCents: 10,
+          dependsOnOrder: [1],
+        }),
+      ],
+      // $16.25 internal -> $6.50 allowed: fits research alone ($6.00), not
+      // both ($10.00).
+      internalCostCents: 1_625,
+      policyVersion: "ac4",
+    });
+    expect(out.steps.find((s) => s.order === 2)?.demotedForBudget).toBe(true);
+    expect(out.steps.find((s) => s.order === 1)?.demotedForBudget).toBe(false);
+    expect(out.automationSpendCeilingMicros).toBe(6_000_000n);
+    expect(out.demotedCount).toBe(1);
+  });
+
+  it("demoting a producer cascades through EVERY transitive consumer, multi-level", () => {
+    /**
+     * research -> fetch -> extract, squeezed until nothing fits. The victim
+     * ranking walks leaf-first, but the property that must hold whatever the
+     * order is the INVARIANT: no surviving machine step depends, directly or
+     * transitively, on a demoted one.
+     */
+    const out = runAutomationPreflight({
+      steps: [
+        step({ order: 1, primitiveId: "research.web_search", estimatedAiCostCents: 10 }),
+        step({
+          order: 2,
+          primitiveId: "web.fetch",
+          estimatedAiCostCents: 10,
+          dependsOnOrder: [1],
+        }),
+        step({
+          order: 3,
+          primitiveId: "extract.structured_rows",
+          estimatedAiCostCents: 10,
+          dependsOnOrder: [2],
+        }),
+      ],
+      // $2.50 internal -> $1.00 allowed: below even extract's funded $1.80,
+      // so everything must go — through three leaf-first iterations, with the
+      // final state fully human and the ceiling zero.
+      internalCostCents: 250,
+      policyVersion: "ac4",
+    });
+    expect(out.steps.every((s) => s.primitiveId === null)).toBe(true);
+    expect(out.automationSpendCeilingMicros).toBe(0n);
+    expect(out.demotedCount).toBe(3);
+  });
+
+  it("the cascade fires when the RANKING would spare the consumer", () => {
+    /**
+     * A producer dearer than its consumer at the same depth cannot happen
+     * (depth orders them), so force the cascade path directly: two chains,
+     * research(1)->fetch(2) and a lone extract(3). Allowance fits exactly
+     * one chainless step. fetch is deepest so it goes first; then the next
+     * iteration must pick research over extract (dearer), and NOTHING may
+     * ever leave fetch machine-quoted while research is human. The invariant
+     * checked is on the FINAL state, which is what the client signs.
+     */
+    const out = runAutomationPreflight({
+      steps: [
+        step({ order: 1, primitiveId: "research.web_search", estimatedAiCostCents: 10 }),
+        step({
+          order: 2,
+          primitiveId: "web.fetch",
+          estimatedAiCostCents: 10,
+          dependsOnOrder: [1],
+        }),
+        step({
+          order: 3,
+          primitiveId: "extract.structured_rows",
+          estimatedAiCostCents: 10,
+          dependsOnOrder: [],
+        }),
+      ],
+      // $4.75 internal -> $1.90 allowed: extract's $1.80 fits alone.
+      internalCostCents: 475,
+      policyVersion: "ac4",
+    });
+    const byOrder = new Map(out.steps.map((s) => [s.order, s]));
+    expect(byOrder.get(3)?.demotedForBudget).toBe(false);
+    expect(byOrder.get(1)?.demotedForBudget).toBe(true);
+    expect(byOrder.get(2)?.demotedForBudget).toBe(true);
+    // The invariant, stated as itself: every surviving machine step's
+    // dependencies survived too.
+    for (const s of out.steps) {
+      if (s.primitiveId === null) continue;
+      const declared = [1, 2, 3].includes(s.order)
+        ? (s.order === 2 ? [1] : [])
+        : [];
+      for (const dep of declared) {
+        expect(byOrder.get(dep)?.primitiveId).not.toBe(null);
+      }
+    }
+  });
+
+  it("a dependency cycle written by the planner cannot hang the preflight", () => {
+    const out = runAutomationPreflight({
+      steps: [
+        step({
+          order: 1,
+          primitiveId: "research.web_search",
+          estimatedAiCostCents: 10,
+          dependsOnOrder: [2],
+        }),
+        step({
+          order: 2,
+          primitiveId: "web.fetch",
+          estimatedAiCostCents: 10,
+          dependsOnOrder: [1],
+        }),
+      ],
+      internalCostCents: 100, // far below anything: both must go, promptly
+      policyVersion: "ac4",
+    });
+    expect(out.steps.every((s) => s.primitiveId === null)).toBe(true);
+    expect(out.demotedCount).toBe(2);
+  });
+
+  it("a human step mid-chain is walked through but never labelled budget-demoted", () => {
+    /**
+     * machine(1) -> human(2) -> machine(3): demoting step 1 must cascade to
+     * step 3 THROUGH the human step, and the human step itself must come out
+     * exactly as it went in — `demotedForBudget` on a step that was always a
+     * person's would misreport what this preflight did.
+     */
+    const out = runAutomationPreflight({
+      steps: [
+        step({ order: 1, primitiveId: "research.web_search", estimatedAiCostCents: 10 }),
+        step({
+          order: 2,
+          primitiveId: null,
+          automatable: false,
+          estimatedAiCostCents: 0,
+          dependsOnOrder: [1],
+        }),
+        step({
+          order: 3,
+          primitiveId: "extract.structured_rows",
+          estimatedAiCostCents: 10,
+          dependsOnOrder: [2],
+        }),
+      ],
+      // $2.50 -> $1.00 allowed: nothing fits.
+      internalCostCents: 250,
+      policyVersion: "ac4",
+    });
+    const byOrder = new Map(out.steps.map((s) => [s.order, s]));
+    expect(byOrder.get(1)?.demotedForBudget).toBe(true);
+    expect(byOrder.get(3)?.demotedForBudget).toBe(true);
+    expect(byOrder.get(2)?.demotedForBudget).toBe(false);
+  });
+});
+
+/**
  * THE RULE THE RUNNER OBEYS, TESTED AS BEHAVIOUR.
  *
  * It used to be covered only by source-string pins in workflow-runner.test.ts,
@@ -487,13 +810,29 @@ describe("how many attempts an accepted step may make", () => {
  * would attempt is the original blocker; funding more is money set aside for
  * tries that will never happen.
  */
-describe("ac3 and the registry agree about attempts", () => {
+describe("the CURRENT policy and the registry agree about attempts", () => {
+  /**
+   * Retargeted from a hardcoded "ac3" in 1E-beta1, deliberately: the loop's
+   * job is to keep TODAY's quotes and TODAY's runner in agreement, so it must
+   * follow CURRENT_AUTOMATION_COST_POLICY wherever that points. ac3's own
+   * agreement is still pinned below, restricted to the primitives ac3
+   * actually priced — history does not get retargeted.
+   */
   for (const [id, primitive] of Object.entries(REGISTRY)) {
     if (!primitive.billable) continue;
-    it(`${id}: the policy funds exactly what the registry would attempt`, () => {
-      expect(attemptsUnder("ac3", id)).toBe(primitive.maxAttempts);
+    it(`${id}: the current policy funds exactly what the registry would attempt`, () => {
+      expect(attemptsUnder(CURRENT_AUTOMATION_COST_POLICY, id)).toBe(primitive.maxAttempts);
     });
   }
+
+  it("ac3 still agrees with the registry about the primitives ac3 priced", () => {
+    expect(attemptsUnder("ac3", "research.web_search")).toBe(
+      REGISTRY["research.web_search"].maxAttempts
+    );
+    expect(attemptsUnder("ac3", "extract.structured_rows")).toBe(
+      REGISTRY["extract.structured_rows"].maxAttempts
+    );
+  });
 
   it("is not vacuous: there really are billable primitives to check", () => {
     expect(Object.values(REGISTRY).filter((p) => p.billable).length).toBeGreaterThan(0);

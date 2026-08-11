@@ -52,6 +52,17 @@ export type ExceptionMetrics = {
   workerSecondsOnTasksWithCause: { cause: string; seconds: number }[];
   /** QC corrections on those same tasks. */
   qcCorrectionsOnTasksWithCause: { cause: string; corrections: number }[];
+  /**
+   * 1E-beta1 — the two arms any web.fetch before/after reading needs, defined
+   * by INTENTION-TO-TREAT: `intended` counts eligible tasks whose executed
+   * plan carried a web.fetch step at all, whether or not its fetches worked.
+   * Conditioning the arm on success would silently drop exactly the mandates
+   * whose pages were hard to fetch and flatter the number — the survivorship
+   * bias the founder's order names. `withUsablePages` is the sub-count whose
+   * step actually put at least one fetched page into the pipeline; the gap
+   * between the two is the fetch-success rate, reported as its own fact.
+   */
+  fetchArms: { intended: number; withUsablePages: number };
   /** Collection progress against the founder's gate. */
   readiness: {
     successfulTasks: number;
@@ -114,8 +125,8 @@ export async function exceptionMetricsForAdmin(): Promise<ExceptionMetrics> {
         },
       },
       steps: {
-        where: { primitiveId: "split.exceptions" },
-        select: { outputSummary: true, order: true },
+        where: { primitiveId: { in: ["split.exceptions", "web.fetch"] } },
+        select: { primitiveId: true, outputSummary: true, order: true },
       },
       artifacts: { select: { id: true } },
     },
@@ -130,6 +141,8 @@ export async function exceptionMetricsForAdmin(): Promise<ExceptionMetrics> {
   const workerSecondsByCause = new Map<string, number>();
   const qcByCause = new Map<string, number>();
   let taskCount = 0;
+  let fetchIntended = 0;
+  let fetchWithUsablePages = 0;
 
   for (const run of runs) {
     const t = run.task;
@@ -144,6 +157,16 @@ export async function exceptionMetricsForAdmin(): Promise<ExceptionMetrics> {
     if (!eligible) continue;
     taskCount += 1;
     if (t.operationalActual?.outcomeClass === "workflow_success") successfulTasks += 1;
+
+    const fetchSteps = run.steps.filter((s) => s.primitiveId === "web.fetch");
+    if (fetchSteps.length > 0) {
+      fetchIntended += 1;
+      const usable = fetchSteps.some((s) => {
+        const summary = s.outputSummary as Record<string, unknown> | null;
+        return typeof summary?.fetchesUsable === "number" && summary.fetchesUsable > 0;
+      });
+      if (usable) fetchWithUsablePages += 1;
+    }
 
     const payload = await loadCauseTally(run.taskId);
     if (payload === null) continue;
@@ -193,6 +216,7 @@ export async function exceptionMetricsForAdmin(): Promise<ExceptionMetrics> {
       cause,
       corrections,
     })),
+    fetchArms: { intended: fetchIntended, withUsablePages: fetchWithUsablePages },
     readiness: {
       successfulTasks,
       successfulTasksTarget: COLLECTION_TARGET_TASKS,

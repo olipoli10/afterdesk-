@@ -39,6 +39,7 @@ const PRIMITIVE_GUIDE = `- research.web_search: public web search for candidate 
 - data.compare: pure code. Difference two sets by key. params: {left, right, key, into}.
 - data.schema_map: pure code. Rename columns per an EXPLICIT mapping. params: {dataset, mapping:[{from, to}], unmapped, into}.
 - build.xlsx: pure code. Write a candidate workbook. params: {dataset, columns, sheetName}.
+- web.fetch: read the full text of pages research.web_search already cited, so extraction works from page content instead of titles. Plan it ONLY directly after a research.web_search step, with depends_on_order naming that step. params: {maxFetches, maxContentTokens}. It cannot search, fetches pages only (never PDFs or files), and a mandate that reads a client file never includes it.
 
 PARAMS ARE PART OF THE CONTRACT. A machine step must carry a "params" object that matches its primitive; a human step and a primitive that takes none use null or {}. Params that do not fit their primitive make the step a person's work, so write what the brief actually supports and nothing more.
 

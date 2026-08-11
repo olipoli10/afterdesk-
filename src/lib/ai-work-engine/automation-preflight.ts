@@ -40,6 +40,17 @@ export type PreflightStep = {
   automatable: boolean;
   /** The planner's own figure for this step, in cents. */
   estimatedAiCostCents: number;
+  /**
+   * 1E-beta1: the plan's own dependency edges, REQUIRED so a caller cannot
+   * silently opt out of the cascade below. The compiler already demotes a
+   * step whose producer is not automatable (topology rule 3) — at EXECUTION
+   * time. Without the same rule here, the QUOTE would price a consumer as
+   * machine work after this preflight demoted its producer for budget, and
+   * the client would pay for automation the compiler was always going to
+   * hand to a person. The two layers must agree, and the quote is the one
+   * the client signs.
+   */
+  dependsOnOrder: number[];
 };
 
 export type PreflightStepResult = {
@@ -144,6 +155,78 @@ export function runAutomationPreflight(input: {
   const demoted = new Set<number>();
   const maxIterations = input.steps.length + 1;
 
+  /**
+   * ── THE DEPENDENCY GRAPH, READ ONCE ──
+   *
+   * Two derived structures, both cycle-safe because the edges are planner
+   * output and a model can write a loop:
+   *
+   * `depthOf` — the longest dependency chain UNDER a step, so the victim
+   * ranking can prefer the leaf-most step. Demoting a consumer before its
+   * producer is strictly cheaper: the producer's output still shortens the
+   * human's job, while a consumer without its producer is a machine step
+   * waiting for input that will never exist. The canonical case is exactly
+   * research → fetch: ranked on spend alone, research at $3.00 × 2 dies
+   * before fetch at $4.00 × 1 and leaves a fetch step whose candidate URLs
+   * nothing will ever produce.
+   *
+   * `dependentsOf` — the reverse edges, for the cascade: WHENEVER a step is
+   * demoted, every automatable step that transitively consumes its output is
+   * demoted with it, in the same iteration. Fail-closed and deliberately
+   * blunt: a false dependency written by the planner costs automation, never
+   * money, and the planner prompt already fights false edges for its own
+   * reasons.
+   */
+  const byOrder = new Map(input.steps.map((s) => [s.order, s]));
+  const depthMemo = new Map<number, number>();
+  /**
+   * Inside a planner-written CYCLE, memoized depths are truncated,
+   * call-order artifacts rather than a well-defined property — deterministic
+   * for a given input (the sort's evaluation order is fixed) but not
+   * meaningful. Safe here because cycle members are mutually dependent, so
+   * the cascade below demotes the whole cycle the moment any member goes:
+   * their relative ranking never decides anything on its own.
+   */
+  const depthOf = (order: number, trail: Set<number>): number => {
+    const cached = depthMemo.get(order);
+    if (cached !== undefined) return cached;
+    if (trail.has(order)) return 0; // a cycle proves nothing about depth
+    const step = byOrder.get(order);
+    if (!step || step.dependsOnOrder.length === 0) {
+      depthMemo.set(order, 0);
+      return 0;
+    }
+    trail.add(order);
+    const depth = 1 + Math.max(...step.dependsOnOrder.map((d) => depthOf(d, trail)));
+    trail.delete(order);
+    depthMemo.set(order, depth);
+    return depth;
+  };
+  const dependentsOf = new Map<number, number[]>();
+  for (const s of input.steps) {
+    for (const dep of s.dependsOnOrder) {
+      dependentsOf.set(dep, [...(dependentsOf.get(dep) ?? []), s.order]);
+    }
+  }
+  /**
+   * Demote one order AND everything that transitively consumes its output.
+   * Traversal walks through EVERY dependent (a human step can sit mid-chain),
+   * but only machine steps are MARKED: `demotedForBudget` on a step that was
+   * always a person's would misreport what this preflight did.
+   */
+  const demoteWithDependents = (order: number) => {
+    const queue = [order];
+    const visited = new Set<number>();
+    while (queue.length > 0) {
+      const current = queue.pop() as number;
+      if (visited.has(current)) continue;
+      visited.add(current);
+      const step = byOrder.get(current);
+      if (step && step.automatable && step.primitiveId !== null) demoted.add(current);
+      queue.push(...(dependentsOf.get(current) ?? []));
+    }
+  };
+
   for (let iteration = 0; iteration <= maxIterations; iteration++) {
     const billable = input.steps.filter(
       (s) => s.automatable && s.primitiveId !== null && !demoted.has(s.order)
@@ -231,16 +314,27 @@ export function runAutomationPreflight(input: {
       };
     }
 
-    // Costliest reservation first; on a tie, the LATER step, so the early
-    // pipeline stages that everything downstream reads from survive longest.
+    /**
+     * VICTIM RANKING, three keys, all deterministic:
+     *
+     *   1. DEEPEST DEPENDENCY CHAIN FIRST. The leaf-most consumer goes before
+     *      anything that feeds it, so the pipeline loses its ends before its
+     *      sources and the cascade below stays a belt rather than the usual
+     *      path. Demoting fetch keeps research's evidence shortening the
+     *      human's job; demoting research would take both.
+     *   2. Then the costliest contract spend (per-attempt worst case times
+     *      funded attempts — the same quantity the ceiling is built from).
+     *      Ranking on one attempt would sometimes drop a cheap-but-thrice-
+     *      funded step and leave the plan still over budget.
+     *   3. Then the LATER step, so the early pipeline stages that everything
+     *      downstream reads from survive longest.
+     */
     const victim = [...billable]
       .filter((s) => perStep.has(s.order))
       .sort((a, b) => {
-        // Rank on what the step can actually spend under this contract, which
-        // is its per-attempt worst case times the attempts it funds — the same
-        // quantity the ceiling is built from. Ranking on one attempt would
-        // sometimes drop a cheap-but-thrice-funded step and leave the plan
-        // still over budget.
+        const ad = depthOf(a.order, new Set());
+        const bd = depthOf(b.order, new Set());
+        if (ad !== bd) return bd - ad;
         const am = (perStep.get(a.order)?.max ?? 0n) * BigInt(perStep.get(a.order)?.attempts ?? 0);
         const bm = (perStep.get(b.order)?.max ?? 0n) * BigInt(perStep.get(b.order)?.attempts ?? 0);
         if (am !== bm) return bm > am ? 1 : -1;
@@ -255,7 +349,15 @@ export function runAutomationPreflight(input: {
       for (const s of billable) demoted.add(s.order);
       continue;
     }
-    demoted.add(victim.order);
+    /**
+     * The victim goes, and so does every machine step that transitively
+     * consumes its output — in the SAME iteration, so no intermediate state
+     * ever exists in which a quoted machine step waits on a producer this
+     * preflight already took away. The compiler applies the identical rule at
+     * execution (topology rule 3, `depends_on_human`); doing it here is what
+     * keeps the QUOTE's economics describing the plan that will actually run.
+     */
+    demoteWithDependents(victim.order);
   }
 
   /* c8 ignore next 3 */

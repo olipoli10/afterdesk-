@@ -87,8 +87,24 @@ export type WorkflowRow = {
    * cites, extract reads and structures. Kept on the row rather than in a
    * side channel so a replay of extract has everything it needs from its
    * input alone.
+   *
+   * The three optional fields are 1E-beta1 provenance, written by web.fetch
+   * when it upgrades an item's text from a page title to a page excerpt. All
+   * optional for the rowId reason: payloads written before the fields existed
+   * must still parse, and research@1 keeps writing exactly the two-field
+   * shape it always wrote. `retrievedAt` comes from the provider's own result
+   * block (it may predate the call: the provider caches fetches);
+   * `contentSha256` is OUR hash of the FULL retrieved text, so a later
+   * re-fetch can prove whether the page moved even though only an excerpt
+   * rides in the payload.
    */
-  evidence?: { url: string; text: string }[];
+  evidence?: {
+    url: string;
+    text: string;
+    kind?: "fetched_excerpt";
+    retrievedAt?: string;
+    contentSha256?: string;
+  }[];
 };
 
 /**
@@ -211,6 +227,13 @@ export type InvocationRecord = {
   cacheReadTokens: number;
   cacheWriteTokens: number;
   searchCount: number;
+  /**
+   * 1E-beta1. Fetches the provider counted for this call
+   * (usage.server_tool_use.web_fetch_requests). Priced at the documented $0
+   * per fetch — the tokens carry the cost — so this is telemetry the bulk
+   * gate and the fetch-success rate read, never a billing input on its own.
+   */
+  fetchCount: number;
   costMicros: number;
   durationMs: number;
   ok: boolean;
