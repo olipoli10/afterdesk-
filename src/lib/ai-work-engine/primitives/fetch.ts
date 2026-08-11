@@ -3,6 +3,10 @@ import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import { isBlockedProviderTargetHost } from "@/lib/net/domain-policy";
 import {
+  WEB_FETCH_ENVELOPE,
+  absoluteWorstCaseMicros,
+} from "@/lib/ai-work-engine/web-fetch-envelope";
+import {
   approxTokens,
   meteredCall,
   worstCaseMicros,
@@ -70,39 +74,31 @@ import type {
 const MAX_TOKENS = 4_000;
 
 /**
- * ── THE MODEL IS PINNED, AND THE PIN IS THE ECONOMIC PROOF ──
+ * ── THE MODEL IS PINNED, AND THE PIN IS HALF THE ECONOMIC PROOF ──
  *
  * Every other primitive reads settings.pricingModel. This one must not, for a
  * reason that is arithmetic before it is taste: the absolute worst case of a
- * server-tool loop is a function of the model's CONTEXT WINDOW, because that
- * window is the one bound the provider physically cannot exceed per
- * iteration — a fetched binary escapes max_content_tokens (the beta1 probe
- * proved it), but no iteration can be inferred, and therefore billed as model
- * input, beyond what fits the window. With iterations bounded by
- * max_uses + 1 (failed fetches count against max_uses, documented), the
- * absolute billable exposure of one invocation is
+ * server-tool loop is a function of the model's CONTEXT WINDOW (see
+ * web-fetch-envelope.ts for the theorem and the rate audit). On a 1M-window
+ * model at the dearest rate that bound is ~$20, unreservable under the
+ * accepted ceiling rule; on claude-haiku-4-5 it is $1.68, comfortably under
+ * the $4.00 ac4 hold. The pin also closes a post-acceptance channel:
+ * pricingModel is an admin-editable runtime setting, and an accepted fetch
+ * step whose worst case moved with a settings edit would violate the freeze
+ * this platform is built on. A constant cannot be edited by a screen.
  *
- *   (maxFetches + 1) x (window x worst-in-rate + max_tokens x out-rate)
- *
- * On a 1M-window model at the dearest rate that is ~$20 — unreservable under
- * the accepted ceiling rule. On claude-haiku-4-5 (200,000-token window,
- * platform docs read 2026-08-11; web_fetch_20260209 with
- * allowed_callers ["direct"] verified live on this model, probe round 3) it
- * is ~$1.08 at the schema maxima, under ac4's $4.00 hold with a 3.7x margin.
- * The pin also closes a post-acceptance channel: pricingModel is an
- * admin-editable runtime setting, and an accepted fetch step whose worst case
- * moved with a settings edit would violate the freeze this platform is built
- * on. A constant cannot be edited by a screen.
+ * The OTHER half is the runtime guard below, because a constant CAN be edited
+ * by a deploy. A pinning test protects today's code; it cannot protect a
+ * contract accepted today from a deploy next month that swaps the model while
+ * leaving web.fetch@1 in place. Only a check made against the frozen ceiling,
+ * at the moment of execution, can do that.
  *
  * The quality trade is small on purpose: the excerpts, hashes and timestamps
  * are harvested BY CODE from typed blocks — the model here only chooses which
  * candidates to fetch and writes a short report, while extraction stays on
- * the pricing model. test/automation-cost-policy.test.ts pins the model, the
- * window and the ceiling arithmetic together; changing any of the three is a
- * deliberate re-proof, not a tweak.
+ * the pricing model.
  */
-export const FETCH_MODEL = "claude-haiku-4-5";
-export const FETCH_MODEL_CONTEXT_WINDOW_TOKENS = 200_000;
+export const FETCH_MODEL = WEB_FETCH_ENVELOPE.model;
 
 /** Cancelled here, below the registry's 200 s guard for this primitive. */
 const CALL_TIMEOUT_MS = 180_000;
@@ -176,6 +172,68 @@ export async function runWebFetch(ctx: PrimitiveContext): Promise<PrimitiveResul
 
   const maxFetches = Number(ctx.params.maxFetches ?? 3);
   const maxContentTokens = Number(ctx.params.maxContentTokens ?? 10_000);
+
+  /**
+   * ── THE ACCEPTED-CONTRACT ECONOMIC GUARD ──
+   *
+   * The absolute worst case of the implementation that is ABOUT TO RUN,
+   * against the per-attempt ceiling the client's contract froze. Those two
+   * numbers come from opposite ends of time — the envelope is today's deploy,
+   * `costCeilingMicros` is `maxCostMicrosPerAttemptAtQuote` as reserved by
+   * the runner — and the whole point is that nothing keeps them aligned
+   * except this comparison.
+   *
+   * The failure it exists for: a future deploy changes the model (or the
+   * window, or the fetch ceiling) while leaving web.fetch@1 in place. Every
+   * pinning test still passes, because the tests describe the new code. A
+   * mandate accepted under the old envelope would then execute an
+   * implementation whose worst case its contract never funded — the exact
+   * "nothing post-acceptance widens spend" violation this platform refuses.
+   *
+   * So: FAIL CLOSED BEFORE THE PROVIDER IS TOUCHED. No client is built, no
+   * tokens are spent, nothing settles. The invocation row records a
+   * `cancelled_before_dispatch` attempt at zero cost — measured, not assumed
+   * — which releases the hold and leaves an auditable trace of the drift;
+   * the throw sends the step down the existing exhausted -> pause -> sweep ->
+   * human path at full payout.
+   *
+   * This runs before the candidate scan on purpose: a drifted deployment is
+   * broken for every fetch step, not only the ones that found something to
+   * fetch.
+   */
+  const absoluteWorstCase = absoluteWorstCaseMicros(WEB_FETCH_ENVELOPE, maxFetches);
+  if (absoluteWorstCase > ctx.costCeilingMicros) {
+    const detail =
+      `web.fetch economic implementation drift: the current implementation ` +
+      `(${WEB_FETCH_ENVELOPE.provider}/${WEB_FETCH_ENVELOPE.model}, ` +
+      `${WEB_FETCH_ENVELOPE.contextWindowTokens} token window, ` +
+      `${maxFetches} fetches) can bill up to ${absoluteWorstCase} micros, ` +
+      `above the ${ctx.costCeilingMicros} micros this accepted contract froze. ` +
+      `Refused before dispatch; this step is a person's work.`;
+    await ctx.recordInvocation({
+      operationKey,
+      provider: WEB_FETCH_ENVELOPE.provider,
+      model: WEB_FETCH_ENVELOPE.model,
+      providerIdempotencyKey: null,
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      searchCount: 0,
+      fetchCount: 0,
+      // Nothing left the process, so this zero is measured, not assumed.
+      costMicros: 0,
+      durationMs: 0,
+      ok: false,
+      error: detail,
+      dispatchState: "cancelled_before_dispatch",
+      errorClass: "quota",
+      httpStatus: null,
+      startedAt: new Date(),
+      finishedAt: new Date(),
+    });
+    throw new Error(detail);
+  }
 
   /**
    * CANDIDATES, code-computed. First-seen order over the evidence the search

@@ -23,14 +23,16 @@ import {
   MAX_TARGETS_IN_PROMPT,
 } from "@/lib/ai-work-engine/primitives/research";
 import {
-  FETCH_MODEL,
-  FETCH_MODEL_CONTEXT_WINDOW_TOKENS,
   MAX_CANDIDATE_URLS_IN_PROMPT,
   MAX_CANDIDATE_URL_CHARS,
   MAX_FIELDS_CHARS_IN_PROMPT,
   MAX_OBJECTIVE_CHARS_IN_PROMPT,
 } from "@/lib/ai-work-engine/primitives/fetch";
-import { costMicrosFor } from "@/lib/ai-work-engine/tool-cost";
+import {
+  WEB_FETCH_ENVELOPE,
+  absoluteWorstCaseMicros,
+} from "@/lib/ai-work-engine/web-fetch-envelope";
+import { PLAN_PRIMITIVES } from "@/lib/ai-work-engine/primitive-vocabulary";
 import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
 
 const step = (over: Partial<PreflightStep> = {}): PreflightStep => ({
@@ -298,33 +300,58 @@ describe("the frozen ceiling actually covers the runtime worst case", () => {
      * canary watching for the impossible — never the mechanism by which we
      * discover the estimate was too low.
      *
-     * The three pinned inputs — model, window, cap — are asserted together:
-     * changing any of them is a deliberate re-proof of this theorem, not a
-     * tweak. The window figure is the platform documentation's, read
-     * 2026-08-11; web_fetch_20260209 with allowed_callers ["direct"] was
-     * verified live on this model the same day (probe round 3).
+     * The envelope is pinned FIELD BY FIELD, because the theorem is only
+     * true of this exact implementation: changing any field is a deliberate
+     * re-proof, not a tweak. The window and rates are the platform
+     * documentation's, read 2026-08-11; web_fetch_20260209 with
+     * allowed_callers ["direct"] was verified live on this model the same day
+     * (probe round 3).
      */
-    expect(FETCH_MODEL).toBe("claude-haiku-4-5");
-    expect(FETCH_MODEL_CONTEXT_WINDOW_TOKENS).toBe(200_000);
-
-    const maxFetches = 3; // schema maximum, pinned above
-    const iterations = maxFetches + 1;
-    const absoluteCeilingMicros = costMicrosFor(FETCH_MODEL, {
-      inputTokens: 0,
-      outputTokens: iterations * 4_000,
-      cacheReadTokens: 0,
-      // Priced entirely at the cache-write rate, the dearest per-token rate
-      // the model has: a bound priced at the cheap rate would not be one.
-      cacheWriteTokens: iterations * FETCH_MODEL_CONTEXT_WINDOW_TOKENS,
+    expect(WEB_FETCH_ENVELOPE).toEqual({
+      primitiveVersion: 1,
+      provider: "anthropic",
+      model: "claude-haiku-4-5",
+      toolType: "web_fetch_20260209",
+      contextWindowTokens: 200_000,
+      maxOutputTokens: 4_000,
+      maxFetchesCeiling: 3,
+      // $2/MTok: the 1-HOUR cache-write rate, dearest in Haiku 4.5's whole
+      // row ($1 base, $1.25 5m-write, $2 1h-write, $0.10 read, $5 output).
+      // The reachable maximum here is $1.25 (no extended TTL is set), so the
+      // bound is priced ABOVE what this call can actually incur.
+      worstInputRateMicrosPerMillion: 2_000_000,
+      outputRateMicrosPerMillion: 5_000_000,
     });
-    const holdMicros = AUTOMATION_COST_POLICIES.ac4.perPrimitive["web.fetch"]!.maxPerAttemptMicros;
+    // The envelope describes the capability version the vocabulary declares.
+    expect(WEB_FETCH_ENVELOPE.primitiveVersion).toBe(PLAN_PRIMITIVES["web.fetch"]);
 
-    // ~$1.08 against $4.00: proved, with margin for a revised window or rate.
-    expect(absoluteCeilingMicros).toBeLessThanOrEqual(holdMicros);
-    expect(absoluteCeilingMicros).toBe(1_080_000);
+    const holdMicros = BigInt(
+      AUTOMATION_COST_POLICIES.ac4.perPrimitive["web.fetch"]!.maxPerAttemptMicros
+    );
+    const ceiling = absoluteWorstCaseMicros(WEB_FETCH_ENVELOPE, 3);
+
+    // 4 iterations x (200,000 x $2/M + 4,000 x $5/M) = 4 x $0.42 = $1.68,
+    // against a $4.00 hold: proved, with margin for a revised window or rate.
+    expect(ceiling).toBe(1_680_000n);
+    expect(ceiling).toBeLessThanOrEqual(holdMicros);
     // ONE funded attempt is part of the same proof: the residual cannot
     // recur on a retry the contract does not fund.
     expect(AUTOMATION_COST_POLICIES.ac4.perPrimitive["web.fetch"]!.maxAttempts).toBe(1);
+  });
+
+  it("the bound grows with the frozen fetch count, and is never trimmed back into range", () => {
+    /**
+     * The guard computes the bound from the fetch count the CONTRACT froze,
+     * unclamped. A frozen value beyond today's schema — a plan quoted under a
+     * future schema, or hand-edited — must make the bound LARGER (and so fail
+     * the runtime guard), never be quietly trimmed to the current ceiling.
+     */
+    expect(absoluteWorstCaseMicros(WEB_FETCH_ENVELOPE, 1)).toBe(840_000n);
+    expect(absoluteWorstCaseMicros(WEB_FETCH_ENVELOPE, 3)).toBe(1_680_000n);
+    const beyondSchema = absoluteWorstCaseMicros(WEB_FETCH_ENVELOPE, 20);
+    expect(beyondSchema).toBeGreaterThan(
+      BigInt(AUTOMATION_COST_POLICIES.ac4.perPrimitive["web.fetch"]!.maxPerAttemptMicros)
+    );
   });
 
   it("the fetch worst case is search-shaped: pre-beta callers are unchanged", () => {

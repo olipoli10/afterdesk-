@@ -42,6 +42,10 @@ vi.mock("@anthropic-ai/sdk", () => ({
 // loud reminder that the pin is load-bearing, not stylistic.
 
 import { runWebFetch, EXCERPT_CHARS, FETCH_MODEL } from "@/lib/ai-work-engine/primitives/fetch";
+import {
+  WEB_FETCH_ENVELOPE,
+  absoluteWorstCaseMicros,
+} from "@/lib/ai-work-engine/web-fetch-envelope";
 
 /* ────────────────────────────── fixtures ────────────────────────────── */
 
@@ -414,6 +418,77 @@ describe("corpus: what the provider sends back", () => {
     expect(createMock).not.toHaveBeenCalled();
     expect(invocations[0].dispatchState).toBe("cancelled_before_dispatch");
     expect(invocations[0].errorClass).toBe("quota");
+  });
+});
+
+describe("the accepted-contract economic guard", () => {
+  const A = "https://acme.example/about";
+
+  /**
+   * POSITIVE CONTROL. The guard is a gate, not a wall: at the ceiling an
+   * accepted ac4 contract actually freezes ($4.00), today's implementation
+   * is under its own absolute bound and the provider IS called. Without
+   * this, every hostile assertion below would pass on a primitive that
+   * simply never calls anything.
+   */
+  it("passes at the real frozen ac4 ceiling: the provider is called", async () => {
+    respond([okFetch(A, "the page text")], 1);
+    const { ctx, invocations } = makeCtx({
+      rows: [evidenceRow([A])],
+      ceiling: 4_000_000n, // ac4's frozen maxPerAttemptMicros for web.fetch
+    });
+    const result = await runWebFetch(ctx);
+    expect(createMock).toHaveBeenCalledTimes(1);
+    expect(result.summary.fetchesUsable).toBe(1);
+    expect(invocations[0].dispatchState).toBe("settled");
+  });
+
+  it("the bound comes from the CURRENT envelope, not from a constant", () => {
+    /**
+     * The drift this guard exists for, shown as arithmetic before it is shown
+     * as behaviour: one frozen ceiling, two implementations. A contract
+     * quoted when the envelope was a 64k-window model was adequately funded
+     * at $1.20; the same frozen ceiling does NOT fund today's 200k envelope.
+     * Nothing about the contract changed — the implementation under it did.
+     */
+    const frozenCeiling = 1_200_000n;
+    const envelopeAtAcceptance = { ...WEB_FETCH_ENVELOPE, contextWindowTokens: 64_000 };
+    expect(absoluteWorstCaseMicros(envelopeAtAcceptance, 3)).toBeLessThanOrEqual(frozenCeiling);
+    expect(absoluteWorstCaseMicros(WEB_FETCH_ENVELOPE, 3)).toBeGreaterThan(frozenCeiling);
+  });
+
+  it("a contract whose frozen ceiling no longer covers the implementation fails closed", async () => {
+    // The runtime half of the same story: that under-funded contract reaches
+    // the primitive, and no provider call happens.
+    respond([okFetch(A, "never fetched")], 1);
+    const { ctx, invocations, artifacts } = makeCtx({
+      rows: [evidenceRow([A])],
+      ceiling: 1_200_000n,
+    });
+
+    await expect(runWebFetch(ctx)).rejects.toThrow(/economic implementation drift/);
+
+    // No provider call, no tokens, no settlement, no artifact.
+    expect(createMock).not.toHaveBeenCalled();
+    expect(artifacts).toHaveLength(0);
+    // One auditable row: refused before dispatch, cost measured at zero, and
+    // the drift named in the record rather than only in a log line. This
+    // dispatch state is what releases the hold on the runner's side.
+    expect(invocations).toHaveLength(1);
+    expect(invocations[0].dispatchState).toBe("cancelled_before_dispatch");
+    expect(invocations[0].costMicros).toBe(0);
+    expect(invocations[0].ok).toBe(false);
+    expect(invocations[0].error).toContain("economic implementation drift");
+    expect(invocations[0].model).toBe(WEB_FETCH_ENVELOPE.model);
+  });
+
+  it("fires before the candidate scan: a drifted deployment is broken for every fetch step", async () => {
+    // Not only for the steps that found something to fetch. A mandate with
+    // zero candidates would otherwise pass through happily under an
+    // implementation its contract cannot pay for.
+    const { ctx } = makeCtx({ rows: [evidenceRow([])], ceiling: 1_200_000n });
+    await expect(runWebFetch(ctx)).rejects.toThrow(/economic implementation drift/);
+    expect(createMock).not.toHaveBeenCalled();
   });
 });
 
