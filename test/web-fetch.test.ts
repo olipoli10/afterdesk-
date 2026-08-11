@@ -35,11 +35,13 @@ vi.mock("@anthropic-ai/sdk", () => ({
   },
 }));
 
-vi.mock("@/lib/settings", () => ({
-  getSettings: async () => ({ pricingModel: "claude-opus-5" }),
-}));
+// No settings mock, deliberately: the primitive's model is PINNED to a code
+// constant (the economic proof depends on that model's context window), so
+// this module must not read settings.pricingModel at all. If a refactor
+// reintroduces the read, these tests fail on the real settings import — a
+// loud reminder that the pin is load-bearing, not stylistic.
 
-import { runWebFetch, EXCERPT_CHARS } from "@/lib/ai-work-engine/primitives/fetch";
+import { runWebFetch, EXCERPT_CHARS, FETCH_MODEL } from "@/lib/ai-work-engine/primitives/fetch";
 
 /* ────────────────────────────── fixtures ────────────────────────────── */
 
@@ -229,6 +231,13 @@ describe("corpus: pages that fetch (business sites, official pricing, simple HTM
       params: { maxFetches: 2, maxContentTokens: 5_000 },
     });
     await runWebFetch(ctx);
+
+    const request = sentRequest() as unknown as { model: string };
+    // The model pin at its call site: claude-haiku-4-5, whose 200k context
+    // window is what makes the absolute cost ceiling provable (see the
+    // theorem test in automation-cost-policy.test.ts). Never pricingModel.
+    expect(request.model).toBe(FETCH_MODEL);
+    expect(FETCH_MODEL).toBe("claude-haiku-4-5");
 
     const tool = sentRequest().tools[0];
     expect(tool.type).toBe("web_fetch_20260209");

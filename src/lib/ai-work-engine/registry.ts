@@ -300,9 +300,12 @@ export const REGISTRY: Record<PlanPrimitiveId, Primitive> = {
      * provider's content bound does not apply to binary content
      * (.scratch/probe-web-fetch-results-2.json: a 444 KB PDF billed 53,754
      * input tokens under a 2,000-token bound), so a disguised binary is the
-     * one place a fetch attempt can overrun its reservation. Funding a single
-     * attempt caps that residual at one overrun per mandate; ac4's comment
-     * carries the arithmetic. Raising this is an ac5 decision, not a tweak.
+     * one fetch whose size the page owner chooses. What bounds it is the
+     * pinned model's context window (fetch.ts, FETCH_MODEL): the absolute
+     * ceiling of one attempt is proved UNDER the frozen hold in ac4's
+     * comment and its theorem test, so even that residual cannot settle
+     * above its reservation. One funded attempt keeps the proof per-mandate
+     * simple. Raising this is an ac5 decision, not a tweak.
      */
     maxAttempts: 1,
     billable: true,

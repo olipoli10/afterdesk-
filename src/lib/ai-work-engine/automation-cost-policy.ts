@@ -207,16 +207,24 @@ export const AUTOMATION_COST_POLICIES = {
    * ($0.30) + bounded prompt re-sent per turn (~$0.05) + 4,000 output tokens
    * ($0.10) + $0 per fetch ≈ $0.45.
    *
-   * RESIDUAL: a binary served from an extensionless URL evades the candidate
-   * filter, and its size is the page owner's choice. At the probe's measured
-   * density three 1 MB disguised binaries cost ≈ $3.75 in one attempt. The
-   * cap is set ABOVE that residual, the primitive funds exactly ONE attempt
-   * (registry.ts carries the same probe reasoning), and the harvest refuses
-   * binary content so the overrun can never recur on a retry it does not
-   * have. Beyond ~1 MB × 3 the context window starts failing the turn before
-   * the money is spent. The one invariant this residual can still break —
-   * settled above held on a single attempt — is exactly what the
-   * settle-over-hold telemetry watches.
+   * RESIDUAL, BOUNDED BY PROOF RATHER THAN BY EXPERIENCE: a binary served
+   * from an extensionless URL evades the candidate filter and escapes
+   * max_content_tokens, and its size is the page owner's choice — so no
+   * per-document figure can bound it. What bounds it is the model: the
+   * primitive's model is PINNED to claude-haiku-4-5 (fetch.ts, FETCH_MODEL),
+   * whose 200,000-token context window is the amount the provider physically
+   * cannot exceed per loop iteration, and iterations are bounded by
+   * max_uses + 1 because failed fetches count against max_uses (documented).
+   * Absolute ceiling at the schema maxima, priced at the model's dearest
+   * per-token rate (cache-write $1.25/M) with the full output allowance per
+   * iteration: (3+1) x (200,000 x $1.25/M + 4,000 x $5/M) = $1.08. The $4.00
+   * cap covers it 3.7x over, deliberately: the margin is what keeps this row
+   * valid if the window or a rate is ever revised upward, and the pinning
+   * test fails first either way. This argument does NOT assume a context
+   * overflow is free — it assumes only that tokens beyond the window cannot
+   * be inferred, and what cannot run cannot be billed as model input. Under
+   * this contract, settled above held is mathematically impossible; the
+   * settle-over-hold card on /admin/reliability watches for the impossible.
    *
    * EXPECTED is derived, then doubled, then marked uncalibrated: a typical
    * 3-fetch pass over ~2,500-token pages accumulates ~15,000 tokens ($0.08)

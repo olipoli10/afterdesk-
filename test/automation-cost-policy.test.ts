@@ -23,11 +23,14 @@ import {
   MAX_TARGETS_IN_PROMPT,
 } from "@/lib/ai-work-engine/primitives/research";
 import {
+  FETCH_MODEL,
+  FETCH_MODEL_CONTEXT_WINDOW_TOKENS,
   MAX_CANDIDATE_URLS_IN_PROMPT,
   MAX_CANDIDATE_URL_CHARS,
   MAX_FIELDS_CHARS_IN_PROMPT,
   MAX_OBJECTIVE_CHARS_IN_PROMPT,
 } from "@/lib/ai-work-engine/primitives/fetch";
+import { costMicrosFor } from "@/lib/ai-work-engine/tool-cost";
 import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
 
 const step = (over: Partial<PreflightStep> = {}): PreflightStep => ({
@@ -262,14 +265,66 @@ describe("the frozen ceiling actually covers the runtime worst case", () => {
       maxFetchContentTokens: 10_000,
     });
     expect(BigInt(worst)).toBeLessThanOrEqual(cap);
-    /**
-     * And the headroom is REAL, not incidental: the gap above the text worst
-     * case is what absorbs the probe-measured residual (a disguised binary
-     * escapes max_content_tokens; three 1 MB binaries at the measured ~117
-     * tokens/KB cost ≈ $3.75 in one attempt). If this margin shrinks below
-     * that, the residual stops being covered and the cap is a fiction.
-     */
+    // The headroom above the TEXT worst case is not the safety argument any
+    // more — the absolute-ceiling theorem below is — but it stays pinned:
+    // a cap sitting on the text bound would have no room to also be above
+    // the theorem's figure.
     expect(BigInt(worst) * 4n).toBeLessThanOrEqual(cap);
+  });
+
+  it("THE ABSOLUTE PROVIDER CEILING IS PROVED: settled above held cannot happen under this contract", () => {
+    /**
+     * The release-gate theorem, pinned as arithmetic. A fetched binary
+     * escapes max_content_tokens (probe-proved), so no per-document figure
+     * bounds an attempt. What bounds it is physics plus one documented rule:
+     *
+     *   - no loop iteration can be inferred — and therefore billed as model
+     *     input — beyond the model's context window;
+     *   - iterations are bounded by maxFetches + 1, because failed fetches
+     *     count against max_uses (documented) and a model pass happens only
+     *     after a tool result (our runner never continues a pause_turn).
+     *
+     * So the absolute billable exposure of ONE invocation is at most
+     * (F+1) iterations, each at the full window, priced at the model's
+     * DEAREST per-token rate (cache-write exceeds input on every model),
+     * plus the full output allowance per iteration. Note what is NOT
+     * assumed: nothing here treats a context overflow as free — tokens
+     * beyond the window simply cannot run.
+     *
+     * This number must sit UNDER ac4's frozen per-attempt hold, because the
+     * runner reserves exactly that hold: with the theorem holding, a settle
+     * above the hold is mathematically impossible under the supported
+     * contract, and the settle-over-hold card on /admin/reliability is a
+     * canary watching for the impossible — never the mechanism by which we
+     * discover the estimate was too low.
+     *
+     * The three pinned inputs — model, window, cap — are asserted together:
+     * changing any of them is a deliberate re-proof of this theorem, not a
+     * tweak. The window figure is the platform documentation's, read
+     * 2026-08-11; web_fetch_20260209 with allowed_callers ["direct"] was
+     * verified live on this model the same day (probe round 3).
+     */
+    expect(FETCH_MODEL).toBe("claude-haiku-4-5");
+    expect(FETCH_MODEL_CONTEXT_WINDOW_TOKENS).toBe(200_000);
+
+    const maxFetches = 3; // schema maximum, pinned above
+    const iterations = maxFetches + 1;
+    const absoluteCeilingMicros = costMicrosFor(FETCH_MODEL, {
+      inputTokens: 0,
+      outputTokens: iterations * 4_000,
+      cacheReadTokens: 0,
+      // Priced entirely at the cache-write rate, the dearest per-token rate
+      // the model has: a bound priced at the cheap rate would not be one.
+      cacheWriteTokens: iterations * FETCH_MODEL_CONTEXT_WINDOW_TOKENS,
+    });
+    const holdMicros = AUTOMATION_COST_POLICIES.ac4.perPrimitive["web.fetch"]!.maxPerAttemptMicros;
+
+    // ~$1.08 against $4.00: proved, with margin for a revised window or rate.
+    expect(absoluteCeilingMicros).toBeLessThanOrEqual(holdMicros);
+    expect(absoluteCeilingMicros).toBe(1_080_000);
+    // ONE funded attempt is part of the same proof: the residual cannot
+    // recur on a retry the contract does not fund.
+    expect(AUTOMATION_COST_POLICIES.ac4.perPrimitive["web.fetch"]!.maxAttempts).toBe(1);
   });
 
   it("the fetch worst case is search-shaped: pre-beta callers are unchanged", () => {

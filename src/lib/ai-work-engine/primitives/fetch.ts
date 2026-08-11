@@ -1,7 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
-import { getSettings } from "@/lib/settings";
 import { isBlockedProviderTargetHost } from "@/lib/net/domain-policy";
 import {
   approxTokens,
@@ -62,12 +61,48 @@ import type {
  * binary extensions never become candidates, the prompt says pages only, and
  * a result whose document source is not plain text is refused at harvest —
  * billed, counted, and kept out of the pipeline. PDF work stays a person's
- * until phase gamma. ac4 funds ONE attempt at a cap with headroom for the
- * residual (a binary served from an extensionless URL), and the settle-over-
- * hold alert is the tripwire on that residual.
+ * until phase gamma. ac4 funds ONE attempt at a cap ABOVE the proven absolute
+ * ceiling below, so a settled spend above its own hold is mathematically
+ * impossible under the supported contract — the settle-over-hold alert on
+ * /admin/reliability watches for the impossible, it is not the bound.
  */
 
 const MAX_TOKENS = 4_000;
+
+/**
+ * ── THE MODEL IS PINNED, AND THE PIN IS THE ECONOMIC PROOF ──
+ *
+ * Every other primitive reads settings.pricingModel. This one must not, for a
+ * reason that is arithmetic before it is taste: the absolute worst case of a
+ * server-tool loop is a function of the model's CONTEXT WINDOW, because that
+ * window is the one bound the provider physically cannot exceed per
+ * iteration — a fetched binary escapes max_content_tokens (the beta1 probe
+ * proved it), but no iteration can be inferred, and therefore billed as model
+ * input, beyond what fits the window. With iterations bounded by
+ * max_uses + 1 (failed fetches count against max_uses, documented), the
+ * absolute billable exposure of one invocation is
+ *
+ *   (maxFetches + 1) x (window x worst-in-rate + max_tokens x out-rate)
+ *
+ * On a 1M-window model at the dearest rate that is ~$20 — unreservable under
+ * the accepted ceiling rule. On claude-haiku-4-5 (200,000-token window,
+ * platform docs read 2026-08-11; web_fetch_20260209 with
+ * allowed_callers ["direct"] verified live on this model, probe round 3) it
+ * is ~$1.08 at the schema maxima, under ac4's $4.00 hold with a 3.7x margin.
+ * The pin also closes a post-acceptance channel: pricingModel is an
+ * admin-editable runtime setting, and an accepted fetch step whose worst case
+ * moved with a settings edit would violate the freeze this platform is built
+ * on. A constant cannot be edited by a screen.
+ *
+ * The quality trade is small on purpose: the excerpts, hashes and timestamps
+ * are harvested BY CODE from typed blocks — the model here only chooses which
+ * candidates to fetch and writes a short report, while extraction stays on
+ * the pricing model. test/automation-cost-policy.test.ts pins the model, the
+ * window and the ceiling arithmetic together; changing any of the three is a
+ * deliberate re-proof, not a tweak.
+ */
+export const FETCH_MODEL = "claude-haiku-4-5";
+export const FETCH_MODEL_CONTEXT_WINDOW_TOKENS = 200_000;
 
 /** Cancelled here, below the registry's 200 s guard for this primitive. */
 const CALL_TIMEOUT_MS = 180_000;
@@ -136,8 +171,7 @@ type FetchedPage = {
 };
 
 export async function runWebFetch(ctx: PrimitiveContext): Promise<PrimitiveResult> {
-  const settings = await getSettings();
-  const model = settings.pricingModel;
+  const model = FETCH_MODEL;
   const operationKey = `fetch:${ctx.snapshotId}:${ctx.order}`;
 
   const maxFetches = Number(ctx.params.maxFetches ?? 3);
