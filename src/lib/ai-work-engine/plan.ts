@@ -41,7 +41,7 @@ const PRIMITIVE_GUIDE = `- research.web_search: public web search for candidate 
 - build.xlsx: pure code. Write a candidate workbook. params: {dataset, columns, sheetName}.
 - web.fetch: read the full text of pages research.web_search already cited, so extraction works from page content instead of titles. Plan it ONLY directly after a research.web_search step, with depends_on_order naming that step. params: {maxFetches, maxContentTokens}. It cannot search, fetches pages only (never PDFs or files), and a mandate that reads a client file never includes it.
 
-PARAMS ARE PART OF THE CONTRACT. A machine step must carry a "params" object that matches its primitive; a human step and a primitive that takes none use null or {}. Params that do not fit their primitive make the step a person's work, so write what the brief actually supports and nothing more.
+PARAMS ARE PART OF THE CONTRACT. A machine step must carry its primitive's configuration in "params", written as a JSON object LITERAL INSIDE A STRING — for example "{\\"dataset\\": \\"main\\", \\"keyFields\\": [\\"email\\"]}". A human step, and a primitive that takes none, use null. A params string that is not valid JSON, or that does not fit its primitive, makes the step a person's work, so write what the brief actually supports and nothing more.
 
 NEVER INVENT A MAPPING OR A COLUMN NAME. Every field name in params must appear in the client's brief or in a file they described. If the brief does not say which column identifies a record, or how one schema maps onto another, that is missing information: plan a human step, do not guess a mapping that will silently produce a column of nulls.
 
@@ -151,7 +151,15 @@ ${JSON.stringify(input.referenceTasks, null, 2)}`,
   }
 
   const parsed = planOutputSchema.safeParse(raw);
-  if (!parsed.success) return { result: null, usage, failure: "failed zod validation" };
+  if (!parsed.success) {
+    // The paths and codes only — never model text — so a production log says
+    // WHICH rule refused instead of the unactionable "failed zod validation".
+    const issues = parsed.error.issues
+      .slice(0, 5)
+      .map((i) => `${i.path.join(".")}: ${i.code}${"message" in i ? ` (${i.message.slice(0, 80)})` : ""}`)
+      .join("; ");
+    return { result: null, usage, failure: `failed zod validation: ${issues}` };
+  }
 
   return { result: { output: parsed.data, raw }, usage, failure: null };
 }

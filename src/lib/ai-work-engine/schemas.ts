@@ -146,6 +146,14 @@ export const CLASSIFICATION_JSON_SCHEMA = {
 
 // ── Stage 2: execution plan ──
 
+/** Bounded number, rounded UP to an integer — see the fixed_minutes note. */
+const intCeil = (min: number, max: number) =>
+  z
+    .number()
+    .min(min)
+    .max(max)
+    .transform((v) => Math.ceil(v));
+
 export const planStepOutputSchema = z
   .object({
     title: z.string().min(1).max(500),
@@ -165,31 +173,56 @@ export const planStepOutputSchema = z
     /**
      * THE STEP'S CONFIGURATION, and deliberately typed loosely HERE.
      *
-     * The planner emits an object; what shape that object must have depends
-     * entirely on which capability the step names, and that per-capability
-     * schema lives in primitive-params.ts where the pure compiler can reach
-     * it. Validating twice, in two vocabularies, is how the two drift.
+     * What shape params must have depends entirely on which capability the
+     * step names, and that per-capability schema lives in primitive-params.ts
+     * where the pure compiler can reach it. Validating twice, in two
+     * vocabularies, is how the two drift.
      *
-     * So this accepts any record and the COMPILER is the gate: params that do
-     * not satisfy their capability make the step human work, before anything
-     * runs and before the client is quoted on automation that cannot happen.
-     * A model that invents a parameter costs a demotion, never a crash.
+     * ON THE WIRE, PARAMS IS A JSON STRING (Level 2 finding, 2026-08-11):
+     * the structured-outputs subset REJECTS free-form objects — the API 400s
+     * with "additionalProperties must be explicitly set to false", and
+     * setting it false would forbid every key. So the wire schema declares a
+     * string, the model writes the object as a JSON literal, and THIS parser
+     * decodes it: a string that is not valid JSON, or not an object, becomes
+     * null — which the compiler turns into human work for any capability
+     * with required params. Fail-closed, never a crash.
+     *
+     * The COMPILER stays the real gate: params that do not satisfy their
+     * capability make the step a person's, before anything runs and before
+     * the client is quoted on automation that cannot happen.
      */
-    params: z.record(z.string(), z.unknown()).nullable().default(null),
+    params: z.preprocess((raw) => {
+      if (typeof raw !== "string") return raw;
+      try {
+        const decoded: unknown = JSON.parse(raw);
+        return decoded !== null && typeof decoded === "object" && !Array.isArray(decoded)
+          ? decoded
+          : null;
+      } catch {
+        return null;
+      }
+    }, z.record(z.string(), z.unknown()).nullable().default(null)),
     /**
      * Human effort split into its two real components, so the residual after
      * automation can be costed honestly. A 15-minute set-up cost does not
      * shrink because only 2 of 80 rows are left. Seconds (not minutes) per
      * unit because per-row work is routinely under a minute, and an integer
      * keeps the whole chain to the payout free of floats.
+     *
+     * CEIL, NOT .int() (Level 2 finding): the wire schema can only say
+     * "number", and a model that writes 2.5 seconds per unit used to kill
+     * the ENTIRE plan on a type rule. Fractional effort now rounds UP — the
+     * conservative direction (more human seconds means a higher payout and a
+     * higher quote, never less) — and ceil is monotone, so the
+     * optimistic <= likely <= conservative checks below still hold.
      */
-    fixed_minutes: z.number().int().min(0).max(6000).nullable(),
-    seconds_per_unit: z.number().int().min(0).max(36_000).nullable(),
-    estimated_minutes_optimistic: z.number().int().min(0).max(6000),
-    estimated_minutes_likely: z.number().int().min(0).max(6000),
-    estimated_minutes_conservative: z.number().int().min(0).max(6000),
-    estimated_ai_cost_cents: z.number().int().min(0).max(100_000),
-    estimated_tool_units: z.number().int().min(0).max(100_000),
+    fixed_minutes: intCeil(0, 6000).nullable(),
+    seconds_per_unit: intCeil(0, 36_000).nullable(),
+    estimated_minutes_optimistic: intCeil(0, 6000),
+    estimated_minutes_likely: intCeil(0, 6000),
+    estimated_minutes_conservative: intCeil(0, 6000),
+    estimated_ai_cost_cents: intCeil(0, 100_000),
+    estimated_tool_units: intCeil(0, 100_000),
     verification_method: z.string().min(1).max(2000),
     acceptance_criteria: z.array(z.string().max(1000)).max(8),
     risk_level: z.enum(STEP_RISK_LEVELS),
@@ -255,7 +288,15 @@ const PLAN_STEP_JSON_SCHEMA = {
     primitive_id: {
       anyOf: [{ type: "string", enum: [...PLAN_PRIMITIVE_IDS] }, { type: "null" }],
     },
-    params: { type: ["object", "null"] },
+    /**
+     * A JSON STRING, not an object — the structured-outputs subset rejects
+     * free-form objects outright (Level 2 finding: the API 400'd EVERY plan
+     * call, production included, with "additionalProperties must be
+     * explicitly set to false"). The zod layer above decodes the string;
+     * garbage decodes to null and the compiler hands that step to a person.
+     * The subset pin in ai-work-engine.test.ts now bans free objects.
+     */
+    params: { type: ["string", "null"] },
     fixed_minutes: { type: ["number", "null"] },
     seconds_per_unit: { type: ["number", "null"] },
     estimated_minutes_optimistic: { type: "number" },

@@ -157,6 +157,82 @@ describe("the JSON schemas stay inside the structured-outputs subset", () => {
       expect(wire).not.toMatch(/"enum":\[[^\]]*null/);
     }
   });
+
+  it("every object node sets additionalProperties:false — free-form objects are banned", async () => {
+    /**
+     * The Level-2 live corpus found the API 400s the whole request when any
+     * schema node is a free object: "For 'object' type, 'additionalProperties'
+     * must be explicitly set to false". The planner's `params` carried exactly
+     * that shape, so EVERY plan generation — production included — failed
+     * silently to manual pricing. Free-form data crosses the wire as a JSON
+     * string now (the zod layer decodes it); this pin keeps the whole class
+     * of accident out.
+     */
+    const { CLASSIFICATION_JSON_SCHEMA, PLAN_JSON_SCHEMA, CRITIQUE_JSON_SCHEMA } = await import(
+      "@/lib/ai-work-engine/schemas"
+    );
+    const isObjectType = (t: unknown) =>
+      t === "object" || (Array.isArray(t) && t.includes("object"));
+    const walk = (node: unknown, path: string, offenders: string[]) => {
+      if (node === null || typeof node !== "object") return;
+      if (Array.isArray(node)) {
+        node.forEach((child, i) => walk(child, `${path}[${i}]`, offenders));
+        return;
+      }
+      const rec = node as Record<string, unknown>;
+      if (isObjectType(rec.type) && rec.additionalProperties !== false) {
+        offenders.push(path);
+      }
+      for (const [k, v] of Object.entries(rec)) walk(v, `${path}.${k}`, offenders);
+    };
+    for (const [name, schema] of [
+      ["classification", CLASSIFICATION_JSON_SCHEMA],
+      ["plan", PLAN_JSON_SCHEMA],
+      ["critique", CRITIQUE_JSON_SCHEMA],
+    ] as const) {
+      const offenders: string[] = [];
+      walk(schema, name, offenders);
+      expect(offenders, `free-form object nodes in ${name}`).toEqual([]);
+    }
+  });
+
+  it("params-as-string decodes to the object, and garbage decodes to null (fail-closed)", async () => {
+    const { planStepOutputSchema } = await import("@/lib/ai-work-engine/schemas");
+    const step = (params: unknown) => ({
+      title: "Read the file",
+      description: "ingest",
+      executor: "deterministic_code",
+      human_role: null,
+      tool: null,
+      primitive_id: "ingest.csv",
+      params,
+      fixed_minutes: null,
+      seconds_per_unit: null,
+      estimated_minutes_optimistic: 0,
+      estimated_minutes_likely: 0,
+      estimated_minutes_conservative: 0,
+      estimated_ai_cost_cents: 0,
+      estimated_tool_units: 0,
+      verification_method: "operator check",
+      acceptance_criteria: [],
+      risk_level: "low",
+      risk_note: null,
+      depends_on_order: [],
+    });
+    // The wire shape: a JSON object literal inside a string.
+    const wired = planStepOutputSchema.parse(step('{"fileId":"abc123","datasetName":"main"}'));
+    expect(wired.params).toEqual({ fileId: "abc123", datasetName: "main" });
+    // Garbage, arrays and scalars all fail closed to null — the compiler
+    // then hands the step to a person, never crashes a plan.
+    expect(planStepOutputSchema.parse(step("not json at all")).params).toBeNull();
+    expect(planStepOutputSchema.parse(step('["fileId"]')).params).toBeNull();
+    expect(planStepOutputSchema.parse(step('"abc123"')).params).toBeNull();
+    // Plain objects still pass through (admin edits, stored raws).
+    expect(planStepOutputSchema.parse(step({ fileId: "abc123" })).params).toEqual({
+      fileId: "abc123",
+    });
+    expect(planStepOutputSchema.parse(step(null)).params).toBeNull();
+  });
 });
 
 describe("the engine's default quote passes the hourly floor it was priced at", () => {
