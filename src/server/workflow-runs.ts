@@ -131,7 +131,14 @@ export async function startWorkflow(taskId: string): Promise<void> {
  */
 export async function releaseToPoolWithoutAutomation(
   taskId: string,
-  reason: string
+  reason: string,
+  /**
+   * LOT B: the admin who pressed the release button, when one did. The two
+   * historical callers (no-plan exit, stall sweep) are system actions and
+   * pass nothing; the new admin action passes its actor so the TaskEvent
+   * says WHO decided not to wait for the sweep.
+   */
+  actorId?: string
 ): Promise<void> {
   /**
    * The audience is resolved OUTSIDE the transaction, the same split finishRun
@@ -181,6 +188,7 @@ export async function releaseToPoolWithoutAutomation(
         from: "ai_processing",
         to: "open",
         action: "automated_processing_skipped",
+        actorId,
         reason,
         meta: { reason },
       });

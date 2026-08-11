@@ -18,6 +18,7 @@ const LOST_REASON_LABEL: Record<string, string> = {
   client_cancelled_no_reason: "Cancelled, no reason",
   qc_failed_repeatedly: "Failed QC repeatedly",
   expired: "Expired",
+  out_of_scope: "Out of scope",
   other: "Other",
 };
 

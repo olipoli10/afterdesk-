@@ -1312,6 +1312,11 @@ enum LostReasonCategory {
   client_cancelled_no_reason
   qc_failed_repeatedly // maxQcRounds exhausted, admin cancelled rather than reassign
   expired // quote or payment window lapsed with no client action
+  /// LOT B — the launch firewall's own output, measurable at last. The
+  /// pricing-stage "we cannot take responsibility for this request" used to
+  /// bucket into `other`, which made the one number a capability roadmap
+  /// needs — how often do we decline for missing capability — unqueryable.
+  out_of_scope
   other
 }
 

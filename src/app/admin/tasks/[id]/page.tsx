@@ -9,7 +9,7 @@ import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
 import { EstimatedVsActual } from "@/components/estimated-vs-actual";
 import { operationalComparisonForAdmin } from "@/lib/queries/operational-intelligence";
-import { AdminCancel, AdminReturnToPool } from "@/components/admin-cancel";
+import { AdminCancel, AdminReleaseToPool, AdminReturnToPool } from "@/components/admin-cancel";
 import {
   ManualPaymentForm,
   ManualRefundForm,
@@ -74,6 +74,9 @@ export default async function AdminTaskDetail({
   // `completed` is non-terminal (dispute window) but cannot be cancelled —
   // never show a button that can only fail.
   const canCancel = isAllowedTransition(task.status, "cancelled");
+  // LOT B: the release button renders only in the one state where it can
+  // succeed — an ai_processing task whose automated run is paused.
+  const runPaused = task.status === "ai_processing" && execution?.status === "paused";
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -355,8 +358,10 @@ export default async function AdminTaskDetail({
         </CardBody>
       </Card>
 
-      {canReassign || canCancel ? (
+      {canReassign || canCancel || runPaused ? (
         <div className="space-y-4">
+          {/* LOT B: a paused run no longer waits for the stall sweep. */}
+          {runPaused ? <AdminReleaseToPool taskId={task.id} /> : null}
           {canReassign ? <AdminReturnToPool taskId={task.id} /> : null}
           {canCancel ? <AdminCancel taskId={task.id} /> : null}
         </div>

@@ -19,6 +19,7 @@ import {
 } from "@/lib/state";
 import { nextInPricingQueue } from "@/lib/queries/tasks";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
+import { releaseToPoolWithoutAutomation } from "@/server/workflow-runs";
 import { returnStandingMinutes, restitutionMessage } from "@/lib/standing-restitution";
 
 const approveSchema = z.object({
@@ -306,6 +307,9 @@ const cancelSchema = z.object({
     "worker_unavailable",
     "client_cancelled_no_reason",
     "qc_failed_repeatedly",
+    // LOT B: the firewall's own verdict, named. A request the platform
+    // cannot take responsibility for is a measurable outcome, not "other".
+    "out_of_scope",
     "other",
   ]),
 });
@@ -481,5 +485,72 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
   revalidatePath("/admin/pricing");
   revalidatePath("/admin/tasks");
   revalidatePath("/admin");
+  return { ok: true };
+}
+
+/**
+ * LOT B — THE BUTTON THE PAUSE NOTIFICATION ALWAYS DESCRIBED.
+ *
+ * A paused run's task sits in ai_processing until the 6-hour stall sweep,
+ * while the admin notification says "releasing it to the pool pays the worker
+ * the full quoted amount" — an action that had no button. This is that
+ * button's action: the SAME degraded exit the sweep takes
+ * (releaseToPoolWithoutAutomation: frozen payout untouched, pool-payable
+ * guard enforced, transition + audit event, pool notified), taken now, by a
+ * person, on a run that is actually paused.
+ *
+ * Deliberately thin: no scheduler change, no run resurrection, no machine
+ * simulation. Idempotent twice over — the state gate here, and the
+ * ai_processing status guard inside the release itself, so a double click or
+ * a race with the sweep is a no-op, never a double publication (and the pool
+ * claim is atomic regardless).
+ */
+const releaseSchema = z.object({ taskId: z.string().min(1) });
+
+export type ReleaseToPoolResult = { ok: true } | { ok: false; error: string };
+
+export async function releasePausedRunToPool(input: unknown): Promise<ReleaseToPoolResult> {
+  const admin = await requireRole("ADMIN");
+  const parsed = releaseSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Task id required." };
+  const { taskId } = parsed.data;
+
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: { status: true, workflowRun: { select: { status: true } } },
+  });
+  if (!task) return { ok: false, error: "Task not found." };
+  /**
+   * The legal-state gate: only a PAUSED run may be released early. A running
+   * run is still working (releasing it would race the runner); a finished
+   * run already handed over; no run at all means the compile path owns the
+   * exit. Everything else stays exactly on the existing rails.
+   */
+  if (task.status !== "ai_processing" || task.workflowRun?.status !== "paused") {
+    return {
+      ok: false,
+      error: "Only a task whose automated run is paused can be released to the pool early.",
+    };
+  }
+
+  await releaseToPoolWithoutAutomation(
+    taskId,
+    "released to the pool by an operator without waiting for the stall sweep",
+    admin.id
+  );
+
+  // The release swallows an already-transitioned race as a no-op; read the
+  // truth back rather than assert it.
+  const afterState = await prisma.task.findUnique({ where: { id: taskId }, select: { status: true } });
+  if (afterState?.status !== "open") {
+    return {
+      ok: false,
+      error:
+        "The task did not reach the pool. If its payout or estimate is missing, resolve that first; see the admin notification.",
+    };
+  }
+
+  revalidatePath(`/admin/tasks/${taskId}`);
+  revalidatePath("/admin/tasks");
   return { ok: true };
 }

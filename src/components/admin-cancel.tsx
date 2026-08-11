@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { cancelTask, reassignTask } from "@/server/actions/admin";
+import { cancelTask, reassignTask, releasePausedRunToPool } from "@/server/actions/admin";
 import { Card, CardBody, Field, inputClass, buttonDanger, buttonSecondary } from "@/components/ui";
 
 export const LOST_REASON_OPTIONS: { value: string; label: string }[] = [
@@ -10,6 +10,10 @@ export const LOST_REASON_OPTIONS: { value: string; label: string }[] = [
   { value: "worker_unavailable", label: "Worker went unavailable / never delivered" },
   { value: "client_cancelled_no_reason", label: "Client cancelled, no reason given" },
   { value: "qc_failed_repeatedly", label: "Failed QC repeatedly" },
+  // LOT B: the firewall's own verdict — declined because the platform cannot
+  // take responsibility for the request as asked. Counted, not buried in
+  // "Other", because how often we decline for capability IS the roadmap.
+  { value: "out_of_scope", label: "Out of scope / cannot take responsibility" },
   { value: "other", label: "Other" },
 ];
 
@@ -188,6 +192,52 @@ export function AdminReturnToPool({ taskId }: { taskId: string }) {
             Keep assignment
           </button>
         </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+/**
+ * LOT B: the missing button. A paused run's task used to wait for the 6-hour
+ * stall sweep while the admin notification described a release nobody could
+ * perform. One click takes the SAME degraded exit the sweep takes — frozen
+ * payout, pool-payable guard, audit event, pool notification — now, with the
+ * operator's identity on the event. Rendered only when the run is paused.
+ */
+export function AdminReleaseToPool({ taskId }: { taskId: string }) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <Card>
+      <CardBody>
+        <p className="text-sm text-[#5B6069]">
+          The automated run is paused. Releasing sends the mandate to the specialist pool at the
+          full quoted payout, without waiting for the stall sweep.
+        </p>
+        {error ? (
+          <p role="alert" className="mt-2 text-sm text-[#8C2F23]">
+            {error}
+          </p>
+        ) : null}
+        <button
+          className={`${buttonSecondary} mt-3`}
+          disabled={isPending}
+          onClick={() => {
+            setError(null);
+            startTransition(async () => {
+              const result = await releasePausedRunToPool({ taskId });
+              if (!result.ok) {
+                setError(result.error);
+                return;
+              }
+              router.refresh();
+            });
+          }}
+        >
+          {isPending ? "Releasing…" : "Release to specialist pool"}
+        </button>
       </CardBody>
     </Card>
   );

@@ -1,6 +1,9 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { clientScopeFromPlanVersion, type ClientScope } from "@/lib/ai-work-engine/client-scope";
+import { buildCompilePreview, type CompilePreview } from "@/lib/ai-work-engine/compile-preview";
+
+export type { CompilePreview, CompilePreviewStep } from "@/lib/ai-work-engine/compile-preview";
 
 /**
  * Role-shaped reads for the AI work engine, same discipline as
@@ -136,4 +139,50 @@ export async function quotedScopeForClient(
     },
   });
   return clientScopeFromPlanVersion(task?.quotedPlanVersion ?? null);
+}
+
+/* ────────────────────────── LOT B: compile preview ────────────────────────── */
+
+/**
+ * ADMIN ONLY — the pre-quote compile preview. A thin loader: every decision
+ * lives in the pure `buildCompilePreview` (compile-preview.ts), which is what
+ * the tests exercise. This function only fetches the latest plan version and
+ * the classification; it creates nothing, reserves nothing, calls nothing.
+ */
+export async function compilePreviewForAdmin(taskId: string): Promise<CompilePreview | null> {
+  const [version, classification] = await Promise.all([
+    prisma.taskExecutionPlanVersion.findFirst({
+      where: { taskId },
+      orderBy: { version: "desc" },
+      select: {
+        dataClass: true,
+        dataClassSignals: true,
+        automationCostPolicyVersion: true,
+        expectedAutomationCostMicros: true,
+        conservativeAutomationCostMicros: true,
+        automationSpendCeilingMicros: true,
+        calibration: true,
+        steps: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            order: true,
+            title: true,
+            executor: true,
+            primitiveId: true,
+            primitiveVersion: true,
+            params: true,
+            dependsOnOrder: true,
+            demotedForBudget: true,
+          },
+        },
+      },
+    }),
+    prisma.taskAiClassification.findUnique({
+      where: { taskId },
+      select: { sensitiveData: true, requiredAccess: true },
+    }),
+  ]);
+  if (!version || version.steps.length === 0) return null;
+  return buildCompilePreview(version, classification);
 }
