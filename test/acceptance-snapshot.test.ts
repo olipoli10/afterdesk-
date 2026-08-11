@@ -34,6 +34,7 @@ const INPUT = {
     conservativeAutomationCostMicros: 2_600_000n,
     automationSpendCeilingMicros: 2_600_000n,
     automationCostPolicyVersion: "ac1",
+    dataClass: "public_business",
   },
   settings: { revisionWindowHours: 72, maxRevisionRounds: 2, disputeWindowHours: 48 },
 };

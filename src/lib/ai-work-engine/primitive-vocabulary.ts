@@ -8,8 +8,8 @@
  * nor vitest catches that, because the vitest config aliases `server-only`
  * away and TypeScript has no concept of a bundle boundary.
  *
- * Nothing here needs the server: it is a table of names and integers. schemas.ts
- * re-exports it so every existing import site keeps working unchanged.
+ * Nothing here needs the server: it is a table of names, integers and enums.
+ * schemas.ts re-exports it so every existing import site keeps working.
  *
  * ── ON THE VERSIONS ──
  *
@@ -23,6 +23,18 @@
  *
  * The registry (registry.ts) must implement exactly these ids at exactly these
  * versions; a test pins the two together.
+ *
+ * ── THESE IDS ARE CAPABILITIES, NOT PRODUCTS ──
+ *
+ * `data.dedupe`, not `useSomeVendor`. The planner speaks in terms of the work
+ * to be done; which implementation satisfies a capability is resolved beneath
+ * this table (see PLAN_PRIMITIVE_REACH and the registry). A vendor name in
+ * this vocabulary would end up frozen inside accepted contracts and inside
+ * calibration keys, which is how a supplier becomes impossible to replace.
+ *
+ * `research.web_search` is the one id that reads like a mechanism, and it is a
+ * pre-existing name kept deliberately: renaming it would bump its version and
+ * degrade every accepted plan pinned to it, for a cosmetic gain.
  */
 
 export const PLAN_PRIMITIVES = {
@@ -40,7 +52,7 @@ export const PLAN_PRIMITIVES = {
    * question. Its verdicts are unchanged; only the output grew.
    *
    * The bump is not free and the cost was accepted deliberately: an already
-   * accepted plan pinned to @1 no longer resolves (registry.ts:118 refuses a
+   * accepted plan pinned to @1 no longer resolves (registry.ts refuses a
    * version mismatch) and degrades to human work, and the step token inside
    * executionWorkflowKey changes, so a new calibration profile starts at
    * `uncalibrated`. Both are the correct behaviour — a workflow that reports
@@ -48,8 +60,43 @@ export const PLAN_PRIMITIVES = {
    * are stated here rather than discovered in a dashboard.
    */
   "split.exceptions": 2,
-  /** Pure code: write the candidate CSV artifact. */
-  "build.csv": 1,
+  /**
+   * Pure code: write the candidate CSV artifact.
+   *
+   * v2 (1E-alpha) knows where its rows came from. On a payload ingested from a
+   * client file there are no per-field source URLs and no verification verdict
+   * to report, because the client's own file IS the source; emitting empty
+   * `_sources`, `status` and `review_reason` columns would put three dead
+   * columns in the deliverable of every deduplication mandate. Web-research
+   * payloads are written exactly as before, column for column.
+   *
+   * Same bump cost as split.exceptions@2, accepted for the same reason: the
+   * file it produces is observably different, so the version has to say so.
+   */
+  "build.csv": 2,
+
+  /* ───────────────────── 1E-alpha: files and data ───────────────────── */
+
+  /** Read an accepted CSV attachment into rows. Local, bounded. */
+  "ingest.csv": 1,
+  /** Read an accepted XLSX attachment into rows. Local, bounded, strict subset. */
+  "ingest.xlsx": 1,
+  /** Exact and normalised-key duplicates. Near-duplicates become candidates. */
+  "data.dedupe": 1,
+  /** Field-level normalisation to declared types. Never invents a value. */
+  "data.normalize": 1,
+  /** Join two ingested sets on a declared key. Unmatched rows are reported. */
+  "data.join": 1,
+  /** Keep or drop rows by declared predicates. */
+  "data.filter": 1,
+  /** Group and count/sum into a summary set. */
+  "data.aggregate": 1,
+  /** Row-level difference between two sets: added, removed, changed. */
+  "data.compare": 1,
+  /** Rename, reorder and drop columns per an EXPLICIT mapping. Never guesses. */
+  "data.schema_map": 1,
+  /** Write a minimal XLSX workbook: headers and values, one sheet. */
+  "build.xlsx": 1,
 } as const;
 
 export type PlanPrimitiveId = keyof typeof PLAN_PRIMITIVES;
@@ -79,9 +126,59 @@ export const PLAN_PRIMITIVE_MODES = {
   "normalize.contact_fields": "PREPARE",
   "split.exceptions": "PREPARE",
   "build.csv": "PREPARE",
+  "ingest.csv": "PREPARE",
+  "ingest.xlsx": "PREPARE",
+  "data.dedupe": "PREPARE",
+  "data.normalize": "PREPARE",
+  "data.join": "PREPARE",
+  "data.filter": "PREPARE",
+  "data.aggregate": "PREPARE",
+  "data.compare": "PREPARE",
+  "data.schema_map": "PREPARE",
+  "build.xlsx": "PREPARE",
 } as const satisfies Record<PlanPrimitiveId, "READ" | "PREPARE">;
 
 export type PlanPrimitiveMode = (typeof PLAN_PRIMITIVE_MODES)[PlanPrimitiveId];
+
+/**
+ * THE SECOND SAFETY AXIS, AND THE ONE 1E-alpha ADDS: HOW FAR THE INPUT GOES.
+ *
+ * `mode` answers "does this change the world". It says nothing about who gets
+ * to READ the input, and once a step can be handed the bytes of a client's
+ * spreadsheet that is the more dangerous question. A capability can be
+ * flawlessly READ-only and still transmit a supplier list to a third party.
+ *
+ * `provider` — the input leaves this machine. A model, an API, any network
+ *              call. Only `public_business` data may be given to one.
+ * `local`    — deterministic code in this process. Nothing leaves.
+ *
+ * Every capability added in this phase is `local`, which is what makes reading
+ * client files safe to ship at all: no misclassification, no bad plan and no
+ * mistaken operator can route a client file to a provider, because no
+ * file-reading capability has anywhere to send it. See data-class.ts.
+ */
+export const PLAN_PRIMITIVE_REACH = {
+  "research.web_search": "provider",
+  "extract.structured_rows": "provider",
+  "normalize.contact_fields": "local",
+  "split.exceptions": "local",
+  "build.csv": "local",
+  "ingest.csv": "local",
+  "ingest.xlsx": "local",
+  "data.dedupe": "local",
+  "data.normalize": "local",
+  "data.join": "local",
+  "data.filter": "local",
+  "data.aggregate": "local",
+  "data.compare": "local",
+  "data.schema_map": "local",
+  "build.xlsx": "local",
+} as const satisfies Record<PlanPrimitiveId, "provider" | "local">;
+
+export type PlanPrimitiveReach = (typeof PLAN_PRIMITIVE_REACH)[PlanPrimitiveId];
+
+/** The capabilities that read a client attachment rather than prior rows. */
+export const FILE_READING_PRIMITIVE_IDS: readonly PlanPrimitiveId[] = ["ingest.csv", "ingest.xlsx"];
 
 /** Modes the compiler will execute. Anything else compiles to human work. */
 export const EXECUTABLE_PRIMITIVE_MODES: readonly string[] = ["READ", "PREPARE"];
@@ -92,6 +189,24 @@ export function primitiveModeOf(id: string | null): PlanPrimitiveMode | null {
   return Object.hasOwn(PLAN_PRIMITIVE_MODES, id)
     ? PLAN_PRIMITIVE_MODES[id as PlanPrimitiveId]
     : null;
+}
+
+/**
+ * The declared reach of a primitive id, or null when the id is unknown.
+ *
+ * An unknown id returning null is load-bearing: the caller must treat "I do
+ * not know where this sends data" as disqualifying, never as `local`.
+ */
+export function primitiveReachOf(id: string | null): PlanPrimitiveReach | null {
+  if (id === null) return null;
+  return Object.hasOwn(PLAN_PRIMITIVE_REACH, id)
+    ? PLAN_PRIMITIVE_REACH[id as PlanPrimitiveId]
+    : null;
+}
+
+/** True when the primitive consumes a client attachment. Unknown ids: false. */
+export function primitiveReadsFiles(id: string | null): boolean {
+  return id !== null && (FILE_READING_PRIMITIVE_IDS as readonly string[]).includes(id);
 }
 
 /** The version the code stamps today for a given id, or null if unknown. */

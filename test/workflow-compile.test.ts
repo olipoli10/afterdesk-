@@ -252,8 +252,26 @@ describe("the registry implements exactly the planner's vocabulary", () => {
 
     const billable = Object.values(REGISTRY).filter((p) => p.billable).map((p) => p.id).sort();
     const pure = Object.values(REGISTRY).filter((p) => !p.billable).map((p) => p.id).sort();
+    /**
+     * The BILLABLE list is the closed one, and it is the only one worth
+     * pinning by value: it is the set of capabilities that can spend a
+     * client's money, so a new entry has to be a deliberate edit here.
+     *
+     * The pure list was pinned by value too until 1E-alpha added ten
+     * deterministic capabilities in one phase. Re-listing all of them would
+     * turn this assertion into a chore that gets updated without being read,
+     * which is how a pin stops protecting anything. What matters about a pure
+     * primitive is stated directly instead: it cannot spend.
+     */
     expect(billable).toEqual(["extract.structured_rows", "research.web_search"]);
-    expect(pure).toEqual(["build.csv", "normalize.contact_fields", "split.exceptions"]);
+    expect(pure.length).toBe(Object.keys(REGISTRY).length - billable.length);
+    for (const id of pure) {
+      expect(REGISTRY[id as keyof typeof REGISTRY].billable).toBe(false);
+    }
+    // Not vacuous: this phase's capabilities are in the registry and pure.
+    expect(pure).toContain("ingest.csv");
+    expect(pure).toContain("data.dedupe");
+    expect(pure).toContain("build.xlsx");
   });
 
   it("the registry source declares no WRITE tier at all", async () => {

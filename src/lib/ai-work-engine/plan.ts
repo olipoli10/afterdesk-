@@ -29,7 +29,22 @@ const PRIMITIVE_GUIDE = `- research.web_search: public web search for candidate 
 - extract.structured_rows: turn fetched content into typed rows, one source URL per field.
 - normalize.contact_fields: pure code. Phone, email and URL formatting, casing, whitespace.
 - split.exceptions: pure code. Split rows into the confidently-sourced ones and the ones a person must check.
-- build.csv: pure code. Write the candidate spreadsheet a person then finishes.`;
+- build.csv: pure code. Write the candidate spreadsheet a person then finishes.
+- ingest.csv / ingest.xlsx: pure code. Read ONE file the client attached into rows. params: {fileId, datasetName, hasHeaderRow, keyColumn}. Use a different datasetName per file when the mandate has several.
+- data.dedupe: pure code. Merge rows whose key fields match exactly or after normalisation. params: {dataset, keyFields, strategy, keep}. It never merges near-matches; set reportNearDuplicates only when the client asked for a candidate list.
+- data.normalize: pure code. Reformat fields to a declared type. params: {dataset, rules:[{field, as}]}. A value that does not parse is left as written and flagged.
+- data.join: pure code. Join two ingested sets. params: {left, right, leftKey, rightKey, type, onConflict, into}.
+- data.filter: pure code. Keep or drop rows. params: {dataset, conditions:[{field, op, value}], match, action, into}.
+- data.aggregate: pure code. Group and total. params: {dataset, groupBy, metrics:[{fn, field, as}], into}.
+- data.compare: pure code. Difference two sets by key. params: {left, right, key, into}.
+- data.schema_map: pure code. Rename columns per an EXPLICIT mapping. params: {dataset, mapping:[{from, to}], unmapped, into}.
+- build.xlsx: pure code. Write a candidate workbook. params: {dataset, columns, sheetName}.
+
+PARAMS ARE PART OF THE CONTRACT. A machine step must carry a "params" object that matches its primitive; a human step and a primitive that takes none use null or {}. Params that do not fit their primitive make the step a person's work, so write what the brief actually supports and nothing more.
+
+NEVER INVENT A MAPPING OR A COLUMN NAME. Every field name in params must appear in the client's brief or in a file they described. If the brief does not say which column identifies a record, or how one schema maps onto another, that is missing information: plan a human step, do not guess a mapping that will silently produce a column of nulls.
+
+THE FILES ARE ONLY THOSE THE CLIENT ATTACHED. An ingest step names a fileId from the mandate's own attachments. If the brief describes a file that is not attached, the work is a person's until it arrives.`;
 
 const SYSTEM = `You are the execution planner for AfterDesk, a managed back-office execution service where a human operator reviews every plan and every price before a client sees anything. You turn a classified brief into an ordered, structured execution plan. You do not price the work — a deterministic engine computes money from your resource estimates.
 

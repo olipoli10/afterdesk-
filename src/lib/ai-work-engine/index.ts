@@ -1,6 +1,9 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { classifyMandateData } from "@/lib/ai-work-engine/data-class";
+import { inspectFiles } from "@/lib/ai-work-engine/file-inspection";
+import { readObject } from "@/lib/storage";
 import { embedWithUsage, embeddingsEnabled } from "@/lib/embeddings";
 import { aiEnabled } from "@/lib/ai";
 import { findSimilarPricedTasks, upsertEmbedding } from "@/lib/ai-work-engine/references";
@@ -150,6 +153,17 @@ export async function runWorkEngine(
         clientDeadlineUtc: true,
         standingCapacityAccountId: true,
         isInternal: true,
+        /**
+         * 1E-alpha: the attachments, so the data class can be computed from
+         * what is actually IN them rather than from what the brief says about
+         * them. Only scanned, unpurged uploads are eligible — the same set the
+         * acceptance freeze will later pin.
+         */
+        files: {
+          where: { kind: "input", scanStatus: "clean", purgedAt: null },
+          select: { id: true, fileName: true, sizeBytes: true, storageKey: true },
+          orderBy: { createdAt: "asc" },
+        },
       },
     });
     if (!task) return;
@@ -352,6 +366,39 @@ export async function runWorkEngine(
     });
     const baseConfidence = classificationRow.confidence;
 
+    /**
+     * 1E-alpha: THE DATA CLASS, COMPUTED LOCALLY, BEFORE ANY PRICE EXISTS.
+     *
+     * Deterministic code opens each attachment, reads its column names and a
+     * bounded sample of values, and hands the SHAPES to a pure classifier. No
+     * model participates: asking a provider what is inside a file, in order to
+     * decide whether that file may be shown to a provider, is a circle whose
+     * answer is always yes.
+     *
+     * Placed here rather than beside the classification call so that a RESUMED
+     * run reaches it too. The stage above is skipped when a previous
+     * invocation already succeeded, and a mandate whose class was computed on
+     * the first attempt but not the second would be priced under whichever
+     * path happened to run.
+     *
+     * The model's own reading of the brief is folded in as one signal among
+     * several, and it can only ever raise the restriction. It is a
+     * declaration, not evidence.
+     */
+    const dataVerdict = classifyMandateData({
+      declaredSensitive: classificationOutput.sensitive_data,
+      declaredRequiredAccessCount: classificationOutput.required_access.length,
+      fileCount: task.files.length,
+      inspections: await inspectFiles(
+        task.files.map((f) => ({
+          id: f.id,
+          fileName: f.fileName,
+          sizeBytes: f.sizeBytes,
+          read: () => readObject(f.storageKey),
+        }))
+      ),
+    });
+
     // ── Stage 2: plan, as a durable operation ──
     const planKey = engineOperationKey(taskId, runKey, "plan");
     await reserveAiOperation({ taskId, purpose: "planning", operationKey: planKey });
@@ -469,6 +516,15 @@ export async function runWorkEngine(
               conservativeAutomationCostMicros: preflight.conservativeAutomationCostMicros,
               automationSpendCeilingMicros: preflight.automationSpendCeilingMicros,
               automationCostPolicyVersion: preflight.policyVersion,
+              /**
+               * 1E-alpha: WHAT THIS MANDATE'S DATA IS, decided here and frozen
+               * with the rest. Computed from a deterministic local read of the
+               * attachments (no model, no provider), so the answer to "may a
+               * capability that leaves this machine touch this work" is
+               * settled before the client is ever quoted.
+               */
+              dataClass: dataVerdict.dataClass,
+              dataClassSignals: dataVerdict.signals.map((sig) => sig.reason),
               model: planned.usage?.model ?? null,
               rawOutput: planned.result!.raw as Prisma.InputJsonValue,
               steps: {
@@ -489,6 +545,13 @@ export async function runWorkEngine(
                    */
                   primitiveId: demotedByOrder.get(i + 1)?.primitiveId ?? null,
                   primitiveVersion: demotedByOrder.get(i + 1)?.primitiveVersion ?? null,
+                  /**
+                   * The step's configuration, frozen beside its economics and
+                   * for the same reason. A demoted step keeps its params: they
+                   * describe what the client approved, and a person reading
+                   * the handoff needs to know which columns were meant.
+                   */
+                  params: (s.params ?? undefined) as Prisma.InputJsonValue | undefined,
                   /**
                    * The step's own economics, frozen. The runner reserves
                    * against THIS number and never reads the policy table, so

@@ -163,6 +163,20 @@ export const planStepOutputSchema = z
      */
     primitive_id: z.string().max(120).nullable(),
     /**
+     * THE STEP'S CONFIGURATION, and deliberately typed loosely HERE.
+     *
+     * The planner emits an object; what shape that object must have depends
+     * entirely on which capability the step names, and that per-capability
+     * schema lives in primitive-params.ts where the pure compiler can reach
+     * it. Validating twice, in two vocabularies, is how the two drift.
+     *
+     * So this accepts any record and the COMPILER is the gate: params that do
+     * not satisfy their capability make the step human work, before anything
+     * runs and before the client is quoted on automation that cannot happen.
+     * A model that invents a parameter costs a demotion, never a crash.
+     */
+    params: z.record(z.string(), z.unknown()).nullable().default(null),
+    /**
      * Human effort split into its two real components, so the residual after
      * automation can be costed honestly. A 15-minute set-up cost does not
      * shrink because only 2 of 80 rows are left. Seconds (not minutes) per
@@ -241,6 +255,7 @@ const PLAN_STEP_JSON_SCHEMA = {
     primitive_id: {
       anyOf: [{ type: "string", enum: [...PLAN_PRIMITIVE_IDS] }, { type: "null" }],
     },
+    params: { type: ["object", "null"] },
     fixed_minutes: { type: ["number", "null"] },
     seconds_per_unit: { type: ["number", "null"] },
     estimated_minutes_optimistic: { type: "number" },
@@ -261,6 +276,7 @@ const PLAN_STEP_JSON_SCHEMA = {
     "human_role",
     "tool",
     "primitive_id",
+    "params",
     "fixed_minutes",
     "seconds_per_unit",
     "estimated_minutes_optimistic",
@@ -311,6 +327,8 @@ export const editStepInputSchema = z
     // it writes the new plan version, so an edit can never pin a version the
     // registry does not currently implement.
     primitiveId: z.string().trim().max(120).nullable(),
+    /** Same shape and same gate as the planner's `params`: see above. */
+    params: z.record(z.string(), z.unknown()).nullable().default(null),
     fixedMinutes: z.coerce.number().int().min(0).max(6000).nullable(),
     secondsPerUnit: z.coerce.number().int().min(0).max(36_000).nullable(),
     estimatedMinutesOptimistic: z.coerce.number().int().min(0).max(6000),

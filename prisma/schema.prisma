@@ -653,16 +653,19 @@ model File {
   /// lieu d'un tableau d'identifiants sans intégrité référentielle : un
   /// artefact ne peut pas pointer vers un run supprimé ni appartenir à un
   /// autre workflow. Null pour les fichiers client et les livrables worker.
-  workflowRunId     String?
-  workflowRun       TaskWorkflowRun?     @relation(fields: [workflowRunId], references: [id], onDelete: SetNull)
-  workflowStepRunId String?
-  workflowStepRun   TaskWorkflowStepRun? @relation(fields: [workflowStepRunId], references: [id], onDelete: SetNull)
+  workflowRunId      String?
+  workflowRun        TaskWorkflowRun?            @relation(fields: [workflowRunId], references: [id], onDelete: SetNull)
+  workflowStepRunId  String?
+  workflowStepRun    TaskWorkflowStepRun?        @relation(fields: [workflowStepRunId], references: [id], onDelete: SetNull)
   /// PHASE 1B — l'audience de l'artefact, explicite. Null pour tout ce qui
   /// n'est pas kind=artifact ; la route de téléchargement refuse un artefact
   /// dont la visibilité est nulle plutôt que de deviner.
   artifactVisibility WorkflowArtifactVisibility?
 
   accessLogs FileAccessLog[]
+
+  /// 1E-alpha : les contrats acceptes qui epinglent ce fichier.
+  acceptanceSnapshotFiles TaskAcceptanceSnapshotFile[]
 
   @@index([taskId])
   @@index([uploaderId])
@@ -828,17 +831,17 @@ model PaymentEvent {
  * months later.
  */
 model Payment {
-  id                String        @id @default(cuid())
-  taskId            String
-  task              Task          @relation(fields: [taskId], references: [id], onDelete: Restrict)
-  amountCents       Int
-  currency          String        @default("USD")
-  method            PaymentMethod
-  provider          String? // "stripe" | null for manual
-  providerRef       String? // payment intent id / wire reference
-  checkoutSessionId String?       @unique
-  status            PaymentStatus @default(pending)
-  receivedAt        DateTime?
+  id                  String        @id @default(cuid())
+  taskId              String
+  task                Task          @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  amountCents         Int
+  currency            String        @default("USD")
+  method              PaymentMethod
+  provider            String? // "stripe" | null for manual
+  providerRef         String? // payment intent id / wire reference
+  checkoutSessionId   String?       @unique
+  status              PaymentStatus @default(pending)
+  receivedAt          DateTime?
   /**
    * PHASE 1C — what Stripe actually captured, from `amount_received`. Until
    * now that value was returned by captureStripePayment and thrown away at
@@ -849,9 +852,9 @@ model Payment {
    * wires and for captures made before this column existed.
    */
   capturedAmountCents Int?
-  note              String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  note                String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   refunds Refund[]
 
@@ -1529,6 +1532,21 @@ model TaskExecutionPlanVersion {
   automationSpendCeilingMicros     BigInt?
   automationCostPolicyVersion      String?
 
+  /// PHASE 1E-alpha — LA CLASSE D'EXECUTION, calculee LOCALEMENT avant le
+  /// devis (src/lib/ai-work-engine/data-class.ts) et gelee ici comme le reste
+  /// de l'economie. Valeurs : public_business | business_confidential |
+  /// personal_sensitive. Null sur tout plan anterieur a cette phase, et null
+  /// se lit alors comme l'ancienne porte a deux booleens, ce qui est exact
+  /// pour ces mandats : aucun d'eux ne pouvait lire un fichier.
+  /// Le compilateur refuse qu'une capacite `provider` traite autre chose que
+  /// public_business, donc changer cette valeur apres coup changerait ce que
+  /// le contrat autorise : elle est couverte par le meme trigger
+  /// d'immutabilite que les etapes.
+  dataClass        String?
+  /// Pourquoi cette classe, en clair, pour l'operateur. Jamais de valeur
+  /// client dedans : le nom d'une colonne, pas son contenu.
+  dataClassSignals String[]
+
   /// Null pour une version admin_edited : aucun modèle n'a produit celle-là.
   model     String?
   rawOutput Json?
@@ -1629,6 +1647,17 @@ model TaskExecutionPlanStep {
   /// étape AVANT le devis, plutôt qu'après paiement.
   demotedForBudget               Boolean @default(false)
 
+  /// PHASE 1E-alpha — LA CONFIGURATION GELEE DE L'ETAPE.
+  /// Jusqu'ici une etape portait un identifiant de primitive et rien d'autre,
+  /// ce qui ne tenait que parce que les cinq primitives d'origine faisaient
+  /// chacune une seule chose. `data.filter` sans predicat n'est pas une
+  /// instruction ; des qu'une etape se configure, la configuration fait partie
+  /// du contrat. Validee par le schema zod de la capacite
+  /// (src/lib/ai-work-engine/primitive-params.ts) a la compilation : des params
+  /// qui ne parsent pas font une etape HUMAINE, jamais une erreur.
+  /// Immutable des l'acceptation, par le trigger existant sur les etapes.
+  params Json?
+
   verificationMethod String
   acceptanceCriteria String[]
   riskLevel          PlanStepRiskLevel
@@ -1726,6 +1755,48 @@ model TaskAcceptanceSnapshot {
   /// contrat, dans leur propre table : les coûts et marges n'ont rien à
   /// faire dans un enregistrement dont le rôle est « ce que le client a vu ».
   operationalBaseline TaskOperationalBaseline?
+
+  /// PHASE 1E-alpha — recopiee verbatim depuis la version de plan acceptee,
+  /// dans la meme transaction, exactement comme les agregats economiques.
+  dataClass String?
+
+  /// Les fichiers client que ce contrat autorise a lire, geles par identite
+  /// ET par contenu. Voir TaskAcceptanceSnapshotFile.
+  inputFiles TaskAcceptanceSnapshotFile[]
+}
+
+/// PHASE 1E-alpha — LES OCTETS QUE LE CLIENT A ACCEPTES.
+///
+/// Une primitive d'ingestion lit un fichier client. Sans ce gel, un
+/// re-televersement entre l'acceptation et l'execution ferait tourner le
+/// mandat sur un contenu que personne n'a devise, et un rejeu apres panne
+/// (les etapes sont relancees en entier sous bail) pourrait donner un
+/// resultat different du premier essai. Les deux sont inacceptables : le
+/// determinisme du rejeu est porteur, et le client a approuve un travail sur
+/// CE fichier-la.
+///
+/// Le sha256 est donc gele en meme temps que l'identifiant. A l'execution le
+/// runner recalcule et refuse si l'empreinte a bouge : le mandat part chez un
+/// humain, jamais en erreur. Substituer un fichier apres acceptation est donc
+/// impossible sans un nouveau contrat explicitement accepte.
+model TaskAcceptanceSnapshotFile {
+  id         String                 @id @default(cuid())
+  snapshotId String
+  snapshot   TaskAcceptanceSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  /// Restrict : un fichier reference par un contrat accepte ne se supprime pas.
+  fileId String
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  /// L'empreinte au moment de l'acceptation. Non nullable ici, contrairement a
+  /// File.sha256 : un fichier sans empreinte calculee ne peut pas entrer dans
+  /// un contrat, il reste du travail humain.
+  sha256    String
+  fileName  String
+  sizeBytes Int
+  createdAt DateTime @default(now())
+
+  @@unique([snapshotId, fileId])
 }
 
 // ---------- Phase 1B : exécution du plan accepté ----------
@@ -1858,10 +1929,10 @@ model TaskWorkflowRun {
   finishedAt DateTime?
   createdAt  DateTime  @default(now())
 
-  steps         TaskWorkflowStepRun[]
-  humanPackage  TaskHumanWorkPackage?
-  artifacts     File[]
-  budgetHolds   WorkflowBudgetHold[]
+  steps        TaskWorkflowStepRun[]
+  humanPackage TaskHumanWorkPackage?
+  artifacts    File[]
+  budgetHolds  WorkflowBudgetHold[]
 
   @@index([status])
   @@index([taskId])
@@ -1949,9 +2020,9 @@ model TaskToolInvocation {
   stepRunId String
   stepRun   TaskWorkflowStepRun @relation(fields: [stepRunId], references: [id], onDelete: Cascade)
 
-  primitiveId String
-  operationKey String
-  attempt      Int
+  primitiveId            String
+  operationKey           String
+  attempt                Int
   providerIdempotencyKey String?
 
   provider String
@@ -1967,7 +2038,7 @@ model TaskToolInvocation {
   /// jamais un chiffre annoncé par un modèle.
   costMicros       Int @default(0)
 
-  durationMs Int     @default(0)
+  durationMs Int      @default(0)
   ok         Boolean
   error      String?
   createdAt  DateTime @default(now())
@@ -2117,7 +2188,7 @@ model TaskHumanWorkPackage {
   unitsTotal     Int
 
   /// Minutes calculées par residual.ts : fixe + (par-unité × restantes).
-  estimatedMinutes Int
+  estimatedMinutes    Int
   /// Le payout du résiduel, déterministe, écrit avant l'entrée au bassin.
   computedPayoutCents Int
   /// Le vaPayoutCents approuvé au devis — le budget de référence, conservé
@@ -2261,15 +2332,14 @@ model AiOperation {
  * row is the only durable record of the quoted pair). Created in the SAME
  * transaction as TaskAcceptanceSnapshot; immutable by its own Postgres
  * trigger (a NEW function — no existing trigger is CREATE OR REPLACEd).
- *
  * Three provenances, never blended:
- *  - planned*        — derived from the accepted plan's own steps;
- *  - estimated*      — the quote as it was actually computed;
- *  - modeled*AtQuote — catalog constants that entered the price without
- *                      being in the plan. The flat 20 reviewer minutes of
- *                      pricing.ts is NOT a plan fact, and naming it as one
- *                      would make "the plan was wrong" and "the policy
- *                      ignores the plan" indistinguishable forever.
+ * - planned*        — derived from the accepted plan's own steps;
+ * - estimated*      — the quote as it was actually computed;
+ * - modeled*AtQuote — catalog constants that entered the price without
+ * being in the plan. The flat 20 reviewer minutes of
+ * pricing.ts is NOT a plan fact, and naming it as one
+ * would make "the plan was wrong" and "the policy
+ * ignores the plan" indistinguishable forever.
  */
 model TaskOperationalBaseline {
   id         String                 @id @default(cuid())
@@ -2418,7 +2488,6 @@ model TaskQualityReview {
  * every significant change leaves an append-only
  * operational_actual_recomputed TaskEvent with before/after hashes — the
  * projection can be overwritten, the history of WHY it changed cannot.
- *
  * ALL MONEY AGGREGATES ARE BigInt: Prisma Int is 32-bit signed and
  * 2 147 483 647 micros is only $2,147.48 — a $500 payout in micros already
  * overflows it. Costs are named by PROVENANCE (booked / metered / modeled);

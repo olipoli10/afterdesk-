@@ -147,7 +147,7 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
 
       const base = await tx.taskExecutionPlanVersion.findUnique({
         where: { id: baseVersionId },
-        select: { taskId: true, version: true },
+        select: { taskId: true, version: true, dataClass: true, dataClassSignals: true },
       });
       if (!base || base.taskId !== taskId) {
         throw new Refused("That plan version does not belong to this task.");
@@ -194,6 +194,19 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
           conservativeAutomationCostMicros: preflight.conservativeAutomationCostMicros,
           automationSpendCeilingMicros: preflight.automationSpendCeilingMicros,
           automationCostPolicyVersion: preflight.policyVersion,
+          /**
+           * THE DATA CLASS SURVIVES AN EDIT, VERBATIM.
+           *
+           * It is a property of the mandate's DATA, computed from the client's
+           * own files before the quote; editing the plan's text changes
+           * nothing about what is inside those files. Left out, this create
+           * wrote NULL, the compiler read NULL as public_business, and an
+           * admin edit silently discarded a personal_sensitive escalation on
+           * the one path where ingestion can actually run. Found by the final
+           * adversarial review, and exactly the class of defect it exists for.
+           */
+          dataClass: base.dataClass,
+          dataClassSignals: base.dataClassSignals,
           steps: {
             create: steps.map((s, i) => ({
               order: i + 1,
@@ -211,6 +224,9 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
                */
               primitiveId: frozen.get(i + 1)?.primitiveId ?? null,
               primitiveVersion: frozen.get(i + 1)?.primitiveVersion ?? null,
+              // Same freeze as the engine's writer: an operator editing a
+              // capability's configuration is editing the contract.
+              params: (s.params ?? undefined) as Prisma.InputJsonValue | undefined,
               expectedCostMicrosAtQuote: frozen.get(i + 1)?.expectedCostMicrosAtQuote ?? null,
               maxCostMicrosPerAttemptAtQuote:
                 frozen.get(i + 1)?.maxCostMicrosPerAttemptAtQuote ?? null,

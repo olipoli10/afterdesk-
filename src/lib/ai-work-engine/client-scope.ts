@@ -92,6 +92,8 @@ export type AcceptanceSnapshotInput = {
     conservativeAutomationCostMicros: bigint | null;
     automationSpendCeilingMicros: bigint | null;
     automationCostPolicyVersion: string | null;
+    /** 1E-alpha: the execution data class, frozen with the economics. */
+    dataClass: string | null;
   } | null;
   settings: {
     revisionWindowHours: number;
@@ -140,6 +142,7 @@ export function buildAcceptanceSnapshot(input: AcceptanceSnapshotInput) {
       input.quotedPlanVersion?.conservativeAutomationCostMicros ?? null,
     automationSpendCeilingMicros: input.quotedPlanVersion?.automationSpendCeilingMicros ?? null,
     automationCostPolicyVersion: input.quotedPlanVersion?.automationCostPolicyVersion ?? null,
+    dataClass: input.quotedPlanVersion?.dataClass ?? null,
     acceptedByUserId: input.acceptedByUserId,
   };
 }

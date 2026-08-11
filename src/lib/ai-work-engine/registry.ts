@@ -5,12 +5,24 @@ import {
 } from "@/lib/ai-work-engine/schemas";
 import type { PrimitiveContext, PrimitiveResult } from "@/lib/ai-work-engine/primitives/types";
 import {
-  runBuildCsv,
   runNormalizeContactFields,
   runSplitExceptions,
 } from "@/lib/ai-work-engine/primitives/pure";
 import { runResearchWebSearch } from "@/lib/ai-work-engine/primitives/research";
 import { runExtractStructuredRows } from "@/lib/ai-work-engine/primitives/extract";
+import {
+  runBuildCsvV2,
+  runBuildXlsx,
+  runDataAggregate,
+  runDataCompare,
+  runDataDedupe,
+  runDataFilter,
+  runDataJoin,
+  runDataNormalize,
+  runDataSchemaMap,
+  runIngestCsv,
+  runIngestXlsx,
+} from "@/lib/ai-work-engine/primitives/files";
 
 /**
  * THE ALLOWLIST. A primitive that is not in this table cannot run, whatever a
@@ -136,7 +148,140 @@ export const REGISTRY: Record<PlanPrimitiveId, Primitive> = {
     // Pure code: no provider, no network, no spend. The literal types make
     // this an assertion the compiler checks, not a claim in a comment.
     billable: false,
-    run: runBuildCsv,
+    run: runBuildCsvV2,
+  }),
+
+  /* ───────────────────── 1E-alpha: files and data ─────────────────────
+   *
+   * Every entry below is PREPARE, non-billable and `local` in the vocabulary:
+   * deterministic code that reads a file the contract froze and reshapes rows
+   * already in the payload. None of them can reach a network, which is the
+   * property that makes reading a client's own file safe to ship (see
+   * data-class.ts). None of them can spend, so none reserves budget.
+   *
+   * Timeouts are wall-clock ceilings inside the runner's ~60s invocation
+   * slice, and the codecs' own row and cell bounds are what actually stop a
+   * large file: a timeout is the backstop, not the plan.
+   */
+  "ingest.csv": define({
+    id: "ingest.csv",
+    version: PLAN_PRIMITIVES["ingest.csv"],
+    displayName: "Read the accepted CSV",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 60_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runIngestCsv,
+  }),
+  "ingest.xlsx": define({
+    id: "ingest.xlsx",
+    version: PLAN_PRIMITIVES["ingest.xlsx"],
+    displayName: "Read the accepted workbook",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 90_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runIngestXlsx,
+  }),
+  "data.dedupe": define({
+    id: "data.dedupe",
+    version: PLAN_PRIMITIVES["data.dedupe"],
+    displayName: "Remove duplicates",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 60_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runDataDedupe,
+  }),
+  "data.normalize": define({
+    id: "data.normalize",
+    version: PLAN_PRIMITIVES["data.normalize"],
+    displayName: "Normalise field formats",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 60_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runDataNormalize,
+  }),
+  "data.join": define({
+    id: "data.join",
+    version: PLAN_PRIMITIVES["data.join"],
+    displayName: "Join two sets",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 60_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runDataJoin,
+  }),
+  "data.filter": define({
+    id: "data.filter",
+    version: PLAN_PRIMITIVES["data.filter"],
+    displayName: "Keep or drop rows",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 30_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runDataFilter,
+  }),
+  "data.aggregate": define({
+    id: "data.aggregate",
+    version: PLAN_PRIMITIVES["data.aggregate"],
+    displayName: "Group and total",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 30_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runDataAggregate,
+  }),
+  "data.compare": define({
+    id: "data.compare",
+    version: PLAN_PRIMITIVES["data.compare"],
+    displayName: "Difference two sets",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 60_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runDataCompare,
+  }),
+  "data.schema_map": define({
+    id: "data.schema_map",
+    version: PLAN_PRIMITIVES["data.schema_map"],
+    displayName: "Map columns to the target schema",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 30_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runDataSchemaMap,
+  }),
+  "build.xlsx": define({
+    id: "build.xlsx",
+    version: PLAN_PRIMITIVES["build.xlsx"],
+    displayName: "Build the candidate workbook",
+    mode: "PREPARE",
+    idempotent: true,
+    handlesSensitiveData: false,
+    timeoutMs: 60_000,
+    maxAttempts: 3,
+    billable: false,
+    run: runBuildXlsx,
   }),
 };
 

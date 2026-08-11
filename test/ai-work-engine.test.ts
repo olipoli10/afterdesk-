@@ -611,3 +611,34 @@ describe("the client scope projection — the only path to a client's eyes", () 
     expect(scope?.exclusions).toEqual([]);
   });
 });
+
+describe("an admin edit cannot lose the mandate's data class", () => {
+  it("editPlanVersion reads the class from the base version and writes it forward", () => {
+    /**
+     * THE BLOCKING DEFECT OF THE FINAL 1E-alpha REVIEW, PINNED AT SOURCE.
+     *
+     * The data class is a property of the mandate's DATA, computed from the
+     * client's own files before the quote. editPlanVersion creates version
+     * N+1, and the version it creates is the one the acceptance snapshot
+     * freezes; when this create omitted dataClass, the column was NULL, the
+     * compiler read NULL as public_business, and one admin edit silently
+     * discarded a personal_sensitive escalation on the only path where
+     * ingestion can actually run.
+     *
+     * Source-level because the action needs a database to run and the
+     * integration suite does not cover it yet; the assertion names both
+     * halves (the select and the write) so a refactor that keeps one and
+     * drops the other still fails.
+     */
+    const source = readFileSync(
+      join(__dirname, "..", "src/server/actions/admin-plan.ts"),
+      "utf8"
+    );
+    const select = source.slice(source.indexOf("where: { id: baseVersionId }"));
+    expect(select).toContain("dataClass: true");
+    expect(select).toContain("dataClassSignals: true");
+    expect(source).toContain("dataClass: base.dataClass");
+    expect(source).toContain("dataClassSignals: base.dataClassSignals");
+  });
+});
+

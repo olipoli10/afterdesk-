@@ -218,6 +218,8 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
               conservativeAutomationCostMicros: true,
               automationSpendCeilingMicros: true,
               automationCostPolicyVersion: true,
+              // 1E-alpha: the execution data class, frozen with the rest.
+              dataClass: true,
             },
           },
         },
@@ -229,7 +231,7 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
         throw new TransitionError("accepted a task with no price");
       }
 
-      await tx.taskAcceptanceSnapshot.create({
+      const snapshot = await tx.taskAcceptanceSnapshot.create({
         data: buildAcceptanceSnapshot({
           taskId,
           acceptedByUserId: user.id,
@@ -241,7 +243,50 @@ export async function acceptQuote(taskId: string): Promise<QuoteActionResult> {
             disputeWindowHours: settings.disputeWindowHours,
           },
         }),
+        select: { id: true },
       });
+
+      /**
+       * 1E-alpha: FREEZE THE BYTES, IN THIS TRANSACTION.
+       *
+       * An ingestion step reads a client attachment. Without this, a
+       * re-upload between acceptance and execution would run the mandate on
+       * content nobody quoted, and a replay after a crash (steps are re-run in
+       * full under a lease) could produce a different answer than the first
+       * attempt. Both are unacceptable, so the identity AND the content hash
+       * are pinned at the same instant as the price.
+       *
+       * Only files that have PASSED the scanner and have a computed hash are
+       * eligible. A file that is still pending, that was rejected, or whose
+       * sha256 was never computed is simply not frozen — and a capability that
+       * cannot find its file in the frozen set hands the mandate to a person.
+       * That is the intended outcome: an unverified attachment must not become
+       * an input the machine reads on the client's behalf.
+       */
+      const eligibleFiles = await tx.file.findMany({
+        where: {
+          taskId,
+          kind: "input",
+          scanStatus: "clean",
+          sha256: { not: null },
+          purgedAt: null,
+        },
+        select: { id: true, sha256: true, fileName: true, sizeBytes: true },
+        orderBy: { createdAt: "asc" },
+      });
+      if (eligibleFiles.length > 0) {
+        await tx.taskAcceptanceSnapshotFile.createMany({
+          data: eligibleFiles.map((f) => ({
+            snapshotId: snapshot.id,
+            fileId: f.id,
+            // Non-null by the query above; asserted rather than defaulted,
+            // because a hash of "" would be a hash that always mismatches.
+            sha256: f.sha256 as string,
+            fileName: f.fileName,
+            sizeBytes: f.sizeBytes,
+          })),
+        });
+      }
 
       /**
        * Phase 1C: the internal baseline, in the SAME transaction as the

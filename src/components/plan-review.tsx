@@ -38,6 +38,8 @@ export type PlanStepView = {
   tool: string | null;
   primitiveId: string | null;
   primitiveVersion: number | null;
+  /** The capability's frozen configuration, opaque to this component. */
+  params: unknown;
   fixedMinutes: number | null;
   secondsPerUnit: number | null;
   estimatedMinutesOptimistic: number;
@@ -134,6 +136,12 @@ type EditableStep = {
   humanRole: (typeof HUMAN_ROLES)[number] | "";
   tool: string;
   primitiveId: string;
+  /**
+   * Carried through the editor UNCHANGED, as opaque JSON. The form has no
+   * widget for a capability's parameters yet, and dropping them on save would
+   * silently strip the configuration off every step an operator touched.
+   */
+  params: unknown;
   fixedMinutes: string;
   secondsPerUnit: string;
   optimistic: string;
@@ -156,6 +164,7 @@ function toEditable(s: PlanStepView): EditableStep {
     humanRole: s.humanRole ?? "",
     tool: s.tool ?? "",
     primitiveId: s.primitiveId ?? "",
+    params: s.params ?? null,
     fixedMinutes: s.fixedMinutes === null ? "" : String(s.fixedMinutes),
     secondsPerUnit: s.secondsPerUnit === null ? "" : String(s.secondsPerUnit),
     optimistic: String(s.estimatedMinutesOptimistic),
@@ -178,6 +187,7 @@ const BLANK_STEP: EditableStep = {
   humanRole: "worker",
   tool: "",
   primitiveId: "",
+  params: null,
   fixedMinutes: "",
   secondsPerUnit: "",
   optimistic: "0",
@@ -239,6 +249,11 @@ export function PlanReview({ data }: { data: PlanReviewData }) {
           // so demoting a step to human clears the primitive rather than
           // leaving a stale id behind for the compiler to trip over.
           primitiveId: s.executor === "human" ? null : (s.primitiveId || null),
+          // A human step carries no capability, so it carries no params.
+          params:
+            s.executor === "human"
+              ? null
+              : ((s.params ?? null) as Record<string, unknown> | null),
           // Empty means "no decomposition", which the residual reads as a
           // signal to fall back to the full PERT estimate. Zero would mean
           // "this step genuinely costs nothing", which is a different claim.

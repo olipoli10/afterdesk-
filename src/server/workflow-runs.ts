@@ -1,5 +1,5 @@
 import "server-only";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { classifyProviderError } from "@/lib/ai-work-engine/provider-error";
@@ -14,12 +14,16 @@ import { transitionTask, TransitionError } from "@/lib/state";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { compileDecisions, type CompileStepInput } from "@/lib/ai-work-engine/compile";
 import { resolvePrimitive } from "@/lib/ai-work-engine/registry";
+import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
+import { primitiveReachOf } from "@/lib/ai-work-engine/primitive-vocabulary";
+import { DATA_CLASSES, type DataClass } from "@/lib/ai-work-engine/data-class";
 import { attemptsAllowedForStep } from "@/lib/ai-work-engine/automation-cost-policy";
 import { computeResidual, type ResidualStepInput } from "@/lib/ai-work-engine/residual";
 import { searchCostMicros } from "@/lib/ai-work-engine/tool-cost";
 import { buildHumanPackageCopy } from "@/lib/ai-work-engine/human-package-copy";
 import { emptyPayload } from "@/lib/ai-work-engine/primitives/types";
 import { loadLatestPayload, persistPayload, writeArtifact } from "@/server/workflow-artifacts";
+import { readObject } from "@/lib/storage";
 import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notifications";
 
 /**
@@ -35,6 +39,16 @@ import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notif
  * State lives entirely in Postgres. `after()` is only an accelerator: any
  * invocation, from any process, can pick a run up where it was left.
  */
+
+/**
+ * The stored class is a plain column, so it is validated on the way out.
+ * An unrecognised string is treated as ABSENT rather than as a class, which
+ * makes the compiler fall back to its pre-1E behaviour instead of trusting a
+ * value nothing in this codebase wrote.
+ */
+function isDataClass(value: string | null | undefined): value is DataClass {
+  return typeof value === "string" && (DATA_CLASSES as readonly string[]).includes(value);
+}
 
 /** Long enough to outlast the slowest primitive, short enough to recover. */
 const LEASE_MS = 6 * 60 * 1000;
@@ -205,6 +219,8 @@ export async function compileWorkflowForTask(
           // The frozen ceiling. Read, never recomputed.
           automationSpendCeilingMicros: true,
           automationCostPolicyVersion: true,
+          // The frozen data class, for exactly the same reason.
+          dataClass: true,
         },
       },
       aiClassification: { select: { sensitiveData: true, requiredAccess: true } },
@@ -248,6 +264,7 @@ export async function compileWorkflowForTask(
       estimatedAiCostCents: true,
       maxCostMicrosPerAttemptAtQuote: true,
       demotedForBudget: true,
+      params: true,
     },
   });
   if (planSteps.length === 0) return null;
@@ -260,11 +277,24 @@ export async function compileWorkflowForTask(
     primitiveId: s.primitiveId,
     primitiveVersion: s.primitiveVersion,
     dependsOnOrder: s.dependsOnOrder,
+    params: s.params,
   }));
 
+  /**
+   * THE DATA CLASS COMES FROM THE CONTRACT, like the ceiling below it and for
+   * the same reason: it was computed locally from the client's own files
+   * BEFORE the quote, and it is what decides whether a capability that leaves
+   * this machine may run at all. Recomputing it here, after payment, would
+   * mean a re-uploaded file could change what the accepted mandate authorises.
+   *
+   * Null on every contract accepted before 1E-alpha, and the compiler reads
+   * that as `public_business` — correct for those mandates, none of which
+   * could read a file.
+   */
   const compiled = compileDecisions(input, {
     sensitiveData: task.aiClassification?.sensitiveData ?? false,
     requiredAccessCount: task.aiClassification?.requiredAccess.length ?? 0,
+    dataClass: isDataClass(snapshot.dataClass) ? snapshot.dataClass : undefined,
   });
 
   /**
@@ -318,6 +348,13 @@ type ClaimedStep = {
   primitiveId: string | null;
   primitiveVersion: number | null;
   attempts: number;
+  /**
+   * The step's configuration exactly as the client accepted it, unparsed.
+   * Carried from TaskExecutionPlanStep for the same reason as the economics
+   * below: the contract is the source, not the current code's idea of a
+   * sensible default.
+   */
+  frozenParams: unknown;
   /**
    * THE PER-ATTEMPT CEILING, FROZEN WHEN THE CLIENT ACCEPTED.
    *
@@ -571,7 +608,14 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
       lastError: true,
       // The frozen economics travel with the step, from the accepted plan.
       planStep: {
-        select: { maxCostMicrosPerAttemptAtQuote: true, maxAttemptsAtQuote: true },
+        // 1E-alpha: `params` travels the same way and for the same reason. The
+        // client approved a deduplication on `email`; the runner reads that
+        // from the frozen contract rather than from anything current.
+        select: {
+          maxCostMicrosPerAttemptAtQuote: true,
+          maxAttemptsAtQuote: true,
+          params: true,
+        },
       },
     },
   });
@@ -692,6 +736,7 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
       attempts: candidate.attempts + 1,
       maxCostMicrosPerAttemptAtQuote: candidate.planStep.maxCostMicrosPerAttemptAtQuote,
       maxAttemptsAtQuote: candidate.planStep.maxAttemptsAtQuote,
+      frozenParams: candidate.planStep.params,
       lockedBy,
     };
   }
@@ -768,6 +813,52 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
 
     const classification = run.task.aiClassification;
 
+    /**
+     * 1E-alpha: THE ONLY CLIENT FILES THIS RUN MAY READ.
+     *
+     * Resolved once from the ACCEPTANCE SNAPSHOT, never from the task's
+     * current attachments. That distinction is the whole guarantee: a file
+     * uploaded, replaced or deleted after the client accepted is simply not in
+     * this list, so no primitive can reach it and a replay after a crash sees
+     * exactly the set the first attempt saw.
+     *
+     * `read()` verifies the hash before returning a single byte. A file whose
+     * content moved is not an error to log and continue past: it means the
+     * bytes under this contract are not the bytes the client approved, and the
+     * only safe answer is to stop and let a person look. The throw is caught
+     * by the step's own failure path, which retries and then hands the step to
+     * a human, so a tampered or restored-from-backup file degrades the mandate
+     * rather than corrupting a deliverable.
+     */
+    const frozenFiles = await prisma.taskAcceptanceSnapshotFile.findMany({
+      where: { snapshotId: run.snapshotId },
+      select: { fileId: true, sha256: true, fileName: true, sizeBytes: true },
+      orderBy: { fileName: "asc" },
+    });
+    const inputFiles = frozenFiles.map((f) => ({
+      fileId: f.fileId,
+      fileName: f.fileName,
+      sizeBytes: f.sizeBytes,
+      sha256: f.sha256,
+      read: async () => {
+        const record = await prisma.file.findUnique({
+          where: { id: f.fileId },
+          select: { storageKey: true, purgedAt: true },
+        });
+        if (!record || record.purgedAt !== null) {
+          throw new Error(`accepted input file ${f.fileId} is no longer stored`);
+        }
+        const body = await readObject(record.storageKey);
+        const actual = createHash("sha256").update(body).digest("hex");
+        if (actual !== f.sha256) {
+          throw new Error(
+            `accepted input file ${f.fileId} no longer matches the hash frozen at acceptance`
+          );
+        }
+        return body;
+      },
+    }));
+
     while (Date.now() < deadline) {
       const step = await claimNextStep(run.id);
       if (!step) break;
@@ -779,6 +870,27 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         // same reason as the other handoff: a step that becomes human work
         // while still counted as automated inflates the residual reduction.
         await handOffStepToHuman(step.id, run.id, "The primitive is no longer available.");
+        continue;
+      }
+
+      /**
+       * 1E-alpha: THE FROZEN CONFIGURATION, RE-READ FROM THE CONTRACT.
+       *
+       * The compiler already validated these params before the run existed, so
+       * this parse should never fail — and it is done again anyway, from the
+       * frozen plan step rather than from anything recomputed, because the one
+       * case where it COULD fail is the one that matters: a deploy that
+       * tightened a capability's schema after a client accepted a plan. When
+       * that happens the honest answer is a person, not a primitive running on
+       * a configuration the current code no longer considers valid.
+       */
+      const stepParams = parsePrimitiveParams(step.primitiveId, step.frozenParams);
+      if (stepParams === null) {
+        await handOffStepToHuman(
+          step.id,
+          run.id,
+          "The step's accepted configuration is not valid for this capability."
+        );
         continue;
       }
 
@@ -910,6 +1022,20 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
               quantityInterpreted: classification?.quantityInterpreted ?? null,
             },
             input,
+            params: stepParams,
+            /**
+             * FILE HANDLES ONLY FOR CAPABILITIES THAT STAY ON THIS MACHINE.
+             *
+             * Only the local file primitives read ctx.inputFiles today, but
+             * "nothing else happens to read it" is a fact about the current
+             * code, not a guarantee. The documented claim is structural: no
+             * combination of a wrong brief, a wrong classification and a
+             * wrong plan can put a client file in front of a provider. So a
+             * provider-reach primitive receives an empty list, and the claim
+             * is true by construction rather than by convention.
+             */
+            inputFiles:
+              primitiveReachOf(step.primitiveId) === "local" ? inputFiles : [],
             /**
              * 1D-alpha0: the real remaining allowance, not the literal `0`
              * that meant "unbounded" and was read by nothing. Zero here now

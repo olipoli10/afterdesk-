@@ -22,6 +22,9 @@ export const planStepSelect = {
   // to be READ here too: the editor round-trips what it was given, and a
   // column missing from this select is a column the next saved version loses.
   primitiveId: true,
+  // 1E-alpha: the capability's frozen configuration, read back so the
+  // editor can round-trip it instead of stripping it on save.
+  params: true,
   primitiveVersion: true,
   fixedMinutes: true,
   secondsPerUnit: true,
