@@ -8,6 +8,8 @@ import { getSettings } from "@/lib/settings";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { aiSuggestionColumns, pricePlan } from "@/lib/ai-work-engine/pricing";
 import { currentPrimitiveVersion, editPlanInputSchema } from "@/lib/ai-work-engine/schemas";
+import { primitiveReadsFiles } from "@/lib/ai-work-engine/primitive-vocabulary";
+import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
 import { CURRENT_AUTOMATION_COST_POLICY } from "@/lib/ai-work-engine/automation-cost-policy";
 import { runAutomationPreflight } from "@/lib/ai-work-engine/automation-preflight";
 
@@ -45,6 +47,44 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
   }
   const { taskId, baseVersionId, editNote, deliverableDescription, assumptions, exclusions, steps } =
     parsed.data;
+
+  /**
+   * LOT A — THE OWNERSHIP BOUNDARY, ENFORCED BY CODE AT THE EDIT DOOR.
+   *
+   * A file-reading step's fileId must name a file that belongs to THIS task
+   * (input kind, scanned clean, unpurged — the same set the planner's
+   * manifest was built over and the acceptance freeze will pin). A cuid being
+   * hard to guess is not a boundary; this check is. It refuses the edit with
+   * a clear message instead of freezing a pointer that either reads another
+   * client's file (never — the runtime snapshot check is the third wall) or
+   * dies at runtime hours after payment.
+   *
+   * Params that do not PARSE are still allowed to save: an unparseable
+   * configuration compiles to human work (invalid_params), which is the
+   * established fail-closed floor, and blocking every malformed save would
+   * prevent the legitimate "leave this step to a person" edit.
+   */
+  const fileSteps = steps.filter((s) => primitiveReadsFiles(s.primitiveId));
+  if (fileSteps.length > 0) {
+    const owned = await prisma.file.findMany({
+      where: { taskId, kind: "input", scanStatus: "clean", purgedAt: null },
+      select: { id: true, fileName: true },
+    });
+    const ownedIds = new Set(owned.map((f) => f.id));
+    for (const s of fileSteps) {
+      const parsedParams = parsePrimitiveParams(s.primitiveId, s.params);
+      if (parsedParams === null) continue;
+      const fileId = parsedParams.fileId as string;
+      if (!ownedIds.has(fileId)) {
+        return {
+          ok: false,
+          error:
+            "A file step points at a file this task does not own. Pick one of the task's own attachments" +
+            (owned.length > 0 ? ` (${owned.map((f) => f.fileName).join(", ")}).` : "; this task has none."),
+        };
+      }
+    }
+  }
 
   const settings = await getSettings();
   const rates = {

@@ -169,7 +169,7 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
    */
   const mandateReadsFiles = steps.some((s) => primitiveReadsFiles(s.primitiveId));
 
-  const compiled: CompiledStep[] = steps.map((s) => {
+  const prelim = steps.map((s) => {
     const decision = byOrder.get(s.order);
     /**
      * THE MODE CHECK, WHICH USED TO BE A COMMENT.
@@ -221,7 +221,8 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       title: s.title,
       primitiveId: s.primitiveId,
       primitiveVersion: s.primitiveVersion,
-      executionMode: automatable ? "automated" : "human",
+      dependsOnOrder: s.dependsOnOrder,
+      automatable,
       handoffReason: automatable
         ? null
         : // The topology's own verdict wins when it has one: "not in the
@@ -242,7 +243,58 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
                   : !paramsOk
                     ? HANDOFF_REASONS.invalid_params
                     : HANDOFF_REASONS.no_primitive),
-      params: automatable ? parsedParams : null,
+      parsedParams,
+    };
+  });
+
+  /**
+   * RULE 3, EXTENDED TO EVERY COMPILE-LEVEL REFUSAL (LOT A).
+   *
+   * The topology cascades its OWN reasons (human executor, missing primitive,
+   * version mismatch) through the dependency graph — but the compiler's later
+   * gates (invalid params, reach, class, mode) did not cascade, so a step
+   * whose params were refused could leave its DEPENDENTS compiled "automated"
+   * with no producer: a dedupe scheduled to run on rows an ingest will never
+   * produce. Found by the LOT A hostile test (an invented file reference must
+   * yield a FULLY human plan, not a decapitated machine chain).
+   *
+   * Same discipline as the preflight's economic cascade: a machine step is
+   * finally automatable only if everything it transitively consumes is.
+   * Cycle-safe (planner data can contain cycles; a cycle proves dependence on
+   * nothing provable, so it demotes).
+   */
+  const byOrderPrelim = new Map(prelim.map((p) => [p.order, p]));
+  const finalOk = new Map<number, boolean>();
+  const visiting = new Set<number>();
+  const finallyAutomatable = (order: number): boolean => {
+    const cached = finalOk.get(order);
+    if (cached !== undefined) return cached;
+    if (visiting.has(order)) return false;
+    const p = byOrderPrelim.get(order);
+    if (!p || !p.automatable) {
+      finalOk.set(order, false);
+      return false;
+    }
+    visiting.add(order);
+    const ok = p.dependsOnOrder.every((d) => finallyAutomatable(d));
+    visiting.delete(order);
+    finalOk.set(order, ok);
+    return ok;
+  };
+
+  const compiled: CompiledStep[] = prelim.map((p) => {
+    const finallyOk = p.automatable && finallyAutomatable(p.order);
+    return {
+      planStepId: p.planStepId,
+      order: p.order,
+      title: p.title,
+      primitiveId: p.primitiveId,
+      primitiveVersion: p.primitiveVersion,
+      executionMode: finallyOk ? "automated" : "human",
+      handoffReason: finallyOk
+        ? null
+        : (p.handoffReason ?? HANDOFF_REASONS.depends_on_human),
+      params: finallyOk ? p.parsedParams : null,
     };
   });
 

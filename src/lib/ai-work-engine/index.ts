@@ -9,6 +9,11 @@ import { aiEnabled } from "@/lib/ai";
 import { findSimilarPricedTasks, upsertEmbedding } from "@/lib/ai-work-engine/references";
 import { runClassification } from "@/lib/ai-work-engine/classify";
 import { runPlanGeneration } from "@/lib/ai-work-engine/plan";
+import {
+  buildAttachmentManifest,
+  plannerAttachmentLines,
+  resolveFileParams,
+} from "@/lib/ai-work-engine/attachments";
 import { runCritique, shouldCritique } from "@/lib/ai-work-engine/critique";
 import { aiSuggestionColumns, pricePlan, type PricingStepInput } from "@/lib/ai-work-engine/pricing";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
@@ -115,6 +120,23 @@ function reprice(
     suggestedPriceCents: up(raw.suggestedPriceCents, onDemotedPlan.suggestedPriceCents),
     suggestedVaPayoutCents: up(raw.suggestedVaPayoutCents, onDemotedPlan.suggestedVaPayoutCents),
   };
+}
+
+/**
+ * LOT A: the persist-side half of the attachment manifest. A file-reading
+ * step's params go through the deterministic ref -> File.id resolution; every
+ * other step's params pass through untouched. An unresolvable reference
+ * (invented, out of range, or a raw id the model produced) loses its fileId
+ * here, which makes the ingest schema's required-field check fail at compile
+ * and the step a person's — a quote-time fact instead of a runtime surprise.
+ */
+function resolvePlannedParams(
+  manifest: ReturnType<typeof buildAttachmentManifest>,
+  primitiveId: string | null,
+  rawParams: unknown
+): Prisma.InputJsonValue | undefined {
+  const resolution = resolveFileParams(manifest, primitiveId, rawParams);
+  return (resolution.params ?? undefined) as Prisma.InputJsonValue | undefined;
 }
 
 function planStepsToPricingInput(plan: PlanOutput): PricingStepInput[] {
@@ -408,6 +430,19 @@ export async function runWorkEngine(
       return;
     }
 
+    /**
+     * COMMERCIAL READINESS, LOT A: the planner finally SEES the attachments.
+     *
+     * The manifest is built once, here, over the exact file set the query
+     * above loaded (scanned, unpurged, createdAt-ordered — the same set the
+     * acceptance freeze pins later). The planner receives only the
+     * provider-safe lines (ref, name, kind, size — never ids, never
+     * content); this module keeps the full manifest to resolve refs back to
+     * real fileIds at persist time below. Same-name files are fine: the ref
+     * is positional, not textual.
+     */
+    const attachmentManifest = buildAttachmentManifest(task.files);
+
     let planned: Awaited<ReturnType<typeof runPlanGeneration>>;
     try {
       planned = await runPlanGeneration({
@@ -417,6 +452,7 @@ export async function runWorkEngine(
         classification: classificationOutput,
         categories,
         referenceTasks,
+        attachmentLines: plannerAttachmentLines(attachmentManifest),
       });
     } catch (error) {
       await failAiOperation({
@@ -554,8 +590,18 @@ export async function runWorkEngine(
                    * for the same reason. A demoted step keeps its params: they
                    * describe what the client approved, and a person reading
                    * the handoff needs to know which columns were meant.
+                   *
+                   * LOT A: file-reading params pass through the manifest
+                   * resolution FIRST, so what freezes is either a real, owned
+                   * File.id or a params object whose missing fileId makes the
+                   * compiler hand the step to a person at quote time. An
+                   * invented reference can no longer survive to the runtime.
                    */
-                  params: (s.params ?? undefined) as Prisma.InputJsonValue | undefined,
+                  params: resolvePlannedParams(
+                    attachmentManifest,
+                    demotedByOrder.get(i + 1)?.primitiveId ?? null,
+                    s.params
+                  ),
                   /**
                    * The step's own economics, frozen. The runner reserves
                    * against THIS number and never reads the policy table, so

@@ -250,6 +250,14 @@ export default async function PricingDetailPage({
             suggestedPriceCents: h.suggestedPriceCents,
             suggestedVaPayoutCents: h.suggestedVaPayoutCents,
           })),
+          // LOT A: the file-step params picker selects among these — the
+          // task's own input uploads, never a typed id. The edit action
+          // re-verifies ownership server-side on every save.
+          attachments: inputFiles.map((f) => ({
+            id: f.id,
+            fileName: f.fileName,
+            sizeBytes: f.sizeBytes,
+          })),
         }}
       />
 

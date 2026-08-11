@@ -30,7 +30,7 @@ const PRIMITIVE_GUIDE = `- research.web_search: public web search for candidate 
 - normalize.contact_fields: pure code. Phone, email and URL formatting, casing, whitespace.
 - split.exceptions: pure code. Split rows into the confidently-sourced ones and the ones a person must check.
 - build.csv: pure code. Write the candidate spreadsheet a person then finishes.
-- ingest.csv / ingest.xlsx: pure code. Read ONE file the client attached into rows. params: {fileId, datasetName, hasHeaderRow, keyColumn}. Use a different datasetName per file when the mandate has several.
+- ingest.csv / ingest.xlsx: pure code. Read ONE attached file into rows. params: {fileId, datasetName, hasHeaderRow, keyColumn}. fileId MUST be one of the references from the ATTACHED FILES list in the brief (file_1, file_2, ...), copied exactly — never a name, never an invented id. Use a different datasetName per file when the mandate has several. If the list shows no csv/xlsx attachment, there is nothing to ingest: that work is a person's.
 - data.dedupe: pure code. Merge rows whose key fields match exactly or after normalisation. params: {dataset, keyFields, strategy, keep}. It never merges near-matches; set reportNearDuplicates only when the client asked for a candidate list.
 - data.normalize: pure code. Reformat fields to a declared type. params: {dataset, rules:[{field, as}]}. A value that does not parse is left as written and flagged.
 - data.join: pure code. Join two ingested sets. params: {left, right, leftKey, rightKey, type, onConflict, into}.
@@ -101,6 +101,14 @@ export async function runPlanGeneration(input: {
   classification: ClassificationOutput;
   categories: { slug: string; name: string; disputeCriteria: string | null }[];
   referenceTasks: ReferenceTask[];
+  /**
+   * LOT A: the attachment manifest's PROVIDER-SAFE lines, pre-rendered by the
+   * caller (attachments.ts): "file_N: \"name\" (kind, size)". Plain strings on
+   * purpose — this module's import closure may not reach the file-inspection
+   * or data-class modules (capability-substrate pin), so everything it knows
+   * about attachments arrives as data. Never ids, never headers, never rows.
+   */
+  attachmentLines: string[];
 }): Promise<StageResult<PlanOutput>> {
   const settings = await getSettings();
   const client = new Anthropic({ timeout: 120_000, maxRetries: 1 });
@@ -122,6 +130,9 @@ export async function runPlanGeneration(input: {
 Title: ${input.title}
 Description: ${input.description}
 Quantity/volume: ${input.quantity || "not specified"}
+
+ATTACHED FILES (the ONLY files this mandate has; an ingest step's fileId must be one of these references, copied exactly)
+${input.attachmentLines.length > 0 ? input.attachmentLines.join("\n") : "none — no file is attached, so no ingest step is possible."}
 
 CLASSIFICATION (structured reading of the brief, produced upstream)
 ${JSON.stringify(input.classification, null, 2)}

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { editPlanVersion } from "@/server/actions/admin-plan";
 // From the vocabulary module, NOT from schemas.ts: this is a client component
 // and schemas.ts is server-only, so importing it here would fail the build.
-import { PLAN_PRIMITIVE_IDS } from "@/lib/ai-work-engine/primitive-vocabulary";
+import { PLAN_PRIMITIVE_IDS, primitiveReadsFiles } from "@/lib/ai-work-engine/primitive-vocabulary";
 import {
   Badge,
   Card,
@@ -101,6 +101,13 @@ export type PlanReviewData = {
     suggestedPriceCents: number;
     suggestedVaPayoutCents: number;
   }[];
+  /**
+   * LOT A: the task's own input attachments, so a file-reading step's fileId
+   * is a SELECTION, never something an operator types. The server action
+   * re-verifies ownership regardless — this list is convenience, the action
+   * is the wall.
+   */
+  attachments: { id: string; fileName: string; sizeBytes: number }[];
 };
 
 const EXECUTORS = ["ai", "human", "deterministic_code"] as const;
@@ -137,11 +144,17 @@ type EditableStep = {
   tool: string;
   primitiveId: string;
   /**
-   * Carried through the editor UNCHANGED, as opaque JSON. The form has no
-   * widget for a capability's parameters yet, and dropping them on save would
-   * silently strip the configuration off every step an operator touched.
+   * The step's capability configuration. LOT A gives it a real editor at
+   * last: file-reading primitives get an attachment picker plus their few
+   * named fields; every other primitive gets a JSON editor whose parse state
+   * is tracked so an invalid edit blocks Save loudly instead of freezing a
+   * configuration the compiler will silently refuse into human work.
    */
   params: unknown;
+  /** The JSON editor's raw text, kept in sync with `params` on valid edits. */
+  paramsText: string;
+  /** True while paramsText is not valid JSON — Save is blocked. */
+  paramsError: boolean;
   fixedMinutes: string;
   secondsPerUnit: string;
   optimistic: string;
@@ -165,6 +178,8 @@ function toEditable(s: PlanStepView): EditableStep {
     tool: s.tool ?? "",
     primitiveId: s.primitiveId ?? "",
     params: s.params ?? null,
+    paramsText: s.params == null ? "" : JSON.stringify(s.params, null, 1),
+    paramsError: false,
     fixedMinutes: s.fixedMinutes === null ? "" : String(s.fixedMinutes),
     secondsPerUnit: s.secondsPerUnit === null ? "" : String(s.secondsPerUnit),
     optimistic: String(s.estimatedMinutesOptimistic),
@@ -188,6 +203,8 @@ const BLANK_STEP: EditableStep = {
   tool: "",
   primitiveId: "",
   params: null,
+  paramsText: "",
+  paramsError: false,
   fixedMinutes: "",
   secondsPerUnit: "",
   optimistic: "0",
@@ -230,6 +247,14 @@ export function PlanReview({ data }: { data: PlanReviewData }) {
 
   function save() {
     if (!v) return;
+    // An invalid params JSON never leaves the browser: the compiler would
+    // accept the save and silently hand the step to a person, which is the
+    // one failure an editor must make loud rather than polite.
+    const badParams = steps.findIndex((s) => s.paramsError && s.executor !== "human");
+    if (badParams !== -1) {
+      setError(`Step ${badParams + 1}: params is not valid JSON. Fix it or clear it before saving.`);
+      return;
+    }
     setError(null);
     startTransition(async () => {
       const result = await editPlanVersion({
@@ -552,6 +577,117 @@ export function PlanReview({ data }: { data: PlanReviewData }) {
                         />
                       </Field>
                     </div>
+                    {/*
+                      LOT A: the capability's parameters, editable at last.
+                      For a file-reading primitive the fileId is a SELECTION
+                      from the task's own attachments — an operator never
+                      types a database id, and the server action re-verifies
+                      ownership on save regardless. Every other primitive
+                      gets the raw JSON with a loud parse guard: an invalid
+                      configuration must block Save here, because downstream
+                      it would "succeed" into a silently human step.
+                    */}
+                    {s.executor !== "human" && s.primitiveId !== "" ? (
+                      primitiveReadsFiles(s.primitiveId) ? (
+                        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                          <Field label="Attachment (fileId)">
+                            <select
+                              className={inputClass}
+                              value={
+                                typeof (s.params as Record<string, unknown> | null)?.fileId === "string"
+                                  ? String((s.params as Record<string, unknown>).fileId)
+                                  : ""
+                              }
+                              onChange={(e) => {
+                                const base =
+                                  s.params && typeof s.params === "object"
+                                    ? { ...(s.params as Record<string, unknown>) }
+                                    : {};
+                                if (e.target.value === "") delete base.fileId;
+                                else base.fileId = e.target.value;
+                                setStep(i, {
+                                  params: base,
+                                  paramsText: JSON.stringify(base, null, 1),
+                                  paramsError: false,
+                                });
+                              }}
+                            >
+                              <option value="">choose an attachment…</option>
+                              {data.attachments.map((f) => (
+                                <option key={f.id} value={f.id}>
+                                  {f.fileName} ({Math.max(1, Math.round(f.sizeBytes / 1024))} KB)
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <Field label="Dataset name">
+                            <input
+                              className={inputClass}
+                              placeholder="main"
+                              value={String(
+                                (s.params as Record<string, unknown> | null)?.datasetName ?? ""
+                              )}
+                              onChange={(e) => {
+                                const base =
+                                  s.params && typeof s.params === "object"
+                                    ? { ...(s.params as Record<string, unknown>) }
+                                    : {};
+                                if (e.target.value === "") delete base.datasetName;
+                                else base.datasetName = e.target.value;
+                                setStep(i, {
+                                  params: base,
+                                  paramsText: JSON.stringify(base, null, 1),
+                                  paramsError: false,
+                                });
+                              }}
+                            />
+                          </Field>
+                          <Field label="Key column (blank = row number)">
+                            <input
+                              className={inputClass}
+                              value={String(
+                                (s.params as Record<string, unknown> | null)?.keyColumn ?? ""
+                              )}
+                              onChange={(e) => {
+                                const base =
+                                  s.params && typeof s.params === "object"
+                                    ? { ...(s.params as Record<string, unknown>) }
+                                    : {};
+                                if (e.target.value === "") delete base.keyColumn;
+                                else base.keyColumn = e.target.value;
+                                setStep(i, {
+                                  params: base,
+                                  paramsText: JSON.stringify(base, null, 1),
+                                  paramsError: false,
+                                });
+                              }}
+                            />
+                          </Field>
+                        </div>
+                      ) : (
+                        <Field label={`Params JSON${s.paramsError ? " — INVALID, fix before saving" : ""}`}>
+                          <textarea
+                            rows={3}
+                            className={`${inputClass} font-mono text-xs ${s.paramsError ? "border-[#8C2F23]" : ""}`}
+                            placeholder='{} — the primitive&apos;s configuration; invalid params make the step a person&apos;s'
+                            value={s.paramsText}
+                            onChange={(e) => {
+                              const text = e.target.value;
+                              if (text.trim() === "") {
+                                setStep(i, { paramsText: text, params: null, paramsError: false });
+                                return;
+                              }
+                              try {
+                                const parsed: unknown = JSON.parse(text);
+                                setStep(i, { paramsText: text, params: parsed, paramsError: false });
+                              } catch {
+                                setStep(i, { paramsText: text, paramsError: true });
+                              }
+                            }}
+                          />
+                        </Field>
+                      )
+                    ) : null}
                     <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-5">
                       <Field label="Min (opt.)">
                         <input inputMode="numeric" className={inputClass} value={s.optimistic} onChange={(e) => setStep(i, { optimistic: e.target.value.replace(/\D/g, "") })} />
