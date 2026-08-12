@@ -29,6 +29,7 @@ import {
   CURRENT_AUTOMATION_COST_POLICY,
 } from "@/lib/ai-work-engine/automation-cost-policy";
 import { runAutomationPreflight } from "@/lib/ai-work-engine/automation-preflight";
+import { compileDecisions } from "@/lib/ai-work-engine/compile";
 import {
   assessDemotionPricing,
   HUMAN_COST_UNKNOWN_NOTICE,
@@ -512,29 +513,80 @@ export async function runWorkEngine(
     const rates = {
       workerHourlyUsd: Math.max(COST_CATALOG.workerHourlyUsdBase, settings.minWorkerHourlyUsd),
     };
+    const rawPriced = pricePlan(planStepsToPricingInput(plannedOutput), rates);
+
+    /**
+     * THE REAL COMPILER, RUN AT PRICING TIME — not a proxy for it.
+     *
+     * Until this fix, this stage asked ONE question about automatability:
+     * "did the planner mark this step ai/deterministic_code and give it a
+     * primitive". That is `compileDecisions`'s topology check and nothing
+     * else — blind to the mandate-level sensitivity/access gate, to reach and
+     * data-class rules, to whether the step's own params actually parse. A
+     * mandate flagged `personal_sensitive` priced every step as if it would
+     * run on a machine, because nothing at pricing time had ever asked
+     * compile.ts what it would actually decide.
+     *
+     * L3 on Neon found exactly that: two refusal mandates compiled to 100%
+     * human at both preview time and real execution — compile-preview.ts and
+     * workflow-runs.ts both call compileDecisions for real — while their
+     * SUGGESTED PRICE, computed here, survived un-suppressed, because this
+     * was the one place in the whole pipeline that never ran the real
+     * compiler at all.
+     *
+     * Params are resolved through the SAME attachment-manifest substitution
+     * that will be persisted a few dozen lines below (`resolvePlannedParams`),
+     * not the raw planner tokens — an invented file reference must compile to
+     * human HERE, at pricing time, exactly as it will at quote-preview time
+     * and at real execution, or this fix would still miss that one shape.
+     */
+    const compileGate = {
+      sensitiveData: classificationOutput.sensitive_data,
+      requiredAccessCount: classificationOutput.required_access.length,
+      // Always computed above (classifyMandateData never returns an absent
+      // class); unlike compile-preview.ts's version this is never reading a
+      // nullable STORED column, so no fallback is needed.
+      dataClass: dataVerdict.dataClass,
+    };
+    const compiled = compileDecisions(
+      plannedOutput.steps.map((s, i) => ({
+        planStepId: String(i + 1), // no DB row exists yet; order is the only identity that matters here
+        order: i + 1,
+        title: s.title,
+        executor: s.executor,
+        primitiveId: s.primitive_id,
+        primitiveVersion: currentPrimitiveVersion(s.primitive_id),
+        dependsOnOrder: s.depends_on_order,
+        params: resolvePlannedParams(attachmentManifest, s.primitive_id, s.params),
+      })),
+      compileGate
+    );
+    const compiledByOrder = new Map(compiled.steps.map((s) => [s.order, s]));
+
     /**
      * THE ECONOMIC PREFLIGHT, BEFORE ANYTHING IS PERSISTED.
      *
-     * Sequence, in memory, one write at the end: price the raw plan, ask the
-     * preflight what it would cost to run and whether the economic rule will
-     * carry that risk, demote what it will not, then RE-PRICE the demoted plan
-     * so the quote describes the work that will actually happen.
+     * Sequence, in memory, one write at the end: compile the raw plan for
+     * real, price it, ask the preflight what it would cost to run the steps
+     * the COMPILER — not a guess about the compiler — says are automatable,
+     * demote what the economic rule will not carry, then RE-PRICE the demoted
+     * plan so the quote describes the work that will actually happen.
      *
      * Never "persist then correct until affordable": a plan version that
      * exists is one other code can already read, and repairing it afterwards
      * opens a window where the stored price does not match the stored plan.
      */
-    const rawPriced = pricePlan(planStepsToPricingInput(plannedOutput), rates);
     const preflight = runAutomationPreflight({
       steps: plannedOutput.steps.map((s, i) => ({
         order: i + 1,
         primitiveId: s.primitive_id,
         primitiveVersion: currentPrimitiveVersion(s.primitive_id),
-        // The topology's own verdict is not available here (the compiler runs
-        // later), so the preflight is conservative: any step the planner marked
-        // machine-executable is treated as billable. Over-reserving at quote
-        // time is safe; under-reserving is what this correction removes.
-        automatable: s.executor !== "human" && s.primitive_id !== null,
+        // The real compiled verdict, not an approximation of it. A step the
+        // mandate-level gate or a capability/reach/class/params check already
+        // refused is never offered to the budget preflight as billable — it
+        // was never going to run on a machine, so reserving money against it
+        // would fund automation nobody could ever spend it on.
+        automatable: compiledByOrder.get(i + 1)?.executionMode === "automated",
         estimatedAiCostCents: s.estimated_ai_cost_cents,
         // 1E-beta1: the plan's own edges, so an economic demotion takes every
         // transitive consumer with it and the quote never prices a machine
@@ -558,30 +610,44 @@ export async function runWorkEngine(
         : reprice(rawPriced, planStepsToPricingInput(plannedOutput), demotedByOrder, rates);
 
     /**
-     * PRICING INTEGRITY: a demotion whose human cost nobody estimated must not
-     * produce a suggested price.
+     * PRICING INTEGRITY, GENERALISED (2026-08-12): a step humanised for ANY
+     * reason, whose human cost nobody estimated, must not produce a suggested
+     * price.
      *
-     * reprice() above re-costs the demoted plan honestly given its inputs, and
-     * those inputs are the problem: a machine step carries the minutes the
-     * planner wrote for it, which the prompt tells it to leave at zero. So a
-     * step that just became a person's job re-prices at nothing, the max()
-     * pins the figures to the raw plan, and the quote silently omits the work.
-     * Measured across 29 mandates: every single demoted step had zero minutes,
-     * and every quote carrying a demotion was unchanged to the cent.
+     * `executesAsHuman` is the UNION of two independent verdicts: the real
+     * compiler (`compiled`, above — sensitivity, access, capability, reach,
+     * class, topology, params) OR the budget preflight (`demotedByOrder`).
+     * Nothing here asks WHY beyond that; demotion-pricing.ts's whole point is
+     * that the reason must never matter to the suppression decision, only to
+     * the audit trail (`humanizedReason`). A step already planned human, with
+     * real minutes on it, still clears `carriesHumanCost` on its own and never
+     * appears in `unpricedOrders` — this generalisation adds coverage, it does
+     * not add false positives on ordinary human steps.
      *
      * There is no honest number to substitute — nobody has measured what these
      * steps cost by hand — so the engine says so instead of guessing. See
      * demotion-pricing.ts for why the refusal is the correct branch.
      */
     const demotionPricing = assessDemotionPricing(
-      plannedOutput.steps.map((s, i) => ({
-        order: i + 1,
-        demotedForBudget: demotedByOrder.get(i + 1)?.demotedForBudget ?? false,
-        estimatedMinutesLikely: s.estimated_minutes_likely,
-        estimatedMinutesConservative: s.estimated_minutes_conservative,
-        fixedMinutes: s.fixed_minutes,
-        secondsPerUnit: s.seconds_per_unit,
-      }))
+      plannedOutput.steps.map((s, i) => {
+        const order = i + 1;
+        const compiledStep = compiledByOrder.get(order);
+        const budgetDemoted = demotedByOrder.get(order)?.demotedForBudget ?? false;
+        const executesAsHuman = compiledStep?.executionMode === "human" || budgetDemoted;
+        return {
+          order,
+          executesAsHuman,
+          humanizedReason: !executesAsHuman
+            ? null
+            : budgetDemoted
+              ? "Demoted for budget by the economic preflight."
+              : (compiledStep?.handoffReason ?? "Handed to a person by the compiler."),
+          estimatedMinutesLikely: s.estimated_minutes_likely,
+          estimatedMinutesConservative: s.estimated_minutes_conservative,
+          fixedMinutes: s.fixed_minutes,
+          secondsPerUnit: s.seconds_per_unit,
+        };
+      })
     );
 
     let planVersion: { id: string };

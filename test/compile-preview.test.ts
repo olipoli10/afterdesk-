@@ -221,6 +221,16 @@ describe("case 5 — a sensitive mandate is HUMAN ONLY regardless of the plan", 
     expect(preview.badges).toContain("SENSITIVE / HUMAN ONLY");
     expect(preview.badges).not.toContain("FILE AUTOMATION");
   });
+
+  it("badges: HUMAN COST UNKNOWN — the R1/R2 regression, live on this exact fixture", () => {
+    // filePipeline()'s three steps were planned as near-free machine work
+    // (zero human minutes) and the mandate-level sensitivity gate turned all
+    // three human. Nothing here was ever "demoted for budget" — the old
+    // gate, keyed only on demotedForBudget, stayed dark on precisely this
+    // shape. It must fire now, first in the list.
+    expect(preview.badges).toContain("HUMAN COST UNKNOWN — PRICE MANUALLY");
+    expect(preview.badges[0]).toBe("HUMAN COST UNKNOWN — PRICE MANUALLY");
+  });
 });
 
 describe("case 6 — a capability gap is named, not hidden", () => {
@@ -245,6 +255,14 @@ describe("case 6 — a capability gap is named, not hidden", () => {
     expect(preview.steps[0].executionMode).toBe("human");
     expect(preview.steps[0].handoffReason).toBe(HANDOFF_REASONS.unknown_primitive);
     expect(preview.badges).toContain("MISSING CAPABILITY");
+  });
+
+  it("badges: HUMAN COST UNKNOWN — a missing capability is still an un-costed humanisation", () => {
+    // Neither step here carries a minute estimate: step 1 was planned "ai"
+    // against a primitive that doesn't exist, step 2 was planned human with
+    // no figure written. A missing capability is exactly the kind of reason
+    // the generalised gate must not need a special case for.
+    expect(preview.badges).toContain("HUMAN COST UNKNOWN — PRICE MANUALLY");
   });
 });
 

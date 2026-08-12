@@ -124,6 +124,7 @@ export function buildCompilePreview(
     params: s.params,
   }));
   const compiled = compileDecisions(inputs, gate);
+  const compiledByOrder = new Map(compiled.steps.map((s) => [s.order, s]));
 
   const demotedByOrder = new Map(version.steps.map((s) => [s.order, s.demotedForBudget]));
   const dependsByOrder = new Map(version.steps.map((s) => [s.order, s.dependsOnOrder]));
@@ -163,19 +164,35 @@ export function buildCompilePreview(
   );
 
   /**
-   * The one badge that invalidates the numbers beside it: a budget demotion
-   * whose human cost nothing estimated. It leads the list because an operator
-   * who reads it must not price from this screen's economics at all.
+   * The one badge that invalidates the numbers beside it: a step humanised —
+   * for ANY reason — whose human cost nothing estimated. It leads the list
+   * because an operator who reads it must not price from this screen's
+   * economics at all.
+   *
+   * `compiled`, above, already ran the REAL compiler with the REAL mandate
+   * gate: its `executionMode` reflects sensitivity, access, capability, reach,
+   * class and topology all at once, not only the budget preflight's own
+   * `demotedForBudget` flag. Reading `demotedForBudget` here alone is exactly
+   * the bug L3 on Neon found: a sensitive or access-gated mandate compiled
+   * 100% human on THIS SAME SCREEN one field up, while the badge that says
+   * "do not trust the price" stayed dark because none of its steps were ever
+   * demoted for BUDGET. `compiledByOrder` is what `demotedForBudget` should
+   * have been generalised into from the start.
    */
   const demotionPricing = assessDemotionPricing(
-    version.steps.map((s) => ({
-      order: s.order,
-      demotedForBudget: s.demotedForBudget,
-      estimatedMinutesLikely: s.estimatedMinutesLikely,
-      estimatedMinutesConservative: s.estimatedMinutesConservative,
-      fixedMinutes: s.fixedMinutes,
-      secondsPerUnit: s.secondsPerUnit,
-    }))
+    version.steps.map((s) => {
+      const compiledStep = compiledByOrder.get(s.order);
+      const executesAsHuman = compiledStep?.executionMode === "human";
+      return {
+        order: s.order,
+        executesAsHuman,
+        humanizedReason: executesAsHuman ? (compiledStep?.handoffReason ?? null) : null,
+        estimatedMinutesLikely: s.estimatedMinutesLikely,
+        estimatedMinutesConservative: s.estimatedMinutesConservative,
+        fixedMinutes: s.fixedMinutes,
+        secondsPerUnit: s.secondsPerUnit,
+      };
+    })
   );
 
   const badges: string[] = [];
