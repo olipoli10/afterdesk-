@@ -155,6 +155,31 @@ function foldDiacritics(text: string): string {
   return text.normalize("NFD").replace(/\p{M}/gu, "");
 }
 
+/**
+ * A header is normalised before any pattern below sees it, and the reason is
+ * the same class of failure the diacritic fold was written for.
+ *
+ * Every multi-word pattern in the list is spelled with SPACES — "date of
+ * birth", "social security", "account number", "credit card". Real exports do
+ * not use spaces. A CSV out of a database says `date_of_birth`, an API export
+ * says `dateOfBirth`, a hand-made sheet says `date-of-birth`. And `_` is a word
+ * character to a regex engine, so `\bdob\b` and `\bdate of birth\b` both slide
+ * straight past `date_of_birth` without a mark. The bilingual header list — the
+ * one thing standing between a payroll file and an automated pipeline — was
+ * therefore matching only the one spelling humans type by hand.
+ *
+ * So: fold the accents, split camelCase, turn the separators real files use
+ * into spaces, collapse the runs. This only ever makes the list fire MORE
+ * often, which is the correct direction for a list whose job is to escalate.
+ */
+export function normalizeHeader(text: string): string {
+  return foldDiacritics(text)
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_\-./\\|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const SENSITIVE_HEADER_PATTERNS: RegExp[] = [
   // Government identifiers
   /\b(ssn|social security|sin\b|nas\b|numero d.?assurance sociale|nia\b)\b/i,
@@ -168,18 +193,63 @@ const SENSITIVE_HEADER_PATTERNS: RegExp[] = [
   // Health
   /\b(diagnosis|diagnostic|patient|medical|medicale?|health|sante|prescription|icd-?\d*|insurance (number|id)|assurance maladie)\b/i,
   // Identity beyond business contact
-  /\b(date of birth|dob\b|birth ?date|date de naissance|age\b|gender|genre|sexe|ethnicit|race\b|religion|marital)\b/i,
+  /\b(date of birth|dob\b|birth ?date|birthday|date de naissance|age\b|gender|genre|sexe|ethnicit|race\b|religion|marital)\b/i,
   // Credentials
   /\b(password|mot de passe|api ?key|secret|token|credential|pin\b)\b/i,
 ];
 
-/** Value shapes that betray a special category regardless of the header. */
+/**
+ * Value shapes that betray a special category REGARDLESS of the header, which
+ * is a much stronger claim than it looks and is why the list is this short.
+ *
+ * A shape earns a place here only if seeing it in an arbitrary cell, with no
+ * idea what the column means, is already enough to stop the mandate. Nine
+ * digits in SSN grouping, an IBAN, a Luhn-valid card: those are self-evident.
+ *
+ * ── WHAT WAS REMOVED, AND WHY IT WAS NEVER A VALUE SIGNAL ──
+ *
+ * `\b(19|20)\d{2}-\d{2}-\d{2}\b` sat in this list as `date_of_birth`. It is
+ * not a date of birth. It is EVERY ISO DATE — `signup_date`, `invoice_date`,
+ * `created_at`, `last_checked`, `contract_date`, the timestamp column that
+ * every CRM and accounting export in existence carries. One such cell in a
+ * sample escalated the entire mandate to human-only, which on a product whose
+ * core market is cleaning exported spreadsheets meant the automation was
+ * disarmed by the most common column in the corpus.
+ *
+ * The replacement is not a laxer date regex. It is the correct rule, below: a
+ * date value alone proves nothing, and a date value in a column that SAYS
+ * birth proves it. Semantics plus value, never value alone.
+ */
 const SENSITIVE_VALUE_PATTERNS: { kind: string; re: RegExp }[] = [
   // US SSN / Canadian SIN, both nine digits in the same separated shapes.
   { kind: "government_id", re: /\b\d{3}[\s-]\d{2}[\s-]\d{4}\b/ },
   { kind: "government_id", re: /\b\d{3}[\s-]\d{3}[\s-]\d{3}\b/ },
   { kind: "iban", re: /\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/ },
-  { kind: "date_of_birth", re: /\b(19|20)\d{2}[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12]\d|3[01])\b/ },
+];
+
+/**
+ * Column names whose birth meaning is real but too loose to escalate a mandate
+ * on their own. `birth`, `born`, `naissance` are the words an export uses when
+ * it has already said elsewhere what the file is about; they are also words
+ * that turn up in company names, place names and product lines.
+ *
+ * The unambiguous spellings — `date of birth`, `dob`, `birth date`, `birthday`,
+ * `date de naissance` — are NOT here. They are in the header list above and
+ * escalate on the name alone, with no value needed, because a column called
+ * `dob` full of blanks is still a date-of-birth column.
+ */
+const WEAK_BIRTH_HEADER = /\b(birth|born|naissance|nee? le)\b/i;
+
+/**
+ * Date shapes, in the orders real exports write them. Consulted ONLY inside a
+ * column the weak list already flagged, which is what lets it be permissive:
+ * the discrimination has already been done by the column name, and asking the
+ * value to also look like a plausible birth year would discriminate nothing —
+ * every year from 1900 to today is one.
+ */
+const DATE_SHAPED: RegExp[] = [
+  /\b(19|20)\d{2}[-/.]\d{1,2}[-/.]\d{1,2}\b/,
+  /\b\d{1,2}[-/.]\d{1,2}[-/.](19|20)\d{2}\b/,
 ];
 
 /**
@@ -205,15 +275,34 @@ function looksLikePaymentCard(value: string): boolean {
   return sum % 10 === 0;
 }
 
-/** What a deterministic pass over one file's headers and sampled values saw. */
+/**
+ * One column as the inspector saw it: its name, and a bounded sample of the
+ * values that live UNDER that name.
+ *
+ * The association is the point. The inspection used to hand over a flat list of
+ * headers and a flat list of values with nothing tying them together, which
+ * made "this date is in a column called birth" an unaskable question — and so
+ * the only available rule was the value-alone one that misfired on every
+ * timestamp column. Keeping the column with its cells is what makes the
+ * semantics-plus-value rule expressible at all.
+ */
+export type InspectedColumn = {
+  /** Verbatim, as written in the file. Normalised at match time, not here. */
+  header: string;
+  /** A bounded sample of this column's own cells. Never the whole column. */
+  values: string[];
+};
+
+/** What a deterministic pass over one file's columns and sampled values saw. */
 export type FileInspection = {
   fileId: string;
   /** False when the file could not be parsed, exceeded a bound, or is an
    *  unsupported shape. An uninspectable file is not a safe file. */
   inspected: boolean;
-  headers: string[];
-  /** A bounded sample of cell values. Never the whole file. */
-  sampledValues: string[];
+  columns: InspectedColumn[];
+  /** Sampled cells that sat past the last header — ragged rows. They are
+   *  scanned by the value-alone shapes, and by nothing that needs a name. */
+  unkeyedValues: string[];
 };
 
 export type DataClassSignal = {
@@ -289,32 +378,8 @@ export function classifyMandateData(input: DataClassInput): DataClassVerdict {
       });
       continue;
     }
-    for (const h of f.headers) {
-      const hit = SENSITIVE_HEADER_PATTERNS.find((re) => re.test(foldDiacritics(h)));
-      if (hit) {
-        signals.push({
-          cls: "personal_sensitive",
-          reason: `A column name indicates a special category: "${h.slice(0, 60)}".`,
-        });
-        break;
-      }
-    }
-    for (const v of f.sampledValues) {
-      const shape = SENSITIVE_VALUE_PATTERNS.find((p) => p.re.test(foldDiacritics(v)));
-      if (shape) {
-        signals.push({
-          cls: "personal_sensitive",
-          reason: `A sampled value matches a ${shape.kind} shape.`,
-        });
-        break;
-      }
-      if (looksLikePaymentCard(v)) {
-        signals.push({
-          cls: "personal_sensitive",
-          reason: "A sampled value passes the payment-card checksum.",
-        });
-        break;
-      }
+    for (const s of [headerSignal(f), valueSignal(f), contextualBirthSignal(f)]) {
+      if (s) signals.push(s);
     }
   }
 
@@ -322,4 +387,66 @@ export function classifyMandateData(input: DataClassInput): DataClassVerdict {
     dataClass: mostRestrictive(signals.map((s) => s.cls)),
     signals,
   };
+}
+
+/** A column NAME that means a special category, whatever its cells hold. */
+function headerSignal(f: FileInspection): DataClassSignal | null {
+  for (const col of f.columns) {
+    if (SENSITIVE_HEADER_PATTERNS.some((re) => re.test(normalizeHeader(col.header)))) {
+      return {
+        cls: "personal_sensitive",
+        reason: `A column name indicates a special category: "${col.header.slice(0, 60)}".`,
+      };
+    }
+  }
+  return null;
+}
+
+/** A VALUE whose shape is self-evident, wherever in the file it sits. */
+function valueSignal(f: FileInspection): DataClassSignal | null {
+  const everyValue = [...f.columns.flatMap((c) => c.values), ...f.unkeyedValues];
+  for (const v of everyValue) {
+    const shape = SENSITIVE_VALUE_PATTERNS.find((p) => p.re.test(foldDiacritics(v)));
+    if (shape) {
+      return {
+        cls: "personal_sensitive",
+        reason: `A sampled value matches a ${shape.kind} shape.`,
+      };
+    }
+    if (looksLikePaymentCard(v)) {
+      return {
+        cls: "personal_sensitive",
+        reason: "A sampled value passes the payment-card checksum.",
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * THE RULE THAT REPLACED THE ISO-DATE FALSE POSITIVE.
+ *
+ * A loose birth word in the column name, confirmed by a date-shaped value
+ * underneath it. Neither half fires alone, on purpose: `birth` in a name with
+ * no dates under it is as likely to be a place or a product, and a date with no
+ * name saying birth is just a date — which is precisely the reading that
+ * disarmed the engine on every export carrying a `created_at`.
+ *
+ * Note what this does NOT do: it never lowers anything. It is a third way to
+ * reach `personal_sensitive`, added to the two above, and the verdict is still
+ * the maximum of every signal.
+ */
+function contextualBirthSignal(f: FileInspection): DataClassSignal | null {
+  for (const col of f.columns) {
+    if (!WEAK_BIRTH_HEADER.test(normalizeHeader(col.header))) continue;
+    if (col.values.some((v) => DATE_SHAPED.some((re) => re.test(v)))) {
+      return {
+        cls: "personal_sensitive",
+        reason:
+          `A column named "${col.header.slice(0, 60)}" carries date values, ` +
+          `which together indicate a date of birth.`,
+      };
+    }
+  }
+  return null;
 }

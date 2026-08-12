@@ -15,6 +15,7 @@ import { PLAN_PRIMITIVE_IDS, PLAN_PRIMITIVES } from "@/lib/ai-work-engine/primit
 import { WEB_FETCH_ENVELOPE } from "@/lib/ai-work-engine/web-fetch-envelope";
 import { classifyMandateData } from "@/lib/ai-work-engine/data-class";
 import { applyIntakeFraming } from "@/lib/ai-work-engine/intake-framing";
+import { inspectedFile } from "@/../test/support/inspection";
 
 /**
  * SEAM REPAIR PINS — the structural tests the GO order demands, one family
@@ -170,18 +171,16 @@ describe("every enum the contract exposes round-trips through the runtime schema
 /* ───── 5. sensitive: doctrine-aligned classifier, downgrade impossible ───── */
 
 describe("sensitive_data aligns with the 1E-alpha data classes and can never downgrade them", () => {
-  const b2bInspection = {
-    fileId: "f1",
-    inspected: true,
-    headers: ["Company", "Contact Name", "Title", "Work Email", "Office Phone", "Website"],
-    sampledValues: ["Acme Tooling", "VP Operations", "ops@acme.example", "+1 514 555 0134"],
-  };
-  const payrollInspection = {
-    fileId: "f2",
-    inspected: true,
-    headers: ["Employee", "Salary", "Date of Birth", "SIN"],
-    sampledValues: ["120000", "1988-04-12"],
-  };
+  const b2bInspection = inspectedFile(
+    "f1",
+    ["Company", "Contact Name", "Title", "Work Email", "Office Phone", "Website"],
+    [["Acme Tooling", "Dana Reid", "VP Operations", "ops@acme.example", "+1 514 555 0134", "acme.example"]]
+  );
+  const payrollInspection = inspectedFile(
+    "f2",
+    ["Employee", "Salary", "Date of Birth", "SIN"],
+    [["Dana Reid", "120000", "1988-04-12", "046 454 286"]]
+  );
 
   it("a B2B professional-contact export is business_confidential, never personal_sensitive", () => {
     const verdict = classifyMandateData({
