@@ -255,12 +255,104 @@ export const AUTOMATION_COST_POLICIES = {
       absoluteCapMicros: 20_000_000,
     },
   },
+
+  /**
+   * ac5 — THE ALLOCATION POLICY, RECALIBRATED. Not one per-primitive figure
+   * moves: research, extract and fetch are byte-identical to ac4's, because
+   * those numbers are proven bounds on what ONE attempt can bill and nothing
+   * measured here disturbs them. What changes is the mandate-level portfolio
+   * rule, and only that.
+   *
+   * ── WHAT THE MEASUREMENT SHOWED ──
+   *
+   * A 45-run web corpus (Level 2, 2026-08-12) put 24 runs into fully-human
+   * plans, and the cause was not the planner: every one of those runs emitted
+   * the right chain and lost it to this rule. Replaying the real preflight
+   * over the captured plans isolated why.
+   *
+   * ac4's ceiling is min(internalCost x 40%, $20), and the quantity it bounds
+   * is the WHOLE funded retry budget. A single-source chain — one search, one
+   * fetch, one extract — funds 6.00 + 4.00 + 1.80 = $11.80 and fits. A
+   * two-source chain funds $21.80, a three-source chain $31.80. Both exceed
+   * the $20 absolute cap, so both were refused AT EVERY MANDATE SIZE: 21 of
+   * 21 passing runs were single-source, 23 of 24 failing runs were multi-
+   * source, and no client price could have changed that. The rule punished
+   * the planner precisely for corroborating across sources, which is the
+   * thing the product sells.
+   *
+   * The share was binding too, separately and less visibly: a legitimate
+   * mandate with a $49.66 internal cost got 40% = $19.86 against a $21.80
+   * chain and lost it by $1.94. At 45% a different run missed by TEN CENTS
+   * ($21.70 allowed against $21.80 needed), which is an artifact, not a
+   * policy. Both barriers therefore had to move, and the sweep says by how
+   * much.
+   *
+   * ── WHY 50% AND $32, AND NOT MORE ──
+   *
+   * A grid of 8 caps x 5 shares was replayed offline against 29 captured
+   * plans (the 24 failures plus 5 passing controls). The result has a
+   * plateau: above 50% share and above a $32 cap, NOTHING further converts.
+   * 50/55/60% are identical at every cap; $32/$35/$40 are identical at every
+   * share. Choosing $40/60% would carry more contractual exposure for exactly
+   * zero additional work won, so the efficient point is the corner of the
+   * plateau.
+   *
+   *   50% / $32  ->  42 of 45 web runs projected, worst-case margin 48%
+   *   45% / $22  ->  36 of 45, i.e. the gate exactly, with no headroom and
+   *                  three-source chains still impossible
+   *
+   * $32 is chosen to cover the three-source chain ($31.80) and to stop just
+   * above it. What that leaves refused is deliberate: a plan funding
+   * $41.80 of reserve on a $130 mandate — a third of the client's price
+   * immobilised — is a demotion the business SHOULD make, and ac5 still makes
+   * it.
+   *
+   * ── WHAT A RESERVE IS, SINCE THE NUMBERS INVITE THE MISREADING ──
+   *
+   * These figures are risk capacity, not spend. Across the same 29 mandates
+   * the funded reserve averaged $19.82 while the expected provider spend
+   * averaged $2.41 — a ratio of 8.2x. ac4 was refusing ordinary work on a
+   * number eight times larger than the work costs. Raising the allocation is
+   * therefore not a loosening of what we spend; it is a correction of what we
+   * pretend we might spend.
+   *
+   * ── AND WHAT DOES NOT CHANGE ──
+   *
+   * ac4 is untouched, and every contract quoted against it keeps its own
+   * numbers: accepted plans carry their economics on their own rows and never
+   * read this table again. Both barriers survive — the share still stops a
+   * thin mandate from risking too much, the cap still stops a fat one from
+   * handing a plan an unbounded budget. Only the calibration moved.
+   */
+  ac5: {
+    perPrimitive: {
+      "research.web_search": {
+        expectedMicros: 500_000,
+        maxPerAttemptMicros: 3_000_000,
+        maxAttempts: 2,
+      },
+      "extract.structured_rows": {
+        expectedMicros: 250_000,
+        maxPerAttemptMicros: 600_000,
+        maxAttempts: 3,
+      },
+      "web.fetch": {
+        expectedMicros: 300_000,
+        maxPerAttemptMicros: 4_000_000,
+        maxAttempts: 1,
+      },
+    },
+    ceilingRule: {
+      maxShareOfInternalCostBps: 5_000,
+      absoluteCapMicros: 32_000_000,
+    },
+  },
 } as const satisfies Record<string, AutomationCostPolicy>;
 
 export type AutomationCostPolicyVersion = keyof typeof AUTOMATION_COST_POLICIES;
 
 /** The version NEW quotes are built with. Accepted contracts never read it. */
-export const CURRENT_AUTOMATION_COST_POLICY: AutomationCostPolicyVersion = "ac4";
+export const CURRENT_AUTOMATION_COST_POLICY: AutomationCostPolicyVersion = "ac5";
 
 export function policyFor(version: string): AutomationCostPolicy | null {
   return Object.hasOwn(AUTOMATION_COST_POLICIES, version)

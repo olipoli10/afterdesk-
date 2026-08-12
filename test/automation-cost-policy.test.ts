@@ -151,7 +151,70 @@ describe("a policy is a historical record, not a mutable setting", () => {
       maxPerAttemptMicros: 4_000_000,
       maxAttempts: 1,
     });
-    expect(CURRENT_AUTOMATION_COST_POLICY).toBe("ac4");
+    /**
+     * ac4's ALLOCATION, pinned by value so ac5's recalibration cannot be
+     * mistaken for an edit of it. Everything quoted under ac4 was quoted
+     * against min(internalCost x 40%, $20) and the record has to survive.
+     */
+    expect(AUTOMATION_COST_POLICIES.ac4.ceilingRule).toEqual({
+      maxShareOfInternalCostBps: 4_000,
+      absoluteCapMicros: 20_000_000,
+    });
+  });
+
+  it("ac5 moves the ALLOCATION and not one proven per-attempt bound", () => {
+    /**
+     * The whole thesis of ac5 in one assertion: a 45-run corpus showed the
+     * mandate-level rule refusing multi-source chains at every mandate size
+     * ($21.80 and $31.80 both exceed ac4's $20 absolute cap), while the
+     * per-attempt figures — which bound what ONE call can bill and are proven
+     * by probe arithmetic — were never the problem. So they are copied
+     * forward BYTE-IDENTICALLY, and only the ceiling rule changes.
+     */
+    for (const id of ["research.web_search", "extract.structured_rows", "web.fetch"] as const) {
+      expect(AUTOMATION_COST_POLICIES.ac5.perPrimitive[id]).toEqual(
+        AUTOMATION_COST_POLICIES.ac4.perPrimitive[id]
+      );
+    }
+    expect(AUTOMATION_COST_POLICIES.ac5.ceilingRule).toEqual({
+      maxShareOfInternalCostBps: 5_000,
+      absoluteCapMicros: 32_000_000,
+    });
+    expect(CURRENT_AUTOMATION_COST_POLICY).toBe("ac5");
+  });
+
+  it("ac5 funds the three-source chain and still refuses the excessive one", () => {
+    /**
+     * The two numbers that decided the calibration, restated as arithmetic
+     * rather than as a claim. A funded chain costs
+     *   research $3.00 x 2 + fetch $4.00 x 1 + extract $0.60 x 3
+     * per step-instance, so:
+     *   1 search + 1 fetch + 1 extract = $11.80  (ac4 funded this)
+     *   2 + 2 + 1                      = $21.80  (ac4 refused it at ANY size)
+     *   3 + 3 + 1                      = $31.80  (ac5 funds it)
+     *   3 + 4 + 1                      = $35.80  (ac5 refuses it)
+     *   4 + 4 + 1                      = $41.80  (the corpus's most extravagant
+     *                                             plan; ac5 refuses it too)
+     */
+    const p = AUTOMATION_COST_POLICIES.ac5.perPrimitive;
+    const chain = (searches: number, fetches: number, extracts: number) =>
+      searches * p["research.web_search"]!.maxPerAttemptMicros * p["research.web_search"]!.maxAttempts! +
+      fetches * p["web.fetch"]!.maxPerAttemptMicros * p["web.fetch"]!.maxAttempts! +
+      extracts * p["extract.structured_rows"]!.maxPerAttemptMicros *
+        p["extract.structured_rows"]!.maxAttempts!;
+
+    const cap = AUTOMATION_COST_POLICIES.ac5.ceilingRule.absoluteCapMicros;
+    expect(chain(1, 1, 1)).toBe(11_800_000);
+    expect(chain(2, 2, 1)).toBe(21_800_000);
+    expect(chain(3, 3, 1)).toBe(31_800_000);
+    expect(chain(3, 4, 1)).toBe(35_800_000);
+    expect(chain(4, 4, 1)).toBe(41_800_000);
+    // What ac4's cap made impossible at every mandate size, ac5 funds.
+    expect(chain(2, 2, 1)).toBeGreaterThan(AUTOMATION_COST_POLICIES.ac4.ceilingRule.absoluteCapMicros);
+    expect(chain(3, 3, 1)).toBeLessThanOrEqual(cap);
+    // And the plans that immobilise a third of a small mandate stay refused.
+    expect(chain(3, 4, 1)).toBeGreaterThan(cap);
+    expect(chain(4, 4, 1)).toBeGreaterThan(cap);
   });
 
   it("a version that never named a retry budget funded exactly ONE attempt", () => {
