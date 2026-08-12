@@ -282,7 +282,9 @@ export async function runWorkEngine(
         // LOT C: the framing gate applies on the resume path too (a pre-LOT-C
         // rawOutput gets the schema's conservative defaults, then the same
         // tightening) — both paths must hand downstream the same framed tier.
-        classificationOutput = applyIntakeFraming(revalidated.data);
+        classificationOutput = applyIntakeFraming(revalidated.data, {
+          attachmentCount: attachmentManifest.length,
+        });
       } else {
         /**
          * PERMANENT wedge, said out loud: the operation is `succeeded` so no
@@ -359,7 +361,9 @@ export async function runWorkEngine(
        * JSON: the row records what the model said, the columns record what
        * the platform decided.
        */
-      const output = applyIntakeFraming(classified.result.output);
+      const output = applyIntakeFraming(classified.result.output, {
+        attachmentCount: attachmentManifest.length,
+      });
       const baseConfidence = resolveConfidence(output.confidence, referenceTasks.length);
       const raw = classified.result.raw;
 

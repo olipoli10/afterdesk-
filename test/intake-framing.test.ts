@@ -41,32 +41,45 @@ describe("the vocabularies are frozen", () => {
 });
 
 describe("applyIntakeFraming — the gate is code, not prompt", () => {
+  // Seam repair: the framing now also owns the attachment-existence fact
+  // (g07), so every call carries the code-known count. One attachment here:
+  // these cases test the tier gate, not the file correction (that suite
+  // lives in capability-contract.test.ts).
+  const CTX = { attachmentCount: 1 };
   const base = {
     quote_tier: "assisted" as const,
     recurrence: "one_off" as const,
     output_format_code: "csv" as const,
+    source_shape: "build_list" as const,
+    missing_information: [] as string[],
   };
 
   it("a recurring ask is forced to manual", () => {
-    expect(applyIntakeFraming({ ...base, recurrence: "recurring" }).quote_tier).toBe("manual");
+    expect(applyIntakeFraming({ ...base, recurrence: "recurring" }, CTX).quote_tier).toBe("manual");
   });
 
   it("an artifact no primitive produces is forced to manual", () => {
-    expect(applyIntakeFraming({ ...base, output_format_code: "other" }).quote_tier).toBe("manual");
+    expect(applyIntakeFraming({ ...base, output_format_code: "other" }, CTX).quote_tier).toBe(
+      "manual"
+    );
   });
 
   it("a one-off csv keeps the model's assisted tier", () => {
-    expect(applyIntakeFraming(base).quote_tier).toBe("assisted");
+    expect(applyIntakeFraming(base, CTX).quote_tier).toBe("assisted");
   });
 
   it("the gate only tightens: manual never becomes assisted", () => {
     for (const recurrence of RECURRENCES) {
       for (const output_format_code of OUTPUT_FORMAT_CODES) {
-        const out = applyIntakeFraming({
-          quote_tier: "manual" as const,
-          recurrence,
-          output_format_code,
-        });
+        const out = applyIntakeFraming(
+          {
+            ...base,
+            quote_tier: "manual" as const,
+            recurrence,
+            output_format_code,
+          },
+          CTX
+        );
         expect(out.quote_tier).toBe("manual");
       }
     }
@@ -74,7 +87,7 @@ describe("applyIntakeFraming — the gate is code, not prompt", () => {
 
   it("never mutates its input", () => {
     const input = { ...base, recurrence: "recurring" as const };
-    const out = applyIntakeFraming(input);
+    const out = applyIntakeFraming(input, CTX);
     expect(input.quote_tier).toBe("assisted");
     expect(out).not.toBe(input);
   });
@@ -114,7 +127,7 @@ describe("resume-path safety: a pre-LOT-C rawOutput still parses, conservatively
     // output_format_code defaults to "other", so the gate fires. Conservative
     // by design: an old classification never made these distinctions, and the
     // safe reading of "unknown" is "an operator decides".
-    expect(applyIntakeFraming(parsed).quote_tier).toBe("manual");
+    expect(applyIntakeFraming(parsed, { attachmentCount: 0 }).quote_tier).toBe("manual");
   });
 });
 

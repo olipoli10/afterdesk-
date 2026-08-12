@@ -71,23 +71,55 @@ export const RECURRENCE_LABELS: Record<Recurrence, string> = {
 /**
  * THE CODE-ENFORCED HALF OF THE FRAMING. Prompt rules can drift; this cannot.
  *
- * A recurring ask or an artifact no primitive produces is forced to the
- * "manual" quote tier — the strongest admin-review signal the vocabulary has
- * (there is no automatic tier at all; see QUOTE_TIERS). Applied to the model
- * output BEFORE anything reads it, on both the live path and the resume path,
- * so shouldCritique, the persisted row and the admin screen all see the same
- * framed tier. It only ever tightens: nothing here can turn "manual" into
- * "assisted".
+ * Two corrections, both applied to the model output BEFORE anything reads it,
+ * on the live path and the resume path alike, so shouldCritique, the
+ * persisted row and the admin screen all see the same framed values:
+ *
+ * 1. A recurring ask or an artifact no primitive produces is forced to the
+ *    "manual" quote tier — the strongest admin-review signal the vocabulary
+ *    has (there is no automatic tier at all; see QUOTE_TIERS).
+ *
+ * 2. `source_shape: "existing_file"` requires an attachment that EXISTS.
+ *    The Level-2 corpus caught the classifier answering "existing_file" for
+ *    a brief that says "attached" while nothing is attached (g07) — and
+ *    whether a file exists is a fact the code owns, not an opinion the model
+ *    holds. With zero attachments the shape becomes "mixed" (source unclear)
+ *    and the absence is recorded in missing_information, so the operator
+ *    reads the contradiction instead of a claim about a phantom file. The
+ *    runtime walls (no ingest without a manifest ref) stay untouched — this
+ *    correction removes the lie from the intake, it was never the last line
+ *    of defence.
+ *
+ * Both only ever tighten: nothing here can turn "manual" into "assisted",
+ * and nothing here can conjure a file that is not there.
  */
 export function applyIntakeFraming<
   T extends {
     quote_tier: "assisted" | "manual";
     recurrence: Recurrence;
     output_format_code: OutputFormatCode;
+    source_shape: SourceShape;
+    missing_information: string[];
   },
->(output: T): T {
-  if (output.recurrence === "recurring" || output.output_format_code === "other") {
-    return { ...output, quote_tier: "manual" };
+>(output: T, context: { attachmentCount: number }): T {
+  let framed = output;
+  if (framed.source_shape === "existing_file" && context.attachmentCount === 0) {
+    framed = {
+      ...framed,
+      source_shape: "mixed" as SourceShape,
+      // Bounded append: the classification schema caps this list at 10, and
+      // a framed output must stay re-validatable.
+      missing_information:
+        framed.missing_information.length < 10
+          ? [
+              ...framed.missing_information,
+              "The brief refers to an attached file, but nothing is attached.",
+            ]
+          : framed.missing_information,
+    };
   }
-  return output;
+  if (framed.recurrence === "recurring" || framed.output_format_code === "other") {
+    framed = { ...framed, quote_tier: "manual" };
+  }
+  return framed;
 }
