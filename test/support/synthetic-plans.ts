@@ -12,6 +12,8 @@
  * to live mode and to the golden corpus it records.
  */
 
+import { SYNTHETIC_WORLDS } from "./synthetic-web";
+
 export type SyntheticProfile = {
   id: string;
   /** A distinctive phrase from the mandate's own brief, used to route. */
@@ -20,6 +22,17 @@ export type SyntheticProfile = {
   /** Built lazily so file plans can reference the run's attachment refs. */
   plan: (attachmentRefs: string[]) => Record<string, unknown>;
 };
+
+/**
+ * The field names a research mandate asks for come from its world, not from a
+ * literal typed twice. They travel classification -> brief.requiredFields ->
+ * extract's prompt -> split.exceptions' verification bar, so a mismatch
+ * between the world and the classification would make every row fail the bar
+ * for a reason that has nothing to do with the engine.
+ */
+function worldFields(id: string): string[] {
+  return SYNTHETIC_WORLDS.find((w) => w.id === id)?.fields ?? ["company"];
+}
 
 const machine = (
   title: string,
@@ -130,6 +143,85 @@ const expensivePlan = () => ({
   ],
 });
 
+/**
+ * W8's own chain: three files, three schemas, one list out.
+ *
+ * Written with the vocabulary AS IT EXISTS, deliberately, and separated from
+ * the generic file plan because it is the mandate that tests whether the
+ * vocabulary can do the job at all. Three ingests, two schema maps onto the
+ * shared column names, then `data.join` twice — the only capability in the
+ * frozen list that takes two datasets and returns one.
+ *
+ * The ground truth is 105 rows. A join is not a union, so this plan cannot
+ * reach it; nothing here is bent to make it look like it can. What the run
+ * produces is the measurement, and the gap between it and 105 is the finding.
+ */
+const consolidationPlan = (refs: string[]) => {
+  const steps: Record<string, unknown>[] = [];
+  const datasets = ["main", "src2", "src3"];
+  refs.slice(0, 3).forEach((ref, i) => {
+    steps.push(
+      machine(`Read the attached file ${i + 1}`, "ingest.csv", { fileId: ref, datasetName: datasets[i] }, [])
+    );
+  });
+  const n = Math.min(refs.length, 3);
+  steps.push(
+    machine(
+      "Map the second file onto our columns",
+      "data.schema_map",
+      {
+        dataset: "src2",
+        mapping: [
+          { from: "Company Name", to: "company" },
+          { from: "Web Site", to: "website" },
+          { from: "E-mail", to: "email" },
+          { from: "Town", to: "city" },
+        ],
+        unmapped: "drop",
+        into: "src2",
+      },
+      [2]
+    ),
+    machine(
+      "Map the third file onto our columns",
+      "data.schema_map",
+      {
+        dataset: "src3",
+        mapping: [
+          { from: "supplier", to: "company" },
+          { from: "domain", to: "website" },
+          { from: "contact_email", to: "email" },
+          { from: "location", to: "city" },
+        ],
+        unmapped: "drop",
+        into: "src3",
+      },
+      [3]
+    ),
+    machine(
+      "Combine the first two lists",
+      "data.join",
+      { left: "main", right: "src2", leftKey: "company", rightKey: "company", type: "left", onConflict: "prefer_left", into: "main" },
+      [1, n + 1]
+    ),
+    machine(
+      "Combine the third list in",
+      "data.join",
+      { left: "main", right: "src3", leftKey: "company", rightKey: "company", type: "left", onConflict: "prefer_left", into: "main" },
+      [n + 3]
+    ),
+    machine("Split what a person must check", "split.exceptions", null, [n + 4]),
+    machine("Build the deliverable", "build.csv", { dataset: "main", columns: [] }, [n + 5]),
+    human("Review and finish the file", [n + 6], 20, 15, 45)
+  );
+  return {
+    deliverable_description: "One combined supplier list with our column names.",
+    assumptions: ["The three files describe the same kind of supplier."],
+    exclusions: ["No data is invented for blank cells."],
+    steps,
+  };
+};
+
 /** A file chain, wired to the run's REAL attachment references. */
 const filePlan = (refs: string[], transform: "normalize" | "dedupe" | "consolidate") => {
   const steps: Record<string, unknown>[] = [];
@@ -193,11 +285,40 @@ const filePlan = (refs: string[], transform: "normalize" | "dedupe" | "consolida
 };
 
 export const SYNTHETIC_PROFILES: SyntheticProfile[] = [
-  { id: "W1", match: "still operating", classification: classification({ quantity_interpreted: 45 }), plan: () => researchPlan() },
-  { id: "W2", match: "industrial packaging", classification: classification({ verification_expectation: "two_independent_sources", quantity_interpreted: 50 }), plan: () => researchPlan() },
-  { id: "W3", match: "independent bookshops", classification: classification({ quantity_interpreted: 80 }), plan: () => researchPlan() },
-  { id: "W4", match: "runs operations", classification: classification({ quantity_interpreted: 30 }), plan: () => researchPlan() },
-  { id: "W5", match: "project-management tools", classification: classification({ quantity_interpreted: 10 }), plan: () => researchPlan() },
+  {
+    id: "W1",
+    match: "still operating",
+    classification: classification({ quantity_interpreted: 45, required_fields: worldFields("W1") }),
+    plan: () => researchPlan(),
+  },
+  {
+    id: "W2",
+    match: "industrial packaging",
+    classification: classification({
+      verification_expectation: "two_independent_sources",
+      quantity_interpreted: 50,
+      required_fields: worldFields("W2"),
+    }),
+    plan: () => researchPlan(),
+  },
+  {
+    id: "W3",
+    match: "independent bookshops",
+    classification: classification({ quantity_interpreted: 80, required_fields: worldFields("W3") }),
+    plan: () => researchPlan(),
+  },
+  {
+    id: "W4",
+    match: "runs operations",
+    classification: classification({ quantity_interpreted: 30, required_fields: worldFields("W4") }),
+    plan: () => researchPlan(),
+  },
+  {
+    id: "W5",
+    match: "project-management tools",
+    classification: classification({ quantity_interpreted: 30, required_fields: worldFields("W5") }),
+    plan: () => researchPlan(),
+  },
   {
     id: "W6",
     match: "five different formats",
@@ -214,7 +335,7 @@ export const SYNTHETIC_PROFILES: SyntheticProfile[] = [
     id: "W8",
     match: "different column names",
     classification: classification({ source_shape: "existing_file", quantity_interpreted: 105 }),
-    plan: (refs) => filePlan(refs, "consolidate"),
+    plan: (refs) => consolidationPlan(refs),
   },
   {
     id: "W9",

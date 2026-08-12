@@ -37,6 +37,7 @@ import {
   type BudgetEnv,
   type TestProviderMode,
 } from "./provider-budget";
+import { DEFAULT_LEDGER_PATH, FileSpendLedger } from "./provider-budget-ledger";
 
 export const GOLDEN_ROOT = join(process.cwd(), "test", "golden");
 
@@ -71,6 +72,9 @@ export function stageOf(params: Record<string, unknown>): string {
   if (sys.includes("task classifier for AfterDesk")) return "classification";
   if (sys.includes("execution planner for AfterDesk")) return "planning";
   if (sys.includes("critique") || sys.includes("adversarial")) return "critique";
+  // Recognised by its own system text, because it declares no tool at all —
+  // deliberately, so the model reading untrusted web prose has no verb.
+  if (sys.includes("convert gathered research into structured rows")) return "extract";
   const tools = (params.tools as { type?: string }[] | undefined) ?? [];
   if (tools.some((t) => String(t.type).startsWith("web_search"))) return "research";
   if (tools.some((t) => String(t.type).startsWith("web_fetch"))) return "fetch";
@@ -156,6 +160,12 @@ export type ReplayStats = {
   recorded: number;
   synthetic: number;
   misses: { stage: string; key: string }[];
+  /**
+   * Paid calls whose fixture could not be written. Money left the account and
+   * bought nothing reusable — the exact failure that emptied the first golden
+   * corpus — so it is surfaced rather than logged and forgotten.
+   */
+  uncapitalised: { stage: string; key: string; reason: string }[];
   budget: ReturnType<ProviderBudget["snapshot"]>;
 };
 
@@ -188,8 +198,25 @@ export function providerStats(): ReplayStats {
  */
 export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) {
   const mode = resolveMode(env);
-  budget = new ProviderBudget({ label: `provider:${mode}` }, env);
-  stats = { mode, replayed: 0, recorded: 0, synthetic: 0, misses: [], budget: budget.snapshot() };
+  /**
+   * The shared ledger is attached ONLY in live mode. Replay and synthetic
+   * cannot spend, so giving them a cross-process lock would buy nothing and
+   * would make a $0 suite fail on a stale lock file.
+   */
+  const ledger =
+    mode === "live"
+      ? new FileSpendLedger(env.TEST_PROVIDER_LEDGER_PATH ?? DEFAULT_LEDGER_PATH)
+      : undefined;
+  budget = new ProviderBudget({ label: `provider:${mode}`, ledger }, env);
+  stats = {
+    mode,
+    replayed: 0,
+    recorded: 0,
+    synthetic: 0,
+    misses: [],
+    uncapitalised: [],
+    budget: budget.snapshot(),
+  };
 
   class ReplayAnthropic {
     messages = {
@@ -247,25 +274,49 @@ export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) 
           cacheWriteTokens: response.usage?.cache_creation_input_tokens ?? 0,
         });
         (budget as ProviderBudget).settle(costMicros);
-        writeFixture({
-          stage,
-          key,
-          request: {
-            model: String(params.model),
-            system: systemTextOf(params),
-            messages: params.messages,
-            outputSchemaName: stage,
-            tools: ((params.tools as { type?: string }[] | undefined) ?? []).map((t) => String(t.type)),
-          },
-          response,
-          meta: {
-            provenance: "verbatim",
-            recordedAt: new Date().toISOString(),
-            model: String(params.model),
-            costMicros,
-          },
-        });
-        (stats as ReplayStats).recorded += 1;
+        /**
+         * THE RECORDING IS PART OF THE CALL, NOT AN AFTERTHOUGHT.
+         *
+         * A paid response that is not written down has to be paid for again,
+         * and that is precisely how the first golden corpus ended up empty:
+         * money was spent, the parsed projection was kept, the raw answer was
+         * not. So a failed write is counted and surfaced in the stats the
+         * harness asserts on, rather than swallowed into a log nobody reads.
+         */
+        try {
+          writeFixture({
+            stage,
+            key,
+            request: {
+              model: String(params.model),
+              system: systemTextOf(params),
+              messages: params.messages,
+              outputSchemaName: stage,
+              tools: ((params.tools as { type?: string }[] | undefined) ?? []).map((t) =>
+                String(t.type)
+              ),
+            },
+            response,
+            meta: {
+              provenance: "verbatim",
+              recordedAt: new Date().toISOString(),
+              model: String(params.model),
+              costMicros,
+            },
+          });
+          (stats as ReplayStats).recorded += 1;
+        } catch (error) {
+          (stats as ReplayStats).uncapitalised.push({
+            stage,
+            key,
+            reason: String(error).slice(0, 300),
+          });
+          console.log(
+            `[provider:live] PAID BUT NOT CAPITALISED — ${stage}/${key} cost ` +
+              `$${(costMicros / 1e6).toFixed(4)} and its fixture could not be written: ` +
+              `${String(error).slice(0, 200)}`
+          );
+        }
         // The running total, printed on every paid call: the operator sees the
         // meter move rather than discovering the bill afterwards.
         console.log(`[provider:live] recorded ${stage}/${key} — ${(budget as ProviderBudget).status()}`);

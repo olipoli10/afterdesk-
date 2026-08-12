@@ -171,10 +171,25 @@ export default async function globalSetup() {
         datasourceUrl: appUrl.includes("pgbouncer=") ? appUrl : `${appUrl}&pgbouncer=true`,
       });
       try {
-        const seen = await appClient.$queryRawUnsafe<{ v: boolean }[]>(
-          `SELECT to_regclass('public.${probe}') IS NOT NULL AS v`
-        );
-        if (seen[0]?.v) {
+        /**
+         * An app connection that cannot be opened at all proves nothing about
+         * aliasing, so it is reported rather than read as a pass. It is also
+         * not fatal: aliasing is a property of ONE server multiplexing names,
+         * and a test URL on a different host than a dead local cluster is not
+         * that. The remote path already required the operator to name the host.
+         */
+        const seen = await appClient
+          .$queryRawUnsafe<{ v: boolean }[]>(
+            `SELECT to_regclass('public.${probe}') IS NOT NULL AS v`
+          )
+          .catch((error: unknown) => {
+            console.log(
+              `[integration] the app's own database is unreachable, so the aliasing probe ` +
+                `could not run: ${String(error).slice(0, 160)}`
+            );
+            return null;
+          });
+        if (seen?.[0]?.v) {
           throw new Error(
             `INTEGRATION DB GUARD FAILED [ALIASED_DATABASE]: a table created in ` +
               `${db.database} is visible through the app's DATABASE_URL — the server ` +

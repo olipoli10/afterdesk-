@@ -28,14 +28,14 @@ describe("the six-condition integration DB guard fails closed", () => {
     ).toThrow(/TEST_URL_MISSING/);
   });
 
-  it("2 — refuses a remote host, parsed not substring-matched", () => {
+  it("2 — refuses a remote host nobody named", () => {
     expect(() =>
       assertSafeIntegrationDb({
         ...GOOD,
         AFTERDESK_TEST_DATABASE_URL:
           "postgres://u:p@db.production.example/afterdesk_integration",
       })
-    ).toThrow(/NOT_LOCALHOST/);
+    ).toThrow(/REMOTE_NOT_ALLOWED/);
     // The substring trap: a remote host that CONTAINS "localhost".
     expect(() =>
       assertSafeIntegrationDb({
@@ -43,7 +43,63 @@ describe("the six-condition integration DB guard fails closed", () => {
         AFTERDESK_TEST_DATABASE_URL:
           "postgres://u:p@localhost.evil.example/afterdesk_integration",
       })
-    ).toThrow(/NOT_LOCALHOST/);
+    ).toThrow(/REMOTE_NOT_ALLOWED/);
+  });
+
+  it("2 — accepts a remote host ONLY when the operator typed that exact host", () => {
+    /**
+     * The stable test Postgres lives at a provider now, so "localhost only"
+     * had to go. What replaced it is stricter, not looser: the operator states
+     * the hostname this suite is authorised to DROP SCHEMA on, and it is
+     * compared for equality against the parsed host. There is no pattern to
+     * fool and no "looks like a test branch" inference to get wrong.
+     */
+    const neon = {
+      ...GOOD,
+      AFTERDESK_TEST_DATABASE_URL:
+        "postgres://u:p@ep-quiet-frost-a1b2c3.us-east-2.aws.neon.tech/afterdesk_integration?sslmode=require",
+    };
+    expect(() => assertSafeIntegrationDb(neon)).toThrow(/REMOTE_NOT_ALLOWED/);
+
+    const named = assertSafeIntegrationDb({
+      ...neon,
+      ALLOW_REMOTE_INTEGRATION_DB: "ep-quiet-frost-a1b2c3.us-east-2.aws.neon.tech",
+    });
+    expect(named.host).toBe("ep-quiet-frost-a1b2c3.us-east-2.aws.neon.tech");
+    expect(named.database).toBe("afterdesk_integration");
+  });
+
+  it("2 — an allowance for one host does not authorise another", () => {
+    // The failure this exists for: an ALLOW_REMOTE_INTEGRATION_DB left in a
+    // shell from a previous branch, and a URL now pointing somewhere else.
+    expect(() =>
+      assertSafeIntegrationDb({
+        ...GOOD,
+        AFTERDESK_TEST_DATABASE_URL:
+          "postgres://u:p@ep-production-writer.aws.neon.tech/afterdesk_integration?sslmode=require",
+        ALLOW_REMOTE_INTEGRATION_DB: "ep-quiet-frost-a1b2c3.us-east-2.aws.neon.tech",
+      })
+    ).toThrow(/REMOTE_HOST_MISMATCH/);
+  });
+
+  it("2 — naming a remote host does not excuse any other condition", () => {
+    const host = "ep-quiet-frost-a1b2c3.us-east-2.aws.neon.tech";
+    const base = { ...GOOD, ALLOW_REMOTE_INTEGRATION_DB: host };
+    // Still needs a disposable database name...
+    expect(() =>
+      assertSafeIntegrationDb({
+        ...base,
+        AFTERDESK_TEST_DATABASE_URL: `postgres://u:p@${host}/neondb?sslmode=require`,
+      })
+    ).toThrow(/DB_NAME_NOT_DISPOSABLE/);
+    // ...and still needs the reset opt-in.
+    expect(() =>
+      assertSafeIntegrationDb({
+        ...base,
+        AFTERDESK_TEST_DATABASE_URL: `postgres://u:p@${host}/afterdesk_integration?sslmode=require`,
+        ALLOW_INTEGRATION_DB_RESET: undefined,
+      })
+    ).toThrow(/RESET_NOT_ALLOWED/);
   });
 
   it("3 — refuses template1 by name: the dev database is not disposable", () => {

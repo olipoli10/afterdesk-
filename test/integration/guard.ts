@@ -50,9 +50,37 @@ export function assertSafeIntegrationDb(
   const id = identityOf(raw);
   if (!id) return fail("TEST_URL_UNPARSEABLE", "AFTERDESK_TEST_DATABASE_URL is not a valid URL.");
 
-  // 2. Localhost only, decided on the PARSED host, not a substring match.
+  /**
+   * 2. A local host, or a REMOTE host the operator named out loud.
+   *
+   * "Localhost only" was the right rule while the only test database was a
+   * local cluster: being local was a cheap proof of not-production. It stops
+   * being right the moment the stable test Postgres lives at a provider, and
+   * the honest replacement is not to weaken the condition but to make the
+   * operator state the exact host they are authorising this suite to DROP.
+   *
+   * That is stronger than a hostname-shape heuristic, not weaker. There is no
+   * pattern, no allowlist and no "looks like a test branch" inference to get
+   * wrong; the only way to point the suite at production is to have typed
+   * production's hostname into the variable, next to a database name that also
+   * has to end in _test or _integration, next to ALLOW_INTEGRATION_DB_RESET=1.
+   * Three deliberate acts, none of which a stray shell variable performs.
+   */
   if (!LOCAL_HOSTS.has(id.host)) {
-    return fail("NOT_LOCALHOST", `host "${id.host}" is not local.`);
+    const named = (env.ALLOW_REMOTE_INTEGRATION_DB ?? "").trim().toLowerCase();
+    if (!named) {
+      return fail(
+        "REMOTE_NOT_ALLOWED",
+        `host "${id.host}" is not local. A remote test database must be named ` +
+          `explicitly: ALLOW_REMOTE_INTEGRATION_DB="${id.host}".`
+      );
+    }
+    if (named !== id.host) {
+      return fail(
+        "REMOTE_HOST_MISMATCH",
+        `ALLOW_REMOTE_INTEGRATION_DB names "${named}" but the URL points at "${id.host}".`
+      );
+    }
   }
 
   // 3. The database names itself as disposable.

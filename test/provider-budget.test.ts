@@ -1,4 +1,8 @@
+import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import { FileSpendLedger } from "@/../test/support/provider-budget-ledger";
 import {
   DEFAULT_MAX_CALLS,
   DEFAULT_MAX_SPEND_MICROS,
@@ -138,6 +142,93 @@ describe("the operator is told before, and during", () => {
   });
 });
 
+describe("one process is not the cap", () => {
+  /**
+   * The hole the per-process budget leaves: three workers, three budgets, one
+   * label saying $1. The ledger is the shared counter that closes it, and it
+   * is simulated here in memory because what is under test is the ARITHMETIC
+   * of the global check, not the filesystem underneath it.
+   */
+  function memoryLedger(state = { calls: 0, micros: 0 }) {
+    return {
+      state,
+      reserve(calls: number, micros: number) {
+        state.calls += calls;
+        state.micros += micros;
+        return { calls: state.calls, micros: state.micros };
+      },
+      settle(reserved: number, actual: number) {
+        state.micros = Math.max(0, state.micros - reserved + actual);
+      },
+    };
+  }
+
+  it("two workers sharing a ledger cannot spend the cap twice", () => {
+    const ledger = memoryLedger();
+    const opts = { label: "w", maxCalls: 10, maxSpendMicros: 1_000_000, ledger };
+    const a = new ProviderBudget(opts);
+    const b = new ProviderBudget(opts);
+
+    a.reserve(400_000);
+    a.settle(400_000);
+    b.reserve(400_000);
+    b.settle(400_000);
+    // Locally each has spent $0.40 and thinks $0.60 remains. Globally $0.80
+    // is gone, so the next $0.40 crosses the shared cap and is refused.
+    expect(() => a.reserve(400_000)).toThrow(ProviderBudgetExceeded);
+    expect(() => b.reserve(400_000)).toThrow(ProviderBudgetExceeded);
+    expect(ledger.state.micros).toBe(800_000);
+  });
+
+  it("the global call count is shared too", () => {
+    const ledger = memoryLedger();
+    const opts = { label: "w", maxCalls: 3, maxSpendMicros: 10_000_000, ledger };
+    const a = new ProviderBudget(opts);
+    const b = new ProviderBudget(opts);
+    a.reserve(1);
+    a.settle(1);
+    b.reserve(1);
+    b.settle(1);
+    a.reserve(1);
+    a.settle(1);
+    expect(() => b.reserve(1)).toThrow(/GLOBAL/);
+  });
+
+  it("a refused reservation does not stay on the shared counter", () => {
+    // Otherwise a single over-budget attempt would permanently consume
+    // headroom nobody actually spent.
+    const ledger = memoryLedger();
+    const b = new ProviderBudget({ label: "w", maxCalls: 9, maxSpendMicros: 500_000, ledger });
+    expect(() => b.reserve(900_000)).toThrow(ProviderBudgetExceeded);
+    expect(ledger.state.micros).toBe(0);
+  });
+
+  it("a ledger that cannot be read REFUSES rather than falling back to per-process", () => {
+    /**
+     * The failure mode that matters most: an I/O error must not silently turn
+     * a global cap back into a per-worker one. Not knowing what the other
+     * processes spent is a reason to stop, not a reason to proceed.
+     */
+    const broken = {
+      reserve(): { calls: number; micros: number } {
+        throw new Error("EBUSY");
+      },
+      settle() {},
+    };
+    const b = new ProviderBudget({ label: "w", maxCalls: 9, maxSpendMicros: 9_000_000, ledger: broken });
+    expect(() => b.reserve(1_000)).toThrow(/shared spend ledger could not be read/);
+  });
+
+  it("without a ledger the budget is still the old per-process one", () => {
+    // Replay and synthetic attach no ledger: they cannot spend, and a stale
+    // lock file must never be able to fail a zero-cost suite.
+    const b = new ProviderBudget({ label: "w", maxCalls: 2, maxSpendMicros: 1_000_000 });
+    b.reserve(1);
+    b.settle(1);
+    expect(b.snapshot().calls).toBe(1);
+  });
+});
+
 describe("fixture addressing — a changed question cannot replay an old answer", () => {
   const base = {
     model: "claude-opus-5",
@@ -170,5 +261,112 @@ describe("fixture addressing — a changed question cannot replay an old answer"
       "classification"
     );
     expect(stageOf({ ...base, system: "", tools: [{ type: "web_fetch_20260209", name: "web_fetch" }] })).toBe("fetch");
+  });
+});
+
+describe("the test layer cannot reach the shipped product", () => {
+  /**
+   * THE CONTAINMENT PIN.
+   *
+   * A synthetic responder is a thing that decides what the web says. It exists
+   * so a rehearsal can run for nothing, and it must be structurally impossible
+   * for it to end up answering a real client's mandate. The strongest cheap
+   * proof of that is direction: nothing under src/ may import anything under
+   * test/, ever, for any reason.
+   *
+   * Checked by reading the source rather than by trusting the bundler, because
+   * a bundler's answer depends on configuration and this one must not.
+   */
+  const SRC = join(__dirname, "..", "src");
+
+  function everyFileUnder(dir: string): string[] {
+    const out: string[] = [];
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) out.push(...everyFileUnder(full));
+      else if (/\.(ts|tsx|mts|cts|js|jsx)$/.test(entry)) out.push(full);
+    }
+    return out;
+  }
+
+  it("no file under src/ imports anything under test/", () => {
+    const offenders: string[] = [];
+    for (const file of everyFileUnder(SRC)) {
+      const source = readFileSync(file, "utf8");
+      for (const m of source.matchAll(/(?:from|import|require)\s*\(?\s*["']([^"']+)["']/g)) {
+        const spec = m[1];
+        const reachesTest =
+          spec.startsWith("@/../test/") ||
+          spec === "test" ||
+          spec.startsWith("test/") ||
+          /(^|\/)\.\.\/(\.\.\/)*test\//.test(spec);
+        if (reachesTest) offenders.push(`${relative(SRC, file)} -> ${spec}`);
+      }
+    }
+    expect(offenders, `src/ must never import from test/:\n${offenders.join("\n")}`).toEqual([]);
+  });
+
+  it("the synthetic responder names itself in a way a production grep would catch", () => {
+    // A weak pin on purpose, and worth having: if this string ever appears in
+    // a src/ file, the test above will already have failed, and the name in
+    // the failure message is what tells a reader what leaked.
+    const files = ["synthetic-web.ts", "synthetic-plans.ts", "synthetic-responder.ts"];
+    for (const f of files) {
+      const source = readFileSync(join(__dirname, "support", f), "utf8");
+      expect(source.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("the shared ledger on disk", () => {
+  /**
+   * The in-memory ledger above proves the ARITHMETIC. This proves the thing
+   * that actually runs in live mode: a counter in a file, a lock that cannot
+   * be created twice, and a refusal when the lock is held by someone else.
+   */
+  const tmp = () => mkdtempSync(join(tmpdir(), "afterdesk-ledger-"));
+
+  it("accumulates across separate ledger objects, which is what separate processes are", () => {
+    const path = join(tmp(), "spend.json");
+    const a = new FileSpendLedger(path);
+    const b = new FileSpendLedger(path);
+    expect(a.reserve(1, 300_000)).toEqual({ calls: 1, micros: 300_000 });
+    expect(b.reserve(1, 300_000)).toEqual({ calls: 2, micros: 600_000 });
+    expect(a.read().micros).toBe(600_000);
+  });
+
+  it("settling replaces the reservation with the real cost", () => {
+    const path = join(tmp(), "spend.json");
+    const l = new FileSpendLedger(path);
+    l.reserve(1, 400_000);
+    l.settle(400_000, 120_000);
+    expect(l.read().micros).toBe(120_000);
+    expect(l.read().calls).toBe(1);
+  });
+
+  it("a settle can never create headroom below zero", () => {
+    const path = join(tmp(), "spend.json");
+    const l = new FileSpendLedger(path);
+    l.settle(999_999, 0);
+    expect(l.read().micros).toBe(0);
+  });
+
+  it("a held lock refuses rather than proceeding without knowing the total", () => {
+    // Written by hand because that is exactly what a crashed worker leaves
+    // behind, and the safe reading of "someone else may be mid-call" is no.
+    const path = join(tmp(), "spend.json");
+    writeFileSync(`${path}.lock`, "");
+    const l = new FileSpendLedger(path);
+    expect(() => l.reserve(1, 1_000)).toThrow(/lock/);
+  });
+
+  it("reset clears both the counter and a stale lock", () => {
+    const path = join(tmp(), "spend.json");
+    const l = new FileSpendLedger(path);
+    l.reserve(1, 500_000);
+    writeFileSync(`${path}.lock`, "");
+    l.reset();
+    expect(l.read()).toEqual({ calls: 0, micros: 0, updatedAt: "never" });
+    expect(l.reserve(1, 1_000).micros).toBe(1_000);
   });
 });

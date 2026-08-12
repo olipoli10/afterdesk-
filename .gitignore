@@ -12,6 +12,11 @@
 
 # testing
 /coverage
+# The cross-process live-spend counter. Machine state for one live session,
+# never a repository fact — committing one would hand the next machine a
+# budget that is already partly spent.
+.provider-spend-ledger.json
+.provider-spend-ledger.json.lock
 
 # next.js
 /.next/
