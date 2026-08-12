@@ -38,30 +38,89 @@ import {
   type TestProviderMode,
 } from "./provider-budget";
 import { DEFAULT_LEDGER_PATH, FileSpendLedger } from "./provider-budget-ledger";
+import { canonicalJson } from "./canonical-json";
+import { codeVersion } from "./code-version";
+import { capabilityDescriptors } from "@/lib/ai-work-engine/capability-contract";
 
 export const GOLDEN_ROOT = join(process.cwd(), "test", "golden");
 
+/**
+ * Bumped when the fixture SHAPE changes, so a reader six months from now can
+ * tell a field's absence from a field that never existed. Version 1 is the
+ * first shape written after the corpus was emptied, which is why there is no
+ * migration path below it: there is nothing to migrate.
+ */
+export const FIXTURE_SCHEMA_VERSION = 1;
+
+/**
+ * WHAT A FIXTURE IS, WHICH IS NOT THE SAME AS WHERE IT CAME FROM.
+ *
+ * `LIVE_RECORDED` was paid for and is evidence about a real provider.
+ * `SYNTHETIC` was fabricated by the test layer and is evidence about nothing
+ * except the harness. Keeping them in one enum on one required field is what
+ * makes it impossible to present the second as the first — which is the whole
+ * reason the distinction is spelled in capitals rather than left to a folder.
+ */
+export type FixtureKind = "LIVE_RECORDED" | "SYNTHETIC";
+
 export type GoldenFixture = {
+  fixtureSchemaVersion: number;
+  kind: FixtureKind;
   /** Which stage produced it, for humans reading the directory. */
   stage: string;
+  /** The addressing hash: sha256 over the canonical request. */
   key: string;
   /** The request, stored for provenance and for regenerating the key. */
   request: {
+    provider: string;
     model: string;
+    /** Kept in full: a hash proves sameness, only the text explains it. */
     system: string;
+    /** sha256 of the system text alone, so a prompt edit is greppable. */
+    systemPromptHash: string;
     messages: unknown;
-    outputSchemaName: string | null;
+    outputSchema: unknown;
     tools: string[];
+    maxTokens: number | null;
+    /** sha256 over the canonical whole request. Equal to `key`. */
+    requestHash: string;
+  };
+  /**
+   * THE RULES THE PLANNER WAS PLAYING BY, so that "does this fixture still
+   * describe our system" is answerable rather than assumed.
+   *
+   * The question this exists for is six months out: a recorded answer replayed
+   * against a rebuilt planner still passes, and without these two fields it
+   * reads as a stronger proof than it is.
+   */
+  contract: {
+    /** sha256 over the canonical capability descriptors. */
+    capabilityContractHash: string;
+    /** `id@version` for every capability the planner could see, in order. */
+    primitiveInventory: string[];
+  };
+  /** Which build of AfterDesk made the call. */
+  code: {
+    gitSha: string | null;
+    gitRef: string | null;
+    /** Always true: a commit id does not prove a clean working tree. */
+    dirtyUnknown: boolean;
   };
   /** The provider's answer, as the SDK returned it. */
   response: unknown;
   meta: {
-    /** "verbatim" = recorded from a real call. "reconstructed" = rebuilt from
-     *  a parsed output that WAS paid for, when the raw text was not kept. */
-    provenance: "verbatim" | "reconstructed" | "synthetic";
     recordedAt: string;
-    model: string;
-    costMicros: number;
+    /** As the provider reported it. Absent counters are recorded as 0. */
+    usage: {
+      inputTokens: number;
+      outputTokens: number;
+      cacheReadTokens: number;
+      cacheWriteTokens: number;
+      searchRequests: number;
+      fetchRequests: number;
+    };
+    /** What this call actually cost, computed from the usage above. */
+    actualCostMicros: number;
     note?: string;
   };
 };
@@ -90,25 +149,74 @@ function systemTextOf(params: Record<string, unknown>): string {
   return "";
 }
 
-/**
- * The addressing hash. Deliberately covers everything that changes the
- * ANSWER and nothing that does not: `max_tokens` and `cache_control` are
- * included because they are part of the request we would replay, while
- * transport-only fields are not present in params at all.
- */
-export function fixtureKey(params: Record<string, unknown>): string {
+/** The identity of a request, before it is hashed. One definition, one use. */
+function canonicalRequest(params: Record<string, unknown>): {
+  model: string;
+  system: string;
+  messages: unknown;
+  schema: unknown;
+  tools: string[];
+  max_tokens: number | null;
+} {
   const outputConfig = params.output_config as { format?: { schema?: unknown } } | undefined;
-  const canonical = JSON.stringify({
-    model: params.model,
+  return {
+    model: String(params.model),
     system: systemTextOf(params),
     messages: params.messages,
     schema: outputConfig?.format?.schema ?? null,
     tools: ((params.tools as { type?: string; name?: string }[] | undefined) ?? []).map(
       (t) => `${t.type}:${t.name}`
     ),
-    max_tokens: params.max_tokens,
-  });
-  return createHash("sha256").update(canonical).digest("hex").slice(0, 32);
+    max_tokens: typeof params.max_tokens === "number" ? params.max_tokens : null,
+  };
+}
+
+/**
+ * The addressing hash. Deliberately covers everything that changes the
+ * ANSWER and nothing that does not: `max_tokens` and `cache_control` are
+ * included because they are part of the request we would replay, while
+ * transport-only fields are not present in params at all.
+ *
+ * Hashed over a CANONICAL serialisation rather than JSON.stringify. Key order
+ * is an accident of how an object was built — a spread here, a literal there —
+ * and letting it reach the hash means two identical requests can address two
+ * different fixtures. A false miss is a paid call bought by a refactor.
+ */
+export function fixtureKey(params: Record<string, unknown>): string {
+  return createHash("sha256").update(canonicalJson(canonicalRequest(params))).digest("hex").slice(0, 32);
+}
+
+/** sha256 of the system text alone, so a prompt edit is greppable. */
+export function systemPromptHash(params: Record<string, unknown>): string {
+  return createHash("sha256").update(systemTextOf(params)).digest("hex").slice(0, 32);
+}
+
+/**
+ * THE PLANNER'S RULES, HASHED. Computed once: the descriptors are frozen at
+ * module load, so a per-call hash would be the same work repeated per dollar.
+ *
+ * Over the DESCRIPTORS rather than the rendered text, because the descriptors
+ * are what the contract IS — ids, versions, modes, reach, params schemas — and
+ * the rendering is one presentation of them. A whitespace change in the
+ * renderer must not read as a change of rules.
+ */
+let contractFingerprint: { capabilityContractHash: string; primitiveInventory: string[] } | null =
+  null;
+
+export function capabilityContractFingerprint(): {
+  capabilityContractHash: string;
+  primitiveInventory: string[];
+} {
+  if (contractFingerprint !== null) return contractFingerprint;
+  const descriptors = capabilityDescriptors();
+  contractFingerprint = {
+    capabilityContractHash: createHash("sha256")
+      .update(canonicalJson(descriptors))
+      .digest("hex")
+      .slice(0, 32),
+    primitiveInventory: descriptors.map((d) => `${d.id}@${d.version}`),
+  };
+  return contractFingerprint;
 }
 
 function fixturePath(stage: string, key: string): string {
@@ -165,9 +273,42 @@ export type ReplayStats = {
    * bought nothing reusable — the exact failure that emptied the first golden
    * corpus — so it is surfaced rather than logged and forgotten.
    */
-  uncapitalised: { stage: string; key: string; reason: string }[];
+  uncapitalised: { stage: string; key: string; costMicros: number; reason: string }[];
   budget: ReturnType<ProviderBudget["snapshot"]>;
 };
+
+export class PaidOutputNotCapitalized extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PaidOutputNotCapitalized";
+  }
+}
+
+/**
+ * A RUN WITH AN UNCAPITALISED PAID CALL IS NOT A SUCCESSFUL RUN.
+ *
+ * The money cannot be un-spent, so this cannot undo anything. What it can do
+ * is refuse to let the run be reported as green: a canary that paid for an
+ * answer and failed to keep it has produced a cost and no asset, which is the
+ * exact trade the whole golden corpus exists to stop making twice.
+ *
+ * Called at the END of a live harness, never inside the call itself — throwing
+ * mid-call would fail the step, the runner would retry it, and the retry would
+ * spend again. The loud line is printed at the moment it happens; this is the
+ * verdict.
+ */
+export function assertPaidCallsCapitalised(from?: ReplayStats): void {
+  const failures = (from ?? stats)?.uncapitalised ?? [];
+  if (failures.length === 0) return;
+  const lost = failures.reduce((n, f) => n + f.costMicros, 0);
+  throw new PaidOutputNotCapitalized(
+    `PAID PROVIDER OUTPUT NOT CAPITALIZED: ${failures.length} call(s) worth ` +
+      `$${(lost / 1e6).toFixed(4)} were paid for and could not be written to the golden ` +
+      `corpus, so they must be paid for again to be replayed. This run is INCOMPLETE ` +
+      `whatever else it produced.\n` +
+      failures.map((f) => `  - ${f.stage}/${f.key}: ${f.reason}`).join("\n")
+  );
+}
 
 type SyntheticResponder = (params: Record<string, unknown>, stage: string) => unknown | null;
 
@@ -264,15 +405,30 @@ export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) 
             output_tokens?: number;
             cache_read_input_tokens?: number;
             cache_creation_input_tokens?: number;
+            server_tool_use?: { web_search_requests?: number; web_fetch_requests?: number };
           };
         };
-        const { costMicrosFor } = await import("@/lib/ai-work-engine/tool-cost");
-        const costMicros = costMicrosFor(String(params.model), {
+        const usage = {
           inputTokens: response.usage?.input_tokens ?? 0,
           outputTokens: response.usage?.output_tokens ?? 0,
           cacheReadTokens: response.usage?.cache_read_input_tokens ?? 0,
           cacheWriteTokens: response.usage?.cache_creation_input_tokens ?? 0,
-        });
+          searchRequests: response.usage?.server_tool_use?.web_search_requests ?? 0,
+          fetchRequests: response.usage?.server_tool_use?.web_fetch_requests ?? 0,
+        };
+        const { costMicrosFor, searchCostMicros, fetchCostMicros } = await import(
+          "@/lib/ai-work-engine/tool-cost"
+        );
+        /**
+         * The SAME arithmetic the run's own accounting uses, tool calls
+         * included. Counting only tokens would understate a research call by
+         * the whole search bill, and the fixture would then record a cost
+         * cheaper than the one the budget settled.
+         */
+        const costMicros =
+          costMicrosFor(String(params.model), usage) +
+          searchCostMicros(usage.searchRequests) +
+          fetchCostMicros(usage.fetchRequests);
         (budget as ProviderBudget).settle(costMicros);
         /**
          * THE RECORDING IS PART OF THE CALL, NOT AN AFTERTHOUGHT.
@@ -284,24 +440,33 @@ export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) 
          * harness asserts on, rather than swallowed into a log nobody reads.
          */
         try {
+          const contract = capabilityContractFingerprint();
+          const request = canonicalRequest(params);
           writeFixture({
+            fixtureSchemaVersion: FIXTURE_SCHEMA_VERSION,
+            kind: "LIVE_RECORDED",
             stage,
             key,
             request: {
-              model: String(params.model),
-              system: systemTextOf(params),
-              messages: params.messages,
-              outputSchemaName: stage,
-              tools: ((params.tools as { type?: string }[] | undefined) ?? []).map((t) =>
-                String(t.type)
-              ),
+              provider: "anthropic",
+              model: request.model,
+              system: request.system,
+              systemPromptHash: systemPromptHash(params),
+              messages: request.messages,
+              outputSchema: request.schema,
+              tools: request.tools,
+              maxTokens: request.max_tokens,
+              // Equal to `key` by construction, and stored anyway: a fixture
+              // read on its own must be able to prove its own filename.
+              requestHash: key,
             },
+            contract,
+            code: codeVersion(),
             response,
             meta: {
-              provenance: "verbatim",
               recordedAt: new Date().toISOString(),
-              model: String(params.model),
-              costMicros,
+              usage,
+              actualCostMicros: costMicros,
             },
           });
           (stats as ReplayStats).recorded += 1;
@@ -309,10 +474,11 @@ export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) 
           (stats as ReplayStats).uncapitalised.push({
             stage,
             key,
+            costMicros,
             reason: String(error).slice(0, 300),
           });
           console.log(
-            `[provider:live] PAID BUT NOT CAPITALISED — ${stage}/${key} cost ` +
+            `[provider:live] PAID PROVIDER OUTPUT NOT CAPITALIZED — ${stage}/${key} cost ` +
               `$${(costMicros / 1e6).toFixed(4)} and its fixture could not be written: ` +
               `${String(error).slice(0, 200)}`
           );
