@@ -12,6 +12,9 @@ import type { CompilePreview } from "@/lib/queries/plan";
  */
 
 const BADGE_TONE: Record<string, string> = {
+  // The only badge that invalidates the figures beside it — same ink as the
+  // hardest refusals, because an operator must not price from this screen.
+  "HUMAN COST UNKNOWN — PRICE MANUALLY": "border-[#8C2F23]/40 bg-[#8C2F23]/10 text-[#8C2F23]",
   "SENSITIVE / HUMAN ONLY": "border-[#8C2F23]/40 bg-[#8C2F23]/10 text-[#8C2F23]",
   "MISSING CAPABILITY": "border-[#8C2F23]/40 bg-[#8C2F23]/10 text-[#8C2F23]",
   "DEMOTED FOR BUDGET": "border-[#955710]/40 bg-[#D98324]/10 text-[#955710]",

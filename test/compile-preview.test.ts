@@ -48,6 +48,12 @@ function step(partial: Partial<StepRow> & Pick<StepRow, "order" | "title">): Ste
     params: null,
     dependsOnOrder: [],
     demotedForBudget: false,
+    // A machine step's human effort, exactly as the planner writes it: zero.
+    // The pricing-integrity suite below turns that into its own scenario.
+    estimatedMinutesLikely: 0,
+    estimatedMinutesConservative: 0,
+    fixedMinutes: null,
+    secondsPerUnit: null,
     ...partial,
   };
 }

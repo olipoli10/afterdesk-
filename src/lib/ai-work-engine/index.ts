@@ -30,6 +30,10 @@ import {
 } from "@/lib/ai-work-engine/automation-cost-policy";
 import { runAutomationPreflight } from "@/lib/ai-work-engine/automation-preflight";
 import {
+  assessDemotionPricing,
+  HUMAN_COST_UNKNOWN_NOTICE,
+} from "@/lib/ai-work-engine/demotion-pricing";
+import {
   claimAiOperation,
   engineOperationKey,
   failAiOperation,
@@ -553,6 +557,33 @@ export async function runWorkEngine(
         ? rawPriced
         : reprice(rawPriced, planStepsToPricingInput(plannedOutput), demotedByOrder, rates);
 
+    /**
+     * PRICING INTEGRITY: a demotion whose human cost nobody estimated must not
+     * produce a suggested price.
+     *
+     * reprice() above re-costs the demoted plan honestly given its inputs, and
+     * those inputs are the problem: a machine step carries the minutes the
+     * planner wrote for it, which the prompt tells it to leave at zero. So a
+     * step that just became a person's job re-prices at nothing, the max()
+     * pins the figures to the raw plan, and the quote silently omits the work.
+     * Measured across 29 mandates: every single demoted step had zero minutes,
+     * and every quote carrying a demotion was unchanged to the cent.
+     *
+     * There is no honest number to substitute — nobody has measured what these
+     * steps cost by hand — so the engine says so instead of guessing. See
+     * demotion-pricing.ts for why the refusal is the correct branch.
+     */
+    const demotionPricing = assessDemotionPricing(
+      plannedOutput.steps.map((s, i) => ({
+        order: i + 1,
+        demotedForBudget: demotedByOrder.get(i + 1)?.demotedForBudget ?? false,
+        estimatedMinutesLikely: s.estimated_minutes_likely,
+        estimatedMinutesConservative: s.estimated_minutes_conservative,
+        fixedMinutes: s.fixed_minutes,
+        secondsPerUnit: s.seconds_per_unit,
+      }))
+    );
+
     let planVersion: { id: string };
     try {
       planVersion = await succeedAiOperation({
@@ -772,16 +803,37 @@ export async function runWorkEngine(
         : critiqueTriggered
           ? "Critique: triggered but failed; review this plan as if unchecked."
           : "Critique: not triggered.",
+      // Leads the operator to the one fact that invalidates every figure above.
+      demotionPricing.humanCostUnknown
+        ? `${HUMAN_COST_UNKNOWN_NOTICE} (steps ${demotionPricing.unpricedOrders.join(", ")})`
+        : "",
     ]
+      .filter(Boolean)
       .join(" ")
       .slice(0, 2000);
 
     await prisma.task.update({
       where: { id: taskId },
       data: {
-        ...aiSuggestionColumns(priced),
+        /**
+         * The suggestion is SUPPRESSED, not corrected, when a demotion left
+         * human work nobody costed: there is no honest number to write, and a
+         * wrong one is worse than none because it is the one an operator can
+         * approve in a single click. The plan, its steps and its economics are
+         * all still on record — only the price stays the admin's to write.
+         */
+        ...(demotionPricing.humanCostUnknown
+          ? {
+              aiSuggestedPriceCents: null,
+              aiLowCents: null,
+              aiHighCents: null,
+              aiSuggestedVaPayoutCents: null,
+              aiEstimatedMinutes: null,
+            }
+          : aiSuggestionColumns(priced)),
         aiReasoning: reasoning,
-        aiConfidence: finalConfidence,
+        // A quote the engine refuses to price is never a confident one.
+        aiConfidence: demotionPricing.humanCostUnknown ? "low" : finalConfidence,
         aiSuggestedCategorySlug: classificationOutput.category_slug_guess,
         aiComputedAt: new Date(),
       },

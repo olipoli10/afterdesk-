@@ -5,6 +5,7 @@ import {
   type CompileStepInput,
 } from "@/lib/ai-work-engine/compile";
 import { primitiveReadsFiles } from "@/lib/ai-work-engine/primitive-vocabulary";
+import { assessDemotionPricing } from "@/lib/ai-work-engine/demotion-pricing";
 import type { DataClass } from "@/lib/ai-work-engine/data-class";
 
 /**
@@ -74,6 +75,15 @@ export type PreviewVersionRow = {
     params: unknown;
     dependsOnOrder: number[];
     demotedForBudget: boolean;
+    /**
+     * The step's frozen human effort. Read so the preview can tell an
+     * operator when a budget demotion produced work the quote never costed —
+     * the columns already exist, so the warning needs no migration.
+     */
+    estimatedMinutesLikely: number;
+    estimatedMinutesConservative: number;
+    fixedMinutes: number | null;
+    secondsPerUnit: number | null;
   }[];
 };
 
@@ -152,7 +162,24 @@ export function buildCompilePreview(
     (s) => s.primitiveId !== null && primitiveReadsFiles(s.primitiveId)
   );
 
+  /**
+   * The one badge that invalidates the numbers beside it: a budget demotion
+   * whose human cost nothing estimated. It leads the list because an operator
+   * who reads it must not price from this screen's economics at all.
+   */
+  const demotionPricing = assessDemotionPricing(
+    version.steps.map((s) => ({
+      order: s.order,
+      demotedForBudget: s.demotedForBudget,
+      estimatedMinutesLikely: s.estimatedMinutesLikely,
+      estimatedMinutesConservative: s.estimatedMinutesConservative,
+      fixedMinutes: s.fixedMinutes,
+      secondsPerUnit: s.secondsPerUnit,
+    }))
+  );
+
   const badges: string[] = [];
+  if (demotionPricing.humanCostUnknown) badges.push("HUMAN COST UNKNOWN — PRICE MANUALLY");
   if (gateForcedHuman) badges.push("SENSITIVE / HUMAN ONLY");
   if (missingCapability) badges.push("MISSING CAPABILITY");
   if (demoted) badges.push("DEMOTED FOR BUDGET");

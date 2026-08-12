@@ -174,6 +174,13 @@ export async function compilePreviewForAdmin(taskId: string): Promise<CompilePre
             params: true,
             dependsOnOrder: true,
             demotedForBudget: true,
+            // Pricing integrity: the preview warns when a budget demotion
+            // produced human work the quote never costed. These columns
+            // already exist, so the warning needs no migration.
+            estimatedMinutesLikely: true,
+            estimatedMinutesConservative: true,
+            fixedMinutes: true,
+            secondsPerUnit: true,
           },
         },
       },
