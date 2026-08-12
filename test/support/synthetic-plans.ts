@@ -158,7 +158,14 @@ const expensivePlan = () => ({
  */
 const consolidationPlan = (refs: string[]) => {
   const steps: Record<string, unknown>[] = [];
-  const datasets = ["main", "src2", "src3"];
+  /**
+   * `src1`, not `main`. The default dataset name always resolves to the
+   * WORKING SET (files.ts datasetsOf), so a first file ingested as `main` is
+   * silently replaced by the second ingest and never reachable again. Using
+   * the default here would measure that trap instead of the question this
+   * mandate asks, which is whether three lists can be combined at all.
+   */
+  const datasets = ["src1", "src2", "src3"];
   refs.slice(0, 3).forEach((ref, i) => {
     steps.push(
       machine(`Read the attached file ${i + 1}`, "ingest.csv", { fileId: ref, datasetName: datasets[i] }, [])
@@ -201,17 +208,17 @@ const consolidationPlan = (refs: string[]) => {
     machine(
       "Combine the first two lists",
       "data.join",
-      { left: "main", right: "src2", leftKey: "company", rightKey: "company", type: "left", onConflict: "prefer_left", into: "main" },
+      { left: "src1", right: "src2", leftKey: "company", rightKey: "company", type: "left", onConflict: "prefer_left", into: "src1" },
       [1, n + 1]
     ),
     machine(
       "Combine the third list in",
       "data.join",
-      { left: "main", right: "src3", leftKey: "company", rightKey: "company", type: "left", onConflict: "prefer_left", into: "main" },
+      { left: "src1", right: "src3", leftKey: "company", rightKey: "company", type: "left", onConflict: "prefer_left", into: "src1" },
       [n + 3]
     ),
     machine("Split what a person must check", "split.exceptions", null, [n + 4]),
-    machine("Build the deliverable", "build.csv", { dataset: "main", columns: [] }, [n + 5]),
+    machine("Build the deliverable", "build.csv", { dataset: "src1", columns: [] }, [n + 5]),
     human("Review and finish the file", [n + 6], 20, 15, 45)
   );
   return {
