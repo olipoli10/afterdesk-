@@ -160,6 +160,31 @@ const dataJoin = z.object({
   into: datasetName.default(DEFAULT_DATASET),
 });
 
+/**
+ * STACKING, NOT MATCHING, and the schema says so in its own shape: `datasets`
+ * is a LIST and there is no key field anywhere. The planner reads this
+ * rendering, and the one mistake that matters is reaching for `data.join` when
+ * the mandate said "combine these files" — a join answers a different question
+ * and returns the left side, which looks like success.
+ */
+const dataConcat = z.object({
+  /** Two or more sets, stacked in this order. Each must appear once. */
+  datasets: z
+    .array(datasetName)
+    .min(2)
+    .max(10)
+    .refine((names) => new Set(names).size === names.length, {
+      message:
+        "a dataset may appear only once: stacking a set with itself gives two rows one lineage",
+    }),
+  /**
+   * `union` keeps every column any input carries, filling the gaps with null.
+   * `intersection` keeps only the columns present in every input.
+   */
+  columns: z.enum(["union", "intersection"]).default("union"),
+  into: datasetName.default(DEFAULT_DATASET),
+});
+
 const condition = z.object({
   field: fieldName,
   op: z.enum(["eq", "neq", "contains", "not_contains", "empty", "not_empty", "gt", "lt"]),
@@ -269,6 +294,7 @@ export const PRIMITIVE_PARAM_SCHEMAS = {
   "data.dedupe": dataDedupe,
   "data.normalize": dataNormalize,
   "data.join": dataJoin,
+  "data.concat": dataConcat,
   "data.filter": dataFilter,
   "data.aggregate": dataAggregate,
   "data.compare": dataCompare,
@@ -286,6 +312,7 @@ export type IngestXlsxParams = z.infer<typeof ingestXlsx>;
 export type DataDedupeParams = z.infer<typeof dataDedupe>;
 export type DataNormalizeParams = z.infer<typeof dataNormalize>;
 export type DataJoinParams = z.infer<typeof dataJoin>;
+export type DataConcatParams = z.infer<typeof dataConcat>;
 export type DataFilterParams = z.infer<typeof dataFilter>;
 export type DataAggregateParams = z.infer<typeof dataAggregate>;
 export type DataCompareParams = z.infer<typeof dataCompare>;

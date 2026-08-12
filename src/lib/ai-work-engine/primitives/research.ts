@@ -7,10 +7,11 @@ import {
   meteredCall,
   worstCaseMicros,
 } from "@/lib/ai-work-engine/metered-call";
-import type {
-  PrimitiveContext,
-  PrimitiveResult,
-  WorkflowRow,
+import {
+  withRows,
+  type PrimitiveContext,
+  type PrimitiveResult,
+  type WorkflowRow,
 } from "@/lib/ai-work-engine/primitives/types";
 
 /**
@@ -277,7 +278,7 @@ ${briefExcerpt}`;
         ];
 
   return {
-    payload: { ...ctx.input, rows, researchNarrative: narrative },
+    payload: { ...withRows(ctx.input, rows), researchNarrative: narrative },
     summary: {
       // Read back from the invocation record the adapter wrote, so the
       // summary and the billed row can never disagree.

@@ -146,25 +146,16 @@ const expensivePlan = () => ({
 /**
  * W8's own chain: three files, three schemas, one list out.
  *
- * Written with the vocabulary AS IT EXISTS, deliberately, and separated from
- * the generic file plan because it is the mandate that tests whether the
- * vocabulary can do the job at all. Three ingests, two schema maps onto the
- * shared column names, then `data.join` twice — the only capability in the
- * frozen list that takes two datasets and returns one.
+ * Every dataset is NAMED, and none of them is `main`. That is not style: the
+ * working-set alias resolves to whatever the previous step produced, so a plan
+ * that ingests a second file and later says `main` is asking a question with
+ * two answers — which now refuses rather than picking one.
  *
- * The ground truth is 105 rows. A join is not a union, so this plan cannot
- * reach it; nothing here is bent to make it look like it can. What the run
- * produces is the measurement, and the gap between it and 105 is the finding.
+ * Three ingests, two schema maps onto the shared column names, then ONE
+ * `data.concat` that stacks all three. Ground truth: 40 + 35 + 30 = 105.
  */
 const consolidationPlan = (refs: string[]) => {
   const steps: Record<string, unknown>[] = [];
-  /**
-   * `src1`, not `main`. The default dataset name always resolves to the
-   * WORKING SET (files.ts datasetsOf), so a first file ingested as `main` is
-   * silently replaced by the second ingest and never reachable again. Using
-   * the default here would measure that trap instead of the question this
-   * mandate asks, which is whether three lists can be combined at all.
-   */
   const datasets = ["src1", "src2", "src3"];
   refs.slice(0, 3).forEach((ref, i) => {
     steps.push(
@@ -206,20 +197,14 @@ const consolidationPlan = (refs: string[]) => {
       [3]
     ),
     machine(
-      "Combine the first two lists",
-      "data.join",
-      { left: "src1", right: "src2", leftKey: "company", rightKey: "company", type: "left", onConflict: "prefer_left", into: "src1" },
-      [1, n + 1]
+      "Stack the three lists into one",
+      "data.concat",
+      { datasets: ["src1", "src2", "src3"], columns: "union", into: "combined" },
+      [1, n + 1, n + 2]
     ),
-    machine(
-      "Combine the third list in",
-      "data.join",
-      { left: "src1", right: "src3", leftKey: "company", rightKey: "company", type: "left", onConflict: "prefer_left", into: "src1" },
-      [n + 3]
-    ),
-    machine("Split what a person must check", "split.exceptions", null, [n + 4]),
-    machine("Build the deliverable", "build.csv", { dataset: "src1", columns: [] }, [n + 5]),
-    human("Review and finish the file", [n + 6], 20, 15, 45)
+    machine("Split what a person must check", "split.exceptions", null, [n + 3]),
+    machine("Build the deliverable", "build.csv", { dataset: "combined", columns: [] }, [n + 4]),
+    human("Review and finish the file", [n + 5], 20, 15, 45)
   );
   return {
     deliverable_description: "One combined supplier list with our column names.",

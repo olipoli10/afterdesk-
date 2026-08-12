@@ -109,8 +109,19 @@ const CAPABILITY_PROSE = {
     notes: [],
   },
   "data.join": {
-    summary: "Pure code. Join two ingested sets on a declared key.",
-    notes: [],
+    summary:
+      "Pure code. Join two sets SIDE BY SIDE on a declared key: each left row gains the matching right row's columns. The output has the LEFT set's row count, never the sum.",
+    notes: [
+      'To put files one under another instead — "combine these three exports into one list" — the capability is data.concat. Choosing join there returns only the first file and looks like it worked.',
+    ],
+  },
+  "data.concat": {
+    summary:
+      "Pure code. Stack two or more sets END TO END. The output row count is the SUM of the inputs. No key, nothing matched, nothing merged, nothing deduplicated.",
+    notes: [
+      "This is the capability for combining several files of the same kind into one list. Map them onto shared column names with data.schema_map first when their headers differ.",
+      "It never removes duplicates: two identical rows from two files stay two rows. Plan data.dedupe after it when the client asked for that, with the key they named.",
+    ],
   },
   "data.filter": {
     summary: "Pure code. Keep or drop rows by declared predicates.",

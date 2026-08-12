@@ -254,6 +254,91 @@ describe("every synthetic plan is a plan the real engine would accept", () => {
   );
 });
 
+describe("W8's own plan, executed step by step, reaches its ground truth", () => {
+  /**
+   * THE REPLAY THE ORDER ASKED FOR, WITHOUT A DATABASE.
+   *
+   * The measurement above drives a chain written by hand, which proves the
+   * capabilities and proves nothing about the PLAN the L3 harness will feed
+   * the runner. So this one reads W8's actual synthetic plan, resolves each
+   * step through the REGISTRY the runner uses, and threads the payload the way
+   * processWorkflowRuns does. If the plan and the capabilities ever disagree,
+   * this is red before any Postgres is involved.
+   */
+  it("105 rows out of 40 + 35 + 30, at zero cost", async () => {
+    const { REGISTRY } = await import("@/lib/ai-work-engine/registry");
+    const { consolidationFixtures } = await import("../.scratch/l3-fixtures");
+    const { planOutputSchema } = await import("@/lib/ai-work-engine/schemas");
+
+    const files = consolidationFixtures();
+    const frozen = files.map((f, i) => ({
+      fileId: `file_${i + 1}`,
+      fileName: f.fileName,
+      sizeBytes: f.bytes.byteLength,
+      sha256: createHash("sha256").update(f.bytes).digest("hex"),
+      read: async () => f.bytes,
+    }));
+
+    const profile = SYNTHETIC_PROFILES.find((p) => p.id === "W8");
+    const parsed = planOutputSchema.safeParse(profile?.plan(["file_1", "file_2", "file_3"]));
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+
+    const brief: PrimitiveContext["brief"] = {
+      title: "Consolidate three regional supplier lists",
+      description: "Three files, different column names, one list out.",
+      quantity: "105",
+      objective: "consolidate",
+      geography: [],
+      requiredFields: ["company", "website", "email", "city"],
+      quantityInterpreted: 105,
+    };
+
+    let payload: WorkflowPayload = emptyPayload(105, ["company", "website", "email", "city"]);
+    const artifacts: ArtifactSpec[] = [];
+    const ran: string[] = [];
+
+    for (const step of parsed.data.steps) {
+      if (!step.primitive_id) continue;
+      const primitive = REGISTRY[step.primitive_id as keyof typeof REGISTRY];
+      expect(primitive, `${step.primitive_id} is not in the registry`).toBeDefined();
+      const h = makeContext(brief, payload, 0n);
+      h.ctx.params = await mustParams(step.primitive_id, step.params ?? {});
+      h.ctx.inputFiles = frozen;
+      h.ctx.writeArtifact = async (spec) => {
+        artifacts.push(spec);
+        return { fileId: `artifact_${artifacts.length}` };
+      };
+      const out = await primitive.run(h.ctx);
+      payload = out.payload;
+      ran.push(step.primitive_id);
+    }
+
+    expect(ran).toEqual([
+      "ingest.csv",
+      "ingest.csv",
+      "ingest.csv",
+      "data.schema_map",
+      "data.schema_map",
+      "data.concat",
+      "split.exceptions",
+      "build.csv",
+    ]);
+
+    const candidate = artifacts.find((a) => a.name === "candidate");
+    expect(candidate).toBeDefined();
+    const csv = (candidate as ArtifactSpec).body.toString("utf8");
+    const rows = csv.split("\n").filter((l) => l.trim().length > 0).length - 1;
+    expect(rows).toBe(105);
+    expect(csv.split("\n")[0].split(",")).toEqual(["company", "website", "email", "city"]);
+
+    // Not one row invented and not one dropped: the ground truth is the sum of
+    // the three files' own declared counts.
+    const declared = files.reduce((n, f) => n + Number(f.truth.dataRows), 0);
+    expect(rows).toBe(declared);
+  });
+});
+
 describe("nothing in this path can spend", () => {
   it("the provider layer reports synthetic mode and a budget it never touched", () => {
     const ps = providerStats();
@@ -279,23 +364,21 @@ describe("W8 — what consolidating three files can actually produce today", () 
    * the engine produces, so the gap is a measurement in the repository rather
    * than a surprise in a report.
    */
-  it("loses the first file entirely when it is ingested under the default name", async () => {
+  it("REFUSES rather than silently handing over the second file", async () => {
     /**
-     * A SECOND DEFECT, FOUND WHILE MEASURING THE FIRST, AND WORSE THAN IT.
+     * THE HOSTILE REPRODUCTION OF THE P0, KEPT AND INVERTED.
      *
-     * `datasetsOf` resolves `main` as `{...input.datasets, main: input.rows}`
-     * — the working set ALWAYS wins for that name. That was a deliberate fix:
-     * a stored `main` used to shadow the live rows and hand the client back
-     * their own original file.
+     * This test used to assert the defect: ingest file one into `main`, file
+     * two into `src2`, ask for `main`, receive file TWO. Thirty-five rows
+     * where forty were ingested, no step failed, and a deliverable built from
+     * the wrong source that nobody could tell apart from a correct one.
      *
-     * But it makes `main` unusable as a NAME. Ingest file one into `main`,
-     * then file two into `src2`, and `main` now resolves to file two's rows,
-     * because those are the working set. The first file is gone, no step
-     * failed, and the deliverable is silently a different file than the plan
-     * describes — the one failure mode this module says it cannot survive.
-     *
-     * The planner has no reason to avoid `main`: it is the default in the
-     * params schema.
+     * It now asserts the fix, in the shape that matters: the engine does not
+     * return the other file, and it does not return the right one either —
+     * there is no way to know which was meant, so it REFUSES and says why.
+     * Both datasets are still intact and still reachable BY NAME, which is
+     * the second half of the assertion: the fix is a refusal to guess, not a
+     * loss of data.
      */
     const { consolidationFixtures } = await import("../.scratch/l3-fixtures");
     const { runIngestCsv, runDataDedupe } = await import("@/lib/ai-work-engine/primitives/files");
@@ -328,33 +411,37 @@ describe("W8 — what consolidating three files can actually produce today", () 
       h.ctx.inputFiles = frozen;
       payload = (await runIngestCsv(h.ctx)).payload;
     }
-    // 40 rows went into `main`. 35 then went into `src2`.
+    // 40 rows went into `main`. 35 then went into `src2`. Both are intact.
     expect(payload.datasets?.main?.length).toBe(40);
     expect(payload.datasets?.src2?.length).toBe(35);
+    expect(payload.workingDataset).toBe("src2");
 
-    // And yet a step that asks for `main` is handed the 35.
-    const dedupe = makeContext(brief, payload, 0n);
-    dedupe.ctx.params = await mustParams("data.dedupe", {
-      dataset: "main",
-      keyFields: ["company"],
-      strategy: "exact",
-      keep: "first",
-    });
-    const out = await runDataDedupe(dedupe.ctx);
-    expect(
-      out.summary.rowsIn ?? out.summary.rowsOut,
-      "a step asking for `main` should see the 40 rows that were ingested into it"
-    ).toBe(35);
+    const ask = async (dataset: string) => {
+      const h = makeContext(brief, payload, 0n);
+      h.ctx.params = await mustParams("data.dedupe", {
+        dataset,
+        keyFields: ["company"],
+        strategy: "exact",
+        keep: "first",
+      });
+      return runDataDedupe(h.ctx);
+    };
+
+    // `main` has two candidate meanings here, so it has none.
+    await expect(ask("main")).rejects.toThrow(/ambiguous/);
+
+    // And naming either one gets exactly that one. No data was lost; only the
+    // guess was removed.
+    expect((await ask("src2")).summary.rowsOut).toBe(35);
   });
 
-  it("produces the left list's row count, not the sum", async () => {
+  it("stacks all three into 105 rows, and a join would still give 40", async () => {
     const { consolidationFixtures } = await import("../.scratch/l3-fixtures");
     // build.csv resolves to runBuildCsvV2 in the registry — the params-aware
     // one that honours `dataset`. Using the v1 pure function here would be
     // measuring a code path the runner does not take.
-    const { runIngestCsv, runDataSchemaMap, runDataJoin, runBuildCsvV2 } = await import(
-      "@/lib/ai-work-engine/primitives/files"
-    );
+    const { runIngestCsv, runDataSchemaMap, runDataJoin, runDataConcat, runBuildCsvV2 } =
+      await import("@/lib/ai-work-engine/primitives/files");
 
     const files = consolidationFixtures();
     const declaredTotal = files.reduce((n, f) => n + Number(f.truth.dataRows), 0);
@@ -444,45 +531,63 @@ describe("W8 — what consolidating three files can actually produce today", () 
         runDataSchemaMap
       )
     ).payload;
-    const joinRows: number[] = [];
-    for (const right of ["src2", "src3"]) {
-      const out = await step(
-        "data.join",
-        {
-          left: "src1",
-          right,
-          leftKey: "company",
-          rightKey: "company",
-          type: "left",
-          onConflict: "prefer_left",
-          into: "src1",
-        },
-        payload,
-        runDataJoin
-      );
-      payload = out.payload;
-      joinRows.push(Number(out.summary.rowsOut));
-    }
-    // A left join returns the LEFT side's rows, every time. Neither call
-    // brings the right list's extra suppliers into the result.
-    expect(joinRows).toEqual([40, 40]);
+    /**
+     * THE CAPABILITY THAT ANSWERS THE MANDATE'S ACTUAL QUESTION.
+     *
+     * One step, three datasets, stacked. The measurement that motivated it is
+     * kept below: the same three files through `data.join` still come out as
+     * 40, so the two capabilities remain distinguishable by their results and
+     * not only by their names.
+     */
+    const stacked = await step(
+      "data.concat",
+      { datasets: ["src1", "src2", "src3"], columns: "union", into: "combined" },
+      payload,
+      runDataConcat
+    );
+    expect(stacked.summary.rowsOut).toBe(105);
+    expect(stacked.summary.datasetsIn).toBe(3);
+    expect(stacked.summary.perDataset).toBe("src1:40,src2:35,src3:30");
+    // The three files were mapped onto the same four column names, so the
+    // union is those four and nothing was invented to fill a gap.
+    expect(stacked.summary.columnsOut).toBe(4);
 
-    const built = await step("build.csv", { dataset: "src1", columns: [] }, payload, runBuildCsvV2);
+    const built = await step(
+      "build.csv",
+      { dataset: "combined", columns: [] },
+      stacked.payload,
+      runBuildCsvV2
+    );
     const csv = built.artifacts[0].body.toString("utf8");
     const rows = csv.split("\n").filter((l) => l.trim().length > 0).length - 1;
+    expect(rows).toBe(declaredTotal);
+    expect(rows).toBe(105);
+    expect(csv.split("\n")[0].split(",")).toEqual(["company", "website", "email", "city"]);
 
     /**
-     * THE FINDING, PINNED. Forty rows, not one hundred and five. Nothing in
-     * the frozen vocabulary appends one dataset to another: `data.join`
-     * matches keys and keeps the left side, and `ingest` into an existing
-     * dataset name REPLACES it. A mandate that says "combine these lists" is
-     * therefore not automatable today, whatever the planner writes.
-     *
-     * This assertion is the alarm, not the goal. If a future capability adds
-     * a union and this becomes 105, this test fails and someone reads the
-     * comment, which is exactly when the ground truth should be revisited.
+     * AND THE ALARM STAYS. A left join on the same three sets still returns
+     * the left side's 40 rows — unchanged by this commit, and pinned here so
+     * that "concat exists now" can never be mistaken for "join was fixed".
      */
-    expect(rows).toBe(40);
-    expect(rows).toBeLessThan(declaredTotal);
+    let joined = payload;
+    for (const right of ["src2", "src3"]) {
+      joined = (
+        await step(
+          "data.join",
+          {
+            left: "src1",
+            right,
+            leftKey: "company",
+            rightKey: "company",
+            type: "left",
+            onConflict: "prefer_left",
+            into: "src1",
+          },
+          joined,
+          runDataJoin
+        )
+      ).payload;
+    }
+    expect(joined.datasets?.src1?.length).toBe(40);
   });
 });

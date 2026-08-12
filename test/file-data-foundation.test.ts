@@ -1128,27 +1128,27 @@ describe("defects found by this suite, now closed", () => {
   );
 
   it(
-    "FIXED: a transform writing into a named dataset is no longer shadowed by a stale default",
+    "FIXED: a plan that maps into a named dataset and then builds the default REFUSES",
     async () => {
       /**
-       * src/lib/ai-work-engine/primitives/files.ts, datasetsOf:
-       *   return { main: input.rows, ...(input.datasets ?? {}) };
+       * THE DESIGN CALL THIS TEST LEFT OPEN, NOW MADE.
        *
-       * The spread lets a STORED `main` win over the live working set. Every
-       * transform writes both `rows` and `datasets[into]`, so `datasets.main`
-       * exists as soon as any step uses the default name, and it then stays
-       * frozen at that step's output while the working set moves on.
+       * The original defect was `{ main: input.rows, ...(input.datasets ?? {}) }`:
+       * a STORED `main` won over the live working set, so a plan that mapped
+       * into "mapped" and built the default handed the client back their own
+       * ORIGINAL file, under the original headers, with no error anywhere.
        *
-       * A plan that maps into "mapped" and then builds with the default
-       * dataset therefore delivers the client's ORIGINAL file back, under the
-       * original headers, with no error anywhere. Observed: the artifact's
-       * header is "Company Name" while the payload's working rows carry
-       * "company".
+       * The first fix flipped the spread — the working set wins for `main` —
+       * and that traded one silent wrong answer for another, measured later on
+       * a three-file mandate: after a second ingest into a different name,
+       * `main` quietly meant the second file while the first sat in
+       * `datasets.main`, whole and unreachable.
        *
-       * The assertion below is written as "the deliverable is the run's own
-       * working set" rather than as one particular header, because which of
-       * the two meanings of `main` should win is a design call for whoever
-       * fixes it, and both defensible fixes satisfy this.
+       * Both versions answer a question with two candidate answers. The rule
+       * now is that it has none: `main` is the working set's alias, and once
+       * the working set has a NAME that is not `main`, asking for `main`
+       * refuses. This test therefore asserts the refusal, and then asserts
+       * that the plan which says what it means gets exactly what it meant.
        */
       const csv = "Company Name\nClinique Nord\n";
       const file = frozenFile("f_defect2", "companies.csv", utf8(csv));
@@ -1160,9 +1160,15 @@ describe("defects found by this suite, now closed", () => {
         { input: ingested.payload }
       );
       const mapped = await runDataSchemaMap(map.ctx);
-      const build = makeContext("build.csv", {}, { input: mapped.payload });
-      await runBuildCsvV2(build.ctx);
 
+      const refusal = await refusalFrom(
+        runBuildCsvV2(makeContext("build.csv", {}, { input: mapped.payload }).ctx)
+      );
+      expect(refusal.message).toContain("ambiguous");
+      expect(refusal.message).toContain("mapped");
+
+      const build = makeContext("build.csv", { dataset: "mapped" }, { input: mapped.payload });
+      await runBuildCsvV2(build.ctx);
       const [header] = build.artifacts[0].body.toString("utf8").split("\n");
       expect(header.split(",")).toEqual(Object.keys(mapped.payload.rows[0].fields));
     }

@@ -1,6 +1,7 @@
 import type {
   DataAggregateParams,
   DataCompareParams,
+  DataConcatParams,
   DataDedupeParams,
   DataFilterParams,
   DataJoinParams,
@@ -952,6 +953,160 @@ function paddedWith(row: WorkflowRow, columns: string[]): WorkflowRow {
   const fields: Record<string, string | null> = { ...row.fields };
   for (const name of columns) if (!Object.hasOwn(fields, name)) fields[name] = null;
   return { ...row, fields };
+}
+
+/**
+ * CONCATENATION. Datasets stacked one under another, in the order given.
+ *
+ * ── IT IS NOT A JOIN, AND THE DISTINCTION IS THE POINT ──
+ *
+ *   data.join    matches rows across two sets BY A KEY and returns the left
+ *                side, widened. Three lists of 40, 35 and 30 come out as 40.
+ *   data.concat  puts the rows END TO END. The same three come out as 105.
+ *
+ * That difference is why this exists. A mandate saying "three branch exports,
+ * one file back" was measured producing 40 rows out of 105 with no error
+ * anywhere, because a join was the only capability in the vocabulary that took
+ * two datasets and returned one, and it silently answered a different question.
+ *
+ * ── NOTHING IS MERGED, DEDUPLICATED OR REORDERED ──
+ *
+ * Two identical rows from two files stay two rows. Deciding they are the same
+ * record is `data.dedupe`'s job, it needs a key the operator chose, and doing
+ * it here would delete client data under a step whose name says "combine".
+ *
+ * ── THE COLUMN SET IS DECIDED, NOT DISCOVERED ──
+ *
+ * `union` keeps every column any input carries; a row that lacks one gets null,
+ * which is the engine's "not found" and never an empty string. `intersection`
+ * keeps only the columns every input carries, which is the honest choice when
+ * the files genuinely disagree and a half-filled column would read as data
+ * loss. Either way the output is RECTANGULAR and its column order is fixed by
+ * the input order, so the same three files always produce the same bytes.
+ *
+ * ── LINEAGE IS CARRIED, NEVER REMINTED ──
+ *
+ * A concatenated row is the same logical record it was in its own file, so it
+ * keeps its `rowId`. Two inputs carrying the same id therefore means the plan
+ * stacked a dataset with itself, or two views of one file: the ids would
+ * collide, the exception-to-row join would silently attach one row's findings
+ * to another, and the delivery-duplication protections would be reading a
+ * corrupted key. That refuses.
+ */
+export function concat(
+  datasets: Record<string, WorkflowRow[]>,
+  params: DataConcatParams
+): TransformOutcome {
+  const inputs: { name: string; rows: WorkflowRow[] }[] = [];
+  for (const name of params.datasets) {
+    const rows = datasetNamed(datasets, name);
+    if (rows === null) {
+      return refuse(`data.concat refused: no dataset named "${name}" is present in this run.`);
+    }
+    const guard = guardRows(rows, "data.concat");
+    if (guard !== null) return refuse(guard);
+    inputs.push({ name, rows });
+  }
+
+  const total = inputs.reduce((n, i) => n + i.rows.length, 0);
+  if (total > MAX_TRANSFORM_ROWS) {
+    return refuse(
+      `data.concat refused: the combined ${total} rows exceed the ${MAX_TRANSFORM_ROWS} row ` +
+        `ceiling for a deterministic transform. A person splits this mandate.`
+    );
+  }
+
+  /**
+   * COLUMN ORDER, FIXED BY THE INPUTS RATHER THAN BY A SORT.
+   *
+   * First-seen order across the datasets in the order the step listed them is
+   * what a person expects from "put these files together": the first file's
+   * columns, then whatever the later ones add. Sorting alphabetically would be
+   * equally deterministic and would reorder the client's own file for no
+   * reason anyone could explain.
+   */
+  const perInput = inputs.map((i) => new Set(fieldNamesOf(i.rows)));
+  const ordered: string[] = [];
+  const seenColumn = new Set<string>();
+  for (const input of inputs) {
+    for (const row of input.rows) {
+      for (const name of Object.keys(row.fields)) {
+        if (seenColumn.has(name)) continue;
+        seenColumn.add(name);
+        ordered.push(name);
+      }
+    }
+  }
+  const columns =
+    params.columns === "intersection"
+      ? ordered.filter((name) => perInput.every((set) => set.has(name)))
+      : ordered;
+
+  if (columns.length === 0 && total > 0) {
+    return refuse(
+      `data.concat refused: with columns:"${params.columns}" the inputs share no column at all, ` +
+        `so the combined set would have rows and no fields. Map the files onto shared column ` +
+        `names first, or use columns:"union".`
+    );
+  }
+  if (columns.length > MAX_COLUMNS_PER_ROW) {
+    return refuse(
+      `data.concat refused: the combined column set is ${columns.length} wide, above the ` +
+        `${MAX_COLUMNS_PER_ROW} ceiling. These files do not describe the same kind of record.`
+    );
+  }
+
+  const out: WorkflowRow[] = [];
+  const seenIds = new Map<string, string>();
+  const droppedColumns = new Map<string, number>();
+
+  for (const input of inputs) {
+    for (const row of input.rows) {
+      if (row.rowId !== undefined) {
+        const owner = seenIds.get(row.rowId);
+        if (owner !== undefined) {
+          return refuse(
+            `data.concat refused: datasets "${owner}" and "${input.name}" contain the same ` +
+              `logical row, so stacking them would give two rows one identity. They are the ` +
+              `same table, or two views of it — concatenating those is not what the step means.`
+          );
+        }
+        seenIds.set(row.rowId, input.name);
+      }
+      const fields: Record<string, string | null> = {};
+      for (const name of columns) fields[name] = fieldValue(row, name);
+      // Counted, not flagged: a column the intersection dropped is a decision
+      // the step made, and the operator sees it in the summary.
+      if (params.columns === "intersection") {
+        for (const name of Object.keys(row.fields)) {
+          if (!seenColumn.has(name) || columns.includes(name)) continue;
+          droppedColumns.set(name, (droppedColumns.get(name) ?? 0) + 1);
+        }
+      }
+      const sources: Record<string, string[]> = {};
+      for (const name of columns) {
+        const urls = sourcesFor(row, name);
+        if (urls.length > 0) sources[name] = urls;
+      }
+      out.push({ ...row, fields, sources });
+    }
+  }
+
+  return {
+    ok: true,
+    rows: out,
+    // Concatenation decides nothing about any row, so it raises nothing.
+    exceptions: [],
+    summary: {
+      datasetsIn: inputs.length,
+      rowsIn: total,
+      rowsOut: out.length,
+      columnsOut: columns.length,
+      columnStrategy: params.columns,
+      perDataset: inputs.map((i) => `${i.name}:${i.rows.length}`).join(","),
+      columnsDroppedByIntersection: droppedColumns.size,
+    },
+  };
 }
 
 /**

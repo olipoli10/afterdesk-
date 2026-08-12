@@ -7,10 +7,11 @@ import {
   meteredCall,
   worstCaseMicros,
 } from "@/lib/ai-work-engine/metered-call";
-import type {
-  PrimitiveContext,
-  PrimitiveResult,
-  WorkflowRow,
+import {
+  withRows,
+  type PrimitiveContext,
+  type PrimitiveResult,
+  type WorkflowRow,
 } from "@/lib/ai-work-engine/primitives/types";
 
 /**
@@ -123,7 +124,7 @@ export async function runExtractStructuredRows(
     // Nothing to structure is not a failure: the run simply produced no
     // candidates, and every unit becomes a person's work.
     return {
-      payload: { ...ctx.input, rows: [], requestedFields },
+      payload: { ...withRows(ctx.input, []), requestedFields },
       summary: { rowsOut: 0, reason: "no evidence to extract from" },
     };
   }
@@ -225,7 +226,7 @@ ${narrative.slice(0, 60_000) || "(none reported)"}`;
   );
 
   return {
-    payload: { ...ctx.input, rows, requestedFields },
+    payload: { ...withRows(ctx.input, rows), requestedFields },
     summary: {
       rowsOut: rows.length,
       evidenceItems: evidence.length,
