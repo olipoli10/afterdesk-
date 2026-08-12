@@ -130,7 +130,16 @@ export function stageOf(params: Record<string, unknown>): string {
   const sys = systemTextOf(params);
   if (sys.includes("task classifier for AfterDesk")) return "classification";
   if (sys.includes("execution planner for AfterDesk")) return "planning";
-  if (sys.includes("critique") || sys.includes("adversarial")) return "critique";
+  /**
+   * BUG FOUND DURING PART C (2026-08-12): this used to match on "critique" or
+   * "adversarial", and NEITHER word appears in critique.ts's actual SYSTEM
+   * text — only in its surrounding code comments. The match was therefore
+   * dead: any real critique call fell through to "other", and a synthetic run
+   * that ever reached Stage 4 would have thrown "no responder for stage
+   * other" rather than exercising the critique layer at all. Matched on the
+   * prompt's own opening sentence instead, which is stable and unique to it.
+   */
+  if (sys.includes("independent plan critic for AfterDesk")) return "critique";
   // Recognised by its own system text, because it declares no tool at all —
   // deliberately, so the model reading untrusted web prose has no verb.
   if (sys.includes("convert gathered research into structured rows")) return "extract";

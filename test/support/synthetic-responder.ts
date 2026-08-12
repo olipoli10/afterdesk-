@@ -73,6 +73,15 @@ export function syntheticResponderFor(
     return asProviderResponse(profile.plan(refs), model);
   }
 
+  if (stage === "critique") {
+    // runCritique() embeds the same brief description used to classify and
+    // plan, so the exact same match phrase routes here — the independent
+    // critique layer answers about THIS mandate's own plan, not a generic one.
+    const profile = SYNTHETIC_PROFILES.find((p) => text.includes(p.match));
+    if (!profile) return null;
+    return asProviderResponse(profile.critique, model);
+  }
+
   if (stage === "research") {
     const world = worldByMatch(text);
     return world ? researchResponse(world, model) : null;

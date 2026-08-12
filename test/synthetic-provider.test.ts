@@ -254,6 +254,66 @@ describe("every synthetic plan is a plan the real engine would accept", () => {
   );
 });
 
+describe("the independent critique layer is actually reachable, in real shapes", () => {
+  /**
+   * PART C REGRESSION PIN. `stageOf()` used to match critique requests on
+   * "critique" or "adversarial" — neither word appears in critique.ts's real
+   * SYSTEM prompt, only in its surrounding comments. That made the match dead:
+   * a real critique call fell through to "other", and the synthetic mock
+   * would have thrown "no responder for stage other" the first time L3 ever
+   * reached Stage 4. This drives runCritique() FOR REAL (through the same
+   * mocked SDK the rest of this file uses) so a regression here is a failing
+   * test, not a silent gap discovered on a real corpus run.
+   */
+  it.each(SYNTHETIC_PROFILES.map((p) => [p.id, p] as const))(
+    "%s — runCritique() resolves through the mocked SDK to a schema-valid, scenario-real verdict",
+    async (_id, profile) => {
+      const { runCritique } = await import("@/lib/ai-work-engine/critique");
+      const { classificationOutputSchema, planOutputSchema } = await import(
+        "@/lib/ai-work-engine/schemas"
+      );
+
+      const classification = classificationOutputSchema.parse(profile.classification);
+      const plan = planOutputSchema.parse(profile.plan(["file_1", "file_2", "file_3"]));
+
+      const result = await runCritique({
+        title: `L3 ${profile.id}`,
+        // Same routing convention the classification/planning tests above use:
+        // the brief carries the profile's own distinctive phrase.
+        description: `A client brief mentioning ${profile.match} and nothing else of note.`,
+        quantity: null,
+        classification,
+        plan,
+      });
+
+      expect(result.failure, JSON.stringify(result.failure)).toBeNull();
+      expect(result.result).not.toBeNull();
+      expect(result.result?.output.severity).toBe(
+        (profile.critique as { severity: string }).severity
+      );
+    }
+  );
+
+  it("R1 and R2 — the two refusal mandates — come back BLOCKING with a named security reason", () => {
+    // The responder only decides the provider's ANSWER; it is these two
+    // scenarios' own critique content (authored in synthetic-plans.ts) that
+    // must be real enough to matter, not a rubber-stamped "none" for every id.
+    for (const id of ["R1", "R2"]) {
+      const profile = SYNTHETIC_PROFILES.find((p) => p.id === id);
+      const c = profile?.critique as { severity: string; security_risk_flags: string[] };
+      expect(c.severity, id).toBe("blocking");
+      expect(c.security_risk_flags.length, id).toBeGreaterThan(0);
+    }
+  });
+
+  it("at least one ordinary executable mandate gets a real, non-rubber-stamped critique", () => {
+    const w1 = SYNTHETIC_PROFILES.find((p) => p.id === "W1");
+    const c = w1?.critique as { severity: string; time_risk_flags: string[] };
+    expect(c.severity).not.toBe("blocking");
+    expect(c.time_risk_flags.length).toBeGreaterThan(0);
+  });
+});
+
 describe("W8's own plan, executed step by step, reaches its ground truth", () => {
   /**
    * THE REPLAY THE ORDER ASKED FOR, WITHOUT A DATABASE.

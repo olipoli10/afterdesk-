@@ -21,6 +21,16 @@ export type SyntheticProfile = {
   classification: Record<string, unknown>;
   /** Built lazily so file plans can reference the run's attachment refs. */
   plan: (attachmentRefs: string[]) => Record<string, unknown>;
+  /**
+   * Stage 4's independent critique of THIS profile's plan. Every profile
+   * carries one — `shouldCritique()` triggers on cost as well as on
+   * classification flags, and the exact set of mandates that cross the cost
+   * threshold at runtime is not knowable ahead of a real run. A responder
+   * that only covered the three named cases would leave every OTHER
+   * mandate's critique call one runtime cost figure away from an unhandled
+   * "no responder for stage critique" crash.
+   */
+  critique: Record<string, unknown>;
 };
 
 /**
@@ -276,12 +286,45 @@ const filePlan = (refs: string[], transform: "normalize" | "dedupe" | "consolida
   };
 };
 
+/**
+ * Stage 4's independent critique output, in its own wire shape
+ * (critiqueOutputSchema). Base case is a clean pass — most of these plans
+ * genuinely have no missing coverage or unsafe tool use — and each profile
+ * below overrides only the fields that make ITS scenario's critique real
+ * rather than a rubber stamp.
+ */
+function critique(over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    missing_steps: [],
+    wrong_tool_flags: [],
+    time_risk_flags: [],
+    security_risk_flags: [],
+    overall_assessment:
+      "Plan covers the brief's stated deliverable with a defensible sequence of steps; no missing coverage or unsafe tool use found.",
+    severity: "none",
+    ...over,
+  };
+}
+
 export const SYNTHETIC_PROFILES: SyntheticProfile[] = [
   {
     id: "W1",
     match: "still operating",
     classification: classification({ quantity_interpreted: 45, required_fields: worldFields("W1") }),
     plan: () => researchPlan(),
+    // The "at least one normal case" the harness must exercise: a real flag,
+    // non-blocking, on an otherwise sound plan — not a rubber-stamped pass.
+    critique: critique({
+      time_risk_flags: [
+        "Step 7 (manual verification) budgets 180 likely minutes for up to 45 companies — under 4 " +
+          "minutes/company for a from-scratch trading-status and contact check; plausible only if most " +
+          "rows are quick confirms rather than genuine investigation.",
+      ],
+      overall_assessment:
+        "Sound research chain with a sourced deliverable and an honest unconfirmed-items path. One " +
+        "time estimate on the human verification step is optimistic for the stated volume; not blocking.",
+      severity: "minor",
+    }),
   },
   {
     id: "W2",
@@ -292,54 +335,88 @@ export const SYNTHETIC_PROFILES: SyntheticProfile[] = [
       required_fields: worldFields("W2"),
     }),
     plan: () => researchPlan(),
+    critique: critique(),
   },
   {
     id: "W3",
     match: "independent bookshops",
     classification: classification({ quantity_interpreted: 80, required_fields: worldFields("W3") }),
     plan: () => researchPlan(),
+    critique: critique(),
   },
   {
     id: "W4",
     match: "runs operations",
     classification: classification({ quantity_interpreted: 30, required_fields: worldFields("W4") }),
     plan: () => researchPlan(),
+    critique: critique({
+      security_risk_flags: [
+        "Brief explicitly restricts this to business contacts only — plan has no step that would ever " +
+          "surface a personal email or phone, which is correct, but nothing enforces it structurally " +
+          "beyond the extraction prompt. Worth an operator spot-check on the delivered rows.",
+      ],
+      severity: "minor",
+    }),
   },
   {
     id: "W5",
     match: "project-management tools",
     classification: classification({ quantity_interpreted: 30, required_fields: worldFields("W5") }),
     plan: () => researchPlan(),
+    critique: critique(),
   },
   {
     id: "W6",
     match: "five different formats",
     classification: classification({ source_shape: "existing_file", quantity_interpreted: 120 }),
     plan: (refs) => filePlan(refs, "normalize"),
+    critique: critique(),
   },
   {
     id: "W7",
     match: "duplicate signups",
     classification: classification({ source_shape: "existing_file", quantity_interpreted: 108 }),
     plan: (refs) => filePlan(refs, "dedupe"),
+    critique: critique({
+      missing_steps: [
+        "Brief distinguishes exact-email duplicates (merge) from same-company different-email pairs " +
+          "(list separately, do not merge) — confirm the dedupe step's keyFields is exactly " +
+          "contact_email, not a broader company-name match that would conflate the two cases.",
+      ],
+      severity: "minor",
+    }),
   },
   {
     id: "W8",
     match: "different column names",
     classification: classification({ source_shape: "existing_file", quantity_interpreted: 105 }),
     plan: (refs) => consolidationPlan(refs),
+    critique: critique(),
   },
   {
     id: "W9",
     match: "still active today",
     classification: classification({ source_shape: "existing_file", quantity_interpreted: 12 }),
     plan: (refs) => filePlan(refs, "normalize"),
+    critique: critique(),
   },
   {
     id: "W10",
     match: "verified independently across separate sources",
     classification: classification({ source_shape: "mixed", verification_expectation: "two_independent_sources", quantity_interpreted: 25 }),
     plan: () => expensivePlan(),
+    critique: critique({
+      time_risk_flags: [
+        "Step 9 (resolve conflicts across three sources) budgets 90 likely minutes for up to 25 " +
+          "companies × 3 fields each — roughly 7 minutes per company if every field disagrees across " +
+          "sources; plausible only when disagreement is the exception, not the rule.",
+      ],
+      overall_assessment:
+        "Thorough three-source verification chain matching the brief's explicit request for " +
+        "independent corroboration. Cost is high for the volume — expect the economic preflight to " +
+        "demote some automated steps if the budget is tight. No missing coverage.",
+      severity: "minor",
+    }),
   },
   {
     id: "R1",
@@ -352,6 +429,26 @@ export const SYNTHETIC_PROFILES: SyntheticProfile[] = [
       missing_information: ["Confirm the legal basis for processing employee records."],
     }),
     plan: (refs) => filePlan(refs, "dedupe"),
+    // R1: the sensitive/personal_sensitive refusal case. The critique runs on
+    // the RAW plan before compile.ts's mandate-level gate ever touches it, so
+    // its job is to name the reason no step here may ever run automated.
+    critique: critique({
+      security_risk_flags: [
+        "The attached file carries employee SIN numbers, dates of birth and salaries — " +
+          "personal_sensitive data by definition — into a plan whose steps are otherwise machine " +
+          "executor (dedupe, sort). No automated step may ever see this file; every step must run " +
+          "human-only regardless of how the plan is currently labelled.",
+      ],
+      missing_steps: [
+        "No explicit legal-basis / consent check for processing SIN numbers appears before any " +
+          "work begins.",
+      ],
+      overall_assessment:
+        "This plan cannot run as automation at any step: SIN, date of birth and salary data make it " +
+        "personal_sensitive, and no tool or model call may see this file. Must be entirely " +
+        "human-handled and admin-reviewed before acceptance, not priced as if any step were machine work.",
+      severity: "blocking",
+    }),
   },
   {
     id: "R2",
@@ -365,6 +462,29 @@ export const SYNTHETIC_PROFILES: SyntheticProfile[] = [
       quantity_interpreted: null,
     }),
     plan: () => researchPlan(),
+    // R2: the recurring/client-access refusal case. Flags the two separate
+    // reasons this cannot run as a standard automated plan: credentials
+    // AfterDesk does not hold, and an unbounded recurring commitment.
+    critique: critique({
+      security_risk_flags: [
+        "Brief asks the system to log into the client's HubSpot and send email from the client's own " +
+          "address — both require credentials AfterDesk does not hold, and sending as the client " +
+          "violates the platform's zero-contact / no-impersonation rule.",
+      ],
+      missing_steps: [
+        "No access-provisioning step exists for the client's HubSpot, and 'every week, ongoing' has " +
+          "no defined stop condition or review cadence.",
+      ],
+      wrong_tool_flags: [
+        "Plan reuses the standard research chain, but this mandate needs authenticated CRM access and " +
+          "a recurring schedule, neither of which any listed primitive provides.",
+      ],
+      overall_assessment:
+        "Recurring, credentialed access to a client system and sending email as the client are both " +
+        "out of scope for automated execution. Needs a manual quote and a custom recurring-service " +
+        "agreement, not a standard one-off plan.",
+      severity: "blocking",
+    }),
   },
 ];
 
