@@ -29,6 +29,32 @@ if (process.env.DATABASE_URL !== process.env.AFTERDESK_TEST_DATABASE_URL) {
   process.env.DIRECT_URL = db.url;
 }
 
+/**
+ * THE THREE APPEND-ONLY GUARD TRIGGERS, BY NAME — found to be the exact and
+ * complete set via `grep -rn "BEFORE TRUNCATE" prisma/migrations` (2026-08-12,
+ * while running this suite against Neon for the first time): LedgerEntry,
+ * TaskAcceptanceSnapshot, TaskOperationalBaseline. Each blocks TRUNCATE by
+ * design, same reasoning as before — session-disabled here is acceptable
+ * ONLY because the guard proved this database is disposable.
+ *
+ * `SET session_replication_role = replica` used to do this, session-wide, in
+ * one statement. It requires actual Postgres superuser, which the local
+ * `prisma dev` cluster grants its connecting role but Neon's `neondb_owner`
+ * does not — this suite had never actually been run against Neon until this
+ * session, and it failed here with `permission denied to set parameter
+ * "session_replication_role"` the first time it was. `ALTER TABLE ... DISABLE
+ * TRIGGER <name>` needs only TABLE OWNERSHIP for an ordinary user-defined
+ * trigger like these three, which the connecting role has on both local
+ * Postgres and Neon — so this works everywhere the old approach only worked
+ * locally, and it disables exactly three named triggers rather than every
+ * trigger in the database for the transaction's duration.
+ */
+const TRUNCATE_GUARDED_TABLES = [
+  { table: "LedgerEntry", trigger: "LedgerEntry_no_truncate" },
+  { table: "TaskAcceptanceSnapshot", trigger: "TaskAcceptanceSnapshot_no_truncate" },
+  { table: "TaskOperationalBaseline", trigger: "TaskOperationalBaseline_no_truncate" },
+];
+
 beforeAll(async () => {
   const { prisma } = await import("@/lib/db");
   const tables = await prisma.$queryRawUnsafe<{ tablename: string }[]>(
@@ -37,8 +63,12 @@ beforeAll(async () => {
   if (tables.length === 0) return;
   const list = tables.map((t) => `"${t.tablename}"`).join(", ");
   await prisma.$transaction([
-    prisma.$executeRawUnsafe(`SET session_replication_role = replica`),
+    ...TRUNCATE_GUARDED_TABLES.map(({ table, trigger }) =>
+      prisma.$executeRawUnsafe(`ALTER TABLE "${table}" DISABLE TRIGGER "${trigger}"`)
+    ),
     prisma.$executeRawUnsafe(`TRUNCATE TABLE ${list} RESTART IDENTITY CASCADE`),
-    prisma.$executeRawUnsafe(`SET session_replication_role = DEFAULT`),
+    ...TRUNCATE_GUARDED_TABLES.map(({ table, trigger }) =>
+      prisma.$executeRawUnsafe(`ALTER TABLE "${table}" ENABLE TRIGGER "${trigger}"`)
+    ),
   ]);
 });

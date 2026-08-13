@@ -154,6 +154,37 @@ const expensivePlan = () => ({
 });
 
 /**
+ * FOUR sources, no file, nothing sensitive — the isolated budget-only
+ * demotion case. ac5's funded ceiling per primitive is $6.00×2 (research),
+ * $4.00×1 (fetch), $0.60×3 (extract): a THREE-source chain funds
+ * 3×6.00 + 3×4.00 + 1.80 = $31.80, which is UNDER ac5's $32 cap by design
+ * (the policy's own docstring: "$32 is chosen to cover the three-source
+ * chain and stop just above it") — which is exactly why expensivePlan()
+ * above no longer demonstrates budget demotion on its own. FOUR sources funds
+ * 4×6.00 + 4×4.00 + 1.80 = $41.80, unambiguously over the cap regardless of
+ * calibration drift, with no file attached and no sensitive/access flag to
+ * confound which gate did the work.
+ */
+const quadSourcePlan = () => ({
+  deliverable_description: "A four-source cross-checked CSV.",
+  assumptions: ["Four independent sources per field."],
+  exclusions: ["No paid data providers."],
+  steps: [
+    machine("Search source A", "research.web_search", null, [], "ai", 90),
+    machine("Read source A pages", "web.fetch", { maxFetches: 3, maxContentTokens: 10_000 }, [1], "ai", 25),
+    machine("Search source B", "research.web_search", null, [], "ai", 90),
+    machine("Read source B pages", "web.fetch", { maxFetches: 3, maxContentTokens: 10_000 }, [3], "ai", 25),
+    machine("Search source C", "research.web_search", null, [], "ai", 90),
+    machine("Read source C pages", "web.fetch", { maxFetches: 3, maxContentTokens: 10_000 }, [5], "ai", 25),
+    machine("Search source D", "research.web_search", null, [], "ai", 90),
+    machine("Read source D pages", "web.fetch", { maxFetches: 3, maxContentTokens: 10_000 }, [7], "ai", 25),
+    machine("Structure and cross-check", "extract.structured_rows", null, [2, 4, 6, 8], "ai", 120),
+    machine("Build the deliverable", "build.csv", { dataset: "main", columns: [] }, [9]),
+    human("Resolve the conflicts", [10], 30, 120, 180),
+  ],
+});
+
+/**
  * W8's own chain: three files, three schemas, one list out.
  *
  * Every dataset is NAMED, and none of them is `main`. That is not style: the
@@ -417,6 +448,21 @@ export const SYNTHETIC_PROFILES: SyntheticProfile[] = [
         "demote some automated steps if the budget is tight. No missing coverage.",
       severity: "minor",
     }),
+  },
+  {
+    // NOT part of the L3 corpus (l3-corpus.ts is untouched, and its
+    // EXPECTED_MANDATE_IDS pin in .scratch/l3.e2e.ts stays at exactly 12).
+    // This profile exists for the isolated budget-demotion integration test
+    // (test/integration/budget-demotion-integration.itest.ts): public data,
+    // no file, no sensitivity, no required access — the ONE variable is cost.
+    id: "BUDGET-DEMOTION-PURE",
+    match: "quadruple-sourced comparison",
+    classification: classification({
+      quantity_interpreted: 40,
+      required_fields: ["company", "metric"],
+    }),
+    plan: () => quadSourcePlan(),
+    critique: critique(),
   },
   {
     id: "R1",

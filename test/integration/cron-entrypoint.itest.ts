@@ -281,12 +281,22 @@ describe("processWorkflowRuns() — the real cron entrypoint, called with no arg
     expect(step.status).toBe("done");
     // One attempt was already spent by the "crashed" worker; the reclaim
     // took a second one. Two, not one and not three: neither skipped nor
-    // double-claimed.
+    // double-claimed — this is the actual proof of reclaim (not stuck under
+    // the stale lease forever, and not claimed twice by two racing runners).
     expect(step.attempts).toBe(2);
-    // A fresh fencing token — the stale worker's lock is gone, replaced by
-    // the claim this run actually made.
-    expect(step.lockedBy).not.toBeNull();
-    expect(step.lockedBy).not.toBe(STALE_WORKER);
+    /**
+     * FOUND BY ACTUALLY RUNNING THIS AGAINST REAL POSTGRES: the original
+     * assertion here expected a fresh, non-null lockedBy on the completed
+     * step — wrong. workflow-runs.ts's success path (finishClaimedStep with
+     * status:"done", ~line 1205) explicitly clears lockedBy to null once a
+     * step is done: the fencing token only matters while work is in flight,
+     * and leaving a stale-looking lock value on a finished row would be
+     * noise, not evidence. The correct proof that the STALE lock specifically
+     * is gone is exactly the attempts count above (a genuine reclaim
+     * happened, not a no-op skip); the correct proof here is that no lock
+     * leaks past completion at all.
+     */
+    expect(step.lockedBy).toBeNull();
     expect(step.lastError).toBeNull();
   });
 
