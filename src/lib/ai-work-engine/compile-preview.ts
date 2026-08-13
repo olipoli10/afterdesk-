@@ -151,11 +151,28 @@ export function buildCompilePreview(
             s.handoffReason === HANDOFF_REASONS.required_access
         )
       : false;
+  /**
+   * REAL DEFECT, FOUND 2026-08-12 running the isolated budget-demotion
+   * integration test: a step this SAME preflight demoted for budget was
+   * persisted with `primitiveId: null` (index.ts's write for a demoted step
+   * — automation-preflight.ts:301, `primitiveId: wasDemoted ? null : ...`).
+   * Re-compiling those STORED rows here, topology.ts sees only
+   * `primitiveId === null` on a non-human step and returns `no_primitive`
+   * (topology.ts:64) — the exact reason a genuinely-unresolvable capability
+   * gets — with no way to tell "budget took this away" from "no primitive
+   * was ever chosen". The result: every budget-demoted mandate showed
+   * MISSING CAPABILITY beside DEMOTED FOR BUDGET on this screen, telling an
+   * operator the registry was missing a primitive when the true reason was
+   * economics. `demotedByOrder`, computed just above, is what disambiguates
+   * the two causes; a step already explained by DEMOTED FOR BUDGET must not
+   * also claim the capability was missing.
+   */
   const missingCapability = compiled.steps.some(
     (s) =>
-      s.handoffReason === HANDOFF_REASONS.no_primitive ||
-      s.handoffReason === HANDOFF_REASONS.unknown_primitive ||
-      s.handoffReason === HANDOFF_REASONS.primitive_version_changed
+      !(demotedByOrder.get(s.order) ?? false) &&
+      (s.handoffReason === HANDOFF_REASONS.no_primitive ||
+        s.handoffReason === HANDOFF_REASONS.unknown_primitive ||
+        s.handoffReason === HANDOFF_REASONS.primitive_version_changed)
   );
   const demoted = version.steps.some((s) => s.demotedForBudget);
   const usesFetch = automated.some((s) => s.primitiveId === "web.fetch");

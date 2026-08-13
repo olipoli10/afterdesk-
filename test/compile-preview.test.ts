@@ -201,6 +201,17 @@ describe("case 4 — a budget-demoted step is flagged at the quote", () => {
     expect(preview.steps[1].demotedForBudget).toBe(true);
     expect(preview.badges).toContain("DEMOTED FOR BUDGET");
   });
+
+  it("does NOT also claim the capability is missing — a demoted step's nulled primitiveId is not a registry gap", () => {
+    // Regression pin, found running the isolated budget-demotion integration
+    // test against Neon (2026-08-12): a demoted step is persisted with
+    // primitiveId:null, and re-compiling that stored row makes topology.ts
+    // return "no_primitive" — the identical reason a genuinely unresolvable
+    // capability gets. Without excluding demoted steps, this badge fired
+    // beside DEMOTED FOR BUDGET and told the operator the registry was
+    // missing a primitive when the real reason was economics.
+    expect(preview.badges).not.toContain("MISSING CAPABILITY");
+  });
 });
 
 describe("case 5 — a sensitive mandate is HUMAN ONLY regardless of the plan", () => {
