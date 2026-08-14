@@ -936,6 +936,112 @@ describe("provider clients form a closed set whose closure never reaches the loc
     }
   });
 
+  /**
+   * R5.2 — THE FINANCIAL PERIMETER, enforced on the SAME allowlist the
+   * security perimeter already uses.
+   *
+   * The list above answers "may this module talk to a provider at all". This
+   * one answers the question R5.2 exists to close: "and is that call
+   * accounted for before it leaves". Every entry must declare HOW it is
+   * metered, and the declaration is checked against the real source — so a
+   * future developer who adds a provider call has to either wire it into the
+   * account-spend boundary or consciously write a lie in this table.
+   *
+   *   type-only               constructs no client (import type only)
+   *   metered-call            dispatches through meteredCall, and its runner
+   *                           reserves account capacity around it
+   *   account-spend-at-caller the named caller reserves before dispatching
+   *
+   * `account-spend-at-caller` exists because R5 deliberately kept the
+   * reservation in the DB-coupled orchestrator rather than in the stage
+   * modules, so those stay pure and directly testable without a database.
+   */
+  const METERED_BY_METERED_CALL = "metered-call" as const;
+  const TYPE_ONLY = "type-only" as const;
+  const METERING: Record<string, typeof TYPE_ONLY | typeof METERED_BY_METERED_CALL | string> = {
+    [join("src", "lib", "ai-work-engine", "metered-call.ts")]: TYPE_ONLY,
+    [join("src", "lib", "ai-work-engine", "stage-usage.ts")]: TYPE_ONLY,
+    [join("src", "lib", "ai-work-engine", "primitives", "research.ts")]: METERED_BY_METERED_CALL,
+    [join("src", "lib", "ai-work-engine", "primitives", "extract.ts")]: METERED_BY_METERED_CALL,
+    [join("src", "lib", "ai-work-engine", "primitives", "fetch.ts")]: METERED_BY_METERED_CALL,
+    // Phase 1A stages + the embedding provider: reserved by the orchestrator.
+    [join("src", "lib", "ai-work-engine", "classify.ts")]: join("src", "lib", "ai-work-engine", "index.ts"),
+    [join("src", "lib", "ai-work-engine", "plan.ts")]: join("src", "lib", "ai-work-engine", "index.ts"),
+    [join("src", "lib", "ai-work-engine", "critique.ts")]: join("src", "lib", "ai-work-engine", "index.ts"),
+    [join("src", "lib", "embeddings.ts")]: join("src", "lib", "ai-work-engine", "index.ts"),
+    // R5.2's newly covered surfaces: reserved in their server actions.
+    [join("src", "lib", "ai.ts")]: join("src", "server", "actions", "intake.ts"),
+    [join("src", "lib", "assistant-ai.ts")]: join("src", "server", "actions", "va-assistant.ts"),
+    [join("src", "lib", "closed-job-analysis.ts")]: join("src", "server", "actions", "admin-closed-jobs.ts"),
+  };
+
+  it("R5.2 — every provider-client module declares how it is metered, and the declaration is true", () => {
+    // 1. The two lists cannot drift apart: a new provider module must make an
+    //    explicit metering decision, it cannot simply be added to one list.
+    expect(
+      PROVIDER_CLIENT_MODULES.filter((m) => !(m in METERING)),
+      "A provider-client module has no metering declaration. Decide how its " +
+        "spend is accounted BEFORE allowing the call — that is the whole point of R5.2."
+    ).toEqual([]);
+    expect(
+      Object.keys(METERING).filter((m) => !PROVIDER_CLIENT_MODULES.includes(m)),
+      "A metering declaration names a module that is no longer a provider client."
+    ).toEqual([]);
+
+    const read = (rel: string) => readFileSync(join(ROOT2, rel), "utf8").replace(/\r\n/g, "\n");
+
+    for (const [rel, mechanism] of Object.entries(METERING)) {
+      const source = read(rel);
+      const constructsClient = /new Anthropic\(/.test(source) || /fetch\("https:\/\/api\.voyageai\.com/.test(source);
+
+      if (mechanism === TYPE_ONLY) {
+        expect(constructsClient, `${rel} is declared type-only but builds a provider client`).toBe(false);
+        continue;
+      }
+
+      // 2. Anything not type-only really does dispatch, and must never let the
+      //    SDK retry behind the ledger's back (the R5.1 doctrine).
+      //
+      //    Comments are STRIPPED before the check. Without that, a doc comment
+      //    that merely mentions `maxRetries: 0` — which the one in ai.ts does,
+      //    explaining the rule — satisfies a naive `toContain` even while the
+      //    code below it says 1. That false negative was observed, not
+      //    theorised: it silently swallowed a deliberate mutation test.
+      expect(constructsClient, `${rel} is declared metered but constructs no client`).toBe(true);
+      const code = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+      const constructions = code.match(/new Anthropic\(\{[^}]*\}\)/g) ?? [];
+      if (/new Anthropic\(/.test(code)) {
+        expect(constructions.length, `${rel}: could not parse its Anthropic construction`).toBeGreaterThan(0);
+      }
+      for (const construction of constructions) {
+        expect(construction, `${rel}: a metered client must set maxRetries: 0`).toContain("maxRetries: 0");
+        expect(construction, `${rel}: must never re-enable SDK retries`).not.toMatch(/maxRetries:\s*[1-9]/);
+      }
+
+      if (mechanism === METERED_BY_METERED_CALL) {
+        expect(source, `${rel} must dispatch through meteredCall`).toContain("metered-call");
+        continue;
+      }
+
+      // 3. `account-spend-at-caller`: the named caller must really reserve.
+      const callerSource = read(mechanism);
+      expect(
+        callerSource,
+        `${rel} is declared as reserved by ${mechanism}, which does not import the account-spend boundary`
+      ).toContain("@/server/account-spend");
+      expect(
+        callerSource,
+        `${rel} is declared as reserved by ${mechanism}, which never calls reserveAccountProviderSpend`
+      ).toContain("reserveAccountProviderSpend(");
+    }
+  });
+
+  it("R5.2 — the runner that hosts meteredCall primitives reserves account capacity", () => {
+    const runner = readFileSync(join(ROOT2, "src", "server", "workflow-runs.ts"), "utf8").replace(/\r\n/g, "\n");
+    expect(runner).toContain("@/server/account-spend");
+    expect(runner).toContain("reserveAccountProviderSpend(");
+  });
+
   it("no provider-client module can reach the inspection, even transitively", () => {
     /** Local-alias imports of one file, resolved to repo-relative paths. */
     function localImportsOf(file: string): string[] {

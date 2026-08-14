@@ -4,17 +4,30 @@ import { getSettings } from "@/lib/settings";
 import { classifyMandateData } from "@/lib/ai-work-engine/data-class";
 import { inspectFiles } from "@/lib/ai-work-engine/file-inspection";
 import { readObject } from "@/lib/storage";
-import { embedWithUsage, embeddingsEnabled } from "@/lib/embeddings";
+import {
+  embedWithUsage,
+  embeddingsEnabled,
+  voyageActualMicros,
+  voyageMicrosPerMillionTokens,
+  voyageWorstCaseMicros,
+  VOYAGE_PROVIDER,
+} from "@/lib/embeddings";
 import { aiEnabled } from "@/lib/ai";
 import { findSimilarPricedTasks, upsertEmbedding } from "@/lib/ai-work-engine/references";
-import { runClassification } from "@/lib/ai-work-engine/classify";
-import { runPlanGeneration } from "@/lib/ai-work-engine/plan";
+import { classifyReservationMicros, runClassification } from "@/lib/ai-work-engine/classify";
+import { planReservationMicros, runPlanGeneration } from "@/lib/ai-work-engine/plan";
 import {
   buildAttachmentManifest,
   plannerAttachmentLines,
   resolveFileParams,
 } from "@/lib/ai-work-engine/attachments";
-import { runCritique, shouldCritique } from "@/lib/ai-work-engine/critique";
+import { critiqueReservationMicros, runCritique, shouldCritique } from "@/lib/ai-work-engine/critique";
+import {
+  AccountSpendCeilingError,
+  recordAccountSpendBlocked,
+  reserveAccountProviderSpend,
+  settleAccountSpendHoldDirect,
+} from "@/server/account-spend";
 import { aiSuggestionColumns, pricePlan, type PricingStepInput } from "@/lib/ai-work-engine/pricing";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { floorConfidenceForCritique, resolveConfidence } from "@/lib/ai-work-engine/confidence";
@@ -207,6 +220,55 @@ export async function runWorkEngine(
     if (existingPlan) return;
 
     const settings = await getSettings();
+
+    /**
+     * R5.2 — THE VOYAGE GATE, BEFORE THE EMBEDDING POST.
+     *
+     * This is the earliest billable call the platform makes for a task, and
+     * until R5.2 it ran ahead of every reservation — so "production with no
+     * ceiling configured spends nothing" was false by exactly one Voyage
+     * charge per submission, on the one provider the admin card could not see.
+     *
+     * NO RATE IS INVENTED. embeddings.ts still contains no Voyage price; the
+     * operator supplies the current published rate, and without it production
+     * simply does not make the call. That is the same early return
+     * `!embeddingsEnabled` above already performs, i.e. an existing, supported
+     * product state: no AI pricing suggestion, the admin prices manually.
+     */
+    const voyageRate = voyageMicrosPerMillionTokens();
+    let embedHold: Awaited<ReturnType<typeof reserveAccountProviderSpend>> | null = null;
+    if (voyageRate === null) {
+      if (process.env.NODE_ENV === "production") {
+        console.error(
+          "[work-engine] VOYAGE_EMBEDDING_MICROS_PER_MILLION_TOKENS is not configured; " +
+            "refusing to dispatch an unmeterable billable embedding call. AI pricing is " +
+            "skipped for this task and the admin prices it manually."
+        );
+        return;
+      }
+      // Non-production keeps its historical behaviour so every existing
+      // harness (which mocks the provider outright, spending nothing) is
+      // unaffected. Production is where the money is, and production is closed.
+      console.warn("[work-engine] Voyage rate unconfigured; embedding is unmetered in non-production.");
+    } else {
+      embedHold = await reserveAccountProviderSpend({
+        provider: VOYAGE_PROVIDER,
+        operationKey: engineOperationKey(taskId, runKey, "embed"),
+        attempt: 1,
+        worstCaseMicros: voyageWorstCaseMicros(voyageRate),
+      });
+      if (!embedHold.ok) {
+        await recordAccountSpendBlocked({
+          taskId,
+          stage: "embedding",
+          operationKey: engineOperationKey(taskId, runKey, "embed"),
+          attempt: 1,
+          refusal: embedHold,
+        });
+        return;
+      }
+    }
+
     const [embedding, categories] = await Promise.all([
       embedWithUsage(`${task.title}\n\n${task.description}`, "query"),
       prisma.taskCategory.findMany({
@@ -216,6 +278,17 @@ export async function runWorkEngine(
       }),
     ]);
     const vector = embedding.vector;
+
+    /**
+     * R5.2 — settle the Voyage hold at the EXACT measured cost. Voyage returns
+     * total_tokens, so this is a measurement rather than an estimate. When it
+     * reports nothing, the hold deliberately stays `held`: an unmeasured call
+     * is never settled to a number nobody observed.
+     */
+    if (embedHold !== null && embedHold.ok && voyageRate !== null) {
+      const actual = voyageActualMicros(embedding.usage.totalTokens, voyageRate);
+      if (actual !== null) await settleAccountSpendHoldDirect(embedHold.holdId, actual);
+    }
 
     /**
      * 1D-alpha0: the embedding provider stops being an invisible paying
@@ -318,8 +391,46 @@ export async function runWorkEngine(
         return;
       }
 
+      /**
+       * R5 — THE ACCOUNT-LEVEL CIRCUIT BREAKER, BEFORE THIS CALL LEAVES
+       * AFTERDESK. Phase 1A has no run and no step, so this is the only
+       * pre-dispatch cost gate it has ever had. Reserved here, in the
+       * already fully DB-coupled orchestrator, rather than inside
+       * classify.ts itself — that keeps classify.ts free of any Prisma
+       * dependency, which is what lets test/synthetic-provider.test.ts keep
+       * calling runClassification directly against the mocked SDK alone.
+       *
+       * A refusal throws BEFORE the real call, inside the SAME try the
+       * ordinary provider-failure path already uses: failAiOperation runs,
+       * the error re-raises, and the call simply never happens — no new
+       * failure path, the identical one a timeout or a rate limit takes.
+       */
+      const classifyReservedMicros = classifyReservationMicros({
+        title: task.title,
+        description: task.description,
+        quantity: task.quantity,
+        categories,
+        attachmentLines,
+      });
+      const classifyAccountHold = await reserveAccountProviderSpend({
+        operationKey: claim.operationKey,
+        attempt: claim.attempt,
+        worstCaseMicros: BigInt(classifyReservedMicros),
+      });
+
       let classified: Awaited<ReturnType<typeof runClassification>>;
       try {
+        if (!classifyAccountHold.ok) {
+          // R5.1 — the block is a durable, queryable fact before it is a throw.
+          await recordAccountSpendBlocked({
+            taskId,
+            stage: "classification",
+            operationKey: claim.operationKey,
+            attempt: claim.attempt,
+            refusal: classifyAccountHold,
+          });
+          throw new AccountSpendCeilingError(classifyAccountHold);
+        }
         classified = await runClassification({
           title: task.title,
           description: task.description,
@@ -327,6 +438,15 @@ export async function runWorkEngine(
           categories,
           attachmentLines,
         });
+        // The response arrived, so the real cost is known: settle now,
+        // always. A refusal above never reaches this line (nothing was
+        // reserved to settle). A throw from the real call itself
+        // (network/timeout) also never reaches this line, and the hold
+        // correctly stays `held` — an unknown outcome, never optimistically
+        // released.
+        if (classified.usage) {
+          await settleAccountSpendHoldDirect(classifyAccountHold.holdId, BigInt(classified.usage.costMicros));
+        }
       } catch (error) {
         // No response arrived at all — nothing billable to record, and if a
         // call WAS emitted before the death, the operation's attempt count
@@ -473,8 +593,37 @@ export async function runWorkEngine(
       return;
     }
 
+    // R5 — same account-level gate as classify's, same reasoning: reserved
+    // here (already DB-coupled) rather than inside plan.ts.
+    const planReservedMicros = planReservationMicros({
+      title: task.title,
+      description: task.description,
+      quantity: task.quantity,
+      classification: classificationOutput,
+      categories,
+      referenceTasks,
+      attachmentLines,
+      model: settings.pricingModel,
+    });
+    const planAccountHold = await reserveAccountProviderSpend({
+      operationKey: planClaim.operationKey,
+      attempt: planClaim.attempt,
+      worstCaseMicros: BigInt(planReservedMicros),
+    });
+
     let planned: Awaited<ReturnType<typeof runPlanGeneration>>;
     try {
+      if (!planAccountHold.ok) {
+        // R5.1 — the block is a durable, queryable fact before it is a throw.
+        await recordAccountSpendBlocked({
+          taskId,
+          stage: "planning",
+          operationKey: planClaim.operationKey,
+          attempt: planClaim.attempt,
+          refusal: planAccountHold,
+        });
+        throw new AccountSpendCeilingError(planAccountHold);
+      }
       planned = await runPlanGeneration({
         title: task.title,
         description: task.description,
@@ -484,6 +633,9 @@ export async function runWorkEngine(
         referenceTasks,
         attachmentLines,
       });
+      if (planned.usage) {
+        await settleAccountSpendHoldDirect(planAccountHold.holdId, BigInt(planned.usage.costMicros));
+      }
     } catch (error) {
       await failAiOperation({
         claim: planClaim,
@@ -784,8 +936,34 @@ export async function runWorkEngine(
       await reserveAiOperation({ taskId, purpose: "critique", operationKey: critiqueOpKey });
       const critiqueClaim = await claimAiOperation(critiqueOpKey);
       if (critiqueClaim) {
+        // R5 — same account-level gate as classify's and plan's.
+        const critiqueReservedMicros = critiqueReservationMicros({
+          title: task.title,
+          description: task.description,
+          quantity: task.quantity,
+          classification: classificationOutput,
+          plan: plannedOutput,
+          model: settings.pricingModel,
+        });
+        const critiqueAccountHold = await reserveAccountProviderSpend({
+          operationKey: critiqueClaim.operationKey,
+          attempt: critiqueClaim.attempt,
+          worstCaseMicros: BigInt(critiqueReservedMicros),
+        });
+
         let critiqued: Awaited<ReturnType<typeof runCritique>> | null = null;
         try {
+          if (!critiqueAccountHold.ok) {
+            // R5.1 — the block is a durable, queryable fact before it is a throw.
+            await recordAccountSpendBlocked({
+              taskId,
+              stage: "critique",
+              operationKey: critiqueClaim.operationKey,
+              attempt: critiqueClaim.attempt,
+              refusal: critiqueAccountHold,
+            });
+            throw new AccountSpendCeilingError(critiqueAccountHold);
+          }
           critiqued = await runCritique({
             title: task.title,
             description: task.description,
@@ -793,6 +971,9 @@ export async function runWorkEngine(
             classification: classificationOutput,
             plan: plannedOutput,
           });
+          if (critiqued.usage) {
+            await settleAccountSpendHoldDirect(critiqueAccountHold.holdId, BigInt(critiqued.usage.costMicros));
+          }
         } catch (error) {
           await failAiOperation({
             claim: critiqueClaim,

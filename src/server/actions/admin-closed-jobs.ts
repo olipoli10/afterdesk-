@@ -1,9 +1,20 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { closedJobCategoryStats } from "@/lib/queries/closed-jobs";
-import { analyzeClosedJobs, closedJobAnalysisEnabled, type Observation } from "@/lib/closed-job-analysis";
+import {
+  analyzeClosedJobs,
+  closedJobAnalysisCostMicros,
+  closedJobAnalysisEnabled,
+  closedJobAnalysisReservationMicros,
+  type Observation,
+} from "@/lib/closed-job-analysis";
+import {
+  reserveAccountProviderSpend,
+  settleAccountSpendHoldDirect,
+} from "@/server/account-spend";
 
 export type RunAnalysisResult =
   | { ok: true; observations: Observation[] }
@@ -37,7 +48,46 @@ export async function runClosedJobAnalysis(): Promise<RunAnalysisResult> {
     };
   }
 
+  /**
+   * R5.2 — THE ACCOUNT-LEVEL SPEND GATE, BEFORE THE CALL LEAVES AFTERDESK.
+   *
+   * Internal and non-critical: exactly ONE call per invocation — the
+   * per-category aggregation already happened in SQL above, so there is no
+   * loop over jobs and no unbounded fan-out. A refusal simply defers the
+   * analysis; no queue is built.
+   *
+   * IDENTITY: per-invocation uuid. No automatic retry layer exists here, so
+   * one invocation is exactly one dispatch, and the admin pressing the button
+   * again is a new invocation that takes its own reservation.
+   */
+  const accountHold = await reserveAccountProviderSpend({
+    operationKey: `closed-job-analysis:${randomUUID()}`,
+    attempt: 1,
+    worstCaseMicros: BigInt(
+      closedJobAnalysisReservationMicros({
+        model: settings.closedJobAnalysisModel,
+        total,
+        categories,
+      })
+    ),
+  });
+  if (!accountHold.ok) {
+    console.warn("[closed-job-analysis] account spend ceiling refused the run", {
+      reason: accountHold.reason,
+      periodKey: accountHold.periodKey,
+    });
+    return { ok: false, error: "Analysis isn't available right now — try again later." };
+  }
+
   const result = await analyzeClosedJobs(total, categories);
+  // analyzeClosedJobs never throws for a provider failure; it reports zero
+  // usage in that case, which settles honestly at zero for a call that
+  // produced nothing billable.
+  await settleAccountSpendHoldDirect(
+    accountHold.holdId,
+    BigInt(closedJobAnalysisCostMicros(settings.closedJobAnalysisModel, result.usage))
+  );
+
   if (result.observations.length === 0) {
     return { ok: false, error: "Analysis didn't return anything usable — try again shortly." };
   }

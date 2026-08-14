@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { vi } from "vitest";
 
 /**
  * THE ZERO-COST PROVIDER LAYER.
@@ -271,6 +272,45 @@ export class ReplayMiss extends Error {
   }
 }
 
+/**
+ * ONE LIVE DISPATCH THAT DID NOT REACH `settle()`.
+ *
+ * Found 2026-08-13, canary run 1: `runWorkEngine`'s own durable-operation
+ * wrapper catches and retries provider failures, so by the time a caller
+ * sees `AiOperation.lastError` it may already be the error from a LATER
+ * retry, not the one that actually explains what went wrong. This record is
+ * captured HERE, at the one place that always sees the real, original
+ * failure, independent of whatever the caller does with it afterwards.
+ *
+ * Deliberately excludes `params`/the request body and anything from
+ * `error.headers` beyond the request id: a stack trace or an SDK error
+ * object can carry request content, and this diagnostic exists to be safe
+ * to print and to commit alongside a bug report, never to carry a client's
+ * brief.
+ */
+export type LiveCallError = {
+  stage: string;
+  /** e.g. "APIConnectionError", "AuthenticationError", "TypeError" — never the raw class, always its name. */
+  errorClass: string;
+  /** Truncated, and never the request body — see the type's own note above. */
+  message: string;
+  /** Truncated stack, own file's frames only matter less than the error site. */
+  stack: string | null;
+  /** The Anthropic SDK exposes this on API errors; null for anything else (network, our own code). */
+  httpStatus: number | null;
+  /** Anthropic's own request id, when the SDK error carries one — the thing to hand support if asked. */
+  providerRequestId: string | null;
+  /** Did client.messages.create() itself return successfully before something else threw? */
+  responseWasReceived: boolean;
+  reservation: {
+    beforeReserve: ReturnType<ProviderBudget["snapshot"]>;
+    afterHandling: ReturnType<ProviderBudget["snapshot"]>;
+    /** What this failure was settled as — see settleFailedReservation()'s own docstring for why. */
+    settledAsMicros: number;
+  };
+  occurredAt: string;
+};
+
 export type ReplayStats = {
   mode: TestProviderMode;
   replayed: number;
@@ -283,6 +323,8 @@ export type ReplayStats = {
    * corpus — so it is surfaced rather than logged and forgotten.
    */
   uncapitalised: { stage: string; key: string; costMicros: number; reason: string }[];
+  /** Every live dispatch that threw before or during response handling. See LiveCallError. */
+  liveCallErrors: LiveCallError[];
   budget: ReturnType<ProviderBudget["snapshot"]>;
 };
 
@@ -340,13 +382,93 @@ export function providerStats(): ReplayStats {
 }
 
 /**
+ * THE ONE PLACE THAT SEES A LIVE FAILURE FIRST — before any retry, before
+ * any durable-operation error handling upstream gets a chance to catch it,
+ * transform it, or (as `runWorkEngine` does) overwrite it with a LATER
+ * attempt's different error. Deliberately reads only what is safe to print
+ * and to commit to a bug report: no `params`, no request body, nothing from
+ * `error.headers` beyond a request id.
+ */
+function recordLiveCallError(input: {
+  stage: string;
+  error: unknown;
+  responseWasReceived: boolean;
+  beforeReserve: ReturnType<ProviderBudget["snapshot"]>;
+  afterHandling: ReturnType<ProviderBudget["snapshot"]>;
+  settledAsMicros: number;
+}): void {
+  if (!stats) return;
+  const e = input.error as {
+    name?: string;
+    message?: string;
+    stack?: string;
+    status?: number;
+    statusCode?: number;
+    requestID?: string;
+    request_id?: string;
+    headers?: { get?: (k: string) => string | null } | Record<string, string>;
+    constructor?: { name?: string };
+  } | null;
+
+  const httpStatus =
+    typeof e?.status === "number" ? e.status : typeof e?.statusCode === "number" ? e.statusCode : null;
+
+  let providerRequestId: string | null = null;
+  const headers = e?.headers;
+  if (typeof e?.requestID === "string") providerRequestId = e.requestID;
+  else if (typeof e?.request_id === "string") providerRequestId = e.request_id;
+  else if (headers && typeof (headers as { get?: unknown }).get === "function") {
+    const get = (headers as { get: (k: string) => string | null }).get;
+    providerRequestId = get("request-id") ?? get("x-request-id") ?? null;
+  } else if (headers && typeof headers === "object") {
+    const h = headers as Record<string, string>;
+    providerRequestId = h["request-id"] ?? h["x-request-id"] ?? null;
+  }
+
+  (stats as ReplayStats).liveCallErrors.push({
+    stage: input.stage,
+    errorClass: typeof e?.name === "string" ? e.name : (e?.constructor?.name ?? "UnknownError"),
+    message: String(e?.message ?? input.error).slice(0, 500),
+    stack: typeof e?.stack === "string" ? e.stack.slice(0, 2000) : null,
+    httpStatus,
+    providerRequestId,
+    responseWasReceived: input.responseWasReceived,
+    reservation: {
+      beforeReserve: input.beforeReserve,
+      afterHandling: input.afterHandling,
+      settledAsMicros: input.settledAsMicros,
+    },
+    occurredAt: new Date().toISOString(),
+  });
+}
+
+/** What the live branch needs from "the real SDK": a class it can `new`. */
+type RealSdkModule = {
+  default: new (o: unknown) => { messages: { create: (p: unknown) => Promise<unknown> } };
+};
+
+/**
  * Build the object `vi.mock("@anthropic-ai/sdk", ...)` should return.
  * Call it from a harness like:
  *
  *   vi.mock("@anthropic-ai/sdk", async () =>
  *     (await import("../test/support/provider-replay")).anthropicMockFactory());
+ *
+ * `realSdkLoader` is a TEST-ONLY escape hatch, never used by any production
+ * or L3/canary caller (which all rely on the default). It exists because
+ * `vi.importActual` — correct as it is for reaching the true SDK from
+ * inside a mock — cannot itself be redirected to a fake: it always returns
+ * the real, installed "@anthropic-ai/sdk" package. Verifying the live
+ * branch's OWN logic (reserve → dispatch → settle → golden recording, and
+ * the conservative-settlement behaviour on a failed dispatch) at zero cost
+ * and zero network therefore needs a way to substitute a fake "real SDK"
+ * for that one call — this parameter is that seam, and nothing else.
  */
-export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) {
+export function anthropicMockFactory(
+  env: BudgetEnv = process.env as BudgetEnv,
+  options?: { realSdkLoader?: () => Promise<RealSdkModule> }
+) {
+  const loadRealSdk = options?.realSdkLoader ?? (() => vi.importActual<RealSdkModule>("@anthropic-ai/sdk"));
   const mode = resolveMode(env);
   /**
    * The shared ledger is attached ONLY in live mode. Replay and synthetic
@@ -365,6 +487,7 @@ export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) 
     synthetic: 0,
     misses: [],
     uncapitalised: [],
+    liveCallErrors: [],
     budget: budget.snapshot(),
   };
 
@@ -402,13 +525,9 @@ export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) 
         }
 
         // ── live: the only branch that can spend, and it is fenced ──
+        const beforeReserve = (budget as ProviderBudget).snapshot();
         (budget as ProviderBudget).reserve();
-        const actual = (await import("@anthropic-ai/sdk")) as unknown as {
-          default: new (o: unknown) => { messages: { create: (p: unknown) => Promise<unknown> } };
-        };
-        const RealAnthropic = actual.default;
-        const client = new RealAnthropic({ timeout: 120_000, maxRetries: 1 });
-        const response = (await client.messages.create(params)) as {
+        type AnthropicUsageShape = {
           usage?: {
             input_tokens?: number;
             output_tokens?: number;
@@ -417,28 +536,108 @@ export function anthropicMockFactory(env: BudgetEnv = process.env as BudgetEnv) 
             server_tool_use?: { web_search_requests?: number; web_fetch_requests?: number };
           };
         };
-        const usage = {
-          inputTokens: response.usage?.input_tokens ?? 0,
-          outputTokens: response.usage?.output_tokens ?? 0,
-          cacheReadTokens: response.usage?.cache_read_input_tokens ?? 0,
-          cacheWriteTokens: response.usage?.cache_creation_input_tokens ?? 0,
-          searchRequests: response.usage?.server_tool_use?.web_search_requests ?? 0,
-          fetchRequests: response.usage?.server_tool_use?.web_fetch_requests ?? 0,
-        };
-        const { costMicrosFor, searchCostMicros, fetchCostMicros } = await import(
-          "@/lib/ai-work-engine/tool-cost"
-        );
-        /**
-         * The SAME arithmetic the run's own accounting uses, tool calls
-         * included. Counting only tokens would understate a research call by
-         * the whole search bill, and the fixture would then record a cost
-         * cheaper than the one the budget settled.
-         */
-        const costMicros =
-          costMicrosFor(String(params.model), usage) +
-          searchCostMicros(usage.searchRequests) +
-          fetchCostMicros(usage.fetchRequests);
-        (budget as ProviderBudget).settle(costMicros);
+        let response: AnthropicUsageShape | null = null;
+        let costMicros: number | undefined;
+        let usage:
+          | {
+              inputTokens: number;
+              outputTokens: number;
+              cacheReadTokens: number;
+              cacheWriteTokens: number;
+              searchRequests: number;
+              fetchRequests: number;
+            }
+          | undefined;
+        try {
+          /**
+           * BUG FOUND 2026-08-13, canary run 1: a plain `await
+           * import("@anthropic-ai/sdk")` here does NOT reach the real SDK
+           * once the test file has `vi.mock("@anthropic-ai/sdk", ...)`'d
+           * that specifier — vitest's module interception applies to EVERY
+           * import of that specifier for the whole test run, including one
+           * written inside the mock factory's own implementation code.
+           * Confirmed with a synthetic, zero-network probe
+           * (.scratch/probe-mock-self-reference.e2e.ts): the inner import
+           * resolved back to the exact same mocked class, so
+           * `new RealAnthropic(...)` constructed ANOTHER ReplayAnthropic,
+           * and calling `.messages.create()` on it re-entered this exact
+           * branch — reserving budget again on every recursive level until
+           * the shared ledger cap finally threw, unwinding through however
+           * many levels of recursion had run. Every one of those
+           * reservations was real (against the ledger) and NONE was ever
+           * settled, because the recursion never once reached a genuine
+           * response. `vi.importActual` is the documented way to reach the
+           * real module from inside code that is itself part of a mock.
+           */
+          const actual = await loadRealSdk();
+          const RealAnthropic = actual.default;
+          /**
+           * R5.2 — maxRetries: 0, the same doctrine as every production client.
+           *
+           * This is the ONE client in the repository that has actually spent
+           * real money (canary runs 1-5, and R5.1's live positive-path proof).
+           * An SDK-internal retry here issues a second billable POST that the
+           * run-scoped ledger below counts ONCE — so the very instrument used
+           * to prove spend safety would itself have been under-reporting it.
+           * The harness caps calls and spend on its own; it does not need the
+           * SDK retrying behind that accounting.
+           */
+          const client = new RealAnthropic({ timeout: 120_000, maxRetries: 0 });
+          response = (await client.messages.create(params)) as AnthropicUsageShape;
+
+          usage = {
+            inputTokens: response.usage?.input_tokens ?? 0,
+            outputTokens: response.usage?.output_tokens ?? 0,
+            cacheReadTokens: response.usage?.cache_read_input_tokens ?? 0,
+            cacheWriteTokens: response.usage?.cache_creation_input_tokens ?? 0,
+            searchRequests: response.usage?.server_tool_use?.web_search_requests ?? 0,
+            fetchRequests: response.usage?.server_tool_use?.web_fetch_requests ?? 0,
+          };
+          const { costMicrosFor, searchCostMicros, fetchCostMicros } = await import(
+            "@/lib/ai-work-engine/tool-cost"
+          );
+          /**
+           * The SAME arithmetic the run's own accounting uses, tool calls
+           * included. Counting only tokens would understate a research call by
+           * the whole search bill, and the fixture would then record a cost
+           * cheaper than the one the budget settled.
+           */
+          costMicros =
+            costMicrosFor(String(params.model), usage) +
+            searchCostMicros(usage.searchRequests) +
+            fetchCostMicros(usage.fetchRequests);
+          (budget as ProviderBudget).settle(costMicros);
+        } catch (error) {
+          /**
+           * CONSERVATIVE ON PURPOSE — never assume a failed dispatch cost
+           * nothing. A response that was never received (the SDK call
+           * itself threw — network, auth, rate limit, timeout) is genuinely
+           * ambiguous: Anthropic may have billed it before the failure
+           * reached us. The reservation is therefore settled at its FULL
+           * amount, not released — the same "never lower a figure you are
+           * unsure of" rule this codebase already applies to pricing
+           * (reprice() takes max(), never min()). A response that WAS
+           * received (something in OUR OWN usage/cost-calculation code
+           * threw afterwards) is unambiguous: the call was real and its
+           * usage figures are already in hand, so it is settled at that
+           * real, computed cost rather than either the reservation or zero.
+           */
+          const settledAsMicros =
+            response !== null && typeof costMicros === "number"
+              ? costMicros
+              : (budget as ProviderBudget).callReserveMicros;
+          (budget as ProviderBudget).settle(settledAsMicros);
+          const afterHandling = (budget as ProviderBudget).snapshot();
+          recordLiveCallError({
+            stage,
+            error,
+            responseWasReceived: response !== null,
+            beforeReserve,
+            afterHandling,
+            settledAsMicros,
+          });
+          throw error;
+        }
         /**
          * THE RECORDING IS PART OF THE CALL, NOT AN AFTERTHOUGHT.
          *

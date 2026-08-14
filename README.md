@@ -74,8 +74,9 @@ Open the task in the operator area and use **Recheck** beside each legacy file.
   CSV, XLSX, PDF, DOCX, PNG and JPEG. Signatures, archive expansion,
   dangerous formulas, macros, external Office relationships and known malware
   payloads are checked. Common Office/image metadata is removed.
-- Production uploads fail closed unless ClamAV is reachable. Files cannot be
-  attached or downloaded until their scan evidence is `clean`.
+- Production uploads fail closed unless the malware scanner accepts the
+  call. Files cannot be attached or downloaded until their scan evidence is
+  `clean`.
 - Worker-facing filenames are generated and client-authored revision/dispute
   text is not shown directly to workers. The operator publishes an
   identity-safe instruction summary.
@@ -94,8 +95,11 @@ redaction and operator review; the public security page says this explicitly.
    `DIRECT_URL` for migrations. Run `npm run db:migrate` during deployment.
 2. **Persistent private storage** — mount `./storage` as a non-public volume,
    or replace `src/lib/storage.ts` with a private object-storage adapter.
-3. **ClamAV** — set `CLAMAV_HOST` and optionally `CLAMAV_PORT`. Production
-   scanning cannot be disabled.
+3. **Cloudmersive Virus Scan API** — set `CLOUDMERSIVE_API_KEY`. Production
+   scanning cannot be disabled. A self-hosted clamd cannot be reached from
+   Vercel Functions (no TLS, no auth, expects a trusted local network), so
+   file scanning is an external HTTPS call; use a plan whose per-file limit
+   covers this app's own upload cap (25 MB default).
 4. **Stripe** — set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`; send these
    events to `POST /api/webhooks/stripe`:
    `checkout.session.completed`, `checkout.session.async_payment_succeeded`,

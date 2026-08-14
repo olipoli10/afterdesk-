@@ -311,6 +311,39 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
       }
 
       /**
+       * R4 — HUMAN TIME INTEGRITY. A job this worker actually performed must
+       * leave a durable time record: operational-actuals.ts computes
+       * `workerActiveSeconds` from TaskWorkSession rows in phase
+       * residual_work/manual_fallback, and treats zero such rows as UNKNOWN
+       * (MISSING_WORKER_TIME), not zero — which silently drops human cost
+       * out of bookedAndMeteredCostMicros and disqualifies the task from
+       * cost/performance calibration.
+       *
+       * The check is EXISTENCE, not accumulated duration: a session's
+       * accumulatedSeconds only updates on pause/resume/stop
+       * (src/server/work-sessions.ts), so an active, never-paused session
+       * legitimately still reads 0 here. stopAllOpenSessions below finalizes
+       * it with the real elapsed seconds right after this transaction
+       * commits — this gate only has to prove the worker started a timer at
+       * least once; it does not (and must not) infer duration itself, which
+       * is exactly the submittedAt-minus-claimedAt shortcut this lot exists
+       * to refuse.
+       */
+      const timedAtLeastOnce = await tx.taskWorkSession.count({
+        where: {
+          taskId,
+          userId: user.id,
+          role: "worker",
+          phase: { in: ["residual_work", "manual_fallback"] },
+        },
+      });
+      if (timedAtLeastOnce === 0) {
+        throw new Refused(
+          "Start your timer before delivering — use Start above, do the work, then come back to submit. We need a real record of how long this took."
+        );
+      }
+
+      /**
        * Delivery metrics, for the two categories that have a shape. Judged
        * against the TASK's category read above, never against whatever
        * category the submitted blob claims to be, so a worker cannot pick the

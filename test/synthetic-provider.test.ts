@@ -327,7 +327,7 @@ describe("W8's own plan, executed step by step, reaches its ground truth", () =>
    */
   it("105 rows out of 40 + 35 + 30, at zero cost", async () => {
     const { REGISTRY } = await import("@/lib/ai-work-engine/registry");
-    const { consolidationFixtures } = await import("../.scratch/l3-fixtures");
+    const { consolidationFixtures } = await import("./support/l3-fixtures");
     const { planOutputSchema } = await import("@/lib/ai-work-engine/schemas");
 
     const files = consolidationFixtures();
@@ -440,7 +440,7 @@ describe("W8 — what consolidating three files can actually produce today", () 
      * the second half of the assertion: the fix is a refusal to guess, not a
      * loss of data.
      */
-    const { consolidationFixtures } = await import("../.scratch/l3-fixtures");
+    const { consolidationFixtures } = await import("./support/l3-fixtures");
     const { runIngestCsv, runDataDedupe } = await import("@/lib/ai-work-engine/primitives/files");
 
     const files = consolidationFixtures();
@@ -496,7 +496,7 @@ describe("W8 — what consolidating three files can actually produce today", () 
   });
 
   it("stacks all three into 105 rows, and a join would still give 40", async () => {
-    const { consolidationFixtures } = await import("../.scratch/l3-fixtures");
+    const { consolidationFixtures } = await import("./support/l3-fixtures");
     // build.csv resolves to runBuildCsvV2 in the registry — the params-aware
     // one that honours `dataset`. Using the v1 pure function here would be
     // measuring a code path the runner does not take.

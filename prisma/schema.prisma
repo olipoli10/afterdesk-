@@ -2179,6 +2179,56 @@ enum WorkflowBudgetHoldStatus {
   released
 }
 
+/// R5 — LE DISJONCTEUR DE DÉPENSE AU NIVEAU COMPTE.
+///
+/// WorkflowBudgetHold protège UN run accepté. Ceci protège AfterDesk
+/// lui-même : l'exposition CUMULÉE, tous mandats confondus (y compris les
+/// appels classify/plan/critique de la Phase 1A, qui n'ont ni run ni step),
+/// contre un plafond opérationnel que l'entreprise se fixe — jamais dérivé
+/// du plan accepté, jamais du modèle, jamais du client.
+///
+/// (provider, operationKey, attempt) est unique : chaque appel logique
+/// n'est jamais réservé deux fois, exactement comme WorkflowBudgetHold.
+/// operationKey est réutilisé tel quel depuis l'appelant (la même clé que
+/// WorkflowBudgetHold pour un primitive d'exécution, ou AiOperation.operationKey
+/// pour classify/plan/critique) — aucune nouvelle identité n'est inventée.
+///
+/// periodKey borne l'agrégat à une fenêtre (un jour UTC aujourd'hui) : sans
+/// fenêtre, un plafond cumulatif à vie finirait toujours par se déclencher.
+/// Même statut réutilisé que WorkflowBudgetHold : held → settled | released,
+/// jamais réassigné une fois settled/released.
+model AccountProviderSpendHold {
+  id String @id @default(cuid())
+
+  /// "anthropic" aujourd'hui — un champ, pas un enum, pour ne pas bâtir un
+  /// multi-fournisseur que rien ne réclame encore.
+  provider String
+
+  /// Fenêtre d'agrégation, ex. "2026-08-13" (jour UTC). Dénormalisé en
+  /// colonne plutôt que dérivé de createdAt à chaque requête : l'agrégat
+  /// tourne à chaque réservation et doit rester un index simple.
+  periodKey String
+
+  /// Réutilisée telle quelle depuis l'appelant — jamais recalculée ici.
+  operationKey String
+  attempt      Int
+
+  /// Le pire cas de cette tentative, en microdollars. BigInt : voir la même
+  /// remarque sur WorkflowBudgetHold.amountMicros.
+  amountMicros BigInt
+
+  status WorkflowBudgetHoldStatus @default(held)
+
+  /// La dépense réellement constatée à la conversion. Null tant que `held`.
+  settledMicros BigInt?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, operationKey, attempt])
+  @@index([provider, periodKey, status])
+}
+
 /// LE MANDAT RÉSIDUEL REMIS À UN HUMAIN.
 ///
 /// Ce n'est PAS une tâche enfant et ce n'est pas réclamable en soi : la tâche

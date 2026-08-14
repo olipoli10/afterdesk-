@@ -1,5 +1,6 @@
 import { beforeAll } from "vitest";
 import { assertSafeIntegrationDb } from "./guard";
+import { resolveL3TestDatabaseUrl } from "./resolve-l3-db";
 
 /**
  * Runs in EVERY test worker before the file's imports execute their module
@@ -24,7 +25,9 @@ import { assertSafeIntegrationDb } from "./guard";
  * need the truncation below.
  */
 if (process.env.DATABASE_URL !== process.env.AFTERDESK_TEST_DATABASE_URL) {
-  const db = assertSafeIntegrationDb(process.env);
+  const db = assertSafeIntegrationDb(process.env, {
+    l3TestDatabaseUrl: resolveL3TestDatabaseUrl() ?? undefined,
+  });
   process.env.DATABASE_URL = db.url;
   process.env.DIRECT_URL = db.url;
 }

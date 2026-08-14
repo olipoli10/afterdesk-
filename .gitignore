@@ -17,6 +17,14 @@
 # budget that is already partly spent.
 .provider-spend-ledger.json
 .provider-spend-ledger.json.lock
+# Run-scoped ledgers (e.g. canary-run-2): same reasoning, one file per run.
+.provider-spend-ledger.*.json
+.provider-spend-ledger.*.json.lock
+# Local execution evidence: end-to-end harnesses, live-canary records and
+# throwaway probes. Real proof of what was run and what was paid, but machine
+# state rather than a repository fact — and never required by production or CI.
+# Left on disk deliberately; only kept out of the index.
+.scratch/
 
 # next.js
 /.next/
