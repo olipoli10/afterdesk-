@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
 import { REGISTRY } from "@/lib/ai-work-engine/registry";
@@ -557,6 +557,26 @@ describe("T039 — Scenario C: revision, resubmission, acceptance", () => {
         actorId: fixture.admin.id,
       })
     ).toMatchObject({ opened: true, unitStateId: fixture.unitId });
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true },
+      })
+    ).toEqual({ state: "in_review" });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: fixture.unitId, cause: "review_opened" },
+      })
+    ).toBe(1);
+    expect(
+      await prisma.taskEvent.count({
+        where: {
+          taskId: fixture.task.id,
+          action: "human_unit_submitted",
+          meta: { path: ["cause"], equals: "review_opened" },
+        },
+      })
+    ).toBe(1);
     await expectStillBlockedAndUnspent(fixture);
 
     expect(
@@ -584,6 +604,47 @@ describe("T039 — Scenario C: revision, resubmission, acceptance", () => {
         select: { status: true, payload: true, submittedById: true },
       })
     ).toEqual({ status: "superseded", payload: FIRST_RESULT, submittedById: fixture.worker.id });
+    expect(
+      await prisma.humanWorkUnitReviewDecision.findUniqueOrThrow({
+        where: { candidateId: firstCandidateId },
+        select: {
+          outcome: true,
+          cause: true,
+          revisionInstructions: true,
+          remainingRevisionsAfter: true,
+          claimGeneration: true,
+        },
+      })
+    ).toEqual({
+      outcome: "rejected",
+      cause: null,
+      revisionInstructions: "Explain the evidence behind the decision and resubmit.",
+      remainingRevisionsAfter: 1,
+      claimGeneration: 1,
+    });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: fixture.unitId, cause: "revision_requested" },
+      })
+    ).toBe(1);
+    expect(
+      await prisma.taskEvent.count({
+        where: {
+          taskId: fixture.task.id,
+          action: "human_unit_rejected",
+          meta: { path: ["cause"], equals: "revision_requested" },
+        },
+      })
+    ).toBe(1);
+    expect(
+      await prisma.notification.count({
+        where: {
+          taskId: fixture.task.id,
+          userId: fixture.worker.id,
+          type: "human_unit_revision_requested",
+        },
+      })
+    ).toBe(1);
     expect(await prisma.humanWorkUnitResumeRecord.count({ where: { runId: fixture.runId } })).toBe(
       0
     );
@@ -631,9 +692,30 @@ describe("T039 — Scenario C: revision, resubmission, acceptance", () => {
         candidateId: secondCandidateId,
         acceptedById: fixture.admin.id,
         resultPayload: ACCEPTED_RESULT,
-        resultSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+        resultSha256: createHash("sha256")
+          .update(
+            JSON.stringify({ confidence: 0.98, decision: "approved after revision" }),
+            "utf8"
+          )
+          .digest("hex"),
       },
     ]);
+    expect(
+      await prisma.humanWorkUnitCandidate.findUniqueOrThrow({
+        where: { id: secondCandidateId },
+        select: { status: true },
+      })
+    ).toEqual({ status: "accepted" });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: fixture.unitId, cause: "accepted" },
+      })
+    ).toBe(1);
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: fixture.task.id, action: "human_unit_accepted" },
+      })
+    ).toBe(1);
 
     const resumes = await Promise.all([applyResume(fixture.unitId), applyResume(fixture.unitId)]);
     expect(resumes.filter((outcome) => outcome.resumed)).toHaveLength(1);
@@ -708,6 +790,20 @@ describe("T039 — fail closed at the revision bound or for unsafe work", () => 
       })
     ).toBe(1);
     expect(
+      await prisma.taskHumanWorkPackage.findUniqueOrThrow({
+        where: { runId: fixture.runId },
+        select: {
+          computedPayoutCents: true,
+          reservedBudgetCents: true,
+          estimatedMinutes: true,
+        },
+      })
+    ).toEqual({
+      computedPayoutCents: 4_000,
+      reservedBudgetCents: 4_000,
+      estimatedMinutes: 60,
+    });
+    expect(
       await prisma.taskWorkflowRun.findUniqueOrThrow({
         where: { id: fixture.runId },
         select: { status: true },
@@ -716,6 +812,20 @@ describe("T039 — fail closed at the revision bound or for unsafe work", () => 
     expect(await prisma.humanWorkUnitAcceptance.count({ where: { unitStateId: fixture.unitId } })).toBe(
       0
     );
+    expect(
+      await prisma.notification.count({
+        where: {
+          taskId: fixture.task.id,
+          userId: fixture.admin.id,
+          type: "human_unit_exhausted",
+        },
+      })
+    ).toBe(1);
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: fixture.task.id, action: "human_unit_exhausted" },
+      })
+    ).toBe(1);
     await expectStillBlockedAndUnspent(fixture);
   });
 });
@@ -819,6 +929,37 @@ describe("T039 — review refusals preserve the candidate and the first decision
         select: { state: true, remainingRevisions: true },
       })
     ).toEqual({ state: "revision_requested", remainingRevisions: 1 });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: fixture.unitId, cause: "refused:duplicate" },
+      })
+    ).toBe(1);
+  });
+
+  it("converges two racing decisions on one immutable winner", async () => {
+    const fixture = await claimedReviewUnit();
+    const candidateId = await seedSubmittedCandidate(fixture);
+    const otherAdmin = await createAdmin("racing-decision");
+
+    const outcomes = await Promise.all([
+      reviewRuntime.decideHumanUnitCandidate({
+        candidateId,
+        actorId: fixture.admin.id,
+        outcome: "accept",
+      }),
+      reviewRuntime.decideHumanUnitCandidate({
+        candidateId,
+        actorId: otherAdmin.id,
+        outcome: "accept",
+      }),
+    ]);
+
+    expect(outcomes.filter((outcome) => outcome.decided)).toHaveLength(1);
+    expect(outcomes.filter((outcome) => !outcome.decided && outcome.cause === "duplicate")).toHaveLength(
+      1
+    );
+    expect(await prisma.humanWorkUnitReviewDecision.count({ where: { candidateId } })).toBe(1);
+    expect(await prisma.humanWorkUnitAcceptance.count({ where: { candidateId } })).toBe(1);
     expect(
       await prisma.humanWorkUnitTransition.count({
         where: { unitStateId: fixture.unitId, cause: "refused:duplicate" },

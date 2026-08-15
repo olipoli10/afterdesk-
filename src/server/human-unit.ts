@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { transitionTask, TransitionError } from "@/lib/state";
@@ -58,12 +59,49 @@ export type SubmitOutcome =
       missing?: string[];
     };
 
+export type OpenReviewOutcome =
+  | { opened: true; unitStateId: string }
+  | {
+      opened: false;
+      cause: "not_available" | "self_review" | "duplicate" | "lifecycle_exit";
+    };
+
+export type DecisionOutcome =
+  | {
+      decided: true;
+      unitStateId: string;
+      state: "accepted" | "revision_requested" | "exhausted";
+    }
+  | {
+      decided: false;
+      cause:
+        | "not_available"
+        | "duplicate"
+        | "self_review"
+        | "stale_generation"
+        | "lifecycle_exit"
+        | "paused";
+    };
+
 type SubmitInput = {
   taskId: string;
   actorId: string;
   claimGeneration: number;
   payload: unknown;
   fileIds: string[];
+};
+
+type OpenReviewInput = {
+  taskId: string;
+  actorId: string;
+};
+
+type DecisionInput = {
+  candidateId: string;
+  actorId: string;
+  outcome: "accept" | "reject";
+  cause?: "revisions_exhausted" | "unsafe_or_unverifiable";
+  revisionInstructions?: string;
 };
 
 /** Only the two causes publication itself can produce. */
@@ -840,6 +878,637 @@ export async function submitHumanUnitCandidate(
       if (await recordDuplicateIfPresent(input)) {
         return { submitted: false, cause: "duplicate" };
       }
+    }
+    throw error;
+  }
+}
+
+const TASK_LIFECYCLE_EXITS = new Set(["cancelled", "expired", "completed"]);
+const RUN_LIFECYCLE_EXITS = new Set(["abandoned", "done"]);
+
+type ReviewAuditCause =
+  | "review_opened"
+  | "accepted"
+  | "revision_requested"
+  | "exhausted:revisions"
+  | "exhausted:unsafe";
+
+type ReviewRefusalCause =
+  | "refused:self_review"
+  | "refused:duplicate"
+  | "refused:stale_generation";
+
+class LostDecisionCas extends Error {}
+
+/**
+ * Canonical JSON for the acceptance digest. Object keys are ordered at every
+ * depth; array order remains meaningful. The acceptance stores both this
+ * digest and a copied JSON value, so a later corruption is detectable without
+ * trusting the candidate row that preceded it.
+ */
+function canonicalJson(value: unknown): string {
+  const canonicalize = (entry: unknown): unknown => {
+    if (Array.isArray(entry)) return entry.map(canonicalize);
+    if (entry && typeof entry === "object") {
+      const result: Record<string, unknown> = {};
+      for (const key of Object.keys(entry).sort()) {
+        const child = (entry as Record<string, unknown>)[key];
+        if (child !== undefined) result[key] = canonicalize(child);
+      }
+      return result;
+    }
+    if (typeof entry === "number" && !Number.isFinite(entry)) {
+      throw new Error("a non-finite number has no canonical JSON form");
+    }
+    return entry;
+  };
+  const encoded = JSON.stringify(canonicalize(value));
+  if (encoded === undefined) throw new Error("the accepted result is not JSON");
+  return encoded;
+}
+
+function resultDigest(payload: unknown): string {
+  return createHash("sha256").update(canonicalJson(payload), "utf8").digest("hex");
+}
+
+async function recordReviewRefusal(
+  tx: Prisma.TransactionClient,
+  unit: RefusalAuditUnit,
+  actorId: string,
+  cause: ReviewRefusalCause,
+): Promise<void> {
+  const audited = await tx.humanWorkUnitRunState.update({
+    where: { id: unit.id },
+    data: { transitionSeq: { increment: 1 } },
+    select: {
+      state: true,
+      transitionSeq: true,
+      claimGeneration: true,
+      resumeGeneration: true,
+    },
+  });
+  await tx.humanWorkUnitTransition.create({
+    data: {
+      unitStateId: unit.id,
+      seq: audited.transitionSeq,
+      actorId,
+      actorRole: "admin",
+      fromState: audited.state,
+      toState: audited.state,
+      cause,
+      claimGeneration: audited.claimGeneration,
+      resumeGeneration: audited.resumeGeneration,
+    },
+  });
+  await tx.taskEvent.create({
+    data: {
+      taskId: unit.taskId,
+      action: "human_unit_refused",
+      actorId,
+      meta: {
+        state: audited.state,
+        cause,
+        claimGeneration: audited.claimGeneration,
+        resumeGeneration: audited.resumeGeneration,
+      },
+    },
+  });
+}
+
+async function writeReviewTransition(
+  tx: Prisma.TransactionClient,
+  input: {
+    unitStateId: string;
+    taskId: string;
+    actorId: string;
+    seq: number;
+    fromState: "submitted" | "in_review";
+    toState: "in_review" | "accepted" | "revision_requested" | "exhausted";
+    cause: ReviewAuditCause;
+    claimGeneration: number;
+    resumeGeneration: number;
+    action:
+      | "human_unit_submitted"
+      | "human_unit_accepted"
+      | "human_unit_rejected"
+      | "human_unit_exhausted";
+  },
+): Promise<void> {
+  await tx.humanWorkUnitTransition.create({
+    data: {
+      unitStateId: input.unitStateId,
+      seq: input.seq,
+      actorId: input.actorId,
+      actorRole: "admin",
+      fromState: input.fromState,
+      toState: input.toState,
+      cause: input.cause,
+      claimGeneration: input.claimGeneration,
+      resumeGeneration: input.resumeGeneration,
+    },
+  });
+  await tx.taskEvent.create({
+    data: {
+      taskId: input.taskId,
+      action: input.action,
+      actorId: input.actorId,
+      meta: {
+        state: input.toState,
+        cause: input.cause,
+        claimGeneration: input.claimGeneration,
+        resumeGeneration: input.resumeGeneration,
+      },
+    },
+  });
+}
+
+/** Transaction T6. Opening a review is optional; deciding from submitted is legal. */
+export async function openHumanUnitReview(
+  input: OpenReviewInput,
+): Promise<OpenReviewOutcome> {
+  return prisma.$transaction(async (tx) => {
+    const unit = await tx.humanWorkUnitRunState.findUnique({
+      where: { taskId: input.taskId },
+      select: {
+        id: true,
+        taskId: true,
+        state: true,
+        claimGeneration: true,
+        resumeGeneration: true,
+        claimedById: true,
+        run: { select: { status: true } },
+        task: { select: { status: true, claimedById: true } },
+        candidates: {
+          where: { status: "pending" },
+          orderBy: { submittedAt: "desc" },
+          take: 1,
+          select: { submittedById: true, claimGeneration: true },
+        },
+      },
+    });
+    if (!unit) return { opened: false, cause: "not_available" };
+    if (
+      TASK_LIFECYCLE_EXITS.has(unit.task.status) ||
+      RUN_LIFECYCLE_EXITS.has(unit.run.status) ||
+      ["resumed", "exhausted", "withdrawn"].includes(unit.state)
+    ) {
+      return { opened: false, cause: "lifecycle_exit" };
+    }
+
+    const candidate = unit.candidates[0];
+    if (!candidate) return { opened: false, cause: "not_available" };
+    if (candidate.submittedById === input.actorId) {
+      await recordReviewRefusal(tx, unit, input.actorId, "refused:self_review");
+      return { opened: false, cause: "self_review" };
+    }
+
+    const actor = await tx.user.findUnique({
+      where: { id: input.actorId },
+      select: { role: true },
+    });
+    if (actor?.role !== "ADMIN") return { opened: false, cause: "not_available" };
+    if (
+      unit.task.status !== "claimed" ||
+      unit.claimedById === null ||
+      unit.task.claimedById !== unit.claimedById ||
+      candidate.claimGeneration !== unit.claimGeneration
+    ) {
+      return { opened: false, cause: "not_available" };
+    }
+    if (unit.state === "in_review") {
+      await recordReviewRefusal(tx, unit, input.actorId, "refused:duplicate");
+      return { opened: false, cause: "duplicate" };
+    }
+    if (unit.state !== "submitted") return { opened: false, cause: "not_available" };
+
+    const moved = await tx.humanWorkUnitRunState.updateMany({
+      where: {
+        id: unit.id,
+        state: "submitted",
+        claimGeneration: candidate.claimGeneration,
+      },
+      data: { state: "in_review", transitionSeq: { increment: 1 } },
+    });
+    if (moved.count === 0) {
+      const current = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: { state: true },
+      });
+      if (current.state === "in_review") {
+        await recordReviewRefusal(tx, unit, input.actorId, "refused:duplicate");
+        return { opened: false, cause: "duplicate" };
+      }
+      if (["resumed", "exhausted", "withdrawn"].includes(current.state)) {
+        return { opened: false, cause: "lifecycle_exit" };
+      }
+      return { opened: false, cause: "not_available" };
+    }
+
+    const opened = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { transitionSeq: true, resumeGeneration: true },
+    });
+    await writeReviewTransition(tx, {
+      unitStateId: unit.id,
+      taskId: unit.taskId,
+      actorId: input.actorId,
+      seq: opened.transitionSeq,
+      fromState: "submitted",
+      toState: "in_review",
+      cause: "review_opened",
+      claimGeneration: unit.claimGeneration,
+      resumeGeneration: opened.resumeGeneration,
+      // The frozen TaskEvent vocabulary has no review-open action. This is the
+      // existing submitted-family mirror, distinguished by state and cause.
+      action: "human_unit_submitted",
+    });
+    return { opened: true, unitStateId: unit.id };
+  });
+}
+
+type LoadedReviewCandidate = NonNullable<
+  Awaited<ReturnType<typeof loadReviewCandidate>>
+>;
+
+async function loadReviewCandidate(
+  tx: Prisma.TransactionClient,
+  candidateId: string,
+) {
+  return tx.humanWorkUnitCandidate.findUnique({
+    where: { id: candidateId },
+    select: {
+      id: true,
+      unitStateId: true,
+      submittedById: true,
+      claimGeneration: true,
+      payload: true,
+      status: true,
+      decision: { select: { id: true } },
+      unitState: {
+        select: {
+          id: true,
+          taskId: true,
+          runId: true,
+          state: true,
+          claimGeneration: true,
+          resumeGeneration: true,
+          remainingRevisions: true,
+          claimedById: true,
+          run: { select: { status: true } },
+          task: { select: { status: true, claimedById: true } },
+          definition: {
+            select: { id: true, dataClass: true, declaredInputs: true },
+          },
+        },
+      },
+    },
+  });
+}
+
+function reviewLifecycleOutcome(
+  candidate: LoadedReviewCandidate,
+): Exclude<DecisionOutcome, { decided: true }> | null {
+  const unit = candidate.unitState;
+  if (unit.state === "paused" || unit.run.status === "paused") {
+    return { decided: false, cause: "paused" };
+  }
+  if (
+    TASK_LIFECYCLE_EXITS.has(unit.task.status) ||
+    RUN_LIFECYCLE_EXITS.has(unit.run.status) ||
+    ["resumed", "exhausted", "withdrawn"].includes(unit.state)
+  ) {
+    return { decided: false, cause: "lifecycle_exit" };
+  }
+  return null;
+}
+
+async function recordDecisionDuplicateIfPresent(
+  input: DecisionInput,
+): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
+    const candidate = await loadReviewCandidate(tx, input.candidateId);
+    if (!candidate?.decision) return false;
+    await recordReviewRefusal(
+      tx,
+      candidate.unitState,
+      input.actorId,
+      "refused:duplicate",
+    );
+    return true;
+  });
+}
+
+async function classifyLostDecision(input: DecisionInput): Promise<DecisionOutcome> {
+  if (await recordDecisionDuplicateIfPresent(input)) {
+    return { decided: false, cause: "duplicate" };
+  }
+  return prisma.$transaction(async (tx) => {
+    const candidate = await loadReviewCandidate(tx, input.candidateId);
+    if (!candidate) return { decided: false, cause: "not_available" };
+    const lifecycle = reviewLifecycleOutcome(candidate);
+    if (lifecycle) return lifecycle;
+    if (candidate.claimGeneration !== candidate.unitState.claimGeneration) {
+      await recordReviewRefusal(
+        tx,
+        candidate.unitState,
+        input.actorId,
+        "refused:stale_generation",
+      );
+      return { decided: false, cause: "stale_generation" };
+    }
+    return { decided: false, cause: "not_available" };
+  });
+}
+
+/** Transactions T7/T8/T9. Exactly one immutable decision can win. */
+export async function decideHumanUnitCandidate(
+  input: DecisionInput,
+): Promise<DecisionOutcome> {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const candidate = await loadReviewCandidate(tx, input.candidateId);
+      if (!candidate) return { outcome: { decided: false, cause: "not_available" } as const };
+      const unit = candidate.unitState;
+
+      // Application refusal is first so the database trigger is a backstop,
+      // never the only protection and never the reason the refusal audit rolls back.
+      if (candidate.submittedById === input.actorId) {
+        await recordReviewRefusal(tx, unit, input.actorId, "refused:self_review");
+        return { outcome: { decided: false, cause: "self_review" } as const };
+      }
+      const actor = await tx.user.findUnique({
+        where: { id: input.actorId },
+        select: { role: true },
+      });
+      if (actor?.role !== "ADMIN") {
+        return { outcome: { decided: false, cause: "not_available" } as const };
+      }
+      if (candidate.decision) {
+        await recordReviewRefusal(tx, unit, input.actorId, "refused:duplicate");
+        return { outcome: { decided: false, cause: "duplicate" } as const };
+      }
+
+      const lifecycle = reviewLifecycleOutcome(candidate);
+      if (lifecycle) return { outcome: lifecycle };
+      if (candidate.claimGeneration !== unit.claimGeneration) {
+        await recordReviewRefusal(
+          tx,
+          unit,
+          input.actorId,
+          "refused:stale_generation",
+        );
+        return { outcome: { decided: false, cause: "stale_generation" } as const };
+      }
+      if (
+        unit.task.status !== "claimed" ||
+        unit.claimedById === null ||
+        unit.task.claimedById !== unit.claimedById ||
+        candidate.submittedById !== unit.claimedById
+      ) {
+        return { outcome: { decided: false, cause: "lifecycle_exit" } as const };
+      }
+      if (
+        candidate.status !== "pending" ||
+        (unit.state !== "submitted" && unit.state !== "in_review")
+      ) {
+        return { outcome: { decided: false, cause: "not_available" } as const };
+      }
+
+      const fromState = unit.state;
+      const unsafe = input.outcome === "reject" && input.cause === "unsafe_or_unverifiable";
+      const exhausted = input.outcome === "reject" && (unsafe || unit.remainingRevisions === 0);
+      const remainingAfter =
+        input.outcome === "reject" && !exhausted
+          ? unit.remainingRevisions - 1
+          : unit.remainingRevisions;
+      const refusalCause = exhausted
+        ? unsafe
+          ? ("unsafe_or_unverifiable" as const)
+          : ("revisions_exhausted" as const)
+        : null;
+      const decision = await tx.humanWorkUnitReviewDecision.create({
+        data: {
+          candidateId: candidate.id,
+          unitStateId: unit.id,
+          decidedById: input.actorId,
+          outcome: input.outcome === "accept" ? "accepted" : "rejected",
+          cause: refusalCause,
+          revisionInstructions: input.revisionInstructions?.trim() || null,
+          remainingRevisionsAfter: remainingAfter,
+          claimGeneration: candidate.claimGeneration,
+        },
+        select: { id: true },
+      });
+
+      if (input.outcome === "accept") {
+        await tx.humanWorkUnitAcceptance.create({
+          data: {
+            unitStateId: unit.id,
+            candidateId: candidate.id,
+            decisionId: decision.id,
+            acceptedById: input.actorId,
+            claimGenerationAtAcceptance: candidate.claimGeneration,
+            resultPayload: candidate.payload as Prisma.InputJsonValue,
+            resultSha256: resultDigest(candidate.payload),
+            dataClass: mostRestrictive([
+              asDataClass(unit.definition.dataClass),
+              ...parseDeclaredInputs(unit.definition.declaredInputs).map((declared) =>
+                asDataClass(declared.dataClass),
+              ),
+            ]),
+            criteriaVersionRef: unit.definition.id,
+          },
+        });
+        const candidateMoved = await tx.humanWorkUnitCandidate.updateMany({
+          where: { id: candidate.id, status: "pending" },
+          data: { status: "accepted" },
+        });
+        if (candidateMoved.count !== 1) throw new LostDecisionCas();
+        const acceptedAt = new Date();
+        const unitMoved = await tx.humanWorkUnitRunState.updateMany({
+          where: {
+            id: unit.id,
+            state: fromState,
+            claimGeneration: candidate.claimGeneration,
+            remainingRevisions: unit.remainingRevisions,
+          },
+          data: {
+            state: "accepted",
+            acceptedAt,
+            transitionSeq: { increment: 1 },
+          },
+        });
+        if (unitMoved.count !== 1) throw new LostDecisionCas();
+        const accepted = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+          where: { id: unit.id },
+          select: { transitionSeq: true, resumeGeneration: true },
+        });
+        await writeReviewTransition(tx, {
+          unitStateId: unit.id,
+          taskId: unit.taskId,
+          actorId: input.actorId,
+          seq: accepted.transitionSeq,
+          fromState,
+          toState: "accepted",
+          cause: "accepted",
+          claimGeneration: candidate.claimGeneration,
+          resumeGeneration: accepted.resumeGeneration,
+          action: "human_unit_accepted",
+        });
+        return {
+          outcome: {
+            decided: true,
+            unitStateId: unit.id,
+            state: "accepted",
+          } as const,
+        };
+      }
+
+      const candidateMoved = await tx.humanWorkUnitCandidate.updateMany({
+        where: { id: candidate.id, status: "pending" },
+        data: { status: exhausted ? "rejected" : "superseded" },
+      });
+      if (candidateMoved.count !== 1) throw new LostDecisionCas();
+
+      if (!exhausted) {
+        const unitMoved = await tx.humanWorkUnitRunState.updateMany({
+          where: {
+            id: unit.id,
+            state: fromState,
+            claimGeneration: candidate.claimGeneration,
+            remainingRevisions: unit.remainingRevisions,
+          },
+          data: {
+            state: "revision_requested",
+            remainingRevisions: { decrement: 1 },
+            transitionSeq: { increment: 1 },
+          },
+        });
+        if (unitMoved.count !== 1) throw new LostDecisionCas();
+        const revised = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+          where: { id: unit.id },
+          select: { transitionSeq: true, resumeGeneration: true },
+        });
+        await writeReviewTransition(tx, {
+          unitStateId: unit.id,
+          taskId: unit.taskId,
+          actorId: input.actorId,
+          seq: revised.transitionSeq,
+          fromState,
+          toState: "revision_requested",
+          cause: "revision_requested",
+          claimGeneration: candidate.claimGeneration,
+          resumeGeneration: revised.resumeGeneration,
+          action: "human_unit_rejected",
+        });
+        const notifiedAt = new Date();
+        await tx.humanWorkUnitAlert.create({
+          data: {
+            unitStateId: unit.id,
+            kind: "revision_requested",
+            dueAt: notifiedAt,
+            claimGeneration: candidate.claimGeneration,
+          },
+        });
+        await tx.notification.create({
+          data: {
+            userId: unit.claimedById,
+            taskId: unit.taskId,
+            type: "human_unit_revision_requested",
+            title: "A revision was requested",
+            body: "An administrator reviewed the submitted result. Follow the revision instructions and resubmit while the task remains assigned to you.",
+          },
+        });
+        return {
+          outcome: {
+            decided: true,
+            unitStateId: unit.id,
+            state: "revision_requested",
+          } as const,
+        };
+      }
+
+      const unitMoved = await tx.humanWorkUnitRunState.updateMany({
+        where: {
+          id: unit.id,
+          state: fromState,
+          claimGeneration: candidate.claimGeneration,
+          remainingRevisions: unit.remainingRevisions,
+        },
+        data: {
+          state: "exhausted",
+          refusalCause: refusalCause!,
+          transitionSeq: { increment: 1 },
+        },
+      });
+      if (unitMoved.count !== 1) throw new LostDecisionCas();
+      const exhaustedUnit = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: { transitionSeq: true, resumeGeneration: true },
+      });
+      const transitionCause = unsafe ? "exhausted:unsafe" : "exhausted:revisions";
+      await writeReviewTransition(tx, {
+        unitStateId: unit.id,
+        taskId: unit.taskId,
+        actorId: input.actorId,
+        seq: exhaustedUnit.transitionSeq,
+        fromState,
+        toState: "exhausted",
+        cause: transitionCause,
+        claimGeneration: candidate.claimGeneration,
+        resumeGeneration: exhaustedUnit.resumeGeneration,
+        action: "human_unit_exhausted",
+      });
+      const alertedAt = new Date();
+      await tx.humanWorkUnitAlert.create({
+        data: {
+          unitStateId: unit.id,
+          kind: "admin_pause",
+          dueAt: alertedAt,
+          claimGeneration: candidate.claimGeneration,
+        },
+      });
+      const admins = await tx.user.findMany({
+        where: { role: "ADMIN" },
+        select: { id: true },
+      });
+      if (admins.length > 0) {
+        await tx.notification.createMany({
+          data: admins.map((admin) => ({
+            userId: admin.id,
+            taskId: unit.taskId,
+            type: "human_unit_exhausted",
+            title: "Human work unit needs residual handling",
+            body: "The independent review exhausted this human work unit. The existing claimant keeps the task while the remaining manual scope is published.",
+          })),
+        });
+      }
+      return {
+        outcome: {
+          decided: true,
+          unitStateId: unit.id,
+          state: "exhausted",
+        } as const,
+        residualRunId: unit.runId,
+      };
+    });
+
+    if (result.residualRunId) {
+      // T14 is the existing, independently replayable residual transaction.
+      // The exhausted state above is its durable intent; this direct call makes
+      // the handoff immediate, while the workflow drain remains the recovery.
+      const { publishAdmittedResidualScope } = await import("@/server/workflow-runs");
+      await publishAdmittedResidualScope(result.residualRunId);
+    }
+    return result.outcome;
+  } catch (error) {
+    if (error instanceof LostDecisionCas) return classifyLostDecision(input);
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002" &&
+      (await recordDecisionDuplicateIfPresent(input))
+    ) {
+      return { decided: false, cause: "duplicate" };
     }
     throw error;
   }
