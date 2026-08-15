@@ -66,30 +66,92 @@ function parseDeclaredInputs(raw: unknown): DeclaredInput[] {
 }
 
 /**
- * Pause the run and record why, WITHOUT touching the unit or the task.
+ * REFUSE, ATOMICALLY — the `admitted -> paused` transition.
  *
- * The unit stays `admitted`: it was validly admitted and nothing about the
- * accepted contract changed. What changed is the world around it, and that is
- * an operator's problem to resolve, not a reason to rewrite the contract.
+ * contracts/audit-events.md §1 names both publication refusals as unit
+ * transitions with their own causes, and FR-050 requires TWO records per
+ * transition written in the SAME transaction as the transition itself.
+ *
+ * An earlier version of this function paused only the workflow run and wrote a
+ * TaskEvent. That left the unit reading `admitted` forever: an operator would
+ * be told the unit was waiting to publish, with nothing in the audit trail
+ * explaining why it never did. The state and the reason have to move together,
+ * or the state is a lie about a mandate someone has paid for.
+ *
+ * Everything below commits together or not at all. The CAS on `admitted` is
+ * also what makes a retried sweep, a redelivered webhook and two racing drain
+ * ticks converge on ONE refusal instead of a pile of identical audit rows.
+ *
+ * The task is deliberately NOT transitioned: it stays in `ai_processing`. A
+ * refusal publishes nothing, so nothing about the client-facing lifecycle
+ * moves; an admin decides what happens next.
  */
 async function pauseForRefusal(
+  unit: { id: string; taskId: string; claimGeneration: number; resumeGeneration: number },
   runId: string,
-  taskId: string,
   cause: RefusalCause,
   detail: string
 ): Promise<void> {
-  const paused = await prisma.taskWorkflowRun.updateMany({
-    where: { id: runId, status: { in: ["running", "compiling", "awaiting_human_unit"] } },
-    data: { status: "paused", pausedReason: detail },
-  });
-  if (paused.count === 0) return;
+  await prisma.$transaction(async (tx) => {
+    /**
+     * CAS `admitted -> paused`, allocating the audit sequence in the SAME
+     * write (C7/INV-T1). `MAX(seq)+1` is forbidden: two concurrent writers
+     * read the same maximum and both claim it.
+     *
+     * `pausedDetail` is operator-facing and separately constrained (FR-049):
+     * no money value, no identity-bearing text. Callers supply sentences about
+     * the mandate's shape, never about a person or an amount.
+     */
+    const moved = await tx.humanWorkUnitRunState.updateMany({
+      where: { id: unit.id, state: "admitted" },
+      data: {
+        state: "paused",
+        refusalCause: cause,
+        pausedDetail: detail,
+        transitionSeq: { increment: 1 },
+      },
+    });
+    // Already refused, or already moved on. Write nothing: this is the
+    // idempotence guarantee, not an error.
+    if (moved.count === 0) return;
 
-  await prisma.taskEvent.create({
-    data: {
-      taskId,
-      action: "human_unit_paused",
-      meta: { cause },
-    },
+    const { transitionSeq } = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { transitionSeq: true },
+    });
+
+    await tx.humanWorkUnitTransition.create({
+      data: {
+        unitStateId: unit.id,
+        seq: transitionSeq,
+        // No actor: a machine refused, and recording an id here would put a
+        // person's name against a decision they did not make.
+        actorId: null,
+        actorRole: "system",
+        fromState: "admitted",
+        toState: "paused",
+        cause: `paused:${cause}`,
+        claimGeneration: unit.claimGeneration,
+        resumeGeneration: unit.resumeGeneration,
+      },
+    });
+
+    // The mirror, for the surfaces that already render TaskEvent generically.
+    // `meta` carries non-sensitive scalars only.
+    await tx.taskEvent.create({
+      data: {
+        taskId: unit.taskId,
+        action: "human_unit_paused",
+        meta: { state: "paused", cause: `paused:${cause}`, claimGeneration: unit.claimGeneration },
+      },
+    });
+
+    // The run stops too: its machine block has nowhere to go until an admin
+    // resolves the refusal.
+    await tx.taskWorkflowRun.updateMany({
+      where: { id: runId, status: { in: ["running", "compiling", "awaiting_human_unit"] } },
+      data: { status: "paused", pausedReason: detail },
+    });
   });
 }
 
@@ -159,8 +221,8 @@ export async function publishHumanWorkUnit(runId: string): Promise<PublishOutcom
     });
     if (brokenProducers > 0) {
       await pauseForRefusal(
+        unit,
         unit.run.id,
-        unit.taskId,
         "input_unavailable",
         "A step this human unit depends on did not produce its input, so there is nothing to hand a worker."
       );
@@ -180,8 +242,8 @@ export async function publishHumanWorkUnit(runId: string): Promise<PublishOutcom
     });
     if (!file || (frozenSha && file.sha256 !== frozenSha)) {
       await pauseForRefusal(
+        unit,
         unit.run.id,
-        unit.taskId,
         "input_unavailable",
         "An accepted file this human unit declares no longer resolves, or no longer matches the hash frozen at acceptance."
       );
@@ -201,8 +263,8 @@ export async function publishHumanWorkUnit(runId: string): Promise<PublishOutcom
   const inputClass = mostRestrictive(declaredInputs.map((i) => asDataClass(i.dataClass)));
   if (!isAtLeastAsRestrictive(unitClass, inputClass)) {
     await pauseForRefusal(
+      unit,
       unit.run.id,
-      unit.taskId,
       "classification_conflict",
       `This human unit is classified ${unitClass} but declares an input classified ${inputClass}; publishing would show a worker material under a weaker classification than it carries.`
     );

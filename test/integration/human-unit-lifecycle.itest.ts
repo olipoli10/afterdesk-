@@ -341,49 +341,135 @@ describe("Scenario A steps 1-4 — the unit reaches the pool", () => {
   });
 });
 
-describe("pre-transaction refusals publish nothing", () => {
+describe("pre-transaction refusals pause the unit and publish nothing", () => {
   /**
-   * Both refusals below pause the run and leave the unit `admitted`. They are
-   * deliberately checked BEFORE the transaction opens: a refusal discovered
-   * halfway through would have to roll back a task transition and a set of
-   * notifications, and a notification for a move that then rolls back is worse
-   * than no notification at all.
+   * A REFUSAL IS A UNIT TRANSITION, NOT JUST A RUN PAUSE.
+   *
+   * contracts/audit-events.md §1 names both of these as `admitted -> paused`
+   * transitions with their own causes, and FR-050 requires TWO records per
+   * transition written in the same transaction as the transition itself: the
+   * primary `HumanWorkUnitTransition` row and the `TaskEvent` mirror.
+   *
+   * Pausing only the workflow run would leave the unit reading `admitted`
+   * forever. An operator opening the admin surface would be told the unit is
+   * waiting to publish, and the audit trail would carry no record of why it
+   * never did. The state and the reason move together or the state is a lie.
+   *
+   * Both refusals are decided BEFORE the transaction opens. Discovering one
+   * halfway through would mean rolling back a task transition and a batch of
+   * pool notifications, and a notification for a move that then rolls back is
+   * worse than none.
    */
-  it("input_unavailable when a producing step failed permanently", async () => {
+
+  /** Everything a refusal must have written, and everything it must not. */
+  async function expectPausedByRefusal(input: {
+    unitId: string;
+    runId: string;
+    taskId: string;
+    cause: "input_unavailable" | "classification_conflict";
+    detailMatches: RegExp;
+  }) {
+    const unit = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: input.unitId },
+      select: {
+        state: true,
+        refusalCause: true,
+        pausedDetail: true,
+        transitionSeq: true,
+        publishedAt: true,
+        publicationDeadlineAt: true,
+      },
+    });
+    expect(unit.state).toBe("paused");
+    expect(unit.refusalCause).toBe(input.cause);
+    expect(unit.pausedDetail).toMatch(input.detailMatches);
+    // Nothing about publication happened.
+    expect(unit.publishedAt).toBeNull();
+    expect(unit.publicationDeadlineAt).toBeNull();
+    // Allocated monotonically in the same CAS as the state change (C7).
+    expect(unit.transitionSeq).toBe(2);
+
+    /**
+     * `pausedDetail` is operator-facing and separately constrained: no money
+     * value and no identity-bearing text (FR-049). Leaking either would put it
+     * on a surface the audit table was deliberately shaped to exclude.
+     */
+    expect(unit.pausedDetail ?? "").not.toMatch(/\$|\bcents\b|payout|price|@/i);
+
+    const transitions = await prisma.humanWorkUnitTransition.findMany({
+      where: { unitStateId: input.unitId },
+      orderBy: { seq: "asc" },
+      select: {
+        seq: true,
+        cause: true,
+        fromState: true,
+        toState: true,
+        actorRole: true,
+        actorId: true,
+      },
+    });
+    expect(transitions).toHaveLength(2);
+    expect(transitions[1]).toMatchObject({
+      seq: 2,
+      cause: `paused:${input.cause}`,
+      fromState: "admitted",
+      toState: "paused",
+      actorRole: "system",
+      // A system transition has no actor. An id here would be a person being
+      // recorded as responsible for a machine's refusal.
+      actorId: null,
+    });
+
+    // The mirror, written in the same transaction (FR-050).
+    const mirrored = await prisma.taskEvent.count({
+      where: { taskId: input.taskId, action: "human_unit_paused" },
+    });
+    expect(mirrored).toBe(1);
+
+    const run = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: input.runId },
+      select: { status: true, pausedReason: true },
+    });
+    expect(run.status).toBe("paused");
+    expect(run.pausedReason).toMatch(input.detailMatches);
+
+    // NOTHING was published: the task never left ai_processing, no worker was
+    // told, and no publication clock was started.
+    const task = await prisma.task.findUniqueOrThrow({
+      where: { id: input.taskId },
+      select: { status: true },
+    });
+    expect(task.status).toBe("ai_processing");
+    expect(await prisma.notification.count({ where: { taskId: input.taskId } })).toBe(0);
+    expect(await prisma.humanWorkUnitAlert.count({ where: { unitStateId: input.unitId } })).toBe(0);
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: input.taskId, action: "human_unit_published" },
+      })
+    ).toBe(0);
+  }
+
+  it("input_unavailable: a producing step failed permanently", async () => {
     const { run, unit, task } = await admittedRunReadyToPublish({ producerStatus: "failed" });
     const outcome = await publishHumanWorkUnit(run.id);
     expect(outcome.published).toBe(false);
     expect(outcome.cause).toBe("input_unavailable");
 
-    const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
-      where: { id: unit.id },
-      select: { state: true, publishedAt: true },
+    await expectPausedByRefusal({
+      unitId: unit.id,
+      runId: run.id,
+      taskId: task.id,
+      cause: "input_unavailable",
+      detailMatches: /input/i,
     });
-    expect(after.state).toBe("admitted");
-    expect(after.publishedAt).toBeNull();
-
-    const runAfter = await prisma.taskWorkflowRun.findUniqueOrThrow({
-      where: { id: run.id },
-      select: { status: true, pausedReason: true },
-    });
-    expect(runAfter.status).toBe("paused");
-    expect(runAfter.pausedReason).toMatch(/input/i);
-
-    // Nothing reached the pool.
-    const taskAfter = await prisma.task.findUniqueOrThrow({
-      where: { id: task.id },
-      select: { status: true },
-    });
-    expect(taskAfter.status).toBe("ai_processing");
-    expect(await prisma.notification.count({ where: { taskId: task.id } })).toBe(0);
-    expect(await prisma.humanWorkUnitAlert.count({ where: { unitStateId: unit.id } })).toBe(0);
   });
 
   /**
    * The unit would show a worker material classified more restrictively than
-   * the unit itself is. Publishing would be a downgrade by omission.
+   * the unit itself. Publishing would be a downgrade by omission: the material
+   * keeps its sensitivity while the unit stops declaring it.
    */
-  it("classification_conflict when an input is more restrictive than the unit", async () => {
+  it("classification_conflict: an input is more restrictive than the unit", async () => {
     const { run, unit, task } = await admittedRunReadyToPublish({
       dataClass: "business_confidential",
       inputClass: "personal_sensitive",
@@ -392,33 +478,59 @@ describe("pre-transaction refusals publish nothing", () => {
     expect(outcome.published).toBe(false);
     expect(outcome.cause).toBe("classification_conflict");
 
-    const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+    await expectPausedByRefusal({
+      unitId: unit.id,
+      runId: run.id,
+      taskId: task.id,
+      cause: "classification_conflict",
+      detailMatches: /classification|classified/i,
+    });
+  });
+
+  /**
+   * A retried sweep, a redelivered webhook, or two drain ticks racing. The CAS
+   * on `admitted` means a second call finds `paused` and writes nothing, so the
+   * audit trail carries one refusal rather than a pile of identical ones.
+   */
+  it.each([
+    ["input_unavailable", { producerStatus: "failed" }] as const,
+    [
+      "classification_conflict",
+      { dataClass: "business_confidential", inputClass: "personal_sensitive" },
+    ] as const,
+  ])("a repeated call after %s creates no duplicate", async (_cause, over) => {
+    const { run, unit, task } = await admittedRunReadyToPublish(over);
+    await publishHumanWorkUnit(run.id);
+    const second = await publishHumanWorkUnit(run.id);
+    expect(second.published).toBe(false);
+
+    expect(
+      await prisma.humanWorkUnitTransition.count({ where: { unitStateId: unit.id } })
+    ).toBe(2);
+    expect(
+      await prisma.taskEvent.count({ where: { taskId: task.id, action: "human_unit_paused" } })
+    ).toBe(1);
+    const unitAfter = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
       where: { id: unit.id },
-      select: { state: true },
+      select: { transitionSeq: true, state: true },
     });
-    expect(after.state).toBe("admitted");
-
-    const runAfter = await prisma.taskWorkflowRun.findUniqueOrThrow({
-      where: { id: run.id },
-      select: { status: true, pausedReason: true },
-    });
-    expect(runAfter.status).toBe("paused");
-    expect(runAfter.pausedReason).toMatch(/classification/i);
-
-    const taskAfter = await prisma.task.findUniqueOrThrow({
-      where: { id: task.id },
-      select: { status: true },
-    });
-    expect(taskAfter.status).toBe("ai_processing");
+    expect(unitAfter.transitionSeq).toBe(2);
+    expect(unitAfter.state).toBe("paused");
   });
 
   it("permits an input no more restrictive than the unit", async () => {
-    const { run } = await admittedRunReadyToPublish({
+    const { run, unit } = await admittedRunReadyToPublish({
       dataClass: "personal_sensitive",
       inputClass: "business_confidential",
     });
     const outcome = await publishHumanWorkUnit(run.id);
     expect(outcome.published).toBe(true);
+    const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { state: true, refusalCause: true },
+    });
+    expect(after.state).toBe("published");
+    expect(after.refusalCause).toBeNull();
   });
 
   it("refuses a run with no admitted unit, without throwing", async () => {
