@@ -14,14 +14,19 @@
 import { type SiteLang } from "./langs";
 
 export const COMPACT_SERVICES_LABEL: Record<SiteLang, string> = {
-  en: "Our Services",
-  // "Produits" until the repositioning: the hub sells finished work, not
-  // products, and it was the one compact label that named the wrong thing.
-  // "Services" is the same eight characters, so the measured fit below is
-  // unchanged.
-  fr: "Services",
-  es: "Servicios",
-  tl: "Serbisyo",
+  // The operations repositioning (ADR-022) renames the hub link without
+  // moving the /services route. These compact forms are chosen to stay AT OR
+  // UNDER the measured lengths they replace — the pill's 375px budget was
+  // measured, not estimated, and this file may not silently spend it:
+  // EN 10<12, FR "Mandats" 7<8 (Québécois for entrusted engagements),
+  // ES "Encargos" 8<9 (commissioned work), TL 9 vs 8 (+~5px at 10px mono,
+  // inside every measured margin). FR/ES deliberately use the shorter
+  // domestic word rather than the full "Opérations"/"Operaciones" the
+  // footer carries — this file's own rule: compact forms, not translations.
+  en: "Operations",
+  fr: "Mandats",
+  es: "Encargos",
+  tl: "Operasyon",
 };
 
 export const COMPACT_HOW_LABEL: Record<SiteLang, string> = {

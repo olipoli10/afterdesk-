@@ -6,6 +6,7 @@ import { arrivedFromInsideTheApp, getSessionUser, roleHome } from "@/lib/authz";
 import { Reveal } from "@/components/reveal";
 import { PublicCounters } from "@/components/public-counters";
 import { LiveTaskWindow } from "@/components/live-task-window";
+import { OperationConsole } from "@/components/operation-console";
 import { MobileMenu } from "@/components/mobile-menu";
 import { PointerGlow } from "@/components/pointer-glow";
 import { SITE_URL } from "@/lib/site";
@@ -187,6 +188,12 @@ export default async function Home({
             >
               {t.footer.how}
             </Link>
+            <Link
+              href="/inside"
+              className="hidden text-[12px] font-medium text-[#8A9099] transition-colors hover:text-white sm:block sm:text-[13px]"
+            >
+              {t.footer.inside}
+            </Link>
           </div>
           <div className="flex items-center justify-end gap-1.5 sm:gap-2.5">
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
@@ -353,6 +360,15 @@ export default async function Home({
           </Reveal>
         </div>
       </section>
+
+      {/* ── THE OPERATION CONSOLE — static diagram of the operating
+             model: seven stations, one result, the issue caught and reworked
+             in plain sight. Unnumbered on purpose: the 01–04 chapters tell
+             the story of a PURCHASE, and this section tells the story of the
+             SYSTEM — renumbering four translated labels to wedge it in would
+             buy nothing. Deeper detail and the truth registry live on
+             /inside. */}
+      <OperationConsole copy={t.console} />
 
       {/* ── 01/04 THE RECEIPT ─────────────────────────────────────────── */}
       <section className="border-t border-white/8">
@@ -608,6 +624,9 @@ export default async function Home({
             </Link>
             <Link href="/services" className="transition-colors hover:text-[#14161A]">
               {t.footer.services}
+            </Link>
+            <Link href="/inside" className="transition-colors hover:text-[#14161A]">
+              {t.footer.inside}
             </Link>
             <Link href="/login" className="transition-colors hover:text-[#14161A]">
               {t.footer.signIn}

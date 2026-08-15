@@ -29,6 +29,39 @@ export function clientLangOf(value: string | undefined | null): ClientLang {
   return siteLangOf(value);
 }
 
+/**
+ * Copy for the Operation Console (operation-console.tsx) — the static
+ * seven-station diagram of one result moving through the operating model.
+ * Exported so the component can type its prop without importing the whole
+ * dictionary shape.
+ */
+export type ConsoleCopy = {
+  label: string;
+  h2: string;
+  /** The whole journey in one paragraph for screen readers — the Console's
+   *  version of hero.srPreview. */
+  srSummary: string;
+  /** [station name, one line of what happens] — exactly the seven states,
+   *  in order: request, scope, plan, method, issue, review, delivery. The
+   *  tuple length IS the parity gate across languages. */
+  stations: [
+    [string, string],
+    [string, string],
+    [string, string],
+    [string, string],
+    [string, string],
+    [string, string],
+    [string, string],
+  ];
+  /** The words amber and green accompany — color is never the only
+   *  carrier of the issue/verified states. */
+  statusIssue: string;
+  statusVerified: string;
+  /** The sentence that closes the autonomy reading: a person reviews every
+   *  delivery. Stated under the diagram. */
+  reviewNote: string;
+};
+
 type Dict = {
   /** `portal` replaces signIn + send once a session exists. Same key, same
    *  words as the worker storefront, so the door does not rename itself
@@ -115,7 +148,7 @@ type Dict = {
      *  NOT IN SCOPE list on /how-it-works (docs.ts scope.items). */
     limits: string;
   };
-  footer: { about: string; how: string; signIn: string; work: string; services: string };
+  footer: { about: string; how: string; signIn: string; work: string; services: string; inside: string };
   liveWindow: {
     taskTitle: string;
     fieldScope: string;
@@ -137,6 +170,7 @@ type Dict = {
     steps: [string, string][];
     pillars: [string, string][];
   };
+  console: ConsoleCopy;
   /**
    * No `workerWord`, no `released`, and their absence is the point.
    *
@@ -158,29 +192,23 @@ const en: Dict = {
   nav: { signIn: "Sign in", send: "Request a fixed-price quote", portal: "My account" },
   hero: {
     /**
-     * WHAT, THEN THE BUYING MODEL. In six words, before the fold.
+     * THE CATEGORY LINE (ADR-022). "Hand over the operation. / Not the
+     * task." moves the page from "we do your admin tasks" to "we take
+     * responsibility for an outcome" — the negation in line2 is what blocks
+     * the VA-agency reading. The subheadline anchors it immediately in what
+     * is supportable today: one described result, a written scope, one fixed
+     * price, the method managed by AfterDesk, and a human review before
+     * delivery. No autonomy claim, no recurrence claim, and no
+     * execution-lane list up here — the lanes are named on /inside, where
+     * there is room to be exact.
      *
-     * The previous pair — "Send the work. / Get it back checked." — sold the
-     * mechanism: someone does it, someone else checks. Read cold it landed as
-     * a better-supervised VA agency, which is the category this business is
-     * not in.
-     *
-     * The alternative tested against it was "Describe the result. / Get it
-     * back finished." It lost on three measurable counts, not on taste. At
-     * 1440px the h1 box is 604px wide: its two lines measure 691px and 707px,
-     * so BOTH wrap and the hero grows to four visual lines at every width
-     * (178px on mobile against 133px here). It repeats the sub-hero's own
-     * opening words verbatim one line below itself. And "describe what you
-     * want, get it back done" is the stock pitch of an AI agent product — the
-     * second reading this rewrite has to avoid.
-     *
-     * This pair keeps the shipped rhythm exactly: one line wraps, three
-     * visual lines, same height as before.
+     * Geometry: same shape as the pair it replaces — line1 wraps once, line2
+     * stays whole, three visual lines at the widths that matter.
      */
-    line1: "Finished admin work.",
-    line2: "One fixed price.",
+    line1: "Hand over the operation.",
+    line2: "Not the task.",
     subtitle:
-      "Describe the result you need. AfterDesk defines the scope, sets one fixed price, manages the execution and verifies the finished delivery.",
+      "Describe the result that has to exist. AfterDesk writes the scope, sets one fixed price, manages the method, and reviews the delivery before it reaches you.",
     cta: "Request a fixed-price quote",
     guarantee: (h) =>
       `Your card is authorized, not charged. Nothing reaches you until it has passed our review against the approved standard, and your card is charged only ${h} hours after that, so you have time to reject it.`,
@@ -192,7 +220,7 @@ const en: Dict = {
     label: "What this is",
     h2: [
       "",
-      " delivers finished administrative work. You describe the result you need: clean this list, research these companies, pull the dates out of these contracts. We define the scope, quote one fixed price, and own the work until it is done and checked.",
+      " takes on a defined operation and delivers the finished result. You describe what has to exist: this list cleaned, these companies researched, the dates out of these contracts. We write the scope, quote one fixed price, and own the work until it is done and checked.",
     ],
     /**
      * THE METHOD SENTENCE, AND THE LIMIT OF WHAT IT MAY CLAIM.
@@ -201,10 +229,12 @@ const en: Dict = {
      * automation, does not say people only handle exceptions, and does not
      * imply a fleet of specialised providers being selected between. Today the
      * dependable way is usually a person working to a written standard, and
-     * this sentence stays true on the day that changes.
+     * this sentence stays true on the day that changes. The clause added
+     * by the repositioning — a person reviews every delivery — is the one
+     * mechanism that is BOTH live and load-bearing, so it is named here.
      */
     intro:
-      "The method depends on the work. AfterDesk chooses and manages the most dependable way to complete the approved scope, and answers for the result either way.",
+      "The method depends on the operation. AfterDesk chooses and manages the most dependable way to complete the approved scope — and a person reviews every delivery against the approved standard before it reaches you.",
     steps: [
       [
         "Define",
@@ -296,7 +326,7 @@ const en: Dict = {
    */
   ch04: {
     label: "End to end",
-    h2: "One task, from request to delivery.",
+    h2: "One operation, from request to delivery.",
     laneYou: "You",
     laneThem: "AfterDesk",
     note: "Timings are illustrative; the confirmed date is on your quote",
@@ -349,7 +379,35 @@ const en: Dict = {
     limits:
       "Not everything fits. We turn down live calls, anything that needs your identity to cross, high-stakes legal, medical or financial judgment, and anything we cannot check against a source. If your job does not fit, we say so before you pay anything.",
   },
-  footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us", services: "Our Services" },
+  footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us", services: "Operations", inside: "Inside AfterDesk" },
+  /**
+   * THE OPERATION CONSOLE (operation-console.tsx) — seven stations, one
+   * result. Station five is the point: an issue is caught and reworked
+   * instead of delivered. TRUTH RULES (ADR-022): one result, never a queue;
+   * the lane list in station four names POSSIBLE managed methods, not lanes
+   * that all run automatically today; human review is visibly part of the
+   * model; no recurrence vocabulary anywhere in this dictionary
+   * (test/public-site-truth.test.ts bans it outright).
+   */
+  console: {
+    label: "The operating model",
+    h2: "What happens between your approval and the delivery.",
+    srSummary:
+      "Diagram of how AfterDesk runs one operation. A request becomes a written scope with one fixed price. The scope is organized into a managed plan. Each step is given the most dependable method — software, a model, a connected tool, browser work or a person. A step that fails is stopped and flagged as an issue. A person reviews the work and it is redone until it passes. You receive the verified delivery at the unchanged fixed price.",
+    stations: [
+      ["Request", "You describe the result that has to exist, in plain language."],
+      ["Written scope", "AfterDesk turns it into a written scope with one fixed price. You approve before anything starts."],
+      ["Managed plan", "The scope becomes a plan of bounded steps AfterDesk is responsible for."],
+      ["Method selected", "Each step gets the most dependable method available to it — software, a model, a connected tool, browser work or a person, all managed by AfterDesk."],
+      ["Issue detected", "A step that fails or looks wrong is stopped and flagged instead of delivered."],
+      ["Review & rework", "A person reviews the work against the approved standard. What fails goes back and is redone."],
+      ["Verified delivery", "You receive the version that passed, at the fixed price you approved."],
+    ],
+    statusIssue: "Issue",
+    statusVerified: "Verified",
+    reviewNote:
+      "A person reviews every delivery against the approved standard before it goes out. The issue lane is not an apology — catching a step there is the system working.",
+  },
   liveWindow: {
     taskTitle: "Clean a 1,800-row supplier price list",
     fieldScope: "SCOPE",
@@ -390,10 +448,10 @@ const en: Dict = {
 const fr: Dict = {
   nav: { signIn: "Connexion", send: "Demander un prix fixe", portal: "Mon compte" },
   hero: {
-    line1: "Du travail administratif fini.",
-    line2: "Un prix fixe.",
+    line1: "Confie l'opération.",
+    line2: "Pas la tâche.",
     subtitle:
-      "Décrivez le résultat dont vous avez besoin. AfterDesk définit le périmètre, fixe un prix unique, pilote l'exécution et vérifie la livraison terminée.",
+      "Décrivez le résultat qui doit exister. AfterDesk écrit le périmètre, fixe un prix unique, pilote la méthode et révise la livraison avant qu'elle vous parvienne.",
     cta: "Demander un prix fixe",
     guarantee: (h) =>
       `Votre carte est autorisée, pas débitée. Rien ne vous parvient avant d'avoir passé notre révision selon la norme approuvée, et votre carte n'est débitée que ${h} heures plus tard, vous avez donc le temps de refuser.`,
@@ -405,10 +463,10 @@ const fr: Dict = {
     label: "Ce qu'on fait",
     h2: [
       "",
-      " livre du travail administratif fini. Vous décrivez le résultat voulu : nettoyer cette liste, rechercher ces entreprises, sortir les dates de ces contrats. Nous définissons le périmètre, chiffrons un prix fixe, et nous portons le travail jusqu'à ce qu'il soit fait et vérifié.",
+      " prend en charge une opération définie et livre le résultat fini. Vous décrivez ce qui doit exister : cette liste nettoyée, ces entreprises recherchées, les dates sorties de ces contrats. Nous écrivons le périmètre, chiffrons un prix fixe, et nous portons le travail jusqu'à ce qu'il soit fait et vérifié.",
     ],
     intro:
-      "La méthode dépend du travail. AfterDesk choisit et pilote la façon la plus fiable de réaliser le périmètre approuvé, et répond du résultat dans tous les cas.",
+      "La méthode dépend de l'opération. AfterDesk choisit et pilote la façon la plus fiable de réaliser le périmètre approuvé — et une personne révise chaque livraison selon la norme approuvée avant qu'elle vous parvienne.",
     steps: [
       [
         "Définir",
@@ -471,7 +529,7 @@ const fr: Dict = {
   },
   ch04: {
     label: "De bout en bout",
-    h2: "Une tâche, de la demande à la livraison.",
+    h2: "Une opération, de la demande à la livraison.",
     laneYou: "Vous",
     laneThem: "AfterDesk",
     note: "Étapes illustratives ; la date confirmée figure sur votre devis",
@@ -530,7 +588,26 @@ const fr: Dict = {
       "7 h 07 · révision réussie · dans votre boîte de réception",
     ],
   },
-  footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", work: "Travailler avec nous", services: "Nos services" },
+  footer: { about: "Qui nous sommes", how: "Comment ça marche", signIn: "Connexion", work: "Travailler avec nous", services: "Opérations", inside: "Sous le capot" },
+  console: {
+    label: "Le modèle d'opération",
+    h2: "Ce qui se passe entre votre approbation et la livraison.",
+    srSummary:
+      "Schéma d'une opération menée par AfterDesk. Une demande devient un périmètre écrit avec un prix fixe. Le périmètre est organisé en un plan pris en charge. Chaque étape reçoit la méthode la plus fiable — logiciel, modèle, outil connecté, travail au navigateur ou une personne. Une étape qui échoue est arrêtée et signalée comme problème. Une personne révise le travail et il est refait jusqu'à ce qu'il passe. Vous recevez la livraison vérifiée, au prix fixe inchangé.",
+    stations: [
+      ["Demande", "Vous décrivez, en langage clair, le résultat qui doit exister."],
+      ["Périmètre écrit", "AfterDesk en fait un périmètre écrit avec un prix fixe. Vous approuvez avant que rien ne commence."],
+      ["Plan pris en charge", "Le périmètre devient un plan d'étapes bornées dont AfterDesk est responsable."],
+      ["Méthode choisie", "Chaque étape reçoit la méthode la plus fiable pour elle — logiciel, modèle, outil connecté, travail au navigateur ou une personne, le tout piloté par AfterDesk."],
+      ["Problème détecté", "Une étape qui échoue ou semble douteuse est arrêtée et signalée au lieu d'être livrée."],
+      ["Révision et reprise", "Une personne révise le travail selon la norme approuvée. Ce qui échoue repart et est refait."],
+      ["Livraison vérifiée", "Vous recevez la version qui a passé, au prix fixe que vous avez approuvé."],
+    ],
+    statusIssue: "Problème",
+    statusVerified: "Vérifié",
+    reviewNote:
+      "Une personne révise chaque livraison selon la norme approuvée avant qu'elle sorte. La voie des problèmes n'est pas une excuse : attraper une étape là, c'est le système qui fonctionne.",
+  },
   counters: {
     taskWord: ["tâche livrée", "tâches livrées"],
     toDate: "À ce jour,",
@@ -545,10 +622,10 @@ const fr: Dict = {
 const es: Dict = {
   nav: { signIn: "Iniciar sesión", send: "Pedir un precio fijo", portal: "Mi cuenta" },
   hero: {
-    line1: "Trabajo administrativo terminado.",
-    line2: "Un precio fijo.",
+    line1: "Confíanos la operación.",
+    line2: "No la tarea.",
     subtitle:
-      "Describe el resultado que necesitas. AfterDesk define el alcance, fija un precio único, gestiona la ejecución y verifica la entrega terminada.",
+      "Describe el resultado que debe existir. AfterDesk escribe el alcance, fija un precio único, gestiona el método y revisa la entrega antes de que te llegue.",
     cta: "Pedir un precio fijo",
     guarantee: (h) =>
       `Tu tarjeta queda autorizada, no cobrada. Nada te llega antes de pasar nuestra revisión contra el estándar aprobado, y tu tarjeta se cobra solo ${h} horas después de eso, así que tienes tiempo de rechazarlo.`,
@@ -560,10 +637,10 @@ const es: Dict = {
     label: "Qué es esto",
     h2: [
       "",
-      " entrega trabajo administrativo terminado. Tú describes el resultado que necesitas: limpiar esta lista, investigar estas empresas, sacar las fechas de estos contratos. Nosotros definimos el alcance, cotizamos un precio fijo y sostenemos el trabajo hasta que esté hecho y revisado.",
+      " toma una operación definida y entrega el resultado terminado. Tú describes lo que debe existir: esta lista limpia, estas empresas investigadas, las fechas fuera de estos contratos. Nosotros escribimos el alcance, cotizamos un precio fijo y sostenemos el trabajo hasta que esté hecho y revisado.",
     ],
     intro:
-      "El método depende del trabajo. AfterDesk elige y gestiona la forma más fiable de completar el alcance aprobado, y responde por el resultado en cualquier caso.",
+      "El método depende de la operación. AfterDesk elige y gestiona la forma más fiable de completar el alcance aprobado — y una persona revisa cada entrega contra el estándar aprobado antes de que te llegue.",
     steps: [
       [
         "Definir",
@@ -626,7 +703,7 @@ const es: Dict = {
   },
   ch04: {
     label: "De principio a fin",
-    h2: "Una tarea, de la solicitud a la entrega.",
+    h2: "Una operación, de la solicitud a la entrega.",
     laneYou: "Tú",
     laneThem: "AfterDesk",
     note: "Pasos ilustrativos; la fecha confirmada aparece en tu presupuesto",
@@ -685,7 +762,26 @@ const es: Dict = {
       "7:07 a. m. · pasó la revisión · en tu bandeja de entrada",
     ],
   },
-  footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros", services: "Nuestros servicios" },
+  footer: { about: "Quiénes somos", how: "Cómo funciona", signIn: "Iniciar sesión", work: "Trabaja con nosotros", services: "Operaciones", inside: "Por dentro" },
+  console: {
+    label: "El modelo operativo",
+    h2: "Qué pasa entre tu aprobación y la entrega.",
+    srSummary:
+      "Diagrama de cómo AfterDesk ejecuta una operación. Una solicitud se convierte en un alcance escrito con un precio fijo. El alcance se organiza en un plan gestionado. Cada paso recibe el método más fiable — software, un modelo, una herramienta conectada, trabajo en navegador o una persona. Un paso que falla se detiene y se marca como problema. Una persona revisa el trabajo y se rehace hasta que pasa. Recibes la entrega verificada, al precio fijo sin cambios.",
+    stations: [
+      ["Solicitud", "Describes, en lenguaje claro, el resultado que debe existir."],
+      ["Alcance escrito", "AfterDesk lo convierte en un alcance escrito con un precio fijo. Apruebas antes de que empiece nada."],
+      ["Plan gestionado", "El alcance se convierte en un plan de pasos acotados de los que AfterDesk es responsable."],
+      ["Método elegido", "Cada paso recibe el método más fiable disponible — software, un modelo, una herramienta conectada, trabajo en navegador o una persona, todo gestionado por AfterDesk."],
+      ["Problema detectado", "Un paso que falla o parece dudoso se detiene y se marca en lugar de entregarse."],
+      ["Revisión y rehecho", "Una persona revisa el trabajo contra el estándar aprobado. Lo que falla vuelve y se rehace."],
+      ["Entrega verificada", "Recibes la versión que pasó, al precio fijo que aprobaste."],
+    ],
+    statusIssue: "Problema",
+    statusVerified: "Verificado",
+    reviewNote:
+      "Una persona revisa cada entrega contra el estándar aprobado antes de que salga. El carril de problemas no es una disculpa: atrapar un paso ahí es el sistema funcionando.",
+  },
   counters: {
     taskWord: ["tarea entregada", "tareas entregadas"],
     toDate: "Hasta la fecha,",
@@ -703,10 +799,10 @@ const es: Dict = {
 const tl: Dict = {
   nav: { signIn: "Mag-sign in", send: "Humingi ng fixed na presyo", portal: "Account ko" },
   hero: {
-    line1: "Tapos nang admin na trabaho.",
-    line2: "Isang fixed na presyo.",
+    line1: "Ipasa ang operasyon.",
+    line2: "Hindi ang task.",
     subtitle:
-      "Ilarawan ang resultang kailangan mo. Tinutukoy ng AfterDesk ang scope, nagtatakda ng iisang fixed na presyo, namamahala sa execution, at sinusuri ang tapos nang delivery.",
+      "Ilarawan ang resultang dapat mabuo. Isinusulat ng AfterDesk ang scope, nagtatakda ng iisang fixed na presyo, namamahala sa paraan, at nirerebyu ang delivery bago ito makarating sa iyo.",
     cta: "Humingi ng fixed na presyo",
     guarantee: (h) =>
       `Naka-authorize lang ang card mo, hindi sinisingil. Walang nakakarating sa iyo hangga't hindi ito pumapasa sa aming review laban sa aprubadong pamantayan, at sisingilin lang ang card mo ${h} oras pagkatapos noon, kaya may oras ka pang tumanggi.`,
@@ -718,10 +814,10 @@ const tl: Dict = {
     label: "Ano ito",
     h2: [
       "Ang ",
-      " ay naghahatid ng tapos nang administratibong trabaho. Inilalarawan mo ang resultang kailangan mo: linisin ang listahang ito, saliksikin ang mga kumpanyang ito, kunin ang mga petsa sa mga kontratang ito. Kami ang tumutukoy ng scope, nagpepresyo nang fixed, at kami ang may hawak nito hanggang tapos at nasuri na.",
+      " ang kumukuha ng isang tinukoy na operasyon at naghahatid ng tapos na resulta. Inilalarawan mo kung ano ang dapat mabuo: linisin ang listahang ito, saliksikin ang mga kumpanyang ito, kunin ang mga petsa sa mga kontratang ito. Kami ang sumusulat ng scope, nagpepresyo nang fixed, at kami ang may hawak nito hanggang tapos at nasuri na.",
     ],
     intro:
-      "Nakadepende sa trabaho ang paraan. Ang AfterDesk ang pumipili at namamahala sa pinaka-maaasahang paraan para tapusin ang aprubadong scope, at kami ang sumasagot sa resulta anuman ang paraan.",
+      "Nakadepende sa operasyon ang paraan. Ang AfterDesk ang pumipili at namamahala sa pinaka-maaasahang paraan para tapusin ang aprubadong scope — at may taong nagrerebyu ng bawat delivery laban sa aprubadong pamantayan bago ito makarating sa iyo.",
     steps: [
       [
         "Tukuyin",
@@ -784,7 +880,7 @@ const tl: Dict = {
   },
   ch04: {
     label: "Simula hanggang dulo",
-    h2: "Isang task, mula request hanggang delivery.",
+    h2: "Isang operasyon, mula request hanggang delivery.",
     laneYou: "Ikaw",
     laneThem: "AfterDesk",
     note: "Ilustratibo ang mga hakbang; nasa quote mo ang kumpirmadong petsa",
@@ -843,7 +939,26 @@ const tl: Dict = {
       "7:07 AM · pumasa sa review · nasa inbox mo na",
     ],
   },
-  footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin", services: "Mga serbisyo" },
+  footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin", services: "Mga operasyon", inside: "Sa loob ng AfterDesk" },
+  console: {
+    label: "Ang operating model",
+    h2: "Ano ang nangyayari sa pagitan ng pag-apruba mo at ng delivery.",
+    srSummary:
+      "Diagram kung paano pinapatakbo ng AfterDesk ang isang operasyon. Ang request ay nagiging nakasulat na scope na may fixed na presyo. Inaayos ang scope sa isang managed na plano. Bawat hakbang ay binibigyan ng pinaka-maaasahang paraan — software, model, konektadong tool, trabaho sa browser o tao. Ang hakbang na pumalya ay hinihinto at minamarkahan bilang problema. May taong nagrerebyu ng trabaho at inuulit ito hanggang pumasa. Natatanggap mo ang beripikadong delivery, sa hindi nagbabagong fixed na presyo.",
+    stations: [
+      ["Request", "Ilalarawan mo, sa simpleng salita, ang resultang dapat mabuo."],
+      ["Nakasulat na scope", "Ginagawa itong nakasulat na scope na may fixed na presyo. Ikaw ang mag-a-approve bago magsimula ang kahit ano."],
+      ["Managed na plano", "Nagiging plano ang scope — mga hakbang na may hangganan na pananagutan ng AfterDesk."],
+      ["Piniling paraan", "Bawat hakbang ay binibigyan ng pinaka-maaasahang paraan — software, model, konektadong tool, trabaho sa browser o tao, lahat pinamamahalaan ng AfterDesk."],
+      ["May nakitang problema", "Ang hakbang na pumalya o mukhang mali ay hinihinto at minamarkahan sa halip na i-deliver."],
+      ["Review at ulit", "May taong nagrerebyu ng trabaho laban sa aprubadong pamantayan. Ang bumabagsak ay bumabalik at inuulit."],
+      ["Beripikadong delivery", "Natatanggap mo ang bersyong pumasa, sa fixed na presyong inaprubahan mo."],
+    ],
+    statusIssue: "Problema",
+    statusVerified: "Beripikado",
+    reviewNote:
+      "May taong nagrerebyu ng bawat delivery laban sa aprubadong pamantayan bago ito lumabas. Ang lane ng problema ay hindi paghingi ng paumanhin: ang mahuli ang isang hakbang doon ay ang sistemang gumagana.",
+  },
   counters: {
     taskWord: ["task na naihatid", "mga task na naihatid"],
     toDate: "Sa ngayon,",
