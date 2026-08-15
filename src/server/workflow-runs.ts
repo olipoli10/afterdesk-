@@ -1857,6 +1857,7 @@ export async function finishRun(runId: string): Promise<void> {
       planVersionId: true,
       status: true,
       automatedStepCount: true,
+      humanWorkUnit: { select: { id: true } },
       task: {
         select: {
           id: true,
@@ -1872,7 +1873,11 @@ export async function finishRun(runId: string): Promise<void> {
       },
     },
   });
-  if (!run || run.task.status !== "ai_processing") return;
+  // An admitted run carries the fixed payout the worker already saw. Sending
+  // it through this ordinary residual path would recompute that promise and
+  // create a second human-work package. The caller already branches, but this
+  // guard is the fail-closed boundary for every future caller (T037).
+  if (!run || run.humanWorkUnit !== null || run.task.status !== "ai_processing") return;
 
   if (
     await handoverBlockedForUnknownPayout({
@@ -2064,31 +2069,32 @@ export async function finishRun(runId: string): Promise<void> {
  * through the existing `submitDeliverable -> submitted_for_qc ->
  * approveDeliverable` path at the accepted fixed payout (FR-057).
  *
- * This is the minimum T034's wiring needs to exist and be provable. T037 owns
- * the rest of its contract — notably the defensive guard on `finishRun`
- * refusing to run for an admitted run.
+ * Run state and audit event are one transaction. A crash or an audit failure
+ * therefore exposes both or neither; `done` without its reason is forbidden.
  */
 export async function finishAdmittedRun(runId: string): Promise<void> {
-  const run = await prisma.taskWorkflowRun.findUnique({
-    where: { id: runId },
-    select: { taskId: true },
-  });
-  if (!run) return;
+  await prisma.$transaction(async (tx) => {
+    const run = await tx.taskWorkflowRun.findUnique({
+      where: { id: runId },
+      select: { taskId: true },
+    });
+    if (!run) return;
 
-  // CAS, and the result is checked: a run already finished by a concurrent
-  // tick must not produce a second audit event.
-  const finished = await prisma.taskWorkflowRun.updateMany({
-    where: { id: runId, status: { in: ["running", "awaiting_human_unit"] } },
-    data: { status: "done", finishedAt: new Date() },
-  });
-  if (finished.count === 0) return;
+    // CAS, and the result is checked: a run already finished by a concurrent
+    // tick must not produce a second audit event.
+    const finished = await tx.taskWorkflowRun.updateMany({
+      where: { id: runId, status: { in: ["running", "awaiting_human_unit"] } },
+      data: { status: "done", finishedAt: new Date() },
+    });
+    if (finished.count === 0) return;
 
-  await prisma.taskEvent.create({
-    data: {
-      taskId: run.taskId,
-      action: "human_unit_run_finished",
-      meta: { runId },
-    },
+    await tx.taskEvent.create({
+      data: {
+        taskId: run.taskId,
+        action: "human_unit_run_finished",
+        meta: { runId },
+      },
+    });
   });
 }
 
