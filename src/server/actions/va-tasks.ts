@@ -11,7 +11,7 @@ import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
 import { getSettings } from "@/lib/settings";
 import { metricsSchemaFor } from "@/lib/delivery-metrics";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
-import { bindClaimToHumanUnit } from "@/server/human-unit";
+import { bindClaimToHumanUnit, HumanUnitBindError } from "@/server/human-unit";
 import {
   ACTIVE_CLAIM_STATUSES,
   activeClaimCapRefusal,
@@ -28,6 +28,17 @@ class Refused extends Error {}
 
 function surfaced(e: unknown): VaActionResult | null {
   if (e instanceof Refused) return { ok: false, error: e.message };
+  /**
+   * A required human-work-unit binding failed, so the whole claim rolled back.
+   * Surfaced with the SAME wording as a task that is no longer available:
+   * telling a worker which of the two happened would describe the internal
+   * state of a unit they have no business seeing, and neither answer changes
+   * what they can do next.
+   */
+  if (e instanceof HumanUnitBindError) {
+    console.error("human work unit binding failed; claim rolled back", e);
+    return { ok: false, error: "This task is no longer available." };
+  }
   if (e instanceof IllegalTransitionError) {
     console.error("illegal transition in VA action", e);
     return { ok: false, error: "That action is not possible right now. Nothing was changed." };

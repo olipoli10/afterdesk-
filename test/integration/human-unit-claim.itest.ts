@@ -1,6 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { prisma } from "@/lib/db";
-import { publishHumanWorkUnit } from "@/server/human-unit";
+import {
+  bindClaimToHumanUnit,
+  HumanUnitBindError,
+  publishHumanWorkUnit,
+} from "@/server/human-unit";
 import { createTask, createWorker } from "./fixtures";
 
 /**
@@ -47,7 +51,7 @@ vi.mock("@/lib/authz", async (importOriginal) => {
 });
 
 const { requireApprovedVa } = await import("@/lib/authz");
-const { claimTask } = await import("@/server/actions/va-tasks");
+const { claimTask, releaseTask } = await import("@/server/actions/va-tasks");
 
 const signedInAs = (id: string) =>
   vi.mocked(requireApprovedVa).mockResolvedValue({ id, role: "VA" } as never);
@@ -326,33 +330,75 @@ describe("the claim binds the unit in the same act", () => {
   });
 
   /**
-   * A worker resubmitting after a revision request claims nothing new: the
-   * unit is already theirs. `assignmentEstablished` is false — FR-048's
-   * "established or matched" — and the generation does not move.
+   * THE `revision_requested -> claimed` BRANCH, ACTUALLY REACHED.
+   *
+   * An earlier version of this test proved nothing: it re-called `claimTask`
+   * on a task the same worker already held, so the task-level CAS
+   * (`guard: { claimedById: null }`) refused before `bindClaimToHumanUnit` was
+   * ever entered, and the assertion that "the unit did not move" was satisfied
+   * by the binding never running at all.
+   *
+   * The real route is a RELEASE. `releaseTask` moves the task back to `open`
+   * and clears `Task.claimedById`, which fires `INV-14`'s fencing trigger: the
+   * generation is bumped and the unit's claimant cleared, but the unit's STATE
+   * is deliberately left alone. So a unit that was mid-revision comes back to
+   * the pool still reading `revision_requested`, and the next claim binds from
+   * exactly that state.
+   *
+   * The `revision_requested` state itself is seeded, because its producer is
+   * the admin review gate in User Story 2. That is the pattern tasks.md already
+   * sanctions for this phase (lines 101 and 353): seed the US2-owned row through
+   * the fixture layer so the machine-side spine is testable on its own.
    */
-  it("binds from revision_requested without re-establishing the assignment", async () => {
+  it("binds from revision_requested after a release, without re-establishing", async () => {
     const { task, unit } = await publishedUnit();
     const worker = await createWorker();
     signedInAs(worker.id);
     await claimTask(task.id);
 
-    // The worker still holds the task; the unit went back for a revision.
+    // The reviewer sent it back (US2 seeds the state, as sanctioned).
     await prisma.humanWorkUnitRunState.update({
       where: { id: unit.id },
       data: { state: "revision_requested" as never },
     });
 
-    const second = await claimTask(task.id);
-    expect(second.ok).toBe(false);
+    // The worker hands it back to the pool. The fencing trigger fires here.
+    const released = await releaseTask(task.id);
+    expect(released.ok).toBe(true);
 
-    const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+    const afterRelease = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
       where: { id: unit.id },
-      select: { state: true, claimGeneration: true, claimedById: true },
+      select: { state: true, claimedById: true, claimGeneration: true },
     });
-    // The task CAS refuses a second claim, so nothing about the unit moved.
-    expect(after.claimGeneration).toBe(1);
-    expect(after.claimedById).toBe(worker.id);
-    expect(after.state).toBe("revision_requested");
+    expect(afterRelease.state).toBe("revision_requested");
+    expect(afterRelease.claimedById).toBeNull();
+    // Bumped by the trigger on the prior-claimant change.
+    expect(afterRelease.claimGeneration).toBe(2);
+
+    // Now a claim genuinely enters the revision_requested branch.
+    const second = await createWorker();
+    signedInAs(second.id);
+    const result = await claimTask(task.id);
+    expect(result.ok).toBe(true);
+
+    const bound = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { state: true, claimedById: true, claimGeneration: true },
+    });
+    expect(bound.state).toBe("claimed");
+    expect(bound.claimedById).toBe(second.id);
+    // The trigger already cleared the claimant, so this IS a fresh assignment
+    // and the generation moves once more.
+    expect(bound.claimGeneration).toBe(3);
+
+    const audits = await prisma.humanWorkUnitTransition.findMany({
+      where: { unitStateId: unit.id, cause: "claimed" },
+      orderBy: { seq: "asc" },
+      select: { fromState: true, assignmentEstablished: true },
+    });
+    expect(audits).toHaveLength(2);
+    expect(audits[1].fromState).toBe("revision_requested");
+    expect(audits[1].assignmentEstablished).toBe(true);
   });
 });
 
@@ -485,6 +531,247 @@ describe("the existing claim guards still bind", () => {
       select: { status: true, claimedById: true },
     });
     expect(after.status).toBe("claimed");
+    expect(after.claimedById).toBe(worker.id);
+  });
+});
+
+/**
+ * THE FAIL-OPEN THE REVIEW CAUGHT.
+ *
+ * `bindClaimToHumanUnit` returned the same value in three different
+ * situations: no unit at all, a unit in a state that cannot be claimed, and a
+ * lost CAS. Only the first is a legitimate no-op — an ordinary pool task with
+ * no human work unit, which is most claims.
+ *
+ * The other two are failures, and returning quietly let the surrounding
+ * `claimTask` transaction COMMIT. The result would be a task marked claimed,
+ * with a claimant and a `va_claimed` audit row, sitting on a unit that never
+ * bound to it — precisely the state the whole "one act, two records" design
+ * exists to make impossible, reached silently.
+ *
+ * A mandatory binding that fails must take the entire claim down with it.
+ */
+describe("a unit that exists but cannot be bound fails the whole claim", () => {
+  /**
+   * `published -> paused` is a real state: the publication deadline lapsing
+   * pauses the unit while the task is still sitting in the pool. Nothing about
+   * this test depends on how it got there — what matters is that a unit
+   * exists, is not claimable, and must not be quietly skipped.
+   */
+  async function pausedUnitInThePool() {
+    const built = await publishedUnit();
+    await prisma.humanWorkUnitRunState.update({
+      where: { id: built.unit.id },
+      data: {
+        state: "paused" as never,
+        refusalCause: "publication_deadline" as never,
+        pausedDetail: "The publication deadline lapsed with no claim.",
+      },
+    });
+    return built;
+  }
+
+  it("refuses the claim and rolls the whole transaction back", async () => {
+    const { task, unit } = await pausedUnitInThePool();
+    const worker = await createWorker();
+    signedInAs(worker.id);
+
+    const result = await claimTask(task.id);
+    expect(result.ok).toBe(false);
+
+    // The task never moved: no status change, no claimant.
+    const taskAfter = await prisma.task.findUniqueOrThrow({
+      where: { id: task.id },
+      select: { status: true, claimedById: true, claimedAt: true },
+    });
+    expect(taskAfter.status).toBe("open");
+    expect(taskAfter.claimedById).toBeNull();
+    expect(taskAfter.claimedAt).toBeNull();
+
+    // The unit is exactly as it was.
+    const unitAfter = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { state: true, claimedById: true, claimGeneration: true, transitionSeq: true },
+    });
+    expect(unitAfter.state).toBe("paused");
+    expect(unitAfter.claimedById).toBeNull();
+    expect(unitAfter.claimGeneration).toBe(0);
+    // published was seq 2; nothing was allocated on top of it.
+    expect(unitAfter.transitionSeq).toBe(2);
+
+    /**
+     * THE ROLLBACK ASSERTIONS. `va_claimed` is written by `transitionTask`
+     * BEFORE the binding runs, so its absence is what proves the whole
+     * transaction was undone rather than the binding merely declining.
+     */
+    expect(
+      await prisma.taskEvent.count({ where: { taskId: task.id, action: "va_claimed" } })
+    ).toBe(0);
+    expect(
+      await prisma.taskEvent.count({ where: { taskId: task.id, action: "human_unit_claimed" } })
+    ).toBe(0);
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: unit.id, cause: "claimed" },
+      })
+    ).toBe(0);
+  });
+
+  it.each(["admitted", "submitted", "in_review", "accepted", "resumed", "exhausted", "withdrawn"])(
+    "refuses a claim against a unit in state %s",
+    async (state) => {
+      const { task, unit } = await publishedUnit();
+      await prisma.humanWorkUnitRunState.update({
+        where: { id: unit.id },
+        data: {
+          state: state as never,
+          // CHK-4: accepted and resumed require an acceptedAt.
+          ...(state === "accepted" || state === "resumed" ? { acceptedAt: new Date() } : {}),
+        },
+      });
+      const worker = await createWorker();
+      signedInAs(worker.id);
+
+      const result = await claimTask(task.id);
+      expect(result.ok).toBe(false);
+
+      const taskAfter = await prisma.task.findUniqueOrThrow({
+        where: { id: task.id },
+        select: { status: true, claimedById: true },
+      });
+      expect(taskAfter.status).toBe("open");
+      expect(taskAfter.claimedById).toBeNull();
+      expect(
+        await prisma.taskEvent.count({ where: { taskId: task.id, action: "va_claimed" } })
+      ).toBe(0);
+    }
+  );
+
+  /**
+   * The no-op that must SURVIVE. A task with no unit is not a failure, and
+   * tightening the failure path must not turn every ordinary pool claim into a
+   * refusal. This is the same assertion as the one further up, repeated here
+   * deliberately: it is the thing most likely to be broken by the fix.
+   */
+  it("still claims a task that has no unit at all", async () => {
+    const task = await createTask({ status: "open" });
+    const worker = await createWorker();
+    signedInAs(worker.id);
+
+    const result = await claimTask(task.id);
+    expect(result.ok).toBe(true);
+
+    const after = await prisma.task.findUniqueOrThrow({
+      where: { id: task.id },
+      select: { status: true, claimedById: true },
+    });
+    expect(after.status).toBe("claimed");
+    expect(after.claimedById).toBe(worker.id);
+  });
+});
+
+/**
+ * THE LOST CAS, MADE DETERMINISTIC.
+ *
+ * The other failure branch is the compare-and-set finding nothing to move,
+ * because someone changed the unit between this function's read and its write.
+ * Racing two real claims for it would be flaky and would usually lose to the
+ * task-level CAS anyway, so the interleaving is FORCED instead of raced: the
+ * transaction client is wrapped so that the moment `bindClaimToHumanUnit`
+ * finishes its read, a separate connection commits a state change underneath
+ * it. The product code is untouched and unaware; only the timing is arranged.
+ */
+describe("losing the compare-and-set fails the binding", () => {
+  /**
+   * Passes every call through to the real transaction client, except that
+   * `humanWorkUnitRunState.findUnique` runs `duringTheGap` after returning —
+   * which is exactly the window the CAS exists to close.
+   */
+  function txWithAWriterInTheGap(
+    tx: Parameters<typeof bindClaimToHumanUnit>[0],
+    duringTheGap: () => Promise<unknown>
+  ) {
+    return new Proxy(tx, {
+      get(target, prop, receiver) {
+        const value = Reflect.get(target, prop, receiver);
+        if (prop !== "humanWorkUnitRunState") return value;
+        return new Proxy(value as object, {
+          get(model, key, r) {
+            const inner = Reflect.get(model, key, r);
+            if (key !== "findUnique") return inner;
+            return async (...args: unknown[]) => {
+              const row = await (inner as (...a: unknown[]) => Promise<unknown>).apply(model, args);
+              await duringTheGap();
+              return row;
+            };
+          },
+        });
+      },
+    }) as typeof tx;
+  }
+
+  it("throws instead of reporting a quiet no-op", async () => {
+    const { task, unit } = await publishedUnit();
+    const worker = await createWorker();
+
+    const attempt = prisma.$transaction(async (tx) => {
+      const raced = txWithAWriterInTheGap(tx, () =>
+        // The row moves out from under the read, before the CAS reaches it.
+        //
+        // Written on the SAME connection deliberately. A second connection
+        // would be a truer picture of a concurrent writer, but it is not what
+        // this branch actually tests: the guard fires on the CAS matching zero
+        // rows, and nothing about it cares who did the moving. One connection
+        // makes that condition exact and deterministic instead of raced.
+        tx.humanWorkUnitRunState.update({
+          where: { id: unit.id },
+          data: { state: "withdrawn" as never },
+        })
+      );
+      return bindClaimToHumanUnit(raced, { taskId: task.id, workerId: worker.id });
+    });
+
+    await expect(attempt).rejects.toBeInstanceOf(HumanUnitBindError);
+
+    // The whole transaction rolled back, so even the interfering write is gone
+    // and the unit is untouched.
+    const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { state: true, claimedById: true, transitionSeq: true },
+    });
+    expect(after.state).toBe("published");
+    expect(after.claimedById).toBeNull();
+    expect(after.transitionSeq).toBe(2);
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: unit.id, cause: "claimed" },
+      })
+    ).toBe(0);
+  });
+
+  /**
+   * The wrapper itself must not be what makes the test pass. Same harness, no
+   * writer in the gap: the binding succeeds normally.
+   */
+  it("binds normally when nothing moves in the gap", async () => {
+    const { task, unit } = await publishedUnit();
+    const worker = await createWorker();
+    await prisma.task.update({
+      where: { id: task.id },
+      data: { status: "claimed", claimedById: worker.id, claimedAt: new Date() },
+    });
+
+    const result = await prisma.$transaction(async (tx) => {
+      const passthrough = txWithAWriterInTheGap(tx, async () => undefined);
+      return bindClaimToHumanUnit(passthrough, { taskId: task.id, workerId: worker.id });
+    });
+
+    expect(result.assignmentEstablished).toBe(true);
+    const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { state: true, claimedById: true },
+    });
+    expect(after.state).toBe("claimed");
     expect(after.claimedById).toBe(worker.id);
   });
 });

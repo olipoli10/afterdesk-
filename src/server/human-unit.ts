@@ -157,6 +157,16 @@ async function pauseForRefusal(
 }
 
 /**
+ * A binding that was REQUIRED and did not happen.
+ *
+ * Thrown from inside the caller's transaction so the whole claim rolls back.
+ * Deliberately distinct from "this task has no unit", which is an ordinary
+ * pool claim and returns normally: collapsing the two is the fail-open this
+ * class exists to prevent.
+ */
+export class HumanUnitBindError extends Error {}
+
+/**
  * BIND THE CLAIM — transaction T3, and deliberately NOT its own transaction.
  *
  * Called from INSIDE the existing `claimTask` transaction, after its
@@ -197,10 +207,25 @@ export async function bindClaimToHumanUnit(
   });
 
   // No unit on this task: an ordinary pool claim, which this function has no
-  // business altering.
+  // business altering. THE ONLY legitimate no-op.
   if (!unit) return { assignmentEstablished: false };
+
+  /**
+   * A UNIT EXISTS AND CANNOT BE BOUND. This is a failure, never a no-op.
+   *
+   * Returning quietly here is what an earlier version did, and it let the
+   * surrounding `claimTask` transaction COMMIT: a task marked claimed, with a
+   * claimant and a `va_claimed` audit row, sitting on a unit that never bound
+   * to it. That is exactly the divergence "one act, two records" exists to make
+   * impossible, reached in silence.
+   *
+   * Throwing takes the whole claim down — the task transition, its claimant and
+   * its audit trail all roll back with it.
+   */
   if (unit.state !== "published" && unit.state !== "revision_requested") {
-    return { assignmentEstablished: false };
+    throw new HumanUnitBindError(
+      `human work unit for task ${input.taskId} is ${unit.state}; it cannot be claimed`
+    );
   }
 
   /**
@@ -232,9 +257,17 @@ export async function bindClaimToHumanUnit(
       transitionSeq: { increment: 1 },
     },
   });
-  // Lost the CAS to a concurrent writer. The caller's own task-level CAS makes
-  // this near-unreachable, but "near" is not a guarantee to build on.
-  if (moved.count === 0) return { assignmentEstablished: false };
+  /**
+   * Lost the CAS to a concurrent writer between the read above and here. The
+   * caller's own task-level CAS makes this very hard to reach, but "very hard"
+   * is not a guarantee, and the failure mode if it did happen is the same
+   * silent divergence as above. Same answer: take the claim down.
+   */
+  if (moved.count === 0) {
+    throw new HumanUnitBindError(
+      `human work unit for task ${input.taskId} changed state during the claim`
+    );
+  }
 
   const bound = await tx.humanWorkUnitRunState.findUniqueOrThrow({
     where: { id: unit.id },
