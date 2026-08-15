@@ -56,6 +56,24 @@ const TRUNCATE_GUARDED_TABLES = [
   { table: "LedgerEntry", trigger: "LedgerEntry_no_truncate" },
   { table: "TaskAcceptanceSnapshot", trigger: "TaskAcceptanceSnapshot_no_truncate" },
   { table: "TaskOperationalBaseline", trigger: "TaskOperationalBaseline_no_truncate" },
+  /**
+   * HUMAN WORK UNIT. Both refuse TRUNCATE by design — an acceptance is the
+   * frozen record of what a reviewer signed off on, and a transition trail
+   * that can be wiped is not evidence.
+   *
+   * Registering them here is not optional and is easy to miss: a BEFORE
+   * TRUNCATE guard absent from this list does not fail its own file, it fails
+   * the NEXT one, which reads as unrelated breakage. Session-disabled during
+   * truncation only because the guard proved this database is disposable.
+   */
+  {
+    table: "HumanWorkUnitAcceptance",
+    trigger: "afterdesk_human_unit_acceptance_no_truncate",
+  },
+  {
+    table: "HumanWorkUnitTransition",
+    trigger: "afterdesk_human_unit_transition_no_truncate",
+  },
 ];
 
 beforeAll(async () => {

@@ -239,6 +239,14 @@ model User {
   accountContextNotesAuthored AccountContextNote[]         @relation("AccountContextNoteAuthor")
   standingCapacityPayouts     StandingCapacityPayout[]     @relation("StandingCapacityPayoutWorker")
   assistantMessages           AssistantMessage[]
+
+  /// HUMAN WORK UNIT — les quatre roles distincts qu'une personne peut tenir
+  /// autour d'une unite. Nommes separement pour qu'aucun ne puisse etre
+  /// confondu avec un autre dans une requete.
+  humanUnitsClaimed    HumanWorkUnitRunState[]       @relation("HumanUnitClaimedBy")
+  humanUnitCandidates  HumanWorkUnitCandidate[]      @relation("HumanUnitSubmittedBy")
+  humanUnitDecisions   HumanWorkUnitReviewDecision[] @relation("HumanUnitDecidedBy")
+  humanUnitAcceptances HumanWorkUnitAcceptance[]     @relation("HumanUnitAcceptedBy")
 }
 
 /**
@@ -525,6 +533,10 @@ model Task {
   @@index([claimedById])
   @@index([categoryId])
   @@index([standingCapacityAccountId])
+
+  /// HUMAN WORK UNIT — denormalise pour qu'un trigger sur Task trouve l'unite
+  /// en une seule lecture d'index.
+  humanWorkUnit HumanWorkUnitRunState?
 }
 
 /**
@@ -671,6 +683,9 @@ model File {
   @@index([uploaderId])
   @@index([scanStatus])
   @@index([workflowRunId])
+
+  /// HUMAN WORK UNIT — artefacts declares portes par un candidat.
+  humanUnitCandidateFiles HumanWorkUnitCandidateFile[]
 }
 
 model FileAccessLog {
@@ -1582,6 +1597,9 @@ model TaskExecutionPlanVersion {
   workflowRuns  TaskWorkflowRun[]
 
   @@unique([taskId, version])
+
+  /// HUMAN WORK UNIT — la definition appartient a la version de plan acceptee.
+  humanUnitDefinitions HumanWorkUnitDefinition[]
 }
 
 model TaskExecutionPlanStep {
@@ -1717,6 +1735,9 @@ model TaskExecutionPlanStep {
   stepRuns TaskWorkflowStepRun[]
 
   @@unique([planVersionId, order])
+
+  /// HUMAN WORK UNIT — au plus une definition par etape acceptee.
+  humanUnitDefinition HumanWorkUnitDefinition?
 }
 
 /// Étape critique, CONDITIONNELLE (jamais systématique — décision fondateur,
@@ -1810,6 +1831,9 @@ model TaskAcceptanceSnapshot {
   /// Les fichiers client que ce contrat autorise a lire, geles par identite
   /// ET par contenu. Voir TaskAcceptanceSnapshotFile.
   inputFiles TaskAcceptanceSnapshotFile[]
+
+  /// HUMAN WORK UNIT — une unite par contrat accepte.
+  humanWorkUnit HumanWorkUnitRunState?
 }
 
 /// PHASE 1E-alpha — LES OCTETS QUE LE CLIENT A ACCEPTES.
@@ -1862,6 +1886,11 @@ enum TaskWorkflowRunStatus {
   /// Abandonné : la tâche est repartie en travail humain intégral.
   abandoned
   done
+  /// PHASE HWU - la machine s'est arretee a l'UNIQUE etape humaine admise et
+  /// attend une acceptation admin. Distinct de `awaiting_human`, qui signifie
+  /// que TOUT le residuel est parti au bassin : ici le bloc machine d'aval
+  /// existe toujours et reprendra exactement une fois.
+  awaiting_human_unit
 }
 
 enum TaskWorkflowStepStatus {
@@ -1876,6 +1905,10 @@ enum TaskWorkflowStepStatus {
   failed
   /// Le compilateur l'a classée humaine : elle rejoint le paquet résiduel.
   handed_to_human
+  /// PHASE HWU - etape machine en aval de la coupure humaine. Elle n'est ni en
+  /// echec ni demotee : elle attend l'acceptation, et la reprise la repassera
+  /// en `pending` exactement une fois.
+  blocked_on_human_unit
 }
 
 enum WorkflowExecutionMode {
@@ -1983,6 +2016,10 @@ model TaskWorkflowRun {
 
   @@index([status])
   @@index([taskId])
+
+  /// HUMAN WORK UNIT
+  humanWorkUnit   HumanWorkUnitRunState?
+  humanUnitResume HumanWorkUnitResumeRecord?
 }
 
 /// UNE LIGNE PAR ÉTAPE COMPILÉE, machine ou humaine.
@@ -2796,4 +2833,383 @@ model WorkflowCalibrationStratum {
   updatedAt DateTime @updatedAt
 
   @@unique([profileId, dimension, policyVersion])
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HUMAN WORK UNIT — SAFE RESUME
+//
+// La machine s'arrête à UNE unité humaine structurée, un travailleur remet, un
+// admin DIFFÉRENT accepte, la machine reprend EXACTEMENT UNE FOIS.
+//
+// La définition est séparée de l'état parce que l'une appartient à un plan
+// accepté et doit se lire à l'identique pour toujours, tandis que l'autre
+// change à chaque transition. Les réunir sur une seule ligne rendrait « gelé »
+// et « mutable » le même objet, et rendrait le trigger d'immutabilité
+// impossible à écrire.
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum HumanWorkUnitState {
+  admitted
+  published
+  claimed
+  submitted
+  in_review
+  revision_requested
+  accepted
+  resumed
+  exhausted
+  paused
+  withdrawn
+}
+
+/// Vocabulaire PROPRE, disjoint de celui des capacités et des budgets : un
+/// refus de topologie rendu comme « capacité manquante » enverrait l'opérateur
+/// réparer la mauvaise chose.
+enum HumanWorkUnitRefusalCause {
+  unsupported_topology
+  malformed_topology
+  unmapped_economics
+  input_unavailable
+  classification_conflict
+  task_already_claimed
+  revisions_exhausted
+  publication_deadline
+  submission_deadline
+  claim_lease_expired
+  lifecycle_exit
+  unsafe_or_unverifiable
+  economics_exceeds_reserved
+}
+
+enum HumanWorkUnitCandidateStatus {
+  pending
+  accepted
+  rejected
+  superseded
+  withdrawn
+}
+
+enum HumanWorkUnitDecisionOutcome {
+  accepted
+  rejected
+}
+
+enum HumanWorkUnitAlertKind {
+  publication_deadline
+  submission_deadline
+  claim_lease
+  admin_pause
+  revision_requested
+  withdrawn
+}
+
+enum HumanWorkUnitTransitionActorRole {
+  worker
+  admin
+  system
+}
+
+/// LA DÉFINITION GELÉE. Une ligne par étape humaine admise, écrite dans la
+/// transaction de compilation, jamais mutée.
+model HumanWorkUnitDefinition {
+  id String @id @default(cuid())
+
+  planVersionId String
+  planVersion   TaskExecutionPlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Restrict)
+
+  /// Unique ⇒ une définition par étape acceptée ; une nouvelle définition
+  /// exige une nouvelle version de plan.
+  planStepId String                @unique
+  planStep   TaskExecutionPlanStep @relation(fields: [planStepId], references: [id], onDelete: Restrict)
+
+  instructions String
+  /// TOUT ce que le travailleur peut voir. Rien d'autre n'est projeté.
+  declaredInputs        Json
+  outputSchema          Json
+  requiredArtifactKinds String[]
+  acceptanceCriteria    String[]
+  verificationMethod    String
+
+  /// Critères GELÉS ; les faits du travailleur sont lus en direct.
+  eligibility       Json
+  reviewerAuthority String @default("admin")
+
+  /// Contexte de capacité DESCRIPTIF seulement. Jamais une entrée d'un bail,
+  /// d'un prix, d'un payout ou d'un calcul économique.
+  expectedMinutes Int
+
+  revisionBound            Int
+  publicationDeadlineHours Int
+  submissionDeadlineHours  Int
+  claimLeaseHours          Int
+
+  /// Les valeurs exactes que le test d'admission a lues.
+  economicProvenance Json
+  dataClass          String
+
+  createdAt DateTime @default(now())
+
+  runState HumanWorkUnitRunState?
+
+  @@index([planVersionId])
+}
+
+/// L'ÉTAT VIVANT. Une ligne par run admis.
+model HumanWorkUnitRunState {
+  id String @id @default(cuid())
+
+  /// Unique ⇒ une unité par run. Un second état d'attente sur un contrat
+  /// rendrait indécidable, après coup, lequel faisait foi.
+  runId String          @unique
+  run   TaskWorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  /// Dénormalisé pour qu'un trigger sur `Task` trouve l'unité en une seule
+  /// lecture d'index.
+  taskId String @unique
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  snapshotId String                 @unique
+  snapshot   TaskAcceptanceSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Restrict)
+
+  definitionId String                  @unique
+  definition   HumanWorkUnitDefinition @relation(fields: [definitionId], references: [id], onDelete: Restrict)
+
+  cutOrder Int
+  state    HumanWorkUnitState
+
+  /// JETON DE FENCING monotone. Incrémenté exactement une fois par
+  /// `bindClaimToHumanUnit` sur la réclamation initiale NULL → travailleur, et
+  /// exactement une fois par réassignation par le trigger. Les deux sont
+  /// disjoints : la garde `OLD."claimedById" IS NOT NULL` du trigger fait que
+  /// la première réclamation n'est jamais doublement incrémentée.
+  claimGeneration Int @default(0)
+  /// Monotone. Incrémenté une seule fois, par la reprise.
+  resumeGeneration Int @default(0)
+  /// Allocateur d'audit monotone : chaque mutation auditée l'incrémente dans
+  /// le MÊME CAS et utilise la nouvelle valeur. Jamais `MAX(seq)+1`.
+  transitionSeq Int @default(0)
+
+  remainingRevisions Int
+
+  claimedById String?
+  claimedBy   User?     @relation("HumanUnitClaimedBy", fields: [claimedById], references: [id], onDelete: Restrict)
+  claimedAt   DateTime?
+
+  claimLeaseExpiresAt   DateTime?
+  submissionDeadlineAt  DateTime?
+  publishedAt           DateTime?
+  publicationDeadlineAt DateTime?
+  submittedAt           DateTime?
+  acceptedAt            DateTime?
+
+  refusalCause HumanWorkUnitRefusalCause?
+  /// Destiné à l'opérateur. Aucune valeur monétaire, aucun texte porteur
+  /// d'identité.
+  pausedDetail String?
+
+  admittedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  candidates  HumanWorkUnitCandidate[]
+  decisions   HumanWorkUnitReviewDecision[]
+  acceptance  HumanWorkUnitAcceptance?
+  resume      HumanWorkUnitResumeRecord?
+  transitions HumanWorkUnitTransition[]
+  alerts      HumanWorkUnitAlert[]
+
+  @@index([state])
+  @@index([state, publicationDeadlineAt])
+  @@index([state, submissionDeadlineAt])
+  @@index([state, claimLeaseExpiresAt])
+  @@index([claimedById])
+}
+
+/// LES CANDIDATS. Append-only : un candidat est la PREUVE de ce qui a
+/// réellement été remis, et ne disparaît pas avec une ligne d'état (Restrict,
+/// pas Cascade).
+model HumanWorkUnitCandidate {
+  id String @id @default(cuid())
+
+  unitStateId String
+  unitState   HumanWorkUnitRunState @relation(fields: [unitStateId], references: [id], onDelete: Restrict)
+
+  claimGeneration Int
+  revisionIndex   Int
+
+  submittedById String
+  submittedBy   User   @relation("HumanUnitSubmittedBy", fields: [submittedById], references: [id], onDelete: Restrict)
+
+  /// Conforme au schéma gelé. JAMAIS une entrée de quoi que ce soit tant qu'il
+  /// n'est pas celui qui a été accepté.
+  payload Json
+  status  HumanWorkUnitCandidateStatus @default(pending)
+
+  submittedAt DateTime @default(now())
+
+  files      HumanWorkUnitCandidateFile[]
+  decision   HumanWorkUnitReviewDecision?
+  acceptance HumanWorkUnitAcceptance?
+
+  /// Une soumission dupliquée ne peut pas créer un second candidat.
+  @@unique([unitStateId, claimGeneration, revisionIndex])
+  @@index([unitStateId, status])
+}
+
+model HumanWorkUnitCandidateFile {
+  candidateId String
+  candidate   HumanWorkUnitCandidate @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+
+  fileId String
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  artifactKind String
+
+  @@id([candidateId, fileId])
+  @@index([fileId])
+}
+
+/// UNE décision par candidat. Une seconde perd la contrainte ; la première
+/// tient, non modifiée.
+model HumanWorkUnitReviewDecision {
+  id String @id @default(cuid())
+
+  candidateId String                 @unique
+  candidate   HumanWorkUnitCandidate @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+
+  unitStateId String
+  unitState   HumanWorkUnitRunState @relation(fields: [unitStateId], references: [id], onDelete: Restrict)
+
+  /// Ne doit JAMAIS égaler `candidate.submittedById` : l'auto-acceptation
+  /// transforme un candidat en entrée de contrat sans aucune porte
+  /// indépendante.
+  decidedById String
+  decidedBy   User   @relation("HumanUnitDecidedBy", fields: [decidedById], references: [id], onDelete: Restrict)
+
+  outcome HumanWorkUnitDecisionOutcome
+  cause   HumanWorkUnitRefusalCause?
+
+  /// Rédigé par l'opérateur, visible du travailleur, sans identité.
+  revisionInstructions    String?
+  remainingRevisionsAfter Int
+  claimGeneration         Int
+
+  decidedAt DateTime @default(now())
+
+  acceptance HumanWorkUnitAcceptance?
+
+  @@index([unitStateId])
+}
+
+/// L'UNIQUE acceptation immuable.
+model HumanWorkUnitAcceptance {
+  id String @id @default(cuid())
+
+  unitStateId String                @unique
+  unitState   HumanWorkUnitRunState @relation(fields: [unitStateId], references: [id], onDelete: Restrict)
+
+  candidateId String                 @unique
+  candidate   HumanWorkUnitCandidate @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+
+  decisionId String                      @unique
+  decision   HumanWorkUnitReviewDecision @relation(fields: [decisionId], references: [id], onDelete: Restrict)
+
+  acceptedById String
+  acceptedBy   User   @relation("HumanUnitAcceptedBy", fields: [acceptedById], references: [id], onDelete: Restrict)
+
+  claimGenerationAtAcceptance Int
+
+  /// Une COPIE, gelée à l'acceptation — pas un pointeur vers le candidat, pour
+  /// que le résultat accepté ne puisse pas changer même si la table des
+  /// candidats était un jour touchée.
+  resultPayload Json
+  /// Empreinte de la sérialisation canonique : une altération est détectable.
+  resultSha256 String
+
+  /// Hérite de la classe gelée du mandat et d'au moins la plus restrictive des
+  /// entrées déclarées. Jamais rétrogradée.
+  dataClass String
+  /// Contre QUELS critères gelés — la provenance de la décision.
+  criteriaVersionRef String
+
+  acceptedAt DateTime @default(now())
+
+  resume HumanWorkUnitResumeRecord?
+}
+
+/// UNE reprise par run. CETTE CONTRAINTE UNIQUE EST LA GARANTIE
+/// EXACTEMENT-UNE-FOIS, à travers triggers concurrents, retries, balayages
+/// planifiés, crashs et rejeux.
+model HumanWorkUnitResumeRecord {
+  id String @id @default(cuid())
+
+  runId String          @unique
+  run   TaskWorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  unitStateId String                @unique
+  unitState   HumanWorkUnitRunState @relation(fields: [unitStateId], references: [id], onDelete: Restrict)
+
+  acceptanceId String                  @unique
+  acceptance   HumanWorkUnitAcceptance @relation(fields: [acceptanceId], references: [id], onDelete: Restrict)
+
+  resumeGeneration Int
+  /// Quelles étapes d'aval cette reprise a rendues exécutables.
+  resumedStepRunIds String[]
+  /// Étapes NON reprises, qui conservent leur propre raison.
+  skippedStepRunIds String[]
+
+  resumedAt DateTime @default(now())
+}
+
+/// L'AUDIT APPEND-ONLY. Aucune colonne ici ne peut porter une valeur
+/// monétaire, un identifiant nominatif, une entrée brute ou un contenu soumis :
+/// la règle est imposée par la FORME de la table, pas par un filtrage.
+model HumanWorkUnitTransition {
+  id String @id @default(cuid())
+
+  unitStateId String
+  unitState   HumanWorkUnitRunState @relation(fields: [unitStateId], references: [id], onDelete: Restrict)
+
+  /// Monotone par unité, alloué depuis `transitionSeq` dans le même CAS.
+  seq Int
+
+  /// Un identifiant opaque, jamais un nom ni un courriel. Null pour une
+  /// transition système.
+  actorId   String?
+  actorRole HumanWorkUnitTransitionActorRole
+
+  fromState HumanWorkUnitState?
+  toState   HumanWorkUnitState
+  /// Vocabulaire FERMÉ (contracts/audit-events.md §1).
+  cause String
+
+  claimGeneration  Int
+  resumeGeneration Int
+  /// true = l'affectation a été créée ici ; false = elle correspondait déjà ;
+  /// null = sans objet.
+  assignmentEstablished Boolean?
+
+  occurredAt DateTime @default(now())
+
+  @@unique([unitStateId, seq])
+  @@index([unitStateId, occurredAt])
+}
+
+/// FAITS de délai et de notification. La clé unique est ce qui rend le
+/// balayage rejouable sans lecture « a-t-on déjà notifié ? » sujette aux
+/// courses.
+model HumanWorkUnitAlert {
+  id String @id @default(cuid())
+
+  unitStateId String
+  unitState   HumanWorkUnitRunState @relation(fields: [unitStateId], references: [id], onDelete: Restrict)
+
+  kind  HumanWorkUnitAlertKind
+  dueAt DateTime
+
+  firedAt         DateTime @default(now())
+  claimGeneration Int
+
+  @@unique([unitStateId, kind, dueAt])
+  @@index([unitStateId])
 }
