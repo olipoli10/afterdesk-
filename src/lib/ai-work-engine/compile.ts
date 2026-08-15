@@ -37,6 +37,12 @@ export type CompileStepInput = TopologyStep & {
    * than throwing halfway through an accepted mandate.
    */
   params?: unknown;
+  /**
+   * The economic preflight deliberately clears primitiveId when it demotes a
+   * step. This frozen boolean is therefore the only durable fact that can
+   * distinguish "budget chose a person" from "no capability was chosen".
+   */
+  demotedForBudget?: boolean;
 };
 
 export type CompileGate = {
@@ -124,6 +130,7 @@ export const HANDOFF_REASONS = {
     "The mandate reads a client file, so no step in it may send data to an outside service.",
   invalid_params: "The step's frozen configuration does not satisfy its capability.",
   unknown_reach: "The named primitive does not declare where it sends data.",
+  budget_demoted: "Demoted for budget by the economic preflight.",
 } as const;
 
 /**
@@ -234,6 +241,7 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
 
     const automatable =
       decision?.automatable === true &&
+      !s.demotedForBudget &&
       modeAllowed &&
       reachKnown &&
       reachAllowedForClass &&
@@ -256,6 +264,7 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       (decision?.reason ?? null) === null || decision?.reason === "depends_on_human";
     const ownMeritsOk =
       ownReasonOk &&
+      !s.demotedForBudget &&
       modeAllowed &&
       reachKnown &&
       reachAllowedForClass &&
@@ -273,6 +282,8 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       ownMeritsOk,
       handoffReason: automatable
         ? null
+        : s.demotedForBudget
+          ? HANDOFF_REASONS.budget_demoted
         : // The topology's own verdict wins when it has one: "not in the
           // registry" and "depends on a human step" are more useful to an
           // operator than a generic mode refusal, and an unknown id has no

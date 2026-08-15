@@ -73,7 +73,7 @@ function downstreamStepIds(steps: ResumeStep[], cutOrder: number): Set<string> {
 
 function ownMeritRefusal(step: ResumeStep): string | null {
   if (step.planStep.demotedForBudget) {
-    return step.handoffReason ?? HANDOFF_REASONS.no_primitive;
+    return step.handoffReason ?? HANDOFF_REASONS.budget_demoted;
   }
   if (step.primitiveId === null) return HANDOFF_REASONS.no_primitive;
   if (!Object.hasOwn(REGISTRY, step.primitiveId)) return HANDOFF_REASONS.unknown_primitive;

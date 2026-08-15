@@ -427,6 +427,28 @@ describe("the human cut gate", () => {
       expect(behind.executionMode).toBe("human");
       expect(behind.blockedOnHumanUnit).toBe(false);
     });
+
+    /**
+     * A budget demotion is not a missing primitive. The economic preflight
+     * deliberately clears primitiveId before the accepted plan is stored, so
+     * the boolean is the only durable fact that can keep the reason honest at
+     * compile time. Ignoring it makes the admin surface blame the registry for
+     * an economic decision and lets a later resume mislabel the same step.
+     */
+    it("keeps a prior budget demotion named as a budget decision", () => {
+      const budgetDemoted = {
+        ...machine(3, [2], { primitiveId: null, primitiveVersion: null }),
+        demotedForBudget: true,
+      };
+      const plan = compileDecisions(
+        [machine(1), human(2, [1]), budgetDemoted],
+        { ...OPEN_GATE, humanCut: { order: 2 } }
+      );
+      const refused = plan.steps.find((s) => s.order === 3)!;
+      expect(refused.executionMode).toBe("human");
+      expect(refused.handoffReason).toBe(HANDOFF_REASONS.budget_demoted);
+      expect(refused.blockedOnHumanUnit).toBe(false);
+    });
   });
 
   /**

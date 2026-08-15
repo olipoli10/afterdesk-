@@ -345,6 +345,7 @@ export async function compileWorkflowForTask(
     primitiveVersion: s.primitiveVersion,
     dependsOnOrder: s.dependsOnOrder,
     params: s.params,
+    demotedForBudget: s.demotedForBudget,
   }));
 
   /**

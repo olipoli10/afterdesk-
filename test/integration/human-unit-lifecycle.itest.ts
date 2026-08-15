@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
+import { HANDOFF_REASONS } from "@/lib/ai-work-engine/compile";
 import { REGISTRY } from "@/lib/ai-work-engine/registry";
 import type { WorkflowPayload } from "@/lib/ai-work-engine/primitives/types";
 import { compileFrozenOutputSchema } from "@/lib/ai-work-engine/human-unit-result-schema";
@@ -34,7 +35,7 @@ const { claimTask, submitDeliverable } = await import("@/server/actions/va-tasks
 const { startWorkerSession } = await import("@/server/actions/work-sessions");
 const { approveDeliverable } = await import("@/server/actions/admin-qc");
 const { applyResume } = await import("@/server/human-unit-resume");
-const { advanceWorkflow } = await import("@/server/workflow-runs");
+const { advanceWorkflow, compileWorkflowForTask } = await import("@/server/workflow-runs");
 
 /**
  * QUICKSTART SCENARIO A — MACHINE → HUMAN → MACHINE (T024).
@@ -1556,5 +1557,395 @@ describe("T024 — Scenario A steps 1-11, accepted result to fixed payout", () =
 
     const contractAfter = await acceptedContract(task.id, preCutArtifact.id);
     expect(contractAfter).toEqual(contractBefore);
+  });
+});
+
+const BUDGET_DEMOTION_REASON = HANDOFF_REASONS.budget_demoted;
+
+/**
+ * Scenario B starts from the accepted plan instead of hand-authoring the run.
+ * That distinction is load-bearing for the budget case: economic preflight
+ * clears primitiveId and leaves `demotedForBudget` as the durable explanation,
+ * so only the real compiler can prove that explanation survives into the run.
+ *
+ * The moved-version row is then put back into its pre-resume blocked shape to
+ * model the capability moving AFTER compilation. `applyResume` must re-check
+ * it and demote it without touching the eligible sibling.
+ */
+async function partialResumeScenario() {
+  await prisma.setting.upsert({
+    where: { key: "humanWorkUnitResumeEnabled" },
+    create: { key: "humanWorkUnitResumeEnabled", value: true },
+    update: { value: true },
+  });
+
+  const worker = await createWorker();
+  const admin = await createAdmin();
+  const task = await createTask({
+    status: "ai_processing",
+    clientPriceCents: 10_000,
+    vaPayoutCents: 4_000,
+    estimatedMinutes: 60,
+  });
+  await prisma.payment.create({
+    data: {
+      taskId: task.id,
+      amountCents: 10_000,
+      currency: "USD",
+      method: "card" as never,
+      status: "authorized" as never,
+    },
+  });
+
+  const planVersion = await prisma.taskExecutionPlanVersion.create({
+    data: {
+      taskId: task.id,
+      version: 1,
+      source: "ai_generated" as never,
+      deliverableDescription: "partial resume",
+      assumptions: [],
+      exclusions: [],
+      internalCostLikelyCents: 3_000,
+      internalCostConservativeCents: 4_000,
+      suggestedPriceCents: 10_000,
+      suggestedVaPayoutCents: 4_000,
+      calibration: "calibrated" as never,
+      expectedAutomationCostMicros: 0n,
+      conservativeAutomationCostMicros: 0n,
+      automationSpendCeilingMicros: FROZEN_AUTOMATION_CEILING,
+      automationCostPolicyVersion: FROZEN_POLICY_VERSION,
+      dataClass: "business_confidential",
+      dataClassSignals: ["accepted partial-resume fixture"],
+    },
+    select: { id: true },
+  });
+
+  const planStep = (input: {
+    order: number;
+    title: string;
+    executor: "deterministic_code" | "human";
+    primitiveId: string | null;
+    primitiveVersion: number | null;
+    demotedForBudget?: boolean;
+  }) =>
+    prisma.taskExecutionPlanStep.create({
+      data: {
+        planVersionId: planVersion.id,
+        order: input.order,
+        title: input.title,
+        description: input.title,
+        executor: input.executor as never,
+        humanRole: input.executor === "human" ? ("worker" as never) : null,
+        primitiveId: input.primitiveId,
+        primitiveVersion: input.primitiveVersion,
+        params: {},
+        fixedMinutes: input.executor === "human" ? 30 : null,
+        estimatedMinutesOptimistic: 10,
+        estimatedMinutesLikely: 20,
+        estimatedMinutesConservative: 30,
+        expectedCostMicrosAtQuote:
+          input.primitiveId === MACHINE_PRIMITIVE_ID ? 0n : null,
+        maxCostMicrosPerAttemptAtQuote:
+          input.primitiveId === MACHINE_PRIMITIVE_ID ? 0n : null,
+        maxAttemptsAtQuote: input.primitiveId === MACHINE_PRIMITIVE_ID ? 1 : null,
+        automationCostPolicyVersion: FROZEN_POLICY_VERSION,
+        demotedForBudget: input.demotedForBudget ?? false,
+        verificationMethod: "sample_check",
+        acceptanceCriteria: ["ok"],
+        riskLevel: "low" as never,
+        dependsOnOrder: input.order === 1 ? [] : input.order === 2 ? [1] : [2],
+        humanOutputSchema: input.executor === "human" ? OUTPUT_SCHEMA : undefined,
+        humanRequiredArtifactKinds: [],
+      },
+      select: { id: true },
+    });
+
+  await planStep({
+    order: 1,
+    title: "produce",
+    executor: "deterministic_code",
+    primitiveId: MACHINE_PRIMITIVE_ID,
+    primitiveVersion: MACHINE_PRIMITIVE_VERSION,
+  });
+  await planStep({
+    order: 2,
+    title: "judge",
+    executor: "human",
+    primitiveId: null,
+    primitiveVersion: null,
+  });
+  await planStep({
+    order: 3,
+    title: "eligible sibling",
+    executor: "deterministic_code",
+    primitiveId: MACHINE_PRIMITIVE_ID,
+    primitiveVersion: MACHINE_PRIMITIVE_VERSION,
+  });
+  await planStep({
+    order: 4,
+    title: "unknown capability",
+    executor: "deterministic_code",
+    primitiveId: "missing.capability",
+    primitiveVersion: 1,
+  });
+  await planStep({
+    order: 5,
+    title: "moved capability version",
+    executor: "deterministic_code",
+    primitiveId: MACHINE_PRIMITIVE_ID,
+    primitiveVersion: MACHINE_PRIMITIVE_VERSION + 1,
+  });
+  await planStep({
+    order: 6,
+    title: "budget demotion",
+    executor: "deterministic_code",
+    primitiveId: null,
+    primitiveVersion: null,
+    demotedForBudget: true,
+  });
+
+  const snapshot = await prisma.taskAcceptanceSnapshot.create({
+    data: {
+      taskId: task.id,
+      planVersionId: planVersion.id,
+      clientPriceCents: 10_000,
+      currency: "USD",
+      title: "partial resume",
+      description: "contract copy",
+      revisionWindowHours: 72,
+      maxRevisionRounds: 2,
+      disputeWindowHours: 48,
+      acceptedByUserId: task.clientId,
+      expectedAutomationCostMicros: 0n,
+      conservativeAutomationCostMicros: 0n,
+      automationSpendCeilingMicros: FROZEN_AUTOMATION_CEILING,
+      automationCostPolicyVersion: FROZEN_POLICY_VERSION,
+      dataClass: "business_confidential",
+    },
+    select: { id: true },
+  });
+
+  const compiled = await compileWorkflowForTask(task.id);
+  expect(compiled, "the supported one-cut plan must be admitted").not.toBeNull();
+  const run = await prisma.taskWorkflowRun.findUniqueOrThrow({
+    where: { taskId: task.id },
+    select: {
+      id: true,
+      humanWorkUnit: { select: { id: true, definitionId: true } },
+    },
+  });
+  expect(run.humanWorkUnit).not.toBeNull();
+
+  const steps = await prisma.taskWorkflowStepRun.findMany({
+    where: { runId: run.id },
+    orderBy: { order: "asc" },
+    select: { id: true, order: true },
+  });
+  const byOrder = new Map(steps.map((step) => [step.order, step.id]));
+  const idAt = (order: number) => {
+    const id = byOrder.get(order);
+    if (!id) throw new Error(`missing step run at order ${order}`);
+    return id;
+  };
+
+  await prisma.taskWorkflowStepRun.update({
+    where: { id: idAt(1) },
+    data: { status: "done" as never, finishedAt: new Date() },
+  });
+  await persistPayload({
+    taskId: task.id,
+    runId: run.id,
+    stepRunId: idAt(1),
+    snapshotId: snapshot.id,
+    order: 1,
+    payload: PRE_CUT_PAYLOAD,
+  });
+
+  // The accepted version becomes unavailable after compilation but before the
+  // acceptance is applied. T10 owns this second, live executability check.
+  await prisma.$transaction([
+    prisma.taskWorkflowStepRun.update({
+      where: { id: idAt(5) },
+      data: {
+        status: "blocked_on_human_unit" as never,
+        executionMode: "automated" as never,
+        handoffReason: null,
+      },
+    }),
+    prisma.taskWorkflowRun.update({
+      where: { id: run.id },
+      data: {
+        automatedStepCount: { increment: 1 },
+        humanStepCount: { decrement: 1 },
+      },
+    }),
+  ]);
+
+  await advanceWorkflow(task.id);
+  asWorker(worker.id);
+  const claim = await claimTask(task.id);
+  expect(claim.ok, !claim.ok ? claim.error : "claim must succeed").toBe(true);
+  await seedAcceptedHumanResult({
+    unitId: run.humanWorkUnit!.id,
+    runId: run.id,
+    definitionId: run.humanWorkUnit!.definitionId,
+    workerId: worker.id,
+    adminId: admin.id,
+  });
+
+  return {
+    task,
+    runId: run.id,
+    unitId: run.humanWorkUnit!.id,
+    worker,
+    eligibleId: idAt(3),
+    unknownId: idAt(4),
+    movedId: idAt(5),
+    budgetId: idAt(6),
+  };
+}
+
+describe("T025 — Scenario B partial resume preserves every independent reason", () => {
+  it("skips unknown, moved and budget-demoted work while one eligible sibling runs once", async () => {
+    const fixture = await partialResumeScenario();
+
+    const before = await prisma.taskWorkflowStepRun.findMany({
+      where: {
+        id: { in: [fixture.unknownId, fixture.movedId, fixture.budgetId] },
+      },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        status: true,
+        executionMode: true,
+        handoffReason: true,
+        planStep: { select: { demotedForBudget: true } },
+      },
+    });
+    expect(before).toEqual([
+      {
+        id: fixture.unknownId,
+        status: "handed_to_human",
+        executionMode: "human",
+        handoffReason: HANDOFF_REASONS.unknown_primitive,
+        planStep: { demotedForBudget: false },
+      },
+      {
+        id: fixture.movedId,
+        status: "blocked_on_human_unit",
+        executionMode: "automated",
+        handoffReason: null,
+        planStep: { demotedForBudget: false },
+      },
+      {
+        id: fixture.budgetId,
+        status: "handed_to_human",
+        executionMode: "human",
+        handoffReason: BUDGET_DEMOTION_REASON,
+        planStep: { demotedForBudget: true },
+      },
+    ]);
+
+    const outcome = await applyResume(fixture.unitId);
+    expect(outcome.resumed).toBe(true);
+    if (!outcome.resumed) throw new Error(`resume refused: ${outcome.cause}`);
+    expect(outcome.resumedStepRunIds).toEqual([fixture.eligibleId]);
+    expect(outcome.skippedStepRunIds).toEqual([
+      fixture.unknownId,
+      fixture.movedId,
+      fixture.budgetId,
+    ]);
+
+    const record = await prisma.humanWorkUnitResumeRecord.findUniqueOrThrow({
+      where: { runId: fixture.runId },
+      select: { resumedStepRunIds: true, skippedStepRunIds: true },
+    });
+    expect(record).toEqual({
+      resumedStepRunIds: [fixture.eligibleId],
+      skippedStepRunIds: [fixture.unknownId, fixture.movedId, fixture.budgetId],
+    });
+
+    const after = await prisma.taskWorkflowStepRun.findMany({
+      where: {
+        id: {
+          in: [fixture.eligibleId, fixture.unknownId, fixture.movedId, fixture.budgetId],
+        },
+      },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        status: true,
+        executionMode: true,
+        handoffReason: true,
+        attempts: true,
+        planStep: { select: { demotedForBudget: true } },
+      },
+    });
+    expect(after).toEqual([
+      {
+        id: fixture.eligibleId,
+        status: "pending",
+        executionMode: "automated",
+        handoffReason: null,
+        attempts: 0,
+        planStep: { demotedForBudget: false },
+      },
+      {
+        id: fixture.unknownId,
+        status: "handed_to_human",
+        executionMode: "human",
+        handoffReason: HANDOFF_REASONS.unknown_primitive,
+        attempts: 0,
+        planStep: { demotedForBudget: false },
+      },
+      {
+        id: fixture.movedId,
+        status: "handed_to_human",
+        executionMode: "human",
+        handoffReason: HANDOFF_REASONS.primitive_version_changed,
+        attempts: 0,
+        planStep: { demotedForBudget: false },
+      },
+      {
+        id: fixture.budgetId,
+        status: "handed_to_human",
+        executionMode: "human",
+        handoffReason: BUDGET_DEMOTION_REASON,
+        attempts: 0,
+        planStep: { demotedForBudget: true },
+      },
+    ]);
+    expect(after.map((step) => step.handoffReason)).not.toContain(
+      HANDOFF_REASONS.depends_on_human
+    );
+
+    expect(await advanceWorkflow(fixture.task.id)).toEqual({ steps: 1, finished: false });
+    expect(await advanceWorkflow(fixture.task.id)).toEqual({ steps: 0, finished: false });
+    expect(
+      await prisma.taskWorkflowStepRun.findUniqueOrThrow({
+        where: { id: fixture.eligibleId },
+        select: { status: true, attempts: true },
+      })
+    ).toEqual({ status: "done", attempts: 1 });
+    expect(
+      await prisma.taskWorkflowStepRun.count({
+        where: {
+          id: { in: [fixture.unknownId, fixture.movedId, fixture.budgetId] },
+          attempts: { gt: 0 },
+        },
+      })
+    ).toBe(0);
+    expect(
+      await prisma.task.findUniqueOrThrow({
+        where: { id: fixture.task.id },
+        select: { status: true, claimedById: true },
+      })
+    ).toEqual({ status: "claimed", claimedById: fixture.worker.id });
+    expect(
+      await prisma.taskWorkflowRun.findUniqueOrThrow({
+        where: { id: fixture.runId },
+        select: { status: true },
+      })
+    ).toEqual({ status: "running" });
   });
 });
