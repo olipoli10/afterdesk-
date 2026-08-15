@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notifications";
 import {
@@ -153,6 +154,123 @@ async function pauseForRefusal(
       data: { status: "paused", pausedReason: detail },
     });
   });
+}
+
+/**
+ * BIND THE CLAIM — transaction T3, and deliberately NOT its own transaction.
+ *
+ * Called from INSIDE the existing `claimTask` transaction, after its
+ * `transitionTask({ from: "open", to: "claimed", guard: { claimedById: null } })`
+ * has already succeeded. That ordering is the whole design:
+ *
+ *   - `Task.claimedById` remains the SOLE assignment authority (C9). This
+ *     function mirrors that decision onto the unit; it never makes a competing
+ *     one, and there is no second claim anywhere.
+ *   - sharing the caller's transaction means the task and the unit can never
+ *     be observed disagreeing about who holds the work. A separate transaction
+ *     would leave a window where the pool shows the task taken and the unit
+ *     still says nobody has it.
+ *   - the caller's advisory-locked WIP cap and the T014 eligibility predicates
+ *     have already run. This function adds no authorization of its own and
+ *     must not: a second, subtly different definition of "may claim" is
+ *     exactly the drift `worker-eligibility.ts` exists to prevent.
+ *
+ * THE GENERATION IS BUMPED EXACTLY ONCE, and only for the initial
+ * `NULL -> worker` assignment (C4). `INV-14`'s trigger deliberately excludes
+ * that case — its guard is `OLD."claimedById" IS NOT NULL` — because a second
+ * bump here would instantly stale the claim just created, and the worker's
+ * first submission would be refused as coming from a superseded generation.
+ */
+export async function bindClaimToHumanUnit(
+  tx: Prisma.TransactionClient,
+  input: { taskId: string; workerId: string }
+): Promise<{ assignmentEstablished: boolean }> {
+  const unit = await tx.humanWorkUnitRunState.findUnique({
+    where: { taskId: input.taskId },
+    select: {
+      id: true,
+      state: true,
+      claimedById: true,
+      resumeGeneration: true,
+      definition: { select: { claimLeaseHours: true, submissionDeadlineHours: true } },
+    },
+  });
+
+  // No unit on this task: an ordinary pool claim, which this function has no
+  // business altering.
+  if (!unit) return { assignmentEstablished: false };
+  if (unit.state !== "published" && unit.state !== "revision_requested") {
+    return { assignmentEstablished: false };
+  }
+
+  /**
+   * "Established or matched" (FR-048). The assignment is ESTABLISHED when the
+   * unit had no claimant; it is MATCHED when the worker already held it, which
+   * is what a re-bind after a revision request looks like. Only the first bumps
+   * the generation.
+   */
+  const established = unit.claimedById === null;
+
+  const now = new Date();
+  const hours = (n: number) => new Date(now.getTime() + n * 60 * 60 * 1000);
+
+  const moved = await tx.humanWorkUnitRunState.updateMany({
+    where: { id: unit.id, state: { in: ["published", "revision_requested"] } },
+    data: {
+      state: "claimed",
+      claimedById: input.workerId,
+      claimedAt: now,
+      /**
+       * Both clocks come from the FROZEN durations on the definition, never
+       * from the plan's expected minutes. FR-058: an estimate is the planner's
+       * opinion, and turning it into a deadline would mean a generous guess
+       * bought a worker time while a thin one took it away.
+       */
+      claimLeaseExpiresAt: hours(unit.definition.claimLeaseHours),
+      submissionDeadlineAt: hours(unit.definition.submissionDeadlineHours),
+      ...(established ? { claimGeneration: { increment: 1 } } : {}),
+      transitionSeq: { increment: 1 },
+    },
+  });
+  // Lost the CAS to a concurrent writer. The caller's own task-level CAS makes
+  // this near-unreachable, but "near" is not a guarantee to build on.
+  if (moved.count === 0) return { assignmentEstablished: false };
+
+  const bound = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+    where: { id: unit.id },
+    select: { transitionSeq: true, claimGeneration: true },
+  });
+
+  await tx.humanWorkUnitTransition.create({
+    data: {
+      unitStateId: unit.id,
+      seq: bound.transitionSeq,
+      // A worker did this one, and the audit says so.
+      actorId: input.workerId,
+      actorRole: "worker",
+      fromState: unit.state,
+      toState: "claimed",
+      cause: "claimed",
+      claimGeneration: bound.claimGeneration,
+      resumeGeneration: unit.resumeGeneration,
+      assignmentEstablished: established,
+    },
+  });
+
+  await tx.taskEvent.create({
+    data: {
+      taskId: input.taskId,
+      action: "human_unit_claimed",
+      meta: {
+        state: "claimed",
+        cause: "claimed",
+        claimGeneration: bound.claimGeneration,
+        assignmentEstablished: established,
+      },
+    },
+  });
+
+  return { assignmentEstablished: established };
 }
 
 /**

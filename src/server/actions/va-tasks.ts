@@ -11,6 +11,7 @@ import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
 import { getSettings } from "@/lib/settings";
 import { metricsSchemaFor } from "@/lib/delivery-metrics";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
+import { bindClaimToHumanUnit } from "@/server/human-unit";
 import {
   ACTIVE_CLAIM_STATUSES,
   activeClaimCapRefusal,
@@ -162,6 +163,19 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
         guard: { claimedById: null },
         data: { claimedById: user.id, claimedAt: new Date() },
       });
+
+      /**
+       * ONE ACT, TWO RECORDS.
+       *
+       * The task assignment above is the decision; this mirrors it onto the
+       * human work unit inside the SAME transaction, so the two can never be
+       * observed disagreeing about who holds the work. A no-op for every task
+       * without a unit, which is every ordinary pool claim.
+       *
+       * Placed AFTER the transition on purpose: `INV-13` checks the unit's
+       * claimant against the task's, so the task must already carry it.
+       */
+      await bindClaimToHumanUnit(tx, { taskId, workerId: user.id });
     });
   } catch (e) {
     const handled = surfaced(e);
