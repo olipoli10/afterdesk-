@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
 import { publishHumanWorkUnit } from "@/server/human-unit";
+import { advanceWorkflow } from "@/server/workflow-runs";
 import { createTask, createWorker } from "./fixtures";
 
 /**
@@ -578,4 +579,284 @@ describe("pre-transaction refusals pause the unit and publish nothing", () => {
     const outcome = await publishHumanWorkUnit(run.id);
     expect(outcome.published).toBe(false);
   });
+});
+
+/**
+ * THE RUNTIME WIRING (T034).
+ *
+ * `advanceWorkflow` is the drain: it runs machine steps until there are none
+ * left to run. An admitted run changes what "none left" means twice over.
+ *
+ * Before this wiring, an admitted run was actively harmful. Its blocked
+ * descendants are `executionMode: "automated"` with a status that is not
+ * `done`, so the old tail counted them as remaining and the run never
+ * finished; and the moment publication moved the task to `open`, the very next
+ * tick saw a task outside `ai_processing` and ABANDONED the run — throwing away
+ * a mandate a person was at that moment being asked to work on.
+ */
+describe("T034 — the drain tail publishes at the cut", () => {
+  it("publishes when the next incomplete step is the cut", async () => {
+    const { task, run, unit } = await admittedRunReadyToPublish();
+    await advanceWorkflow(task.id);
+
+    const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { state: true },
+    });
+    expect(after.state).toBe("published");
+
+    const runAfter = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: run.id },
+      select: { status: true },
+    });
+    expect(runAfter.status).toBe("awaiting_human_unit");
+
+    const taskAfter = await prisma.task.findUniqueOrThrow({
+      where: { id: task.id },
+      select: { status: true },
+    });
+    expect(taskAfter.status).toBe("open");
+  });
+
+  /**
+   * The pre-cut block has NOT drained. Publishing here would hand a worker a
+   * unit whose inputs do not exist yet.
+   */
+  it("does not publish while a pre-cut step is still incomplete", async () => {
+    const { task, run, unit } = await admittedRunReadyToPublish({
+      producerStatus: "pending",
+    });
+    await advanceWorkflow(task.id);
+
+    const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { state: true, publishedAt: true },
+    });
+    expect(after.state).toBe("admitted");
+    expect(after.publishedAt).toBeNull();
+
+    const runAfter = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: run.id },
+      select: { status: true },
+    });
+    expect(runAfter.status).not.toBe("awaiting_human_unit");
+
+    const taskAfter = await prisma.task.findUniqueOrThrow({
+      where: { id: task.id },
+      select: { status: true },
+    });
+    expect(taskAfter.status).toBe("ai_processing");
+  });
+
+  /**
+   * A redelivered webhook, a cron tick landing on top of an `after()` call, or
+   * simply the next scheduled drain. None may publish a second time.
+   */
+  it("replays without publishing twice", async () => {
+    const { task, unit } = await admittedRunReadyToPublish();
+    await advanceWorkflow(task.id);
+    await advanceWorkflow(task.id);
+    await advanceWorkflow(task.id);
+
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: unit.id, cause: "published" },
+      })
+    ).toBe(1);
+    expect(await prisma.humanWorkUnitAlert.count({ where: { unitStateId: unit.id } })).toBe(1);
+    expect(
+      await prisma.taskEvent.count({ where: { taskId: task.id, action: "human_unit_published" } })
+    ).toBe(1);
+  });
+});
+
+describe("T034 — finishAdmittedRun only when every step is done", () => {
+  /** All steps done, unit terminal: the admitted run is over. */
+  async function allDone(unitState: string) {
+    const built = await admittedRunReadyToPublish();
+    await prisma.taskWorkflowStepRun.updateMany({
+      where: { runId: built.run.id },
+      data: { status: "done" },
+    });
+    await prisma.humanWorkUnitRunState.update({
+      where: { id: built.unit.id },
+      data: { state: unitState as never, acceptedAt: new Date() },
+    });
+    // The worker holds the task through delivery; the run finishing does not
+    // take it away from them.
+    await prisma.task.update({
+      where: { id: built.task.id },
+      data: { status: "claimed" as never, claimedById: (await createWorker()).id },
+    });
+    return built;
+  }
+
+  it("finishes the run and leaves the task with its claimant", async () => {
+    const { task, run } = await allDone("resumed");
+    await advanceWorkflow(task.id);
+
+    const runAfter = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: run.id },
+      select: { status: true, finishedAt: true },
+    });
+    expect(runAfter.status).toBe("done");
+    expect(runAfter.finishedAt).not.toBeNull();
+
+    /**
+     * FR-057. The run ending is not a payout event: the same claimant delivers
+     * through the existing QC path at the accepted fixed payout.
+     */
+    const taskAfter = await prisma.task.findUniqueOrThrow({
+      where: { id: task.id },
+      select: { status: true, claimedById: true, vaPayoutCents: true, estimatedMinutes: true },
+    });
+    expect(taskAfter.status).toBe("claimed");
+    expect(taskAfter.claimedById).not.toBeNull();
+    expect(taskAfter.vaPayoutCents).toBe(4_000);
+    expect(taskAfter.estimatedMinutes).toBe(60);
+    expect(await prisma.taskHumanWorkPackage.count({ where: { runId: run.id } })).toBe(0);
+  });
+
+  it("does not finish while a blocked descendant is still waiting", async () => {
+    const { task, run, unit } = await admittedRunReadyToPublish();
+    await prisma.humanWorkUnitRunState.update({
+      where: { id: unit.id },
+      data: { state: "published" as never, publishedAt: new Date() },
+    });
+    await advanceWorkflow(task.id);
+
+    const runAfter = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: run.id },
+      select: { status: true, finishedAt: true },
+    });
+    expect(runAfter.status).not.toBe("done");
+    expect(runAfter.finishedAt).toBeNull();
+  });
+});
+
+describe("T034 — an admitted run is not abandoned while a person holds it", () => {
+  /**
+   * THE LOAD-BEARING GUARD.
+   *
+   * The existing rule is right for every other run: a task that left
+   * `ai_processing` was cancelled or finished elsewhere, and a run that keeps
+   * executing against it burns money on a mandate nobody wants.
+   *
+   * An admitted run is the exception the rule never anticipated. Publication
+   * deliberately moves the task to `open` so a worker can claim it, and a claim
+   * moves it to `claimed`. Under the old guard the next tick would abandon the
+   * run in both states — discarding the machine block behind a person who is
+   * actively working, with no way back.
+   */
+  async function admittedRunWithTask(taskStatus: string) {
+    const built = await admittedRunReadyToPublish();
+    await prisma.humanWorkUnitRunState.update({
+      where: { id: built.unit.id },
+      data: { state: "published" as never, publishedAt: new Date() },
+    });
+    if (taskStatus === "claimed") {
+      await prisma.task.update({
+        where: { id: built.task.id },
+        data: { status: "open" as never },
+      });
+      await prisma.task.update({
+        where: { id: built.task.id },
+        data: { status: "claimed" as never, claimedById: (await createWorker()).id },
+      });
+    } else {
+      await prisma.task.update({
+        where: { id: built.task.id },
+        data: { status: taskStatus as never },
+      });
+    }
+    return built;
+  }
+
+  it.each(["open", "claimed"])("survives a drain tick while the task is %s", async (status) => {
+    const { task, run } = await admittedRunWithTask(status);
+    await advanceWorkflow(task.id);
+
+    const after = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: run.id },
+      select: { status: true, pausedReason: true },
+    });
+    expect(after.status).not.toBe("abandoned");
+    expect(after.pausedReason ?? "").not.toMatch(/left ai_processing/i);
+  });
+
+  /**
+   * Fail-closed is unchanged where it should be. A cancelled or expired
+   * mandate stops, admitted or not: nobody is owed that work any more.
+   */
+  it.each(["cancelled", "expired"])("still abandons when the task is %s", async (status) => {
+    const { task, run } = await admittedRunWithTask(status);
+    await advanceWorkflow(task.id);
+
+    const after = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: run.id },
+      select: { status: true },
+    });
+    expect(after.status).toBe("abandoned");
+  });
+
+  /**
+   * The widening is scoped to admitted runs; everything else keeps failing
+   * closed exactly as before.
+   *
+   * Built from scratch rather than by deleting a unit: `INV-7` refuses to let
+   * an audit row be deleted outside the retention purge, and it is right to.
+   * A test that had to disable an append-only guard to set up its fixture
+   * would be proving something about a database this product does not run.
+   */
+  it("still abandons a run with no unit when its task is open", async () => {
+    const task = await createTask({ status: "open" });
+    const planVersion = await prisma.taskExecutionPlanVersion.create({
+      data: {
+        taskId: task.id,
+        version: 1,
+        source: "ai_generated" as never,
+        deliverableDescription: "no unit",
+        assumptions: [],
+        exclusions: [],
+        internalCostLikelyCents: 1,
+        internalCostConservativeCents: 1,
+        suggestedPriceCents: 1,
+        suggestedVaPayoutCents: 1,
+        calibration: "calibrated" as never,
+      },
+      select: { id: true },
+    });
+    const snapshot = await prisma.taskAcceptanceSnapshot.create({
+      data: {
+        taskId: task.id,
+        planVersionId: planVersion.id,
+        clientPriceCents: 1,
+        currency: "USD",
+        title: "no unit",
+        description: "c",
+        revisionWindowHours: 72,
+        maxRevisionRounds: 2,
+        disputeWindowHours: 48,
+        acceptedByUserId: task.clientId,
+      },
+      select: { id: true },
+    });
+    const run = await prisma.taskWorkflowRun.create({
+      data: {
+        snapshotId: snapshot.id,
+        taskId: task.id,
+        planVersionId: planVersion.id,
+        status: "running" as never,
+      },
+      select: { id: true },
+    });
+
+    await advanceWorkflow(task.id);
+    const after = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: run.id },
+      select: { status: true },
+    });
+    expect(after.status).toBe("abandoned");
+  });
+
 });

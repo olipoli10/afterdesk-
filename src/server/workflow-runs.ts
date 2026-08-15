@@ -38,6 +38,7 @@ import { emptyPayload } from "@/lib/ai-work-engine/primitives/types";
 import { loadLatestPayload, persistPayload, writeArtifact } from "@/server/workflow-artifacts";
 import { readObject } from "@/lib/storage";
 import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notifications";
+import { publishHumanWorkUnit } from "@/server/human-unit";
 
 /**
  * THE DURABLE STEP PROCESSOR.
@@ -1028,6 +1029,12 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         id: true,
         snapshotId: true,
         status: true,
+        /**
+         * T034 — the admitted human work unit, if this run has one. Its
+         * presence changes what the drain tail means and what the lifecycle
+         * guard is allowed to do.
+         */
+        humanWorkUnit: { select: { id: true, state: true, cutOrder: true } },
         task: {
           select: {
             id: true,
@@ -1057,14 +1064,52 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
      * picked up by every cron tick because its run row still says "running".
      */
     if (run.task.status !== "ai_processing") {
-      await prisma.taskWorkflowRun.updateMany({
-        where: { id: run.id, status: "running" },
-        data: {
-          status: "abandoned",
-          finishedAt: new Date(),
-          pausedReason: `Task left ai_processing (${run.task.status}); execution stopped.`,
-        },
+      /**
+       * T034 — THE ONE EXCEPTION, AND ONLY FOR AN ADMITTED RUN.
+       *
+       * The rule above is right for every other run: a task that left
+       * `ai_processing` was cancelled or finished elsewhere, and a run still
+       * executing against it burns money on a mandate nobody wants.
+       *
+       * An admitted run is the case that rule never anticipated. Publication
+       * DELIBERATELY moves the task to `open` so a worker can claim it, and a
+       * claim moves it to `claimed`. Abandoning there would discard the machine
+       * block sitting behind a person who is at that moment doing the work, and
+       * there is no way back from `abandoned`.
+       *
+       * Everything else keeps failing closed: `cancelled`, `expired`,
+       * `completed` and any other status still stop the run, admitted or not.
+       * Nobody is owed that work any more.
+       */
+      const heldByAPerson =
+        run.humanWorkUnit !== null &&
+        (run.task.status === "open" || run.task.status === "claimed");
+
+      if (!heldByAPerson) {
+        await prisma.taskWorkflowRun.updateMany({
+          where: { id: run.id, status: "running" },
+          data: {
+            status: "abandoned",
+            finishedAt: new Date(),
+            pausedReason: `Task left ai_processing (${run.task.status}); execution stopped.`,
+          },
+        });
+        return { steps: 0, finished: false };
+      }
+
+      /**
+       * The run survives, but nothing machine-side runs while a person holds
+       * the work: the blocked block is released exactly once, by the resume.
+       * The one thing still worth doing here is closing a run whose steps are
+       * all finished, which is how an accepted-and-resumed mandate ends.
+       */
+      const stillOpen = await prisma.taskWorkflowStepRun.count({
+        where: { runId: run.id, status: { not: "done" } },
       });
+      if (stillOpen === 0) {
+        await finishAdmittedRun(run.id);
+        return { steps: 0, finished: true };
+      }
       return { steps: 0, finished: false };
     }
 
@@ -1659,6 +1704,61 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
       }
     }
 
+    /**
+     * T034 — THE DRAIN TAIL FOR AN ADMITTED RUN.
+     *
+     * Kept entirely separate from the ordinary tail below, which stays
+     * byte-identical for every run without a unit.
+     *
+     * The ordinary tail counts unfinished AUTOMATED steps, and an admitted
+     * run's blocked descendants are exactly that: `automated`, and not `done`.
+     * Falling through would mean the run could never finish, and the mandate
+     * would sit in the drain forever with nobody told.
+     */
+    if (run.humanWorkUnit) {
+      const unit = run.humanWorkUnit;
+      const nextIncomplete = await prisma.taskWorkflowStepRun.findFirst({
+        where: { runId: run.id, status: { not: "done" } },
+        orderBy: { order: "asc" },
+        select: { order: true },
+      });
+
+      if (!nextIncomplete) {
+        await finishAdmittedRun(run.id);
+        return { steps, finished: true };
+      }
+
+      /**
+       * The pre-cut block has drained exactly when the FIRST unfinished step is
+       * the cut itself. Anything earlier still incomplete means a producer has
+       * not run, and publishing would hand a worker a unit whose inputs do not
+       * exist.
+       */
+      if (nextIncomplete.order === unit.cutOrder && unit.state === "admitted") {
+        const outcome = await publishHumanWorkUnit(run.id);
+        if (outcome.published) {
+          /**
+           * CAS off `running`, and the RESULT IS CHECKED. A blind updateMany
+           * here would silently do nothing if a concurrent tick had already
+           * moved the run, and the caller would be told the run is waiting on a
+           * person when it might be paused or abandoned.
+           */
+          const moved = await prisma.taskWorkflowRun.updateMany({
+            where: { id: run.id, status: "running" },
+            data: { status: "awaiting_human_unit" },
+          });
+          if (moved.count === 0) {
+            console.warn("[workflow] run left running before awaiting_human_unit", {
+              runId: run.id,
+            });
+          }
+        }
+      }
+      // Either way the machine has nothing more to do on this tick: the
+      // remaining steps are blocked behind a person.
+      return { steps, finished: false };
+    }
+
     const remaining = await prisma.taskWorkflowStepRun.count({
       where: { runId: run.id, executionMode: "automated", status: { not: "done" } },
     });
@@ -1953,6 +2053,43 @@ export async function finishRun(runId: string): Promise<void> {
     if (error instanceof TransitionError) return;
     throw error;
   }
+}
+
+/**
+ * END AN ADMITTED RUN — and do NOTHING else.
+ *
+ * Marks the run `done`, stamps `finishedAt`, writes the audit event. No
+ * residual payout computation, no `vaPayoutCents` or `estimatedMinutes` write,
+ * no `TaskHumanWorkPackage`, and no task transition: the same claimant delivers
+ * through the existing `submitDeliverable -> submitted_for_qc ->
+ * approveDeliverable` path at the accepted fixed payout (FR-057).
+ *
+ * This is the minimum T034's wiring needs to exist and be provable. T037 owns
+ * the rest of its contract — notably the defensive guard on `finishRun`
+ * refusing to run for an admitted run.
+ */
+export async function finishAdmittedRun(runId: string): Promise<void> {
+  const run = await prisma.taskWorkflowRun.findUnique({
+    where: { id: runId },
+    select: { taskId: true },
+  });
+  if (!run) return;
+
+  // CAS, and the result is checked: a run already finished by a concurrent
+  // tick must not produce a second audit event.
+  const finished = await prisma.taskWorkflowRun.updateMany({
+    where: { id: runId, status: { in: ["running", "awaiting_human_unit"] } },
+    data: { status: "done", finishedAt: new Date() },
+  });
+  if (finished.count === 0) return;
+
+  await prisma.taskEvent.create({
+    data: {
+      taskId: run.taskId,
+      action: "human_unit_run_finished",
+      meta: { runId },
+    },
+  });
 }
 
 // ── The scheduled drain ───────────────────────────────────────────────────
