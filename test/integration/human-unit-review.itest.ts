@@ -341,6 +341,68 @@ async function submit(fixture: ReviewFixture, payload: unknown = FIRST_RESULT) {
   return outcome.candidateId;
 }
 
+async function candidateArtifact(input: {
+  uploaderId: string;
+  taskId?: string;
+  clean?: boolean;
+  kind?: "input" | "deliverable";
+}) {
+  const clean = input.clean ?? true;
+  return prisma.file.create({
+    data: {
+      taskId: input.taskId,
+      kind: input.kind ?? "deliverable",
+      uploaderId: input.uploaderId,
+      storageKey: `it/hwu-candidate-${randomUUID()}`,
+      fileName: "review-evidence.txt",
+      mime: "text/plain",
+      sizeBytes: 128,
+      scanStatus: clean ? "clean" : "pending",
+      ...(clean
+        ? {
+            sha256: "0".repeat(64),
+            detectedMime: "text/plain",
+            scannedAt: new Date("2026-08-15T00:00:00.000Z"),
+          }
+        : {}),
+    },
+    select: { id: true, taskId: true },
+  });
+}
+
+async function installSubmitCasStateMove() {
+  await removeSubmitCasStateMove();
+  await prisma.$executeRawUnsafe(`
+    CREATE FUNCTION afterdesk_test_t041_move_before_submit_cas()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+      UPDATE "HumanWorkUnitRunState"
+         SET "state" = 'published'
+       WHERE "id" = NEW."unitStateId";
+      RETURN NEW;
+    END;
+    $$
+  `);
+  await prisma.$executeRawUnsafe(`
+    CREATE TRIGGER afterdesk_test_t041_move_before_submit_cas
+    BEFORE INSERT ON "HumanWorkUnitCandidate"
+    FOR EACH ROW
+    EXECUTE FUNCTION afterdesk_test_t041_move_before_submit_cas()
+  `);
+}
+
+async function removeSubmitCasStateMove() {
+  await prisma.$executeRawUnsafe(`
+    DROP TRIGGER IF EXISTS afterdesk_test_t041_move_before_submit_cas
+    ON "HumanWorkUnitCandidate"
+  `);
+  await prisma.$executeRawUnsafe(
+    `DROP FUNCTION IF EXISTS afterdesk_test_t041_move_before_submit_cas()`
+  );
+}
+
 /**
  * Fixture seam for T042's branches. T039 precedes both T041 and T042, so a
  * review-only case must not be hidden behind the missing submit runtime. This
@@ -813,5 +875,181 @@ describe("T039 — schema and declared-artifact refusals leave the work with its
       await prisma.humanWorkUnitTransition.count({ where: { unitStateId: fixture.unitId } })
     ).toBe(1);
     await expectStillBlockedAndUnspent(fixture);
+  });
+});
+
+describe("T041 — submission rechecks live eligibility and file ownership", () => {
+  it("refuses a claimant whose approval changed after the claim", async () => {
+    const fixture = await claimedReviewUnit();
+    await prisma.vaProfile.update({
+      where: { userId: fixture.worker.id },
+      data: { status: "suspended" },
+    });
+
+    expect(
+      await reviewRuntime.submitHumanUnitCandidate({
+        taskId: fixture.task.id,
+        actorId: fixture.worker.id,
+        claimGeneration: 1,
+        payload: ACCEPTED_RESULT,
+        fileIds: [],
+      })
+    ).toEqual({ submitted: false, cause: "not_eligible" });
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true, claimedById: true },
+      })
+    ).toEqual({ state: "claimed", claimedById: fixture.worker.id });
+    expect(await prisma.humanWorkUnitCandidate.count({ where: { unitStateId: fixture.unitId } })).toBe(
+      0
+    );
+  });
+
+  it("does not reveal a unit when an unrelated worker guesses a generation", async () => {
+    const fixture = await claimedReviewUnit();
+    const stranger = await createWorker();
+
+    expect(
+      await reviewRuntime.submitHumanUnitCandidate({
+        taskId: fixture.task.id,
+        actorId: stranger.id,
+        claimGeneration: 0,
+        payload: ACCEPTED_RESULT,
+        fileIds: [],
+      })
+    ).toEqual({ submitted: false, cause: "not_available" });
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true, transitionSeq: true },
+      })
+    ).toEqual({ state: "claimed", transitionSeq: 1 });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: fixture.unitId, cause: "refused:stale_generation" },
+      })
+    ).toBe(0);
+  });
+
+  it("records a superseded holder's late generation as stale", async () => {
+    const fixture = await claimedReviewUnit();
+    const successor = await createWorker();
+    await prisma.task.update({
+      where: { id: fixture.task.id },
+      data: { claimedById: successor.id },
+    });
+
+    expect(
+      await reviewRuntime.submitHumanUnitCandidate({
+        taskId: fixture.task.id,
+        actorId: fixture.worker.id,
+        claimGeneration: 1,
+        payload: ACCEPTED_RESULT,
+        fileIds: [],
+      })
+    ).toEqual({ submitted: false, cause: "stale_generation" });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: {
+          unitStateId: fixture.unitId,
+          actorId: fixture.worker.id,
+          cause: "refused:stale_generation",
+        },
+      })
+    ).toBe(1);
+  });
+
+  it.each(["different_uploader", "already_attached", "not_clean", "wrong_kind"] as const)(
+    "refuses a required artifact that is $0",
+    async (failure) => {
+      const fixture = await claimedReviewUnit({ requiredArtifactKinds: ["review_evidence"] });
+      const otherWorker = failure === "different_uploader" ? await createWorker() : null;
+      const otherTask = failure === "already_attached" ? await createTask() : null;
+      const artifact = await candidateArtifact({
+        uploaderId: otherWorker?.id ?? fixture.worker.id,
+        ...(otherTask ? { taskId: otherTask.id } : {}),
+        clean: failure !== "not_clean",
+        kind: failure === "wrong_kind" ? "input" : "deliverable",
+      });
+
+      expect(
+        await reviewRuntime.submitHumanUnitCandidate({
+          taskId: fixture.task.id,
+          actorId: fixture.worker.id,
+          claimGeneration: 1,
+          payload: ACCEPTED_RESULT,
+          fileIds: [artifact.id],
+        })
+      ).toEqual({
+        submitted: false,
+        cause: "schema_invalid",
+        missing: ["review_evidence"],
+      });
+      expect(
+        await prisma.file.findUniqueOrThrow({
+          where: { id: artifact.id },
+          select: { taskId: true },
+        })
+      ).toEqual({ taskId: artifact.taskId });
+      expect(
+        await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+          where: { id: fixture.unitId },
+          select: { state: true, claimedById: true },
+        })
+      ).toEqual({ state: "claimed", claimedById: fixture.worker.id });
+      expect(
+        await prisma.humanWorkUnitCandidate.count({ where: { unitStateId: fixture.unitId } })
+      ).toBe(0);
+    }
+  );
+
+  it("attaches one owned clean file to its declared artifact slot", async () => {
+    const fixture = await claimedReviewUnit({ requiredArtifactKinds: ["review_evidence"] });
+    const artifact = await candidateArtifact({ uploaderId: fixture.worker.id });
+
+    const outcome = await reviewRuntime.submitHumanUnitCandidate({
+      taskId: fixture.task.id,
+      actorId: fixture.worker.id,
+      claimGeneration: 1,
+      payload: ACCEPTED_RESULT,
+      fileIds: [artifact.id],
+    });
+    expect(outcome).toMatchObject({ submitted: true, unitStateId: fixture.unitId });
+    if (!outcome.submitted) throw new Error(`submission refused: ${outcome.cause}`);
+    expect(
+      await prisma.humanWorkUnitCandidateFile.findUniqueOrThrow({
+        where: { candidateId_fileId: { candidateId: outcome.candidateId, fileId: artifact.id } },
+        select: { artifactKind: true, file: { select: { taskId: true } } },
+      })
+    ).toEqual({ artifactKind: "review_evidence", file: { taskId: fixture.task.id } });
+  });
+
+  it("rolls the candidate back when the unit moves before the submit CAS", async () => {
+    const fixture = await claimedReviewUnit();
+    await installSubmitCasStateMove();
+    try {
+      expect(
+        await reviewRuntime.submitHumanUnitCandidate({
+          taskId: fixture.task.id,
+          actorId: fixture.worker.id,
+          claimGeneration: 1,
+          payload: ACCEPTED_RESULT,
+          fileIds: [],
+        })
+      ).toEqual({ submitted: false, cause: "not_available" });
+    } finally {
+      await removeSubmitCasStateMove();
+    }
+
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true, transitionSeq: true },
+      })
+    ).toEqual({ state: "claimed", transitionSeq: 1 });
+    expect(await prisma.humanWorkUnitCandidate.count({ where: { unitStateId: fixture.unitId } })).toBe(
+      0
+    );
   });
 });

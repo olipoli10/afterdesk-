@@ -1,8 +1,21 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notifications";
+import type {
+  FrozenEligibility,
+  FrozenHumanUnitDefinition,
+} from "@/lib/ai-work-engine/human-unit-definition";
+import { validateCandidate } from "@/lib/ai-work-engine/human-unit-result-schema";
+import {
+  ACTIVE_CLAIM_STATUSES,
+  activeClaimCapRefusal,
+  categoryCertificationRefusal,
+  highValueRefusal,
+  priorRejectionRefusal,
+  vaStatusRefusal,
+} from "@/lib/worker-eligibility";
 import {
   DATA_CLASSES,
   isAtLeastAsRestrictive,
@@ -29,6 +42,28 @@ export type PublishOutcome = {
   published: boolean;
   /** Present only on a refusal. Named in the unit's own vocabulary (FR-053). */
   cause?: RefusalCause | "not_admitted" | "already_published";
+};
+
+export type SubmitOutcome =
+  | { submitted: true; candidateId: string; unitStateId: string }
+  | {
+      submitted: false;
+      cause:
+        | "not_available"
+        | "stale_generation"
+        | "not_eligible"
+        | "schema_invalid"
+        | "duplicate"
+        | "lifecycle_exit";
+      missing?: string[];
+    };
+
+type SubmitInput = {
+  taskId: string;
+  actorId: string;
+  claimGeneration: number;
+  payload: unknown;
+  fileIds: string[];
 };
 
 /** Only the two causes publication itself can produce. */
@@ -304,6 +339,510 @@ export async function bindClaimToHumanUnit(
   });
 
   return { assignmentEstablished: established };
+}
+
+/**
+ * Frozen criteria are stored as JSON. A malformed historical row is a refusal,
+ * never a smaller set of requirements. This is intentionally the same parser
+ * shape used by the residual publisher in workflow-runs.ts.
+ */
+function parseFrozenEligibility(value: unknown): FrozenEligibility | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value))
+    return null;
+  const e = value as Record<string, unknown>;
+  if (
+    !(e.categorySlug === null || typeof e.categorySlug === "string") ||
+    typeof e.tier !== "string" ||
+    typeof e.requireCategoryCertification !== "boolean" ||
+    typeof e.highValueThreshold !== "number" ||
+    !Number.isFinite(e.highValueThreshold) ||
+    typeof e.minRatedDeliveries !== "number" ||
+    !Number.isInteger(e.minRatedDeliveries) ||
+    e.minRatedDeliveries < 0 ||
+    typeof e.maxActiveClaims !== "number" ||
+    !Number.isInteger(e.maxActiveClaims) ||
+    e.maxActiveClaims < 1
+  ) {
+    return null;
+  }
+  return {
+    categorySlug: e.categorySlug as string | null,
+    tier: e.tier,
+    requireCategoryCertification: e.requireCategoryCertification,
+    highValueThreshold: e.highValueThreshold,
+    minRatedDeliveries: e.minRatedDeliveries,
+    maxActiveClaims: e.maxActiveClaims,
+  };
+}
+
+class SubmitRefused extends Error {
+  constructor(readonly outcome: Exclude<SubmitOutcome, { submitted: true }>) {
+    super(outcome.cause);
+  }
+}
+
+class LostSubmitCas extends Error {}
+
+type RefusalAuditUnit = {
+  id: string;
+  taskId: string;
+};
+
+async function actorHeldClaimGeneration(
+  tx: Prisma.TransactionClient,
+  unitStateId: string,
+  actorId: string,
+  claimGeneration: number,
+): Promise<boolean> {
+  return (
+    (await tx.humanWorkUnitTransition.count({
+      where: {
+        unitStateId,
+        actorId,
+        cause: "claimed",
+        claimGeneration,
+      },
+    })) > 0
+  );
+}
+
+/**
+ * A recorded refusal changes no business state, but it still owns one audit
+ * sequence. UPDATE ... RETURNING serializes against a concurrent transition,
+ * so the row names the state and generation that were actually current when
+ * the refusal was recorded rather than a stale pre-lock read.
+ */
+async function recordSubmitRefusal(
+  tx: Prisma.TransactionClient,
+  unit: RefusalAuditUnit,
+  actorId: string,
+  cause: "refused:stale_generation" | "refused:duplicate",
+): Promise<void> {
+  const audited = await tx.humanWorkUnitRunState.update({
+    where: { id: unit.id },
+    data: { transitionSeq: { increment: 1 } },
+    select: {
+      state: true,
+      transitionSeq: true,
+      claimGeneration: true,
+      resumeGeneration: true,
+    },
+  });
+
+  await tx.humanWorkUnitTransition.create({
+    data: {
+      unitStateId: unit.id,
+      seq: audited.transitionSeq,
+      actorId,
+      actorRole: "worker",
+      fromState: audited.state,
+      toState: audited.state,
+      cause,
+      claimGeneration: audited.claimGeneration,
+      resumeGeneration: audited.resumeGeneration,
+    },
+  });
+  await tx.taskEvent.create({
+    data: {
+      taskId: unit.taskId,
+      action: "human_unit_refused",
+      actorId,
+      meta: {
+        state: audited.state,
+        cause,
+        claimGeneration: audited.claimGeneration,
+      },
+    },
+  });
+}
+
+function candidateRevisionIndex(unit: {
+  remainingRevisions: number;
+  definition: { revisionBound: number };
+}): number | null {
+  const index = unit.definition.revisionBound - unit.remainingRevisions;
+  return Number.isInteger(index) && index >= 0 ? index : null;
+}
+
+/**
+ * A P2002 is a duplicate only when the exact durable T5 predecessor now
+ * exists. This prevents an unrelated unique-index defect from being swallowed
+ * as an ordinary double-click.
+ */
+async function recordDuplicateIfPresent(input: SubmitInput): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
+    const unit = await tx.humanWorkUnitRunState.findUnique({
+      where: { taskId: input.taskId },
+      select: {
+        id: true,
+        taskId: true,
+        claimGeneration: true,
+        remainingRevisions: true,
+        definition: { select: { revisionBound: true } },
+      },
+    });
+    if (!unit || unit.claimGeneration !== input.claimGeneration) return false;
+
+    const revisionIndex = candidateRevisionIndex(unit);
+    if (revisionIndex === null) return false;
+    const candidate = await tx.humanWorkUnitCandidate.findUnique({
+      where: {
+        unitStateId_claimGeneration_revisionIndex: {
+          unitStateId: unit.id,
+          claimGeneration: input.claimGeneration,
+          revisionIndex,
+        },
+      },
+      select: { submittedById: true },
+    });
+    if (!candidate || candidate.submittedById !== input.actorId) return false;
+
+    await recordSubmitRefusal(tx, unit, input.actorId, "refused:duplicate");
+    return true;
+  });
+}
+
+async function classifyLostSubmit(input: SubmitInput): Promise<SubmitOutcome> {
+  if (await recordDuplicateIfPresent(input)) {
+    return { submitted: false, cause: "duplicate" };
+  }
+  return prisma.$transaction(async (tx) => {
+    const unit = await tx.humanWorkUnitRunState.findUnique({
+      where: { taskId: input.taskId },
+      select: { id: true, taskId: true, state: true, claimGeneration: true },
+    });
+    if (!unit) return { submitted: false, cause: "not_available" };
+    if (unit.claimGeneration !== input.claimGeneration) {
+      if (
+        !(await actorHeldClaimGeneration(
+          tx,
+          unit.id,
+          input.actorId,
+          input.claimGeneration,
+        ))
+      ) {
+        return { submitted: false, cause: "not_available" };
+      }
+      await recordSubmitRefusal(
+        tx,
+        unit,
+        input.actorId,
+        "refused:stale_generation",
+      );
+      return { submitted: false, cause: "stale_generation" };
+    }
+    if (["resumed", "exhausted", "withdrawn"].includes(unit.state)) {
+      return { submitted: false, cause: "lifecycle_exit" };
+    }
+    return { submitted: false, cause: "not_available" };
+  });
+}
+
+/**
+ * SUBMIT A CANDIDATE — transaction T5.
+ *
+ * Conformance is only permission to create immutable evidence. It never
+ * accepts the result and never makes a downstream machine step runnable.
+ * Candidate, file links, unit CAS, primary transition and TaskEvent mirror
+ * commit together or not at all.
+ */
+export async function submitHumanUnitCandidate(
+  input: SubmitInput,
+): Promise<SubmitOutcome> {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const unit = await tx.humanWorkUnitRunState.findUnique({
+        where: { taskId: input.taskId },
+        include: {
+          definition: true,
+          task: {
+            select: {
+              status: true,
+              claimedById: true,
+              category: { select: { slug: true, name: true } },
+            },
+          },
+        },
+      });
+      if (!unit) return { submitted: false, cause: "not_available" };
+
+      const revisionIndex = candidateRevisionIndex(unit);
+      if (revisionIndex === null)
+        return { submitted: false, cause: "not_available" };
+
+      // The generation fences first. An old holder is stale even if the task
+      // has since moved to somebody else; their old result is never merged.
+      if (unit.claimGeneration !== input.claimGeneration) {
+        if (
+          !(await actorHeldClaimGeneration(
+            tx,
+            unit.id,
+            input.actorId,
+            input.claimGeneration,
+          ))
+        ) {
+          return { submitted: false, cause: "not_available" };
+        }
+        await recordSubmitRefusal(
+          tx,
+          unit,
+          input.actorId,
+          "refused:stale_generation",
+        );
+        return { submitted: false, cause: "stale_generation" };
+      }
+
+      // A response lost after commit reaches this exact durable predecessor.
+      // It is a duplicate even after review concluded, and recording the retry
+      // must not reopen or otherwise rewrite that conclusion.
+      const existing = await tx.humanWorkUnitCandidate.findUnique({
+        where: {
+          unitStateId_claimGeneration_revisionIndex: {
+            unitStateId: unit.id,
+            claimGeneration: input.claimGeneration,
+            revisionIndex,
+          },
+        },
+        select: { submittedById: true },
+      });
+      if (existing?.submittedById === input.actorId) {
+        await recordSubmitRefusal(tx, unit, input.actorId, "refused:duplicate");
+        return { submitted: false, cause: "duplicate" };
+      }
+
+      if (["resumed", "exhausted", "withdrawn"].includes(unit.state)) {
+        return { submitted: false, cause: "lifecycle_exit" };
+      }
+      if (
+        unit.claimedById !== input.actorId ||
+        unit.task.claimedById !== input.actorId ||
+        unit.task.status !== "claimed"
+      ) {
+        return { submitted: false, cause: "not_available" };
+      }
+      if (unit.state !== "claimed" && unit.state !== "revision_requested") {
+        return { submitted: false, cause: "not_available" };
+      }
+
+      const eligibility = parseFrozenEligibility(unit.definition.eligibility);
+      if (eligibility === null)
+        return { submitted: false, cause: "not_eligible" };
+
+      const profile = await tx.vaProfile.findUnique({
+        where: { userId: input.actorId },
+        select: { status: true, scoreCache: true, ratedCount: true },
+      });
+      let eligibilityRefusal = vaStatusRefusal(profile?.status);
+      if (eligibilityRefusal === null && profile) {
+        const frozenCategory =
+          eligibility.categorySlug === null
+            ? null
+            : {
+                slug: eligibility.categorySlug,
+                name:
+                  unit.task.category?.slug === eligibility.categorySlug
+                    ? unit.task.category.name
+                    : eligibility.categorySlug,
+              };
+        let certifiedCount = 0;
+        if (eligibility.requireCategoryCertification && frozenCategory) {
+          certifiedCount = await tx.certification.count({
+            where: { userId: input.actorId, courseSlug: frozenCategory.slug },
+          });
+        }
+        eligibilityRefusal = categoryCertificationRefusal({
+          requireCategoryCertification:
+            eligibility.requireCategoryCertification,
+          category: frozenCategory,
+          certifiedCount,
+        });
+
+        if (eligibilityRefusal === null) {
+          const previouslyFailed = await tx.submission.count({
+            where: {
+              taskId: input.taskId,
+              vaId: input.actorId,
+              qcStatus: "rejected",
+            },
+          });
+          eligibilityRefusal = priorRejectionRefusal(previouslyFailed);
+        }
+        if (eligibilityRefusal === null) {
+          eligibilityRefusal = highValueRefusal({
+            tier: eligibility.tier,
+            scoreCache: profile.scoreCache,
+            ratedCount: profile.ratedCount,
+            highValueThreshold: eligibility.highValueThreshold,
+            minRatedDeliveries: eligibility.minRatedDeliveries,
+          });
+        }
+        if (eligibilityRefusal === null) {
+          await tx.$executeRaw`
+            SELECT pg_advisory_xact_lock(hashtext(${`claim-cap:${input.actorId}`}))
+          `;
+          const activeCount = await tx.task.count({
+            where: {
+              id: { not: input.taskId },
+              claimedById: input.actorId,
+              status: { in: [...ACTIVE_CLAIM_STATUSES] },
+            },
+          });
+          eligibilityRefusal = activeClaimCapRefusal({
+            activeCount,
+            maxActiveClaims: eligibility.maxActiveClaims,
+          });
+        }
+      }
+      if (eligibilityRefusal !== null) {
+        return { submitted: false, cause: "not_eligible" };
+      }
+
+      const uniqueFileIds = [...new Set(input.fileIds)];
+      if (uniqueFileIds.length !== input.fileIds.length) {
+        return {
+          submitted: false,
+          cause: "schema_invalid",
+          missing: ["artifact_file"],
+        };
+      }
+
+      /**
+       * `fileIds` is the frozen action shape; it has no second user-authored
+       * artifact-kind channel. Required kinds are ordered on the definition,
+       * so each uploaded file occupies that declared slot. An extra file has
+       * no accepted-contract kind and is refused rather than labelled by us.
+       */
+      if (input.fileIds.length > unit.definition.requiredArtifactKinds.length) {
+        return {
+          submitted: false,
+          cause: "schema_invalid",
+          missing: ["artifact_kind"],
+        };
+      }
+      const artifactKinds = unit.definition.requiredArtifactKinds.slice(
+        0,
+        input.fileIds.length,
+      );
+      const validation = validateCandidate(
+        unit.definition as unknown as FrozenHumanUnitDefinition,
+        input.payload,
+        artifactKinds,
+      );
+      if (!validation.ok) {
+        return {
+          submitted: false,
+          cause: "schema_invalid",
+          missing: validation.missing,
+        };
+      }
+
+      if (input.fileIds.length > 0) {
+        const attached = await tx.file.updateMany({
+          where: {
+            id: { in: input.fileIds },
+            uploaderId: input.actorId,
+            taskId: null,
+            kind: "deliverable",
+            scanStatus: "clean",
+          },
+          data: { taskId: input.taskId },
+        });
+        if (attached.count !== input.fileIds.length) {
+          throw new SubmitRefused({
+            submitted: false,
+            cause: "schema_invalid",
+            missing:
+              artifactKinds.length > 0 ? artifactKinds : ["artifact_file"],
+          });
+        }
+      }
+
+      const candidate = await tx.humanWorkUnitCandidate.create({
+        data: {
+          unitStateId: unit.id,
+          claimGeneration: input.claimGeneration,
+          revisionIndex,
+          submittedById: input.actorId,
+          payload: validation.value as Prisma.InputJsonValue,
+          files:
+            input.fileIds.length === 0
+              ? undefined
+              : {
+                  create: input.fileIds.map((fileId, index) => ({
+                    fileId,
+                    artifactKind: artifactKinds[index]!,
+                  })),
+                },
+        },
+        select: { id: true },
+      });
+
+      const submittedAt = new Date();
+      const moved = await tx.humanWorkUnitRunState.updateMany({
+        where: {
+          id: unit.id,
+          taskId: input.taskId,
+          state: { in: ["claimed", "revision_requested"] },
+          claimedById: input.actorId,
+          claimGeneration: input.claimGeneration,
+        },
+        data: {
+          state: "submitted",
+          submittedAt,
+          transitionSeq: { increment: 1 },
+        },
+      });
+      if (moved.count === 0) throw new LostSubmitCas();
+
+      const submitted = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: { transitionSeq: true, resumeGeneration: true },
+      });
+      await tx.humanWorkUnitTransition.create({
+        data: {
+          unitStateId: unit.id,
+          seq: submitted.transitionSeq,
+          actorId: input.actorId,
+          actorRole: "worker",
+          fromState: unit.state,
+          toState: "submitted",
+          cause: "submitted",
+          claimGeneration: input.claimGeneration,
+          resumeGeneration: submitted.resumeGeneration,
+        },
+      });
+      await tx.taskEvent.create({
+        data: {
+          taskId: input.taskId,
+          action: "human_unit_submitted",
+          actorId: input.actorId,
+          meta: {
+            state: "submitted",
+            cause: "submitted",
+            claimGeneration: input.claimGeneration,
+          },
+        },
+      });
+
+      return {
+        submitted: true,
+        candidateId: candidate.id,
+        unitStateId: unit.id,
+      };
+    });
+  } catch (error) {
+    if (error instanceof SubmitRefused) return error.outcome;
+    if (error instanceof LostSubmitCas) return classifyLostSubmit(input);
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      if (await recordDuplicateIfPresent(input)) {
+        return { submitted: false, cause: "duplicate" };
+      }
+    }
+    throw error;
+  }
 }
 
 /**
