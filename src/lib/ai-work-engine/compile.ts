@@ -52,6 +52,20 @@ export type CompileGate = {
    * mandates, because none of them could read a file.
    */
   dataClass?: DataClass;
+  /**
+   * THE ADMITTED HUMAN CUT (T030).
+   *
+   * Present only when this run was admitted as a human work unit: the accepted
+   * plan `order` of the single human step the machine stops at. Absent is the
+   * whole of today's behaviour, byte for byte.
+   *
+   * Its ONLY effect is to reclassify steps whose sole reason for being human is
+   * the pure `depends_on_human` cascade behind that one step. It is not a
+   * licence to run anything else: a step refused on its own merits stays human
+   * and keeps its own reason, because "waiting on a person" is a lie about a
+   * step that will not run whatever the person does.
+   */
+  humanCut?: { order: number };
 };
 
 export type CompiledStep = {
@@ -69,6 +83,13 @@ export type CompiledStep = {
    * parse. The runner hands this to the primitive and never re-parses.
    */
   params: Record<string, unknown> | null;
+  /**
+   * Machine work that is merely WAITING on the admitted human step. Persisted
+   * as `blocked_on_human_unit`, and made `pending` again exactly once by the
+   * resume. False everywhere else, including on every step that is human for
+   * its own reasons.
+   */
+  blockedOnHumanUnit: boolean;
 };
 
 export type CompiledPlan = {
@@ -138,6 +159,10 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       executionMode: "human" as const,
       handoffReason: gateReason,
       params: null,
+      // The mandate-level gate fires before the cut is ever considered. A
+      // sensitive or access-gated mandate is never admitted in practice; this
+      // does not rely on that being true upstream.
+      blockedOnHumanUnit: false,
     }));
     return {
       steps: compiled,
@@ -215,6 +240,28 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       reachAllowedBesideFiles &&
       paramsOk;
 
+    /**
+     * THE STEP'S OWN MERITS, SEPARATED FROM THE CASCADE.
+     *
+     * `automatable` above deliberately conflates the two: a descendant of a
+     * human step is not automatable, full stop. That is the right answer for
+     * today's compiler and the wrong input for the human cut, which needs to
+     * know whether a step would run IF its producer existed.
+     *
+     * `depends_on_human` is therefore the one topology reason that does not
+     * disqualify a step here. Every other reason — not in the registry, moved
+     * version, planned as human work — is about the step itself and survives.
+     */
+    const ownReasonOk =
+      (decision?.reason ?? null) === null || decision?.reason === "depends_on_human";
+    const ownMeritsOk =
+      ownReasonOk &&
+      modeAllowed &&
+      reachKnown &&
+      reachAllowedForClass &&
+      reachAllowedBesideFiles &&
+      paramsOk;
+
     return {
       planStepId: s.planStepId,
       order: s.order,
@@ -223,6 +270,7 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       primitiveVersion: s.primitiveVersion,
       dependsOnOrder: s.dependsOnOrder,
       automatable,
+      ownMeritsOk,
       handoffReason: automatable
         ? null
         : // The topology's own verdict wins when it has one: "not in the
@@ -282,19 +330,66 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
     return ok;
   };
 
+  /**
+   * BEHIND THE CUT, AND ONLY BEHIND THE CUT.
+   *
+   * A step counts as blocked on the human unit when it is automatable on its
+   * own merits AND every dependency is either finally automatable, the cut
+   * itself, or itself blocked on the unit. That recursion is what keeps the
+   * conversion honest: it reaches exactly the steps whose single obstacle is
+   * the person, and stops dead at the first step that is human for any other
+   * reason — which then keeps its own reason and blocks everything behind it
+   * in turn.
+   *
+   * Cycle-safe by the same in-progress set as `finallyAutomatable`, and for
+   * the same reason: plan data can contain cycles, and a cycle proves
+   * dependence on nothing provable.
+   */
+  const cutOrder = gate.humanCut?.order;
+  const cutAdmitted = cutOrder !== undefined && byOrderPrelim.has(cutOrder);
+  const blockedCache = new Map<number, boolean>();
+  const blockedVisiting = new Set<number>();
+  const blockedOnUnit = (order: number): boolean => {
+    if (!cutAdmitted || order === cutOrder) return false;
+    const cached = blockedCache.get(order);
+    if (cached !== undefined) return cached;
+    if (blockedVisiting.has(order)) return false;
+    const p = byOrderPrelim.get(order);
+    // OWN merits, not `automatable`: every descendant of the cut fails the
+    // latter by construction, which is the very condition being reclassified.
+    if (!p || !p.ownMeritsOk) {
+      blockedCache.set(order, false);
+      return false;
+    }
+    blockedVisiting.add(order);
+    const ok = p.dependsOnOrder.every(
+      (d) => d === cutOrder || finallyAutomatable(d) || blockedOnUnit(d)
+    );
+    blockedVisiting.delete(order);
+    blockedCache.set(order, ok);
+    return ok;
+  };
+
   const compiled: CompiledStep[] = prelim.map((p) => {
     const finallyOk = p.automatable && finallyAutomatable(p.order);
+    // Only consulted when the step is not already runnable, so a step
+    // unrelated to the cut can never be flagged.
+    const blocked = !finallyOk && blockedOnUnit(p.order);
+    const runnable = finallyOk || blocked;
     return {
       planStepId: p.planStepId,
       order: p.order,
       title: p.title,
       primitiveId: p.primitiveId,
       primitiveVersion: p.primitiveVersion,
-      executionMode: finallyOk ? "automated" : "human",
-      handoffReason: finallyOk
+      // A blocked step IS machine work. It carries its parsed params because
+      // the resume runs it later without re-parsing anything.
+      executionMode: runnable ? "automated" : "human",
+      handoffReason: runnable
         ? null
         : (p.handoffReason ?? HANDOFF_REASONS.depends_on_human),
-      params: finallyOk ? p.parsedParams : null,
+      params: runnable ? p.parsedParams : null,
+      blockedOnHumanUnit: blocked,
     };
   });
 

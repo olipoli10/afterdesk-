@@ -297,3 +297,167 @@ describe("the registry implements exactly the planner's vocabulary", () => {
     expect(resolvePrimitive(null, 1)).toBeNull();
   });
 });
+
+/**
+ * THE HUMAN CUT GATE (T023).
+ *
+ * `compileDecisions` is what decides, after a client has signed, which steps
+ * the machine may run. The human work unit adds exactly one new question to
+ * it: when the plan stops at one admitted human step, may the work BEHIND that
+ * step be treated as machine work that is merely waiting?
+ *
+ * Answering "yes" too broadly is the dangerous direction. A step that is human
+ * for its OWN reasons — no primitive, a moved version, params that do not
+ * parse, a forbidden reach, a budget demotion — must keep being human and must
+ * keep saying WHY in its own words. If the cut swallowed those reasons, an
+ * operator would be told "waiting on a person" about a step that will never
+ * run no matter how fast that person works, and the resume would try to run it.
+ */
+describe("the human cut gate", () => {
+  const cutPlan = (): CompileStepInput[] => [
+    machine(1),
+    human(2, [1]),
+    machine(3, [2]),
+    machine(4, [3]),
+  ];
+
+  describe("absent — today's behaviour is untouched", () => {
+    /**
+     * The whole existing suite above is the real proof of this. These two
+     * assert it explicitly, so a future change to the gate cannot quietly
+     * alter the no-cut path while the older tests still pass for other reasons.
+     */
+    it("compiles identically with no gate and with an undefined cut", () => {
+      const withoutKey = compileDecisions(cutPlan(), OPEN_GATE);
+      const withUndefined = compileDecisions(cutPlan(), { ...OPEN_GATE, humanCut: undefined });
+      expect(withUndefined).toEqual(withoutKey);
+    });
+
+    it("still cascades a human step onto everything behind it", () => {
+      const plan = compileDecisions(cutPlan(), OPEN_GATE);
+      const behind = plan.steps.filter((s) => s.order === 3 || s.order === 4);
+      for (const step of behind) {
+        expect(step.executionMode).toBe("human");
+        expect(step.handoffReason).toBe(HANDOFF_REASONS.depends_on_human);
+        expect(step.blockedOnHumanUnit).toBe(false);
+      }
+    });
+  });
+
+  describe("present — only the pure cascade converts", () => {
+    it("compiles a descendant blocked ONLY by the cut as automated and flagged", () => {
+      const plan = compileDecisions(cutPlan(), { ...OPEN_GATE, humanCut: { order: 2 } });
+      for (const order of [3, 4]) {
+        const step = plan.steps.find((s) => s.order === order)!;
+        expect(step.executionMode).toBe("automated");
+        expect(step.handoffReason).toBeNull();
+        expect(step.blockedOnHumanUnit).toBe(true);
+      }
+    });
+
+    it("leaves the cut itself human", () => {
+      const plan = compileDecisions(cutPlan(), { ...OPEN_GATE, humanCut: { order: 2 } });
+      const cut = plan.steps.find((s) => s.order === 2)!;
+      expect(cut.executionMode).toBe("human");
+      expect(cut.handoffReason).toBe(HANDOFF_REASONS.human_step);
+      expect(cut.blockedOnHumanUnit).toBe(false);
+    });
+
+    it("leaves an ancestor of the cut automated and unflagged", () => {
+      const plan = compileDecisions(cutPlan(), { ...OPEN_GATE, humanCut: { order: 2 } });
+      const ancestor = plan.steps.find((s) => s.order === 1)!;
+      expect(ancestor.executionMode).toBe("automated");
+      expect(ancestor.blockedOnHumanUnit).toBe(false);
+    });
+
+    it("counts a blocked step as automated, because that is what it is", () => {
+      const plan = compileDecisions(cutPlan(), { ...OPEN_GATE, humanCut: { order: 2 } });
+      // 1, 3 and 4 are machine work; only the cut is a person's.
+      expect(plan.automatedStepCount).toBe(3);
+      expect(plan.humanStepCount).toBe(1);
+      expect(plan.fullyHuman).toBe(false);
+    });
+  });
+
+  /**
+   * THE LOAD-BEARING GROUP.
+   *
+   * Each case puts a step behind the cut that is human for its OWN reason. The
+   * cut must not convert it, and its reason must survive verbatim — that is
+   * FR-038, and the defect it prevents is an operator being sent to wait on a
+   * person for a step that is actually missing a primitive.
+   */
+  describe("every other refusal keeps its own reason", () => {
+    const cases: Array<[string, Partial<CompileStepInput>, string]> = [
+      [
+        "no primitive",
+        { primitiveId: null, primitiveVersion: null },
+        HANDOFF_REASONS.no_primitive,
+      ],
+      [
+        "unknown primitive",
+        { primitiveId: "research.invented", primitiveVersion: 1 },
+        HANDOFF_REASONS.unknown_primitive,
+      ],
+      [
+        "moved primitive version",
+        { primitiveVersion: PLAN_PRIMITIVES["research.web_search"] + 1 },
+        HANDOFF_REASONS.primitive_version_changed,
+      ],
+    ];
+
+    it.each(cases)("does not convert a step refused for %s", (_label, over, reason) => {
+      const steps = [machine(1), human(2, [1]), machine(3, [2], over), machine(4, [3])];
+      const plan = compileDecisions(steps, { ...OPEN_GATE, humanCut: { order: 2 } });
+      const refused = plan.steps.find((s) => s.order === 3)!;
+      expect(refused.executionMode).toBe("human");
+      expect(refused.handoffReason).toBe(reason);
+      expect(refused.blockedOnHumanUnit).toBe(false);
+    });
+
+    /**
+     * And the cascade behind an independently-refused step stays human too. A
+     * step whose producer will never run is not "waiting on a person": nothing
+     * the person does will make its input appear.
+     */
+    it.each(cases)("does not convert what sits behind a step refused for %s", (_label, over) => {
+      const steps = [machine(1), human(2, [1]), machine(3, [2], over), machine(4, [3])];
+      const plan = compileDecisions(steps, { ...OPEN_GATE, humanCut: { order: 2 } });
+      const behind = plan.steps.find((s) => s.order === 4)!;
+      expect(behind.executionMode).toBe("human");
+      expect(behind.blockedOnHumanUnit).toBe(false);
+    });
+  });
+
+  /**
+   * The mandate-level gate short-circuits the whole plan before the cut is ever
+   * considered. A sensitive or access-gated mandate is never admitted in
+   * practice, but the compiler must not depend on that happening upstream.
+   */
+  it("never converts anything when the mandate-level gate fired", () => {
+    for (const gate of [
+      { sensitiveData: true, requiredAccessCount: 0 },
+      { sensitiveData: false, requiredAccessCount: 2 },
+    ]) {
+      const plan = compileDecisions(cutPlan(), { ...gate, humanCut: { order: 2 } });
+      expect(plan.fullyHuman).toBe(true);
+      for (const step of plan.steps) {
+        expect(step.executionMode).toBe("human");
+        expect(step.blockedOnHumanUnit).toBe(false);
+      }
+    }
+  });
+
+  it("ignores a cut naming an order that does not exist", () => {
+    const plan = compileDecisions(cutPlan(), { ...OPEN_GATE, humanCut: { order: 99 } });
+    expect(plan).toEqual(compileDecisions(cutPlan(), OPEN_GATE));
+  });
+
+  it("stays deterministic", () => {
+    const gate = { ...OPEN_GATE, humanCut: { order: 2 } };
+    const first = compileDecisions(cutPlan(), gate);
+    for (let i = 0; i < 5; i += 1) {
+      expect(compileDecisions(cutPlan(), gate)).toEqual(first);
+    }
+  });
+});
