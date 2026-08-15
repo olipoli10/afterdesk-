@@ -1,3 +1,6 @@
+import { sanitizeClientText } from "@/lib/ai-work-engine/client-scope";
+import { compileFrozenOutputSchema } from "@/lib/ai-work-engine/human-unit-result-schema";
+
 /**
  * THE FROZEN DEFINITION OF A HUMAN WORK UNIT.
  *
@@ -44,6 +47,9 @@ export type AcceptedPlanStepRow = {
   description: string;
   verificationMethod: string;
   acceptanceCriteria: string[];
+  /** The frozen human output contract, written before acceptance (T011/B). */
+  humanOutputSchema: unknown;
+  humanRequiredArtifactKinds: string[];
   fixedMinutes: number | null;
   secondsPerUnit: number | null;
   estimatedMinutesOptimistic: number;
@@ -66,7 +72,7 @@ export type EconomicProvenance = {
 export type FrozenHumanUnitDefinition = {
   instructions: string;
   declaredInputs: DeclaredInput[];
-  /** The frozen shape a candidate must satisfy. See the blocker note below. */
+  /** The frozen shape a candidate must satisfy, copied off the accepted step. */
   outputSchema: unknown;
   requiredArtifactKinds: string[];
   acceptanceCriteria: string[];
@@ -98,43 +104,75 @@ export type FrozenEligibility = {
 };
 
 /**
- * ────────────────────────────────────────────────────────────────────────────
- * T011 IS BLOCKED, AND DELIBERATELY NOT IMPLEMENTED BY GUESSWORK.
+ * Freeze the accepted human step into the unit definition, or refuse.
  *
- * `freezeHumanUnitDefinition` cannot be written as specified. Two fields of
- * `FrozenHumanUnitDefinition` have no accepted-contract column to derive from:
+ * COPIES, NEVER AUTHORS. Every field below reads from `input.cut` (columns of
+ * the accepted plan step), from `input.settings` / `input.eligibility` (frozen
+ * platform settings), or from the accepted task economics. There is no
+ * parameter carrying an instruction, an input, an output, an artifact or an
+ * acceptance obligation that did not come from the signed contract — which is
+ * what makes "the unit adds nothing beyond that accepted step" structural
+ * rather than reviewed (FR-002, FR-035, readiness CHK020).
  *
- *   - `outputSchema`            — data-model.md §4 calls it "the frozen
- *                                 JSON-schema-shaped description the candidate
- *                                 must satisfy"
- *   - `requiredArtifactKinds`   — "declared artifacts the candidate must carry"
+ * RETURNS NULL — a refusal — when the accepted step carries no usable output
+ * contract. A plan accepted before those columns existed has null in both, and
+ * they are never backfilled: inventing a default would put an obligation on a
+ * worker that no client accepted, and freezing an empty one would leave the
+ * submission gate with nothing to check. Either way the unit is not admitted
+ * and the mandate stays on the existing manual path.
  *
- * Verified against the repository, not assumed: neither name, nor
- * `expectedOutputs`, appears anywhere in `prisma/schema.prisma` or `src/`.
- * `TaskExecutionPlanStep` carries `title`, `description`, `verificationMethod`,
- * `acceptanceCriteria`, `params`, the effort columns and the frozen economics —
- * and nothing that describes the SHAPE of a human deliverable.
- *
- * The three ways out are all design decisions, not coding details:
- *
- *   A. Derive both from the cut's existing `params` Json. Cheapest, but for a
- *      human step `primitiveId` is null and `params` is validated by the
- *      capability schemas, so in practice it is null — this would freeze an
- *      empty requirement on every real unit.
- *   B. Add the two columns to `TaskExecutionPlanStep` and have the planner
- *      populate them. They would be null on every already-accepted plan, so
- *      those plans fail closed to human — consistent with how the frozen
- *      economics columns already behave, and the most honest option.
- *   C. Make a frozen output contract a precondition of admission, so a cut
- *      without one is refused rather than admitted with no requirement. This
- *      adds a fourth refusal cause and changes the admission contract.
- *
- * Implementing any of these silently would put an obligation on a worker that
- * the client never accepted, or accept a candidate against no requirement at
- * all — both of which are the exact failure FR-002 and FR-035 exist to prevent.
- * So this stops here for a founder decision rather than resolving itself.
- *
- * Nothing downstream is blocked by the gap: `human-unit-result-schema.ts`
- * (T012) compiles and validates whatever shape is chosen, and is complete.
- * ────────────────────────────────────────────────────────────────────────────
+ * The refusal uses the SAME compiler the submission gate uses, so the freeze
+ * can never admit a contract that would later prove uncompilable and strand a
+ * worker who is unable to submit.
  */
+export function freezeHumanUnitDefinition(input: {
+  planVersionId: string;
+  cut: AcceptedPlanStepRow;
+  acceptedTaskPayoutCents: number;
+  acceptedEstimatedMinutes: number;
+  dataClass: string;
+  declaredInputs: DeclaredInput[];
+  settings: FrozenUnitSettings;
+  eligibility: FrozenEligibility;
+}): FrozenHumanUnitDefinition | null {
+  const { cut } = input;
+
+  if (compileFrozenOutputSchema(cut.humanOutputSchema) === null) return null;
+
+  const artifactKinds = Array.isArray(cut.humanRequiredArtifactKinds)
+    ? cut.humanRequiredArtifactKinds.filter((k): k is string => typeof k === "string")
+    : [];
+
+  return {
+    // The worker's brief is the accepted step's own title and description, run
+    // through the house copy sanitiser. Nothing else is added.
+    instructions: sanitizeClientText(`${cut.title}. ${cut.description}`, 4_600),
+    declaredInputs: input.declaredInputs.map((i) => ({ ...i })),
+    // Structured-cloned, not aliased: a definition every party reads forever
+    // must not share a reference with whoever built it.
+    outputSchema: structuredClone(cut.humanOutputSchema),
+    requiredArtifactKinds: [...artifactKinds],
+    acceptanceCriteria: [...cut.acceptanceCriteria],
+    verificationMethod: cut.verificationMethod,
+    eligibility: { ...input.eligibility },
+    reviewerAuthority: "admin",
+    // Descriptive capacity context ONLY (FR-058). Note that no duration below
+    // reads it.
+    expectedMinutes: cut.estimatedMinutesLikely,
+    revisionBound: input.settings.revisionBound,
+    publicationDeadlineHours: input.settings.publicationDeadlineHours,
+    submissionDeadlineHours: input.settings.submissionDeadlineHours,
+    claimLeaseHours: input.settings.claimLeaseHours,
+    economicProvenance: {
+      planStepId: cut.id,
+      fixedMinutes: cut.fixedMinutes,
+      secondsPerUnit: cut.secondsPerUnit,
+      pertOptimistic: cut.estimatedMinutesOptimistic,
+      pertLikely: cut.estimatedMinutesLikely,
+      pertConservative: cut.estimatedMinutesConservative,
+      acceptedTaskPayoutCents: input.acceptedTaskPayoutCents,
+      acceptedEstimatedMinutes: input.acceptedEstimatedMinutes,
+    },
+    dataClass: input.dataClass,
+  };
+}

@@ -1680,6 +1680,31 @@ model TaskExecutionPlanStep {
   /// Immutable des l'acceptation, par le trigger existant sur les etapes.
   params Json?
 
+  /// HUMAN WORK UNIT — LE CONTRAT DE SORTIE D'UNE ÉTAPE HUMAINE, GELÉ AU DEVIS.
+  ///
+  /// Ce qu'un travailleur doit REMETTRE : la forme du résultat, et les artefacts
+  /// déclarés qui doivent l'accompagner. Deux colonnes explicites, jamais
+  /// dérivées de `params` : `params` est la configuration d'une capacité
+  /// MACHINE, et faire porter à un champ générique une obligation HUMAINE
+  /// rendrait impossible de dire, plus tard, ce que le client avait accepté.
+  ///
+  /// PRODUITES AVANT L'ACCEPTATION, comme le reste du plan. Après acceptation
+  /// elles sont figées par le trigger existant
+  /// `second_shift_accepted_plan_step_guard`, qui refuse TOUT UPDATE d'une
+  /// étape dont la version de plan est référencée par un snapshot. Ce trigger
+  /// ne nomme aucune colonne : ces deux-là héritent donc de la protection sans
+  /// nouveau trigger, et un opérateur ne peut ni les ajouter ni les changer
+  /// après coup.
+  ///
+  /// NULLABLES ET JAMAIS RÉTRO-REMPLIES, exactement comme les colonnes
+  /// économiques gelées : un contrat accepté avant ce correctif ne portait pas
+  /// ces valeurs au moment de sa signature, et les inventer aujourd'hui
+  /// fabriquerait une provenance. Une étape humaine sans contrat de sortie
+  /// valide n'est PAS admise en unité de travail humain — fail-closed, jamais
+  /// une obligation par défaut que personne n'a acceptée.
+  humanOutputSchema          Json?
+  humanRequiredArtifactKinds String[]
+
   verificationMethod String
   acceptanceCriteria String[]
   riskLevel          PlanStepRiskLevel

@@ -896,6 +896,9 @@ export async function runWorkEngine(
                   estimatedMinutesConservative: s.estimated_minutes_conservative,
                   estimatedAiCostCents: s.estimated_ai_cost_cents,
                   estimatedToolUnits: s.estimated_tool_units,
+                  humanOutputSchema:
+                    (s.human_output_schema ?? undefined) as Prisma.InputJsonValue | undefined,
+                  humanRequiredArtifactKinds: s.human_required_artifact_kinds,
                   verificationMethod: s.verification_method,
                   acceptanceCriteria: s.acceptance_criteria,
                   riskLevel: s.risk_level,

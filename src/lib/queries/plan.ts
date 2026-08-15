@@ -37,6 +37,8 @@ export const planStepSelect = {
   estimatedAiCostCents: true,
   estimatedToolUnits: true,
   verificationMethod: true,
+  humanOutputSchema: true,
+  humanRequiredArtifactKinds: true,
   acceptanceCriteria: true,
   riskLevel: true,
   riskNote: true,

@@ -128,6 +128,31 @@ export type Settings = {
    * explicitly, not something the code decides on the operator's behalf.
    */
   reliabilityPublic: { onTime: boolean; qcPass: boolean; dispute: boolean };
+  /**
+   * HUMAN WORK UNIT — SAFE RESUME (FR-058, FR-064).
+   *
+   * OFF BY DEFAULT. The flag is read at admission, in `compileWorkflowForTask`,
+   * and NOWHERE else: it decides whether a new workflow may be admitted as a
+   * human work unit, never whether an already-admitted one may continue.
+   * Turning it off mid-flight must not strand a person already holding work on
+   * a mandate a client has paid for.
+   */
+  humanWorkUnitResumeEnabled: boolean;
+  /**
+   * Revision rounds a reviewer may request before the unit exhausts. Frozen
+   * onto the definition at admission and never raised for a live run (FR-022).
+   */
+  humanWorkUnitRevisionBound: number;
+  /**
+   * The three durations below are fixed hour counts, DELIBERATELY independent
+   * of the plan's expected minutes. FR-058 makes expected minutes descriptive
+   * capacity context only; deriving a lease from it would turn the planner's
+   * estimate into a deadline a worker is held to — a high guess buying someone
+   * time, a low one taking it away.
+   */
+  humanWorkUnitPublicationDeadlineHours: number;
+  humanWorkUnitSubmissionDeadlineHours: number;
+  humanWorkUnitClaimLeaseHours: number;
 };
 
 const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
@@ -187,6 +212,15 @@ export const SettingsSchema = z.object({
     qcPass: z.boolean(),
     dispute: z.boolean(),
   }),
+  humanWorkUnitResumeEnabled: z.boolean(),
+  // A bound of 0 would exhaust a unit on its first rejection with no second
+  // attempt; an unbounded one would let a fixed-payout mandate loop forever.
+  humanWorkUnitRevisionBound: z.number().int().min(1).max(10),
+  // `positiveHours` caps at 30 days, the same ceiling every other duration in
+  // this file uses. No relationship to any estimate, by construction.
+  humanWorkUnitPublicationDeadlineHours: positiveHours,
+  humanWorkUnitSubmissionDeadlineHours: positiveHours,
+  humanWorkUnitClaimLeaseHours: positiveHours,
 });
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -248,6 +282,14 @@ export const DEFAULT_SETTINGS: Settings = {
     { hours: 20, weeklyClientPriceCents: 40_000, weeklyVaPayoutCents: 30_000 },
   ],
   reliabilityPublic: { onTime: true, qcPass: true, dispute: true },
+  // OFF. Nothing about a live mandate changes until an operator turns this on
+  // deliberately, and it only ever affects units admitted afterwards.
+  humanWorkUnitResumeEnabled: false,
+  humanWorkUnitRevisionBound: 2,
+  // Three days each, set independently rather than one derived from another.
+  humanWorkUnitPublicationDeadlineHours: 72,
+  humanWorkUnitSubmissionDeadlineHours: 72,
+  humanWorkUnitClaimLeaseHours: 72,
 };
 
 /**

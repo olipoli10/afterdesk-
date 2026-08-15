@@ -50,6 +50,8 @@ export type PlanStepView = {
   primitiveVersion: number | null;
   /** The capability's frozen configuration, opaque to this component. */
   params: unknown;
+  humanOutputSchema: unknown;
+  humanRequiredArtifactKinds: string[];
   fixedMinutes: number | null;
   secondsPerUnit: number | null;
   estimatedMinutesOptimistic: number;
@@ -171,6 +173,8 @@ type EditableStep = {
    * configuration the compiler will silently refuse into human work.
    */
   params: unknown;
+  humanOutputSchema: unknown;
+  humanRequiredArtifactKinds: string[];
   /** The JSON editor's raw text, kept in sync with `params` on valid edits. */
   paramsText: string;
   /** True while paramsText is not valid JSON — Save is blocked. */
@@ -198,6 +202,8 @@ function toEditable(s: PlanStepView): EditableStep {
     tool: s.tool ?? "",
     primitiveId: s.primitiveId ?? "",
     params: s.params ?? null,
+    humanOutputSchema: s.humanOutputSchema ?? null,
+    humanRequiredArtifactKinds: s.humanRequiredArtifactKinds ?? [],
     paramsText: s.params == null ? "" : JSON.stringify(s.params, null, 1),
     paramsError: false,
     fixedMinutes: s.fixedMinutes === null ? "" : String(s.fixedMinutes),
@@ -223,6 +229,8 @@ const BLANK_STEP: EditableStep = {
   tool: "",
   primitiveId: "",
   params: null,
+  humanOutputSchema: null,
+  humanRequiredArtifactKinds: [],
   paramsText: "",
   paramsError: false,
   fixedMinutes: "",
@@ -309,6 +317,15 @@ export function PlanReview({ data }: { data: PlanReviewData }) {
           estimatedMinutesConservative: Number(s.conservative || 0),
           estimatedAiCostCents: Number(s.aiCostCents || 0),
           estimatedToolUnits: Number(s.toolUnits || 0),
+          /**
+           * PASS-THROUGH, not an editable field. There is no input for the
+           * human output contract in this form, but `admin-plan.ts` rebuilds
+           * every step row from this payload — so omitting it here would wipe
+           * the obligation on the next save. Carried verbatim so an edit to
+           * some other field cannot quietly delete what the plan promised.
+           */
+          humanOutputSchema: (s.humanOutputSchema ?? null) as Record<string, unknown> | null,
+          humanRequiredArtifactKinds: s.humanRequiredArtifactKinds ?? [],
           verificationMethod: s.verificationMethod,
           acceptanceCriteria: lines(s.acceptanceCriteria),
           riskLevel: s.riskLevel,

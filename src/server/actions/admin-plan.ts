@@ -283,6 +283,11 @@ export async function editPlanVersion(input: unknown): Promise<EditPlanResult> {
               estimatedMinutesConservative: s.estimatedMinutesConservative,
               estimatedAiCostCents: s.estimatedAiCostCents,
               estimatedToolUnits: s.estimatedToolUnits,
+              // Same freeze discipline as `params`: editing the obligation a
+              // person will be held to is editing the contract.
+              humanOutputSchema:
+                (s.humanOutputSchema ?? undefined) as Prisma.InputJsonValue | undefined,
+              humanRequiredArtifactKinds: s.humanRequiredArtifactKinds,
               verificationMethod: s.verificationMethod,
               acceptanceCriteria: s.acceptanceCriteria,
               riskLevel: s.riskLevel,

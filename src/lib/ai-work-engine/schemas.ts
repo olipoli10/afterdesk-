@@ -273,6 +273,34 @@ export const planStepOutputSchema = z
     estimated_minutes_conservative: intCeil(0, 6000),
     estimated_ai_cost_cents: intCeil(0, 100_000),
     estimated_tool_units: intCeil(0, 100_000),
+    /**
+     * HUMAN WORK UNIT — the output contract for a HUMAN step (null otherwise).
+     *
+     * Same JSON-string-on-the-wire treatment as `params`, and for the same
+     * reason: the structured-outputs subset rejects free-form objects. Nullable
+     * with a null default so this can never kill a generation — a human step
+     * that arrives without a usable contract simply is not admitted as a work
+     * unit, which is the fail-closed direction.
+     *
+     * Deliberately NOT folded into `params`: that field configures a MACHINE
+     * capability, and an obligation a person is held to must be its own column
+     * or nobody can later say what the client actually accepted.
+     */
+    human_output_schema: z.preprocess((raw) => {
+      if (typeof raw !== "string") return raw;
+      try {
+        const decoded: unknown = JSON.parse(raw);
+        return decoded !== null && typeof decoded === "object" && !Array.isArray(decoded)
+          ? decoded
+          : null;
+      } catch {
+        return null;
+      }
+    }, z.record(z.string(), z.unknown()).nullable().default(null)),
+    human_required_artifact_kinds: z
+      .array(z.string().trim().min(1).max(120))
+      .max(10)
+      .default([]),
     verification_method: z.string().min(1).max(2000),
     acceptance_criteria: z.array(z.string().max(1000)).max(8),
     risk_level: z.enum(STEP_RISK_LEVELS),
@@ -427,6 +455,17 @@ export const editStepInputSchema = z
     estimatedMinutesConservative: z.coerce.number().int().min(0).max(6000),
     estimatedAiCostCents: z.coerce.number().int().min(0).max(100_000),
     estimatedToolUnits: z.coerce.number().int().min(0).max(100_000),
+    /**
+     * The human step's frozen output contract. Present here because
+     * `admin-plan.ts` REBUILDS every step row from this payload: a field absent
+     * from this schema is a field silently wiped on the next admin edit, which
+     * would erase an obligation before the client ever accepted it.
+     */
+    humanOutputSchema: z.record(z.string(), z.unknown()).nullable().default(null),
+    humanRequiredArtifactKinds: z
+      .array(z.string().trim().min(1).max(120))
+      .max(10)
+      .default([]),
     verificationMethod: z.string().trim().min(1).max(2000),
     acceptanceCriteria: z.array(z.string().trim().max(1000)).max(8),
     riskLevel: z.enum(STEP_RISK_LEVELS),
