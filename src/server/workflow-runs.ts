@@ -21,6 +21,11 @@ import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { compileDecisions, type CompileStepInput } from "@/lib/ai-work-engine/compile";
+import { admitHumanCut } from "@/lib/ai-work-engine/human-unit-admission";
+import {
+  freezeHumanUnitDefinition,
+  type FrozenHumanUnitDefinition,
+} from "@/lib/ai-work-engine/human-unit-definition";
 import { resolvePrimitive } from "@/lib/ai-work-engine/registry";
 import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
 import { primitiveReachOf } from "@/lib/ai-work-engine/primitive-vocabulary";
@@ -241,6 +246,15 @@ export async function compileWorkflowForTask(
       },
       aiClassification: { select: { sensitiveData: true, requiredAccess: true } },
       workflowRun: { select: { id: true, automatedStepCount: true } },
+      /**
+       * T032 — the accepted economics admission reads, and the facts the
+       * eligibility snapshot freezes. Read from the contract, never
+       * recomputed: the verdict must be reproducible by replay.
+       */
+      vaPayoutCents: true,
+      estimatedMinutes: true,
+      tier: true,
+      category: { select: { slug: true } },
     },
   });
   if (!task) return null;
@@ -258,6 +272,8 @@ export async function compileWorkflowForTask(
 
   const snapshot = task.acceptanceSnapshot;
   if (!snapshot || !snapshot.planVersionId) return null;
+  // Hoisted: property narrowing does not survive into the transaction closure.
+  const planVersionId = snapshot.planVersionId;
 
   const planSteps = await prisma.taskExecutionPlanStep.findMany({
     where: { planVersionId: snapshot.planVersionId },
@@ -281,6 +297,28 @@ export async function compileWorkflowForTask(
       maxCostMicrosPerAttemptAtQuote: true,
       demotedForBudget: true,
       params: true,
+      /**
+       * T031 — THE COLUMNS ADMISSION AND THE DEFINITION FREEZE READ.
+       *
+       * All frozen at quote time on the accepted plan step, and all read from
+       * HERE rather than recomputed: the admission verdict has to be
+       * reproducible by replay, which it is not if any input can be derived
+       * differently later.
+       *
+       * `fixedMinutes` is the one that decides economic admission, and null
+       * means UNKNOWN rather than zero — the distinction that once paid twenty
+       * minutes on a mandate quoted at two hundred and forty.
+       */
+      fixedMinutes: true,
+      secondsPerUnit: true,
+      estimatedMinutesOptimistic: true,
+      estimatedMinutesLikely: true,
+      estimatedMinutesConservative: true,
+      description: true,
+      verificationMethod: true,
+      acceptanceCriteria: true,
+      humanOutputSchema: true,
+      humanRequiredArtifactKinds: true,
     },
   });
   if (planSteps.length === 0) return null;
@@ -307,11 +345,119 @@ export async function compileWorkflowForTask(
    * that as `public_business` — correct for those mandates, none of which
    * could read a file.
    */
-  const compiled = compileDecisions(input, {
+  const gate = {
     sensitiveData: task.aiClassification?.sensitiveData ?? false,
     requiredAccessCount: task.aiClassification?.requiredAccess.length ?? 0,
     dataClass: isDataClass(snapshot.dataClass) ? snapshot.dataClass : undefined,
-  });
+  };
+
+  /**
+   * T1 — HUMAN WORK UNIT ADMISSION (T032).
+   *
+   * THE FLAG IS READ HERE AND NOWHERE ELSE (C10). It decides whether a NEW
+   * workflow may be admitted; it is never consulted again for a workflow that
+   * already has a unit. Turning it off must not strand a person who is already
+   * holding work on a mandate a client has paid for.
+   *
+   * Everything below refuses rather than degrades. A plan that does not admit
+   * compiles exactly as it does today — which is the behaviour that shipped
+   * long before this feature and remains correct.
+   */
+  const settings = await getSettings();
+  let admittedCut: { order: number } | undefined;
+  let frozenDefinition: FrozenHumanUnitDefinition | null = null;
+
+  if (settings.humanWorkUnitResumeEnabled) {
+    const verdict = admitHumanCut(
+      planSteps.map((s) => ({
+        order: s.order,
+        executor: s.executor as "ai" | "human" | "deterministic_code",
+        dependsOnOrder: s.dependsOnOrder,
+        fixedMinutes: s.fixedMinutes,
+        secondsPerUnit: s.secondsPerUnit,
+        estimatedMinutesOptimistic: s.estimatedMinutesOptimistic,
+        estimatedMinutesLikely: s.estimatedMinutesLikely,
+        estimatedMinutesConservative: s.estimatedMinutesConservative,
+      })),
+      { vaPayoutCents: task.vaPayoutCents, estimatedMinutes: task.estimatedMinutes }
+    );
+
+    if (verdict.admitted) {
+      const cut = planSteps.find((s) => s.order === verdict.cutOrder);
+      /**
+       * The freeze returns null when the accepted step carries no compilable
+       * output contract — a plan accepted before those columns existed. Not
+       * admitted, fail-closed: inventing a default would put an obligation on
+       * a worker that no client ever accepted. The not-admitted RECORDING is
+       * T050; this only declines to admit.
+       */
+      if (cut) {
+        frozenDefinition = freezeHumanUnitDefinition({
+          planVersionId,
+          cut: {
+            id: cut.id,
+            order: cut.order,
+            title: cut.title,
+            description: cut.description,
+            verificationMethod: cut.verificationMethod,
+            acceptanceCriteria: cut.acceptanceCriteria,
+            humanOutputSchema: cut.humanOutputSchema,
+            humanRequiredArtifactKinds: cut.humanRequiredArtifactKinds,
+            fixedMinutes: cut.fixedMinutes,
+            secondsPerUnit: cut.secondsPerUnit,
+            estimatedMinutesOptimistic: cut.estimatedMinutesOptimistic,
+            estimatedMinutesLikely: cut.estimatedMinutesLikely,
+            estimatedMinutesConservative: cut.estimatedMinutesConservative,
+          },
+          // Non-null by construction: admission already refused a null or
+          // non-positive payout as `unmapped_economics`.
+          acceptedTaskPayoutCents: task.vaPayoutCents!,
+          acceptedEstimatedMinutes: task.estimatedMinutes!,
+          dataClass: gate.dataClass ?? "public_business",
+          /**
+           * WHAT THE WORKER MAY SEE, and the whole of it (FR-014): the outputs
+           * of the steps this cut directly depends on. Derived from the
+           * accepted graph, never operator-authored.
+           */
+          declaredInputs: cut.dependsOnOrder.flatMap((order) => {
+            const producer = planSteps.find((s) => s.order === order);
+            if (!producer) return [];
+            return [
+              {
+                kind: "artifact" as const,
+                ref: `step:${producer.order}`,
+                label: producer.title,
+                dataClass: gate.dataClass ?? "public_business",
+              },
+            ];
+          }),
+          settings: {
+            revisionBound: settings.humanWorkUnitRevisionBound,
+            publicationDeadlineHours: settings.humanWorkUnitPublicationDeadlineHours,
+            submissionDeadlineHours: settings.humanWorkUnitSubmissionDeadlineHours,
+            claimLeaseHours: settings.humanWorkUnitClaimLeaseHours,
+          },
+          /**
+           * CRITERIA are frozen; the worker's own facts stay live (FR-009). A
+           * later change to the platform configuration therefore affects only
+           * units admitted afterwards, while a change to the individual
+           * worker's status or score affects access immediately.
+           */
+          eligibility: {
+            categorySlug: task.category?.slug ?? null,
+            tier: task.tier,
+            requireCategoryCertification: settings.requireCategoryCertification,
+            highValueThreshold: settings.highValueThreshold,
+            minRatedDeliveries: settings.minRatedDeliveries,
+            maxActiveClaims: settings.maxActiveClaims,
+          },
+        });
+        if (frozenDefinition) admittedCut = { order: verdict.cutOrder };
+      }
+    }
+  }
+
+  const compiled = compileDecisions(input, { ...gate, humanCut: admittedCut });
 
   /**
    * THE CEILING IS COPIED FROM THE CONTRACT, NOT COMPUTED HERE.
@@ -326,31 +472,111 @@ export async function compileWorkflowForTask(
    * fail-closed by design, not an oversight.
    */
 
-  const run = await prisma.taskWorkflowRun.create({
-    data: {
-      snapshotId: snapshot.id,
-      taskId,
-      planVersionId: snapshot.planVersionId,
-      status: compiled.fullyHuman ? "awaiting_human" : "running",
-      automatedStepCount: compiled.automatedStepCount,
-      humanStepCount: compiled.humanStepCount,
-      runAutomationBudgetMicros: snapshot.automationSpendCeilingMicros,
-      budgetPolicyVersion: BUDGET_POLICY_VERSION,
-      compiledAt: new Date(),
-      startedAt: compiled.fullyHuman ? null : new Date(),
-      steps: {
-        create: compiled.steps.map((s) => ({
-          planStepId: s.planStepId,
-          order: s.order,
-          primitiveId: s.primitiveId,
-          primitiveVersion: s.primitiveVersion,
-          executionMode: s.executionMode,
-          status: s.executionMode === "automated" ? "pending" : "handed_to_human",
-          handoffReason: s.handoffReason,
-        })),
+  /**
+   * ONE TRANSACTION. The run, its steps, the frozen definition and the unit
+   * state commit together or not at all: a run that exists without its unit
+   * would be a mandate the machine believes it may finish alone, and a unit
+   * without its run would be a person waiting on nothing.
+   */
+  const admitted = admittedCut !== undefined && frozenDefinition !== null;
+  const run = await prisma.$transaction(async (tx) => {
+    const created = await tx.taskWorkflowRun.create({
+      data: {
+        snapshotId: snapshot.id,
+        taskId,
+        planVersionId,
+        status: compiled.fullyHuman ? "awaiting_human" : "running",
+        automatedStepCount: compiled.automatedStepCount,
+        humanStepCount: compiled.humanStepCount,
+        runAutomationBudgetMicros: snapshot.automationSpendCeilingMicros,
+        budgetPolicyVersion: BUDGET_POLICY_VERSION,
+        compiledAt: new Date(),
+        startedAt: compiled.fullyHuman ? null : new Date(),
+        steps: {
+          create: compiled.steps.map((s) => ({
+            planStepId: s.planStepId,
+            order: s.order,
+            primitiveId: s.primitiveId,
+            primitiveVersion: s.primitiveVersion,
+            executionMode: s.executionMode,
+            /**
+             * A blocked step is machine work that is WAITING. It is not
+             * pending — nothing may claim it — and it is not handed to a
+             * person, because no person is going to do it. The resume makes it
+             * pending again exactly once.
+             */
+            status: s.blockedOnHumanUnit
+              ? "blocked_on_human_unit"
+              : s.executionMode === "automated"
+                ? "pending"
+                : "handed_to_human",
+            handoffReason: s.handoffReason,
+          })),
+        },
       },
-    },
-    select: { id: true },
+      select: { id: true },
+    });
+
+    if (admitted && frozenDefinition && admittedCut) {
+      const cutStep = planSteps.find((s) => s.order === admittedCut.order)!;
+      const definition = await tx.humanWorkUnitDefinition.create({
+        data: {
+          planVersionId,
+          planStepId: cutStep.id,
+          instructions: frozenDefinition.instructions,
+          declaredInputs: frozenDefinition.declaredInputs as Prisma.InputJsonValue,
+          outputSchema: frozenDefinition.outputSchema as Prisma.InputJsonValue,
+          requiredArtifactKinds: frozenDefinition.requiredArtifactKinds,
+          acceptanceCriteria: frozenDefinition.acceptanceCriteria,
+          verificationMethod: frozenDefinition.verificationMethod,
+          eligibility: frozenDefinition.eligibility as unknown as Prisma.InputJsonValue,
+          reviewerAuthority: frozenDefinition.reviewerAuthority,
+          expectedMinutes: frozenDefinition.expectedMinutes,
+          revisionBound: frozenDefinition.revisionBound,
+          publicationDeadlineHours: frozenDefinition.publicationDeadlineHours,
+          submissionDeadlineHours: frozenDefinition.submissionDeadlineHours,
+          claimLeaseHours: frozenDefinition.claimLeaseHours,
+          economicProvenance:
+            frozenDefinition.economicProvenance as unknown as Prisma.InputJsonValue,
+          dataClass: frozenDefinition.dataClass,
+        },
+        select: { id: true, revisionBound: true },
+      });
+
+      /**
+       * `transitionSeq` is incremented in the SAME write that allocates the
+       * audit row's `seq` (C7/INV-T1). `MAX(seq)+1` is forbidden: two
+       * concurrent writers both read the same maximum and both claim it.
+       */
+      const unit = await tx.humanWorkUnitRunState.create({
+        data: {
+          runId: created.id,
+          taskId,
+          snapshotId: snapshot.id,
+          definitionId: definition.id,
+          cutOrder: admittedCut.order,
+          state: "admitted",
+          remainingRevisions: definition.revisionBound,
+          transitionSeq: 1,
+        },
+        select: { id: true, claimGeneration: true, resumeGeneration: true },
+      });
+
+      await tx.humanWorkUnitTransition.create({
+        data: {
+          unitStateId: unit.id,
+          seq: 1,
+          actorRole: "system",
+          fromState: null,
+          toState: "admitted",
+          cause: "admitted",
+          claimGeneration: unit.claimGeneration,
+          resumeGeneration: unit.resumeGeneration,
+        },
+      });
+    }
+
+    return created;
   });
 
   return { runId: run.id, fullyHuman: compiled.fullyHuman };
