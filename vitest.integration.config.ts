@@ -13,8 +13,12 @@ import { defineConfig } from "vitest/config";
  * "afterdesk_integration" IS the app database wearing a costume (the guard's
  * isolation probe refuses exactly that). First `npx prisma dev --name
  * integration`, create the database once on ITS port, then:
- *   AFTERDESK_TEST_DATABASE_URL="postgres://postgres:postgres@127.0.0.1:51222/afterdesk_integration?sslmode=disable&pgbouncer=true&connection_limit=3" \
+ *   AFTERDESK_TEST_DATABASE_URL="postgres://postgres:postgres@127.0.0.1:<TCP-port>/afterdesk_integration?sslmode=disable&pgbouncer=true&connection_limit=10" \
  *   ALLOW_INTEGRATION_DB_RESET=1 npm run test:integration
+ * Use the TCP URL printed by `prisma dev ls`; its port is the database port,
+ * not the main Prisma API port or the shadow-database port. Keep Prisma's
+ * pooler-compatibility flag: the local proxy multiplexes backend sessions,
+ * while transaction-scoped advisory locks remain held for each transaction.
  */
 export default defineConfig({
   resolve: {
@@ -28,17 +32,15 @@ export default defineConfig({
     include: ["test/integration/**/*.itest.ts"],
     globalSetup: ["./test/integration/global-setup.ts"],
     setupFiles: ["./test/integration/per-file-setup.ts"],
-    // One file at a time AND one worker process for the whole suite: the
-    // local `prisma dev` proxy tolerates few concurrent clients, and a fresh
-    // PrismaClient per test file (the default worker-per-file model) wedges
-    // it. A single fork shares the @/lib/db singleton across every file.
+    // One file at a time and one worker process for the whole suite. Files
+    // still need isolated module graphs: application caches (notably
+    // getSettings) must not survive the SQL truncation between files.
     fileParallelism: false,
     pool: "forks",
     maxWorkers: 1,
-    // One PROCESS for the whole suite: isolate:false shares the worker (and
-    // therefore the @/lib/db singleton and its connection pool) across every
-    // file — the local prisma-dev proxy tolerates very few clients.
-    isolate: false,
+    // per-file-setup disconnects each file's Prisma singleton in afterAll,
+    // so isolation does not accumulate one live connection pool per file.
+    isolate: true,
     testTimeout: 60_000,
     hookTimeout: 120_000,
   },

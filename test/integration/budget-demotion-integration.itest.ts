@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import { AUTOMATION_COST_POLICIES } from "@/lib/ai-work-engine/automation-cost-policy";
 
@@ -44,9 +44,11 @@ import { AUTOMATION_COST_POLICIES } from "@/lib/ai-work-engine/automation-cost-p
 
 const runNonce = randomUUID().replace(/-/g, "").slice(0, 10);
 const uid = () => `bd${runNonce}${Math.random().toString(36).slice(2, 8)}`;
+const originalAnthropicApiKey = process.env.ANTHROPIC_API_KEY;
+const originalProviderMode = process.env.TEST_PROVIDER_MODE;
 
-// TEST_PROVIDER_MODE=synthetic is set by the invoking runner's env, exactly
-// as .scratch/l3.e2e.ts relies on the same env var rather than passing it here.
+// The beforeAll below sets TEST_PROVIDER_MODE=synthetic before this lazy mock
+// is evaluated, then restores the caller's environment after the file.
 vi.mock("@anthropic-ai/sdk", async () =>
   (await import("../support/provider-replay")).anthropicMockFactory()
 );
@@ -66,6 +68,13 @@ describe("the budget-preflight demotion mechanism, isolated, through the real pi
   let taskId: string;
 
   beforeAll(async () => {
+    // aiEnabled is frozen when @/lib/ai is imported. Give this synthetic-only
+    // integration test an explicit non-secret sentinel before the work-engine
+    // module graph loads; without it runWorkEngine returns before persisting
+    // classification or plan evidence. The SDK itself remains mocked below.
+    process.env.ANTHROPIC_API_KEY = "synthetic-integration-no-network";
+    process.env.TEST_PROVIDER_MODE = "synthetic";
+
     // Importing ai-work-engine's index.ts is what actually evaluates the
     // mocked "@anthropic-ai/sdk" module for the first time (it is statically
     // imported by classify.ts/plan.ts/critique.ts) and installs the
@@ -115,6 +124,13 @@ describe("the budget-preflight demotion mechanism, isolated, through the real pi
     taskId = task.id;
 
     await runWorkEngine(task.id, { runKey: `budget-demo-${uid()}` });
+  });
+
+  afterAll(() => {
+    if (originalAnthropicApiKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = originalAnthropicApiKey;
+    if (originalProviderMode === undefined) delete process.env.TEST_PROVIDER_MODE;
+    else process.env.TEST_PROVIDER_MODE = originalProviderMode;
   });
 
   it("resolves public_business with no sensitivity/access flag — the mandate-level gate never fires", async () => {

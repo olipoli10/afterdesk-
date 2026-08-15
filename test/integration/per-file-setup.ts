@@ -1,4 +1,4 @@
-import { beforeAll } from "vitest";
+import { afterAll, beforeAll } from "vitest";
 import { assertSafeIntegrationDb } from "./guard";
 import { resolveL3TestDatabaseUrl } from "./resolve-l3-db";
 
@@ -17,7 +17,7 @@ import { resolveL3TestDatabaseUrl } from "./resolve-l3-db";
  *     acceptable ONLY because the guard proved this database is disposable.
  */
 /**
- * With isolate:false this module re-runs once per FILE in the same process.
+ * This module re-runs once per FILE in the same worker process.
  * After the first run, DATABASE_URL already IS the test URL — re-running
  * the guard then would trip its own condition 5 (SAME_AS_APP_DB) against
  * the redirection it performed itself. The guard's job is done the moment
@@ -92,4 +92,12 @@ beforeAll(async () => {
       prisma.$executeRawUnsafe(`ALTER TABLE "${table}" ENABLE TRIGGER "${trigger}"`)
     ),
   ]);
+});
+
+afterAll(async () => {
+  // Each file has an isolated module graph and therefore its own Prisma
+  // singleton. Close it before the next file starts so the direct local
+  // PostgreSQL server never accumulates abandoned pools across the suite.
+  const { prisma } = await import("@/lib/db");
+  await prisma.$disconnect();
 });

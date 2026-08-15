@@ -28,7 +28,11 @@ import {
  */
 
 const uid = () => `r5-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-const PROVIDER = "anthropic-r5-itest";
+// The unsuffixed ACCOUNT_PROVIDER_SPEND_CEILING_MICROS variable is the
+// backwards-compatible ceiling for the default Anthropic provider only.
+// Using a made-up provider here made every configured-ceiling assertion run
+// as an intentionally unconfigured non-production provider instead.
+const PROVIDER = "anthropic";
 
 /** @types/node declares NODE_ENV readonly; tests legitimately need to flip it. */
 const env = process.env as Record<string, string | undefined>;

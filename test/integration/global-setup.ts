@@ -254,8 +254,9 @@ export default async function globalSetup() {
   } catch (error) {
     throw new Error(
       `[integration] schema rebuild failed against ${db.database}. If the local cluster is ` +
-        `down: kill stray node processes, remove the stale .lock/server.json/postmaster.pid ` +
-        `under AppData/Local/prisma-dev-nodejs/Data, then relaunch \`npx prisma dev\`. ` +
+        `down: inspect \`npx prisma dev ls\`, then stop/start only the named disposable ` +
+        `integration instance. If it cannot recover, remove and recreate only that exact ` +
+        `named disposable instance; never delete Prisma Dev's global Data directory. ` +
         `${String(error).slice(0, 700)}`
     );
   } finally {

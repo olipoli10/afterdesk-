@@ -30,9 +30,10 @@ npm run build                    # runs prisma migrate deploy, then next build
 Real-PostgreSQL integration suite — a **separate disposable cluster**, never the app's port. The local proxy aliases every database name onto one store, and the harness's isolation probe refuses exactly that:
 
 ```bash
-npx prisma dev --name integration          # in its own terminal; note ITS port
+npx prisma dev --name integration --detach
+npx prisma dev ls                          # copy THIS instance's TCP/database port
 
-AFTERDESK_TEST_DATABASE_URL="postgres://postgres:postgres@127.0.0.1:<port>/afterdesk_integration?sslmode=disable&pgbouncer=true&connection_limit=3" \
+AFTERDESK_TEST_DATABASE_URL="postgres://postgres:postgres@127.0.0.1:<TCP-port>/afterdesk_integration?sslmode=disable&pgbouncer=true&connection_limit=10" \
 ALLOW_INTEGRATION_DB_RESET=1 \
 npm run test:integration
 ```
