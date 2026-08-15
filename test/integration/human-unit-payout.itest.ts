@@ -45,7 +45,12 @@ const { claimTask, submitDeliverable } = await import("@/server/actions/va-tasks
 const { startWorkerSession } = await import("@/server/actions/work-sessions");
 const { approveDeliverable } = await import("@/server/actions/admin-qc");
 const { applyResume } = await import("@/server/human-unit-resume");
-const { advanceWorkflow, finishAdmittedRun, finishRun } = await import("@/server/workflow-runs");
+const {
+  advanceWorkflow,
+  finishAdmittedRun,
+  finishRun,
+  publishAdmittedResidualScope,
+} = await import("@/server/workflow-runs");
 
 const OUTPUT_SCHEMA = {
   type: "object",
@@ -192,6 +197,8 @@ async function admittedPayoutRun() {
       status: "running" as never,
       automatedStepCount: 2,
       humanStepCount: 1,
+      unitsTotal: 12,
+      unitsResolvedAutomatically: 0,
       steps: {
         create: [
           {
@@ -231,7 +238,16 @@ async function admittedPayoutRun() {
       requiredArtifactKinds: [],
       acceptanceCriteria: ["ok"],
       verificationMethod: "sample_check",
-      eligibility: {},
+      eligibility: {
+        categorySlug: null,
+        tier: "standard",
+        requireCategoryCertification: false,
+        highValueThreshold: 4,
+        minRatedDeliveries: 3,
+        // The already-held task must not count against its own re-check. A
+        // cap of one makes that requirement observable instead of vacuous.
+        maxActiveClaims: 1,
+      },
       reviewerAuthority: "admin",
       expectedMinutes: 20,
       revisionBound: 2,
@@ -287,6 +303,7 @@ async function acceptAndResume(input: {
   definitionId: string;
   workerId: string;
   adminId: string;
+  finishSteps?: boolean;
 }) {
   const before = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
     where: { id: input.unitId },
@@ -359,10 +376,34 @@ async function acceptAndResume(input: {
 
   const resumed = await applyResume(input.unitId);
   expect(resumed.resumed).toBe(true);
-  await prisma.taskWorkflowStepRun.updateMany({
-    where: { runId: input.runId },
-    data: { status: "done" as never, finishedAt: new Date() },
+  if (input.finishSteps !== false) {
+    await prisma.taskWorkflowStepRun.updateMany({
+      where: { runId: input.runId },
+      data: { status: "done" as never, finishedAt: new Date() },
+    });
+  }
+}
+
+async function claimedAndResumedPayoutRun() {
+  const worker = await createWorker();
+  const admin = await createAdmin();
+  const fixture = await admittedPayoutRun();
+
+  await advanceWorkflow(fixture.task.id);
+  asWorker(worker.id);
+  const claim = await claimTask(fixture.task.id);
+  expect(claim.ok, !claim.ok ? claim.error : "claim must succeed").toBe(true);
+
+  await acceptAndResume({
+    runId: fixture.run.id,
+    unitId: fixture.unit.id,
+    definitionId: fixture.definition.id,
+    workerId: worker.id,
+    adminId: admin.id,
+    finishSteps: false,
   });
+
+  return { ...fixture, worker, admin };
 }
 
 beforeEach(() => {
@@ -542,5 +583,204 @@ describe("T027/T037 — fixed payout and admitted-run finish", () => {
         select: { status: true },
       })
     ).toEqual({ status: "running" });
+  });
+});
+
+describe("T028/T038 — downstream-failure residual bypass", () => {
+  it("routes a permanent resumed-step failure to one same-claimant package at the frozen payout", async () => {
+    const { task, run, unit, worker } = await claimedAndResumedPayoutRun();
+    const before = await prisma.task.findUniqueOrThrow({
+      where: { id: task.id },
+      select: { status: true, claimedById: true, vaPayoutCents: true, estimatedMinutes: true },
+    });
+    const downstream = await prisma.taskWorkflowStepRun.findFirstOrThrow({
+      where: { runId: run.id, order: 3 },
+      select: { id: true },
+    });
+    await prisma.taskWorkflowStepRun.update({
+      where: { id: downstream.id },
+      data: { status: "pending" as never, attempts: 99, lastError: "permanent downstream failure" },
+    });
+
+    await advanceWorkflow(task.id);
+
+    expect(computeResidual, "fixed admitted economics must bypass residual payout code").not.toHaveBeenCalled();
+    expect(
+      await prisma.taskHumanWorkPackage.findMany({
+        where: { runId: run.id },
+        select: {
+          taskId: true,
+          computedPayoutCents: true,
+          reservedBudgetCents: true,
+          estimatedMinutes: true,
+        },
+      })
+    ).toEqual([
+      {
+        taskId: task.id,
+        computedPayoutCents: before.vaPayoutCents,
+        reservedBudgetCents: before.vaPayoutCents,
+        estimatedMinutes: before.estimatedMinutes,
+      },
+    ]);
+    expect(
+      await prisma.task.findUniqueOrThrow({
+        where: { id: task.id },
+        select: { status: true, claimedById: true, vaPayoutCents: true, estimatedMinutes: true },
+      })
+    ).toEqual(before);
+    expect(before).toMatchObject({ status: "claimed", claimedById: worker.id });
+    const afterRun = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: run.id },
+      select: { status: true, finishedAt: true },
+    });
+    expect(afterRun.status).toBe("awaiting_human");
+    expect(afterRun.finishedAt).not.toBeNull();
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: { state: true, claimedById: true },
+      })
+    ).toEqual({ state: "resumed", claimedById: worker.id });
+    expect(await prisma.payout.count({ where: { taskId: task.id } })).toBe(0);
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: task.id, action: "human_unit_residual_scope_published" },
+      })
+    ).toBe(1);
+
+    await Promise.all([
+      publishAdmittedResidualScope(run.id),
+      publishAdmittedResidualScope(run.id),
+    ]);
+    expect(await prisma.taskHumanWorkPackage.count({ where: { runId: run.id } })).toBe(1);
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: task.id, action: "human_unit_residual_scope_published" },
+      })
+    ).toBe(1);
+  });
+
+  it("loses the package unique key without changing anything when stale state is replayed", async () => {
+    const { task, run } = await claimedAndResumedPayoutRun();
+    await publishAdmittedResidualScope(run.id);
+    const packageBefore = await prisma.taskHumanWorkPackage.findUniqueOrThrow({
+      where: { runId: run.id },
+    });
+    await prisma.taskWorkflowRun.update({
+      where: { id: run.id },
+      data: { status: "running" as never, finishedAt: null },
+    });
+
+    await publishAdmittedResidualScope(run.id);
+
+    expect(await prisma.taskHumanWorkPackage.findUniqueOrThrow({ where: { runId: run.id } })).toEqual(
+      packageBefore
+    );
+    expect(
+      await prisma.taskWorkflowRun.findUniqueOrThrow({
+        where: { id: run.id },
+        select: { status: true, finishedAt: true },
+      })
+    ).toEqual({ status: "running", finishedAt: null });
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: task.id, action: "human_unit_residual_scope_published" },
+      })
+    ).toBe(1);
+  });
+
+  it("pauses for an admin before publication when the same claimant is no longer eligible", async () => {
+    const { task, run, unit, worker, admin } = await claimedAndResumedPayoutRun();
+    const taskBefore = await prisma.task.findUniqueOrThrow({
+      where: { id: task.id },
+      select: { status: true, claimedById: true, vaPayoutCents: true, estimatedMinutes: true },
+    });
+    await prisma.vaProfile.update({
+      where: { userId: worker.id },
+      data: { status: "suspended" as never },
+    });
+
+    await Promise.all([
+      publishAdmittedResidualScope(run.id),
+      publishAdmittedResidualScope(run.id),
+    ]);
+
+    expect(await prisma.taskHumanWorkPackage.count({ where: { runId: run.id } })).toBe(0);
+    expect(
+      await prisma.task.findUniqueOrThrow({
+        where: { id: task.id },
+        select: { status: true, claimedById: true, vaPayoutCents: true, estimatedMinutes: true },
+      })
+    ).toEqual(taskBefore);
+    expect(
+      await prisma.taskWorkflowRun.findUniqueOrThrow({
+        where: { id: run.id },
+        select: { status: true, pausedReason: true },
+      })
+    ).toMatchObject({ status: "paused" });
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: { state: true, claimedById: true },
+      })
+    ).toEqual({ state: "resumed", claimedById: worker.id });
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: task.id, action: "human_unit_paused" },
+      })
+    ).toBe(1);
+    expect(
+      await prisma.humanWorkUnitAlert.count({
+        where: { unitStateId: unit.id, kind: "admin_pause" },
+      })
+    ).toBe(1);
+    expect(
+      await prisma.notification.count({
+        where: { taskId: task.id, type: "human_unit_paused", userId: { in: [admin.id, worker.id] } },
+      })
+    ).toBe(2);
+  });
+
+  it("rolls package publication and the run move back if its audit cannot be written", async () => {
+    const { task, run } = await claimedAndResumedPayoutRun();
+    const trigger = `it_reject_residual_audit_${uid()}`;
+    const fn = `${trigger}_fn`;
+    await prisma.$executeRawUnsafe(`
+      CREATE FUNCTION "${fn}"() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN
+        IF NEW."action" = 'human_unit_residual_scope_published' THEN
+          RAISE EXCEPTION 'forced residual audit failure';
+        END IF;
+        RETURN NEW;
+      END;
+      $$
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE TRIGGER "${trigger}"
+      BEFORE INSERT ON "TaskEvent"
+      FOR EACH ROW EXECUTE FUNCTION "${fn}"()
+    `);
+
+    try {
+      await expect(publishAdmittedResidualScope(run.id)).rejects.toThrow(
+        /forced residual audit failure/i
+      );
+      expect(await prisma.taskHumanWorkPackage.count({ where: { runId: run.id } })).toBe(0);
+      expect(
+        await prisma.taskWorkflowRun.findUniqueOrThrow({
+          where: { id: run.id },
+          select: { status: true, finishedAt: true },
+        })
+      ).toEqual({ status: "running", finishedAt: null });
+      expect(
+        await prisma.taskEvent.count({
+          where: { taskId: task.id, action: "human_unit_residual_scope_published" },
+        })
+      ).toBe(0);
+    } finally {
+      await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS "${trigger}" ON "TaskEvent"`);
+      await prisma.$executeRawUnsafe(`DROP FUNCTION IF EXISTS "${fn}"()`);
+    }
   });
 });

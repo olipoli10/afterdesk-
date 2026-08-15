@@ -24,8 +24,17 @@ import { compileDecisions, type CompileStepInput } from "@/lib/ai-work-engine/co
 import { admitHumanCut } from "@/lib/ai-work-engine/human-unit-admission";
 import {
   freezeHumanUnitDefinition,
+  type FrozenEligibility,
   type FrozenHumanUnitDefinition,
 } from "@/lib/ai-work-engine/human-unit-definition";
+import {
+  ACTIVE_CLAIM_STATUSES,
+  activeClaimCapRefusal,
+  categoryCertificationRefusal,
+  highValueRefusal,
+  priorRejectionRefusal,
+  vaStatusRefusal,
+} from "@/lib/worker-eligibility";
 import { resolvePrimitive } from "@/lib/ai-work-engine/registry";
 import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
 import { primitiveReachOf } from "@/lib/ai-work-engine/primitive-vocabulary";
@@ -662,6 +671,22 @@ async function pauseRunForExhaustedStep(input: {
   attempts: number;
   message: string;
 }): Promise<void> {
+  /**
+   * Once a human result has resumed this run, a permanent machine failure is
+   * no longer an ordinary automation pause. The task already has its one
+   * claimant and its accepted fixed payout, so the only safe handover is T14:
+   * publish the remaining scope to that same claimant without reopening the
+   * pool or recomputing money.
+   */
+  const admittedUnit = await prisma.humanWorkUnitRunState.findUnique({
+    where: { runId: input.runId },
+    select: { state: true },
+  });
+  if (admittedUnit?.state === "resumed" || admittedUnit?.state === "exhausted") {
+    await publishAdmittedResidualScope(input.runId);
+    return;
+  }
+
   const paused = await prisma.taskWorkflowRun.updateMany({
     where: { id: input.runId, status: { in: ["running", "compiling"] } },
     data: {
@@ -1098,19 +1123,20 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
       }
 
       /**
-       * The run survives, but nothing machine-side runs while a person holds
-       * the work: the blocked block is released exactly once, by the resume.
-       * The one thing still worth doing here is closing a run whose steps are
-       * all finished, which is how an accepted-and-resumed mandate ends.
+       * Before acceptance, the run survives but no machine step may move: the
+       * blocked block is released exactly once by `applyResume`. AFTER that
+       * durable `resumed` state, however, the whole point of the admitted path
+       * is to continue the downstream machine block while the SAME claimant
+       * keeps the task. Returning unconditionally here left every resumed run
+       * marked `running` but permanently unable to execute.
+       *
+       * `open` is retained only as the pre-claim publication state. A resumed
+       * unit must still have the claimed task assignment before any machine
+       * continuation is allowed.
        */
-      const stillOpen = await prisma.taskWorkflowStepRun.count({
-        where: { runId: run.id, status: { not: "done" } },
-      });
-      if (stillOpen === 0) {
-        await finishAdmittedRun(run.id);
-        return { steps: 0, finished: true };
-      }
-      return { steps: 0, finished: false };
+      const mayContinueAfterResume =
+        run.humanWorkUnit?.state === "resumed" && run.task.status === "claimed";
+      if (!mayContinueAfterResume) return { steps: 0, finished: false };
     }
 
     const classification = run.task.aiClassification;
@@ -2096,6 +2122,317 @@ export async function finishAdmittedRun(runId: string): Promise<void> {
       },
     });
   });
+}
+
+/**
+ * A frozen definition was written by our compiler, but it is stored as JSON.
+ * Treat an unreadable historical row as ineligible instead of casting it and
+ * accidentally turning missing criteria into permission.
+ */
+function parseFrozenEligibility(value: unknown): FrozenEligibility | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const e = value as Record<string, unknown>;
+  if (
+    !(e.categorySlug === null || typeof e.categorySlug === "string") ||
+    typeof e.tier !== "string" ||
+    typeof e.requireCategoryCertification !== "boolean" ||
+    typeof e.highValueThreshold !== "number" ||
+    !Number.isFinite(e.highValueThreshold) ||
+    typeof e.minRatedDeliveries !== "number" ||
+    !Number.isInteger(e.minRatedDeliveries) ||
+    e.minRatedDeliveries < 0 ||
+    typeof e.maxActiveClaims !== "number" ||
+    !Number.isInteger(e.maxActiveClaims) ||
+    e.maxActiveClaims < 1
+  ) {
+    return null;
+  }
+  return {
+    categorySlug: e.categorySlug as string | null,
+    tier: e.tier,
+    requireCategoryCertification: e.requireCategoryCertification,
+    highValueThreshold: e.highValueThreshold,
+    minRatedDeliveries: e.minRatedDeliveries,
+    maxActiveClaims: e.maxActiveClaims,
+  };
+}
+
+/**
+ * PUBLISH ONLY THE WORK THAT REMAINS AFTER AN ADMITTED RESUME FAILED.
+ *
+ * This is deliberately not `finishRun`. The task is already claimed, its
+ * payout was accepted before that claim, and the claimant already produced the
+ * human result that resumed the machine. T14 changes only the worker's brief:
+ * it never changes the task, its assignment, its estimate or its money.
+ *
+ * All durable writes share one transaction. The run CAS serializes concurrent
+ * calls; the package's existing `runId` and `taskId` unique keys are the final
+ * replay guard if stale run state is presented. A unique-key loser rolls back
+ * its run move and audit with it.
+ */
+export async function publishAdmittedResidualScope(runId: string): Promise<void> {
+  const scope = await prisma.taskWorkflowRun.findUnique({
+    where: { id: runId },
+    select: {
+      taskId: true,
+      unitsTotal: true,
+    },
+  });
+  if (!scope) return;
+
+  // Scope is descriptive, not economic. It may shrink after automation, but
+  // neither this read nor the package copy enters the payout calculation.
+  const payload = await loadLatestPayload(runId);
+  const unitsTotal = payload?.unitsTotal ?? scope.unitsTotal ?? 0;
+  const unitsRemaining = payload
+    ? payload.rows.filter((row) => row.status !== "verified").length +
+      Math.max(0, unitsTotal - payload.rows.length)
+    : unitsTotal;
+  const hasCandidate =
+    (await prisma.file.count({
+      where: { workflowRunId: runId, artifactVisibility: "deliverable_candidate", purgedAt: null },
+    })) > 0;
+  const draftedRows = payload?.rows.length ?? 0;
+  const verifiedRows = payload?.rows.filter((row) => row.status === "verified").length ?? 0;
+  const copy = buildHumanPackageCopy({
+    unitsRemaining,
+    unitsTotal,
+    hasCandidate,
+    draftedRows,
+    verifiedRows,
+  });
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const run = await tx.taskWorkflowRun.findUnique({
+        where: { id: runId },
+        select: {
+          id: true,
+          taskId: true,
+          planVersionId: true,
+          status: true,
+          humanWorkUnit: {
+            select: {
+              id: true,
+              state: true,
+              claimedById: true,
+              claimGeneration: true,
+              definition: { select: { eligibility: true } },
+            },
+          },
+          task: {
+            select: {
+              status: true,
+              claimedById: true,
+              vaPayoutCents: true,
+              estimatedMinutes: true,
+              category: { select: { slug: true, name: true } },
+            },
+          },
+        },
+      });
+      if (
+        !run ||
+        !["running", "awaiting_human_unit"].includes(run.status) ||
+        !run.humanWorkUnit ||
+        !["resumed", "exhausted"].includes(run.humanWorkUnit.state)
+      ) {
+        return;
+      }
+
+      const unit = run.humanWorkUnit;
+      const eligibility = parseFrozenEligibility(unit.definition.eligibility);
+      const claimantId = unit.claimedById;
+      let refusal: string | null = null;
+
+      /**
+       * The task assignment is the authority. A missing or divergent mirror
+       * is not permission to invent a payee; it is an admin-owned stop.
+       */
+      if (
+        claimantId === null ||
+        run.task.claimedById !== claimantId ||
+        run.task.status !== "claimed"
+      ) {
+        refusal = "The current task assignment cannot be verified.";
+      } else if (eligibility === null) {
+        refusal = "The frozen worker eligibility rules cannot be verified.";
+      } else if (
+        run.task.vaPayoutCents === null ||
+        run.task.vaPayoutCents <= 0 ||
+        run.task.estimatedMinutes === null ||
+        run.task.estimatedMinutes <= 0
+      ) {
+        refusal = "The accepted task economics cannot be verified.";
+      }
+
+      if (refusal === null && claimantId !== null && eligibility !== null) {
+        const profile = await tx.vaProfile.findUnique({
+          where: { userId: claimantId },
+          select: { status: true, scoreCache: true, ratedCount: true },
+        });
+        refusal = vaStatusRefusal(profile?.status);
+
+        if (refusal === null && profile) {
+          const frozenCategory =
+            eligibility.categorySlug === null
+              ? null
+              : {
+                  slug: eligibility.categorySlug,
+                  name:
+                    run.task.category?.slug === eligibility.categorySlug
+                      ? run.task.category.name
+                      : eligibility.categorySlug,
+                };
+          let certifiedCount = 0;
+          if (eligibility.requireCategoryCertification && frozenCategory) {
+            certifiedCount = await tx.certification.count({
+              where: { userId: claimantId, courseSlug: frozenCategory.slug },
+            });
+          }
+          refusal = categoryCertificationRefusal({
+            requireCategoryCertification: eligibility.requireCategoryCertification,
+            category: frozenCategory,
+            certifiedCount,
+          });
+
+          if (refusal === null) {
+            const previouslyFailed = await tx.submission.count({
+              where: { taskId: run.taskId, vaId: claimantId, qcStatus: "rejected" },
+            });
+            refusal = priorRejectionRefusal(previouslyFailed);
+          }
+
+          if (refusal === null) {
+            refusal = highValueRefusal({
+              tier: eligibility.tier,
+              scoreCache: profile.scoreCache,
+              ratedCount: profile.ratedCount,
+              highValueThreshold: eligibility.highValueThreshold,
+              minRatedDeliveries: eligibility.minRatedDeliveries,
+            });
+          }
+
+          if (refusal === null) {
+            // Identical lock and statuses as claimTask. The current task is
+            // excluded because this is a RE-check of the capacity that existed
+            // immediately before its already-established claim.
+            await tx.$executeRaw`
+              SELECT pg_advisory_xact_lock(hashtext(${`claim-cap:${claimantId}`}))
+            `;
+            const activeCount = await tx.task.count({
+              where: {
+                id: { not: run.taskId },
+                claimedById: claimantId,
+                status: { in: [...ACTIVE_CLAIM_STATUSES] },
+              },
+            });
+            refusal = activeClaimCapRefusal({
+              activeCount,
+              maxActiveClaims: eligibility.maxActiveClaims,
+            });
+          }
+        }
+      }
+
+      if (refusal !== null) {
+        const pausedAt = new Date();
+        const paused = await tx.taskWorkflowRun.updateMany({
+          where: { id: run.id, status: { in: ["running", "awaiting_human_unit"] } },
+          data: {
+            status: "paused",
+            pausedReason: `${refusal} An administrator must review the existing assignment.`,
+          },
+        });
+        if (paused.count === 0) return;
+
+        await tx.humanWorkUnitAlert.create({
+          data: {
+            unitStateId: unit.id,
+            kind: "admin_pause",
+            dueAt: pausedAt,
+            claimGeneration: unit.claimGeneration,
+          },
+        });
+        await tx.taskEvent.create({
+          data: {
+            taskId: run.taskId,
+            action: "human_unit_paused",
+            meta: { runId, cause: "paused:claimant_ineligible" },
+          },
+        });
+
+        const admins = await tx.user.findMany({
+          where: { role: "ADMIN" },
+          select: { id: true },
+        });
+        const recipients = new Set(admins.map((admin) => admin.id));
+        if (claimantId !== null) recipients.add(claimantId);
+        if (recipients.size > 0) {
+          await tx.notification.createMany({
+            data: [...recipients].map((userId) => ({
+              userId,
+              taskId: run.taskId,
+              type: "human_unit_paused",
+              title: "Remaining work needs an administrator",
+              body: "The downstream automation stopped and the current assignment must be reviewed before the remaining scope can be published. No payout or assignment changed.",
+            })),
+          });
+        }
+        return;
+      }
+
+      // Narrowing above proves these accepted values exist. Restated as local
+      // integers so no fallback can silently turn an unknown promise into 0.
+      const frozenPayoutCents = run.task.vaPayoutCents!;
+      const frozenEstimatedMinutes = run.task.estimatedMinutes!;
+      const finishedAt = new Date();
+      const moved = await tx.taskWorkflowRun.updateMany({
+        where: { id: run.id, status: { in: ["running", "awaiting_human_unit"] } },
+        data: {
+          status: "awaiting_human",
+          finishedAt,
+          unitsTotal,
+          unitsResolvedAutomatically: Math.max(0, unitsTotal - unitsRemaining),
+          unitsPrefilled: draftedRows,
+          unitsVerifiedByMachine: verifiedRows,
+        },
+      });
+      if (moved.count === 0) return;
+
+      await tx.taskHumanWorkPackage.create({
+        data: {
+          runId: run.id,
+          taskId: run.taskId,
+          planVersionId: run.planVersionId,
+          objective: copy.objective,
+          whatIsAlreadyDone: copy.whatIsAlreadyDone,
+          instructions: copy.instructions,
+          checklist: copy.checklist,
+          unitsRemaining,
+          unitsTotal,
+          // References only: no payout calculation is called on this path.
+          estimatedMinutes: frozenEstimatedMinutes,
+          computedPayoutCents: frozenPayoutCents,
+          reservedBudgetCents: frozenPayoutCents,
+        },
+      });
+      await tx.taskEvent.create({
+        data: {
+          taskId: run.taskId,
+          action: "human_unit_residual_scope_published",
+          meta: { runId, unitStateId: unit.id, claimantPreserved: true },
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      // The existing runId/taskId constraints are the replay guard. The whole
+      // transaction, including its CAS and audit, has already rolled back.
+      return;
+    }
+    throw error;
+  }
 }
 
 // ── The scheduled drain ───────────────────────────────────────────────────
