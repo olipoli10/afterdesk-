@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
-import { createAcceptedTask, createWorker } from "./fixtures";
+import { createTask, createWorker } from "./fixtures";
 
 /**
  * THE HUMAN WORK UNIT'S DATABASE INVARIANTS, proven against real PostgreSQL
@@ -29,12 +29,27 @@ async function createAdmittedUnit(over?: {
   claimedById?: string | null;
   acceptedAt?: Date | null;
 }) {
-  const { task, snapshot } = await createAcceptedTask();
+  /**
+   * ORDER MATTERS, and getting it wrong quietly weakened two assertions.
+   *
+   * The accepted-plan guard fires on INSERT **and** UPDATE of any step whose
+   * plan version is referenced by an acceptance snapshot. So the sequence has
+   * to be: task, plan version, STEP, and only then the snapshot that accepts
+   * it. Build the snapshot earlier and the step insert is refused; omit
+   * `planVersionId` from the snapshot — as the first draft of this helper did —
+   * and the guard never sees the plan as accepted at all, so the edits these
+   * tests exist to refuse sail straight through and report a passing invariant
+   * that was never exercised.
+   *
+   * The snapshot is immutable once written, so none of this can be patched up
+   * afterwards. It has to be right the first time.
+   */
+  const task = await createTask({ status: "open" });
   const planVersion = await prisma.taskExecutionPlanVersion.create({
     data: {
       taskId: task.id,
       version: 1,
-      source: "ai_draft" as never,
+      source: "ai_generated" as never,
       deliverableDescription: "Integration plan",
       assumptions: [],
       exclusions: [],
@@ -42,7 +57,48 @@ async function createAdmittedUnit(over?: {
       internalCostConservativeCents: 4_000,
       suggestedPriceCents: 10_000,
       suggestedVaPayoutCents: 2_000,
-      calibration: "cc1" as never,
+      calibration: "calibrated" as never,
+    },
+    select: { id: true },
+  });
+  const planStep = await prisma.taskExecutionPlanStep.create({
+    data: {
+      planVersionId: planVersion.id,
+      order: 2,
+      title: "Confirm the decision-maker",
+      description: "Check each row against a second independent source.",
+      executor: "human" as never,
+      humanRole: "worker" as never,
+      fixedMinutes: 30,
+      estimatedMinutesOptimistic: 20,
+      estimatedMinutesLikely: 30,
+      estimatedMinutesConservative: 45,
+      verificationMethod: "sample_check",
+      acceptanceCriteria: ["Every row carries a named source."],
+      riskLevel: "low" as never,
+      dependsOnOrder: [],
+      humanOutputSchema: {
+        type: "object",
+        properties: { summary: { type: "string" } },
+        required: ["summary"],
+      },
+      humanRequiredArtifactKinds: ["source_file"],
+    },
+    select: { id: true },
+  });
+  // Acceptance happens HERE. Everything above is now frozen.
+  const snapshot = await prisma.taskAcceptanceSnapshot.create({
+    data: {
+      taskId: task.id,
+      planVersionId: planVersion.id,
+      clientPriceCents: 10_000,
+      currency: "USD",
+      title: "Integration task",
+      description: "contract copy",
+      revisionWindowHours: 72,
+      maxRevisionRounds: 2,
+      disputeWindowHours: 48,
+      acceptedByUserId: task.clientId,
     },
     select: { id: true },
   });
@@ -58,33 +114,7 @@ async function createAdmittedUnit(over?: {
   const definition = await prisma.humanWorkUnitDefinition.create({
     data: {
       planVersionId: planVersion.id,
-      planStepId: (
-        await prisma.taskExecutionPlanStep.create({
-          data: {
-            planVersionId: planVersion.id,
-            order: 2,
-            title: "Confirm the decision-maker",
-            description: "Check each row against a second independent source.",
-            executor: "human" as never,
-            humanRole: "worker" as never,
-            fixedMinutes: 30,
-            estimatedMinutesOptimistic: 20,
-            estimatedMinutesLikely: 30,
-            estimatedMinutesConservative: 45,
-            verificationMethod: "sample_check",
-            acceptanceCriteria: ["Every row carries a named source."],
-            riskLevel: "low" as never,
-            dependsOnOrder: [],
-            humanOutputSchema: {
-              type: "object",
-              properties: { summary: { type: "string" } },
-              required: ["summary"],
-            },
-            humanRequiredArtifactKinds: ["source_file"],
-          },
-          select: { id: true },
-        })
-      ).id,
+      planStepId: planStep.id,
       instructions: "Confirm the decision-maker for each row.",
       declaredInputs: [],
       outputSchema: {
@@ -742,7 +772,24 @@ describe("check constraints", () => {
   });
 
   it("CHK-2 — revisionBound and expectedMinutes may not go negative", async () => {
-    const { planVersion } = await createAdmittedUnit();
+    // Its own UNACCEPTED plan version: the accepted one refuses new steps.
+    const task = await createTask({ status: "submitted" });
+    const planVersion = await prisma.taskExecutionPlanVersion.create({
+      data: {
+        taskId: task.id,
+        version: 1,
+        source: "ai_generated" as never,
+        deliverableDescription: "chk2",
+        assumptions: [],
+        exclusions: [],
+        internalCostLikelyCents: 1,
+        internalCostConservativeCents: 1,
+        suggestedPriceCents: 1,
+        suggestedVaPayoutCents: 1,
+        calibration: "calibrated" as never,
+      },
+      select: { id: true },
+    });
     await expect(
       prisma.humanWorkUnitDefinition.create({
         data: {
@@ -865,12 +912,14 @@ describe("the frozen human output contract is immutable once accepted", () => {
   });
 
   it("leaves an UNACCEPTED plan's step freely editable, which the editor needs", async () => {
-    const { task } = await createAcceptedTask();
+    // No acceptance snapshot references this plan version, which is the whole
+    // point: an unaccepted plan stays editable, and the admin editor needs it.
+    const task = await createTask({ status: "submitted" });
     const free = await prisma.taskExecutionPlanVersion.create({
       data: {
         taskId: task.id,
         version: 2,
-        source: "ai_draft" as never,
+        source: "ai_generated" as never,
         deliverableDescription: "draft",
         assumptions: [],
         exclusions: [],
@@ -878,7 +927,7 @@ describe("the frozen human output contract is immutable once accepted", () => {
         internalCostConservativeCents: 1,
         suggestedPriceCents: 1,
         suggestedVaPayoutCents: 1,
-        calibration: "cc1" as never,
+        calibration: "calibrated" as never,
       },
       select: { id: true },
     });
