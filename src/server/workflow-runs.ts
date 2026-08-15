@@ -43,7 +43,10 @@ import { attemptsAllowedForStep } from "@/lib/ai-work-engine/automation-cost-pol
 import { computeResidual, type ResidualStepInput } from "@/lib/ai-work-engine/residual";
 import { fetchCostMicros, searchCostMicros } from "@/lib/ai-work-engine/tool-cost";
 import { buildHumanPackageCopy } from "@/lib/ai-work-engine/human-package-copy";
-import { emptyPayload } from "@/lib/ai-work-engine/primitives/types";
+import {
+  emptyPayload,
+  type WorkflowPayload,
+} from "@/lib/ai-work-engine/primitives/types";
 import { loadLatestPayload, persistPayload, writeArtifact } from "@/server/workflow-artifacts";
 import { readObject } from "@/lib/storage";
 import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notifications";
@@ -635,6 +638,30 @@ type ClaimedStep = {
 };
 
 /**
+ * THE ACCEPTED HUMAN RESULT IS THE RESUME INPUT, NOT A SIDE EFFECT.
+ *
+ * Review validates the frozen output schema before an acceptance can exist,
+ * but the workflow runner has a narrower, non-negotiable interface: machine
+ * primitives consume a WorkflowPayload. Refuse a corrupt or incompatible
+ * accepted row here instead of quietly falling back to the pre-cut artifact —
+ * that fallback would make the durable acceptance irrelevant while still
+ * marking the downstream work successful.
+ */
+function acceptedHumanWorkflowPayload(value: unknown): WorkflowPayload {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    !Array.isArray((value as WorkflowPayload).rows) ||
+    typeof (value as WorkflowPayload).unitsTotal !== "number" ||
+    !Array.isArray((value as WorkflowPayload).requestedFields) ||
+    !(value as WorkflowPayload).requestedFields.every((field) => typeof field === "string")
+  ) {
+    throw new Error("The accepted human result is not a workflow payload.");
+  }
+  return value as WorkflowPayload;
+}
+
+/**
  * Ends a claimed step, but ONLY if this invocation still holds the lease.
  *
  * Without the `lockedBy` predicate the lease was decorative. The sequence that
@@ -1059,7 +1086,15 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
          * presence changes what the drain tail means and what the lifecycle
          * guard is allowed to do.
          */
-        humanWorkUnit: { select: { id: true, state: true, cutOrder: true } },
+        humanWorkUnit: {
+          select: {
+            id: true,
+            state: true,
+            cutOrder: true,
+            acceptance: { select: { resultPayload: true } },
+            resume: { select: { resumedStepRunIds: true } },
+          },
+        },
         task: {
           select: {
             id: true,
@@ -1241,7 +1276,26 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         // path so the step backs off and retries with the data intact —
         // outside the try it escaped to the run-level handler, which left the
         // step running under a dead lease with no recorded error.
+        /**
+         * The first step released by T10 starts a NEW machine block. Its
+         * predecessor is the human cut, so its input is the immutable result
+         * copied onto HumanWorkUnitAcceptance — never the last machine payload
+         * from before the cut. `applyResume` records ids in dependency order;
+         * only index zero takes this branch. Every later resumed step reads the
+         * persisted output of its machine predecessor through the ordinary
+         * artifact path below.
+         *
+         * This also preserves replay safety: if the first resumed step wrote
+         * its payload and crashed before the fenced status write, its retry is
+         * still fed the accepted result, not the output it partially wrote.
+         */
+        const firstResumedStepId = run.humanWorkUnit?.resume?.resumedStepRunIds[0];
+        const acceptedResumeInput =
+          run.humanWorkUnit?.state === "resumed" && firstResumedStepId === step.id
+            ? acceptedHumanWorkflowPayload(run.humanWorkUnit.acceptance?.resultPayload)
+            : null;
         const input =
+          acceptedResumeInput ??
           (await loadLatestPayload(run.id, step.order)) ??
           emptyPayload(
             classification?.quantityInterpreted ?? 0,

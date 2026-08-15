@@ -1,20 +1,48 @@
-import { describe, expect, it } from "vitest";
+import { createHash, randomUUID } from "node:crypto";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
+import { REGISTRY } from "@/lib/ai-work-engine/registry";
+import type { WorkflowPayload } from "@/lib/ai-work-engine/primitives/types";
+import { compileFrozenOutputSchema } from "@/lib/ai-work-engine/human-unit-result-schema";
+import { vaPoolSelect } from "@/lib/queries/tasks";
+import { readObject } from "@/lib/storage";
 import { publishHumanWorkUnit } from "@/server/human-unit";
-import { advanceWorkflow } from "@/server/workflow-runs";
+import { persistPayload } from "@/server/workflow-artifacts";
 import { createTask, createWorker } from "./fixtures";
 
+vi.mock("@/lib/authz", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/authz")>();
+  return {
+    ...actual,
+    requireApprovedVa: vi.fn(),
+    requireRole: vi.fn(),
+  };
+});
+
+vi.mock("next/cache", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/cache")>();
+  return { ...actual, revalidatePath: vi.fn() };
+});
+
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return { ...actual, after: vi.fn() };
+});
+
+const { requireApprovedVa, requireRole } = await import("@/lib/authz");
+const { claimTask, submitDeliverable } = await import("@/server/actions/va-tasks");
+const { startWorkerSession } = await import("@/server/actions/work-sessions");
+const { approveDeliverable } = await import("@/server/actions/admin-qc");
+const { applyResume } = await import("@/server/human-unit-resume");
+const { advanceWorkflow } = await import("@/server/workflow-runs");
+
 /**
- * QUICKSTART SCENARIO A — THE PUBLICATION HALF (T024, partial).
+ * QUICKSTART SCENARIO A — MACHINE → HUMAN → MACHINE (T024).
  *
- * This file will eventually prove all eleven steps of Scenario A end to end.
- * Right now it proves steps 1-4: an admitted unit whose pre-cut block has
- * drained is published to the pool, exactly once, without touching a single
- * number the client already accepted.
- *
- * T024 stays OPEN until steps 5-11 exist, because a lifecycle test that stops
- * at publication has not proven the lifecycle. What is asserted here is
- * asserted for real.
+ * The publication tests keep each T2 refusal and idempotence boundary narrow.
+ * The final test then walks one accepted mandate through all eleven observable
+ * lifecycle steps and diffs the accepted contract field-for-field and the
+ * pre-cut artifact byte-for-byte after payout.
  *
  * The reason publication is the dangerous moment: it is the first time the
  * mandate becomes visible to someone outside the transaction that created it.
@@ -25,9 +53,96 @@ import { createTask, createWorker } from "./fixtures";
 
 const OUTPUT_SCHEMA = {
   type: "object",
-  properties: { summary: { type: "string" } },
-  required: ["summary"],
+  properties: {
+    rows: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          rowId: { type: "string" },
+          unitKey: { type: "string" },
+          fields: {
+            type: "object",
+            properties: { email: { type: "string" } },
+            required: ["email"],
+          },
+          sources: {
+            type: "object",
+            properties: {
+              email: { type: "array", items: { type: "string" } },
+            },
+            required: ["email"],
+          },
+          status: { type: "string" },
+          reviewReason: { type: "string" },
+        },
+        required: ["rowId", "unitKey", "fields", "sources", "status", "reviewReason"],
+      },
+    },
+    unitsTotal: { type: "integer" },
+    requestedFields: { type: "array", items: { type: "string" } },
+  },
+  required: ["rows", "unitsTotal", "requestedFields"],
 };
+
+const ACCEPTED_RESULT: WorkflowPayload = {
+  rows: [
+    {
+      rowId: "human#1",
+      unitKey: "human-accepted-row",
+      fields: { email: " Alice@EXAMPLE.COM " },
+      sources: { email: ["https://source.example/human"] },
+      status: "needs_review",
+      reviewReason: "Accepted by the independent reviewer.",
+    },
+  ],
+  unitsTotal: 1,
+  requestedFields: ["email"],
+};
+
+const PRE_CUT_PAYLOAD: WorkflowPayload = {
+  rows: [
+    {
+      rowId: "machine#1",
+      unitKey: "pre-cut-machine-row",
+      fields: { email: "producer@example.com" },
+      sources: { email: ["https://source.example/machine"] },
+      status: "needs_review",
+      reviewReason: "Waiting for human judgment.",
+    },
+  ],
+  unitsTotal: 1,
+  requestedFields: ["email"],
+};
+
+const MACHINE_PRIMITIVE_ID = "normalize.contact_fields";
+const MACHINE_PRIMITIVE_VERSION = REGISTRY[MACHINE_PRIMITIVE_ID].version;
+const FROZEN_AUTOMATION_CEILING = 25_000n;
+const FROZEN_POLICY_VERSION = "lifecycle-policy-v1";
+
+function asWorker(workerId: string) {
+  vi.mocked(requireApprovedVa).mockResolvedValue({ id: workerId, role: "VA" } as never);
+}
+
+function asAdmin(adminId: string) {
+  vi.mocked(requireRole).mockResolvedValue({ id: adminId, role: "ADMIN" } as never);
+}
+
+async function createAdmin() {
+  return prisma.user.create({
+    data: {
+      name: "Lifecycle Admin",
+      email: `lifecycle-admin-${randomUUID()}@it.local`,
+      role: "ADMIN",
+    },
+    select: { id: true },
+  });
+}
+
+beforeEach(() => {
+  vi.mocked(requireApprovedVa).mockReset();
+  vi.mocked(requireRole).mockReset();
+});
 
 /**
  * An admitted unit whose pre-cut block is done: run `running`, task
@@ -43,9 +158,11 @@ async function admittedRunReadyToPublish(over?: {
   producerStatus?: string;
   vaPayoutCents?: number;
   estimatedMinutes?: number;
+  executableMachineSteps?: boolean;
 }) {
   const task = await createTask({
     status: "ai_processing",
+    clientPriceCents: 10_000,
     vaPayoutCents: over?.vaPayoutCents ?? 4_000,
     estimatedMinutes: over?.estimatedMinutes ?? 60,
   });
@@ -62,6 +179,12 @@ async function admittedRunReadyToPublish(over?: {
       suggestedPriceCents: 10_000,
       suggestedVaPayoutCents: 4_000,
       calibration: "calibrated" as never,
+      expectedAutomationCostMicros: 0n,
+      conservativeAutomationCostMicros: 0n,
+      automationSpendCeilingMicros: FROZEN_AUTOMATION_CEILING,
+      automationCostPolicyVersion: FROZEN_POLICY_VERSION,
+      dataClass: over?.dataClass ?? "business_confidential",
+      dataClassSignals: ["accepted lifecycle fixture"],
     },
     select: { id: true },
   });
@@ -74,6 +197,15 @@ async function admittedRunReadyToPublish(over?: {
         description: "d",
         executor: executor as never,
         humanRole: executor === "human" ? ("worker" as never) : null,
+        primitiveId:
+          executor === "human" || !over?.executableMachineSteps
+            ? null
+            : MACHINE_PRIMITIVE_ID,
+        primitiveVersion:
+          executor === "human" || !over?.executableMachineSteps
+            ? null
+            : MACHINE_PRIMITIVE_VERSION,
+        params: {},
         fixedMinutes: executor === "human" ? 30 : null,
         estimatedMinutesOptimistic: 10,
         estimatedMinutesLikely: 20,
@@ -82,6 +214,16 @@ async function admittedRunReadyToPublish(over?: {
         acceptanceCriteria: ["ok"],
         riskLevel: "low" as never,
         dependsOnOrder: deps,
+        expectedCostMicrosAtQuote:
+          executor === "human" || !over?.executableMachineSteps ? null : 0n,
+        maxCostMicrosPerAttemptAtQuote:
+          executor === "human" || !over?.executableMachineSteps ? null : 0n,
+        maxAttemptsAtQuote:
+          executor === "human" || !over?.executableMachineSteps ? null : 1,
+        automationCostPolicyVersion:
+          executor === "human" || !over?.executableMachineSteps
+            ? null
+            : FROZEN_POLICY_VERSION,
         humanOutputSchema: executor === "human" ? OUTPUT_SCHEMA : undefined,
         humanRequiredArtifactKinds: [],
       },
@@ -119,6 +261,11 @@ async function admittedRunReadyToPublish(over?: {
       maxRevisionRounds: 2,
       disputeWindowHours: 48,
       acceptedByUserId: task.clientId,
+      expectedAutomationCostMicros: 0n,
+      conservativeAutomationCostMicros: 0n,
+      automationSpendCeilingMicros: FROZEN_AUTOMATION_CEILING,
+      automationCostPolicyVersion: FROZEN_POLICY_VERSION,
+      dataClass: over?.dataClass ?? "business_confidential",
     },
     select: { id: true },
   });
@@ -128,11 +275,21 @@ async function admittedRunReadyToPublish(over?: {
       taskId: task.id,
       planVersionId: planVersion.id,
       status: "running" as never,
+      automatedStepCount: 2,
+      humanStepCount: 1,
+      unitsTotal: 1,
+      unitsResolvedAutomatically: 0,
+      runAutomationBudgetMicros: FROZEN_AUTOMATION_CEILING,
+      budgetPolicyVersion: FROZEN_POLICY_VERSION,
       steps: {
         create: [
           {
             planStepId: producer.id,
             order: 1,
+            primitiveId: over?.executableMachineSteps ? MACHINE_PRIMITIVE_ID : null,
+            primitiveVersion: over?.executableMachineSteps
+              ? MACHINE_PRIMITIVE_VERSION
+              : null,
             executionMode: "automated" as never,
             status: (over?.producerStatus ?? "done") as never,
           },
@@ -145,6 +302,10 @@ async function admittedRunReadyToPublish(over?: {
           {
             planStepId: downstream.id,
             order: 3,
+            primitiveId: over?.executableMachineSteps ? MACHINE_PRIMITIVE_ID : null,
+            primitiveVersion: over?.executableMachineSteps
+              ? MACHINE_PRIMITIVE_VERSION
+              : null,
             executionMode: "automated" as never,
             status: "blocked_on_human_unit" as never,
           },
@@ -207,7 +368,7 @@ async function admittedRunReadyToPublish(over?: {
       resumeGeneration: 0,
     },
   });
-  return { task, run, unit, definition, snapshot };
+  return { task, run, unit, definition, snapshot, planVersion };
 }
 
 describe("Scenario A steps 1-4 — the unit reaches the pool", () => {
@@ -859,4 +1020,541 @@ describe("T034 — an admitted run is not abandoned while a person holds it", ()
     expect(after.status).toBe("abandoned");
   });
 
+});
+
+/**
+ * The values a client and worker already accepted. Lifecycle state, audit
+ * evidence and the eventual payout are deliberately excluded: those are the
+ * additive facts this scenario is supposed to create. Everything returned by
+ * this helper must compare exactly before publication and after QC.
+ */
+async function acceptedContract(taskId: string, preCutArtifactId: string) {
+  const task = await prisma.task.findUniqueOrThrow({
+    where: { id: taskId },
+    select: {
+      title: true,
+      description: true,
+      quantity: true,
+      clientPriceCents: true,
+      vaPayoutCents: true,
+      estimatedMinutes: true,
+      acceptanceSnapshot: {
+        select: {
+          id: true,
+          planVersionId: true,
+          clientPriceCents: true,
+          currency: true,
+          title: true,
+          description: true,
+          quantity: true,
+          clientDeadlineUtc: true,
+          deliverableDescription: true,
+          assumptions: true,
+          exclusions: true,
+          disputeCriteria: true,
+          revisionWindowHours: true,
+          maxRevisionRounds: true,
+          disputeWindowHours: true,
+          acceptedByUserId: true,
+          expectedAutomationCostMicros: true,
+          conservativeAutomationCostMicros: true,
+          automationSpendCeilingMicros: true,
+          automationCostPolicyVersion: true,
+          dataClass: true,
+        },
+      },
+      planVersions: {
+        orderBy: { version: "asc" },
+        select: {
+          id: true,
+          version: true,
+          source: true,
+          deliverableDescription: true,
+          assumptions: true,
+          exclusions: true,
+          internalCostLikelyCents: true,
+          internalCostConservativeCents: true,
+          suggestedPriceCents: true,
+          suggestedVaPayoutCents: true,
+          expectedAutomationCostMicros: true,
+          conservativeAutomationCostMicros: true,
+          automationSpendCeilingMicros: true,
+          automationCostPolicyVersion: true,
+          dataClass: true,
+          dataClassSignals: true,
+          steps: {
+            orderBy: { order: "asc" },
+            select: {
+              id: true,
+              order: true,
+              title: true,
+              description: true,
+              executor: true,
+              humanRole: true,
+              primitiveId: true,
+              primitiveVersion: true,
+              params: true,
+              fixedMinutes: true,
+              secondsPerUnit: true,
+              estimatedMinutesOptimistic: true,
+              estimatedMinutesLikely: true,
+              estimatedMinutesConservative: true,
+              expectedCostMicrosAtQuote: true,
+              maxCostMicrosPerAttemptAtQuote: true,
+              maxAttemptsAtQuote: true,
+              automationCostPolicyVersion: true,
+              humanOutputSchema: true,
+              humanRequiredArtifactKinds: true,
+              verificationMethod: true,
+              acceptanceCriteria: true,
+              riskLevel: true,
+              dependsOnOrder: true,
+            },
+          },
+        },
+      },
+      workflowRun: {
+        select: {
+          snapshotId: true,
+          planVersionId: true,
+          runAutomationBudgetMicros: true,
+          budgetPolicyVersion: true,
+          humanWorkUnit: {
+            select: {
+              snapshotId: true,
+              definition: {
+                select: {
+                  planVersionId: true,
+                  planStepId: true,
+                  instructions: true,
+                  declaredInputs: true,
+                  outputSchema: true,
+                  requiredArtifactKinds: true,
+                  acceptanceCriteria: true,
+                  verificationMethod: true,
+                  eligibility: true,
+                  reviewerAuthority: true,
+                  expectedMinutes: true,
+                  revisionBound: true,
+                  publicationDeadlineHours: true,
+                  submissionDeadlineHours: true,
+                  claimLeaseHours: true,
+                  economicProvenance: true,
+                  dataClass: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  const artifact = await prisma.file.findUniqueOrThrow({
+    where: { id: preCutArtifactId },
+    select: {
+      id: true,
+      taskId: true,
+      kind: true,
+      uploaderId: true,
+      storageKey: true,
+      fileName: true,
+      mime: true,
+      sizeBytes: true,
+      scanStatus: true,
+      detectedMime: true,
+      sha256: true,
+      workflowRunId: true,
+      workflowStepRunId: true,
+      artifactVisibility: true,
+      purgedAt: true,
+    },
+  });
+
+  return {
+    scopeAndEconomics: task,
+    storedArtifact: {
+      record: artifact,
+      bytesBase64: (await readObject(artifact.storageKey)).toString("base64"),
+    },
+  };
+}
+
+/**
+ * T024 is allowed to seed the User Story 2 review gate. The fixture still
+ * writes the same durable facts that gate will own: one typed candidate, one
+ * submitted transition, one independent acceptance, the cut step completed,
+ * and one accepted transition. `applyResume` remains entirely production.
+ */
+async function seedAcceptedHumanResult(input: {
+  unitId: string;
+  runId: string;
+  definitionId: string;
+  workerId: string;
+  adminId: string;
+}) {
+  const schema = compileFrozenOutputSchema(OUTPUT_SCHEMA);
+  expect(schema, "the accepted human output contract must compile").not.toBeNull();
+  expect(schema!.safeParse(ACCEPTED_RESULT).success).toBe(true);
+
+  const claimed = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+    where: { id: input.unitId },
+    select: { state: true, claimGeneration: true, resumeGeneration: true, transitionSeq: true },
+  });
+  expect(claimed.state).toBe("claimed");
+
+  const candidate = await prisma.$transaction(async (tx) => {
+    const created = await tx.humanWorkUnitCandidate.create({
+      data: {
+        unitStateId: input.unitId,
+        claimGeneration: claimed.claimGeneration,
+        revisionIndex: 0,
+        submittedById: input.workerId,
+        payload: ACCEPTED_RESULT as never,
+      },
+      select: { id: true },
+    });
+    const moved = await tx.humanWorkUnitRunState.updateMany({
+      where: {
+        id: input.unitId,
+        state: "claimed",
+        claimGeneration: claimed.claimGeneration,
+        transitionSeq: claimed.transitionSeq,
+      },
+      data: {
+        state: "submitted",
+        submittedAt: new Date(),
+        transitionSeq: { increment: 1 },
+      },
+    });
+    expect(moved.count).toBe(1);
+    await tx.humanWorkUnitTransition.create({
+      data: {
+        unitStateId: input.unitId,
+        seq: claimed.transitionSeq + 1,
+        actorId: input.workerId,
+        actorRole: "worker",
+        fromState: "claimed",
+        toState: "submitted",
+        cause: "submitted",
+        claimGeneration: claimed.claimGeneration,
+        resumeGeneration: claimed.resumeGeneration,
+      },
+    });
+    return created;
+  });
+
+  const submitted = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+    where: { id: input.unitId },
+    select: { transitionSeq: true },
+  });
+  await prisma.$transaction(async (tx) => {
+    const decision = await tx.humanWorkUnitReviewDecision.create({
+      data: {
+        candidateId: candidate.id,
+        unitStateId: input.unitId,
+        decidedById: input.adminId,
+        outcome: "accepted",
+        remainingRevisionsAfter: 2,
+        claimGeneration: claimed.claimGeneration,
+      },
+      select: { id: true },
+    });
+    await tx.humanWorkUnitCandidate.update({
+      where: { id: candidate.id },
+      data: { status: "accepted" },
+    });
+    await tx.humanWorkUnitAcceptance.create({
+      data: {
+        unitStateId: input.unitId,
+        candidateId: candidate.id,
+        decisionId: decision.id,
+        acceptedById: input.adminId,
+        claimGenerationAtAcceptance: claimed.claimGeneration,
+        resultPayload: ACCEPTED_RESULT as never,
+        resultSha256: createHash("sha256")
+          .update(JSON.stringify(ACCEPTED_RESULT))
+          .digest("hex"),
+        dataClass: "business_confidential",
+        criteriaVersionRef: input.definitionId,
+      },
+    });
+    const moved = await tx.humanWorkUnitRunState.updateMany({
+      where: {
+        id: input.unitId,
+        state: "submitted",
+        claimGeneration: claimed.claimGeneration,
+        transitionSeq: submitted.transitionSeq,
+      },
+      data: {
+        state: "accepted",
+        acceptedAt: new Date(),
+        transitionSeq: { increment: 1 },
+      },
+    });
+    expect(moved.count).toBe(1);
+    const finishedCut = await tx.taskWorkflowStepRun.updateMany({
+      where: { runId: input.runId, order: 2, status: "handed_to_human" },
+      data: { status: "done", finishedAt: new Date() },
+    });
+    expect(finishedCut.count).toBe(1);
+    await tx.humanWorkUnitTransition.create({
+      data: {
+        unitStateId: input.unitId,
+        seq: submitted.transitionSeq + 1,
+        actorId: input.adminId,
+        actorRole: "admin",
+        fromState: "submitted",
+        toState: "accepted",
+        cause: "accepted",
+        claimGeneration: claimed.claimGeneration,
+        resumeGeneration: claimed.resumeGeneration,
+      },
+    });
+  });
+}
+
+describe("T024 — Scenario A steps 1-11, accepted result to fixed payout", () => {
+  it("runs the accepted human result downstream exactly once without changing the contract", async () => {
+    const worker = await createWorker();
+    const admin = await createAdmin();
+    const { task, run, unit, definition, snapshot } = await admittedRunReadyToPublish({
+      executableMachineSteps: true,
+    });
+    const [producer, downstream] = await Promise.all([
+      prisma.taskWorkflowStepRun.findFirstOrThrow({
+        where: { runId: run.id, order: 1 },
+        select: { id: true, status: true },
+      }),
+      prisma.taskWorkflowStepRun.findFirstOrThrow({
+        where: { runId: run.id, order: 3 },
+        select: { id: true, status: true },
+      }),
+    ]);
+    await persistPayload({
+      taskId: task.id,
+      runId: run.id,
+      stepRunId: producer.id,
+      snapshotId: snapshot.id,
+      order: 1,
+      payload: PRE_CUT_PAYLOAD,
+    });
+    const preCutArtifact = await prisma.file.findFirstOrThrow({
+      where: { workflowStepRunId: producer.id, fileName: "payload.json" },
+      select: { id: true },
+    });
+    const contractBefore = await acceptedContract(task.id, preCutArtifact.id);
+
+    // 1. Pre-cut complete; the downstream machine work is blocked, not human.
+    expect(producer.status).toBe("done");
+    expect(downstream.status).toBe("blocked_on_human_unit");
+    expect(
+      await prisma.taskWorkflowStepRun.count({
+        where: { runId: run.id, order: 3, status: "handed_to_human" },
+      })
+    ).toBe(0);
+
+    // 2-4. The production drain publishes once at the cut and freezes money.
+    await advanceWorkflow(task.id);
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: { state: true },
+      })
+    ).toEqual({ state: "published" });
+    expect(
+      await prisma.taskWorkflowRun.findUniqueOrThrow({
+        where: { id: run.id },
+        select: { status: true },
+      })
+    ).toEqual({ status: "awaiting_human_unit" });
+    const poolTask = await prisma.task.findUniqueOrThrow({
+      where: { id: task.id },
+      select: vaPoolSelect,
+    });
+    expect(poolTask).toMatchObject({ vaPayoutCents: 4_000, estimatedMinutes: 60 });
+    expect(
+      await prisma.task.findUniqueOrThrow({
+        where: { id: task.id },
+        select: { status: true, claimedById: true },
+      })
+    ).toEqual({ status: "open", claimedById: null });
+    expect(await prisma.taskHumanWorkPackage.count({ where: { runId: run.id } })).toBe(0);
+    expect(await prisma.workflowBudgetHold.count({ where: { runId: run.id } })).toBe(0);
+    expect(
+      await prisma.taskWorkflowStepRun.findUniqueOrThrow({
+        where: { id: downstream.id },
+        select: { status: true, attempts: true, lockedBy: true },
+      })
+    ).toEqual({ status: "blocked_on_human_unit", attempts: 0, lockedBy: null });
+
+    // 5. One claim binds Task and unit to the same worker at generation one.
+    asWorker(worker.id);
+    const claim = await claimTask(task.id);
+    expect(claim.ok, !claim.ok ? claim.error : "claim must succeed").toBe(true);
+    expect(
+      await prisma.task.findUniqueOrThrow({
+        where: { id: task.id },
+        select: { status: true, claimedById: true },
+      })
+    ).toEqual({ status: "claimed", claimedById: worker.id });
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: { state: true, claimedById: true, claimGeneration: true },
+      })
+    ).toEqual({ state: "claimed", claimedById: worker.id, claimGeneration: 1 });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: {
+          unitStateId: unit.id,
+          cause: "claimed",
+          actorId: worker.id,
+          assignmentEstablished: true,
+        },
+      })
+    ).toBe(1);
+
+    // 6. T024 freezes only the allowlist; T054/T055 own the worker SQL view.
+    const workerInputs = await prisma.humanWorkUnitDefinition.findUniqueOrThrow({
+      where: { id: definition.id },
+      select: { declaredInputs: true },
+    });
+    expect(workerInputs.declaredInputs).toEqual([
+      {
+        kind: "artifact",
+        ref: "step:1",
+        label: "step 1",
+        dataClass: "business_confidential",
+      },
+    ]);
+    expect(JSON.stringify(workerInputs)).not.toMatch(/clientPrice|payout|credential|secret/i);
+
+    // 7-8. Seed the later review gate, but prove its durable evidence exactly.
+    await seedAcceptedHumanResult({
+      unitId: unit.id,
+      runId: run.id,
+      definitionId: definition.id,
+      workerId: worker.id,
+      adminId: admin.id,
+    });
+    expect(await prisma.humanWorkUnitCandidate.count({ where: { unitStateId: unit.id } })).toBe(1);
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: unit.id, cause: "submitted", actorId: worker.id },
+      })
+    ).toBe(1);
+    expect(await prisma.humanWorkUnitAcceptance.count({ where: { unitStateId: unit.id } })).toBe(1);
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: { state: true },
+      })
+    ).toEqual({ state: "accepted" });
+
+    // 9. One durable resume releases the eligible machine step once.
+    const resumed = await applyResume(unit.id);
+    expect(resumed).toMatchObject({
+      resumed: true,
+      resumeGeneration: 1,
+      resumedStepRunIds: [downstream.id],
+      skippedStepRunIds: [],
+    });
+    expect(await applyResume(unit.id)).toEqual({ resumed: false, cause: "already_resumed" });
+    expect(await prisma.humanWorkUnitResumeRecord.count({ where: { runId: run.id } })).toBe(1);
+    expect(
+      await prisma.taskWorkflowStepRun.findUniqueOrThrow({
+        where: { id: downstream.id },
+        select: { status: true, attempts: true },
+      })
+    ).toEqual({ status: "pending", attempts: 0 });
+    expect(
+      await prisma.taskWorkflowRun.findUniqueOrThrow({
+        where: { id: run.id },
+        select: { status: true },
+      })
+    ).toEqual({ status: "running" });
+
+    // 10-11. The accepted result is the first resumed input, exactly once.
+    const drained = await advanceWorkflow(task.id);
+    expect(drained).toEqual({ steps: 1, finished: true });
+    expect(await advanceWorkflow(task.id)).toEqual({ steps: 0, finished: false });
+    expect(
+      await prisma.taskWorkflowStepRun.findUniqueOrThrow({
+        where: { id: downstream.id },
+        select: { status: true, attempts: true },
+      })
+    ).toEqual({ status: "done", attempts: 1 });
+    const downstreamArtifact = await prisma.file.findFirstOrThrow({
+      where: { workflowStepRunId: downstream.id, fileName: "payload.json" },
+      select: { storageKey: true },
+    });
+    const downstreamPayload = JSON.parse(
+      (await readObject(downstreamArtifact.storageKey)).toString("utf8")
+    ) as WorkflowPayload;
+    expect(downstreamPayload.rows).toHaveLength(1);
+    expect(downstreamPayload.rows[0]).toMatchObject({
+      rowId: "human#1",
+      unitKey: "human-accepted-row",
+      fields: { email: "alice@example.com" },
+    });
+    expect(downstreamPayload.rows.map((row) => row.unitKey)).not.toContain(
+      "pre-cut-machine-row"
+    );
+    expect(
+      await prisma.taskWorkflowRun.findUniqueOrThrow({
+        where: { id: run.id },
+        select: {
+          status: true,
+          actualAiCostMicros: true,
+          actualToolCostMicros: true,
+          runAutomationBudgetMicros: true,
+        },
+      })
+    ).toEqual({
+      status: "done",
+      actualAiCostMicros: 0,
+      actualToolCostMicros: 0,
+      runAutomationBudgetMicros: FROZEN_AUTOMATION_CEILING,
+    });
+    expect(await prisma.workflowBudgetHold.count({ where: { runId: run.id } })).toBe(0);
+    expect(
+      await prisma.task.findUniqueOrThrow({
+        where: { id: task.id },
+        select: { status: true, claimedById: true },
+      })
+    ).toEqual({ status: "claimed", claimedById: worker.id });
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: task.id, action: "human_unit_run_finished" },
+      })
+    ).toBe(1);
+
+    asWorker(worker.id);
+    expect((await startWorkerSession(task.id)).ok).toBe(true);
+    const delivery = await submitDeliverable({
+      taskId: task.id,
+      note: "Accepted human result processed and delivered.",
+    });
+    expect(delivery.ok, !delivery.ok ? delivery.error : "delivery must succeed").toBe(true);
+    const submission = await prisma.submission.findFirstOrThrow({
+      where: { taskId: task.id, vaId: worker.id, qcStatus: "pending" },
+      select: { id: true },
+    });
+    asAdmin(admin.id);
+    const approval = await approveDeliverable({
+      submissionId: submission.id,
+      rating: 5,
+      identityVerified: true,
+    });
+    expect(approval.ok, !approval.ok ? approval.error : "approval must succeed").toBe(true);
+    expect(
+      await prisma.payout.findMany({
+        where: { taskId: task.id },
+        select: { vaId: true, amountCents: true, status: true },
+      })
+    ).toEqual([{ vaId: worker.id, amountCents: 4_000, status: "owed" }]);
+
+    const contractAfter = await acceptedContract(task.id, preCutArtifact.id);
+    expect(contractAfter).toEqual(contractBefore);
+  });
 });
