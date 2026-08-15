@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import {
   bindClaimToHumanUnit,
@@ -683,13 +684,20 @@ describe("a unit that exists but cannot be bound fails the whole claim", () => {
  */
 describe("losing the compare-and-set fails the binding", () => {
   /**
-   * Passes every call through to the real transaction client, except that
-   * `humanWorkUnitRunState.findUnique` runs `duringTheGap` after returning —
-   * which is exactly the window the CAS exists to close.
+   * Passes every call through to the real transaction client except the first
+   * unit read, which returns the row captured before the concurrent commit.
+   * The write is still the production CAS on the real transaction client.
+   *
+   * Prisma Dev's local proxy serializes a second writer while an interactive
+   * transaction is open until that transaction times out. Capturing the read,
+   * committing through the second client, then presenting the captured row to
+   * the production CAS preserves the database fact this guard protects — a
+   * cross-connection commit after the read and a zero-row CAS — without
+   * turning the proxy timeout into the asserted behaviour.
    */
-  function txWithAWriterInTheGap(
+  function txWithStaleUnitRead(
     tx: Parameters<typeof bindClaimToHumanUnit>[0],
-    duringTheGap: () => Promise<unknown>
+    staleUnit: unknown
   ) {
     return new Proxy(tx, {
       get(target, prop, receiver) {
@@ -699,11 +707,7 @@ describe("losing the compare-and-set fails the binding", () => {
           get(model, key, r) {
             const inner = Reflect.get(model, key, r);
             if (key !== "findUnique") return inner;
-            return async (...args: unknown[]) => {
-              const row = await (inner as (...a: unknown[]) => Promise<unknown>).apply(model, args);
-              await duringTheGap();
-              return row;
-            };
+            return async () => staleUnit;
           },
         });
       },
@@ -713,33 +717,46 @@ describe("losing the compare-and-set fails the binding", () => {
   it("throws instead of reporting a quiet no-op", async () => {
     const { task, unit } = await publishedUnit();
     const worker = await createWorker();
-
-    const attempt = prisma.$transaction(async (tx) => {
-      const raced = txWithAWriterInTheGap(tx, () =>
-        // The row moves out from under the read, before the CAS reaches it.
-        //
-        // Written on the SAME connection deliberately. A second connection
-        // would be a truer picture of a concurrent writer, but it is not what
-        // this branch actually tests: the guard fires on the CAS matching zero
-        // rows, and nothing about it cares who did the moving. One connection
-        // makes that condition exact and deterministic instead of raced.
-        tx.humanWorkUnitRunState.update({
-          where: { id: unit.id },
-          data: { state: "withdrawn" as never },
-        })
-      );
-      return bindClaimToHumanUnit(raced, { taskId: task.id, workerId: worker.id });
+    const staleUnit = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: {
+        id: true,
+        state: true,
+        claimedById: true,
+        resumeGeneration: true,
+        definition: { select: { claimLeaseHours: true, submissionDeadlineHours: true } },
+      },
+    });
+    const concurrent = new PrismaClient({
+      datasourceUrl: process.env.AFTERDESK_TEST_DATABASE_URL,
     });
 
-    await expect(attempt).rejects.toBeInstanceOf(HumanUnitBindError);
+    try {
+      await concurrent.$connect();
+      // A genuinely separate client commits after the captured read. Its write
+      // must survive the losing transaction's rollback below.
+      await concurrent.humanWorkUnitRunState.update({
+        where: { id: unit.id },
+        data: { state: "withdrawn" as never },
+      });
+      const attempt = prisma.$transaction(async (tx) => {
+        const raced = txWithStaleUnitRead(tx, staleUnit);
+        return bindClaimToHumanUnit(raced, { taskId: task.id, workerId: worker.id });
+      });
 
-    // The whole transaction rolled back, so even the interfering write is gone
-    // and the unit is untouched.
+      await expect(attempt).rejects.toBeInstanceOf(HumanUnitBindError);
+    } finally {
+      await concurrent.$disconnect();
+    }
+
+    // The losing transaction rolled back, but the concurrent writer committed
+    // independently. This is the proof that two real transaction boundaries
+    // participated rather than a proxy arranging two writes on one connection.
     const after = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
       where: { id: unit.id },
       select: { state: true, claimedById: true, transitionSeq: true },
     });
-    expect(after.state).toBe("published");
+    expect(after.state).toBe("withdrawn");
     expect(after.claimedById).toBeNull();
     expect(after.transitionSeq).toBe(2);
     expect(
@@ -762,7 +779,17 @@ describe("losing the compare-and-set fails the binding", () => {
     });
 
     const result = await prisma.$transaction(async (tx) => {
-      const passthrough = txWithAWriterInTheGap(tx, async () => undefined);
+      const currentUnit = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: unit.id },
+        select: {
+          id: true,
+          state: true,
+          claimedById: true,
+          resumeGeneration: true,
+          definition: { select: { claimLeaseHours: true, submissionDeadlineHours: true } },
+        },
+      });
+      const passthrough = txWithStaleUnitRead(tx, currentUnit);
       return bindClaimToHumanUnit(passthrough, { taskId: task.id, workerId: worker.id });
     });
 
