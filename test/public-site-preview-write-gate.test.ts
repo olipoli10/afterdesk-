@@ -80,3 +80,37 @@ describe("preview refuses every non-idempotent method before any handler", () =>
     expect(proxy(req("POST", "/register/va")).status).not.toBe(403);
   });
 });
+
+describe("preview blocks the ENTIRE /api surface, every method (1.4B.4)", () => {
+  const req = (method: string, path: string) =>
+    new NextRequest(`https://preview.example${path}`, { method });
+
+  it("GET/HEAD/OPTIONS/POST on /api/cron/maintenance all 403 in preview", () => {
+    process.env.VERCEL_ENV = "preview";
+    for (const m of ["GET", "HEAD", "OPTIONS", "POST"]) {
+      expect(proxy(req(m, "/api/cron/maintenance")).status, m).toBe(403);
+    }
+  });
+  it("GET /api/files/x/download and GET /api/auth/session 403 in preview", () => {
+    process.env.VERCEL_ENV = "preview";
+    expect(proxy(req("GET", "/api/files/x/download")).status).toBe(403);
+    expect(proxy(req("GET", "/api/auth/session")).status).toBe(403);
+  });
+  it("ordinary pages still pass GET/HEAD/OPTIONS in preview", () => {
+    process.env.VERCEL_ENV = "preview";
+    for (const p of ["/", "/register/va", "/some-unlisted-route"]) {
+      for (const m of ["GET", "HEAD", "OPTIONS"]) {
+        expect(proxy(req(m, p)).status, `${m} ${p}`).not.toBe(403);
+      }
+    }
+  });
+  it("page POSTs stay blocked and production keeps its API untouched", () => {
+    process.env.VERCEL_ENV = "preview";
+    expect(proxy(req("POST", "/register/va")).status).toBe(403);
+    process.env.VERCEL_ENV = "production";
+    expect(proxy(req("GET", "/api/cron/maintenance")).status).not.toBe(403);
+    expect(proxy(req("POST", "/api/tasks")).status).not.toBe(403);
+    delete process.env.VERCEL_ENV;
+    expect(proxy(req("GET", "/api/cron/maintenance")).status).not.toBe(403);
+  });
+});

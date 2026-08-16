@@ -46,14 +46,27 @@ export function proxy(req: NextRequest) {
      never write: every non-idempotent method is refused before any handler
      runs. VERCEL_ENV is unset locally and "production" in production, so
      this gate has zero effect anywhere else. */
-  if (
-    process.env.VERCEL_ENV === "preview" &&
-    !["GET", "HEAD", "OPTIONS"].includes(req.method)
-  ) {
-    return NextResponse.json(
-      { error: "preview is read-only: database isolation is not proven" },
-      { status: 403 },
-    );
+  if (process.env.VERCEL_ENV === "preview") {
+    /* 1.4B.4: the public V5/A2 preview needs NO API at all - and API GETs
+       are not read-only here (cron maintenance runs payments/sweeps, the
+       download GET writes a fileAccessLog, Better Auth GET can process
+       stateful callbacks). The ENTIRE /api surface is refused, every
+       method. Ordinary pages keep GET/HEAD/OPTIONS; page POSTs (Server
+       Actions) stay refused by the general rule. Production and local are
+       untouched - this whole block is preview-only. */
+    const { pathname } = req.nextUrl;
+    if (pathname === "/api" || pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "preview exposes no API: the public preview is a read-only site" },
+        { status: 403 },
+      );
+    }
+    if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+      return NextResponse.json(
+        { error: "preview is read-only: database isolation is not proven" },
+        { status: 403 },
+      );
+    }
   }
 
   const headers = new Headers(req.headers);
