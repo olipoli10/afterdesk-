@@ -95,6 +95,10 @@ describe("C9 - preview deployments are read-only until DB isolation is proven", 
     const s = read("src/proxy.ts");
     expect(s).toMatch(/VERCEL_ENV === "preview"/);
     expect(s).toMatch(/status: 403/);
-    expect(s).toMatch(/"\/api\/:path\*"/);
+    /* 1.4B.2: /api (and every application route) is covered by the single
+       negative-lookahead matcher; real coverage is proven with the official
+       unstable_doesMiddlewareMatch helper in
+       test/public-site-preview-write-gate.test.ts */
+    expect(s).toMatch(/\(\?\!_next\/static/);
   });
 });
