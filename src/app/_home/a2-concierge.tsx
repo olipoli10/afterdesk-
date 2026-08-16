@@ -162,18 +162,33 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const launchRef = useRef<HTMLButtonElement>(null);
   const arrived = useRef(false);
+  /* every timer lives in a ref: an event handler's return value is ignored
+     by React, so cleanup MUST go through these (open/close/unmount) */
+  const travelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const arrivalTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hailTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearAllTimers = useCallback(() => {
+    for (const r of [travelTimer, arrivalTimer, hailTimer]) {
+      if (r.current) { clearTimeout(r.current); r.current = null; }
+    }
+  }, []);
+  useEffect(() => clearAllTimers, [clearAllTimers]);
 
-  /* Arrival & Hail: once per page view after the world settles. */
+  /* Arrival & Hail: once per page view after the world settles. Both the
+     arrival delay and the hail dismissal are ref-held so unmount (and
+     Strict Mode's double-invoke) really cancels them. */
   useEffect(() => {
-    const t = setTimeout(() => {
+    arrivalTimer.current = setTimeout(() => {
       if (arrived.current) return;
       arrived.current = true;
       launcher.play(SEQ.arrival);
       setHail(true);
-      const t2 = setTimeout(() => setHail(false), 3200);
-      return () => clearTimeout(t2);
+      hailTimer.current = setTimeout(() => setHail(false), 3200);
     }, 2400);
-    return () => clearTimeout(t);
+    return () => {
+      if (arrivalTimer.current) { clearTimeout(arrivalTimer.current); arrivalTimer.current = null; }
+      if (hailTimer.current) { clearTimeout(hailTimer.current); hailTimer.current = null; }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -197,19 +212,27 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
      coexist, including mid-transfer */
   useEffect(() => { assertSingleA2(); }, [location, open]);
 
+  const openRef = useRef(false);
   const openPanel = useCallback(() => {
+    openRef.current = true;
     setOpen(true);
     setAnswer("");
-    /* the same being leaves the launcher, travels, arrives in the panel */
+    /* the same being leaves the launcher, travels, arrives in the panel;
+       any previous travel is cancelled first, and a late callback can
+       never resurrect the panel after a fast close */
+    if (travelTimer.current) { clearTimeout(travelTimer.current); travelTimer.current = null; }
     setLocation("traveling");
-    const travel = setTimeout(() => {
+    travelTimer.current = setTimeout(() => {
+      travelTimer.current = null;
+      if (!openRef.current) return;
       setLocation("panel");
       panelA2.play(SEQ.listening);
     }, reduced ? 0 : 220);
-    return () => clearTimeout(travel);
   }, [panelA2, reduced]);
 
   const closePanel = useCallback(() => {
+    openRef.current = false;
+    if (travelTimer.current) { clearTimeout(travelTimer.current); travelTimer.current = null; }
     setOpen(false);
     setAnswer("");
     setLocation("launcher");
@@ -270,7 +293,7 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
           ref={launchRef}
           type="button"
           className={styles.launch}
-          aria-label="Ask AfterDesk"
+          aria-label={copy.ask}
           aria-haspopup="dialog"
           aria-expanded={open}
           onClick={() => (open ? closePanel() : openPanel())}

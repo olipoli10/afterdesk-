@@ -31,24 +31,24 @@ import { A2Concierge } from "./_home/a2-concierge";
 
 const HOME_META: Record<SiteLang, { title: string; description: string }> = {
   en: {
-    title: "Finished admin work at a fixed price: data, research, documents",
+    title: "One request in. One verified result out. | AfterDesk",
     description:
-      "AfterDesk delivers finished administrative work for one fixed price you approve before anything starts. We define the scope, manage the execution, and check the result against a written standard.",
+      "Describe the result you need. AfterDesk assembles software, models, connected tools, browser work and bounded human review, then delivers one checked result at an approved fixed price.",
   },
   fr: {
-    title: "Du travail administratif fini à prix fixe : données, recherche, documents",
+    title: "Une demande entre. Un résultat vérifié ressort. | AfterDesk",
     description:
-      "AfterDesk livre du travail administratif fini pour un prix fixe approuvé avant que rien ne commence. Nous définissons le périmètre, gérons l'exécution et vérifions le résultat contre une norme écrite.",
+      "Décrivez le résultat qu'il vous faut. AfterDesk assemble logiciels, modèles, outils connectés, travail navigateur et révision humaine bornée, puis livre un résultat vérifié à un prix fixe approuvé.",
   },
   es: {
-    title: "Trabajo administrativo terminado a precio fijo: datos, investigación, documentos",
+    title: "Entra una solicitud. Sale un resultado verificado. | AfterDesk",
     description:
-      "AfterDesk entrega trabajo administrativo terminado por un precio fijo que apruebas antes de que empiece nada. Definimos el alcance, gestionamos la ejecución y verificamos el resultado contra una norma escrita.",
+      "Describa el resultado que necesita. AfterDesk ensambla software, modelos, herramientas conectadas, trabajo de navegador y revisión humana acotada, y entrega un resultado verificado a un precio fijo aprobado.",
   },
   tl: {
-    title: "Tapos nang admin na trabaho sa fixed na presyo: data, research, dokumento",
+    title: "Isang kahilingan ang pumapasok. Isang beripikadong resulta ang lumalabas. | AfterDesk",
     description:
-      "Naghahatid ang AfterDesk ng tapos nang admin na trabaho sa isang fixed na presyo na inaaprubahan mo bago magsimula ang kahit ano. Kami ang nagtatakda ng scope, namamahala sa execution, at sumusuri sa resulta laban sa nakasulat na pamantayan.",
+      "Ilarawan ang resultang kailangan mo. Binubuo ng AfterDesk ang software, mga modelo, konektadong tools, browser na trabaho at may hangganang pagsusuri ng tao, at naghahatid ng isang siniyasat na resulta sa aprubadong fixed na presyo.",
   },
 };
 
@@ -69,7 +69,7 @@ const ORG_JSONLD = JSON.stringify({
   name: "AfterDesk",
   url: SITE_URL,
   description:
-    "Finished administrative work at a fixed price, for data, research and document work.",
+    "AfterDesk assembles software, models, connected tools, browser work and bounded human review, and delivers one checked result at an approved fixed price. Early Access.",
 });
 
 export default async function Home({

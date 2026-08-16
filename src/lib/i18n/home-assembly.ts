@@ -174,7 +174,7 @@ const en: ConceptAssemblyCopy = {
     resolved: "Carried as a declared unknown, never estimated",
   },
   verification: {
-    line: "Evidence aligns against the finish line you approved, then a person signs the delivery.",
+    line: "Evidence is checked against the finish line you approved, and a person reviews the delivery against that standard before it goes out.",
     limit: "The review is careful — it is not a promise that every possible error is caught.",
   },
   outcome: {
@@ -275,7 +275,7 @@ const fr: ConceptAssemblyCopy = {
     resolved: "Portée comme inconnue déclarée, jamais estimée",
   },
   verification: {
-    line: "Les preuves s'alignent contre la ligne d'arrivée que vous avez approuvée, puis une personne signe la livraison.",
+    line: "Les preuves sont vérifiées contre la ligne d'arrivée que vous avez approuvée, et une personne révise la livraison selon ce standard avant qu'elle parte.",
     limit: "La révision est rigoureuse — ce n'est pas une promesse que toute erreur possible soit attrapée.",
   },
   outcome: {
@@ -376,7 +376,7 @@ const es: ConceptAssemblyCopy = {
     resolved: "Registrada como incógnita declarada, nunca estimada",
   },
   verification: {
-    line: "La evidencia se alinea con la meta que usted aprobó, y luego una persona firma la entrega.",
+    line: "La evidencia se verifica contra la meta que usted aprobó, y una persona revisa la entrega según ese estándar antes de que salga.",
     limit: "La revisión es cuidadosa — no es una promesa de que se detecte todo error posible.",
   },
   outcome: {
@@ -477,7 +477,7 @@ const tl: ConceptAssemblyCopy = {
     resolved: "Itinala bilang deklaradong hindi alam, hindi kailanman tinantiya",
   },
   verification: {
-    line: "Ang ebidensya ay itinutugma sa linya ng tapos na inaprubahan mo, at may taong pumipirma sa paghahatid.",
+    line: "Ang ebidensya ay sinusuri laban sa linya ng tapos na inaprubahan mo, at may taong nagrerebyu ng paghahatid ayon sa pamantayang iyon bago ito lumabas.",
     limit: "Maingat ang pagsusuri — hindi ito pangakong mahuhuli ang lahat ng posibleng mali.",
   },
   outcome: {
@@ -564,7 +564,7 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     close: "Close",
   },
   fr: {
-    ask: "Ask AfterDesk",
+    ask: "Demandez à AfterDesk",
     hail: "Demandez à AfterDesk",
     title: "Guide AfterDesk",
     intro: "Un guide du site aux réponses approuvées et citées. Il n'invente jamais; quand il ne sait pas, il le dit.",
@@ -579,7 +579,7 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     close: "Fermer",
   },
   es: {
-    ask: "Ask AfterDesk",
+    ask: "Pregunta a AfterDesk",
     hail: "Pregunta a AfterDesk",
     title: "Guía AfterDesk",
     intro: "Una guía del sitio con respuestas aprobadas y citadas. Nunca inventa; cuando no sabe, lo dice.",
@@ -594,7 +594,7 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     close: "Cerrar",
   },
   tl: {
-    ask: "Ask AfterDesk",
+    ask: "Magtanong sa AfterDesk",
     hail: "Magtanong sa AfterDesk",
     title: "Gabay ng AfterDesk",
     intro: "Isang gabay ng site na may aprubadong sagot at citation. Hindi ito nag-iimbento; kapag hindi alam, sinasabi nito.",
