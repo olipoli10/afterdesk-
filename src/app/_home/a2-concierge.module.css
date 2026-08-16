@@ -1,0 +1,153 @@
+/* A2 concierge chrome - onyx/graphite instrument surfaces matching the V5.5
+   world. The being carries the amber; the chrome stays quiet. */
+
+.dock {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.hail {
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c9a76a;
+  position: relative;
+  padding-right: 1.6rem;
+}
+.hail::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 1.25rem;
+  height: 1px;
+  background: #c9a76a;
+  opacity: 0.6;
+}
+
+.launch {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  background: #0b0d11;
+  border: 1px solid #262b35;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+.launch:hover { border-color: rgba(201, 167, 106, 0.55); }
+.launch:focus-visible {
+  outline: 2px solid #c9a76a;
+  outline-offset: 2px;
+}
+
+.empty { display: block; width: 32px; height: 32px; }
+
+.panel {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 5rem;
+  z-index: 61;
+  width: min(21rem, calc(100vw - 2.5rem));
+  background: #0b0d11;
+  border: 1px solid #262b35;
+  border-radius: 12px;
+  padding: 0.9rem 1rem 1rem;
+  color: #c8ccd4;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+  transform: translateY(0);
+  animation: a2panelin 240ms ease-out;
+}
+@keyframes a2panelin {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.reduce { animation: none; }
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #e2c486;
+  font-size: 0.9rem;
+}
+.head b { flex: 1; font-weight: 600; }
+
+.close {
+  background: none;
+  border: 1px solid #262b35;
+  color: #8a919e;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.close:hover { border-color: rgba(201, 167, 106, 0.55); color: #c9a76a; }
+.close:focus-visible { outline: 2px solid #c9a76a; outline-offset: 2px; }
+
+.intro {
+  margin: 0.6rem 0 0.7rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #9aa3b2;
+}
+
+.sugg { display: grid; gap: 0.4rem; }
+.sugg button {
+  text-align: left;
+  background: #10131a;
+  border: 1px solid #1f2430;
+  border-radius: 8px;
+  color: #c8ccd4;
+  font-size: 0.8rem;
+  padding: 0.5rem 0.65rem;
+  cursor: pointer;
+}
+.sugg button:hover { border-color: rgba(201, 167, 106, 0.45); }
+.sugg button:focus-visible { outline: 2px solid #c9a76a; outline-offset: 1px; }
+
+.ans {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #c8ccd4;
+  border-top: 1px solid #1f2430;
+  padding-top: 0.7rem;
+}
+.cite {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: #c9a76a;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(201, 167, 106, 0.4);
+}
+.cite:hover { border-bottom-color: #c9a76a; }
+.cite:focus-visible { outline: 2px solid #c9a76a; outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  .panel {
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+    bottom: 4.6rem;
+  }
+  .dock { right: 0.9rem; bottom: 0.9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+}
