@@ -97,8 +97,8 @@ const en: InsideDict = {
         "The scope becomes a managed plan of bounded steps AfterDesk is responsible for — not a ticket handed to whoever is available.",
       ],
       [
-        "The method is chosen per step",
-        "Software, models, connected tools, browser work and bounded human review — whichever is the most dependable for that step, chosen and managed by AfterDesk.",
+        "The method is managed, step by step",
+        "AfterDesk decides how each step of the approved scope is carried out and stays responsible for it. Today that means managed specialists working to the written standard, with software assistance where it is dependable. What is being built to extend that is listed in the registry below.",
       ],
       [
         "A flagged step is stopped, not delivered",
@@ -113,7 +113,7 @@ const en: InsideDict = {
   method: {
     h2: "About the method",
     body:
-      "The method may combine software, models, connected tools, browser work and bounded human review. What never changes: the scope is frozen before execution, the price is fixed before execution, and a person reviews every delivery against the approved standard before it goes out. AfterDesk answers for the result whichever method produced it.",
+      "Today the approved scope is carried out by managed specialists working to the written standard, with software assistance where it is dependable, and a person reviews every delivery against that standard before it goes out. That review is ordinary quality control on every operation — it is not the same thing as the bounded-human-step architecture in the registry below, which is still being built. What never changes, whatever the method: the scope is frozen before execution, the price is fixed before execution, and AfterDesk answers for the result.",
   },
   registry: {
     h2: "What is live, what is being built",
@@ -157,7 +157,7 @@ const en: InsideDict = {
         ],
         [
           "Bounded human work inside automated plans",
-          "A machine plan that stops at a defined human step and resumes safely once the reviewed result is accepted.",
+          "A machine plan that stops at a defined human step and resumes safely once the reviewed result is accepted. This is architecture being built; it is separate from the review that already happens on every delivery today.",
         ],
         [
           "Deeper verification",
@@ -219,8 +219,8 @@ const fr: InsideDict = {
         "Le périmètre devient un plan pris en charge, en étapes bornées dont AfterDesk est responsable — pas un billet remis au premier disponible.",
       ],
       [
-        "La méthode est choisie par étape",
-        "Logiciel, modèles, outils connectés, travail au navigateur et révision humaine bornée — la plus fiable pour chaque étape, choisie et pilotée par AfterDesk.",
+        "La méthode est pilotée, étape par étape",
+        "AfterDesk décide comment chaque étape du périmètre approuvé est réalisée et en reste responsable. Aujourd'hui, cela veut dire des spécialistes encadrés travaillant selon la norme écrite, avec de l'assistance logicielle là où elle est fiable. Ce qui se construit pour élargir cela est listé dans le registre ci-dessous.",
       ],
       [
         "Une étape signalée est arrêtée, pas livrée",
@@ -235,7 +235,7 @@ const fr: InsideDict = {
   method: {
     h2: "À propos de la méthode",
     body:
-      "La méthode peut combiner logiciel, modèles, outils connectés, travail au navigateur et révision humaine bornée. Ce qui ne change jamais : le périmètre est gelé avant l'exécution, le prix est fixé avant l'exécution, et une personne révise chaque livraison selon la norme approuvée avant qu'elle sorte. AfterDesk répond du résultat, quelle que soit la méthode qui l'a produit.",
+      "Aujourd'hui, le périmètre approuvé est réalisé par des spécialistes encadrés travaillant selon la norme écrite, avec de l'assistance logicielle là où elle est fiable, et une personne révise chaque livraison selon cette norme avant qu'elle sorte. Cette révision est le contrôle qualité ordinaire de chaque opération — ce n'est pas la même chose que l'architecture d'étape humaine bornée du registre ci-dessous, qui se construit encore. Ce qui ne change jamais, quelle que soit la méthode : le périmètre est gelé avant l'exécution, le prix est fixé avant l'exécution, et AfterDesk répond du résultat.",
   },
   registry: {
     h2: "Ce qui est en service, ce qui se construit",
@@ -279,7 +279,7 @@ const fr: InsideDict = {
         ],
         [
           "Travail humain borné dans les plans automatisés",
-          "Un plan machine qui s'arrête à une étape humaine définie et reprend en sécurité une fois le résultat révisé accepté.",
+          "Un plan machine qui s'arrête à une étape humaine définie et reprend en sécurité une fois le résultat révisé accepté. C'est une architecture en construction ; elle est distincte de la révision qui a déjà lieu sur chaque livraison aujourd'hui.",
         ],
         [
           "Vérification plus profonde",
@@ -341,8 +341,8 @@ const es: InsideDict = {
         "El alcance se convierte en un plan gestionado de pasos acotados de los que AfterDesk es responsable — no un ticket entregado al primero disponible.",
       ],
       [
-        "El método se elige por paso",
-        "Software, modelos, herramientas conectadas, trabajo en navegador y revisión humana acotada — el más fiable para cada paso, elegido y gestionado por AfterDesk.",
+        "El método se gestiona, paso a paso",
+        "AfterDesk decide cómo se realiza cada paso del alcance aprobado y sigue siendo responsable de él. Hoy eso significa especialistas gestionados que trabajan según el estándar escrito, con asistencia de software donde es fiable. Lo que se está construyendo para ampliarlo figura en el registro de abajo.",
       ],
       [
         "Un paso marcado se detiene, no se entrega",
@@ -357,7 +357,7 @@ const es: InsideDict = {
   method: {
     h2: "Sobre el método",
     body:
-      "El método puede combinar software, modelos, herramientas conectadas, trabajo en navegador y revisión humana acotada. Lo que nunca cambia: el alcance se congela antes de la ejecución, el precio se fija antes de la ejecución, y una persona revisa cada entrega contra el estándar aprobado antes de que salga. AfterDesk responde por el resultado, lo haya producido el método que sea.",
+      "Hoy el alcance aprobado lo realizan especialistas gestionados que trabajan según el estándar escrito, con asistencia de software donde es fiable, y una persona revisa cada entrega contra ese estándar antes de que salga. Esa revisión es el control de calidad ordinario de cada operación — no es lo mismo que la arquitectura de paso humano acotado del registro de abajo, que todavía se está construyendo. Lo que nunca cambia, sea cual sea el método: el alcance se congela antes de la ejecución, el precio se fija antes de la ejecución, y AfterDesk responde por el resultado.",
   },
   registry: {
     h2: "Qué está en servicio, qué se está construyendo",
@@ -401,7 +401,7 @@ const es: InsideDict = {
         ],
         [
           "Trabajo humano acotado dentro de planes automatizados",
-          "Un plan de máquina que se detiene en un paso humano definido y se reanuda con seguridad una vez aceptado el resultado revisado.",
+          "Un plan de máquina que se detiene en un paso humano definido y se reanuda con seguridad una vez aceptado el resultado revisado. Es arquitectura en construcción; es distinta de la revisión que ya ocurre hoy en cada entrega.",
         ],
         [
           "Verificación más profunda",
@@ -463,8 +463,8 @@ const tl: InsideDict = {
         "Nagiging managed na plano ang scope — mga hakbang na may hangganan na pananagutan ng AfterDesk, hindi ticket na iniaabot sa kung sinumang bakante.",
       ],
       [
-        "Pinipili ang paraan kada hakbang",
-        "Software, mga model, konektadong tools, trabaho sa browser at may-hangganang human review — alinman ang pinaka-maaasahan para sa hakbang na iyon, pinipili at pinamamahalaan ng AfterDesk.",
+        "Pinamamahalaan ang paraan, hakbang-hakbang",
+        "Ang AfterDesk ang nagpapasya kung paano isasagawa ang bawat hakbang ng aprubadong scope at nananatiling responsable dito. Ngayon, ibig sabihin nito ay mga managed na espesyalista na sumusunod sa nakasulat na pamantayan, na may tulong ng software kung saan ito maaasahan. Ang ginagawa pa para palawakin ito ay nakalista sa registry sa ibaba.",
       ],
       [
         "Ang minarkahang hakbang ay hinihinto, hindi inihahatid",
@@ -479,7 +479,7 @@ const tl: InsideDict = {
   method: {
     h2: "Tungkol sa paraan",
     body:
-      "Maaaring pagsamahin ng paraan ang software, mga model, konektadong tools, trabaho sa browser at may-hangganang human review. Ang hindi nagbabago: naka-freeze ang scope bago ang execution, fixed ang presyo bago ang execution, at may taong nagrerebyu ng bawat delivery laban sa aprubadong pamantayan bago ito lumabas. Ang AfterDesk ang sumasagot sa resulta, alinmang paraan ang gumawa nito.",
+      "Ngayon, ang aprubadong scope ay isinasagawa ng mga managed na espesyalista na sumusunod sa nakasulat na pamantayan, na may tulong ng software kung saan ito maaasahan, at may taong nagrerebyu ng bawat delivery laban sa pamantayang iyon bago ito lumabas. Ang review na iyon ay ordinaryong quality control sa bawat operasyon — hindi ito katulad ng arkitektura ng may-hangganang hakbang na pantao sa registry sa ibaba, na ginagawa pa. Ang hindi nagbabago, anuman ang paraan: naka-freeze ang scope bago ang execution, fixed ang presyo bago ang execution, at ang AfterDesk ang sumasagot sa resulta.",
   },
   registry: {
     h2: "Ano ang live, ano ang ginagawa pa",
@@ -523,7 +523,7 @@ const tl: InsideDict = {
         ],
         [
           "May-hangganang trabahong pantao sa loob ng automated na plano",
-          "Isang machine na plano na humihinto sa tinukoy na hakbang na pantao at ligtas na nagpapatuloy kapag tinanggap na ang nirebyung resulta.",
+          "Isang machine na plano na humihinto sa tinukoy na hakbang na pantao at ligtas na nagpapatuloy kapag tinanggap na ang nirebyung resulta. Arkitektura itong ginagawa pa; hiwalay ito sa review na nangyayari na sa bawat delivery ngayon.",
         ],
         [
           "Mas malalim na beripikasyon",
