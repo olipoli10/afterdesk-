@@ -1,0 +1,1810 @@
+/* -------------------------------------------------------------------------
+   The homepage "Assembly Lock" stylesheet (accepted V5.5, ported 1.4B).
+
+   CONTINUOUS PROGRESS, NOT SIX SLIDES. The client writes ONE custom property,
+   --p (0..1), onto .stage. Every choreographed element derives its own segment
+   progress below with clamp() and interpolates through transform/opacity/
+   clip-path only - no layout properties animate, nothing re-renders, and when
+   the user stops scrolling nothing keeps moving. The static (reduced-motion /
+   no-JS) story freezes the SAME system at four --p values.
+
+   BLUEPRINT, NOT DASHBOARD (the V5.2 verdict). The machine is ONE instrument
+   slab with two hemispheres. Information is engraved - ticks, seams, rules,
+   thresholds - never boxed. The only bordered object inside the machine is the
+   governed amber exception, exactly because it is the exception. The outcome
+   COMPOSES element by element behind its opening frame, so no intermediate
+   frame ever slices a word, a score or a status.
+
+   THE LAW OF COLOURS. Gold is AfterDesk: the spine, its joints, the rail, the
+   engraving ticks, the frame of the outcome. Amber is the one governed
+   exception. Green exists only after verification, and always next to a word.
+   None of the three is ever a glow field.
+   ------------------------------------------------------------------------- */
+
+.stage {
+  /* palette (proven V4 tokens, V5 semantics) */
+  --onyx: #08090b;
+  --graphite: #111318;
+  --graphite-raised: #171a20;
+  --hi: #f1eee7;
+  --mid: #969ba3;
+  --quiet: #8b919b;
+  --low: #787e88;
+  --gold: #c9a76a;
+  --gold-hi: #e2c486;
+  --amber: #d87526;
+  --amber-deep: #a24608;
+  --green: #2e9a74;
+  --green-deep: #247a5b;
+  --hair: rgba(241, 238, 231, 0.08);
+  --hair-soft: rgba(241, 238, 231, 0.05);
+
+  /* the one driven value */
+  --p: 0;
+
+  /* segment progress - the whole choreography reads these */
+  --s-exit: clamp(0, calc((var(--p) - 0.12) / 0.13), 1);
+  /* V5.3: the planes enter EARLIER and FASTER - the physical-scroll review
+     caught an empty centre at p≈.33 between the hero's exit and their mass.
+     V5.5/P1: an ease-out curve (s' = s·(2−s)) front-loads the travel so the
+     central void closes continuously - ≤520px at .30, ≤320px at .3263,
+     ≤180px at .35, junction by .38 - with the same window and no jump. */
+  --s-enter-raw: clamp(0, calc((var(--p) - 0.22) / 0.16), 1);
+  --s-enter: calc(var(--s-enter-raw) * (2 - var(--s-enter-raw)));
+  --s-lock: clamp(0, calc((var(--p) - 0.45) / 0.17), 1);
+  --s-exc: clamp(0, calc((var(--p) - 0.62) / 0.1), 1);
+  --s-ver: clamp(0, calc((var(--p) - 0.72) / 0.1), 1);
+  --s-fuse: clamp(0, calc((var(--p) - 0.82) / 0.18), 1);
+  /* one bell curve for the lock pulse: peaks at the middle of the lock act */
+  --pulse: calc(var(--s-lock) * (1 - var(--s-lock)) * 4);
+  /* the outcome frame opens first, then content composes piece by piece */
+  --s-open: clamp(0, calc(var(--s-fuse) / 0.45), 1);
+  /* V5.3: map and decision hierarchy compose as ONE event - the whole useful
+     surface (chart, recommendation, sites) is present by p≈.89 instead of a
+     finished map facing an empty column */
+  --s-c: clamp(0, calc((var(--s-fuse) - 0.28) / 0.5), 1);
+
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--onyx);
+  color: var(--hi);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Frozen frame of the same system: the static story and no-JS rendering. */
+.stageStatic {
+  height: auto;
+  min-height: clamp(620px, 94vh, 820px);
+  overflow: hidden;
+  border-top: 1px solid var(--hair-soft);
+}
+
+.track {
+  position: relative;
+  height: 560vh;
+}
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+}
+
+/* --- environment ---------------------------------------------------------- */
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--hair-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--hair-soft) 1px, transparent 1px);
+  background-size: 96px 96px;
+  opacity: calc(0.9 - var(--s-fuse) * 0.82);
+  pointer-events: none;
+}
+@media (max-width: 767px) {
+  .grid {
+    background-size: 64px 64px;
+  }
+}
+
+.nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 2.25rem clamp(1.5rem, 6vw, 8.5rem) 0;
+  opacity: calc(1 - var(--s-fuse) * 1.4);
+}
+.mark {
+  font-size: 1.0625rem;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+.navLinks {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.navLinks a {
+  color: var(--mid);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.navLinks a:hover {
+  color: var(--hi);
+}
+.navLinks a:focus-visible,
+.field input:focus-visible,
+.go:focus-visible {
+  outline: 2px solid var(--gold-hi);
+  outline-offset: 3px;
+}
+@media (max-width: 767px) {
+  .navLinks a {
+    display: none;
+  }
+}
+.early {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  font-size: 0.71875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--low);
+  border: 1px solid var(--hair);
+  border-radius: 100px;
+  padding: 0.3125rem 0.6875rem 0.3125rem 0.5625rem;
+  white-space: nowrap;
+}
+.early::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+/* --- the promise (V5.2 Monument hero: kicker, two lines, one breath) ------- */
+
+.copy {
+  position: absolute;
+  z-index: 30;
+  left: clamp(1.5rem, 6vw, 8.5rem);
+  right: clamp(1.5rem, 6vw, 8.5rem);
+  top: clamp(7rem, 18vh, 11rem);
+  pointer-events: none;
+}
+.kicker {
+  margin: 0 0 clamp(1rem, 2.4vh, 1.5rem);
+  font-size: 0.71875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: calc(1 - var(--s-exit) * 1.6);
+  transform: translateY(calc(var(--s-exit) * -14px));
+}
+.hl {
+  margin: 0;
+  font-size: clamp(2.5rem, 5.8vw, 5.25rem);
+  font-weight: 640;
+  line-height: 1.04;
+  letter-spacing: -0.034em;
+  text-wrap: balance;
+}
+.hl span {
+  display: block;
+}
+/* Unequal exits: line 1 leaves hard left, line 2 right and slightly later.
+   Whole lines travel - nothing fades in place, nothing is sliced. */
+.hlL1 {
+  transform: translateX(calc(var(--s-exit) * -72vw));
+  opacity: calc(1 - var(--s-exit) * 1.15);
+}
+.hlL2 {
+  transform: translateX(calc(var(--s-exit) * 78vw));
+  opacity: calc(1 - var(--s-exit) * 1.25);
+}
+@media (max-width: 767px) {
+  /* mobile exits diagonally up, per the mobile choreography */
+  .hlL1 {
+    transform: translate(calc(var(--s-exit) * -78vw), calc(var(--s-exit) * -7vh));
+  }
+  .hlL2 {
+    transform: translate(calc(var(--s-exit) * 84vw), calc(var(--s-exit) * -4vh));
+  }
+}
+/* One line. It leaves whole - a slide and a fade, never a mid-word clip. */
+.sup {
+  margin: clamp(1.125rem, 2.6vh, 1.75rem) 0 0;
+  max-width: 40rem;
+  font-size: clamp(0.9375rem, 1.15vw, 1.0625rem);
+  line-height: 1.55;
+  color: var(--mid);
+  transform: translateX(calc(var(--s-exit) * -36px));
+  opacity: calc(1 - var(--s-exit) * 2.1);
+}
+
+/* Off-stage presences: two machined edge ticks instead of ghost planes with
+   readable fragments. They state "masses wait outside" in pure geometry. */
+.edgeTick {
+  position: absolute;
+  z-index: 8;
+  top: 50%;
+  width: clamp(1.25rem, 2.6vw, 2.5rem);
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  opacity: calc(0.5 - var(--s-enter) * 0.5);
+  pointer-events: none;
+}
+.edgeTickL {
+  left: 0;
+}
+.edgeTickR {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+/* --- the request field → gold instruction rail ----------------------------- */
+
+.fieldWrap {
+  position: relative;
+  max-width: 35rem;
+  margin-top: clamp(1.5rem, 4vh, 2.75rem);
+  pointer-events: auto;
+  /* The compressed field must leave with its act - no residue may ever cross
+     the entering machine. */
+  opacity: calc(1 - var(--s-enter) * 2.2);
+}
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.6875rem;
+  padding: 0 0.5rem 0 1.25rem;
+  height: 3.625rem;
+  background: linear-gradient(180deg, var(--graphite-raised), var(--graphite));
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  transform: scaleY(calc(1 - var(--s-exit) * 0.94));
+  transform-origin: 50% 50%;
+}
+.caret {
+  width: 2px;
+  height: 1.25rem;
+  background: var(--gold-hi);
+  border-radius: 1px;
+  flex: none;
+}
+.field input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  color: var(--hi);
+  font: inherit;
+  font-size: 0.9375rem;
+  padding: 0;
+  opacity: calc(1 - var(--s-exit) * 2.4);
+}
+.field input::placeholder {
+  color: var(--mid);
+}
+.go {
+  flex: none;
+  height: 2.375rem;
+  padding: 0 1.125rem;
+  border: 0;
+  border-radius: 100px;
+  background: var(--gold);
+  color: #17120a;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: calc(1 - var(--s-exit) * 2.4);
+}
+/* The rail the field compresses into: anchored on the field's own collapse
+   axis (half its 3.625rem height) so the two never read as parallel lines. */
+.rail {
+  position: absolute;
+  inset: 1.8125rem 0 auto 0;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(201, 167, 106, 0.25), var(--gold-hi));
+  /* the rail HOLDS the centre until the planes own real visual mass, then
+     dissolves into the hand-off - never an empty frame between acts */
+  opacity: calc(var(--s-exit) * (1 - var(--s-enter) * 1.25));
+  pointer-events: none;
+}
+.fieldNote {
+  margin: 0.75rem 0 0;
+  font-size: 0.75rem;
+  color: var(--low);
+  opacity: calc(1 - var(--s-exit) * 2);
+}
+.stage[data-phase="machine"] .fieldWrap,
+.stage[data-phase="outcome"] .fieldWrap {
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .field {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.875rem 1rem;
+    row-gap: 0.8125rem;
+  }
+  .field input {
+    flex: 1 1 calc(100% - 2px - 0.6875rem);
+    font-size: 1rem;
+  }
+  .go {
+    margin-left: auto;
+  }
+}
+
+/* --- the gold spine -------------------------------------------------------- */
+
+.spine {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  top: 8dvh;
+  bottom: 8dvh;
+  /* one-pixel engineered datum, per the V5 direction - never a cable */
+  width: 1px;
+  transform: translateX(-50%) scaleY(calc(0.24 + var(--s-exit) * 0.76));
+  transform-origin: 50% 38%;
+  background: var(--gold);
+  opacity: calc(var(--s-exit) * (1 - var(--s-fuse) * 0.7));
+  pointer-events: none;
+}
+.joint {
+  position: absolute;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%) scale(var(--s-lock));
+  background: var(--gold-hi);
+}
+.jointBox {
+  position: absolute;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%) scale(var(--s-lock));
+  border: 1px solid rgba(201, 167, 106, 0.55);
+}
+/* the quiet mechanical pulse at the moment of lock - a bell, not a glow */
+.spinePulse {
+  position: absolute;
+  left: 50%;
+  top: 8dvh;
+  bottom: 8dvh;
+  width: 6px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, rgba(226, 196, 134, 0.55), transparent);
+  opacity: var(--pulse);
+  pointer-events: none;
+}
+.lockWord {
+  position: absolute;
+  z-index: 21;
+  left: 50%;
+  bottom: 3.4dvh;
+  transform: translateX(-50%);
+  font-size: 0.6875rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--gold-hi);
+  white-space: nowrap;
+  /* hands the floor to the verification line when the readback begins; each
+     factor clamps to [0,1] - two negatives must never multiply into a ghost */
+  opacity: calc(
+    clamp(0, calc((var(--s-lock) - 0.55) / 0.45), 1) *
+    clamp(0, calc(1 - var(--s-ver) * 1.4), 1) *
+    clamp(0, calc(1 - var(--s-fuse) * 2), 1)
+  );
+}
+
+/* --- the machine: one slab, two hemispheres -------------------------------- */
+
+/* A perimeter rule that closes around BOTH hemispheres at the lock: the
+   instrument is sealed as one object, not two boxes meeting. */
+.machineFrame {
+  position: absolute;
+  z-index: 9;
+  top: 9dvh;
+  bottom: 9dvh;
+  left: calc(50% - min(50vw - 50px, 620px) - 14px);
+  right: calc(50% - min(50vw - 50px, 620px) - 14px);
+  border: 1px solid rgba(201, 167, 106, 0.22);
+  opacity: calc(var(--s-lock) * (1 - var(--s-fuse) * 1.6));
+  pointer-events: none;
+}
+
+/* Hemispheres, not cards: no border of their own, a depth gradient toward
+   the outer edge, and the shared frame above does the sealing. The class
+   names planeL/planeR are load-bearing for the runtime guard. */
+.plane {
+  position: absolute;
+  z-index: 10;
+  top: 9dvh;
+  bottom: 9dvh;
+  width: calc(50vw - 50px);
+  max-width: 620px;
+  opacity: calc(1 - var(--s-fuse) * 1.35);
+}
+/* At rest both hemispheres are ENTIRELY off-stage - the V5.2 verdict rejected
+   readable ghost fragments. Only the edge ticks state that masses wait. */
+/* V5.4/C1: real visible MASS. The slab grounds are dense enough to read as
+   opaque surfaces against the onyx even mid-entrance, and each hemisphere
+   carries a lit LEADING EDGE on its inner rim - the crest that tells a still
+   frame two systems are arriving to meet. */
+.planeL {
+  left: calc(50% - min(50vw - 50px, 620px) - 14px);
+  background: linear-gradient(100deg, rgba(24, 27, 34, 0.94) 0%, rgba(15, 17, 22, 0.62) 100%);
+  transform: translateX(
+    calc((1 - var(--s-enter)) * (-1 * (min(50vw - 50px, 620px) + 10vw)) + var(--pulse) * 3px)
+  );
+}
+.planeR {
+  left: calc(50% + 14px);
+  background: linear-gradient(260deg, rgba(24, 27, 34, 0.94) 0%, rgba(15, 17, 22, 0.62) 100%);
+  transform: translateX(
+    calc((1 - var(--s-enter)) * (min(50vw - 50px, 620px) + 10vw) + var(--pulse) * -3px)
+  );
+}
+/* the leading edge: a gold crest and a machined shoulder on the inner rim,
+   alive during the approach, absorbed once the perimeter frame seals */
+.planeEdge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(226, 196, 134, 0.75);
+  opacity: calc(var(--s-enter) * (1 - var(--s-lock)));
+  pointer-events: none;
+}
+.planeEdge::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background: linear-gradient(90deg, rgba(226, 196, 134, 0.14), transparent);
+}
+.planeEdgeL {
+  right: 0;
+}
+.planeEdgeL::before {
+  right: 1px;
+  transform: scaleX(-1);
+}
+.planeEdgeR {
+  left: 0;
+}
+.planeEdgeR::before {
+  left: 1px;
+}
+.planeInner {
+  position: absolute;
+  inset: clamp(1rem, 2.8vh, 1.9rem) clamp(1rem, 1.9vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Dormant at rest; information wakes on entry. */
+  opacity: calc(0.12 + var(--s-enter) * 0.88);
+}
+.zTitle {
+  font-size: 0.6875rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--low);
+  margin-bottom: clamp(0.875rem, 2.4vh, 1.5rem);
+}
+
+/* left hemisphere: the contract, engraved ---------------------------------- */
+
+/* The requested outcome is the dominant engraved object: a gold machining
+   corner, not a box. */
+.quote {
+  position: relative;
+  padding: 0.375rem 0 0 1rem;
+  margin-bottom: clamp(1rem, 3vh, 1.75rem);
+}
+.quote::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0.875rem;
+  height: 1.75rem;
+  border-left: 1px solid var(--gold);
+  border-top: 1px solid var(--gold);
+}
+.quote i {
+  display: block;
+  font-style: normal;
+  font-size: 0.625rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--low);
+  margin-bottom: 0.4375rem;
+}
+.quote b {
+  font-weight: 560;
+  font-size: clamp(1rem, 1.35vw, 1.3125rem);
+  line-height: 1.32;
+  letter-spacing: -0.012em;
+  color: var(--hi);
+  opacity: calc(0.25 + var(--s-exit) * 0.75);
+}
+
+/* The contract as engraving: label ticks, strong values, no row borders. */
+.engraving {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: clamp(1rem, 2vw, 2rem);
+  row-gap: clamp(1rem, 3.4vh, 2.25rem);
+  /* the slab breathes evenly: the engraving floats in the free height
+     instead of leaving one dead band above the threshold */
+  margin-block: auto;
+}
+.engRow {
+  position: relative;
+  padding-left: 1rem;
+}
+.engRow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.3125rem;
+  width: 0.5rem;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.7;
+}
+.engRow i {
+  display: block;
+  font-style: normal;
+  font-size: 0.625rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--low);
+  margin-bottom: 0.3125rem;
+}
+.engRow b {
+  font-weight: 500;
+  font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+  line-height: 1.45;
+  color: var(--hi);
+}
+.auth {
+  margin: clamp(0.75rem, 2vh, 1.25rem) 0 0;
+  font-size: 0.6875rem;
+  color: var(--low);
+}
+/* The finish line is a THRESHOLD: one gold rule, words above it. It stays
+   anchored to the slab's floor: the engraving's own auto margins already
+   split the free height, so the threshold must not bring a third auto that
+   would float it to mid-air (and under the verification line). */
+.threshold {
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(201, 167, 106, 0.4);
+  font-size: clamp(0.75rem, 0.9vw, 0.84375rem);
+  line-height: 1.5;
+  color: var(--mid);
+}
+.threshold i {
+  display: block;
+  font-style: normal;
+  font-size: 0.625rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.3125rem;
+}
+/* The finish line is GOLD while the machine works; verification alone may
+   recolour the threshold green - the same law the checks obey. */
+.thresholdVerified {
+  border-top-color: color-mix(
+    in srgb,
+    rgba(201, 167, 106, 0.4),
+    rgba(46, 154, 116, 0.75) calc(var(--s-ver) * 100%)
+  );
+}
+
+/* right hemisphere: one fabric, five behaviours on a routing bus ------------ */
+
+.fabricWrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: clamp(0.75rem, 1.4vw, 1.25rem);
+}
+/* the collector bus: every material connects to it; it feeds the spine */
+.bus {
+  position: relative;
+  flex: none;
+  width: 1px;
+  background: rgba(201, 167, 106, calc(0.18 + var(--s-lock) * 0.4));
+}
+/* Each lane carries its own bus node at the root of its tick, so node and
+   lane can never drift apart. */
+.laneTick::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * clamp(0.75rem, 1.4vw, 1.25rem) - 3px);
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  background: var(--gold-hi);
+  border-radius: 1px;
+  transform: scale(calc(0.3 + var(--m) * 0.7));
+}
+.lanes {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(0.5rem, 1.4vh, 1rem);
+}
+.lanesRibbon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(0.5rem, 1.4vh, 1rem);
+  flex: 1;
+  min-height: 0;
+}
+/* A lane is a stratum of the fabric, not a card: no border, no fill. Its
+   connection tick and its behaviour glyph carry the activation. */
+.lane {
+  --m: clamp(0, calc((var(--s-lock) - var(--d)) / 0.42), 1);
+  position: relative;
+  padding-left: clamp(0.875rem, 1.4vw, 1.25rem);
+  opacity: calc(0.42 + var(--m) * 0.58);
+}
+.laneTick {
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  width: clamp(0.5rem, 1vw, 0.875rem);
+  height: 1px;
+  background: var(--gold);
+  opacity: calc(0.25 + var(--m) * 0.75);
+  transform-origin: 0 50%;
+  transform: scaleX(calc(0.4 + var(--m) * 0.6));
+}
+.laneHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  font-size: 0.65625rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--low);
+}
+.laneHead b {
+  color: var(--hi);
+  font-weight: 560;
+}
+.laneBody {
+  margin-top: 0.25rem;
+  font-size: clamp(0.71875rem, 0.85vw, 0.78125rem);
+  color: var(--mid);
+  line-height: 1.45;
+}
+/* model: a dashed draft condenses into a solid claim */
+.vModel {
+  margin-top: 0.4375rem;
+  height: 2px;
+  width: calc(24% + var(--m) * 62%);
+  background-image: linear-gradient(90deg, var(--gold) 0 60%, transparent 0);
+  background-size: calc(18px - var(--m) * 14px) 2px;
+}
+/* software: exact fields attach and confirm - engraved, not chipped */
+.vSoft {
+  margin-top: 0.4375rem;
+  display: flex;
+  gap: 1rem;
+}
+.vSoft i {
+  font-style: normal;
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--mid);
+  opacity: calc(0.45 + var(--m) * 0.55);
+  border-bottom: 1px solid rgba(201, 167, 106, calc(var(--m) * 0.8));
+  padding-bottom: 0.1875rem;
+}
+/* code: the invariant resolves */
+.vCode {
+  margin-top: 0.4375rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  color: var(--quiet);
+}
+.vCode b {
+  font-weight: 500;
+  color: var(--hi);
+  opacity: var(--m);
+}
+/* browser: a viewport trace focuses and reads - a screen earns its frame */
+.vBrowser {
+  position: relative;
+  margin-top: 0.4375rem;
+  height: 14px;
+  border: 1px solid rgba(241, 238, 231, 0.14);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.vBrowser::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--m) * 62%);
+  width: 22%;
+  background: rgba(201, 167, 106, calc(0.12 + var(--m) * 0.25));
+  border-left: 1px solid rgba(201, 167, 106, 0.5);
+  border-right: 1px solid rgba(201, 167, 106, 0.5);
+}
+.excState {
+  color: var(--amber);
+  letter-spacing: 0.08em;
+}
+.excState::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 0.375rem;
+  background: var(--amber);
+  opacity: clamp(0, calc((var(--s-lock) - 0.7) / 0.3), 1);
+}
+.excRow .excState {
+  opacity: clamp(0, calc((var(--s-lock) - 0.7) / 0.3), 1);
+}
+/* THE one bordered object in the machine: the governed human aperture. */
+.aperture {
+  margin-top: 0.4375rem;
+  max-height: calc(var(--s-exc) * (1 - var(--s-ver)) * 3.6rem);
+  opacity: calc(var(--s-exc) * (1 - var(--s-ver)));
+  overflow: hidden;
+  border: 1px solid rgba(216, 117, 38, 0.55);
+  border-left: 2px solid var(--amber);
+  border-radius: 2px;
+  background: rgba(216, 117, 38, 0.06);
+  transition: none;
+}
+.apertureInner {
+  padding: 0.5rem 0.6875rem;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: #eda469;
+}
+.resolved {
+  margin: 0.375rem 0 0;
+  font-size: 0.65625rem;
+  color: var(--quiet);
+  opacity: clamp(0, calc((var(--s-ver) - 0.35) / 0.4), 1);
+}
+
+/* --- verification ---------------------------------------------------------- */
+
+.evidence {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  width: min(38vw, 30rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(46, 154, 116, 0.55));
+  transform: translateX(calc((1 - var(--s-ver)) * 14vw - 100%));
+  opacity: calc(var(--s-ver) * (1 - var(--s-fuse) * 2));
+  pointer-events: none;
+}
+.check {
+  color: var(--green);
+  opacity: clamp(0, calc((var(--s-ver) - 0.6) / 0.35), 1);
+}
+/* the flow surface's steady check: in flow, the readback already happened */
+.checkOn {
+  color: var(--green);
+}
+.verLine {
+  position: absolute;
+  z-index: 22;
+  left: 50%;
+  /* below the slab at EVERY viewport height - at 800px the old 9.5dvh sat on
+     the contract threshold */
+  bottom: 2.8dvh;
+  transform: translateX(-50%);
+  width: min(46rem, 86vw);
+  margin: 0;
+  text-align: center;
+  font-size: clamp(0.71875rem, 0.9vw, 0.8125rem);
+  line-height: 1.55;
+  color: var(--quiet);
+  opacity: calc(clamp(0, calc(var(--s-ver) / 0.5), 1) * (1 - var(--s-fuse) * 2.2));
+}
+.verLine b {
+  color: var(--hi);
+  font-weight: 520;
+}
+
+/* --- the fused outcome: frame opens, content composes ---------------------- */
+
+.outcome {
+  position: absolute;
+  z-index: 25;
+  inset: 4dvh clamp(1rem, 3.4vw, 3.75rem) 7dvh;
+  background: linear-gradient(165deg, #0b0d11 0%, #08090b 70%);
+  border: 1px solid rgba(201, 167, 106, calc(var(--s-open) * 0.4));
+  border-radius: 6px;
+  /* the shutters part outward - candidate B's graft, kept */
+  clip-path: inset(0 calc((1 - var(--s-open)) * 50.5%) 0 calc((1 - var(--s-open)) * 50.5%));
+  opacity: min(1, calc(var(--s-open) * 3));
+  pointer-events: none;
+}
+.outcomeInner {
+  position: absolute;
+  inset: clamp(1rem, 2.8vh, 1.9rem) clamp(1.125rem, 2.2vw, 2.25rem);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: clamp(0.625rem, 1.8vh, 1.125rem);
+}
+/* Composition: each block arrives WHOLE - a small rise and a fade gated on
+   its own threshold of --s-c. No element can ever be shown sliced. */
+.cmp {
+  opacity: clamp(0, calc((var(--s-c) - var(--at)) / 0.16), 1);
+  transform: translateY(calc((1 - clamp(0, calc((var(--s-c) - var(--at)) / 0.16), 1)) * 10px));
+}
+.outcomeHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--hair);
+  padding-bottom: clamp(0.5rem, 1.4vh, 0.8125rem);
+}
+.outcomeKicker {
+  font-size: 0.65625rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--low);
+}
+.outcomeLock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  font-size: 0.65625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+  white-space: nowrap;
+}
+.outcomeBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr);
+  gap: clamp(1.125rem, 2.6vw, 2.5rem);
+  min-height: 0;
+}
+/* the chart's composition wrapper must hand the grid track's height down */
+.outcomeBody > .cmp {
+  min-height: 0;
+  display: grid;
+}
+
+/* the engineered chart of the south shore: coastline, corridor, graticule */
+.geo {
+  position: relative;
+  height: 100%;
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  background:
+    linear-gradient(to right, var(--hair-soft) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(to bottom, var(--hair-soft) 1px, transparent 1px) 0 0 / 34px 34px,
+    #0a0c10;
+  min-height: 0;
+  overflow: hidden;
+}
+.geoSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.geoLabel {
+  position: absolute;
+  left: 0.875rem;
+  bottom: 0.6875rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--low);
+}
+.geoRiver {
+  position: absolute;
+  left: 24%;
+  top: 22%;
+  transform: rotate(-27deg);
+  transform-origin: 0 0;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.59375rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(150, 155, 163, 0.5);
+  white-space: nowrap;
+}
+.geoScale {
+  position: absolute;
+  right: 0.875rem;
+  bottom: 0.6875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.05em;
+  color: var(--low);
+}
+.geoScale::before {
+  content: "";
+  width: 3rem;
+  height: 1px;
+  background: var(--low);
+  box-shadow: 0 -2px 0 0 transparent, inset 1px 0 0 var(--low), inset -1px 0 0 var(--low);
+}
+.geoNorth {
+  position: absolute;
+  right: 0.875rem;
+  top: 0.6875rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  color: var(--low);
+}
+.geoNorth::after {
+  content: "";
+  display: block;
+  margin: 0.1875rem auto 0;
+  width: 1px;
+  height: 0.625rem;
+  background: var(--low);
+}
+/* cartographic annotations: each scored site named on the chart itself */
+.geoTag {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.65625rem;
+  letter-spacing: 0.04em;
+  color: var(--hi);
+  text-shadow: 0 1px 3px rgba(8, 9, 11, 0.9);
+}
+.geoTag b {
+  font-weight: 600;
+  color: var(--gold-hi);
+}
+.geoTagOpen,
+.geoTagOpen b {
+  color: #eda469;
+}
+
+/* the decision column: recommendation → places → proof → unknown ------------ */
+
+.rec {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.625rem, 1.9vh, 1.125rem);
+  min-height: 0;
+}
+.recTitle {
+  margin: 0;
+  font-size: clamp(1.375rem, 2.4vw, 2.125rem);
+  font-weight: 640;
+  letter-spacing: -0.024em;
+  line-height: 1.14;
+}
+.recDetail {
+  margin: 0;
+  font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+  line-height: 1.55;
+  color: var(--mid);
+}
+.siteRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 1.25rem;
+  row-gap: 0.25rem;
+  align-items: baseline;
+  padding-left: 1rem;
+  position: relative;
+}
+.siteRow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.4375rem;
+  width: 0.5rem;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.7;
+}
+.siteRow em {
+  font-style: normal;
+  font-weight: 560;
+  font-size: clamp(0.875rem, 1.05vw, 1rem);
+  color: var(--hi);
+}
+.siteNote {
+  grid-column: 1;
+  font-size: clamp(0.6875rem, 0.82vw, 0.75rem);
+  color: var(--quiet);
+}
+.siteScore {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: center;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.25rem, 1.7vw, 1.625rem);
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  color: var(--gold-hi);
+}
+.siteScoreOpen {
+  color: #eda469;
+}
+.ledger {
+  margin-top: auto;
+  border-top: 1px solid var(--hair);
+  padding-top: clamp(0.4375rem, 1.2vh, 0.75rem);
+}
+.ledgerTitle {
+  font-size: 0.625rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--low);
+  margin-bottom: 0.375rem;
+}
+.ledgerCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1.5rem;
+  row-gap: 0.3125rem;
+}
+.ledgerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.625rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: clamp(0.625rem, 0.78vw, 0.6875rem);
+  color: var(--quiet);
+}
+.ledgerRow b {
+  font-weight: 500;
+  white-space: nowrap;
+}
+/* the ledger's phone condensation: hidden wherever the full rows fit */
+.ledgerCompact {
+  display: none;
+}
+.unknown {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid rgba(216, 117, 38, 0.4);
+  border-left: 2px solid var(--amber);
+  background: rgba(216, 117, 38, 0.07);
+  border-radius: 2px;
+  padding: 0.5rem 0.6875rem;
+  font-size: clamp(0.65625rem, 0.82vw, 0.75rem);
+}
+.unknown b {
+  font-weight: 520;
+  color: var(--hi);
+}
+.unknown span {
+  color: #eda469;
+  text-align: right;
+}
+.outcomeFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--hair);
+  padding-top: clamp(0.5rem, 1.4vh, 0.8125rem);
+  font-size: clamp(0.6875rem, 0.85vw, 0.78125rem);
+  color: var(--mid);
+}
+.outcomeFoot b {
+  color: var(--hi);
+  font-weight: 560;
+}
+.closing {
+  position: absolute;
+  z-index: 26;
+  left: 50%;
+  bottom: 1.6dvh;
+  transform: translateX(-50%);
+  width: min(52rem, 88vw);
+  margin: 0;
+  text-align: center;
+  font-size: clamp(0.78125rem, 1vw, 0.9375rem);
+  color: var(--quiet);
+  opacity: clamp(0, calc((var(--s-c) - 0.86) / 0.14), 1);
+}
+.closing b {
+  color: var(--hi);
+  font-weight: 560;
+}
+
+/* --- mobile: semantic zoom, one dominant thing per moment ------------------ */
+
+@media (max-width: 767px) {
+  .stage {
+    /* the mobile choreography re-times the machine on the same --p:
+       intent enters alone → condenses to a band → the fabric magazine
+       cycles one dominant material at a time → exception → readback */
+    --m-cond: clamp(0, calc((var(--p) - 0.38) / 0.08), 1);
+    --li: clamp(0, calc((var(--p) - 0.48) * 22.3), 4);
+  }
+  .copy {
+    top: clamp(6.5rem, 13vh, 9rem);
+  }
+  .machineFrame {
+    left: 0.75rem;
+    right: 0.75rem;
+    top: 8dvh;
+    bottom: 8dvh;
+  }
+  /* the intent hemisphere: full width, then condensed to a contract band */
+  .planeL {
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    max-width: none;
+    top: 8dvh;
+    bottom: 8dvh;
+    clip-path: inset(0 0 calc(var(--m-cond) * (100% - 5.25rem)) 0);
+    transform: translateX(calc((1 - var(--s-enter)) * -104vw));
+    background: linear-gradient(180deg, rgba(23, 26, 32, 0.55) 0%, rgba(10, 12, 15, 0.12) 80%);
+  }
+  /* the band's one-line summary lives in its own element; the full engraving
+     fades as the band takes over, so the clip never slices readable text */
+  .quote b {
+    font-size: 1.0625rem;
+  }
+  .quote,
+  .engraving,
+  .auth,
+  .threshold,
+  .planeL .zTitle {
+    opacity: calc((0.12 + var(--s-enter) * 0.88) * (1 - var(--m-cond) * 1.9));
+  }
+  .bandMini {
+    position: absolute;
+    inset: 0 clamp(1rem, 4vw, 1.5rem) auto;
+    top: 1.375rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.875rem;
+    opacity: clamp(0, calc((var(--m-cond) - 0.5) / 0.5), 1);
+    font-size: 0.8125rem;
+  }
+  .bandMini i {
+    font-style: normal;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--hi);
+  }
+  .bandMini b {
+    font-weight: 600;
+    color: var(--gold-hi);
+    white-space: nowrap;
+  }
+  /* the fabric hemisphere: below the band, one material dominant at a time */
+  .planeR {
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    max-width: none;
+    top: calc(8dvh + 5.75rem);
+    bottom: 8dvh;
+    transform: translateX(calc((1 - clamp(0, calc((var(--p) - 0.4) / 0.1), 1)) * 104vw));
+    background: linear-gradient(180deg, rgba(23, 26, 32, 0.4) 0%, rgba(10, 12, 15, 0.1) 85%);
+  }
+  .planeR .planeInner {
+    opacity: 1;
+  }
+  /* the magazine: a vertical ribbon of the five materials, translated so ONE
+     fills the window; neighbours pass through during the travel only */
+  .lanes {
+    position: relative;
+    overflow: hidden;
+    justify-content: flex-start;
+  }
+  .lanesRibbon {
+    position: absolute;
+    inset: 0;
+    height: 500%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0;
+    transform: translateY(calc(var(--li) * -20%));
+  }
+  .lane {
+    height: 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 1.125rem;
+    opacity: 1;
+  }
+  /* the seam never crosses a glyph: on the phone the spine overshoots the
+     slab on both ends and is mechanically interrupted behind it - the stubs
+     live entirely OUTSIDE the band and the magazine, a machined gap, never a
+     line through words. Slab spans 8dvh..92dvh; spine spans 2.5dvh..97.5dvh,
+     so the slab sits between 5.8% and 94.2% of the spine's height. */
+  .spine,
+  .spinePulse {
+    top: 2.5dvh;
+    bottom: 2.5dvh;
+    mask-image: linear-gradient(
+      180deg,
+      #000 0 4.5%,
+      transparent 5.8% 94.2%,
+      #000 95.5% 100%
+    );
+  }
+  /* the state rail replaces bus and ticks at phone width */
+  .bus,
+  .laneTick {
+    display: none;
+  }
+  .lane {
+    padding-left: 0;
+    padding-bottom: 14%;
+  }
+  .laneHead {
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+  }
+  .laneHead b {
+    color: var(--gold-hi);
+  }
+  .laneBody {
+    margin-top: 0.625rem;
+    font-size: 1.1875rem;
+    line-height: 1.5;
+    color: var(--hi);
+    max-width: 24ch;
+  }
+  .vModel {
+    margin-top: 1rem;
+    height: 3px;
+  }
+  .vCode {
+    margin-top: 1rem;
+    font-size: 1rem;
+  }
+  .vSoft {
+    margin-top: 1rem;
+    gap: 1.5rem;
+  }
+  .vSoft i {
+    font-size: 0.875rem;
+  }
+  .vBrowser {
+    margin-top: 1rem;
+    height: 22px;
+  }
+  .aperture {
+    max-height: calc(clamp(0, calc((var(--p) - 0.64) / 0.08), 1) * (1 - var(--s-ver)) * 4.5rem);
+    opacity: calc(clamp(0, calc((var(--p) - 0.64) / 0.08), 1) * (1 - var(--s-ver)));
+  }
+  .apertureInner {
+    font-size: 0.9375rem;
+    padding: 0.75rem 0.875rem;
+  }
+  /* the phone aperture arrives WHOLE - opacity and a small rise, never a
+     height clip that slices its own words mid-opening */
+  .aperture {
+    max-height: none;
+    opacity: calc(clamp(0, calc((var(--p) - 0.64) / 0.05), 1) * (1 - var(--s-ver)));
+    transform: translateY(calc((1 - clamp(0, calc((var(--p) - 0.64) / 0.05), 1)) * 8px));
+  }
+  /* V5.5/P2: the lock label is the instrument's own state line - centred in
+     the free zone above the magazine's rail, inside the seam's masked gap:
+     two balanced 12px lines, ≥12px from the rail, the stubs and the control */
+  .lockWord {
+    left: 50%;
+    bottom: calc(8dvh + 5.25rem);
+    transform: translateX(-50%);
+    max-width: 62vw;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    white-space: normal;
+    text-wrap: balance;
+    text-align: center;
+  }
+  /* afterworld headings adopt the same clear gutter as the closing column:
+     no phrase may enter the fixed control's corner during the hand-off */
+  .afterworld .sectionTitle,
+  .afterworld .sectionLede {
+    margin-left: 4.5rem;
+  }
+  .resolved {
+    font-size: 0.875rem;
+  }
+  /* the magazine's position rail: all five materials, the staged one lit */
+  .magRail {
+    display: flex;
+    position: absolute;
+    left: clamp(1rem, 4vw, 1.5rem);
+    right: clamp(1rem, 4vw, 1.5rem);
+    bottom: 1.125rem;
+    justify-content: space-between;
+    font-size: 0.59375rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--low);
+  }
+  .magRail span {
+    --on: clamp(0, calc(1 - max(var(--li) - var(--i), var(--i) - var(--li))), 1);
+    opacity: calc(0.4 + var(--on) * 0.6);
+    color: color-mix(in srgb, var(--low), var(--gold-hi) calc(var(--on) * 100%));
+  }
+  /* verification + outcome recompose vertically */
+  .verLine {
+    font-size: 0.8125rem;
+    width: 88vw;
+  }
+  .outcome {
+    inset: 3dvh 0.75rem 8.5dvh;
+  }
+  .outcomeInner {
+    inset: 0.875rem 1rem;
+    gap: 0.625rem;
+  }
+  /* one line each, stacked: the header may not eat three rows of the slab */
+  .outcomeHead {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3125rem;
+    padding-bottom: 0.5rem;
+  }
+  .outcomeKicker,
+  .outcomeLock {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .outcomeBody {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+  .geo {
+    min-height: 22vh;
+    max-height: 24vh;
+  }
+  .geoRiver {
+    left: 20%;
+    top: 16%;
+    letter-spacing: 0.22em;
+  }
+  .geoLabel {
+    max-width: 58%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .geoTag {
+    font-size: 0.59375rem;
+  }
+  .rec {
+    gap: 0.625rem;
+  }
+  .recTitle {
+    font-size: 1.375rem;
+  }
+  .recDetail {
+    font-size: 0.875rem;
+  }
+  .siteRow em {
+    font-size: 0.9375rem;
+  }
+  .siteNote {
+    font-size: 0.78125rem;
+  }
+  .siteScore {
+    font-size: 1.5rem;
+  }
+  /* V5.3: the sticky phase carries only the ESSENTIAL decision - chart,
+     recommendation, sites. Evidence, unknown, delivery and the closing
+     sentence live in the natural-flow surface after the story, so nothing
+     ever overlaps inside an expiring 100dvh viewport. */
+  .stage .ledger,
+  .stage .unknown,
+  .stage .outcomeFoot,
+  .stage .closing {
+    display: none;
+  }
+  .geo {
+    min-height: 24vh;
+    max-height: 27vh;
+  }
+}
+@media (min-width: 768px) {
+  .bandMini,
+  .magRail {
+    display: none;
+  }
+}
+/* Short phones: the decision column compresses instead of overprinting.
+   The detail clamps to three lines - an honest ellipsis, never an overlap. */
+@media (max-width: 767px) and (max-height: 840px) {
+  .outcomeBody {
+    overflow: hidden;
+  }
+  .geo {
+    min-height: 17vh;
+    max-height: 20vh;
+  }
+  .rec {
+    gap: 0.5rem;
+  }
+  .recTitle {
+    font-size: 1.25rem;
+  }
+  .recDetail {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.8125rem;
+  }
+  .siteRow {
+    row-gap: 0.125rem;
+  }
+  .siteScore {
+    font-size: 1.375rem;
+  }
+  /* on a short chart the annotations ride ABOVE their markers, clearing the
+     corridor caption along the bottom edge */
+  .geoTag {
+    transform: translate(-50%, -2.1rem);
+  }
+  .outcomeFoot span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+}
+
+/* --- the afterworld: the same universe continues below the fold ------------ */
+
+.afterworld {
+  /* the same palette tokens as the stage: the door's field is built from
+     them, and an undefined var() would strip its box entirely */
+  --onyx: #08090b;
+  --graphite: #111318;
+  --graphite-raised: #171a20;
+  --hi: #f1eee7;
+  --mid: #969ba3;
+  --quiet: #8b919b;
+  --low: #787e88;
+  --gold: #c9a76a;
+  --gold-hi: #e2c486;
+  --amber: #d87526;
+  --green: #2e9a74;
+  --hair: rgba(241, 238, 231, 0.08);
+  --hair-soft: rgba(241, 238, 231, 0.05);
+  --s-exit: 0;
+  --s-enter: 0;
+
+  position: relative;
+  background: #08090b;
+  color: #f1eee7;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+/* V5.3: the phone's real ending. After the story, the outcome becomes a
+   natural-flow surface that may exceed the viewport: stable vertical order,
+   no absolute stacking, nothing can ever overlap. Desktop keeps its full
+   in-stage surface and never renders this. */
+.outcomeFlow {
+  display: none;
+}
+@media (max-width: 767px) {
+  .outcomeFlow {
+    display: block;
+    position: relative;
+    margin: 1rem 0.75rem 0;
+    padding: 1rem 1rem 1.25rem;
+    background: linear-gradient(165deg, #0b0d11 0%, #08090b 70%);
+    border: 1px solid rgba(201, 167, 106, 0.4);
+    border-radius: 6px;
+  }
+  .outcomeFlow .ledger {
+    margin-top: 0;
+  }
+  .outcomeFlow .ledgerCols {
+    grid-template-columns: 1fr;
+    row-gap: 0.375rem;
+  }
+  .outcomeFlow .ledgerRow {
+    font-size: 0.71875rem;
+  }
+  .outcomeFlow .unknown {
+    margin-top: 0.875rem;
+    /* indented clear of the fixed dev control's bottom-left corridor: the
+       carried unknown may never sit under the global N button at any of the
+       review's stop positions */
+    margin-left: 4.25rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+  }
+  .outcomeFlow .unknown span {
+    text-align: left;
+  }
+  .outcomeFlow .outcomeFoot {
+    margin-top: 0.875rem;
+    /* indented clear of the fixed control's corridor, aligned with the amber
+       unknown: the closing column steps aside as one deliberate block */
+    margin-left: 4.25rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+  }
+  /* the closing sentence, in flow, clear of the fixed dev control's corner */
+  .flowClosing {
+    margin: 1.5rem 1rem 0 5rem;
+    padding-bottom: 0.5rem;
+    text-align: right;
+    font-size: 0.875rem;
+    color: var(--quiet);
+  }
+  .flowClosing b {
+    color: var(--hi);
+    font-weight: 560;
+  }
+}
+@media (min-width: 768px) {
+  .flowClosing {
+    display: none;
+  }
+}
+
+/* the spine continues as a hairline thread between the sections */
+.worldThread {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(201, 167, 106, 0.5),
+    rgba(201, 167, 106, 0.12) 30%,
+    rgba(201, 167, 106, 0.12) 70%,
+    rgba(201, 167, 106, 0.5)
+  );
+  pointer-events: none;
+}
+.section {
+  position: relative;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: clamp(4.5rem, 11vh, 7.5rem) clamp(1.5rem, 6vw, 4rem);
+}
+.sectionTitle {
+  margin: 0;
+  font-size: clamp(1.625rem, 3vw, 2.5rem);
+  font-weight: 640;
+  letter-spacing: -0.026em;
+  color: #f1eee7;
+}
+.sectionLede {
+  margin: 0.875rem 0 0;
+  max-width: 44rem;
+  font-size: clamp(0.875rem, 1.05vw, 1rem);
+  line-height: 1.6;
+  color: #969ba3;
+}
+
+/* outcome range: three finishes as engraved inventory lines, not cards */
+.rangeRows {
+  margin-top: clamp(2rem, 5vh, 3.25rem);
+  border-top: 1px solid rgba(241, 238, 231, 0.08);
+}
+.rangeRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(9rem, 18vw, 13rem);
+  align-items: center;
+  gap: clamp(1.25rem, 4vw, 3rem);
+  padding: clamp(1.375rem, 3.4vh, 2.125rem) 0 clamp(1.375rem, 3.4vh, 2.125rem) 1.25rem;
+  border-bottom: 1px solid rgba(241, 238, 231, 0.08);
+}
+.rangeRow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(50% - 0.5px);
+  width: 0.625rem;
+  height: 1px;
+  background: #c9a76a;
+}
+.rangeKicker {
+  display: block;
+  font-size: 0.65625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #787e88;
+}
+.rangeName {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: clamp(1.125rem, 1.7vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  color: #f1eee7;
+}
+.rangeEssence {
+  display: block;
+  margin-top: 0.3125rem;
+  font-size: clamp(0.8125rem, 0.95vw, 0.875rem);
+  color: #969ba3;
+}
+.rangeGlyph svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+@media (max-width: 640px) {
+  .rangeRow {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .rangeGlyph {
+    max-width: 12rem;
+  }
+}
+
+/* control ring: the boundary, on the same onyx */
+.ringWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+}
+.ringFrame {
+  position: relative;
+  width: min(30rem, 78vw);
+  aspect-ratio: 2 / 1;
+  border: 1px solid rgba(201, 167, 106, 0.35);
+  border-radius: 999px / 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ringCore {
+  font-size: 0.71875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e2c486;
+}
+.ringLabel {
+  position: absolute;
+  font-size: 0.65625rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #787e88;
+  white-space: nowrap;
+}
+
+/* the front door, then the deliberate passage toward daylight */
+.door {
+  text-align: center;
+}
+.doorLine {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 640;
+  letter-spacing: -0.024em;
+  color: #f1eee7;
+}
+.doorLine i {
+  font-style: normal;
+  color: #969ba3;
+}
+.doorField {
+  max-width: 35rem;
+  margin: clamp(1.75rem, 4vh, 2.75rem) auto 0;
+  text-align: left;
+}
+.door .field {
+  transform: none;
+}
+.door .field input,
+.door .go,
+.door .fieldNote {
+  opacity: 1;
+}
+
+/* coda: the thread lands on one final joint, then daylight is a decision */
+.coda {
+  position: relative;
+  height: clamp(14rem, 26vh, 19rem);
+  background: linear-gradient(180deg, #08090b 0%, #08090b 34%, #f6f5f2 100%);
+}
+.codaJoint {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 7px;
+  height: 7px;
+  transform: translate(-50%, -50%);
+  background: #e2c486;
+}
+.codaThread {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  height: 34%;
+  width: 1px;
+  background: rgba(201, 167, 106, 0.5);
+}
+
+/* --- accessibility --------------------------------------------------------- */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- 1.4B: CSS belt for reduced motion. The experience already disables
+   its scroll choreography in JS (subscribeMotionPreference); this block
+   guarantees no module transition or animation survives even if a future
+   edit forgets the JS path. ---- */
+@media (prefers-reduced-motion: reduce) {
+  .stage *,
+  .afterworld *,
+  .outcomeFlow * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -254,9 +254,9 @@ describe("the Operation Console never lets color speak alone", () => {
     expect(src).not.toMatch(/\buseState\b|\buseEffect\b|\bsetInterval\b|\bsetTimeout\b/);
   });
 
-  it("the homepage actually mounts it", () => {
+  it("the homepage mounts the ported V5.5 experience (ADR-026 replaced the console composition)", () => {
     const src = read("src/app/page.tsx");
-    expect(src).toMatch(/<OperationConsole copy=\{t\.console\} \/>/);
+    expect(src).toMatch(/<AssemblyExperience copy=\{t\} ctaHref="\/register" \/>/);
   });
 });
 
