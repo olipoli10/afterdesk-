@@ -113,27 +113,24 @@ export function proxy(req: NextRequest) {
   return res;
 }
 
-// The matcher must be statically analyzable at build time — Next.js parses
-// this literal from source, so it cannot be built from DOC_PATHS by spread.
-// Kept in sync with DOC_PATHS by hand; the two arrays are meant to be
-// identical.
+// The matcher must be statically analyzable at build time. Phase 1.4B.2
+// replaced the hand-maintained page allowlist with the official
+// negative-lookahead form (see the installed proxy.md, "Negative matching"):
+// EVERY application request - pages, page-bound Server Actions (Next 16
+// Server Functions are POSTs to the page route that uses them), /api and
+// all current AND future dynamic routes - now flows through the proxy, so
+// the preview write gate can actually hold its invariant. Only proven
+// framework/static resources are excluded. The language-cookie logic above
+// is keyed by exact pathname and is unaffected by the wider match.
 export const config = {
   matcher: [
-    "/",
-    "/workers",
-    "/academy",
-    "/about",
-    "/how-it-works",
-    "/services",
-    "/security",
-    "/privacy",
-    "/terms",
-    "/acceptable-use",
-    "/ledger",
-    "/notifications",
-    "/client/:path*",
-    "/va/:path*",
-    "/admin/:path*",
-    "/api/:path*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - manifest.webmanifest, icon.svg, opengraph-image (app metadata)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|icon.svg|opengraph-image).*)",
   ],
 };
