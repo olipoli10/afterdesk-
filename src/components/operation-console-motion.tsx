@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { ConsoleMotionCopy } from "@/lib/i18n/client";
 
@@ -27,18 +27,18 @@ import type { ConsoleMotionCopy } from "@/lib/i18n/client";
  * would be decoration — this one traces the recovery path that the static copy
  * describes in words.
  *
- * HOW IT DRIVES THE CSS. Two numbers on the wrapper: `--console-seen`, the
- * furthest station reached (monotonic, so going back never hides what was
- * already shown), and `--console-active`, the station being worked on now.
- * Every visual state derives from those two in `globals.css` — no per-station
- * JavaScript, no inline style writes, nothing to keep in sync.
+ * HOW IT DRIVES THE CSS. Two attributes on the wrapper, and nothing else:
+ * `data-seen`, the furthest station reached — monotonic, so the two backward
+ * frames never hide what they already showed — and `data-active`, the station
+ * being worked on now. `globals.css` matches both literally. One mechanism
+ * means there is never a question about which one is really in effect.
  *
  * THE STATIC PAGE IS THE FALLBACK, NOT A DEGRADED MODE. Before hydration,
- * with JavaScript off, and under `prefers-reduced-motion: reduce`, the wrapper
- * keeps the CSS defaults (`--console-seen: 99`, `--console-active: -1`): every
- * station fully opaque, nothing emphasised, exactly the committed static
- * design. The controls only render after mount and only when motion is
- * allowed, so a no-JS visitor never meets a dead button.
+ * with JavaScript off, and under `prefers-reduced-motion: reduce`, neither
+ * attribute is written at all, so no rule matches and every station renders
+ * fully opaque with nothing emphasised — exactly the committed static design.
+ * The controls only render after mount and only when motion is allowed, so a
+ * no-JS visitor never meets a dead button.
  */
 
 /** Station indices, in the order the operation actually visits them. */
@@ -59,7 +59,6 @@ export function OperationConsoleMotion({
   const [frame, setFrame] = useState(-1);
   const [playing, setPlaying] = useState(false);
   const [enabled, setEnabled] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Reduced motion is a hard stop, not a slower animation: the static state
@@ -93,51 +92,19 @@ export function OperationConsoleMotion({
   }, []);
 
   /**
-   * Both numbers are DERIVED from the frame, not accumulated in a ref.
-   *
-   * The first version kept `seen` in a ref seeded at 99 — the static default —
-   * and raised it with Math.max. It could therefore never come down, so every
-   * station rendered fully revealed for the whole run and the animation did
-   * nothing at all. It looked correct in the source and was only caught by
-   * sampling the custom properties in a real browser.
-   *
-   * Deriving it from FRAMES has no such failure mode: `seen` is simply the
-   * furthest station the sequence has reached so far, which is what keeps the
-   * two backward frames from hiding what they already showed.
+   * Both numbers are DERIVED from the frame rather than accumulated, which is
+   * what lets the two backward frames move `active` back without ever lowering
+   * `seen`. An accumulator seeded at the static default could only ever rise.
    */
   const active = frame < 0 ? -1 : FRAMES[frame];
   const seen = frame < 0 ? 99 : Math.max(...FRAMES.slice(0, frame + 1));
-
-  /**
-   * Paint the decorative state. `frame < 0` means "no motion", and every
-   * station is restored to the static appearance — which is also what happens
-   * if this effect never runs at all.
-   */
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    const stations = root.querySelectorAll<HTMLElement>(".op-station");
-    stations.forEach((li, i) => {
-      const ring = li.querySelector<HTMLElement>(".op-station-ring");
-      if (frame < 0) {
-        li.style.opacity = "";
-        if (ring) ring.style.opacity = "";
-        return;
-      }
-      li.style.opacity = i <= seen ? "1" : "0.32";
-      if (ring) ring.style.opacity = i === active ? "0.6" : "0";
-    });
-  }, [frame, seen, active]);
 
   const atEnd = frame >= FRAMES.length - 1;
 
   return (
     <div
-      ref={rootRef}
       className="op-console"
-      /* Mirrors the active index for the ring's selectors. The CSS variables
-         below still drive the reveal, which is legal arithmetic; the ring is
-         selector-driven because its comparison is not. */
+      /* The whole decorative state, and the only thing this island writes. */
       data-active={frame < 0 ? undefined : active}
       data-seen={frame < 0 ? undefined : seen}
     >

@@ -62,10 +62,8 @@ export function OperationConsole({ copy }: { copy: ConsoleCopy }) {
             return (
               <li
                 key={label}
-                /* --i is the station's own index. It is a static inline value
-                   from the server render, not something JavaScript writes: the
-                   CSS compares it against the wrapper's two numbers. */
-                style={{ "--i": i } as React.CSSProperties}
+                /* `relative` positions the rail segment below, nothing else.
+                   The ring anchors to the badge, not to this row. */
                 className="op-station relative grid grid-cols-[44px_1fr] gap-x-5 pb-9 last:pb-0"
               >
                 {/* rail segment down to the next station */}
@@ -75,8 +73,14 @@ export function OperationConsole({ copy }: { copy: ConsoleCopy }) {
                     className="absolute bottom-0 left-[21.5px] top-11 w-px bg-white/12"
                   />
                 )}
+                {/* `relative` here is load-bearing, not decoration: the ring
+                    inside is absolutely positioned, so it resolves against the
+                    nearest positioned ancestor. Without it that ancestor is
+                    the row, and the ring renders as a full-width capsule
+                    (~766px desktop, ~333px mobile) instead of a 50px circle
+                    around the badge. */}
                 <span
-                  className={`grid h-11 w-11 place-items-center rounded-full border bg-[#111317] font-mono text-[12px] tabular-nums ${
+                  className={`relative grid h-11 w-11 place-items-center rounded-full border bg-[#111317] font-mono text-[12px] tabular-nums ${
                     isIssue
                       ? "border-[#D98324]/60 text-[#D98324]"
                       : isVerified
@@ -86,8 +90,8 @@ export function OperationConsole({ copy }: { copy: ConsoleCopy }) {
                 >
                   {String(i + 1).padStart(2, "0")}
                   {/* Purely decorative: marks the station being worked on.
-                      Opacity is driven entirely by CSS from --console-active,
-                      and it carries no information the words do not. */}
+                      Driven by the wrapper's `data-active` in globals.css, and
+                      it carries no information the words do not. */}
                   <span aria-hidden className="op-station-ring" />
                 </span>
                 <div className="pt-2">
