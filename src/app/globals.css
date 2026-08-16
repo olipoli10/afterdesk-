@@ -430,3 +430,84 @@ dialog.ss-modal::backdrop {
     }
   }
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   OPERATION CONSOLE — the motion layer.
+
+   NO ARITHMETIC. Everything here is attribute selectors and :nth-child.
+
+   The first implementation derived opacity from custom properties —
+   `clamp(0.32, calc(1 + (var(--console-seen) - var(--i)) * 10), 1)` — with
+   `@property` registering them as numbers. Measured in the real browser, that
+   silently did nothing: with `--console-seen: 0` inherited correctly and
+   `--i: 6` set inline, the computed opacity was still 1, and a sibling
+   expression stayed an unresolved token string rather than a number. The
+   rules were present in `document.styleSheets` and simply had no effect.
+
+   Rather than keep guessing at custom-property registration across engines,
+   the state is a plain attribute the island writes and the CSS matches
+   literally. Seven values, two attributes, nothing to resolve:
+
+     data-seen    furthest station reached — everything after it is dimmed
+     data-active  station being worked on now — it gets the ring
+
+   THE FALLBACK IS THE ABSENCE OF THE ATTRIBUTES. With no `data-seen`, no rule
+   below matches and every station renders at full opacity: exactly the
+   committed static design. That is what a no-JS visitor, a pre-hydration
+   paint, and a reduced-motion visitor all get — not a special mode, just the
+   default.
+   ──────────────────────────────────────────────────────────────────────── */
+.op-station {
+  opacity: 1;
+}
+
+/* For data-seen="N", every station after the (N+1)th is dimmed. */
+.op-console[data-seen="0"] .op-station:nth-child(n + 2),
+.op-console[data-seen="1"] .op-station:nth-child(n + 3),
+.op-console[data-seen="2"] .op-station:nth-child(n + 4),
+.op-console[data-seen="3"] .op-station:nth-child(n + 5),
+.op-console[data-seen="4"] .op-station:nth-child(n + 6),
+.op-console[data-seen="5"] .op-station:nth-child(n + 7),
+.op-console[data-seen="6"] .op-station:nth-child(n + 8) {
+  opacity: 0.32;
+}
+
+.op-station-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.op-console[data-active="0"] .op-station:nth-child(1) .op-station-ring,
+.op-console[data-active="1"] .op-station:nth-child(2) .op-station-ring,
+.op-console[data-active="2"] .op-station:nth-child(3) .op-station-ring,
+.op-console[data-active="3"] .op-station:nth-child(4) .op-station-ring,
+.op-console[data-active="4"] .op-station:nth-child(5) .op-station-ring,
+.op-console[data-active="5"] .op-station:nth-child(6) .op-station-ring,
+.op-console[data-active="6"] .op-station:nth-child(7) .op-station-ring {
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .op-station {
+    transition: opacity 460ms ease;
+  }
+  .op-station-ring {
+    transition: opacity 300ms ease;
+  }
+}
+
+/* Belt and braces: even if the island ever wrote its attributes under reduced
+   motion, the complete state wins here. */
+@media (prefers-reduced-motion: reduce) {
+  .op-station {
+    opacity: 1;
+    transform: none;
+  }
+  .op-station-ring {
+    opacity: 0;
+  }
+}
