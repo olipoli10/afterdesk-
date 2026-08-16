@@ -39,6 +39,23 @@ const LANG_COOKIE: Record<string, { name: string; allowed: string[] }> = {
 };
 
 export function proxy(req: NextRequest) {
+  /* PREVIEW WRITE GATE (1.4B.1). The Vercel Preview environment shares the
+     Sensitive DATABASE_URL family with Production and its isolation cannot
+     be proven from the CLI (sensitive values are not retrievable). Until a
+     provably isolated preview database exists, a preview deployment must
+     never write: every non-idempotent method is refused before any handler
+     runs. VERCEL_ENV is unset locally and "production" in production, so
+     this gate has zero effect anywhere else. */
+  if (
+    process.env.VERCEL_ENV === "preview" &&
+    !["GET", "HEAD", "OPTIONS"].includes(req.method)
+  ) {
+    return NextResponse.json(
+      { error: "preview is read-only: database isolation is not proven" },
+      { status: 403 },
+    );
+  }
+
   const headers = new Headers(req.headers);
   headers.set("x-pathname", req.nextUrl.pathname);
 
@@ -117,5 +134,6 @@ export const config = {
     "/client/:path*",
     "/va/:path*",
     "/admin/:path*",
+    "/api/:path*",
   ],
 };

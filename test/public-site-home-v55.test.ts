@@ -41,7 +41,7 @@ describe("R2 - A2 is integrated on the homepage", () => {
   });
   it("the launcher is the semantic 44px button named Ask AfterDesk carrying the frozen A2", () => {
     const s = read(A2);
-    expect(s).toMatch(/aria-label="Ask AfterDesk"/);
+    expect(s).toMatch(/aria-label=\{copy\.ask\}/); // localized in 1.4B.1
     expect(s).toMatch(/A2_REST/);
     expect(s).toMatch(/aria-haspopup="dialog"/);
   });
