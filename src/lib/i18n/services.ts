@@ -43,18 +43,38 @@ type Dict = {
   offerings: [OfferingCopy, OfferingCopy, OfferingCopy, OfferingCopy];
 };
 
+/**
+ * THE BODY SPEAKS OPERATIONS; THE ROUTE STAYS `/services`.
+ *
+ * The nav label moved to Operations (mobile-menu-compact.ts, client.ts
+ * footer) but ADR-022 approved no redirect and no URL migration: there is no
+ * Search Console evidence for one, and `/services` holds whatever ranking
+ * exists. So this file repositions what the page SAYS without touching where
+ * it lives.
+ *
+ * TWO CLAIM RULES, pinned by test/public-site-truth.test.ts:
+ *  - no recurring-service vocabulary in the active offerings. The fourth
+ *    family used to be sold as "the recurring back-office chores", which
+ *    markets a recurring operation AfterDesk does not offer today —
+ *    recurrence is a VISION row on /inside, nowhere else.
+ *  - no autonomy or engine-deployment claim. The intro says AfterDesk
+ *    manages the execution to a written standard, which is what is live.
+ *
+ * Standing Capacity remains unpublished (see offerings.ts); nothing here may
+ * revive it, and the four families stay four.
+ */
 export const SERVICES_I18N: Record<ServicesLang, Dict> = {
   en: {
     meta: {
-      title: "What we deliver: finished admin work at a fixed price",
+      title: "Operations we take on, at one fixed price",
       description:
-        "Data and CRM, research and lists, documents, coordination. Describe the result, approve one fixed price before anything starts, and receive work checked against a written standard.",
+        "Data and CRM, research and lists, documents, coordination. Describe the outcome, approve one fixed price before anything starts, and receive work reviewed against a written standard.",
     },
     header: { signIn: "Sign in", getStarted: "Request a fixed-price quote" },
-    eyebrow: "What we deliver",
-    h1: "The kinds of work we finish.",
+    eyebrow: "Operations we take on",
+    h1: "Operations with a finish line you can check.",
     intro:
-      "Four families, and they are the ones the platform actually takes. Describe a result in any of them and you get a written scope and one fixed price to approve. AfterDesk manages the execution and checks the finished work against the approved standard. Not everything fits, and we say so before you pay.",
+      "Four families, and they are the ones the platform actually takes. Describe an outcome in any of them and you get a written scope and one fixed price to approve. AfterDesk manages the execution to that written standard and reviews the finished work against it before delivery. Not everything fits, and we say so before you pay.",
     learnMore: "Get a quote",
     offerings: [
       {
@@ -76,24 +96,24 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
           "Key terms and dates pulled out, documents rebuilt to your template, drafts written to a brief.",
       },
       {
-        audience: "The recurring back-office chores",
+        audience: "Back-office work with a defined end",
         title: "Coordination",
         description:
-          "Bounded administrative coordination: checking, compiling and keeping records in step.",
+          "Bounded administrative coordination: checking, compiling and bringing records back into step. Each one is scoped and priced on its own.",
       },
     ],
   },
   fr: {
     meta: {
-      title: "Ce qu'on livre : du travail administratif fini à prix fixe",
+      title: "Les opérations qu'on prend en charge, à prix fixe",
       description:
-        "Données et CRM, recherche et listes, documents, coordination. Décrivez le résultat, approuvez un prix fixe avant que rien ne commence, et recevez un travail vérifié contre une norme écrite.",
+        "Données et CRM, recherche et listes, documents, coordination. Décrivez le résultat, approuvez un prix fixe avant que rien ne commence, et recevez un travail révisé selon une norme écrite.",
     },
     header: { signIn: "Connexion", getStarted: "Demander un prix fixe" },
-    eyebrow: "Ce qu'on livre",
-    h1: "Les genres de travaux qu'on finit.",
+    eyebrow: "Les opérations qu'on prend",
+    h1: "Des opérations avec une ligne d'arrivée vérifiable.",
     intro:
-      "Quatre familles, et ce sont celles que la plateforme prend réellement. Décrivez un résultat dans l'une d'elles et vous obtenez un périmètre écrit et un prix fixe à approuver. AfterDesk pilote l'exécution et vérifie le travail fini contre la norme approuvée. Tout ne rentre pas, et on le dit avant que vous payiez.",
+      "Quatre familles, et ce sont celles que la plateforme prend réellement. Décrivez un résultat dans l'une d'elles et vous obtenez un périmètre écrit et un prix fixe à approuver. AfterDesk pilote l'exécution selon cette norme écrite et révise le travail fini selon elle avant la livraison. Tout ne rentre pas, et on le dit avant que vous payiez.",
     learnMore: "Obtenir un prix",
     offerings: [
       {
@@ -115,24 +135,24 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
           "Dates et clauses clés extraites, documents reconstruits dans votre gabarit, rédactions sur mandat.",
       },
       {
-        audience: "Les tâches administratives récurrentes",
+        audience: "Du travail de back-office avec une fin définie",
         title: "Coordination",
         description:
-          "Coordination administrative délimitée : vérifier, compiler et tenir les dossiers à jour.",
+          "Coordination administrative délimitée : vérifier, compiler et remettre les dossiers en phase. Chacune est cadrée et chiffrée pour elle-même.",
       },
     ],
   },
   es: {
     meta: {
-      title: "Lo que entregamos: trabajo administrativo terminado a precio fijo",
+      title: "Las operaciones que asumimos, a un precio fijo",
       description:
         "Datos y CRM, investigación y listas, documentos, coordinación. Describe el resultado, aprueba un precio fijo antes de que empiece nada, y recibe trabajo revisado contra un estándar escrito.",
     },
     header: { signIn: "Iniciar sesión", getStarted: "Pedir un precio fijo" },
-    eyebrow: "Lo que entregamos",
-    h1: "Los tipos de trabajo que terminamos.",
+    eyebrow: "Las operaciones que asumimos",
+    h1: "Operaciones con una meta que se puede comprobar.",
     intro:
-      "Cuatro familias, y son las que la plataforma toma de verdad. Describe un resultado en cualquiera de ellas y obtienes un alcance escrito y un precio fijo que aprobar. AfterDesk gestiona la ejecución y revisa el trabajo terminado contra el estándar aprobado. No todo encaja, y lo decimos antes de que pagues.",
+      "Cuatro familias, y son las que la plataforma toma de verdad. Describe un resultado en cualquiera de ellas y obtienes un alcance escrito y un precio fijo que aprobar. AfterDesk gestiona la ejecución según ese estándar escrito y revisa el trabajo terminado contra él antes de la entrega. No todo encaja, y lo decimos antes de que pagues.",
     learnMore: "Pedir precio",
     offerings: [
       {
@@ -154,24 +174,24 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
           "Fechas y cláusulas clave extraídas, documentos rehechos en tu plantilla, borradores escritos sobre encargo.",
       },
       {
-        audience: "Las tareas administrativas recurrentes",
+        audience: "Trabajo de back-office con un final definido",
         title: "Coordinación",
         description:
-          "Coordinación administrativa acotada: revisar, compilar y mantener los registros al día.",
+          "Coordinación administrativa acotada: revisar, compilar y volver a poner los registros en orden. Cada una se acota y se cotiza por separado.",
       },
     ],
   },
   tl: {
     meta: {
-      title: "Ang inihahatid namin: tapos nang admin na trabaho sa fixed na presyo",
+      title: "Mga operasyong kinukuha namin, sa isang fixed na presyo",
       description:
-        "Data at CRM, research at listahan, dokumento, koordinasyon. Ilarawan ang resulta, aprubahan ang isang fixed na presyo bago magsimula ang kahit ano, at tanggapin ang trabahong sinuri laban sa nakasulat na pamantayan.",
+        "Data at CRM, research at listahan, dokumento, koordinasyon. Ilarawan ang resulta, aprubahan ang isang fixed na presyo bago magsimula ang kahit ano, at tanggapin ang trabahong nirebyu laban sa nakasulat na pamantayan.",
     },
     header: { signIn: "Mag-sign in", getStarted: "Humingi ng fixed na presyo" },
-    eyebrow: "Ang inihahatid namin",
-    h1: "Ang mga uri ng trabahong tinatapos namin.",
+    eyebrow: "Mga operasyong kinukuha namin",
+    h1: "Mga operasyong may finish line na masusuri.",
     intro:
-      "Apat na pamilya, at ito ang talagang tinatanggap ng platform. Ilarawan ang isang resulta sa alinman sa mga ito at makakakuha ka ng nakasulat na scope at isang fixed na presyong aaprubahan. Ang AfterDesk ang namamahala sa execution at sumusuri sa tapos nang trabaho laban sa aprubadong pamantayan. Hindi lahat kasya, at sinasabi namin ito bago ka magbayad.",
+      "Apat na pamilya, at ito ang talagang tinatanggap ng platform. Ilarawan ang isang resulta sa alinman sa mga ito at makakakuha ka ng nakasulat na scope at isang fixed na presyong aaprubahan. Pinamamahalaan ng AfterDesk ang execution ayon sa nakasulat na pamantayang iyon at nirerebyu ang tapos nang trabaho laban dito bago ihatid. Hindi lahat kasya, at sinasabi namin ito bago ka magbayad.",
     learnMore: "Humingi ng presyo",
     offerings: [
       {
@@ -193,10 +213,10 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
           "Mahahalagang petsa at termino na hinahango, dokumentong muling binubuo sa template mo, draft na isinusulat ayon sa brief.",
       },
       {
-        audience: "Ang paulit-ulit na gawaing administratibo",
+        audience: "Gawaing back-office na may tiyak na katapusan",
         title: "Koordinasyon",
         description:
-          "Limitadong administratibong koordinasyon: pagsusuri, pag-iipon, at pagpapanatiling updated ng mga record.",
+          "Limitadong administratibong koordinasyon: pagsusuri, pag-iipon, at pagbabalik ng mga record sa ayos. Bawat isa ay may sariling scope at presyo.",
       },
     ],
   },

@@ -58,7 +58,7 @@ export function OperationConsole({ copy }: { copy: ConsoleCopy }) {
                 {i < copy.stations.length - 1 && (
                   <span
                     aria-hidden
-                    className="absolute bottom-0 left-[21px] top-11 w-px bg-white/12"
+                    className="absolute bottom-0 left-[21.5px] top-11 w-px bg-white/12"
                   />
                 )}
                 <span

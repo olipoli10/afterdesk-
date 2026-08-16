@@ -384,21 +384,23 @@ const en: Dict = {
    * THE OPERATION CONSOLE (operation-console.tsx) — seven stations, one
    * result. Station five is the point: an issue is caught and reworked
    * instead of delivered. TRUTH RULES (ADR-022): one result, never a queue;
-   * the lane list in station four names POSSIBLE managed methods, not lanes
-   * that all run automatically today; human review is visibly part of the
-   * model; no recurrence vocabulary anywhere in this dictionary
+   * station four states that AfterDesk SELECTS the most dependable
+   * AVAILABLE method and points at /inside rather than listing every future
+   * execution lane on the homepage — listing them here reads as a menu the
+   * client can order from today; human review is visibly part of the model;
+   * no recurrence vocabulary anywhere in this dictionary
    * (test/public-site-truth.test.ts bans it outright).
    */
   console: {
     label: "The operating model",
     h2: "What happens between your approval and the delivery.",
     srSummary:
-      "Diagram of how AfterDesk runs one operation. A request becomes a written scope with one fixed price. The scope is organized into a managed plan. Each step is given the most dependable method — software, a model, a connected tool, browser work or a person. A step that fails is stopped and flagged as an issue. A person reviews the work and it is redone until it passes. You receive the verified delivery at the unchanged fixed price.",
+      "A static diagram of one operation, from your request to a reviewed delivery. Its seven steps are listed in order below.",
     stations: [
       ["Request", "You describe the result that has to exist, in plain language."],
       ["Written scope", "AfterDesk turns it into a written scope with one fixed price. You approve before anything starts."],
       ["Managed plan", "The scope becomes a plan of bounded steps AfterDesk is responsible for."],
-      ["Method selected", "Each step gets the most dependable method available to it — software, a model, a connected tool, browser work or a person, all managed by AfterDesk."],
+      ["Method selected", "AfterDesk selects and manages the most dependable available method for the approved step. What is used today, and what is still being built, is set out on Inside AfterDesk."],
       ["Issue detected", "A step that fails or looks wrong is stopped and flagged instead of delivered."],
       ["Review & rework", "A person reviews the work against the approved standard. What fails goes back and is redone."],
       ["Verified delivery", "You receive the version that passed, at the fixed price you approved."],
@@ -406,7 +408,7 @@ const en: Dict = {
     statusIssue: "Issue",
     statusVerified: "Verified",
     reviewNote:
-      "A person reviews every delivery against the approved standard before it goes out. The issue lane is not an apology — catching a step there is the system working.",
+      "A person reviews every delivery against the approved standard before it goes out. That review is careful, not a guarantee that every possible error is detected. The issue step is not an apology — stopping a step there is the system working.",
   },
   liveWindow: {
     taskTitle: "Clean a 1,800-row supplier price list",
@@ -448,7 +450,7 @@ const en: Dict = {
 const fr: Dict = {
   nav: { signIn: "Connexion", send: "Demander un prix fixe", portal: "Mon compte" },
   hero: {
-    line1: "Confie l'opération.",
+    line1: "Confiez l'opération.",
     line2: "Pas la tâche.",
     subtitle:
       "Décrivez le résultat qui doit exister. AfterDesk écrit le périmètre, fixe un prix unique, pilote la méthode et révise la livraison avant qu'elle vous parvienne.",
@@ -593,12 +595,12 @@ const fr: Dict = {
     label: "Le modèle d'opération",
     h2: "Ce qui se passe entre votre approbation et la livraison.",
     srSummary:
-      "Schéma d'une opération menée par AfterDesk. Une demande devient un périmètre écrit avec un prix fixe. Le périmètre est organisé en un plan pris en charge. Chaque étape reçoit la méthode la plus fiable — logiciel, modèle, outil connecté, travail au navigateur ou une personne. Une étape qui échoue est arrêtée et signalée comme problème. Une personne révise le travail et il est refait jusqu'à ce qu'il passe. Vous recevez la livraison vérifiée, au prix fixe inchangé.",
+      "Schéma statique d'une opération, de votre demande à une livraison révisée. Ses sept étapes sont listées dans l'ordre ci-dessous.",
     stations: [
       ["Demande", "Vous décrivez, en langage clair, le résultat qui doit exister."],
       ["Périmètre écrit", "AfterDesk en fait un périmètre écrit avec un prix fixe. Vous approuvez avant que rien ne commence."],
       ["Plan pris en charge", "Le périmètre devient un plan d'étapes bornées dont AfterDesk est responsable."],
-      ["Méthode choisie", "Chaque étape reçoit la méthode la plus fiable pour elle — logiciel, modèle, outil connecté, travail au navigateur ou une personne, le tout piloté par AfterDesk."],
+      ["Méthode choisie", "AfterDesk choisit et pilote la méthode la plus fiable disponible pour l'étape approuvée. Ce qui est utilisé aujourd'hui, et ce qui se construit encore, est détaillé dans Sous le capot."],
       ["Problème détecté", "Une étape qui échoue ou semble douteuse est arrêtée et signalée au lieu d'être livrée."],
       ["Révision et reprise", "Une personne révise le travail selon la norme approuvée. Ce qui échoue repart et est refait."],
       ["Livraison vérifiée", "Vous recevez la version qui a passé, au prix fixe que vous avez approuvé."],
@@ -606,7 +608,7 @@ const fr: Dict = {
     statusIssue: "Problème",
     statusVerified: "Vérifié",
     reviewNote:
-      "Une personne révise chaque livraison selon la norme approuvée avant qu'elle sorte. La voie des problèmes n'est pas une excuse : attraper une étape là, c'est le système qui fonctionne.",
+      "Une personne révise chaque livraison selon la norme approuvée avant qu'elle sorte. Cette révision est rigoureuse, pas une garantie que toute erreur possible sera détectée. L'étape « problème » n'est pas une excuse : arrêter une étape là, c'est le système qui fonctionne.",
   },
   counters: {
     taskWord: ["tâche livrée", "tâches livrées"],
@@ -767,12 +769,12 @@ const es: Dict = {
     label: "El modelo operativo",
     h2: "Qué pasa entre tu aprobación y la entrega.",
     srSummary:
-      "Diagrama de cómo AfterDesk ejecuta una operación. Una solicitud se convierte en un alcance escrito con un precio fijo. El alcance se organiza en un plan gestionado. Cada paso recibe el método más fiable — software, un modelo, una herramienta conectada, trabajo en navegador o una persona. Un paso que falla se detiene y se marca como problema. Una persona revisa el trabajo y se rehace hasta que pasa. Recibes la entrega verificada, al precio fijo sin cambios.",
+      "Diagrama estático de una operación, desde tu solicitud hasta una entrega revisada. Sus siete pasos se enumeran en orden más abajo.",
     stations: [
       ["Solicitud", "Describes, en lenguaje claro, el resultado que debe existir."],
       ["Alcance escrito", "AfterDesk lo convierte en un alcance escrito con un precio fijo. Apruebas antes de que empiece nada."],
       ["Plan gestionado", "El alcance se convierte en un plan de pasos acotados de los que AfterDesk es responsable."],
-      ["Método elegido", "Cada paso recibe el método más fiable disponible — software, un modelo, una herramienta conectada, trabajo en navegador o una persona, todo gestionado por AfterDesk."],
+      ["Método elegido", "AfterDesk elige y gestiona el método más fiable disponible para el paso aprobado. Lo que se usa hoy, y lo que aún se está construyendo, se detalla en Por dentro."],
       ["Problema detectado", "Un paso que falla o parece dudoso se detiene y se marca en lugar de entregarse."],
       ["Revisión y rehecho", "Una persona revisa el trabajo contra el estándar aprobado. Lo que falla vuelve y se rehace."],
       ["Entrega verificada", "Recibes la versión que pasó, al precio fijo que aprobaste."],
@@ -780,7 +782,7 @@ const es: Dict = {
     statusIssue: "Problema",
     statusVerified: "Verificado",
     reviewNote:
-      "Una persona revisa cada entrega contra el estándar aprobado antes de que salga. El carril de problemas no es una disculpa: atrapar un paso ahí es el sistema funcionando.",
+      "Una persona revisa cada entrega contra el estándar aprobado antes de que salga. Esa revisión es rigurosa, no una garantía de que se detecte todo error posible. El paso de problema no es una disculpa: detener un paso ahí es el sistema funcionando.",
   },
   counters: {
     taskWord: ["tarea entregada", "tareas entregadas"],
@@ -944,12 +946,12 @@ const tl: Dict = {
     label: "Ang operating model",
     h2: "Ano ang nangyayari sa pagitan ng pag-apruba mo at ng delivery.",
     srSummary:
-      "Diagram kung paano pinapatakbo ng AfterDesk ang isang operasyon. Ang request ay nagiging nakasulat na scope na may fixed na presyo. Inaayos ang scope sa isang managed na plano. Bawat hakbang ay binibigyan ng pinaka-maaasahang paraan — software, model, konektadong tool, trabaho sa browser o tao. Ang hakbang na pumalya ay hinihinto at minamarkahan bilang problema. May taong nagrerebyu ng trabaho at inuulit ito hanggang pumasa. Natatanggap mo ang beripikadong delivery, sa hindi nagbabagong fixed na presyo.",
+      "Statikong diagram ng isang operasyon, mula sa iyong request hanggang sa nirebyung delivery. Nakalista sa ibaba ang pitong hakbang nito ayon sa pagkakasunod.",
     stations: [
       ["Request", "Ilalarawan mo, sa simpleng salita, ang resultang dapat mabuo."],
       ["Nakasulat na scope", "Ginagawa itong nakasulat na scope na may fixed na presyo. Ikaw ang mag-a-approve bago magsimula ang kahit ano."],
       ["Managed na plano", "Nagiging plano ang scope — mga hakbang na may hangganan na pananagutan ng AfterDesk."],
-      ["Piniling paraan", "Bawat hakbang ay binibigyan ng pinaka-maaasahang paraan — software, model, konektadong tool, trabaho sa browser o tao, lahat pinamamahalaan ng AfterDesk."],
+      ["Piniling paraan", "Pinipili at pinamamahalaan ng AfterDesk ang pinaka-maaasahang paraang available para sa aprubadong hakbang. Nasa Sa loob ng AfterDesk kung ano ang ginagamit ngayon at ano ang ginagawa pa."],
       ["May nakitang problema", "Ang hakbang na pumalya o mukhang mali ay hinihinto at minamarkahan sa halip na i-deliver."],
       ["Review at ulit", "May taong nagrerebyu ng trabaho laban sa aprubadong pamantayan. Ang bumabagsak ay bumabalik at inuulit."],
       ["Beripikadong delivery", "Natatanggap mo ang bersyong pumasa, sa fixed na presyong inaprubahan mo."],
@@ -957,7 +959,7 @@ const tl: Dict = {
     statusIssue: "Problema",
     statusVerified: "Beripikado",
     reviewNote:
-      "May taong nagrerebyu ng bawat delivery laban sa aprubadong pamantayan bago ito lumabas. Ang lane ng problema ay hindi paghingi ng paumanhin: ang mahuli ang isang hakbang doon ay ang sistemang gumagana.",
+      "May taong nagrerebyu ng bawat delivery laban sa aprubadong pamantayan bago ito lumabas. Maingat ang review na iyon, hindi garantiyang matutukoy ang bawat posibleng mali. Ang hakbang na problema ay hindi paghingi ng paumanhin: ang ihinto ang isang hakbang doon ay ang sistemang gumagana.",
   },
   counters: {
     taskWord: ["task na naihatid", "mga task na naihatid"],
