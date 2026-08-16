@@ -355,7 +355,7 @@ const en: Dict = {
     h2: "What changes between the models.",
     legend: "Three other ways to get this done, and what each leaves on your desk.",
     wall: "AfterDesk",
-    desk: "Sometimes the first version fails the standard. When it does it goes back, and you never see that attempt: you receive the version that passed.",
+    desk: "Sometimes a version does not meet the standard. When review flags one, it goes back for rework before anything is delivered. That review is careful; it is not a promise that every possible error is caught.",
     pairs: [
       [
         "Do it yourself with AI tools",
@@ -547,7 +547,7 @@ const fr: Dict = {
     h2: "Ce qui change d'un modèle à l'autre.",
     legend: "Trois autres façons de faire faire ça, et ce que chacune vous laisse sur le bureau.",
     wall: "AfterDesk",
-    desk: "Parfois la première version échoue à la norme. Elle repart alors, et vous ne voyez jamais cette tentative : vous recevez la version qui a passé.",
+    desk: "Parfois une version n'atteint pas la norme. Quand la révision en signale une, elle repart en correction avant toute livraison. Cette révision est rigoureuse ; ce n'est pas une promesse que toute erreur possible sera détectée.",
     pairs: [
       [
         "Le faire soi-même avec l'IA",
@@ -721,7 +721,7 @@ const es: Dict = {
     h2: "Qué cambia de un modelo a otro.",
     legend: "Otras tres formas de hacer esto, y lo que cada una te deja en el escritorio.",
     wall: "AfterDesk",
-    desk: "A veces la primera versión no pasa el estándar. Cuando pasa eso vuelve atrás, y nunca ves ese intento: recibes la versión que pasó.",
+    desk: "A veces una versión no cumple el estándar. Cuando la revisión marca una, vuelve a corrección antes de cualquier entrega. Esa revisión es rigurosa; no es una promesa de que se detecte todo error posible.",
     pairs: [
       [
         "Hacerlo tú con IA",
@@ -898,7 +898,7 @@ const tl: Dict = {
     h2: "Ano ang nagbabago sa bawat modelo.",
     legend: "Tatlong ibang paraan para maipagawa ito, at kung ano ang naiiwan sa mesa mo ng bawat isa.",
     wall: "AfterDesk",
-    desk: "Minsan hindi pumapasa ang unang bersyon sa pamantayan. Kapag nangyari iyon, bumabalik ito at hindi mo na nakikita ang tangkang iyon: ang bersyong pumasa ang natatanggap mo.",
+    desk: "Minsan hindi pumapasa sa pamantayan ang isang bersyon. Kapag may namarkahan ang review, bumabalik ito para ayusin bago ang anumang paghahatid. Maingat ang review na iyon; hindi ito pangakong matutukoy ang bawat posibleng mali.",
     pairs: [
       [
         "Gawin mo mismo gamit ang AI",
