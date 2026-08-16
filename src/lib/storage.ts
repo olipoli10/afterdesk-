@@ -38,14 +38,56 @@ import {
  * original filenames never appear in a key.
  */
 
-const r2Configured = Boolean(
-  process.env.R2_ACCOUNT_ID &&
-    process.env.R2_ACCESS_KEY_ID &&
-    process.env.R2_SECRET_ACCESS_KEY &&
-    process.env.R2_BUCKET
-);
+/* Explicit, testable storage mode (Phase 1.4B.4). Decided once at import:
+ *
+ *   preview-disabled  every VERCEL_ENV=preview deployment. No S3 client is
+ *                     ever constructed, no disk and no network are touched,
+ *                     and all five operations fail with the named
+ *                     StoragePreviewDisabledError - synchronously for
+ *                     objectStream, before any stream exists. Even four
+ *                     accidentally-present R2 values cannot re-enable it.
+ *   r2                the existing Cloudflare backend when all four
+ *                     credentials are present outside preview.
+ *   local-dev         the existing disk backend, outside preview AND
+ *                     outside production only.
+ *
+ * A PARTIAL R2 configuration (1-3 of the four values) is a configuration
+ * mistake in every environment: it throws at import instead of silently
+ * degrading to disabled-or-disk. Production without full R2 keeps its
+ * original import-time failure verbatim. */
+export type StorageMode = "preview-disabled" | "r2" | "local-dev";
 
-if (process.env.NODE_ENV === "production" && !r2Configured) {
+export class StoragePreviewDisabledError extends Error {
+  constructor(op: string) {
+    super(
+      `StoragePreviewDisabledError: ${op} is disabled on preview deployments - ` +
+        "preview carries no file storage by design (the preview write gate " +
+        "already refuses every mutation; no real task file can exist here)."
+    );
+    this.name = "StoragePreviewDisabledError";
+  }
+}
+
+const R2_KEYS = ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"] as const;
+const r2Present = R2_KEYS.filter((k) => Boolean(process.env[k]));
+const r2Configured = r2Present.length === R2_KEYS.length;
+
+if (r2Present.length > 0 && !r2Configured) {
+  throw new Error(
+    `partial R2 configuration: ${r2Present.length} of ${R2_KEYS.length} values set ` +
+      `(${r2Present.join(", ")}). Set all four or none - a partial set never ` +
+      "falls back to disk or to disabled storage."
+  );
+}
+
+export const STORAGE_MODE: StorageMode =
+  process.env.VERCEL_ENV === "preview"
+    ? "preview-disabled"
+    : r2Configured
+      ? "r2"
+      : "local-dev";
+
+if (process.env.NODE_ENV === "production" && STORAGE_MODE === "local-dev") {
   throw new Error(
     "R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET must all be set in " +
       "production. Local-disk storage does not survive a request past a serverless " +
@@ -54,16 +96,17 @@ if (process.env.NODE_ENV === "production" && !r2Configured) {
 }
 
 const bucket = process.env.R2_BUCKET as string;
-const s3 = r2Configured
-  ? new S3Client({
-      region: "auto",
-      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY as string,
-      },
-    })
-  : null;
+const s3 =
+  STORAGE_MODE === "r2"
+    ? new S3Client({
+        region: "auto",
+        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY as string,
+        },
+      })
+    : null;
 
 /** local-disk backend — unchanged from before, dev-only. */
 const ROOT = path.join(process.cwd(), "storage");
@@ -76,6 +119,7 @@ function resolveKey(key: string): string {
 }
 
 export async function putObject(key: string, data: Buffer): Promise<void> {
+  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("putObject");
   if (s3) {
     await s3.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: data }));
     return;
@@ -86,6 +130,7 @@ export async function putObject(key: string, data: Buffer): Promise<void> {
 }
 
 export async function readObject(key: string): Promise<Buffer> {
+  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("readObject");
   if (s3) {
     const res = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
     const bytes = await res.Body!.transformToByteArray();
@@ -95,6 +140,7 @@ export async function readObject(key: string): Promise<Buffer> {
 }
 
 export async function objectExists(key: string): Promise<boolean> {
+  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("objectExists");
   if (s3) {
     try {
       await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
@@ -119,6 +165,7 @@ export async function objectExists(key: string): Promise<boolean> {
 }
 
 export async function deleteObject(key: string): Promise<void> {
+  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("deleteObject");
   if (s3) {
     // S3-compatible DeleteObject is already idempotent — deleting an
     // absent key succeeds rather than 404ing, matching the local-disk
@@ -137,6 +184,8 @@ export async function deleteObject(key: string): Promise<void> {
 
 /** Returns a web ReadableStream for a stored object (route handlers stream it out). */
 export function objectStream(key: string): ReadableStream {
+  /* synchronous refusal BEFORE any stream object is created */
+  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("objectStream");
   if (s3) {
     // objectStream() has to be synchronous (its return value goes straight
     // into `new NextResponse(...)`, which needs a real ReadableStream, not
