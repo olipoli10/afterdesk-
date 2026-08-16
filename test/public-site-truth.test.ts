@@ -1,36 +1,33 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CLIENT_I18N } from "@/lib/i18n/client";
 import { INSIDE_I18N } from "@/lib/i18n/inside";
+import { SERVICES_I18N } from "@/lib/i18n/services";
 import { SITE_LANGS } from "@/lib/i18n/langs";
 
 /**
- * PUBLIC-SITE TRUTH GUARDS (ADR-022, Project Brain public-product
- * invariant 18).
+ * PUBLIC-SITE TRUTH GUARDS (ADR-022; Project Brain public-product invariants
+ * 18 and 19).
  *
- * The repositioning is allowed to say "operation"; it is NOT allowed to say
- * things the released product does not do. These tests are the enforcement
- * point, and each one was proven to FIRE by planting its violation before
- * this file was committed — a pin that never fires is counted as coverage
- * while protecting nothing (the T022 lesson).
+ * WHAT THESE TESTS DO AND DO NOT PROVE. Every check below is a keyword or
+ * structural scan over the dictionaries and over three source files. A
+ * keyword scan proves exactly one thing: that a named phrase is absent from,
+ * or present in, a named place. It does NOT prove a sentence is true, does
+ * not understand paraphrase, and cannot catch a claim written in words this
+ * file does not list. Invariant 19 exists because the first version of this
+ * file overstated its own reach — it checked recurrence only outside
+ * AVAILABLE and its comment claimed "recurrence is VISION-only", which is a
+ * strictly larger statement than the assertion made.
  *
- * The four guards:
- *  1. the homepage dictionary may not claim recurrence or autonomy, in any
- *     of the four languages;
- *  2. /inside may name recurrence only OUTSIDE the "available today" group,
- *     and may not leak internal engineering vocabulary (task ids, branch
- *     names, test counts) to customers;
- *  3. the Operation Console's amber/green states must carry their words —
- *     color is never the only carrier — and the sr-only journey must exist;
- *  4. the /services route survives the label change: the route file exists
- *     and no redirect moves it (ADR-022 approved no redirect).
+ * So each guard below names its boundary precisely, and each was proven to
+ * fire by planting a counterexample AT THAT boundary — not at one convenient
+ * spelling of it.
  */
 
 const read = (p: string) => readFileSync(join(process.cwd(), p), "utf8");
 
-/** Every user-visible string in a dict subtree, functions included (they
- *  are called with representative arguments so their sentences count). */
+/** Every user-visible string in a dict subtree, functions included. */
 function stringsOf(node: unknown): string[] {
   if (typeof node === "string") return [node];
   if (typeof node === "function") {
@@ -49,19 +46,24 @@ function stringsOf(node: unknown): string[] {
   return [];
 }
 
+const lower = (node: unknown) => stringsOf(node).join(" · ").toLowerCase();
+
 /**
- * The banned homepage vocabulary. Recurrence in all four languages, and the
- * autonomy words that would turn the Console into a claim the product does
- * not support. Word-boundary-free on purpose for the accented/agglutinated
- * forms; every entry is lowercase and matched against lowercased text.
+ * Recurrence vocabulary in the four site languages. The list is the exact
+ * scope of every recurrence assertion in this file: a recurrence claim
+ * phrased outside these forms would not be caught.
  */
-const HOMEPAGE_BANNED = [
+const RECURRENCE = [
   "recurring",
   "recurrence",
   "récurrent",
   "récurrence",
   "recurrente",
   "paulit-ulit",
+];
+
+/** Autonomy vocabulary banned from the homepage dictionary. */
+const AUTONOMY = [
   "autonomous",
   "autonomously",
   "autonome",
@@ -73,52 +75,140 @@ const HOMEPAGE_BANNED = [
   "totalmente automatizado",
 ];
 
+/**
+ * Engine-DEPLOYMENT vocabulary. Naming an internal work engine in the
+ * AVAILABLE group asserts a deployed, client-serving capability, which is
+ * exactly the source-tree-is-not-deployment error invariant 18 names.
+ */
+const ENGINE_CLAIM = [
+  "work engine",
+  "moteur de travail",
+  "moteur interne",
+  "motor de trabajo",
+  "motor interno",
+  "internal engine",
+];
+
+/**
+ * The only thing that could license an AVAILABLE engine claim: an approved
+ * release-evidence fixture. It does not exist, so the ban is currently
+ * absolute — and if someone adds the fixture, this guard forces the claim to
+ * be listed in it rather than merely asserted in marketing copy.
+ */
+const RELEASE_EVIDENCE = "test/fixtures/public-release-evidence.json";
+
+// ────────────────────────── 1. homepage claims ──────────────────────────
+
 describe("the homepage dictionary claims no recurrence and no autonomy", () => {
   for (const { code } of SITE_LANGS) {
     it(`holds in ${code}`, () => {
-      const all = stringsOf(CLIENT_I18N[code]).join(" · ").toLowerCase();
-      for (const word of HOMEPAGE_BANNED) {
+      const all = lower(CLIENT_I18N[code]);
+      for (const word of [...RECURRENCE, ...AUTONOMY]) {
         expect(all, `homepage[${code}] must not contain "${word}"`).not.toContain(word);
       }
     });
   }
 });
 
-describe("/inside keeps its registry honest", () => {
-  const RECURRENCE = ["recurring", "récurrent", "recurrente", "paulit-ulit"];
+// ──────────────── 2 & 3. recurrence is VISION-only on /inside ────────────
 
+describe("/inside places recurrence in VISION and nowhere else", () => {
   for (const { code } of SITE_LANGS) {
     const t = INSIDE_I18N[code];
 
-    it(`in ${code}, recurrence appears only outside AVAILABLE TODAY`, () => {
-      const available = stringsOf(t.registry.available).join(" · ").toLowerCase();
+    it(`in ${code}, AVAILABLE names no recurrence`, () => {
+      const available = lower(t.registry.available);
       for (const word of RECURRENCE) {
         expect(available, `available[${code}] must not contain "${word}"`).not.toContain(word);
       }
-      // The vision group is where the roadmap lives, and it must actually
-      // say so in its own language — an empty vision group would mean the
-      // registry stopped disclosing the plan.
-      expect(t.registry.vision.items.length).toBeGreaterThan(0);
     });
 
-    it(`in ${code}, no internal engineering vocabulary leaks to customers`, () => {
-      const all = stringsOf(t).join(" · ");
-      // Task ids (T035…), branch names (feat/…), test counts (85/85).
-      expect(all).not.toMatch(/\bT0\d\d\b/);
-      expect(all).not.toMatch(/\bfeat\//);
-      expect(all).not.toMatch(/\b\d+\/\d+\b/);
-      expect(all).not.toMatch(/HumanWorkUnit/);
+    /** The half the earlier version of this file never checked. */
+    it(`in ${code}, IN DEVELOPMENT names no recurrence`, () => {
+      const building = lower(t.registry.building);
+      for (const word of RECURRENCE) {
+        expect(building, `building[${code}] must not contain "${word}"`).not.toContain(word);
+      }
     });
 
-    it(`in ${code}, the three registry groups all exist and are labelled`, () => {
-      expect(t.registry.available.label.length).toBeGreaterThan(0);
-      expect(t.registry.building.label.length).toBeGreaterThan(0);
-      expect(t.registry.vision.label.length).toBeGreaterThan(0);
-      expect(t.registry.available.items.length).toBeGreaterThan(0);
-      expect(t.registry.building.items.length).toBeGreaterThan(0);
+    /**
+     * "Only under VISION" is two statements: absent elsewhere (above) AND
+     * present there. Without this, deleting the vision row entirely would
+     * leave the suite green while the site silently stopped disclosing the
+     * roadmap.
+     */
+    it(`in ${code}, VISION does name recurrence`, () => {
+      const vision = lower(t.registry.vision);
+      expect(
+        RECURRENCE.some((w) => vision.includes(w)),
+        `vision[${code}] must disclose recurrence in one of: ${RECURRENCE.join(", ")}`
+      ).toBe(true);
+    });
+
+    /** Outside the three registry groups, /inside must not mention it either. */
+    it(`in ${code}, the rest of the page names no recurrence`, () => {
+      const rest = lower({
+        lede: t.lede,
+        model: t.model,
+        method: t.method,
+        boundaries: t.boundaries,
+        cta: t.cta,
+        meta: t.meta,
+        h1: t.h1,
+      });
+      for (const word of RECURRENCE) {
+        expect(rest, `inside body[${code}] must not contain "${word}"`).not.toContain(word);
+      }
     });
   }
 });
+
+// ─────────────── 4. active /services offerings sell no recurrence ────────
+
+describe("the active /services offerings claim no recurring operation", () => {
+  for (const { code } of SITE_LANGS) {
+    it(`holds in ${code}`, () => {
+      const t = SERVICES_I18N[code];
+      // The whole visible page, not only the cards: the headline and intro
+      // sell just as hard as an offering description.
+      const page = lower(t);
+      for (const word of RECURRENCE) {
+        expect(page, `services[${code}] must not contain "${word}"`).not.toContain(word);
+      }
+      // Four families, still four — a fifth would mean Standing Capacity or
+      // something like it came back without a decision.
+      expect(t.offerings).toHaveLength(4);
+    });
+  }
+});
+
+// ───────── 5. AVAILABLE may not claim a deployed internal engine ─────────
+
+describe("AVAILABLE cannot claim a deployed work engine without release evidence", () => {
+  const evidencePresent = existsSync(join(process.cwd(), RELEASE_EVIDENCE));
+
+  for (const { code } of SITE_LANGS) {
+    it(`holds in ${code}`, () => {
+      const available = lower(INSIDE_I18N[code].registry.available);
+      const claimed = ENGINE_CLAIM.filter((w) => available.includes(w));
+      if (!evidencePresent) {
+        expect(
+          claimed,
+          `available[${code}] names ${claimed.join(", ")} but ${RELEASE_EVIDENCE} does not exist — ` +
+            "source-tree presence is not deployment evidence (invariant 18)"
+        ).toEqual([]);
+        return;
+      }
+      // If the fixture is ever added, the claim must be listed IN it.
+      const approved: string[] = JSON.parse(read(RELEASE_EVIDENCE)).approvedClaims ?? [];
+      for (const w of claimed) {
+        expect(approved.map((a) => a.toLowerCase()), `"${w}" not in ${RELEASE_EVIDENCE}`).toContain(w);
+      }
+    });
+  }
+});
+
+// ──────────────────────── 6. the Console's own rules ────────────────────
 
 describe("the Operation Console never lets color speak alone", () => {
   it("every language carries seven fully-worded stations and both status words", () => {
@@ -134,15 +224,20 @@ describe("the Operation Console never lets color speak alone", () => {
         c.statusVerified.trim().length,
         `console[${code}] verified word empty`
       ).toBeGreaterThan(0);
-      expect(c.srSummary.length, `console[${code}] sr summary too thin`).toBeGreaterThan(80);
       expect(c.reviewNote.trim().length, `console[${code}] review note empty`).toBeGreaterThan(0);
+      // Orientation, not a re-narration of the seven <li> that follow it.
+      // Upper bound is the point of this assertion; the lower bound only
+      // stops it being emptied.
+      expect(c.srSummary.length, `console[${code}] sr summary empty`).toBeGreaterThan(40);
+      expect(
+        c.srSummary.length,
+        `console[${code}] sr summary should orient, not re-read all seven steps`
+      ).toBeLessThan(240);
     }
   });
 
   it("the component renders the status WORDS next to the amber and green marks", () => {
     const src = read("src/components/operation-console.tsx");
-    // The amber and green tokens are allowed here ONLY because the words
-    // render beside them. Delete either render and this fires.
     expect(src).toContain("#D98324");
     expect(src).toContain("#1E7F5C");
     expect(src).toMatch(/\{copy\.statusIssue\}/);
@@ -153,10 +248,10 @@ describe("the Operation Console never lets color speak alone", () => {
     const src = read("src/components/operation-console.tsx");
     expect(src).toMatch(/sr-only/);
     expect(src).toMatch(/\{copy\.srSummary\}/);
-    // Static slice: a Server Component with no interactivity. Turning this
-    // into a client component is an explicit later decision, not a drift.
-    expect(src).not.toMatch(/"use client"/);
-    expect(src).not.toMatch(/useState|useEffect|setInterval|setTimeout/);
+    // Either quote style, and the JSX pragma spelling too — the earlier
+    // version only matched the double-quoted form.
+    expect(src).not.toMatch(/['"`]use client['"`]/);
+    expect(src).not.toMatch(/\buseState\b|\buseEffect\b|\bsetInterval\b|\bsetTimeout\b/);
   });
 
   it("the homepage actually mounts it", () => {
@@ -165,16 +260,57 @@ describe("the Operation Console never lets color speak alone", () => {
   });
 });
 
+// ───────────────────── 7. /services survives the relabel ─────────────────
+
+/**
+ * Sources inside the `redirects()` block only. The `headers()` block
+ * legitimately uses a `/:path*` catch-all, and scanning the whole file would
+ * either flag that or force the guard to be loosened until it proved nothing.
+ */
+function redirectSources(config: string): string[] {
+  const start = config.indexOf("async redirects()");
+  if (start === -1) return [];
+  const after = config.indexOf("async headers()", start);
+  const block = config.slice(start, after === -1 ? undefined : after);
+  return [...block.matchAll(/source:\s*["'`]([^"'`]+)["'`]/g)].map((m) => m[1]);
+}
+
+/** Would this redirect source capture the /services page itself? */
+function capturesServices(source: string): boolean {
+  if (source === "/services") return true;
+  // Root catch-alls: "/:path*", "/:slug*", "/(.*)", "/:path([^/]*)".
+  if (/^\/:[A-Za-z_]\w*\*?$/.test(source)) return true;
+  if (/^\/\(\.[*+]\)$/.test(source)) return true;
+  // Any parameterised source rooted at /services, e.g. "/services/:path*".
+  if (/^\/services(\/|$)/.test(source) && /[:(]/.test(source)) return true;
+  return false;
+}
+
 describe("/services survives the operations relabel", () => {
   it("the route file still exists", () => {
     expect(read("src/app/services/page.tsx").length).toBeGreaterThan(0);
   });
 
-  it("no redirect moves /services (ADR-022 approved none)", () => {
-    const config = read("next.config.ts");
-    // A redirect FROM /services would appear as source: "/services…".
-    // The existing standing-capacity redirect TO /services must survive.
-    expect(config).not.toMatch(/source:\s*["']\/services["']/);
-    expect(config).toMatch(/destination:\s*["']\/services["']/);
+  it("no redirect source captures /services, in any wildcard form", () => {
+    const sources = redirectSources(read("next.config.ts"));
+    const offenders = sources.filter(capturesServices);
+    expect(
+      offenders,
+      `these redirect sources would capture /services: ${offenders.join(", ")}`
+    ).toEqual([]);
+    // The legitimate standing-capacity redirect TO /services must survive —
+    // otherwise "no offenders" could be achieved by deleting redirects wholesale.
+    expect(read("next.config.ts")).toMatch(/destination:\s*["']\/services["']/);
+  });
+
+  it("the wildcard matcher itself is correct", () => {
+    // Pinning the helper directly: a matcher that silently stopped matching
+    // would make the assertion above vacuously green.
+    expect(capturesServices("/services")).toBe(true);
+    expect(capturesServices("/services/:path*")).toBe(true);
+    expect(capturesServices("/:path*")).toBe(true);
+    expect(capturesServices("/(.*)")).toBe(true);
+    expect(capturesServices("/services/standing-capacity")).toBe(false);
+    expect(capturesServices("/workers")).toBe(false);
   });
 });

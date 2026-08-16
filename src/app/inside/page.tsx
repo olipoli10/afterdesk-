@@ -213,13 +213,13 @@ export default async function InsidePage({
         <div className="mx-auto grid w-full max-w-[1120px] gap-4 px-6 py-7 sm:grid-cols-[auto_1fr] sm:items-center">
           <Wordmark tone="paper" />
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#8A9099] sm:justify-end">
-            <Link href="/" className="transition-colors hover:text-white">
+            <Link href="/" className="inline-flex min-h-11 items-center transition-colors hover:text-white">
               {t.footer.home}
             </Link>
-            <Link href="/how-it-works" className="transition-colors hover:text-white">
+            <Link href="/how-it-works" className="inline-flex min-h-11 items-center transition-colors hover:text-white">
               {t.footer.how}
             </Link>
-            <Link href="/about" className="transition-colors hover:text-white">
+            <Link href="/about" className="inline-flex min-h-11 items-center transition-colors hover:text-white">
               {t.footer.about}
             </Link>
           </div>

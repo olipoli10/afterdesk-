@@ -7,7 +7,17 @@
  * invariant 18 in the Project Brain):
  *
  *  - AVAILABLE TODAY may state only what released, customer-visible behavior
- *    already supports. Source-tree presence is not deployment evidence.
+ *    already supports. Source-tree presence is not deployment evidence — an
+ *    engine that exists in the repository is not an engine the client is
+ *    being served by, and the AVAILABLE group may not claim one. The guard
+ *    in test/public-site-truth.test.ts refuses engine-deployment vocabulary
+ *    in this group outright until a release-evidence fixture exists.
+ *  - No absolute detection promise. "Problems are caught, not delivered" and
+ *    "the failed attempt never reaches you" claim a completeness no review
+ *    can honour. The supportable shape is conditional: when a step fails or
+ *    is flagged it is stopped, reworked, and reviewed against the approved
+ *    standard before delivery — and review is not a guarantee that every
+ *    possible error is detected.
  *  - Anything the engine will do but does not yet do for clients belongs in
  *    IN DEVELOPMENT. Anything architectural belongs in VISION.
  *  - Recurring operations appear ONLY in the vision group. Never in
@@ -91,8 +101,8 @@ const en: InsideDict = {
         "Software, models, connected tools, browser work and bounded human review — whichever is the most dependable for that step, chosen and managed by AfterDesk.",
       ],
       [
-        "Problems are caught, not delivered",
-        "A step that fails or looks wrong is stopped and flagged. It is reworked and re-checked; the failed attempt never reaches you.",
+        "A flagged step is stopped, not delivered",
+        "When a step fails or is flagged, it is stopped. It is reworked and reviewed against the approved standard before delivery. Review is careful, but it is not a guarantee that every possible error is detected.",
       ],
       [
         "You receive the result and its evidence",
@@ -121,12 +131,12 @@ const en: InsideDict = {
           "Your card is authorized at approval and charged only after the delivery passes review and your dispute window closes.",
         ],
         [
-          "Managed execution with software assistance",
-          "AfterDesk plans and prices every operation with its internal work engine. Execution is carried out by managed specialists working to the written standard, with software where it is dependable.",
+          "Managed execution to a written standard",
+          "AfterDesk manages the execution of the approved scope, using managed specialists and software assistance where it is dependable.",
         ],
         [
           "A person reviews every delivery",
-          "Quality review against the approved standard happens before release, on every operation.",
+          "Quality review against the approved standard happens before release, on every operation. It is a review, not a proof that nothing was missed.",
         ],
         [
           "Evidence kept",
@@ -213,8 +223,8 @@ const fr: InsideDict = {
         "Logiciel, modèles, outils connectés, travail au navigateur et révision humaine bornée — la plus fiable pour chaque étape, choisie et pilotée par AfterDesk.",
       ],
       [
-        "Les problèmes sont attrapés, pas livrés",
-        "Une étape qui échoue ou semble douteuse est arrêtée et signalée. Elle est reprise et revérifiée ; la tentative ratée ne vous parvient jamais.",
+        "Une étape signalée est arrêtée, pas livrée",
+        "Quand une étape échoue ou est signalée, elle est arrêtée. Elle est reprise et révisée selon la norme approuvée avant livraison. La révision est rigoureuse, mais elle ne garantit pas que toute erreur possible sera détectée.",
       ],
       [
         "Vous recevez le résultat et sa preuve",
@@ -243,12 +253,12 @@ const fr: InsideDict = {
           "Votre carte est autorisée à l'approbation et débitée seulement après que la livraison a passé la révision et que votre fenêtre de contestation est fermée.",
         ],
         [
-          "Exécution prise en charge, assistée par logiciel",
-          "AfterDesk planifie et chiffre chaque opération avec son moteur de travail interne. L'exécution est menée par des spécialistes encadrés travaillant selon la norme écrite, avec du logiciel là où il est fiable.",
+          "Exécution prise en charge selon une norme écrite",
+          "AfterDesk pilote l'exécution du périmètre approuvé, avec des spécialistes encadrés et de l'assistance logicielle là où elle est fiable.",
         ],
         [
           "Une personne révise chaque livraison",
-          "La révision de qualité selon la norme approuvée a lieu avant la remise, sur chaque opération.",
+          "La révision de qualité selon la norme approuvée a lieu avant la remise, sur chaque opération. C'est une révision, pas une preuve que rien n'a été manqué.",
         ],
         [
           "La preuve est conservée",
@@ -335,8 +345,8 @@ const es: InsideDict = {
         "Software, modelos, herramientas conectadas, trabajo en navegador y revisión humana acotada — el más fiable para cada paso, elegido y gestionado por AfterDesk.",
       ],
       [
-        "Los problemas se atrapan, no se entregan",
-        "Un paso que falla o parece dudoso se detiene y se marca. Se rehace y se vuelve a comprobar; el intento fallido nunca te llega.",
+        "Un paso marcado se detiene, no se entrega",
+        "Cuando un paso falla o se marca, se detiene. Se rehace y se revisa contra el estándar aprobado antes de la entrega. La revisión es rigurosa, pero no garantiza que se detecte todo error posible.",
       ],
       [
         "Recibes el resultado y su evidencia",
@@ -365,12 +375,12 @@ const es: InsideDict = {
           "Tu tarjeta se autoriza al aprobar y se cobra solo después de que la entrega pase la revisión y se cierre tu ventana de disputa.",
         ],
         [
-          "Ejecución gestionada con asistencia de software",
-          "AfterDesk planifica y cotiza cada operación con su motor de trabajo interno. La ejecución la realizan especialistas gestionados que trabajan según el estándar escrito, con software donde es fiable.",
+          "Ejecución gestionada según un estándar escrito",
+          "AfterDesk gestiona la ejecución del alcance aprobado, con especialistas gestionados y asistencia de software donde es fiable.",
         ],
         [
           "Una persona revisa cada entrega",
-          "La revisión de calidad contra el estándar aprobado ocurre antes de la entrega, en cada operación.",
+          "La revisión de calidad contra el estándar aprobado ocurre antes de la entrega, en cada operación. Es una revisión, no una prueba de que no se pasó nada por alto.",
         ],
         [
           "Evidencia conservada",
@@ -457,8 +467,8 @@ const tl: InsideDict = {
         "Software, mga model, konektadong tools, trabaho sa browser at may-hangganang human review — alinman ang pinaka-maaasahan para sa hakbang na iyon, pinipili at pinamamahalaan ng AfterDesk.",
       ],
       [
-        "Nahuhuli ang problema, hindi naide-deliver",
-        "Ang hakbang na pumalya o mukhang mali ay hinihinto at minamarkahan. Inuulit ito at muling sinusuri; hindi kailanman makakarating sa iyo ang palyadong attempt.",
+        "Ang minarkahang hakbang ay hinihinto, hindi inihahatid",
+        "Kapag pumalya o namarkahan ang isang hakbang, hinihinto ito. Inuulit ito at sinusuri laban sa aprubadong pamantayan bago ihatid. Maingat ang review, ngunit hindi ito garantiyang matutukoy ang bawat posibleng mali.",
       ],
       [
         "Natatanggap mo ang resulta at ang ebidensya nito",
@@ -487,12 +497,12 @@ const tl: InsideDict = {
           "Ina-authorize ang card mo sa pag-apruba at sinisingil lang matapos pumasa sa review ang delivery at magsara ang iyong dispute window.",
         ],
         [
-          "Managed na execution na may tulong ng software",
-          "Pinaplano at pinepresyuhan ng AfterDesk ang bawat operasyon gamit ang internal na work engine nito. Ang execution ay ginagawa ng mga managed na espesyalista na sumusunod sa nakasulat na pamantayan, na may software kung saan ito maaasahan.",
+          "Managed na execution ayon sa nakasulat na pamantayan",
+          "Pinamamahalaan ng AfterDesk ang execution ng aprubadong scope, gamit ang mga managed na espesyalista at tulong ng software kung saan ito maaasahan.",
         ],
         [
           "May taong nagrerebyu ng bawat delivery",
-          "Nangyayari ang quality review laban sa aprubadong pamantayan bago ang paghahatid, sa bawat operasyon.",
+          "Nangyayari ang quality review laban sa aprubadong pamantayan bago ang paghahatid, sa bawat operasyon. Isa itong review, hindi patunay na walang napalampas.",
         ],
         [
           "Nakatago ang ebidensya",
