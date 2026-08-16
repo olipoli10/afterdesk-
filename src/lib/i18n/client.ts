@@ -60,6 +60,19 @@ export type ConsoleCopy = {
   /** The sentence that closes the autonomy reading: a person reviews every
    *  delivery. Stated under the diagram. */
   reviewNote: string;
+  /** Labels for the motion layer's controls. Rendered only when motion is
+   *  actually running — never under reduced motion, never without JS. */
+  motion: ConsoleMotionCopy;
+};
+
+/** Control labels for the Operation Console's motion layer. */
+export type ConsoleMotionCopy = {
+  pause: string;
+  resume: string;
+  replay: string;
+  /** Describes the diagram once, next to the controls. Deliberately not a
+   *  live region: announcing each frame would be nine interruptions per run. */
+  hint: string;
 };
 
 type Dict = {
@@ -409,6 +422,12 @@ const en: Dict = {
     statusVerified: "Verified",
     reviewNote:
       "A person reviews every delivery against the approved standard before it goes out. That review is careful, not a guarantee that every possible error is detected. The issue step is not an apology — stopping a step there is the system working.",
+    motion: {
+      pause: "Pause",
+      resume: "Resume",
+      replay: "Replay",
+      hint: "One operation, played once. Every step stays readable when it stops.",
+    },
   },
   liveWindow: {
     taskTitle: "Clean a 1,800-row supplier price list",
@@ -609,6 +628,12 @@ const fr: Dict = {
     statusVerified: "Vérifié",
     reviewNote:
       "Une personne révise chaque livraison selon la norme approuvée avant qu'elle sorte. Cette révision est rigoureuse, pas une garantie que toute erreur possible sera détectée. L'étape « problème » n'est pas une excuse : arrêter une étape là, c'est le système qui fonctionne.",
+    motion: {
+      pause: "Pause",
+      resume: "Reprendre",
+      replay: "Rejouer",
+      hint: "Une opération, jouée une fois. Chaque étape reste lisible à l'arrêt.",
+    },
   },
   counters: {
     taskWord: ["tâche livrée", "tâches livrées"],
@@ -783,6 +808,12 @@ const es: Dict = {
     statusVerified: "Verificado",
     reviewNote:
       "Una persona revisa cada entrega contra el estándar aprobado antes de que salga. Esa revisión es rigurosa, no una garantía de que se detecte todo error posible. El paso de problema no es una disculpa: detener un paso ahí es el sistema funcionando.",
+    motion: {
+      pause: "Pausa",
+      resume: "Reanudar",
+      replay: "Repetir",
+      hint: "Una operación, reproducida una vez. Cada paso queda legible al detenerse.",
+    },
   },
   counters: {
     taskWord: ["tarea entregada", "tareas entregadas"],
@@ -960,6 +991,12 @@ const tl: Dict = {
     statusVerified: "Beripikado",
     reviewNote:
       "May taong nagrerebyu ng bawat delivery laban sa aprubadong pamantayan bago ito lumabas. Maingat ang review na iyon, hindi garantiyang matutukoy ang bawat posibleng mali. Ang hakbang na problema ay hindi paghingi ng paumanhin: ang ihinto ang isang hakbang doon ay ang sistemang gumagana.",
+    motion: {
+      pause: "I-pause",
+      resume: "Ituloy",
+      replay: "Ulitin",
+      hint: "Isang operasyon, isang beses lang. Nananatiling nababasa ang bawat hakbang kapag huminto.",
+    },
   },
   counters: {
     taskWord: ["task na naihatid", "mga task na naihatid"],

@@ -1,4 +1,5 @@
 import type { ConsoleCopy } from "@/lib/i18n/client";
+import { OperationConsoleMotion } from "./operation-console-motion";
 
 /**
  * THE OPERATION CONSOLE — deliberately static.
@@ -26,6 +27,14 @@ import type { ConsoleCopy } from "@/lib/i18n/client";
  * the only carrier: both states also say their word (statusIssue /
  * statusVerified), which is what test/public-site-truth.test.ts pins.
  *
+ * STAGE B added a motion layer WITHOUT changing any of the above. The list
+ * below is still rendered here, on the server, and is handed to
+ * `OperationConsoleMotion` as `children` — which Next.js documents as staying
+ * outside the client module graph, so none of this markup becomes a client
+ * component. The island only sets two numbers on a wrapper; `globals.css`
+ * derives every animated state from them. Delete the island and the page is
+ * exactly what it was.
+ *
  * Without CSS this renders as a plain ordered list read top to bottom —
  * number, station name, status word, one line of what happens. That reading
  * order IS the journey, which is why the rail is vertical at every width
@@ -45,6 +54,7 @@ export function OperationConsole({ copy }: { copy: ConsoleCopy }) {
             diagram — same convention as the hero's srPreview. */}
         <p className="sr-only">{copy.srSummary}</p>
 
+        <OperationConsoleMotion copy={copy.motion}>
         <ol className="mt-12 max-w-[760px]">
           {copy.stations.map(([label, body], i) => {
             const isIssue = i === 4;
@@ -52,7 +62,11 @@ export function OperationConsole({ copy }: { copy: ConsoleCopy }) {
             return (
               <li
                 key={label}
-                className="relative grid grid-cols-[44px_1fr] gap-x-5 pb-9 last:pb-0"
+                /* --i is the station's own index. It is a static inline value
+                   from the server render, not something JavaScript writes: the
+                   CSS compares it against the wrapper's two numbers. */
+                style={{ "--i": i } as React.CSSProperties}
+                className="op-station relative grid grid-cols-[44px_1fr] gap-x-5 pb-9 last:pb-0"
               >
                 {/* rail segment down to the next station */}
                 {i < copy.stations.length - 1 && (
@@ -71,6 +85,10 @@ export function OperationConsole({ copy }: { copy: ConsoleCopy }) {
                   }`}
                 >
                   {String(i + 1).padStart(2, "0")}
+                  {/* Purely decorative: marks the station being worked on.
+                      Opacity is driven entirely by CSS from --console-active,
+                      and it carries no information the words do not. */}
+                  <span aria-hidden className="op-station-ring" />
                 </span>
                 <div className="pt-2">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -94,6 +112,7 @@ export function OperationConsole({ copy }: { copy: ConsoleCopy }) {
             );
           })}
         </ol>
+        </OperationConsoleMotion>
 
         {/* The sentence that closes the autonomy reading: a person reviews
             every delivery. Stated after the diagram, where it lands as the
