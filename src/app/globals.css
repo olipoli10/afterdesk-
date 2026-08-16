@@ -434,34 +434,33 @@ dialog.ss-modal::backdrop {
 /* ────────────────────────────────────────────────────────────────────────
    OPERATION CONSOLE — the motion layer.
 
-   NO ARITHMETIC. Everything here is attribute selectors and :nth-child.
+   One mechanism: two attributes the island writes on the wrapper, matched
+   literally here. Nothing computed, nothing inherited, and no second
+   imperative paint path.
 
-   The first implementation derived opacity from custom properties —
-   `clamp(0.32, calc(1 + (var(--console-seen) - var(--i)) * 10), 1)` — with
-   `@property` registering them as numbers. Measured in the real browser, that
-   silently did nothing: with `--console-seen: 0` inherited correctly and
-   `--i: 6` set inline, the computed opacity was still 1, and a sibling
-   expression stayed an unresolved token string rather than a number. The
-   rules were present in `document.styleSheets` and simply had no effect.
-
-   Rather than keep guessing at custom-property registration across engines,
-   the state is a plain attribute the island writes and the CSS matches
-   literally. Seven values, two attributes, nothing to resolve:
-
-     data-seen    furthest station reached — everything after it is dimmed
+     data-seen    furthest station reached — later rows are muted
      data-active  station being worked on now — it gets the ring
 
    THE FALLBACK IS THE ABSENCE OF THE ATTRIBUTES. With no `data-seen`, no rule
-   below matches and every station renders at full opacity: exactly the
+   below matches and every station renders at full opacity — exactly the
    committed static design. That is what a no-JS visitor, a pre-hydration
-   paint, and a reduced-motion visitor all get — not a special mode, just the
+   paint and a reduced-motion visitor all get; not a special mode, just the
    default.
+
+   THE MUTED OPACITY IS A CONTRAST FLOOR, NOT A TASTE CHOICE. Pause can hold a
+   muted frame indefinitely, so a not-yet-reached row is readable text rather
+   than a transient. At 0.32 the muted badge number composited over #0D0E11
+   measures about 1.6:1. 0.85 is the lowest value at which every text colour on
+   that row still clears AA — the badge number is the binding case and lands
+   near 4.6:1. test/public-site-console-render.test.ts recomputes the ratio
+   from the declared value, so lowering it fails instead of silently
+   regressing.
    ──────────────────────────────────────────────────────────────────────── */
 .op-station {
   opacity: 1;
 }
 
-/* For data-seen="N", every station after the (N+1)th is dimmed. */
+/* For data-seen="N", every station after the (N+1)th is muted. */
 .op-console[data-seen="0"] .op-station:nth-child(n + 2),
 .op-console[data-seen="1"] .op-station:nth-child(n + 3),
 .op-console[data-seen="2"] .op-station:nth-child(n + 4),
@@ -469,7 +468,7 @@ dialog.ss-modal::backdrop {
 .op-console[data-seen="4"] .op-station:nth-child(n + 6),
 .op-console[data-seen="5"] .op-station:nth-child(n + 7),
 .op-console[data-seen="6"] .op-station:nth-child(n + 8) {
-  opacity: 0.32;
+  opacity: 0.85;
 }
 
 .op-station-ring {
