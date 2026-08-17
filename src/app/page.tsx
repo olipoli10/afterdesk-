@@ -59,7 +59,13 @@ export async function generateMetadata({
 }) {
   const sp = await searchParams;
   const lang = clientLangOf(sp.lang);
-  return { ...HOME_META[lang], alternates: langAlternates("/", sp.lang) };
+  /* HOME_META titles already carry "| AfterDesk"; absolute keeps the root
+     layout's "%s · AfterDesk" template from adding the brand a second time */
+  return {
+    ...HOME_META[lang],
+    title: { absolute: HOME_META[lang].title },
+    alternates: langAlternates("/", sp.lang),
+  };
 }
 
 const ORG_JSONLD = JSON.stringify({
@@ -96,28 +102,34 @@ export default async function Home({
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ORG_JSONLD }} />
-      {/* minimal chrome, LEFT only - the V5.5 experience owns the top-right
-          (its anchor nav + Early Access badge). No overlap by construction. */}
-      <header className="absolute inset-x-0 top-0 z-50">
-        <div className="flex items-center gap-4 px-5 py-4 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e]">
-          <Link href="/" className="text-[#e2c486] transition-colors hover:text-[#c9a76a]">
-            AfterDesk
-          </Link>
-          {portal ? (
-            <Link href={portal} className="transition-colors hover:text-[#c9a76a]">
-              {nav.nav.portal}
-            </Link>
-          ) : (
-            <Link href="/login" className="transition-colors hover:text-[#c9a76a]">
-              {nav.nav.signIn}
-            </Link>
-          )}
-          <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
-        </div>
-      </header>
 
       <main>
-        <AssemblyExperience copy={t} ctaHref="/register" />
+        {/* ONE header: the V5.5 nav owns all chrome. Sign in/Portal and the
+            language switch ride its utility slot - on phones they drop to a
+            second row so the accepted mark/Early Access line stays intact. */}
+        <AssemblyExperience
+          copy={t}
+          ctaHref="/register"
+          utility={
+            <span
+              /* the element crosses the RSC boundary into the nav's child
+                 list, so React demands an explicit key for it */
+              key="page-utilities"
+              className="order-3 flex basis-full items-center gap-4 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e] md:order-none md:basis-auto"
+            >
+              {portal ? (
+                <Link href={portal} className="transition-colors hover:text-[#c9a76a]">
+                  {nav.nav.portal}
+                </Link>
+              ) : (
+                <Link href="/login" className="transition-colors hover:text-[#c9a76a]">
+                  {nav.nav.signIn}
+                </Link>
+              )}
+              <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
+            </span>
+          }
+        />
       </main>
 
       {/* real routes under the world's coda - quiet, mono, indexable */}

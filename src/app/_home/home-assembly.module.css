@@ -125,6 +125,9 @@
   font-size: 1.0625rem;
   font-weight: 640;
   letter-spacing: -0.02em;
+  /* the single wordmark is a real link home now */
+  color: inherit;
+  text-decoration: none;
 }
 .navLinks {
   margin-left: auto;
@@ -140,6 +143,7 @@
 .navLinks a:hover {
   color: var(--hi);
 }
+.mark:focus-visible,
 .navLinks a:focus-visible,
 .field input:focus-visible,
 .go:focus-visible {
@@ -149,6 +153,13 @@
 @media (max-width: 767px) {
   .navLinks a {
     display: none;
+  }
+  /* the utility slot (sign-in + languages) carries order:3/basis:100% on
+     phones, so it wraps under the accepted mark / Early Access line */
+  .nav {
+    flex-wrap: wrap;
+    gap: 1rem;
+    row-gap: 0.5rem;
   }
 }
 .early {
@@ -1163,7 +1174,10 @@
     --li: clamp(0, calc((var(--p) - 0.48) * 22.3), 4);
   }
   .copy {
-    top: clamp(6.5rem, 13vh, 9rem);
+    /* was clamp(6.5rem, 13vh, 9rem): the consolidated two-row header
+       (mark/Early Access + sign-in/language) needs the hero to start
+       lower so the language pill keeps clear air above the kicker */
+    top: clamp(10.5rem, 24vh, 13rem);
   }
   .machineFrame {
     left: 0.75rem;
