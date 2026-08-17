@@ -61,10 +61,16 @@ describe("C2 - exactly one A2 concierge per route, mounted through the contract"
       expect(s, `${p} must not duplicate sprite internals`).not.toMatch(/A2_REST|a2pose|data-a2-being=/);
     }
   });
-  it("the homepage keeps its own single direct mount (it does not use the shell)", () => {
-    const s = noComments(read("src/app/page.tsx"));
-    expect(s.match(/<A2Concierge\b/g) ?? []).toHaveLength(1);
-    expect(s).not.toMatch(/<PublicShell\b/);
+  it("the homepage owns exactly one concierge, mounted through the V7 acts tree", () => {
+    /* V7 moved the mount INSIDE SimplicityActs so the escort engine owns
+       the dock by ref (no global querySelector, no second being possible).
+       The contract stays: exactly one mount in the homepage tree. */
+    const page = noComments(read("src/app/page.tsx"));
+    const acts = noComments(read("src/app/_v7/simplicity-acts.tsx"));
+    expect(page.match(/<A2Concierge\b/g) ?? [], "page must not double-mount").toHaveLength(0);
+    expect(acts.match(/<A2Concierge\b/g) ?? [], "the acts own the single mount").toHaveLength(1);
+    expect(page).toMatch(/<SimplicityActs\b/);
+    expect(page).not.toMatch(/<PublicShell\b/);
   });
 });
 
