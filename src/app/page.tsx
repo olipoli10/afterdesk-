@@ -14,7 +14,6 @@ import {
 import { AssemblyExperience } from "./_home/assembly-experience";
 import { SimplicityActs } from "@/app/_v7/simplicity-acts";
 import { V7_ACTS_I18N } from "@/lib/i18n/v7-acts";
-import { A2Concierge } from "./_home/a2-concierge";
 
 /* ---------------------------------------------------------------------------
    The real homepage IS the accepted V5.5 "Assembly Lock" experience
@@ -105,36 +104,47 @@ export default async function Home({
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ORG_JSONLD }} />
 
-      <main>
-        {/* V7 - the four simplicity acts open the page; the accepted V5.5
-            assembly spectacle follows unchanged (internal geometry frozen). */}
-        <SimplicityActs copy={V7_ACTS_I18N[clientLangOf(raw)]} />
-        {/* ONE header: the V5.5 nav owns all chrome. Sign in/Portal and the
-            language switch ride its utility slot - on phones they drop to a
-            second row so the accepted mark/Early Access line stays intact. */}
-        <AssemblyExperience
-          copy={t}
-          ctaHref="/register"
-          utility={
-            <span
-              /* the element crosses the RSC boundary into the nav's child
-                 list, so React demands an explicit key for it */
-              key="page-utilities"
-              className="order-3 flex basis-full items-center gap-4 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e] md:order-none md:basis-auto"
-            >
-              {portal ? (
-                <Link href={portal} className="transition-colors hover:text-[#c9a76a]">
-                  {nav.nav.portal}
-                </Link>
-              ) : (
-                <Link href="/login" className="transition-colors hover:text-[#c9a76a]">
-                  {nav.nav.signIn}
-                </Link>
-              )}
-              <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
+      {/* V7: ONE premium header for the whole story - the single wordmark
+          of the document. The V5.5 machine below renders in continuation
+          mode and no longer draws its own nav. */}
+      <header className="absolute inset-x-0 top-0 z-50">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-5 gap-y-2 px-6 pt-9 text-[#F7F6F3]">
+          <Link href="/" className="text-[1.0625rem] font-[640] tracking-[-0.02em] text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]">
+            AfterDesk
+          </Link>
+          <span
+            key="page-utilities"
+            className="order-3 flex basis-full items-center gap-4 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e] md:order-none md:basis-auto"
+          >
+            {portal ? (
+              <Link href={portal} className="transition-colors hover:text-[#c9a76a]">
+                {nav.nav.portal}
+              </Link>
+            ) : (
+              <Link href="/login" className="transition-colors hover:text-[#c9a76a]">
+                {nav.nav.signIn}
+              </Link>
+            )}
+            <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
+          </span>
+          <span className="ml-auto flex items-center gap-8">
+            <a href="#outcomes" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.outcomes}</a>
+            <a href="#how" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.how}</a>
+            <a href="#inside" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.inside}</a>
+            <span className="inline-flex items-center gap-[0.4375rem] whitespace-nowrap rounded-full border border-white/15 px-3 py-1.5 font-mono text-[0.71875rem] uppercase tracking-[0.06em] text-[#8a919e]">
+              <span aria-hidden className="h-1 w-1 rounded-full bg-[#C9A76A]" />
+              {t.nav.earlyAccess}
             </span>
-          }
-        />
+          </span>
+        </div>
+      </header>
+
+      <main>
+        {/* V7 - the four simplicity acts tell the whole opening story; the
+            accepted V5.5 machine continues it (internal geometry frozen).
+            The acts own the single A2 being. */}
+        <SimplicityActs copy={V7_ACTS_I18N[clientLangOf(raw)]} concierge={concierge} />
+        <AssemblyExperience copy={t} ctaHref="/register" continuation />
       </main>
 
       {/* real routes under the world's coda - quiet, mono, indexable */}
@@ -148,7 +158,6 @@ export default async function Home({
         </nav>
       </footer>
 
-      <A2Concierge copy={concierge} />
     </>
   );
 }
