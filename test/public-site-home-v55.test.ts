@@ -36,7 +36,7 @@ describe("R1 - the homepage IS the accepted V5.5 experience", () => {
 
 describe("R2 - A2 is integrated on the homepage", () => {
   it("the A2 concierge component exists and the homepage tree mounts it once (via the V7 acts)", () => {
-    const page = read("src/app/page.tssx".replace("tssx", "tsx"));
+    const page = read("src/app/page.tsx");
     const acts = read("src/app/_v7/simplicity-acts.tsx");
     expect(acts).toMatch(/<A2Concierge/);
     expect(page).toMatch(/<SimplicityActs/);

@@ -713,7 +713,7 @@ export function AssemblyExperience({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [motion]);
+  }, [motion, continuation]);
 
   /* Submitting nudges the story forward - a scroll, never a navigation. */
   const advance = () => {

@@ -8,9 +8,18 @@
      resolved by name and verified for cardinality at measure time; the
      engine disarms LOUDLY (data-v7-engine="missing-anchors") instead of
      silently, and the guard rig fails on that state.
-   - ONE coordinate authority: every target is stored as a DOCUMENT-space
-     point at measure time; each frame converts to viewport space with the
-     single scrollY read. No mixed math, no dead variables.
+   - TWO coordinate spaces, one authority (P4.2). Document-space anchors
+     serve the acts in normal flow; the act-3 walk lives inside a STICKY,
+     where document coordinates lie while the element is pinned. The
+     engine precomputes the pin window (pinStart/pinEnd), the datum lane's
+     offset inside the sticky inner, and the walk x range, then derives
+     every frame's target in VIEWPORT space by pure arithmetic - exact in
+     all three sticky phases, zero per-frame layout reads.
+   - Text is protected by RESERVED LANES in the layout itself, not by
+     runtime dodging: act 2 gives the escort its own lane under the
+     headline, act 3 puts the datum lane FIRST inside the sticky, and the
+     story SEALS at walk-end (the result card materializes) so no transit
+     ever crosses the stations or a headline.
    - The slip and the A2 dock follow the same authority; A2 offsets are
      Math.round()ed so the pixel being never lands on fractions.
    - No per-frame CSS transition: transitions are applied ONCE on escort
@@ -58,11 +67,17 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
     /* the dock lives inside THIS tree (we render the concierge below) */
     const dock = root.querySelector<HTMLElement>("[data-a2-dock]");
 
-    type Pt = { x: number; y: number }; /* DOCUMENT space, always */
+    type Pt = { x: number; y: number }; /* DOCUMENT space (normal-flow acts) */
     let A: Record<(typeof ANCHOR_NAMES)[number], Pt> | null = null;
     let dockHomeViewport: { x: number; y: number } | null = null;
     let blockTop = 0, blockHeight = 1, vh = 1;
+    /* sticky constants for act 3 - the second coordinate space */
+    let pinStart = 0, pinEnd = 0, sectionTop = 0, laneOffset = 0, wsX = 0, weX = 0;
+    /* the act-2 headline is a full-width wall on narrow screens: the pair
+       passes BEHIND it (opacity), never across it */
+    let wallTop = 0, wallBottom = -1;
     let escorting = false;
+    let exitTimer = 0;
 
     const measure = () => {
       vh = window.innerHeight;
@@ -81,7 +96,31 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         return p && Number.isFinite(p.x) && Number.isFinite(p.y);
       });
       A = complete ? (found as Record<(typeof ANCHOR_NAMES)[number], Pt>) : null;
-      root.setAttribute("data-v7-engine", complete ? "armed" : "missing-anchors");
+      /* pin window + datum lane, from real sticky geometry. All offsets are
+         layout-stable, so this stays exact at ANY scroll position. */
+      const sec = root.querySelector<HTMLElement>('section[data-act="3"]');
+      const inner = sec?.firstElementChild as HTMLElement | null;
+      const ws = root.querySelector<HTMLElement>('[data-v7-anchor="walk-start"]');
+      const we = root.querySelector<HTMLElement>('[data-v7-anchor="walk-end"]');
+      if (sec && inner && ws && we && complete) {
+        sectionTop = sec.getBoundingClientRect().top + window.scrollY;
+        pinStart = sectionTop;
+        pinEnd = sectionTop + sec.offsetHeight - inner.offsetHeight;
+        laneOffset = ws.getBoundingClientRect().top - inner.getBoundingClientRect().top;
+        wsX = ws.getBoundingClientRect().left + window.scrollX;
+        weX = we.getBoundingClientRect().left + window.scrollX;
+      } else {
+        A = null;
+      }
+      const wall = root.querySelector<HTMLElement>('section[data-act="2"] h2');
+      if (wall) {
+        const wb = wall.getBoundingClientRect();
+        wallTop = wb.top + window.scrollY;
+        wallBottom = wb.bottom + window.scrollY;
+      } else {
+        wallBottom = -1;
+      }
+      root.setAttribute("data-v7-engine", A ? "armed" : "missing-anchors");
       if (dock) {
         /* dock is position:fixed - its untransformed rect IS viewport space */
         const prev = dock.style.transform;
@@ -90,22 +129,35 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         dockHomeViewport = { x: b.left, y: b.top };
         dock.style.transform = prev;
       }
+      lastY = -1; /* force a recompute on the next frame */
     };
-    measure();
-    if (document.fonts?.ready) document.fonts.ready.then(measure).catch(() => undefined);
-    window.addEventListener("resize", measure);
 
     const setEscort = (on: boolean) => {
       if (!dock || escorting === on) return;
       escorting = on;
       root.setAttribute("data-v7-escort", on ? "on" : "off");
-      /* transition ONCE at entry/exit - never during scroll frames */
-      dock.style.transition = on ? "none" : "transform 260ms cubic-bezier(.22,.8,.24,1)";
-      if (!on) dock.style.transform = "translate3d(0,0,0)";
+      if (on) {
+        if (exitTimer) { window.clearTimeout(exitTimer); exitTimer = 0; }
+        dock.style.transition = "none";
+        dock.style.opacity = "1";
+      } else {
+        /* the being never glides across page content on release: it fades
+           where the story left it, snaps home invisible, fades back in */
+        dock.style.transition = "opacity 140ms linear";
+        dock.style.opacity = "0";
+        exitTimer = window.setTimeout(() => {
+          exitTimer = 0;
+          dock.style.transition = "none";
+          dock.style.transform = "translate3d(0,0,0)";
+          requestAnimationFrame(() => {
+            dock.style.transition = "opacity 180ms linear";
+            dock.style.opacity = "1";
+          });
+        }, 160);
+      }
     };
 
     let raf = 0, lastY = -1;
-    const W = [0.06, 0.3, 0.44, 0.8, 0.96]; /* waypoint thresholds in block progress */
     const frame = () => {
       raf = 0;
       const y = window.scrollY;
@@ -114,41 +166,83 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       if (!A) return; /* disarmed loudly; guards catch data-v7-engine */
       const g = clamp01((y - blockTop) / blockHeight);
       root.style.setProperty("--g", g.toFixed(4));
-      const walk = clamp01((g - W[2]) / (W[3] - W[2]));
+      /* the walk is bound to the REAL pin window, not to block fractions */
+      const walk = pinEnd > pinStart ? clamp01((y - pinStart) / (pinEnd - pinStart)) : 0;
       root.style.setProperty("--walk", walk.toFixed(4));
+      root.style.setProperty("--seal", clamp01((y - pinEnd) / (vh * 0.4)).toFixed(4));
 
-      /* slip document-space target via named waypoints */
-      let sx: number, sy: number, so = 1;
-      if (g < W[0]) { sx = A.request.x; sy = A.request.y; so = 0; }
-      else if (g < W[1]) { const t = (g - W[0]) / (W[1] - W[0]); sx = lerp(A.request.x, A.problem.x, t); sy = lerp(A.request.y, A.problem.y, t); }
-      else if (g < W[2]) { const t = (g - W[1]) / (W[2] - W[1]); sx = lerp(A.problem.x, A["walk-start"].x, t); sy = lerp(A.problem.y, A["walk-start"].y, t); }
-      else if (g < W[3]) { sx = lerp(A["walk-start"].x, A["walk-end"].x, walk); sy = lerp(A["walk-start"].y, A["walk-end"].y, walk); }
-      else { const t = clamp01((g - W[3]) / (W[4] - W[3])); sx = lerp(A["walk-end"].x, A.result.x, t); sy = lerp(A["walk-end"].y, A.result.y, t); if (g >= W[4]) so = 0; }
+      /* sticky arithmetic: the inner's viewport top in all three phases */
+      const itv = y < pinStart ? sectionTop - y : y <= pinEnd ? 0 : pinEnd - y;
+      const laneY = itv + laneOffset;
+      const scrollX = window.scrollX;
+      const yAppear = blockTop + 0.06 * blockHeight;
+      const yProblem = blockTop + 0.3 * blockHeight;
+      const yApproachEnd = Math.max(yProblem + 1, pinStart);
+      const yFadeEnd = pinEnd + vh * 0.4;
 
-      /* ONE conversion document -> viewport for both objects */
-      const vx = sx - window.scrollX, vy = sy - y;
+      /* every target below is a VIEWPORT-space point, exact at this y */
+      let vx: number, vy: number, so = 1;
+      if (y < yAppear) {
+        vx = A.request.x - scrollX; vy = A.request.y - y; so = 0;
+      } else if (y < yProblem) {
+        const t = (y - yAppear) / (yProblem - yAppear);
+        vx = lerp(A.request.x - scrollX, A.problem.x - scrollX, t);
+        vy = lerp(A.request.y - y, A.problem.y - y, t);
+      } else if (y < yApproachEnd) {
+        const t = (y - yProblem) / (yApproachEnd - yProblem);
+        vx = lerp(A.problem.x - scrollX, wsX - scrollX, t);
+        vy = lerp(A.problem.y - y, laneY, t);
+      } else if (y <= pinEnd) {
+        /* the stable corridor: x advances with pin progress, y rides the lane */
+        vx = lerp(wsX, weX, walk) - scrollX;
+        vy = laneY;
+      } else {
+        /* the story SEALS at walk-end: fade in place, drift 20px, done */
+        const t = clamp01((y - pinEnd) / (yFadeEnd - pinEnd));
+        vx = weX - scrollX;
+        vy = laneY + t * 20;
+        so = 1 - t;
+      }
+      /* pass-behind: on narrow screens the act-2 headline is a full-width
+         wall no visible path can cross. The pair fades exactly while its
+         band (dock top -6 .. dock bottom +44) intersects the measured
+         block, passes behind the text plane, and re-emerges. The escort
+         stays LATCHED through the pass - no home trip mid-story. */
+      const storyActive = so > 0.01 && y >= yAppear;
+      let behind = 1;
+      if (wallBottom > 0) {
+        const pairTopDoc = vy + y - 6, pairBotDoc = vy + y + 44;
+        const dWall = Math.max(wallTop - 12 - pairBotDoc, pairTopDoc - (wallBottom + 12), 0);
+        behind = clamp01(dWall / 36);
+      }
+      so = so * behind;
       slip.style.transform = `translate3d(${vx.toFixed(1)}px, ${vy.toFixed(1)}px, 0)`;
-      slip.style.opacity = String(so);
+      slip.style.opacity = so.toFixed(3);
 
       if (dock && dockHomeViewport) {
-        const inStory = g > W[0] && g < W[4] && so > 0;
-        setEscort(inStory);
-        if (inStory) {
+        setEscort(storyActive);
+        if (storyActive) {
           /* integer-pixel escort, trailing beside the slip, never covering */
           const tx = Math.round(vx - 44 - dockHomeViewport.x);
           const ty = Math.round(vy - 6 - dockHomeViewport.y);
           dock.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+          dock.style.opacity = behind.toFixed(3);
         }
       }
     };
+    measure();
+    if (document.fonts?.ready) document.fonts.ready.then(() => { measure(); frame(); }).catch(() => undefined);
+    const onResize = () => { measure(); frame(); };
+    window.addEventListener("resize", onResize);
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(frame); };
     window.addEventListener("scroll", onScroll, { passive: true });
     frame();
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", measure);
+      window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
-      if (dock) { dock.style.transform = ""; dock.style.transition = ""; }
+      if (exitTimer) window.clearTimeout(exitTimer);
+      if (dock) { dock.style.transform = ""; dock.style.transition = ""; dock.style.opacity = ""; }
       slip.style.opacity = "0";
     };
   }, [reduced]);
@@ -198,9 +292,13 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           {copy.act2.h}
         </h2>
         {/* the slip hovers above the gauntlet - contained flex-wrap, no
-            percentage absolutes, so the geometry itself fits every phone */}
-        <div className="relative mt-10">
-          <span data-v7-anchor="problem" className="absolute left-1/2 top-[-34px] h-px w-px" />
+            percentage absolutes, so the geometry itself fits every phone.
+            The escort gets its OWN reserved lane between the headline and
+            the chips: the pair can never sit on the act-2 copy. */}
+        <div className="mt-10">
+          <div aria-hidden className="relative h-8">
+            <span data-v7-anchor="problem" className="absolute left-1/2 top-4 h-px w-px" />
+          </div>
           <div aria-hidden className="flex max-w-full flex-wrap gap-2.5">
             {copy.act2.gauntlet.map((q, i) => (
               <span
@@ -217,19 +315,25 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       </section>
 
       {/* ── ACT 3 — the walk (sticky, continuous) ────────────────────── */}
+      {/* The datum lane comes FIRST inside the sticky: the escort arrives
+          from above through chip decor only, and while the section is
+          pinned the pair rides a stable corridor that no headline or
+          station text ever enters. */}
       <section data-act="3" className="relative" style={{ height: reduced ? "auto" : "200vh" }}>
         <div className={reduced ? "" : "sticky top-0 flex min-h-screen flex-col justify-center"}>
           <div className="mx-auto w-full max-w-[1180px] px-6 py-[8vh]">
-            <h2 className="max-w-[26ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em]">
-              {copy.act3.h}
-            </h2>
-            <div className="relative mt-16">
-              <div className="relative h-px w-full bg-gradient-to-r from-transparent via-[#C9A76A] to-transparent">
+            <div className="relative mb-12 h-[30px]">
+              <div className="absolute inset-x-0 top-[15px] h-px bg-gradient-to-r from-transparent via-[#C9A76A] to-transparent">
                 <span data-v7-anchor="walk-start" className="absolute left-[6%] top-0 h-px w-px" />
                 <span data-v7-anchor="walk-end" className="absolute right-[6%] top-0 h-px w-px" />
               </div>
-              {reduced && <StaticSlip label="req" className="absolute -top-8 left-[58%]" />}
-              <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+              {reduced && <StaticSlip label="req" className="absolute left-[58%] top-[-4px]" />}
+            </div>
+            <h2 className="max-w-[26ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em]">
+              {copy.act3.h}
+            </h2>
+            <div className="relative mt-8">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
                 {copy.act3.stations.map((s, i) => (
                   <div key={s.name} className="min-w-0">
                     <span
@@ -255,9 +359,14 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           {copy.act4.h}
         </h2>
         {/* the short intentional light moment: ONE contained sealed card on
-            onyx - the world stays night, the deliverable glows */}
+            onyx - the world stays night, the deliverable glows. The walk
+            seals INTO this card: --seal reveals it as the story completes
+            (default 1 so no-JS and reduced readers always see it). */}
         <div className="mt-10 flex flex-wrap items-center gap-6">
-          <div className="relative max-w-[300px] rounded-md border border-[#C9A76A] bg-[#F7F6F3] p-5 text-[#14161A] shadow-[0_0_40px_rgba(201,167,106,0.12)]">
+          <div
+            className="relative max-w-[300px] rounded-md border border-[#C9A76A] bg-[#F7F6F3] p-5 text-[#14161A] shadow-[0_0_40px_rgba(201,167,106,0.12)]"
+            style={reduced ? undefined : { opacity: "calc(1 - 0.85 * (1 - var(--seal, 1)))" }}
+          >
             <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#8a7a55]">AfterDesk · result</p>
             <p className="mt-2 text-[15px] font-semibold leading-[1.4]">✓ {copy.act4.chips[3]}</p>
             <span data-v7-anchor="result" className="absolute right-4 top-4 h-px w-px" />
