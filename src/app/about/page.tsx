@@ -2,13 +2,12 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { Reveal } from "@/components/reveal";
 import { ComparisonTable } from "@/components/comparison-table";
-import { TrustLinks } from "@/components/trust-links";
 import { SpecialistLink } from "@/components/specialist-link";
-import { Wordmark } from "@/components/logo";
-import { LangSwitch } from "@/components/lang-switch";
-import { SITE_LANGS, langAlternates } from "@/lib/i18n/langs";
+import { PublicShell } from "@/components/public-shell";
+import { OnyxThreshold } from "@/components/instruments";
+import { langAlternates } from "@/lib/i18n/langs";
 import { ABOUT_I18N, docLangOf } from "@/lib/i18n/docs";
-import { CLIENT_I18N } from "@/lib/i18n/client";
+import { pageConcierge } from "@/lib/i18n/public-shell";
 
 /* ─────────────────────────────────────────────────────────────────────────
    ABOUT US — the origin story, told in the company's own "we" voice.
@@ -64,37 +63,8 @@ export default async function AboutPage({
   const t = ABOUT_I18N[lang];
 
   return (
-    <div lang={lang} className="min-h-screen overflow-x-clip bg-[#F7F6F3]">
-      <header className="sticky top-0 z-50 border-b border-black/8 bg-[#F7F6F3]/80 backdrop-blur-md">
-        <div className="mx-auto flex h-14 w-full max-w-[900px] items-center justify-between gap-3 px-6">
-          <Link href="/" className="text-[12px]">
-            <Wordmark tone="ink" />
-          </Link>
-          <div className="flex items-center gap-3 text-[13px] font-medium sm:gap-5">
-            <LangSwitch path="/about" current={lang} options={SITE_LANGS} tone="paper" />
-            <Link
-              href="/login"
-              className="text-[#5B6069] transition-colors hover:text-[#14161A]"
-            >
-              {CLIENT_I18N[lang].nav.signIn}
-            </Link>
-            <Link
-              href="/how-it-works"
-              className="text-[#5B6069] transition-colors hover:text-[#14161A]"
-            >
-              {t.nav.how}
-            </Link>
-            <Link
-              href="/"
-              className="hidden text-[#5B6069] transition-colors hover:text-[#14161A] sm:block"
-            >
-              {t.nav.client}
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-[900px] px-6 pb-24 pt-14 sm:pt-20">
+    <PublicShell variant="paper" lang={lang} path="/about" concierge={pageConcierge("about", lang)}>
+      <div className="mx-auto w-full max-w-[900px] px-6 pb-24 pt-14 text-[#14161A] sm:pt-20">
         {/* ── DOCKET ────────────────────────────────────────────────────── */}
         <p className="flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[#5B6069]">
           <span className="whitespace-nowrap">{t.kicker}</span>
@@ -150,6 +120,36 @@ export default async function AboutPage({
             <span className="block text-[#5B6069]">{t.bridge[0]}</span>
             <span className="block text-[#14161A]">{t.bridge[1]}</span>
           </p>
+        </Reveal>
+
+        {/* ── THE ACCOUNTABILITY MOMENT (1.4C) ─────────────────────────────
+            The bridge sentence, made visible: scattered helpers on the left,
+            ONE owner point where the approved brief and finish line stay
+            attached, one verified result out. Labels reuse the page's own
+            published solution vocabulary; the sketch is decorative and the
+            adjacent real text keeps carrying the meaning. */}
+        <Reveal className="mt-12">
+          <OnyxThreshold className="rounded-lg" >
+            <div data-proof="accountability" className="grid gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+              <div aria-hidden className="font-mono text-[11px] leading-[2.1] text-[#5B6069]">
+                <p className="text-[#767C86]">models · tools · freelancers</p>
+                <p>◇ output <span className="text-[#8A9099]">— unverified</span></p>
+                <p>◇ hours <span className="text-[#8A9099]">— unowned</span></p>
+                <p>◇ handoffs <span className="text-[#8A9099]">— exceptions lost</span></p>
+              </div>
+              <div aria-hidden className="hidden flex-col items-center gap-1 lg:flex">
+                <span className="h-10 w-px bg-gradient-to-b from-transparent to-[#C9A76A]" />
+                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#C9A76A] font-mono text-[10px] uppercase tracking-[0.08em] text-[#E2C486]">AD</span>
+                <span className="h-10 w-px bg-gradient-to-t from-transparent to-[#C9A76A]" />
+              </div>
+              <div className="font-mono text-[11px] leading-[2.1]">
+                <p className="text-[#E2C486]">{t.solution[0]?.[0]} → {t.solution[1]?.[0]}</p>
+                <p className="text-[#c7ccd4]">brief + finish line <span className="text-[#767C86]">— attached</span></p>
+                <p className="text-[#c7ccd4]">{t.solution[2]?.[0]} <span className="text-[#1E9E6F]">✓</span></p>
+                <p className="mt-2 max-w-[38ch] font-sans text-[13px] leading-[1.6] text-[#9AA1AB]">{t.solutionLede}</p>
+              </div>
+            </div>
+          </OnyxThreshold>
         </Reveal>
 
         {/* ── MOVEMENT II — the solution ────────────────────────────────── */}
@@ -248,19 +248,10 @@ export default async function AboutPage({
           >
             {t.protocolLink}
           </Link>
-          .
+          .{" "}
+          <SpecialistLink lang={lang} />
         </p>
-      </main>
-
-      <footer className="border-t border-black/8">
-        <div className="mx-auto flex w-full max-w-[900px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[12px]">
-          <Wordmark tone="ink" />
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <TrustLinks lang={lang} />
-            <SpecialistLink lang={lang} />
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </PublicShell>
   );
 }
