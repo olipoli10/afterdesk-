@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { LangSwitch } from "@/components/lang-switch";
 import { TrustLinks } from "@/components/trust-links";
+import { MobileNav } from "@/components/mobile-nav";
 import { A2Concierge, type ConciergeCopy } from "@/app/_home/a2-concierge";
 import { PUBLIC_SHELL_I18N, type SiteLang } from "@/lib/i18n/public-shell";
 
@@ -76,6 +77,13 @@ export function PublicShell({
                 {t.nav[key]}
               </Link>
             ))}
+            <MobileNav
+              label={t.menu}
+              closeLabel={t.closeMenu}
+              night={night}
+              currentPath={path}
+              items={NAV_ROUTES.map(([href, key]) => ({ href, text: t.nav[key] }))}
+            />
             <Link
               href="/register"
               className={`inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-4 font-mono text-[0.71875rem] uppercase tracking-[0.06em] no-underline transition-colors ${
