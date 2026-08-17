@@ -35,9 +35,12 @@ describe("R1 - the homepage IS the accepted V5.5 experience", () => {
 });
 
 describe("R2 - A2 is integrated on the homepage", () => {
-  it("the A2 concierge component exists and the page mounts it", () => {
-    expect(existsSync(join(root, A2))).toBe(true);
-    expect(read(PAGE)).toMatch(/A2Concierge/);
+  it("the A2 concierge component exists and the homepage tree mounts it once (via the V7 acts)", () => {
+    const page = read("src/app/page.tssx".replace("tssx", "tsx"));
+    const acts = read("src/app/_v7/simplicity-acts.tsx");
+    expect(acts).toMatch(/<A2Concierge/);
+    expect(page).toMatch(/<SimplicityActs/);
+    expect((page.match(/<A2Concierge/g) ?? []).length).toBe(0);
   });
   it("the launcher is the semantic 44px button named Ask AfterDesk carrying the frozen A2", () => {
     const s = read(A2);

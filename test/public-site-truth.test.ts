@@ -258,7 +258,7 @@ describe("the Operation Console never lets color speak alone", () => {
     const src = read("src/app/page.tsx");
     /* 1.4B.6 moved the page utilities into the experience's single header,
        so the mount is multi-prop now: copy, ctaHref and the utility slot */
-    expect(src).toMatch(/<AssemblyExperience\s+copy=\{t\}\s+ctaHref="\/register"\s+utility=\{/);
+    expect(src).toMatch(/<AssemblyExperience copy=\{t\} ctaHref="\/register" continuation \/>/);
   });
 });
 

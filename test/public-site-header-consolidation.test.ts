@@ -57,12 +57,16 @@ describe("H1 - the final rendered title carries the brand exactly once", () => {
 });
 
 describe("H2 - exactly one visible header wordmark, and it is a real link", () => {
-  it("page.tsx no longer renders its own header or a second brand wordmark", () => {
+  it("page.tsx renders THE one premium header, and the machine renders none (V7)", () => {
+    /* V7 inverted the 1.4B.6 arrangement BY MANDATE: the acts need chrome
+       from the first viewport, so page.tsx owns the single header and the
+       V5.5 machine renders in continuation mode (its nav is conditional
+       and off). The single-wordmark contract is unchanged and proven at
+       runtime by v7-guard-rig (exactly one visible AfterDesk text node). */
     const s = page();
-    expect(s).not.toMatch(/<header/);
-    /* the JSON-LD organization *name* is data, not chrome - only JSX text
-       nodes count as a visible wordmark */
-    expect(s).not.toMatch(/>\s*AfterDesk\s*</);
+    expect(s.match(/<header/g) ?? [], "exactly one page header").toHaveLength(1);
+    expect(s.match(/>\s*AfterDesk\s*</g) ?? [], "exactly one wordmark text node").toHaveLength(1);
+    expect(s).toMatch(/<AssemblyExperience[^>]*continuation/);
   });
   it("the assembly nav's mark is the single wordmark and links home", () => {
     const s = assembly();
@@ -74,9 +78,8 @@ describe("H2 - exactly one visible header wordmark, and it is a real link", () =
 });
 
 describe("H3 - the single header keeps every utility function", () => {
-  it("page.tsx still provides Sign in/Portal and the language switch, now through the header slot", () => {
+  it("page.tsx still provides Sign in/Portal and the language switch, inside its header", () => {
     const s = page();
-    expect(s).toMatch(/utility=\{/);
     expect(s).toMatch(/nav\.nav\.signIn/);
     expect(s).toMatch(/nav\.nav\.portal/);
     expect(s).toMatch(/<LangSwitch/);
