@@ -234,19 +234,27 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       }
     };
     measure();
-    if (document.fonts?.ready) document.fonts.ready.then(() => { measure(); frame(); }).catch(() => undefined);
+    /* fonts.ready is uncancellable: the flag stops a stale resolution from
+       re-arming the engine after this effect was cleaned up (e.g. when the
+       reduced-motion store flips right after hydration) */
+    let disposed = false;
+    if (document.fonts?.ready) document.fonts.ready.then(() => { if (!disposed) { measure(); frame(); } }).catch(() => undefined);
     const onResize = () => { measure(); frame(); };
     window.addEventListener("resize", onResize);
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(frame); };
     window.addEventListener("scroll", onScroll, { passive: true });
     frame();
     return () => {
+      disposed = true;
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
       if (exitTimer) window.clearTimeout(exitTimer);
       if (dock) { dock.style.transform = ""; dock.style.transition = ""; dock.style.opacity = ""; dock.removeAttribute("data-v7-escorting"); }
       slip.style.opacity = "0";
+      /* the armed marker must not survive a flip to reduced motion */
+      root.removeAttribute("data-v7-engine");
+      root.removeAttribute("data-v7-escort");
     };
   }, [reduced]);
 
@@ -284,7 +292,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             onChange={(e) => setTyped(e.target.value)}
             placeholder={copy.act1.placeholder}
             aria-label={copy.act1.placeholder}
-            className="w-full min-w-0 bg-transparent text-[15px] text-[#F7F6F3] outline-none placeholder:text-[#5B6069]"
+            className="w-full min-w-0 bg-transparent text-[15px] text-[#F7F6F3] outline-none placeholder:text-[#5B6069] [&:focus-visible]:[outline:1px_solid_rgba(201,167,106,0.7)] [&:focus-visible]:[outline-offset:8px]"
           />
           <span data-v7-anchor="request" className="h-px w-px" />
         </div>
