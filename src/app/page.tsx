@@ -12,6 +12,8 @@ import {
   HOME_CONCIERGE_I18N,
 } from "@/lib/i18n/home-assembly";
 import { AssemblyExperience } from "./_home/assembly-experience";
+import { SimplicityActs } from "@/app/_v7/simplicity-acts";
+import { V7_ACTS_I18N } from "@/lib/i18n/v7-acts";
 import { A2Concierge } from "./_home/a2-concierge";
 
 /* ---------------------------------------------------------------------------
@@ -104,6 +106,9 @@ export default async function Home({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ORG_JSONLD }} />
 
       <main>
+        {/* V7 - the four simplicity acts open the page; the accepted V5.5
+            assembly spectacle follows unchanged (internal geometry frozen). */}
+        <SimplicityActs copy={V7_ACTS_I18N[clientLangOf(raw)]} />
         {/* ONE header: the V5.5 nav owns all chrome. Sign in/Portal and the
             language switch ride its utility slot - on phones they drop to a
             second row so the accepted mark/Early Access line stays intact. */}
