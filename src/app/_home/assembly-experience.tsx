@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { ConceptAssemblyCopy } from "@/lib/i18n/home-assembly";
 import styles from "./home-assembly.module.css";
@@ -204,6 +205,7 @@ function Stage({
   frozenP,
   stageRef,
   idSuffix,
+  utility,
 }: {
   copy: ConceptAssemblyCopy;
   typed: string;
@@ -212,6 +214,7 @@ function Stage({
   frozenP?: number;
   stageRef?: React.RefObject<HTMLDivElement | null>;
   idSuffix: string;
+  utility?: React.ReactNode;
 }) {
   const isStatic = frozenP !== undefined;
   const instruction = typed.trim() || copy.sampleRequest;
@@ -226,8 +229,12 @@ function Stage({
     >
       <div className={styles.grid} aria-hidden="true" />
 
+      {/* the ONE header: wordmark + page utilities + anchor nav. On phones
+          the utility slot wraps to its own row (order/basis classes on the
+          slot), keeping the accepted mark / Early Access line untouched. */}
       <nav className={styles.nav}>
-        <span className={styles.mark}>AfterDesk</span>
+        <Link href="/" className={styles.mark}>AfterDesk</Link>
+        {utility}
         <span className={styles.navLinks}>
           <a href="#outcomes">{copy.nav.outcomes}</a>
           <a href="#how">{copy.nav.how}</a>
@@ -658,7 +665,15 @@ function BelowFold({
 
 /* -- the experience --------------------------------------------------------- */
 
-export function AssemblyExperience({ copy, ctaHref }: { copy: ConceptAssemblyCopy; ctaHref: string }) {
+export function AssemblyExperience({
+  copy,
+  ctaHref,
+  utility,
+}: {
+  copy: ConceptAssemblyCopy;
+  ctaHref: string;
+  utility?: React.ReactNode;
+}) {
   const motion = useSyncExternalStore(
     subscribeMotionPreference,
     () => !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -714,6 +729,9 @@ export function AssemblyExperience({ copy, ctaHref }: { copy: ConceptAssemblyCop
             onAdvance={() => undefined}
             frozenP={p}
             idSuffix={`static-${i}`}
+            /* page utilities render once, in the first frozen moment - the
+               later stages keep only their fading mark/anchor chrome */
+            utility={i === 0 ? utility : undefined}
           />
         ))}
         <BelowFold copy={copy} typed={typed} onTyped={setTyped} onAdvance={() => undefined} ctaHref={ctaHref} />
@@ -733,6 +751,7 @@ export function AssemblyExperience({ copy, ctaHref }: { copy: ConceptAssemblyCop
             onAdvance={advance}
             stageRef={stageRef}
             idSuffix="live"
+            utility={utility}
           />
         </div>
       </div>

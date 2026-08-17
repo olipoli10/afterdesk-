@@ -256,7 +256,9 @@ describe("the Operation Console never lets color speak alone", () => {
 
   it("the homepage mounts the ported V5.5 experience (ADR-026 replaced the console composition)", () => {
     const src = read("src/app/page.tsx");
-    expect(src).toMatch(/<AssemblyExperience copy=\{t\} ctaHref="\/register" \/>/);
+    /* 1.4B.6 moved the page utilities into the experience's single header,
+       so the mount is multi-prop now: copy, ctaHref and the utility slot */
+    expect(src).toMatch(/<AssemblyExperience\s+copy=\{t\}\s+ctaHref="\/register"\s+utility=\{/);
   });
 });
 
