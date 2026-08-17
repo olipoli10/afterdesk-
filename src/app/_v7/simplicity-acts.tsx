@@ -138,6 +138,8 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       root.setAttribute("data-v7-escort", on ? "on" : "off");
       if (on) {
         if (exitTimer) { window.clearTimeout(exitTimer); exitTimer = 0; }
+        /* the launcher affordance stays home: no hail mid-story (P6) */
+        dock.setAttribute("data-v7-escorting", "on");
         dock.style.transition = "none";
         dock.style.opacity = "1";
       } else {
@@ -149,6 +151,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           exitTimer = 0;
           dock.style.transition = "none";
           dock.style.transform = "translate3d(0,0,0)";
+          dock.removeAttribute("data-v7-escorting");
           requestAnimationFrame(() => {
             dock.style.transition = "opacity 180ms linear";
             dock.style.opacity = "1";
@@ -242,7 +245,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
       if (exitTimer) window.clearTimeout(exitTimer);
-      if (dock) { dock.style.transform = ""; dock.style.transition = ""; dock.style.opacity = ""; }
+      if (dock) { dock.style.transform = ""; dock.style.transition = ""; dock.style.opacity = ""; dock.removeAttribute("data-v7-escorting"); }
       slip.style.opacity = "0";
     };
   }, [reduced]);
@@ -251,6 +254,9 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
 
   return (
     <div ref={rootRef} data-v7-acts="" className="relative bg-[#08090B] text-[#F7F6F3]">
+      {/* while the being escorts the slip, its launcher hail stays silent -
+          the affordance belongs to the resting dock, not to the story */}
+      <style>{`[data-a2-dock][data-v7-escorting="on"] > span[aria-hidden] { visibility: hidden; }`}</style>
       <p className="sr-only">{copy.srStory}</p>
 
       {!reduced && (
