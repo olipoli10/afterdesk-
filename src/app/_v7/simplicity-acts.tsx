@@ -59,6 +59,10 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
   const rootRef = useRef<HTMLDivElement | null>(null);
   const slipRef = useRef<HTMLDivElement | null>(null);
   const [typed, setTyped] = useState("");
+  /* the artifact's localized accessible names, readable from the frame
+     loop without widening the effect dependencies */
+  const artCopyRef = useRef(copy.artifact);
+  artCopyRef.current = copy.artifact;
 
   useEffect(() => {
     if (reduced) return;
@@ -208,19 +212,28 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       }
       /* pass-behind: on narrow screens the act-2 headline is a full-width
          wall no visible path can cross. The pair fades exactly while its
-         band (dock top -6 .. dock bottom +44) intersects the measured
-         block, passes behind the text plane, and re-emerges. The escort
-         stays LATCHED through the pass - no home trip mid-story. */
+         band (scaled being top -28 .. plate/feet bottom +46) intersects
+         the measured block, passes behind the text plane, and re-emerges.
+         The escort stays LATCHED through the pass - no home trip. */
       const storyActive = so > 0.01 && y >= yAppear;
       let behind = 1;
       if (wallBottom > 0) {
-        const pairTopDoc = vy + y - 6, pairBotDoc = vy + y + 44;
+        const pairTopDoc = vy + y - 28, pairBotDoc = vy + y + 46;
         const dWall = Math.max(wallTop - 12 - pairBotDoc, pairTopDoc - (wallBottom + 12), 0);
         behind = clamp01(dWall / 36);
       }
       so = so * behind;
       slip.style.transform = `translate3d(${vx.toFixed(1)}px, ${vy.toFixed(1)}px, 0)`;
       slip.style.opacity = so.toFixed(3);
+
+      /* the artifact's three machined states: request until the walk,
+         locked while the scope is frozen on the datum, checked after the
+         seal. Attribute + localized accessible name, written on change. */
+      const artState = y < yApproachEnd ? "request" : y <= pinEnd ? "locked" : "checked";
+      if (slip.getAttribute("data-v7-artifact") !== artState) {
+        slip.setAttribute("data-v7-artifact", artState);
+        slip.setAttribute("aria-label", artCopyRef.current[artState]);
+      }
 
       if (dock && dockHomeViewport) {
         setEscort(storyActive);
@@ -263,24 +276,55 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
   return (
     <div ref={rootRef} data-v7-acts="" className="relative bg-[#08090B] text-[#F7F6F3]">
       {/* while the being escorts the slip, its launcher hail stays silent -
-          the affordance belongs to the resting dock, not to the story */}
-      <style>{`[data-a2-dock][data-v7-escorting="on"] > span[aria-hidden] { visibility: hidden; }`}</style>
+          the affordance belongs to the resting dock, not to the story.
+          P8.1: during the story the being doubles (integer scale, feet
+          planted, anatomy untouched) and the launcher chrome steps back so
+          only the character carries. The artifact plate switches its three
+          machined states by attribute. */}
+      <style>{`
+        [data-a2-dock][data-v7-escorting="on"] > span[aria-hidden] { visibility: hidden; }
+        [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: scale(2); transform-origin: 50% 100%; }
+        [data-a2-dock][data-v7-escorting="on"] button { background: transparent; border-color: transparent; box-shadow: none; overflow: visible; }
+        [data-v7-slip] [data-plate] { background: #14171d; border-color: #3a4150; }
+        [data-v7-slip] [data-band], [data-v7-slip] [data-check] { opacity: 0; }
+        [data-v7-slip][data-v7-artifact="locked"] [data-plate] { border-color: #C9A76A; }
+        [data-v7-slip][data-v7-artifact="locked"] [data-band] { opacity: 1; }
+        [data-v7-slip][data-v7-artifact="locked"] [data-lines] { opacity: 0.55; }
+        [data-v7-slip][data-v7-artifact="checked"] [data-plate] { background: #F7F6F3; border-color: #C9A76A; }
+        [data-v7-slip][data-v7-artifact="checked"] [data-lines] { opacity: 0; }
+        [data-v7-slip][data-v7-artifact="checked"] [data-check] { opacity: 1; }
+      `}</style>
       <p className="sr-only">{copy.srStory}</p>
 
       {!reduced && (
         <div
           ref={slipRef}
-          aria-hidden
+          role="img"
+          aria-label={copy.artifact.request}
           data-v7-slip=""
-          className="pointer-events-none fixed left-0 top-0 z-40 h-[18px] w-[28px] rounded-[2px] border border-[#C9A76A] bg-[#F7F6F3] font-mono text-[7px] leading-[16px] text-[#14161A] opacity-0"
+          data-v7-artifact="request"
+          className="pointer-events-none fixed left-0 top-0 z-40 w-[52px] opacity-0"
           style={{ willChange: "transform" }}
         >
-          <span className="pl-1">req</span>
+          {/* the carried piece: a machined onyx plate with a gold seam.
+              Three states, universal visual grammar, localized name:
+              request (etched lines) -> locked (gold frame + seal band)
+              -> checked (light plate, gold seam, dark check). */}
+          <div data-plate="" className="relative h-[34px] w-[52px] rounded-[3px] border shadow-[0_2px_10px_rgba(0,0,0,0.5)] transition-[background-color,border-color] duration-300">
+            <span data-seam="" aria-hidden className="absolute inset-y-[3px] left-[3px] w-[2px] rounded-full bg-[#C9A76A]" />
+            <span data-band="" aria-hidden className="absolute inset-x-[9px] top-[4px] h-[4px] rounded-sm bg-[#C9A76A] transition-opacity duration-300" />
+            <span data-lines="" aria-hidden className="absolute bottom-[7px] left-[11px] right-[7px] flex flex-col gap-[4px] transition-opacity duration-300">
+              <i className="block h-[2px] w-[82%] rounded bg-[#78808B]" />
+              <i className="block h-[2px] w-[58%] rounded bg-[#78808B]" />
+              <i className="block h-[2px] w-[70%] rounded bg-[#78808B]" />
+            </span>
+            <span data-check="" aria-hidden className="absolute inset-0 grid place-items-center pl-[4px] font-mono text-[17px] font-bold leading-none text-[#14161A] transition-opacity duration-300">✓</span>
+          </div>
         </div>
       )}
 
       {/* ── ACT 1 — the door ─────────────────────────────────────────── */}
-      <section data-act="1" className="relative mx-auto flex min-h-[88vh] w-full max-w-[1180px] flex-col justify-center px-6 pt-24">
+      <section data-act="1" className="relative mx-auto flex min-h-[82vh] w-full max-w-[1180px] flex-col justify-center px-6 pt-24">
         <h1 className="max-w-[15ch] text-[clamp(2.5rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
           {copy.act1.h}
         </h1>
@@ -292,16 +336,16 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             onChange={(e) => setTyped(e.target.value)}
             placeholder={copy.act1.placeholder}
             aria-label={copy.act1.placeholder}
-            className="w-full min-w-0 bg-transparent text-[15px] text-[#F7F6F3] outline-none placeholder:text-[#5B6069] [&:focus-visible]:[outline:1px_solid_rgba(201,167,106,0.7)] [&:focus-visible]:[outline-offset:8px]"
+            className="w-full min-w-0 bg-transparent text-[15px] text-[#F7F6F3] outline-none placeholder:text-[#8A929D] [&:focus-visible]:[outline:1px_solid_rgba(201,167,106,0.7)] [&:focus-visible]:[outline-offset:8px]"
           />
           <span data-v7-anchor="request" className="h-px w-px" />
         </div>
-        <p className="mt-3 font-mono text-[10.5px] text-[#5B6069]">{copy.act1.note}</p>
-        {reduced && <StaticSlip label="req" className="mt-4" />}
+        <p className="mt-3 font-mono text-[10.5px] text-[#78808B]">{copy.act1.note}</p>
+        {reduced && <StaticArtifact state="request" className="mt-4" />}
       </section>
 
       {/* ── ACT 2 — the gauntlet, child-simple, bounded grid ─────────── */}
-      <section data-act="2" className="relative mx-auto flex min-h-[80vh] w-full max-w-[1180px] flex-col justify-center px-6">
+      <section data-act="2" className="relative mx-auto w-full max-w-[1180px] px-6 py-[7vh]">
         <h2 className="max-w-[22ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em]">
           {copy.act2.h}
         </h2>
@@ -317,14 +361,14 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             {copy.act2.gauntlet.map((q, i) => (
               <span
                 key={q}
-                className={`${mono} whitespace-nowrap rounded-[3px] border border-dashed border-white/25 px-2.5 py-1.5 text-[#5B6069]`}
+                className={`${mono} whitespace-nowrap rounded-[3px] border border-dashed border-white/25 px-2.5 py-1.5 text-[#78808B]`}
                 style={{ transform: `translate3d(0, calc(var(--g, 0) * ${((i % 3) - 1) * 8}px), 0)` }}
               >
                 {q}
               </span>
             ))}
           </div>
-          {reduced && <StaticSlip label="req" className="mt-4" />}
+          {reduced && <StaticArtifact state="request" className="mt-4" />}
         </div>
       </section>
 
@@ -335,33 +379,31 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           station text ever enters. */}
       <section data-act="3" className="relative" style={{ height: reduced ? "auto" : "200vh" }}>
         <div className={reduced ? "" : "sticky top-0 flex min-h-screen flex-col justify-center"}>
-          <div className="mx-auto w-full max-w-[1180px] px-6 py-[8vh]">
-            <div className="relative mb-12 h-[30px]">
-              <div className="absolute inset-x-0 top-[15px] h-px bg-gradient-to-r from-transparent via-[#C9A76A] to-transparent">
+          <div className={`mx-auto w-full max-w-[1180px] px-6 ${reduced ? "py-[6vh]" : "flex min-h-screen flex-col justify-between pb-[11vh] pt-[11vh]"}`}>
+            <div data-v7-lane="" className="relative h-[44px]">
+              <div className="absolute inset-x-0 top-[22px] h-px bg-gradient-to-r from-transparent via-[#C9A76A] to-transparent">
                 <span data-v7-anchor="walk-start" className="absolute left-[6%] top-0 h-px w-px" />
                 <span data-v7-anchor="walk-end" className="absolute right-[6%] top-0 h-px w-px" />
               </div>
-              {reduced && <StaticSlip label="req" className="absolute left-[58%] top-[-4px]" />}
+              {reduced && <StaticArtifact state="locked" className="absolute left-[58%] top-[-12px]" />}
             </div>
-            <h2 className="max-w-[26ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em]">
+            <h2 className="max-w-[44ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em]">
               {copy.act3.h}
             </h2>
-            <div className="relative mt-8">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-                {copy.act3.stations.map((s, i) => (
-                  <div key={s.name} className="min-w-0">
-                    <span
-                      aria-hidden
-                      className="mb-2 block h-2 w-px bg-[#C9A76A]"
-                      style={reduced ? undefined : { opacity: `calc(0.25 + 0.75 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}
-                    />
-                    <p className={`${mono} text-[#E2C486]`} style={reduced ? undefined : { opacity: `calc(0.45 + 0.55 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}>
-                      {s.name}
-                    </p>
-                    <p className="mt-1 font-mono text-[10.5px] leading-[1.5] text-[#5B6069]">{s.truth}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4">
+              {copy.act3.stations.map((s, i) => (
+                <div key={s.name} className="min-w-0">
+                  <span
+                    aria-hidden
+                    className="mb-3 block h-10 w-px bg-[#C9A76A]"
+                    style={reduced ? undefined : { opacity: `calc(0.25 + 0.75 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}
+                  />
+                  <p className={`${mono} text-[#E2C486]`} style={reduced ? undefined : { opacity: `calc(0.45 + 0.55 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}>
+                    {s.name}
+                  </p>
+                  <p className="mt-1.5 font-mono text-[10.5px] leading-[1.5] text-[#78808B]">{s.truth}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -381,10 +423,10 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             className="relative max-w-[300px] rounded-md border border-[#C9A76A] bg-[#F7F6F3] p-5 text-[#14161A] shadow-[0_0_40px_rgba(201,167,106,0.12)]"
             style={reduced ? undefined : { opacity: "calc(1 - 0.85 * (1 - var(--seal, 1)))" }}
           >
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#8a7a55]">AfterDesk · result</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6b5d3f]">AfterDesk · result</p>
             <p className="mt-2 text-[15px] font-semibold leading-[1.4]">✓ {copy.act4.chips[3]}</p>
             <span data-v7-anchor="result" className="absolute right-4 top-4 h-px w-px" />
-            {reduced && <StaticSlip label="✓" className="mt-3" />}
+            {reduced && <StaticArtifact state="checked" className="mt-3" />}
           </div>
           <div className="grid gap-2.5">
             {copy.act4.chips.slice(0, 3).map((c) => (
@@ -408,13 +450,26 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
   );
 }
 
-function StaticSlip({ label, className = "" }: { label: string; className?: string }) {
+function StaticArtifact({ state, className = "" }: { state: "request" | "locked" | "checked"; className?: string }) {
+  /* the same machined plate, frozen at one state for reduced motion */
+  const checked = state === "checked";
+  const locked = state === "locked";
   return (
     <span
       aria-hidden
-      className={`inline-block h-[18px] w-[28px] rounded-[2px] border border-[#C9A76A] bg-[#F7F6F3] pl-1 font-mono text-[7px] leading-[16px] text-[#14161A] ${className}`}
+      data-v7-static-artifact=""
+      className={`relative inline-block h-[34px] w-[52px] rounded-[3px] border shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${checked ? "border-[#C9A76A] bg-[#F7F6F3]" : locked ? "border-[#C9A76A] bg-[#14171d]" : "border-[#3a4150] bg-[#14171d]"} ${className}`}
     >
-      {label}
+      <i className="absolute inset-y-[3px] left-[3px] w-[2px] rounded-full bg-[#C9A76A]" />
+      {locked && <i className="absolute inset-x-[9px] top-[4px] h-[4px] rounded-sm bg-[#C9A76A]" />}
+      {!checked && (
+        <i className={`absolute bottom-[7px] left-[11px] right-[7px] flex flex-col gap-[4px] ${locked ? "opacity-55" : ""}`}>
+          <i className="block h-[2px] w-[82%] rounded bg-[#78808B]" />
+          <i className="block h-[2px] w-[58%] rounded bg-[#78808B]" />
+          <i className="block h-[2px] w-[70%] rounded bg-[#78808B]" />
+        </i>
+      )}
+      {checked && <i className="absolute inset-0 grid place-items-center pl-[4px] font-mono text-[17px] font-bold not-italic leading-none text-[#14161A]">✓</i>}
     </span>
   );
 }

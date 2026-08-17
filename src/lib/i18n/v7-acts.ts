@@ -18,6 +18,7 @@ export type V7ActsCopy = {
     ];
   };
   act4: { h: string; chips: [string, string, string, string]; cta: string };
+  artifact: { request: string; locked: string; checked: string };
   srStory: string;
 };
 
@@ -30,11 +31,11 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       note: "Nothing typed here is sent, stored or recorded.",
     },
     act2: {
-      h: "Getting work done should not mean managing AI, tools, freelancers, handoffs and quality control yourself.",
+      h: "AI, tools, people, handoffs. You should not have to manage them.",
       gauntlet: ["which prompt?", "which tool?", "who takes it?", "handoff lost", "who re-checks?"],
     },
     act3: {
-      h: "AfterDesk freezes the scope, coordinates the work, handles exceptions and checks the result before it reaches you.",
+      h: "AfterDesk scopes the work, runs it, handles problems, and checks the result.",
       stations: [
         { name: "Scope", truth: "written scope · one fixed price" },
         { name: "Execution", truth: "managed to the written standard" },
@@ -47,6 +48,7 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       chips: ["One owner", "Written scope", "Fixed price", "Checked result"],
       cta: "Describe your result",
     },
+    artifact: { request: "Your request", locked: "Scope locked", checked: "Checked result" },
     srStory: "Your request becomes a slip. AfterDesk receives it, freezes the scope, coordinates the execution, reviews the work, and returns it finished and checked.",
   },
   fr: {
@@ -57,11 +59,11 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       note: "Rien de ce qui est tapé ici n'est envoyé, stocké ou enregistré.",
     },
     act2: {
-      h: "Faire faire le travail ne devrait pas vouloir dire gérer soi-même l'IA, les outils, les pigistes, les transferts et le contrôle qualité.",
+      h: "IA, outils, personnes, transferts. Ce n'est pas à vous de les gérer.",
       gauntlet: ["quel prompt?", "quel outil?", "qui le prend?", "transfert perdu", "qui revérifie?"],
     },
     act3: {
-      h: "AfterDesk gèle la portée, coordonne le travail, gère les exceptions et vérifie le résultat avant qu'il vous parvienne.",
+      h: "AfterDesk cadre le travail, l'exécute, gère les imprévus et vérifie le résultat.",
       stations: [
         { name: "Portée", truth: "portée écrite · un prix fixe" },
         { name: "Exécution", truth: "gérée selon le standard écrit" },
@@ -74,6 +76,7 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       chips: ["Un responsable", "Portée écrite", "Prix fixe", "Résultat vérifié"],
       cta: "Décrivez votre résultat",
     },
+    artifact: { request: "Votre demande", locked: "Portée gelée", checked: "Résultat vérifié" },
     srStory: "Votre demande devient un bordereau. AfterDesk le reçoit, gèle la portée, coordonne l'exécution, revoit le travail et vous le rend fini et vérifié.",
   },
   es: {
@@ -84,11 +87,11 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       note: "Nada de lo escrito aquí se envía, almacena o registra.",
     },
     act2: {
-      h: "Hacer el trabajo no debería significar gestionar usted mismo la IA, las herramientas, los freelancers, los traspasos y el control de calidad.",
+      h: "IA, herramientas, personas, traspasos. Gestionarlos no es su trabajo.",
       gauntlet: ["¿qué prompt?", "¿qué herramienta?", "¿quién lo toma?", "traspaso perdido", "¿quién reverifica?"],
     },
     act3: {
-      h: "AfterDesk congela el alcance, coordina el trabajo, gestiona las excepciones y verifica el resultado antes de que le llegue.",
+      h: "AfterDesk delimita el trabajo, lo ejecuta, resuelve imprevistos y verifica el resultado.",
       stations: [
         { name: "Alcance", truth: "alcance escrito · un precio fijo" },
         { name: "Ejecución", truth: "gestionada según el estándar escrito" },
@@ -101,6 +104,7 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       chips: ["Un responsable", "Alcance escrito", "Precio fijo", "Resultado verificado"],
       cta: "Describa su resultado",
     },
+    artifact: { request: "Su solicitud", locked: "Alcance congelado", checked: "Resultado verificado" },
     srStory: "Su solicitud se convierte en un comprobante. AfterDesk lo recibe, congela el alcance, coordina la ejecución, revisa el trabajo y se lo devuelve terminado y verificado.",
   },
   tl: {
@@ -111,11 +115,11 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       note: "Walang tinatype dito ang ipinapadala, iniimbak o naitatala.",
     },
     act2: {
-      h: "Ang pagpapagawa ng trabaho ay hindi dapat mangahulugan ng pamamahala mo mismo sa AI, mga tool, freelancer, handoff at quality control.",
+      h: "AI, tools, tao, handoff. Hindi ikaw ang dapat mamahala ng lahat ng ito.",
       gauntlet: ["aling prompt?", "aling tool?", "sino ang kukuha?", "nawalang handoff", "sino ang magre-recheck?"],
     },
     act3: {
-      h: "Nagyeyelo ang AfterDesk ng saklaw, nag-uugnay ng trabaho, humahawak ng exception at sinusuri ang resulta bago ito umabot sa iyo.",
+      h: "Sinasaklaw ng AfterDesk ang trabaho, pinapatakbo, inaayos ang aberya, sinusuri ang resulta.",
       stations: [
         { name: "Saklaw", truth: "nakasulat na saklaw · isang fixed na presyo" },
         { name: "Execution", truth: "pinamamahalaan ayon sa nakasulat na pamantayan" },
@@ -128,6 +132,7 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       chips: ["Isang may-ari", "Nakasulat na saklaw", "Fixed na presyo", "Beripikadong resulta"],
       cta: "Ilarawan ang iyong resulta",
     },
+    artifact: { request: "Ang iyong kahilingan", locked: "Nakapirmi ang saklaw", checked: "Beripikadong resulta" },
     srStory: "Nagiging slip ang iyong kahilingan. Tinatanggap ito ng AfterDesk, nagyeyelo ng saklaw, nag-uugnay ng execution, nirerebyu ang trabaho, at ibinabalik itong tapos at beripikado.",
   },
 };
