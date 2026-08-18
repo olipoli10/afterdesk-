@@ -1,0 +1,960 @@
+"use client";
+
+/* V7 - the four simplicity acts (direction C hybridized with A's hero).
+   REWRITTEN at the P3.1/P4.1 corrective gate.
+
+   ENGINE CONTRACT (each rule answers a named Codex defect):
+   - NAMED anchors - request / problem / walk-start / walk-end / result -
+     resolved by name and verified for cardinality at measure time; the
+     engine disarms LOUDLY (data-v7-engine="missing-anchors") instead of
+     silently, and the guard rig fails on that state.
+   - TWO coordinate spaces, one authority (P4.2). Document-space anchors
+     serve the acts in normal flow; the act-3 walk lives inside a STICKY,
+     where document coordinates lie while the element is pinned. The
+     engine precomputes the pin window (pinStart/pinEnd), the datum lane's
+     offset inside the sticky inner, and the walk x range, then derives
+     every frame's target in VIEWPORT space by pure arithmetic - exact in
+     all three sticky phases, zero per-frame layout reads.
+   - Text is protected by RESERVED LANES in the layout itself, not by
+     runtime dodging: act 2 gives the escort its own lane under the
+     headline, act 3 puts the datum lane FIRST inside the sticky, and the
+     story SEALS at walk-end (the result card materializes) so no transit
+     ever crosses the stations or a headline.
+   - The slip and the A2 dock follow the same authority; A2 offsets are
+     Math.round()ed so the pixel being never lands on fractions.
+   - No per-frame CSS transition: transitions are applied ONCE on escort
+     entry/exit via a class; scroll-driven frames write raw transforms.
+   - The dock transform is guaranteed cleared when the story releases it
+     (g outside the acts) and on unmount.
+   - Ownership: this component RENDERS the concierge itself inside its own
+     ref tree and finds the dock within that ref - no global
+     document.querySelector, and a second A2 cannot exist.
+   - Anchors re-measure after fonts load, on resize, and on first scroll
+     past hydration. No layout reads inside the frame loop.
+   - Reduced motion: the scheduler never starts; the story renders as
+     natural flow with static slips and the dock resting in its corner. */
+
+import Link from "next/link";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { A2Concierge, type ConciergeCopy } from "@/app/_home/a2-concierge";
+import type { V7ActsCopy } from "@/lib/i18n/v7-acts";
+
+function subscribeReduced(cb: () => void) {
+  const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+  m.addEventListener("change", cb);
+  return () => m.removeEventListener("change", cb);
+}
+
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+const ANCHOR_NAMES = ["request", "problem", "solution", "walk-start", "walk-end", "result", "example"] as const;
+
+export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierge: ConciergeCopy }) {
+  const reduced = useSyncExternalStore(
+    subscribeReduced,
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const slipRef = useRef<HTMLDivElement | null>(null);
+  const [typed, setTyped] = useState("");
+  /* the artifact's localized accessible names, readable from the frame
+     loop without widening the effect dependencies (written in an effect,
+     never during render) */
+  const artCopyRef = useRef(copy.artifact);
+  useEffect(() => { artCopyRef.current = copy.artifact; }, [copy.artifact]);
+
+  useEffect(() => {
+    if (reduced) return;
+    const root = rootRef.current, slip = slipRef.current;
+    if (!root || !slip) return;
+    /* the dock lives inside THIS tree (we render the concierge below) */
+    const dock = root.querySelector<HTMLElement>("[data-a2-dock]");
+
+    type Pt = { x: number; y: number }; /* DOCUMENT space (normal-flow acts) */
+    let A: Record<(typeof ANCHOR_NAMES)[number], Pt> | null = null;
+    let dockHomeViewport: { x: number; y: number } | null = null;
+    let blockTop = 0, blockHeight = 1, vh = 1;
+    /* geometry-based milestones: the slip RESTS at each stop when that anchor
+       sits at a comfortable viewport height, so the pacing holds on every
+       track length. They depend on the layout, not on the scroll. */
+    let yAppear = 0, yProblem = 0, ySolution = 0, yCarryStart = 0, yApproachEnd = 0, yExample = 0;
+    let narrativeVh = 1, lastWidth = 0, adjusting = false;
+    /* WHERE THE READER IS, kept up to date every frame. A resize event only
+       fires AFTER the browser has relaid out and possibly moved the scroll
+       itself, so an anchor read at that moment describes a layout the reader
+       never saw. This one is always captured in the layout they were
+       actually reading. */
+    let actBoxes: Array<{ id: string; top: number; h: number }> = [];
+    let anchor: { id: string; f: number } | null = null;
+    /* sticky constants for act 3 - the second coordinate space */
+    let pinStart = 0, pinEnd = 0, sectionTop = 0, laneOffset = 0, wsX = 0, weX = 0;
+    let stageTopDoc = 0, stageBottomDoc = 0, stickyTop = 0;
+    /* Everything the escort must never land on. Each surface carries the
+       rule needed to place it at the current scroll, so a pinned heading is
+       judged where it is really drawn; its COLUMN, so it only counts when it
+       is actually in the pair's way; and the stretch of story where it is an
+       obstacle at all - the request field is where the pair begins and the
+       sealed card is where it is set down, and neither blocks the moment the
+       story deliberately puts the pair there. */
+    type Plane = { mode: "flow" | "pinned" | "stage"; top: number; h: number; stickyTop: number; pinStart: number; pinEnd: number; left: number; right: number; fromY: number; untilY: number };
+    let planes: Plane[] = [];
+    let escorting = false;
+    let exitTimer = 0;
+
+    /* NATURAL layout coordinates. getBoundingClientRect() returns where an
+       element is PAINTED, so for a sticky element it reports its pinned
+       position - measuring from it would redefine the pin window at the
+       current scroll and reset the walk. The offsetTop/offsetLeft chain
+       reports the layout position, which is what a pin window is made of. */
+    const docTop = (el: HTMLElement) => { let y = 0; let n: HTMLElement | null = el; while (n) { y += n.offsetTop; n = n.offsetParent as HTMLElement | null; } return y; };
+    const docLeft = (el: HTMLElement) => { let x = 0; let n: HTMLElement | null = el; while (n) { x += n.offsetLeft; n = n.offsetParent as HTMLElement | null; } return x; };
+    /* Chrome folds the sticky shift into offsetTop as well as into the
+       rendered rect, so BOTH lie about a pinned element's natural place.
+       The only honest reading is to neutralise the stickiness for the
+       measurement itself: the style is set and restored inside a single
+       task, so nothing is ever painted in the static state - no visible
+       manipulation, no temporary scroll. */
+    /* ONE transaction: every sticky element in the tree is neutralised
+       together, all natural readings are taken, and the styles are always
+       restored in finally. One forced layout instead of one per element,
+       and nothing is ever painted in the static state. */
+    const withNaturalLayout = <T,>(read: () => T): T => {
+      const sticky: Array<[HTMLElement, string]> = [];
+      for (const el of root.querySelectorAll<HTMLElement>("*")) {
+        if (getComputedStyle(el).position === "sticky") { sticky.push([el, el.style.position]); el.style.position = "static"; }
+      }
+      try {
+        return read();
+      } finally {
+        for (const [el, prev] of sticky) el.style.position = prev;
+      }
+    };
+    /* a point inside a sticky block: its natural place is the block's
+       natural top plus its own (shift-free) offset within it */
+
+
+    /* the narrative height unit: captured once, refreshed only on a real
+       width/orientation change. Mobile chrome that changes only the height
+       must never restretch the story's own geometry. */
+    const setNarrativeUnit = () => {
+      narrativeVh = window.innerHeight;
+      root.style.setProperty("--v7vh", narrativeVh + "px");
+      lastWidth = window.innerWidth;
+    };
+
+    /* the launcher is fixed and bottom-anchored, so its home in viewport
+       space depends on the viewport height itself. Refreshing only this is
+       not a structural remeasure - the story geometry is untouched. */
+    const measureDockHome = () => {
+      if (!dock) return;
+      const prev = dock.style.transform;
+      dock.style.transform = "";
+      const box = (dock.querySelector<HTMLElement>("button") ?? dock).getBoundingClientRect();
+      dockHomeViewport = { x: box.left, y: box.top };
+      dock.style.transform = prev;
+    };
+
+    const measure = () => {
+      vh = window.innerHeight;
+      blockTop = docTop(root);
+      blockHeight = Math.max(1, root.offsetHeight - narrativeVh);
+      const found: Partial<Record<(typeof ANCHOR_NAMES)[number], Pt>> = {};
+      const natural = withNaturalLayout(() => {
+        const out: Record<string, number> = {};
+        for (const name of ANCHOR_NAMES) {
+          const el = root.querySelector<HTMLElement>(`[data-v7-anchor="${name}"]`);
+          if (!el) continue;
+          found[name] = { x: docLeft(el) + el.offsetWidth / 2, y: docTop(el) };
+        }
+        /* the acts, in natural coordinates, so the reader's position inside
+           the idea they are reading can be computed every frame without
+           touching the layout again */
+        actBoxes = [];
+        for (const sec of root.querySelectorAll<HTMLElement>("section[data-act], [data-v7-sem='example']")) {
+          actBoxes.push({ id: sec.getAttribute("data-act") ?? "example", top: docTop(sec), h: sec.offsetHeight });
+        }
+        const sec0 = root.querySelector<HTMLElement>('section[data-act="3"]');
+        const inner0 = sec0?.querySelector<HTMLElement>("[data-v7-stage]") ?? sec0?.firstElementChild as HTMLElement | null;
+        if (sec0) out.sectionTop = docTop(sec0);
+        if (inner0) out.stageTop = docTop(inner0);
+        for (const sel of ['section[data-act="1"] h1', 'section[data-act="2"] h2', 'section[data-act="2b"] h2', 'section[data-act="3"] h2', 'section[data-act="4"] h2']) {
+          const el = root.querySelector<HTMLElement>(sel);
+          if (el) out["plane:" + sel] = docTop(el);
+        }
+        return out;
+      });
+      const complete = ANCHOR_NAMES.every((n) => {
+        const p = found[n];
+        return p && Number.isFinite(p.x) && Number.isFinite(p.y);
+      });
+      A = complete ? (found as Record<(typeof ANCHOR_NAMES)[number], Pt>) : null;
+      /* pin window + datum lane, from real sticky geometry. All offsets are
+         layout-stable, so this stays exact at ANY scroll position. */
+      const sec = root.querySelector<HTMLElement>('section[data-act="3"]');
+      const inner = (sec?.querySelector<HTMLElement>("[data-v7-stage]") ?? sec?.firstElementChild) as HTMLElement | null;
+      const ws = root.querySelector<HTMLElement>('[data-v7-anchor="walk-start"]');
+      const we = root.querySelector<HTMLElement>('[data-v7-anchor="walk-end"]');
+      if (sec && inner && ws && we && complete) {
+        sectionTop = natural.sectionTop;
+        /* the stage may sit BELOW the section top (a plateau heading above
+           it) and may pin at a non-zero offset: both come from NATURAL
+           layout, so the three sticky phases stay exact at any scroll and
+           survive a viewport height change */
+        stageTopDoc = natural.stageTop;
+        const st = parseFloat(getComputedStyle(inner).top);
+        stickyTop = Number.isFinite(st) ? st : 0;
+        stageBottomDoc = sectionTop + sec.offsetHeight - inner.offsetHeight;
+        pinStart = stageTopDoc - stickyTop;
+        pinEnd = stageBottomDoc - stickyTop;
+        /* offsets INSIDE the stage are relative, so they are unaffected by
+           the stage's own sticky shift */
+        laneOffset = docTop(ws) - docTop(inner);
+        wsX = docLeft(ws);
+        weX = docLeft(we);
+      } else {
+        A = null;
+      }
+      /* TEXT PLANES: every headline and station line the pair could cross,
+         each described in the space it actually lives in. A plateau
+         heading is pinned in VIEWPORT space while its section is in view
+         (the P4.2 lesson, applied to text this time); stage content moves
+         with the stage; ordinary copy stays in document space. */
+      planes = [];
+      if (A) {
+        yAppear = blockTop + Math.min(0.05 * blockHeight, narrativeVh * 0.35);
+        yProblem = Math.max(yAppear + 1, A.problem.y - narrativeVh * 0.5);
+        ySolution = Math.max(yProblem + 1, A.solution.y - narrativeVh * 0.5);
+        const solutionSection = actBoxes.find((b) => b.id === "2b");
+        /* WHAT and PROBLEM already have their own complete visual evidence.
+           A2 enters only as SOLUTION approaches, through the reserved carry
+           column, and is fully present before that heading reaches the
+           ownership zone. The entrance is scroll-driven, never timed. */
+        yCarryStart = Math.max(yProblem, (solutionSection?.top ?? A.solution.y) - narrativeVh * 0.96);
+        yApproachEnd = Math.max(ySolution + 1, pinStart);
+        yExample = A.example.y - narrativeVh * 0.78;
+      }
+      const planeSel = ['section[data-act="1"] h1', 'section[data-act="2"] h2', 'section[data-act="2b"] h2', 'section[data-act="3"] h2', 'section[data-act="4"] h2'];
+      for (const sel of planeSel) {
+        const el = root.querySelector<HTMLElement>(sel);
+        if (!el) continue;
+        const host = el.closest("section") as HTMLElement | null;
+        const cs = getComputedStyle(el);
+        const elBox = el.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const fragments = Array.from(range.getClientRects()).filter((r) => r.width > 1 && r.height > 1);
+        range.detach();
+        const addFragments = (mode: Plane["mode"], baseTop: number, stickyTop: number, planePinStart: number, planePinEnd: number) => {
+          for (const r of fragments) {
+            const lineOffset = r.top - elBox.top;
+            planes.push({ mode, top: baseTop + lineOffset, h: r.height,
+              stickyTop: mode === "pinned" ? stickyTop + lineOffset : stickyTop,
+              pinStart: planePinStart, pinEnd: planePinEnd, left: r.left + window.scrollX, right: r.right + window.scrollX,
+              fromY: -1e9, untilY: 1e9 });
+          }
+        };
+        if (inner && inner.contains(el)) {
+          addFragments("stage", docTop(el) - docTop(inner), 0, 0, 0);
+        } else if (cs.position === "sticky" && host) {
+          const hostTop = natural.sectionTop !== undefined && host === root.querySelector('section[data-act="3"]') ? natural.sectionTop : docTop(host);
+          const st = parseFloat(cs.top) || 0;
+          const nat = natural["plane:" + sel] ?? docTop(el);
+          addFragments("pinned", nat, st, nat - st, hostTop + host.offsetHeight - el.offsetHeight - st);
+        } else {
+          addFragments("flow", docTop(el), 0, 0, 0);
+        }
+      }
+      /* the request field, the gauntlet chips and the sealed result card are
+         not type, but the reader is reading them just the same */
+      for (const el of root.querySelectorAll<HTMLElement>('[data-v7-sem="what"] input, [data-v7-sem="problem"] .flex-wrap > *')) {
+        planes.push({ mode: "flow", top: docTop(el), h: el.offsetHeight, stickyTop: 0, pinStart: 0, pinEnd: 0,
+          left: docLeft(el), right: docLeft(el) + el.offsetWidth, fromY: yAppear, untilY: 1e9 });
+      }
+      for (const el of root.querySelectorAll<HTMLElement>('section[data-act="4"] .rounded-md')) {
+        planes.push({ mode: "flow", top: docTop(el), h: el.offsetHeight, stickyTop: 0, pinStart: 0, pinEnd: 0,
+          left: docLeft(el), right: docLeft(el) + el.offsetWidth, fromY: -1e9, untilY: yExample });
+      }
+
+      /* the station lines ride inside the pinned stage */
+      if (inner) {
+        const innerTop = inner.getBoundingClientRect().top;
+        for (const el of inner.querySelectorAll<HTMLElement>("p")) {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          for (const r of Array.from(range.getClientRects())) {
+            if (r.width <= 1 || r.height <= 1) continue;
+            planes.push({ mode: "stage", top: r.top - innerTop, h: r.height, stickyTop: 0, pinStart: 0, pinEnd: 0,
+              left: r.left + window.scrollX, right: r.right + window.scrollX, fromY: -1e9, untilY: 1e9 });
+          }
+          range.detach();
+        }
+      }
+      root.setAttribute("data-v7-engine", A ? "armed" : "missing-anchors");
+      buildLane();
+      measureDockHome();
+      lastY = -1; /* force a recompute on the next frame */
+    };
+
+    const setEscort = (on: boolean) => {
+      if (!dock || escorting === on) return;
+      escorting = on;
+      root.setAttribute("data-v7-escort", on ? "on" : "off");
+      if (on) {
+        if (exitTimer) { window.clearTimeout(exitTimer); exitTimer = 0; }
+        /* the launcher affordance stays home: no hail mid-story (P6) */
+        dock.setAttribute("data-v7-escorting", "on");
+        dock.style.transition = "none";
+        dock.style.opacity = "1";
+      } else {
+        /* the being never glides across page content on release: it fades
+           where the story left it, snaps home invisible, fades back in */
+        dock.style.transition = "opacity 140ms linear";
+        dock.style.opacity = "0";
+        exitTimer = window.setTimeout(() => {
+          exitTimer = 0;
+          dock.style.transition = "none";
+          dock.style.transform = "translate3d(0,0,0)";
+          dock.removeAttribute("data-v7-escorting");
+          requestAnimationFrame(() => {
+            dock.style.transition = "opacity 180ms linear";
+            dock.style.opacity = "1";
+          });
+        }, 160);
+      }
+    };
+
+    let raf = 0, lastY = -1;
+    /* WHAT THE STORY WANTS at a given scroll. Pure narrative intent: no
+       collision handling of any kind lives in here. */
+    const desire = (y: number) => {
+      const sx = window.scrollX;
+      const itv = y < pinStart ? stageTopDoc - y : y <= pinEnd ? stickyTop : stageBottomDoc - y;
+      const laneY = itv + laneOffset;
+      const walkT = pinEnd > pinStart ? clamp01((y - pinStart) / (pinEnd - pinStart)) : 0;
+      const carryOpacity = clamp01((y - yCarryStart) / Math.max(1, narrativeVh * 0.08));
+      /* while it carries, the story asks for a comfortable band rather than a
+         lane that has already scrolled off the top */
+      const carryY = Math.min(Math.max(laneY, vh * 0.18), vh * 0.62);
+      if (!A) return { vx: 0, vy: vh * 0.5, so: 0 };
+      if (y < yAppear) return { vx: A.request.x - sx, vy: A.request.y - y, so: 0 };
+      if (y < yProblem) {
+        const t = (y - yAppear) / (yProblem - yAppear);
+        return { vx: lerp(A.request.x - sx, A.problem.x - sx, t), vy: lerp(A.request.y - y, A.problem.y - y, t), so: carryOpacity };
+      }
+      if (y < ySolution) {
+        const t = (y - yProblem) / (ySolution - yProblem);
+        return { vx: lerp(A.problem.x - sx, A.solution.x - sx, t), vy: lerp(A.problem.y - y, A.solution.y - y, t), so: carryOpacity };
+      }
+      if (y < yApproachEnd) {
+        const t = (y - ySolution) / (yApproachEnd - ySolution);
+        return { vx: lerp(A.solution.x - sx, wsX - sx, t), vy: lerp(A.solution.y - y, laneY, t), so: carryOpacity };
+      }
+      if (y <= pinEnd) return { vx: lerp(wsX, weX, walkT) - sx, vy: laneY, so: carryOpacity };
+      if (y < yExample) return { vx: weX - sx, vy: carryY, so: carryOpacity };
+      const t = clamp01((y - yExample) / (narrativeVh * 0.35));
+      const out = clamp01((y - (yExample + narrativeVh * 0.95)) / (narrativeVh * 0.25));
+      return { vx: lerp(weX - sx, A.example.x - sx + 64, t), vy: lerp(carryY, A.example.y - y + 30, t), so: carryOpacity * (1 - out) };
+    };
+
+    /* every obstacle placed in viewport space at a given scroll */
+    const bandsAt = (y: number) => {
+      const itv = y < pinStart ? stageTopDoc - y : y <= pinEnd ? stickyTop : stageBottomDoc - y;
+      const out: Array<[number, number, number, number]> = [];
+      for (const pl of planes) {
+        if (y < pl.fromY || y > pl.untilY) continue;
+        let t: number;
+        if (pl.mode === "flow") t = pl.top - y;
+        else if (pl.mode === "stage") t = itv + pl.top;
+        else t = y < pl.pinStart ? pl.top - y : y <= pl.pinEnd ? pl.stickyTop : pl.pinEnd + pl.stickyTop - y;
+        const b = t + pl.h;
+        if (b < -40 || t > vh + 40) continue;
+        out.push([t, b, pl.left, pl.right]);
+      }
+      return out;
+    };
+
+    /* THE PROJECTION. Given where the story wants the pair and what is on
+       screen, return the nearest height at which the whole composition sits
+       clear of everything. One function, no cases: the free space is built
+       from the obstacles, and the answer is the closest point inside it. */
+    /* the composition's real reach around its anchor point. The being grows
+       as the story advances, so these cover its LARGEST size: a model built
+       on the resting size left 10px of clearance where 12 was asked for. */
+    const RISE = 40, DROP = 54, CLEAR = 12;
+    const freeAt = (bands: Array<[number, number, number, number]>, xL: number, xR: number) => {
+      const lo = RISE, hi = vh - DROP - 8;
+      const free: Array<[number, number]> = [];
+      if (hi <= lo) return free;
+      const blocked: Array<[number, number]> = [];
+      for (const [bT, bB, oL, oR] of bands) {
+        if (oR < xL - 6 || oL > xR + 6) continue;
+        blocked.push([bT - CLEAR - DROP, bB + CLEAR + RISE]);
+      }
+      blocked.sort((a, b) => a[0] - b[0]);
+      let cur = lo;
+      for (const [mT, mB] of blocked) {
+        if (mB <= cur) continue;
+        if (mT > cur) free.push([cur, Math.min(mT, hi)]);
+        cur = Math.max(cur, mB);
+        if (cur >= hi) break;
+      }
+      if (cur < hi) free.push([cur, hi]);
+      return free.filter(([a, b]) => b - a >= 1);
+    };
+    /* THE CARRY LANE: one global, continuous function of scroll position.
+       Choosing the nearest free interval independently at each sample still
+       teleported when that interval closed. Instead, every legal height is
+       mapped for the whole story first; a dynamic programme then finds one
+       connected, minimum-cost route through those measured gaps. The route
+       is computed once and depends only on scroll position — never on
+       reading direction or arrival path.
+
+       A windowed predecessor search (a hard per-sample displacement cap)
+       previously turned one genuinely tight squeeze into total failure: a
+       real, physically narrow gap can close to nothing within a single
+       sample even though a wide-open gap exists right beside it, and if the
+       escort was pinned inside the narrow one when it closed, the only
+       predecessor within the window was gone - `end < 0`, the whole lane
+       disarmed for the entire story. Search now covers every legal height
+       in the row: the quadratic step cost still makes ordinary motion the
+       cheapest choice and keeps it exactly as smooth as before, but a
+       transition is never refused purely because it is far - only because
+       the destination is not legal. The one time a real squeeze forces a
+       larger step, it costs that one step, never the rest of the page. */
+    const LANE_STEP = 10, Y_STEP = 8;
+    let lane: Float32Array | null = null;
+    let laneCut: Uint8Array | null = null;
+    let laneFrom = 0;
+    const buildLane = () => {
+      if (!A) { lane = null; laneCut = null; return; }
+      /* The route exists for the carrying story, with a hidden lead-in long
+         enough to reach its first legal height before opacity begins. The
+         request field above is evidence for WHAT, not part of the carrying
+         interval, so it must not make an invisible prelude unsatisfiable. */
+      laneFrom = Math.max(blockTop, yCarryStart - narrativeVh * 0.35);
+      const laneUntil = yExample + narrativeVh * 1.3;
+      const n = Math.max(4, Math.ceil((laneUntil - laneFrom) / LANE_STEP) + 2);
+      const lo = RISE, hi = vh - DROP - 8;
+      const m = Math.max(2, Math.floor((hi - lo) / Y_STEP) + 1);
+      const wants = new Float32Array(n);
+      const directLegal = new Uint8Array(n);
+      const legal: Uint8Array[] = [];
+      for (let i = 0; i < n; i++) {
+        const y = laneFrom + i * LANE_STEP;
+        const d = desire(y);
+        /* Plan the collision-free route before it becomes visible too. If
+           obstacles appeared only when opacity crossed a threshold, the
+           first visible sample could require an impossible jump. The hidden
+           lead-in gives the same continuous function room to pre-position. */
+        const free = freeAt(bandsAt(y), d.vx - 54, d.vx + 62);
+        wants[i] = Math.min(Math.max(d.vy, lo), hi);
+        if (free.some(([a, b]) => wants[i] >= a && wants[i] <= b)) directLegal[i] = 1;
+        const row = new Uint8Array(m);
+        for (let k = 0; k < m; k++) {
+          const vy = lo + k * Y_STEP;
+          if (free.some(([a, b]) => vy >= a && vy <= b)) row[k] = 1;
+        }
+        legal.push(row);
+      }
+
+      /* A genuinely reserved layout lane needs no projection at all. Keep
+         the narrative's continuous desired path byte-for-byte when every
+         sample already clears every measured surface; only invoke the
+         global projector when the layout itself cannot provide that lane. */
+      if (directLegal.every((v) => v === 1)) {
+        lane = wants;
+        return;
+      }
+
+      let costs = new Float64Array(m);
+      costs.fill(Infinity);
+      const back: Int16Array[] = [new Int16Array(m).fill(-1)];
+      for (let k = 0; k < m; k++) {
+        if (!legal[0][k]) continue;
+        const d = lo + k * Y_STEP - wants[0];
+        costs[k] = d * d * 0.02;
+      }
+      for (let i = 1; i < n; i++) {
+        const next = new Float64Array(m);
+        next.fill(Infinity);
+        const rowBack = new Int16Array(m).fill(-1);
+        /* every predecessor in the row is a candidate: connectivity is
+           bounded only by legality, never by an artificial search window */
+        for (let k = 0; k < m; k++) {
+          if (!legal[i][k]) continue;
+          let best = Infinity, bestJ = -1;
+          for (let j = 0; j < m; j++) {
+            if (!Number.isFinite(costs[j])) continue;
+            const step = (k - j) * Y_STEP;
+            const candidate = costs[j] + step * step * 0.08;
+            if (candidate < best) { best = candidate; bestJ = j; }
+          }
+          if (bestJ < 0) continue;
+          const d = lo + k * Y_STEP - wants[i];
+          next[k] = best + d * d * 0.02;
+          rowBack[k] = bestJ;
+        }
+        costs = next;
+        back.push(rowBack);
+      }
+
+      let end = -1, best = Infinity;
+      for (let k = 0; k < m; k++) {
+        if (costs[k] < best) { best = costs[k]; end = k; }
+      }
+      if (end < 0) {
+        lane = null;
+        laneCut = null;
+        root.setAttribute("data-v7-engine", "no-carry-lane");
+        return;
+      }
+      const path = new Float32Array(n);
+      for (let i = n - 1, k = end; i >= 0; i--) {
+        path[i] = lo + k * Y_STEP;
+        if (i > 0) k = back[i][k];
+      }
+      lane = path;
+      /* THE INTERPOLATION SAFETY PASS. Two adjacent samples are each
+         individually legal - that is what the DP guarantees - but a
+         straight blend between them can still sweep through illegal space
+         in between when a real obstacle sits between the two sides. Proven
+         by direct measurement: a six-scroll-pixel window where the blended
+         position visibly overlapped station text, even though both
+         endpoints were correct on their own. Every transition is checked at
+         several scroll positions against the SAME geometry the DP itself
+         used; one that would cross illegal space is marked so laneAt steps
+         instead of blends there - never rendered inside the obstacle, and
+         never smoothed through it either. Ordinary transitions, the
+         overwhelming majority of the page, are entirely unaffected. */
+      const cut = new Uint8Array(n);
+      for (let i = 1; i < n; i++) {
+        const v0 = path[i - 1], v1 = path[i];
+        if (v0 === v1) continue;
+        const y0 = laneFrom + (i - 1) * LANE_STEP, y1 = laneFrom + i * LANE_STEP;
+        const SAMPLES = 6;
+        let safe = true;
+        for (let s = 1; s < SAMPLES && safe; s++) {
+          const t = s / SAMPLES;
+          const y = y0 + (y1 - y0) * t;
+          const vy = v0 + (v1 - v0) * t;
+          const d = desire(y);
+          const free = freeAt(bandsAt(y), d.vx - 54, d.vx + 62);
+          if (!free.some(([a, b]) => vy >= a && vy <= b)) safe = false;
+        }
+        if (!safe) cut[i] = 1;
+      }
+      laneCut = cut;
+    };
+    const laneAt = (y: number) => {
+      if (!lane || lane.length < 2) return desire(y).vy;
+      const t = (y - laneFrom) / LANE_STEP;
+      const i = Math.min(lane.length - 2, Math.max(0, Math.floor(t)));
+      const f = Math.min(1, Math.max(0, t - i));
+      if (laneCut && laneCut[i + 1]) {
+        /* the only way to move between two correct, legal positions on
+           opposite sides of something solid without ever rendering inside
+           it: hold, then step, exactly once, at the midpoint */
+        return f < 0.5 ? lane[i] : lane[i + 1];
+      }
+      return lane[i] + (lane[i + 1] - lane[i]) * f;
+    };
+
+    const frame = () => {
+      raf = 0;
+      const y = window.scrollY;
+      if (y === lastY) return;
+      lastY = y;
+      if (!A) return; /* disarmed loudly; guards catch data-v7-engine */
+      const g = clamp01((y - blockTop) / blockHeight);
+      root.style.setProperty("--g", g.toFixed(4));
+      const centre = y + vh * 0.5;
+      for (const b of actBoxes) {
+        if (b.h > 0 && centre >= b.top && centre < b.top + b.h) { anchor = { id: b.id, f: (y - b.top) / b.h }; break; }
+      }
+      /* the walk is bound to the REAL pin window, not to block fractions */
+      const walk = pinEnd > pinStart ? clamp01((y - pinStart) / (pinEnd - pinStart)) : 0;
+      root.style.setProperty("--walk", walk.toFixed(4));
+      root.style.setProperty("--seal", clamp01((y - pinEnd) / (narrativeVh * 0.4)).toFixed(4));
+
+
+      /* WHERE THE PAIR IS. The lane already answered this question for every
+         scroll position, from the real layout: it is clear of headline type,
+         station lines, the request field, the gauntlet chips, the sealed
+         card and the launcher, it is smooth, and it is the same in both
+         reading directions. Nothing here has to dodge anything. */
+      const d = desire(y);
+      const vx = d.vx;
+      const vy = laneAt(y);
+      const so = d.so;
+      const storyActive = so > 0.01 && y >= yAppear;
+
+      slip.style.transform = `translate3d(${vx.toFixed(1)}px, ${vy.toFixed(1)}px, 0)`;
+      slip.style.opacity = so.toFixed(3);
+
+      /* the artifact's three machined states: request until the walk,
+         locked while the scope is frozen on the datum, checked after the
+         seal. Attribute + localized accessible name, written on change. */
+      const artState = y < yApproachEnd ? "request" : y <= pinEnd ? "locked" : "checked";
+      if (slip.getAttribute("data-v7-artifact") !== artState) {
+        slip.setAttribute("data-v7-artifact", artState);
+        slip.setAttribute("aria-label", artCopyRef.current[artState]);
+      }
+
+      if (dock && dockHomeViewport) {
+        setEscort(storyActive);
+        if (storyActive) {
+          /* integer-pixel escort, trailing beside the slip, never covering */
+          const tx = Math.round(vx - 44 - dockHomeViewport.x);
+          const ty = Math.round(vy - 6 - dockHomeViewport.y);
+          dock.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+          /* the being fades with its plate, never apart from it: one
+             composition, one opacity, so the two can never disagree */
+          dock.style.opacity = so.toFixed(3);
+        }
+      }
+    };
+    setNarrativeUnit();
+    measure();
+    /* fonts.ready is uncancellable: the flag stops a stale resolution from
+       re-arming the engine after this effect was cleaned up (e.g. when the
+       reduced-motion store flips right after hydration) */
+    let disposed = false;
+    if (document.fonts?.ready) document.fonts.ready.then(() => { if (!disposed) { measure(); frame(); } }).catch(() => undefined);
+    /* a mobile address bar fires a burst of resize events: coalesce them
+       into at most ONE remeasure per frame */
+    let resizeRaf = 0;
+    const onResize = () => {
+      if (window.innerWidth !== lastWidth) {
+        /* A REAL relayout (orientation or width), handled BEFORE this frame
+           is painted. Deferring it to the next animation frame would show
+           one hybrid image - new width, old story unit, old scroll - and a
+           single wrong image is exactly the flash the reader notices.
+
+           The mobile and desktop rhythms are not proportional to one
+           another, so global progress is NOT the invariant: the reader's
+           ACT and their position inside it are. That anchor is kept up to
+           date on every painted frame, so it describes the layout they were
+           actually reading, not this half-changed one. */
+        const pos = anchor;
+        setNarrativeUnit();
+        measure();
+        if (pos && !adjusting) {
+          const box = actBoxes.find((b) => b.id === pos.id);
+          if (box && box.h > 0) {
+            const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            const target = Math.min(maxY, Math.max(0, Math.round(box.top + pos.f * box.h)));
+            if (Math.abs(target - window.scrollY) > 2) {
+              adjusting = true;          /* exactly one adjustment, never a second */
+              window.scrollTo({ top: target, behavior: "instant" as ScrollBehavior });
+              requestAnimationFrame(() => { adjusting = false; });
+            }
+          }
+        }
+        lastY = -1;
+        frame();
+        return;
+      }
+      if (resizeRaf) return;
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        {
+          /* height-only (mobile chrome): the story geometry is expressed in
+             the captured unit, so nothing structural moved. Refresh only the
+             viewport-space values the escort needs to stay on screen. */
+          vh = window.innerHeight;
+          measureDockHome();
+          lastY = -1;
+          frame();
+        }
+      });
+    };
+    window.addEventListener("resize", onResize);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", onResize);
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(frame); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    frame();
+    return () => {
+      disposed = true;
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      vv?.removeEventListener("resize", onResize);
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      if (raf) cancelAnimationFrame(raf);
+      if (exitTimer) window.clearTimeout(exitTimer);
+      if (dock) { dock.style.transform = ""; dock.style.transition = ""; dock.style.opacity = ""; dock.removeAttribute("data-v7-escorting"); }
+      slip.style.opacity = "0";
+      /* the armed marker must not survive a flip to reduced motion */
+      root.removeAttribute("data-v7-engine");
+      root.removeAttribute("data-v7-escort");
+    };
+  }, [reduced]);
+
+  const mono = "font-mono text-[11px] uppercase tracking-[0.16em]";
+
+  return (
+    <div ref={rootRef} data-v7-acts="" className="relative bg-[#08090B] text-[#F7F6F3]">
+      {/* while the being escorts the slip, its launcher hail stays silent -
+          the affordance belongs to the resting dock, not to the story.
+          P8.1: during the story the being doubles (integer scale, feet
+          planted, anatomy untouched) and the launcher chrome steps back so
+          only the character carries. The artifact plate switches its three
+          machined states by attribute. */}
+      <style>{`
+        [data-a2-dock][data-v7-escorting="on"] > span[aria-hidden] { display: none; }
+        [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: scale(2); transform-origin: 50% 100%; }
+        [data-a2-dock][data-v7-escorting="on"] button { background: transparent; border-color: transparent; box-shadow: none; overflow: visible; }
+        /* the closure is COMMANDED BY SCROLL: the gold seam closes with
+           the walk, the frame stabilizes to gold, the result surface is
+           revealed by the seal progress, the check lands last. Reversible
+           at any scroll position; no time-based animation, no pulse. */
+        [data-v7-slip] [data-plate] { background: #14171d; border-color: color-mix(in srgb, #3a4150, #C9A76A calc(var(--walk, 0) * 100%)); }
+        [data-v7-slip] [data-seam] { transform: scaleY(calc(0.35 + 0.65 * var(--walk, 0))); transform-origin: 50% 100%; }
+        [data-v7-slip] [data-band] { opacity: var(--walk, 0); }
+        [data-v7-slip] [data-lines] { opacity: max(calc(1 - 0.45 * var(--walk, 0) - 1.4 * var(--seal, 0)), 0); }
+        [data-v7-slip] [data-paper] { opacity: min(calc(var(--seal, 0) * 1.5), 1); }
+        [data-v7-slip] [data-check] { opacity: clamp(0, calc((var(--seal, 0) - 0.62) * 2.6), 1); }
+      `}</style>
+      <p className="sr-only">{copy.srStory}</p>
+
+      {!reduced && (
+        <div
+          ref={slipRef}
+          role="img"
+          aria-label={copy.artifact.request}
+          data-v7-slip=""
+          data-v7-artifact="request"
+          className="pointer-events-none fixed left-0 top-0 z-40 w-[52px] opacity-0"
+          style={{ willChange: "transform" }}
+        >
+          {/* the carried piece: a machined onyx plate with a gold seam.
+              Three states, universal visual grammar, localized name:
+              request (etched lines) -> locked (gold frame + seal band)
+              -> checked (light plate, gold seam, dark check). */}
+          <div data-plate="" className="relative h-[34px] w-[52px] overflow-hidden rounded-[3px] border shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+            <span data-paper="" aria-hidden className="absolute inset-0 bg-[#F7F6F3]" />
+            <span data-seam="" aria-hidden className="absolute inset-y-[3px] left-[3px] w-[2px] rounded-full bg-[#C9A76A]" />
+            <span data-band="" aria-hidden className="absolute inset-x-[9px] top-[4px] h-[4px] rounded-sm bg-[#C9A76A]" />
+            <span data-lines="" aria-hidden className="absolute bottom-[7px] left-[11px] right-[7px] flex flex-col gap-[4px]">
+              <i className="block h-[2px] w-[82%] rounded bg-[#78808B]" />
+              <i className="block h-[2px] w-[58%] rounded bg-[#78808B]" />
+              <i className="block h-[2px] w-[70%] rounded bg-[#78808B]" />
+            </span>
+            <span data-check="" aria-hidden className="absolute inset-0 grid place-items-center pl-[4px] font-mono text-[17px] font-bold leading-none text-[#14161A]">✓</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── ACT 1 — the door ─────────────────────────────────────────── */}
+      {/* MOBILE PLATEAUS: each teaching idea keeps its heading pinned while
+          its own content passes beneath it, so a settle anywhere inside the
+          section still shows THAT idea's headline and THAT idea's visual.
+          Native sticky only - the finger is never intercepted, there is no
+          snap and no automatic advance. Desktop (sm:) keeps the accepted
+          compact rhythm, and every engine anchor stays in normal flow. */}
+      <section data-act="1" data-v7-sem="what" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.15)] sm:min-h-[82vh] sm:justify-center sm:pt-24">
+        <h1 className="sticky top-[10vh] z-10 max-w-[15ch] text-[clamp(2.5rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.04em] sm:static">
+          {copy.act1.h}
+        </h1>
+        {/* the composition fills its plateau: the pinned heading always has
+            one of its OWN elements beside it, at every settle */}
+        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.08)] pt-[calc(var(--v7vh,100vh)*0.04)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
+        <p className="max-w-[44ch] text-[clamp(1.05rem,1.6vw,1.25rem)] leading-[1.6] text-[#9AA1AB] sm:mt-5">{copy.act1.sub}</p>
+        <div className="flex w-full max-w-[520px] items-center gap-3 rounded-lg border border-white/15 bg-[#171A20] px-4 py-3.5 sm:mt-8">
+          <span aria-hidden className="text-[#C9A76A]">▍</span>
+          <input
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            placeholder={copy.act1.placeholder}
+            aria-label={copy.act1.placeholder}
+            className="w-full min-w-0 bg-transparent text-[15px] text-[#F7F6F3] outline-none placeholder:text-[#8A929D] [&:focus-visible]:[outline:1px_solid_rgba(201,167,106,0.7)] [&:focus-visible]:[outline-offset:8px]"
+          />
+          <span data-v7-anchor="request" className="h-px w-px" />
+        </div>
+        <p className="font-mono text-[10.5px] text-[#78808B] sm:mt-3">{copy.act1.note}</p>
+        {reduced && <StaticArtifact state="request" className="mt-4" />}
+        </div>
+      </section>
+
+      {/* ── ACT 2 — the gauntlet, child-simple, bounded grid ─────────── */}
+      <section data-act="2" data-v7-sem="problem" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:block sm:min-h-0 sm:py-[7vh]">
+        {/* THE TRANSPORT LANE, RESERVED IN THE LAYOUT ITSELF.
+            This headline is STICKY and the content under it FLOWS, so any
+            vertical gap between the two necessarily closes as the reader
+            scrolls - no spacing rule can hold one open. A COLUMN is the only
+            reservation that survives scrolling, so the headline simply stops
+            short of the escort's column instead.
+            The bound is derived, not chosen: the escort rides its anchor at
+            87% of this same content box and reaches 54px to its left, so text
+            may run to 87% - 54px, less the 18px the engine already demands as
+            clearance. One rule, expressed in the anchor's own units - it
+            therefore holds at every width and in every language, with no
+            breakpoint test, no language test, and nothing tuned to a
+            screenshot. Desktop keeps its measure: there the acts are not a
+            single narrow column and the escort does not ride beside them. */}
+        <h2 className="sticky top-[10vh] z-10 max-w-[calc(87%-72px)] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] sm:static sm:max-w-[22ch]">
+          {copy.act2.h}
+        </h2>
+        {/* the slip hovers above the gauntlet - contained flex-wrap, no
+            percentage absolutes, so the geometry itself fits every phone.
+            The escort gets its OWN reserved lane between the headline and
+            the chips: the pair can never sit on the act-2 copy. */}
+        <div className="flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.06)] pt-0 sm:mt-10 sm:block sm:flex-none sm:pb-0">
+          <div aria-hidden className="relative h-px sm:h-8">
+            <span data-v7-anchor="problem" className="absolute left-[87%] top-0 h-px w-px sm:top-4" />
+          </div>
+          {/* A GENUINE LANE, RESERVED IN THE LAYOUT. These are short labels,
+              not fields: a column flex was stretching them to the full width,
+              which turned the gauntlet into a stack of full-width walls
+              sweeping past the escort. Sized to their own text, they leave a
+              real column on the right where the pair can hold one height
+              while they pass - measured, the alternative was the guide
+              hopping 124px from gap to gap, four times, down this act. */}
+          <div aria-hidden className="flex max-w-full flex-1 flex-col flex-wrap items-start justify-between sm:max-w-[78%] sm:flex-none sm:flex-row sm:items-stretch sm:gap-2.5">
+            {copy.act2.gauntlet.map((q, i) => (
+              <span
+                key={q}
+                className={`${mono} max-w-[45%] rounded-[3px] border border-dashed border-white/25 px-2.5 py-1.5 text-[#78808B] sm:max-w-none sm:whitespace-nowrap`}
+                style={{ transform: `translate3d(0, calc(var(--g, 0) * ${((i % 3) - 1) * 8}px), 0)` }}
+              >
+                {q}
+              </span>
+            ))}
+          </div>
+          {reduced && <StaticArtifact state="request" className="mt-4" />}
+        </div>
+      </section>
+
+      {/* ── SOLUTION — Endvera takes the request ───────────────────── */}
+      <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
+        {/* the same reserved column: this sticky headline is the wall the
+            escort was teleporting over, because it swept up through exactly
+            the height the story wants the pair to occupy. Held out of the
+            column, its vertical travel no longer touches the escort at all. */}
+        <h2 className="sticky top-[10vh] z-10 max-w-[calc(87%-72px)] text-[clamp(1.5rem,3.2vw,2.3rem)] font-semibold leading-[1.16] tracking-[-0.03em] sm:static sm:max-w-[24ch]">
+          {copy.solution.h}
+        </h2>
+        {/* the handover: the support line travels WITH the lane where A2
+            receives the request, so the moment reads as one composition */}
+        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.07)] pt-[calc(var(--v7vh,100vh)*0.05)] sm:mt-12 sm:block sm:flex-none sm:pb-0 sm:pt-0">
+          <p className="max-w-[40ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB]">{copy.solution.sub}</p>
+          <div aria-hidden className="relative mt-[14vh] h-[64px] sm:mt-8">
+            <span data-v7-anchor="solution" className="absolute left-[87%] top-[30px] h-px w-px" />
+            {reduced && <StaticArtifact state="request" className="absolute left-[38%] top-0" />}
+          </div>
+        </div>
+      </section>
+
+      {/* ── ACT 3 — the walk (sticky, continuous) ────────────────────── */}
+      {/* The datum lane comes FIRST inside the sticky: the escort arrives
+          from above through chip decor only, and while the section is
+          pinned the pair rides a stable corridor that no headline or
+          station text ever enters. */}
+      <section data-act="3" data-v7-sem="how" className={reduced ? "relative" : "relative h-[calc(var(--v7vh,100vh)*1.6)] sm:h-[200vh]"}>
+        {/* the HOW plateau: its heading stays with its own stations for the
+            whole act, exactly like the other mobile plateaus */}
+        <div data-v7-stage="" className={reduced ? "" : "sticky top-0 flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center sm:min-h-screen"}>
+          <div className={`mx-auto w-full max-w-[1180px] px-6 ${reduced ? "py-[6vh]" : "flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-between pb-[8vh] pt-[8vh] sm:min-h-screen sm:pb-[10vh] sm:pt-[10vh]"}`}>
+            <h2 className="max-w-[14ch] text-[clamp(1.15rem,3vw,2.1rem)] font-semibold leading-[1.2] tracking-[-0.03em] sm:max-w-[72%]">
+              {copy.act3.h}
+            </h2>
+            <div data-v7-lane="" className="relative h-[120px] sm:h-[44px]">
+              <div className="absolute inset-x-0 top-[22px] h-px bg-gradient-to-r from-transparent via-[#C9A76A] to-transparent">
+                <span data-v7-anchor="walk-start" className="absolute right-[10%] top-0 h-px w-px" />
+                <span data-v7-anchor="walk-end" className="absolute right-[12%] top-0 h-px w-px sm:right-[6%]" />
+              </div>
+              {reduced && <StaticArtifact state="locked" className="absolute left-[58%] top-[-12px]" />}
+            </div>
+            <div className="grid max-w-[65%] grid-cols-2 gap-x-3 gap-y-6 sm:max-w-[78%] sm:grid-cols-4 sm:gap-x-6">
+              {copy.act3.stations.map((s, i) => (
+                <div key={s.name} className="min-w-0">
+                  <span
+                    aria-hidden
+                    className="mb-3 block h-10 w-px bg-[#C9A76A]"
+                    style={reduced ? undefined : { opacity: `calc(0.25 + 0.75 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}
+                  />
+                  <p className={`${mono} text-[#E2C486]`} style={reduced ? undefined : { opacity: `calc(0.45 + 0.55 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}>
+                    {s.name}
+                  </p>
+                  <p className="mt-1.5 font-mono text-[10.5px] leading-[1.5] text-[#78808B]">{s.truth}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ACT 4 — the sealed result, ONYX (no paper hard-cut) ──────── */}
+      <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[80vh] sm:justify-center sm:pb-16 sm:pt-0">
+        <h2 className="sticky top-[10vh] z-10 max-w-[14ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] sm:static sm:max-w-[26ch]">
+          {copy.act4.h}
+        </h2>
+        {/* the short intentional light moment: ONE contained sealed card on
+            onyx - the world stays night, the deliverable glows. The walk
+            seals INTO this card: --seal reveals it as the story completes
+            (default 1 so no-JS and reduced readers always see it). */}
+        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.04)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
+        <div className="flex flex-wrap items-center gap-6 sm:mt-10">
+          <div
+            className="relative max-w-[300px] rounded-md border border-[#C9A76A] bg-[#F7F6F3] p-5 text-[#14161A] shadow-[0_0_40px_rgba(201,167,106,0.12)]"
+            style={reduced ? undefined : { opacity: "calc(1 - 0.85 * (1 - var(--seal, 1)))" }}
+          >
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6b5d3f]">Endvera · result</p>
+            <p className="mt-2 text-[15px] font-semibold leading-[1.4]">✓ {copy.act4.chips[3]}</p>
+            <span data-v7-anchor="result" className="absolute right-4 top-4 h-px w-px" />
+            {reduced && <StaticArtifact state="checked" className="mt-3" />}
+          </div>
+          <div className="grid justify-items-start gap-2.5 sm:justify-items-stretch">
+            {copy.act4.chips.slice(0, 3).map((c) => (
+              <span key={c} className={`${mono} max-w-[45%] rounded-[4px] border border-white/20 px-3.5 py-2 text-[#c7ccd4] sm:max-w-none`}>{c}</span>
+            ))}
+          </div>
+        </div>
+        <div className="sm:mt-10">
+          <Link
+            href="/register"
+            className="inline-flex min-h-11 items-center rounded-full border border-[#C9A76A] px-6 text-[15px] font-medium text-[#E2C486] no-underline transition-colors hover:bg-[#C9A76A] hover:text-[#14161A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]"
+          >
+            {copy.act4.cta}
+          </Link>
+        </div>
+        {/* the bridge into the real example: A2 presents it here */}
+        <div className="sm:mt-14">
+          <p className={`${mono} text-[#E2C486]`}>{copy.exampleIntro}</p>
+          <span data-v7-anchor="example" aria-hidden className="relative left-[65%] top-3 block h-px w-px sm:left-[87%]" />
+          {reduced && <StaticArtifact state="checked" className="mt-4" />}
+        </div>
+        </div>
+      </section>
+
+      {/* the ONE being lives inside this tree - scoped ownership */}
+      <A2Concierge copy={concierge} />
+    </div>
+  );
+}
+
+function StaticArtifact({ state, className = "" }: { state: "request" | "locked" | "checked"; className?: string }) {
+  /* the same machined plate, frozen at one state for reduced motion */
+  const checked = state === "checked";
+  const locked = state === "locked";
+  return (
+    <span
+      aria-hidden
+      data-v7-static-artifact=""
+      className={`relative inline-block h-[34px] w-[52px] rounded-[3px] border shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${checked ? "border-[#C9A76A] bg-[#F7F6F3]" : locked ? "border-[#C9A76A] bg-[#14171d]" : "border-[#3a4150] bg-[#14171d]"} ${className}`}
+    >
+      <i className="absolute inset-y-[3px] left-[3px] w-[2px] rounded-full bg-[#C9A76A]" />
+      {locked && <i className="absolute inset-x-[9px] top-[4px] h-[4px] rounded-sm bg-[#C9A76A]" />}
+      {!checked && (
+        <i className={`absolute bottom-[7px] left-[11px] right-[7px] flex flex-col gap-[4px] ${locked ? "opacity-55" : ""}`}>
+          <i className="block h-[2px] w-[82%] rounded bg-[#78808B]" />
+          <i className="block h-[2px] w-[58%] rounded bg-[#78808B]" />
+          <i className="block h-[2px] w-[70%] rounded bg-[#78808B]" />
+        </i>
+      )}
+      {checked && <i className="absolute inset-0 grid place-items-center pl-[4px] font-mono text-[17px] font-bold not-italic leading-none text-[#14161A]">✓</i>}
+    </span>
+  );
+}

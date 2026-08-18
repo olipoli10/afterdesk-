@@ -207,6 +207,7 @@ function Stage({
   stageRef,
   idSuffix,
   utility,
+  continuation,
 }: {
   copy: ConceptAssemblyCopy;
   typed: string;
@@ -216,6 +217,9 @@ function Stage({
   stageRef?: React.RefObject<HTMLDivElement | null>;
   idSuffix: string;
   utility?: React.ReactNode;
+  /* continuation mode: the V7 acts above own the opening, so this stage
+     skips its own nav and hero copy and keeps the machine/outcome intact */
+  continuation?: boolean;
 }) {
   const isStatic = frozenP !== undefined;
   const instruction = typed.trim() || copy.sampleRequest;
@@ -233,7 +237,7 @@ function Stage({
       {/* the ONE header: wordmark + page utilities + anchor nav. On phones
           the utility slot wraps to its own row (order/basis classes on the
           slot), keeping the accepted mark / Early Access line untouched. */}
-      <nav className={styles.nav}>
+      {!continuation && <nav className={styles.nav}>
         <Link href="/" className={styles.mark} aria-label="Endvera home">
           <Wordmark tone="paper" />
         </Link>
@@ -244,9 +248,9 @@ function Stage({
           <a href="#inside">{copy.nav.inside}</a>
           <span className={styles.early}>{copy.nav.earlyAccess}</span>
         </span>
-      </nav>
+      </nav>}
 
-      <div className={styles.copy}>
+      {!continuation && <div className={styles.copy}>
         <p className={styles.kicker}>{copy.kicker}</p>
         <h1 className={styles.hl} data-g="hl">
           <span className={styles.hlL1}>{copy.headline[0]}</span>
@@ -266,7 +270,7 @@ function Stage({
           />
           <span className={styles.rail} aria-hidden="true" />
         </div>
-      </div>
+      </div>}
 
       {/* off-stage masses, stated in geometry */}
       <span className={`${styles.edgeTick} ${styles.edgeTickL}`} aria-hidden="true" />
@@ -672,10 +676,12 @@ export function AssemblyExperience({
   copy,
   ctaHref,
   utility,
+  continuation,
 }: {
   copy: ConceptAssemblyCopy;
   ctaHref: string;
   utility?: React.ReactNode;
+  continuation?: boolean;
 }) {
   const motion = useSyncExternalStore(
     subscribeMotionPreference,
@@ -695,7 +701,10 @@ export function AssemblyExperience({
     /* One measurement, two style writes, straight from the event. No rAF
        token to wedge, no state, no work after the user stops. */
     const onScroll = () => {
-      const p = progressToP(track.getBoundingClientRect().top, track.offsetHeight, window.innerHeight);
+      const raw = progressToP(track.getBoundingClientRect().top, track.offsetHeight, window.innerHeight);
+      /* continuation mode enters at the machine: the acts already told the
+         hero story, so the track maps onto [0.2, 1] instead of [0, 1] */
+      const p = continuation ? 0.2 + raw * 0.8 : raw;
       stage.style.setProperty("--p", p.toFixed(4));
       const phase = p < 0.2 ? "hero" : p < 0.82 ? "machine" : "outcome";
       if (stage.dataset.phase !== phase) stage.dataset.phase = phase;
@@ -707,7 +716,7 @@ export function AssemblyExperience({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [motion]);
+  }, [motion, continuation]);
 
   /* Submitting nudges the story forward - a scroll, never a navigation. */
   const advance = () => {
@@ -723,7 +732,7 @@ export function AssemblyExperience({
     return (
       <div>
         <p className={styles.srOnly}>{copy.srJourney}</p>
-        {STATIC_STOPS.map((p, i) => (
+        {(continuation ? STATIC_STOPS.filter((sp) => sp >= 0.2) : STATIC_STOPS).map((p, i) => (
           <Stage
             key={p}
             copy={copy}
@@ -732,12 +741,13 @@ export function AssemblyExperience({
             onAdvance={() => undefined}
             frozenP={p}
             idSuffix={`static-${i}`}
+            continuation={continuation}
             /* page utilities render once, in the first frozen moment - the
                later stages keep only their fading mark/anchor chrome */
             utility={i === 0 ? utility : undefined}
           />
         ))}
-        <BelowFold copy={copy} typed={typed} onTyped={setTyped} onAdvance={() => undefined} ctaHref={ctaHref} />
+        <div data-coda=""><BelowFold copy={copy} typed={typed} onTyped={setTyped} onAdvance={() => undefined} ctaHref={ctaHref} /></div>
       </div>
     );
   }
@@ -755,10 +765,11 @@ export function AssemblyExperience({
             stageRef={stageRef}
             idSuffix="live"
             utility={utility}
+            continuation={continuation}
           />
         </div>
       </div>
-      <BelowFold copy={copy} typed={typed} onTyped={setTyped} onAdvance={advance} ctaHref={ctaHref} />
+      <div data-coda=""><BelowFold copy={copy} typed={typed} onTyped={setTyped} onAdvance={advance} ctaHref={ctaHref} /></div>
     </div>
   );
 }

@@ -11,13 +11,20 @@ import {
   conceptAssemblyLangOf,
   HOME_CONCIERGE_I18N,
 } from "@/lib/i18n/home-assembly";
+import { Wordmark } from "@/components/logo";
 import { AssemblyExperience } from "./_home/assembly-experience";
-import { A2Concierge } from "./_home/a2-concierge";
+import { SimplicityActs } from "@/app/_v7/simplicity-acts";
+import { V7_ACTS_I18N } from "@/lib/i18n/v7-acts";
 
 /* ---------------------------------------------------------------------------
-   The real homepage IS the accepted V5.5 "Assembly Lock" experience
-   (Codex GO 9.2/10), ported faithfully from the frozen prototype, plus the
-   single A2 concierge (Phase 1.4B). One request enters; Endvera assembles
+   The homepage opens with the four V7 simplicity acts, proven locally on the
+   pre-rebrand lineage and reimplemented here on the official ENDVERA source:
+   they tell what the offer is, the problem, the solution and how it works
+   before any example. The accepted V5.5 "Assembly Lock" experience
+   (Codex GO 9.2/10) then continues the story in continuation mode - its
+   internal geometry is untouched, it simply no longer draws its own opening.
+   The acts own the single A2 concierge (Phase 1.4B), so the page does not
+   mount a second one. One request enters; Endvera assembles
    software, models, connected tools, a browser and bounded human judgment;
    problems are recovered; the result is checked; a finished result leaves.
 
@@ -103,33 +110,55 @@ export default async function Home({
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ORG_JSONLD }} />
 
-      <main>
-        {/* ONE header: the V5.5 nav owns all chrome. Sign in/Portal and the
-            language switch ride its utility slot - on phones they drop to a
-            second row so the accepted mark/Early Access line stays intact. */}
-        <AssemblyExperience
-          copy={t}
-          ctaHref="/register"
-          utility={
-            <span
-              /* the element crosses the RSC boundary into the nav's child
-                 list, so React demands an explicit key for it */
-              key="page-utilities"
-              className="order-3 flex basis-full items-center gap-4 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e] md:order-none md:basis-auto"
-            >
-              {portal ? (
-                <Link href={portal} className="transition-colors hover:text-[#c9a76a]">
-                  {nav.nav.portal}
-                </Link>
-              ) : (
-                <Link href="/login" className="transition-colors hover:text-[#c9a76a]">
-                  {nav.nav.signIn}
-                </Link>
-              )}
-              <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
+      {/* ONE header for the whole document, and the only wordmark on the
+          page: the official ENDVERA lockup component, never a typed name.
+          The machine below runs in continuation mode and no longer draws
+          its own nav, so this header is the single owner of the identity. */}
+      <header className="absolute inset-x-0 top-0 z-50">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-5 gap-y-2 px-6 pt-9 text-[#F7F6F3]">
+          <Link
+            href="/"
+            aria-label="Endvera home"
+            className="text-[1.0625rem] no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]"
+          >
+            <Wordmark tone="paper" />
+          </Link>
+          <span
+            /* the element crosses the RSC boundary into the header's child
+               list, so React demands an explicit key for it */
+            key="page-utilities"
+            className="order-3 flex basis-full items-center gap-4 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e] md:order-none md:basis-auto"
+          >
+            {portal ? (
+              <Link href={portal} className="transition-colors hover:text-[#c9a76a]">
+                {nav.nav.portal}
+              </Link>
+            ) : (
+              <Link href="/login" className="transition-colors hover:text-[#c9a76a]">
+                {nav.nav.signIn}
+              </Link>
+            )}
+            <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
+          </span>
+          <span className="ml-auto flex items-center gap-8">
+            <a href="#outcomes" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.outcomes}</a>
+            <a href="#how" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.how}</a>
+            <a href="#inside" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.inside}</a>
+            <span className="inline-flex items-center gap-[0.4375rem] whitespace-nowrap rounded-full border border-white/15 px-3 py-1.5 font-mono text-[0.71875rem] uppercase tracking-[0.06em] text-[#8a919e]">
+              <span aria-hidden className="h-1 w-1 rounded-full bg-[#C9A76A]" />
+              {t.nav.earlyAccess}
             </span>
-          }
-        />
+          </span>
+        </div>
+      </header>
+
+      <main>
+        {/* the four acts tell the whole opening story and own the single A2
+            being; the accepted machine continues it, geometry frozen */}
+        <SimplicityActs copy={V7_ACTS_I18N[clientLangOf(raw)]} concierge={concierge} />
+        <div data-v7-sem="example">
+          <AssemblyExperience copy={t} ctaHref="/register" continuation />
+        </div>
       </main>
 
       {/* real routes under the world's coda - quiet, mono, indexable */}
@@ -142,8 +171,6 @@ export default async function Home({
           <Link href="/workers" className="transition-colors hover:text-[#c9a76a]">{nav.footer.work}</Link>
         </nav>
       </footer>
-
-      <A2Concierge copy={concierge} />
     </>
   );
 }

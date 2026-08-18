@@ -35,9 +35,12 @@ describe("R1 - the homepage IS the accepted V5.5 experience", () => {
 });
 
 describe("R2 - A2 is integrated on the homepage", () => {
-  it("the A2 concierge component exists and the page mounts it", () => {
+  it("the A2 concierge component exists and the homepage tree mounts it once (via the V7 acts)", () => {
     expect(existsSync(join(root, A2))).toBe(true);
-    expect(read(PAGE)).toMatch(/A2Concierge/);
+    const page = read(PAGE);
+    expect(read("src/app/_v7/simplicity-acts.tsx")).toMatch(/<A2Concierge/);
+    expect(page).toMatch(/<SimplicityActs/);
+    expect((page.match(/<A2Concierge/g) ?? []).length, "the page must not mount a second A2").toBe(0);
   });
   it("the launcher is the semantic 44px button named Ask Endvera carrying the frozen A2", () => {
     const s = read(A2);

@@ -57,12 +57,19 @@ describe("H1 - the final rendered title carries the brand exactly once", () => {
 });
 
 describe("H2 - exactly one visible header wordmark, and it is a real link", () => {
-  it("page.tsx no longer renders its own header or a second brand wordmark", () => {
+  it("page.tsx renders THE one premium header, and the machine renders none (V7)", () => {
+    /* V7 inverts the 1.4B.6 arrangement by mandate: the acts need chrome from
+       the first viewport, so page.tsx owns the single header and the V5.5
+       machine runs in continuation mode with its nav conditional and off.
+       The single-wordmark contract is unchanged - only its owner moved - and
+       on this lineage the wordmark is the official component, never typed. */
     const s = page();
-    expect(s).not.toMatch(/<header/);
-    /* the JSON-LD organization *name* is data, not chrome - only JSX text
-       nodes count as a visible wordmark */
+    expect(s.match(/<header/g) ?? [], "exactly one page header").toHaveLength(1);
+    expect(s.match(/<Wordmark/g) ?? [], "exactly one official wordmark").toHaveLength(1);
+    /* the JSON-LD organization *name* is data, not chrome - a typed brand in
+       JSX would be a second, unofficial wordmark */
     expect(s).not.toMatch(/>\s*Endvera\s*</);
+    expect(s).toMatch(/<AssemblyExperience[^>]*continuation/);
   });
   it("the assembly nav's mark is the single wordmark and links home", () => {
     const s = assembly();
@@ -75,9 +82,8 @@ describe("H2 - exactly one visible header wordmark, and it is a real link", () =
 });
 
 describe("H3 - the single header keeps every utility function", () => {
-  it("page.tsx still provides Sign in/Portal and the language switch, now through the header slot", () => {
+  it("page.tsx still provides Sign in/Portal and the language switch, inside its header", () => {
     const s = page();
-    expect(s).toMatch(/utility=\{/);
     expect(s).toMatch(/nav\.nav\.signIn/);
     expect(s).toMatch(/nav\.nav\.portal/);
     expect(s).toMatch(/<LangSwitch/);
