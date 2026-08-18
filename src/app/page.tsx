@@ -144,7 +144,9 @@ export default async function Home({
             accepted V5.5 machine continues it (internal geometry frozen).
             The acts own the single A2 being. */}
         <SimplicityActs copy={V7_ACTS_I18N[clientLangOf(raw)]} concierge={concierge} />
-        <AssemblyExperience copy={t} ctaHref="/register" continuation />
+        <div data-v7-sem="example">
+          <AssemblyExperience copy={t} ctaHref="/register" continuation />
+        </div>
       </main>
 
       {/* real routes under the world's coda - quiet, mono, indexable */}

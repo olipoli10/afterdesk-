@@ -7,6 +7,8 @@ export type SiteLang = "en" | "fr" | "es" | "tl";
 
 export type V7ActsCopy = {
   act1: { h: string; sub: string; placeholder: string; note: string };
+  solution: { h: string; sub: string };
+  exampleIntro: string;
   act2: { h: string; gauntlet: [string, string, string, string, string] };
   act3: {
     h: string;
@@ -25,13 +27,15 @@ export type V7ActsCopy = {
 export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   en: {
     act1: {
-      h: "You describe the result. We handle the rest.",
-      sub: "AfterDesk turns one request into finished, checked work.",
+      h: "AfterDesk gets digital work done for your business.",
+      sub: "You describe the result. We coordinate the right AI, tools and people, check the work, and deliver it back.",
       placeholder: "Describe the result you need…",
       note: "Nothing typed here is sent, stored or recorded.",
     },
+    solution: { h: "AfterDesk takes it from here.", sub: "You hand over the request. AfterDesk organizes everything it needs." },
+    exampleIntro: "One real request, end to end.",
     act2: {
-      h: "AI, tools, people, handoffs. You should not have to manage them.",
+      h: "AI, tools and people should not be yours to manage.",
       gauntlet: ["which prompt?", "which tool?", "who takes it?", "handoff lost", "who re-checks?"],
     },
     act3: {
@@ -53,13 +57,15 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   },
   fr: {
     act1: {
-      h: "Vous décrivez le résultat. On s'occupe du reste.",
-      sub: "AfterDesk transforme une demande en travail fini et vérifié.",
+      h: "AfterDesk fait faire votre travail numérique.",
+      sub: "Vous décrivez le résultat. On coordonne IA, outils et personnes, on vérifie le travail et on vous le livre.",
       placeholder: "Décrivez le résultat qu'il vous faut…",
       note: "Rien de ce qui est tapé ici n'est envoyé, stocké ou enregistré.",
     },
+    solution: { h: "AfterDesk s'en charge.", sub: "Vous remettez la demande. AfterDesk organise tout ce qu'il faut." },
+    exampleIntro: "Une vraie demande, de bout en bout.",
     act2: {
-      h: "IA, outils, personnes, transferts. Ce n'est pas à vous de les gérer.",
+      h: "IA, outils et personnes : ce n'est pas à vous de tout gérer.",
       gauntlet: ["quel prompt?", "quel outil?", "qui le prend?", "transfert perdu", "qui revérifie?"],
     },
     act3: {
@@ -81,13 +87,15 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   },
   es: {
     act1: {
-      h: "Usted describe el resultado. Nosotros nos encargamos del resto.",
-      sub: "AfterDesk convierte una solicitud en trabajo terminado y verificado.",
+      h: "AfterDesk se encarga de su trabajo digital.",
+      sub: "Usted describe el resultado. Coordinamos la IA, las herramientas y las personas adecuadas, verificamos el trabajo y se lo entregamos.",
       placeholder: "Describa el resultado que necesita…",
       note: "Nada de lo escrito aquí se envía, almacena o registra.",
     },
+    solution: { h: "AfterDesk se encarga.", sub: "Usted entrega la solicitud. AfterDesk organiza todo lo necesario." },
+    exampleIntro: "Una solicitud real, de principio a fin.",
     act2: {
-      h: "IA, herramientas, personas, traspasos. Gestionarlos no es su trabajo.",
+      h: "IA, herramientas y personas: usted no debería gestionarlas.",
       gauntlet: ["¿qué prompt?", "¿qué herramienta?", "¿quién lo toma?", "traspaso perdido", "¿quién reverifica?"],
     },
     act3: {
@@ -109,13 +117,15 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   },
   tl: {
     act1: {
-      h: "Ilarawan mo ang resulta. Kami ang bahala sa iba.",
-      sub: "Ginagawa ng AfterDesk ang isang kahilingan na tapos at beripikadong trabaho.",
+      h: "Ipinapagawa ng AfterDesk ang iyong digital na trabaho.",
+      sub: "Ilarawan mo ang resulta. Kinokoordina namin ang AI, tools at tao, sinusuri ang trabaho, at inihahatid ito sa iyo.",
       placeholder: "Ilarawan ang resultang kailangan mo…",
       note: "Walang tinatype dito ang ipinapadala, iniimbak o naitatala.",
     },
+    solution: { h: "Ang AfterDesk na ang bahala.", sub: "Iabot mo ang kahilingan. Aayusin ng AfterDesk ang lahat ng kailangan." },
+    exampleIntro: "Isang totoong kahilingan, mula simula hanggang dulo.",
     act2: {
-      h: "AI, tools, tao, handoff. Hindi ikaw ang dapat mamahala ng lahat ng ito.",
+      h: "AI, tools at tao: hindi ikaw ang dapat mamahala.",
       gauntlet: ["aling prompt?", "aling tool?", "sino ang kukuha?", "nawalang handoff", "sino ang magre-recheck?"],
     },
     act3: {
