@@ -22,7 +22,7 @@ export type Offering = {
  *
  * It used to hold two rows — a one-off task and a weekly block of hours — so
  * the page asked the visitor to choose a staffing arrangement before it had
- * said what AfterDesk produces. The block of hours is unpublished (see the
+ * said what Endvera produces. The block of hours is unpublished (see the
  * note at the end of this file) and the remaining row described a purchasing
  * mode, not a result.
  *
@@ -77,7 +77,7 @@ export const OFFERINGS: Offering[] = [
    *
    * Its row read "Reserve a block of managed hours every week" and linked to a
    * page that priced 5h / 10h / 20h. That is what the schema actually bills,
-   * so the copy was honest — and it is the one offer AfterDesk cannot show
+   * so the copy was honest — and it is the one offer Endvera cannot show
    * next to "finished outcomes at a fixed price" without contradicting itself.
    *
    * Everything behind the storefront is untouched: existing accounts, their

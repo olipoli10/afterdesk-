@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { academyStats } from "@/lib/academy/public";
 
-export const alt = "AfterDesk Academy: free virtual assistant training with real exams";
+export const alt = "Endvera Academy: free virtual assistant training with real exams";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -50,7 +50,7 @@ export default function OgImage() {
             textTransform: "uppercase",
           }}
         >
-          <div>AfterDesk</div>
+          <div>Endvera</div>
           <div style={{ fontSize: 20, letterSpacing: "0.18em", color: "#5B6069" }}>Academy</div>
         </div>
 

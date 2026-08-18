@@ -45,7 +45,7 @@ export function AssistantWidget({ taskId, initialHistory }: { taskId: string; in
   return (
     <div className="w-full rounded-lg border border-white/10 bg-[#111317] p-4">
       <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-white/55">
-        AfterDesk Assistant — method questions only
+        Endvera Assistant — method questions only
       </p>
 
       {turns.length > 0 ? (

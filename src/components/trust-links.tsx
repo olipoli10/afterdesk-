@@ -30,23 +30,23 @@ import type { SiteLang } from "@/lib/i18n/langs";
  * so the page has something real to show the moment it's linked again.
  */
 const LABELS: Record<SiteLang, [string, string, string, string, string]> = {
-  en: ["AfterDesk Academy", "Security", "Privacy", "Terms", "Acceptable use"],
+  en: ["Endvera Academy", "Security", "Privacy", "Terms", "Acceptable use"],
   fr: [
-    "Académie AfterDesk",
+    "Académie Endvera",
     "Sécurité",
     "Confidentialité",
     "Conditions",
     "Utilisation acceptable",
   ],
   es: [
-    "Academia AfterDesk",
+    "Academia Endvera",
     "Seguridad",
     "Privacidad",
     "Términos",
     "Uso aceptable",
   ],
   tl: [
-    "AfterDesk Academy",
+    "Endvera Academy",
     "Seguridad",
     "Privacy",
     "Mga Tuntunin",

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Wordmark } from "@/components/logo";
 import type { ConceptAssemblyCopy } from "@/lib/i18n/home-assembly";
 import styles from "./home-assembly.module.css";
 
@@ -233,7 +234,9 @@ function Stage({
           the utility slot wraps to its own row (order/basis classes on the
           slot), keeping the accepted mark / Early Access line untouched. */}
       <nav className={styles.nav}>
-        <Link href="/" className={styles.mark}>AfterDesk</Link>
+        <Link href="/" className={styles.mark} aria-label="Endvera home">
+          <Wordmark tone="paper" />
+        </Link>
         {utility}
         <span className={styles.navLinks}>
           <a href="#outcomes">{copy.nav.outcomes}</a>

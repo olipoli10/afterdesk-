@@ -1,10 +1,10 @@
 /* Phase 1.4B.6 guards - written RED against 8ef3953.
    Codex's final release review confirmed two visible defects in the shipped
-   Preview: (1) HOME_META titles already end in "| AfterDesk" and the root
-   layout template appends "· AfterDesk", so the rendered title carries the
+   Preview: (1) HOME_META titles already end in "| Endvera" and the root
+   layout template appends "· Endvera", so the rendered title carries the
    brand twice; (2) page.tsx renders an absolute utility header with an
-   AfterDesk link while AssemblyExperience renders its own absolute nav and
-   AfterDesk mark in the same top-left region - two overlapping wordmarks,
+   Endvera link while AssemblyExperience renders its own absolute nav and
+   Endvera mark in the same top-left region - two overlapping wordmarks,
    conspicuous at 390px/360px.
 
    The physical non-overlap proof (pairwise rects at 1440/390/360/200% in all
@@ -24,7 +24,7 @@ const layout = () => read("src/app/layout.tsx");
 const assembly = () => read("src/app/_home/assembly-experience.tsx");
 
 /* Reproduce Next's title resolution for this page: layout declares a
-   `template: "%s · AfterDesk"`; a page title given as a plain string goes
+   `template: "%s · Endvera"`; a page title given as a plain string goes
    through it, a `title: { absolute: ... }` skips it. */
 function finalTitleFor(pageTitle: string): string {
   const src = layout();
@@ -43,16 +43,16 @@ function homeMetaTitles(): string[] {
 }
 
 describe("H1 - the final rendered title carries the brand exactly once", () => {
-  it("every language's resolved <title> contains exactly one 'AfterDesk'", () => {
+  it("every language's resolved <title> contains exactly one 'Endvera'", () => {
     for (const t of homeMetaTitles()) {
       const rendered = finalTitleFor(t);
-      const count = (rendered.match(/AfterDesk/g) ?? []).length;
+      const count = (rendered.match(/Endvera/g) ?? []).length;
       expect(count, `rendered title: ${JSON.stringify(rendered)}`).toBe(1);
     }
   });
   it("the approved positioning text itself is preserved untouched", () => {
     const [en] = homeMetaTitles();
-    expect(en).toBe("One request in. One verified result out. | AfterDesk");
+    expect(en).toBe("One request in. One verified result out. | Endvera");
   });
 });
 
@@ -62,13 +62,14 @@ describe("H2 - exactly one visible header wordmark, and it is a real link", () =
     expect(s).not.toMatch(/<header/);
     /* the JSON-LD organization *name* is data, not chrome - only JSX text
        nodes count as a visible wordmark */
-    expect(s).not.toMatch(/>\s*AfterDesk\s*</);
+    expect(s).not.toMatch(/>\s*Endvera\s*</);
   });
   it("the assembly nav's mark is the single wordmark and links home", () => {
     const s = assembly();
     const markUses = s.match(/styles\.mark/g) ?? [];
     expect(markUses).toHaveLength(1);
-    expect(s).toMatch(/<Link\s+href="\/"\s+className=\{styles\.mark\}>\s*AfterDesk\s*<\/Link>/);
+    expect(s).toMatch(/import\s+\{\s*Wordmark\s*\}\s+from\s+"@\/components\/logo"/);
+    expect(s).toMatch(/<Link\s+href="\/"\s+className=\{styles\.mark\}\s+aria-label="Endvera home">\s*<Wordmark\s+tone="paper"\s*\/>\s*<\/Link>/);
     expect(s).not.toMatch(/<span[^>]*className=\{styles\.mark\}/);
   });
 });

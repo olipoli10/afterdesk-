@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "AfterDesk",
-    short_name: "AfterDesk",
+    name: "Endvera",
+    short_name: "Endvera",
     description:
       "Managed back-office execution for repeatable data, research and document workflows.",
     start_url: "/",

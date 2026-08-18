@@ -9,7 +9,7 @@ import { linkInline } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Client sign-up",
-  description: "Create an AfterDesk client account: describe a deliverable, approve a fixed price and download reviewed work.",
+  description: "Create an Endvera client account: describe a deliverable, approve a fixed price and download reviewed work.",
   robots: { index: false, follow: false },
 };
 

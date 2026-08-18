@@ -63,7 +63,7 @@ type SecurityDict = {
   /**
    * Added when the execution engine went live. The page described a world
    * where only people touched the work, and a reader could reasonably conclude
-   * that nothing left AfterDesk and Stripe. Automated steps now start on the
+   * that nothing left Endvera and Stripe. Automated steps now start on the
    * payment webhook, before any human sees the task.
    */
   automation: { h2: string; body: string };
@@ -77,7 +77,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     meta: {
       title: "Security",
       description:
-        "How AfterDesk protects the files you send: uploads are inspected and scrubbed of author metadata, access ends with the task, and every delivery is reviewed by one operator before it reaches you.",
+        "How Endvera protects the files you send: uploads are inspected and scrubbed of author metadata, access ends with the task, and every delivery is reviewed by one operator before it reaches you.",
     },
     title: "Security",
     intro:
@@ -109,7 +109,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     meta: {
       title: "Sécurité",
       description:
-        "Comment AfterDesk protège les fichiers que vous envoyez : les téléversements sont inspectés et nettoyés de leurs métadonnées d'auteur, l'accès prend fin avec la tâche, et chaque livraison est vérifiée par un opérateur avant de vous parvenir.",
+        "Comment Endvera protège les fichiers que vous envoyez : les téléversements sont inspectés et nettoyés de leurs métadonnées d'auteur, l'accès prend fin avec la tâche, et chaque livraison est vérifiée par un opérateur avant de vous parvenir.",
     },
     title: "Sécurité",
     intro:
@@ -141,7 +141,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     meta: {
       title: "Seguridad",
       description:
-        "Cómo protege AfterDesk los archivos que envías: las subidas se inspeccionan y se limpian de metadatos de autor, el acceso termina con la tarea, y cada entrega es revisada por un operador antes de llegar a ti.",
+        "Cómo protege Endvera los archivos que envías: las subidas se inspeccionan y se limpian de metadatos de autor, el acceso termina con la tarea, y cada entrega es revisada por un operador antes de llegar a ti.",
     },
     title: "Seguridad",
     intro:
@@ -173,7 +173,7 @@ export const SECURITY_I18N: Record<DocLang, SecurityDict> = {
     meta: {
       title: "Seguridad",
       description:
-        "Paano pinoprotektahan ng AfterDesk ang mga file na ipinapadala mo: sinusuri at nililinis ang mga upload sa author metadata, natatapos ang access kasabay ng task, at sinusuri ng isang operator ang bawat delivery bago ito makarating sa iyo.",
+        "Paano pinoprotektahan ng Endvera ang mga file na ipinapadala mo: sinusuri at nililinis ang mga upload sa author metadata, natatapos ang access kasabay ng task, at sinusuri ng isang operator ang bawat delivery bago ito makarating sa iyo.",
     },
     title: "Seguridad",
     intro:
@@ -222,7 +222,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacy",
       description:
-        "What AfterDesk collects, why, how long it is kept, and who can see it. The service is built so that client and worker do not learn each other's identity, and that separation is enforced in the data layer, not just the interface.",
+        "What Endvera collects, why, how long it is kept, and who can see it. The service is built so that client and worker do not learn each other's identity, and that separation is enforced in the data layer, not just the interface.",
     },
     title: "Privacy",
     intro:
@@ -233,7 +233,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     },
     used: {
       h2: "How it is used",
-      body: "To operate the task, prevent fraud, enforce the identity boundary, provide support, satisfy financial recordkeeping and improve aggregate service quality. Automated systems and AI providers are used across the task, not only at intake: to structure a draft brief, to classify and plan the work and prepare a price for an operator to approve, and — on some tasks after payment — to perform steps of the work itself, including automated web searches whose queries are derived from your brief and, where a task requires it, reading the files you attached. That reading is done by AfterDesk's own software, and it does not send the contents of your files to an AI provider. Human specialists carry out the work that automation cannot, and every delivery is reviewed by AfterDesk before it reaches you. Do not submit secrets that are unnecessary for the task.",
+      body: "To operate the task, prevent fraud, enforce the identity boundary, provide support, satisfy financial recordkeeping and improve aggregate service quality. Automated systems and AI providers are used across the task, not only at intake: to structure a draft brief, to classify and plan the work and prepare a price for an operator to approve, and — on some tasks after payment — to perform steps of the work itself, including automated web searches whose queries are derived from your brief and, where a task requires it, reading the files you attached. That reading is done by Endvera's own software, and it does not send the contents of your files to an AI provider. Human specialists carry out the work that automation cannot, and every delivery is reviewed by Endvera before it reaches you. Do not submit secrets that are unnecessary for the task.",
     },
     providers: {
       h2: "Service providers",
@@ -251,7 +251,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Confidentialité",
       description:
-        "Ce qu'AfterDesk recueille, pourquoi, combien de temps c'est conservé, et qui peut le voir. Le service est conçu pour que client et travailleur ne connaissent pas l'identité l'un de l'autre, et cette séparation est appliquée au niveau des données, pas seulement de l'interface.",
+        "Ce qu'Endvera recueille, pourquoi, combien de temps c'est conservé, et qui peut le voir. Le service est conçu pour que client et travailleur ne connaissent pas l'identité l'un de l'autre, et cette séparation est appliquée au niveau des données, pas seulement de l'interface.",
     },
     title: "Confidentialité",
     intro:
@@ -262,7 +262,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     },
     used: {
       h2: "Comment c'est utilisé",
-      body: "Pour réaliser la tâche, prévenir la fraude, appliquer la frontière d'identité, fournir du soutien, satisfaire aux obligations comptables et améliorer la qualité globale du service. Des systèmes automatisés et des fournisseurs d'IA interviennent tout au long de la tâche, pas seulement à la prise en charge : pour structurer un brouillon de brief, pour classer et planifier le travail et préparer un prix qu'un opérateur approuve, et — sur certaines tâches, après paiement — pour exécuter des étapes du travail, y compris des recherches web automatisées dont les requêtes dérivent de votre brief et, lorsque la tâche l'exige, la lecture des fichiers que vous avez joints. Cette lecture est faite par les logiciels d'AfterDesk, et elle n'envoie pas le contenu de vos fichiers à un fournisseur d'IA. Des spécialistes humains réalisent ce que l'automatisation ne peut pas faire, et chaque livraison est révisée par AfterDesk avant de vous parvenir. N'envoyez pas de secrets inutiles à la tâche.",
+      body: "Pour réaliser la tâche, prévenir la fraude, appliquer la frontière d'identité, fournir du soutien, satisfaire aux obligations comptables et améliorer la qualité globale du service. Des systèmes automatisés et des fournisseurs d'IA interviennent tout au long de la tâche, pas seulement à la prise en charge : pour structurer un brouillon de brief, pour classer et planifier le travail et préparer un prix qu'un opérateur approuve, et — sur certaines tâches, après paiement — pour exécuter des étapes du travail, y compris des recherches web automatisées dont les requêtes dérivent de votre brief et, lorsque la tâche l'exige, la lecture des fichiers que vous avez joints. Cette lecture est faite par les logiciels d'Endvera, et elle n'envoie pas le contenu de vos fichiers à un fournisseur d'IA. Des spécialistes humains réalisent ce que l'automatisation ne peut pas faire, et chaque livraison est révisée par Endvera avant de vous parvenir. N'envoyez pas de secrets inutiles à la tâche.",
     },
     providers: {
       h2: "Fournisseurs de services",
@@ -280,7 +280,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacidad",
       description:
-        "Qué recopila AfterDesk, por qué, cuánto tiempo se conserva y quién puede verlo. El servicio está diseñado para que cliente y trabajador no conozcan la identidad del otro, y esa separación se aplica en la capa de datos, no solo en la interfaz.",
+        "Qué recopila Endvera, por qué, cuánto tiempo se conserva y quién puede verlo. El servicio está diseñado para que cliente y trabajador no conozcan la identidad del otro, y esa separación se aplica en la capa de datos, no solo en la interfaz.",
     },
     title: "Privacidad",
     intro:
@@ -291,7 +291,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     },
     used: {
       h2: "Cómo se usa",
-      body: "Para realizar la tarea, prevenir fraude, aplicar el límite de identidad, dar soporte, cumplir con registros financieros y mejorar la calidad general del servicio. Se usan sistemas automatizados y proveedores de IA a lo largo de la tarea, no solo en la recepción: para estructurar un borrador del brief, para clasificar y planificar el trabajo y preparar un precio que un operador aprueba, y — en algunas tareas, tras el pago — para ejecutar pasos del trabajo, incluidas búsquedas web automatizadas cuyas consultas derivan de tu brief y, cuando la tarea lo requiere, la lectura de los archivos que adjuntaste. Esa lectura la hace el propio software de AfterDesk, y no envía el contenido de tus archivos a un proveedor de IA. Los especialistas humanos hacen lo que la automatización no puede, y cada entrega es revisada por AfterDesk antes de llegar a ti. No envíes secretos innecesarios para la tarea.",
+      body: "Para realizar la tarea, prevenir fraude, aplicar el límite de identidad, dar soporte, cumplir con registros financieros y mejorar la calidad general del servicio. Se usan sistemas automatizados y proveedores de IA a lo largo de la tarea, no solo en la recepción: para estructurar un borrador del brief, para clasificar y planificar el trabajo y preparar un precio que un operador aprueba, y — en algunas tareas, tras el pago — para ejecutar pasos del trabajo, incluidas búsquedas web automatizadas cuyas consultas derivan de tu brief y, cuando la tarea lo requiere, la lectura de los archivos que adjuntaste. Esa lectura la hace el propio software de Endvera, y no envía el contenido de tus archivos a un proveedor de IA. Los especialistas humanos hacen lo que la automatización no puede, y cada entrega es revisada por Endvera antes de llegar a ti. No envíes secretos innecesarios para la tarea.",
     },
     providers: {
       h2: "Proveedores de servicio",
@@ -309,7 +309,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     meta: {
       title: "Privacy",
       description:
-        "Ano ang kinokolekta ng AfterDesk, bakit, gaano katagal itinatago, at sino ang makakakita nito. Dinisenyo ang serbisyo upang hindi malaman ng client at worker ang identity ng isa't isa, at ipinapatupad ang paghihiwalay na iyon sa data layer, hindi lang sa interface.",
+        "Ano ang kinokolekta ng Endvera, bakit, gaano katagal itinatago, at sino ang makakakita nito. Dinisenyo ang serbisyo upang hindi malaman ng client at worker ang identity ng isa't isa, at ipinapatupad ang paghihiwalay na iyon sa data layer, hindi lang sa interface.",
     },
     title: "Privacy",
     intro:
@@ -320,7 +320,7 @@ export const PRIVACY_I18N: Record<DocLang, PrivacyDict> = {
     },
     used: {
       h2: "Paano ito ginagamit",
-      body: "Para paganahin ang task, pigilan ang fraud, ipatupad ang identity boundary, magbigay ng suporta, tuparin ang financial recordkeeping at pahusayin ang pangkalahatang kalidad ng serbisyo. Gumagamit ng automated systems at AI providers sa buong task, hindi lang sa intake: para bumuo ng draft brief, para i-classify at planuhin ang trabaho at maghanda ng presyong inaaprubahan ng operator, at — sa ilang task, pagkatapos ng bayad — para magsagawa ng mga hakbang ng trabaho, kasama ang automated web searches na ang mga query ay galing sa iyong brief at, kapag kailangan ng task, ang pagbabasa ng mga file na inilakip mo. Ang pagbabasang iyon ay ginagawa ng sariling software ng AfterDesk, at hindi nito ipinapadala ang laman ng mga file mo sa isang AI provider. Ginagawa ng human specialists ang hindi kayang i-automate, at sinusuri ng AfterDesk ang bawat delivery bago ito makarating sa iyo. Huwag magpadala ng sikreto na hindi kailangan ng task.",
+      body: "Para paganahin ang task, pigilan ang fraud, ipatupad ang identity boundary, magbigay ng suporta, tuparin ang financial recordkeeping at pahusayin ang pangkalahatang kalidad ng serbisyo. Gumagamit ng automated systems at AI providers sa buong task, hindi lang sa intake: para bumuo ng draft brief, para i-classify at planuhin ang trabaho at maghanda ng presyong inaaprubahan ng operator, at — sa ilang task, pagkatapos ng bayad — para magsagawa ng mga hakbang ng trabaho, kasama ang automated web searches na ang mga query ay galing sa iyong brief at, kapag kailangan ng task, ang pagbabasa ng mga file na inilakip mo. Ang pagbabasang iyon ay ginagawa ng sariling software ng Endvera, at hindi nito ipinapadala ang laman ng mga file mo sa isang AI provider. Ginagawa ng human specialists ang hindi kayang i-automate, at sinusuri ng Endvera ang bawat delivery bago ito makarating sa iyo. Huwag magpadala ng sikreto na hindi kailangan ng task.",
     },
     providers: {
       h2: "Mga Service Provider",
@@ -356,7 +356,7 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     meta: {
       title: "Terms",
       description:
-        "The operational agreement behind AfterDesk work: approved scope, review standards, revisions, disputes and refunds.",
+        "The operational agreement behind Endvera work: approved scope, review standards, revisions, disputes and refunds.",
     },
     title: "Service terms",
     intro:
@@ -371,22 +371,22 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     payments: {
       h2: "Payments and refunds",
-      body: "Clients purchase a deliverable from AfterDesk, not hours of work or access to an individual; anyone performing part of it is an independent subcontractor engaged and paid by AfterDesk. An upheld dispute queues a refund to the original payment method. Fraudulent chargebacks, unlawful tasks and material misrepresentation may result in suspension.",
+      body: "Clients purchase a deliverable from Endvera, not hours of work or access to an individual; anyone performing part of it is an independent subcontractor engaged and paid by Endvera. An upheld dispute queues a refund to the original payment method. Fraudulent chargebacks, unlawful tasks and material misrepresentation may result in suspension.",
     },
     operator: {
-      h2: "How AfterDesk operates",
-      body: "AfterDesk chooses and manages how an approved scope is carried out, and may use software, automation, AI providers and independent specialists to do it. Responsibility for the result stays with AfterDesk whatever the method. Pricing, quality review, dispute and payout decisions are owned by an authorized AfterDesk operator through the recorded task workflow.",
+      h2: "How Endvera operates",
+      body: "Endvera chooses and manages how an approved scope is carried out, and may use software, automation, AI providers and independent specialists to do it. Responsibility for the result stays with Endvera whatever the method. Pricing, quality review, dispute and payout decisions are owned by an authorized Endvera operator through the recorded task workflow.",
     },
     rights: {
       h2: "Confidentiality and rights",
-      body: "Users must upload only material they are authorized to share. Workers may use task data only to complete the assigned work and may not contact or identify the client. On full payment, the client receives the rights AfterDesk can transfer in the commissioned deliverable, excluding third-party materials and pre-existing tools.",
+      body: "Users must upload only material they are authorized to share. Workers may use task data only to complete the assigned work and may not contact or identify the client. On full payment, the client receives the rights Endvera can transfer in the commissioned deliverable, excluding third-party materials and pre-existing tools.",
     },
   },
   fr: {
     meta: {
       title: "Conditions",
       description:
-        "L'entente opérationnelle derrière le travail AfterDesk : périmètre et prix des tâches ponctuelles, révision, litiges et remboursements.",
+        "L'entente opérationnelle derrière le travail Endvera : périmètre et prix des tâches ponctuelles, révision, litiges et remboursements.",
     },
     title: "Conditions de service",
     intro:
@@ -401,22 +401,22 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     payments: {
       h2: "Paiements et remboursements",
-      body: "Les clients achètent un livrable d'AfterDesk, pas des heures de travail ni l'accès à une personne; quiconque en réalise une partie est un sous-traitant indépendant engagé et payé par AfterDesk. Un litige maintenu met en file un remboursement vers le moyen de paiement d'origine. Des rétrofacturations frauduleuses, des tâches illégales et une fausse représentation matérielle peuvent entraîner une suspension.",
+      body: "Les clients achètent un livrable d'Endvera, pas des heures de travail ni l'accès à une personne; quiconque en réalise une partie est un sous-traitant indépendant engagé et payé par Endvera. Un litige maintenu met en file un remboursement vers le moyen de paiement d'origine. Des rétrofacturations frauduleuses, des tâches illégales et une fausse représentation matérielle peuvent entraîner une suspension.",
     },
     operator: {
-      h2: "Comment AfterDesk fonctionne",
-      body: "AfterDesk choisit et gère la façon dont un mandat approuvé est réalisé, et peut recourir à des logiciels, à l'automatisation, à des fournisseurs d'IA et à des spécialistes indépendants pour y arriver. La responsabilité du résultat demeure celle d'AfterDesk, quelle que soit la méthode. Les décisions de prix, de contrôle qualité, de litige et de paiement relèvent d'un opérateur AfterDesk autorisé, via le flux de tâche enregistré.",
+      h2: "Comment Endvera fonctionne",
+      body: "Endvera choisit et gère la façon dont un mandat approuvé est réalisé, et peut recourir à des logiciels, à l'automatisation, à des fournisseurs d'IA et à des spécialistes indépendants pour y arriver. La responsabilité du résultat demeure celle d'Endvera, quelle que soit la méthode. Les décisions de prix, de contrôle qualité, de litige et de paiement relèvent d'un opérateur Endvera autorisé, via le flux de tâche enregistré.",
     },
     rights: {
       h2: "Confidentialité et droits",
-      body: "Les utilisateurs ne doivent téléverser que du matériel qu'ils sont autorisés à partager. Les travailleurs ne peuvent utiliser les données d'une tâche que pour réaliser le travail assigné et ne peuvent contacter ou identifier le client. Sur paiement complet, le client reçoit les droits qu'AfterDesk peut transférer dans le livrable commandé, à l'exclusion du matériel de tiers et des outils préexistants.",
+      body: "Les utilisateurs ne doivent téléverser que du matériel qu'ils sont autorisés à partager. Les travailleurs ne peuvent utiliser les données d'une tâche que pour réaliser le travail assigné et ne peuvent contacter ou identifier le client. Sur paiement complet, le client reçoit les droits qu'Endvera peut transférer dans le livrable commandé, à l'exclusion du matériel de tiers et des outils préexistants.",
     },
   },
   es: {
     meta: {
       title: "Términos",
       description:
-        "El acuerdo operativo de AfterDesk: alcance y precio de tareas puntuales, revisión, disputas y reembolsos.",
+        "El acuerdo operativo de Endvera: alcance y precio de tareas puntuales, revisión, disputas y reembolsos.",
     },
     title: "Términos del servicio",
     intro:
@@ -431,22 +431,22 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     payments: {
       h2: "Pagos y reembolsos",
-      body: "Los clientes compran un entregable a AfterDesk, no horas de trabajo ni acceso a una persona; quien realice parte de él es un subcontratista independiente contratado y pagado por AfterDesk. Una disputa confirmada pone en cola un reembolso al método de pago original. Contracargos fraudulentos, tareas ilegales y tergiversación material pueden resultar en suspensión.",
+      body: "Los clientes compran un entregable a Endvera, no horas de trabajo ni acceso a una persona; quien realice parte de él es un subcontratista independiente contratado y pagado por Endvera. Una disputa confirmada pone en cola un reembolso al método de pago original. Contracargos fraudulentos, tareas ilegales y tergiversación material pueden resultar en suspensión.",
     },
     operator: {
-      h2: "Cómo opera AfterDesk",
-      body: "AfterDesk elige y gestiona cómo se lleva a cabo un encargo aprobado, y puede usar software, automatización, proveedores de IA y especialistas independientes para hacerlo. La responsabilidad del resultado sigue siendo de AfterDesk, sea cual sea el método. Las decisiones de precio, revisión de calidad, disputas y pagos pertenecen a un operador autorizado de AfterDesk a través del flujo de tarea registrado.",
+      h2: "Cómo opera Endvera",
+      body: "Endvera elige y gestiona cómo se lleva a cabo un encargo aprobado, y puede usar software, automatización, proveedores de IA y especialistas independientes para hacerlo. La responsabilidad del resultado sigue siendo de Endvera, sea cual sea el método. Las decisiones de precio, revisión de calidad, disputas y pagos pertenecen a un operador autorizado de Endvera a través del flujo de tarea registrado.",
     },
     rights: {
       h2: "Confidencialidad y derechos",
-      body: "Los usuarios deben subir solo material que están autorizados a compartir. Los trabajadores pueden usar los datos de la tarea solo para completar el trabajo asignado y no pueden contactar o identificar al cliente. Con el pago completo, el cliente recibe los derechos que AfterDesk puede transferir en el entregable encargado, excluyendo material de terceros y herramientas preexistentes.",
+      body: "Los usuarios deben subir solo material que están autorizados a compartir. Los trabajadores pueden usar los datos de la tarea solo para completar el trabajo asignado y no pueden contactar o identificar al cliente. Con el pago completo, el cliente recibe los derechos que Endvera puede transferir en el entregable encargado, excluyendo material de terceros y herramientas preexistentes.",
     },
   },
   tl: {
     meta: {
       title: "Terms",
       description:
-        "Ang operational agreement ng AfterDesk: scope at presyo ng one-off work, review, dispute, at refund.",
+        "Ang operational agreement ng Endvera: scope at presyo ng one-off work, review, dispute, at refund.",
     },
     title: "Mga Tuntunin ng Serbisyo",
     intro:
@@ -461,15 +461,15 @@ export const TERMS_I18N: Record<DocLang, TermsDict> = {
     },
     payments: {
       h2: "Mga Bayad at Refund",
-      body: "Bumibili ang mga client ng deliverable mula sa AfterDesk, hindi oras ng trabaho o access sa isang tao; sinumang gumagawa ng bahagi nito ay independiyenteng subcontractor na kinuha at binabayaran ng AfterDesk. Ang na-uphold na dispute ay nagpapapila ng refund papunta sa orihinal na paraan ng pagbayad. Ang mapanlinlang na chargeback, ilegal na task, at material na maling representasyon ay maaaring magresulta sa suspensyon.",
+      body: "Bumibili ang mga client ng deliverable mula sa Endvera, hindi oras ng trabaho o access sa isang tao; sinumang gumagawa ng bahagi nito ay independiyenteng subcontractor na kinuha at binabayaran ng Endvera. Ang na-uphold na dispute ay nagpapapila ng refund papunta sa orihinal na paraan ng pagbayad. Ang mapanlinlang na chargeback, ilegal na task, at material na maling representasyon ay maaaring magresulta sa suspensyon.",
     },
     operator: {
-      h2: "Paano Nag-ooperate ang AfterDesk",
-      body: "Ang AfterDesk ang pumipili at namamahala kung paano isasagawa ang inaprubahang scope, at maaari nitong gamitin ang software, automation, AI providers at independent na specialist para gawin ito. Nananatili sa AfterDesk ang pananagutan sa resulta anuman ang paraan. Ang pricing, quality review, dispute, at payout decisions ay pag-aari ng authorized na AfterDesk operator sa pamamagitan ng naitalang task workflow.",
+      h2: "Paano Nag-ooperate ang Endvera",
+      body: "Ang Endvera ang pumipili at namamahala kung paano isasagawa ang inaprubahang scope, at maaari nitong gamitin ang software, automation, AI providers at independent na specialist para gawin ito. Nananatili sa Endvera ang pananagutan sa resulta anuman ang paraan. Ang pricing, quality review, dispute, at payout decisions ay pag-aari ng authorized na Endvera operator sa pamamagitan ng naitalang task workflow.",
     },
     rights: {
       h2: "Confidentiality at mga Karapatan",
-      body: "Dapat lang mag-upload ang mga user ng materyal na may pahintulot silang ibahagi. Puwede lang gamitin ng mga worker ang data ng task para tapusin ang inatas na trabaho at hindi sila puwedeng makipag-ugnayan o mag-identify sa client. Sa buong bayad, natatanggap ng client ang mga karapatang maipapasa ng AfterDesk sa in-commission na deliverable, hindi kasama ang materyal ng third-party at mga umiiral nang tool.",
+      body: "Dapat lang mag-upload ang mga user ng materyal na may pahintulot silang ibahagi. Puwede lang gamitin ng mga worker ang data ng task para tapusin ang inatas na trabaho at hindi sila puwedeng makipag-ugnayan o mag-identify sa client. Sa buong bayad, natatanggap ng client ang mga karapatang maipapasa ng Endvera sa in-commission na deliverable, hindi kasama ang materyal ng third-party at mga umiiral nang tool.",
     },
   },
 };
@@ -492,11 +492,11 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
     meta: {
       title: "Acceptable use",
       description:
-        "What AfterDesk will and will not take on. Some tasks we turn down. This page says which, and why, in plain language.",
+        "What Endvera will and will not take on. Some tasks we turn down. This page says which, and why, in plain language.",
     },
     title: "Acceptable use",
     intro:
-      "AfterDesk handles bounded administrative work. Some tasks are refused even when they can be described.",
+      "Endvera handles bounded administrative work. Some tasks are refused even when they can be described.",
     notAccepted: {
       h2: "Not accepted",
       items: [
@@ -521,11 +521,11 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
     meta: {
       title: "Utilisation acceptable",
       description:
-        "Ce qu'AfterDesk accepte et refuse de prendre en charge. Certaines tâches sont refusées. Cette page dit lesquelles, et pourquoi, en langage clair.",
+        "Ce qu'Endvera accepte et refuse de prendre en charge. Certaines tâches sont refusées. Cette page dit lesquelles, et pourquoi, en langage clair.",
     },
     title: "Utilisation acceptable",
     intro:
-      "AfterDesk traite du travail administratif borné. Certaines tâches sont refusées même lorsqu'elles peuvent être décrites.",
+      "Endvera traite du travail administratif borné. Certaines tâches sont refusées même lorsqu'elles peuvent être décrites.",
     notAccepted: {
       h2: "Non accepté",
       items: [
@@ -550,11 +550,11 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
     meta: {
       title: "Uso aceptable",
       description:
-        "Qué acepta y qué rechaza AfterDesk. Rechazamos algunas tareas. Esta página dice cuáles, y por qué, en lenguaje claro.",
+        "Qué acepta y qué rechaza Endvera. Rechazamos algunas tareas. Esta página dice cuáles, y por qué, en lenguaje claro.",
     },
     title: "Uso aceptable",
     intro:
-      "AfterDesk maneja trabajo administrativo acotado. Se rechazan algunas tareas incluso cuando se pueden describir.",
+      "Endvera maneja trabajo administrativo acotado. Se rechazan algunas tareas incluso cuando se pueden describir.",
     notAccepted: {
       h2: "No aceptado",
       items: [
@@ -579,11 +579,11 @@ export const ACCEPTABLE_USE_I18N: Record<DocLang, AcceptableUseDict> = {
     meta: {
       title: "Katanggap-tanggap na Paggamit",
       description:
-        "Kung ano ang tatanggapin at hindi tatanggapin ng AfterDesk. May mga task kaming tinatanggihan. Sinasabi ng page na ito kung alin, at bakit, sa simpleng wika.",
+        "Kung ano ang tatanggapin at hindi tatanggapin ng Endvera. May mga task kaming tinatanggihan. Sinasabi ng page na ito kung alin, at bakit, sa simpleng wika.",
     },
     title: "Katanggap-tanggap na Paggamit",
     intro:
-      "Hinahandle ng AfterDesk ang naka-bound na administrative work. May mga task na tinatanggihan kahit ilarawan pa ito.",
+      "Hinahandle ng Endvera ang naka-bound na administrative work. May mga task na tinatanggihan kahit ilarawan pa ito.",
     notAccepted: {
       h2: "Hindi Tinatanggap",
       items: [
@@ -630,7 +630,7 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Public Ledger",
       description:
-        "A privacy-protected record of settled AfterDesk transaction events, corrections and reliability data when enough activity exists to publish safely.",
+        "A privacy-protected record of settled Endvera transaction events, corrections and reliability data when enough activity exists to publish safely.",
     },
     back: "← Back",
     eyebrow: "Public Ledger",
@@ -662,7 +662,7 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Registre public",
       description:
-        "Un registre protégé des transactions réglées d'AfterDesk : écritures, corrections et données de fiabilité, publiées lorsque l'activité suffit pour le faire sans risque.",
+        "Un registre protégé des transactions réglées d'Endvera : écritures, corrections et données de fiabilité, publiées lorsque l'activité suffit pour le faire sans risque.",
     },
     back: "← Retour",
     eyebrow: "Registre public",
@@ -694,7 +694,7 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Registro público",
       description:
-        "Un registro protegido de las transacciones liquidadas de AfterDesk: entradas, correcciones y datos de fiabilidad, publicados cuando hay actividad suficiente para hacerlo con seguridad.",
+        "Un registro protegido de las transacciones liquidadas de Endvera: entradas, correcciones y datos de fiabilidad, publicados cuando hay actividad suficiente para hacerlo con seguridad.",
     },
     back: "← Volver",
     eyebrow: "Registro público",
@@ -726,7 +726,7 @@ export const LEDGER_I18N: Record<DocLang, LedgerDict> = {
     meta: {
       title: "Pampublikong Ledger",
       description:
-        "Isang protektadong tala ng mga settled na transaksyon ng AfterDesk: mga entry, correction, at reliability data, inilalathala kapag sapat na ang aktibidad para gawin ito nang ligtas.",
+        "Isang protektadong tala ng mga settled na transaksyon ng Endvera: mga entry, correction, at reliability data, inilalathala kapag sapat na ang aktibidad para gawin ito nang ligtas.",
     },
     back: "← Bumalik",
     eyebrow: "Pampublikong Ledger",

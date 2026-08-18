@@ -55,9 +55,9 @@ type Dict = {
  * TWO CLAIM RULES, pinned by test/public-site-truth.test.ts:
  *  - no recurring-service vocabulary in the active offerings. The fourth
  *    family used to be sold as "the recurring back-office chores", which
- *    markets a recurring operation AfterDesk does not offer today —
+ *    markets a recurring operation Endvera does not offer today —
  *    recurrence is a VISION row on /inside, nowhere else.
- *  - no autonomy or engine-deployment claim. The intro says AfterDesk
+ *  - no autonomy or engine-deployment claim. The intro says Endvera
  *    manages the execution to a written standard, which is what is live.
  *
  * Standing Capacity remains unpublished (see offerings.ts); nothing here may
@@ -74,7 +74,7 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     eyebrow: "Operations we take on",
     h1: "Operations with a finish line you can check.",
     intro:
-      "Four families, and they are the ones the platform actually takes. Describe an outcome in any of them and you get a written scope and one fixed price to approve. AfterDesk manages the execution to that written standard and reviews the finished work against it before delivery. Not everything fits, and we say so before you pay.",
+      "Four families, and they are the ones the platform actually takes. Describe an outcome in any of them and you get a written scope and one fixed price to approve. Endvera manages the execution to that written standard and reviews the finished work against it before delivery. Not everything fits, and we say so before you pay.",
     learnMore: "Get a quote",
     offerings: [
       {
@@ -113,7 +113,7 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     eyebrow: "Les opérations qu'on prend",
     h1: "Des opérations avec une ligne d'arrivée vérifiable.",
     intro:
-      "Quatre familles, et ce sont celles que la plateforme prend réellement. Décrivez un résultat dans l'une d'elles et vous obtenez un périmètre écrit et un prix fixe à approuver. AfterDesk pilote l'exécution selon cette norme écrite et révise le travail fini selon elle avant la livraison. Tout ne rentre pas, et on le dit avant que vous payiez.",
+      "Quatre familles, et ce sont celles que la plateforme prend réellement. Décrivez un résultat dans l'une d'elles et vous obtenez un périmètre écrit et un prix fixe à approuver. Endvera pilote l'exécution selon cette norme écrite et révise le travail fini selon elle avant la livraison. Tout ne rentre pas, et on le dit avant que vous payiez.",
     learnMore: "Obtenir un prix",
     offerings: [
       {
@@ -152,7 +152,7 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     eyebrow: "Las operaciones que asumimos",
     h1: "Operaciones con una meta que se puede comprobar.",
     intro:
-      "Cuatro familias, y son las que la plataforma toma de verdad. Describe un resultado en cualquiera de ellas y obtienes un alcance escrito y un precio fijo que aprobar. AfterDesk gestiona la ejecución según ese estándar escrito y revisa el trabajo terminado contra él antes de la entrega. No todo encaja, y lo decimos antes de que pagues.",
+      "Cuatro familias, y son las que la plataforma toma de verdad. Describe un resultado en cualquiera de ellas y obtienes un alcance escrito y un precio fijo que aprobar. Endvera gestiona la ejecución según ese estándar escrito y revisa el trabajo terminado contra él antes de la entrega. No todo encaja, y lo decimos antes de que pagues.",
     learnMore: "Pedir precio",
     offerings: [
       {
@@ -191,7 +191,7 @@ export const SERVICES_I18N: Record<ServicesLang, Dict> = {
     eyebrow: "Mga operasyong kinukuha namin",
     h1: "Mga operasyong may finish line na masusuri.",
     intro:
-      "Apat na pamilya, at ito ang talagang tinatanggap ng platform. Ilarawan ang isang resulta sa alinman sa mga ito at makakakuha ka ng nakasulat na scope at isang fixed na presyong aaprubahan. Pinamamahalaan ng AfterDesk ang execution ayon sa nakasulat na pamantayang iyon at nirerebyu ang tapos nang trabaho laban dito bago ihatid. Hindi lahat kasya, at sinasabi namin ito bago ka magbayad.",
+      "Apat na pamilya, at ito ang talagang tinatanggap ng platform. Ilarawan ang isang resulta sa alinman sa mga ito at makakakuha ka ng nakasulat na scope at isang fixed na presyong aaprubahan. Pinamamahalaan ng Endvera ang execution ayon sa nakasulat na pamantayang iyon at nirerebyu ang tapos nang trabaho laban dito bago ihatid. Hindi lahat kasya, at sinasabi namin ito bago ka magbayad.",
     learnMore: "Humingi ng presyo",
     offerings: [
       {

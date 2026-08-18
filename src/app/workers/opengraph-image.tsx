@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "AfterDesk — The payout is printed before you claim.";
+export const alt = "Endvera — The payout is printed before you claim.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -9,7 +9,7 @@ export const contentType = "image/png";
  *
  * This image used to read "America goes to sleep. / You wake up to paid work."
  * It is the single most-travelled surface on the site: every share of
- * /workers, on any platform, rendered that sentence, and it defined AfterDesk
+ * /workers, on any platform, rendered that sentence, and it defined Endvera
  * by a labour-arbitrage story — one timezone asleep, another working cheaper.
  * A client who followed a shared link met that framing before anything else.
  *
@@ -41,7 +41,7 @@ export default function OgImage() {
             textTransform: "uppercase",
           }}
         >
-          AfterDesk
+          Endvera
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 72, color: "#8A9099", letterSpacing: "-0.02em" }}>

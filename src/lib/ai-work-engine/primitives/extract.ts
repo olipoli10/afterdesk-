@@ -84,7 +84,7 @@ const extractOutputSchema = z.object({
     .max(500),
 });
 
-const SYSTEM = `You convert gathered research into structured rows for AfterDesk.
+const SYSTEM = `You convert gathered research into structured rows for Endvera.
 
 YOU HAVE TWO INPUTS AND THEY ARE NOT EQUALLY TRUSTED.
 

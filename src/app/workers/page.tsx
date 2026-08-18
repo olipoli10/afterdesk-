@@ -132,7 +132,7 @@ export default async function WorkersHome({
      bounce threw a just-signed-out worker straight back into the app before
      the sign-out could ever be seen to take effect.
      The fix is the same cold-arrival check "/" uses (src/lib/authz.ts):
-     a worker who clicks their way here from inside AfterDesk — including the
+     a worker who clicks their way here from inside Endvera — including the
      sign-out navigation, whose Referer names this same origin — asked for
      the storefront and gets it; only a COLD arrival (bookmark, typed URL, a
      link from elsewhere) with a verified session bounces straight to the

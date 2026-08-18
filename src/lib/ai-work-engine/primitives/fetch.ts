@@ -146,7 +146,7 @@ export function defangClientText(text: string): string {
   return text.replace(/[a-z][a-z0-9+.-]*:\/\//gi, " ");
 }
 
-const SYSTEM = `You read already-cited web pages for AfterDesk.
+const SYSTEM = `You read already-cited web pages for Endvera.
 
 WHAT YOU DO: fetch the most relevant of the CANDIDATE URLS listed in the brief, up to the tool's limit, and then report which fetched page carries which of the requested facts, quoting the carrying sentence.
 

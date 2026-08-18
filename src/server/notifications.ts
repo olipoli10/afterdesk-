@@ -44,7 +44,7 @@ export async function deliverPendingNotifications(): Promise<{
         text:
           `${row.body ?? row.title}\n\n` +
           (row.taskId ? `Open task: ${new URL(taskPath, appUrl || "http://localhost:3000").toString()}\n\n` : "") +
-          "Sign in to AfterDesk for the authoritative status.",
+          "Sign in to Endvera for the authoritative status.",
       });
       await prisma.notification.update({
         where: { id: row.id },

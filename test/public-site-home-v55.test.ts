@@ -39,7 +39,7 @@ describe("R2 - A2 is integrated on the homepage", () => {
     expect(existsSync(join(root, A2))).toBe(true);
     expect(read(PAGE)).toMatch(/A2Concierge/);
   });
-  it("the launcher is the semantic 44px button named Ask AfterDesk carrying the frozen A2", () => {
+  it("the launcher is the semantic 44px button named Ask Endvera carrying the frozen A2", () => {
     const s = read(A2);
     expect(s).toMatch(/aria-label=\{copy\.ask\}/); // localized in 1.4B.1
     expect(s).toMatch(/A2_REST/);

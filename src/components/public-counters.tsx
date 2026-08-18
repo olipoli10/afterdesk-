@@ -51,7 +51,7 @@ export async function PublicCounters({
      * deciding whether to work here. On the client side they are the wrong
      * ledger entirely: "47 specialists approved" answers a question the client
      * never asked and files the page as a marketplace of people, which is the
-     * one reading the positioning cannot carry. AfterDesk sells a finished
+     * one reading the positioning cannot carry. Endvera sells a finished
      * outcome and owns how it gets made.
      *
      * Optional rather than blank strings, so the client dictionary simply does

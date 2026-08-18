@@ -20,7 +20,7 @@ import { Fragment } from "react";
    This table used to name real platforms (Fiverr, Upwork, OnlineJobs.ph) and
    rate them. The repositioning replaced them with the four ways a buyer can
    get this work done, because rating other companies on price and vetting
-   made claims nothing here measures, and naming marketplaces filed AfterDesk
+   made claims nothing here measures, and naming marketplaces filed Endvera
    as a fourth marketplace.
 
    That swap is also what broke the mobile layout, and the failure is worth
@@ -43,7 +43,7 @@ export type MatrixCell = {
 
 export type MatrixAxis = {
   axis: string;
-  /** [Fiverr, Upwork, OnlineJobs.ph, AfterDesk] */
+  /** [Fiverr, Upwork, OnlineJobs.ph, Endvera] */
   cells: [MatrixCell, MatrixCell, MatrixCell, MatrixCell];
 };
 
@@ -51,18 +51,18 @@ export type ComparisonTableDict = {
   eyebrow: string;
   heading: string;
   subline: string;
-  /** [Fiverr, Upwork, OnlineJobs.ph, AfterDesk] */
+  /** [Fiverr, Upwork, OnlineJobs.ph, Endvera] */
   channels: [string, string, string, string];
   axes: MatrixAxis[];
   footnote: string;
 };
 
-/** "AfterDesk" has no natural space to wrap on — left to the browser it breaks
+/** "Endvera" has no natural space to wrap on — left to the browser it breaks
  *  mid-word. The name is identical across all four site languages (a brand
  *  name, not translated), so a fixed break point here is safe everywhere, not
  *  just in English. The OnlineJobs.ph entry beside it went with the brands. */
 const HEADER_BREAKS: Record<string, [string, string]> = {
-  AfterDesk: ["After", "Desk"],
+  Endvera: ["After", "Desk"],
 };
 
 /**
@@ -174,7 +174,7 @@ export function ComparisonTable({ t }: { t: ComparisonTableDict }) {
             {/**
              * The axis column is STICKY. Scrolling four columns is only usable
              * if the row label stays put; without this the reader arrives at
-             * "AfterDesk" having lost which question the tick answers. It
+             * "Endvera" having lost which question the tick answers. It
              * carries the panel's own background so the chips pass behind it
              * rather than through it.
              */}

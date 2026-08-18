@@ -85,14 +85,14 @@ const pEn: ProtocolDict = {
   meta: {
     title: "How it works: defined scope, fixed price, checked delivery",
     description:
-      "Define the deliverable, approve the scope and price, then AfterDesk manages execution and quality control before delivery. The full operating protocol, versioned and dated.",
+      "Define the deliverable, approve the scope and price, then Endvera manages execution and quality control before delivery. The full operating protocol, versioned and dated.",
   },
   nav: { about: "About us", client: "Get work done" },
   docket: "Operating protocol",
   h1: ["Defined scope.", "Managed execution.", "Reviewed delivery."],
   deck: "Define the result, approve one fixed price, receive it checked. Below, the same task in the six stages we run internally. The approved brief, price and review standard follow it from intake to delivery.",
   movement1: "One task, in six stages",
-  lanes: ["You", "AfterDesk", "Execution"],
+  lanes: ["You", "Endvera", "Execution"],
   stages: (s) => [
     { label: "Describe", say: "Plain language. Attach files if needed." },
     {
@@ -103,7 +103,7 @@ const pEn: ProtocolDict = {
     },
     {
       label: "Execute",
-      say: "AfterDesk runs the approved scope, and chooses the most dependable method for it.",
+      say: "Endvera runs the approved scope, and chooses the most dependable method for it.",
       val: "0",
       unit: "Contact",
     },
@@ -154,7 +154,7 @@ const pEn: ProtocolDict = {
     rows: [
       ["01", "2026-07-30", "First published."],
       ["02", "2026-08-05", "Repositioned around bounded deliverables; timing qualified as working hours."],
-      ["03", "2026-08-10", "Execution stage restated: AfterDesk owns the approved scope and chooses the method for it."],
+      ["03", "2026-08-10", "Execution stage restated: Endvera owns the approved scope and chooses the method for it."],
     ],
   },
   bookend: {
@@ -168,14 +168,14 @@ const pFr: ProtocolDict = {
   meta: {
     title: "Comment ça marche : périmètre défini, prix fixe, livraison vérifiée",
     description:
-      "Définissez le livrable, approuvez le périmètre et le prix, puis AfterDesk gère l'exécution et le contrôle qualité avant livraison. Le protocole complet, versionné et daté.",
+      "Définissez le livrable, approuvez le périmètre et le prix, puis Endvera gère l'exécution et le contrôle qualité avant livraison. Le protocole complet, versionné et daté.",
   },
   nav: { about: "Qui nous sommes", client: "Faire faire du travail" },
   docket: "Protocole d'exploitation",
   h1: ["Cadre défini.", "Exécution gérée.", "Livraison vérifiée."],
   deck: "Définissez le résultat, approuvez un prix fixe, recevez-le vérifié. Ci-dessous, la même tâche dans les six étapes que nous exécutons en interne. Le brief approuvé, le prix et la norme de contrôle la suivent de la prise en charge à la livraison.",
   movement1: "Une tâche, en six étapes",
-  lanes: ["Vous", "AfterDesk", "Exécution"],
+  lanes: ["Vous", "Endvera", "Exécution"],
   stages: (s) => [
     { label: "Décrire", say: "En clair. Joignez des fichiers au besoin." },
     {
@@ -186,7 +186,7 @@ const pFr: ProtocolDict = {
     },
     {
       label: "Exécution",
-      say: "AfterDesk réalise le périmètre approuvé et choisit la méthode la plus fiable pour le faire.",
+      say: "Endvera réalise le périmètre approuvé et choisit la méthode la plus fiable pour le faire.",
       val: "0",
       unit: "Contact",
     },
@@ -237,7 +237,7 @@ const pFr: ProtocolDict = {
     rows: [
       ["01", "2026-07-30", "Première publication."],
       ["02", "2026-08-05", "Recentré sur les livrables délimités; délai qualifié en heures ouvrables."],
-      ["03", "2026-08-10", "Étape d'exécution reformulée : AfterDesk porte le périmètre approuvé et en choisit la méthode."],
+      ["03", "2026-08-10", "Étape d'exécution reformulée : Endvera porte le périmètre approuvé et en choisit la méthode."],
     ],
   },
   bookend: {
@@ -251,14 +251,14 @@ const pEs: ProtocolDict = {
   meta: {
     title: "Cómo funciona: alcance definido, precio fijo, entrega verificada",
     description:
-      "Define el entregable, aprueba el alcance y el precio, y AfterDesk gestiona la ejecución y el control de calidad antes de la entrega. El protocolo completo, versionado y fechado.",
+      "Define el entregable, aprueba el alcance y el precio, y Endvera gestiona la ejecución y el control de calidad antes de la entrega. El protocolo completo, versionado y fechado.",
   },
   nav: { about: "Quiénes somos", client: "Haz que se haga" },
   docket: "Protocolo operativo",
   h1: ["Alcance definido.", "Ejecución gestionada.", "Entrega revisada."],
   deck: "Define el resultado, aprueba un precio fijo, recíbelo revisado. Abajo, la misma tarea en las seis etapas que ejecutamos internamente. Las instrucciones aprobadas, el precio y el estándar de revisión la acompañan hasta la entrega.",
   movement1: "Una tarea, en seis etapas",
-  lanes: ["Tú", "AfterDesk", "Ejecución"],
+  lanes: ["Tú", "Endvera", "Ejecución"],
   stages: (s) => [
     { label: "Describir", say: "En lenguaje claro. Adjunta archivos si hacen falta." },
     {
@@ -269,7 +269,7 @@ const pEs: ProtocolDict = {
     },
     {
       label: "Ejecución",
-      say: "AfterDesk ejecuta el alcance aprobado y elige el método más fiable para hacerlo.",
+      say: "Endvera ejecuta el alcance aprobado y elige el método más fiable para hacerlo.",
       val: "0",
       unit: "Contacto",
     },
@@ -320,7 +320,7 @@ const pEs: ProtocolDict = {
     rows: [
       ["01", "2026-07-30", "Primera publicación."],
       ["02", "2026-08-05", "Reenfocado en entregables acotados; plazo calificado en horas hábiles."],
-      ["03", "2026-08-10", "Etapa de ejecución reformulada: AfterDesk sostiene el alcance aprobado y elige el método."],
+      ["03", "2026-08-10", "Etapa de ejecución reformulada: Endvera sostiene el alcance aprobado y elige el método."],
     ],
   },
   bookend: {
@@ -334,14 +334,14 @@ const pTl: ProtocolDict = {
   meta: {
     title: "Paano gumagana: tiyak na scope, fixed na presyo, sinuring delivery",
     description:
-      "I-define ang deliverable, aprubahan ang scope at presyo, at mina-manage ng AfterDesk ang execution at quality control bago i-deliver. Ang buong protocol, may bersyon at petsa.",
+      "I-define ang deliverable, aprubahan ang scope at presyo, at mina-manage ng Endvera ang execution at quality control bago i-deliver. Ang buong protocol, may bersyon at petsa.",
   },
   nav: { about: "Tungkol sa amin", client: "Ipagawa ang trabaho" },
   docket: "Protocol ng operasyon",
   h1: ["Malinaw na scope.", "Managed execution.", "Sinuring delivery."],
   deck: "Kasama ng task mula intake hanggang delivery ang approved brief, presyo, at review standard.",
   movement1: "Isang task, sa anim na yugto",
-  lanes: ["Ikaw", "AfterDesk", "Execution"],
+  lanes: ["Ikaw", "Endvera", "Execution"],
   stages: (s) => [
     { label: "Ilarawan", say: "Simpleng salita. Maglakip ng file kung kailangan." },
     {
@@ -352,7 +352,7 @@ const pTl: ProtocolDict = {
     },
     {
       label: "Execution",
-      say: "Isinasagawa ng AfterDesk ang approved scope, at pinipili nito ang pinaka-maaasahang paraan para dito.",
+      say: "Isinasagawa ng Endvera ang approved scope, at pinipili nito ang pinaka-maaasahang paraan para dito.",
       val: "0",
       unit: "Kontak",
     },
@@ -403,7 +403,7 @@ const pTl: ProtocolDict = {
     rows: [
       ["01", "2026-07-30", "Unang inilathala."],
       ["02", "2026-08-05", "Ini-refocus sa bounded deliverables; ang timing ay naka-qualify sa working hours."],
-      ["03", "2026-08-10", "Muling isinaad ang execution stage: hawak ng AfterDesk ang aprubadong scope at pumipili ng paraan."],
+      ["03", "2026-08-10", "Muling isinaad ang execution stage: hawak ng Endvera ang aprubadong scope at pumipili ng paraan."],
     ],
   },
   bookend: {
@@ -460,9 +460,9 @@ type AboutDict = {
 
 const aEn: AboutDict = {
   meta: {
-    title: "About AfterDesk: finished work, not hired time",
+    title: "About Endvera: finished work, not hired time",
     description:
-      "AfterDesk exists to close the gap between asking for administrative work and receiving a finished, checked deliverable.",
+      "Endvera exists to close the gap between asking for administrative work and receiving a finished, checked deliverable.",
   },
   nav: { how: "How it works", client: "Get work done" },
   kicker: "About us",
@@ -490,7 +490,7 @@ const aEn: AboutDict = {
   bridge: ["Access to people and tools was not missing.", "Accountability for completion was."],
   solutionHead: "The operating idea",
   solutionLede:
-    "AfterDesk delivers finished administrative work at a fixed price. The approved brief and review standard stay attached to the task from scope to delivery.",
+    "Endvera delivers finished administrative work at a fixed price. The approved brief and review standard stay attached to the task from scope to delivery.",
   solution: [
     [
       "Defined scope",
@@ -498,7 +498,7 @@ const aEn: AboutDict = {
     ],
     [
       "Managed execution",
-      "AfterDesk owns coordination and exception handling against the approved brief instead of passing them back to the client.",
+      "Endvera owns coordination and exception handling against the approved brief instead of passing them back to the client.",
     ],
     [
       "Reviewed delivery",
@@ -509,7 +509,7 @@ const aEn: AboutDict = {
   trainingA:
     "Standards only work when people can apply them. The Academy runs six full courses on ",
   trainingLink: "working with AI",
-  trainingB: ", covering where a model invents facts, how to check a run of hundreds of rows rather than one, and exactly where client data may never go. Courses and exams are available to specialists whether or not they receive work through AfterDesk.",
+  trainingB: ", covering where a model invents facts, how to check a run of hundreds of rows rather than one, and exactly where client data may never go. Courses and exams are available to specialists whether or not they receive work through Endvera.",
   bookend: {
     dim: "Describe the deliverable.",
     lit: "Get completed, reviewed work.",
@@ -525,7 +525,7 @@ const aEn: AboutDict = {
    * competitive claims about someone else's pricing and delivery speed, with
    * no measurement behind them anywhere in this business.
    *
-   * Vetting went for a second reason on top of that one: its AfterDesk cell
+   * Vetting went for a second reason on top of that one: its Endvera cell
    * ("Academy-trained... an operator reading every application") sold the
    * client on the quality of our worker recruitment. That is an argument for
    * buying access to vetted people, which is precisely what this service is
@@ -542,7 +542,7 @@ const aEn: AboutDict = {
     eyebrow: "Comparative",
     heading: "How this actually compares",
     subline: "What changes between the models, not which brand you have heard of.",
-    channels: ["DIY with AI tools", "Freelance marketplace", "Hourly staffing", "AfterDesk"],
+    channels: ["DIY with AI tools", "Freelance marketplace", "Hourly staffing", "Endvera"],
     axes: [
       {
         axis: "Who manages the execution",
@@ -551,7 +551,7 @@ const aEn: AboutDict = {
           { label: "You", tone: "weak", detail: "you choose, brief and supervise whoever takes it" },
           { label: "You", tone: "weak", detail: "you direct the time you are buying" },
           {
-            label: "AfterDesk",
+            label: "Endvera",
             tone: "strong",
             detail: "we choose the method, run it, and handle what the brief did not cover",
           },
@@ -577,7 +577,7 @@ const aEn: AboutDict = {
           { label: "You", tone: "weak", detail: "if it is wrong, correcting it is your problem" },
           { label: "You", tone: "weak", detail: "you bought time; the result stays your responsibility" },
           {
-            label: "AfterDesk",
+            label: "Endvera",
             tone: "strong",
             detail: "checked against the approved standard before delivery, and ours to put right",
           },
@@ -591,9 +591,9 @@ const aEn: AboutDict = {
 
 const aFr: AboutDict = {
   meta: {
-    title: "À propos d'AfterDesk : du travail fini, pas du temps loué",
+    title: "À propos d'Endvera : du travail fini, pas du temps loué",
     description:
-      "AfterDesk existe pour combler l'écart entre une demande de travail administratif et la réception d'un livrable fini et vérifié.",
+      "Endvera existe pour combler l'écart entre une demande de travail administratif et la réception d'un livrable fini et vérifié.",
   },
   nav: { how: "Comment \u00E7a marche", client: "Faire faire du travail" },
   kicker: "Qui nous sommes",
@@ -621,7 +621,7 @@ const aFr: AboutDict = {
   bridge: ["L'accès aux personnes et aux outils ne manquait pas.", "La responsabilité de terminer le travail, oui."],
   solutionHead: "L'idée opérationnelle",
   solutionLede:
-    "AfterDesk livre du travail administratif fini à prix fixe. Le brief et la norme de contrôle suivent la tâche du cadrage à la livraison.",
+    "Endvera livre du travail administratif fini à prix fixe. Le brief et la norme de contrôle suivent la tâche du cadrage à la livraison.",
   solution: [
     [
       "Cadre défini",
@@ -629,7 +629,7 @@ const aFr: AboutDict = {
     ],
     [
       "Exécution gérée",
-      "AfterDesk gère la coordination et les exceptions selon le brief approuvé plutôt que de les renvoyer au client.",
+      "Endvera gère la coordination et les exceptions selon le brief approuvé plutôt que de les renvoyer au client.",
     ],
     [
       "Livraison vérifiée",
@@ -640,7 +640,7 @@ const aFr: AboutDict = {
   trainingA:
     "Les normes ne fonctionnent que si les gens savent les appliquer. L'Académie donne six cours complets sur le ",
   trainingLink: "travail avec l'IA",
-  trainingB: ", couvrant les endroits où un modèle invente des faits, comment vérifier une série de centaines de lignes plutôt qu'une seule, et exactement où les données du client ne peuvent jamais aller. Les cours et examens restent accessibles aux spécialistes, qu'ils reçoivent ou non du travail par AfterDesk.",
+  trainingB: ", couvrant les endroits où un modèle invente des faits, comment vérifier une série de centaines de lignes plutôt qu'une seule, et exactement où les données du client ne peuvent jamais aller. Les cours et examens restent accessibles aux spécialistes, qu'ils reçoivent ou non du travail par Endvera.",
   bookend: {
     dim: "Décrivez le livrable.",
     lit: "Recevez un travail terminé et vérifié.",
@@ -652,7 +652,7 @@ const aFr: AboutDict = {
     eyebrow: "Comparatif",
     heading: "Ce que \u00E7a donne, concr\u00E8tement",
     subline: "Ce qui change d'un modèle à l'autre, pas la marque dont vous avez entendu parler.",
-    channels: ["Le faire soi-même avec l'IA", "Place de marché freelance", "Personnel à l'heure", "AfterDesk"],
+    channels: ["Le faire soi-même avec l'IA", "Place de marché freelance", "Personnel à l'heure", "Endvera"],
     axes: [
       {
         axis: "Qui pilote l'exécution",
@@ -660,7 +660,7 @@ const aFr: AboutDict = {
           { label: "Vous", tone: "weak", detail: "vous écrivez les prompts, enchaînez les étapes et décidez quand c'est fini" },
           { label: "Vous", tone: "weak", detail: "vous choisissez, briefez et supervisez la personne qui prend le travail" },
           { label: "Vous", tone: "weak", detail: "vous dirigez le temps que vous achetez" },
-          { label: "AfterDesk", tone: "strong", detail: "nous choisissons la méthode, l'exécutons et traitons ce que le mandat n'avait pas prévu" },
+          { label: "Endvera", tone: "strong", detail: "nous choisissons la méthode, l'exécutons et traitons ce que le mandat n'avait pas prévu" },
         ],
       },
       {
@@ -678,7 +678,7 @@ const aFr: AboutDict = {
           { label: "À vous", tone: "weak", detail: "la sortie est à vous à vérifier et à corriger" },
           { label: "À vous", tone: "weak", detail: "si c'est faux, la correction est votre problème" },
           { label: "À vous", tone: "weak", detail: "vous avez acheté du temps ; le résultat reste votre responsabilité" },
-          { label: "À AfterDesk", tone: "strong", detail: "vérifié contre le standard approuvé avant livraison, et à nous de le reprendre" },
+          { label: "À Endvera", tone: "strong", detail: "vérifié contre le standard approuvé avant livraison, et à nous de le reprendre" },
         ],
       },
     ],
@@ -689,9 +689,9 @@ const aFr: AboutDict = {
 
 const aEs: AboutDict = {
   meta: {
-    title: "Sobre AfterDesk: trabajo terminado, no tiempo contratado",
+    title: "Sobre Endvera: trabajo terminado, no tiempo contratado",
     description:
-      "AfterDesk existe para cerrar la brecha entre pedir trabajo administrativo y recibir un entregable terminado y revisado.",
+      "Endvera existe para cerrar la brecha entre pedir trabajo administrativo y recibir un entregable terminado y revisado.",
   },
   nav: { how: "C\u00F3mo funciona", client: "Haz que se haga" },
   kicker: "Qui\u00E9nes somos",
@@ -719,7 +719,7 @@ const aEs: AboutDict = {
   bridge: ["No faltaba acceso a personas y herramientas.", "Faltaba responsabilidad por completar el trabajo."],
   solutionHead: "La idea operativa",
   solutionLede:
-    "AfterDesk entrega trabajo administrativo terminado a precio fijo. Las instrucciones y el estándar de revisión siguen a la tarea desde el alcance hasta la entrega.",
+    "Endvera entrega trabajo administrativo terminado a precio fijo. Las instrucciones y el estándar de revisión siguen a la tarea desde el alcance hasta la entrega.",
   solution: [
     [
       "Alcance definido",
@@ -727,7 +727,7 @@ const aEs: AboutDict = {
     ],
     [
       "Ejecución gestionada",
-      "AfterDesk gestiona la coordinación y las excepciones según las instrucciones aprobadas, sin devolverlas al cliente.",
+      "Endvera gestiona la coordinación y las excepciones según las instrucciones aprobadas, sin devolverlas al cliente.",
     ],
     [
       "Entrega revisada",
@@ -738,7 +738,7 @@ const aEs: AboutDict = {
   trainingA:
     "Los estándares solo funcionan cuando las personas saben aplicarlos. La Academia imparte seis cursos completos sobre ",
   trainingLink: "trabajar con IA",
-  trainingB: ", que cubren dónde un modelo inventa datos, cómo revisar una serie de cientos de filas en lugar de una, y exactamente dónde nunca pueden ir los datos del cliente. Los cursos y exámenes están disponibles aunque el especialista no reciba trabajo mediante AfterDesk.",
+  trainingB: ", que cubren dónde un modelo inventa datos, cómo revisar una serie de cientos de filas en lugar de una, y exactamente dónde nunca pueden ir los datos del cliente. Los cursos y exámenes están disponibles aunque el especialista no reciba trabajo mediante Endvera.",
   bookend: {
     dim: "Describe el entregable.",
     lit: "Recibe trabajo terminado y revisado.",
@@ -750,7 +750,7 @@ const aEs: AboutDict = {
     eyebrow: "Comparativa",
     heading: "C\u00F3mo se compara esto en realidad",
     subline: "Lo que cambia entre los modelos, no la marca que ya conoces.",
-    channels: ["Hacerlo tú con IA", "Mercado de freelancers", "Personal por horas", "AfterDesk"],
+    channels: ["Hacerlo tú con IA", "Mercado de freelancers", "Personal por horas", "Endvera"],
     axes: [
       {
         axis: "Quién gestiona la ejecución",
@@ -758,7 +758,7 @@ const aEs: AboutDict = {
           { label: "Tú", tone: "weak", detail: "escribes los prompts, ejecutas los pasos y decides cuándo está listo" },
           { label: "Tú", tone: "weak", detail: "eliges, informas y supervisas a quien lo tome" },
           { label: "Tú", tone: "weak", detail: "diriges el tiempo que estás comprando" },
-          { label: "AfterDesk", tone: "strong", detail: "elegimos el método, lo ejecutamos y resolvemos lo que el encargo no cubría" },
+          { label: "Endvera", tone: "strong", detail: "elegimos el método, lo ejecutamos y resolvemos lo que el encargo no cubría" },
         ],
       },
       {
@@ -776,7 +776,7 @@ const aEs: AboutDict = {
           { label: "Tuyo", tone: "weak", detail: "la salida es tuya para verificar y corregir" },
           { label: "Tuyo", tone: "weak", detail: "si está mal, corregirlo es tu problema" },
           { label: "Tuyo", tone: "weak", detail: "compraste tiempo; el resultado sigue siendo tu responsabilidad" },
-          { label: "De AfterDesk", tone: "strong", detail: "revisado contra el estándar aprobado antes de entregarse, y nuestro para rehacerlo" },
+          { label: "De Endvera", tone: "strong", detail: "revisado contra el estándar aprobado antes de entregarse, y nuestro para rehacerlo" },
         ],
       },
     ],
@@ -787,9 +787,9 @@ const aEs: AboutDict = {
 
 const aTl: AboutDict = {
   meta: {
-    title: "Tungkol sa AfterDesk: tapos na trabaho, hindi inupahang oras",
+    title: "Tungkol sa Endvera: tapos na trabaho, hindi inupahang oras",
     description:
-      "Umiiral ang AfterDesk para punan ang pagitan ng pag-request ng admin na trabaho at pagtanggap ng tapos at sinuring deliverable.",
+      "Umiiral ang Endvera para punan ang pagitan ng pag-request ng admin na trabaho at pagtanggap ng tapos at sinuring deliverable.",
   },
   nav: { how: "Paano ito gumagana", client: "Ipagawa ang trabaho" },
   kicker: "Tungkol sa amin",
@@ -817,7 +817,7 @@ const aTl: AboutDict = {
   bridge: ["Hindi kulang ang access sa tao at tools.", "Ang kulang ay accountability sa pagkumpleto."],
   solutionHead: "Ang operating idea",
   solutionLede:
-    "Naghahatid ang AfterDesk ng tapos nang administratibong trabaho sa fixed na presyo. Kasama ng task ang approved brief at review standard mula scope hanggang delivery.",
+    "Naghahatid ang Endvera ng tapos nang administratibong trabaho sa fixed na presyo. Kasama ng task ang approved brief at review standard mula scope hanggang delivery.",
   solution: [
     [
       "Malinaw na scope",
@@ -825,7 +825,7 @@ const aTl: AboutDict = {
     ],
     [
       "Managed execution",
-      "Mina-manage ng AfterDesk ang coordination at exceptions ayon sa approved brief sa halip na ibalik sa client.",
+      "Mina-manage ng Endvera ang coordination at exceptions ayon sa approved brief sa halip na ibalik sa client.",
     ],
     [
       "Sinuring delivery",
@@ -836,7 +836,7 @@ const aTl: AboutDict = {
   trainingA:
     "Gumagana lang ang standards kapag marunong ang mga tao na gamitin ang mga ito. May anim na buong kurso ang Academy tungkol sa ",
   trainingLink: "pagtatrabaho gamit ang AI",
-  trainingB: ", saklaw kung saan nag-iimbento ng facts ang isang modelo, paano suriin ang daan-daang rows sa halip na isa, at kung saan talaga hindi puwedeng dalhin ang data ng kliyente. Available ang courses at exams kahit hindi makatanggap ng work sa AfterDesk ang specialist.",
+  trainingB: ", saklaw kung saan nag-iimbento ng facts ang isang modelo, paano suriin ang daan-daang rows sa halip na isa, at kung saan talaga hindi puwedeng dalhin ang data ng kliyente. Available ang courses at exams kahit hindi makatanggap ng work sa Endvera ang specialist.",
   bookend: {
     dim: "Ilarawan ang deliverable.",
     lit: "Tumanggap ng completed at reviewed na work.",
@@ -848,7 +848,7 @@ const aTl: AboutDict = {
     eyebrow: "Paghahambing",
     heading: "Ito ang totoong paghahambing",
     subline: "Ang pagkakaiba ng mga modelo, hindi kung anong brand ang narinig mo na.",
-    channels: ["DIY gamit ang AI tools", "Freelance marketplace", "Staffing kada oras", "AfterDesk"],
+    channels: ["DIY gamit ang AI tools", "Freelance marketplace", "Staffing kada oras", "Endvera"],
     axes: [
       {
         axis: "Sino ang namamahala sa execution",
@@ -856,7 +856,7 @@ const aTl: AboutDict = {
           { label: "Ikaw", tone: "weak", detail: "ikaw ang sumusulat ng prompt, nagpapatakbo ng bawat hakbang, at nagdedesisyon kung tapos na" },
           { label: "Ikaw", tone: "weak", detail: "ikaw ang pumipili, nagbi-brief at nagsu-supervise sa kukuha nito" },
           { label: "Ikaw", tone: "weak", detail: "ikaw ang nagdidirekta sa oras na binibili mo" },
-          { label: "AfterDesk", tone: "strong", detail: "kami ang pumipili ng paraan, nagpapatakbo nito, at humahawak sa hindi nasakop ng brief" },
+          { label: "Endvera", tone: "strong", detail: "kami ang pumipili ng paraan, nagpapatakbo nito, at humahawak sa hindi nasakop ng brief" },
         ],
       },
       {
@@ -874,7 +874,7 @@ const aTl: AboutDict = {
           { label: "Sa iyo", tone: "weak", detail: "ikaw ang magbe-verify at magtatama ng output" },
           { label: "Sa iyo", tone: "weak", detail: "kung mali, ikaw ang may problema sa pag-aayos" },
           { label: "Sa iyo", tone: "weak", detail: "oras ang binili mo; sa iyo pa rin ang resulta" },
-          { label: "Sa AfterDesk", tone: "strong", detail: "sinusuri laban sa aprubadong pamantayan bago ihatid, at amin itong ayusin" },
+          { label: "Sa Endvera", tone: "strong", detail: "sinusuri laban sa aprubadong pamantayan bago ihatid, at amin itong ayusin" },
         ],
       },
     ],

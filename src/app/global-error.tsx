@@ -41,7 +41,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
                 color: "#8A9099",
               }}
             >
-              AfterDesk
+              Endvera
             </p>
             <h1 style={{ margin: "20px 0 0", fontSize: 24, fontWeight: 600 }}>
               The application could not load.

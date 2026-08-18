@@ -6,8 +6,8 @@ import { AppShell } from "@/components/app-shell";
 
 export const metadata = {
   /**
-   * A plain string here would resolve to "Operator · AfterDesk" for this
-   * segment but NOT pass the "· AfterDesk" template down further: Next only
+   * A plain string here would resolve to "Operator · Endvera" for this
+   * segment but NOT pass the "· Endvera" template down further: Next only
    * carries a title template to descendants when the layout that consumes it
    * redeclares its own template object. Sub-pages (pricing, QC, workers,
    * tasks) still show this default verbatim until they set their own title,
@@ -15,7 +15,7 @@ export const metadata = {
    */
   title: {
     default: "Operator",
-    template: "%s · AfterDesk",
+    template: "%s · Endvera",
   },
   robots: { index: false, follow: false },
 };

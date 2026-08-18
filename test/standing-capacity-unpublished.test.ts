@@ -12,7 +12,7 @@ import sitemap from "@/app/sitemap";
  * weeklyClientPriceCents, drawn down in minutes — and its public page said so
  * in as many words: "It is a capacity service, not outcome pricing." That is
  * an honest description of the invoice and the one thing the client
- * positioning cannot carry, because AfterDesk sells finished outcomes rather
+ * positioning cannot carry, because Endvera sells finished outcomes rather
  * than blocks of labour. Rewording the page would have made the copy lie about
  * the billing.
  *

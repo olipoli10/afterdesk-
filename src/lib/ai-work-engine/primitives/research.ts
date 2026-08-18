@@ -72,7 +72,7 @@ export const MAX_TARGETS_IN_PROMPT = 120;
  */
 const BLOCKED_DOMAINS = BLOCKED_PROVIDER_TARGET_DOMAINS;
 
-const SYSTEM = `You research public facts for AfterDesk and you CITE EVERYTHING.
+const SYSTEM = `You research public facts for Endvera and you CITE EVERYTHING.
 
 WHAT YOU DO: find publicly published information about each unit named in the brief, and report where you found it.
 

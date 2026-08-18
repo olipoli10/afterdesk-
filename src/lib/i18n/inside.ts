@@ -72,15 +72,15 @@ type InsideDict = {
 
 const en: InsideDict = {
   meta: {
-    title: "Inside AfterDesk: how a managed operation actually runs",
+    title: "Inside Endvera: how a managed operation actually runs",
     description:
-      "How AfterDesk turns a described result into a written scope, a managed plan and a verified delivery — and an honest registry of what is available today, what is in development and what is the longer-term architecture.",
+      "How Endvera turns a described result into a written scope, a managed plan and a verified delivery — and an honest registry of what is available today, what is in development and what is the longer-term architecture.",
   },
   header: { signIn: "Sign in", start: "Request a fixed-price quote", how: "How it works" },
-  kicker: "Inside AfterDesk",
+  kicker: "Inside Endvera",
   h1: "One result, taken through a managed operation.",
   lede:
-    "You describe the result that has to exist. AfterDesk clarifies it, freezes a written scope with one fixed price, organizes the work into a plan it is responsible for, and reviews the delivery before it reaches you. This page shows how that runs — and is honest about which parts are live today and which are still being built.",
+    "You describe the result that has to exist. Endvera clarifies it, freezes a written scope with one fixed price, organizes the work into a plan it is responsible for, and reviews the delivery before it reaches you. This page shows how that runs — and is honest about which parts are live today and which are still being built.",
   model: {
     h2: "The operating model",
     items: [
@@ -90,15 +90,15 @@ const en: InsideDict = {
       ],
       [
         "The scope freezes",
-        "AfterDesk clarifies the request and freezes a written scope with one fixed price. You approve before anything starts, and nothing added later can quietly grow what you agreed to.",
+        "Endvera clarifies the request and freezes a written scope with one fixed price. You approve before anything starts, and nothing added later can quietly grow what you agreed to.",
       ],
       [
         "The work is organized",
-        "The scope becomes a managed plan of bounded steps AfterDesk is responsible for — not a ticket handed to whoever is available.",
+        "The scope becomes a managed plan of bounded steps Endvera is responsible for — not a ticket handed to whoever is available.",
       ],
       [
         "The method is managed, step by step",
-        "AfterDesk decides how each step of the approved scope is carried out and stays responsible for it. Today that means managed specialists working to the written standard, with software assistance where it is dependable. What is being built to extend that is listed in the registry below.",
+        "Endvera decides how each step of the approved scope is carried out and stays responsible for it. Today that means managed specialists working to the written standard, with software assistance where it is dependable. What is being built to extend that is listed in the registry below.",
       ],
       [
         "A flagged step is stopped, not delivered",
@@ -113,7 +113,7 @@ const en: InsideDict = {
   method: {
     h2: "About the method",
     body:
-      "Today the approved scope is carried out by managed specialists working to the written standard, with software assistance where it is dependable, and a person reviews every delivery against that standard before it goes out. That review is ordinary quality control on every operation — it is not the same thing as the bounded-human-step architecture in the registry below, which is still being built. What never changes, whatever the method: the scope is frozen before execution, the price is fixed before execution, and AfterDesk answers for the result.",
+      "Today the approved scope is carried out by managed specialists working to the written standard, with software assistance where it is dependable, and a person reviews every delivery against that standard before it goes out. That review is ordinary quality control on every operation — it is not the same thing as the bounded-human-step architecture in the registry below, which is still being built. What never changes, whatever the method: the scope is frozen before execution, the price is fixed before execution, and Endvera answers for the result.",
   },
   registry: {
     h2: "What is live, what is being built",
@@ -132,7 +132,7 @@ const en: InsideDict = {
         ],
         [
           "Managed execution to a written standard",
-          "AfterDesk manages the execution of the approved scope, using managed specialists and software assistance where it is dependable.",
+          "Endvera manages the execution of the approved scope, using managed specialists and software assistance where it is dependable.",
         ],
         [
           "A person reviews every delivery",
@@ -194,15 +194,15 @@ const en: InsideDict = {
 
 const fr: InsideDict = {
   meta: {
-    title: "Sous le capot d'AfterDesk : comment une opération prise en charge se déroule",
+    title: "Sous le capot d'Endvera : comment une opération prise en charge se déroule",
     description:
-      "Comment AfterDesk transforme un résultat décrit en périmètre écrit, en plan pris en charge et en livraison vérifiée — avec un registre honnête de ce qui est disponible aujourd'hui, en développement, et de l'architecture à plus long terme.",
+      "Comment Endvera transforme un résultat décrit en périmètre écrit, en plan pris en charge et en livraison vérifiée — avec un registre honnête de ce qui est disponible aujourd'hui, en développement, et de l'architecture à plus long terme.",
   },
   header: { signIn: "Connexion", start: "Demander un prix fixe", how: "Comment ça marche" },
   kicker: "Sous le capot",
   h1: "Un résultat, mené à travers une opération prise en charge.",
   lede:
-    "Vous décrivez le résultat qui doit exister. AfterDesk le clarifie, gèle un périmètre écrit avec un prix fixe, organise le travail en un plan dont il est responsable, et révise la livraison avant qu'elle vous parvienne. Cette page montre comment ça se déroule — et dit honnêtement ce qui est en service aujourd'hui et ce qui se construit encore.",
+    "Vous décrivez le résultat qui doit exister. Endvera le clarifie, gèle un périmètre écrit avec un prix fixe, organise le travail en un plan dont il est responsable, et révise la livraison avant qu'elle vous parvienne. Cette page montre comment ça se déroule — et dit honnêtement ce qui est en service aujourd'hui et ce qui se construit encore.",
   model: {
     h2: "Le modèle d'opération",
     items: [
@@ -212,15 +212,15 @@ const fr: InsideDict = {
       ],
       [
         "Le périmètre gèle",
-        "AfterDesk clarifie la demande et gèle un périmètre écrit avec un prix fixe. Vous approuvez avant que rien ne commence, et rien d'ajouté ensuite ne peut discrètement élargir ce que vous avez accepté.",
+        "Endvera clarifie la demande et gèle un périmètre écrit avec un prix fixe. Vous approuvez avant que rien ne commence, et rien d'ajouté ensuite ne peut discrètement élargir ce que vous avez accepté.",
       ],
       [
         "Le travail est organisé",
-        "Le périmètre devient un plan pris en charge, en étapes bornées dont AfterDesk est responsable — pas un billet remis au premier disponible.",
+        "Le périmètre devient un plan pris en charge, en étapes bornées dont Endvera est responsable — pas un billet remis au premier disponible.",
       ],
       [
         "La méthode est pilotée, étape par étape",
-        "AfterDesk décide comment chaque étape du périmètre approuvé est réalisée et en reste responsable. Aujourd'hui, cela veut dire des spécialistes encadrés travaillant selon la norme écrite, avec de l'assistance logicielle là où elle est fiable. Ce qui se construit pour élargir cela est listé dans le registre ci-dessous.",
+        "Endvera décide comment chaque étape du périmètre approuvé est réalisée et en reste responsable. Aujourd'hui, cela veut dire des spécialistes encadrés travaillant selon la norme écrite, avec de l'assistance logicielle là où elle est fiable. Ce qui se construit pour élargir cela est listé dans le registre ci-dessous.",
       ],
       [
         "Une étape signalée est arrêtée, pas livrée",
@@ -235,7 +235,7 @@ const fr: InsideDict = {
   method: {
     h2: "À propos de la méthode",
     body:
-      "Aujourd'hui, le périmètre approuvé est réalisé par des spécialistes encadrés travaillant selon la norme écrite, avec de l'assistance logicielle là où elle est fiable, et une personne révise chaque livraison selon cette norme avant qu'elle sorte. Cette révision est le contrôle qualité ordinaire de chaque opération — ce n'est pas la même chose que l'architecture d'étape humaine bornée du registre ci-dessous, qui se construit encore. Ce qui ne change jamais, quelle que soit la méthode : le périmètre est gelé avant l'exécution, le prix est fixé avant l'exécution, et AfterDesk répond du résultat.",
+      "Aujourd'hui, le périmètre approuvé est réalisé par des spécialistes encadrés travaillant selon la norme écrite, avec de l'assistance logicielle là où elle est fiable, et une personne révise chaque livraison selon cette norme avant qu'elle sorte. Cette révision est le contrôle qualité ordinaire de chaque opération — ce n'est pas la même chose que l'architecture d'étape humaine bornée du registre ci-dessous, qui se construit encore. Ce qui ne change jamais, quelle que soit la méthode : le périmètre est gelé avant l'exécution, le prix est fixé avant l'exécution, et Endvera répond du résultat.",
   },
   registry: {
     h2: "Ce qui est en service, ce qui se construit",
@@ -254,7 +254,7 @@ const fr: InsideDict = {
         ],
         [
           "Exécution prise en charge selon une norme écrite",
-          "AfterDesk pilote l'exécution du périmètre approuvé, avec des spécialistes encadrés et de l'assistance logicielle là où elle est fiable.",
+          "Endvera pilote l'exécution du périmètre approuvé, avec des spécialistes encadrés et de l'assistance logicielle là où elle est fiable.",
         ],
         [
           "Une personne révise chaque livraison",
@@ -316,15 +316,15 @@ const fr: InsideDict = {
 
 const es: InsideDict = {
   meta: {
-    title: "AfterDesk por dentro: cómo funciona una operación gestionada",
+    title: "Endvera por dentro: cómo funciona una operación gestionada",
     description:
-      "Cómo AfterDesk convierte un resultado descrito en un alcance escrito, un plan gestionado y una entrega verificada — con un registro honesto de lo que está disponible hoy, lo que está en desarrollo y la arquitectura a más largo plazo.",
+      "Cómo Endvera convierte un resultado descrito en un alcance escrito, un plan gestionado y una entrega verificada — con un registro honesto de lo que está disponible hoy, lo que está en desarrollo y la arquitectura a más largo plazo.",
   },
   header: { signIn: "Iniciar sesión", start: "Pedir un precio fijo", how: "Cómo funciona" },
   kicker: "Por dentro",
   h1: "Un resultado, llevado por una operación gestionada.",
   lede:
-    "Describes el resultado que debe existir. AfterDesk lo aclara, congela un alcance escrito con un precio fijo, organiza el trabajo en un plan del que es responsable, y revisa la entrega antes de que te llegue. Esta página muestra cómo funciona — y es honesta sobre qué partes están en servicio hoy y cuáles todavía se están construyendo.",
+    "Describes el resultado que debe existir. Endvera lo aclara, congela un alcance escrito con un precio fijo, organiza el trabajo en un plan del que es responsable, y revisa la entrega antes de que te llegue. Esta página muestra cómo funciona — y es honesta sobre qué partes están en servicio hoy y cuáles todavía se están construyendo.",
   model: {
     h2: "El modelo operativo",
     items: [
@@ -334,15 +334,15 @@ const es: InsideDict = {
       ],
       [
         "El alcance se congela",
-        "AfterDesk aclara la solicitud y congela un alcance escrito con un precio fijo. Apruebas antes de que empiece nada, y nada añadido después puede ampliar en silencio lo que aceptaste.",
+        "Endvera aclara la solicitud y congela un alcance escrito con un precio fijo. Apruebas antes de que empiece nada, y nada añadido después puede ampliar en silencio lo que aceptaste.",
       ],
       [
         "El trabajo se organiza",
-        "El alcance se convierte en un plan gestionado de pasos acotados de los que AfterDesk es responsable — no un ticket entregado al primero disponible.",
+        "El alcance se convierte en un plan gestionado de pasos acotados de los que Endvera es responsable — no un ticket entregado al primero disponible.",
       ],
       [
         "El método se gestiona, paso a paso",
-        "AfterDesk decide cómo se realiza cada paso del alcance aprobado y sigue siendo responsable de él. Hoy eso significa especialistas gestionados que trabajan según el estándar escrito, con asistencia de software donde es fiable. Lo que se está construyendo para ampliarlo figura en el registro de abajo.",
+        "Endvera decide cómo se realiza cada paso del alcance aprobado y sigue siendo responsable de él. Hoy eso significa especialistas gestionados que trabajan según el estándar escrito, con asistencia de software donde es fiable. Lo que se está construyendo para ampliarlo figura en el registro de abajo.",
       ],
       [
         "Un paso marcado se detiene, no se entrega",
@@ -357,7 +357,7 @@ const es: InsideDict = {
   method: {
     h2: "Sobre el método",
     body:
-      "Hoy el alcance aprobado lo realizan especialistas gestionados que trabajan según el estándar escrito, con asistencia de software donde es fiable, y una persona revisa cada entrega contra ese estándar antes de que salga. Esa revisión es el control de calidad ordinario de cada operación — no es lo mismo que la arquitectura de paso humano acotado del registro de abajo, que todavía se está construyendo. Lo que nunca cambia, sea cual sea el método: el alcance se congela antes de la ejecución, el precio se fija antes de la ejecución, y AfterDesk responde por el resultado.",
+      "Hoy el alcance aprobado lo realizan especialistas gestionados que trabajan según el estándar escrito, con asistencia de software donde es fiable, y una persona revisa cada entrega contra ese estándar antes de que salga. Esa revisión es el control de calidad ordinario de cada operación — no es lo mismo que la arquitectura de paso humano acotado del registro de abajo, que todavía se está construyendo. Lo que nunca cambia, sea cual sea el método: el alcance se congela antes de la ejecución, el precio se fija antes de la ejecución, y Endvera responde por el resultado.",
   },
   registry: {
     h2: "Qué está en servicio, qué se está construyendo",
@@ -376,7 +376,7 @@ const es: InsideDict = {
         ],
         [
           "Ejecución gestionada según un estándar escrito",
-          "AfterDesk gestiona la ejecución del alcance aprobado, con especialistas gestionados y asistencia de software donde es fiable.",
+          "Endvera gestiona la ejecución del alcance aprobado, con especialistas gestionados y asistencia de software donde es fiable.",
         ],
         [
           "Una persona revisa cada entrega",
@@ -438,15 +438,15 @@ const es: InsideDict = {
 
 const tl: InsideDict = {
   meta: {
-    title: "Sa loob ng AfterDesk: paano talaga tumatakbo ang isang managed na operasyon",
+    title: "Sa loob ng Endvera: paano talaga tumatakbo ang isang managed na operasyon",
     description:
-      "Paano ginagawa ng AfterDesk ang inilarawang resulta na nakasulat na scope, managed na plano at beripikadong delivery — na may tapat na registry ng kung ano ang available ngayon, ano ang ginagawa pa, at ano ang mas pangmatagalang arkitektura.",
+      "Paano ginagawa ng Endvera ang inilarawang resulta na nakasulat na scope, managed na plano at beripikadong delivery — na may tapat na registry ng kung ano ang available ngayon, ano ang ginagawa pa, at ano ang mas pangmatagalang arkitektura.",
   },
   header: { signIn: "Mag-sign in", start: "Humingi ng fixed na presyo", how: "Paano ito gumagana" },
-  kicker: "Sa loob ng AfterDesk",
+  kicker: "Sa loob ng Endvera",
   h1: "Isang resulta, dinadala sa isang managed na operasyon.",
   lede:
-    "Ilalarawan mo ang resultang dapat mabuo. Nililinaw ito ng AfterDesk, nagfi-freeze ng nakasulat na scope na may fixed na presyo, inaayos ang trabaho sa isang planong pananagutan nito, at nirerebyu ang delivery bago ito makarating sa iyo. Ipinapakita ng page na ito kung paano iyon tumatakbo — at tapat ito kung aling bahagi ang live na ngayon at alin ang ginagawa pa.",
+    "Ilalarawan mo ang resultang dapat mabuo. Nililinaw ito ng Endvera, nagfi-freeze ng nakasulat na scope na may fixed na presyo, inaayos ang trabaho sa isang planong pananagutan nito, at nirerebyu ang delivery bago ito makarating sa iyo. Ipinapakita ng page na ito kung paano iyon tumatakbo — at tapat ito kung aling bahagi ang live na ngayon at alin ang ginagawa pa.",
   model: {
     h2: "Ang operating model",
     items: [
@@ -456,15 +456,15 @@ const tl: InsideDict = {
       ],
       [
         "Nagfi-freeze ang scope",
-        "Nililinaw ng AfterDesk ang request at nagfi-freeze ng nakasulat na scope na may fixed na presyo. Ikaw ang mag-a-approve bago magsimula ang kahit ano, at walang idinagdag pagkatapos ang tahimik na makakapagpalaki ng napagkasunduan mo.",
+        "Nililinaw ng Endvera ang request at nagfi-freeze ng nakasulat na scope na may fixed na presyo. Ikaw ang mag-a-approve bago magsimula ang kahit ano, at walang idinagdag pagkatapos ang tahimik na makakapagpalaki ng napagkasunduan mo.",
       ],
       [
         "Inaayos ang trabaho",
-        "Nagiging managed na plano ang scope — mga hakbang na may hangganan na pananagutan ng AfterDesk, hindi ticket na iniaabot sa kung sinumang bakante.",
+        "Nagiging managed na plano ang scope — mga hakbang na may hangganan na pananagutan ng Endvera, hindi ticket na iniaabot sa kung sinumang bakante.",
       ],
       [
         "Pinamamahalaan ang paraan, hakbang-hakbang",
-        "Ang AfterDesk ang nagpapasya kung paano isasagawa ang bawat hakbang ng aprubadong scope at nananatiling responsable dito. Ngayon, ibig sabihin nito ay mga managed na espesyalista na sumusunod sa nakasulat na pamantayan, na may tulong ng software kung saan ito maaasahan. Ang ginagawa pa para palawakin ito ay nakalista sa registry sa ibaba.",
+        "Ang Endvera ang nagpapasya kung paano isasagawa ang bawat hakbang ng aprubadong scope at nananatiling responsable dito. Ngayon, ibig sabihin nito ay mga managed na espesyalista na sumusunod sa nakasulat na pamantayan, na may tulong ng software kung saan ito maaasahan. Ang ginagawa pa para palawakin ito ay nakalista sa registry sa ibaba.",
       ],
       [
         "Ang minarkahang hakbang ay hinihinto, hindi inihahatid",
@@ -479,7 +479,7 @@ const tl: InsideDict = {
   method: {
     h2: "Tungkol sa paraan",
     body:
-      "Ngayon, ang aprubadong scope ay isinasagawa ng mga managed na espesyalista na sumusunod sa nakasulat na pamantayan, na may tulong ng software kung saan ito maaasahan, at may taong nagrerebyu ng bawat delivery laban sa pamantayang iyon bago ito lumabas. Ang review na iyon ay ordinaryong quality control sa bawat operasyon — hindi ito katulad ng arkitektura ng may-hangganang hakbang na pantao sa registry sa ibaba, na ginagawa pa. Ang hindi nagbabago, anuman ang paraan: naka-freeze ang scope bago ang execution, fixed ang presyo bago ang execution, at ang AfterDesk ang sumasagot sa resulta.",
+      "Ngayon, ang aprubadong scope ay isinasagawa ng mga managed na espesyalista na sumusunod sa nakasulat na pamantayan, na may tulong ng software kung saan ito maaasahan, at may taong nagrerebyu ng bawat delivery laban sa pamantayang iyon bago ito lumabas. Ang review na iyon ay ordinaryong quality control sa bawat operasyon — hindi ito katulad ng arkitektura ng may-hangganang hakbang na pantao sa registry sa ibaba, na ginagawa pa. Ang hindi nagbabago, anuman ang paraan: naka-freeze ang scope bago ang execution, fixed ang presyo bago ang execution, at ang Endvera ang sumasagot sa resulta.",
   },
   registry: {
     h2: "Ano ang live, ano ang ginagawa pa",
@@ -498,7 +498,7 @@ const tl: InsideDict = {
         ],
         [
           "Managed na execution ayon sa nakasulat na pamantayan",
-          "Pinamamahalaan ng AfterDesk ang execution ng aprubadong scope, gamit ang mga managed na espesyalista at tulong ng software kung saan ito maaasahan.",
+          "Pinamamahalaan ng Endvera ang execution ng aprubadong scope, gamit ang mga managed na espesyalista at tulong ng software kung saan ito maaasahan.",
         ],
         [
           "May taong nagrerebyu ng bawat delivery",

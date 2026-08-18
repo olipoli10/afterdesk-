@@ -41,9 +41,9 @@ describe("C4 - the launcher's accessible name is localized", () => {
   it("aria-label uses copy.ask, and ask is really translated", () => {
     const c = read("src/app/_home/a2-concierge.tsx");
     expect(c).toMatch(/aria-label=\{copy\.ask\}/);
-    expect(c).not.toMatch(/aria-label="Ask AfterDesk"/);
+    expect(c).not.toMatch(/aria-label="Ask Endvera"/);
     const d = read("src/lib/i18n/home-assembly.ts");
-    for (const ask of ['ask: "Ask AfterDesk"', 'ask: "Demandez à AfterDesk"', 'ask: "Pregunta a AfterDesk"', 'ask: "Magtanong sa AfterDesk"'])
+    for (const ask of ['ask: "Ask Endvera"', 'ask: "Demandez à Endvera"', 'ask: "Pregunta a Endvera"', 'ask: "Magtanong sa Endvera"'])
       expect(d, ask).toContain(ask);
   });
 });

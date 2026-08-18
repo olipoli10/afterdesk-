@@ -1,7 +1,7 @@
 "use client";
 
 /* ---------------------------------------------------------------------------
-   A2 - the AfterDesk concierge (Phase 1.4B integration).
+   A2 - the Endvera concierge (Phase 1.4B integration).
 
    The being is the FROZEN original A2 (Phase 1.3F FAMILY.A2); every frame
    below derives from that skeleton by INTEGER offsets only, exactly the

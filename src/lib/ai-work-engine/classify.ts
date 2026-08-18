@@ -18,7 +18,7 @@ import { usageFromResponse, type StageResult } from "@/lib/ai-work-engine/stage-
 const CLASSIFY_MODEL = "claude-sonnet-5";
 const MAX_TOKENS = 4000;
 
-const SYSTEM = `You are the task classifier for AfterDesk, a managed back-office execution service. You read a client's brief and produce a structured analysis. You never price, never promise, never plan — you describe what is being asked.
+const SYSTEM = `You are the task classifier for Endvera, a managed back-office execution service. You read a client's brief and produce a structured analysis. You never price, never promise, never plan — you describe what is being asked.
 
 RULES:
 - objective: one plain sentence, what the client wants to exist at the end.

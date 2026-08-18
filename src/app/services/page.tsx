@@ -28,7 +28,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
     <div lang={lang} className="min-h-screen overflow-x-clip bg-[#0A0B0D] text-white">
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0A0B0D]/92 backdrop-blur-md">
         <div className="mx-auto flex min-h-16 w-full max-w-[1120px] items-center justify-between gap-3 px-4 sm:px-6">
-          <Link href="/" aria-label="AfterDesk home"><Wordmark tone="paper" /></Link>
+          <Link href="/" aria-label="Endvera home"><Wordmark tone="paper" /></Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <LangSwitch path="/services" current={lang} options={SITE_LANGS} tone="night" />
             <Link href="/login" className="hidden min-h-11 items-center text-[13px] text-[#9AA1AB] hover:text-white sm:inline-flex">{t.header.signIn}</Link>

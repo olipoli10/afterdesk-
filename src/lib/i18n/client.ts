@@ -177,7 +177,7 @@ type Dict = {
   };
   whatWeAre: {
     label: string;
-    /** [before, after] around a literal "AfterDesk" the JSX inserts. */
+    /** [before, after] around a literal "Endvera" the JSX inserts. */
     h2: [string, string];
     intro: string;
     steps: [string, string][];
@@ -210,7 +210,7 @@ const en: Dict = {
      * responsibility for an outcome" — the negation in line2 is what blocks
      * the VA-agency reading. The subheadline anchors it immediately in what
      * is supportable today: one described result, a written scope, one fixed
-     * price, the method managed by AfterDesk, and a human review before
+     * price, the method managed by Endvera, and a human review before
      * delivery. No autonomy claim, no recurrence claim, and no
      * execution-lane list up here — the lanes are named on /inside, where
      * there is room to be exact.
@@ -221,7 +221,7 @@ const en: Dict = {
     line1: "Hand over the operation.",
     line2: "Not the task.",
     subtitle:
-      "Describe the result that has to exist. AfterDesk writes the scope, sets one fixed price, manages the method, and reviews the delivery before it reaches you.",
+      "Describe the result that has to exist. Endvera writes the scope, sets one fixed price, manages the method, and reviews the delivery before it reaches you.",
     cta: "Request a fixed-price quote",
     guarantee: (h) =>
       `Your card is authorized, not charged. Nothing reaches you until it has passed our review against the approved standard, and your card is charged only ${h} hours after that, so you have time to reject it.`,
@@ -238,7 +238,7 @@ const en: Dict = {
     /**
      * THE METHOD SENTENCE, AND THE LIMIT OF WHAT IT MAY CLAIM.
      *
-     * It says AfterDesk chooses the method. It does NOT say the method is
+     * It says Endvera chooses the method. It does NOT say the method is
      * automation, does not say people only handle exceptions, and does not
      * imply a fleet of specialised providers being selected between. Today the
      * dependable way is usually a person working to a written standard, and
@@ -247,7 +247,7 @@ const en: Dict = {
      * mechanism that is BOTH live and load-bearing, so it is named here.
      */
     intro:
-      "The method depends on the operation. AfterDesk chooses and manages the most dependable way to complete the approved scope — and a person reviews every delivery against the approved standard before it reaches you.",
+      "The method depends on the operation. Endvera chooses and manages the most dependable way to complete the approved scope — and a person reviews every delivery against the approved standard before it reaches you.",
     steps: [
       [
         "Define",
@@ -275,7 +275,7 @@ const en: Dict = {
        * THE STANDARD IS WRITTEN, NOT A FEELING — AND NOBODY ELSE'S PAY IS THE
        * CLIENT'S BUSINESS.
        *
-       * This read "Nobody gets paid until you are satisfied / Not AfterDesk,
+       * This read "Nobody gets paid until you are satisfied / Not Endvera,
        * and not the specialist." Two problems in one pillar.
        *
        * "Satisfied" replaced the mechanism the product actually runs on with a
@@ -341,12 +341,12 @@ const en: Dict = {
     label: "End to end",
     h2: "One operation, from request to delivery.",
     laneYou: "You",
-    laneThem: "AfterDesk",
+    laneThem: "Endvera",
     note: "Timings are illustrative; the confirmed date is on your quote",
     steps: [
       ["Step 1", "You describe the result you need."],
       ["Step 2", "One fixed price for a written scope. You approve it."],
-      ["Step 3", "AfterDesk runs the approved scope."],
+      ["Step 3", "Endvera runs the approved scope."],
       ["Step 4", "Checked against the standard, then delivered."],
     ],
   },
@@ -356,7 +356,7 @@ const en: Dict = {
    * The earlier version named Fiverr-shaped competitors and, worse, the /about
    * table beside it rated them on price, speed and vetting. Those are claims
    * about other companies that nothing in this business measures, and naming
-   * marketplaces filed AfterDesk as a fourth marketplace.
+   * marketplaces filed Endvera as a fourth marketplace.
    *
    * Each row now carries ONE structural difference that is true by
    * construction here: who manages the execution and owns the result, what the
@@ -367,7 +367,7 @@ const en: Dict = {
     label: "The comparison",
     h2: "What changes between the models.",
     legend: "Three other ways to get this done, and what each leaves on your desk.",
-    wall: "AfterDesk",
+    wall: "Endvera",
     desk: "Sometimes a version does not meet the standard. When review flags one, it goes back for rework before anything is delivered. That review is careful; it is not a promise that every possible error is caught.",
     pairs: [
       [
@@ -392,12 +392,12 @@ const en: Dict = {
     limits:
       "Not everything fits. We turn down live calls, anything that needs your identity to cross, high-stakes legal, medical or financial judgment, and anything we cannot check against a source. If your job does not fit, we say so before you pay anything.",
   },
-  footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us", services: "Operations", inside: "Inside AfterDesk" },
+  footer: { about: "About us", how: "How it works", signIn: "Sign in", work: "Work with us", services: "Operations", inside: "Inside Endvera" },
   /**
    * THE OPERATION CONSOLE (operation-console.tsx) — seven stations, one
    * result. Station five is the point: an issue is caught and reworked
    * instead of delivered. TRUTH RULES (ADR-022): one result, never a queue;
-   * station four states that AfterDesk SELECTS the most dependable
+   * station four states that Endvera SELECTS the most dependable
    * AVAILABLE method and points at /inside rather than listing every future
    * execution lane on the homepage — listing them here reads as a menu the
    * client can order from today; human review is visibly part of the model;
@@ -411,9 +411,9 @@ const en: Dict = {
       "A static diagram of one operation, from your request to a reviewed delivery. Its seven steps are listed in order below.",
     stations: [
       ["Request", "You describe the result that has to exist, in plain language."],
-      ["Written scope", "AfterDesk turns it into a written scope with one fixed price. You approve before anything starts."],
-      ["Managed plan", "The scope becomes a plan of bounded steps AfterDesk is responsible for."],
-      ["Method selected", "AfterDesk selects and manages the most dependable available method for the approved step. What is used today, and what is still being built, is set out on Inside AfterDesk."],
+      ["Written scope", "Endvera turns it into a written scope with one fixed price. You approve before anything starts."],
+      ["Managed plan", "The scope becomes a plan of bounded steps Endvera is responsible for."],
+      ["Method selected", "Endvera selects and manages the most dependable available method for the approved step. What is used today, and what is still being built, is set out on Inside Endvera."],
       ["Issue detected", "A step that fails or looks wrong is stopped and flagged instead of delivered."],
       ["Review & rework", "A person reviews the work against the approved standard. What fails goes back and is redone."],
       ["Verified delivery", "You receive the version that passed, at the fixed price you approved."],
@@ -472,7 +472,7 @@ const fr: Dict = {
     line1: "Confiez l'opération.",
     line2: "Pas la tâche.",
     subtitle:
-      "Décrivez le résultat qui doit exister. AfterDesk écrit le périmètre, fixe un prix unique, pilote la méthode et révise la livraison avant qu'elle vous parvienne.",
+      "Décrivez le résultat qui doit exister. Endvera écrit le périmètre, fixe un prix unique, pilote la méthode et révise la livraison avant qu'elle vous parvienne.",
     cta: "Demander un prix fixe",
     guarantee: (h) =>
       `Votre carte est autorisée, pas débitée. Rien ne vous parvient avant d'avoir passé notre révision selon la norme approuvée, et votre carte n'est débitée que ${h} heures plus tard, vous avez donc le temps de refuser.`,
@@ -487,7 +487,7 @@ const fr: Dict = {
       " prend en charge une opération définie et livre le résultat fini. Vous décrivez ce qui doit exister : cette liste nettoyée, ces entreprises recherchées, les dates sorties de ces contrats. Nous écrivons le périmètre, chiffrons un prix fixe, et nous portons le travail jusqu'à ce qu'il soit fait et vérifié.",
     ],
     intro:
-      "La méthode dépend de l'opération. AfterDesk choisit et pilote la façon la plus fiable de réaliser le périmètre approuvé — et une personne révise chaque livraison selon la norme approuvée avant qu'elle vous parvienne.",
+      "La méthode dépend de l'opération. Endvera choisit et pilote la façon la plus fiable de réaliser le périmètre approuvé — et une personne révise chaque livraison selon la norme approuvée avant qu'elle vous parvienne.",
     steps: [
       [
         "Définir",
@@ -552,12 +552,12 @@ const fr: Dict = {
     label: "De bout en bout",
     h2: "Une opération, de la demande à la livraison.",
     laneYou: "Vous",
-    laneThem: "AfterDesk",
+    laneThem: "Endvera",
     note: "Étapes illustratives ; la date confirmée figure sur votre devis",
     steps: [
       ["Étape 1", "Vous décrivez le résultat voulu."],
       ["Étape 2", "Un prix fixe pour un périmètre écrit. Vous l'approuvez."],
-      ["Étape 3", "AfterDesk réalise le périmètre approuvé."],
+      ["Étape 3", "Endvera réalise le périmètre approuvé."],
       ["Étape 4", "Vérifié selon la norme, puis livré."],
     ],
   },
@@ -565,7 +565,7 @@ const fr: Dict = {
     label: "La comparaison",
     h2: "Ce qui change d'un modèle à l'autre.",
     legend: "Trois autres façons de faire faire ça, et ce que chacune vous laisse sur le bureau.",
-    wall: "AfterDesk",
+    wall: "Endvera",
     desk: "Parfois une version n'atteint pas la norme. Quand la révision en signale une, elle repart en correction avant toute livraison. Cette révision est rigoureuse ; ce n'est pas une promesse que toute erreur possible sera détectée.",
     pairs: [
       [
@@ -617,9 +617,9 @@ const fr: Dict = {
       "Schéma statique d'une opération, de votre demande à une livraison révisée. Ses sept étapes sont listées dans l'ordre ci-dessous.",
     stations: [
       ["Demande", "Vous décrivez, en langage clair, le résultat qui doit exister."],
-      ["Périmètre écrit", "AfterDesk en fait un périmètre écrit avec un prix fixe. Vous approuvez avant que rien ne commence."],
-      ["Plan pris en charge", "Le périmètre devient un plan d'étapes bornées dont AfterDesk est responsable."],
-      ["Méthode choisie", "AfterDesk choisit et pilote la méthode la plus fiable disponible pour l'étape approuvée. Ce qui est utilisé aujourd'hui, et ce qui se construit encore, est détaillé dans Sous le capot."],
+      ["Périmètre écrit", "Endvera en fait un périmètre écrit avec un prix fixe. Vous approuvez avant que rien ne commence."],
+      ["Plan pris en charge", "Le périmètre devient un plan d'étapes bornées dont Endvera est responsable."],
+      ["Méthode choisie", "Endvera choisit et pilote la méthode la plus fiable disponible pour l'étape approuvée. Ce qui est utilisé aujourd'hui, et ce qui se construit encore, est détaillé dans Sous le capot."],
       ["Problème détecté", "Une étape qui échoue ou semble douteuse est arrêtée et signalée au lieu d'être livrée."],
       ["Révision et reprise", "Une personne révise le travail selon la norme approuvée. Ce qui échoue repart et est refait."],
       ["Livraison vérifiée", "Vous recevez la version qui a passé, au prix fixe que vous avez approuvé."],
@@ -652,7 +652,7 @@ const es: Dict = {
     line1: "Confíanos la operación.",
     line2: "No la tarea.",
     subtitle:
-      "Describe el resultado que debe existir. AfterDesk escribe el alcance, fija un precio único, gestiona el método y revisa la entrega antes de que te llegue.",
+      "Describe el resultado que debe existir. Endvera escribe el alcance, fija un precio único, gestiona el método y revisa la entrega antes de que te llegue.",
     cta: "Pedir un precio fijo",
     guarantee: (h) =>
       `Tu tarjeta queda autorizada, no cobrada. Nada te llega antes de pasar nuestra revisión contra el estándar aprobado, y tu tarjeta se cobra solo ${h} horas después de eso, así que tienes tiempo de rechazarlo.`,
@@ -667,7 +667,7 @@ const es: Dict = {
       " toma una operación definida y entrega el resultado terminado. Tú describes lo que debe existir: esta lista limpia, estas empresas investigadas, las fechas fuera de estos contratos. Nosotros escribimos el alcance, cotizamos un precio fijo y sostenemos el trabajo hasta que esté hecho y revisado.",
     ],
     intro:
-      "El método depende de la operación. AfterDesk elige y gestiona la forma más fiable de completar el alcance aprobado — y una persona revisa cada entrega contra el estándar aprobado antes de que te llegue.",
+      "El método depende de la operación. Endvera elige y gestiona la forma más fiable de completar el alcance aprobado — y una persona revisa cada entrega contra el estándar aprobado antes de que te llegue.",
     steps: [
       [
         "Definir",
@@ -732,12 +732,12 @@ const es: Dict = {
     label: "De principio a fin",
     h2: "Una operación, de la solicitud a la entrega.",
     laneYou: "Tú",
-    laneThem: "AfterDesk",
+    laneThem: "Endvera",
     note: "Pasos ilustrativos; la fecha confirmada aparece en tu presupuesto",
     steps: [
       ["Paso 1", "Describes el resultado que necesitas."],
       ["Paso 2", "Un precio fijo para un alcance escrito. Lo apruebas."],
-      ["Paso 3", "AfterDesk ejecuta el alcance aprobado."],
+      ["Paso 3", "Endvera ejecuta el alcance aprobado."],
       ["Paso 4", "Verificado contra el estándar, y entregado."],
     ],
   },
@@ -745,7 +745,7 @@ const es: Dict = {
     label: "La comparación",
     h2: "Qué cambia de un modelo a otro.",
     legend: "Otras tres formas de hacer esto, y lo que cada una te deja en el escritorio.",
-    wall: "AfterDesk",
+    wall: "Endvera",
     desk: "A veces una versión no cumple el estándar. Cuando la revisión marca una, vuelve a corrección antes de cualquier entrega. Esa revisión es rigurosa; no es una promesa de que se detecte todo error posible.",
     pairs: [
       [
@@ -797,9 +797,9 @@ const es: Dict = {
       "Diagrama estático de una operación, desde tu solicitud hasta una entrega revisada. Sus siete pasos se enumeran en orden más abajo.",
     stations: [
       ["Solicitud", "Describes, en lenguaje claro, el resultado que debe existir."],
-      ["Alcance escrito", "AfterDesk lo convierte en un alcance escrito con un precio fijo. Apruebas antes de que empiece nada."],
-      ["Plan gestionado", "El alcance se convierte en un plan de pasos acotados de los que AfterDesk es responsable."],
-      ["Método elegido", "AfterDesk elige y gestiona el método más fiable disponible para el paso aprobado. Lo que se usa hoy, y lo que aún se está construyendo, se detalla en Por dentro."],
+      ["Alcance escrito", "Endvera lo convierte en un alcance escrito con un precio fijo. Apruebas antes de que empiece nada."],
+      ["Plan gestionado", "El alcance se convierte en un plan de pasos acotados de los que Endvera es responsable."],
+      ["Método elegido", "Endvera elige y gestiona el método más fiable disponible para el paso aprobado. Lo que se usa hoy, y lo que aún se está construyendo, se detalla en Por dentro."],
       ["Problema detectado", "Un paso que falla o parece dudoso se detiene y se marca en lugar de entregarse."],
       ["Revisión y rehecho", "Una persona revisa el trabajo contra el estándar aprobado. Lo que falla vuelve y se rehace."],
       ["Entrega verificada", "Recibes la versión que pasó, al precio fijo que aprobaste."],
@@ -835,7 +835,7 @@ const tl: Dict = {
     line1: "Ipasa ang operasyon.",
     line2: "Hindi ang task.",
     subtitle:
-      "Ilarawan ang resultang dapat mabuo. Isinusulat ng AfterDesk ang scope, nagtatakda ng iisang fixed na presyo, namamahala sa paraan, at nirerebyu ang delivery bago ito makarating sa iyo.",
+      "Ilarawan ang resultang dapat mabuo. Isinusulat ng Endvera ang scope, nagtatakda ng iisang fixed na presyo, namamahala sa paraan, at nirerebyu ang delivery bago ito makarating sa iyo.",
     cta: "Humingi ng fixed na presyo",
     guarantee: (h) =>
       `Naka-authorize lang ang card mo, hindi sinisingil. Walang nakakarating sa iyo hangga't hindi ito pumapasa sa aming review laban sa aprubadong pamantayan, at sisingilin lang ang card mo ${h} oras pagkatapos noon, kaya may oras ka pang tumanggi.`,
@@ -850,7 +850,7 @@ const tl: Dict = {
       " ang kumukuha ng isang tinukoy na operasyon at naghahatid ng tapos na resulta. Inilalarawan mo kung ano ang dapat mabuo: linisin ang listahang ito, saliksikin ang mga kumpanyang ito, kunin ang mga petsa sa mga kontratang ito. Kami ang sumusulat ng scope, nagpepresyo nang fixed, at kami ang may hawak nito hanggang tapos at nasuri na.",
     ],
     intro:
-      "Nakadepende sa operasyon ang paraan. Ang AfterDesk ang pumipili at namamahala sa pinaka-maaasahang paraan para tapusin ang aprubadong scope — at may taong nagrerebyu ng bawat delivery laban sa aprubadong pamantayan bago ito makarating sa iyo.",
+      "Nakadepende sa operasyon ang paraan. Ang Endvera ang pumipili at namamahala sa pinaka-maaasahang paraan para tapusin ang aprubadong scope — at may taong nagrerebyu ng bawat delivery laban sa aprubadong pamantayan bago ito makarating sa iyo.",
     steps: [
       [
         "Tukuyin",
@@ -915,12 +915,12 @@ const tl: Dict = {
     label: "Simula hanggang dulo",
     h2: "Isang operasyon, mula request hanggang delivery.",
     laneYou: "Ikaw",
-    laneThem: "AfterDesk",
+    laneThem: "Endvera",
     note: "Ilustratibo ang mga hakbang; nasa quote mo ang kumpirmadong petsa",
     steps: [
       ["Hakbang 1", "Ilalarawan mo ang resultang kailangan mo."],
       ["Hakbang 2", "Isang fixed na presyo para sa nakasulat na scope. Aaprubahan mo."],
-      ["Hakbang 3", "Isinasagawa ng AfterDesk ang aprubadong scope."],
+      ["Hakbang 3", "Isinasagawa ng Endvera ang aprubadong scope."],
       ["Hakbang 4", "Sinuri laban sa pamantayan, tapos inihatid."],
     ],
   },
@@ -928,7 +928,7 @@ const tl: Dict = {
     label: "Ang paghahambing",
     h2: "Ano ang nagbabago sa bawat modelo.",
     legend: "Tatlong ibang paraan para maipagawa ito, at kung ano ang naiiwan sa mesa mo ng bawat isa.",
-    wall: "AfterDesk",
+    wall: "Endvera",
     desk: "Minsan hindi pumapasa sa pamantayan ang isang bersyon. Kapag may namarkahan ang review, bumabalik ito para ayusin bago ang anumang paghahatid. Maingat ang review na iyon; hindi ito pangakong matutukoy ang bawat posibleng mali.",
     pairs: [
       [
@@ -972,7 +972,7 @@ const tl: Dict = {
       "7:07 AM · pumasa sa review · nasa inbox mo na",
     ],
   },
-  footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin", services: "Mga operasyon", inside: "Sa loob ng AfterDesk" },
+  footer: { about: "Tungkol sa amin", how: "Paano ito gumagana", signIn: "Mag-sign in", work: "Magtrabaho sa amin", services: "Mga operasyon", inside: "Sa loob ng Endvera" },
   console: {
     label: "Ang operating model",
     h2: "Ano ang nangyayari sa pagitan ng pag-apruba mo at ng delivery.",
@@ -981,8 +981,8 @@ const tl: Dict = {
     stations: [
       ["Request", "Ilalarawan mo, sa simpleng salita, ang resultang dapat mabuo."],
       ["Nakasulat na scope", "Ginagawa itong nakasulat na scope na may fixed na presyo. Ikaw ang mag-a-approve bago magsimula ang kahit ano."],
-      ["Managed na plano", "Nagiging plano ang scope — mga hakbang na may hangganan na pananagutan ng AfterDesk."],
-      ["Piniling paraan", "Pinipili at pinamamahalaan ng AfterDesk ang pinaka-maaasahang paraang available para sa aprubadong hakbang. Nasa Sa loob ng AfterDesk kung ano ang ginagamit ngayon at ano ang ginagawa pa."],
+      ["Managed na plano", "Nagiging plano ang scope — mga hakbang na may hangganan na pananagutan ng Endvera."],
+      ["Piniling paraan", "Pinipili at pinamamahalaan ng Endvera ang pinaka-maaasahang paraang available para sa aprubadong hakbang. Nasa Sa loob ng Endvera kung ano ang ginagamit ngayon at ano ang ginagawa pa."],
       ["May nakitang problema", "Ang hakbang na pumalya o mukhang mali ay hinihinto at minamarkahan sa halip na i-deliver."],
       ["Review at ulit", "May taong nagrerebyu ng trabaho laban sa aprubadong pamantayan. Ang bumabagsak ay bumabalik at inuulit."],
       ["Beripikadong delivery", "Natatanggap mo ang bersyong pumasa, sa fixed na presyong inaprubahan mo."],

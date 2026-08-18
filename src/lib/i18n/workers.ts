@@ -241,7 +241,7 @@ const en: Dict = {
      * It read "America goes to sleep. / You wake up to paid work." — the
      * labour-arbitrage pitch, in the four languages, and burned into the
      * shared OG image of this page. It sold the gap between two economies
-     * rather than anything AfterDesk actually does differently.
+     * rather than anything Endvera actually does differently.
      *
      * What replaces it is the real difference and it is verifiable in the
      * product: the amount is fixed and shown before the decision, and it

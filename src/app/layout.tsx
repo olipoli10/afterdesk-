@@ -19,12 +19,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: "Managed back-office execution for data, research and CRM work",
-    template: "%s · AfterDesk",
+    template: "%s · Endvera",
   },
   description:
-    "AfterDesk scopes, manages and reviews bounded CRM, research, data and document work. Approve the scope and price, then receive a checked, usable deliverable.",
+    "Endvera scopes, manages and reviews bounded CRM, research, data and document work. Approve the scope and price, then receive a checked, usable deliverable.",
   openGraph: {
-    siteName: "AfterDesk",
+    siteName: "Endvera",
     type: "website",
     locale: "en_US",
   },

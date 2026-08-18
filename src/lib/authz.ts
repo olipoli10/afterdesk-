@@ -23,7 +23,7 @@ export function roleHome(role: Role): string {
  * True when this request was started from one of our own pages instead of by
  * arriving at the bare root/storefront. Someone opening a public entry page
  * cold — bookmark, typed address, a link from elsewhere — is opening the
- * product; someone who clicked their way here from inside AfterDesk is
+ * product; someone who clicked their way here from inside Endvera is
  * ASKING for the marketing/storefront page, and that is the difference a
  * signed-in bounce has to respect. Shared by `/` and `/workers` so the two
  * doors can never drift into different behavior.

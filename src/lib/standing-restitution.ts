@@ -27,7 +27,7 @@ export type StandingRestitution =
  *
  * The minutes are deducted at submission (submitStandingTask increments
  * minutesUsedThisPeriod before any work exists) and nothing ever gave them
- * back. A client whose dispute AfterDesk upheld — meaning the delivery failed
+ * back. A client whose dispute Endvera upheld — meaning the delivery failed
  * against the written standard — lost the work AND the capacity, which leaves
  * them strictly worse off than a one-off client, who gets refunded for the
  * same failure. This is the standing equivalent of that refund.

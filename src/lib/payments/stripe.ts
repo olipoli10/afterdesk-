@@ -114,7 +114,7 @@ export async function checkoutUrlForTask(taskId: string, clientId: string): Prom
             unit_amount: task.clientPriceCents,
             product_data: {
               name: task.title,
-              description: "AfterDesk task — fixed price approved before work starts",
+              description: "Endvera task — fixed price approved before work starts",
             },
           },
         },

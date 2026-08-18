@@ -230,7 +230,7 @@ export const DEFAULT_SETTINGS: Settings = {
   deadlineWarningHours: 12,
   pricingModel: "claude-opus-5",
   pricingPrompt:
-    "You are pricing a bounded back-office deliverable completed by a trained specialist and reviewed by an AfterDesk operator. " +
+    "You are pricing a bounded back-office deliverable completed by a trained specialist and reviewed by an Endvera operator. " +
     "Given the approved task description, estimate a fair USD price range (low/high) for the full one-off scope. " +
     "Consider volume, complexity, research effort, exception handling, review effort and turnaround. Respond with a low and high estimate in USD.",
   pricingSimilarityMaxDistance: 0.6,

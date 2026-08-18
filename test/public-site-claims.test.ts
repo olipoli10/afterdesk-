@@ -54,7 +54,7 @@ const lower = (node: unknown) => stringsOf(node).join(" · ").toLowerCase();
  *
  * BARE "models" / "modèles" / "modelos" IS DELIBERATELY NOT LISTED. The
  * comparison section legitimately says "what changes between the models",
- * meaning buying models — DIY, marketplace, hourly staffing, AfterDesk — and
+ * meaning buying models — DIY, marketplace, hourly staffing, Endvera — and
  * banning the bare word would fail on true copy while teaching nothing. The
  * connected-tool and browser terms below are unambiguous, and in this copy the
  * lane list never names models without also naming them, so the boundary still

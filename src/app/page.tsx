@@ -17,7 +17,7 @@ import { A2Concierge } from "./_home/a2-concierge";
 /* ---------------------------------------------------------------------------
    The real homepage IS the accepted V5.5 "Assembly Lock" experience
    (Codex GO 9.2/10), ported faithfully from the frozen prototype, plus the
-   single A2 concierge (Phase 1.4B). One request enters; AfterDesk assembles
+   single A2 concierge (Phase 1.4B). One request enters; Endvera assembles
    software, models, connected tools, a browser and bounded human judgment;
    problems are recovered; the result is checked; a finished result leaves.
 
@@ -31,24 +31,24 @@ import { A2Concierge } from "./_home/a2-concierge";
 
 const HOME_META: Record<SiteLang, { title: string; description: string }> = {
   en: {
-    title: "One request in. One verified result out. | AfterDesk",
+    title: "One request in. One verified result out. | Endvera",
     description:
-      "Describe the result you need. AfterDesk assembles software, models, connected tools, browser work and bounded human review, then delivers one checked result at an approved fixed price.",
+      "Describe the result you need. Endvera assembles software, models, connected tools, browser work and bounded human review, then delivers one checked result at an approved fixed price.",
   },
   fr: {
-    title: "Une demande entre. Un résultat vérifié ressort. | AfterDesk",
+    title: "Une demande entre. Un résultat vérifié ressort. | Endvera",
     description:
-      "Décrivez le résultat qu'il vous faut. AfterDesk assemble logiciels, modèles, outils connectés, travail navigateur et révision humaine bornée, puis livre un résultat vérifié à un prix fixe approuvé.",
+      "Décrivez le résultat qu'il vous faut. Endvera assemble logiciels, modèles, outils connectés, travail navigateur et révision humaine bornée, puis livre un résultat vérifié à un prix fixe approuvé.",
   },
   es: {
-    title: "Entra una solicitud. Sale un resultado verificado. | AfterDesk",
+    title: "Entra una solicitud. Sale un resultado verificado. | Endvera",
     description:
-      "Describa el resultado que necesita. AfterDesk ensambla software, modelos, herramientas conectadas, trabajo de navegador y revisión humana acotada, y entrega un resultado verificado a un precio fijo aprobado.",
+      "Describa el resultado que necesita. Endvera ensambla software, modelos, herramientas conectadas, trabajo de navegador y revisión humana acotada, y entrega un resultado verificado a un precio fijo aprobado.",
   },
   tl: {
-    title: "Isang kahilingan ang pumapasok. Isang beripikadong resulta ang lumalabas. | AfterDesk",
+    title: "Isang kahilingan ang pumapasok. Isang beripikadong resulta ang lumalabas. | Endvera",
     description:
-      "Ilarawan ang resultang kailangan mo. Binubuo ng AfterDesk ang software, mga modelo, konektadong tools, browser na trabaho at may hangganang pagsusuri ng tao, at naghahatid ng isang siniyasat na resulta sa aprubadong fixed na presyo.",
+      "Ilarawan ang resultang kailangan mo. Binubuo ng Endvera ang software, mga modelo, konektadong tools, browser na trabaho at may hangganang pagsusuri ng tao, at naghahatid ng isang siniyasat na resulta sa aprubadong fixed na presyo.",
   },
 };
 
@@ -59,8 +59,8 @@ export async function generateMetadata({
 }) {
   const sp = await searchParams;
   const lang = clientLangOf(sp.lang);
-  /* HOME_META titles already carry "| AfterDesk"; absolute keeps the root
-     layout's "%s · AfterDesk" template from adding the brand a second time */
+  /* HOME_META titles already carry "| Endvera"; absolute keeps the root
+     layout's "%s · Endvera" template from adding the brand a second time */
   return {
     ...HOME_META[lang],
     title: { absolute: HOME_META[lang].title },
@@ -72,10 +72,10 @@ const ORG_JSONLD = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": `${SITE_URL}/#organization`,
-  name: "AfterDesk",
+  name: "Endvera",
   url: SITE_URL,
   description:
-    "AfterDesk assembles software, models, connected tools, browser work and bounded human review, and delivers one checked result at an approved fixed price. Early Access.",
+    "Endvera assembles software, models, connected tools, browser work and bounded human review, and delivers one checked result at an approved fixed price. Early Access.",
 });
 
 export default async function Home({

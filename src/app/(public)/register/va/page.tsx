@@ -7,7 +7,7 @@ import { academyStats } from "@/lib/academy/public";
 
 export const metadata: Metadata = {
   title: "Apply to join the pool",
-  description: "Apply to work AfterDesk tasks: the payout is printed before you claim.",
+  description: "Apply to work Endvera tasks: the payout is printed before you claim.",
   robots: { index: false, follow: false },
 };
 

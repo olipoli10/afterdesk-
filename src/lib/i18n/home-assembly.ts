@@ -130,7 +130,7 @@ export type ConceptAssemblyCopy = {
 const en: ConceptAssemblyCopy = {
   meta: {
     title: "Concept — the assembly lock",
-    description: "An internal design prototype for the AfterDesk public site. Not a public page.",
+    description: "An internal design prototype for the Endvera public site. Not a public page.",
   },
   nav: { outcomes: "Outcomes", how: "How it works", inside: "Inside", earlyAccess: "Early access" },
   kicker: "The right system assembles itself",
@@ -204,7 +204,7 @@ const en: ConceptAssemblyCopy = {
     unknownNote: "declared unknown · carried, not estimated",
     delivered: "Delivered as agreed · $1,840 fixed",
     exports: "Exports on delivery: XLSX · GeoJSON · brief",
-    closing: "You asked for the outcome. AfterDesk assembled and delivered it.",
+    closing: "You asked for the outcome. Endvera assembled and delivered it.",
   },
   range: {
     title: "One front door. Very different finishes.",
@@ -222,7 +222,7 @@ const en: ConceptAssemblyCopy = {
   },
   door: {
     line1: "Describe the result.",
-    line2: "AfterDesk assembles everything between.",
+    line2: "Endvera assembles everything between.",
   },
   srJourney:
     "A request is described. Its scope, price and finish line are fixed. Two systems assemble around a gold axis: one carries intent and control, the other the execution fabric. One fact cannot be confirmed and becomes a bounded human question. Evidence is checked against the finish line, and the assembled system delivers one verified decision surface.",
@@ -231,7 +231,7 @@ const en: ConceptAssemblyCopy = {
 const fr: ConceptAssemblyCopy = {
   meta: {
     title: "Concept — le verrou d'assemblage",
-    description: "Prototype de design interne pour le site public d'AfterDesk. Ce n'est pas une page publique.",
+    description: "Prototype de design interne pour le site public d'Endvera. Ce n'est pas une page publique.",
   },
   nav: { outcomes: "Résultats", how: "Comment ça marche", inside: "Coulisses", earlyAccess: "Accès anticipé" },
   kicker: "Le bon système s'assemble de lui-même",
@@ -305,7 +305,7 @@ const fr: ConceptAssemblyCopy = {
     unknownNote: "inconnue déclarée · portée, non estimée",
     delivered: "Livré comme convenu · 1 840 $ fixe",
     exports: "Exports à la livraison : XLSX · GeoJSON · synthèse",
-    closing: "Vous avez demandé le résultat. AfterDesk l'a assemblé et livré.",
+    closing: "Vous avez demandé le résultat. Endvera l'a assemblé et livré.",
   },
   range: {
     title: "Une seule porte. Des finitions très différentes.",
@@ -323,7 +323,7 @@ const fr: ConceptAssemblyCopy = {
   },
   door: {
     line1: "Décrivez le résultat.",
-    line2: "AfterDesk assemble tout le reste.",
+    line2: "Endvera assemble tout le reste.",
   },
   srJourney:
     "Une demande est décrite. Sa portée, son prix et sa ligne d'arrivée sont fixés. Deux systèmes s'assemblent autour d'un axe or : l'un porte l'intention et le contrôle, l'autre le tissu d'exécution. Un fait ne peut pas être confirmé et devient une question humaine bornée. Les preuves sont vérifiées contre la ligne d'arrivée, et le système assemblé livre une surface de décision vérifiée.",
@@ -332,7 +332,7 @@ const fr: ConceptAssemblyCopy = {
 const es: ConceptAssemblyCopy = {
   meta: {
     title: "Concepto — el bloqueo de ensamblaje",
-    description: "Prototipo de diseño interno para el sitio público de AfterDesk. No es una página pública.",
+    description: "Prototipo de diseño interno para el sitio público de Endvera. No es una página pública.",
   },
   nav: { outcomes: "Resultados", how: "Cómo funciona", inside: "Por dentro", earlyAccess: "Acceso anticipado" },
   kicker: "El sistema adecuado se ensambla solo",
@@ -406,7 +406,7 @@ const es: ConceptAssemblyCopy = {
     unknownNote: "incógnita declarada · registrada, no estimada",
     delivered: "Entregado según lo acordado · $1,840 fijo",
     exports: "Exportaciones en la entrega: XLSX · GeoJSON · síntesis",
-    closing: "Pidió el resultado. AfterDesk lo ensambló y lo entregó.",
+    closing: "Pidió el resultado. Endvera lo ensambló y lo entregó.",
   },
   range: {
     title: "Una sola puerta. Acabados muy distintos.",
@@ -424,7 +424,7 @@ const es: ConceptAssemblyCopy = {
   },
   door: {
     line1: "Describa el resultado.",
-    line2: "AfterDesk ensambla todo lo demás.",
+    line2: "Endvera ensambla todo lo demás.",
   },
   srJourney:
     "Se describe una solicitud. Su alcance, su precio y su meta quedan fijados. Dos sistemas se ensamblan alrededor de un eje dorado: uno lleva la intención y el control, el otro el tejido de ejecución. Un dato no puede confirmarse y se convierte en una pregunta humana acotada. La evidencia se verifica contra la meta, y el sistema ensamblado entrega una superficie de decisión verificada.",
@@ -433,7 +433,7 @@ const es: ConceptAssemblyCopy = {
 const tl: ConceptAssemblyCopy = {
   meta: {
     title: "Konsepto — ang assembly lock",
-    description: "Panloob na design prototype para sa pampublikong site ng AfterDesk. Hindi ito pampublikong pahina.",
+    description: "Panloob na design prototype para sa pampublikong site ng Endvera. Hindi ito pampublikong pahina.",
   },
   nav: { outcomes: "Mga resulta", how: "Paano ito gumagana", inside: "Sa loob", earlyAccess: "Maagang akses" },
   kicker: "Kusang nabubuo ang tamang sistema",
@@ -507,7 +507,7 @@ const tl: ConceptAssemblyCopy = {
     unknownNote: "deklaradong hindi alam · dala-dala, hindi tinantiya",
     delivered: "Naihatid ayon sa napagkasunduan · $1,840 takda",
     exports: "Mga export sa paghahatid: XLSX · GeoJSON · buod",
-    closing: "Hiningi mo ang resulta. Binuo at inihatid ito ng AfterDesk.",
+    closing: "Hiningi mo ang resulta. Binuo at inihatid ito ng Endvera.",
   },
   range: {
     title: "Isang pinto. Ibang-ibang mga tapos.",
@@ -525,7 +525,7 @@ const tl: ConceptAssemblyCopy = {
   },
   door: {
     line1: "Ilarawan ang resulta.",
-    line2: "Sagot ng AfterDesk ang lahat ng pagitan.",
+    line2: "Sagot ng Endvera ang lahat ng pagitan.",
   },
   srJourney:
     "Inilalarawan ang isang kahilingan. Naitatakda ang saklaw, presyo at linya ng tapos nito. Dalawang sistema ang nabubuo sa paligid ng gintong axis: dala ng isa ang layunin at kontrol, dala ng isa ang tela ng ehekusyon. May isang datos na hindi makumpirma at nagiging tiyak na tanong sa tao. Sinusuri ang ebidensya laban sa linya ng tapos, at ang nabuong sistema ay naghahatid ng isang beripikadong surface ng desisyon.",
@@ -549,14 +549,14 @@ export type HomeConciergeCopy = {
 
 export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
   en: {
-    ask: "Ask AfterDesk",
-    hail: "Ask AfterDesk",
-    title: "AfterDesk guide",
+    ask: "Ask Endvera",
+    hail: "Ask Endvera",
+    title: "Endvera guide",
     intro: "A site guide with approved answers and citations. It never invents; when it does not know, it says so.",
     suggestions: ["Who checks the work?", "Do you support recurring work?", "What if the guide is unavailable?"],
     answers: {
       verified: "A person reviews every delivery against the operating standard before it goes out.",
-      verifiedCite: "afterdesk.co/inside · Operating standard",
+      verifiedCite: "endvera.com/inside · Operating standard",
       verifiedHref: "/inside",
       unknown: "That is not covered by the published pages yet, so I will not guess. A person answers at",
       unavailable: "The guide is offline right now and fails closed: no answer is better than an invented one. The site itself stays fully readable.",
@@ -564,14 +564,14 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     close: "Close",
   },
   fr: {
-    ask: "Demandez à AfterDesk",
-    hail: "Demandez à AfterDesk",
-    title: "Guide AfterDesk",
+    ask: "Demandez à Endvera",
+    hail: "Demandez à Endvera",
+    title: "Guide Endvera",
     intro: "Un guide du site aux réponses approuvées et citées. Il n'invente jamais; quand il ne sait pas, il le dit.",
     suggestions: ["Qui vérifie le travail?", "Offrez-vous le travail récurrent?", "Et si le guide est indisponible?"],
     answers: {
       verified: "Une personne révise chaque livraison selon le standard d'exploitation avant qu'elle parte.",
-      verifiedCite: "afterdesk.co/inside · Standard d'exploitation",
+      verifiedCite: "endvera.com/inside · Standard d'exploitation",
       verifiedHref: "/inside",
       unknown: "Les pages publiées ne couvrent pas encore ce point, donc je ne devine pas. Une personne répond à",
       unavailable: "Le guide est hors ligne et échoue fermé : aucune réponse vaut mieux qu'une réponse inventée. Le site reste entièrement lisible.",
@@ -579,14 +579,14 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     close: "Fermer",
   },
   es: {
-    ask: "Pregunta a AfterDesk",
-    hail: "Pregunta a AfterDesk",
-    title: "Guía AfterDesk",
+    ask: "Pregunta a Endvera",
+    hail: "Pregunta a Endvera",
+    title: "Guía Endvera",
     intro: "Una guía del sitio con respuestas aprobadas y citadas. Nunca inventa; cuando no sabe, lo dice.",
     suggestions: ["¿Quién revisa el trabajo?", "¿Ofrecen trabajo recurrente?", "¿Y si la guía no está disponible?"],
     answers: {
       verified: "Una persona revisa cada entrega según el estándar operativo antes de que salga.",
-      verifiedCite: "afterdesk.co/inside · Estándar operativo",
+      verifiedCite: "endvera.com/inside · Estándar operativo",
       verifiedHref: "/inside",
       unknown: "Las páginas publicadas aún no cubren ese punto, así que no adivino. Una persona responde en",
       unavailable: "La guía está fuera de línea y falla cerrada: ninguna respuesta es mejor que una inventada. El sitio sigue siendo legible.",
@@ -594,14 +594,14 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     close: "Cerrar",
   },
   tl: {
-    ask: "Magtanong sa AfterDesk",
-    hail: "Magtanong sa AfterDesk",
-    title: "Gabay ng AfterDesk",
+    ask: "Magtanong sa Endvera",
+    hail: "Magtanong sa Endvera",
+    title: "Gabay ng Endvera",
     intro: "Isang gabay ng site na may aprubadong sagot at citation. Hindi ito nag-iimbento; kapag hindi alam, sinasabi nito.",
     suggestions: ["Sino ang nagsusuri ng trabaho?", "May recurring work ba kayo?", "Paano kung offline ang gabay?"],
     answers: {
       verified: "May taong sumusuri sa bawat delivery ayon sa operating standard bago ito lumabas.",
-      verifiedCite: "afterdesk.co/inside · Operating standard",
+      verifiedCite: "endvera.com/inside · Operating standard",
       verifiedHref: "/inside",
       unknown: "Hindi pa saklaw ng mga naka-publish na pahina ang puntong iyan, kaya hindi ako manghuhula. May taong sumasagot sa",
       unavailable: "Offline ang gabay ngayon at nagfa-fail closed: mas mabuti ang walang sagot kaysa imbentong sagot. Nananatiling ganap na mababasa ang site.",
