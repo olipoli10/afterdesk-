@@ -31,18 +31,33 @@
   opacity: 0.6;
 }
 
+/* the launcher is now a small STATION PLATFORM: the being stands at 64px
+   (integer 2x of the frozen skeleton, crispEdges intact) on a graphite
+   plate whose amber top seam marks it as part of the system's datum - a
+   resting instrument, not a chat bubble. Touch target grows with it. */
 .launch {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 76px;
+  height: 76px;
+  min-width: 76px;
+  min-height: 76px;
   display: grid;
   place-items: center;
-  background: #0b0d11;
+  position: relative;
+  background: linear-gradient(180deg, #14171c 0%, #0b0d11 100%);
   border: 1px solid #262b35;
   border-radius: 10px;
   cursor: pointer;
-  padding: 0;
+  padding: 0 0 4px;
+}
+.launch::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 14%;
+  right: 14%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #c9a76a, transparent);
+  opacity: 0.65;
 }
 .launch:hover { border-color: rgba(201, 167, 106, 0.55); }
 .launch:focus-visible {
@@ -50,12 +65,12 @@
   outline-offset: 2px;
 }
 
-.empty { display: block; width: 32px; height: 32px; }
+.empty { display: block; width: 64px; height: 64px; }
 
 .panel {
   position: fixed;
   right: 1.25rem;
-  bottom: 5rem;
+  bottom: 7.25rem;
   z-index: 61;
   width: min(21rem, calc(100vw - 2.5rem));
   background: #0b0d11;
@@ -143,9 +158,13 @@
     right: 0.75rem;
     left: 0.75rem;
     width: auto;
-    bottom: 4.6rem;
+    bottom: 6.6rem;
   }
   .dock { right: 0.9rem; bottom: 0.9rem; }
+  /* on phones the station platform IS the affordance: the textual hail
+     would sweep across the manifest during the arrival moment, so it is
+     a desktop-only flourish. The button keeps its accessible name. */
+  .hail { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

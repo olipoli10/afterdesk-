@@ -7,6 +7,16 @@ export type SiteLang = "en" | "fr" | "es" | "tl";
 
 export type V7ActsCopy = {
   act1: { h: string; sub: string; placeholder: string; note: string };
+  /* the intake console's machined labels + the path manifest: the in-hero
+     answer to "what does Endvera handle", phrased as work done FOR the
+     visitor, never as features they would configure */
+  instrument: {
+    intake: string;
+    awaiting: string;
+    receiving: string;
+    manifestTitle: string;
+    manifest: [string, string, string, string, string];
+  };
   solution: { h: string; sub: string };
   exampleIntro: string;
   act2: { h: string; gauntlet: [string, string, string, string, string] };
@@ -27,10 +37,17 @@ export type V7ActsCopy = {
 export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   en: {
     act1: {
-      h: "Endvera gets digital work done for your business.",
-      sub: "You describe the result. We coordinate the right AI, tools and people, check the work, and deliver it back.",
+      h: "Digital work, handled.",
+      sub: "You describe the result. We coordinate the systems, tools and people required to deliver it checked.",
       placeholder: "Describe the result you need…",
       note: "Nothing typed here is sent, stored or recorded.",
+    },
+    instrument: {
+      intake: "Intake 01",
+      awaiting: "Awaiting request",
+      receiving: "Receiving",
+      manifestTitle: "Coordinated for you",
+      manifest: ["Models", "Tools", "Browsers", "Workflows", "Human review"],
     },
     solution: { h: "Endvera takes it from here.", sub: "You hand over the request. Endvera organizes everything it needs." },
     exampleIntro: "One real request, end to end.",
@@ -57,10 +74,17 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   },
   fr: {
     act1: {
-      h: "Endvera fait faire votre travail numérique.",
-      sub: "Vous décrivez le résultat. On coordonne IA, outils et personnes, on vérifie le travail et on vous le livre.",
+      h: "Le travail numérique, pris en charge.",
+      sub: "Vous décrivez le résultat. Nous coordonnons les systèmes, les outils et les personnes qu'il faut pour le livrer vérifié.",
       placeholder: "Décrivez le résultat qu'il vous faut…",
       note: "Rien de ce qui est tapé ici n'est envoyé, stocké ou enregistré.",
+    },
+    instrument: {
+      intake: "Admission 01",
+      awaiting: "En attente",
+      receiving: "Réception",
+      manifestTitle: "Coordonné pour vous",
+      manifest: ["Modèles", "Outils", "Navigateurs", "Flux de travail", "Revue humaine"],
     },
     solution: { h: "Endvera s'en charge.", sub: "Vous remettez la demande. Endvera organise tout ce qu'il faut." },
     exampleIntro: "Une vraie demande, de bout en bout.",
@@ -87,10 +111,17 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   },
   es: {
     act1: {
-      h: "Endvera se encarga de su trabajo digital.",
-      sub: "Usted describe el resultado. Coordinamos la IA, las herramientas y las personas adecuadas, verificamos el trabajo y se lo entregamos.",
+      h: "El trabajo digital, resuelto.",
+      sub: "Usted describe el resultado. Nosotros coordinamos los sistemas, las herramientas y las personas necesarias para entregarlo verificado.",
       placeholder: "Describa el resultado que necesita…",
       note: "Nada de lo escrito aquí se envía, almacena o registra.",
+    },
+    instrument: {
+      intake: "Admisión 01",
+      awaiting: "En espera",
+      receiving: "Recibiendo",
+      manifestTitle: "Coordinado para usted",
+      manifest: ["Modelos", "Herramientas", "Navegadores", "Flujos de trabajo", "Revisión humana"],
     },
     solution: { h: "Endvera se encarga.", sub: "Usted entrega la solicitud. Endvera organiza todo lo necesario." },
     exampleIntro: "Una solicitud real, de principio a fin.",
@@ -117,10 +148,17 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   },
   tl: {
     act1: {
-      h: "Ipinapagawa ng Endvera ang iyong digital na trabaho.",
-      sub: "Ilarawan mo ang resulta. Kinokoordina namin ang AI, tools at tao, sinusuri ang trabaho, at inihahatid ito sa iyo.",
+      h: "Digital na trabaho, hawak na.",
+      sub: "Ilarawan mo ang resulta. Kami ang magkokoordina ng mga system, tool at tao para maihatid itong siniyasat.",
       placeholder: "Ilarawan ang resultang kailangan mo…",
       note: "Walang tinatype dito ang ipinapadala, iniimbak o naitatala.",
+    },
+    instrument: {
+      intake: "Intake 01",
+      awaiting: "Naghihintay",
+      receiving: "Tinatanggap",
+      manifestTitle: "Kinokoordina para sa iyo",
+      manifest: ["Mga modelo", "Mga tool", "Mga browser", "Mga workflow", "Pagsusuri ng tao"],
     },
     solution: { h: "Ang Endvera na ang bahala.", sub: "Iabot mo ang kahilingan. Aayusin ng Endvera ang lahat ng kailangan." },
     exampleIntro: "Isang totoong kahilingan, mula simula hanggang dulo.",

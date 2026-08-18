@@ -20,17 +20,24 @@ export function LogoMark({ className }: { className?: string }) {
  * Mark + wordmark lockup, same mono-uppercase treatment the bare text used
  * everywhere. "ink" is dark text for paper chrome; "paper" uses the gilt
  * highlight on the onyx homepage so the temporary identity reads amber.
+ *
+ * `plate` mounts the same lockup on a machined graphite name-plate — a
+ * manufacturer's plate rather than a floating label: recessed surface, thin
+ * border, a mounting seam under the mark, and a 4px amber pip as its entire
+ * active state. Opt-in only; every existing consumer renders byte-identical.
  */
 export function Wordmark({
   tone = "ink",
+  plate = false,
   className = "",
 }: {
   tone?: "ink" | "paper";
+  plate?: boolean;
   className?: string;
 }) {
-  return (
-    <span className={`inline-flex items-center gap-1.5 ${className}`}>
-      <LogoMark className="h-[18px] w-[18px] shrink-0 rounded-[4px]" />
+  const lockup = (
+    <span className={`inline-flex items-center gap-1.5 ${plate ? "" : className}`}>
+      <LogoMark className={plate ? "h-[22px] w-[22px] shrink-0 rounded-[5px]" : "h-[18px] w-[18px] shrink-0 rounded-[4px]"} />
       <span
         className={`whitespace-nowrap font-mono uppercase tracking-[0.18em] ${
           tone === "paper" ? "text-[#E2C486]" : "text-[#14161A]"
@@ -38,6 +45,16 @@ export function Wordmark({
       >
         Endvera
       </span>
+    </span>
+  );
+  if (!plate) return lockup;
+  return (
+    <span
+      className={`relative inline-flex items-center gap-2 rounded-[6px] border border-[#262B35] bg-[#14171C] py-2 pl-2.5 pr-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ${className}`}
+    >
+      {lockup}
+      <span aria-hidden className="mx-0.5 h-[18px] w-px bg-[#262B35]" />
+      <span aria-hidden className="h-[4px] w-[4px] rounded-[1px] bg-[#C9A76A]" />
     </span>
   );
 }

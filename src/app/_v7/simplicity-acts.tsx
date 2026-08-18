@@ -569,6 +569,9 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       if (!A) return; /* disarmed loudly; guards catch data-v7-engine */
       const g = clamp01((y - blockTop) / blockHeight);
       root.style.setProperty("--g", g.toFixed(4));
+      /* far-fabric parallax: written by THIS same frame on the same rAF -
+         depth without a second clock, compositor-only (transform) */
+      root.style.setProperty("--par", (-(y * 0.05)).toFixed(1) + "px");
       const centre = y + vh * 0.5;
       for (const b of actBoxes) {
         if (b.h > 0 && centre >= b.top && centre < b.top + b.h) { anchor = { id: b.id, f: (y - b.top) / b.h }; break; }
@@ -605,9 +608,13 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       if (dock && dockHomeViewport) {
         setEscort(storyActive);
         if (storyActive) {
-          /* integer-pixel escort, trailing beside the slip, never covering */
-          const tx = Math.round(vx - 44 - dockHomeViewport.x);
-          const ty = Math.round(vy - 6 - dockHomeViewport.y);
+          /* integer-pixel escort, trailing beside the slip, never covering.
+             The dock grew 44 -> 76px (station platform) while the being kept
+             its painted 64px: these offsets re-centre the platform so the
+             BEING's left edge stays at vx-54 and its feet at vy+36 - the
+             exact clearances the R2.2 lane was proven against. */
+          const tx = Math.round(vx - 60 - dockHomeViewport.x);
+          const ty = Math.round(vy - 35 - dockHomeViewport.y);
           dock.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
           /* the being fades with its plate, never apart from it: one
              composition, one opacity, so the two can never disagree */
@@ -704,8 +711,12 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           machined states by attribute. */}
       <style>{`
         [data-a2-dock][data-v7-escorting="on"] > span[aria-hidden] { display: none; }
-        [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: scale(2); transform-origin: 50% 100%; }
+        /* the being now rests at 64px natively (integer 2x sprite), so the
+           escort no longer rescales it: the PAINTED escort is byte-identical
+           to the R2.2-proven geometry - same 64px being, same clearances. */
+        [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: scale(1); transform-origin: 50% 100%; }
         [data-a2-dock][data-v7-escorting="on"] button { background: transparent; border-color: transparent; box-shadow: none; overflow: visible; }
+        [data-a2-dock][data-v7-escorting="on"] button::before { opacity: 0; }
         /* the closure is COMMANDED BY SCROLL: the gold seam closes with
            the walk, the frame stabilizes to gold, the result surface is
            revealed by the seal progress, the check lands last. Reversible
@@ -716,8 +727,57 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         [data-v7-slip] [data-lines] { opacity: max(calc(1 - 0.45 * var(--walk, 0) - 1.4 * var(--seal, 0)), 0); }
         [data-v7-slip] [data-paper] { opacity: min(calc(var(--seal, 0) * 1.5), 1); }
         [data-v7-slip] [data-check] { opacity: clamp(0, calc((var(--seal, 0) - 0.62) * 2.6), 1); }
+        /* ── FABLE OPENING ──────────────────────────────────────────────
+           Focus choreography: the machine acknowledges its operator. Pure
+           :focus-within state styling - transitions, never animations. */
+        [data-slot]:focus-within { border-color: rgba(201, 167, 106, 0.65); }
+        [data-slot]:focus-within [data-slotseam] { opacity: 1; box-shadow: 0 0 18px rgba(201, 167, 106, 0.4); }
+        [data-slot]:focus-within [data-tick] { border-color: #C9A76A; }
+        /* Entrance orchestration: every element exactly once, ~1.1s total,
+           staggered console -> seam -> statement -> slot -> manifest ->
+           out-rail -> port. All keyframes animate FROM hidden states and
+           base styles ARE the finished scene, so reduced motion (and no-JS)
+           get the complete final composition instantly. The lumen's 18s
+           opacity drift is the page's single ambient - idle power. */
+        @media (prefers-reduced-motion: no-preference) {
+          [data-fabric] { animation: v7in 0.6s ease-out both; }
+          [data-console] { animation: v7in 0.5s ease-out 0.08s both; }
+          [data-seamtop] { animation: v7seam 0.45s ease-out 0.3s both; transform-origin: 50% 50%; }
+          section[data-act="1"] h1 { animation: v7rise 0.5s ease-out 0.42s both; }
+          [data-v7-sub] { animation: v7rise 0.48s ease-out 0.54s both; }
+          [data-slot] { animation: v7rise 0.5s ease-out 0.66s both; }
+          [data-v7-note] { animation: v7in 0.45s ease-out 0.8s both; }
+          [data-v7-manifest] { animation: v7rise 0.48s ease-out 0.86s both; }
+          [data-outrail] { animation: v7seam 0.4s ease-out 0.98s both; transform-origin: 0 50%; }
+          [data-port] { animation: v7in 0.3s ease-out 1.08s both; }
+          [data-rail] { animation: v7rail 0.4s ease-out 1.04s both; }
+          [data-lumen] { animation: v7in 0.7s ease-out both, v7lumen 18s ease-in-out 1.4s infinite alternate; }
+        }
+        @keyframes v7in { from { opacity: 0; } }
+        @keyframes v7rise { from { opacity: 0; transform: translateY(14px); } }
+        @keyframes v7seam { from { transform: scaleX(0); } }
+        @keyframes v7rail { from { transform: scaleY(0); } }
+        @keyframes v7lumen { from { opacity: 0.78; } to { opacity: 1; } }
       `}</style>
       <p className="sr-only">{copy.srStory}</p>
+
+      {/* THE FAR PLANE: a barely-visible engineering fabric behind every
+          act - fine 32px weave inside a sparser 160px survey grid. It says
+          a measured apparatus extends beyond what is lit, and it kills the
+          "text floating on blank black" failure at near-zero paint cost
+          (two repeating gradients, compositor-translated by the engine's
+          own frame via --par). */}
+      <div
+        aria-hidden
+        data-fabric=""
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg, rgba(154,161,171,0.045) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgba(154,161,171,0.045) 0 1px, transparent 1px 32px), repeating-linear-gradient(0deg, rgba(154,161,171,0.05) 0 1px, transparent 1px 160px), repeating-linear-gradient(90deg, rgba(154,161,171,0.05) 0 1px, transparent 1px 160px)",
+          transform: "translate3d(0, var(--par, 0px), 0)",
+          willChange: "transform",
+        }}
+      />
 
       {!reduced && (
         <div
@@ -747,39 +807,131 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         </div>
       )}
 
-      {/* ── ACT 1 — the door ─────────────────────────────────────────── */}
-      {/* MOBILE PLATEAUS: each teaching idea keeps its heading pinned while
-          its own content passes beneath it, so a settle anywhere inside the
-          section still shows THAT idea's headline and THAT idea's visual.
-          Native sticky only - the finger is never intercepted, there is no
-          snap and no automatic advance. Desktop (sm:) keeps the accepted
-          compact rhythm, and every engine anchor stays in normal flow. */}
-      <section data-act="1" data-v7-sem="what" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.15)] sm:min-h-[82vh] sm:justify-center sm:pt-24">
-        <h1 className="sticky top-[10vh] z-10 max-w-[15ch] text-[clamp(2.5rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.04em] sm:static">
+      {/* ── ACT 1 — the intake console ───────────────────────────────── */}
+      {/* FABLE OPENING: the Instrument Desk direction grafted with the
+          Datum Line's path manifest and execution rail. The first viewport
+          is one machined graphite object - a powered intake console waiting
+          for its operator - not text on a void. Every engine surface is
+          untouched: same h1 selector and sticky plateau, same input
+          selector, same request-anchor placement, no new sticky elements.
+          MOBILE PLATEAUS: native sticky only - the finger is never
+          intercepted, there is no snap and no automatic advance. */}
+      <section data-act="1" data-v7-sem="what" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.18)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.26)] sm:min-h-[88vh] sm:justify-center sm:pt-32">
+        {/* THE CONSOLE: one plane that contains the whole first moment.
+            2D lighting stands in for inclination - a lit top seam, gradient
+            weight toward the base, a grounding shadow. The page header sits
+            on its upper rail, so the name-plate lockup reads as mounted. */}
+        <div aria-hidden data-console="" className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--v7vh,100vh)*0.05)] top-3 rounded-[12px] border border-[#232830] bg-[linear-gradient(180deg,#171A20_0%,#111419_55%,#0C0E13_100%)] shadow-[0_36px_90px_rgba(0,0,0,0.55)] sm:bottom-8 sm:top-4">
+          <span data-seamtop="" className="absolute inset-x-8 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#C9A76A] to-transparent opacity-75" />
+          <span className="absolute left-3 top-3 h-2.5 w-2.5 border-l border-t border-[#3A4150]" />
+          <span className="absolute right-3 top-3 h-2.5 w-2.5 border-r border-t border-[#3A4150]" />
+          <span className="absolute bottom-3 left-3 h-2.5 w-2.5 border-b border-l border-[#3A4150]" />
+          <span className="absolute bottom-3 right-3 h-2.5 w-2.5 border-b border-r border-[#3A4150]" />
+          {/* the collected out-rail: the intake's output runs along the
+              console base to the port ON THE ESCORT COLUMN - the same
+              derived x the anchors use (87% of the padded content box),
+              so the request's visible exit IS the lane the story rides */}
+          <span data-outrail="" className="absolute bottom-6 left-8 h-px right-[calc(1.5rem+(100%-3rem)*0.13)] bg-gradient-to-r from-transparent via-[#C9A76A]/35 to-[#C9A76A]/70" />
+          <span data-port="" className="absolute bottom-6 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[9px] w-[22px] -translate-x-1/2 translate-y-1/2 rounded-[2px] border border-[#6F4C29] bg-[#15110A]" />
+        </div>
+        {/* powered-on illumination centred on the slot region - the page's
+            light source, locating the focal point before any word is read */}
+        {/* desktop only: at phone widths the radial freezes into a visible
+            rectangular smudge in stills - the mobile console is already
+            filled, so it simply goes without ambient light */}
+        <div aria-hidden data-lumen="" className="pointer-events-none absolute left-[2%] top-[36%] hidden h-[46%] w-[62%] rounded-full bg-[radial-gradient(closest-side,rgba(201,167,106,0.13),rgba(201,167,106,0.045)_55%,transparent_75%)] sm:block" />
+
+        {/* PINNED PLATE: on mobile the plateau headline is an OPAQUE plate,
+            so flowing content passes legibly BENEATH it - the old layout
+            used emptiness as its collision buffer; a filled console needs
+            real occlusion. Desktop stays plain static text. */}
+        <h1 className="sticky top-[10vh] z-10 -mx-3 max-w-[15ch] rounded-[8px] bg-[#14171D] px-3 py-2.5 text-[clamp(2.4rem,5.6vw,4.3rem)] font-semibold leading-[1.04] tracking-[-0.04em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[15ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           {copy.act1.h}
         </h1>
-        {/* the composition fills its plateau: the pinned heading always has
-            one of its OWN elements beside it, at every settle */}
-        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.08)] pt-[calc(var(--v7vh,100vh)*0.04)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
-        <p className="max-w-[44ch] text-[clamp(1.05rem,1.6vw,1.25rem)] leading-[1.6] text-[#9AA1AB] sm:mt-5">{copy.act1.sub}</p>
-        <div className="flex w-full max-w-[520px] items-center gap-3 rounded-lg border border-white/15 bg-[#171A20] px-4 py-3.5 sm:mt-8">
-          <span aria-hidden className="text-[#C9A76A]">▍</span>
-          <input
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            placeholder={copy.act1.placeholder}
-            aria-label={copy.act1.placeholder}
-            className="w-full min-w-0 bg-transparent text-[15px] text-[#F7F6F3] outline-none placeholder:text-[#8A929D] [&:focus-visible]:[outline:1px_solid_rgba(201,167,106,0.7)] [&:focus-visible]:[outline-offset:8px]"
-          />
-          <span data-v7-anchor="request" className="h-px w-px" />
+        {/* the composition flows: statement, intake slot, note, then the
+            path manifest - the console's zones in reading order, the base
+            band below them carrying the out-rail and port */}
+        <div className="relative flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.12)] pt-[calc(var(--v7vh,100vh)*0.025)] sm:block sm:flex-none sm:pb-16 sm:pt-0">
+          <div>
+            <p data-v7-sub="" className="max-w-[46ch] text-[clamp(1.02rem,1.55vw,1.22rem)] leading-[1.6] text-[#9AA1AB] sm:mt-5">{copy.act1.sub}</p>
+            {/* THE INTAKE SLOT: the request field MILLED into the console -
+                machined housing, corner ticks, etched labels, an amber base
+                seam that ignites on focus (the machine acknowledging its
+                operator). The engine's request anchor stays inside. */}
+            <div data-slot="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] w-full max-w-[560px] rounded-[8px] border border-[#2A303B] bg-[#14171D] shadow-[0_2px_28px_rgba(0,0,0,0.45)] transition-colors sm:mt-9">
+              <span aria-hidden data-tick="" className="absolute -left-px -top-px h-2.5 w-2.5 rounded-tl-[8px] border-l border-t border-[#4A5160] transition-colors" />
+              <span aria-hidden data-tick="" className="absolute -right-px -top-px h-2.5 w-2.5 rounded-tr-[8px] border-r border-t border-[#4A5160] transition-colors" />
+              <span aria-hidden data-tick="" className="absolute -bottom-px -left-px h-2.5 w-2.5 rounded-bl-[8px] border-b border-l border-[#4A5160] transition-colors" />
+              <span aria-hidden data-tick="" className="absolute -bottom-px -right-px h-2.5 w-2.5 rounded-br-[8px] border-b border-r border-[#4A5160] transition-colors" />
+              <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 pb-2 pt-2.5">
+                <span className={`${mono} whitespace-nowrap text-[#77808C]`}>{copy.instrument.intake}</span>
+                {/* one status, no label swap: a "receiving" claim would
+                    contradict the trust note directly beneath it. Focus is
+                    acknowledged by the seam and ticks igniting instead. */}
+                <span data-await="" className={`${mono} whitespace-nowrap text-[#C9A76A] transition-opacity`}>{copy.instrument.awaiting}</span>
+              </div>
+              <div className="flex items-center gap-3 px-4 py-3.5">
+                <span aria-hidden className="text-[#C9A76A]">▍</span>
+                <input
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  placeholder={copy.act1.placeholder}
+                  aria-label={copy.act1.placeholder}
+                  className="w-full min-w-0 overflow-hidden bg-transparent text-[15px] text-[#F7F6F3] outline-none [text-overflow:ellipsis] placeholder:text-[#8A929D]"
+                />
+                <span data-v7-anchor="request" className="h-px w-px" />
+                {/* THE REAL DOOR: the hero's one conversion affordance -
+                    the intake's action key routes to the actual request
+                    flow, resolving both the missing-CTA dead end and the
+                    "does typing submit?" ambiguity (it visibly does not:
+                    the door is this key, and the note below says so). */}
+                <Link
+                  href="/register"
+                  aria-label={copy.act4.cta}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-[6px] border border-[#6F4C29] text-[16px] text-[#C9A76A] no-underline transition-colors hover:bg-[#C9A76A] hover:text-[#14161A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]"
+                >
+                  →
+                </Link>
+              </div>
+              <span aria-hidden data-slotseam="" className="absolute inset-x-3 bottom-0 h-[2px] rounded-full bg-[#C9A76A] opacity-40 transition-[opacity,box-shadow]" />
+            </div>
+            {/* the reduced-motion artifact sits WITH the note it explains -
+                anchored to the slot's zone, never stranded in open space */}
+            <div className="mt-3 flex items-center gap-4">
+              <p data-v7-note="" className="font-mono text-[10.5px] text-[#78808B]">{copy.act1.note}</p>
+              {reduced && <StaticArtifact state="request" className="shrink-0" />}
+            </div>
+          </div>
+          {/* THE PATH MANIFEST (grafted from the Datum direction): the
+              in-viewport answer to "what does Endvera handle", phrased as
+              coordination done FOR the visitor - never as features to
+              configure. Real content; width-capped by the same derived
+              lane rule as the act headlines, so it can never enter the
+              escort column. */}
+          <div data-v7-manifest="" className="relative mt-[calc(var(--v7vh,100vh)*0.05)] max-w-[calc(87%-72px)] sm:mt-11 sm:max-w-[680px]">
+            <p className={`${mono} text-[#77808C]`}>{copy.instrument.manifestTitle}</p>
+            <ol className="mt-2.5 flex list-none flex-col gap-2 p-0 sm:flex-row sm:flex-wrap sm:gap-x-7 sm:gap-y-2.5">
+              {copy.instrument.manifest.map((m, i) => (
+                <li key={m} className={`${mono} flex items-center gap-2 text-[#9AA1AB]`}>
+                  <span aria-hidden className="text-[10px] text-[#8A6F45]">0{i + 1}</span>
+                  <span aria-hidden className="h-[3px] w-[3px] rounded-[1px] bg-[#C9A76A]/80" />
+                  {m}
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
-        <p className="font-mono text-[10.5px] text-[#78808B] sm:mt-3">{copy.act1.note}</p>
-        {reduced && <StaticArtifact state="request" className="mt-4" />}
-        </div>
+        {/* the drop: from the console port straight down out of the act -
+            act 2's reserved escort column continues the same line */}
+        <span aria-hidden data-rail="" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 bg-gradient-to-b from-[#C9A76A]/70 to-[#C9A76A]/15" />
       </section>
 
       {/* ── ACT 2 — the gauntlet, child-simple, bounded grid ─────────── */}
       <section data-act="2" data-v7-sem="problem" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:block sm:min-h-0 sm:py-[7vh]">
+        {/* the execution datum, drawn: the same derived x as the anchors
+            (87% of the padded content box) - this hairline IS the reserved
+            escort column made visible, continuing the console's out-rail */}
+        <span aria-hidden data-lane-line="" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 bg-gradient-to-b from-[#C9A76A]/15 via-[#C9A76A]/25 to-[#C9A76A]/15" />
         {/* THE TRANSPORT LANE, RESERVED IN THE LAYOUT ITSELF.
             This headline is STICKY and the content under it FLOWS, so any
             vertical gap between the two necessarily closes as the reader
@@ -794,7 +946,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             breakpoint test, no language test, and nothing tuned to a
             screenshot. Desktop keeps its measure: there the acts are not a
             single narrow column and the escort does not ride beside them. */}
-        <h2 className="sticky top-[10vh] z-10 max-w-[calc(87%-72px)] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] sm:static sm:max-w-[22ch]">
+        <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[calc(87%-72px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[22ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           {copy.act2.h}
         </h2>
         {/* the slip hovers above the gauntlet - contained flex-wrap, no
@@ -816,7 +968,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             {copy.act2.gauntlet.map((q, i) => (
               <span
                 key={q}
-                className={`${mono} max-w-[45%] rounded-[3px] border border-dashed border-white/25 px-2.5 py-1.5 text-[#78808B] sm:max-w-none sm:whitespace-nowrap`}
+                className={`${mono} max-w-[45%] rounded-[3px] border border-[#2A303B] bg-[#12151B] px-2.5 py-1.5 text-[#8A929D] sm:max-w-none sm:whitespace-nowrap`}
                 style={{ transform: `translate3d(0, calc(var(--g, 0) * ${((i % 3) - 1) * 8}px), 0)` }}
               >
                 {q}
@@ -829,11 +981,13 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
 
       {/* ── SOLUTION — Endvera takes the request ───────────────────── */}
       <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
+        {/* the datum continues through the handover act */}
+        <span aria-hidden data-lane-line="" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 bg-gradient-to-b from-[#C9A76A]/15 via-[#C9A76A]/25 to-[#C9A76A]/15" />
         {/* the same reserved column: this sticky headline is the wall the
             escort was teleporting over, because it swept up through exactly
             the height the story wants the pair to occupy. Held out of the
             column, its vertical travel no longer touches the escort at all. */}
-        <h2 className="sticky top-[10vh] z-10 max-w-[calc(87%-72px)] text-[clamp(1.5rem,3.2vw,2.3rem)] font-semibold leading-[1.16] tracking-[-0.03em] sm:static sm:max-w-[24ch]">
+        <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[calc(87%-72px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.5rem,3.2vw,2.3rem)] font-semibold leading-[1.16] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[24ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           {copy.solution.h}
         </h2>
         {/* the handover: the support line travels WITH the lane where A2
@@ -888,7 +1042,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
 
       {/* ── ACT 4 — the sealed result, ONYX (no paper hard-cut) ──────── */}
       <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[80vh] sm:justify-center sm:pb-16 sm:pt-0">
-        <h2 className="sticky top-[10vh] z-10 max-w-[14ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] sm:static sm:max-w-[26ch]">
+        <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[14ch] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[26ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           {copy.act4.h}
         </h2>
         {/* the short intentional light moment: ONE contained sealed card on
@@ -908,7 +1062,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           </div>
           <div className="grid justify-items-start gap-2.5 sm:justify-items-stretch">
             {copy.act4.chips.slice(0, 3).map((c) => (
-              <span key={c} className={`${mono} max-w-[45%] rounded-[4px] border border-white/20 px-3.5 py-2 text-[#c7ccd4] sm:max-w-none`}>{c}</span>
+              <span key={c} className={`${mono} max-w-[45%] rounded-[4px] border border-[#2A303B] bg-[#12151B] px-3.5 py-2 text-[#c7ccd4] sm:max-w-none`}>{c}</span>
             ))}
           </div>
         </div>

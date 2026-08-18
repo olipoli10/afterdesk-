@@ -34,7 +34,11 @@ export function LangSwitch<T extends string>({
   path: string;
   current: T;
   options: { code: T; label: string }[];
-  tone: "night" | "paper";
+  /* "onyx" is the homepage console tone: the active language reads as a
+     gilt selection on graphite instead of a paper block, so the switcher
+     belongs to the instrument instead of glaring against it. "night" and
+     "paper" render byte-identical to before. */
+  tone: "night" | "paper" | "onyx";
 }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
@@ -54,11 +58,17 @@ export function LangSwitch<T extends string>({
   }
 
   const active =
-    tone === "night" ? "bg-[#F7F6F3] text-[#14161A]" : "bg-[#14161A] text-[#F7F6F3]";
+    tone === "onyx"
+      ? "border border-[#6F4C29] bg-[#1A1D24] text-[#E2C486]"
+      : tone === "night"
+        ? "bg-[#F7F6F3] text-[#14161A]"
+        : "bg-[#14161A] text-[#F7F6F3]";
   const idle =
-    tone === "night"
-      ? "text-[#767C86] hover:text-white"
-      : "text-[#5B6069] hover:text-[#14161A]";
+    tone === "onyx"
+      ? "border border-transparent text-[#767C86] hover:text-[#E2C486]"
+      : tone === "night"
+        ? "text-[#767C86] hover:text-white"
+        : "text-[#5B6069] hover:text-[#14161A]";
 
   return (
     <>
@@ -72,9 +82,9 @@ export function LangSwitch<T extends string>({
         <nav
           aria-label="Language"
           className={`absolute right-0 top-11 z-50 min-w-36 overflow-hidden rounded-md border p-1 shadow-xl ${
-            tone === "night"
-              ? "border-white/15 bg-[#111317]"
-              : "border-black/10 bg-white"
+            tone === "paper"
+              ? "border-black/10 bg-white"
+              : "border-white/15 bg-[#111317]"
           }`}
         >
           {options.map((option) => (

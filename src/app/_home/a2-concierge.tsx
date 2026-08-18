@@ -302,8 +302,11 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
           onFocus={() => { if (!open && location === "launcher") setHail(true); }}
           onBlur={() => setHail(false)}
         >
+          {/* the being at MEANINGFUL scale: exactly 2x the frozen 32px
+              skeleton - an integer scale, so crispEdges stays crisp and
+              the approved anatomy is untouched */}
           {location === "launcher" ? (
-            <A2Sprite rects={launcher.rects} px={1} />
+            <A2Sprite rects={launcher.rects} px={2} />
           ) : (
             <span className={styles.empty} aria-hidden="true" />
           )}

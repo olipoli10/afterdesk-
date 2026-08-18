@@ -115,13 +115,15 @@ export default async function Home({
           The machine below runs in continuation mode and no longer draws
           its own nav, so this header is the single owner of the identity. */}
       <header className="absolute inset-x-0 top-0 z-50">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-5 gap-y-2 px-6 pt-9 text-[#F7F6F3]">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-5 gap-y-1.5 px-6 pt-5 text-[#F7F6F3] sm:pt-9">
           <Link
             href="/"
             aria-label="Endvera home"
             className="text-[1.0625rem] no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]"
           >
-            <Wordmark tone="paper" />
+            {/* the name-plate lockup: the mark mounted on a machined
+                graphite plate that sits on the console's upper rail */}
+            <Wordmark tone="paper" plate />
           </Link>
           <span
             /* the element crosses the RSC boundary into the header's child
@@ -138,13 +140,13 @@ export default async function Home({
                 {nav.nav.signIn}
               </Link>
             )}
-            <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
+            <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="onyx" />
           </span>
           <span className="ml-auto flex items-center gap-8">
             <a href="#outcomes" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.outcomes}</a>
             <a href="#how" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.how}</a>
             <a href="#inside" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.inside}</a>
-            <span className="inline-flex items-center gap-[0.4375rem] whitespace-nowrap rounded-full border border-white/15 px-3 py-1.5 font-mono text-[0.71875rem] uppercase tracking-[0.06em] text-[#8a919e]">
+            <span className="inline-flex items-center gap-[0.4375rem] whitespace-nowrap rounded-full border border-[#262B35] bg-[#0F1116] px-3 py-1.5 font-mono text-[0.71875rem] uppercase tracking-[0.06em] text-[#8a919e]">
               <span aria-hidden className="h-1 w-1 rounded-full bg-[#C9A76A]" />
               {t.nav.earlyAccess}
             </span>

@@ -19,12 +19,20 @@ const MACHINE = "src/app/_home/assembly-experience.tsx";
 const ENGINE = "src/app/_v7/simplicity-acts.tsx";
 const DICTIONARY = "src/lib/i18n/v7-acts.ts";
 
-/* the closed surface this phase may touch, from the R1 manifest */
+/* the closed surface this phase may touch: the R1 manifest, EXTENDED by
+   the FABLE opening reconstruction's presentation-only files - the lockup
+   (opt-in plate variant), the language switcher (additive onyx tone), and
+   the A2 launcher chrome (station platform, integer 2x being). All four
+   are visual surfaces; no server, business or data file is in the set. */
 const ALLOWED = new Set([
   PAGE,
   MACHINE,
   ENGINE,
   DICTIONARY,
+  "src/components/logo.tsx",
+  "src/components/lang-switch.tsx",
+  "src/app/_home/a2-concierge.tsx",
+  "src/app/_home/a2-concierge.module.css",
   "test/public-site-endvera-v7.test.ts",
   "test/public-site-endvera-brand.test.ts",
   "test/public-site-cohesion.test.ts",
