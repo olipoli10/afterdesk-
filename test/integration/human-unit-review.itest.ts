@@ -19,7 +19,9 @@ vi.mock("next/server", () => ({ after: vi.fn() }));
 
 const actionAuthz = await import("@/lib/authz");
 const actionCache = await import("next/cache");
+const actionAfter = await import("next/server");
 const workerActions = await import("@/server/actions/human-unit-worker");
+const adminActions = await import("@/server/actions/human-unit-admin");
 
 /**
  * T039 — QUICKSTART SCENARIO C, RED BEFORE T041/T042.
@@ -1282,5 +1284,251 @@ describe("T044 — worker server action", () => {
       })
     ).resolves.toMatchObject({ ok: false, code: "stale_generation" });
     expect(actionCache.revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
+describe("T045 — admin review and bounded continuation actions", () => {
+  beforeEach(() => {
+    vi.mocked(actionAuthz.requireRole).mockReset();
+    vi.mocked(actionCache.revalidatePath).mockReset();
+    vi.mocked(actionAfter.after).mockReset();
+  });
+
+  it("authorizes before parsing a malformed decision", async () => {
+    const denied = new Error("admin authorization stopped the action");
+    vi.mocked(actionAuthz.requireRole).mockRejectedValueOnce(denied);
+
+    await expect(adminActions.decideHumanUnitCandidate({})).rejects.toBe(denied);
+    expect(actionAuthz.requireRole).toHaveBeenCalledWith("ADMIN");
+  });
+
+  it("opens review through T6 and records the admin transition", async () => {
+    const fixture = await claimedReviewUnit();
+    await submit(fixture);
+    vi.mocked(actionAuthz.requireRole).mockResolvedValueOnce(
+      fixture.admin as never
+    );
+
+    await expect(
+      adminActions.openHumanUnitReview(fixture.task.id)
+    ).resolves.toEqual({ ok: true });
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true },
+      })
+    ).toEqual({ state: "in_review" });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: {
+          unitStateId: fixture.unitId,
+          actorId: fixture.admin.id,
+          cause: "review_opened",
+        },
+      })
+    ).toBe(1);
+  });
+
+  it("accepts durably before scheduling applyResume as an accelerator", async () => {
+    const fixture = await claimedReviewUnit();
+    const candidateId = await submit(fixture, ACCEPTED_RESULT);
+    let accelerator: (() => void | Promise<void>) | undefined;
+    vi.mocked(actionAuthz.requireRole).mockResolvedValueOnce(
+      fixture.admin as never
+    );
+    vi.mocked(actionAfter.after).mockImplementationOnce((task) => {
+      if (typeof task === "function") {
+        accelerator = task as () => void | Promise<void>;
+      }
+    });
+
+    await expect(
+      adminActions.decideHumanUnitCandidate({ candidateId, outcome: "accept" })
+    ).resolves.toEqual({ ok: true });
+
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true },
+      })
+    ).toEqual({ state: "accepted" });
+    expect(
+      await prisma.humanWorkUnitResumeRecord.count({
+        where: { unitStateId: fixture.unitId },
+      })
+    ).toBe(0);
+    expect(accelerator).toBeTypeOf("function");
+
+    await accelerator?.();
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true },
+      })
+    ).toEqual({ state: "resumed" });
+  });
+
+  it("continues an economics pause without changing ceiling, payout or holds", async () => {
+    const fixture = await claimedReviewUnit();
+    const candidateId = await submit(fixture, ACCEPTED_RESULT);
+    expect(
+      await reviewRuntime.decideHumanUnitCandidate({
+        candidateId,
+        actorId: fixture.admin.id,
+        outcome: "accept",
+      })
+    ).toMatchObject({ decided: true, state: "accepted" });
+    await prisma.$transaction([
+      prisma.humanWorkUnitRunState.update({
+        where: { id: fixture.unitId },
+        data: {
+          state: "paused",
+          refusalCause: "economics_exceeds_reserved",
+          pausedDetail: "Frozen ceiling requires an explicit operator decision.",
+        },
+      }),
+      prisma.taskWorkflowRun.update({
+        where: { id: fixture.runId },
+        data: { status: "paused", pausedReason: "economics gate" },
+      }),
+    ]);
+    const before = await prisma.taskWorkflowRun.findUniqueOrThrow({
+      where: { id: fixture.runId },
+      select: {
+        runAutomationBudgetMicros: true,
+        actualAiCostMicros: true,
+        actualToolCostMicros: true,
+        snapshot: { select: { automationSpendCeilingMicros: true } },
+        task: { select: { vaPayoutCents: true } },
+        budgetHolds: {
+          orderBy: { id: "asc" },
+          select: { id: true, amountMicros: true, status: true },
+        },
+      },
+    });
+    vi.mocked(actionAuthz.requireRole).mockResolvedValueOnce(
+      fixture.admin as never
+    );
+
+    await expect(
+      adminActions.continuePausedHumanUnitRun({
+        taskId: fixture.task.id,
+        decision: "continue_within_ceiling",
+        reason: "The frozen remainder is sufficient for the authorized downstream step.",
+      })
+    ).resolves.toEqual({ ok: true });
+
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true, refusalCause: true, pausedDetail: true },
+      })
+    ).toEqual({ state: "accepted", refusalCause: null, pausedDetail: null });
+    expect(
+      await prisma.taskWorkflowRun.findUniqueOrThrow({
+        where: { id: fixture.runId },
+        select: {
+          runAutomationBudgetMicros: true,
+          actualAiCostMicros: true,
+          actualToolCostMicros: true,
+          snapshot: { select: { automationSpendCeilingMicros: true } },
+          task: { select: { vaPayoutCents: true } },
+          budgetHolds: {
+            orderBy: { id: "asc" },
+            select: { id: true, amountMicros: true, status: true },
+          },
+        },
+      })
+    ).toEqual(before);
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: {
+          unitStateId: fixture.unitId,
+          actorId: fixture.admin.id,
+          cause: "admin_continued",
+        },
+      })
+    ).toBe(1);
+    expect(actionAfter.after).toHaveBeenCalledOnce();
+  });
+
+  it("fails a non-economic pause closed to the manual residual path", async () => {
+    const fixture = await claimedReviewUnit();
+    await prisma.$transaction([
+      prisma.humanWorkUnitRunState.update({
+        where: { id: fixture.unitId },
+        data: {
+          state: "paused",
+          refusalCause: "input_unavailable",
+          pausedDetail: "A declared input is unavailable.",
+        },
+      }),
+      prisma.taskWorkflowRun.update({
+        where: { id: fixture.runId },
+        data: { status: "paused", pausedReason: "input unavailable" },
+      }),
+    ]);
+    vi.mocked(actionAuthz.requireRole).mockResolvedValueOnce(
+      fixture.admin as never
+    );
+
+    await expect(
+      adminActions.continuePausedHumanUnitRun({
+        taskId: fixture.task.id,
+        decision: "fail_closed_to_manual",
+        reason: "The missing declared input requires manual completion.",
+      })
+    ).resolves.toEqual({ ok: true });
+
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true },
+      })
+    ).toEqual({ state: "exhausted" });
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: fixture.unitId, cause: "admin_failed_closed" },
+      })
+    ).toBe(1);
+  });
+
+  it("refuses continuation after a lifecycle exit without changing money", async () => {
+    const fixture = await claimedReviewUnit();
+    await prisma.$transaction([
+      prisma.humanWorkUnitRunState.update({
+        where: { id: fixture.unitId },
+        data: {
+          state: "paused",
+          refusalCause: "economics_exceeds_reserved",
+        },
+      }),
+      prisma.taskWorkflowRun.update({
+        where: { id: fixture.runId },
+        data: { status: "abandoned" },
+      }),
+    ]);
+    const payoutBefore = await prisma.task.findUniqueOrThrow({
+      where: { id: fixture.task.id },
+      select: { vaPayoutCents: true },
+    });
+    vi.mocked(actionAuthz.requireRole).mockResolvedValueOnce(
+      fixture.admin as never
+    );
+
+    await expect(
+      adminActions.continuePausedHumanUnitRun({
+        taskId: fixture.task.id,
+        decision: "continue_within_ceiling",
+        reason: "This must not revive a completed mandate.",
+      })
+    ).resolves.toMatchObject({ ok: false, code: "lifecycle_exit" });
+    expect(
+      await prisma.task.findUniqueOrThrow({
+        where: { id: fixture.task.id },
+        select: { vaPayoutCents: true },
+      })
+    ).toEqual(payoutBefore);
+    expect(actionAfter.after).not.toHaveBeenCalled();
   });
 });
