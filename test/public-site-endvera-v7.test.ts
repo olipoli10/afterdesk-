@@ -151,7 +151,11 @@ describe("ENDVERA x V7 transplant", () => {
     expect(idle).toMatch(/lid:\s*1/);
     expect(idle, "rest-life includes a restrained body or head shift").toMatch(/\b(?:dx|dy|hy|hdx|hdy)\s*:/);
     expect(a2).toMatch(/hasAttribute\("data-v7-escorting"\)/);
-    expect(a2).toMatch(/2800\s*\+\s*Math\.random\(\)\s*\*\s*2200/);
+    expect(a2, "A2 moves again quickly enough to read as alive at rest").toMatch(
+      /900\s*\+\s*Math\.random\(\)\s*\*\s*900/,
+    );
+    const bodyLedIdle = (idle.match(/\b(?:dx|dy|hy|hdx|hdy|bfx|bfy|ffx|ffy)\s*:/g) ?? []).length;
+    expect(bodyLedIdle, "rest-life is visibly anatomical, not eye-only").toBeGreaterThanOrEqual(12);
     expect(a2).toMatch(/MutationObserver/);
     expect(a2).toMatch(/data-a2-scene/);
     expect(a2).toMatch(/data-a2-whisper/);
@@ -162,8 +166,14 @@ describe("ENDVERA x V7 transplant", () => {
     expect(engine).toMatch(/data-v7-trail[\s\S]*scaleX\(var\(--walk/);
     expect(engine).toMatch(/data-v7-trail[\s\S]*origin-left/);
     expect(engine).toMatch(/--a2-travel-y/);
+    expect(engine, "the existing scroll authority publishes a four-phase gait").toMatch(
+      /setAttribute\(\s*["']data-a2-gait["']\s*,\s*String\(Math\.abs\(Math\.floor\(y\s*\/\s*18\)\)\s*%\s*4\)\s*\)/,
+    );
     expect(engine).toMatch(/data-a2-scene/);
     expect(engine).toMatch(/translate3d\(0,\s*var\(--a2-travel-y/);
+    expect(a2).toMatch(/data-a2-part=\{A2_PARTS\[i\]\}/);
+    expect(engine).toMatch(/data-a2-gait="1"[\s\S]*data-a2-part="front-foot"/);
+    expect(engine).toMatch(/data-a2-gait="3"[\s\S]*data-a2-part="back-foot"/);
     expect(engine).not.toMatch(/@keyframes\s+a2(?:walk|bob|travel)/);
   });
 
@@ -171,17 +181,24 @@ describe("ENDVERA x V7 transplant", () => {
     const a2 = read(A2);
     const css = read(A2_CSS);
     const copy = read(HOME_ASSEMBLY);
-    for (const phrase of [
-      "I carry the request while Endvera gets the work finished.",
-      "Je porte la demande pendant qu'Endvera termine le travail.",
-      "Llevo la solicitud mientras Endvera termina el trabajo.",
-      "Dala ko ang request habang tinatapos ng Endvera ang trabaho.",
-    ]) expect(copy).toContain(phrase);
-    expect(a2).toMatch(/copy\.guide\.hero/);
+    const engine = read(ENGINE);
+    for (const scene of ["hero", "solution", "run", "review", "outcome"]) {
+      expect(copy, `all four languages define the ${scene} supervision line`).toSatisfy(
+        (source: string) => (source.match(new RegExp(`${scene}:\\s*[\"']`, "g")) ?? []).length === 4,
+      );
+    }
+    expect(a2).toMatch(/guideScene/);
+    expect(a2).toMatch(/copy\.guide\[guideScene\]/);
+    expect(a2).toMatch(/setWhisper\("scene"\)/);
+    expect(engine).toMatch(/data-a2-outcome-guide[\s\S]*concierge\.guide\.outcome/);
+    expect(engine, "scene supervision remains visible during escort").not.toMatch(
+      /data-v7-escorting="on"[^}]*span\[aria-hidden\][^}]*display:\s*none/,
+    );
     expect(a2).toContain("if (reducedRef.current) { stop(); setRects(A2_REST); return; }");
     expect(a2).toMatch(/launcherPlay\(SEQ\.arrival\)[\s\S]*?\}, \[launcherPlay\]\);/);
     expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-being/);
     expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-whisper/);
+    expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-part[\s\S]*transform:\s*none/);
   });
 
   it("reserves the solution copy outside A2's mobile transport lane", () => {

@@ -56,6 +56,32 @@
   white-space: nowrap;
 }
 
+.hail[data-a2-whisper="scene"] {
+  left: 0;
+  right: auto;
+  bottom: 78px;
+  width: 76px;
+  max-width: 76px;
+  box-sizing: border-box;
+  padding: 0.42rem 0.38rem;
+  font-size: 0.56rem;
+  line-height: 1.3;
+  color: #f0d5a1;
+  border-color: rgba(216, 117, 38, 0.52);
+  background: rgba(11, 13, 17, 0.97);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.42), 0 0 22px rgba(216, 117, 38, 0.09);
+  pointer-events: none;
+}
+.hail[data-a2-whisper="scene"]::after {
+  left: 50%;
+  top: 100%;
+  width: 1px;
+  height: 0.55rem;
+}
+.hail[data-a2-whisper="scene"][data-a2-guide-scene="outcome"] {
+  display: none;
+}
+
 /* A-REFOCUS: at its post the being stands FREE on the hero's own hairline
    deck - no platform box competing with the intake box below it. The
    button chrome is invisible chrome: full 76px touch target, focus ring

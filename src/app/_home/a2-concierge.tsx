@@ -45,6 +45,7 @@ export function a2pose(p: Pose = {}): Rect[] {
   ];
 }
 export const A2_REST: Rect[] = a2pose();
+const A2_PARTS = ["crown", "head", "body", "eye", "eye", "tail", "back-foot", "front-foot"] as const;
 
 /* Approved 1.4A sequences (10 fps whole frames; each returns to rest). */
 export const SEQ: Record<string, Pose[]> = {
@@ -70,17 +71,18 @@ export const SEQ: Record<string, Pose[]> = {
     { dx: 1 }, { dx: 2, dy: 1, sq: 1 }, { dx: 3, dy: 1, sq: 1, lid: 1 }, { dx: 3, dy: 1, sq: 1, lid: 1 },
   ],
 };
-/* Rest-life is deliberately asymmetric and sparse: gaze is common, a head
-   lift or weight shift is occasional, and the two-pixel hop is rare because
-   it is only one of six equally weighted sequences. Every sequence returns
-   to the frozen rest skeleton. The escort engine resets it before travel. */
+/* Rest-life is a restrained rotation of gaze, posture, weight and one rare
+   hop. It is frequent enough to read as a living supervisor, but every move
+   remains an integer-pixel pose and returns to the frozen rest skeleton. */
 export const IDLE: Pose[][] = [
-  [{ ex: -1 }, { ex: -1 }, {}, { ex: 1 }, { ex: 1 }, {}],
-  [{ lid: 1 }, {}, {}],
-  [{ ex: 1 }, {}, { ex: -1 }, {}],
+  [{ hdx: -1, ex: -1 }, { hdx: -1, ex: -1 }, { ex: 1 }, {}],
+  [{ dy: 1, lid: 1 }, { dy: 1 }, { dy: 1, ex: 1 }, {}],
+  [{ dx: -1, hdx: -1 }, { dx: -1, hdx: -1 }, { hdx: -1 }, {}],
   [{ hy: -1, hdy: -1 }, { hy: -1, hdy: -1, ex: -1 }, { hy: -1, hdy: -1 }, {}],
-  [{ dx: 1 }, { dx: 1, hdx: 1 }, { dx: 1 }, {}],
-  [{ dy: -1 }, { dy: -2 }, { dy: -1 }, {}],
+  [{ dx: 1, ffx: 1 }, { dx: 1, hdx: 1, ffx: 1 }, { dx: 1 }, {}],
+  [{ dy: 1, bfy: 1 }, { dy: 1, ffy: 1 }, { dy: 1 }, {}],
+  [{ hy: -1, ex: 1, ffx: -1 }, { hy: -1, hdy: -1, ex: 1 }, { ex: 1 }, {}],
+  [{ dy: -1 }, { dy: -1, hy: -1, hdy: -1 }, { dy: -1 }, {}],
 ];
 
 const STORY_REACTIONS: Record<string, Pose[]> = {
@@ -114,7 +116,7 @@ function A2Sprite({ rects, px, label }: { rects: Rect[]; px: number; label?: str
       aria-label={label}
     >
       {rects.map(([x, y, w, h, c], i) => (
-        <rect key={i} x={x} y={y} width={w} height={h} fill={c} />
+        <rect key={i} data-a2-part={A2_PARTS[i]} x={x} y={y} width={w} height={h} fill={c} />
       ))}
     </svg>
   );
@@ -155,7 +157,7 @@ function usePlayer(reduced: boolean) {
 
 export type ConciergeCopy = {
   ask: string; hail: string; title: string; intro: string;
-  guide: { hero: string };
+  guide: { hero: string; solution: string; run: string; review: string; outcome: string };
   suggestions: [string, string, string];
   answers: { verified: string; verifiedCite: string; verifiedHref: string;
              unknown: string; unavailable: string };
@@ -177,7 +179,8 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   /* the ONE being's location: launcher -> traveling -> panel and back */
   const [location, setLocation] = useState<"launcher" | "traveling" | "panel">("launcher");
   const [open, setOpen] = useState(false);
-  const [whisper, setWhisper] = useState<"guide" | "ask" | null>(null);
+  const [whisper, setWhisper] = useState<"guide" | "scene" | "ask" | null>(null);
+  const [guideScene, setGuideScene] = useState<keyof ConciergeCopy["guide"]>("hero");
   const [answer, setAnswer] = useState<"" | "verified" | "unknown" | "unavailable">("");
   const launcher = usePlayer(reduced);
   const panelA2 = usePlayer(reduced);
@@ -221,7 +224,7 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
     if (location !== "launcher" || reduced) return;
     let alive = true;
     let t: ReturnType<typeof setTimeout>;
-    const tick = () => {
+    const tick = (delay = 900 + Math.random() * 900) => {
       t = setTimeout(() => {
         const escorting =
           launchRef.current
@@ -231,9 +234,10 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
           launcher.play(IDLE[Math.floor(Math.random() * IDLE.length)]);
         }
         if (alive) tick();
-      }, 2800 + Math.random() * 2200);
+      }, delay);
     };
-    tick();
+    /* Let the one-time arrival complete, then keep the being visibly alive. */
+    tick(2300);
     return () => { alive = false; clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, reduced]);
@@ -248,11 +252,16 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
     const react = () => {
       if (!dock.hasAttribute("data-v7-escorting")) {
         seen = "";
+        setWhisper((current) => current === "scene" ? null : current);
         return;
       }
       const scene = dock.getAttribute("data-a2-scene") ?? "";
       if (scene === seen) return;
       seen = scene;
+      if (scene in copy.guide) {
+        setGuideScene(scene as keyof ConciergeCopy["guide"]);
+        setWhisper("scene");
+      }
       launcherReset();
       if (!reduced && STORY_REACTIONS[scene]) launcherPlay(STORY_REACTIONS[scene]);
     };
@@ -260,7 +269,7 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
     observer.observe(dock, { attributes: true, attributeFilter: ["data-v7-escorting", "data-a2-scene"] });
     react();
     return () => observer.disconnect();
-  }, [launcherPlay, launcherReset, reduced]);
+  }, [copy.guide, launcherPlay, launcherReset, reduced]);
 
   /* guard runs after every location/open change - two beings must never
      coexist, including mid-transfer */
@@ -342,8 +351,8 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
       {/* launcher: 44x44 semantic button carrying the 32px being */}
       <div ref={dockRef} className={styles.dock} data-a2-dock="">
         {whisper && !open && (
-          <span className={styles.hail} data-a2-whisper={whisper} aria-hidden="true">
-            {whisper === "guide" ? copy.guide.hero : copy.hail}
+          <span className={styles.hail} data-a2-whisper={whisper} data-a2-guide-scene={guideScene} aria-hidden="true">
+            {whisper === "ask" ? copy.hail : copy.guide[guideScene]}
           </span>
         )}
         <button

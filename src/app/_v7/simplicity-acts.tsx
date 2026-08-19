@@ -335,6 +335,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           dock.style.transform = "translate3d(0,0,0)";
           dock.removeAttribute("data-v7-escorting");
           dock.removeAttribute("data-a2-scene");
+          dock.removeAttribute("data-a2-gait");
           dock.style.removeProperty("--a2-travel-y");
           requestAnimationFrame(() => {
             dock.style.transition = "opacity 180ms linear";
@@ -635,6 +636,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           const scene = y < yApproachEnd ? "solution" : y <= pinEnd ? "run" : y < yExample ? "review" : "outcome";
           if (dock.getAttribute("data-a2-scene") !== scene) dock.setAttribute("data-a2-scene", scene);
           const step = [0, -2, -1, 0][Math.abs(Math.floor(y / 18)) % 4];
+          dock.setAttribute("data-a2-gait", String(Math.abs(Math.floor(y / 18)) % 4));
           dock.style.setProperty("--a2-travel-y", `${step}px`);
           /* integer-pixel escort, trailing beside the slip, never covering.
              The being keeps its painted 64px and the SAME clearances the
@@ -727,6 +729,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         dock.style.removeProperty("--a2-travel-y");
         dock.removeAttribute("data-v7-escorting");
         dock.removeAttribute("data-a2-scene");
+        dock.removeAttribute("data-a2-gait");
       }
       slip.style.opacity = "0";
       /* the armed marker must not survive a flip to reduced motion */
@@ -746,12 +749,23 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           only the character carries. The artifact plate switches its three
           machined states by attribute. */}
       <style>{`
-        [data-a2-dock][data-v7-escorting="on"] > span[aria-hidden] { display: none; }
+        [data-a2-dock][data-v7-escorting="on"] > span[data-a2-whisper="guide"],
+        [data-a2-dock][data-v7-escorting="on"] > span[data-a2-whisper="ask"] { display: none; }
         /* the being now rests at 64px natively (integer 2x sprite), so the
            escort no longer rescales it: the PAINTED escort is byte-identical
            to the R2.2-proven geometry - same 64px being, same clearances. */
         [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: translate3d(0, var(--a2-travel-y, 0px), 0) scale(1); transform-origin: 50% 100%; }
+        [data-a2-dock][data-v7-escorting="on"] [data-a2-part] { transform-box: fill-box; transform-origin: 50% 100%; }
+        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="1"] [data-a2-part="front-foot"] { transform: translate(1px, -2px); }
+        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="1"] [data-a2-part="body"],
+        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="1"] [data-a2-part="head"] { transform: translateY(-1px); }
+        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="3"] [data-a2-part="back-foot"] { transform: translate(-1px, -2px); }
+        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="3"] [data-a2-part="body"],
+        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="3"] [data-a2-part="crown"] { transform: translateY(-1px); }
         [data-a2-dock][data-v7-escorting="on"] button { background: transparent; border-color: transparent; box-shadow: none; overflow: visible; }
+        @media (prefers-reduced-motion: reduce) {
+          [data-a2-dock][data-v7-escorting="on"] [data-a2-part] { transform: none !important; }
+        }
         /* the closure is COMMANDED BY SCROLL: the gold seam closes with
            the walk, the frame stabilizes to gold, the result surface is
            revealed by the seal progress, the check lands last. Reversible
@@ -1281,6 +1295,10 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           {/* the bridge into the real example: A2 presents it here */}
           <div className="mt-8 pt-[calc(var(--v7vh,100vh)*0.02)] sm:col-span-2 sm:mt-4 sm:pt-0">
             <p className={`${mono} text-[#E2C486]`}>{copy.exampleIntro}</p>
+            <p data-a2-outcome-guide="" className="mt-3 inline-flex max-w-[calc(87%-72px)] items-center gap-2 rounded border border-[#6F4C29] bg-[#111319] px-2.5 py-2 font-mono text-[10px] leading-[1.35] text-[#D7B879]">
+              <span className="text-[#D87526]">A2 /</span>
+              <span>{concierge.guide.outcome}</span>
+            </p>
             <span data-v7-anchor="example" aria-hidden className="relative left-[65%] top-3 block h-px w-px sm:left-[87%]" />
             {reduced && <StaticArtifact state="checked" className="mt-4" />}
           </div>
