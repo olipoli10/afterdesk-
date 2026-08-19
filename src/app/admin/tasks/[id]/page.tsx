@@ -18,6 +18,8 @@ import {
 import { RecheckFileButton } from "@/components/admin-file-actions";
 import { ExecutionPanel } from "@/components/execution-panel";
 import { executionForAdmin } from "@/lib/queries/execution";
+import { humanUnitForAdmin } from "@/lib/queries/human-unit";
+import { HumanWorkUnitAdmin } from "@/components/human-work-unit-admin";
 import {
   DisputeDecisionForm,
   RevisionInstructionsForm,
@@ -68,6 +70,7 @@ export default async function AdminTaskDetail({
   // Null for every task quoted without an executable plan, which is most of
   // them: the panel simply does not render.
   const execution = await executionForAdmin(id);
+  const humanUnit = await humanUnitForAdmin(id);
   const operational = await operationalComparisonForAdmin(id);
   const isTerminal = TERMINAL_STATUSES.includes(task.status);
   const canReassign = REASSIGNABLE.includes(task.status) && task.claimedBy != null;
@@ -206,6 +209,8 @@ export default async function AdminTaskDetail({
           <ExecutionPanel run={execution} />
         </div>
       ) : null}
+
+      {humanUnit ? <HumanWorkUnitAdmin view={humanUnit} /> : null}
 
       <Card className="mb-4">
         <CardBody>

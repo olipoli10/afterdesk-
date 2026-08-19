@@ -16,6 +16,8 @@ import { HumanPackagePanel } from "@/components/human-package";
 import { WorkSessionTimer } from "@/components/work-session-timer";
 import { openSessionFor } from "@/server/work-sessions";
 import { humanPackageForVa } from "@/lib/queries/execution";
+import { humanUnitForWorker } from "@/lib/queries/human-unit";
+import { HumanWorkUnitWorker } from "@/components/human-work-unit-worker";
 import {
   Badge,
   Card,
@@ -58,6 +60,20 @@ export default async function VaTaskPage({
     openSessionFor(id, user.id, "worker"),
   ]);
   if (!task) notFound();
+
+  // The worker surface is a separate, minimum projection.  The generation is
+  // read only to fence that projection and is never rendered from Task.
+  const assignedUnit = await prisma.humanWorkUnitRunState.findFirst({
+    where: { taskId: id, claimedById: user.id },
+    select: { claimGeneration: true },
+  });
+  const humanUnit = assignedUnit
+    ? await humanUnitForWorker({
+        taskId: id,
+        workerId: user.id,
+        claimGeneration: assignedUnit.claimGeneration,
+      })
+    : null;
 
   // Strictly "claimed" — the assistant's own gate is narrower than
   // canDeliver below (see sendAssistantMessage's doc comment).
@@ -152,7 +168,9 @@ export default async function VaTaskPage({
         </Card>
       ) : null}
 
-      <Card tone="night">
+      {humanUnit ? (
+        assignedUnit ? <HumanWorkUnitWorker unit={humanUnit} taskId={task.id} claimGeneration={assignedUnit.claimGeneration} /> : null
+      ) : <Card tone="night">
         <CardBody>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             {task.category ? (
@@ -185,9 +203,9 @@ export default async function VaTaskPage({
             ) : null}
           </dl>
         </CardBody>
-      </Card>
+      </Card>}
 
-      {task.category?.disputeCriteria ? (
+      {!humanUnit && task.category?.disputeCriteria ? (
         <Card tone="night">
           <CardBody>
             <SectionLabel tone="night">What counts as done</SectionLabel>
@@ -198,11 +216,11 @@ export default async function VaTaskPage({
         </Card>
       ) : null}
 
-      {humanPackage ? <HumanPackagePanel pkg={humanPackage} /> : null}
+      {!humanUnit && humanPackage ? <HumanPackagePanel pkg={humanPackage} /> : null}
 
       {/* Phase 1C — the visible work timer. Explicit verbs only; nothing
           else is tracked, and the panel says so to the worker. */}
-      {canDeliver || task.status === "claimed" ? (
+      {!humanUnit && (canDeliver || task.status === "claimed") ? (
         <div className="mb-4">
           <WorkSessionTimer
             taskId={task.id}
@@ -228,7 +246,7 @@ export default async function VaTaskPage({
         </div>
       ) : null}
 
-      {task.files.length > 0 ? (
+      {!humanUnit && task.files.length > 0 ? (
         <Card tone="night">
           <CardBody>
             <SectionLabel tone="night">Files to work from</SectionLabel>
@@ -255,7 +273,7 @@ export default async function VaTaskPage({
         </Card>
       ) : null}
 
-      {canDeliver ? (
+      {!humanUnit && canDeliver ? (
         <DeliverableForm
           taskId={task.id}
           categorySlug={task.category?.slug ?? null}
@@ -266,11 +284,11 @@ export default async function VaTaskPage({
         />
       ) : null}
 
-      {task.status === "claimed" ? (
+      {!humanUnit && task.status === "claimed" ? (
         <AssistantWidget taskId={task.id} initialHistory={assistantHistoryRows} />
       ) : null}
 
-      {canDeliver ? <AskAdminQuestionForm taskId={task.id} /> : null}
+      {!humanUnit && canDeliver ? <AskAdminQuestionForm taskId={task.id} /> : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <Link
