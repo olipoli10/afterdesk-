@@ -69,6 +69,52 @@ function AccentLine({ text, accent }: { text: string; accent: string }) {
   );
 }
 
+/* THE ATTACHED DIALOGUE WINDOW. One compact window per beat, living in a
+   RESERVED in-flow band so it can never cover protected content, opened by
+   the scroll authority exactly while A2 stands beside it (data-v7-beat),
+   folded before he walks again. The tether visibly reaches the being. */
+function A2Dialogue({ beat, label, line, align }: {
+  beat: "probleme" | "perimetre" | "moteur" | "jugement" | "resultat";
+  label: string;
+  line: string;
+  align?: "drop" | "flush";
+}) {
+  return (
+    <div data-a2-beat={beat} className="pointer-events-none relative flex min-h-[92px] items-start justify-end">
+      {/* the step marker: always drawn, so the reserved band reads as a
+          waiting station on the route, never as a hole. The window unfolds
+          from it when A2 arrives. */}
+      <span aria-hidden data-beat-marker="" className={`absolute top-[38px] flex items-center gap-1.5 ${align === "flush" ? "right-2" : "right-[calc(13%+76px)]"}`}>
+        <i className="h-px w-10 bg-gradient-to-l from-[#6F4C29]/70 to-transparent" />
+        <i className="h-[7px] w-[7px] rotate-45 border border-[#6F4C29] bg-[#15110A]" />
+      </span>
+      <aside
+        data-a2-dialog={beat}
+        className={`relative mt-2 max-w-[min(46ch,calc(87%-96px))] rounded-[7px] border border-[#49331F] bg-[#0B0D11]/97 px-3 py-2.5 shadow-[0_12px_34px_rgba(0,0,0,0.42)] ${
+          align === "drop"
+            ? /* the drop corridor at the centre stays text-free: the window
+                 sits fully LEFT of it, tethered right toward the pair */
+              "mr-[calc(13%+76px)] sm:mr-[calc(50%+40px)] sm:max-w-[min(44ch,calc(50%-64px))]"
+            : align === "flush" ? "mr-2 max-w-[min(46ch,calc(100%-40px))]" : "mr-[calc(13%+76px)]"
+        }`}
+      >
+        <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-[#D87526]">
+          <span aria-hidden data-a2-note-speaker="" className="relative h-[10px] w-[13px] shrink-0 bg-[#D87526] shadow-[0_0_8px_rgba(216,117,38,0.58)]">
+            <i className="absolute left-[3px] top-[3px] h-[2px] w-[2px] bg-[#08090B]" />
+            <i className="absolute right-[3px] top-[3px] h-[2px] w-[2px] bg-[#08090B]" />
+            <i className="absolute -bottom-[2px] left-[2px] h-[2px] w-[9px] bg-[#3A3F49]" />
+          </span>
+          {label}
+        </p>
+        <p className="mt-1 text-[12px] leading-[1.45] text-[#E8D9B8] sm:text-[13px]">{line}</p>
+        <span aria-hidden data-a2-note-tether="" className={`absolute left-full top-1/2 h-px w-[68px] bg-gradient-to-r from-[#D87526]/80 to-[#C9A76A]/35 ${align === "drop" ? "sm:top-auto sm:-bottom-3 sm:left-1/2 sm:h-3 sm:w-px sm:bg-gradient-to-b" : ""}`}>
+          <i className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rotate-45 border border-[#D87526] bg-[#111318]" />
+        </span>
+      </aside>
+    </div>
+  );
+}
+
 const ANCHOR_NAMES = ["request", "problem", "solution", "walk-start", "walk-end", "result", "example"] as const;
 
 export function SimplicityActs({ copy, concierge, children }: {
@@ -109,8 +155,9 @@ export function SimplicityActs({ copy, concierge, children }: {
        sits at a comfortable viewport height, so the pacing holds on every
        track length. They depend on the layout, not on the scroll. */
     let yAppear = 0, yProblem = 0, ySolution = 0, yCarryStart = 0, yApproachEnd = 0, yExample = 0;
-    let exampleSceneY = Number.POSITIVE_INFINITY, finalSceneY = Number.POSITIVE_INFINITY, releaseY = Number.POSITIVE_INFINITY;
-    let narrativeVh = 1, lastWidth = 0, adjusting = false;
+    let handoffStart = 0, handoffEnd = 0;
+    let exampleSceneY = Number.POSITIVE_INFINITY, finalSceneY = Number.POSITIVE_INFINITY, releaseY = Number.POSITIVE_INFINITY, freeFixY = Number.POSITIVE_INFINITY;
+    let narrativeVh = 1, lastWidth = 0, adjusting = false, pageMaxY = Number.POSITIVE_INFINITY, endZoneChecked = false;
     /* WHERE THE READER IS, kept up to date every frame. A resize event only
        fires AFTER the browser has relaid out and possibly moved the scroll
        itself, so an anchor read at that moment describes a layout the reader
@@ -121,6 +168,22 @@ export function SimplicityActs({ copy, concierge, children }: {
     /* sticky constants for act 3 - the second coordinate space */
     let pinStart = 0, pinEnd = 0, sectionTop = 0, laneOffset = 0, wsX = 0, weX = 0;
     let stageTopDoc = 0, stageBottomDoc = 0, stickyTop = 0;
+    let railX = 0;
+    /* THE PAINTED PATH (founder repair). One polyline of measured, painted
+       segments owns every A2 position: the 87% column through acts 1-2b,
+       the datum excursion inside the pinned stage, the service bay through
+       the engine, the 87% column again through act 4, the result. The
+       request plate shares it until the port, then descends the drop alone.
+       Every coordinate below comes from a painted element's own geometry. */
+    let colX = 0;              /* the 87% conductor (acts 2/2b/4) */
+    let dropXm = 0;            /* where the drop leaves the datum (stage x) */
+    let deckY = 0;             /* the release deck A2 walks to his free post */
+    let portOffsetY = 0;       /* the engine's top port, stage-relative */
+    let frameBottomOffset = 0; /* engine frame bottom, stage-relative */
+    /* beat bands: reserved in-flow layout slots where one attached dialogue
+       window opens while A2 pauses beside it. Document-space tops. */
+    type BeatName = "probleme" | "perimetre" | "moteur" | "jugement" | "resultat";
+    let beatBands: Partial<Record<BeatName, { y: number; h: number }>> = {};
     /* Everything the escort must never land on. Each surface carries the
        rule needed to place it at the current scroll, so a pinned heading is
        judged where it is really drawn; its COLUMN, so it only counts when it
@@ -214,6 +277,24 @@ export function SimplicityActs({ copy, concierge, children }: {
         const inner0 = sec0?.querySelector<HTMLElement>("[data-v7-stage]") ?? sec0?.firstElementChild as HTMLElement | null;
         if (sec0) out.sectionTop = docTop(sec0);
         if (inner0) out.stageTop = docTop(inner0);
+        const rail = root.querySelector<HTMLElement>("[data-engine-escort-rail]");
+        if (rail) out.railX = docLeft(rail) + rail.offsetWidth / 2;
+        /* the 87% conductor: A2's highway. Its centre x is the painted law
+           every vertical leg reuses. */
+        const col = root.querySelector<HTMLElement>('section[data-act="2"] [data-lane-line]');
+        if (col) out.colX = docLeft(col) + col.offsetWidth / 2;
+        /* the engine's top port (the request receiver) and the frame the
+           service bay runs through, all stage-relative */
+        const port = root.querySelector<HTMLElement>("[data-engine-feed-joint]");
+        if (port) { out.portX = docLeft(port) + port.offsetWidth / 2; out.portY = docTop(port) + port.offsetHeight / 2; }
+        const frameEl = root.querySelector<HTMLElement>("[data-living-engine]");
+        if (frameEl) { out.frameTop = docTop(frameEl); out.frameBottom = docTop(frameEl) + frameEl.offsetHeight; }
+        const deck = root.querySelector<HTMLElement>("[data-release-deck]");
+        if (deck) out.deckY = docTop(deck);
+        for (const band of root.querySelectorAll<HTMLElement>("[data-a2-beat]")) {
+          out["beat:" + band.getAttribute("data-a2-beat")] = docTop(band);
+          out["beatH:" + band.getAttribute("data-a2-beat")] = band.offsetHeight;
+        }
         for (const sel of ['section[data-act="1"] h1', 'section[data-act="2"] h2', 'section[data-act="2b"] h2', 'section[data-act="3"] h2', 'section[data-act="4"] h2']) {
           const el = root.querySelector<HTMLElement>(sel);
           if (el) out["plane:" + sel] = docTop(el);
@@ -252,6 +333,20 @@ export function SimplicityActs({ copy, concierge, children }: {
         laneOffset = docTop(ws) - docTop(inner);
         wsX = docLeft(ws);
         weX = docLeft(we);
+        colX = natural.colX ?? wsX;
+        dropXm = natural.portX ?? weX;
+        railX = natural.railX ?? colX;
+        portOffsetY = (natural.portY ?? (stageTopDoc + laneOffset)) - stageTopDoc;
+        frameBottomOffset = (natural.frameBottom ?? (stageTopDoc + laneOffset)) - stageTopDoc;
+        /* the bay's exit stub spans the measured distance from the frame's
+           bottom to the stage's end, so it MEETS the act-4 jog in every
+           language instead of guessing with a viewport fraction */
+        root.style.setProperty("--bay-exit-h", `${Math.max(8, Math.round(inner.offsetHeight - frameBottomOffset + 2))}px`);
+        beatBands = {};
+        for (const name of ["probleme", "perimetre", "moteur", "jugement", "resultat"] as const) {
+          const y = natural["beat:" + name];
+          if (y !== undefined) beatBands[name] = { y, h: natural["beatH:" + name] ?? 80 };
+        }
       } else {
         A = null;
       }
@@ -264,17 +359,55 @@ export function SimplicityActs({ copy, concierge, children }: {
       if (A) {
         yAppear = blockTop + Math.min(0.05 * blockHeight, narrativeVh * 0.35);
         yProblem = Math.max(yAppear + 1, A.problem.y - narrativeVh * 0.5);
-        ySolution = Math.max(yProblem + 1, A.solution.y - narrativeVh * 0.5);
+        /* Long translations need enough scroll distance to remain locomotion,
+           not a fast zip. Filipino at 360px leaves only 20px naturally; keep
+           at least 5% of the stable narrative unit before the pin begins. */
+        const naturalSolutionY = A.solution.y - narrativeVh * 0.5;
+        const minApproach = narrativeVh * 0.05;
+        /* the scene must OWN its dialogue stop: the perimetre window has to
+           open inside the solution scene, so the scene starts no later than
+           that window does */
+        let solutionCap = naturalSolutionY;
+        const periB = beatBands.perimetre;
+        if (periB) {
+          const wL = window.innerWidth < 640 ? Math.max(narrativeVh * 0.48, 640) : narrativeVh * 0.48;
+          const periW0 = periB.y + periB.h * 0.55 - narrativeVh * 0.10 - wL;
+          solutionCap = Math.min(naturalSolutionY, periW0 - narrativeVh * 0.04);
+        }
+        ySolution = Math.max(yProblem + 1, Math.min(solutionCap, pinStart - minApproach));
         /* WHAT and PROBLEM already have their own complete visual evidence.
            A2 enters only as SOLUTION approaches, through the reserved carry
            column, and is fully present before that heading reaches the
            ownership zone. The entrance is scroll-driven, never timed. */
         yCarryStart = Math.max(yAppear, yProblem - narrativeVh * 0.28);
-        yApproachEnd = Math.max(ySolution + 1, pinStart);
+        const minJunctionRunway = narrativeVh * 0.05;
+        yApproachEnd = Math.max(ySolution + 1, pinStart - minJunctionRunway);
+        /* THE CHOREOGRAPHY MAP inside the pin. Each moment owns real scroll
+           so no single gesture can swallow the whole handoff: stations tour,
+           arrival pause + port opens, plate descends the drop, port closes +
+           ignition, A2's return walk and bay descent. Fractions of the pin
+           span; the span itself was widened in the layout so each moment
+           survives one normal gesture. */
+        const pinSpan = Math.max(1, pinEnd - pinStart);
+        handoffStart = pinStart + pinSpan * 0.38; /* plate leaves the datum */
+        handoffEnd = pinStart + pinSpan * 0.60;   /* plate inside the port */
         yExample = A.example.y - narrativeVh * 0.78;
         exampleSceneY = (natural.exampleGuideTop ?? A.example.y) - narrativeVh * 0.42;
         finalSceneY = (natural.finalGuideTop ?? root.offsetHeight + blockTop) - narrativeVh * 0.72;
-        releaseY = Math.max(yExample + narrativeVh * 0.72, exampleSceneY + narrativeVh * 0.12);
+        /* the release moment is derived FROM the deck: A2 finishes his walk
+           exactly where the free post will be painted, so the role change
+           happens at zero displacement - never a teleport under a fade */
+        deckY = natural.deckY ?? A.result.y + narrativeVh * 0.4;
+        /* the release must come AFTER the resultat plateau plus the walk
+           itself; the deck's layout reserve makes the coincidence term the
+           normal winner, so the flip stays a zero-displacement role change */
+        const resB = beatBands.resultat;
+        const resPlateauEnd = resB ? resB.y + resB.h * 0.55 - narrativeVh * 0.14 : yExample + narrativeVh * 0.3;
+        releaseY = Math.max(yExample + narrativeVh * 0.5, resPlateauEnd + narrativeVh * 0.34);
+        /* the launcher takes its fixed corner only once the released being
+           has scrolled fully out of view: the role change moves nothing in
+           front of the reader - never a jump, never a fade over distance */
+        freeFixY = releaseY + narrativeVh * 0.85;
       }
       const planeSel = ['section[data-act="1"] h1', 'section[data-act="2"] h2', 'section[data-act="2b"] h2', 'section[data-act="3"] h2', 'section[data-act="4"] h2'];
       for (const sel of planeSel) {
@@ -333,8 +466,10 @@ export function SimplicityActs({ copy, concierge, children }: {
         }
       }
       root.setAttribute("data-v7-engine", A ? "armed" : "missing-anchors");
-      buildLane();
+      pageMaxY = Math.max(0, document.documentElement.scrollHeight - narrativeVh);
       measureDockHome();
+      buildLegs();
+      buildLane();
       lastY = -1; /* force a recompute on the next frame */
     };
 
@@ -372,36 +507,148 @@ export function SimplicityActs({ copy, concierge, children }: {
     };
 
     let raf = 0, lastY = -1;
-    /* WHAT THE STORY WANTS at a given scroll. Pure narrative intent: no
-       collision handling of any kind lives in here. */
-    const desire = (y: number) => {
+    /* THE LEG TABLE. A2's whole journey is a sequence of straight painted
+       legs and standing plateaus, each owning a scroll interval. Positions
+       are DOCUMENT points for the normal-flow acts and STAGE points inside
+       the pinned act (evaluated against the live sticky offset), so one
+       pure function of scroll yields the same route in both directions.
+       Corners are traced as quarter-arcs at the joints, never cut. */
+    type Leg = {
+      y0: number; y1: number;               /* scroll interval */
+      space: "doc" | "stage";
+      x0: number; py0: number; x1: number; py1: number; /* path endpoints */
+      plateau?: boolean;                     /* standing beside a dialogue */
+    };
+    let legs: Leg[] = [];
+    let legArc: number[] = [];               /* cumulative arc length before leg i */
+    /* ONE source of truth for every dialogue window: computed with the legs
+       so a window can never open before its plateau exists */
+    let beatWindows: Partial<Record<BeatName | "moteur", [number, number]>> = {};
+    const buildLegs = () => {
+      legs = [];
+      legArc = [];
+      if (!A || !dockHomeDoc) return;
+      const u = narrativeVh;
+      const homeX = dockHomeDoc.x + 60, homeY = dockHomeDoc.y + 35;
+      const cx = colX - 16;                  /* body left of the line, plate on it */
+      const laneStageY = laneOffset;         /* datum, stage-relative */
+      const S = Math.max(1, pinEnd - pinStart);
+      const p = (f: number) => pinStart + S * f;
+      const push = (y0: number, y1: number, space: Leg["space"], x0: number, py0: number, x1: number, py1: number, plateau?: boolean) => {
+        if (y1 <= y0) return;
+        legs.push({ y0, y1, space, x0, py0, x1, py1, plateau });
+      };
+      /* plateau window beside an in-flow band: while the band crosses the
+         comfortable reading zone, A2 stands at its side. A plateau must
+         outlast one whole normal gesture (wheel ~360px, phone swipe
+         ~600px), and can never begin before the leg that DELIVERS him -
+         language-dependent layouts shift both, so the floor is explicit. */
+      beatWindows = {};
+      const L = window.innerWidth < 640 ? Math.max(u * 0.48, 640) : u * 0.48;
+      const bandStop = (name: BeatName, fallbackY: number, notBefore?: number) => {
+        const b = beatBands[name];
+        const centerDoc = b ? b.y + b.h * 0.55 : fallbackY;
+        let w1 = centerDoc - u * 0.10;
+        let w0 = w1 - L;
+        if (notBefore !== undefined && w0 < notBefore) { const shift = notBefore - w0; w0 += shift; w1 += shift; }
+        beatWindows[name] = [w0 + u * 0.02, w1 - u * 0.03];
+        return { w0, w1, py: centerDoc - 3 };
+      };
+      const sProb = bandStop("probleme", A.problem.y);
+      const sPeri = bandStop("perimetre", A.solution.y, sProb.w1 + u * 0.06);
+      /* hero: along the deck to the column, then down the column with two
+         plateaus, arriving on the datum exactly when the stage pins */
+      const joinEnd = yCarryStart + u * 0.20;
+      push(yCarryStart, joinEnd, "doc", homeX, homeY, cx, homeY);
+      push(joinEnd, sProb.w0, "doc", cx, homeY, cx, sProb.py);
+      push(sProb.w0, sProb.w1, "doc", cx, sProb.py, cx, sProb.py, true);
+      push(sProb.w1, sPeri.w0, "doc", cx, sProb.py, cx, sPeri.py);
+      push(sPeri.w0, sPeri.w1, "doc", cx, sPeri.py, cx, sPeri.py, true);
+      /* approach the elbow: the descent ends ON the datum at the column x.
+         Pre-pin the stage rests at its natural top, so the datum has one
+         document position until the pin takes over. */
+      const datumDocY = stageTopDoc + laneOffset;
+      push(sPeri.w1, pinStart, "doc", cx, sPeri.py, cx, datumDocY);
+      /* the pinned choreography (stage space) */
+      push(p(0), p(0.30), "stage", cx, laneStageY, dropXm, laneStageY);          /* station tour with the plate */
+      push(p(0.30), p(0.70), "stage", dropXm, laneStageY, dropXm, laneStageY, true); /* supervises the entry */
+      push(p(0.70), p(0.88), "stage", dropXm, laneStageY, railX, laneStageY);    /* return walk on the datum */
+      /* he holds at the datum through the port's close and the ignition,
+         watching the machine light - then rides the service bay down in
+         DOCUMENT space at slope one: the stage is parked after the pin, so
+         he descends beside the dashboard exactly as fast as it scrolls,
+         never leaving the reader's view. Works identically on the phone's
+         taller-than-viewport frame. */
+      push(p(0.88), p(1), "stage", railX, laneStageY, railX, laneStageY, true);
+      /* the moteur window gets the same one-gesture floor, clamped inside
+         the standing hold so it always folds before the return walk */
+      beatWindows.moteur = [
+        pinStart + S * 0.31,
+        Math.min(pinStart + S * 0.68, Math.max(pinStart + S * 0.62, pinStart + S * 0.31 + L)),
+      ];
+      const bayTopDoc = stageBottomDoc + laneOffset;
+      const bayBotDoc = stageBottomDoc + frameBottomOffset + 16;
+      const bayEnd = pinEnd + Math.max(1, bayBotDoc - bayTopDoc);
+      push(pinEnd, bayEnd, "doc", railX, bayTopDoc, railX, bayBotDoc);
+      const jogEnd = bayEnd + Math.max(1, Math.abs(railX - cx)) * 1.2;
+      push(bayEnd, jogEnd, "doc", railX, bayBotDoc, cx, bayBotDoc);
+      /* language-dependent layouts move both the bands and the bay's
+         length: the stops are floored AFTER the legs that deliver him */
+      const jugFallback = pinEnd + u * 0.9;
+      const sJug = bandStop("jugement", jugFallback, jogEnd + u * 0.06);
+      const sRes = bandStop("resultat", yExample + u * 0.15, sJug.w1 + u * 0.06);
+      /* a shifted resultat stop pushes the release with it */
+      releaseY = Math.max(releaseY, sRes.w1 + u * 0.30);
+      freeFixY = releaseY + u * 0.85;
+      push(jogEnd, sJug.w0, "doc", cx, bayBotDoc, cx, sJug.py);
+      push(sJug.w0, sJug.w1, "doc", cx, sJug.py, cx, sJug.py, true);
+      push(sJug.w1, sRes.w0, "doc", cx, sJug.py, cx, sRes.py);
+      push(sRes.w0, sRes.w1, "doc", cx, sRes.py, cx, sRes.py, true);
+      /* the release: down the column to the painted deck, then along the
+         deck to the exact point where the free post is painted - the role
+         change happens standing still, never as a jump */
+      const rampTurn = Math.max(sRes.w1 + 1, releaseY - u * 0.28);
+      const freeX = window.innerWidth - 36;
+      push(sRes.w1, rampTurn, "doc", cx, sRes.py, cx, deckY - 3);
+      push(rampTurn, releaseY, "doc", cx, deckY - 3, freeX, deckY - 3);
+      /* released: he stands at the deck's end and leaves the frame with the
+         page; the corner post takes over only once he is out of view */
+      push(releaseY, freeFixY, "doc", freeX, deckY - 3, freeX, deckY - 3, true);
+      /* arc prefix for distance-true gait */
+      let acc = 0;
+      legArc = legs.map((L) => { const a = acc; acc += Math.hypot(L.x1 - L.x0, L.py1 - L.py0); return a; });
+    };
+    /* WHERE A2 IS at a given scroll: evaluate the leg table. Also reports
+       the distance walked so the gait is tied to ground actually covered. */
+    const a2At = (y: number) => {
       const sx = window.scrollX;
       const itv = y < pinStart ? stageTopDoc - y : y <= pinEnd ? stickyTop : stageBottomDoc - y;
-      const laneY = itv + laneOffset;
-      const walkT = pinEnd > pinStart ? clamp01((y - pinStart) / (pinEnd - pinStart)) : 0;
       const carryOpacity = clamp01((y - yCarryStart) / Math.max(1, narrativeVh * 0.08));
-      /* while it carries, the story asks for a comfortable band rather than a
-         lane that has already scrolled off the top */
-      const carryY = Math.min(Math.max(laneY, vh * 0.18), vh * 0.62);
-      if (!A) return { vx: 0, vy: vh * 0.5, so: 0 };
-      if (y < yAppear) return { vx: A.request.x - sx, vy: A.request.y - y, so: 0 };
-      if (y < yProblem) {
-        const t = (y - yAppear) / (yProblem - yAppear);
-        return { vx: lerp(A.request.x - sx, A.problem.x - sx, t), vy: lerp(A.request.y - y, A.problem.y - y, t), so: carryOpacity };
+      if (!A || !legs.length) return { vx: 0, vy: vh * 0.5, so: 0, arc: 0, moving: false };
+      let L = legs[0];
+      if (y <= L.y0) {
+        const px = L.space === "stage" ? L.x0 - sx : L.x0 - sx;
+        const py = L.space === "stage" ? itv + L.py0 : L.py0 - y;
+        return { vx: px, vy: py, so: carryOpacity, arc: 0, moving: false };
       }
-      if (y < ySolution) {
-        const t = (y - yProblem) / (ySolution - yProblem);
-        return { vx: lerp(A.problem.x - sx, A.solution.x - sx, t), vy: lerp(A.problem.y - y, A.solution.y - y, t), so: carryOpacity };
+      for (let i = 0; i < legs.length; i++) {
+        L = legs[i];
+        if (y <= L.y1 || i === legs.length - 1) {
+          const t = clamp01((y - L.y0) / Math.max(1, L.y1 - L.y0));
+          const x = lerp(L.x0, L.x1, t);
+          const py = lerp(L.py0, L.py1, t);
+          const arc = legArc[i] + Math.hypot(L.x1 - L.x0, L.py1 - L.py0) * t;
+          const vy = L.space === "stage" ? itv + py : py - y;
+          return { vx: x - sx, vy, so: carryOpacity, arc, moving: !L.plateau && t < 1 };
+        }
       }
-      if (y < yApproachEnd) {
-        const t = (y - ySolution) / (yApproachEnd - ySolution);
-        return { vx: lerp(A.solution.x - sx, wsX - sx, t), vy: lerp(A.solution.y - y, laneY, t), so: carryOpacity };
-      }
-      if (y <= pinEnd) return { vx: lerp(wsX, weX, walkT) - sx, vy: laneY, so: carryOpacity };
-      if (y < yExample) return { vx: weX - sx, vy: carryY, so: carryOpacity };
-      const t = clamp01((y - yExample) / (narrativeVh * 0.35));
-      const out = clamp01((y - (yExample + narrativeVh * 0.95)) / (narrativeVh * 0.25));
-      return { vx: lerp(weX - sx, A.example.x - sx + 64, t), vy: lerp(carryY, A.example.y - y + 30, t), so: carryOpacity * (1 - out) };
+      return { vx: 0, vy: vh * 0.5, so: 0, arc: 0, moving: false };
+    };
+    /* the projector's narrative input (safety net): the desired viewport
+       height of the composition on the doc legs */
+    const desire = (y: number) => {
+      const a = a2At(y);
+      return { vx: a.vx, vy: a.vy, so: a.so };
     };
 
     /* every obstacle placed in viewport space at a given scroll */
@@ -607,6 +854,62 @@ export function SimplicityActs({ copy, concierge, children }: {
       return lane[i] + (lane[i + 1] - lane[i]) * f;
     };
 
+    /* THE ROUTE. A2 evaluates his leg table; the plate rides at his side
+       until the drop, then descends the painted drop ALONE - a straight
+       vertical on the drop's own x, entering the visible port. It never
+       crosses a readable line: the drop column is reserved by the layout.
+       The projector (safety net) still guards the document-space legs. */
+    const routeAt = (y: number) => {
+      const sx = window.scrollX;
+      const a = a2At(y);
+      /* the reserved bands make the lane equal the narrative byte-for-byte;
+         the projector only ever differs if a layout regression appears */
+      const a2Y = y < pinStart ? laneAt(y) : a.vy;
+      const itv = y < pinStart ? stageTopDoc - y : y <= pinEnd ? stickyTop : stageBottomDoc - y;
+      const S = Math.max(1, pinEnd - pinStart);
+      const pinP = clamp01((y - pinStart) / S);
+      /* choreography phases (all pure functions of scroll) */
+      const gate = Math.min(clamp01((pinP - 0.30) / 0.08), 1 - clamp01((pinP - 0.60) / 0.06));
+      const plateP = clamp01((y - handoffStart) / Math.max(1, handoffEnd - handoffStart));
+      const entry = clamp01((pinP - 0.60) / 0.12);
+      /* the plate: joined to A2 before the drop, then its own vertical */
+      let plate: { x: number; y: number; opacity: number };
+      if (y < handoffStart) {
+        /* vertical travel: the plate rides CENTRED on the line, A2 walks
+           at its left. On the datum the pair keeps the proven side-carry. */
+        const vertical = y < pinStart;
+        plate = vertical
+          ? { x: a.vx - 10, y: a2Y + 6, opacity: a.so }
+          : { x: a.vx + 16, y: a2Y, opacity: a.so };
+      } else {
+        const py = lerp(laneOffset, portOffsetY - 8, plateP);
+        /* it disappears INSIDE the port mouth, never in open air */
+        const inPort = clamp01((plateP - 0.86) / 0.14);
+        plate = { x: dropXm - sx - 26, y: itv + py - 17, opacity: a.so * (1 - inPort) };
+      }
+      return {
+        handoff: plateP,
+        gate,
+        entry,
+        pinP,
+        escortOpacity: a.so,
+        arc: a.arc,
+        movingLeg: a.moving,
+        artifact: plate,
+        a2: { x: a.vx, y: a2Y },
+      };
+    };
+    /* which dialogue window is open at this scroll: the ONE window table
+       built with the legs - a window exists strictly inside its plateau,
+       so it always folds before A2 walks again */
+    const beatAt = (y: number): string => {
+      for (const name of ["probleme", "perimetre", "moteur", "jugement", "resultat"] as const) {
+        const w = beatWindows[name];
+        if (w && y >= w[0] && y <= w[1]) return name;
+      }
+      return "";
+    };
+
     /* ONE semantic snapshot drives the character, conductor and core. It is
        pure: the same scroll position always yields the same scene and the
        same machine state, forward or backward. */
@@ -621,7 +924,8 @@ export function SimplicityActs({ copy, concierge, children }: {
       else if (y >= yExample && y < exampleSceneY) { scene = "outcome"; sceneP = between(yExample, exampleSceneY); }
       else if (y >= exampleSceneY && y < finalSceneY) { scene = "example"; sceneP = between(exampleSceneY, finalSceneY); }
       else if (y >= finalSceneY) { scene = "final"; sceneP = 1; }
-      const engineP = between(ySolution, Math.max(ySolution + 1, pinEnd));
+      const engineVisualEnd = yApproachEnd + (pinEnd - yApproachEnd) * 0.45;
+      const engineP = between(ySolution, Math.max(ySolution + 1, engineVisualEnd));
       const release = between(yExample, releaseY);
       return {
         scene,
@@ -656,9 +960,14 @@ export function SimplicityActs({ copy, concierge, children }: {
       for (const b of actBoxes) {
         if (b.h > 0 && centre >= b.top && centre < b.top + b.h) { anchor = { id: b.id, f: (y - b.top) / b.h }; break; }
       }
-      /* the walk is bound to the REAL pin window, not to block fractions */
-      const walk = pinEnd > pinStart ? clamp01((y - pinStart) / (pinEnd - pinStart)) : 0;
+      /* the station tour owns the FIRST stretch of the pin; the rest of the
+         pin belongs to the entry choreography, so the walk completes before
+         the plate ever leaves the datum */
+      const pinP0 = pinEnd > pinStart ? clamp01((y - pinStart) / (pinEnd - pinStart)) : 0;
+      const walk = clamp01(pinP0 / 0.3);
       root.style.setProperty("--walk", walk.toFixed(4));
+      /* the whole choreography's clock: module groups read it directly */
+      root.style.setProperty("--run", pinP0.toFixed(4));
       root.style.setProperty("--seal", clamp01((y - pinEnd) / (narrativeVh * 0.4)).toFixed(4));
       root.style.setProperty("--scene-p", snapshot.sceneP.toFixed(4));
       root.style.setProperty("--engine-p", snapshot.engineP.toFixed(4));
@@ -676,20 +985,43 @@ export function SimplicityActs({ copy, concierge, children }: {
          station lines, the request field, the gauntlet chips, the sealed
          card and the launcher, it is smooth, and it is the same in both
          reading directions. Nothing here has to dodge anything. */
-      const d = desire(y);
-      const vx = d.vx;
-      const vy = laneAt(y);
-      const so = d.so;
-      const storyActive = so > 0.01 && y >= yCarryStart && y < releaseY;
-      const freeActive = y >= releaseY;
+      const route = routeAt(y);
+      const vx = route.a2.x;
+      const vy = route.a2.y;
+      const so = route.artifact.opacity;
+      const storyActive = route.escortOpacity > 0.01 && y >= yCarryStart && y < freeFixY;
+      const freeActive = y >= freeFixY;
 
-      slip.style.transform = `translate3d(${vx.toFixed(1)}px, ${vy.toFixed(1)}px, 0)`;
+      root.style.setProperty("--handoff", route.handoff.toFixed(4));
+      root.style.setProperty("--gate", route.gate.toFixed(4));
+      root.style.setProperty("--entry", route.entry.toFixed(4));
+      if (root.getAttribute("data-v7-handed-off") !== (route.handoff >= 1 ? "on" : "off")) {
+        root.setAttribute("data-v7-handed-off", route.handoff >= 1 ? "on" : "off");
+      }
+      /* the one attached dialogue window: opens when A2 arrives at a step,
+         folds before he walks again - all from the same scroll authority */
+      const beat = beatAt(y);
+      if (root.getAttribute("data-v7-beat") !== beat) root.setAttribute("data-v7-beat", beat);
+      /* end-of-page stop: on phones the conclusion opens only here, where
+         the footer's reserve keeps the corner column clear by construction.
+         The page can grow after the last measure (the machine settles its
+         own height), so the boundary is re-read ONCE when the reader first
+         enters the end zone - never per frame. */
+      if (!endZoneChecked && y > pageMaxY - vh * 1.5) {
+        endZoneChecked = true;
+        pageMaxY = Math.max(pageMaxY, document.documentElement.scrollHeight - narrativeVh);
+      } else if (endZoneChecked && y < pageMaxY - vh * 2.5) {
+        endZoneChecked = false;
+      }
+      const end = y >= pageMaxY - 24 ? "on" : "off";
+      if (root.getAttribute("data-v7-end") !== end) root.setAttribute("data-v7-end", end);
+      slip.style.transform = `translate3d(${route.artifact.x.toFixed(1)}px, ${route.artifact.y.toFixed(1)}px, 0)`;
       slip.style.opacity = so.toFixed(3);
 
-      /* the artifact's three machined states: request until the walk,
-         locked while the scope is frozen on the datum, checked after the
-         seal. Attribute + localized accessible name, written on change. */
-      const artState = y < yApproachEnd ? "request" : y <= pinEnd ? "locked" : "checked";
+      /* the artifact's machined states: request while carried, locked from
+         the arrival pause (the scope freezes as the port opens). The checked
+         story belongs to the delivered result surface, not to this plate. */
+      const artState = route.pinP < 0.3 ? "request" : "locked";
       if (slip.getAttribute("data-v7-artifact") !== artState) {
         slip.setAttribute("data-v7-artifact", artState);
         slip.setAttribute("aria-label", artCopyRef.current[artState]);
@@ -704,9 +1036,10 @@ export function SimplicityActs({ copy, concierge, children }: {
              scroll stops, the being stops. Reverse scroll plays it backward.
              Scene attributes change only at narrative boundaries and let the
              existing sprite player spend one short reaction there. */
-          const nextD = desire(y + 2);
-          const moving = Math.hypot(nextD.vx - vx, laneAt(y + 2) - vy) > 0.18;
-          const phase = moving ? Math.abs(Math.floor((y - yCarryStart) / 28)) % 4 : 0;
+          /* legs tied to ground actually covered: the gait phase advances
+             with the route's own arc length, so A2 can never walk in place
+             and never glides with frozen feet */
+          const phase = route.movingLeg ? Math.abs(Math.floor(route.arc / 28)) % 4 : 0;
           dock.setAttribute("data-a2-gait", String(phase));
           /* The route already moves the whole being continuously. A second
              body bob made that continuous motion read as scroll jitter on
@@ -812,6 +1145,7 @@ export function SimplicityActs({ copy, concierge, children }: {
       root.removeAttribute("data-v7-engine");
       root.removeAttribute("data-v7-escort");
       root.removeAttribute("data-v7-scene");
+      root.removeAttribute("data-v7-beat");
     };
   }, [reduced]);
 
@@ -881,25 +1215,45 @@ export function SimplicityActs({ copy, concierge, children }: {
           [data-port] { animation: v7in 0.3s ease-out 1.08s both; }
           [data-rail] { animation: v7rail 0.4s ease-out 1.04s both; }
           [data-lumen] { animation: v7in 0.7s ease-out both; }
-          :is([data-await-sweep], [data-energy-packet], [data-heart-beat]) { animation: v7pulse 4s linear infinite; }
+          [data-v7-acts] { animation: v7pulse 5.2s linear infinite; }
         }
         @media (prefers-reduced-motion: reduce) {
-          :is([data-await-sweep], [data-energy-packet], [data-heart-beat]) { animation: none; }
+          [data-v7-acts] { animation: none; --energy-p: 0.52; --heart-p: 0.28; --frame-p: 0.12; --packet-o: 0.72; }
           [data-await-sweep] { transform: rotate(0.12turn); }
           [data-energy-packet] { opacity: 0.72; transform: none !important; }
         }
-        @property --energy-p { syntax: "<number>"; inherits: false; initial-value: 0; }
+        @property --energy-p { syntax: "<number>"; inherits: true; initial-value: 0; }
         @property --heart-p { syntax: "<number>"; inherits: true; initial-value: 0; }
-        /* One continuous vein. Scroll owns how much of each segment is
-           energized; the single shared ambient slot moves one short packet
-           through every already-powered segment and gives the core one
-           restrained double beat. */
+        @property --frame-p { syntax: "<number>"; inherits: true; initial-value: 0.08; }
+        @property --packet-o { syntax: "<number>"; inherits: true; initial-value: 0.18; }
+        /* One inherited phase becomes one travelling current. Each physical
+           segment owns a short overlapping window of that phase, so energy
+           reaches the core in order instead of every pipe flashing at once. */
+        [data-flow-step] {
+          --packet-p: clamp(0, calc((var(--energy-p) - var(--flow-start)) * var(--flow-scale)), 1);
+          --packet-enter: clamp(0, calc((var(--energy-p) - var(--flow-start)) * 80), 1);
+          --packet-leave: clamp(0, calc((var(--flow-end) - var(--energy-p)) * 80), 1);
+          --packet-visible: min(var(--packet-enter), var(--packet-leave));
+        }
+        [data-flow-step="origin"] { --flow-start: 0; --flow-end: 0.12; --flow-scale: 8.333; }
+        [data-flow-step="burden"] { --flow-start: 0.10; --flow-end: 0.22; --flow-scale: 8.333; }
+        [data-flow-step="handoff"] { --flow-start: 0.20; --flow-end: 0.32; --flow-scale: 8.333; }
+        [data-flow-step="approach"] { --flow-start: 0.30; --flow-end: 0.44; --flow-scale: 7.143; }
+        [data-flow-step="curve"] { --flow-start: 0.42; --flow-end: 0.58; --flow-scale: 6.25; }
+        [data-flow-step="intake"] { --flow-start: 0.56; --flow-end: 0.70; --flow-scale: 7.143; }
+        [data-flow-step="output"] { --flow-start: 0.68; --flow-end: 0.84; --flow-scale: 6.25; }
+        [data-flow-step="release"] { --flow-start: 0.82; --flow-end: 1; --flow-scale: 5.556; }
+        /* One continuous vein. Scroll owns which sections are energized;
+           ONE inherited ambient phase moves through every visible vessel.
+           The accepted dashboard stays untouched inside: energy reaches it
+           through ports and grid gaps, never through a line over its copy. */
         [data-main-vein] {
-          --vein-size: clamp(7px, 1.15vw, 10px);
+          --vein-size: clamp(2px, 0.28vw, 3px);
           border: 1px solid rgba(111, 76, 41, 0.82);
           border-radius: 999px;
-          background: linear-gradient(180deg, rgba(15, 11, 7, 0.96), rgba(55, 37, 19, 0.86));
-          box-shadow: inset 0 0 0 1px rgba(201, 167, 106, 0.12), 0 0 12px rgba(216, 117, 38, 0.16);
+          background: linear-gradient(180deg, rgba(18, 12, 7, 0.98), rgba(65, 42, 20, 0.92));
+          box-shadow: inset 0 0 0 1px rgba(255, 210, 142, 0.08), 0 0 8px rgba(216, 117, 38, 0.18);
+          opacity: 1 !important;
         }
         [data-main-vein][data-vein-axis="y"] { width: var(--vein-size) !important; }
         [data-main-vein][data-vein-axis="x"] { height: var(--vein-size) !important; }
@@ -915,15 +1269,28 @@ export function SimplicityActs({ copy, concierge, children }: {
         [data-main-vein][data-vein-axis="x"]::after { inset: auto 4px 1px; height: 1px; }
         [data-main-vein][data-vein-axis="y"]::before { inset: 4px auto 4px 1px; width: 1px; }
         [data-main-vein][data-vein-axis="y"]::after { inset: 4px 1px 4px auto; width: 1px; }
-        :is([data-heart-feed], [data-heart-drop], [data-engine-spine], [data-heart-intake], [data-heart-output-desktop], [data-heart-output-mobile], [data-result-feed]) {
+        :is([data-heart-feed], [data-heart-drop], [data-heart-output-desktop], [data-heart-output-mobile], [data-result-feed]) {
           border-color: rgba(216, 117, 38, 0.8);
           box-shadow: inset 0 0 0 1px rgba(255, 210, 142, 0.16), 0 0 14px rgba(216, 117, 38, 0.3);
         }
         [data-heart-drop] { z-index: 2; }
         [data-main-vein] > [data-vein-channel] {
           position: absolute;
-          inset: 2px !important;
           border-radius: 999px;
+          background: linear-gradient(90deg, rgba(216,117,38,0.58), #F0A14A, rgba(201,167,106,0.62));
+          box-shadow: 0 0 7px rgba(216,117,38,0.34);
+        }
+        /* the current needs a REAL body: a two-pixel channel with a bright
+           head reads in normal video where a hairline vanished */
+        [data-main-vein][data-vein-axis="x"] > [data-vein-channel] {
+          inset: auto 0 !important;
+          top: calc(50% - 1px) !important;
+          height: 2px !important;
+        }
+        [data-main-vein][data-vein-axis="y"] > [data-vein-channel] {
+          inset: 0 auto !important;
+          left: calc(50% - 1px) !important;
+          width: 2px !important;
         }
         [data-energy-packet] {
           position: absolute;
@@ -931,62 +1298,150 @@ export function SimplicityActs({ copy, concierge, children }: {
           border-radius: 999px;
           background: linear-gradient(90deg, transparent 0%, #F0A14A 22%, #FFD28E 42%, rgba(216,117,38,0.52) 56%, #F0A14A 72%, transparent 100%);
           box-shadow: 0 0 10px rgba(216,117,38,0.58), 0 0 18px rgba(216,117,38,0.22);
-          opacity: calc(0.18 + var(--heart-p) * 0.82);
+          opacity: calc(var(--packet-o) * var(--packet-visible, 1));
           will-change: transform, opacity;
         }
         [data-main-vein][data-vein-axis="x"] > [data-energy-packet] {
-          inset-block: 1px;
+          inset-block: 0;
           left: 0;
-          width: 28%;
-          transform: translate3d(calc(var(--energy-p) * 257%), 0, 0);
+          width: 22%;
+          transform: translate3d(calc(var(--packet-p, var(--energy-p)) * 355%), 0, 0);
         }
         [data-main-vein][data-vein-axis="y"] > [data-energy-packet] {
-          inset-inline: 1px;
+          inset-inline: 0;
           top: 0;
-          height: 22%;
+          height: 18%;
           background: linear-gradient(180deg, transparent 0%, #F0A14A 22%, #FFD28E 42%, rgba(216,117,38,0.52) 56%, #F0A14A 72%, transparent 100%);
-          transform: translate3d(0, calc(var(--energy-p) * 355%), 0);
+          transform: translate3d(0, calc(var(--packet-p, var(--energy-p)) * 455%), 0);
         }
         [data-await-sweep] { transform: rotate(calc(var(--energy-p) * 1turn)); }
+        [data-engine-vein-lane] { isolation: isolate; }
+        [data-engine-vein-bed] {
+          fill: none;
+          stroke: rgba(72, 48, 24, 0.92);
+          stroke-width: 7;
+          stroke-linecap: round;
+          vector-effect: non-scaling-stroke;
+        }
+        [data-engine-vein] {
+          fill: none;
+          stroke: #D87526;
+          stroke-width: 3;
+          stroke-linecap: round;
+          vector-effect: non-scaling-stroke;
+          opacity: 0.82;
+        }
+        [data-engine-vein-energy] {
+          fill: none;
+          stroke: #FFD28E;
+          stroke-width: 3;
+          stroke-linecap: round;
+          stroke-dasharray: 8 92;
+          stroke-dashoffset: calc(var(--packet-p, var(--energy-p)) * -100);
+          vector-effect: non-scaling-stroke;
+          opacity: calc(0.4 + var(--heart-p) * 0.6);
+        }
+        [data-engine-escort-rail], [data-engine-escort-branch] {
+          border-color: rgba(216, 117, 38, 0.92);
+          box-shadow: inset 0 0 0 1px rgba(255, 210, 142, 0.14), 0 0 12px rgba(216, 117, 38, 0.28);
+        }
+        /* THE RECEIVER'S CHOREOGRAPHY, all from scroll: lids slide open on
+           --gate, the inner glow answers the plate (--handoff) and the
+           entry wash (--entry), then the lids close behind it. The port is
+           ALWAYS drawn - a closed door is a visible state, not absence. */
+        [data-artifact-receiver] { box-shadow: 0 0 calc(5px + var(--gate, 0) * 10px + var(--entry, 0) * 6px) rgba(216, 117, 38, calc(0.35 + var(--gate, 0) * 0.3)); }
+        [data-artifact-receiver] [data-port-glow=""] { opacity: calc(0.14 + var(--gate, 0) * 0.36 + var(--handoff, 0) * 0.3 + var(--entry, 0) * 0.2); }
+        [data-artifact-receiver] [data-port-lid="left"] { transform: translateX(calc(var(--gate, 0) * -8px)); }
+        [data-artifact-receiver] [data-port-lid="right"] { transform: translateX(calc(var(--gate, 0) * 8px)); }
+        /* the entry wash: the instant the port closes, the intake chain
+           visibly carries the received energy to the heart - scroll-owned,
+           reversible, layered over the ambient current */
+        [data-v7-acts] { --entry-glow: calc(var(--entry, 0) * 0.85); }
+        :is([data-engine-header-feed], [data-mobile-vein-link], [data-mobile-heart-bridge], [data-heart-neck]) > [data-vein-channel] {
+          box-shadow: 0 0 calc(7px + var(--entry-glow, 0) * 9px) rgba(240, 161, 74, calc(0.34 + var(--entry-glow, 0) * 0.5));
+        }
+        [data-engine-vein-energy] { opacity: calc(0.4 + var(--heart-p) * 0.4 + var(--entry-glow, 0) * 0.5); }
+        /* THE ATTACHED DIALOGUE WINDOWS: folded (scaled shut) until the
+           scroll authority opens exactly one; the fold happens before A2
+           walks again because each window lives strictly inside a plateau */
+        [data-a2-dialog] {
+          opacity: 0;
+          visibility: hidden;
+          transform: scale(0.94) translateY(4px);
+          transform-origin: 100% 100%;
+          transition: opacity 160ms linear, transform 160ms ease-out, visibility 0s linear 160ms;
+        }
+        [data-v7-beat="probleme"] [data-a2-dialog="probleme"],
+        [data-v7-beat="perimetre"] [data-a2-dialog="perimetre"],
+        [data-v7-beat="moteur"] [data-a2-dialog="moteur"],
+        [data-v7-beat="jugement"] [data-a2-dialog="jugement"],
+        [data-v7-beat="resultat"] [data-a2-dialog="resultat"] {
+          opacity: 1;
+          visibility: visible;
+          transform: none;
+          transition: opacity 160ms linear, transform 160ms ease-out, visibility 0s;
+        }
         [data-power-fill] {
           opacity: calc(0.48 + var(--power-beat, 0.5) * 0.52);
           will-change: transform, opacity;
         }
-        /* One persistent coordination heart. Five short branches feed the
-           same route chamber and return evidence to the lower ledger. */
-        [data-heart-branch] {
-          --ep: var(--engine-p, 1);
+        /* The accepted three-zone coordination dashboard. One capability is
+           active at a time; completed modules keep a low amber memory. */
+        [data-engine-module] {
+          --ep: var(--run, 1);
           --pre: clamp(0, calc((var(--ep) - var(--m, 0)) * 9), 1);
           --post: clamp(0, calc(((var(--m, 0) + 0.2) - var(--ep)) * 9), 1);
           --active: min(var(--pre), var(--post));
           --done: clamp(0, calc((var(--ep) - (var(--m, 0) + 0.1)) * 8), 1);
           opacity: calc(0.55 + 0.45 * max(var(--active), var(--done)));
           border-color: color-mix(in srgb, #262B35, #D87526 calc(var(--active) * 100%));
+          /* activation must survive normal video: the whole card takes a
+             warm lift, then keeps a lower amber memory once passed */
+          background: color-mix(in srgb, #12151B, #46331B calc(max(var(--active), var(--done) * 0.4) * 100%));
           transform: translateX(calc((1 - var(--active)) * 2px));
         }
-        [data-heart-branch] > span:first-child {
+        [data-engine-module] > p:first-child > span {
           background: color-mix(in srgb, #1A150D, #D87526 calc(var(--active) * 100%));
           box-shadow: 0 0 calc(10px * var(--active)) rgba(216,117,38,0.65);
         }
-        [data-heart-aura] {
-          opacity: calc(0.32 + var(--heart-p) * 0.68);
-          border-color: color-mix(in srgb, #6F4C29, #F0A14A calc(var(--heart-p) * 100%));
-          box-shadow: inset 0 0 calc(8px + var(--heart-p) * 20px) rgba(216,117,38,calc(0.08 + var(--heart-p) * 0.24)), 0 0 calc(6px + var(--heart-p) * 14px) rgba(216,117,38,calc(var(--heart-p) * 0.22));
+        /* The accepted dashboard stays geometrically fixed. A separate
+           overlay gives its perimeter one very slow breath while the actual
+           double beat remains inside the central ENDVERA core. */
+        [data-engine-frame-pulse] {
+          opacity: var(--frame-p);
+          box-shadow: inset 0 0 9px rgba(216,117,38,0.18), 0 0 12px rgba(216,117,38,0.1);
         }
-        [data-living-engine] {
-          border-color: color-mix(in srgb, #2A303B, #C98749 calc(var(--heart-p) * 30%));
-          box-shadow:
-            0 24px 70px rgba(0,0,0,0.58),
-            inset 0 0 calc(3px + var(--heart-p) * 7px) rgba(216,117,38,calc(0.025 + var(--heart-p) * 0.055)),
-            0 0 calc(2px + var(--heart-p) * 5px) rgba(216,117,38,calc(var(--heart-p) * 0.09));
+        /* THE LIVING HEART. The double beat must survive normal video: the
+           masses tighten one pixel, the seam flares wide, the aura breathes
+           and the interior itself takes one warm breath of light. All from
+           the ONE inherited ambient phase - no second clock. */
+        [data-core-heart] {
+          isolation: isolate;
+          background: color-mix(in srgb, #0C0F14, #2E2413 calc(var(--heart-p) * 100%));
+        }
+        [data-heart-shell] { transition: none; }
+        [data-heart-shell="left"] { transform: translateX(calc(var(--heart-p) * -1px)); }
+        [data-heart-shell="right"] { transform: translateX(calc(var(--heart-p) * 1px)); }
+        [data-heart-shell] { opacity: calc(1 - var(--heart-p) * 0.38); }
+        [data-heart-aura] {
+          opacity: calc(0.4 + var(--heart-p) * 0.6);
+          border-color: color-mix(in srgb, #4A3A26, #FFD28E calc(var(--heart-p) * 92%));
+          box-shadow: inset 0 0 calc(8px + var(--heart-p) * 34px) rgba(240,161,74,calc(0.07 + var(--heart-p) * 0.4)), 0 0 calc(6px + var(--heart-p) * 22px) rgba(216,117,38,calc(var(--heart-p) * 0.4));
+        }
+        [data-heart-seam] {
+          opacity: calc(0.48 + var(--heart-p) * 0.52);
+          background: linear-gradient(180deg, rgba(111,76,41,calc(0.2 + var(--heart-p) * 0.8)), #FFD28E, rgba(111,76,41,calc(0.2 + var(--heart-p) * 0.8)));
+          box-shadow: 0 0 calc(4px + var(--heart-p) * 20px) calc(var(--heart-p) * 5px) rgba(255,210,142,calc(0.2 + var(--heart-p) * 0.6));
+        }
+        [data-heart-node] {
+          opacity: calc(0.62 + var(--heart-p) * 0.38);
+          transform: translateX(-50%) rotate(45deg) scale(calc(0.84 + var(--heart-p) * 0.28));
+          box-shadow: 0 0 calc(4px + var(--heart-p) * 13px) rgba(240,161,74,calc(0.28 + var(--heart-p) * 0.48));
         }
         [data-heart-inlet] {
-          opacity: calc(0.62 + var(--heart-p) * 0.38);
-          box-shadow: inset 0 0 calc(3px + var(--heart-p) * 7px) rgba(240,161,74,0.72), 0 0 calc(4px + var(--heart-p) * 10px) rgba(216,117,38,0.42);
+          border-color: color-mix(in srgb, #6F4C29, #FFD28E calc(var(--heart-p) * 78%));
+          box-shadow: inset 0 0 calc(3px + var(--heart-p) * 7px) rgba(240,161,74,0.66), 0 0 calc(4px + var(--heart-p) * 9px) rgba(216,117,38,0.35);
         }
-        [data-heart-seam] { opacity: calc(0.62 + var(--heart-p) * 0.38); transform: scaleY(calc(0.92 + var(--heart-p) * 0.08)); transform-origin: 50% 50%; }
-        [data-heart-shell="left"] { transform: translateX(calc((1 - var(--engine-p, 1)) * -1px)); }
-        [data-heart-shell="right"] { transform: translateX(calc((1 - var(--engine-p, 1)) * 1px)); }
         [data-engine-evidence] { opacity: calc(0.25 + 0.75 * var(--engine-p, 1)); }
         [data-engine-verification] { opacity: calc(0.45 + 0.55 * var(--release, 1)); }
         [data-engine-result] {
@@ -994,10 +1449,19 @@ export function SimplicityActs({ copy, concierge, children }: {
           transform: translateX(calc((1 - var(--release, 1)) * -5px));
         }
         @media (prefers-reduced-motion: reduce) {
-          [data-heart-branch], [data-heart-shell], [data-heart-seam], [data-engine-verification], [data-engine-result], [data-power-fill] {
+          [data-engine-module], [data-engine-verification], [data-engine-result], [data-power-fill], [data-heart-shell] {
             opacity: 1;
             transform: none !important;
           }
+          [data-engine-vein-energy] { stroke-dashoffset: -92; opacity: 0.78; }
+          [data-heart-aura], [data-heart-seam], [data-heart-inlet], [data-heart-node] { opacity: 0.72; }
+          [data-heart-node] { transform: translateX(-50%) rotate(45deg); }
+          [data-engine-frame-pulse] { opacity: 0.12; }
+          /* the complete static composition: the heart lit but still, the
+             receiver drawn, and every dialogue window open and readable */
+          [data-core-heart] { background: color-mix(in srgb, #0C0F14, #2E2413 40%); }
+          [data-artifact-receiver] [data-port-glow=""] { opacity: 0.42; }
+          [data-a2-dialog] { opacity: 1; visibility: visible; transform: none; transition: none; }
         }
         /* SCENE 4 station illumination: a bump with 60% passage-memory,
            entirely a function of --walk. pre rises before the centre, post
@@ -1029,14 +1493,22 @@ export function SimplicityActs({ copy, concierge, children }: {
         @keyframes v7rise { from { opacity: 0; transform: translateY(14px); } }
         @keyframes v7seam { from { transform: scaleX(0); } }
         @keyframes v7rail { from { transform: scaleY(0); } }
+        /* the double beat holds its peaks long enough for a 30fps video to
+           keep several bright frames: rise, first beat held, short dip,
+           second beat held, decay - roughly 1.1s of the 5.2s cycle */
         @keyframes v7pulse {
-          0%, 62% { --energy-p: 0; --heart-p: 0; }
-          68% { --energy-p: 0.08; --heart-p: 1; }
-          72% { --energy-p: 0.18; --heart-p: 0.18; }
-          76% { --energy-p: 0.3; --heart-p: 0.72; }
-          82% { --energy-p: 0.48; --heart-p: 0; }
-          96% { --energy-p: 1; --heart-p: 0; }
-          100% { --energy-p: 1; --heart-p: 0; }
+          0% { --energy-p: 0; --heart-p: 0; --frame-p: 0.08; --packet-o: 0.35; }
+          34% { --energy-p: 0.34; --heart-p: 0; --frame-p: 0.12; --packet-o: 0.9; }
+          56% { --energy-p: 0.56; --heart-p: 0; --frame-p: 0.16; --packet-o: 1; }
+          60% { --energy-p: 0.6; --heart-p: 0.15; --frame-p: 0.2; --packet-o: 1; }
+          63% { --energy-p: 0.63; --heart-p: 1; --frame-p: 0.24; --packet-o: 1; }
+          66% { --energy-p: 0.66; --heart-p: 0.92; --frame-p: 0.24; --packet-o: 1; }
+          68% { --energy-p: 0.68; --heart-p: 0.3; --frame-p: 0.2; --packet-o: 0.98; }
+          71% { --energy-p: 0.71; --heart-p: 0.95; --frame-p: 0.22; --packet-o: 0.96; }
+          74% { --energy-p: 0.74; --heart-p: 0.85; --frame-p: 0.22; --packet-o: 0.94; }
+          80% { --energy-p: 0.8; --heart-p: 0; --frame-p: 0.14; --packet-o: 0.88; }
+          92% { --energy-p: 0.92; --heart-p: 0; --frame-p: 0.1; --packet-o: 0.64; }
+          100% { --energy-p: 1; --heart-p: 0; --frame-p: 0.08; --packet-o: 0.35; }
         }
       `}</style>
       <p className="sr-only">{copy.srStory}</p>
@@ -1141,12 +1613,17 @@ export function SimplicityActs({ copy, concierge, children }: {
                 pair. This is also the ONE being's dock: the concierge
                 launcher lives here in normal flow, and the escort engine
                 tracks its document-space home. */}
-            <div data-a2-post="" className="relative mt-[calc(var(--v7vh,100vh)*0.035)] flex w-full max-w-[560px] items-end justify-end pr-2 sm:mt-7">
-              <span aria-hidden className="absolute bottom-0 left-1 right-1 h-px bg-gradient-to-r from-transparent via-[#C9A76A]/40 to-transparent" />
+            {/* phones reserve the whisper's room INSIDE the post row, so the
+                arrival hail can open above the being without touching the
+                statement that precedes it */}
+            <div data-a2-post="" className="relative mt-[calc(var(--v7vh,100vh)*0.02)] flex w-full max-w-[560px] items-end justify-end pr-2 pt-[60px] sm:mt-7 sm:pt-0">
+              {/* the deck A2 walks from his post to the column: a REGISTERED
+                  conductor, so the route's first leg rides painted ground */}
+              <span aria-hidden data-a2-rail="" className="absolute bottom-0 left-1 right-1 h-px bg-gradient-to-r from-transparent via-[#C9A76A]/40 to-transparent" />
               {/* the deck continues past the box and fades - the one quiet
                   counterweight the desktop's right wing carries (C's 15%:
                   a subordinate line, never a subject) */}
-              <span aria-hidden className="absolute bottom-0 left-full hidden h-px w-[44vw] max-w-[500px] bg-gradient-to-r from-[#C9A76A]/25 to-transparent sm:block" />
+              <span aria-hidden data-a2-rail="" className="absolute bottom-0 left-full hidden h-px w-[44vw] max-w-[500px] bg-gradient-to-r from-[#C9A76A]/25 to-transparent sm:block" />
               <A2Concierge copy={concierge} />
             </div>
             {/* THE INTAKE SLOT: the request field MILLED into the console -
@@ -1225,18 +1702,18 @@ export function SimplicityActs({ copy, concierge, children }: {
         </div>
         {/* the drop: from the console port straight down out of the act -
             act 2's reserved escort column continues the same line */}
-        <span aria-hidden data-rail="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-conductor-segment="intake" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+        <span aria-hidden data-rail="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="origin" data-conductor-segment="intake" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
           <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] to-[#C9A76A]/45 shadow-[0_0_8px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-intake, 0))" }} />
           <i data-energy-packet="" />
         </span>
       </section>
 
       {/* ── ACT 2 — the gauntlet, child-simple, bounded grid ─────────── */}
-      <section data-act="2" data-v7-sem="problem" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:block sm:min-h-0 sm:py-[7vh]">
+      <section data-act="2" data-v7-sem="problem" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:block sm:min-h-0 sm:py-[5vh]">
         {/* the execution datum, drawn: the same derived x as the anchors
             (87% of the padded content box) - this hairline IS the reserved
             escort column made visible, continuing the console's out-rail */}
-        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-conductor-segment="problem" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="burden" data-conductor-segment="problem" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
           <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-problem, 0))" }} />
           <i data-energy-packet="" />
         </span>
@@ -1288,14 +1765,17 @@ export function SimplicityActs({ copy, concierge, children }: {
               </span>
             ))}
           </div>
+          {/* the reserved band where A2 pauses and his window opens: real
+              layout space, so the dialogue can never cover the fragments */}
+          <A2Dialogue beat="probleme" label={copy.engine.supervisor} line={concierge.guide.problem} />
           {reduced && <StaticArtifact state="request" className="mt-4" />}
         </div>
       </section>
 
       {/* ── SOLUTION — Endvera takes the request ───────────────────── */}
-      <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*0.95)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.12)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
+      <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*0.95)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.12)] sm:min-h-0 sm:justify-start sm:py-[5vh]">
         {/* the datum continues through the handover act */}
-        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-conductor-segment="engine" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="handoff" data-conductor-segment="engine" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
           <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-engine, 0))" }} />
           <i data-energy-packet="" />
         </span>
@@ -1325,14 +1805,14 @@ export function SimplicityActs({ copy, concierge, children }: {
             </div>
             <div aria-hidden className="relative mt-5 flex items-center gap-3">
               <span className="grid h-8 w-12 place-items-center rounded-[4px] border border-[#6F4C29] bg-[#15110B] font-mono text-[9px] text-[#C9A76A]">IN</span>
-              <span data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="relative h-px flex-1 overflow-hidden bg-[#3A3020]">
+              <span data-main-vein="" data-vein-vessel="" data-vein-axis="x" data-flow-step="handoff" className="relative h-px flex-1 overflow-hidden bg-[#3A3020]">
                 <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
                 <i data-energy-packet="" />
               </span>
               <span data-port="" className="relative h-9 w-9 rounded-[5px] border border-[#6F4C29] bg-[#0D1015] shadow-[inset_0_0_0_3px_#171A20]">
                 <i className="absolute inset-y-2 left-1/2 w-px -translate-x-1/2 bg-[#D87526]" />
               </span>
-              <span data-heart-feed="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute left-full top-1/2 h-px w-[90px] -translate-y-1/2 overflow-hidden sm:w-16">
+              <span data-heart-feed="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" data-flow-step="approach" className="absolute left-full top-1/2 h-px w-[90px] -translate-y-1/2 overflow-hidden sm:w-16">
                 <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
                 <i data-energy-packet="" />
               </span>
@@ -1340,9 +1820,12 @@ export function SimplicityActs({ copy, concierge, children }: {
             <p className="mt-3 border-t border-[#292E38] pt-2 font-mono text-[9px] uppercase tracking-[0.11em] text-[#8C7A58]">→ {copy.engine.title}</p>
             <span aria-hidden className="absolute bottom-0 left-4 right-0 h-px bg-gradient-to-r from-[#D87526] via-[#C9A76A]/60 to-transparent" />
           </div>
-          <div aria-hidden className="relative mt-[calc(var(--v7vh,100vh)*0.02)] h-[64px] sm:col-span-2 sm:mt-7">
-            <span data-v7-anchor="solution" className="absolute left-[87%] top-[30px] h-px w-px" />
+          <div aria-hidden className="relative mt-[calc(var(--v7vh,100vh)*0.02)] h-[10px] sm:col-span-2 sm:mt-4">
+            <span data-v7-anchor="solution" className="absolute left-[87%] top-[6px] h-px w-px" />
             {reduced && <StaticArtifact state="request" className="absolute left-[38%] top-0" />}
+          </div>
+          <div className="sm:col-span-2">
+            <A2Dialogue beat="perimetre" label={copy.engine.supervisor} line={concierge.guide.solution} />
           </div>
         </div>
       </section>
@@ -1352,15 +1835,19 @@ export function SimplicityActs({ copy, concierge, children }: {
           from above through chip decor only, and while the section is
           pinned the pair rides a stable corridor that no headline or
           station text ever enters. */}
-      <section data-act="3" data-v7-sem="how" className={reduced ? "relative" : "relative h-[calc(var(--v7vh,100vh)*1.8)] sm:h-[170vh]"}>
+      {/* the act owns enough scroll that the station tour, the arrival
+          pause, the plate's descent, the port closing and A2's bay descent
+          each survive at least one whole normal gesture */}
+      <section data-act="3" data-v7-sem="how" className={reduced ? "relative" : "relative h-[calc(var(--v7vh,100vh)*3.1)] sm:h-[230vh]"}>
         {/* the HOW plateau: its heading stays with its own stations for the
             whole act, exactly like the other mobile plateaus */}
         <div data-v7-stage="" className={reduced ? "" : "sticky top-0 flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center sm:min-h-screen"}>
-          <div className={`mx-auto w-full max-w-[1180px] px-6 ${reduced ? "py-[6vh]" : "flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center gap-[calc(var(--v7vh,100vh)*0.045)] pb-[6vh] pt-[6vh] sm:min-h-screen sm:gap-[6vh] sm:pb-[8vh] sm:pt-[8vh]"}`}>
+          <div className={`relative mx-auto w-full max-w-[1180px] px-6 ${reduced ? "py-[6vh]" : "flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center gap-[calc(var(--v7vh,100vh)*0.025)] pb-[4vh] pt-[4vh] sm:min-h-screen sm:gap-[3.5vh] sm:pb-[6vh] sm:pt-[6vh]"}`}>
             <h2 className="max-w-[14ch] text-[clamp(1.15rem,3vw,2.1rem)] font-semibold leading-[1.2] tracking-[-0.03em] sm:max-w-[72%]">
               <AccentLine text={copy.act3.h} accent={copy.act3.accent} />
             </h2>
-            <div data-v7-lane="" className="relative h-[120px] sm:h-[44px]">
+            <A2Dialogue beat="moteur" align="drop" label={copy.engine.supervisor} line={concierge.guide.run} />
+            <div data-v7-lane="" className="relative h-[76px] sm:h-[44px]">
               <div className="absolute inset-x-0 top-[22px] h-px bg-gradient-to-r from-transparent via-[#6F4C29]/45 to-transparent">
                 <span
                   aria-hidden
@@ -1368,6 +1855,7 @@ export function SimplicityActs({ copy, concierge, children }: {
                   data-main-vein=""
                   data-vein-vessel=""
                   data-vein-axis="x"
+                  data-flow-step="approach"
                   data-conductor-segment="run"
                   className="absolute inset-0 origin-left bg-gradient-to-r from-transparent via-[#D87526] to-[#D87526]/25 opacity-80 shadow-[0_0_10px_rgba(216,117,38,0.42)] will-change-transform"
                 >
@@ -1375,12 +1863,23 @@ export function SimplicityActs({ copy, concierge, children }: {
                   <i data-energy-packet="" />
                 </span>
                 <span data-v7-anchor="walk-start" className="absolute right-[10%] top-0 h-px w-px" />
-                <span data-v7-anchor="walk-end" className="absolute right-[12%] top-0 h-px w-px sm:right-[6%]" />
+                <span data-v7-anchor="walk-end" className="absolute right-[13%] top-0 h-px w-px sm:left-1/2 sm:right-auto" />
               </div>
-              <span aria-hidden data-heart-drop="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="pointer-events-none absolute right-[13%] top-[22px] z-[1] h-[calc(100%+var(--v7vh,100vh)*0.08+72px)] overflow-hidden sm:left-1/2 sm:right-auto sm:h-[calc(100%+6vh+40px)] sm:-translate-x-1/2">
+              <span aria-hidden data-heart-drop="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="approach" className="pointer-events-none absolute right-[13%] top-[22px] z-[1] h-[calc(100%-22px+var(--v7vh,100vh)*0.045)] overflow-hidden sm:left-1/2 sm:right-auto sm:h-[calc(100%-22px+6vh)] sm:-translate-x-1/2">
                 <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
                 <i data-energy-packet="" />
               </span>
+              {/* the incoming conductor: the 87% column arrives ON the datum
+                  from above, overflowing the stage top so it visually joins
+                  the act-2b line across the section seam - and the painted
+                  elbow at the joint takes the turn as a curve */}
+              <span aria-hidden data-vein-inbound="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="curve" className="pointer-events-none absolute bottom-[calc(100%-22px)] right-[13%] z-0 h-[calc(var(--v7vh,100vh)*1.2)] w-px translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+                <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/30 via-[#D87526] to-[#C9A76A]/30 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-engine, 0))" }} />
+                <i data-energy-packet="" />
+              </span>
+              {/* desktop only: on phones the column and the drop share one x
+                  and the line simply continues straight through the datum */}
+              <span aria-hidden data-vein-elbow="" className="pointer-events-none absolute right-[13%] top-[23px] z-[2] hidden h-[14px] w-[14px] -translate-y-full rounded-br-[12px] border-b-2 border-r-2 border-[#D87526]/85 shadow-[2px_2px_8px_rgba(216,117,38,0.25)] sm:block" />
               {reduced && <StaticArtifact state="locked" className="absolute left-[58%] top-[-12px]" />}
             </div>
             {/* SCENE 4 (NARRATIVE): six stations on the datum. Each is a
@@ -1394,121 +1893,168 @@ export function SimplicityActs({ copy, concierge, children }: {
             {/* the stations are PHYSICAL MODULES on a shared platform - a
                 graphite body each, the rod rising to the datum, name plate
                 and role line inside. Substance, not thin text columns. */}
-            {/* On narrow screens A2 occupies only this dedicated supervisor
-                band. The machine below can therefore use the full content
-                width without rebuilding the proven R2.2 escort path. */}
-            <div data-living-engine="" data-heart-beat="" className="relative w-full overflow-hidden rounded-[12px] border border-[#2A303B] bg-[linear-gradient(150deg,#15181E,#0A0C10_72%)] p-2.5 shadow-[0_24px_70px_rgba(0,0,0,0.58)] sm:p-4">
-              {/* The intake spine ends at the heart's TOP port. It no longer
-                  runs through the machine and therefore cannot draw the
-                  rejected cross over the core copy. */}
-              <span aria-hidden data-engine-spine="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="pointer-events-none absolute right-[47px] top-0 z-[1] h-[228px] overflow-hidden sm:left-[49.4%] sm:right-auto sm:h-[78px] sm:-translate-x-1/2">
-                <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
+            {/* RESTORED 8a4d66c DASHBOARD. The accepted three-zone heart is
+                the visual authority. The living vein is grafted only into
+                reserved gaps and ports; it never crosses readable content. */}
+            <div data-living-engine="" data-heart-beat="" className="relative w-full rounded-[12px] border border-[#2A303B] bg-[linear-gradient(150deg,#15181E,#0A0C10_72%)] p-2.5 shadow-[0_24px_70px_rgba(0,0,0,0.58)] sm:p-4">
+              <span aria-hidden data-engine-frame-pulse="" className="pointer-events-none absolute inset-0 z-[5] rounded-[11px] border border-[#D87526]/45" />
+              {/* A2's service bay approach: the painted rail he rides from
+                  the datum down through the frame's own gate notch into the
+                  interior bay (desktop; on phones he follows the drop) */}
+              <span aria-hidden data-bay-approach="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="output" className="pointer-events-none absolute right-[53px] top-[calc(-3.5vh-22px)] z-[1] hidden h-[calc(3.5vh+22px+128px)] w-px overflow-hidden sm:block">
+                <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#C9A76A]/60 via-[#D87526]/70 to-[#C9A76A]/50" />
                 <i data-energy-packet="" />
               </span>
-              <div data-supervisor-band="" className="flex min-h-[96px] items-start justify-between gap-3 border-b border-[#252A33] pb-2.5 pr-[92px] pt-1 sm:min-h-12 sm:items-center sm:pr-0 sm:pt-0">
-                <div className="min-w-0">
-                  <p className={`${mono} text-[#C9A76A]`}>{copy.engine.title}</p>
-                  <p className="mt-1 text-[11px] leading-[1.35] text-[#929AA6] sm:text-[12px]">{copy.engine.handoff}</p>
+              <span aria-hidden data-bay-gate="" className="pointer-events-none absolute right-[47px] top-[-4px] z-[6] hidden h-[7px] w-[13px] rounded-[2px] border border-[#6F4C29] bg-[#15110A] sm:block" />
+              {/* the bay's exit: A2 leaves the machine by its bottom edge and
+                  the jog in act 4 returns him to the column */}
+              <span aria-hidden data-bay-exit="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="output" className="pointer-events-none absolute bottom-[calc(0px-var(--bay-exit-h,6vh))] right-[53px] z-[1] hidden h-[var(--bay-exit-h,6vh)] w-px overflow-hidden sm:block">
+                <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526]/70 to-[#C9A76A]/70" />
+                <i data-energy-packet="" />
+              </span>
+              <div data-engine-intake-zone="" className="relative -mx-2.5 sm:-mx-4">
+                <span aria-hidden data-engine-header-feed="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="curve" className="absolute -top-2.5 bottom-8 left-[87%] z-[2] -translate-x-1/2 overflow-hidden sm:-top-4 sm:left-1/2">
+                  <i data-vein-channel="" />
+                  <i data-energy-packet="" />
+                </span>
+                {/* THE REQUEST RECEIVER: a machined port on the frame's top
+                    edge. Its two lids are CLOSED at rest, open as the plate
+                    arrives (--gate), swallow it, and close behind it - all
+                    commanded by scroll, reversible, drawn before the plate
+                    ever moves so the reader sees a closed door first. */}
+                <span aria-hidden data-engine-feed-joint="" data-artifact-receiver="" className="absolute -top-[13px] left-[87%] z-[6] h-[14px] w-[26px] -translate-x-1/2 rounded-[3px] border border-[#6F4C29] bg-[#15110A] shadow-[0_0_9px_rgba(216,117,38,0.4)] sm:-top-[19px] sm:left-1/2">
+                  <i data-port-glow="" className="absolute inset-[2px] rounded-[2px] bg-gradient-to-b from-[#FFD28E]/80 to-[#D87526]/60" />
+                  <i data-port-lid="left" className="absolute inset-y-[2px] left-[2px] w-[10px] rounded-l-[2px] border-r border-[#3A3020] bg-[#1B1610]" />
+                  <i data-port-lid="right" className="absolute inset-y-[2px] right-[2px] w-[10px] rounded-r-[2px] border-l border-[#3A3020] bg-[#1B1610]" />
+                </span>
+                <div className="relative mx-2.5 flex min-h-[72px] items-start justify-between gap-3 border-b border-[#252A33] pb-2.5 pr-[72px] sm:mx-4 sm:min-h-0 sm:items-center sm:pr-0">
+                  <p className={`${mono} max-w-[22ch] text-[#C9A76A]`}>{copy.engine.title}</p>
+                  <span className="hidden shrink-0 items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-[#7F8793] sm:mr-[52px] sm:flex"><i aria-hidden className="h-1.5 w-1.5 rounded-[2px] bg-[#D87526] shadow-[0_0_10px_rgba(216,117,38,0.7)]" />live</span>
                 </div>
-                <span className="absolute right-2.5 top-2.5 w-[78px] border-l border-[#6F4C29] pl-2 font-mono text-[9px] uppercase tracking-[0.11em] text-[#D87526] sm:static sm:w-auto sm:shrink-0">{copy.engine.supervisor}</span>
+                <div data-engine-vein-lane="" aria-hidden className="relative h-8">
+                  <svg className="absolute inset-0 h-full w-full sm:hidden" viewBox="0 0 100 28" preserveAspectRatio="none">
+                    <path data-engine-vein-bed="" d="M87 0 C87 14 58 11 36 28" />
+                    <path data-engine-vein="" d="M87 0 C87 14 58 11 36 28" />
+                    <path data-engine-vein-energy="" data-flow-step="curve" pathLength="100" d="M87 0 C87 14 58 11 36 28" />
+                  </svg>
+                  {/* The first mobile column has a fixed 86px supervisor rail
+                      plus a 10px gap. This link closes the width-dependent
+                      distance from the curve to that column's true centre. */}
+                  <span
+                    aria-hidden
+                    data-mobile-vein-link=""
+                    data-main-vein=""
+                    data-vein-vessel=""
+                    data-vein-axis="x"
+                    data-flow-step="intake"
+                    className="absolute bottom-0 z-[6] -translate-y-1/2 overflow-hidden sm:hidden"
+                    style={{ left: "calc((100% - 96px) / 2)", right: "64%" }}
+                  >
+                    <i data-vein-channel="" />
+                    <i data-energy-packet="" />
+                  </span>
+                  <svg className="absolute inset-0 hidden h-full w-full sm:block" viewBox="0 0 100 28" preserveAspectRatio="none">
+                    <path data-engine-vein-bed="" d="M50 0 C50 8 50 18 50 28" />
+                    <path data-engine-vein="" d="M50 0 C50 8 50 18 50 28" />
+                    <path data-engine-vein-energy="" data-flow-step="curve" pathLength="100" d="M50 0 C50 8 50 18 50 28" />
+                  </svg>
+                </div>
               </div>
-
-              <div data-coordination-heart="" className="relative mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[minmax(150px,0.78fr)_minmax(320px,1.55fr)_minmax(160px,0.82fr)] sm:items-stretch">
-                {/* Three locks sit on the intake vein. They define the
-                    machine's boundary; they are not a competing dashboard. */}
-                <div data-engine-boundary="" className="relative grid grid-cols-3 gap-1.5 sm:grid-cols-1 sm:content-center">
-                  <p className="col-span-3 font-mono text-[9.5px] uppercase tracking-[0.13em] text-[#8C7A58] sm:col-span-1">{copy.engine.boundary}</p>
-                  {copy.engine.boundaryItems.map((item, i) => (
-                    <p key={item} className="relative min-w-0 border-l border-[#6F4C29] bg-[#12120F] px-2 py-2 text-[10px] leading-[1.3] text-[#C7AE78] sm:min-h-10">
-                      <span aria-hidden className="mr-1 font-mono text-[8px] text-[#D87526]">0{i + 1}</span>{item}
-                    </p>
-                  ))}
-                  <span aria-hidden data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute bottom-[-7px] left-0 right-0 overflow-hidden bg-[#3A3020]/70 sm:bottom-auto sm:left-auto sm:right-[-10px] sm:top-1/2 sm:h-[3px] sm:w-[12px]">
-                    <i data-vein-channel="" className="absolute inset-0 bg-[#D87526]" />
+              <div data-coordination-heart="" className="relative grid grid-cols-[minmax(0,1fr)_86px] gap-2.5 sm:grid-cols-[0.8fr_1.5fr_0.8fr] sm:items-stretch sm:px-[88px]">
+                <span aria-hidden data-engine-escort-junction="" className="pointer-events-none absolute left-[87%] top-0 z-[7] h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 rotate-45 border border-[#F0A14A] bg-[#17110A] shadow-[0_0_9px_rgba(216,117,38,0.68)] sm:left-auto sm:right-[33px]" />
+                <span aria-hidden data-engine-escort-branch="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" data-flow-step="intake" className="pointer-events-none absolute left-1/2 right-[37px] top-0 z-[2] hidden -translate-y-1/2 overflow-hidden sm:block">
+                  <i data-vein-channel="" />
+                  <i data-energy-packet="" />
+                </span>
+                <span aria-hidden data-engine-escort-rail="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="intake" className="pointer-events-none absolute bottom-0 left-[87%] top-0 z-[2] -translate-x-1/2 overflow-hidden sm:left-auto sm:right-[37px]">
+                  <i data-vein-channel="" />
+                  <i data-energy-packet="" />
+                </span>
+                <div data-engine-boundary="" className="relative col-start-1 row-start-1 overflow-visible rounded-[7px] border border-[#3B3324] bg-[#14130F] p-3 sm:col-auto sm:row-auto">
+                  {/* Mobile keeps the truthful boundary-first reading order.
+                      A reserved centre vessel continues behind its opaque lock
+                      plates, across the grid gap and into the core port. */}
+                  <span aria-hidden data-mobile-heart-bridge="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="intake" className="absolute -bottom-[21px] -top-[11px] left-1/2 z-0 -translate-x-1/2 overflow-hidden sm:hidden">
+                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#FFD28E] to-[#F0A14A]" />
                     <i data-energy-packet="" />
                   </span>
-                </div>
-
-                {/* The heart is an abstract machined join: two onyx masses,
-                    one amber seam, one route chamber and one evidence ledger. */}
-                <div data-engine-core="" className="relative min-h-[246px] overflow-hidden rounded-[10px] border border-[#3A4150] bg-[#0B0E13] p-3 pr-[106px] pt-10 sm:min-h-[270px] sm:p-4 sm:pt-10 sm:pr-4">
-                  <span aria-hidden data-heart-shell="left" className="absolute inset-y-0 left-0 w-[49.7%] bg-[linear-gradient(145deg,#191D24,#101319)]" />
-                  <span aria-hidden data-heart-shell="right" className="absolute inset-y-0 right-0 w-[49.7%] bg-[linear-gradient(215deg,#171A20,#0D1015)]" />
-                  <span aria-hidden data-heart-intake="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="absolute right-[36px] top-0 z-[4] h-[28px] overflow-hidden sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
-                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
-                    <i data-energy-packet="" />
-                  </span>
-                  {/* The proven escort corridor becomes a visible power bay
-                      instead of empty right-side space. A2 may travel over
-                      the vein; all readable/deliverable content stays left. */}
-                  <span aria-hidden data-supervisor-rail="" className="absolute inset-y-0 right-0 z-[1] w-[96px] border-l border-[#6F4C29]/35 bg-[linear-gradient(90deg,transparent,#15110B_72%)] sm:hidden">
-                    <i className="absolute left-4 right-4 top-[26%] h-px bg-[#6F4C29]/40" />
-                    <i className="absolute left-4 right-4 top-1/2 h-px bg-[#6F4C29]/35" />
-                    <i className="absolute left-4 right-4 top-[74%] h-px bg-[#6F4C29]/30" />
-                  </span>
-                  <span aria-hidden data-heart-seam="" className="absolute inset-y-3 right-[40px] z-[1] w-[2px] translate-x-1/2 bg-gradient-to-b from-transparent via-[#F0A14A] to-transparent shadow-[0_0_8px_rgba(216,117,38,0.28)] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
-                  <span aria-hidden data-heart-inlet="" className="absolute right-[33px] top-[21px] z-[5] h-[14px] w-[14px] rounded-[3px] border border-[#D87526] bg-[#17110A] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
-                  <span aria-hidden data-heart-aura="" className="pointer-events-none absolute inset-1 z-[3] rounded-[8px] border border-[#6F4C29]/60" />
-
-                  <div className="relative z-[2] mx-auto max-w-[310px] text-center">
-                    <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#8C7A58]">{copy.engine.route}</p>
-                    <p className="mt-1 font-mono text-[11px] font-semibold tracking-[0.14em] text-[#E2C486]">{copy.engine.core}</p>
-                    <p className="mt-1 text-[12px] leading-[1.4] text-[#A6ADB8]">{copy.engine.coreSub}</p>
+                  <p className="relative z-[1] inline-block bg-[#14130F] pr-2 font-mono text-[10.5px] uppercase tracking-[0.13em] text-[#8C7A58]">{copy.engine.boundary}</p>
+                  <div className="relative z-[1] mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-1">
+                    {copy.engine.boundaryItems.map((item) => <p key={item} className="min-w-0 rounded-[4px] border border-[#403622] px-2 py-2 text-[12px] leading-[1.35] text-[#C7AE78] sm:text-[10px]">{item}</p>)}
                   </div>
-
-                  <div className="relative z-[2] mt-3 grid gap-1.5 sm:grid-cols-2">
+                </div>
+                <div data-engine-core="" className="relative col-start-1 row-start-2 overflow-visible rounded-[9px] border border-[#3A4150] bg-[#0B0E13] p-3 pt-4 sm:col-auto sm:row-auto">
+                  <span aria-hidden data-heart-intake="" data-heart-inlet="" data-flow-step="intake" className="absolute left-1/2 top-[-10px] z-[4] h-[18px] w-[18px] -translate-x-1/2 overflow-hidden rounded-[4px] border border-[#D87526] bg-[#17110A]">
+                    <i data-vein-channel="" className="absolute inset-x-[7px] inset-y-[2px] bg-gradient-to-b from-[#FFD28E] via-[#F0A14A] to-[#D87526]" />
+                    <i data-energy-packet="" className="absolute inset-x-[5px] top-[2px] h-[6px] rounded-full bg-[#FFD28E]" />
+                  </span>
+                  <span aria-hidden data-heart-neck="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="intake" className="absolute left-1/2 top-[8px] z-[3] h-2 -translate-x-1/2 overflow-hidden">
+                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#FFD28E] to-[#F0A14A]" />
+                    <i data-energy-packet="" />
+                  </span>
+                  <div data-core-heart="" className="relative z-[2] grid min-h-[104px] place-items-center overflow-hidden rounded-[7px] border border-[#6F4C29] bg-[#0C0F14] px-2 py-3 text-center sm:min-h-[96px]">
+                    <span aria-hidden data-heart-shell="left" className="pointer-events-none absolute inset-y-0 left-0 z-0 w-[49.5%] bg-[linear-gradient(145deg,#20242D,#11151B_78%)]" />
+                    <span aria-hidden data-heart-shell="right" className="pointer-events-none absolute inset-y-0 right-0 z-0 w-[49.5%] bg-[linear-gradient(215deg,#1D2129,#0E1117_78%)]" />
+                    <span aria-hidden data-heart-seam="" className="pointer-events-none absolute inset-y-2 left-1/2 z-[1] w-[3px] -translate-x-1/2 bg-gradient-to-b from-[#6F4C29]/20 via-[#FFD28E] to-[#6F4C29]/20" />
+                    <span aria-hidden data-heart-aura="" className="pointer-events-none absolute inset-0 z-[1] rounded-[6px] border border-[#6F4C29]/60" />
+                    <span aria-hidden data-heart-node="" className="pointer-events-none absolute left-1/2 top-[11px] z-[4] h-[9px] w-[9px] border border-[#F0A14A] bg-[#17110A]" />
+                    <div className="relative z-[3] w-[88%] rounded-[5px] border border-[#292E38] bg-[#101319]/95 px-3 py-2">
+                      <p className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-[#8C7A58]">{copy.engine.route}</p>
+                      <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#E2C486]">{copy.engine.core}</p>
+                      <p className="mt-1 text-[12px] leading-[1.4] text-[#AAB1BC]">{copy.engine.coreSub}</p>
+                    </div>
+                  </div>
+                  <div data-engine-modules="" className="relative z-[2] mt-2 grid grid-cols-2 gap-1.5">
+                    {/* the mandate's grouped activations: models+software+
+                        browser light during the station tour, approved
+                        systems + human judgment during the plate's entry -
+                        two perceptible stops, never one indistinct sweep */}
                     {copy.act3.stations.map((s, i) => i === 5 ? null : (
                       <div
                         key={s.name}
-                        data-heart-branch=""
-                        className={`relative min-w-0 border-l px-2.5 py-1.5 ${i === 4 ? "border-[#A8642E] sm:col-span-2 sm:mx-auto sm:w-[72%]" : "border-[#343A45]"}`}
-                        style={{ "--m": `${(i / 5).toFixed(2)}` } as React.CSSProperties}
+                        data-engine-module=""
+                        className={`min-w-0 rounded-[5px] border border-[#262B35] bg-[#12151B] px-2.5 py-2 ${i === 4 ? "col-span-2" : ""}`}
+                        style={{ "--m": [0.05, 0.12, 0.19, 0.46, 0.56][i]?.toFixed(2) ?? "0.5" } as React.CSSProperties}
                       >
-                        <span aria-hidden className="absolute -left-[4px] top-[11px] h-[7px] w-[7px] rounded-[2px] border border-[#6F4C29] bg-[#1A150D]" />
-                        <p data-branch-title="" className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-[#C8CDD5] sm:text-[10px]">{s.name}</p>
-                        <p className="mt-0.5 text-[12px] leading-[1.35] text-[#9AA1AB] sm:text-[11px] sm:leading-[1.3]">{s.truth}</p>
-                        {i === 4 && <p className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.11em] text-[#D87526]">{copy.engine.whenNeeded}</p>}
+                        <p className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-[#C8CDD5] sm:text-[10px]">
+                          <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-[2px] border border-[#6F4C29] bg-[#1A150D]" />
+                          {s.name}
+                        </p>
+                        <p className="mt-0.5 break-words text-[12px] leading-[1.35] text-[#929AA6] sm:text-[11px]">{s.truth}</p>
                       </div>
                     ))}
                   </div>
-
-                  <div data-evidence-ledger="" data-engine-evidence="" className="relative z-[2] mt-3 border-t border-[#6F4C29]/55 pt-2">
-                    <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#D7B879]">{copy.engine.ledger}</p>
-                    <p className="mt-1 text-[10px] leading-[1.35] text-[#9AA1AB]">{copy.engine.evidence}</p>
-                    <span aria-hidden className="mt-2 grid grid-cols-5 gap-1">
-                      {[0, 1, 2, 3, 4].map((i) => <i key={i} className="h-[3px] bg-[#C9A76A]/55" />)}
-                    </span>
-                  </div>
+                  <p data-evidence-ledger="" data-engine-evidence="" className="relative z-[2] mt-2 border-t border-[#292E38] pt-2 font-mono text-[10px] uppercase tracking-[0.1em] text-[#A98B58]">← {copy.engine.evidence}</p>
+                  <span aria-hidden data-heart-output-mobile="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="output" className="absolute -bottom-[12px] left-1/2 z-[3] h-3 -translate-x-1/2 overflow-hidden sm:hidden">
+                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#FFD28E] to-[#C9A76A]" />
+                    <i data-energy-packet="" />
+                  </span>
+                  <span aria-hidden data-heart-output-desktop="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" data-flow-step="output" className="absolute -right-[12px] top-1/2 z-[3] hidden w-3 -translate-y-1/2 overflow-hidden sm:block">
+                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#FFD28E] to-[#C9A76A]" />
+                    <i data-energy-packet="" />
+                  </span>
                 </div>
-
-                <div data-verification-output="" className="relative mr-[106px] grid content-center gap-0 sm:mr-0">
-                  <div data-verification-gate="" data-engine-verification="" className="relative rounded-[7px] border border-[#6F4C29] bg-[#15110B] p-3">
-                    <span aria-hidden data-heart-output-mobile="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="absolute -top-3 left-1/2 h-3 -translate-x-1/2 overflow-hidden sm:hidden">
-                      <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] to-[#C9A76A]" />
-                      <i data-energy-packet="" />
-                    </span>
-                    <span aria-hidden data-heart-output-desktop="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute -left-3 top-1/2 hidden w-3 -translate-y-1/2 overflow-hidden sm:block">
-                      <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] to-[#C9A76A]" />
-                      <i data-energy-packet="" />
-                    </span>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#C9A76A]">{copy.act3.stations[5].name}</p>
-                    <p className="mt-1 text-[11px] leading-[1.4] text-[#A6ADB8]">{copy.engine.verification}</p>
+                <div className="relative col-start-1 row-start-3 grid gap-0 sm:col-auto sm:row-auto">
+                  <div data-engine-verification="" className="relative rounded-[7px] border border-[#6F4C29] bg-[#15110B] p-3">
+                    <span aria-hidden data-verification-inlet="" className="absolute left-1/2 top-[-6px] z-[3] h-[11px] w-[11px] -translate-x-1/2 rotate-45 border border-[#D87526] bg-[#17110A] shadow-[0_0_8px_rgba(216,117,38,0.45)] sm:left-[-6px] sm:top-1/2 sm:-translate-y-1/2" />
+                    <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-[#C9A76A]">{copy.act3.stations[5].name}</p>
+                    <p className="mt-1 text-[12px] leading-[1.4] text-[#A6ADB8] sm:text-[11px]">{copy.engine.verification}</p>
                     <span aria-hidden className="mt-2 block h-[2px] origin-left bg-[#1E7F5C]" style={{ transform: "scaleX(var(--release, 0))" }} />
-                    <span className="mt-1 block font-mono text-[8px] uppercase tracking-[0.12em] text-[#1E7F5C]">{copy.engine.pass}</span>
                   </div>
-                  <span aria-hidden data-result-feed="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="relative mx-auto h-3 overflow-hidden">
+                  <span aria-hidden data-result-feed="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="output" className="relative mx-auto h-3 overflow-hidden">
                     <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#C9A76A] to-[#1E7F5C]" />
                     <i data-energy-packet="" />
                   </span>
-                  <div data-engine-result="" className="relative overflow-hidden rounded-[7px] border border-[#C9A76A] bg-[#F3F0E8] p-3 text-[#17191D]">
-                    <span aria-hidden className="absolute inset-y-0 left-0 w-[3px] bg-[#C9A76A]" />
+                  <div data-engine-result="" className="relative overflow-visible rounded-[7px] border border-[#C9A76A] bg-[#F3F0E8] p-3 text-[#17191D]">
+                    <span aria-hidden data-result-inlet="" className="absolute left-1/2 top-[-6px] z-[3] h-[11px] w-[11px] -translate-x-1/2 rotate-45 border border-[#C9A76A] bg-[#17110A]" />
+                    <span aria-hidden className="absolute inset-y-0 left-0 w-[3px] overflow-hidden rounded-l-[6px] bg-[#C9A76A]" />
                     <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#6B5D3F]">ENDVERA · RESULT</p>
                     <p className="mt-1.5 text-[13px] font-semibold">✓ {copy.engine.result}</p>
                   </div>
                 </div>
               </div>
-              <span aria-hidden data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute bottom-0 left-0 right-0 overflow-hidden bg-[#372C1B]">
-                <i data-power-fill="" data-vein-channel="" className="block h-full origin-left bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#1E7F5C] shadow-[0_0_12px_rgba(216,117,38,0.55)]" style={{ transform: "scaleX(var(--power-run, 0))" }} />
+              <span aria-hidden data-main-vein="" data-vein-vessel="" data-vein-axis="x" data-flow-step="output" className="absolute bottom-0 left-0 right-0 overflow-hidden bg-[#372C1B]">
+                <i data-power-fill="" data-vein-channel="" className="block h-full origin-left bg-gradient-to-r from-[#D87526] via-[#FFD28E] to-[#1E7F5C] shadow-[0_0_12px_rgba(216,117,38,0.55)]" style={{ transform: "scaleX(var(--power-run, 0))" }} />
                 <i data-energy-packet="" />
               </span>
             </div>
@@ -1522,17 +2068,38 @@ export function SimplicityActs({ copy, concierge, children }: {
           palette's "passed" state and nothing else), 0.5 -> 1 the artifact
           seals and its frame closes. Defaults are 1, so no-JS and reduced
           readers always see the finished, checked scene. ─────────────── */}
-      <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.45)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[110vh] sm:justify-center sm:pb-16 sm:pt-6">
-        <span aria-hidden data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-conductor-segment="release" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+      {/* the bottom reserve holds the release deck far enough below the
+          resultat plateau that A2's walk to his post owns real scroll */}
+      <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.5)] w-full max-w-[1180px] flex-col px-6 pb-[calc(var(--v7vh,100vh)*0.24)] pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[118vh] sm:pb-[24vh] sm:pt-6">
+        {/* the release conductor: origin at the engine's exit jog above,
+            destination the example port below - never a floating end */}
+        <span aria-hidden data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-flow-step="release" data-conductor-segment="release" className="pointer-events-none absolute bottom-[calc(var(--v7vh,100vh)*0.06)] left-[calc(1.5rem+(100%-3rem)*0.87)] top-[calc(var(--v7vh,100vh)*-0.045)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15 sm:top-0">
           <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] via-[#C9A76A] to-[#1E7F5C] shadow-[0_0_9px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-release, 0))" }} />
           <i data-energy-packet="" />
         </span>
+        {/* the engine's exit: A2's bay leaves the frame bottom and jogs
+            back onto the 87% column through two painted elbows */}
+        <span aria-hidden data-vein-jog="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" data-flow-step="release" className="pointer-events-none absolute left-[calc(1.5rem+(100%-3rem)*0.87)] right-[77px] top-0 hidden h-px -translate-y-1/2 overflow-hidden sm:block">
+          <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#C9A76A]/70 to-[#D87526]/70" />
+          <i data-energy-packet="" />
+        </span>
+        <span aria-hidden data-vein-jog-elbow="" className="pointer-events-none absolute right-[70px] top-[1px] hidden h-[12px] w-[12px] -translate-y-full rounded-br-[10px] border-b-2 border-r-2 border-[#D87526]/75 sm:block" />
+        <span aria-hidden data-vein-jog-elbow="" className="pointer-events-none absolute left-[calc(1.5rem+(100%-3rem)*0.87)] top-0 hidden h-[12px] w-[12px] -translate-x-1/2 rounded-tl-[10px] border-l-2 border-t-2 border-[#D87526]/75 sm:block" />
+        {/* the example port: the released story's destination */}
+        <span aria-hidden data-example-port="" className="pointer-events-none absolute bottom-[calc(var(--v7vh,100vh)*0.06-5px)] left-[calc(1.5rem+(100%-3rem)*0.87)] h-[10px] w-[18px] -translate-x-1/2 rounded-[2px] border border-[#6F4C29] bg-[#15110A] shadow-[0_0_8px_rgba(216,117,38,0.3)]" />
+        {/* the release deck: the hairline A2 walks from the column to his
+            free post at the corner - origin the example port, destination
+            the post, role the supervisor's way home */}
+        <span aria-hidden data-release-deck="" data-a2-rail="" className="pointer-events-none absolute bottom-[calc(var(--v7vh,100vh)*0.06)] left-[calc(1.5rem+(100%-3rem)*0.87)] right-[calc((100%-100vw)/2+16px)] h-px bg-gradient-to-r from-[#C9A76A]/50 via-[#C9A76A]/25 to-[#C9A76A]/10" />
         {/* SCENE 5 — the review moment */}
-        <h2 className="sticky top-[8vh] z-10 -mx-3 w-[calc(87%-68px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:w-auto sm:max-w-[26ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
+        <h2 data-review-heading="" className="relative z-10 -mx-3 w-[calc(87%-68px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:m-0 sm:w-auto sm:max-w-[26ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <span className="block max-w-[14ch] sm:max-w-none">
             <AccentLine text={copy.review.h} accent={copy.review.accent} />
           </span>
         </h2>
+        <div className="mt-[14vh] sm:mt-[12vh]">
+          <A2Dialogue beat="jugement" label={copy.engine.supervisor} line={concierge.guide.review} />
+        </div>
         <div className="flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.05)] pt-[calc(var(--v7vh,100vh)*0.02)] sm:grid sm:max-w-[calc(87%-72px)] sm:flex-none sm:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] sm:items-start sm:gap-x-8 sm:gap-y-6 sm:pb-0 sm:pt-0">
           <p className="mt-2 max-w-[calc(87%-80px)] text-[clamp(0.95rem,1.4vw,1.1rem)] leading-[1.6] text-[#9AA1AB] sm:col-span-2 sm:mt-4 sm:max-w-[44ch]">{copy.review.sub}</p>
           {/* the review table: draft + standard + evidence, one exception
@@ -1623,8 +2190,14 @@ export function SimplicityActs({ copy, concierge, children }: {
             </div>
           </div>
 
+          {/* the result separates; A2 confirms it from beside the column.
+              This band lives inside the review grid (already capped at the
+              corridor), so the window runs flush to the band's edge. */}
+          <div className="sm:col-span-2 sm:mt-[10vh]">
+            <A2Dialogue beat="resultat" align="flush" label={copy.engine.supervisor} line={concierge.guide.outcome} />
+          </div>
           {/* the bridge into the real example: A2 presents it here */}
-          <div className="mt-8 pt-[calc(var(--v7vh,100vh)*0.02)] sm:col-span-2 sm:mt-4 sm:pt-0">
+          <div className="mt-2 pt-[calc(var(--v7vh,100vh)*0.02)] sm:col-span-2 sm:mt-0 sm:pt-0">
             <p className={`${mono} text-[#E2C486]`}>{copy.exampleIntro}</p>
             <span data-v7-anchor="example" aria-hidden className="relative left-[65%] top-3 block h-px w-px sm:left-[87%]" />
             {reduced && <StaticArtifact state="checked" className="mt-4" />}

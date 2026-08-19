@@ -218,8 +218,10 @@ export default async function Home({
         </SimplicityActs>
       </main>
 
-      {/* real routes under the world's coda - quiet, mono, indexable */}
-      <footer className="bg-[#08090b] px-5 pb-28 pt-2 sm:pb-10">
+      {/* real routes under the world's coda - quiet, mono, indexable.
+          The tall phone padding reserves the corner where the freed A2
+          opens its conclusion at the end-of-page stop. */}
+      <footer className="bg-[#08090b] px-5 pb-10 pt-2 max-[900px]:pb-[300px]">
         <nav className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e]">
           <Link href="/services" className="transition-colors hover:text-[#c9a76a]">{nav.footer.services}</Link>
           <Link href="/how-it-works" className="transition-colors hover:text-[#c9a76a]">{nav.footer.how}</Link>

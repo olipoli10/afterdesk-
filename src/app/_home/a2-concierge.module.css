@@ -21,17 +21,20 @@
   bottom: 1.25rem;
   z-index: 60;
 }
+/* The conclusion window opens ABOVE the being, in the corner column that
+   the layout keeps empty - never over the footer navigation beside it. */
 .dock[data-a2-free="on"] .sceneGuide {
   left: auto;
-  right: 68px;
-  bottom: 12px;
-  width: 190px;
+  right: 0;
+  bottom: 84px;
+  width: 196px;
 }
 .dock[data-a2-free="on"] .sceneGuide::after {
-  left: 100%;
-  top: 50%;
-  width: 0.55rem;
-  height: 1px;
+  left: auto;
+  right: 30px;
+  top: 100%;
+  width: 1px;
+  height: 0.55rem;
 }
 
 /* Scene copy is rendered once. data-a2-scene - written by the scroll
@@ -68,8 +71,11 @@
   opacity: 0.58;
 }
 .sceneGuide > span { display: none; }
-.dock[data-v7-escorting="on"] .sceneGuide,
-.dock[data-a2-free="on"] .sceneGuide { display: block; }
+/* The dialogue now belongs to the reserved in-flow windows during the whole
+   escorted story. The free being speaks only at the FINAL scene - its
+   conclusion invitation - so this floating panel can never sit over the
+   machine's content mid-journey. */
+.dock[data-a2-free="on"][data-a2-scene="final"] .sceneGuide { display: block; }
 
 /* During transport the machine itself carries the explanation. The large
    floating note used to cover the request, headline, stations and review
@@ -94,12 +100,20 @@
 /* At 200% zoom a desktop viewport is only ~720 CSS px wide. Keep the
    supervisor note on the inside of A2's reserved lane instead of letting
    the absolute bubble widen the document. Mobile keeps its compact
-   above-the-being composition below. */
+   above-the-being composition below. The conclusion follows the phone
+   rule here too: full-width final text means the window opens only at the
+   end-of-page stop, inside the footer's reserved corner. */
 @media (min-width: 641px) and (max-width: 900px) {
   .dock[data-v7-escorting="on"] .sceneGuide {
     left: auto;
     right: 70px;
     bottom: 10px;
+  }
+  .dock[data-a2-free="on"][data-a2-scene="final"] .sceneGuide {
+    display: none;
+  }
+  [data-v7-acts][data-v7-end="on"] .dock[data-a2-free="on"][data-a2-scene="final"] .sceneGuide {
+    display: block;
   }
 }
 
@@ -340,20 +354,38 @@
     width: auto;
     bottom: 0.9rem;
   }
+  /* the phone whisper opens ABOVE the being, inside the room the post row
+     reserves for it - never over the statement beside the post */
   .hail {
-    right: 66px;
-    bottom: 12px;
-    max-width: min(205px, calc(100vw - 108px));
+    right: 0;
+    bottom: 80px;
+    max-width: min(215px, calc(100vw - 96px));
     font-size: 0.64rem;
+  }
+  .hail::after {
+    left: auto;
+    right: 30px;
+    top: 100%;
+    width: 1px;
+    height: 0.5rem;
   }
   .dock[data-a2-free="on"] {
     right: 0.65rem;
     bottom: 0.75rem;
   }
-  .dock[data-a2-free="on"] .sceneGuide {
-    right: 70px;
-    bottom: 10px;
-    width: 180px;
+  /* on phones the final text flows full-width, so the conclusion opens
+     only at the end-of-page stop, inside the footer's reserved corner.
+     (The selector matches the global final-scene rule's specificity so the
+     phone suppression actually wins the cascade.) */
+  .dock[data-a2-free="on"] .sceneGuide,
+  .dock[data-a2-free="on"][data-a2-scene="final"] .sceneGuide {
+    display: none;
+    right: 0;
+    bottom: 80px;
+    width: 176px;
+  }
+  [data-v7-acts][data-v7-end="on"] .dock[data-a2-free="on"][data-a2-scene="final"] .sceneGuide {
+    display: block;
   }
   .sceneGuide {
     width: 124px;
