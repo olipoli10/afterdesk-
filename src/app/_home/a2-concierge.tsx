@@ -86,10 +86,13 @@ export const IDLE: Pose[][] = [
 ];
 
 const STORY_REACTIONS: Record<string, Pose[]> = {
+  problem: [{ hdx: -1, ex: -1 }, { hdx: -1, ey: 1 }, { ex: 1 }, {}],
   solution: [{ hy: -1, hdy: -1 }, { hy: -1, hdy: -1, ex: -1 }, { ex: -1 }, {}],
   run: [{ ex: 1 }, { ex: 1, ffy: -1 }, { ex: -1, bfy: -1 }, { ex: -1 }, {}],
   review: [{ hdx: -1, ex: -1 }, { hdx: -1, ex: -1 }, { ex: -1 }, {}],
   outcome: [{ hy: -1, hdy: -1, ffy: -1 }, { hy: -1, hdy: -1 }, { ffy: -1 }, {}],
+  example: [{ ex: 1 }, { hdx: 1, ex: 1 }, { hdx: 1 }, {}],
+  final: [{ hy: -1, hdy: -1 }, { hy: -1, hdy: -1, ex: -1 }, { ex: 1 }, {}],
 };
 
 /* Single-being guard: the DOM may never hold two A2 renders. */
@@ -157,7 +160,10 @@ function usePlayer(reduced: boolean) {
 
 export type ConciergeCopy = {
   ask: string; hail: string; title: string; intro: string;
-  guide: { hero: string; solution: string; run: string; review: string; outcome: string };
+  guide: {
+    hero: string; problem: string; solution: string; run: string;
+    review: string; outcome: string; example: string; final: string;
+  };
   suggestions: [string, string, string];
   answers: { verified: string; verifiedCite: string; verifiedHref: string;
              unknown: string; unavailable: string };
@@ -179,8 +185,7 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   /* the ONE being's location: launcher -> traveling -> panel and back */
   const [location, setLocation] = useState<"launcher" | "traveling" | "panel">("launcher");
   const [open, setOpen] = useState(false);
-  const [whisper, setWhisper] = useState<"guide" | "scene" | "ask" | null>(null);
-  const [guideScene, setGuideScene] = useState<keyof ConciergeCopy["guide"]>("hero");
+  const [whisper, setWhisper] = useState<"guide" | "ask" | null>(null);
   const [answer, setAnswer] = useState<"" | "verified" | "unknown" | "unavailable">("");
   const launcher = usePlayer(reduced);
   const panelA2 = usePlayer(reduced);
@@ -243,25 +248,22 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   }, [location, reduced]);
 
   /* The story engine owns travel and publishes only discrete scene changes.
-     This observer adds no clock: it resets any rest pose when escort begins,
-     then spends the existing 10fps player on one short reaction per scene. */
+     Every localized guide line is already rendered below; CSS selects the
+     line from data-a2-scene in the SAME paint as the engine. This observer
+     is deliberately only a posture reaction - never the copy-timing
+     authority, so A2 cannot explain a scene before the scene exists. */
   useEffect(() => {
     const dock = dockRef.current;
     if (!dock) return;
     let seen = "";
     const react = () => {
-      if (!dock.hasAttribute("data-v7-escorting")) {
+      if (!dock.hasAttribute("data-v7-escorting") && !dock.hasAttribute("data-a2-free")) {
         seen = "";
-        setWhisper((current) => current === "scene" ? null : current);
         return;
       }
       const scene = dock.getAttribute("data-a2-scene") ?? "";
       if (scene === seen) return;
       seen = scene;
-      if (scene in copy.guide) {
-        setGuideScene(scene as keyof ConciergeCopy["guide"]);
-        setWhisper("scene");
-      }
       launcherReset();
       if (!reduced && STORY_REACTIONS[scene]) launcherPlay(STORY_REACTIONS[scene]);
     };
@@ -269,7 +271,7 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
     observer.observe(dock, { attributes: true, attributeFilter: ["data-v7-escorting", "data-a2-scene"] });
     react();
     return () => observer.disconnect();
-  }, [copy.guide, launcherPlay, launcherReset, reduced]);
+  }, [launcherPlay, launcherReset, reduced]);
 
   /* guard runs after every location/open change - two beings must never
      coexist, including mid-transfer */
@@ -349,12 +351,17 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   return (
     <>
       {/* launcher: 44x44 semantic button carrying the 32px being */}
-      <div ref={dockRef} className={styles.dock} data-a2-dock="">
+      <div ref={dockRef} className={styles.dock} data-a2-dock="" data-a2-scene="hero">
         {whisper && !open && (
-          <span className={styles.hail} data-a2-whisper={whisper} data-a2-guide-scene={guideScene} aria-hidden="true">
-            {whisper === "ask" ? copy.hail : copy.guide[guideScene]}
+          <span className={styles.hail} data-a2-whisper={whisper} aria-hidden="true">
+            {whisper === "ask" ? copy.hail : copy.guide.hero}
           </span>
         )}
+        <span className={styles.sceneGuide} data-a2-scene-guide="" aria-hidden="true">
+          {Object.entries(copy.guide).map(([scene, line]) => (
+            <span key={scene} data-a2-guide-line={scene}>{line}</span>
+          ))}
+        </span>
         <button
           ref={launchRef}
           type="button"

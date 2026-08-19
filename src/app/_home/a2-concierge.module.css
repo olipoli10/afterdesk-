@@ -12,6 +12,85 @@
   gap: 0.55rem;
 }
 
+/* After the result is released, the SAME dock becomes the page guide again.
+   It is never cloned: the fixed placement simply frees the one existing A2
+   from the transport lane so it can be clicked at the final CTA. */
+.dock[data-a2-free="on"] {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 60;
+}
+.dock[data-a2-free="on"] .sceneGuide {
+  left: auto;
+  right: 68px;
+  bottom: 12px;
+  width: 190px;
+}
+.dock[data-a2-free="on"] .sceneGuide::after {
+  left: 100%;
+  top: 50%;
+  width: 0.55rem;
+  height: 1px;
+}
+
+/* Scene copy is rendered once. data-a2-scene - written by the scroll
+   authority in the same frame as the visual scene - selects exactly one
+   line. The panel is wide enough to read, but grows only into the already
+   reserved right-hand transport column. */
+.sceneGuide {
+  display: none;
+  position: absolute;
+  left: 0;
+  bottom: 82px;
+  width: 184px;
+  box-sizing: border-box;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(216, 117, 38, 0.48);
+  border-radius: 7px;
+  background: rgba(11, 13, 17, 0.97);
+  color: #f0d5a1;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.42), 0 0 22px rgba(216, 117, 38, 0.09);
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 0.68rem;
+  line-height: 1.42;
+  letter-spacing: 0.025em;
+  pointer-events: none;
+}
+.sceneGuide::after {
+  content: "";
+  position: absolute;
+  left: 38px;
+  top: 100%;
+  width: 1px;
+  height: 0.55rem;
+  background: #c9a76a;
+  opacity: 0.58;
+}
+.sceneGuide > span { display: none; }
+.dock[data-v7-escorting="on"] .sceneGuide,
+.dock[data-a2-free="on"] .sceneGuide { display: block; }
+.dock[data-a2-scene="hero"] [data-a2-guide-line="hero"],
+.dock[data-a2-scene="problem"] [data-a2-guide-line="problem"],
+.dock[data-a2-scene="solution"] [data-a2-guide-line="solution"],
+.dock[data-a2-scene="run"] [data-a2-guide-line="run"],
+.dock[data-a2-scene="review"] [data-a2-guide-line="review"],
+.dock[data-a2-scene="outcome"] [data-a2-guide-line="outcome"],
+.dock[data-a2-scene="example"] [data-a2-guide-line="example"],
+.dock[data-a2-scene="final"] [data-a2-guide-line="final"] { display: block; }
+
+/* At 200% zoom a desktop viewport is only ~720 CSS px wide. Keep the
+   supervisor note on the inside of A2's reserved lane instead of letting
+   the absolute bubble widen the document. Mobile keeps its compact
+   above-the-being composition below. */
+@media (min-width: 641px) and (max-width: 900px) {
+  .dock[data-v7-escorting="on"] .sceneGuide {
+    left: auto;
+    right: 70px;
+    bottom: 10px;
+  }
+}
+
 /* A2 speaks once at the door, then only on intent. The note is part of the
    hero post, not the transport lane: it disappears the instant escort begins
    so no floating chat bubble can cover the story. */
@@ -248,6 +327,22 @@
     bottom: 12px;
     max-width: min(205px, calc(100vw - 108px));
     font-size: 0.64rem;
+  }
+  .dock[data-a2-free="on"] {
+    right: 0.65rem;
+    bottom: 0.75rem;
+  }
+  .dock[data-a2-free="on"] .sceneGuide {
+    right: 70px;
+    bottom: 10px;
+    width: 180px;
+  }
+  .sceneGuide {
+    width: 124px;
+    bottom: 78px;
+    padding: 0.48rem 0.5rem;
+    font-size: 0.66rem;
+    line-height: 1.38;
   }
 }
 

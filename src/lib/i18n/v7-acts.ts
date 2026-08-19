@@ -28,7 +28,17 @@ export type V7ActsCopy = {
     manifest: [string, string, string, string, string];
   };
   solution: AccentedCopy & { eyebrow: string; sub: string };
-  engine: { title: string };
+  engine: {
+    title: string;
+    handoff: string;
+    boundary: string;
+    boundaryItems: [string, string, string];
+    core: string;
+    coreSub: string;
+    evidence: string;
+    verification: string;
+    result: string;
+  };
   exampleIntro: string;
   act2: AccentedCopy & { sub: string; fragments: [Fragment, Fragment, Fragment, Fragment, Fragment, Fragment] };
   act3: AccentedCopy & { stations: [Station, Station, Station, Station, Station, Station] };
@@ -71,7 +81,17 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       accent: "whole run.",
       sub: "Your request becomes a written scope. The engine selects the right capabilities, manages execution and exceptions, then routes the result for review.",
     },
-    engine: { title: "Coordination engine · live run" },
+    engine: {
+      title: "The coordination core · live run",
+      handoff: "Your request enters one coordinated run.",
+      boundary: "Boundary locked",
+      boundaryItems: ["Scope locked", "Price fixed", "Permissions approved"],
+      core: "ENDVERA CORE",
+      coreSub: "Routes each step to the capability it needs",
+      evidence: "Evidence returns to the core",
+      verification: "Checked against the scope you approved",
+      result: "Finished result",
+    },
     exampleIntro: "See what one request can become.",
     act2: {
       h: "The work breaks between the tools.",
@@ -90,12 +110,12 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       h: "AI, software and people. One coordinated run.",
       accent: "One coordinated run.",
       stations: [
-        { name: "Scope", truth: "defines the result, limits and fixed price" },
-        { name: "AI models", truth: "chooses and combines the right capabilities" },
-        { name: "Tools", truth: "creates, transforms and validates the work" },
-        { name: "Browser", truth: "works across approved web interfaces" },
-        { name: "Human expertise", truth: "handles judgment, exceptions and edge cases" },
-        { name: "Verification", truth: "checks the result against the approved scope" },
+        { name: "AI models", truth: "reason · compare · draft" },
+        { name: "Software & tools", truth: "create · transform · validate" },
+        { name: "Browser work", truth: "research · approved interfaces" },
+        { name: "Approved systems", truth: "authorized records · admin steps" },
+        { name: "Human judgment", truth: "exceptions · decisions" },
+        { name: "Verification gate", truth: "scope · evidence · status" },
       ],
     },
     act4: {
@@ -181,7 +201,17 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       accent: "toute l'exécution.",
       sub: "Votre demande devient un mandat écrit. Le moteur choisit les bonnes capacités, gère l'exécution et les exceptions, puis achemine le résultat en révision.",
     },
-    engine: { title: "Moteur de coordination · exécution active" },
+    engine: {
+      title: "Le cœur de coordination · exécution active",
+      handoff: "Votre demande entre dans une seule exécution coordonnée.",
+      boundary: "Périmètre verrouillé",
+      boundaryItems: ["Mandat gelé", "Prix fixe", "Accès approuvés"],
+      core: "CŒUR ENDVERA",
+      coreSub: "Achemine chaque étape vers la bonne capacité",
+      evidence: "Les preuves reviennent au cœur",
+      verification: "Vérifié selon le mandat approuvé",
+      result: "Résultat fini",
+    },
     exampleIntro: "Voyez ce qu'une seule demande peut devenir.",
     act2: {
       h: "Le travail se perd entre les outils.",
@@ -200,12 +230,12 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       h: "IA, logiciels et humains. Une seule exécution coordonnée.",
       accent: "Une seule exécution coordonnée.",
       stations: [
-        { name: "Portée", truth: "définit le résultat, les limites et le prix fixe" },
-        { name: "Modèles d'IA", truth: "choisit et combine les bonnes capacités" },
-        { name: "Outils", truth: "crée, transforme et valide le travail" },
-        { name: "Navigateur", truth: "agit dans les interfaces Web approuvées" },
-        { name: "Expertise humaine", truth: "gère le jugement, les exceptions et les cas limites" },
-        { name: "Vérification", truth: "vérifie le résultat contre la portée approuvée" },
+        { name: "Modèles d'IA", truth: "raisonner · comparer · rédiger" },
+        { name: "Logiciels et outils", truth: "créer · transformer · valider" },
+        { name: "Travail navigateur", truth: "recherche · interfaces approuvées" },
+        { name: "Systèmes approuvés", truth: "dossiers autorisés · tâches admin" },
+        { name: "Jugement humain", truth: "exceptions · décisions" },
+        { name: "Porte de vérification", truth: "mandat · preuves · statut" },
       ],
     },
     act4: {
@@ -291,7 +321,17 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       accent: "toda la ejecución.",
       sub: "Su solicitud se convierte en un alcance escrito. El motor elige las capacidades adecuadas, gestiona la ejecución y las excepciones, y encamina el resultado a revisión.",
     },
-    engine: { title: "Motor de coordinación · ejecución activa" },
+    engine: {
+      title: "Núcleo de coordinación · ejecución activa",
+      handoff: "Su solicitud entra en una sola ejecución coordinada.",
+      boundary: "Límite fijado",
+      boundaryItems: ["Alcance fijado", "Precio fijo", "Permisos aprobados"],
+      core: "NÚCLEO ENDVERA",
+      coreSub: "Dirige cada paso a la capacidad que necesita",
+      evidence: "La evidencia vuelve al núcleo",
+      verification: "Verificado contra el alcance aprobado",
+      result: "Resultado terminado",
+    },
     exampleIntro: "Vea en qué puede convertirse una solicitud.",
     act2: {
       h: "El trabajo se rompe entre las herramientas.",
@@ -310,12 +350,12 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       h: "IA, software y personas. Una ejecución coordinada.",
       accent: "Una ejecución coordinada.",
       stations: [
-        { name: "Alcance", truth: "define el resultado, los límites y el precio fijo" },
-        { name: "Modelos de IA", truth: "elige y combina las capacidades adecuadas" },
-        { name: "Herramientas", truth: "crea, transforma y valida el trabajo" },
-        { name: "Navegador", truth: "trabaja en interfaces web aprobadas" },
-        { name: "Experiencia humana", truth: "resuelve criterios, excepciones y casos límite" },
-        { name: "Verificación", truth: "comprueba el resultado contra el alcance aprobado" },
+        { name: "Modelos de IA", truth: "razonar · comparar · redactar" },
+        { name: "Software y herramientas", truth: "crear · transformar · validar" },
+        { name: "Trabajo en navegador", truth: "investigar · interfaces aprobadas" },
+        { name: "Sistemas aprobados", truth: "registros autorizados · tareas admin" },
+        { name: "Criterio humano", truth: "excepciones · decisiones" },
+        { name: "Puerta de verificación", truth: "alcance · evidencia · estado" },
       ],
     },
     act4: {
@@ -401,7 +441,17 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       accent: "buong run.",
       sub: "Nagiging nakasulat na scope ang request. Pinipili ng engine ang tamang kakayahan, pinamamahalaan ang execution at exceptions, saka dinadala ang resulta sa review.",
     },
-    engine: { title: "Coordination engine · active run" },
+    engine: {
+      title: "Coordination core · active run",
+      handoff: "Pumapasok ang request sa iisang coordinated run.",
+      boundary: "Naka-lock ang boundary",
+      boundaryItems: ["Naka-lock ang scope", "Fixed ang presyo", "Aprubado ang permissions"],
+      core: "ENDVERA CORE",
+      coreSub: "Dinadala ang bawat hakbang sa tamang kakayahan",
+      evidence: "Bumabalik ang evidence sa core",
+      verification: "Sinuri laban sa aprubadong scope",
+      result: "Tapos na resulta",
+    },
     exampleIntro: "Tingnan kung ano ang kayang maging resulta ng isang request.",
     act2: {
       h: "Nasira ang trabaho sa pagitan ng mga tool.",
@@ -420,12 +470,12 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       h: "AI, software at tao. Isang coordinated run.",
       accent: "Isang coordinated run.",
       stations: [
-        { name: "Scope", truth: "itinatakda ang resulta, limitasyon at fixed price" },
-        { name: "AI models", truth: "pinipili at pinagsasama ang tamang kakayahan" },
-        { name: "Tools", truth: "gumagawa, nagbabago at nagva-validate ng trabaho" },
-        { name: "Browser", truth: "gumagawa sa aprubadong web interfaces" },
-        { name: "Human expertise", truth: "humahawak ng judgment, exceptions at edge cases" },
-        { name: "Verification", truth: "sinusuri ang resulta laban sa aprubadong scope" },
+        { name: "AI models", truth: "reason · compare · draft" },
+        { name: "Software at tools", truth: "create · transform · validate" },
+        { name: "Browser work", truth: "research · approved interfaces" },
+        { name: "Approved systems", truth: "authorized records · admin steps" },
+        { name: "Human judgment", truth: "exceptions · decisions" },
+        { name: "Verification gate", truth: "scope · evidence · status" },
       ],
     },
     act4: {

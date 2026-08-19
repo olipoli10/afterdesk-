@@ -48,6 +48,15 @@ function subscribeReduced(cb: () => void) {
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
+type MotionScene = keyof ConciergeCopy["guide"];
+type MotionSnapshot = {
+  scene: MotionScene;
+  sceneP: number;
+  engineP: number;
+  release: number;
+  power: { intake: number; problem: number; engine: number; run: number; release: number; beat: number };
+};
+
 function AccentLine({ text, accent }: { text: string; accent: string }) {
   const at = text.indexOf(accent);
   if (at < 0) return <>{text}</>;
@@ -62,7 +71,11 @@ function AccentLine({ text, accent }: { text: string; accent: string }) {
 
 const ANCHOR_NAMES = ["request", "problem", "solution", "walk-start", "walk-end", "result", "example"] as const;
 
-export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierge: ConciergeCopy }) {
+export function SimplicityActs({ copy, concierge, children }: {
+  copy: V7ActsCopy;
+  concierge: ConciergeCopy;
+  children?: React.ReactNode;
+}) {
   const reduced = useSyncExternalStore(
     subscribeReduced,
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -96,6 +109,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
        sits at a comfortable viewport height, so the pacing holds on every
        track length. They depend on the layout, not on the scroll. */
     let yAppear = 0, yProblem = 0, ySolution = 0, yCarryStart = 0, yApproachEnd = 0, yExample = 0;
+    let exampleSceneY = Number.POSITIVE_INFINITY, finalSceneY = Number.POSITIVE_INFINITY, releaseY = Number.POSITIVE_INFINITY;
     let narrativeVh = 1, lastWidth = 0, adjusting = false;
     /* WHERE THE READER IS, kept up to date every frame. A resize event only
        fires AFTER the browser has relaid out and possibly moved the scroll
@@ -116,7 +130,8 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
        story deliberately puts the pair there. */
     type Plane = { mode: "flow" | "pinned" | "stage"; top: number; h: number; stickyTop: number; pinStart: number; pinEnd: number; left: number; right: number; fromY: number; untilY: number };
     let planes: Plane[] = [];
-    let escorting = false;
+    type DockMode = "home" | "escort" | "free";
+    let dockMode: DockMode = "home";
     let exitTimer = 0;
 
     /* NATURAL layout coordinates. getBoundingClientRect() returns where an
@@ -166,11 +181,14 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
        honest here). Refreshing it is not a structural remeasure. */
     const measureDockHome = () => {
       if (!dock) return;
+      const wasFree = dock.getAttribute("data-a2-free") === "on";
       const prev = dock.style.transform;
+      if (wasFree) dock.removeAttribute("data-a2-free");
       dock.style.transform = "";
       const btn = dock.querySelector<HTMLElement>("button") ?? dock;
       dockHomeDoc = { x: docLeft(btn), y: docTop(btn) };
       dock.style.transform = prev;
+      if (wasFree) dock.setAttribute("data-a2-free", "on");
     };
 
     const measure = () => {
@@ -200,6 +218,10 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           const el = root.querySelector<HTMLElement>(sel);
           if (el) out["plane:" + sel] = docTop(el);
         }
+        const exampleGuide = root.querySelector<HTMLElement>('[data-a2-guide="example"]');
+        const finalGuide = root.querySelector<HTMLElement>('[data-a2-guide="final"]');
+        if (exampleGuide) out.exampleGuideTop = docTop(exampleGuide);
+        if (finalGuide) out.finalGuideTop = docTop(finalGuide);
         return out;
       });
       const complete = ANCHOR_NAMES.every((n) => {
@@ -243,14 +265,16 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         yAppear = blockTop + Math.min(0.05 * blockHeight, narrativeVh * 0.35);
         yProblem = Math.max(yAppear + 1, A.problem.y - narrativeVh * 0.5);
         ySolution = Math.max(yProblem + 1, A.solution.y - narrativeVh * 0.5);
-        const solutionSection = actBoxes.find((b) => b.id === "2b");
         /* WHAT and PROBLEM already have their own complete visual evidence.
            A2 enters only as SOLUTION approaches, through the reserved carry
            column, and is fully present before that heading reaches the
            ownership zone. The entrance is scroll-driven, never timed. */
-        yCarryStart = Math.max(yProblem, (solutionSection?.top ?? A.solution.y) - narrativeVh * 0.96);
+        yCarryStart = Math.max(yAppear, yProblem - narrativeVh * 0.28);
         yApproachEnd = Math.max(ySolution + 1, pinStart);
         yExample = A.example.y - narrativeVh * 0.78;
+        exampleSceneY = (natural.exampleGuideTop ?? A.example.y) - narrativeVh * 0.42;
+        finalSceneY = (natural.finalGuideTop ?? root.offsetHeight + blockTop) - narrativeVh * 0.72;
+        releaseY = Math.max(yExample + narrativeVh * 0.72, exampleSceneY + narrativeVh * 0.12);
       }
       const planeSel = ['section[data-act="1"] h1', 'section[data-act="2"] h2', 'section[data-act="2b"] h2', 'section[data-act="3"] h2', 'section[data-act="4"] h2'];
       for (const sel of planeSel) {
@@ -314,19 +338,20 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       lastY = -1; /* force a recompute on the next frame */
     };
 
-    const setEscort = (on: boolean) => {
-      if (!dock || escorting === on) return;
-      escorting = on;
-      root.setAttribute("data-v7-escort", on ? "on" : "off");
-      if (on) {
-        if (exitTimer) { window.clearTimeout(exitTimer); exitTimer = 0; }
-        /* the launcher affordance stays home: no hail mid-story (P6) */
+    const setDockMode = (next: DockMode) => {
+      if (!dock || dockMode === next) return;
+      dockMode = next;
+      if (exitTimer) { window.clearTimeout(exitTimer); exitTimer = 0; }
+      root.setAttribute("data-v7-escort", next === "escort" ? "on" : "off");
+      if (next === "escort") {
+        dock.removeAttribute("data-a2-free");
         dock.setAttribute("data-v7-escorting", "on");
         dock.style.transition = "none";
         dock.style.opacity = "1";
       } else {
-        /* the being never glides across page content on release: it fades
-           where the story left it, snaps home invisible, fades back in */
+        /* One existing transition moves the SAME being between roles. At
+           release it fades at the result, becomes a fixed clickable guide,
+           then returns alone: the artifact continues without a clone. */
         dock.style.transition = "opacity 140ms linear";
         dock.style.opacity = "0";
         exitTimer = window.setTimeout(() => {
@@ -334,9 +359,10 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           dock.style.transition = "none";
           dock.style.transform = "translate3d(0,0,0)";
           dock.removeAttribute("data-v7-escorting");
-          dock.removeAttribute("data-a2-scene");
           dock.removeAttribute("data-a2-gait");
           dock.style.removeProperty("--a2-travel-y");
+          if (next === "free") dock.setAttribute("data-a2-free", "on");
+          else dock.removeAttribute("data-a2-free");
           requestAnimationFrame(() => {
             dock.style.transition = "opacity 180ms linear";
             dock.style.opacity = "1";
@@ -581,6 +607,39 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       return lane[i] + (lane[i + 1] - lane[i]) * f;
     };
 
+    /* ONE semantic snapshot drives the character, conductor and core. It is
+       pure: the same scroll position always yields the same scene and the
+       same machine state, forward or backward. */
+    const snapshotAt = (y: number): MotionSnapshot => {
+      const between = (from: number, to: number) => clamp01((y - from) / Math.max(1, to - from));
+      let scene: MotionScene = "hero";
+      let sceneP = between(blockTop, yCarryStart);
+      if (y >= yCarryStart && y < ySolution) { scene = "problem"; sceneP = between(yCarryStart, ySolution); }
+      else if (y >= ySolution && y < yApproachEnd) { scene = "solution"; sceneP = between(ySolution, yApproachEnd); }
+      else if (y >= yApproachEnd && y <= pinEnd) { scene = "run"; sceneP = between(yApproachEnd, pinEnd); }
+      else if (y > pinEnd && y < yExample) { scene = "review"; sceneP = between(pinEnd, yExample); }
+      else if (y >= yExample && y < exampleSceneY) { scene = "outcome"; sceneP = between(yExample, exampleSceneY); }
+      else if (y >= exampleSceneY && y < finalSceneY) { scene = "example"; sceneP = between(exampleSceneY, finalSceneY); }
+      else if (y >= finalSceneY) { scene = "final"; sceneP = 1; }
+      const engineP = between(ySolution, Math.max(ySolution + 1, pinEnd));
+      const release = between(yExample, releaseY);
+      return {
+        scene,
+        sceneP,
+        engineP,
+        release,
+        power: {
+          intake: between(blockTop, yCarryStart),
+          problem: between(yCarryStart, ySolution),
+          engine: between(ySolution, yApproachEnd),
+          run: between(yApproachEnd, Math.max(yApproachEnd + 1, pinEnd)),
+          release,
+          /* a pulse sampled from scroll distance, never wall-clock time */
+          beat: 0.42 + Math.abs(Math.sin(y / 42)) * 0.58,
+        },
+      };
+    };
+
     const frame = () => {
       raf = 0;
       const y = window.scrollY;
@@ -588,6 +647,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       lastY = y;
       if (!A) return; /* disarmed loudly; guards catch data-v7-engine */
       const g = clamp01((y - blockTop) / blockHeight);
+      const snapshot = snapshotAt(y);
       root.style.setProperty("--g", g.toFixed(4));
       /* far-fabric parallax: written by THIS same frame on the same rAF -
          depth without a second clock, compositor-only (transform) */
@@ -600,7 +660,16 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       const walk = pinEnd > pinStart ? clamp01((y - pinStart) / (pinEnd - pinStart)) : 0;
       root.style.setProperty("--walk", walk.toFixed(4));
       root.style.setProperty("--seal", clamp01((y - pinEnd) / (narrativeVh * 0.4)).toFixed(4));
-
+      root.style.setProperty("--scene-p", snapshot.sceneP.toFixed(4));
+      root.style.setProperty("--engine-p", snapshot.engineP.toFixed(4));
+      root.style.setProperty("--release", snapshot.release.toFixed(4));
+      root.style.setProperty("--power-intake", snapshot.power.intake.toFixed(4));
+      root.style.setProperty("--power-problem", snapshot.power.problem.toFixed(4));
+      root.style.setProperty("--power-engine", snapshot.power.engine.toFixed(4));
+      root.style.setProperty("--power-run", snapshot.power.run.toFixed(4));
+      root.style.setProperty("--power-release", snapshot.power.release.toFixed(4));
+      root.style.setProperty("--power-beat", snapshot.power.beat.toFixed(4));
+      if (root.getAttribute("data-v7-scene") !== snapshot.scene) root.setAttribute("data-v7-scene", snapshot.scene);
 
       /* WHERE THE PAIR IS. The lane already answered this question for every
          scroll position, from the real layout: it is clear of headline type,
@@ -611,7 +680,8 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       const vx = d.vx;
       const vy = laneAt(y);
       const so = d.so;
-      const storyActive = so > 0.01 && y >= yAppear;
+      const storyActive = so > 0.01 && y >= yCarryStart && y < releaseY;
+      const freeActive = y >= releaseY;
 
       slip.style.transform = `translate3d(${vx.toFixed(1)}px, ${vy.toFixed(1)}px, 0)`;
       slip.style.opacity = so.toFixed(3);
@@ -626,17 +696,19 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       }
 
       if (dock && dockHomeDoc) {
-        setEscort(storyActive);
+        setDockMode(freeActive ? "free" : storyActive ? "escort" : "home");
+        if (dock.getAttribute("data-a2-scene") !== snapshot.scene) dock.setAttribute("data-a2-scene", snapshot.scene);
         if (storyActive) {
           /* A2's walk is driven by the SAME scroll authority as the route.
              Four integer compositor positions form a quiet step cycle; when
              scroll stops, the being stops. Reverse scroll plays it backward.
              Scene attributes change only at narrative boundaries and let the
              existing sprite player spend one short reaction there. */
-          const scene = y < yApproachEnd ? "solution" : y <= pinEnd ? "run" : y < yExample ? "review" : "outcome";
-          if (dock.getAttribute("data-a2-scene") !== scene) dock.setAttribute("data-a2-scene", scene);
-          const step = [0, -2, -1, 0][Math.abs(Math.floor(y / 18)) % 4];
-          dock.setAttribute("data-a2-gait", String(Math.abs(Math.floor(y / 18)) % 4));
+          const nextD = desire(y + 2);
+          const moving = Math.hypot(nextD.vx - vx, laneAt(y + 2) - vy) > 0.18;
+          const phase = moving ? Math.abs(Math.floor((y - yCarryStart) / 18)) % 4 : 0;
+          const step = [0, -2, -1, 0][phase];
+          dock.setAttribute("data-a2-gait", String(phase));
           dock.style.setProperty("--a2-travel-y", `${step}px`);
           /* integer-pixel escort, trailing beside the slip, never covering.
              The being keeps its painted 64px and the SAME clearances the
@@ -647,9 +719,10 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           const tx = Math.round(vx - 60 - (dockHomeDoc.x - sx));
           const ty = Math.round(vy - 35 - (dockHomeDoc.y - y));
           dock.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
-          /* the being fades with its plate, never apart from it: one
-             composition, one opacity, so the two can never disagree */
-          dock.style.opacity = so.toFixed(3);
+          dock.style.opacity = "1";
+        } else if (freeActive) {
+          dock.removeAttribute("data-a2-gait");
+          dock.style.removeProperty("--a2-travel-y");
         }
       }
     };
@@ -728,6 +801,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         dock.style.opacity = "";
         dock.style.removeProperty("--a2-travel-y");
         dock.removeAttribute("data-v7-escorting");
+        dock.removeAttribute("data-a2-free");
         dock.removeAttribute("data-a2-scene");
         dock.removeAttribute("data-a2-gait");
       }
@@ -735,13 +809,14 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       /* the armed marker must not survive a flip to reduced motion */
       root.removeAttribute("data-v7-engine");
       root.removeAttribute("data-v7-escort");
+      root.removeAttribute("data-v7-scene");
     };
   }, [reduced]);
 
   const mono = "font-mono text-[11px] uppercase tracking-[0.16em]";
 
   return (
-    <div ref={rootRef} data-v7-acts="" className="relative bg-[#08090B] text-[#F7F6F3]">
+    <div ref={rootRef} data-v7-acts="" className="relative overflow-x-clip bg-[#08090B] text-[#F7F6F3]">
       {/* while the being escorts the slip, its launcher hail stays silent -
           the affordance belongs to the resting dock, not to the story.
           P8.1: during the story the being doubles (integer scale, feet
@@ -812,6 +887,42 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         }
         @media (prefers-reduced-motion: reduce) {
           [data-await-sweep] { animation: none; transform: rotate(0.12turn); }
+        }
+        /* The conductor is the site's nervous system. Every bright segment
+           is powered by scroll-owned variables from the single frame loop;
+           the beat is distance-sampled, so it stops when the reader stops. */
+        [data-power-fill] {
+          opacity: calc(0.48 + var(--power-beat, 0.5) * 0.52);
+          will-change: transform, opacity;
+        }
+        /* One persistent coordination core. A single capability is active
+           at a time; completed modules keep a low amber memory, evidence
+           returns, verification turns green, and the ivory result exits. */
+        [data-engine-module] {
+          --ep: var(--engine-p, 1);
+          --pre: clamp(0, calc((var(--ep) - var(--m, 0)) * 9), 1);
+          --post: clamp(0, calc(((var(--m, 0) + 0.2) - var(--ep)) * 9), 1);
+          --active: min(var(--pre), var(--post));
+          --done: clamp(0, calc((var(--ep) - (var(--m, 0) + 0.1)) * 8), 1);
+          opacity: calc(0.55 + 0.45 * max(var(--active), var(--done)));
+          border-color: color-mix(in srgb, #262B35, #D87526 calc(var(--active) * 100%));
+          transform: translateX(calc((1 - var(--active)) * 2px));
+        }
+        [data-engine-module] > p:first-child > span {
+          background: color-mix(in srgb, #1A150D, #D87526 calc(var(--active) * 100%));
+          box-shadow: 0 0 calc(10px * var(--active)) rgba(216,117,38,0.65);
+        }
+        [data-engine-evidence] { opacity: calc(0.25 + 0.75 * var(--engine-p, 1)); }
+        [data-engine-verification] { opacity: calc(0.45 + 0.55 * var(--release, 1)); }
+        [data-engine-result] {
+          opacity: calc(0.28 + 0.72 * var(--release, 1));
+          transform: translateX(calc((1 - var(--release, 1)) * -5px));
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-engine-module], [data-engine-verification], [data-engine-result], [data-power-fill] {
+            opacity: 1;
+            transform: none !important;
+          }
         }
         /* SCENE 4 station illumination: a bump with 60% passage-memory,
            entirely a function of --walk. pre rises before the centre, post
@@ -1031,7 +1142,9 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         </div>
         {/* the drop: from the console port straight down out of the act -
             act 2's reserved escort column continues the same line */}
-        <span aria-hidden data-rail="" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 bg-gradient-to-b from-[#C9A76A]/70 to-[#C9A76A]/15" />
+        <span aria-hidden data-rail="" data-conductor-segment="intake" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+          <i data-power-fill="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] to-[#C9A76A]/45 shadow-[0_0_8px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-intake, 0))" }} />
+        </span>
       </section>
 
       {/* ── ACT 2 — the gauntlet, child-simple, bounded grid ─────────── */}
@@ -1039,7 +1152,9 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         {/* the execution datum, drawn: the same derived x as the anchors
             (87% of the padded content box) - this hairline IS the reserved
             escort column made visible, continuing the console's out-rail */}
-        <span aria-hidden data-lane-line="" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 bg-gradient-to-b from-[#C9A76A]/15 via-[#C9A76A]/25 to-[#C9A76A]/15" />
+        <span aria-hidden data-lane-line="" data-conductor-segment="problem" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+          <i data-power-fill="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-problem, 0))" }} />
+        </span>
         {/* THE TRANSPORT LANE, RESERVED IN THE LAYOUT ITSELF.
             This headline is STICKY and the content under it FLOWS, so any
             vertical gap between the two necessarily closes as the reader
@@ -1095,7 +1210,9 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       {/* ── SOLUTION — Endvera takes the request ───────────────────── */}
       <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*0.95)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.12)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
         {/* the datum continues through the handover act */}
-        <span aria-hidden data-lane-line="" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 bg-gradient-to-b from-[#C9A76A]/15 via-[#C9A76A]/25 to-[#C9A76A]/15" />
+        <span aria-hidden data-lane-line="" data-conductor-segment="engine" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+          <i data-power-fill="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-engine, 0))" }} />
+        </span>
         {/* the same reserved column: this sticky headline is the wall the
             escort was teleporting over, because it swept up through exactly
             the height the story wants the pair to occupy. Held out of the
@@ -1112,22 +1229,20 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             handover keeps the R2.1/R2.2 escort mechanics untouched. */}
         <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.035)] sm:mt-9 sm:grid sm:flex-none sm:grid-cols-[minmax(0,0.78fr)_minmax(380px,1.22fr)] sm:items-start sm:gap-10 sm:pb-0 sm:pt-0">
           <p className="max-w-[calc(87%-80px)] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB] sm:max-w-[44ch] sm:pt-2">{copy.solution.sub}</p>
-          <div data-casing="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] max-w-[calc(87%-72px)] rounded-[10px] border border-[#232830] bg-[linear-gradient(180deg,#15181E,#0E1116)] p-3 shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:mt-0 sm:max-w-none sm:p-4">
-            <p className={`${mono} mb-2.5 text-[#7A828E]`}>{copy.engine.title}</p>
-            <div className="relative flex flex-col gap-1.5">
-              {/* the thread: one amber line stitching the six slices */}
-              <span aria-hidden className="absolute bottom-2 left-[11px] top-2 w-px bg-gradient-to-b from-[#C9A76A]/60 via-[#C9A76A]/35 to-[#C9A76A]/60" />
-              {copy.act3.stations.map((s) => (
-                <div key={s.name} className="relative grid min-w-0 grid-cols-[7px_minmax(0,0.42fr)_minmax(0,1fr)] items-center gap-2.5 rounded-[5px] border border-[#262B35] bg-[#12151B] py-2 pl-2 pr-3">
-                  <span aria-hidden className="relative z-[1] h-[7px] w-[7px] shrink-0 rounded-[2px] border border-[#6F4C29] bg-[#1A150D]" />
-                  <span className={`${mono} min-w-0 text-[#A6ADB8]`}>{s.name}</span>
-                  <span className="min-w-0 text-[10px] leading-[1.35] text-[#737B87]">{s.truth}</span>
-                </div>
+          <div data-engine-boundary="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] max-w-[calc(87%-72px)] overflow-hidden rounded-[10px] border border-[#3A3020] bg-[linear-gradient(180deg,#17150F,#0E1116)] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:mt-0 sm:max-w-none sm:p-5">
+            <div className="flex items-center justify-between gap-4">
+              <p className={`${mono} text-[#D7B879]`}>{copy.engine.boundary}</p>
+              <span aria-hidden className="h-2 w-2 rounded-[2px] bg-[#D87526] shadow-[0_0_14px_rgba(216,117,38,0.62)]" />
+            </div>
+            <p className="mt-3 max-w-[32ch] text-[14px] leading-[1.5] text-[#C8CDD5]">{copy.engine.handoff}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              {copy.engine.boundaryItems.map((item, i) => (
+                <span key={item} className="flex min-h-10 items-center gap-2 rounded-[5px] border border-[#403622] bg-[#12120F] px-3 font-mono text-[10px] uppercase tracking-[0.11em] text-[#C9A76A]">
+                  <i aria-hidden className="not-italic text-[#D87526]">0{i + 1}</i>{item}
+                </span>
               ))}
             </div>
-            {/* (the desktop stub that once reached toward the lane ended in
-                open space and read as unfinished wiring - the casing's
-                internal thread and the handover itself carry the story) */}
+            <span aria-hidden className="absolute bottom-0 left-4 right-0 h-px bg-gradient-to-r from-[#D87526] via-[#C9A76A]/60 to-transparent" />
           </div>
           <div aria-hidden className="relative mt-[calc(var(--v7vh,100vh)*0.02)] h-[64px] sm:col-span-2 sm:mt-7">
             <span data-v7-anchor="solution" className="absolute left-[87%] top-[30px] h-px w-px" />
@@ -1154,9 +1269,12 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
                 <span
                   aria-hidden
                   data-v7-trail=""
+                  data-conductor-segment="run"
                   className="absolute inset-0 origin-left bg-gradient-to-r from-transparent via-[#D87526] to-[#D87526]/25 opacity-80 shadow-[0_0_10px_rgba(216,117,38,0.42)] will-change-transform"
                   style={reduced ? undefined : { transform: "scaleX(var(--walk, 0))" }}
-                />
+                >
+                  <i data-power-fill="" className="absolute inset-0 origin-left bg-[#F0A14A] shadow-[0_0_12px_rgba(216,117,38,0.65)]" style={reduced ? undefined : { transform: "scaleX(var(--power-run, 0))" }} />
+                </span>
                 <span data-v7-anchor="walk-start" className="absolute right-[10%] top-0 h-px w-px" />
                 <span data-v7-anchor="walk-end" className="absolute right-[12%] top-0 h-px w-px sm:right-[6%]" />
               </div>
@@ -1178,35 +1296,66 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
                 72px reach): at pin-exit the slip descends through this
                 zone, and R2.2 proved a column is the only reservation
                 that survives scrolling. */}
-            <div className="relative max-w-[calc(87%-72px)] rounded-[10px] border border-[#1E232B] bg-[#0D1015]/80 p-2.5 sm:max-w-[78%] sm:p-3">
+            <div data-living-engine="" className="relative -ml-4 w-[calc(100%-96px)] overflow-hidden rounded-[12px] border border-[#2A303B] bg-[linear-gradient(150deg,#15181E,#0A0C10_72%)] p-2.5 shadow-[0_24px_70px_rgba(0,0,0,0.58)] sm:ml-0 sm:w-full sm:p-4">
               {/* ONE column on mobile: at pin-exit the slip descends through
                   this block's rows, and a second column would put station
                   text inside the descent footprint (measured: the 128px
                   jump over "Verification"). Desktop keeps three columns -
                   its corridor never crosses the grid. */}
-              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3 sm:gap-2.5">
+              <div className="flex items-center justify-between gap-3 border-b border-[#252A33] pb-2.5">
+                <p className={`${mono} text-[#C9A76A]`}>{copy.engine.title}</p>
+                <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-[#7F8793]"><i aria-hidden className="h-1.5 w-1.5 rounded-[2px] bg-[#D87526] shadow-[0_0_10px_rgba(216,117,38,0.7)]" />live</span>
+              </div>
+              <div className="mt-2.5 grid gap-2.5 sm:grid-cols-[0.76fr_1.5fr_0.84fr] sm:items-stretch">
+                <div data-engine-boundary="" className="rounded-[7px] border border-[#3B3324] bg-[#14130F] p-2.5 sm:p-3">
+                  <p className="font-mono text-[9.5px] uppercase tracking-[0.13em] text-[#8C7A58]">{copy.engine.boundary}</p>
+                  <div className="mt-2 grid grid-cols-3 gap-1 sm:grid-cols-1 sm:gap-1.5">
+                    {copy.engine.boundaryItems.map((item) => <p key={item} className="min-w-0 rounded-[4px] border border-[#403622] px-1.5 py-1.5 text-[9px] leading-[1.3] text-[#C7AE78] sm:px-2 sm:text-[10px]">{item}</p>)}
+                  </div>
+                </div>
+                <div data-engine-core="" className="relative rounded-[8px] border border-[#3A4150] bg-[#0D1015] p-2.5 sm:p-3">
+                  <div className="relative overflow-hidden rounded-[6px] border border-[#6F4C29] bg-[#17130D] px-3 py-2.5 text-center">
+                    <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D87526] to-transparent" />
+                    <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#E2C486]">{copy.engine.core}</p>
+                    <p className="mt-1 text-[11px] leading-[1.35] text-[#9EA5AF] sm:text-[12px]">{copy.engine.coreSub}</p>
+                  </div>
+                  <div data-engine-modules="" className="mt-2 grid gap-1.5 sm:grid-cols-2">
                 {/* name ABOVE role on mobile: a side-by-side row starves the
                     role column and long Spanish/Tagalog words then OVERFLOW
                     their box straight into the escort corridor (measured:
                     fragments painted to x=245 from a box ending at 201).
                     Stacked, the role owns the platform's full width and
                     nothing can escape the reserved bound. */}
-                {copy.act3.stations.map((s, i) => (
+                {copy.act3.stations.map((s, i) => i === 5 ? null : (
                   <div
                     key={s.name}
-                    data-station=""
-                    className="min-w-0 rounded-[6px] border border-[#262B35] bg-[#12151B] px-2.5 py-1.5 sm:px-3 sm:pb-2.5 sm:pt-2"
-                    style={reduced ? undefined : ({ "--c": `${((i + 0.5) / 6).toFixed(3)}` } as React.CSSProperties)}
+                    data-engine-module=""
+                    className="min-w-0 rounded-[5px] border border-[#262B35] bg-[#12151B] px-2 py-1.5"
+                    style={{ "--m": `${(i / 5).toFixed(2)}` } as React.CSSProperties}
                   >
-                    <span aria-hidden data-strod="" className="hidden h-8 w-px bg-[#C9A76A] sm:mb-2 sm:block" />
-                    <p data-stname="" className={`${mono} flex items-center gap-1.5 text-[#E2C486]`}>
-                      <span aria-hidden className="h-[3px] w-[3px] shrink-0 rounded-[1px] bg-[#C9A76A] sm:hidden" />
+                    <p className="flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-[#C8CDD5] sm:text-[10px]">
+                      <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-[2px] border border-[#6F4C29] bg-[#1A150D]" />
                       {s.name}
                     </p>
-                    <p data-sttruth="" className="mt-0.5 min-w-0 break-words font-mono text-[9.5px] leading-[1.45] text-[#8A929D] sm:mt-1 sm:text-[10.5px]">{s.truth}</p>
+                    <p className="mt-0.5 break-words text-[10px] leading-[1.3] text-[#828A95] sm:text-[11px]">{s.truth}</p>
                   </div>
                 ))}
+                  </div>
+                  <p data-engine-evidence="" className="mt-2 border-t border-[#292E38] pt-2 font-mono text-[9px] uppercase tracking-[0.1em] text-[#A98B58]">← {copy.engine.evidence}</p>
+                </div>
+                <div className="grid gap-2">
+                  <div data-engine-verification="" className="rounded-[7px] border border-[#6F4C29] bg-[#15110B] p-2.5 sm:p-3">
+                    <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-[#C9A76A]">{copy.act3.stations[5].name}</p>
+                    <p className="mt-1 text-[10px] leading-[1.35] text-[#A6ADB8] sm:text-[11px]">{copy.engine.verification}</p>
+                    <span aria-hidden className="mt-2 block h-px origin-left bg-[#1E7F5C]" style={{ transform: "scaleX(var(--release, 0))" }} />
+                  </div>
+                  <div data-engine-result="" className="rounded-[7px] border border-[#C9A76A] bg-[#F3F0E8] p-2.5 text-[#17191D] sm:p-3">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#6B5D3F]">ENDVERA · RESULT</p>
+                    <p className="mt-1.5 text-[12px] font-semibold">✓ {copy.engine.result}</p>
+                  </div>
+                </div>
               </div>
+              <span aria-hidden className="absolute bottom-0 left-0 right-0 h-px bg-[#372C1B]"><i data-power-fill="" className="block h-px origin-left bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#1E7F5C] shadow-[0_0_12px_rgba(216,117,38,0.55)]" style={{ transform: "scaleX(var(--power-run, 0))" }} /></span>
             </div>
           </div>
         </div>
@@ -1219,6 +1368,9 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           seals and its frame closes. Defaults are 1, so no-JS and reduced
           readers always see the finished, checked scene. ─────────────── */}
       <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.45)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[110vh] sm:justify-center sm:pb-16 sm:pt-6">
+        <span aria-hidden data-conductor-segment="release" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+          <i data-power-fill="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] via-[#C9A76A] to-[#1E7F5C] shadow-[0_0_9px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-release, 0))" }} />
+        </span>
         {/* SCENE 5 — the review moment */}
         <h2 className="sticky top-[8vh] z-10 -mx-3 w-[calc(87%-68px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:w-auto sm:max-w-[26ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <span className="block max-w-[14ch] sm:max-w-none">
@@ -1295,10 +1447,6 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           {/* the bridge into the real example: A2 presents it here */}
           <div className="mt-8 pt-[calc(var(--v7vh,100vh)*0.02)] sm:col-span-2 sm:mt-4 sm:pt-0">
             <p className={`${mono} text-[#E2C486]`}>{copy.exampleIntro}</p>
-            <p data-a2-outcome-guide="" className="mt-3 inline-flex max-w-[calc(87%-72px)] items-center gap-2 rounded border border-[#6F4C29] bg-[#111319] px-2.5 py-2 font-mono text-[10px] leading-[1.35] text-[#D7B879]">
-              <span className="text-[#D87526]">A2 /</span>
-              <span>{concierge.guide.outcome}</span>
-            </p>
             <span data-v7-anchor="example" aria-hidden className="relative left-[65%] top-3 block h-px w-px sm:left-[87%]" />
             {reduced && <StaticArtifact state="checked" className="mt-4" />}
           </div>
@@ -1307,6 +1455,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
 
       {/* the ONE being lives inside this tree, at its hero post above the
           intake box - scoped ownership, rendered inside act 1 */}
+      {children}
     </div>
   );
 }

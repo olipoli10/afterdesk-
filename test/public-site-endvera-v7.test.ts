@@ -167,7 +167,7 @@ describe("ENDVERA x V7 transplant", () => {
     expect(engine).toMatch(/data-v7-trail[\s\S]*origin-left/);
     expect(engine).toMatch(/--a2-travel-y/);
     expect(engine, "the existing scroll authority publishes a four-phase gait").toMatch(
-      /setAttribute\(\s*["']data-a2-gait["']\s*,\s*String\(Math\.abs\(Math\.floor\(y\s*\/\s*18\)\)\s*%\s*4\)\s*\)/,
+      /const\s+phase\s*=\s*moving\s*\?\s*Math\.abs\(Math\.floor\(\(y\s*-\s*yCarryStart\)\s*\/\s*18\)\)\s*%\s*4\s*:\s*0/,
     );
     expect(engine).toMatch(/data-a2-scene/);
     expect(engine).toMatch(/translate3d\(0,\s*var\(--a2-travel-y/);
@@ -182,15 +182,15 @@ describe("ENDVERA x V7 transplant", () => {
     const css = read(A2_CSS);
     const copy = read(HOME_ASSEMBLY);
     const engine = read(ENGINE);
-    for (const scene of ["hero", "solution", "run", "review", "outcome"]) {
+    for (const scene of ["hero", "problem", "solution", "run", "review", "outcome", "example", "final"]) {
       expect(copy, `all four languages define the ${scene} supervision line`).toSatisfy(
         (source: string) => (source.match(new RegExp(`${scene}:\\s*[\"']`, "g")) ?? []).length === 4,
       );
     }
-    expect(a2).toMatch(/guideScene/);
-    expect(a2).toMatch(/copy\.guide\[guideScene\]/);
-    expect(a2).toMatch(/setWhisper\("scene"\)/);
-    expect(engine).toMatch(/data-a2-outcome-guide[\s\S]*concierge\.guide\.outcome/);
+    expect(a2).toMatch(/data-a2-scene-guide/);
+    expect(a2).toMatch(/data-a2-guide-line=\{scene\}/);
+    expect(a2).not.toMatch(/setWhisper\("scene"\)/);
+    expect(engine, "the guide speaks from the one A2, never a duplicate outcome label").not.toMatch(/data-a2-outcome-guide/);
     expect(engine, "scene supervision remains visible during escort").not.toMatch(
       /data-v7-escorting="on"[^}]*span\[aria-hidden\][^}]*display:\s*none/,
     );
@@ -199,6 +199,72 @@ describe("ENDVERA x V7 transplant", () => {
     expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-being/);
     expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-whisper/);
     expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-part[\s\S]*transform:\s*none/);
+  });
+
+  it("binds every A2 explanation to the scene that is actually being shown", () => {
+    const a2 = read(A2);
+    const copy = read(HOME_ASSEMBLY);
+    const engine = read(ENGINE);
+    const page = read(PAGE);
+
+    for (const scene of ["hero", "problem", "solution", "run", "review", "outcome", "example", "final"]) {
+      expect(copy, `all four languages define the ${scene} A2 line`).toSatisfy(
+        (source: string) => (source.match(new RegExp(`${scene}:\\s*[\"']`, "g")) ?? []).length === 4,
+      );
+    }
+
+    /* The guide lines are rendered once and selected by the scene attribute
+       in the same paint. A MutationObserver/React render may still drive the
+       facial reaction, but it must not be the text timing authority. */
+    expect(a2).toMatch(/data-a2-scene-guide/);
+    expect(a2).toMatch(/data-a2-guide-line=\{scene\}/);
+    expect(a2).not.toMatch(/setWhisper\("scene"\)/);
+    expect(engine).toMatch(/type\s+MotionSnapshot/);
+    expect(engine).toMatch(/const\s+snapshotAt\s*=/);
+    expect(engine).toMatch(/data-v7-scene/);
+    expect(engine).toMatch(/data-a2-scene/);
+    expect(page).toMatch(/data-a2-guide="example"/);
+    expect(page).toMatch(/data-a2-guide="final"/);
+  });
+
+  it("shows one living coordination core instead of two static capability lists", () => {
+    const engine = read(ENGINE);
+    expect((engine.match(/data-living-engine=/g) ?? []).length).toBe(1);
+    expect(engine).toMatch(/data-engine-boundary/);
+    expect(engine).toMatch(/data-engine-core/);
+    expect(engine).toMatch(/data-engine-module/);
+    expect(engine).toMatch(/data-engine-verification/);
+    expect(engine).toMatch(/data-engine-result/);
+    expect(engine).toMatch(/--engine-p/);
+    expect((engine.match(/copy\.act3\.stations\.map/g) ?? []).length).toBe(1);
+  });
+
+  it("makes the conductor carry scroll-owned energy without another animation clock", () => {
+    const engine = read(ENGINE);
+    expect(engine).toMatch(/data-conductor-segment/);
+    expect(engine).toMatch(/data-power-fill/);
+    expect(engine).toMatch(/data-power-fill[\s\S]*scale[XY]\(var\(--power-/);
+    for (const channel of ["intake", "problem", "engine", "run", "release"]) {
+      expect(engine).toContain(`--power-${channel}`);
+    }
+    expect(engine).toMatch(/--power-beat/);
+    expect(engine).not.toMatch(/@keyframes\s+(?:heartbeat|power|energy)/i);
+    expect((engine.match(/\binfinite\b/g) ?? []).length).toBe(1);
+  });
+
+  it("keeps the one A2 through the live example and releases it as the final guide", () => {
+    const page = read(PAGE);
+    const engine = read(ENGINE);
+    const a2 = read(A2);
+    const css = read(A2_CSS);
+
+    expect(engine).toMatch(/children\??:\s*React\.ReactNode/);
+    expect(engine).toMatch(/\{children\}/);
+    expect(page).toMatch(/<SimplicityActs[^>]*>[\s\S]*<AssemblyExperience[\s\S]*<\/SimplicityActs>/);
+    expect(engine).toMatch(/data-a2-free/);
+    expect(css).toMatch(/data-a2-free="on"[\s\S]*position:\s*fixed/);
+    expect(a2).toMatch(/data-a2-guide-line=\{scene\}/);
+    expect(page).toMatch(/data-a2-guide="final"/);
   });
 
   it("reserves the solution copy outside A2's mobile transport lane", () => {

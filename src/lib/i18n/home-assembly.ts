@@ -541,7 +541,10 @@ export function conceptAssemblyLangOf(value: string | undefined | null): SiteLan
 /* ---- the A2 concierge: approved static answers, four languages ---------- */
 export type HomeConciergeCopy = {
   ask: string; hail: string; title: string; intro: string;
-  guide: { hero: string; solution: string; run: string; review: string; outcome: string };
+  guide: {
+    hero: string; problem: string; solution: string; run: string;
+    review: string; outcome: string; example: string; final: string;
+  };
   suggestions: [string, string, string];
   answers: { verified: string; verifiedCite: string; verifiedHref: string;
              unknown: string; unavailable: string };
@@ -555,11 +558,14 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     title: "Endvera guide",
     intro: "A site guide with approved answers and citations. It never invents; when it does not know, it says so.",
     guide: {
-      hero: "I’m A2. Give me the finish line; I’ll show you how the run moves.",
-      solution: "I set the finish line.",
-      run: "I coordinate the run.",
-      review: "I route human judgment.",
-      outcome: "I check the result.",
+      hero: "Result first. Follow the run.",
+      problem: "This is where work breaks: between tools and handoffs.",
+      solution: "Here, the request becomes a written scope.",
+      run: "Models, tools and people now move as one run.",
+      review: "Human review steps in where judgment matters.",
+      outcome: "Finished, checked and ready to use.",
+      example: "Now watch one real request run end to end.",
+      final: "That’s the full run. Ask me about scope, review or delivery.",
     },
     suggestions: ["Who checks the work?", "Do you support recurring work?", "What if the guide is unavailable?"],
     answers: {
@@ -577,11 +583,14 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     title: "Guide Endvera",
     intro: "Un guide du site aux réponses approuvées et citées. Il n'invente jamais; quand il ne sait pas, il le dit.",
     guide: {
-      hero: "Moi, c’est A2. Donnez-moi le résultat; je vous montre comment la mission avance.",
-      solution: "Je fixe la ligne d’arrivée.",
-      run: "Je coordonne l’exécution.",
-      review: "Je passe le jugement à l’humain.",
-      outcome: "Je vérifie le résultat.",
+      hero: "Le résultat d’abord. Suivez l’exécution.",
+      problem: "Le travail bloque ici : entre les outils et les transferts.",
+      solution: "Ici, la demande devient un mandat écrit.",
+      run: "Modèles, outils et humains : une seule exécution.",
+      review: "La révision humaine prend le relais quand il faut juger.",
+      outcome: "Fini, vérifié et prêt à utiliser.",
+      example: "Maintenant, suivez une vraie demande de bout en bout.",
+      final: "Parcours complet. Posez-moi une question sur le mandat, la révision ou la livraison.",
     },
     suggestions: ["Qui vérifie le travail?", "Offrez-vous le travail récurrent?", "Et si le guide est indisponible?"],
     answers: {
@@ -599,11 +608,14 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     title: "Guía Endvera",
     intro: "Una guía del sitio con respuestas aprobadas y citadas. Nunca inventa; cuando no sabe, lo dice.",
     guide: {
-      hero: "Soy A2. Dame el resultado; te mostraré cómo avanza el trabajo.",
-      solution: "Fijo la meta.",
-      run: "Coordino la ejecución.",
-      review: "Derivo el criterio humano.",
-      outcome: "Compruebo el resultado.",
+      hero: "Primero, el resultado. Siga la ejecución.",
+      problem: "El trabajo falla aquí: entre herramientas y traspasos.",
+      solution: "Aquí, la solicitud se convierte en un alcance escrito.",
+      run: "Modelos, herramientas y personas: una sola ejecución.",
+      review: "La revisión humana interviene cuando hace falta criterio.",
+      outcome: "Terminado, verificado y listo para usar.",
+      example: "Ahora, siga una solicitud real de principio a fin.",
+      final: "Este es el recorrido completo. Pregúnteme por el alcance, la revisión o la entrega.",
     },
     suggestions: ["¿Quién revisa el trabajo?", "¿Ofrecen trabajo recurrente?", "¿Y si la guía no está disponible?"],
     answers: {
@@ -621,11 +633,14 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     title: "Gabay ng Endvera",
     intro: "Isang gabay ng site na may aprubadong sagot at citation. Hindi ito nag-iimbento; kapag hindi alam, sinasabi nito.",
     guide: {
-      hero: "Ako si A2. Ibigay ang resulta; ipapakita ko kung paano umuusad ang run.",
-      solution: "Itinatakda ko ang finish line.",
-      run: "Ako ang nag-uugnay sa run.",
-      review: "Ipinapasa ko sa tao ang judgment.",
-      outcome: "Sinusuri ko ang resulta.",
+      hero: "Resulta muna. Sundan ang proseso.",
+      problem: "Dito nasisira ang trabaho: sa pagitan ng tools at handoffs.",
+      solution: "Dito nagiging nakasulat na scope ang request.",
+      run: "Models, tools at mga tao: iisang coordinated run.",
+      review: "Human review ang pumapasok kapag kailangan ng judgment.",
+      outcome: "Tapos, sinuri at handa nang gamitin.",
+      example: "Ngayon, sundan ang isang tunay na request mula simula hanggang dulo.",
+      final: "Iyan ang buong run. Magtanong tungkol sa scope, review o delivery.",
     },
     suggestions: ["Sino ang nagsusuri ng trabaho?", "May recurring work ba kayo?", "Paano kung offline ang gabay?"],
     answers: {

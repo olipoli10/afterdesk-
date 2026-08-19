@@ -172,24 +172,25 @@ export default async function Home({
             single A2 being; scene 7 gives the accepted machine its context;
             the machine (geometry frozen) demonstrates the breadth; scene 8
             closes with the conversion the system has now earned. */}
-        <SimplicityActs copy={acts} concierge={concierge} />
-        {/* the wrapper carries its OWN onyx ground: the site body is paper,
-            and a transparent wrapper painted scene 7's ivory copy invisible
-            on white (the machine's internal surfaces masked the cause) */}
-        <div
-          data-v7-sem="example"
-          className="relative bg-[#08090B]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(0deg, rgba(154,161,171,0.055) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgba(154,161,171,0.055) 0 1px, transparent 1px 32px), repeating-linear-gradient(0deg, rgba(154,161,171,0.06) 0 1px, transparent 1px 160px), repeating-linear-gradient(90deg, rgba(154,161,171,0.06) 0 1px, transparent 1px 160px)",
-          }}
-        >
-          {/* The accepted machine starts immediately: it demonstrates one
-              real request end to end, then its own illustrated outcome range
-              shows the breadth. This avoids a second generic card gallery. */}
-          <AssemblyExperience copy={t} ctaHref="/register" continuation />
-          {/* SCENE 8 — conversion, after the system has been demonstrated */}
-          <section className="mx-auto w-full max-w-[1180px] px-6 pb-20 pt-4 sm:pb-24 sm:pt-6">
+        <SimplicityActs copy={acts} concierge={concierge}>
+          {/* Keeping the accepted machine inside the narration owner lets
+              the SAME A2 supervise the live example and return as the final
+              clickable guide. No second being and no second scroll engine. */}
+          <div
+            data-v7-sem="example"
+            data-a2-guide="example"
+            className="relative bg-[#08090B]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg, rgba(154,161,171,0.055) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgba(154,161,171,0.055) 0 1px, transparent 1px 32px), repeating-linear-gradient(0deg, rgba(154,161,171,0.06) 0 1px, transparent 1px 160px), repeating-linear-gradient(90deg, rgba(154,161,171,0.06) 0 1px, transparent 1px 160px)",
+            }}
+          >
+            {/* The accepted machine starts immediately: it demonstrates one
+                real request end to end, then its own illustrated outcome range
+                shows the breadth. This avoids a second generic card gallery. */}
+            <AssemblyExperience copy={t} ctaHref="/register" continuation />
+            {/* SCENE 8 — conversion, after the system has been demonstrated */}
+            <section data-a2-guide="final" className="mx-auto w-full max-w-[1180px] px-6 pb-20 pt-4 sm:pb-24 sm:pt-6">
             <h2 className="max-w-[34ch] text-[clamp(1.3rem,2.6vw,1.9rem)] font-semibold leading-[1.25] tracking-[-0.03em] text-[#F7F6F3]">
               <AccentLine text={acts.act4.h} accent={acts.act4.accent} />
             </h2>
@@ -209,12 +210,13 @@ export default async function Home({
               </Link>
               <p className="m-0 font-mono text-[10.5px] text-[#78808B]">{acts.act4.ctaNote}</p>
             </div>
-          </section>
-        </div>
+            </section>
+          </div>
+        </SimplicityActs>
       </main>
 
       {/* real routes under the world's coda - quiet, mono, indexable */}
-      <footer className="bg-[#08090b] px-5 pb-10 pt-2">
+      <footer className="bg-[#08090b] px-5 pb-28 pt-2 sm:pb-10">
         <nav className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e]">
           <Link href="/services" className="transition-colors hover:text-[#c9a76a]">{nav.footer.services}</Link>
           <Link href="/how-it-works" className="transition-colors hover:text-[#c9a76a]">{nav.footer.how}</Link>
