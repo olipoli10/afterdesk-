@@ -95,6 +95,13 @@ const STORY_REACTIONS: Record<string, Pose[]> = {
   final: [{ hy: -1, hdy: -1 }, { hy: -1, hdy: -1, ex: -1 }, { ex: 1 }, {}],
 };
 
+/* Scroll already owns A2's travel and footfall. While he is escorted, a
+   scene change may move only his gaze/lids; otherwise a second body pose at
+   10fps reads as jitter on top of the scroll trajectory. */
+function escortReaction(frames: Pose[]): Pose[] {
+  return frames.map(({ ex, ey, lid }) => ({ ex, ey, lid }));
+}
+
 /* Single-being guard: the DOM may never hold two A2 renders. */
 export function assertSingleA2() {
   if (typeof document === "undefined") return;
@@ -213,6 +220,13 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   useEffect(() => {
     arrivalTimer.current = setTimeout(() => {
       if (arrived.current) return;
+      /* A fast reader can enter the story before the one-time arrival fires.
+         In that case scroll is already the motion authority: mark the arrival
+         complete and never layer its body translation over the escort. */
+      if (dockRef.current?.hasAttribute("data-v7-escorting")) {
+        arrived.current = true;
+        return;
+      }
       arrived.current = true;
       launcherPlay(SEQ.arrival);
       setWhisper("guide");
@@ -265,7 +279,12 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
       if (scene === seen) return;
       seen = scene;
       launcherReset();
-      if (!reduced && STORY_REACTIONS[scene]) launcherPlay(STORY_REACTIONS[scene]);
+      if (!reduced && STORY_REACTIONS[scene]) {
+        const frames = dock.hasAttribute("data-v7-escorting")
+          ? escortReaction(STORY_REACTIONS[scene])
+          : STORY_REACTIONS[scene];
+        launcherPlay(frames);
+      }
     };
     const observer = new MutationObserver(react);
     observer.observe(dock, { attributes: true, attributeFilter: ["data-v7-escorting", "data-a2-scene"] });

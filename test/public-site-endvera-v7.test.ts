@@ -117,7 +117,7 @@ describe("ENDVERA x V7 transplant", () => {
     const dictionary = read(DICTIONARY);
     expect(dictionary).toContain('h: "Digital work, finished."');
     expect(dictionary).toContain('h: "Give us the workflow—not another task."');
-    expect(dictionary).toContain('h: "One approved run becomes the standard."');
+    expect(dictionary).toContain('h: "One workflow. One managed run."');
     expect(dictionary).toContain('h: "Human judgment where it matters."');
     expect(dictionary).toContain('h: "Finished. Checked. Ready to use."');
     for (const deadCopy of [
@@ -190,7 +190,7 @@ describe("ENDVERA x V7 transplant", () => {
     expect(engine).toMatch(/data-v7-trail[\s\S]*origin-left/);
     expect(engine).toMatch(/--a2-travel-y/);
     expect(engine, "the existing scroll authority publishes a four-phase gait").toMatch(
-      /const\s+phase\s*=\s*moving\s*\?\s*Math\.abs\(Math\.floor\(\(y\s*-\s*yCarryStart\)\s*\/\s*18\)\)\s*%\s*4\s*:\s*0/,
+      /const\s+phase\s*=\s*moving\s*\?\s*Math\.abs\(Math\.floor\(\(y\s*-\s*yCarryStart\)\s*\/\s*28\)\)\s*%\s*4\s*:\s*0/,
     );
     expect(engine).toMatch(/data-a2-scene/);
     expect(engine).toMatch(/translate3d\(0,\s*var\(--a2-travel-y/);
@@ -255,7 +255,7 @@ describe("ENDVERA x V7 transplant", () => {
     expect((engine.match(/data-living-engine=/g) ?? []).length).toBe(1);
     expect(engine).toMatch(/data-engine-boundary/);
     expect(engine).toMatch(/data-engine-core/);
-    expect(engine).toMatch(/data-engine-module/);
+    expect(engine).toMatch(/data-heart-branch/);
     expect(engine).toMatch(/data-engine-verification/);
     expect(engine).toMatch(/data-engine-result/);
     expect(engine).toMatch(/--engine-p/);
@@ -273,6 +273,68 @@ describe("ENDVERA x V7 transplant", () => {
     expect(engine).toMatch(/--power-beat/);
     expect(engine).not.toMatch(/@keyframes\s+(?:heartbeat|power|energy)/i);
     expect((engine.match(/\binfinite\b/g) ?? []).length).toBe(1);
+  });
+
+  it("turns the conductor into one continuous living vein instead of disconnected hairlines", () => {
+    const engine = read(ENGINE);
+    expect((engine.match(/data-main-vein=/g) ?? []).length, "every narrative segment belongs to the same main vein").toBeGreaterThanOrEqual(5);
+    expect(engine).toMatch(/data-main-vein[\s\S]*data-vein-channel/);
+    expect(engine).toMatch(/data-main-vein[\s\S]*data-energy-packet/);
+    expect(engine).toMatch(/data-main-vein[\s\S]*min\(3px/);
+    expect(engine).toMatch(/data-energy-packet[\s\S]*animation:\s*v7pulse/);
+    expect(engine).toMatch(/\[data-await-sweep\][\s\S]*animation:\s*v7pulse/);
+    expect((engine.match(/\binfinite\b/g) ?? []).length, "the vein and intake share the one ambient clock").toBe(1);
+  });
+
+  it("keeps A2's torso stable while scroll locomotion is expressed by the feet", () => {
+    const engine = read(ENGINE);
+    const a2 = read(A2);
+    const a2Css = read(A2_CSS);
+    const escortCss = engine.slice(engine.indexOf('[data-a2-dock][data-v7-escorting="on"]'));
+    expect(escortCss).toMatch(/data-a2-gait="1"[\s\S]*data-a2-part="front-foot"/);
+    expect(escortCss).toMatch(/data-a2-gait="3"[\s\S]*data-a2-part="back-foot"/);
+    expect(escortCss, "walking must not bob the body, head or crown on every scroll quantum").not.toMatch(
+      /data-a2-gait="[13]"[^}]*data-a2-part="(?:body|head|crown)"/,
+    );
+    expect(engine, "the dock itself must not receive a separate gait bounce").not.toMatch(
+      /--a2-travel-y[\s\S]*const\s+step\s*=\s*\[[^\]]*-[12]/,
+    );
+    expect(a2Css, "the sprite must stop interpolating after the finger stops").toMatch(
+      /data-v7-escorting="on"[\s\S]*\.launch\s*>\s*svg\s*\{[\s\S]*transition:\s*none/,
+    );
+    expect(a2, "scene reactions during travel must be eyes-only, never a second body gait").toMatch(
+      /function\s+escortReaction[\s\S]*\{\s*ex,\s*ey,\s*lid\s*\}/,
+    );
+    expect(a2).toMatch(/data-v7-escorting[\s\S]*escortReaction\(STORY_REACTIONS\[scene\]\)/);
+    expect(a2, "the delayed arrival must never start after scroll escort has begun").toMatch(
+      /arrivalTimer\.current\s*=\s*setTimeout[\s\S]*data-v7-escorting[\s\S]*launcherPlay\(SEQ\.arrival\)/,
+    );
+  });
+
+  it("renders one machined coordination heart with branches, a ledger and a verification gate", () => {
+    const engine = read(ENGINE);
+    expect((engine.match(/data-engine-handoff=/g) ?? []).length).toBe(1);
+    expect((engine.match(/copy\.engine\.boundaryItems\.map/g) ?? []).length, "boundary locks belong to the heart only").toBe(1);
+    expect((engine.match(/data-coordination-heart=/g) ?? []).length).toBe(1);
+    expect((engine.match(/<span\s+aria-hidden\s+data-heart-shell=/g) ?? []).length).toBe(2);
+    expect((engine.match(/data-heart-seam=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-heart-branch=/g) ?? []).length).toBe(1);
+    expect(engine).toMatch(/copy\.act3\.stations\.map[\s\S]*data-heart-branch/);
+    expect((engine.match(/data-evidence-ledger=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-verification-gate=/g) ?? []).length).toBe(1);
+    expect(engine).not.toMatch(/data-engine-modules=/);
+    expect(engine).not.toMatch(/data-engine-module=/);
+  });
+
+  it("uses a mobile supervisor band and a complete static reduced-motion heart", () => {
+    const engine = read(ENGINE);
+    expect(engine).toMatch(/data-supervisor-band/);
+    expect(engine).toMatch(/data-supervisor-rail/);
+    expect(engine).toMatch(/data-engine-core[\s\S]*pr-\[106px\][\s\S]*sm:pr-4/);
+    expect(engine).toMatch(/data-verification-output[\s\S]*mr-\[106px\][\s\S]*sm:mr-0/);
+    expect(engine).toMatch(/data-coordination-heart[\s\S]*grid-cols-1[\s\S]*sm:grid-cols/);
+    expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-energy-packet[\s\S]*animation:\s*none/);
+    expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-heart-branch[\s\S]*opacity:\s*1/);
   });
 
   it("keeps the one A2 through the live example and releases it as the final guide", () => {
@@ -299,9 +361,9 @@ describe("ENDVERA x V7 transplant", () => {
 
   it("uses the single ambient slot for a moving awaiting bar and disables it for reduced motion", () => {
     const engine = read(ENGINE);
-    expect(engine).toMatch(/@keyframes\s+v7await/);
-    expect(engine).toMatch(/\[data-await-sweep\][\s\S]*animation:\s*v7await/);
-    expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*\[data-await-sweep\][\s\S]*animation:\s*none/);
+    expect(engine).toMatch(/@keyframes\s+v7pulse/);
+    expect(engine).toMatch(/:is\(\[data-await-sweep\],\s*\[data-energy-packet\],\s*\[data-heart-beat\]\)[\s\S]*animation:\s*v7pulse/);
+    expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*:is\(\[data-await-sweep\],\s*\[data-energy-packet\],\s*\[data-heart-beat\]\)[\s\S]*animation:\s*none/);
     expect(engine).not.toMatch(/animation:\s*v7lumen\s+18s/);
     expect((engine.match(/\binfinite\b/g) ?? []).length).toBe(1);
   });

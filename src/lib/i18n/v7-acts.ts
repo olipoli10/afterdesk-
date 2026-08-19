@@ -35,6 +35,11 @@ export type V7ActsCopy = {
     boundaryItems: [string, string, string];
     core: string;
     coreSub: string;
+    supervisor: string;
+    route: string;
+    ledger: string;
+    whenNeeded: string;
+    pass: string;
     evidence: string;
     verification: string;
     result: string;
@@ -80,9 +85,9 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
     },
     solution: {
       eyebrow: "ENDVERA",
-      h: "One approved run becomes the standard.",
-      accent: "becomes the standard.",
-      sub: "The first approved run records the scope, quality bar, evidence and exception path in one operating standard.",
+      h: "One workflow. One managed run.",
+      accent: "One managed run.",
+      sub: "The approved scope enters one route across AI, software, browser work, approved systems and people.",
     },
     engine: {
       title: "The coordination core · first run",
@@ -91,6 +96,11 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       boundaryItems: ["Workflow scoped", "Quality bar written", "Price & access fixed"],
       core: "ENDVERA CORE",
       coreSub: "Routes each step, owns the handoffs and surfaces exceptions",
+      supervisor: "A2 · run guide",
+      route: "Route",
+      ledger: "Evidence ledger",
+      whenNeeded: "when needed",
+      pass: "pass",
       evidence: "Evidence and exceptions return to the core",
       verification: "Checked against the approved standard",
       result: "Approved result",
@@ -204,9 +214,9 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
     },
     solution: {
       eyebrow: "ENDVERA",
-      h: "Une exécution approuvée devient le standard.",
-      accent: "devient le standard.",
-      sub: "La première exécution approuvée consigne la portée, le niveau de qualité, les preuves et le chemin des exceptions dans un même standard d'exploitation.",
+      h: "Un processus. Une exécution prise en charge.",
+      accent: "Une exécution prise en charge.",
+      sub: "La portée approuvée entre dans un seul parcours à travers l'IA, les logiciels, le navigateur, les systèmes approuvés et les humains.",
     },
     engine: {
       title: "Le cœur de coordination · première exécution",
@@ -215,6 +225,11 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       boundaryItems: ["Processus cadré", "Niveau de qualité écrit", "Prix et accès fixés"],
       core: "CŒUR ENDVERA",
       coreSub: "Achemine chaque étape, prend les transferts en charge et signale les exceptions",
+      supervisor: "A2 · guide d'exécution",
+      route: "Parcours",
+      ledger: "Registre des preuves",
+      whenNeeded: "au besoin",
+      pass: "conforme",
       evidence: "Preuves et exceptions reviennent au cœur",
       verification: "Vérifié selon le standard approuvé",
       result: "Résultat approuvé",
@@ -328,9 +343,9 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
     },
     solution: {
       eyebrow: "ENDVERA",
-      h: "Una ejecución aprobada se convierte en el estándar.",
-      accent: "se convierte en el estándar.",
-      sub: "La primera ejecución aprobada registra el alcance, el nivel de calidad, la evidencia y la ruta de excepciones en un solo estándar operativo.",
+      h: "Un proceso. Una ejecución gestionada.",
+      accent: "Una ejecución gestionada.",
+      sub: "El alcance aprobado entra en una sola ruta por IA, software, trabajo en navegador, sistemas aprobados y personas.",
     },
     engine: {
       title: "Núcleo de coordinación · primera ejecución",
@@ -339,6 +354,11 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       boundaryItems: ["Proceso definido", "Nivel de calidad escrito", "Precio y acceso fijados"],
       core: "NÚCLEO ENDVERA",
       coreSub: "Dirige cada paso, asume los traspasos y señala las excepciones",
+      supervisor: "A2 · guía de ejecución",
+      route: "Ruta",
+      ledger: "Registro de evidencia",
+      whenNeeded: "cuando hace falta",
+      pass: "aprobado",
       evidence: "La evidencia y las excepciones vuelven al núcleo",
       verification: "Verificado contra el estándar aprobado",
       result: "Resultado aprobado",
@@ -452,9 +472,9 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
     },
     solution: {
       eyebrow: "ENDVERA",
-      h: "Ang aprubadong run ang nagiging standard.",
-      accent: "nagiging standard.",
-      sub: "Itinatala ng unang aprubadong run ang scope, quality bar, evidence at exception path sa iisang operating standard.",
+      h: "Isang workflow. Isang managed run.",
+      accent: "Isang managed run.",
+      sub: "Ang approved scope ay pumapasok sa iisang route sa AI, software, browser work, approved systems at mga tao.",
     },
     engine: {
       title: "Coordination core · first run",
@@ -463,6 +483,11 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
       boundaryItems: ["Naka-scope ang workflow", "Nakasulat ang quality bar", "Fixed ang presyo at access"],
       core: "ENDVERA CORE",
       coreSub: "Dinadala ang bawat hakbang, inaako ang handoffs at inilalabas ang exceptions",
+      supervisor: "A2 · run guide",
+      route: "Route",
+      ledger: "Evidence ledger",
+      whenNeeded: "kapag kailangan",
+      pass: "pass",
       evidence: "Bumabalik sa core ang evidence at exceptions",
       verification: "Sinuri laban sa aprubadong standard",
       result: "Aprubadong resulta",

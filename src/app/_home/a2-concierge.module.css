@@ -201,6 +201,12 @@
   z-index: 1;
   transition: transform 80ms linear;
 }
+.dock[data-v7-escorting="on"] .launch > svg {
+  /* Scroll already supplies continuous whole-pixel travel. Interpolating
+     each gait quantum kept moving the sprite after the finger stopped and
+     made the supervisor read as if it were shaking. */
+  transition: none;
+}
 .launch:hover::before,
 .launch:focus-visible::before {
   opacity: 0.38;

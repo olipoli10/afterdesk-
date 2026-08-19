@@ -706,10 +706,12 @@ export function SimplicityActs({ copy, concierge, children }: {
              existing sprite player spend one short reaction there. */
           const nextD = desire(y + 2);
           const moving = Math.hypot(nextD.vx - vx, laneAt(y + 2) - vy) > 0.18;
-          const phase = moving ? Math.abs(Math.floor((y - yCarryStart) / 18)) % 4 : 0;
-          const step = [0, -2, -1, 0][phase];
+          const phase = moving ? Math.abs(Math.floor((y - yCarryStart) / 28)) % 4 : 0;
           dock.setAttribute("data-a2-gait", String(phase));
-          dock.style.setProperty("--a2-travel-y", `${step}px`);
+          /* The route already moves the whole being continuously. A second
+             body bob made that continuous motion read as scroll jitter on
+             phones, so locomotion now lives in the feet only. */
+          dock.style.setProperty("--a2-travel-y", "0px");
           /* integer-pixel escort, trailing beside the slip, never covering.
              The being keeps its painted 64px and the SAME clearances the
              R2.2 lane was proven against (left edge vx-54, feet vy+36);
@@ -831,12 +833,8 @@ export function SimplicityActs({ copy, concierge, children }: {
            to the R2.2-proven geometry - same 64px being, same clearances. */
         [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: translate3d(0, var(--a2-travel-y, 0px), 0) scale(1); transform-origin: 50% 100%; }
         [data-a2-dock][data-v7-escorting="on"] [data-a2-part] { transform-box: fill-box; transform-origin: 50% 100%; }
-        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="1"] [data-a2-part="front-foot"] { transform: translate(1px, -2px); }
-        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="1"] [data-a2-part="body"],
-        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="1"] [data-a2-part="head"] { transform: translateY(-1px); }
-        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="3"] [data-a2-part="back-foot"] { transform: translate(-1px, -2px); }
-        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="3"] [data-a2-part="body"],
-        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="3"] [data-a2-part="crown"] { transform: translateY(-1px); }
+        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="1"] [data-a2-part="front-foot"] { transform: translate(1px, -1px); }
+        [data-a2-dock][data-v7-escorting="on"][data-a2-gait="3"] [data-a2-part="back-foot"] { transform: translate(-1px, -1px); }
         [data-a2-dock][data-v7-escorting="on"] button { background: transparent; border-color: transparent; box-shadow: none; overflow: visible; }
         @media (prefers-reduced-motion: reduce) {
           [data-a2-dock][data-v7-escorting="on"] [data-a2-part] { transform: none !important; }
@@ -883,22 +881,53 @@ export function SimplicityActs({ copy, concierge, children }: {
           [data-port] { animation: v7in 0.3s ease-out 1.08s both; }
           [data-rail] { animation: v7rail 0.4s ease-out 1.04s both; }
           [data-lumen] { animation: v7in 0.7s ease-out both; }
-          [data-await-sweep] { animation: v7await 6s linear infinite; }
+          :is([data-await-sweep], [data-energy-packet], [data-heart-beat]) { animation: v7pulse 4s linear infinite; }
         }
         @media (prefers-reduced-motion: reduce) {
-          [data-await-sweep] { animation: none; transform: rotate(0.12turn); }
+          :is([data-await-sweep], [data-energy-packet], [data-heart-beat]) { animation: none; }
+          [data-await-sweep] { transform: rotate(0.12turn); }
+          [data-energy-packet] { opacity: 0.72; transform: none !important; }
         }
-        /* The conductor is the site's nervous system. Every bright segment
-           is powered by scroll-owned variables from the single frame loop;
-           the beat is distance-sampled, so it stops when the reader stops. */
+        @property --energy-p { syntax: "<number>"; inherits: false; initial-value: 0; }
+        @property --heart-p { syntax: "<number>"; inherits: false; initial-value: 0; }
+        /* One continuous vein. Scroll owns how much of each segment is
+           energized; the single shared ambient slot moves one short packet
+           through every already-powered segment and gives the core one
+           restrained double beat. */
+        [data-main-vein] { --vein-size: min(3px, 0.75vw); }
+        [data-main-vein][data-vein-axis="y"] { width: var(--vein-size) !important; }
+        [data-main-vein][data-vein-axis="x"] { height: var(--vein-size) !important; }
+        [data-vein-channel] { border-radius: 999px; }
+        [data-energy-packet] {
+          position: absolute;
+          z-index: 2;
+          border-radius: 999px;
+          background: linear-gradient(90deg, transparent, #F0A14A 42%, #FFD28E 66%, transparent);
+          box-shadow: 0 0 6px rgba(216,117,38,0.24);
+          opacity: calc(var(--heart-p) * 0.9);
+          will-change: transform, opacity;
+        }
+        [data-main-vein][data-vein-axis="x"] > [data-energy-packet] {
+          inset-block: 0;
+          left: 0;
+          width: 18%;
+          transform: translate3d(calc(var(--energy-p) * 455%), 0, 0);
+        }
+        [data-main-vein][data-vein-axis="y"] > [data-energy-packet] {
+          inset-inline: 0;
+          top: 0;
+          height: 14%;
+          background: linear-gradient(180deg, transparent, #F0A14A 42%, #FFD28E 66%, transparent);
+          transform: translate3d(0, calc(var(--energy-p) * 615%), 0);
+        }
+        [data-await-sweep] { transform: rotate(calc(var(--energy-p) * 1turn)); }
         [data-power-fill] {
           opacity: calc(0.48 + var(--power-beat, 0.5) * 0.52);
           will-change: transform, opacity;
         }
-        /* One persistent coordination core. A single capability is active
-           at a time; completed modules keep a low amber memory, evidence
-           returns, verification turns green, and the ivory result exits. */
-        [data-engine-module] {
+        /* One persistent coordination heart. Five short branches feed the
+           same route chamber and return evidence to the lower ledger. */
+        [data-heart-branch] {
           --ep: var(--engine-p, 1);
           --pre: clamp(0, calc((var(--ep) - var(--m, 0)) * 9), 1);
           --post: clamp(0, calc(((var(--m, 0) + 0.2) - var(--ep)) * 9), 1);
@@ -908,10 +937,13 @@ export function SimplicityActs({ copy, concierge, children }: {
           border-color: color-mix(in srgb, #262B35, #D87526 calc(var(--active) * 100%));
           transform: translateX(calc((1 - var(--active)) * 2px));
         }
-        [data-engine-module] > p:first-child > span {
+        [data-heart-branch] > span:first-child {
           background: color-mix(in srgb, #1A150D, #D87526 calc(var(--active) * 100%));
           box-shadow: 0 0 calc(10px * var(--active)) rgba(216,117,38,0.65);
         }
+        [data-heart-seam] { opacity: calc(0.62 + var(--heart-p) * 0.38); transform: scaleY(calc(0.92 + var(--heart-p) * 0.08)); transform-origin: 50% 50%; }
+        [data-heart-shell="left"] { transform: translateX(calc((1 - var(--engine-p, 1)) * -1px)); }
+        [data-heart-shell="right"] { transform: translateX(calc((1 - var(--engine-p, 1)) * 1px)); }
         [data-engine-evidence] { opacity: calc(0.25 + 0.75 * var(--engine-p, 1)); }
         [data-engine-verification] { opacity: calc(0.45 + 0.55 * var(--release, 1)); }
         [data-engine-result] {
@@ -919,7 +951,7 @@ export function SimplicityActs({ copy, concierge, children }: {
           transform: translateX(calc((1 - var(--release, 1)) * -5px));
         }
         @media (prefers-reduced-motion: reduce) {
-          [data-engine-module], [data-engine-verification], [data-engine-result], [data-power-fill] {
+          [data-heart-branch], [data-heart-shell], [data-heart-seam], [data-engine-verification], [data-engine-result], [data-power-fill] {
             opacity: 1;
             transform: none !important;
           }
@@ -954,7 +986,15 @@ export function SimplicityActs({ copy, concierge, children }: {
         @keyframes v7rise { from { opacity: 0; transform: translateY(14px); } }
         @keyframes v7seam { from { transform: scaleX(0); } }
         @keyframes v7rail { from { transform: scaleY(0); } }
-        @keyframes v7await { to { transform: rotate(1turn); } }
+        @keyframes v7pulse {
+          0%, 62% { --energy-p: 0; --heart-p: 0; }
+          68% { --energy-p: 0.08; --heart-p: 1; }
+          72% { --energy-p: 0.18; --heart-p: 0.18; }
+          76% { --energy-p: 0.3; --heart-p: 0.72; }
+          82% { --energy-p: 0.48; --heart-p: 0; }
+          96% { --energy-p: 1; --heart-p: 0; }
+          100% { --energy-p: 1; --heart-p: 0; }
+        }
       `}</style>
       <p className="sr-only">{copy.srStory}</p>
 
@@ -1142,8 +1182,9 @@ export function SimplicityActs({ copy, concierge, children }: {
         </div>
         {/* the drop: from the console port straight down out of the act -
             act 2's reserved escort column continues the same line */}
-        <span aria-hidden data-rail="" data-conductor-segment="intake" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
-          <i data-power-fill="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] to-[#C9A76A]/45 shadow-[0_0_8px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-intake, 0))" }} />
+        <span aria-hidden data-rail="" data-main-vein="" data-vein-axis="y" data-conductor-segment="intake" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+          <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] to-[#C9A76A]/45 shadow-[0_0_8px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-intake, 0))" }} />
+          <i data-energy-packet="" />
         </span>
       </section>
 
@@ -1152,8 +1193,9 @@ export function SimplicityActs({ copy, concierge, children }: {
         {/* the execution datum, drawn: the same derived x as the anchors
             (87% of the padded content box) - this hairline IS the reserved
             escort column made visible, continuing the console's out-rail */}
-        <span aria-hidden data-lane-line="" data-conductor-segment="problem" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
-          <i data-power-fill="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-problem, 0))" }} />
+        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-axis="y" data-conductor-segment="problem" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+          <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-problem, 0))" }} />
+          <i data-energy-packet="" />
         </span>
         {/* THE TRANSPORT LANE, RESERVED IN THE LAYOUT ITSELF.
             This headline is STICKY and the content under it FLOWS, so any
@@ -1210,8 +1252,9 @@ export function SimplicityActs({ copy, concierge, children }: {
       {/* ── SOLUTION — Endvera takes the request ───────────────────── */}
       <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*0.95)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.12)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
         {/* the datum continues through the handover act */}
-        <span aria-hidden data-lane-line="" data-conductor-segment="engine" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
-          <i data-power-fill="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-engine, 0))" }} />
+        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-axis="y" data-conductor-segment="engine" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+          <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-engine, 0))" }} />
+          <i data-energy-packet="" />
         </span>
         {/* the same reserved column: this sticky headline is the wall the
             escort was teleporting over, because it swept up through exactly
@@ -1229,19 +1272,25 @@ export function SimplicityActs({ copy, concierge, children }: {
             handover keeps the R2.1/R2.2 escort mechanics untouched. */}
         <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.035)] sm:mt-9 sm:grid sm:flex-none sm:grid-cols-[minmax(0,0.78fr)_minmax(380px,1.22fr)] sm:items-start sm:gap-10 sm:pb-0 sm:pt-0">
           <p className="max-w-[calc(87%-80px)] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB] sm:max-w-[44ch] sm:pt-2">{copy.solution.sub}</p>
-          <div data-engine-boundary="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] max-w-[calc(87%-72px)] overflow-hidden rounded-[10px] border border-[#3A3020] bg-[linear-gradient(180deg,#17150F,#0E1116)] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:mt-0 sm:max-w-none sm:p-5">
-            <div className="flex items-center justify-between gap-4">
-              <p className={`${mono} text-[#D7B879]`}>{copy.engine.boundary}</p>
-              <span aria-hidden className="h-2 w-2 rounded-[2px] bg-[#D87526] shadow-[0_0_14px_rgba(216,117,38,0.62)]" />
+          <div data-engine-handoff="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] max-w-[calc(87%-72px)] overflow-hidden rounded-[10px] border border-[#3A3020] bg-[linear-gradient(180deg,#17150F,#0E1116)] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:mt-0 sm:max-w-none sm:p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className={`${mono} text-[#D7B879]`}>{copy.artifact.request}</p>
+                <p className="mt-2 max-w-[30ch] text-[14px] leading-[1.5] text-[#C8CDD5]">{copy.engine.handoff}</p>
+              </div>
+              <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-[#D87526]">01 · {copy.artifact.locked}</span>
             </div>
-            <p className="mt-3 max-w-[32ch] text-[14px] leading-[1.5] text-[#C8CDD5]">{copy.engine.handoff}</p>
-            <div className="mt-4 grid gap-2 sm:grid-cols-3">
-              {copy.engine.boundaryItems.map((item, i) => (
-                <span key={item} className="flex min-h-10 items-center gap-2 rounded-[5px] border border-[#403622] bg-[#12120F] px-3 font-mono text-[10px] uppercase tracking-[0.11em] text-[#C9A76A]">
-                  <i aria-hidden className="not-italic text-[#D87526]">0{i + 1}</i>{item}
-                </span>
-              ))}
+            <div aria-hidden className="mt-5 flex items-center gap-3">
+              <span className="grid h-8 w-12 place-items-center rounded-[4px] border border-[#6F4C29] bg-[#15110B] font-mono text-[9px] text-[#C9A76A]">IN</span>
+              <span data-main-vein="" data-vein-axis="x" className="relative h-px flex-1 overflow-hidden bg-[#3A3020]">
+                <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
+                <i data-energy-packet="" />
+              </span>
+              <span data-port="" className="relative h-9 w-9 rounded-[5px] border border-[#6F4C29] bg-[#0D1015] shadow-[inset_0_0_0_3px_#171A20]">
+                <i className="absolute inset-y-2 left-1/2 w-px -translate-x-1/2 bg-[#D87526]" />
+              </span>
             </div>
+            <p className="mt-3 border-t border-[#292E38] pt-2 font-mono text-[9px] uppercase tracking-[0.11em] text-[#8C7A58]">→ {copy.engine.title}</p>
             <span aria-hidden className="absolute bottom-0 left-4 right-0 h-px bg-gradient-to-r from-[#D87526] via-[#C9A76A]/60 to-transparent" />
           </div>
           <div aria-hidden className="relative mt-[calc(var(--v7vh,100vh)*0.02)] h-[64px] sm:col-span-2 sm:mt-7">
@@ -1269,11 +1318,14 @@ export function SimplicityActs({ copy, concierge, children }: {
                 <span
                   aria-hidden
                   data-v7-trail=""
+                  data-main-vein=""
+                  data-vein-axis="x"
                   data-conductor-segment="run"
                   className="absolute inset-0 origin-left bg-gradient-to-r from-transparent via-[#D87526] to-[#D87526]/25 opacity-80 shadow-[0_0_10px_rgba(216,117,38,0.42)] will-change-transform"
                   style={reduced ? undefined : { transform: "scaleX(var(--walk, 0))" }}
                 >
-                  <i data-power-fill="" className="absolute inset-0 origin-left bg-[#F0A14A] shadow-[0_0_12px_rgba(216,117,38,0.65)]" style={reduced ? undefined : { transform: "scaleX(var(--power-run, 0))" }} />
+                  <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-left bg-[#F0A14A] shadow-[0_0_12px_rgba(216,117,38,0.65)]" style={reduced ? undefined : { transform: "scaleX(var(--power-run, 0))" }} />
+                  <i data-energy-packet="" />
                 </span>
                 <span data-v7-anchor="walk-start" className="absolute right-[10%] top-0 h-px w-px" />
                 <span data-v7-anchor="walk-end" className="absolute right-[12%] top-0 h-px w-px sm:right-[6%]" />
@@ -1291,71 +1343,102 @@ export function SimplicityActs({ copy, concierge, children }: {
             {/* the stations are PHYSICAL MODULES on a shared platform - a
                 graphite body each, the rod rising to the datum, name plate
                 and role line inside. Substance, not thin text columns. */}
-            {/* the platform stops at the SAME derived lane bound as every
-                other surface (87% of the content box minus the escort's
-                72px reach): at pin-exit the slip descends through this
-                zone, and R2.2 proved a column is the only reservation
-                that survives scrolling. */}
-            <div data-living-engine="" className="relative -ml-4 w-[calc(100%-96px)] overflow-hidden rounded-[12px] border border-[#2A303B] bg-[linear-gradient(150deg,#15181E,#0A0C10_72%)] p-2.5 shadow-[0_24px_70px_rgba(0,0,0,0.58)] sm:ml-0 sm:w-full sm:p-4">
-              {/* ONE column on mobile: at pin-exit the slip descends through
-                  this block's rows, and a second column would put station
-                  text inside the descent footprint (measured: the 128px
-                  jump over "Verification"). Desktop keeps three columns -
-                  its corridor never crosses the grid. */}
-              <div className="flex items-center justify-between gap-3 border-b border-[#252A33] pb-2.5">
-                <p className={`${mono} text-[#C9A76A]`}>{copy.engine.title}</p>
-                <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-[#7F8793]"><i aria-hidden className="h-1.5 w-1.5 rounded-[2px] bg-[#D87526] shadow-[0_0_10px_rgba(216,117,38,0.7)]" />live</span>
-              </div>
-              <div className="mt-2.5 grid gap-2.5 sm:grid-cols-[0.76fr_1.5fr_0.84fr] sm:items-stretch">
-                <div data-engine-boundary="" className="rounded-[7px] border border-[#3B3324] bg-[#14130F] p-2.5 sm:p-3">
-                  <p className="font-mono text-[9.5px] uppercase tracking-[0.13em] text-[#8C7A58]">{copy.engine.boundary}</p>
-                  <div className="mt-2 grid grid-cols-3 gap-1 sm:grid-cols-1 sm:gap-1.5">
-                    {copy.engine.boundaryItems.map((item) => <p key={item} className="min-w-0 rounded-[4px] border border-[#403622] px-1.5 py-1.5 text-[9px] leading-[1.3] text-[#C7AE78] sm:px-2 sm:text-[10px]">{item}</p>)}
-                  </div>
+            {/* On narrow screens A2 occupies only this dedicated supervisor
+                band. The machine below can therefore use the full content
+                width without rebuilding the proven R2.2 escort path. */}
+            <div data-living-engine="" className="relative w-full overflow-hidden rounded-[12px] border border-[#2A303B] bg-[linear-gradient(150deg,#15181E,#0A0C10_72%)] p-2.5 shadow-[0_24px_70px_rgba(0,0,0,0.58)] sm:p-4">
+              <div data-supervisor-band="" className="flex min-h-[96px] items-start justify-between gap-3 border-b border-[#252A33] pb-2.5 pr-[92px] pt-1 sm:min-h-12 sm:items-center sm:pr-0 sm:pt-0">
+                <div className="min-w-0">
+                  <p className={`${mono} text-[#C9A76A]`}>{copy.engine.title}</p>
+                  <p className="mt-1 text-[11px] leading-[1.35] text-[#929AA6] sm:text-[12px]">{copy.engine.handoff}</p>
                 </div>
-                <div data-engine-core="" className="relative rounded-[8px] border border-[#3A4150] bg-[#0D1015] p-2.5 sm:p-3">
-                  <div className="relative overflow-hidden rounded-[6px] border border-[#6F4C29] bg-[#17130D] px-3 py-2.5 text-center">
-                    <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D87526] to-transparent" />
-                    <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#E2C486]">{copy.engine.core}</p>
-                    <p className="mt-1 text-[11px] leading-[1.35] text-[#9EA5AF] sm:text-[12px]">{copy.engine.coreSub}</p>
-                  </div>
-                  <div data-engine-modules="" className="mt-2 grid gap-1.5 sm:grid-cols-2">
-                {/* name ABOVE role on mobile: a side-by-side row starves the
-                    role column and long Spanish/Tagalog words then OVERFLOW
-                    their box straight into the escort corridor (measured:
-                    fragments painted to x=245 from a box ending at 201).
-                    Stacked, the role owns the platform's full width and
-                    nothing can escape the reserved bound. */}
-                {copy.act3.stations.map((s, i) => i === 5 ? null : (
-                  <div
-                    key={s.name}
-                    data-engine-module=""
-                    className="min-w-0 rounded-[5px] border border-[#262B35] bg-[#12151B] px-2 py-1.5"
-                    style={{ "--m": `${(i / 5).toFixed(2)}` } as React.CSSProperties}
-                  >
-                    <p className="flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-[#C8CDD5] sm:text-[10px]">
-                      <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-[2px] border border-[#6F4C29] bg-[#1A150D]" />
-                      {s.name}
+                <span className="absolute right-2.5 top-2.5 w-[78px] border-l border-[#6F4C29] pl-2 font-mono text-[9px] uppercase tracking-[0.11em] text-[#D87526] sm:static sm:w-auto sm:shrink-0">{copy.engine.supervisor}</span>
+              </div>
+
+              <div data-coordination-heart="" className="relative mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[minmax(150px,0.78fr)_minmax(320px,1.55fr)_minmax(160px,0.82fr)] sm:items-stretch">
+                {/* Three locks sit on the intake vein. They define the
+                    machine's boundary; they are not a competing dashboard. */}
+                <div data-engine-boundary="" className="relative grid grid-cols-3 gap-1.5 sm:grid-cols-1 sm:content-center">
+                  <p className="col-span-3 font-mono text-[9.5px] uppercase tracking-[0.13em] text-[#8C7A58] sm:col-span-1">{copy.engine.boundary}</p>
+                  {copy.engine.boundaryItems.map((item, i) => (
+                    <p key={item} className="relative min-w-0 border-l border-[#6F4C29] bg-[#12120F] px-2 py-2 text-[10px] leading-[1.3] text-[#C7AE78] sm:min-h-10">
+                      <span aria-hidden className="mr-1 font-mono text-[8px] text-[#D87526]">0{i + 1}</span>{item}
                     </p>
-                    <p className="mt-0.5 break-words text-[10px] leading-[1.3] text-[#828A95] sm:text-[11px]">{s.truth}</p>
-                  </div>
-                ))}
-                  </div>
-                  <p data-engine-evidence="" className="mt-2 border-t border-[#292E38] pt-2 font-mono text-[9px] uppercase tracking-[0.1em] text-[#A98B58]">← {copy.engine.evidence}</p>
+                  ))}
+                  <span aria-hidden data-main-vein="" data-vein-axis="x" className="absolute bottom-[-7px] left-0 right-0 overflow-hidden bg-[#3A3020]/70 sm:bottom-auto sm:left-auto sm:right-[-10px] sm:top-1/2 sm:h-[3px] sm:w-[12px]">
+                    <i data-vein-channel="" className="absolute inset-0 bg-[#D87526]" />
+                    <i data-energy-packet="" />
+                  </span>
                 </div>
-                <div className="grid gap-2">
-                  <div data-engine-verification="" className="rounded-[7px] border border-[#6F4C29] bg-[#15110B] p-2.5 sm:p-3">
-                    <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-[#C9A76A]">{copy.act3.stations[5].name}</p>
-                    <p className="mt-1 text-[10px] leading-[1.35] text-[#A6ADB8] sm:text-[11px]">{copy.engine.verification}</p>
-                    <span aria-hidden className="mt-2 block h-px origin-left bg-[#1E7F5C]" style={{ transform: "scaleX(var(--release, 0))" }} />
+
+                {/* The heart is an abstract machined join: two onyx masses,
+                    one amber seam, one route chamber and one evidence ledger. */}
+                <div data-engine-core="" className="relative min-h-[246px] overflow-hidden rounded-[10px] border border-[#3A4150] bg-[#0B0E13] p-3 pr-[106px] sm:min-h-[270px] sm:p-4 sm:pr-4">
+                  <span aria-hidden data-heart-shell="left" className="absolute inset-y-0 left-0 w-[49.7%] bg-[linear-gradient(145deg,#191D24,#101319)]" />
+                  <span aria-hidden data-heart-shell="right" className="absolute inset-y-0 right-0 w-[49.7%] bg-[linear-gradient(215deg,#171A20,#0D1015)]" />
+                  {/* The proven escort corridor becomes a visible power bay
+                      instead of empty right-side space. A2 may travel over
+                      the vein; all readable/deliverable content stays left. */}
+                  <span aria-hidden data-supervisor-rail="" className="absolute inset-y-0 right-0 z-[1] w-[96px] border-l border-[#6F4C29]/35 bg-[linear-gradient(90deg,transparent,#15110B_72%)] sm:hidden">
+                    <i className="absolute left-4 right-4 top-[26%] h-px bg-[#6F4C29]/40" />
+                    <i className="absolute left-4 right-4 top-1/2 h-px bg-[#6F4C29]/35" />
+                    <i className="absolute left-4 right-4 top-[74%] h-px bg-[#6F4C29]/30" />
+                    <i data-main-vein="" data-vein-axis="y" className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden bg-[#3A3020]/70">
+                      <b data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
+                      <b data-energy-packet="" />
+                    </i>
+                  </span>
+                  <span aria-hidden data-heart-seam="" data-heart-beat="" className="absolute inset-y-3 right-[47px] z-[1] w-[2px] translate-x-1/2 bg-gradient-to-b from-transparent via-[#F0A14A] to-transparent shadow-[0_0_8px_rgba(216,117,38,0.28)] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
+
+                  <div className="relative z-[2] mx-auto max-w-[310px] text-center">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#8C7A58]">{copy.engine.route}</p>
+                    <p className="mt-1 font-mono text-[11px] font-semibold tracking-[0.14em] text-[#E2C486]">{copy.engine.core}</p>
+                    <p className="mt-1 text-[12px] leading-[1.4] text-[#A6ADB8]">{copy.engine.coreSub}</p>
                   </div>
-                  <div data-engine-result="" className="rounded-[7px] border border-[#C9A76A] bg-[#F3F0E8] p-2.5 text-[#17191D] sm:p-3">
+
+                  <div className="relative z-[2] mt-3 grid gap-1.5 sm:grid-cols-2">
+                    {copy.act3.stations.map((s, i) => i === 5 ? null : (
+                      <div
+                        key={s.name}
+                        data-heart-branch=""
+                        className={`relative min-w-0 border-l px-2.5 py-1.5 ${i === 4 ? "border-[#A8642E] sm:col-span-2 sm:mx-auto sm:w-[72%]" : "border-[#343A45]"}`}
+                        style={{ "--m": `${(i / 5).toFixed(2)}` } as React.CSSProperties}
+                      >
+                        <span aria-hidden className="absolute -left-[4px] top-[11px] h-[7px] w-[7px] rounded-[2px] border border-[#6F4C29] bg-[#1A150D]" />
+                        <p data-branch-title="" className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-[#C8CDD5] sm:text-[10px]">{s.name}</p>
+                        <p className="mt-0.5 text-[12px] leading-[1.35] text-[#9AA1AB] sm:text-[11px] sm:leading-[1.3]">{s.truth}</p>
+                        {i === 4 && <p className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.11em] text-[#D87526]">{copy.engine.whenNeeded}</p>}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div data-evidence-ledger="" data-engine-evidence="" className="relative z-[2] mt-3 border-t border-[#6F4C29]/55 pt-2">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#D7B879]">{copy.engine.ledger}</p>
+                    <p className="mt-1 text-[10px] leading-[1.35] text-[#9AA1AB]">{copy.engine.evidence}</p>
+                    <span aria-hidden className="mt-2 grid grid-cols-5 gap-1">
+                      {[0, 1, 2, 3, 4].map((i) => <i key={i} className="h-[3px] bg-[#C9A76A]/55" />)}
+                    </span>
+                  </div>
+                </div>
+
+                <div data-verification-output="" className="mr-[106px] grid content-center gap-2.5 sm:mr-0">
+                  <div data-verification-gate="" data-engine-verification="" className="relative rounded-[7px] border border-[#6F4C29] bg-[#15110B] p-3">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#C9A76A]">{copy.act3.stations[5].name}</p>
+                    <p className="mt-1 text-[11px] leading-[1.4] text-[#A6ADB8]">{copy.engine.verification}</p>
+                    <span aria-hidden className="mt-2 block h-[2px] origin-left bg-[#1E7F5C]" style={{ transform: "scaleX(var(--release, 0))" }} />
+                    <span className="mt-1 block font-mono text-[8px] uppercase tracking-[0.12em] text-[#1E7F5C]">{copy.engine.pass}</span>
+                  </div>
+                  <div data-engine-result="" className="relative overflow-hidden rounded-[7px] border border-[#C9A76A] bg-[#F3F0E8] p-3 text-[#17191D]">
+                    <span aria-hidden className="absolute inset-y-0 left-0 w-[3px] bg-[#C9A76A]" />
                     <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#6B5D3F]">ENDVERA · RESULT</p>
-                    <p className="mt-1.5 text-[12px] font-semibold">✓ {copy.engine.result}</p>
+                    <p className="mt-1.5 text-[13px] font-semibold">✓ {copy.engine.result}</p>
                   </div>
                 </div>
               </div>
-              <span aria-hidden className="absolute bottom-0 left-0 right-0 h-px bg-[#372C1B]"><i data-power-fill="" className="block h-px origin-left bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#1E7F5C] shadow-[0_0_12px_rgba(216,117,38,0.55)]" style={{ transform: "scaleX(var(--power-run, 0))" }} /></span>
+              <span aria-hidden data-main-vein="" data-vein-axis="x" className="absolute bottom-0 left-0 right-0 overflow-hidden bg-[#372C1B]">
+                <i data-power-fill="" data-vein-channel="" className="block h-full origin-left bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#1E7F5C] shadow-[0_0_12px_rgba(216,117,38,0.55)]" style={{ transform: "scaleX(var(--power-run, 0))" }} />
+                <i data-energy-packet="" />
+              </span>
             </div>
           </div>
         </div>
@@ -1368,8 +1451,9 @@ export function SimplicityActs({ copy, concierge, children }: {
           seals and its frame closes. Defaults are 1, so no-JS and reduced
           readers always see the finished, checked scene. ─────────────── */}
       <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.45)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[110vh] sm:justify-center sm:pb-16 sm:pt-6">
-        <span aria-hidden data-conductor-segment="release" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
-          <i data-power-fill="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] via-[#C9A76A] to-[#1E7F5C] shadow-[0_0_9px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-release, 0))" }} />
+        <span aria-hidden data-main-vein="" data-vein-axis="y" data-conductor-segment="release" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+          <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] via-[#C9A76A] to-[#1E7F5C] shadow-[0_0_9px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-release, 0))" }} />
+          <i data-energy-packet="" />
         </span>
         {/* SCENE 5 — the review moment */}
         <h2 className="sticky top-[8vh] z-10 -mx-3 w-[calc(87%-68px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:w-auto sm:max-w-[26ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
