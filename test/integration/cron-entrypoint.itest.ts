@@ -370,6 +370,14 @@ describe("processWorkflowRuns() — the real cron entrypoint, called with no arg
 });
 
 describe("T059 — maintenance route registers both Human Work Unit recovery jobs", () => {
+  it("registers both Human Work Unit recovery sweeps in the operator sweep", async () => {
+    const source = await readFile("src/server/sweeps.ts", "utf8");
+
+    expect(source).toMatch(
+      /after\(async \(\) => \{[\s\S]*await sweepHumanWorkUnitDeadlines\(\)[\s\S]*await recoverPendingHumanUnitResumes\(\)/,
+    );
+  });
+
   it("keeps both jobs behind run(name, job) and exposes both JSON results", async () => {
     const source = await readFile("src/app/api/cron/maintenance/route.ts", "utf8");
     expect(source).toContain('run("humanUnitDeadlines", sweepHumanWorkUnitDeadlines())');

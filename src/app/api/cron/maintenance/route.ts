@@ -17,6 +17,8 @@ import {
 import { processMoneyIntents } from "@/server/money-intents";
 import { processWorkflowRuns } from "@/server/workflow-runs";
 import { deliverPendingNotifications } from "@/server/notifications";
+import { sweepHumanWorkUnitDeadlines } from "@/server/human-unit-deadlines";
+import { recoverPendingHumanUnitResumes } from "@/server/human-unit-resume";
 
 export const runtime = "nodejs";
 
@@ -70,6 +72,8 @@ async function runMaintenance(request: Request) {
     staleSessions,
     repeatWindows,
     staleActuals,
+    humanUnitDeadlines,
+    humanUnitResumes,
   ] = await Promise.all([
     run("quotes", expireStaleQuotes()),
     run("payments", expireStalePayments()),
@@ -93,6 +97,8 @@ async function runMaintenance(request: Request) {
     run("staleSessions", closeStaleWorkSessions()),
     run("repeatWindows", closeExpiredRepeatWindows()),
     run("staleActuals", recomputeStaleOperationalActuals()),
+    run("humanUnitDeadlines", sweepHumanWorkUnitDeadlines()),
+    run("humanUnitResumes", recoverPendingHumanUnitResumes()),
   ]);
   return NextResponse.json({
     quotes,
@@ -105,6 +111,8 @@ async function runMaintenance(request: Request) {
     staleSessions,
     repeatWindows,
     staleActuals,
+    humanUnitDeadlines,
+    humanUnitResumes,
     notifications,
     stalledRuns,
     workflows,
