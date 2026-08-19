@@ -889,36 +889,63 @@ export function SimplicityActs({ copy, concierge, children }: {
           [data-energy-packet] { opacity: 0.72; transform: none !important; }
         }
         @property --energy-p { syntax: "<number>"; inherits: false; initial-value: 0; }
-        @property --heart-p { syntax: "<number>"; inherits: false; initial-value: 0; }
+        @property --heart-p { syntax: "<number>"; inherits: true; initial-value: 0; }
         /* One continuous vein. Scroll owns how much of each segment is
            energized; the single shared ambient slot moves one short packet
            through every already-powered segment and gives the core one
            restrained double beat. */
-        [data-main-vein] { --vein-size: min(3px, 0.75vw); }
+        [data-main-vein] {
+          --vein-size: clamp(7px, 1.15vw, 10px);
+          border: 1px solid rgba(111, 76, 41, 0.82);
+          border-radius: 999px;
+          background: linear-gradient(180deg, rgba(15, 11, 7, 0.96), rgba(55, 37, 19, 0.86));
+          box-shadow: inset 0 0 0 1px rgba(201, 167, 106, 0.12), 0 0 12px rgba(216, 117, 38, 0.16);
+        }
         [data-main-vein][data-vein-axis="y"] { width: var(--vein-size) !important; }
         [data-main-vein][data-vein-axis="x"] { height: var(--vein-size) !important; }
-        [data-vein-channel] { border-radius: 999px; }
+        [data-main-vein]::before,
+        [data-main-vein]::after {
+          content: "";
+          position: absolute;
+          z-index: 1;
+          pointer-events: none;
+          background: rgba(201, 167, 106, 0.42);
+        }
+        [data-main-vein][data-vein-axis="x"]::before { inset: 1px 4px auto; height: 1px; }
+        [data-main-vein][data-vein-axis="x"]::after { inset: auto 4px 1px; height: 1px; }
+        [data-main-vein][data-vein-axis="y"]::before { inset: 4px auto 4px 1px; width: 1px; }
+        [data-main-vein][data-vein-axis="y"]::after { inset: 4px 1px 4px auto; width: 1px; }
+        :is([data-heart-feed], [data-heart-drop], [data-engine-spine], [data-heart-vessel]) {
+          border-color: rgba(216, 117, 38, 0.8);
+          box-shadow: inset 0 0 0 1px rgba(255, 210, 142, 0.16), 0 0 14px rgba(216, 117, 38, 0.3);
+        }
+        [data-heart-drop] { z-index: 2; }
+        [data-main-vein] > [data-vein-channel] {
+          position: absolute;
+          inset: 2px !important;
+          border-radius: 999px;
+        }
         [data-energy-packet] {
           position: absolute;
-          z-index: 2;
+          z-index: 3;
           border-radius: 999px;
-          background: linear-gradient(90deg, transparent, #F0A14A 42%, #FFD28E 66%, transparent);
-          box-shadow: 0 0 6px rgba(216,117,38,0.24);
-          opacity: calc(var(--heart-p) * 0.9);
+          background: linear-gradient(90deg, transparent 0%, #F0A14A 22%, #FFD28E 42%, rgba(216,117,38,0.52) 56%, #F0A14A 72%, transparent 100%);
+          box-shadow: 0 0 10px rgba(216,117,38,0.58), 0 0 18px rgba(216,117,38,0.22);
+          opacity: calc(0.18 + var(--heart-p) * 0.82);
           will-change: transform, opacity;
         }
         [data-main-vein][data-vein-axis="x"] > [data-energy-packet] {
-          inset-block: 0;
+          inset-block: 1px;
           left: 0;
-          width: 18%;
-          transform: translate3d(calc(var(--energy-p) * 455%), 0, 0);
+          width: 28%;
+          transform: translate3d(calc(var(--energy-p) * 257%), 0, 0);
         }
         [data-main-vein][data-vein-axis="y"] > [data-energy-packet] {
-          inset-inline: 0;
+          inset-inline: 1px;
           top: 0;
-          height: 14%;
-          background: linear-gradient(180deg, transparent, #F0A14A 42%, #FFD28E 66%, transparent);
-          transform: translate3d(0, calc(var(--energy-p) * 615%), 0);
+          height: 22%;
+          background: linear-gradient(180deg, transparent 0%, #F0A14A 22%, #FFD28E 42%, rgba(216,117,38,0.52) 56%, #F0A14A 72%, transparent 100%);
+          transform: translate3d(0, calc(var(--energy-p) * 355%), 0);
         }
         [data-await-sweep] { transform: rotate(calc(var(--energy-p) * 1turn)); }
         [data-power-fill] {
@@ -940,6 +967,15 @@ export function SimplicityActs({ copy, concierge, children }: {
         [data-heart-branch] > span:first-child {
           background: color-mix(in srgb, #1A150D, #D87526 calc(var(--active) * 100%));
           box-shadow: 0 0 calc(10px * var(--active)) rgba(216,117,38,0.65);
+        }
+        [data-heart-aura] {
+          opacity: calc(0.32 + var(--heart-p) * 0.68);
+          border-color: color-mix(in srgb, #6F4C29, #F0A14A calc(var(--heart-p) * 100%));
+          box-shadow: inset 0 0 calc(8px + var(--heart-p) * 20px) rgba(216,117,38,calc(0.08 + var(--heart-p) * 0.24)), 0 0 calc(6px + var(--heart-p) * 14px) rgba(216,117,38,calc(var(--heart-p) * 0.22));
+        }
+        [data-heart-inlet] {
+          opacity: calc(0.62 + var(--heart-p) * 0.38);
+          box-shadow: inset 0 0 calc(3px + var(--heart-p) * 7px) rgba(240,161,74,0.72), 0 0 calc(4px + var(--heart-p) * 10px) rgba(216,117,38,0.42);
         }
         [data-heart-seam] { opacity: calc(0.62 + var(--heart-p) * 0.38); transform: scaleY(calc(0.92 + var(--heart-p) * 0.08)); transform-origin: 50% 50%; }
         [data-heart-shell="left"] { transform: translateX(calc((1 - var(--engine-p, 1)) * -1px)); }
@@ -1182,7 +1218,7 @@ export function SimplicityActs({ copy, concierge, children }: {
         </div>
         {/* the drop: from the console port straight down out of the act -
             act 2's reserved escort column continues the same line */}
-        <span aria-hidden data-rail="" data-main-vein="" data-vein-axis="y" data-conductor-segment="intake" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+        <span aria-hidden data-rail="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-conductor-segment="intake" className="absolute bottom-0 left-[calc(1.5rem+(100%-3rem)*0.87)] h-[calc(var(--v7vh,100vh)*0.05)] w-px origin-top -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
           <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] to-[#C9A76A]/45 shadow-[0_0_8px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-intake, 0))" }} />
           <i data-energy-packet="" />
         </span>
@@ -1193,7 +1229,7 @@ export function SimplicityActs({ copy, concierge, children }: {
         {/* the execution datum, drawn: the same derived x as the anchors
             (87% of the padded content box) - this hairline IS the reserved
             escort column made visible, continuing the console's out-rail */}
-        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-axis="y" data-conductor-segment="problem" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-conductor-segment="problem" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
           <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-problem, 0))" }} />
           <i data-energy-packet="" />
         </span>
@@ -1252,7 +1288,7 @@ export function SimplicityActs({ copy, concierge, children }: {
       {/* ── SOLUTION — Endvera takes the request ───────────────────── */}
       <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*0.95)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.12)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
         {/* the datum continues through the handover act */}
-        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-axis="y" data-conductor-segment="engine" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+        <span aria-hidden data-lane-line="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-conductor-segment="engine" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
           <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526]/20 via-[#D87526] to-[#C9A76A]/25 shadow-[0_0_8px_rgba(216,117,38,0.45)]" style={{ transform: "scaleY(var(--power-engine, 0))" }} />
           <i data-energy-packet="" />
         </span>
@@ -1280,14 +1316,18 @@ export function SimplicityActs({ copy, concierge, children }: {
               </div>
               <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-[#D87526]">01 · {copy.artifact.locked}</span>
             </div>
-            <div aria-hidden className="mt-5 flex items-center gap-3">
+            <div aria-hidden className="relative mt-5 flex items-center gap-3">
               <span className="grid h-8 w-12 place-items-center rounded-[4px] border border-[#6F4C29] bg-[#15110B] font-mono text-[9px] text-[#C9A76A]">IN</span>
-              <span data-main-vein="" data-vein-axis="x" className="relative h-px flex-1 overflow-hidden bg-[#3A3020]">
+              <span data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="relative h-px flex-1 overflow-hidden bg-[#3A3020]">
                 <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
                 <i data-energy-packet="" />
               </span>
               <span data-port="" className="relative h-9 w-9 rounded-[5px] border border-[#6F4C29] bg-[#0D1015] shadow-[inset_0_0_0_3px_#171A20]">
                 <i className="absolute inset-y-2 left-1/2 w-px -translate-x-1/2 bg-[#D87526]" />
+              </span>
+              <span data-heart-feed="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute left-full top-1/2 h-px w-[90px] -translate-y-1/2 overflow-hidden sm:w-16">
+                <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
+                <i data-energy-packet="" />
               </span>
             </div>
             <p className="mt-3 border-t border-[#292E38] pt-2 font-mono text-[9px] uppercase tracking-[0.11em] text-[#8C7A58]">→ {copy.engine.title}</p>
@@ -1319,6 +1359,7 @@ export function SimplicityActs({ copy, concierge, children }: {
                   aria-hidden
                   data-v7-trail=""
                   data-main-vein=""
+                  data-vein-vessel=""
                   data-vein-axis="x"
                   data-conductor-segment="run"
                   className="absolute inset-0 origin-left bg-gradient-to-r from-transparent via-[#D87526] to-[#D87526]/25 opacity-80 shadow-[0_0_10px_rgba(216,117,38,0.42)] will-change-transform"
@@ -1330,6 +1371,10 @@ export function SimplicityActs({ copy, concierge, children }: {
                 <span data-v7-anchor="walk-start" className="absolute right-[10%] top-0 h-px w-px" />
                 <span data-v7-anchor="walk-end" className="absolute right-[12%] top-0 h-px w-px sm:right-[6%]" />
               </div>
+              <span aria-hidden data-heart-drop="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="pointer-events-none absolute right-[13%] top-[22px] z-[1] h-[calc(100%+var(--v7vh,100vh)*0.08+72px)] overflow-hidden sm:left-1/2 sm:right-auto sm:h-[calc(100%+6vh+40px)] sm:-translate-x-1/2">
+                <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
+                <i data-energy-packet="" />
+              </span>
               {reduced && <StaticArtifact state="locked" className="absolute left-[58%] top-[-12px]" />}
             </div>
             {/* SCENE 4 (NARRATIVE): six stations on the datum. Each is a
@@ -1347,6 +1392,10 @@ export function SimplicityActs({ copy, concierge, children }: {
                 band. The machine below can therefore use the full content
                 width without rebuilding the proven R2.2 escort path. */}
             <div data-living-engine="" className="relative w-full overflow-hidden rounded-[12px] border border-[#2A303B] bg-[linear-gradient(150deg,#15181E,#0A0C10_72%)] p-2.5 shadow-[0_24px_70px_rgba(0,0,0,0.58)] sm:p-4">
+              <span aria-hidden data-engine-spine="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="pointer-events-none absolute inset-y-0 right-[47px] z-[1] overflow-hidden sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
+                <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
+                <i data-energy-packet="" />
+              </span>
               <div data-supervisor-band="" className="flex min-h-[96px] items-start justify-between gap-3 border-b border-[#252A33] pb-2.5 pr-[92px] pt-1 sm:min-h-12 sm:items-center sm:pr-0 sm:pt-0">
                 <div className="min-w-0">
                   <p className={`${mono} text-[#C9A76A]`}>{copy.engine.title}</p>
@@ -1365,7 +1414,7 @@ export function SimplicityActs({ copy, concierge, children }: {
                       <span aria-hidden className="mr-1 font-mono text-[8px] text-[#D87526]">0{i + 1}</span>{item}
                     </p>
                   ))}
-                  <span aria-hidden data-main-vein="" data-vein-axis="x" className="absolute bottom-[-7px] left-0 right-0 overflow-hidden bg-[#3A3020]/70 sm:bottom-auto sm:left-auto sm:right-[-10px] sm:top-1/2 sm:h-[3px] sm:w-[12px]">
+                  <span aria-hidden data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute bottom-[-7px] left-0 right-0 overflow-hidden bg-[#3A3020]/70 sm:bottom-auto sm:left-auto sm:right-[-10px] sm:top-1/2 sm:h-[3px] sm:w-[12px]">
                     <i data-vein-channel="" className="absolute inset-0 bg-[#D87526]" />
                     <i data-energy-packet="" />
                   </span>
@@ -1373,9 +1422,13 @@ export function SimplicityActs({ copy, concierge, children }: {
 
                 {/* The heart is an abstract machined join: two onyx masses,
                     one amber seam, one route chamber and one evidence ledger. */}
-                <div data-engine-core="" className="relative min-h-[246px] overflow-hidden rounded-[10px] border border-[#3A4150] bg-[#0B0E13] p-3 pr-[106px] sm:min-h-[270px] sm:p-4 sm:pr-4">
+                <div data-engine-core="" data-heart-beat="" className="relative min-h-[246px] overflow-hidden rounded-[10px] border border-[#3A4150] bg-[#0B0E13] p-3 pr-[106px] sm:min-h-[270px] sm:p-4 sm:pr-4">
                   <span aria-hidden data-heart-shell="left" className="absolute inset-y-0 left-0 w-[49.7%] bg-[linear-gradient(145deg,#191D24,#101319)]" />
                   <span aria-hidden data-heart-shell="right" className="absolute inset-y-0 right-0 w-[49.7%] bg-[linear-gradient(215deg,#171A20,#0D1015)]" />
+                  <span aria-hidden data-heart-vessel="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute left-0 right-0 top-1/2 z-[1] -translate-y-1/2 overflow-hidden">
+                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
+                    <i data-energy-packet="" />
+                  </span>
                   {/* The proven escort corridor becomes a visible power bay
                       instead of empty right-side space. A2 may travel over
                       the vein; all readable/deliverable content stays left. */}
@@ -1383,12 +1436,10 @@ export function SimplicityActs({ copy, concierge, children }: {
                     <i className="absolute left-4 right-4 top-[26%] h-px bg-[#6F4C29]/40" />
                     <i className="absolute left-4 right-4 top-1/2 h-px bg-[#6F4C29]/35" />
                     <i className="absolute left-4 right-4 top-[74%] h-px bg-[#6F4C29]/30" />
-                    <i data-main-vein="" data-vein-axis="y" className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden bg-[#3A3020]/70">
-                      <b data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
-                      <b data-energy-packet="" />
-                    </i>
                   </span>
-                  <span aria-hidden data-heart-seam="" data-heart-beat="" className="absolute inset-y-3 right-[47px] z-[1] w-[2px] translate-x-1/2 bg-gradient-to-b from-transparent via-[#F0A14A] to-transparent shadow-[0_0_8px_rgba(216,117,38,0.28)] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
+                  <span aria-hidden data-heart-seam="" className="absolute inset-y-3 right-[40px] z-[1] w-[2px] translate-x-1/2 bg-gradient-to-b from-transparent via-[#F0A14A] to-transparent shadow-[0_0_8px_rgba(216,117,38,0.28)] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
+                  <span aria-hidden data-heart-inlet="" className="absolute right-[33px] top-1/2 z-[4] h-[14px] w-[14px] -translate-y-1/2 rounded-[3px] border border-[#D87526] bg-[#17110A] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
+                  <span aria-hidden data-heart-aura="" className="pointer-events-none absolute inset-1 z-[3] rounded-[8px] border border-[#6F4C29]/60" />
 
                   <div className="relative z-[2] mx-auto max-w-[310px] text-center">
                     <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#8C7A58]">{copy.engine.route}</p>
@@ -1435,7 +1486,7 @@ export function SimplicityActs({ copy, concierge, children }: {
                   </div>
                 </div>
               </div>
-              <span aria-hidden data-main-vein="" data-vein-axis="x" className="absolute bottom-0 left-0 right-0 overflow-hidden bg-[#372C1B]">
+              <span aria-hidden data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute bottom-0 left-0 right-0 overflow-hidden bg-[#372C1B]">
                 <i data-power-fill="" data-vein-channel="" className="block h-full origin-left bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#1E7F5C] shadow-[0_0_12px_rgba(216,117,38,0.55)]" style={{ transform: "scaleX(var(--power-run, 0))" }} />
                 <i data-energy-packet="" />
               </span>
@@ -1451,7 +1502,7 @@ export function SimplicityActs({ copy, concierge, children }: {
           seals and its frame closes. Defaults are 1, so no-JS and reduced
           readers always see the finished, checked scene. ─────────────── */}
       <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.45)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[110vh] sm:justify-center sm:pb-16 sm:pt-6">
-        <span aria-hidden data-main-vein="" data-vein-axis="y" data-conductor-segment="release" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
+        <span aria-hidden data-main-vein="" data-vein-vessel="" data-vein-axis="y" data-conductor-segment="release" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 overflow-hidden bg-[#C9A76A]/15">
           <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-top bg-gradient-to-b from-[#D87526] via-[#C9A76A] to-[#1E7F5C] shadow-[0_0_9px_rgba(216,117,38,0.5)]" style={{ transform: "scaleY(var(--power-release, 0))" }} />
           <i data-energy-packet="" />
         </span>

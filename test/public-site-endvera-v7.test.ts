@@ -278,12 +278,32 @@ describe("ENDVERA x V7 transplant", () => {
   it("turns the conductor into one continuous living vein instead of disconnected hairlines", () => {
     const engine = read(ENGINE);
     expect((engine.match(/data-main-vein=/g) ?? []).length, "every narrative segment belongs to the same main vein").toBeGreaterThanOrEqual(5);
+    expect((engine.match(/data-vein-vessel=/g) ?? []).length, "the conductor is a bounded vessel, not a one-pixel rule").toBeGreaterThanOrEqual(6);
     expect(engine).toMatch(/data-main-vein[\s\S]*data-vein-channel/);
     expect(engine).toMatch(/data-main-vein[\s\S]*data-energy-packet/);
-    expect(engine).toMatch(/data-main-vein[\s\S]*min\(3px/);
+    expect(engine).toMatch(/data-main-vein[\s\S]*clamp\(7px/);
+    expect(engine).toMatch(/\[data-main-vein\][\s\S]*border:[\s\S]*inset/);
+    expect(engine).toMatch(/data-energy-packet[\s\S]*linear-gradient[\s\S]*#FFD28E[\s\S]*#F0A14A/);
     expect(engine).toMatch(/data-energy-packet[\s\S]*animation:\s*v7pulse/);
     expect(engine).toMatch(/\[data-await-sweep\][\s\S]*animation:\s*v7pulse/);
     expect((engine.match(/\binfinite\b/g) ?? []).length, "the vein and intake share the one ambient clock").toBe(1);
+  });
+
+  it("routes the request into the heart and makes the heart receive the shared pulse", () => {
+    const engine = read(ENGINE);
+    expect(engine).toMatch(/data-engine-handoff[\s\S]*data-port[\s\S]*data-heart-feed/);
+    expect(engine).toMatch(/data-heart-feed[\s\S]*data-main-vein[\s\S]*data-vein-channel[\s\S]*data-energy-packet/);
+    expect((engine.match(/data-heart-drop=/g) ?? []).length, "the carry lane must descend into the engine frame").toBe(1);
+    expect((engine.match(/data-engine-spine=/g) ?? []).length, "one powered spine must connect the engine frame to its core").toBe(1);
+    expect((engine.match(/data-heart-inlet=/g) ?? []).length, "the spine and heart vessel meet at one visible inlet").toBe(1);
+    expect(engine).toMatch(/data-heart-drop[\s\S]*data-main-vein[\s\S]*data-vein-channel/);
+    expect(engine).toMatch(/data-engine-spine[\s\S]*data-main-vein[\s\S]*data-vein-channel/);
+    expect((engine.match(/data-heart-vessel=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-heart-aura=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-heart-beat=/g) ?? []).length, "one element owns the shared heartbeat").toBe(1);
+    expect(engine).toMatch(/@property\s+--heart-p[\s\S]*inherits:\s*true/);
+    expect(engine).toMatch(/data-engine-core=""\s+data-heart-beat=""/);
+    expect(engine).toMatch(/data-heart-aura[\s\S]*--heart-p/);
   });
 
   it("keeps A2's torso stable while scroll locomotion is expressed by the feet", () => {
