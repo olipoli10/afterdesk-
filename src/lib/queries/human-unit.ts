@@ -4,6 +4,15 @@ import { Prisma, type HumanWorkUnitState } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";
 import { ACTIVE_CLAIM_STATUSES } from "@/lib/worker-eligibility";
+import { requireRole } from "@/lib/authz";
+import {
+  safeNextAction,
+  safeNextActionForRefusal,
+  type HumanUnitCause,
+  type HumanUnitRefusalCause,
+  type HumanUnitState,
+  type SafeNextAction,
+} from "@/lib/human-unit-state";
 import {
   DATA_CLASSES,
   isAtLeastAsRestrictive,
@@ -356,4 +365,145 @@ export async function humanUnitForWorker(input: {
       revisionInstructions: own?.decision?.revisionInstructions ?? null,
     };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+}
+
+export type AdminUnitView = {
+  taskId: string;
+  definition: unknown | null;
+  unit: unknown | null;
+  candidates: unknown[];
+  decisions: unknown[];
+  acceptance: unknown | null;
+  resume: unknown | null;
+  transitions: unknown[];
+  alerts: unknown[];
+  answers: {
+    why: string;
+    state: HumanUnitState | "not_admitted";
+    refusalCause: string | null;
+    pausedDetail: string | null;
+    whoMayAct: "eligible_worker_pool" | "current_claimant" | "admin" | "system";
+    applicableDeadline: Date | null;
+    remainingRevisions: number | null;
+    safeNextAction: SafeNextAction;
+  };
+};
+
+function adminCause(state: HumanUnitState, cause: string | null): HumanUnitCause | null {
+  if (state !== "paused") return null;
+  switch (cause) {
+    case "economics_exceeds_reserved": return "paused:economics";
+    case "publication_deadline": return "paused:publication_deadline";
+    case "submission_deadline":
+    case "claim_lease_expired": return "paused:submission_deadline";
+    case "input_unavailable": return "paused:input_unavailable";
+    case "classification_conflict": return "paused:classification_conflict";
+    default: return null;
+  }
+}
+
+function adminActor(state: HumanUnitState): AdminUnitView["answers"]["whoMayAct"] {
+  switch (state) {
+    case "published": return "eligible_worker_pool";
+    case "claimed":
+    case "revision_requested": return "current_claimant";
+    case "admitted":
+    case "accepted": return "system";
+    case "submitted":
+    case "in_review":
+    case "paused":
+    case "exhausted":
+    case "resumed":
+    case "withdrawn": return "admin";
+  }
+}
+
+/** Complete operator projection. No caller has to infer why work is waiting. */
+export async function humanUnitForAdmin(taskId: string): Promise<AdminUnitView | null> {
+  await requireRole("ADMIN");
+
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: {
+      id: true,
+      workflowRun: { select: { humanUnitAdmissionRefusalCause: true } },
+      humanWorkUnit: {
+        include: {
+          definition: true,
+          candidates: { include: { files: true, decision: true }, orderBy: { submittedAt: "asc" } },
+          decisions: { orderBy: { decidedAt: "asc" } },
+          acceptance: true,
+          resume: true,
+          transitions: { orderBy: { seq: "asc" } },
+          alerts: { orderBy: { firedAt: "asc" } },
+        },
+      },
+    },
+  });
+  if (!task) return null;
+
+  if (!task.humanWorkUnit) {
+    const refusal = task.workflowRun?.humanUnitAdmissionRefusalCause as HumanUnitRefusalCause | null;
+    if (!refusal) return null;
+    return {
+      taskId,
+      definition: null,
+      unit: null,
+      candidates: [],
+      decisions: [],
+      acceptance: null,
+      resume: null,
+      transitions: [],
+      alerts: [],
+      answers: {
+        why: `not_admitted:${refusal}`,
+        state: "not_admitted",
+        refusalCause: refusal,
+        pausedDetail: null,
+        whoMayAct: "admin",
+        applicableDeadline: null,
+        remainingRevisions: null,
+        safeNextAction: safeNextActionForRefusal(refusal),
+      },
+    };
+  }
+
+  const { definition, candidates, decisions, acceptance, resume, transitions, alerts, ...unit } = task.humanWorkUnit;
+  const state = unit.state as HumanUnitState;
+  const cause = adminCause(state, unit.refusalCause);
+  const next = safeNextAction(state, cause);
+  // Terminal success/withdrawal has no waiting action and therefore is not an
+  // operator wait. If queried directly, the safe action remains fail-closed.
+  const safeNext = next ?? "open_manual_residual_path";
+  const applicableDeadline = state === "published"
+    ? unit.publicationDeadlineAt
+    : state === "claimed"
+      ? [unit.claimLeaseExpiresAt, unit.submissionDeadlineAt]
+          .filter((value): value is Date => value instanceof Date)
+          .sort((a, b) => a.getTime() - b.getTime())[0] ?? null
+      : state === "revision_requested"
+        ? unit.submissionDeadlineAt
+        : null;
+
+  return {
+    taskId,
+    definition,
+    unit,
+    candidates,
+    decisions,
+    acceptance,
+    resume,
+    transitions,
+    alerts,
+    answers: {
+      why: [state, unit.refusalCause, unit.pausedDetail].filter(Boolean).join(":"),
+      state,
+      refusalCause: unit.refusalCause,
+      pausedDetail: unit.pausedDetail,
+      whoMayAct: adminActor(state),
+      applicableDeadline,
+      remainingRevisions: unit.remainingRevisions,
+      safeNextAction: safeNext,
+    },
+  };
 }

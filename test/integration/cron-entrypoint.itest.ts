@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
 import { compileWorkflowForTask, processWorkflowRuns } from "@/server/workflow-runs";
@@ -365,5 +366,14 @@ describe("processWorkflowRuns() — the real cron entrypoint, called with no arg
     expect(["pending", "ready"]).toContain(controlStep.status);
     expect(controlStep.attempts).toBe(0);
     expect(controlStep.lockedBy).toBeNull();
+  });
+});
+
+describe("T059 — maintenance route registers both Human Work Unit recovery jobs", () => {
+  it("keeps both jobs behind run(name, job) and exposes both JSON results", async () => {
+    const source = await readFile("src/app/api/cron/maintenance/route.ts", "utf8");
+    expect(source).toContain('run("humanUnitDeadlines", sweepHumanWorkUnitDeadlines())');
+    expect(source).toContain('run("humanUnitResumes", recoverPendingHumanUnitResumes())');
+    expect(source).toMatch(/humanUnitDeadlines[\s\S]*humanUnitResumes/);
   });
 });
