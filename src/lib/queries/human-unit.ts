@@ -161,8 +161,6 @@ export async function humanUnitForWorker(input: {
       select: {
         id: true,
         state: true,
-        definitionId: true,
-        snapshotId: true,
         definition: { select: { eligibility: true, declaredInputs: true, dataClass: true } },
       },
     });
@@ -198,8 +196,6 @@ export async function humanUnitForWorker(input: {
         AND u."claimedById" = ${input.workerId}
         AND u."claimGeneration" = ${input.claimGeneration}
         AND t."claimedById" = ${input.workerId}
-        AND s.id = ${preflight.snapshotId}
-        AND d.id = ${preflight.definitionId}
       LIMIT 1
     `;
     if (binding.length !== 1) return null;
@@ -236,8 +232,6 @@ export async function humanUnitForWorker(input: {
                 : {}),
             },
           },
-          definitionId: preflight.definitionId,
-          snapshotId: preflight.snapshotId,
         },
         // Terminal workers get status only. Definition inputs and candidate
         // content are not selected into this lifecycle window at all.
@@ -279,15 +273,11 @@ export async function humanUnitForWorker(input: {
               : {}),
           },
         },
-        definitionId: preflight.definitionId,
-        snapshotId: preflight.snapshotId,
       },
       select: {
         state: true,
         remainingRevisions: true,
         submissionDeadlineAt: true,
-        runId: true,
-        snapshotId: true,
         definition: {
           select: {
             instructions: true,
@@ -295,7 +285,6 @@ export async function humanUnitForWorker(input: {
             outputSchema: true,
             requiredArtifactKinds: true,
             acceptanceCriteria: true,
-            dataClass: true,
           },
         },
         candidates: {
@@ -321,7 +310,7 @@ export async function humanUnitForWorker(input: {
       if (entry.kind === "snapshot_file") {
         const file = await tx.taskAcceptanceSnapshotFile.findFirst({
           where: {
-            snapshotId: unit.snapshotId,
+            snapshot: { humanWorkUnit: { is: { id: preflight.id } } },
             OR: [{ id: entry.ref }, { fileId: entry.ref }],
           },
           select: { fileId: true, fileName: true, sizeBytes: true },
@@ -337,7 +326,7 @@ export async function humanUnitForWorker(input: {
       const artifact = await tx.file.findFirst({
         where: {
           taskId: input.taskId,
-          workflowRunId: unit.runId,
+          workflowRun: { humanWorkUnit: { is: { id: preflight.id } } },
           kind: "artifact",
           purgedAt: null,
           artifactVisibility: { in: ["worker_after_claim", "deliverable_candidate"] },

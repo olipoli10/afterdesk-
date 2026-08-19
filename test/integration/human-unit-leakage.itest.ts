@@ -1,7 +1,13 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
 import { humanUnitForWorker } from "@/lib/queries/human-unit";
-import { clientTaskSelect } from "@/lib/queries/tasks";
+import {
+  clientTaskSelect,
+  executionReportForClient,
+  taskForClient,
+} from "@/lib/queries/tasks";
 import { createWorker } from "./fixtures";
 import { createUs4Unit } from "./human-unit-us4-fixtures";
 
@@ -174,5 +180,47 @@ describe("T054 worker projection is an allowlist, not a filtered task", () => {
     expect(keys.has("vaPayoutCents")).toBe(false);
     expect(keys.has("claimedById")).toBe(false);
     expect(keys.has("claimedBy")).toBe(false);
+  });
+});
+
+describe("T066 admitted units close the existing worker-page leak", () => {
+  const workerPage = readFileSync(
+    join(__dirname, "..", "..", "src", "app", "va", "tasks", "[id]", "page.tsx"),
+    "utf8",
+  );
+
+  it("renders the declared unit projection instead of the generic brief and raw file list", () => {
+    // This is deliberately RED until T069 mounts the T067 panel.  It is a
+    // page-level regression net: a secure query alone is insufficient while
+    // the established VA page still renders Task.description and Task.files.
+    expect(workerPage).toContain("humanUnitForWorker");
+    expect(workerPage).toMatch(/humanUnit\s*\?[\s\S]{0,2400}task\.description/);
+    expect(workerPage).toMatch(/humanUnit\s*\?[\s\S]{0,4200}task\.files\.map/);
+  });
+
+  it("leaves the client task view and execution report byte-identical when unit audit rows exist", async () => {
+    const fixture = await createUs4Unit();
+    const task = await prisma.task.findUniqueOrThrow({
+      where: { id: fixture.task.id },
+      select: { clientId: true },
+    });
+    const beforeTask = await taskForClient(fixture.task.id, task.clientId);
+    const beforeReport = await executionReportForClient(fixture.task.id, task.clientId);
+
+    await prisma.taskEvent.createMany({
+      data: [
+        "human_unit_claimed",
+        "human_unit_submitted",
+        "human_unit_paused",
+        "human_unit_resumed",
+      ].map((action) => ({ taskId: fixture.task.id, action })),
+    });
+
+    expect(JSON.stringify(await taskForClient(fixture.task.id, task.clientId))).toBe(
+      JSON.stringify(beforeTask),
+    );
+    expect(JSON.stringify(await executionReportForClient(fixture.task.id, task.clientId))).toBe(
+      JSON.stringify(beforeReport),
+    );
   });
 });
