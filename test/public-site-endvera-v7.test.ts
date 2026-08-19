@@ -142,21 +142,53 @@ describe("ENDVERA x V7 transplant", () => {
     expect(dictionary).toMatch(/accent:\s*"One coordinated run\."/);
   });
 
-  it("makes A2 feel alive with the existing player and a scroll-owned amber wake", () => {
+  it("gives A2 bounded rest-life, scroll-owned locomotion and scene reactions", () => {
     const a2 = read(A2);
     const css = read(A2_CSS);
     const engine = read(ENGINE);
     const idle = a2.match(/export const IDLE:[\s\S]*?\n\];/)?.[0] ?? "";
     expect(idle).toMatch(/ex:\s*-1[\s\S]*ex:\s*1/);
     expect(idle).toMatch(/lid:\s*1/);
-    expect(idle, "idle life may move the gaze, not shake A2's body while the dock travels").not.toMatch(/\b(?:dx|dy|hy|hdx|hdy|tx|ty|bfx|bfy|ffx|ffy|sq)\s*:/);
+    expect(idle, "rest-life includes a restrained body or head shift").toMatch(/\b(?:dx|dy|hy|hdx|hdy)\s*:/);
     expect(a2).toMatch(/hasAttribute\("data-v7-escorting"\)/);
-    expect(a2).toMatch(/5000\s*\+\s*Math\.random\(\)\s*\*\s*5000/);
+    expect(a2).toMatch(/2800\s*\+\s*Math\.random\(\)\s*\*\s*2200/);
+    expect(a2).toMatch(/MutationObserver/);
+    expect(a2).toMatch(/data-a2-scene/);
+    expect(a2).toMatch(/data-a2-whisper/);
     expect(css).toMatch(/data-v7-escorting="on"/);
     expect(css).toMatch(/rgba\(216,\s*117,\s*38/);
+    expect(css).toMatch(/data-a2-whisper/);
     expect(engine).toMatch(/data-v7-trail/);
     expect(engine).toMatch(/data-v7-trail[\s\S]*scaleX\(var\(--walk/);
     expect(engine).toMatch(/data-v7-trail[\s\S]*origin-left/);
+    expect(engine).toMatch(/--a2-travel-y/);
+    expect(engine).toMatch(/data-a2-scene/);
+    expect(engine).toMatch(/translate3d\(0,\s*var\(--a2-travel-y/);
+    expect(engine).not.toMatch(/@keyframes\s+a2(?:walk|bob|travel)/);
+  });
+
+  it("keeps the A2 guide contextual, localized and static under reduced motion", () => {
+    const a2 = read(A2);
+    const css = read(A2_CSS);
+    const copy = read(HOME_ASSEMBLY);
+    for (const phrase of [
+      "I carry the request while Endvera gets the work finished.",
+      "Je porte la demande pendant qu'Endvera termine le travail.",
+      "Llevo la solicitud mientras Endvera termina el trabajo.",
+      "Dala ko ang request habang tinatapos ng Endvera ang trabaho.",
+    ]) expect(copy).toContain(phrase);
+    expect(a2).toMatch(/copy\.guide\.hero/);
+    expect(a2).toContain("if (reducedRef.current) { stop(); setRects(A2_REST); return; }");
+    expect(a2).toMatch(/launcherPlay\(SEQ\.arrival\)[\s\S]*?\}, \[launcherPlay\]\);/);
+    expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-being/);
+    expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-whisper/);
+  });
+
+  it("reserves the solution copy outside A2's mobile transport lane", () => {
+    const engine = read(ENGINE);
+    expect(engine).toMatch(
+      /<p className="max-w-\[calc\(87%-80px\)\][^"]*sm:max-w-\[44ch\][^"]*">\{copy\.solution\.sub\}<\/p>/,
+    );
   });
 
   it("uses the single ambient slot for a moving awaiting bar and disables it for reduced motion", () => {

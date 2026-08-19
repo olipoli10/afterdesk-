@@ -70,11 +70,25 @@ export const SEQ: Record<string, Pose[]> = {
     { dx: 1 }, { dx: 2, dy: 1, sq: 1 }, { dx: 3, dy: 1, sq: 1, lid: 1 }, { dx: 3, dy: 1, sq: 1, lid: 1 },
   ],
 };
+/* Rest-life is deliberately asymmetric and sparse: gaze is common, a head
+   lift or weight shift is occasional, and the two-pixel hop is rare because
+   it is only one of six equally weighted sequences. Every sequence returns
+   to the frozen rest skeleton. The escort engine resets it before travel. */
 export const IDLE: Pose[][] = [
   [{ ex: -1 }, { ex: -1 }, {}, { ex: 1 }, { ex: 1 }, {}],
   [{ lid: 1 }, {}, {}],
   [{ ex: 1 }, {}, { ex: -1 }, {}],
+  [{ hy: -1, hdy: -1 }, { hy: -1, hdy: -1, ex: -1 }, { hy: -1, hdy: -1 }, {}],
+  [{ dx: 1 }, { dx: 1, hdx: 1 }, { dx: 1 }, {}],
+  [{ dy: -1 }, { dy: -2 }, { dy: -1 }, {}],
 ];
+
+const STORY_REACTIONS: Record<string, Pose[]> = {
+  solution: [{ hy: -1, hdy: -1 }, { hy: -1, hdy: -1, ex: -1 }, { ex: -1 }, {}],
+  run: [{ ex: 1 }, { ex: 1, ffy: -1 }, { ex: -1, bfy: -1 }, { ex: -1 }, {}],
+  review: [{ hdx: -1, ex: -1 }, { hdx: -1, ex: -1 }, { ex: -1 }, {}],
+  outcome: [{ hy: -1, hdy: -1, ffy: -1 }, { hy: -1, hdy: -1 }, { ffy: -1 }, {}],
+};
 
 /* Single-being guard: the DOM may never hold two A2 renders. */
 export function assertSingleA2() {
@@ -110,12 +124,14 @@ function A2Sprite({ rects, px, label }: { rects: Rect[]; px: number; label?: str
 function usePlayer(reduced: boolean) {
   const [rects, setRects] = useState<Rect[]>(A2_REST);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reducedRef = useRef(reduced);
+  useEffect(() => { reducedRef.current = reduced; }, [reduced]);
   const stop = useCallback(() => {
     if (timer.current) { clearInterval(timer.current); timer.current = null; }
   }, []);
   const play = useCallback((frames: Pose[], done?: () => void) => {
     stop();
-    if (reduced) {
+    if (reducedRef.current) {
       setRects(a2pose(frames[frames.length - 1]));
       done?.();
       return;
@@ -123,17 +139,23 @@ function usePlayer(reduced: boolean) {
     let i = 0;
     setRects(a2pose(frames[0]));
     timer.current = setInterval(() => {
+      if (reducedRef.current) { stop(); setRects(A2_REST); return; }
       i++;
       if (i >= frames.length) { stop(); done?.(); return; }
       setRects(a2pose(frames[i]));
     }, 100);
-  }, [reduced, stop]);
+  }, [stop]);
+  const reset = useCallback(() => {
+    stop();
+    setRects(A2_REST);
+  }, [stop]);
   useEffect(() => stop, [stop]);
-  return { rects, play, setRects };
+  return { rects, play, setRects, reset };
 }
 
 export type ConciergeCopy = {
   ask: string; hail: string; title: string; intro: string;
+  guide: { hero: string };
   suggestions: [string, string, string];
   answers: { verified: string; verifiedCite: string; verifiedHref: string;
              unknown: string; unavailable: string };
@@ -155,12 +177,15 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   /* the ONE being's location: launcher -> traveling -> panel and back */
   const [location, setLocation] = useState<"launcher" | "traveling" | "panel">("launcher");
   const [open, setOpen] = useState(false);
-  const [hail, setHail] = useState(false);
+  const [whisper, setWhisper] = useState<"guide" | "ask" | null>(null);
   const [answer, setAnswer] = useState<"" | "verified" | "unknown" | "unavailable">("");
   const launcher = usePlayer(reduced);
   const panelA2 = usePlayer(reduced);
+  const launcherPlay = launcher.play;
+  const launcherReset = launcher.reset;
   const dialogRef = useRef<HTMLDivElement>(null);
   const launchRef = useRef<HTMLButtonElement>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
   const arrived = useRef(false);
   /* every timer lives in a ref: an event handler's return value is ignored
      by React, so cleanup MUST go through these (open/close/unmount) */
@@ -174,25 +199,24 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   }, []);
   useEffect(() => clearAllTimers, [clearAllTimers]);
 
-  /* Arrival & Hail: once per page view after the world settles. Both the
-     arrival delay and the hail dismissal are ref-held so unmount (and
+  /* Arrival & guide: once per page view after the world settles. Both the
+     arrival delay and the guide dismissal are ref-held so unmount (and
      Strict Mode's double-invoke) really cancels them. */
   useEffect(() => {
     arrivalTimer.current = setTimeout(() => {
       if (arrived.current) return;
       arrived.current = true;
-      launcher.play(SEQ.arrival);
-      setHail(true);
-      hailTimer.current = setTimeout(() => setHail(false), 3200);
-    }, 2400);
+      launcherPlay(SEQ.arrival);
+      setWhisper("guide");
+      hailTimer.current = setTimeout(() => setWhisper(null), 4800);
+    }, 900);
     return () => {
       if (arrivalTimer.current) { clearTimeout(arrivalTimer.current); arrivalTimer.current = null; }
       if (hailTimer.current) { clearTimeout(hailTimer.current); hailTimer.current = null; }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [launcherPlay]);
 
-  /* rare idle micro-life while resting in the launcher */
+  /* restrained, recurring life while resting in the launcher */
   useEffect(() => {
     if (location !== "launcher" || reduced) return;
     let alive = true;
@@ -207,12 +231,36 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
           launcher.play(IDLE[Math.floor(Math.random() * IDLE.length)]);
         }
         if (alive) tick();
-      }, 5000 + Math.random() * 5000);
+      }, 2800 + Math.random() * 2200);
     };
     tick();
     return () => { alive = false; clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, reduced]);
+
+  /* The story engine owns travel and publishes only discrete scene changes.
+     This observer adds no clock: it resets any rest pose when escort begins,
+     then spends the existing 10fps player on one short reaction per scene. */
+  useEffect(() => {
+    const dock = dockRef.current;
+    if (!dock) return;
+    let seen = "";
+    const react = () => {
+      if (!dock.hasAttribute("data-v7-escorting")) {
+        seen = "";
+        return;
+      }
+      const scene = dock.getAttribute("data-a2-scene") ?? "";
+      if (scene === seen) return;
+      seen = scene;
+      launcherReset();
+      if (!reduced && STORY_REACTIONS[scene]) launcherPlay(STORY_REACTIONS[scene]);
+    };
+    const observer = new MutationObserver(react);
+    observer.observe(dock, { attributes: true, attributeFilter: ["data-v7-escorting", "data-a2-scene"] });
+    react();
+    return () => observer.disconnect();
+  }, [launcherPlay, launcherReset, reduced]);
 
   /* guard runs after every location/open change - two beings must never
      coexist, including mid-transfer */
@@ -222,6 +270,7 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   const openPanel = useCallback(() => {
     openRef.current = true;
     setOpen(true);
+    setWhisper(null);
     setAnswer("");
     /* the same being leaves the launcher, travels, arrives in the panel;
        any previous travel is cancelled first, and a late callback can
@@ -291,9 +340,11 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   return (
     <>
       {/* launcher: 44x44 semantic button carrying the 32px being */}
-      <div className={styles.dock} data-a2-dock="">
-        {hail && !open && (
-          <span className={styles.hail} aria-hidden="true">{copy.hail}</span>
+      <div ref={dockRef} className={styles.dock} data-a2-dock="">
+        {whisper && !open && (
+          <span className={styles.hail} data-a2-whisper={whisper} aria-hidden="true">
+            {whisper === "guide" ? copy.guide.hero : copy.hail}
+          </span>
         )}
         <button
           ref={launchRef}
@@ -303,10 +354,18 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
           aria-haspopup="dialog"
           aria-expanded={open}
           onClick={() => (open ? closePanel() : openPanel())}
-          onMouseEnter={() => { if (!open && location === "launcher") setHail(true); }}
-          onMouseLeave={() => setHail(false)}
-          onFocus={() => { if (!open && location === "launcher") setHail(true); }}
-          onBlur={() => setHail(false)}
+          onMouseEnter={() => {
+            if (!open && location === "launcher") {
+              setWhisper((current) => current === "guide" ? current : "ask");
+            }
+          }}
+          onMouseLeave={() => setWhisper((current) => current === "ask" ? null : current)}
+          onFocus={() => {
+            if (!open && location === "launcher") {
+              setWhisper((current) => current === "guide" ? current : "ask");
+            }
+          }}
+          onBlur={() => setWhisper((current) => current === "ask" ? null : current)}
         >
           {/* the being at MEANINGFUL scale: exactly 2x the frozen 32px
               skeleton - an integer scale, so crispEdges stays crisp and

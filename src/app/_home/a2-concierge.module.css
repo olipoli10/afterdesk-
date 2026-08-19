@@ -12,35 +12,48 @@
   gap: 0.55rem;
 }
 
-/* A-REFOCUS: the hail is INTENT-ONLY - hidden at rest so nothing competes
-   with the focal pair, revealed when the visitor hovers or focuses A2's
-   post (desktop; never on phones). Discoverability without decoration. */
+/* A2 speaks once at the door, then only on intent. The note is part of the
+   hero post, not the transport lane: it disappears the instant escort begins
+   so no floating chat bubble can cover the story. */
 .hail {
-  display: none;
+  display: block;
   font-family: var(--font-geist-mono, ui-monospace, monospace);
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #c9a76a;
-  position: relative;
-  padding-right: 1.6rem;
-  white-space: nowrap;
-}
-@media (min-width: 641px) {
-  .dock:hover .hail,
-  .dock:focus-within .hail {
-    display: block;
-  }
+  font-size: 0.68rem;
+  line-height: 1.45;
+  letter-spacing: 0.045em;
+  color: #c8ccd4;
+  position: absolute;
+  right: 70px;
+  bottom: 15px;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 120px));
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(201, 167, 106, 0.28);
+  border-radius: 7px;
+  background: rgba(15, 18, 24, 0.96);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+  animation: a2whisperin 220ms ease-out both;
 }
 .hail::after {
   content: "";
   position: absolute;
-  right: 0;
+  left: 100%;
   top: 50%;
-  width: 1.25rem;
+  width: 0.7rem;
   height: 1px;
   background: #c9a76a;
-  opacity: 0.6;
+  opacity: 0.5;
+}
+@keyframes a2whisperin {
+  from { opacity: 0; transform: translateX(5px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.hail[data-a2-whisper="ask"] {
+  color: #e2c486;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  white-space: nowrap;
 }
 
 /* A-REFOCUS: at its post the being stands FREE on the hero's own hairline
@@ -81,6 +94,7 @@
 .launch > svg {
   position: relative;
   z-index: 1;
+  transition: transform 80ms linear;
 }
 .launch:hover::before,
 .launch:focus-visible::before {
@@ -124,6 +138,11 @@
     opacity: 0;
     transition: none;
   }
+  .dock [data-a2-being] {
+    transform: none !important;
+    transition: none;
+  }
+  .hail[data-a2-whisper] { animation: none; }
 }
 
 .head {
@@ -198,10 +217,12 @@
     width: auto;
     bottom: 0.9rem;
   }
-  /* on phones the station platform IS the affordance: the textual hail
-     would sweep across the manifest during the arrival moment, so it is
-     a desktop-only flourish. The button keeps its accessible name. */
-  .hail { display: none; }
+  .hail {
+    right: 66px;
+    bottom: 12px;
+    max-width: min(205px, calc(100vw - 108px));
+    font-size: 0.64rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

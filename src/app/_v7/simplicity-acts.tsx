@@ -334,6 +334,8 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           dock.style.transition = "none";
           dock.style.transform = "translate3d(0,0,0)";
           dock.removeAttribute("data-v7-escorting");
+          dock.removeAttribute("data-a2-scene");
+          dock.style.removeProperty("--a2-travel-y");
           requestAnimationFrame(() => {
             dock.style.transition = "opacity 180ms linear";
             dock.style.opacity = "1";
@@ -625,6 +627,15 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       if (dock && dockHomeDoc) {
         setEscort(storyActive);
         if (storyActive) {
+          /* A2's walk is driven by the SAME scroll authority as the route.
+             Four integer compositor positions form a quiet step cycle; when
+             scroll stops, the being stops. Reverse scroll plays it backward.
+             Scene attributes change only at narrative boundaries and let the
+             existing sprite player spend one short reaction there. */
+          const scene = y < yApproachEnd ? "solution" : y <= pinEnd ? "run" : y < yExample ? "review" : "outcome";
+          if (dock.getAttribute("data-a2-scene") !== scene) dock.setAttribute("data-a2-scene", scene);
+          const step = [0, -2, -1, 0][Math.abs(Math.floor(y / 18)) % 4];
+          dock.style.setProperty("--a2-travel-y", `${step}px`);
           /* integer-pixel escort, trailing beside the slip, never covering.
              The being keeps its painted 64px and the SAME clearances the
              R2.2 lane was proven against (left edge vx-54, feet vy+36);
@@ -709,7 +720,14 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       if (resizeRaf) cancelAnimationFrame(resizeRaf);
       if (raf) cancelAnimationFrame(raf);
       if (exitTimer) window.clearTimeout(exitTimer);
-      if (dock) { dock.style.transform = ""; dock.style.transition = ""; dock.style.opacity = ""; dock.removeAttribute("data-v7-escorting"); }
+      if (dock) {
+        dock.style.transform = "";
+        dock.style.transition = "";
+        dock.style.opacity = "";
+        dock.style.removeProperty("--a2-travel-y");
+        dock.removeAttribute("data-v7-escorting");
+        dock.removeAttribute("data-a2-scene");
+      }
       slip.style.opacity = "0";
       /* the armed marker must not survive a flip to reduced motion */
       root.removeAttribute("data-v7-engine");
@@ -732,7 +750,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         /* the being now rests at 64px natively (integer 2x sprite), so the
            escort no longer rescales it: the PAINTED escort is byte-identical
            to the R2.2-proven geometry - same 64px being, same clearances. */
-        [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: scale(1); transform-origin: 50% 100%; }
+        [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: translate3d(0, var(--a2-travel-y, 0px), 0) scale(1); transform-origin: 50% 100%; }
         [data-a2-dock][data-v7-escorting="on"] button { background: transparent; border-color: transparent; box-shadow: none; overflow: visible; }
         /* the closure is COMMANDED BY SCROLL: the gold seam closes with
            the walk, the frame stabilizes to gold, the result surface is
@@ -1079,7 +1097,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             this zone: yCarryStart lives here) is what enters it. The
             handover keeps the R2.1/R2.2 escort mechanics untouched. */}
         <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.035)] sm:mt-9 sm:grid sm:flex-none sm:grid-cols-[minmax(0,0.78fr)_minmax(380px,1.22fr)] sm:items-start sm:gap-10 sm:pb-0 sm:pt-0">
-          <p className="max-w-[44ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB] sm:pt-2">{copy.solution.sub}</p>
+          <p className="max-w-[calc(87%-80px)] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB] sm:max-w-[44ch] sm:pt-2">{copy.solution.sub}</p>
           <div data-casing="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] max-w-[calc(87%-72px)] rounded-[10px] border border-[#232830] bg-[linear-gradient(180deg,#15181E,#0E1116)] p-3 shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:mt-0 sm:max-w-none sm:p-4">
             <p className={`${mono} mb-2.5 text-[#7A828E]`}>{copy.engine.title}</p>
             <div className="relative flex flex-col gap-1.5">

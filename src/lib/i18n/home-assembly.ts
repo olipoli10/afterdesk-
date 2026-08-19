@@ -541,6 +541,7 @@ export function conceptAssemblyLangOf(value: string | undefined | null): SiteLan
 /* ---- the A2 concierge: approved static answers, four languages ---------- */
 export type HomeConciergeCopy = {
   ask: string; hail: string; title: string; intro: string;
+  guide: { hero: string };
   suggestions: [string, string, string];
   answers: { verified: string; verifiedCite: string; verifiedHref: string;
              unknown: string; unavailable: string };
@@ -553,6 +554,7 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     hail: "Ask Endvera",
     title: "Endvera guide",
     intro: "A site guide with approved answers and citations. It never invents; when it does not know, it says so.",
+    guide: { hero: "I carry the request while Endvera gets the work finished." },
     suggestions: ["Who checks the work?", "Do you support recurring work?", "What if the guide is unavailable?"],
     answers: {
       verified: "A person reviews every delivery against the operating standard before it goes out.",
@@ -568,6 +570,7 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     hail: "Demandez à Endvera",
     title: "Guide Endvera",
     intro: "Un guide du site aux réponses approuvées et citées. Il n'invente jamais; quand il ne sait pas, il le dit.",
+    guide: { hero: "Je porte la demande pendant qu'Endvera termine le travail." },
     suggestions: ["Qui vérifie le travail?", "Offrez-vous le travail récurrent?", "Et si le guide est indisponible?"],
     answers: {
       verified: "Une personne révise chaque livraison selon le standard d'exploitation avant qu'elle parte.",
@@ -583,6 +586,7 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     hail: "Pregunta a Endvera",
     title: "Guía Endvera",
     intro: "Una guía del sitio con respuestas aprobadas y citadas. Nunca inventa; cuando no sabe, lo dice.",
+    guide: { hero: "Llevo la solicitud mientras Endvera termina el trabajo." },
     suggestions: ["¿Quién revisa el trabajo?", "¿Ofrecen trabajo recurrente?", "¿Y si la guía no está disponible?"],
     answers: {
       verified: "Una persona revisa cada entrega según el estándar operativo antes de que salga.",
@@ -598,6 +602,7 @@ export const HOME_CONCIERGE_I18N: Record<SiteLang, HomeConciergeCopy> = {
     hail: "Magtanong sa Endvera",
     title: "Gabay ng Endvera",
     intro: "Isang gabay ng site na may aprubadong sagot at citation. Hindi ito nag-iimbento; kapag hindi alam, sinasabi nito.",
+    guide: { hero: "Dala ko ang request habang tinatapos ng Endvera ang trabaho." },
     suggestions: ["Sino ang nagsusuri ng trabaho?", "May recurring work ba kayo?", "Paano kung offline ang gabay?"],
     answers: {
       verified: "May taong sumusuri sa bawat delivery ayon sa operating standard bago ito lumabas.",
