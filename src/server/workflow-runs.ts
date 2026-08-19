@@ -21,7 +21,10 @@ import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { compileDecisions, type CompileStepInput } from "@/lib/ai-work-engine/compile";
-import { admitHumanCut } from "@/lib/ai-work-engine/human-unit-admission";
+import {
+  admitHumanCut,
+  type AdmissionRefusalCause,
+} from "@/lib/ai-work-engine/human-unit-admission";
 import {
   freezeHumanUnitDefinition,
   type FrozenEligibility,
@@ -380,6 +383,7 @@ export async function compileWorkflowForTask(
   const settings = await getSettings();
   let admittedCut: { order: number } | undefined;
   let frozenDefinition: FrozenHumanUnitDefinition | null = null;
+  let admissionRefusalCause: AdmissionRefusalCause | null = null;
 
   if (settings.humanWorkUnitResumeEnabled) {
     const verdict = admitHumanCut(
@@ -467,7 +471,13 @@ export async function compileWorkflowForTask(
           },
         });
         if (frozenDefinition) admittedCut = { order: verdict.cutOrder };
+        else admissionRefusalCause = "unmapped_economics";
+      } else {
+        // Defensive only: admission and freezing read the same accepted plan.
+        admissionRefusalCause = "malformed_topology";
       }
+    } else {
+      admissionRefusalCause = verdict.cause;
     }
   }
 
@@ -504,6 +514,7 @@ export async function compileWorkflowForTask(
         humanStepCount: compiled.humanStepCount,
         runAutomationBudgetMicros: snapshot.automationSpendCeilingMicros,
         budgetPolicyVersion: BUDGET_POLICY_VERSION,
+        humanUnitAdmissionRefusalCause: admissionRefusalCause,
         compiledAt: new Date(),
         startedAt: compiled.fullyHuman ? null : new Date(),
         steps: {
@@ -530,6 +541,19 @@ export async function compileWorkflowForTask(
       },
       select: { id: true },
     });
+
+    if (admissionRefusalCause) {
+      await tx.taskEvent.create({
+        data: {
+          taskId,
+          action: "human_unit_not_admitted",
+          meta: {
+            runId: created.id,
+            cause: admissionRefusalCause,
+          },
+        },
+      });
+    }
 
     if (admitted && frozenDefinition && admittedCut) {
       const cutStep = planSteps.find((s) => s.order === admittedCut.order)!;

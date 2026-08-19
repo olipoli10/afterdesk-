@@ -2001,6 +2001,11 @@ model TaskWorkflowRun {
   /// décider d'un montant.
   budgetPolicyVersion       String?
 
+  /// Cause propre à l'admission HumanWorkUnit. Null signifie soit que le
+  /// rollout n'a pas évalué ce run, soit que le run a été admis. Ce champ ne
+  /// réutilise jamais un vocabulaire de capacité ou de budget.
+  humanUnitAdmissionRefusalCause HumanWorkUnitRefusalCause?
+
   /// Renseigné quand status = paused : ce que l'admin doit trancher.
   pausedReason String?
 

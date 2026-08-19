@@ -4,8 +4,11 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { splitSqlStatements } from "./global-setup";
 
-const databaseUrl = process.env.AFTERDESK_TEST_DATABASE_URL;
-if (!databaseUrl) throw new Error("AFTERDESK_TEST_DATABASE_URL is required");
+const rawDatabaseUrl = process.env.AFTERDESK_TEST_DATABASE_URL;
+if (!rawDatabaseUrl) throw new Error("AFTERDESK_TEST_DATABASE_URL is required");
+const databaseUrl = rawDatabaseUrl.includes("pgbouncer=")
+  ? rawDatabaseUrl
+  : `${rawDatabaseUrl}&pgbouncer=true&connection_limit=1`;
 
 const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
 const schema = `hwu_history_${Date.now().toString(36)}`;

@@ -164,8 +164,8 @@ These bind every task below. A task that appears to require breaking one is wron
 
 ### Implementation for User Story 3
 
-- [ ] T050 [US3] In `compileWorkflowForTask` (`src/server/workflow-runs.ts:288-356`) record the not-admitted verdict: persist the cause on the run in its **own** field drawn from `HumanWorkUnitRefusalCause` — a vocabulary disjoint from any capability or budget vocabulary — write the `human_unit_not_admitted` `TaskEvent` with `meta` carrying only non-sensitive scalars, create **no** `HumanWorkUnitRunState`, and compile exactly as today so the demotion-and-residual path is byte-identical. Makes T046 pass. Proves FR-004, FR-053, FR-038; contracts/audit-events.md §1
-- [ ] T051 [US3] Audit every module touched by this feature and remove any rollout-flag read outside `compileWorkflowForTask`, so publish, claim, submit, decide, accept, resume and the sweeps carry no flag gate at all (C10). Makes T049 pass; makes T047's disable-midflight case pass. Proves FR-064, FR-065
+- [X] T050 [US3] In `compileWorkflowForTask` (`src/server/workflow-runs.ts:288-356`) record the not-admitted verdict: persist the cause on the run in its **own** field drawn from `HumanWorkUnitRefusalCause` — a vocabulary disjoint from any capability or budget vocabulary — write the `human_unit_not_admitted` `TaskEvent` with `meta` carrying only non-sensitive scalars, create **no** `HumanWorkUnitRunState`, and compile exactly as today so the demotion-and-residual path is byte-identical. Makes T046 pass. Proves FR-004, FR-053, FR-038; contracts/audit-events.md §1
+- [X] T051 [US3] Audit every module touched by this feature and remove any rollout-flag read outside `compileWorkflowForTask`, so publish, claim, submit, decide, accept, resume and the sweeps carry no flag gate at all (C10). Makes T049 pass; makes T047's disable-midflight case pass. Proves FR-064, FR-065
 
 **Checkpoint**: every unsupported and unpriceable mandate keeps today's behaviour, the flag is a one-place admission gate, and rollback strands nothing.
 
