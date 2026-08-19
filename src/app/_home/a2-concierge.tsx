@@ -70,10 +70,10 @@ export const SEQ: Record<string, Pose[]> = {
     { dx: 1 }, { dx: 2, dy: 1, sq: 1 }, { dx: 3, dy: 1, sq: 1, lid: 1 }, { dx: 3, dy: 1, sq: 1, lid: 1 },
   ],
 };
-const IDLE: Pose[][] = [
-  [{ bfy: -1 }, { bfy: -1 }, {}],
-  [{ ex: -1 }, { ex: -1 }, {}],
-  [{ hy: -1 }, {}],
+export const IDLE: Pose[][] = [
+  [{ ex: -1 }, { ex: -1 }, {}, { ex: 1 }, { ex: 1 }, {}],
+  [{ lid: 1 }, {}, {}],
+  [{ ex: 1 }, {}, { ex: -1 }, {}],
 ];
 
 /* Single-being guard: the DOM may never hold two A2 renders. */
@@ -199,9 +199,15 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
     let t: ReturnType<typeof setTimeout>;
     const tick = () => {
       t = setTimeout(() => {
-        if (alive && arrived.current) launcher.play(IDLE[Math.floor(Math.random() * IDLE.length)]);
+        const escorting =
+          launchRef.current
+            ?.closest<HTMLElement>("[data-a2-dock]")
+            ?.hasAttribute("data-v7-escorting") ?? false;
+        if (alive && arrived.current && !escorting) {
+          launcher.play(IDLE[Math.floor(Math.random() * IDLE.length)]);
+        }
         if (alive) tick();
-      }, 7000 + Math.random() * 8000);
+      }, 5000 + Math.random() * 5000);
     };
     tick();
     return () => { alive = false; clearTimeout(t); };

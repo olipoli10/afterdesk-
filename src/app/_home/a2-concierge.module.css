@@ -61,6 +61,34 @@
   cursor: pointer;
   padding: 0 0 2px;
 }
+.launch::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 9px;
+  background:
+    radial-gradient(
+      circle at 50% 58%,
+      rgba(216, 117, 38, 0.22),
+      rgba(216, 117, 38, 0.08) 46%,
+      transparent 72%
+    );
+  opacity: 0;
+  transition: opacity 120ms linear;
+}
+.launch > svg {
+  position: relative;
+  z-index: 1;
+}
+.launch:hover::before,
+.launch:focus-visible::before {
+  opacity: 0.38;
+}
+.dock[data-v7-escorting="on"] .launch::before {
+  opacity: 0.62;
+}
 .launch:hover { border-color: rgba(201, 167, 106, 0.35); }
 .launch:focus-visible {
   outline: 2px solid #c9a76a;
@@ -89,6 +117,14 @@
   to { transform: translateY(0); opacity: 1; }
 }
 .reduce { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+  .launch::before {
+    opacity: 0;
+    transition: none;
+  }
+}
 
 .head {
   display: flex;

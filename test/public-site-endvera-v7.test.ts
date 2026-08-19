@@ -18,6 +18,10 @@ const PAGE = "src/app/page.tsx";
 const MACHINE = "src/app/_home/assembly-experience.tsx";
 const ENGINE = "src/app/_v7/simplicity-acts.tsx";
 const DICTIONARY = "src/lib/i18n/v7-acts.ts";
+const A2 = "src/app/_home/a2-concierge.tsx";
+const A2_CSS = "src/app/_home/a2-concierge.module.css";
+const HOME_ASSEMBLY = "src/lib/i18n/home-assembly.ts";
+const HOME_ASSEMBLY_CSS = "src/app/_home/home-assembly.module.css";
 
 /* the closed surface this phase may touch: the R1 manifest, EXTENDED by
    the FABLE opening reconstruction's presentation-only files - the lockup
@@ -29,6 +33,8 @@ const ALLOWED = new Set([
   MACHINE,
   ENGINE,
   DICTIONARY,
+  HOME_ASSEMBLY,
+  HOME_ASSEMBLY_CSS,
   "src/components/logo.tsx",
   "src/components/lang-switch.tsx",
   "src/app/_home/a2-concierge.tsx",
@@ -105,6 +111,72 @@ describe("ENDVERA x V7 transplant", () => {
     for (const forbidden of [/\bfetch\s*\(/, /XMLHttpRequest/, /localStorage/, /sessionStorage/, /sendBeacon/, /document\.cookie/]) {
       expect(engine, `V7 engine must not use ${forbidden}`).not.toMatch(forbidden);
     }
+  });
+
+  it("replaces internal workflow jargon with one client-readable story", () => {
+    const dictionary = read(DICTIONARY);
+    expect(dictionary).toContain('h: "Digital work, finished."');
+    expect(dictionary).toContain('h: "The work breaks between the tools."');
+    expect(dictionary).toContain('h: "One engine coordinates the whole run."');
+    expect(dictionary).toContain('h: "Human judgment where it matters."');
+    expect(dictionary).toContain('h: "Finished. Checked. Ready to use."');
+    for (const deadCopy of [
+      "deliver it checked",
+      "scoped run",
+      "draft 2 of 3",
+      "raw export",
+      "unassigned",
+      "Ready to deliver",
+    ]) {
+      expect(dictionary, `prototype copy remains: ${deadCopy}`).not.toContain(deadCopy);
+    }
+  });
+
+  it("uses structured amber emphasis instead of coloring whole headlines", () => {
+    const engine = read(ENGINE);
+    const dictionary = read(DICTIONARY);
+    expect(engine).toMatch(/function\s+AccentLine\b/);
+    expect(engine).toMatch(/data-copy-accent/);
+    expect(dictionary).toMatch(/accent:\s*"finished\."/);
+    expect(dictionary).toMatch(/accent:\s*"between the tools\."/);
+    expect(dictionary).toMatch(/accent:\s*"One coordinated run\."/);
+  });
+
+  it("makes A2 feel alive with the existing player and a scroll-owned amber wake", () => {
+    const a2 = read(A2);
+    const css = read(A2_CSS);
+    const engine = read(ENGINE);
+    const idle = a2.match(/export const IDLE:[\s\S]*?\n\];/)?.[0] ?? "";
+    expect(idle).toMatch(/ex:\s*-1[\s\S]*ex:\s*1/);
+    expect(idle).toMatch(/lid:\s*1/);
+    expect(idle, "idle life may move the gaze, not shake A2's body while the dock travels").not.toMatch(/\b(?:dx|dy|hy|hdx|hdy|tx|ty|bfx|bfy|ffx|ffy|sq)\s*:/);
+    expect(a2).toMatch(/hasAttribute\("data-v7-escorting"\)/);
+    expect(a2).toMatch(/5000\s*\+\s*Math\.random\(\)\s*\*\s*5000/);
+    expect(css).toMatch(/data-v7-escorting="on"/);
+    expect(css).toMatch(/rgba\(216,\s*117,\s*38/);
+    expect(engine).toMatch(/data-v7-trail/);
+    expect(engine).toMatch(/data-v7-trail[\s\S]*scaleX\(var\(--walk/);
+    expect(engine).toMatch(/data-v7-trail[\s\S]*origin-left/);
+  });
+
+  it("uses the single ambient slot for a moving awaiting bar and disables it for reduced motion", () => {
+    const engine = read(ENGINE);
+    expect(engine).toMatch(/@keyframes\s+v7await/);
+    expect(engine).toMatch(/\[data-await-sweep\][\s\S]*animation:\s*v7await/);
+    expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*\[data-await-sweep\][\s\S]*animation:\s*none/);
+    expect(engine).not.toMatch(/animation:\s*v7lumen\s+18s/);
+    expect((engine.match(/\binfinite\b/g) ?? []).length).toBe(1);
+  });
+
+  it("contextualizes the real example and removes the abstract boundary headline", () => {
+    const copy = read(HOME_ASSEMBLY);
+    const machine = read(MACHINE);
+    const css = read(HOME_ASSEMBLY_CSS);
+    expect(copy).toContain('kicker: "Example run · site selection · 34 sites screened"');
+    expect(copy).toContain('title: "Controlled from request to delivery."');
+    expect(copy).not.toContain('title: "The work runs inside a boundary."');
+    expect(machine).toMatch(/continuation\s*\?\s*0\.3\s*\+\s*raw\s*\*\s*0\.7\s*:\s*raw/);
+    expect(css).toMatch(/\.outcome[\s\S]*opacity:\s*clamp\(0,\s*calc\(var\(--s-c\)\s*\/\s*0\.14\),\s*1\)/);
   });
 
   it("changes nothing outside the authorised transplant surface", () => {

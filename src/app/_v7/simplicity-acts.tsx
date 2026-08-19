@@ -48,6 +48,18 @@ function subscribeReduced(cb: () => void) {
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
+function AccentLine({ text, accent }: { text: string; accent: string }) {
+  const at = text.indexOf(accent);
+  if (at < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, at)}
+      <span data-copy-accent="" className="text-[#D87526]">{accent}</span>
+      {text.slice(at + accent.length)}
+    </>
+  );
+}
+
 const ANCHOR_NAMES = ["request", "problem", "solution", "walk-start", "walk-end", "result", "example"] as const;
 
 export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierge: ConciergeCopy }) {
@@ -736,14 +748,21 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
            Focus choreography: the machine acknowledges its operator. Pure
            :focus-within state styling - transitions, never animations. */
         [data-slot]:focus-within { border-color: rgba(201, 167, 106, 0.65); }
-        [data-slot]:focus-within [data-slotseam] { opacity: 1; box-shadow: 0 0 18px rgba(201, 167, 106, 0.4); }
+        [data-slot]:focus-within [data-slotseam] { opacity: 1; }
         [data-slot]:focus-within [data-tick] { border-color: #C9A76A; }
+        [data-slotseam] {
+          padding: 1px;
+          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+        }
         /* Entrance orchestration: every element exactly once, ~1.1s total,
            staggered console -> seam -> statement -> slot -> manifest ->
            out-rail -> port. All keyframes animate FROM hidden states and
            base styles ARE the finished scene, so reduced motion (and no-JS)
-           get the complete final composition instantly. The lumen's 18s
-           opacity drift is the page's single ambient - idle power. */
+           get the complete final composition instantly. The intake sweep is
+           the page's single ambient signal; the lumen stays still. */
         @media (prefers-reduced-motion: no-preference) {
           [data-fabric] { animation: v7in 0.6s ease-out both; }
           [data-console] { animation: v7in 0.5s ease-out 0.08s both; }
@@ -756,7 +775,11 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           [data-outrail] { animation: v7seam 0.4s ease-out 0.98s both; transform-origin: 0 50%; }
           [data-port] { animation: v7in 0.3s ease-out 1.08s both; }
           [data-rail] { animation: v7rail 0.4s ease-out 1.04s both; }
-          [data-lumen] { animation: v7in 0.7s ease-out both, v7lumen 18s ease-in-out 1.4s infinite alternate; }
+          [data-lumen] { animation: v7in 0.7s ease-out both; }
+          [data-await-sweep] { animation: v7await 6s linear infinite; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-await-sweep] { animation: none; transform: rotate(0.12turn); }
         }
         /* SCENE 4 station illumination: a bump with 60% passage-memory,
            entirely a function of --walk. pre rises before the centre, post
@@ -788,7 +811,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         @keyframes v7rise { from { opacity: 0; transform: translateY(14px); } }
         @keyframes v7seam { from { transform: scaleX(0); } }
         @keyframes v7rail { from { transform: scaleY(0); } }
-        @keyframes v7lumen { from { opacity: 0.78; } to { opacity: 1; } }
+        @keyframes v7await { to { transform: rotate(1turn); } }
       `}</style>
       <p className="sr-only">{copy.srStory}</p>
 
@@ -879,7 +902,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             masque le texte"). Acts 2/2b/4 keep their pinned plates: there,
             content genuinely passes beneath a heading mid-read. */}
         <h1 className="z-10 max-w-[15ch] text-[clamp(2.4rem,5.6vw,4.3rem)] font-semibold leading-[1.04] tracking-[-0.04em]">
-          {copy.act1.h}
+          <AccentLine text={copy.act1.h} accent={copy.act1.accent} />
         </h1>
         {/* the composition flows: statement, intake slot, note, then the
             path manifest - the console's zones in reading order, the base
@@ -941,7 +964,12 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
               </div>
               {/* the small amber line under the box: A's signature, held at
                   a readable-but-quiet level; focus takes it to full */}
-              <span aria-hidden data-slotseam="" className="absolute inset-x-3 bottom-0 h-[2px] rounded-full bg-[#C9A76A] opacity-55 transition-[opacity,box-shadow]" />
+              <span aria-hidden data-slotseam="" className="pointer-events-none absolute inset-[-1px] overflow-hidden rounded-[9px] opacity-70">
+                <i
+                  data-await-sweep=""
+                  className="absolute inset-[-100%] block bg-[conic-gradient(from_0turn,transparent_0_52%,rgba(216,117,38,0.20)_58%,rgba(216,117,38,0.95)_76%,rgba(216,117,38,0.20)_92%,transparent_98%)]"
+                />
+              </span>
             </div>
             {/* the reduced-motion artifact sits WITH the note it explains -
                 anchored to the slot's zone, never stranded in open space */}
@@ -995,7 +1023,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             screenshot. Desktop keeps its measure: there the acts are not a
             single narrow column and the escort does not ride beside them. */}
         <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[calc(87%-72px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[22ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
-          {copy.act2.h}
+          <AccentLine text={copy.act2.h} accent={copy.act2.accent} />
         </h2>
         {/* SCENE 2 (NARRATIVE): the problem stated, then SHOWN - six
             DISCONNECTED graphite pieces, not five buttons. Competent
@@ -1010,23 +1038,21 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           <div aria-hidden className="relative mt-1 h-px sm:h-6">
             <span data-v7-anchor="problem" className="absolute left-[87%] top-0 h-px w-px sm:top-3" />
           </div>
-          <div aria-hidden className="flex max-w-full flex-1 flex-col flex-wrap items-start justify-between gap-2 sm:mt-4 sm:max-w-[78%] sm:flex-none sm:flex-row sm:items-stretch sm:gap-4">
+          <div aria-hidden className="grid max-w-[calc(87%-72px)] flex-1 flex-wrap content-center gap-2.5 py-5 sm:mt-5 sm:max-w-[78%] sm:flex-none sm:grid-cols-2 sm:gap-3 sm:py-0">
             {copy.act2.fragments.map((f, i) => (
               <span
                 key={f.label + f.meta}
                 data-fragment=""
-                className={`relative max-w-[46%] rounded-[3px] border bg-[#12151B] px-3 pb-2 pt-1.5 sm:max-w-none ${
+                className={`relative min-h-[58px] w-full rounded-[6px] border bg-[linear-gradient(135deg,#15181E,#0E1116)] px-3.5 py-2.5 ${
                   i === 5 ? "border-[#6F4C29]" : "border-[#2A303B]"
                 }`}
-                style={{
-                  transform: `translate3d(0, calc(var(--g, 0) * ${((i % 3) - 1) * 10}px), 0) rotate(${[-1.2, 0.8, -0.6, 1.4, -0.9, 0.5][i]}deg)`,
-                }}
               >
-                {/* the stub connector that never reaches its neighbour */}
-                <i aria-hidden className={`absolute top-1/2 block h-px w-3 bg-[#4A5160] ${i % 2 ? "-left-3" : "-right-3"}`} />
-                <i aria-hidden className={`absolute top-1/2 block h-[3px] w-[3px] -translate-y-1/2 rounded-full bg-[#4A5160] ${i % 2 ? "-left-4" : "-right-4"}`} />
-                <b className={`${mono} block font-semibold ${i === 5 ? "text-[#C9A76A]" : "text-[#A6ADB8]"}`}>{f.label}</b>
-                <span className="block font-mono text-[10px] lowercase tracking-[0.08em] text-[#6F7681]">{f.meta}</span>
+                <span aria-hidden className="absolute inset-y-2.5 left-0 w-px bg-gradient-to-b from-transparent via-[#D87526]/70 to-transparent" />
+                <span className="flex items-center gap-2">
+                  <i className={`${mono} not-italic text-[#6F7681]`}>{String(i + 1).padStart(2, "0")}</i>
+                  <b className={`${mono} block font-semibold ${i === 5 ? "text-[#D87526]" : "text-[#A6ADB8]"}`}>{f.label}</b>
+                </span>
+                <span className="mt-1 block pl-[30px] text-[11px] leading-[1.35] text-[#7F8793]">{f.meta}</span>
               </span>
             ))}
           </div>
@@ -1043,7 +1069,8 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             the height the story wants the pair to occupy. Held out of the
             column, its vertical travel no longer touches the escort at all. */}
         <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[calc(87%-72px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.5rem,3.2vw,2.3rem)] font-semibold leading-[1.16] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[24ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
-          {copy.solution.h}
+          <span className="mb-2 block font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-[#D87526]">{copy.solution.eyebrow}</span>
+          <AccentLine text={copy.solution.h} accent={copy.solution.accent} />
         </h2>
         {/* SCENE 3 (NARRATIVE): the coordination engine, introduced as a
             physical object. The casing is a graphite housing of six stacked
@@ -1051,17 +1078,18 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             its lane side - the REAL slip (already carried by A2 through
             this zone: yCarryStart lives here) is what enters it. The
             handover keeps the R2.1/R2.2 escort mechanics untouched. */}
-        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.035)] sm:mt-10 sm:block sm:flex-none sm:pb-0 sm:pt-0">
-          <p className="max-w-[44ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB]">{copy.solution.sub}</p>
-          <div data-casing="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] max-w-[calc(87%-72px)] rounded-[10px] border border-[#232830] bg-[linear-gradient(180deg,#15181E,#0E1116)] p-3 shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:mt-9 sm:max-w-[520px] sm:p-4">
+        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.035)] sm:mt-9 sm:grid sm:flex-none sm:grid-cols-[minmax(0,0.78fr)_minmax(380px,1.22fr)] sm:items-start sm:gap-10 sm:pb-0 sm:pt-0">
+          <p className="max-w-[44ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB] sm:pt-2">{copy.solution.sub}</p>
+          <div data-casing="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] max-w-[calc(87%-72px)] rounded-[10px] border border-[#232830] bg-[linear-gradient(180deg,#15181E,#0E1116)] p-3 shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:mt-0 sm:max-w-none sm:p-4">
             <p className={`${mono} mb-2.5 text-[#7A828E]`}>{copy.engine.title}</p>
             <div className="relative flex flex-col gap-1.5">
               {/* the thread: one amber line stitching the six slices */}
               <span aria-hidden className="absolute bottom-2 left-[11px] top-2 w-px bg-gradient-to-b from-[#C9A76A]/60 via-[#C9A76A]/35 to-[#C9A76A]/60" />
               {copy.act3.stations.map((s) => (
-                <div key={s.name} className="relative flex items-center gap-2.5 rounded-[5px] border border-[#262B35] bg-[#12151B] py-1.5 pl-2 pr-3">
+                <div key={s.name} className="relative grid min-w-0 grid-cols-[7px_minmax(0,0.42fr)_minmax(0,1fr)] items-center gap-2.5 rounded-[5px] border border-[#262B35] bg-[#12151B] py-2 pl-2 pr-3">
                   <span aria-hidden className="relative z-[1] h-[7px] w-[7px] shrink-0 rounded-[2px] border border-[#6F4C29] bg-[#1A150D]" />
-                  <span className={`${mono} whitespace-nowrap text-[#A6ADB8]`}>{s.name}</span>
+                  <span className={`${mono} min-w-0 text-[#A6ADB8]`}>{s.name}</span>
+                  <span className="min-w-0 text-[10px] leading-[1.35] text-[#737B87]">{s.truth}</span>
                 </div>
               ))}
             </div>
@@ -1069,7 +1097,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
                 open space and read as unfinished wiring - the casing's
                 internal thread and the handover itself carry the story) */}
           </div>
-          <div aria-hidden className="relative mt-[calc(var(--v7vh,100vh)*0.02)] h-[64px] sm:mt-7">
+          <div aria-hidden className="relative mt-[calc(var(--v7vh,100vh)*0.02)] h-[64px] sm:col-span-2 sm:mt-7">
             <span data-v7-anchor="solution" className="absolute left-[87%] top-[30px] h-px w-px" />
             {reduced && <StaticArtifact state="request" className="absolute left-[38%] top-0" />}
           </div>
@@ -1087,10 +1115,16 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         <div data-v7-stage="" className={reduced ? "" : "sticky top-0 flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center sm:min-h-screen"}>
           <div className={`mx-auto w-full max-w-[1180px] px-6 ${reduced ? "py-[6vh]" : "flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center gap-[calc(var(--v7vh,100vh)*0.045)] pb-[6vh] pt-[6vh] sm:min-h-screen sm:gap-[6vh] sm:pb-[8vh] sm:pt-[8vh]"}`}>
             <h2 className="max-w-[14ch] text-[clamp(1.15rem,3vw,2.1rem)] font-semibold leading-[1.2] tracking-[-0.03em] sm:max-w-[72%]">
-              {copy.act3.h}
+              <AccentLine text={copy.act3.h} accent={copy.act3.accent} />
             </h2>
             <div data-v7-lane="" className="relative h-[120px] sm:h-[44px]">
-              <div className="absolute inset-x-0 top-[22px] h-px bg-gradient-to-r from-transparent via-[#C9A76A] to-transparent">
+              <div className="absolute inset-x-0 top-[22px] h-px bg-gradient-to-r from-transparent via-[#6F4C29]/45 to-transparent">
+                <span
+                  aria-hidden
+                  data-v7-trail=""
+                  className="absolute inset-0 origin-left bg-gradient-to-r from-transparent via-[#D87526] to-[#D87526]/25 opacity-80 shadow-[0_0_10px_rgba(216,117,38,0.42)] will-change-transform"
+                  style={reduced ? undefined : { transform: "scaleX(var(--walk, 0))" }}
+                />
                 <span data-v7-anchor="walk-start" className="absolute right-[10%] top-0 h-px w-px" />
                 <span data-v7-anchor="walk-end" className="absolute right-[12%] top-0 h-px w-px sm:right-[6%]" />
               </div>
@@ -1154,14 +1188,16 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           readers always see the finished, checked scene. ─────────────── */}
       <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.45)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[110vh] sm:justify-center sm:pb-16 sm:pt-6">
         {/* SCENE 5 — the review moment */}
-        <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[14ch] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[26ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
-          {copy.review.h}
+        <h2 className="sticky top-[8vh] z-10 -mx-3 w-[calc(87%-68px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:w-auto sm:max-w-[26ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
+          <span className="block max-w-[14ch] sm:max-w-none">
+            <AccentLine text={copy.review.h} accent={copy.review.accent} />
+          </span>
         </h2>
-        <div className="flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.05)] pt-[calc(var(--v7vh,100vh)*0.02)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
-          <p className="mt-2 max-w-[44ch] text-[clamp(0.95rem,1.4vw,1.1rem)] leading-[1.6] text-[#9AA1AB] sm:mt-4">{copy.review.sub}</p>
+        <div className="flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.05)] pt-[calc(var(--v7vh,100vh)*0.02)] sm:grid sm:max-w-[calc(87%-72px)] sm:flex-none sm:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] sm:items-start sm:gap-x-8 sm:gap-y-6 sm:pb-0 sm:pt-0">
+          <p className="mt-2 max-w-[calc(87%-80px)] text-[clamp(0.95rem,1.4vw,1.1rem)] leading-[1.6] text-[#9AA1AB] sm:col-span-2 sm:mt-4 sm:max-w-[44ch]">{copy.review.sub}</p>
           {/* the review table: draft + standard + evidence, one exception
               resolved, the human mark - all left of the escort column */}
-          <div className="mt-5 flex max-w-[calc(87%-72px)] flex-wrap items-stretch gap-2.5 sm:mt-8 sm:max-w-[640px] sm:gap-3">
+          <div className="mt-5 flex max-w-[calc(87%-72px)] flex-wrap items-stretch gap-2.5 sm:mt-3 sm:grid sm:max-w-none sm:grid-cols-2 sm:gap-3">
             <div className="rounded-md border border-[#2A303B] bg-[#12151B] px-3.5 py-2.5">
               <p className={`${mono} text-[#7A828E]`}>{copy.review.draft}</p>
               <span aria-hidden className="mt-2 flex flex-col gap-[3px]">
@@ -1199,13 +1235,14 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           </div>
 
           {/* SCENE 6 — the sealed artifact: the payoff of the scroll */}
-          <p data-v7-s6h="" className="mt-[calc(var(--v7vh,100vh)*0.06)] max-w-[calc(87%-72px)] text-[clamp(1.25rem,2.4vw,1.8rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-[#F7F6F3] sm:mt-14 sm:max-w-[24ch]" role="heading" aria-level={2}>
-            {copy.sealed.h}
-          </p>
-          <div className="mt-4 flex flex-wrap items-start gap-5 sm:mt-6">
+          <div className="sm:col-start-2 sm:row-start-2">
+            <p data-v7-s6h="" className="mt-[calc(var(--v7vh,100vh)*0.06)] max-w-[calc(87%-72px)] text-[clamp(1.25rem,2.4vw,1.8rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-[#F7F6F3] sm:mt-3 sm:max-w-[24ch]" role="heading" aria-level={2}>
+              <AccentLine text={copy.sealed.h} accent={copy.sealed.accent} />
+            </p>
+            <div className="mt-4 flex flex-wrap items-start gap-5 sm:mt-5">
             <div
               data-sealed-card=""
-              className="relative max-w-[320px] rounded-md border-2 bg-[#F7F6F3] p-5 text-[#14161A]"
+              className="relative min-h-[220px] w-full max-w-[320px] rounded-md border-2 bg-[#F7F6F3] p-5 text-[#14161A] sm:max-w-none"
               style={reduced ? undefined : { opacity: "calc(0.15 + 0.85 * var(--seal, 1))" }}
             >
               <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6b5d3f]">{copy.sealed.seal}</p>
@@ -1220,10 +1257,11 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
               <span data-v7-anchor="result" className="absolute right-4 top-4 h-px w-px" />
               {reduced && <StaticArtifact state="checked" className="mt-3" />}
             </div>
+            </div>
           </div>
 
           {/* the bridge into the real example: A2 presents it here */}
-          <div className="mt-auto pt-[calc(var(--v7vh,100vh)*0.04)] sm:mt-12 sm:pt-0">
+          <div className="mt-8 pt-[calc(var(--v7vh,100vh)*0.02)] sm:col-span-2 sm:mt-4 sm:pt-0">
             <p className={`${mono} text-[#E2C486]`}>{copy.exampleIntro}</p>
             <span data-v7-anchor="example" aria-hidden className="relative left-[65%] top-3 block h-px w-px sm:left-[87%]" />
             {reduced && <StaticArtifact state="checked" className="mt-4" />}

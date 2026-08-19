@@ -702,9 +702,9 @@ export function AssemblyExperience({
        token to wedge, no state, no work after the user stops. */
     const onScroll = () => {
       const raw = progressToP(track.getBoundingClientRect().top, track.offsetHeight, window.innerHeight);
-      /* continuation mode enters at the machine: the acts already told the
-         hero story, so the track maps onto [0.2, 1] instead of [0, 1] */
-      const p = continuation ? 0.2 + raw * 0.8 : raw;
+      /* continuation mode enters with the machine masses already present:
+         the acts told the opening story, so there is no wire-only interlude. */
+      const p = continuation ? 0.3 + raw * 0.7 : raw;
       stage.style.setProperty("--p", p.toFixed(4));
       const phase = p < 0.2 ? "hero" : p < 0.82 ? "machine" : "outcome";
       if (stage.dataset.phase !== phase) stage.dataset.phase = phase;

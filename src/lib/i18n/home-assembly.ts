@@ -179,10 +179,10 @@ const en: ConceptAssemblyCopy = {
   },
   outcome: {
     lock: "Verified outcome · locked",
-    kicker: "Decision system · built for this request",
-    recommendation: "Build first at Rivière-du-Loup and Rimouski.",
+    kicker: "Example run · site selection · 34 sites screened",
+    recommendation: "Where should we build first? Rivière-du-Loup and Rimouski.",
     detail:
-      "Both clear the 350 kW threshold on today's grid and sit inside the rebate window. Matane is the strongest third site, held for the next capital round.",
+      "The system screened 34 sites against grid capacity, rebate timing and corridor fit. These two lead; Matane stays visible as the strongest next option.",
     corridorLabel: "South shore corridor · Route 132 · 34 sites screened",
     riverLabel: "St. Lawrence",
     scaleLabel: "0 — 50 km",
@@ -207,8 +207,8 @@ const en: ConceptAssemblyCopy = {
     closing: "You asked for the outcome. Endvera assembled and delivered it.",
   },
   range: {
-    title: "One front door. Very different finishes.",
-    lede: "Each of these began as one sentence. None required choosing tools or managing anyone.",
+    title: "One request. Different kinds of finished work.",
+    lede: "A decision, a reconciled operation or completed digital work: you describe the finish line and the system assembles the run.",
     outcomes: [
       ["Decision intelligence", "Where to build next", "A scored, sourced decision system"],
       ["Reconciled operations", "Two systems, one truth", "12,480 accounts reconciled, exceptions declared"],
@@ -216,8 +216,8 @@ const en: ConceptAssemblyCopy = {
     ],
   },
   control: {
-    title: "The work runs inside a boundary.",
-    lede: "Scope, permissions, budget and price are fixed before work starts. Evidence and one bounded human escalation are part of the machine, not an apology after it.",
+    title: "Controlled from request to delivery.",
+    lede: "Scope, permissions, budget and fixed price are approved before work starts. Evidence and bounded human judgment stay inside the run.",
     ring: ["Permissions", "Scope", "Budget", "Fixed price", "Evidence", "Traceability", "Bounded escalation"],
   },
   door: {
@@ -280,10 +280,10 @@ const fr: ConceptAssemblyCopy = {
   },
   outcome: {
     lock: "Résultat vérifié · verrouillé",
-    kicker: "Système de décision · construit pour cette demande",
-    recommendation: "Construire d'abord à Rivière-du-Loup et Rimouski.",
+    kicker: "Exécution exemple · sélection de sites · 34 sites évalués",
+    recommendation: "Où construire d'abord? Rivière-du-Loup et Rimouski.",
     detail:
-      "Les deux dépassent le seuil de 350 kW sur le réseau actuel et sont dans la fenêtre de remise. Matane est le troisième site le plus solide, réservé à la prochaine ronde de capital.",
+      "Le système a évalué 34 sites selon la capacité du réseau, les remises et le corridor. Ces deux sites dominent; Matane demeure la meilleure option suivante.",
     corridorLabel: "Corridor rive sud · Route 132 · 34 sites évalués",
     riverLabel: "Saint-Laurent",
     scaleLabel: "0 — 50 km",
@@ -308,8 +308,8 @@ const fr: ConceptAssemblyCopy = {
     closing: "Vous avez demandé le résultat. Endvera l'a assemblé et livré.",
   },
   range: {
-    title: "Une seule porte. Des finitions très différentes.",
-    lede: "Chacun a commencé par une phrase. Aucun n'a exigé de choisir des outils ni de gérer qui que ce soit.",
+    title: "Une demande. Différentes formes de travail fini.",
+    lede: "Une décision, une opération réconciliée ou du travail numérique accompli : vous décrivez la ligne d'arrivée et le système assemble l'exécution.",
     outcomes: [
       ["Intelligence de décision", "Où construire ensuite", "Un système de décision scoré et sourcé"],
       ["Opérations réconciliées", "Deux systèmes, une vérité", "12 480 comptes réconciliés, exceptions déclarées"],
@@ -317,8 +317,8 @@ const fr: ConceptAssemblyCopy = {
     ],
   },
   control: {
-    title: "Le travail s'exécute dans une frontière.",
-    lede: "Portée, permissions, budget et prix sont fixés avant le travail. Les preuves et une seule escalade humaine bornée font partie de la machine, pas d'une excuse après coup.",
+    title: "Contrôlé de la demande à la livraison.",
+    lede: "Portée, permissions, budget et prix fixe sont approuvés avant le travail. Les preuves et le jugement humain borné restent dans l'exécution.",
     ring: ["Permissions", "Portée", "Budget", "Prix fixe", "Preuves", "Traçabilité", "Escalade bornée"],
   },
   door: {
@@ -381,10 +381,10 @@ const es: ConceptAssemblyCopy = {
   },
   outcome: {
     lock: "Resultado verificado · bloqueado",
-    kicker: "Sistema de decisión · construido para esta solicitud",
-    recommendation: "Construir primero en Rivière-du-Loup y Rimouski.",
+    kicker: "Ejecución de ejemplo · selección de sitios · 34 evaluados",
+    recommendation: "¿Dónde construir primero? Rivière-du-Loup y Rimouski.",
     detail:
-      "Ambos superan el umbral de 350 kW en la red actual y caen dentro de la ventana de reembolso. Matane es el tercer sitio más sólido, reservado para la próxima ronda de capital.",
+      "El sistema evaluó 34 sitios según capacidad de red, incentivos y ubicación en el corredor. Estos dos lideran; Matane sigue visible como la mejor opción siguiente.",
     corridorLabel: "Corredor ribera sur · Ruta 132 · 34 sitios evaluados",
     riverLabel: "San Lorenzo",
     scaleLabel: "0 — 50 km",
@@ -409,8 +409,8 @@ const es: ConceptAssemblyCopy = {
     closing: "Pidió el resultado. Endvera lo ensambló y lo entregó.",
   },
   range: {
-    title: "Una sola puerta. Acabados muy distintos.",
-    lede: "Cada uno empezó con una frase. Ninguno exigió elegir herramientas ni gestionar a nadie.",
+    title: "Una solicitud. Distintos tipos de trabajo terminado.",
+    lede: "Una decisión, una operación conciliada o trabajo digital completado: usted define la meta y el sistema ensambla la ejecución.",
     outcomes: [
       ["Inteligencia de decisión", "Dónde construir después", "Un sistema de decisión puntuado y con fuentes"],
       ["Operaciones reconciliadas", "Dos sistemas, una verdad", "12,480 cuentas reconciliadas, excepciones declaradas"],
@@ -418,8 +418,8 @@ const es: ConceptAssemblyCopy = {
     ],
   },
   control: {
-    title: "El trabajo corre dentro de una frontera.",
-    lede: "Alcance, permisos, presupuesto y precio se fijan antes de empezar. La evidencia y una sola escalada humana acotada son parte de la máquina, no una disculpa posterior.",
+    title: "Controlado desde la solicitud hasta la entrega.",
+    lede: "Alcance, permisos, presupuesto y precio fijo se aprueban antes de empezar. La evidencia y el criterio humano acotado permanecen dentro de la ejecución.",
     ring: ["Permisos", "Alcance", "Presupuesto", "Precio fijo", "Evidencia", "Trazabilidad", "Escalada acotada"],
   },
   door: {
@@ -482,10 +482,10 @@ const tl: ConceptAssemblyCopy = {
   },
   outcome: {
     lock: "Beripikadong resulta · naka-lock",
-    kicker: "Sistema ng desisyon · ginawa para sa kahilingang ito",
-    recommendation: "Magtayo muna sa Rivière-du-Loup at Rimouski.",
+    kicker: "Halimbawang run · site selection · 34 site ang sinuri",
+    recommendation: "Saan dapat unang magtayo? Rivière-du-Loup at Rimouski.",
     detail:
-      "Pareho silang lumalampas sa 350 kW sa kasalukuyang grid at nasa loob ng rebate window. Ang Matane ang pinakamatibay na pangatlo, nakalaan sa susunod na pag-ikot ng kapital.",
+      "Sinuri ng system ang 34 site ayon sa grid capacity, rebate timing at corridor fit. Nangunguna ang dalawa; nananatiling nakikita ang Matane bilang susunod na opsyon.",
     corridorLabel: "Koridor sa timog na pampang · Ruta 132 · 34 na lugar ang sinuri",
     riverLabel: "Saint Lawrence",
     scaleLabel: "0 — 50 km",
@@ -510,8 +510,8 @@ const tl: ConceptAssemblyCopy = {
     closing: "Hiningi mo ang resulta. Binuo at inihatid ito ng Endvera.",
   },
   range: {
-    title: "Isang pinto. Ibang-ibang mga tapos.",
-    lede: "Bawat isa ay nagsimula sa isang pangungusap. Walang nangailangan ng pagpili ng tool o pamamahala ng sinuman.",
+    title: "Isang request. Iba't ibang uri ng tapos na trabaho.",
+    lede: "Decision, reconciled operation o natapos na digital work: ikaw ang naglalarawan ng finish line at binubuo ng system ang run.",
     outcomes: [
       ["Katalinuhan sa desisyon", "Saan susunod magtatayo", "Isang may puntos at may sanggunian na sistema ng desisyon"],
       ["Pinagkasundong operasyon", "Dalawang sistema, isang katotohanan", "12,480 account ang pinagkasundo, deklarado ang mga eksepsyon"],
@@ -519,8 +519,8 @@ const tl: ConceptAssemblyCopy = {
     ],
   },
   control: {
-    title: "Ang trabaho ay tumatakbo sa loob ng hangganan.",
-    lede: "Ang saklaw, permiso, badyet at presyo ay nakatakda bago magsimula. Ang ebidensya at iisang may hangganang eskalasyon sa tao ay bahagi ng makina, hindi paumanhin pagkatapos.",
+    title: "Kontrolado mula request hanggang delivery.",
+    lede: "Aprubado muna ang scope, permissions, budget at fixed price. Nasa loob ng run ang ebidensya at bounded human judgment.",
     ring: ["Mga permiso", "Saklaw", "Badyet", "Takdang presyo", "Ebidensya", "Traceability", "May hangganang eskalasyon"],
   },
   door: {

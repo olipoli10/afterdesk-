@@ -108,6 +108,15 @@ describe("R7 - the frozen A2 and its motion contract", () => {
         for (const rect of a2pose(p))
           for (const v of rect.slice(0, 4)) expect(Number.isInteger(v)).toBe(true);
   });
+  it("idle life is eye-only, integer and returns to canonical rest", async () => {
+    const { a2pose, A2_REST, IDLE } = await import("../src/app/_home/a2-concierge");
+    for (const frames of IDLE) {
+      for (const pose of frames)
+        for (const rect of a2pose(pose))
+          for (const value of rect.slice(0, 4)) expect(Number.isInteger(value)).toBe(true);
+      expect(JSON.stringify(a2pose(frames.at(-1)))).toBe(JSON.stringify(A2_REST));
+    }
+  });
   it("every non-holding sequence returns to the canonical rest", async () => {
     const { a2pose, A2_REST, SEQ } = await import("../src/app/_home/a2-concierge");
     for (const key of ["arrival", "listening", "verified", "unknown"]) {

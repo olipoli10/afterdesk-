@@ -864,7 +864,9 @@
   border-radius: 6px;
   /* the shutters part outward - candidate B's graft, kept */
   clip-path: inset(0 calc((1 - var(--s-open)) * 50.5%) 0 calc((1 - var(--s-open)) * 50.5%));
-  opacity: min(1, calc(var(--s-open) * 3));
+  /* the shutters can begin opening before the surface takes over, but an
+     opaque onyx frame may never precede its first readable content */
+  opacity: clamp(0, calc(var(--s-c) / 0.14), 1);
   pointer-events: none;
 }
 .outcomeInner {
