@@ -50,7 +50,7 @@ import {
 import { loadLatestPayload, persistPayload, writeArtifact } from "@/server/workflow-artifacts";
 import { readObject } from "@/lib/storage";
 import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notifications";
-import { publishHumanWorkUnit } from "@/server/human-unit";
+import { publishHumanWorkUnit, withdrawHumanUnit } from "@/server/human-unit";
 
 /**
  * THE DURABLE STEP PROCESSOR.
@@ -1147,13 +1147,19 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         (run.task.status === "open" || run.task.status === "claimed");
 
       if (!heldByAPerson) {
-        await prisma.taskWorkflowRun.updateMany({
-          where: { id: run.id, status: "running" },
-          data: {
-            status: "abandoned",
-            finishedAt: new Date(),
-            pausedReason: `Task left ai_processing (${run.task.status}); execution stopped.`,
-          },
+        await prisma.$transaction(async (tx) => {
+          await tx.taskWorkflowRun.updateMany({
+            where: { id: run.id, status: "running" },
+            data: {
+              status: "abandoned",
+              finishedAt: new Date(),
+              pausedReason: `Task left ai_processing (${run.task.status}); execution stopped.`,
+            },
+          });
+          await withdrawHumanUnit(tx, {
+            taskId: run.task.id,
+            cause: "lifecycle_exit",
+          });
         });
         return { steps: 0, finished: false };
       }

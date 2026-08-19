@@ -379,6 +379,112 @@ export async function bindClaimToHumanUnit(
   return { assignmentEstablished: established };
 }
 
+const TERMINAL_HUMAN_UNIT_STATES = ["resumed", "exhausted", "withdrawn"] as const;
+
+/**
+ * WITHDRAW ON LIFECYCLE EXIT — transaction T12.
+ *
+ * This function deliberately accepts the caller's transaction. The task exit
+ * and the unit fence are one business act: committing either without the
+ * other would leave a cancelled/completed mandate actionable in the worker or
+ * review surfaces. Callers have already authorized and CAS-guarded the task
+ * transition; this helper owns only the human-unit half of that act.
+ *
+ * The row is locked before its state is read so the recorded `fromState` is
+ * the state that actually lost to the lifecycle exit. The CAS remains as a
+ * second guard and makes a replay a true no-op. Candidates are intentionally
+ * untouched: they are immutable evidence, not state to clean up.
+ */
+export async function withdrawHumanUnit(
+  tx: Prisma.TransactionClient,
+  input: {
+    taskId: string;
+    cause: "lifecycle_exit";
+    actorId?: string;
+  }
+): Promise<void> {
+  await tx.$queryRaw`
+    SELECT "id"
+    FROM "HumanWorkUnitRunState"
+    WHERE "taskId" = ${input.taskId}
+    FOR UPDATE
+  `;
+
+  const unit = await tx.humanWorkUnitRunState.findUnique({
+    where: { taskId: input.taskId },
+    select: {
+      id: true,
+      state: true,
+      claimedById: true,
+      claimGeneration: true,
+      resumeGeneration: true,
+    },
+  });
+  if (!unit || TERMINAL_HUMAN_UNIT_STATES.includes(unit.state as never)) return;
+
+  const moved = await tx.humanWorkUnitRunState.updateMany({
+    where: {
+      id: unit.id,
+      state: { notIn: [...TERMINAL_HUMAN_UNIT_STATES] },
+    },
+    data: {
+      state: "withdrawn",
+      refusalCause: input.cause,
+      transitionSeq: { increment: 1 },
+    },
+  });
+  if (moved.count === 0) return;
+
+  const current = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+    where: { id: unit.id },
+    select: { transitionSeq: true },
+  });
+  const actor = input.actorId
+    ? await tx.user.findUnique({
+        where: { id: input.actorId },
+        select: { role: true },
+      })
+    : null;
+
+  await tx.humanWorkUnitTransition.create({
+    data: {
+      unitStateId: unit.id,
+      seq: current.transitionSeq,
+      actorId: input.actorId ?? null,
+      actorRole: actor?.role === "ADMIN" ? "admin" : "system",
+      fromState: unit.state,
+      toState: "withdrawn",
+      cause: `withdrawn:${input.cause}`,
+      claimGeneration: unit.claimGeneration,
+      resumeGeneration: unit.resumeGeneration,
+    },
+  });
+  await tx.taskEvent.create({
+    data: {
+      taskId: input.taskId,
+      action: "human_unit_withdrawn",
+      actorId: input.actorId ?? null,
+      meta: {
+        state: "withdrawn",
+        cause: `withdrawn:${input.cause}`,
+        claimGeneration: unit.claimGeneration,
+      },
+    },
+  });
+
+  if (unit.claimedById) {
+    await tx.notification.create({
+      data: {
+        userId: unit.claimedById,
+        taskId: input.taskId,
+        type: "human_unit_withdrawn",
+        title: "This work unit was withdrawn",
+        body: "The mandate left its active lifecycle. No further submission or review is available for this work unit.",
+      },
+    });
+  }
+}
+
 /**
  * Frozen criteria are stored as JSON. A malformed historical row is a refusal,
  * never a smaller set of requirements. This is intentionally the same parser

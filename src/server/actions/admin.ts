@@ -21,6 +21,7 @@ import { nextInPricingQueue } from "@/lib/queries/tasks";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
 import { releaseToPoolWithoutAutomation } from "@/server/workflow-runs";
 import { returnStandingMinutes, restitutionMessage } from "@/lib/standing-restitution";
+import { withdrawHumanUnit } from "@/server/human-unit";
 
 const approveSchema = z.object({
   taskId: z.string(),
@@ -364,6 +365,11 @@ export async function cancelTask(input: unknown): Promise<CancelResult> {
         actorId: admin.id,
         reason,
         data: { cancelledAt: new Date(), cancelReason: reason },
+      });
+      await withdrawHumanUnit(tx, {
+        taskId,
+        cause: "lifecycle_exit",
+        actorId: admin.id,
       });
 
       // Excluded for internal practice tasks — not a real business outcome.

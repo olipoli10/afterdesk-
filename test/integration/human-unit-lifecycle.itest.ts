@@ -7,7 +7,13 @@ import type { WorkflowPayload } from "@/lib/ai-work-engine/primitives/types";
 import { compileFrozenOutputSchema } from "@/lib/ai-work-engine/human-unit-result-schema";
 import { vaPoolSelect } from "@/lib/queries/tasks";
 import { readObject } from "@/lib/storage";
-import { publishHumanWorkUnit } from "@/server/human-unit";
+import {
+  decideHumanUnitCandidate,
+  openHumanUnitReview,
+  publishHumanWorkUnit,
+  submitHumanUnitCandidate,
+  withdrawHumanUnit,
+} from "@/server/human-unit";
 import { persistPayload } from "@/server/workflow-artifacts";
 import { createTask, createWorker } from "./fixtures";
 
@@ -32,6 +38,7 @@ vi.mock("next/server", async (importOriginal) => {
 
 const { requireApprovedVa, requireRole } = await import("@/lib/authz");
 const { claimTask, submitDeliverable } = await import("@/server/actions/va-tasks");
+const { cancelTask } = await import("@/server/actions/admin");
 const { startWorkerSession } = await import("@/server/actions/work-sessions");
 const { approveDeliverable } = await import("@/server/actions/admin-qc");
 const { applyResume } = await import("@/server/human-unit-resume");
@@ -1021,6 +1028,139 @@ describe("T034 — an admitted run is not abandoned while a person holds it", ()
     expect(after.status).toBe("abandoned");
   });
 
+});
+
+describe("T043 — lifecycle exit withdraws the unit atomically", () => {
+  it("admin cancellation withdraws the unit, fences later acts and never releases descendants", async () => {
+    const worker = await createWorker();
+    const admin = await createAdmin();
+    const { task, run, unit } = await admittedRunReadyToPublish();
+    expect((await publishHumanWorkUnit(run.id)).published).toBe(true);
+
+    asAdmin(admin.id);
+    const cancelled = await cancelTask({
+      taskId: task.id,
+      reason: "The mandate is no longer authorized to continue.",
+      lostReasonCategory: "other",
+    });
+    expect(cancelled.ok).toBe(true);
+
+    const withdrawn = await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+      where: { id: unit.id },
+      select: { state: true, transitionSeq: true },
+    });
+    expect(withdrawn.state).toBe("withdrawn");
+    expect(
+      await prisma.humanWorkUnitTransition.findMany({
+        where: { unitStateId: unit.id, cause: "withdrawn:lifecycle_exit" },
+        select: { fromState: true, toState: true, actorId: true, actorRole: true },
+      })
+    ).toEqual([
+      {
+        fromState: "published",
+        toState: "withdrawn",
+        actorId: admin.id,
+        actorRole: "admin",
+      },
+    ]);
+    expect(
+      await prisma.taskEvent.count({
+        where: { taskId: task.id, action: "human_unit_withdrawn" },
+      })
+    ).toBe(1);
+    expect(
+      await prisma.taskWorkflowStepRun.findFirstOrThrow({
+        where: { runId: run.id, order: 3 },
+        select: { status: true, attempts: true, lockedBy: true },
+      })
+    ).toEqual({ status: "blocked_on_human_unit", attempts: 0, lockedBy: null });
+
+    expect(
+      await submitHumanUnitCandidate({
+        taskId: task.id,
+        actorId: worker.id,
+        claimGeneration: 0,
+        payload: ACCEPTED_RESULT,
+        fileIds: [],
+      })
+    ).toEqual({ submitted: false, cause: "lifecycle_exit" });
+    expect(await openHumanUnitReview({ taskId: task.id, actorId: admin.id })).toEqual({
+      opened: false,
+      cause: "lifecycle_exit",
+    });
+  });
+
+  it("is replay-safe and retains an already-durable candidate byte-for-byte", async () => {
+    const worker = await createWorker();
+    const admin = await createAdmin();
+    const { task, run, unit } = await admittedRunReadyToPublish();
+    await prisma.task.update({
+      where: { id: task.id },
+      data: { status: "claimed" as never, claimedById: worker.id },
+    });
+    await prisma.humanWorkUnitRunState.update({
+      where: { id: unit.id },
+      data: {
+        state: "submitted" as never,
+        claimedById: worker.id,
+        claimGeneration: 1,
+        transitionSeq: 2,
+      },
+    });
+    const candidate = await prisma.humanWorkUnitCandidate.create({
+      data: {
+        unitStateId: unit.id,
+        claimGeneration: 1,
+        revisionIndex: 0,
+        submittedById: worker.id,
+        payload: ACCEPTED_RESULT as never,
+      },
+    });
+    const before = JSON.parse(JSON.stringify(candidate));
+
+    await prisma.$transaction((tx) =>
+      withdrawHumanUnit(tx, {
+        taskId: task.id,
+        cause: "lifecycle_exit",
+        actorId: admin.id,
+      })
+    );
+    await prisma.$transaction((tx) =>
+      withdrawHumanUnit(tx, {
+        taskId: task.id,
+        cause: "lifecycle_exit",
+        actorId: admin.id,
+      })
+    );
+
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          await prisma.humanWorkUnitCandidate.findUniqueOrThrow({
+            where: { id: candidate.id },
+          })
+        )
+      )
+    ).toEqual(before);
+    expect(
+      await prisma.humanWorkUnitTransition.count({
+        where: { unitStateId: unit.id, cause: "withdrawn:lifecycle_exit" },
+      })
+    ).toBe(1);
+    expect(
+      await decideHumanUnitCandidate({
+        candidateId: candidate.id,
+        actorId: admin.id,
+        outcome: "accept",
+      })
+    ).toEqual({ decided: false, cause: "lifecycle_exit" });
+    expect(
+      await prisma.taskWorkflowStepRun.findFirstOrThrow({
+        where: { runId: run.id, order: 3 },
+        select: { status: true },
+      })
+    ).toEqual({ status: "blocked_on_human_unit" });
+  });
 });
 
 /**
