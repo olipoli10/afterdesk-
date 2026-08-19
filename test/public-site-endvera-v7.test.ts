@@ -116,8 +116,8 @@ describe("ENDVERA x V7 transplant", () => {
   it("replaces internal workflow jargon with one client-readable story", () => {
     const dictionary = read(DICTIONARY);
     expect(dictionary).toContain('h: "Digital work, finished."');
-    expect(dictionary).toContain('h: "The work breaks between the tools."');
-    expect(dictionary).toContain('h: "One engine coordinates the whole run."');
+    expect(dictionary).toContain('h: "Give us the workflow—not another task."');
+    expect(dictionary).toContain('h: "One approved run becomes the standard."');
     expect(dictionary).toContain('h: "Human judgment where it matters."');
     expect(dictionary).toContain('h: "Finished. Checked. Ready to use."');
     for (const deadCopy of [
@@ -132,14 +132,37 @@ describe("ENDVERA x V7 transplant", () => {
     }
   });
 
+  it("turns one approved run into a reusable standard without claiming live recurrence", () => {
+    const dictionary = read(DICTIONARY);
+    const engine = read(ENGINE);
+    const guide = read(HOME_ASSEMBLY);
+
+    expect(dictionary, "all four languages name the first-run quality standard").toSatisfy(
+      (source: string) => (source.match(/standard(?: d'exécution| operativo| ng pagpapatakbo)?/gi) ?? []).length >= 4,
+    );
+    expect(dictionary).not.toMatch(/handed over|mise en place et remise|configurada y entregada|iset up at ipinasa/i);
+    expect(dictionary).toContain('continuity: ["First run", "Checks recorded", "Operating standard"]');
+    expect(dictionary).toContain('h: "Give us the workflow—not another task."');
+    expect(dictionary).toContain('h: "Approve the run. Keep the standard."');
+    expect(dictionary).not.toMatch(/recurring|recurrence|récurrent|récurrence|recurrente|paulit-ulit|next approved run|prochaine exécution|siguiente ejecución|susunod na aprubadong run/i);
+    expect(`${dictionary}\n${guide}`).not.toMatch(/one proven run|first run is proven|exécution éprouvée|première exécution est éprouvée|ejecución probada|primera ejecución está probada|napatunayang run|napatunayan ang first run/i);
+
+    expect((engine.match(/data-engine-standard=/g) ?? []).length).toBe(1);
+    expect(engine).toMatch(/copy\.engine\.continuity\.map/);
+    expect(engine).toMatch(/data-engine-standard[\s\S]*data-power-fill[\s\S]*--power-release/);
+    expect(engine).not.toMatch(/@keyframes\s+(?:loop|recurr|cycle)/i);
+    expect(engine).toMatch(/max-w-\[calc\(87%-80px\)\][\s\S]*grid-cols-1[\s\S]*sm:grid-cols-3/);
+    expect(engine).toMatch(/text-\[12px\][\s\S]*continuitySub/);
+  });
+
   it("uses structured amber emphasis instead of coloring whole headlines", () => {
     const engine = read(ENGINE);
     const dictionary = read(DICTIONARY);
     expect(engine).toMatch(/function\s+AccentLine\b/);
     expect(engine).toMatch(/data-copy-accent/);
     expect(dictionary).toMatch(/accent:\s*"finished\."/);
-    expect(dictionary).toMatch(/accent:\s*"between the tools\."/);
-    expect(dictionary).toMatch(/accent:\s*"One coordinated run\."/);
+    expect(dictionary).toMatch(/accent:\s*"workflow"/);
+    expect(dictionary).toMatch(/accent:\s*"One managed workflow\."/);
   });
 
   it("gives A2 bounded rest-life, scroll-owned locomotion and scene reactions", () => {

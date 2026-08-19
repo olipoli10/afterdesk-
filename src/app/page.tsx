@@ -194,6 +194,9 @@ export default async function Home({
             <h2 className="max-w-[34ch] text-[clamp(1.3rem,2.6vw,1.9rem)] font-semibold leading-[1.25] tracking-[-0.03em] text-[#F7F6F3]">
               <AccentLine text={acts.act4.h} accent={acts.act4.accent} />
             </h2>
+            <p className="mt-3 max-w-[60ch] text-[14px] leading-[1.65] text-[#A1A8B3] sm:text-[15px]">
+              {acts.act4.sub}
+            </p>
             <div className="mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
               {acts.act4.chips.map((c) => (
                 <span key={c} className="rounded-[4px] border border-[#2A303B] bg-[#12151B] px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#c7ccd4]">

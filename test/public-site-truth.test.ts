@@ -2,8 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CLIENT_I18N } from "@/lib/i18n/client";
+import { HOME_CONCIERGE_I18N } from "@/lib/i18n/home-assembly";
 import { INSIDE_I18N } from "@/lib/i18n/inside";
 import { SERVICES_I18N } from "@/lib/i18n/services";
+import { V7_ACTS_I18N } from "@/lib/i18n/v7-acts";
 import { SITE_LANGS } from "@/lib/i18n/langs";
 
 /**
@@ -56,10 +58,18 @@ const lower = (node: unknown) => stringsOf(node).join(" · ").toLowerCase();
 const RECURRENCE = [
   "recurring",
   "recurrence",
+  "repeatable",
+  "repeated operation",
   "récurrent",
   "récurrence",
+  "répétable",
+  "opération répétée",
   "recurrente",
+  "repetible",
+  "operación repetida",
   "paulit-ulit",
+  "inuulit na operasyon",
+  "repeatable operation",
 ];
 
 /** Autonomy vocabulary banned from the homepage dictionary. */
@@ -73,6 +83,20 @@ const AUTONOMY = [
   "fully automated",
   "entièrement automatisé",
   "totalmente automatizado",
+];
+
+/** Semantic next-run promises that avoid the recurrence keywords above. */
+const NEXT_RUN_PROMISE = [
+  "next approved run",
+  "next managed run",
+  "next time",
+  "prochaine exécution",
+  "la prochaine fois",
+  "siguiente ejecución",
+  "próxima vez",
+  "susunod na aprubadong run",
+  "susunod na managed run",
+  "sa susunod",
 ];
 
 /**
@@ -102,8 +126,12 @@ const RELEASE_EVIDENCE = "test/fixtures/public-release-evidence.json";
 describe("the homepage dictionary claims no recurrence and no autonomy", () => {
   for (const { code } of SITE_LANGS) {
     it(`holds in ${code}`, () => {
-      const all = lower(CLIENT_I18N[code]);
-      for (const word of [...RECURRENCE, ...AUTONOMY]) {
+      const all = lower({
+        legacy: CLIENT_I18N[code],
+        activeNarrative: V7_ACTS_I18N[code],
+        activeGuide: HOME_CONCIERGE_I18N[code],
+      });
+      for (const word of [...RECURRENCE, ...AUTONOMY, ...NEXT_RUN_PROMISE]) {
         expect(all, `homepage[${code}] must not contain "${word}"`).not.toContain(word);
       }
     });

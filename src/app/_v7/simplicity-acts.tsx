@@ -1426,17 +1426,40 @@ export function SimplicityActs({ copy, concierge, children }: {
             <div className="mt-4 flex flex-wrap items-start gap-5 sm:mt-5">
             <div
               data-sealed-card=""
-              className="relative min-h-[220px] w-full max-w-[320px] rounded-md border-2 bg-[#F7F6F3] p-5 text-[#14161A] sm:max-w-none"
+              className="relative min-h-[220px] w-full max-w-[calc(87%-80px)] rounded-md border-2 bg-[#F7F6F3] p-4 text-[#14161A] sm:max-w-none sm:p-5"
               style={reduced ? undefined : { opacity: "calc(0.15 + 0.85 * var(--seal, 1))" }}
             >
               <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6b5d3f]">{copy.sealed.seal}</p>
-              <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-1.5">
+              <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
                 {copy.sealed.chips.map((c, i) => (
-                  <p key={c} className="flex items-center gap-1.5 text-[13px] font-semibold leading-[1.35]">
+                  <p key={c} className="flex items-center gap-1.5 text-[12px] font-semibold leading-[1.3] sm:text-[13px] sm:leading-[1.35]">
                     <span aria-hidden className={i === 1 ? "text-[#166049]" : "text-[#6b5d3f]"}>{i === 1 ? "✓" : "·"}</span>
                     {c}
                   </p>
                 ))}
+              </div>
+              {/* The approved result records one operating standard. This is
+                  a first-run deliverable, not a claim that recurring runs are
+                  already live. It uses the existing release scroll authority. */}
+              <div data-engine-standard="" className="mt-3 border-t border-[#C9A76A]/35 pt-3 sm:mt-4">
+                <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-[#766645] sm:text-[10px]">
+                  {copy.engine.standardStatus}
+                </p>
+                <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+                  {copy.engine.continuity.map((stage, i) => (
+                    <p key={stage} className="min-w-0 border-l border-[#B9985E] py-0.5 pl-2 text-[12px] font-semibold leading-[1.3] text-[#282A2F] sm:py-0 sm:pl-1.5 sm:text-[11px]">
+                      <span className="mr-1.5 font-mono text-[10px] text-[#846C43]">0{i + 1}</span>{stage}
+                    </p>
+                  ))}
+                </div>
+                <span aria-hidden className="mt-2.5 block h-px overflow-hidden bg-[#C9A76A]/25">
+                  <i
+                    data-power-fill=""
+                    className="block h-px origin-left bg-gradient-to-r from-[#D87526] via-[#C9A76A] to-[#1E7F5C]"
+                    style={reduced ? undefined : { transform: "scaleX(var(--power-release, 0))" }}
+                  />
+                </span>
+                <p className="mt-2 text-[12px] leading-[1.45] text-[#555A63]">{copy.engine.continuitySub}</p>
               </div>
               <span data-v7-anchor="result" className="absolute right-4 top-4 h-px w-px" />
               {reduced && <StaticArtifact state="checked" className="mt-3" />}
