@@ -38,7 +38,7 @@ export const V7_ACTS_I18N: Record<SiteLang, V7ActsCopy> = {
   en: {
     act1: {
       h: "Digital work, handled.",
-      sub: "You describe the result. We coordinate the systems, tools and people required to deliver it checked.",
+      sub: "You describe the result. We coordinate the systems, tools and people needed to deliver it checked.",
       placeholder: "Describe the result you need…",
       note: "Nothing typed here is sent, stored or recorded.",
     },

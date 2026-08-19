@@ -74,7 +74,11 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
 
     type Pt = { x: number; y: number }; /* DOCUMENT space (normal-flow acts) */
     let A: Record<(typeof ANCHOR_NAMES)[number], Pt> | null = null;
-    let dockHomeViewport: { x: number; y: number } | null = null;
+    /* A-REFOCUS: the dock's home is IN THE FLOW of the hero (A2 stands
+       above the intake box), so its home is tracked in DOCUMENT space and
+       the escort subtracts the current scroll each frame - the transform
+       math stays exact at any scroll position. */
+    let dockHomeDoc: { x: number; y: number } | null = null;
     let blockTop = 0, blockHeight = 1, vh = 1;
     /* geometry-based milestones: the slip RESTS at each stop when that anchor
        sits at a comfortable viewport height, so the pacing holds on every
@@ -144,15 +148,16 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       lastWidth = window.innerWidth;
     };
 
-    /* the launcher is fixed and bottom-anchored, so its home in viewport
-       space depends on the viewport height itself. Refreshing only this is
-       not a structural remeasure - the story geometry is untouched. */
+    /* the launcher now lives in normal flow at A2's post above the intake
+       box: its home is a document-space point read from the offset chain
+       (no sticky ancestor sits between it and the root, so the chain is
+       honest here). Refreshing it is not a structural remeasure. */
     const measureDockHome = () => {
       if (!dock) return;
       const prev = dock.style.transform;
       dock.style.transform = "";
-      const box = (dock.querySelector<HTMLElement>("button") ?? dock).getBoundingClientRect();
-      dockHomeViewport = { x: box.left, y: box.top };
+      const btn = dock.querySelector<HTMLElement>("button") ?? dock;
+      dockHomeDoc = { x: docLeft(btn), y: docTop(btn) };
       dock.style.transform = prev;
     };
 
@@ -605,16 +610,17 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         slip.setAttribute("aria-label", artCopyRef.current[artState]);
       }
 
-      if (dock && dockHomeViewport) {
+      if (dock && dockHomeDoc) {
         setEscort(storyActive);
         if (storyActive) {
           /* integer-pixel escort, trailing beside the slip, never covering.
-             The dock grew 44 -> 76px (station platform) while the being kept
-             its painted 64px: these offsets re-centre the platform so the
-             BEING's left edge stays at vx-54 and its feet at vy+36 - the
-             exact clearances the R2.2 lane was proven against. */
-          const tx = Math.round(vx - 60 - dockHomeViewport.x);
-          const ty = Math.round(vy - 35 - dockHomeViewport.y);
+             The being keeps its painted 64px and the SAME clearances the
+             R2.2 lane was proven against (left edge vx-54, feet vy+36);
+             the home is document-space now, so the current scroll is
+             subtracted to land the same viewport target. */
+          const sx = window.scrollX;
+          const tx = Math.round(vx - 60 - (dockHomeDoc.x - sx));
+          const ty = Math.round(vy - 35 - (dockHomeDoc.y - y));
           dock.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
           /* the being fades with its plate, never apart from it: one
              composition, one opacity, so the two can never disagree */
@@ -716,7 +722,6 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
            to the R2.2-proven geometry - same 64px being, same clearances. */
         [data-a2-dock][data-v7-escorting="on"] [data-a2-being] { transform: scale(1); transform-origin: 50% 100%; }
         [data-a2-dock][data-v7-escorting="on"] button { background: transparent; border-color: transparent; box-shadow: none; overflow: visible; }
-        [data-a2-dock][data-v7-escorting="on"] button::before { opacity: 0; }
         /* the closure is COMMANDED BY SCROLL: the gold seam closes with
            the walk, the frame stabilizes to gold, the result surface is
            revealed by the seal progress, the check lands last. Reversible
@@ -816,7 +821,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           selector, same request-anchor placement, no new sticky elements.
           MOBILE PLATEAUS: native sticky only - the finger is never
           intercepted, there is no snap and no automatic advance. */}
-      <section data-act="1" data-v7-sem="what" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.18)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.26)] sm:min-h-[88vh] sm:justify-center sm:pt-32">
+      <section data-act="1" data-v7-sem="what" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.24)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.24)] sm:min-h-[88vh] sm:justify-center sm:pt-32">
         {/* THE CONSOLE: one plane that contains the whole first moment.
             2D lighting stands in for inclination - a lit top seam, gradient
             weight toward the base, a grounding shadow. The page header sits
@@ -839,13 +844,15 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         {/* desktop only: at phone widths the radial freezes into a visible
             rectangular smudge in stills - the mobile console is already
             filled, so it simply goes without ambient light */}
-        <div aria-hidden data-lumen="" className="pointer-events-none absolute left-[2%] top-[36%] hidden h-[46%] w-[62%] rounded-full bg-[radial-gradient(closest-side,rgba(201,167,106,0.13),rgba(201,167,106,0.045)_55%,transparent_75%)] sm:block" />
+        <div aria-hidden data-lumen="" className="pointer-events-none absolute left-[6%] top-[40%] hidden h-[36%] w-[46%] rounded-full bg-[radial-gradient(closest-side,rgba(201,167,106,0.10),rgba(201,167,106,0.035)_55%,transparent_75%)] sm:block" />
 
-        {/* PINNED PLATE: on mobile the plateau headline is an OPAQUE plate,
-            so flowing content passes legibly BENEATH it - the old layout
-            used emptiness as its collision buffer; a filled console needs
-            real occlusion. Desktop stays plain static text. */}
-        <h1 className="sticky top-[10vh] z-10 -mx-3 max-w-[15ch] rounded-[8px] bg-[#14171D] px-3 py-2.5 text-[clamp(2.4rem,5.6vw,4.3rem)] font-semibold leading-[1.04] tracking-[-0.04em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[15ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
+        {/* A-REFOCUS: the hero headline is STATIC everywhere. The refocused
+            hero holds its whole composition in the first screen, so the
+            act-1 plateau no longer teaches anything - and a static headline
+            can never occlude the manifest passing by ("aucune plaque ne
+            masque le texte"). Acts 2/2b/4 keep their pinned plates: there,
+            content genuinely passes beneath a heading mid-read. */}
+        <h1 className="z-10 max-w-[15ch] text-[clamp(2.4rem,5.6vw,4.3rem)] font-semibold leading-[1.04] tracking-[-0.04em]">
           {copy.act1.h}
         </h1>
         {/* the composition flows: statement, intake slot, note, then the
@@ -854,11 +861,24 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         <div className="relative flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.12)] pt-[calc(var(--v7vh,100vh)*0.025)] sm:block sm:flex-none sm:pb-16 sm:pt-0">
           <div>
             <p data-v7-sub="" className="max-w-[46ch] text-[clamp(1.02rem,1.55vw,1.22rem)] leading-[1.6] text-[#9AA1AB] sm:mt-5">{copy.act1.sub}</p>
+            {/* A2'S POST (A-REFOCUS): the being stands just ABOVE the intake
+                box, feet on a hairline deck - A2 and the box form the focal
+                pair. This is also the ONE being's dock: the concierge
+                launcher lives here in normal flow, and the escort engine
+                tracks its document-space home. */}
+            <div data-a2-post="" className="relative mt-[calc(var(--v7vh,100vh)*0.035)] flex w-full max-w-[560px] items-end justify-end pr-2 sm:mt-7">
+              <span aria-hidden className="absolute bottom-0 left-1 right-1 h-px bg-gradient-to-r from-transparent via-[#C9A76A]/40 to-transparent" />
+              {/* the deck continues past the box and fades - the one quiet
+                  counterweight the desktop's right wing carries (C's 15%:
+                  a subordinate line, never a subject) */}
+              <span aria-hidden className="absolute bottom-0 left-full hidden h-px w-[44vw] max-w-[500px] bg-gradient-to-r from-[#C9A76A]/25 to-transparent sm:block" />
+              <A2Concierge copy={concierge} />
+            </div>
             {/* THE INTAKE SLOT: the request field MILLED into the console -
                 machined housing, corner ticks, etched labels, an amber base
                 seam that ignites on focus (the machine acknowledging its
                 operator). The engine's request anchor stays inside. */}
-            <div data-slot="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] w-full max-w-[560px] rounded-[8px] border border-[#2A303B] bg-[#14171D] shadow-[0_2px_28px_rgba(0,0,0,0.45)] transition-colors sm:mt-9">
+            <div data-slot="" className="relative mt-2 w-full max-w-[560px] rounded-[8px] border border-[#2A303B] bg-[#14171D] shadow-[0_2px_28px_rgba(0,0,0,0.45)] transition-colors sm:mt-2">
               <span aria-hidden data-tick="" className="absolute -left-px -top-px h-2.5 w-2.5 rounded-tl-[8px] border-l border-t border-[#4A5160] transition-colors" />
               <span aria-hidden data-tick="" className="absolute -right-px -top-px h-2.5 w-2.5 rounded-tr-[8px] border-r border-t border-[#4A5160] transition-colors" />
               <span aria-hidden data-tick="" className="absolute -bottom-px -left-px h-2.5 w-2.5 rounded-bl-[8px] border-b border-l border-[#4A5160] transition-colors" />
@@ -893,7 +913,9 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
                   →
                 </Link>
               </div>
-              <span aria-hidden data-slotseam="" className="absolute inset-x-3 bottom-0 h-[2px] rounded-full bg-[#C9A76A] opacity-40 transition-[opacity,box-shadow]" />
+              {/* the small amber line under the box: A's signature, held at
+                  a readable-but-quiet level; focus takes it to full */}
+              <span aria-hidden data-slotseam="" className="absolute inset-x-3 bottom-0 h-[2px] rounded-full bg-[#C9A76A] opacity-55 transition-[opacity,box-shadow]" />
             </div>
             {/* the reduced-motion artifact sits WITH the note it explains -
                 anchored to the slot's zone, never stranded in open space */}
@@ -902,19 +924,19 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
               {reduced && <StaticArtifact state="request" className="shrink-0" />}
             </div>
           </div>
-          {/* THE PATH MANIFEST (grafted from the Datum direction): the
-              in-viewport answer to "what does Endvera handle", phrased as
-              coordination done FOR the visitor - never as features to
-              configure. Real content; width-capped by the same derived
-              lane rule as the act headlines, so it can never enter the
-              escort column. */}
-          <div data-v7-manifest="" className="relative mt-[calc(var(--v7vh,100vh)*0.05)] max-w-[calc(87%-72px)] sm:mt-11 sm:max-w-[680px]">
-            <p className={`${mono} text-[#77808C]`}>{copy.instrument.manifestTitle}</p>
-            <ol className="mt-2.5 flex list-none flex-col gap-2 p-0 sm:flex-row sm:flex-wrap sm:gap-x-7 sm:gap-y-2.5">
+          {/* THE PATH MANIFEST, DEMOTED (A-REFOCUS): the visitor must
+              understand ENDVERA before seeing details, so this is a quiet
+              secondary line - smaller, dimmer, pushed below the first
+              mobile screen. Same derived lane-rule width cap. */}
+          {/* quiet but LEGIBLE: a whisper is still content - the red-team
+              measured the previous step as an effective contrast failure */}
+          <div data-v7-manifest="" className="relative mt-[calc(var(--v7vh,100vh)*0.12)] max-w-[calc(87%-72px)] sm:mt-12 sm:max-w-[640px]">
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#7A828E]">{copy.instrument.manifestTitle}</p>
+            <ol className="mt-2 flex list-none flex-col gap-1.5 p-0 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
               {copy.instrument.manifest.map((m, i) => (
-                <li key={m} className={`${mono} flex items-center gap-2 text-[#9AA1AB]`}>
-                  <span aria-hidden className="text-[10px] text-[#8A6F45]">0{i + 1}</span>
-                  <span aria-hidden className="h-[3px] w-[3px] rounded-[1px] bg-[#C9A76A]/80" />
+                <li key={m} className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[#8A929D] sm:text-[10.5px]">
+                  <span aria-hidden className="text-[9px] text-[#7A6440]">0{i + 1}</span>
+                  <span aria-hidden className="h-[2px] w-[2px] rounded-[1px] bg-[#C9A76A]/70" />
                   {m}
                 </li>
               ))}
@@ -1083,8 +1105,8 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         </div>
       </section>
 
-      {/* the ONE being lives inside this tree - scoped ownership */}
-      <A2Concierge copy={concierge} />
+      {/* the ONE being lives inside this tree, at its hero post above the
+          intake box - scoped ownership, rendered inside act 1 */}
     </div>
   );
 }

@@ -1,17 +1,22 @@
 /* A2 concierge chrome - onyx/graphite instrument surfaces matching the V5.5
    world. The being carries the amber; the chrome stays quiet. */
 
+/* A-REFOCUS: the dock lives IN THE FLOW at A2's post above the intake box
+   (the escort engine tracks its document-space home and transforms it from
+   there). z-index keeps the travelling being above act content. */
 .dock {
-  position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
+  position: relative;
   z-index: 60;
   display: flex;
   align-items: center;
   gap: 0.55rem;
 }
 
+/* A-REFOCUS: the hail is INTENT-ONLY - hidden at rest so nothing competes
+   with the focal pair, revealed when the visitor hovers or focuses A2's
+   post (desktop; never on phones). Discoverability without decoration. */
 .hail {
+  display: none;
   font-family: var(--font-geist-mono, ui-monospace, monospace);
   font-size: 0.75rem;
   letter-spacing: 0.18em;
@@ -19,6 +24,13 @@
   color: #c9a76a;
   position: relative;
   padding-right: 1.6rem;
+  white-space: nowrap;
+}
+@media (min-width: 641px) {
+  .dock:hover .hail,
+  .dock:focus-within .hail {
+    display: block;
+  }
 }
 .hail::after {
   content: "";
@@ -31,10 +43,10 @@
   opacity: 0.6;
 }
 
-/* the launcher is now a small STATION PLATFORM: the being stands at 64px
-   (integer 2x of the frozen skeleton, crispEdges intact) on a graphite
-   plate whose amber top seam marks it as part of the system's datum - a
-   resting instrument, not a chat bubble. Touch target grows with it. */
+/* A-REFOCUS: at its post the being stands FREE on the hero's own hairline
+   deck - no platform box competing with the intake box below it. The
+   button chrome is invisible chrome: full 76px touch target, focus ring
+   only. The being is 64px (integer 2x of the frozen skeleton). */
 .launch {
   width: 76px;
   height: 76px;
@@ -43,23 +55,13 @@
   display: grid;
   place-items: center;
   position: relative;
-  background: linear-gradient(180deg, #14171c 0%, #0b0d11 100%);
-  border: 1px solid #262b35;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 10px;
   cursor: pointer;
-  padding: 0 0 4px;
+  padding: 0 0 2px;
 }
-.launch::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 14%;
-  right: 14%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #c9a76a, transparent);
-  opacity: 0.65;
-}
-.launch:hover { border-color: rgba(201, 167, 106, 0.55); }
+.launch:hover { border-color: rgba(201, 167, 106, 0.35); }
 .launch:focus-visible {
   outline: 2px solid #c9a76a;
   outline-offset: 2px;
@@ -70,7 +72,7 @@
 .panel {
   position: fixed;
   right: 1.25rem;
-  bottom: 7.25rem;
+  bottom: 1.25rem;
   z-index: 61;
   width: min(21rem, calc(100vw - 2.5rem));
   background: #0b0d11;
@@ -158,9 +160,8 @@
     right: 0.75rem;
     left: 0.75rem;
     width: auto;
-    bottom: 6.6rem;
+    bottom: 0.9rem;
   }
-  .dock { right: 0.9rem; bottom: 0.9rem; }
   /* on phones the station platform IS the affordance: the textual hail
      would sweep across the manifest during the arrival moment, so it is
      a desktop-only flourish. The button keeps its accessible name. */
