@@ -105,6 +105,7 @@ export default async function Home({
   const nav = CLIENT_I18N[clientLangOf(raw)];
   const t = CONCEPT_ASSEMBLY_I18N[lang];
   const concierge = HOME_CONCIERGE_I18N[lang];
+  const acts = V7_ACTS_I18N[clientLangOf(raw)];
 
   return (
     <>
@@ -155,11 +156,70 @@ export default async function Home({
       </header>
 
       <main>
-        {/* the four acts tell the whole opening story and own the single A2
-            being; the accepted machine continues it, geometry frozen */}
-        <SimplicityActs copy={V7_ACTS_I18N[clientLangOf(raw)]} concierge={concierge} />
-        <div data-v7-sem="example">
+        {/* the narrative acts tell the whole story (scenes 1-6) and own the
+            single A2 being; scene 7 gives the accepted machine its context;
+            the machine (geometry frozen) demonstrates the breadth; scene 8
+            closes with the conversion the system has now earned. */}
+        <SimplicityActs copy={acts} concierge={concierge} />
+        {/* the wrapper carries its OWN onyx ground: the site body is paper,
+            and a transparent wrapper painted scene 7's ivory copy invisible
+            on white (the machine's internal surfaces masked the cause) */}
+        <div
+          data-v7-sem="example"
+          className="relative bg-[#08090B]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(0deg, rgba(154,161,171,0.055) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgba(154,161,171,0.055) 0 1px, transparent 1px 32px), repeating-linear-gradient(0deg, rgba(154,161,171,0.06) 0 1px, transparent 1px 160px), repeating-linear-gradient(90deg, rgba(154,161,171,0.06) 0 1px, transparent 1px 160px)",
+          }}
+        >
+          {/* SCENE 7 — one front door, very different finished outcomes:
+              four ILLUSTRATIVE example runs in the strict three-line
+              structure Request / Coordinated / Delivered, then the machine
+              shows one of them end to end. */}
+          <section className="mx-auto w-full max-w-[1180px] px-6 pb-4 pt-14 sm:pb-8 sm:pt-20">
+            <h2 className="max-w-[24ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] text-[#F7F6F3]">
+              {acts.outcomes.h}
+            </h2>
+            <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4">
+              {acts.outcomes.cases.map((c) => (
+                <article key={c.title} className="rounded-[10px] border border-[#232830] bg-[linear-gradient(180deg,#14171D,#0E1116)] p-4 sm:p-5">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#6F7681]">{acts.outcomes.example}</p>
+                  <h3 className="mt-1 text-[15px] font-semibold leading-[1.35] text-[#E8EAED]">{c.title}</h3>
+                  <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#8A6F45]">{acts.outcomes.request}</dt>
+                    <dd className="m-0 text-[12.5px] leading-[1.5] text-[#9AA1AB]">{c.request}</dd>
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#8A6F45]">{acts.outcomes.coordinated}</dt>
+                    <dd className="m-0 text-[12.5px] leading-[1.5] text-[#9AA1AB]">{c.coordinated}</dd>
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#8A6F45]">{acts.outcomes.delivered}</dt>
+                    <dd className="m-0 text-[12.5px] leading-[1.5] text-[#c7ccd4]">{c.delivered}</dd>
+                  </dl>
+                </article>
+              ))}
+            </div>
+          </section>
           <AssemblyExperience copy={t} ctaHref="/register" continuation />
+          {/* SCENE 8 — conversion, after the system has been demonstrated */}
+          <section className="mx-auto w-full max-w-[1180px] px-6 pb-20 pt-4 sm:pb-24 sm:pt-6">
+            <h2 className="max-w-[34ch] text-[clamp(1.3rem,2.6vw,1.9rem)] font-semibold leading-[1.25] tracking-[-0.03em] text-[#F7F6F3]">
+              {acts.act4.h}
+            </h2>
+            <div className="mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
+              {acts.act4.chips.map((c) => (
+                <span key={c} className="rounded-[4px] border border-[#2A303B] bg-[#12151B] px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#c7ccd4]">
+                  {c}
+                </span>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link
+                href="/register"
+                className="inline-flex min-h-11 items-center rounded-full border border-[#C9A76A] px-6 text-[15px] font-medium text-[#E2C486] no-underline transition-colors hover:bg-[#C9A76A] hover:text-[#14161A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]"
+              >
+                {acts.act4.cta}
+              </Link>
+              <p className="m-0 font-mono text-[10.5px] text-[#78808B]">{acts.act4.ctaNote}</p>
+            </div>
+          </section>
         </div>
       </main>
 

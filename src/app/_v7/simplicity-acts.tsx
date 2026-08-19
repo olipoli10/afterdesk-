@@ -758,6 +758,32 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           [data-rail] { animation: v7rail 0.4s ease-out 1.04s both; }
           [data-lumen] { animation: v7in 0.7s ease-out both, v7lumen 18s ease-in-out 1.4s infinite alternate; }
         }
+        /* SCENE 4 station illumination: a bump with 60% passage-memory,
+           entirely a function of --walk. pre rises before the centre, post
+           closes the peak window, hold carries the memory. Base styles are
+           the FINISHED lit state, so reduced motion (engine off, no --walk)
+           shows every station lit. */
+        [data-station] {
+          --w: var(--walk, 1);
+          --pre: clamp(0, calc((var(--w) - (var(--c, 0) - 0.15)) * 9), 1);
+          --post: clamp(0, calc(((var(--c, 0) + 0.11) - var(--w)) * 12), 1);
+          --hold: clamp(0, calc((var(--w) - (var(--c, 0) + 0.03)) * 14), 1);
+          --lit: max(calc(0.6 * var(--hold)), min(var(--pre), var(--post)));
+        }
+        [data-station]:not([style]) { --lit: 1; }
+        [data-station] { border-color: color-mix(in srgb, #262B35, #6F4C29 calc(var(--lit) * 100%)); }
+        [data-station] [data-strod] { opacity: calc(0.35 + 0.65 * var(--lit)); box-shadow: 0 0 calc(12px * var(--lit)) rgba(201, 167, 106, 0.55); }
+        [data-station] [data-stname] { opacity: calc(0.6 + 0.4 * var(--lit)); }
+        [data-station] [data-sttruth] { opacity: calc(0.55 + 0.45 * var(--lit)); }
+        /* SCENES 5+6: the seal resolves the exception, lands the human mark
+           in verified green (the palette's "passed" state), and closes the
+           artifact's frame. All defaults are the finished state. */
+        [data-exception] [data-exwarn] { opacity: calc(1 - clamp(0, calc(var(--seal, 1) * 2.4), 1)); position: absolute; }
+        [data-exception] [data-exok] { opacity: clamp(0, calc(var(--seal, 1) * 2.4), 1); }
+        [data-exception] { position: relative; padding-left: 34px; }
+        [data-exception] > span { left: 14px; }
+        [data-mark] { border-color: color-mix(in srgb, #6F4C29, #1E7F5C calc(clamp(0, calc((var(--seal, 1) - 0.3) * 2.2), 1) * 100%)); color: color-mix(in srgb, #C9A76A, #1E7F5C calc(clamp(0, calc((var(--seal, 1) - 0.3) * 2.2), 1) * 100%)); }
+        [data-sealed-card] { border-color: color-mix(in srgb, rgba(201, 167, 106, 0.25), #C9A76A calc(clamp(0, calc((var(--seal, 1) - 0.45) * 2), 1) * 100%)); box-shadow: 0 0 calc(44px * var(--seal, 1)) rgba(201, 167, 106, 0.14); }
         @keyframes v7in { from { opacity: 0; } }
         @keyframes v7rise { from { opacity: 0; transform: translateY(14px); } }
         @keyframes v7seam { from { transform: scaleX(0); } }
@@ -971,29 +997,36 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[calc(87%-72px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[22ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           {copy.act2.h}
         </h2>
-        {/* the slip hovers above the gauntlet - contained flex-wrap, no
-            percentage absolutes, so the geometry itself fits every phone.
-            The escort gets its OWN reserved lane between the headline and
-            the chips: the pair can never sit on the act-2 copy. */}
-        <div className="flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.06)] pt-0 sm:mt-10 sm:block sm:flex-none sm:pb-0">
-          <div aria-hidden className="relative h-px sm:h-8">
-            <span data-v7-anchor="problem" className="absolute left-[87%] top-0 h-px w-px sm:top-4" />
+        {/* SCENE 2 (NARRATIVE): the problem stated, then SHOWN - six
+            DISCONNECTED graphite pieces, not five buttons. Competent
+            fragments that do not join: staggered model drafts, a stalled
+            browser task, a raw tool export, an unassigned handoff, an
+            unanswered review, one uncertainty. Stub connectors deliberately
+            fail to meet; the --g drift the act already owns pushes them
+            gently OUT of alignment as the reader scrolls. The flex-wrap
+            container keeps the engine's obstacle registration intact. */}
+        <div className="flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.05)] pt-0 sm:mt-8 sm:block sm:flex-none sm:pb-0">
+          <p data-v7-s2sub="" className="mt-3 max-w-[42ch] text-[clamp(0.95rem,1.4vw,1.08rem)] leading-[1.6] text-[#9AA1AB]">{copy.act2.sub}</p>
+          <div aria-hidden className="relative mt-1 h-px sm:h-6">
+            <span data-v7-anchor="problem" className="absolute left-[87%] top-0 h-px w-px sm:top-3" />
           </div>
-          {/* A GENUINE LANE, RESERVED IN THE LAYOUT. These are short labels,
-              not fields: a column flex was stretching them to the full width,
-              which turned the gauntlet into a stack of full-width walls
-              sweeping past the escort. Sized to their own text, they leave a
-              real column on the right where the pair can hold one height
-              while they pass - measured, the alternative was the guide
-              hopping 124px from gap to gap, four times, down this act. */}
-          <div aria-hidden className="flex max-w-full flex-1 flex-col flex-wrap items-start justify-between sm:max-w-[78%] sm:flex-none sm:flex-row sm:items-stretch sm:gap-2.5">
-            {copy.act2.gauntlet.map((q, i) => (
+          <div aria-hidden className="flex max-w-full flex-1 flex-col flex-wrap items-start justify-between gap-2 sm:mt-4 sm:max-w-[78%] sm:flex-none sm:flex-row sm:items-stretch sm:gap-4">
+            {copy.act2.fragments.map((f, i) => (
               <span
-                key={q}
-                className={`${mono} max-w-[45%] rounded-[3px] border border-[#2A303B] bg-[#12151B] px-2.5 py-1.5 text-[#8A929D] sm:max-w-none sm:whitespace-nowrap`}
-                style={{ transform: `translate3d(0, calc(var(--g, 0) * ${((i % 3) - 1) * 8}px), 0)` }}
+                key={f.label + f.meta}
+                data-fragment=""
+                className={`relative max-w-[46%] rounded-[3px] border bg-[#12151B] px-3 pb-2 pt-1.5 sm:max-w-none ${
+                  i === 5 ? "border-[#6F4C29]" : "border-[#2A303B]"
+                }`}
+                style={{
+                  transform: `translate3d(0, calc(var(--g, 0) * ${((i % 3) - 1) * 10}px), 0) rotate(${[-1.2, 0.8, -0.6, 1.4, -0.9, 0.5][i]}deg)`,
+                }}
               >
-                {q}
+                {/* the stub connector that never reaches its neighbour */}
+                <i aria-hidden className={`absolute top-1/2 block h-px w-3 bg-[#4A5160] ${i % 2 ? "-left-3" : "-right-3"}`} />
+                <i aria-hidden className={`absolute top-1/2 block h-[3px] w-[3px] -translate-y-1/2 rounded-full bg-[#4A5160] ${i % 2 ? "-left-4" : "-right-4"}`} />
+                <b className={`${mono} block font-semibold ${i === 5 ? "text-[#C9A76A]" : "text-[#A6ADB8]"}`}>{f.label}</b>
+                <span className="block font-mono text-[10px] lowercase tracking-[0.08em] text-[#6F7681]">{f.meta}</span>
               </span>
             ))}
           </div>
@@ -1002,7 +1035,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       </section>
 
       {/* ── SOLUTION — Endvera takes the request ───────────────────── */}
-      <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
+      <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*0.95)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.12)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
         {/* the datum continues through the handover act */}
         <span aria-hidden data-lane-line="" className="pointer-events-none absolute inset-y-0 left-[calc(1.5rem+(100%-3rem)*0.87)] w-px -translate-x-1/2 bg-gradient-to-b from-[#C9A76A]/15 via-[#C9A76A]/25 to-[#C9A76A]/15" />
         {/* the same reserved column: this sticky headline is the wall the
@@ -1012,11 +1045,31 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[calc(87%-72px)] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.5rem,3.2vw,2.3rem)] font-semibold leading-[1.16] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[24ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           {copy.solution.h}
         </h2>
-        {/* the handover: the support line travels WITH the lane where A2
-            receives the request, so the moment reads as one composition */}
-        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.07)] pt-[calc(var(--v7vh,100vh)*0.05)] sm:mt-12 sm:block sm:flex-none sm:pb-0 sm:pt-0">
-          <p className="max-w-[40ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB]">{copy.solution.sub}</p>
-          <div aria-hidden className="relative mt-[14vh] h-[64px] sm:mt-8">
+        {/* SCENE 3 (NARRATIVE): the coordination engine, introduced as a
+            physical object. The casing is a graphite housing of six stacked
+            module slices threaded by the amber line, with an intake port on
+            its lane side - the REAL slip (already carried by A2 through
+            this zone: yCarryStart lives here) is what enters it. The
+            handover keeps the R2.1/R2.2 escort mechanics untouched. */}
+        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.035)] sm:mt-10 sm:block sm:flex-none sm:pb-0 sm:pt-0">
+          <p className="max-w-[44ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.6] text-[#9AA1AB]">{copy.solution.sub}</p>
+          <div data-casing="" className="relative mt-[calc(var(--v7vh,100vh)*0.045)] max-w-[calc(87%-72px)] rounded-[10px] border border-[#232830] bg-[linear-gradient(180deg,#15181E,#0E1116)] p-3 shadow-[0_18px_48px_rgba(0,0,0,0.5)] sm:mt-9 sm:max-w-[520px] sm:p-4">
+            <p className={`${mono} mb-2.5 text-[#7A828E]`}>{copy.engine.title}</p>
+            <div className="relative flex flex-col gap-1.5">
+              {/* the thread: one amber line stitching the six slices */}
+              <span aria-hidden className="absolute bottom-2 left-[11px] top-2 w-px bg-gradient-to-b from-[#C9A76A]/60 via-[#C9A76A]/35 to-[#C9A76A]/60" />
+              {copy.act3.stations.map((s) => (
+                <div key={s.name} className="relative flex items-center gap-2.5 rounded-[5px] border border-[#262B35] bg-[#12151B] py-1.5 pl-2 pr-3">
+                  <span aria-hidden className="relative z-[1] h-[7px] w-[7px] shrink-0 rounded-[2px] border border-[#6F4C29] bg-[#1A150D]" />
+                  <span className={`${mono} whitespace-nowrap text-[#A6ADB8]`}>{s.name}</span>
+                </div>
+              ))}
+            </div>
+            {/* (the desktop stub that once reached toward the lane ended in
+                open space and read as unfinished wiring - the casing's
+                internal thread and the handover itself carry the story) */}
+          </div>
+          <div aria-hidden className="relative mt-[calc(var(--v7vh,100vh)*0.02)] h-[64px] sm:mt-7">
             <span data-v7-anchor="solution" className="absolute left-[87%] top-[30px] h-px w-px" />
             {reduced && <StaticArtifact state="request" className="absolute left-[38%] top-0" />}
           </div>
@@ -1028,11 +1081,11 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           from above through chip decor only, and while the section is
           pinned the pair rides a stable corridor that no headline or
           station text ever enters. */}
-      <section data-act="3" data-v7-sem="how" className={reduced ? "relative" : "relative h-[calc(var(--v7vh,100vh)*1.6)] sm:h-[200vh]"}>
+      <section data-act="3" data-v7-sem="how" className={reduced ? "relative" : "relative h-[calc(var(--v7vh,100vh)*1.8)] sm:h-[170vh]"}>
         {/* the HOW plateau: its heading stays with its own stations for the
             whole act, exactly like the other mobile plateaus */}
         <div data-v7-stage="" className={reduced ? "" : "sticky top-0 flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center sm:min-h-screen"}>
-          <div className={`mx-auto w-full max-w-[1180px] px-6 ${reduced ? "py-[6vh]" : "flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-between pb-[8vh] pt-[8vh] sm:min-h-screen sm:pb-[10vh] sm:pt-[10vh]"}`}>
+          <div className={`mx-auto w-full max-w-[1180px] px-6 ${reduced ? "py-[6vh]" : "flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center gap-[calc(var(--v7vh,100vh)*0.045)] pb-[6vh] pt-[6vh] sm:min-h-screen sm:gap-[6vh] sm:pb-[8vh] sm:pt-[8vh]"}`}>
             <h2 className="max-w-[14ch] text-[clamp(1.15rem,3vw,2.1rem)] font-semibold leading-[1.2] tracking-[-0.03em] sm:max-w-[72%]">
               {copy.act3.h}
             </h2>
@@ -1043,65 +1096,138 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
               </div>
               {reduced && <StaticArtifact state="locked" className="absolute left-[58%] top-[-12px]" />}
             </div>
-            <div className="grid max-w-[65%] grid-cols-2 gap-x-3 gap-y-6 sm:max-w-[78%] sm:grid-cols-4 sm:gap-x-6">
-              {copy.act3.stations.map((s, i) => (
-                <div key={s.name} className="min-w-0">
-                  <span
-                    aria-hidden
-                    className="mb-3 block h-10 w-px bg-[#C9A76A]"
-                    style={reduced ? undefined : { opacity: `calc(0.25 + 0.75 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}
-                  />
-                  <p className={`${mono} text-[#E2C486]`} style={reduced ? undefined : { opacity: `calc(0.45 + 0.55 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}>
-                    {s.name}
-                  </p>
-                  <p className="mt-1.5 font-mono text-[10.5px] leading-[1.5] text-[#78808B]">{s.truth}</p>
-                </div>
-              ))}
+            {/* SCENE 4 (NARRATIVE): six stations on the datum. Each is a
+                physical module - rod, name plate, role line - whose
+                illumination is a pure function of --walk (A2's own
+                position IS a function of --walk, so light travels WITH the
+                being): rises as A2 approaches its centre, peaks in
+                passage, then settles and HOLDS at 60% behind it - lit
+                once, remembering the run, fully reversible. No clock.
+                Reduced motion renders every station lit (base = final). */}
+            {/* the stations are PHYSICAL MODULES on a shared platform - a
+                graphite body each, the rod rising to the datum, name plate
+                and role line inside. Substance, not thin text columns. */}
+            {/* the platform stops at the SAME derived lane bound as every
+                other surface (87% of the content box minus the escort's
+                72px reach): at pin-exit the slip descends through this
+                zone, and R2.2 proved a column is the only reservation
+                that survives scrolling. */}
+            <div className="relative max-w-[calc(87%-72px)] rounded-[10px] border border-[#1E232B] bg-[#0D1015]/80 p-2.5 sm:max-w-[78%] sm:p-3">
+              {/* ONE column on mobile: at pin-exit the slip descends through
+                  this block's rows, and a second column would put station
+                  text inside the descent footprint (measured: the 128px
+                  jump over "Verification"). Desktop keeps three columns -
+                  its corridor never crosses the grid. */}
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3 sm:gap-2.5">
+                {/* name ABOVE role on mobile: a side-by-side row starves the
+                    role column and long Spanish/Tagalog words then OVERFLOW
+                    their box straight into the escort corridor (measured:
+                    fragments painted to x=245 from a box ending at 201).
+                    Stacked, the role owns the platform's full width and
+                    nothing can escape the reserved bound. */}
+                {copy.act3.stations.map((s, i) => (
+                  <div
+                    key={s.name}
+                    data-station=""
+                    className="min-w-0 rounded-[6px] border border-[#262B35] bg-[#12151B] px-2.5 py-1.5 sm:px-3 sm:pb-2.5 sm:pt-2"
+                    style={reduced ? undefined : ({ "--c": `${((i + 0.5) / 6).toFixed(3)}` } as React.CSSProperties)}
+                  >
+                    <span aria-hidden data-strod="" className="hidden h-8 w-px bg-[#C9A76A] sm:mb-2 sm:block" />
+                    <p data-stname="" className={`${mono} flex items-center gap-1.5 text-[#E2C486]`}>
+                      <span aria-hidden className="h-[3px] w-[3px] shrink-0 rounded-[1px] bg-[#C9A76A] sm:hidden" />
+                      {s.name}
+                    </p>
+                    <p data-sttruth="" className="mt-0.5 min-w-0 break-words font-mono text-[9.5px] leading-[1.45] text-[#8A929D] sm:mt-1 sm:text-[10.5px]">{s.truth}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── ACT 4 — the sealed result, ONYX (no paper hard-cut) ──────── */}
-      <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[80vh] sm:justify-center sm:pb-16 sm:pt-0">
+      {/* ── ACT 4 — SCENES 5 + 6: the human check, then the sealed result.
+          --seal drives both: 0 -> 0.5 the review resolves (exception fixed,
+          the human mark lands, amber turns verified green - green is the
+          palette's "passed" state and nothing else), 0.5 -> 1 the artifact
+          seals and its frame closes. Defaults are 1, so no-JS and reduced
+          readers always see the finished, checked scene. ─────────────── */}
+      <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.45)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[110vh] sm:justify-center sm:pb-16 sm:pt-6">
+        {/* SCENE 5 — the review moment */}
         <h2 className="sticky top-[10vh] z-10 -mx-3 max-w-[14ch] rounded-[8px] bg-[#0B0D12] px-3 py-2 text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] shadow-[0_10px_28px_rgba(8,9,11,0.5)] sm:static sm:m-0 sm:max-w-[26ch] sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
-          {copy.act4.h}
+          {copy.review.h}
         </h2>
-        {/* the short intentional light moment: ONE contained sealed card on
-            onyx - the world stays night, the deliverable glows. The walk
-            seals INTO this card: --seal reveals it as the story completes
-            (default 1 so no-JS and reduced readers always see it). */}
-        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.04)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
-        <div className="flex flex-wrap items-center gap-6 sm:mt-10">
-          <div
-            className="relative max-w-[300px] rounded-md border border-[#C9A76A] bg-[#F7F6F3] p-5 text-[#14161A] shadow-[0_0_40px_rgba(201,167,106,0.12)]"
-            style={reduced ? undefined : { opacity: "calc(1 - 0.85 * (1 - var(--seal, 1)))" }}
-          >
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6b5d3f]">Endvera · result</p>
-            <p className="mt-2 text-[15px] font-semibold leading-[1.4]">✓ {copy.act4.chips[3]}</p>
-            <span data-v7-anchor="result" className="absolute right-4 top-4 h-px w-px" />
-            {reduced && <StaticArtifact state="checked" className="mt-3" />}
+        <div className="flex flex-1 flex-col pb-[calc(var(--v7vh,100vh)*0.05)] pt-[calc(var(--v7vh,100vh)*0.02)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
+          <p className="mt-2 max-w-[44ch] text-[clamp(0.95rem,1.4vw,1.1rem)] leading-[1.6] text-[#9AA1AB] sm:mt-4">{copy.review.sub}</p>
+          {/* the review table: draft + standard + evidence, one exception
+              resolved, the human mark - all left of the escort column */}
+          <div className="mt-5 flex max-w-[calc(87%-72px)] flex-wrap items-stretch gap-2.5 sm:mt-8 sm:max-w-[640px] sm:gap-3">
+            <div className="rounded-md border border-[#2A303B] bg-[#12151B] px-3.5 py-2.5">
+              <p className={`${mono} text-[#7A828E]`}>{copy.review.draft}</p>
+              <span aria-hidden className="mt-2 flex flex-col gap-[3px]">
+                <i className="block h-[2px] w-[72px] rounded bg-[#78808B]" />
+                <i className="block h-[2px] w-[54px] rounded bg-[#78808B]" />
+                <i className="block h-[2px] w-[63px] rounded bg-[#78808B]" />
+              </span>
+            </div>
+            <div className="rounded-md border border-[#6F4C29] bg-[#15110A] px-3.5 py-2.5">
+              <p className={`${mono} text-[#C9A76A]`}>{copy.review.standard}</p>
+              <span aria-hidden className="mt-2 flex flex-col gap-[3px]">
+                <i className="block h-[2px] w-[68px] rounded bg-[#8A6F45]" />
+                <i className="block h-[2px] w-[68px] rounded bg-[#8A6F45]" />
+              </span>
+            </div>
+            <div className="rounded-md border border-[#2A303B] bg-[#12151B] px-3.5 py-2.5">
+              <p className={`${mono} text-[#7A828E]`}>{copy.review.evidence}</p>
+              <span aria-hidden className="mt-2 flex items-end gap-[3px]">
+                <i className="block h-[8px] w-[5px] rounded-[1px] bg-[#4A5160]" />
+                <i className="block h-[12px] w-[5px] rounded-[1px] bg-[#4A5160]" />
+                <i className="block h-[6px] w-[5px] rounded-[1px] bg-[#4A5160]" />
+              </span>
+            </div>
+            {/* the exception, resolved as the seal progresses */}
+            <div data-exception="" className="flex items-center gap-2 rounded-md border border-[#2A303B] bg-[#12151B] px-3.5 py-2.5">
+              <span aria-hidden data-exwarn="" className={`${mono} text-[#C9A76A]`}>⚠</span>
+              <span aria-hidden data-exok="" className={`${mono} text-[#1E7F5C]`}>✓</span>
+              <p className={`${mono} text-[#8A929D]`}>{copy.review.exception}</p>
+            </div>
+            {/* the human mark: amber while checking, green once passed */}
+            <div data-mark="" className="flex items-center gap-2 rounded-md border px-3.5 py-2.5">
+              <span aria-hidden className="grid h-5 w-5 place-items-center rounded-full border border-current font-mono text-[11px] font-bold">✓</span>
+              <p className={`${mono}`}>{copy.review.mark}</p>
+            </div>
           </div>
-          <div className="grid justify-items-start gap-2.5 sm:justify-items-stretch">
-            {copy.act4.chips.slice(0, 3).map((c) => (
-              <span key={c} className={`${mono} max-w-[45%] rounded-[4px] border border-[#2A303B] bg-[#12151B] px-3.5 py-2 text-[#c7ccd4] sm:max-w-none`}>{c}</span>
-            ))}
+
+          {/* SCENE 6 — the sealed artifact: the payoff of the scroll */}
+          <p data-v7-s6h="" className="mt-[calc(var(--v7vh,100vh)*0.06)] max-w-[calc(87%-72px)] text-[clamp(1.25rem,2.4vw,1.8rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-[#F7F6F3] sm:mt-14 sm:max-w-[24ch]" role="heading" aria-level={2}>
+            {copy.sealed.h}
+          </p>
+          <div className="mt-4 flex flex-wrap items-start gap-5 sm:mt-6">
+            <div
+              data-sealed-card=""
+              className="relative max-w-[320px] rounded-md border-2 bg-[#F7F6F3] p-5 text-[#14161A]"
+              style={reduced ? undefined : { opacity: "calc(0.15 + 0.85 * var(--seal, 1))" }}
+            >
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6b5d3f]">{copy.sealed.seal}</p>
+              <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {copy.sealed.chips.map((c, i) => (
+                  <p key={c} className="flex items-center gap-1.5 text-[13px] font-semibold leading-[1.35]">
+                    <span aria-hidden className={i === 1 ? "text-[#166049]" : "text-[#6b5d3f]"}>{i === 1 ? "✓" : "·"}</span>
+                    {c}
+                  </p>
+                ))}
+              </div>
+              <span data-v7-anchor="result" className="absolute right-4 top-4 h-px w-px" />
+              {reduced && <StaticArtifact state="checked" className="mt-3" />}
+            </div>
           </div>
-        </div>
-        <div className="sm:mt-10">
-          <Link
-            href="/register"
-            className="inline-flex min-h-11 items-center rounded-full border border-[#C9A76A] px-6 text-[15px] font-medium text-[#E2C486] no-underline transition-colors hover:bg-[#C9A76A] hover:text-[#14161A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]"
-          >
-            {copy.act4.cta}
-          </Link>
-        </div>
-        {/* the bridge into the real example: A2 presents it here */}
-        <div className="sm:mt-14">
-          <p className={`${mono} text-[#E2C486]`}>{copy.exampleIntro}</p>
-          <span data-v7-anchor="example" aria-hidden className="relative left-[65%] top-3 block h-px w-px sm:left-[87%]" />
-          {reduced && <StaticArtifact state="checked" className="mt-4" />}
-        </div>
+
+          {/* the bridge into the real example: A2 presents it here */}
+          <div className="mt-auto pt-[calc(var(--v7vh,100vh)*0.04)] sm:mt-12 sm:pt-0">
+            <p className={`${mono} text-[#E2C486]`}>{copy.exampleIntro}</p>
+            <span data-v7-anchor="example" aria-hidden className="relative left-[65%] top-3 block h-px w-px sm:left-[87%]" />
+            {reduced && <StaticArtifact state="checked" className="mt-4" />}
+          </div>
         </div>
       </section>
 
