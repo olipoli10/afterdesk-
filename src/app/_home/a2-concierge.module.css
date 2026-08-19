@@ -70,6 +70,18 @@
 .sceneGuide > span { display: none; }
 .dock[data-v7-escorting="on"] .sceneGuide,
 .dock[data-a2-free="on"] .sceneGuide { display: block; }
+
+/* During transport the machine itself carries the explanation. The large
+   floating note used to cover the request, headline, stations and review
+   cards while A2 crossed them. Keep the one A2 visible, but remove only its
+   panel through those protected scenes; the final free guide still speaks. */
+.dock[data-v7-escorting="on"][data-a2-scene="problem"] .sceneGuide,
+.dock[data-v7-escorting="on"][data-a2-scene="solution"] .sceneGuide,
+.dock[data-v7-escorting="on"][data-a2-scene="run"] .sceneGuide,
+.dock[data-v7-escorting="on"][data-a2-scene="review"] .sceneGuide {
+  visibility: hidden;
+  opacity: 0;
+}
 .dock[data-a2-scene="hero"] [data-a2-guide-line="hero"],
 .dock[data-a2-scene="problem"] [data-a2-guide-line="problem"],
 .dock[data-a2-scene="solution"] [data-a2-guide-line="solution"],

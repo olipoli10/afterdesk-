@@ -915,7 +915,7 @@ export function SimplicityActs({ copy, concierge, children }: {
         [data-main-vein][data-vein-axis="x"]::after { inset: auto 4px 1px; height: 1px; }
         [data-main-vein][data-vein-axis="y"]::before { inset: 4px auto 4px 1px; width: 1px; }
         [data-main-vein][data-vein-axis="y"]::after { inset: 4px 1px 4px auto; width: 1px; }
-        :is([data-heart-feed], [data-heart-drop], [data-engine-spine], [data-heart-vessel]) {
+        :is([data-heart-feed], [data-heart-drop], [data-engine-spine], [data-heart-intake], [data-heart-output-desktop], [data-heart-output-mobile], [data-result-feed]) {
           border-color: rgba(216, 117, 38, 0.8);
           box-shadow: inset 0 0 0 1px rgba(255, 210, 142, 0.16), 0 0 14px rgba(216, 117, 38, 0.3);
         }
@@ -972,6 +972,13 @@ export function SimplicityActs({ copy, concierge, children }: {
           opacity: calc(0.32 + var(--heart-p) * 0.68);
           border-color: color-mix(in srgb, #6F4C29, #F0A14A calc(var(--heart-p) * 100%));
           box-shadow: inset 0 0 calc(8px + var(--heart-p) * 20px) rgba(216,117,38,calc(0.08 + var(--heart-p) * 0.24)), 0 0 calc(6px + var(--heart-p) * 14px) rgba(216,117,38,calc(var(--heart-p) * 0.22));
+        }
+        [data-living-engine] {
+          border-color: color-mix(in srgb, #2A303B, #C98749 calc(var(--heart-p) * 30%));
+          box-shadow:
+            0 24px 70px rgba(0,0,0,0.58),
+            inset 0 0 calc(3px + var(--heart-p) * 7px) rgba(216,117,38,calc(0.025 + var(--heart-p) * 0.055)),
+            0 0 calc(2px + var(--heart-p) * 5px) rgba(216,117,38,calc(var(--heart-p) * 0.09));
         }
         [data-heart-inlet] {
           opacity: calc(0.62 + var(--heart-p) * 0.38);
@@ -1363,9 +1370,8 @@ export function SimplicityActs({ copy, concierge, children }: {
                   data-vein-axis="x"
                   data-conductor-segment="run"
                   className="absolute inset-0 origin-left bg-gradient-to-r from-transparent via-[#D87526] to-[#D87526]/25 opacity-80 shadow-[0_0_10px_rgba(216,117,38,0.42)] will-change-transform"
-                  style={reduced ? undefined : { transform: "scaleX(var(--walk, 0))" }}
                 >
-                  <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-left bg-[#F0A14A] shadow-[0_0_12px_rgba(216,117,38,0.65)]" style={reduced ? undefined : { transform: "scaleX(var(--power-run, 0))" }} />
+                  <i data-power-fill="" data-vein-channel="" className="absolute inset-0 origin-left bg-[#F0A14A] shadow-[0_0_12px_rgba(216,117,38,0.65)]" style={reduced ? undefined : { transform: "scaleX(var(--walk, 0))" }} />
                   <i data-energy-packet="" />
                 </span>
                 <span data-v7-anchor="walk-start" className="absolute right-[10%] top-0 h-px w-px" />
@@ -1391,8 +1397,11 @@ export function SimplicityActs({ copy, concierge, children }: {
             {/* On narrow screens A2 occupies only this dedicated supervisor
                 band. The machine below can therefore use the full content
                 width without rebuilding the proven R2.2 escort path. */}
-            <div data-living-engine="" className="relative w-full overflow-hidden rounded-[12px] border border-[#2A303B] bg-[linear-gradient(150deg,#15181E,#0A0C10_72%)] p-2.5 shadow-[0_24px_70px_rgba(0,0,0,0.58)] sm:p-4">
-              <span aria-hidden data-engine-spine="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="pointer-events-none absolute inset-y-0 right-[47px] z-[1] overflow-hidden sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
+            <div data-living-engine="" data-heart-beat="" className="relative w-full overflow-hidden rounded-[12px] border border-[#2A303B] bg-[linear-gradient(150deg,#15181E,#0A0C10_72%)] p-2.5 shadow-[0_24px_70px_rgba(0,0,0,0.58)] sm:p-4">
+              {/* The intake spine ends at the heart's TOP port. It no longer
+                  runs through the machine and therefore cannot draw the
+                  rejected cross over the core copy. */}
+              <span aria-hidden data-engine-spine="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="pointer-events-none absolute right-[47px] top-0 z-[1] h-[228px] overflow-hidden sm:left-[49.4%] sm:right-auto sm:h-[78px] sm:-translate-x-1/2">
                 <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
                 <i data-energy-packet="" />
               </span>
@@ -1422,11 +1431,11 @@ export function SimplicityActs({ copy, concierge, children }: {
 
                 {/* The heart is an abstract machined join: two onyx masses,
                     one amber seam, one route chamber and one evidence ledger. */}
-                <div data-engine-core="" data-heart-beat="" className="relative min-h-[246px] overflow-hidden rounded-[10px] border border-[#3A4150] bg-[#0B0E13] p-3 pr-[106px] sm:min-h-[270px] sm:p-4 sm:pr-4">
+                <div data-engine-core="" className="relative min-h-[246px] overflow-hidden rounded-[10px] border border-[#3A4150] bg-[#0B0E13] p-3 pr-[106px] pt-10 sm:min-h-[270px] sm:p-4 sm:pt-10 sm:pr-4">
                   <span aria-hidden data-heart-shell="left" className="absolute inset-y-0 left-0 w-[49.7%] bg-[linear-gradient(145deg,#191D24,#101319)]" />
                   <span aria-hidden data-heart-shell="right" className="absolute inset-y-0 right-0 w-[49.7%] bg-[linear-gradient(215deg,#171A20,#0D1015)]" />
-                  <span aria-hidden data-heart-vessel="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute left-0 right-0 top-1/2 z-[1] -translate-y-1/2 overflow-hidden">
-                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
+                  <span aria-hidden data-heart-intake="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="absolute right-[36px] top-0 z-[4] h-[28px] overflow-hidden sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
+                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] via-[#F0A14A] to-[#C9A76A]" />
                     <i data-energy-packet="" />
                   </span>
                   {/* The proven escort corridor becomes a visible power bay
@@ -1438,7 +1447,7 @@ export function SimplicityActs({ copy, concierge, children }: {
                     <i className="absolute left-4 right-4 top-[74%] h-px bg-[#6F4C29]/30" />
                   </span>
                   <span aria-hidden data-heart-seam="" className="absolute inset-y-3 right-[40px] z-[1] w-[2px] translate-x-1/2 bg-gradient-to-b from-transparent via-[#F0A14A] to-transparent shadow-[0_0_8px_rgba(216,117,38,0.28)] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
-                  <span aria-hidden data-heart-inlet="" className="absolute right-[33px] top-1/2 z-[4] h-[14px] w-[14px] -translate-y-1/2 rounded-[3px] border border-[#D87526] bg-[#17110A] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
+                  <span aria-hidden data-heart-inlet="" className="absolute right-[33px] top-[21px] z-[5] h-[14px] w-[14px] rounded-[3px] border border-[#D87526] bg-[#17110A] sm:left-1/2 sm:right-auto sm:-translate-x-1/2" />
                   <span aria-hidden data-heart-aura="" className="pointer-events-none absolute inset-1 z-[3] rounded-[8px] border border-[#6F4C29]/60" />
 
                   <div className="relative z-[2] mx-auto max-w-[310px] text-center">
@@ -1472,13 +1481,25 @@ export function SimplicityActs({ copy, concierge, children }: {
                   </div>
                 </div>
 
-                <div data-verification-output="" className="mr-[106px] grid content-center gap-2.5 sm:mr-0">
+                <div data-verification-output="" className="relative mr-[106px] grid content-center gap-0 sm:mr-0">
                   <div data-verification-gate="" data-engine-verification="" className="relative rounded-[7px] border border-[#6F4C29] bg-[#15110B] p-3">
+                    <span aria-hidden data-heart-output-mobile="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="absolute -top-3 left-1/2 h-3 -translate-x-1/2 overflow-hidden sm:hidden">
+                      <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#D87526] to-[#C9A76A]" />
+                      <i data-energy-packet="" />
+                    </span>
+                    <span aria-hidden data-heart-output-desktop="" data-main-vein="" data-vein-vessel="" data-vein-axis="x" className="absolute -left-3 top-1/2 hidden w-3 -translate-y-1/2 overflow-hidden sm:block">
+                      <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-r from-[#D87526] to-[#C9A76A]" />
+                      <i data-energy-packet="" />
+                    </span>
                     <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#C9A76A]">{copy.act3.stations[5].name}</p>
                     <p className="mt-1 text-[11px] leading-[1.4] text-[#A6ADB8]">{copy.engine.verification}</p>
                     <span aria-hidden className="mt-2 block h-[2px] origin-left bg-[#1E7F5C]" style={{ transform: "scaleX(var(--release, 0))" }} />
                     <span className="mt-1 block font-mono text-[8px] uppercase tracking-[0.12em] text-[#1E7F5C]">{copy.engine.pass}</span>
                   </div>
+                  <span aria-hidden data-result-feed="" data-main-vein="" data-vein-vessel="" data-vein-axis="y" className="relative mx-auto h-3 overflow-hidden">
+                    <i data-vein-channel="" className="absolute inset-0 bg-gradient-to-b from-[#C9A76A] to-[#1E7F5C]" />
+                    <i data-energy-packet="" />
+                  </span>
                   <div data-engine-result="" className="relative overflow-hidden rounded-[7px] border border-[#C9A76A] bg-[#F3F0E8] p-3 text-[#17191D]">
                     <span aria-hidden className="absolute inset-y-0 left-0 w-[3px] bg-[#C9A76A]" />
                     <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#6B5D3F]">ENDVERA · RESULT</p>

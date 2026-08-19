@@ -295,15 +295,36 @@ describe("ENDVERA x V7 transplant", () => {
     expect(engine).toMatch(/data-heart-feed[\s\S]*data-main-vein[\s\S]*data-vein-channel[\s\S]*data-energy-packet/);
     expect((engine.match(/data-heart-drop=/g) ?? []).length, "the carry lane must descend into the engine frame").toBe(1);
     expect((engine.match(/data-engine-spine=/g) ?? []).length, "one powered spine must connect the engine frame to its core").toBe(1);
-    expect((engine.match(/data-heart-inlet=/g) ?? []).length, "the spine and heart vessel meet at one visible inlet").toBe(1);
+    expect((engine.match(/data-heart-inlet=/g) ?? []).length, "the spine and intake meet at one visible inlet").toBe(1);
     expect(engine).toMatch(/data-heart-drop[\s\S]*data-main-vein[\s\S]*data-vein-channel/);
     expect(engine).toMatch(/data-engine-spine[\s\S]*data-main-vein[\s\S]*data-vein-channel/);
-    expect((engine.match(/data-heart-vessel=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-heart-intake=/g) ?? []).length, "the intake must turn into the heart without crossing its copy").toBe(1);
+    expect((engine.match(/data-heart-vessel=/g) ?? []).length, "a full-width vessel would redraw the rejected cross").toBe(0);
+    expect(engine, "the powered spine must stop before the core instead of crossing it").not.toMatch(
+      /data-engine-spine[^>]*\binset-y-0\b/,
+    );
+    expect((engine.match(/data-heart-output-desktop=/g) ?? []).length, "desktop heart output must reach verification").toBe(1);
+    expect((engine.match(/data-heart-output-mobile=/g) ?? []).length, "mobile heart output must reach verification").toBe(1);
+    expect((engine.match(/data-result-feed=/g) ?? []).length, "verification must visibly feed the finished result").toBe(1);
     expect((engine.match(/data-heart-aura=/g) ?? []).length).toBe(1);
     expect((engine.match(/data-heart-beat=/g) ?? []).length, "one element owns the shared heartbeat").toBe(1);
     expect(engine).toMatch(/@property\s+--heart-p[\s\S]*inherits:\s*true/);
-    expect(engine).toMatch(/data-engine-core=""\s+data-heart-beat=""/);
+    expect(engine).toMatch(/data-living-engine=""\s+data-heart-beat=""/);
+    expect(engine).not.toMatch(/data-engine-core=""\s+data-heart-beat=""/);
     expect(engine).toMatch(/data-heart-aura[\s\S]*--heart-p/);
+    expect(engine).toMatch(/data-living-engine[\s\S]*--heart-p/);
+  });
+
+  it("keeps A2 visible but removes the floating guide while it crosses protected content", () => {
+    const css = read(A2_CSS);
+    for (const scene of ["problem", "solution", "run", "review"]) {
+      expect(css, `${scene} transport suppresses the overlapping guide panel`).toMatch(
+        new RegExp(`data-v7-escorting="on"\\]\\[data-a2-scene="${scene}"\\][\\s\\S]*\\.sceneGuide[\\s\\S]*visibility:\\s*hidden`),
+      );
+    }
+    expect(css, "A2 itself must remain present while its panel is suppressed").not.toMatch(
+      /data-v7-escorting="on"[^}]*\{[^}]*display:\s*none/,
+    );
   });
 
   it("keeps A2's torso stable while scroll locomotion is expressed by the feet", () => {
