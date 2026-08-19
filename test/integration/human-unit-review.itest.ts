@@ -1,9 +1,25 @@
 import { createHash, randomUUID } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import { REGISTRY } from "@/lib/ai-work-engine/registry";
 import { applyResume } from "@/server/human-unit-resume";
+import { startSession } from "@/server/work-sessions";
 import { createTask, createWorker } from "./fixtures";
+
+vi.mock("@/lib/authz", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/authz")>();
+  return {
+    ...actual,
+    requireApprovedVa: vi.fn(),
+    requireRole: vi.fn(),
+  };
+});
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/server", () => ({ after: vi.fn() }));
+
+const actionAuthz = await import("@/lib/authz");
+const actionCache = await import("next/cache");
+const workerActions = await import("@/server/actions/human-unit-worker");
 
 /**
  * T039 — QUICKSTART SCENARIO C, RED BEFORE T041/T042.
@@ -1192,5 +1208,79 @@ describe("T041 — submission rechecks live eligibility and file ownership", () 
     expect(await prisma.humanWorkUnitCandidate.count({ where: { unitStateId: fixture.unitId } })).toBe(
       0
     );
+  });
+});
+
+describe("T044 — worker server action", () => {
+  beforeEach(() => {
+    vi.mocked(actionAuthz.requireApprovedVa).mockReset();
+    vi.mocked(actionCache.revalidatePath).mockReset();
+  });
+
+  it("authorizes before parsing even malformed input", async () => {
+    const denied = new Error("worker authorization stopped the action");
+    vi.mocked(actionAuthz.requireApprovedVa).mockRejectedValueOnce(denied);
+
+    await expect(workerActions.submitHumanUnitResult({})).rejects.toBe(denied);
+  });
+
+  it("submits through T5, then closes timers and revalidates only after commit", async () => {
+    const fixture = await claimedReviewUnit();
+    vi.mocked(actionAuthz.requireApprovedVa).mockResolvedValueOnce(
+      fixture.worker as never
+    );
+    const session = await startSession({
+      taskId: fixture.task.id,
+      userId: fixture.worker.id,
+      role: "worker",
+      phase: "residual_work",
+      workflowRunId: fixture.runId,
+      now: new Date(Date.now() - 5_000),
+    });
+
+    await expect(
+      workerActions.submitHumanUnitResult({
+        taskId: fixture.task.id,
+        claimGeneration: 1,
+        result: FIRST_RESULT,
+      })
+    ).resolves.toEqual({ ok: true });
+
+    expect(
+      await prisma.humanWorkUnitRunState.findUniqueOrThrow({
+        where: { id: fixture.unitId },
+        select: { state: true },
+      })
+    ).toEqual({ state: "submitted" });
+    expect(
+      await prisma.taskWorkSession.findUniqueOrThrow({
+        where: { id: session.id },
+        select: { status: true, endedAt: true },
+      })
+    ).toMatchObject({ status: "completed", endedAt: expect.any(Date) });
+    expect(actionCache.revalidatePath).toHaveBeenCalledWith(
+      `/va/tasks/${fixture.task.id}`
+    );
+    expect(actionCache.revalidatePath).toHaveBeenCalledWith("/va/tasks");
+  });
+
+  it("surfaces a stale generation as a distinct fail-closed code", async () => {
+    const fixture = await claimedReviewUnit();
+    await prisma.humanWorkUnitRunState.update({
+      where: { id: fixture.unitId },
+      data: { claimGeneration: 2 },
+    });
+    vi.mocked(actionAuthz.requireApprovedVa).mockResolvedValueOnce(
+      fixture.worker as never
+    );
+
+    await expect(
+      workerActions.submitHumanUnitResult({
+        taskId: fixture.task.id,
+        claimGeneration: 1,
+        result: FIRST_RESULT,
+      })
+    ).resolves.toMatchObject({ ok: false, code: "stale_generation" });
+    expect(actionCache.revalidatePath).not.toHaveBeenCalled();
   });
 });
