@@ -11,7 +11,11 @@ import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
 import { getSettings } from "@/lib/settings";
 import { metricsSchemaFor } from "@/lib/delivery-metrics";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
-import { bindClaimToHumanUnit, HumanUnitBindError } from "@/server/human-unit";
+import {
+  bindClaimToHumanUnit,
+  HumanUnitBindError,
+  recordReleasedHumanUnit,
+} from "@/server/human-unit";
 import {
   ACTIVE_CLAIM_STATUSES,
   activeClaimCapRefusal,
@@ -222,6 +226,8 @@ export async function releaseTask(taskId: string): Promise<VaActionResult> {
         guard: { claimedById: user.id },
         data: { claimedById: null, claimedAt: null },
       });
+
+      await recordReleasedHumanUnit(tx, { taskId, actorId: user.id });
 
       await tx.vaProfile.update({
         where: { userId: user.id },

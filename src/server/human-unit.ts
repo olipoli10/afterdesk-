@@ -139,6 +139,65 @@ function parseDeclaredInputs(raw: unknown): DeclaredInput[] {
   });
 }
 
+function classificationProjectionIsValid(
+  definitionClass: unknown,
+  rawDeclaredInputs: unknown,
+): boolean {
+  if (
+    typeof definitionClass !== "string" ||
+    !(DATA_CLASSES as readonly string[]).includes(definitionClass) ||
+    !Array.isArray(rawDeclaredInputs)
+  ) {
+    return false;
+  }
+  const declared = parseDeclaredInputs(rawDeclaredInputs);
+  if (declared.length !== rawDeclaredInputs.length) return false;
+  return declared.every(
+    (entry) =>
+      ["payload_field", "snapshot_file", "artifact"].includes(entry.kind) &&
+      (DATA_CLASSES as readonly string[]).includes(entry.dataClass) &&
+      isAtLeastAsRestrictive(
+        definitionClass as DataClass,
+        entry.dataClass as DataClass,
+      ),
+  );
+}
+
+async function unitContractBindingIsCurrent(
+  tx: Prisma.TransactionClient,
+  input: {
+    unitId: string;
+    taskId: string;
+    runId: string;
+    snapshotId: string;
+    definitionId: string;
+  },
+): Promise<boolean> {
+  const bound = await tx.$queryRaw<Array<{ ok: number }>>`
+    SELECT 1 AS ok
+    FROM "HumanWorkUnitRunState" u
+    JOIN "Task" t ON t.id = u."taskId"
+    JOIN "TaskAcceptanceSnapshot" s
+      ON s.id = u."snapshotId" AND s."taskId" = u."taskId"
+    JOIN "HumanWorkUnitDefinition" d ON d.id = u."definitionId"
+    JOIN "TaskExecutionPlanVersion" p
+      ON p.id = d."planVersionId" AND p."taskId" = u."taskId"
+    JOIN "TaskWorkflowRun" r
+      ON r.id = u."runId"
+      AND r."taskId" = u."taskId"
+      AND r."snapshotId" = u."snapshotId"
+      AND r."planVersionId" = d."planVersionId"
+    WHERE u.id = ${input.unitId}
+      AND u."taskId" = ${input.taskId}
+      AND u."runId" = ${input.runId}
+      AND u."snapshotId" = ${input.snapshotId}
+      AND u."definitionId" = ${input.definitionId}
+      AND s."acceptedByUserId" IS NOT NULL
+    LIMIT 1
+  `;
+  return bound.length === 1;
+}
+
 /**
  * REFUSE, ATOMICALLY — the `admitted -> paused` transition.
  *
@@ -272,10 +331,21 @@ export async function bindClaimToHumanUnit(
     where: { taskId: input.taskId },
     select: {
       id: true,
+      taskId: true,
+      runId: true,
+      snapshotId: true,
+      definitionId: true,
       state: true,
       claimedById: true,
       resumeGeneration: true,
-      definition: { select: { claimLeaseHours: true, submissionDeadlineHours: true } },
+      definition: {
+        select: {
+          claimLeaseHours: true,
+          submissionDeadlineHours: true,
+          declaredInputs: true,
+          dataClass: true,
+        },
+      },
     },
   });
 
@@ -300,6 +370,23 @@ export async function bindClaimToHumanUnit(
       `human work unit for task ${input.taskId} is ${unit.state}; it cannot be claimed`
     );
   }
+  if (
+    !(await unitContractBindingIsCurrent(tx, {
+      unitId: unit.id,
+      taskId: unit.taskId,
+      runId: unit.runId,
+      snapshotId: unit.snapshotId,
+      definitionId: unit.definitionId,
+    })) ||
+    !classificationProjectionIsValid(
+      unit.definition.dataClass,
+      unit.definition.declaredInputs,
+    )
+  ) {
+    throw new HumanUnitBindError(
+      `human work unit for task ${input.taskId} failed its contract binding`,
+    );
+  }
 
   /**
    * "Established or matched" (FR-048). The assignment is ESTABLISHED when the
@@ -307,7 +394,15 @@ export async function bindClaimToHumanUnit(
    * is what a re-bind after a revision request looks like. Only the first bumps
    * the generation.
    */
-  const established = unit.claimedById === null;
+  const priorAssignments = await tx.humanWorkUnitTransition.count({
+    where: {
+      unitStateId: unit.id,
+      cause: { in: ["claimed", "reclaimed"] },
+      assignmentEstablished: { not: null },
+    },
+  });
+  const established = unit.claimedById === null && priorAssignments === 0;
+  const auditCause = established ? "claimed" : "reclaimed";
 
   const now = new Date();
   const hours = (n: number) => new Date(now.getTime() + n * 60 * 60 * 1000);
@@ -356,7 +451,7 @@ export async function bindClaimToHumanUnit(
       actorRole: "worker",
       fromState: unit.state,
       toState: "claimed",
-      cause: "claimed",
+      cause: auditCause,
       claimGeneration: bound.claimGeneration,
       resumeGeneration: unit.resumeGeneration,
       assignmentEstablished: established,
@@ -369,7 +464,7 @@ export async function bindClaimToHumanUnit(
       action: "human_unit_claimed",
       meta: {
         state: "claimed",
-        cause: "claimed",
+        cause: auditCause,
         claimGeneration: bound.claimGeneration,
         assignmentEstablished: established,
       },
@@ -377,6 +472,89 @@ export async function bindClaimToHumanUnit(
   });
 
   return { assignmentEstablished: established };
+}
+
+/**
+ * Mirror a voluntary task release onto its admitted human unit. The task CAS
+ * and its database trigger run first, so the prior holder is already fenced
+ * and the generation already bumped when this transition is recorded.
+ */
+export async function recordReleasedHumanUnit(
+  tx: Prisma.TransactionClient,
+  input: { taskId: string; actorId: string },
+): Promise<void> {
+  const unit = await tx.humanWorkUnitRunState.findUnique({
+    where: { taskId: input.taskId },
+    select: {
+      id: true,
+      state: true,
+      claimedById: true,
+      claimGeneration: true,
+      resumeGeneration: true,
+    },
+  });
+  if (!unit) return;
+  if (!["claimed", "submitted", "in_review", "revision_requested"].includes(unit.state)) {
+    throw new HumanUnitBindError(
+      `human work unit for task ${input.taskId} is ${unit.state}; it cannot be released`,
+    );
+  }
+  if (unit.claimedById !== null) {
+    throw new HumanUnitBindError(
+      `human work unit for task ${input.taskId} still has a claimant after release`,
+    );
+  }
+
+  const moved = await tx.humanWorkUnitRunState.updateMany({
+    where: {
+      id: unit.id,
+      state: unit.state,
+      claimedById: null,
+      claimGeneration: unit.claimGeneration,
+    },
+    data: {
+      state: "published",
+      claimedAt: null,
+      claimLeaseExpiresAt: null,
+      submissionDeadlineAt: null,
+      transitionSeq: { increment: 1 },
+    },
+  });
+  if (moved.count !== 1) {
+    throw new HumanUnitBindError(
+      `human work unit for task ${input.taskId} changed during release`,
+    );
+  }
+  const current = await tx.humanWorkUnitRunState.findUniqueOrThrow({
+    where: { id: unit.id },
+    select: { transitionSeq: true },
+  });
+  await tx.humanWorkUnitTransition.create({
+    data: {
+      unitStateId: unit.id,
+      seq: current.transitionSeq,
+      actorId: input.actorId,
+      actorRole: "worker",
+      fromState: unit.state,
+      toState: "published",
+      cause: "released",
+      claimGeneration: unit.claimGeneration,
+      resumeGeneration: unit.resumeGeneration,
+    },
+  });
+  await tx.taskEvent.create({
+    data: {
+      taskId: input.taskId,
+      action: "human_unit_released",
+      actorId: input.actorId,
+      meta: {
+        state: "published",
+        cause: "released",
+        claimGeneration: unit.claimGeneration,
+        resumeGeneration: unit.resumeGeneration,
+      },
+    },
+  });
 }
 
 const TERMINAL_HUMAN_UNIT_STATES = ["resumed", "exhausted", "withdrawn"] as const;
@@ -703,12 +881,33 @@ export async function submitHumanUnitCandidate(
             select: {
               status: true,
               claimedById: true,
+              tier: true,
               category: { select: { slug: true, name: true } },
             },
           },
         },
       });
       if (!unit) return { submitted: false, cause: "not_available" };
+
+      if (
+        !(await unitContractBindingIsCurrent(tx, {
+          unitId: unit.id,
+          taskId: unit.taskId,
+          runId: unit.runId,
+          snapshotId: unit.snapshotId,
+          definitionId: unit.definitionId,
+        }))
+      ) {
+        return { submitted: false, cause: "not_available" };
+      }
+      if (
+        !classificationProjectionIsValid(
+          unit.definition.dataClass,
+          unit.definition.declaredInputs,
+        )
+      ) {
+        return { submitted: false, cause: "not_eligible" };
+      }
 
       const revisionIndex = candidateRevisionIndex(unit);
       if (revisionIndex === null)
@@ -771,6 +970,12 @@ export async function submitHumanUnitCandidate(
       const eligibility = parseFrozenEligibility(unit.definition.eligibility);
       if (eligibility === null)
         return { submitted: false, cause: "not_eligible" };
+      if (
+        unit.task.tier !==
+        (eligibility.tier === "high_value" ? "high_value" : "standard")
+      ) {
+        return { submitted: false, cause: "not_eligible" };
+      }
 
       const profile = await tx.vaProfile.findUnique({
         where: { userId: input.actorId },

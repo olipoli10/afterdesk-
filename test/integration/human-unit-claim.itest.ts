@@ -371,7 +371,7 @@ describe("the claim binds the unit in the same act", () => {
       where: { id: unit.id },
       select: { state: true, claimedById: true, claimGeneration: true },
     });
-    expect(afterRelease.state).toBe("revision_requested");
+    expect(afterRelease.state).toBe("published");
     expect(afterRelease.claimedById).toBeNull();
     // Bumped by the trigger on the prior-claimant change.
     expect(afterRelease.claimGeneration).toBe(2);
@@ -388,18 +388,22 @@ describe("the claim binds the unit in the same act", () => {
     });
     expect(bound.state).toBe("claimed");
     expect(bound.claimedById).toBe(second.id);
-    // The trigger already cleared the claimant, so this IS a fresh assignment
-    // and the generation moves once more.
-    expect(bound.claimGeneration).toBe(3);
+    // The release trigger already fenced the prior holder. Reclaiming mirrors
+    // a successor onto that current generation; it must not allocate a second
+    // fence for the same reassignment.
+    expect(bound.claimGeneration).toBe(2);
 
     const audits = await prisma.humanWorkUnitTransition.findMany({
-      where: { unitStateId: unit.id, cause: "claimed" },
+      where: { unitStateId: unit.id, cause: { in: ["claimed", "reclaimed"] } },
       orderBy: { seq: "asc" },
-      select: { fromState: true, assignmentEstablished: true },
+      select: { cause: true, fromState: true, assignmentEstablished: true },
     });
     expect(audits).toHaveLength(2);
-    expect(audits[1].fromState).toBe("revision_requested");
-    expect(audits[1].assignmentEstablished).toBe(true);
+    expect(audits[1]).toMatchObject({
+      cause: "reclaimed",
+      fromState: "published",
+      assignmentEstablished: false,
+    });
   });
 });
 
@@ -721,10 +725,21 @@ describe("losing the compare-and-set fails the binding", () => {
       where: { id: unit.id },
       select: {
         id: true,
+        taskId: true,
+        runId: true,
+        snapshotId: true,
+        definitionId: true,
         state: true,
         claimedById: true,
         resumeGeneration: true,
-        definition: { select: { claimLeaseHours: true, submissionDeadlineHours: true } },
+        definition: {
+          select: {
+            claimLeaseHours: true,
+            submissionDeadlineHours: true,
+            declaredInputs: true,
+            dataClass: true,
+          },
+        },
       },
     });
     const concurrent = new PrismaClient({
@@ -783,10 +798,21 @@ describe("losing the compare-and-set fails the binding", () => {
         where: { id: unit.id },
         select: {
           id: true,
+          taskId: true,
+          runId: true,
+          snapshotId: true,
+          definitionId: true,
           state: true,
           claimedById: true,
           resumeGeneration: true,
-          definition: { select: { claimLeaseHours: true, submissionDeadlineHours: true } },
+          definition: {
+            select: {
+              claimLeaseHours: true,
+              submissionDeadlineHours: true,
+              declaredInputs: true,
+              dataClass: true,
+            },
+          },
         },
       });
       const passthrough = txWithStaleUnitRead(tx, currentUnit);
