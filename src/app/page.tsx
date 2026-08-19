@@ -168,14 +168,12 @@ export default async function Home({
       </header>
 
       <main>
-        {/* the narrative acts tell the whole story (scenes 1-6) and own the
-            single A2 being; scene 7 gives the accepted machine its context;
-            the machine (geometry frozen) demonstrates the breadth; scene 8
-            closes with the conversion the system has now earned. */}
+        {/* The narrative stays in normal document flow and owns the single
+            A2 being. A2 appears at three explanatory stops; the accepted
+            machine then demonstrates one workflow without a second guide. */}
         <SimplicityActs copy={acts} concierge={concierge}>
-          {/* Keeping the accepted machine inside the narration owner lets
-              the SAME A2 supervise the live example and return as the final
-              clickable guide. No second being and no second scroll engine. */}
+          {/* Keeping the accepted machine inside the narration owner preserves
+              one continuous reading flow and the single-being invariant. */}
           <div
             data-v7-sem="example"
             data-a2-guide="example"
@@ -218,10 +216,8 @@ export default async function Home({
         </SimplicityActs>
       </main>
 
-      {/* real routes under the world's coda - quiet, mono, indexable.
-          The tall phone padding reserves the corner where the freed A2
-          opens its conclusion at the end-of-page stop. */}
-      <footer className="bg-[#08090b] px-5 pb-10 pt-2 max-[900px]:pb-[300px]">
+      {/* Real routes under the world's coda: quiet, mono and indexable. */}
+      <footer className="bg-[#08090b] px-5 pb-10 pt-2">
         <nav className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e]">
           <Link href="/services" className="transition-colors hover:text-[#c9a76a]">{nav.footer.services}</Link>
           <Link href="/how-it-works" className="transition-colors hover:text-[#c9a76a]">{nav.footer.how}</Link>

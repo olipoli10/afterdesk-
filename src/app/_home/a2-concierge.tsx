@@ -95,13 +95,6 @@ const STORY_REACTIONS: Record<string, Pose[]> = {
   final: [{ hy: -1, hdy: -1 }, { hy: -1, hdy: -1, ex: -1 }, { ex: 1 }, {}],
 };
 
-/* Scroll already owns A2's travel and footfall. While he is escorted, a
-   scene change may move only his gaze/lids; otherwise a second body pose at
-   10fps reads as jitter on top of the scroll trajectory. */
-function escortReaction(frames: Pose[]): Pose[] {
-  return frames.map(({ ex, ey, lid }) => ({ ex, ey, lid }));
-}
-
 /* Single-being guard: the DOM may never hold two A2 renders. */
 export function assertSingleA2() {
   if (typeof document === "undefined") return;
@@ -220,10 +213,10 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
   useEffect(() => {
     arrivalTimer.current = setTimeout(() => {
       if (arrived.current) return;
-      /* A fast reader can enter the story before the one-time arrival fires.
-         In that case scroll is already the motion authority: mark the arrival
-         complete and never layer its body translation over the escort. */
-      if (dockRef.current?.hasAttribute("data-v7-escorting")) {
+      /* A fast reader can reach a story stop before the one-time entrance
+         finishes. The station appearance already supplies that arrival. */
+      const stop = dockRef.current?.getAttribute("data-a2-stop");
+      if (stop && stop !== "off") {
         arrived.current = true;
         return;
       }
@@ -245,11 +238,10 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
     let t: ReturnType<typeof setTimeout>;
     const tick = (delay = 900 + Math.random() * 900) => {
       t = setTimeout(() => {
-        const escorting =
-          launchRef.current
-            ?.closest<HTMLElement>("[data-a2-dock]")
-            ?.hasAttribute("data-v7-escorting") ?? false;
-        if (alive && arrived.current && !escorting) {
+        const stop = launchRef.current
+          ?.closest<HTMLElement>("[data-a2-dock]")
+          ?.getAttribute("data-a2-stop");
+        if (alive && arrived.current && stop !== "off") {
           launcher.play(IDLE[Math.floor(Math.random() * IDLE.length)]);
         }
         if (alive) tick();
@@ -261,17 +253,16 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, reduced]);
 
-  /* The story engine owns travel and publishes only discrete scene changes.
-     Every localized guide line is already rendered below; CSS selects the
-     line from data-a2-scene in the SAME paint as the engine. This observer
-     is deliberately only a posture reaction - never the copy-timing
-     authority, so A2 cannot explain a scene before the scene exists. */
+  /* The narrative publishes only three discrete stop changes. Every
+     localized guide line is rendered below; CSS selects the matching one in
+     the same paint. This observer adds only a restrained posture reaction. */
   useEffect(() => {
     const dock = dockRef.current;
     if (!dock) return;
     let seen = "";
     const react = () => {
-      if (!dock.hasAttribute("data-v7-escorting") && !dock.hasAttribute("data-a2-free")) {
+      const stop = dock.getAttribute("data-a2-stop");
+      if (!stop || stop === "off") {
         seen = "";
         return;
       }
@@ -280,14 +271,11 @@ export function A2Concierge({ copy }: { copy: ConciergeCopy }) {
       seen = scene;
       launcherReset();
       if (!reduced && STORY_REACTIONS[scene]) {
-        const frames = dock.hasAttribute("data-v7-escorting")
-          ? escortReaction(STORY_REACTIONS[scene])
-          : STORY_REACTIONS[scene];
-        launcherPlay(frames);
+        launcherPlay(STORY_REACTIONS[scene]);
       }
     };
     const observer = new MutationObserver(react);
-    observer.observe(dock, { attributes: true, attributeFilter: ["data-v7-escorting", "data-a2-scene"] });
+    observer.observe(dock, { attributes: true, attributeFilter: ["data-a2-stop", "data-a2-scene"] });
     react();
     return () => observer.disconnect();
   }, [launcherPlay, launcherReset, reduced]);
