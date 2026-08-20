@@ -17,6 +17,7 @@ GO LOCAL for design review. NO-GO for push, Preview or Production until an authe
 - Language changes preserve the already validated internal post-login destination.
 - Authenticated ENDVERA shell with workflow-first navigation, localized labels and responsive status overview.
 - A2-led request surface and large thinking box using the existing canonical A2 sprite geometry.
+- Refined A2 opening: the intake now begins as a quiet blank canvas with one larger A2 greeting, one natural prompt and one input. Process stages and pre-conversation dashboard chrome were removed; the brief appears progressively only after the conversation earns it.
 - Existing authenticated intake and task-submission server actions remain the only execution boundary.
 - Honest product boundary: A2 structures intake; an operator confirms fit, scope, timing and fixed price before work begins.
 - Readable ivory document surfaces for existing task-detail and standing-capacity screens inside the night shell.
@@ -45,11 +46,12 @@ Evidence directories:
 - Before live: `C:\Users\oliro\.codex\visualizations\2026\08\20\endvera-portal-v1\before-live-refresh`
 - Before portal: `C:\Users\oliro\.codex\visualizations\2026\08\20\endvera-portal-v1\before-portal`
 - After candidate: `C:\Users\oliro\.codex\visualizations\2026\08\20\endvera-portal-v1\after-candidate`
+- Refined A2 opening: `C:\Users\oliro\.codex\visualizations\2026\08\20\endvera-a2-opening-v2`
 
 ## Verification
 
-- Portal contract: 8/8 PASS.
-- Full suite: 1,051 PASS / 1 FAIL. The only failure is the historical `public-site-endvera-v7` scope guard, which compares every branch to fixed base `1b37f77` and intentionally rejects all portal files. It was not weakened or modified.
+- Portal contract: 9/9 PASS.
+- Full suite: 1,052 PASS / 1 FAIL. The only failure is the historical `public-site-endvera-v7` scope guard, which compares every branch to fixed base `1b37f77` and intentionally rejects all portal files. It was not weakened or modified.
 - TypeScript: PASS.
 - ESLint: PASS.
 - `git diff --check`: PASS.

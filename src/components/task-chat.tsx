@@ -55,6 +55,7 @@ export function TaskChat({
   const desktop = useMediaQuery("(hover: hover) and (pointer: fine)");
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const conversationStarted = turns.length > 1;
 
   useEffect(() => {
     const pane = paneRef.current;
@@ -112,22 +113,43 @@ export function TaskChat({
     <div className="space-y-4">
       <section
         data-a2-thinking-box=""
+        data-a2-opening={conversationStarted ? undefined : ""}
         aria-labelledby="a2-intake-title"
-        className="overflow-hidden rounded-[14px] border border-[#4A3A26] bg-[linear-gradient(145deg,#15171C,#0E1014_72%)] shadow-[inset_0_1px_0_rgba(226,196,134,0.08),0_28px_70px_-38px_rgba(0,0,0,0.95)]"
+        className="overflow-hidden rounded-[18px] border border-[#4A3A26] bg-[linear-gradient(145deg,#15171C,#0E1014_72%)] shadow-[inset_0_1px_0_rgba(226,196,134,0.08),0_32px_90px_-42px_rgba(0,0,0,0.98)]"
       >
-        <header className="grid gap-4 border-b border-white/[0.08] p-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:p-5">
-          <A2PortalPresence label={copy.a2Label} />
-          <div className="min-w-0 self-center">
+        <header
+          className={`grid items-center gap-5 border-b border-white/[0.08] p-5 sm:grid-cols-[auto_minmax(0,1fr)] ${
+            conversationStarted ? "sm:p-5" : "sm:gap-7 sm:p-8"
+          }`}
+        >
+          <A2PortalPresence
+            label={copy.a2Label}
+            size={conversationStarted ? "standard" : "hero"}
+          />
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 id="a2-intake-title" className="text-[18px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
+              <span className="text-[15px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
                 {copy.a2Label}
-              </h2>
+              </span>
               <span className="rounded-[3px] border border-[#6F4C29] bg-[#1B1510] px-2 py-1 font-mono text-[12px] uppercase tracking-[0.12em] text-[#E2C486]">
                 {copy.a2Status}
               </span>
             </div>
-            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[#8F97A3]">
-              {copy.approvalNote}
+            <h2
+              id="a2-intake-title"
+              className={`mt-3 max-w-[22ch] font-semibold leading-[1.08] tracking-[-0.04em] text-[#F7F6F3] ${
+                conversationStarted
+                  ? "text-[clamp(1.3rem,3vw,1.7rem)]"
+                  : "text-[clamp(1.65rem,4vw,2.4rem)]"
+              }`}
+            >
+              {copy.title}
+            </h2>
+            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[#B7BDC7]">
+              {copy.opener}
+            </p>
+            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[#858D99]">
+              {copy.sub}
             </p>
           </div>
         </header>
@@ -137,9 +159,10 @@ export function TaskChat({
           role="log"
           aria-live="polite"
           aria-label={copy.conversation}
-          className="max-h-[min(480px,54dvh)] space-y-3 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5"
+          hidden={!conversationStarted && !thinking}
+          className="max-h-[min(430px,48dvh)] space-y-3 overflow-y-auto border-b border-white/[0.08] px-4 py-4 sm:px-6 sm:py-5"
         >
-          {turns.map((turn, index) => (
+          {turns.slice(1).map((turn, index) => (
             <div
               key={index}
               className={
@@ -172,11 +195,13 @@ export function TaskChat({
           ) : null}
         </div>
 
-        <div className="border-t border-white/[0.08] bg-black/10 p-3 sm:p-4">
+        <div className="bg-black/10 p-4 sm:p-5">
           <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
             <textarea
-              rows={3}
-              className={`${inputClassNight} min-h-[92px] resize-y`}
+              rows={conversationStarted ? 3 : 4}
+              className={`${inputClassNight} resize-y ${
+                conversationStarted ? "min-h-[92px]" : "min-h-[132px] text-[17px] leading-relaxed"
+              }`}
               aria-label={copy.inputLabel}
               placeholder={copy.placeholder}
               value={input}
@@ -195,12 +220,13 @@ export function TaskChat({
               disabled={thinking || input.trim().length === 0}
               className="inline-flex min-h-12 items-center justify-center rounded-[7px] bg-[#C9A76A] px-5 text-[14px] font-semibold text-[#14161A] transition-colors hover:bg-[#E2C486] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E2C486] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0E1014] disabled:cursor-not-allowed disabled:opacity-40 sm:min-w-28"
             >
-              {thinking ? copy.sendingReply : copy.send}
+              {thinking ? copy.sendingReply : conversationStarted ? copy.send : copy.start}
             </button>
           </div>
-          {desktop ? (
-            <p className="mt-2 text-[12px] text-[#78808B]">{copy.keyboard}</p>
-          ) : null}
+          <div className="mt-3 flex flex-col gap-1 text-[12px] leading-relaxed text-[#78808B] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <p>{copy.approvalNote}</p>
+            {desktop ? <p className="shrink-0">{copy.keyboard}</p> : null}
+          </div>
         </div>
       </section>
 

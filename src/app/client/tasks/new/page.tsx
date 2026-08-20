@@ -26,78 +26,74 @@ export default async function NewTaskPage({
   // key exists. The form is a complete, honest fallback — never a fake A2.
   const useChat = aiEnabled && mode !== "form";
 
-  return (
-    <div className="mx-auto max-w-4xl text-[#F7F6F3]">
-      <header className="mb-5">
-        <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-[#C9A76A]">
-          {copy.kicker}
-        </p>
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-[clamp(1.7rem,4vw,2.55rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
-              {copy.title}
-            </h1>
-            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[#A1A8B3]">
-              {copy.sub}
-            </p>
-          </div>
-          {aiEnabled ? (
-            <Link
-              href={useChat ? "/client/tasks/new?mode=form" : "/client/tasks/new"}
-              className="inline-flex min-h-11 items-center rounded-md border border-white/15 px-3 text-[13px] font-medium text-[#B7BDC7] transition-colors hover:border-[#C9A76A]/60 hover:text-[#E2C486] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E2C486]"
-            >
-              {useChat ? copy.switchToForm : copy.switchToChat}
-            </Link>
-          ) : null}
-        </div>
-      </header>
-
-      <ol aria-label="Request process" className="mb-5 grid grid-cols-2 overflow-hidden rounded-[9px] border border-white/10 bg-white/[0.035] sm:grid-cols-4">
-        {copy.stages.map((stage, index) => (
-          <li key={stage} className="flex min-h-14 items-center gap-2 border-white/10 px-3 py-2.5 even:border-l sm:border-l sm:first:border-l-0">
-            <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border font-mono text-[12px] ${index === 0 ? "border-[#C9A76A] bg-[#C9A76A] text-[#14161A]" : "border-white/20 text-[#8F97A3]"}`}>
-              {index + 1}
-            </span>
-            <span className={`text-[12px] leading-tight ${index === 0 ? "text-[#F7F6F3]" : "text-[#8F97A3]"}`}>{stage}</span>
-          </li>
-        ))}
-      </ol>
-
-      {useChat ? (
-        <p className="mb-5 text-[12px] leading-[1.6] text-[#8F97A3]">
-          {copy.disclosure}{" "}
-          <Link href="/privacy" className="text-[#C9A76A] underline decoration-[#C9A76A]/40 underline-offset-2">
-            {copy.privacy}
-          </Link>
-          .
-        </p>
-      ) : null}
-
-      {useChat ? (
+  if (useChat) {
+    return (
+      <div
+        data-a2-blank-canvas=""
+        className="mx-auto flex min-h-[calc(100dvh-12rem)] w-full max-w-3xl flex-col justify-center py-3 text-[#F7F6F3] sm:py-8"
+      >
+        <h1 className="sr-only">{copy.title}</h1>
         <TaskChat
           maxFileSizeMB={settings.maxFileSizeMB}
           maxFiles={settings.maxFilesPerTask}
           allowedExtensions={settings.allowedExtensions}
           copy={copy}
         />
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
-          <aside className="rounded-[12px] border border-[#4A3A26] bg-[#111317] p-4">
-            <A2PortalPresence label={copy.a2Label} />
-            <p className="mt-4 font-mono text-[12px] uppercase tracking-[0.12em] text-[#D87526]">
-              {copy.a2Status}
-            </p>
-            <p className="mt-2 text-[13px] leading-relaxed text-[#A1A8B3]">
-              {copy.approvalNote}
-            </p>
-          </aside>
-          <TaskForm
-            maxFileSizeMB={settings.maxFileSizeMB}
-            maxFiles={settings.maxFilesPerTask}
-            allowedExtensions={settings.allowedExtensions}
-          />
+        <div className="mt-4 flex flex-col gap-2 px-1 text-[12px] leading-relaxed text-[#747C88] sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+          <p>
+            {copy.disclosure}{" "}
+            <Link href="/privacy" className="text-[#C9A76A] underline decoration-[#C9A76A]/40 underline-offset-2">
+              {copy.privacy}
+            </Link>
+            .
+          </p>
+          <Link
+            href="/client/tasks/new?mode=form"
+            className="inline-flex min-h-11 shrink-0 items-center text-[13px] font-medium text-[#A1A8B3] underline decoration-white/20 underline-offset-4 transition-colors hover:text-[#E2C486] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E2C486]"
+          >
+            {copy.switchToForm}
+          </Link>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-4xl text-[#F7F6F3]">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-[#C9A76A]">
+            {copy.kicker}
+          </p>
+          <h1 className="mt-2 text-[clamp(1.7rem,4vw,2.55rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
+            {copy.title}
+          </h1>
+        </div>
+        {aiEnabled ? (
+          <Link
+            href="/client/tasks/new"
+            className="inline-flex min-h-11 items-center rounded-md border border-white/15 px-3 text-[13px] font-medium text-[#B7BDC7] transition-colors hover:border-[#C9A76A]/60 hover:text-[#E2C486] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E2C486]"
+          >
+            {copy.switchToChat}
+          </Link>
+        ) : null}
+      </header>
+      <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="rounded-[12px] border border-[#4A3A26] bg-[#111317] p-4">
+          <A2PortalPresence label={copy.a2Label} />
+          <p className="mt-4 font-mono text-[12px] uppercase tracking-[0.12em] text-[#D87526]">
+            {copy.a2Status}
+          </p>
+          <p className="mt-2 text-[13px] leading-relaxed text-[#A1A8B3]">
+            {copy.approvalNote}
+          </p>
+        </aside>
+        <TaskForm
+          maxFileSizeMB={settings.maxFileSizeMB}
+          maxFiles={settings.maxFilesPerTask}
+          allowedExtensions={settings.allowedExtensions}
+        />
+      </div>
     </div>
   );
 }

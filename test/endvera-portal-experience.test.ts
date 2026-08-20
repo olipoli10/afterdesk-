@@ -64,6 +64,21 @@ describe("ENDVERA entrepreneur portal experience", () => {
     expect(a2).toContain('label="A2"');
   });
 
+  it("opens on a quiet A2 conversation canvas instead of a process dashboard", () => {
+    const page = read("src/app/client/tasks/new/page.tsx");
+    const chat = read("src/components/task-chat.tsx");
+    const a2 = read("src/components/a2-portal-presence.tsx");
+    const i18n = read("src/lib/i18n/client-portal.ts");
+
+    expect(page).toContain("data-a2-blank-canvas");
+    expect(page).not.toContain('<ol aria-label="Request process"');
+    expect(chat).toContain("data-a2-opening");
+    expect(chat).toContain("turns.slice(1)");
+    expect(chat).toContain("copy.start");
+    expect(a2).toContain('size?: "compact" | "standard" | "hero"');
+    expect(i18n).toContain("start: string");
+  });
+
   it("preserves the real intake and submission actions and names A2 as intake only", () => {
     const chat = read("src/components/task-chat.tsx");
     const intake = read("src/server/actions/intake.ts");
