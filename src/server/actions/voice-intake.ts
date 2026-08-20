@@ -8,25 +8,19 @@ import type {
   VoiceTranscriptResult,
 } from "@/lib/voice-intake-contract";
 import type { ClientPortalLang } from "@/lib/i18n/client-portal";
+import { requireRole } from "@/lib/authz";
+import {
+  assemblePortalVoiceTranscript,
+  cancelPortalVoiceSession,
+  createPortalVoiceSession,
+  finishPortalVoiceSession,
+  getVoiceRuntimeReadiness,
+  registerPortalVoiceSegment,
+} from "@/server/voice-intake-runtime-boundary";
 
-/**
- * Portal-side reconciliation seam for the approved Audio Intake contract.
- *
- * The audio runtime lives on a divergent, unmerged branch. Returning explicit
- * negative facts is intentional: the client cannot infer or override provider,
- * route, spend, consent or rollout readiness. These actions remain inert until
- * the controller authorizes and merges the real gateway boundary separately.
- */
 export async function getVoiceReadiness(): Promise<Partial<VoiceReadinessFacts>> {
-  return {
-    operationEnabled: false,
-    publishedPolicyAvailable: false,
-    eligibleRouteAvailable: false,
-    configuredSpendCeiling: false,
-    consentVersion: "",
-    allowedLanguages: [],
-    allowedFormats: [],
-  };
+  await requireRole("CLIENT");
+  return getVoiceRuntimeReadiness();
 }
 
 export async function createVoiceSession(input: {
@@ -34,8 +28,8 @@ export async function createVoiceSession(input: {
   consentVersion: string;
   consentAccepted: true;
 }): Promise<VoiceCreateResult> {
-  void input;
-  return { kind: "disabled" };
+  const user = await requireRole("CLIENT");
+  return createPortalVoiceSession({ actor: { id: user.id, role: user.role }, ...input });
 }
 
 export async function submitVoiceSegment(input: {
@@ -47,28 +41,28 @@ export async function submitVoiceSegment(input: {
   bytes: number;
   audio: ArrayBuffer;
 }): Promise<VoiceCommandResult> {
-  void input;
-  return { kind: "disabled" };
+  const user = await requireRole("CLIENT");
+  return registerPortalVoiceSegment({ actor: { id: user.id, role: user.role }, ...input });
 }
 
 export async function finishVoiceSession(input: {
   sessionId: string;
   expectedSegmentCount: number;
 }): Promise<VoiceCommandResult> {
-  void input;
-  return { kind: "disabled" };
+  const user = await requireRole("CLIENT");
+  return finishPortalVoiceSession({ actor: { id: user.id, role: user.role }, ...input });
 }
 
 export async function assembleVoiceTranscript(input: {
   sessionId: string;
 }): Promise<VoiceTranscriptResult> {
-  void input;
-  return { kind: "disabled" };
+  const user = await requireRole("CLIENT");
+  return assemblePortalVoiceTranscript({ actor: { id: user.id, role: user.role }, ...input });
 }
 
 export async function cancelVoiceSession(input: {
   sessionId: string;
 }): Promise<VoiceCommandResult> {
-  void input;
-  return { kind: "disabled" };
+  const user = await requireRole("CLIENT");
+  return cancelPortalVoiceSession({ actor: { id: user.id, role: user.role }, ...input });
 }

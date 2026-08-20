@@ -239,6 +239,7 @@ model User {
   accountContextNotesAuthored AccountContextNote[]         @relation("AccountContextNoteAuthor")
   standingCapacityPayouts     StandingCapacityPayout[]     @relation("StandingCapacityPayoutWorker")
   assistantMessages           AssistantMessage[]
+  voiceIntakeSessions         VoiceIntakeSession[]
 }
 
 /**
@@ -798,9 +799,10 @@ model AiUsage {
    * a hard P2002, which is a BUG to surface, never a condition to swallow.
    * Intake rows predate operations and keep both fields null.
    */
-  operationId String?
-  operation   AiOperation? @relation(fields: [operationId], references: [id], onDelete: Restrict)
-  attempt     Int?
+  operationId    String?
+  operation      AiOperation?         @relation(fields: [operationId], references: [id], onDelete: Restrict)
+  attempt        Int?
+  gatewayAttempt ModelGatewayAttempt?
 
   @@index([userId, createdAt])
   @@index([taskId])
@@ -2157,6 +2159,58 @@ enum WorkflowBudgetHoldStatus {
   released
 }
 
+/// R5 — LE DISJONCTEUR DE DÉPENSE AU NIVEAU COMPTE.
+///
+/// WorkflowBudgetHold protège UN run accepté. Ceci protège AfterDesk
+/// lui-même : l'exposition CUMULÉE, tous mandats confondus (y compris les
+/// appels classify/plan/critique de la Phase 1A, qui n'ont ni run ni step),
+/// contre un plafond opérationnel que l'entreprise se fixe — jamais dérivé
+/// du plan accepté, jamais du modèle, jamais du client.
+///
+/// (provider, operationKey, attempt) est unique : chaque appel logique
+/// n'est jamais réservé deux fois, exactement comme WorkflowBudgetHold.
+/// operationKey est réutilisé tel quel depuis l'appelant (la même clé que
+/// WorkflowBudgetHold pour un primitive d'exécution, ou AiOperation.operationKey
+/// pour classify/plan/critique) — aucune nouvelle identité n'est inventée.
+///
+/// periodKey borne l'agrégat à une fenêtre (un jour UTC aujourd'hui) : sans
+/// fenêtre, un plafond cumulatif à vie finirait toujours par se déclencher.
+/// Même statut réutilisé que WorkflowBudgetHold : held → settled | released,
+/// jamais réassigné une fois settled/released.
+model AccountProviderSpendHold {
+  id String @id @default(cuid())
+
+  /// "anthropic" aujourd'hui — un champ, pas un enum, pour ne pas bâtir un
+  /// multi-fournisseur que rien ne réclame encore.
+  provider String
+
+  /// Fenêtre d'agrégation, ex. "2026-08-13" (jour UTC). Dénormalisé en
+  /// colonne plutôt que dérivé de createdAt à chaque requête : l'agrégat
+  /// tourne à chaque réservation et doit rester un index simple.
+  periodKey String
+
+  /// Réutilisée telle quelle depuis l'appelant — jamais recalculée ici.
+  operationKey String
+  attempt      Int
+
+  /// Le pire cas de cette tentative, en microdollars. BigInt : voir la même
+  /// remarque sur WorkflowBudgetHold.amountMicros.
+  amountMicros BigInt
+
+  status WorkflowBudgetHoldStatus @default(held)
+
+  /// La dépense réellement constatée à la conversion. Null tant que `held`.
+  settledMicros BigInt?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gatewayAttempt ModelGatewayAttempt?
+
+  @@unique([provider, operationKey, attempt])
+  @@index([provider, periodKey, status])
+}
+
 /// LE MANDAT RÉSIDUEL REMIS À UN HUMAIN.
 ///
 /// Ce n'est PAS une tâche enfant et ce n'est pas réclamable en soi : la tâche
@@ -2226,6 +2280,46 @@ enum AiOperationStatus {
   succeeded
   failed
   abandoned
+}
+
+enum VoiceIntakeSessionStatus {
+  open
+  finishing
+  transcribing
+  ready
+  incomplete
+  uncertain
+  cancelled
+  failed
+  purged
+}
+
+enum VoiceIntakeSegmentStatus {
+  registered
+  reserved
+  running
+  succeeded
+  failed
+  uncertain
+  cancelled
+  purged
+}
+
+enum VoiceIntakeLanguage {
+  en
+  fr
+  es
+  tl
+}
+
+enum VoiceMediaFormat {
+  webm
+  ogg
+  mp3
+  wav
+  m4a
+  aac
+  flac
 }
 
 enum WorkSessionRole {
@@ -2298,12 +2392,90 @@ enum CalibrationStratumDimension {
  * from what exists before any result does — engine:{taskId}:{runKey}:{stage},
  * never a count+1.
  */
+/// Pre-Task authorization, consent and aggregate-boundary for one recording.
+/// Raw audio is deliberately absent: only bounded metadata is durable.
+model VoiceIntakeSession {
+  id                   String                   @id @default(cuid())
+  clientId             String
+  client               User                     @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  status               VoiceIntakeSessionStatus @default(open)
+  languageHint         VoiceIntakeLanguage
+  consentVersion       String
+  consentedAt          DateTime
+  maxDurationMs        Int
+  maxSegmentDurationMs Int
+  maxSegmentBytes      Int
+  maxSegments          Int
+  maxTotalBytes        Int
+  maxTotalCostMicros   BigInt
+  expectedSegmentCount Int?
+  capturedDurationMs   Int                      @default(0)
+  capturedBytes        Int                      @default(0)
+  assemblyFingerprint  String?
+  expiresAt            DateTime
+  cancelledAt          DateTime?
+  finishedAt           DateTime?
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+
+  segments VoiceIntakeSegment[]
+
+  @@index([clientId, status])
+  @@index([expiresAt, status])
+}
+
+/// Immutable identity and byte-derived metadata for one bounded audio chunk.
+model VoiceIntakeSegment {
+  id               String                   @id @default(cuid())
+  sessionId        String
+  session          VoiceIntakeSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  ordinal          Int
+  status           VoiceIntakeSegmentStatus @default(registered)
+  mediaFormat      VoiceMediaFormat
+  mimeType         String
+  durationMs       Int
+  byteCount        Int
+  audioFingerprint String
+  languageHint     VoiceIntakeLanguage
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+
+  aiOperation AiOperation?
+  transcript  VoiceTranscriptSegment?
+
+  @@unique([sessionId, ordinal])
+  @@index([sessionId, status])
+}
+
+/// Expiring protected content. Ordinary gateway evidence stores only its
+/// fingerprint and bounded metadata, never this text.
+model VoiceTranscriptSegment {
+  id                   String              @id @default(cuid())
+  segmentId            String              @unique
+  segment              VoiceIntakeSegment  @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  gatewayAttemptId     String              @unique
+  gatewayAttempt       ModelGatewayAttempt @relation(fields: [gatewayAttemptId], references: [id], onDelete: Restrict)
+  text                 String
+  textFingerprint      String
+  characterCount       Int
+  reportedAudioSeconds Decimal?            @db.Decimal(12, 3)
+  measuredCostMicros   BigInt?
+  expiresAt            DateTime
+  purgedAt             DateTime?
+  createdAt            DateTime            @default(now())
+
+  @@index([expiresAt, purgedAt])
+}
+
 model AiOperation {
   id     String  @id @default(cuid())
   taskId String?
   task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
-  /// classification | planning | critique (intake/assistant have no ops yet)
+  voiceIntakeSegmentId String?             @unique
+  voiceIntakeSegment   VoiceIntakeSegment? @relation(fields: [voiceIntakeSegmentId], references: [id], onDelete: Restrict)
+
+  /// classification | planning | critique | intake_voice_transcription
   purpose      String
   operationKey String            @unique
   status       AiOperationStatus @default(reserved)
@@ -2327,8 +2499,214 @@ model AiOperation {
 
   usages AiUsage[]
 
+  gatewayOperation ModelGatewayOperation?
+
   @@index([taskId])
   @@index([status, nextAttemptAt])
+}
+
+// ---------- Model Gateway v1 ----------
+
+/// Immutable once published, except for the one-way published -> retired
+/// lifecycle transition. JSON fields contain closed, canonically hashed
+/// structures validated by the server registry before publication.
+model ModelGatewayPolicyVersion {
+  id                     String    @id @default(cuid())
+  policyKey              String
+  version                Int
+  operationType          String
+  status                 String    @default("draft")
+  routeOrder             Json
+  fallbackRules          Json
+  maxAttempts            Int
+  maxTotalCostMicros     BigInt
+  requiredPrivacyPosture String
+  canonicalHash          String    @unique
+  createdBy              String
+  createdAt              DateTime  @default(now())
+  publishedAt            DateTime?
+  retiredAt              DateTime?
+
+  gatewayOperations ModelGatewayOperation[]
+
+  @@unique([policyKey, version])
+  @@index([operationType, status])
+}
+
+/// One exact path/model/endpoint certification. Published decision-bearing
+/// fields are immutable; expiry changes eligibility, never historical facts.
+model ModelGatewayRouteProfile {
+  id                 String    @id @default(cuid())
+  routeKey           String
+  version            Int
+  status             String    @default("draft")
+  pathKind           String
+  adapterKey         String
+  billingProvider    String
+  intermediary       String?
+  endpointKey        String
+  modelKey           String
+  operationTypes     String[]
+  allowedDataClasses String[]
+  privacyPosture     String
+  residency          String[]
+  pricingEvidence    Json
+  privacyEvidence    Json
+  maxInputTokens     Int
+  maxOutputTokens    Int
+  canonicalHash      String    @unique
+  createdBy          String
+  createdAt          DateTime  @default(now())
+  publishedAt        DateTime?
+  retiredAt          DateTime?
+
+  decisions ModelGatewayDecision[]
+
+  @@unique([routeKey, version])
+  @@index([adapterKey, status])
+}
+
+/// Immutable gateway admission bound one-to-one to the existing logical
+/// operation/lease authority.
+model ModelGatewayOperation {
+  id                 String                    @id @default(cuid())
+  aiOperationId      String                    @unique
+  aiOperation        AiOperation               @relation(fields: [aiOperationId], references: [id], onDelete: Cascade)
+  tenantId           String
+  operationType      String
+  requestFingerprint String
+  outputContractHash String
+  dataClass          String
+  privacyRequirement String
+  policyVersionId    String
+  policyVersion      ModelGatewayPolicyVersion @relation(fields: [policyVersionId], references: [id], onDelete: Restrict)
+  maxTotalCostMicros BigInt
+  status             String                    @default("admitted")
+  finalAttemptId     String?                   @unique
+  resultEvidenceRef  String?
+  createdAt          DateTime                  @default(now())
+  finishedAt         DateTime?
+
+  decisions   ModelGatewayDecision[]
+  auditEvents ModelGatewayAuditEvent[]
+
+  @@index([tenantId, status])
+  @@index([policyVersionId])
+}
+
+/// Immutable policy authorization or refusal, written before any attempt.
+model ModelGatewayDecision {
+  id                  String                    @id @default(cuid())
+  gatewayOperationId  String
+  gatewayOperation    ModelGatewayOperation     @relation(fields: [gatewayOperationId], references: [id], onDelete: Cascade)
+  attempt             Int
+  disposition         String
+  routeProfileId      String?
+  routeProfile        ModelGatewayRouteProfile? @relation(fields: [routeProfileId], references: [id], onDelete: Restrict)
+  reasonClass         String
+  policyHash          String
+  routeHash           String?
+  privacyEvidenceHash String?
+  breakerGeneration   BigInt
+  remainingCostMicros BigInt
+  decisionFingerprint String                    @unique
+  decidedAt           DateTime                  @default(now())
+
+  gatewayAttempt ModelGatewayAttempt?
+
+  @@unique([gatewayOperationId, attempt])
+  @@index([routeProfileId])
+}
+
+/// One persisted attempt under one route_authorized decision and one unique
+/// conservative account reservation.
+model ModelGatewayAttempt {
+  id                   String                   @id @default(cuid())
+  decisionId           String                   @unique
+  decision             ModelGatewayDecision     @relation(fields: [decisionId], references: [id], onDelete: Restrict)
+  accountSpendHoldId   String                   @unique
+  accountSpendHold     AccountProviderSpendHold @relation(fields: [accountSpendHoldId], references: [id], onDelete: Restrict)
+  status               String                   @default("prepared")
+  providerRequestRef   String?
+  dispatchState        String                   @default("not_dispatched")
+  errorClass           String?
+  httpStatus           Int?
+  resultContractStatus String                   @default("not_evaluated")
+  requestEvidenceRef   String?
+  responseEvidenceRef  String?
+  aiUsageId            String?                  @unique
+  aiUsage              AiUsage?                 @relation(fields: [aiUsageId], references: [id], onDelete: Restrict)
+  startedAt            DateTime                 @default(now())
+  dispatchedAt         DateTime?
+  finishedAt           DateTime?
+
+  voiceTranscript VoiceTranscriptSegment?
+
+  @@index([status, startedAt])
+}
+
+/// Current mutable eligibility for one breaker scope. Generation is a CAS
+/// fence; every transition also writes an immutable event.
+model ModelGatewayBreaker {
+  id          String   @id @default(cuid())
+  scopeKind   String
+  scopeKey    String
+  generation  BigInt   @default(0)
+  state       String   @default("closed")
+  reasonClass String
+  changedBy   String
+  changedAt   DateTime @default(now())
+
+  @@unique([scopeKind, scopeKey])
+  @@index([state, scopeKind])
+}
+
+/// Append-only breaker transition history.
+model ModelGatewayBreakerEvent {
+  id              String   @id @default(cuid())
+  scopeKind       String
+  scopeKey        String
+  priorGeneration BigInt
+  newGeneration   BigInt
+  priorState      String
+  newState        String
+  reasonClass     String
+  actorId         String
+  correlationId   String
+  createdAt       DateTime @default(now())
+
+  @@unique([scopeKind, scopeKey, newGeneration])
+  @@index([correlationId])
+}
+
+/// Ordinary, content-free, append-only gateway operational evidence. Event
+/// payload is deliberately columnar and bounded: raw prompts, outputs,
+/// credentials and provider dumps cannot be represented by this model.
+model ModelGatewayAuditEvent {
+  id                   String                 @id @default(cuid())
+  eventType            String
+  correlationId        String
+  gatewayOperationId   String?
+  gatewayOperation     ModelGatewayOperation? @relation(fields: [gatewayOperationId], references: [id], onDelete: Cascade)
+  tenantId             String?
+  attemptId            String?
+  decisionId           String?
+  policyHash           String?
+  routeHash            String?
+  spendHoldId          String?
+  billingProvider      String?
+  amountMicros         BigInt?
+  errorClass           String?
+  dispatchState        String?
+  resultContractStatus String?
+  evidenceRef          String?
+  actorId              String?
+  eventFingerprint     String                 @unique
+  createdAt            DateTime               @default(now())
+
+  @@index([gatewayOperationId, createdAt])
+  @@index([tenantId, createdAt])
+  @@index([correlationId])
 }
 
 /**

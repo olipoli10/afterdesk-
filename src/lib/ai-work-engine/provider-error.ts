@@ -52,6 +52,37 @@ export type ClassifiedProviderError = {
   message: string;
 };
 
+/** Closed Model Gateway vocabulary; no provider response body is preserved. */
+export const GATEWAY_PROVIDER_ERROR_CLASSES = [
+  "provider_refusal",
+  "rate_limit",
+  "authentication",
+  "malformed_request",
+  "timeout",
+  "provider_server_failure",
+  "unknown_failure",
+  "unknown_dispatched_outcome",
+] as const;
+
+export type NormalizedGatewayProviderError = {
+  errorClass: (typeof GATEWAY_PROVIDER_ERROR_CLASSES)[number];
+  httpStatus: number | null;
+};
+
+export function normalizeGatewayProviderError(error: unknown): NormalizedGatewayProviderError {
+  const classified = classifyProviderError(error);
+  const errorClass = {
+    auth: "authentication",
+    quota: "provider_refusal",
+    rate_limit: "rate_limit",
+    timeout: "timeout",
+    bad_request: "malformed_request",
+    provider_5xx: "provider_server_failure",
+    unknown: "unknown_failure",
+  }[classified.errorClass] as NormalizedGatewayProviderError["errorClass"];
+  return Object.freeze({ errorClass, httpStatus: classified.httpStatus });
+}
+
 /** Header and property names providers use for the retry hint. */
 function readRetryAfter(error: unknown): number | null {
   const headers = (error as { headers?: unknown })?.headers;

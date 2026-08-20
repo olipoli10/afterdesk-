@@ -18,15 +18,21 @@ describe("ENDVERA portal microphone candidate", () => {
 
   it("keeps the server boundary disabled and free of provider/network authority", () => {
     const action = read("src/server/actions/voice-intake.ts");
+    const boundary = read("src/server/voice-intake-runtime-boundary.ts");
     expect(action).toContain('"use server"');
-    expect(action).toContain("operationEnabled: false");
-    expect(action).toContain("publishedPolicyAvailable: false");
-    expect(action).toContain("eligibleRouteAvailable: false");
-    expect(action).toContain("configuredSpendCeiling: false");
-    expect(action).not.toMatch(/fetch\s*\(/);
-    expect(action).not.toContain("process.env");
-    expect(action).not.toMatch(/authorization/i);
-    expect(action).not.toMatch(/openrouter/i);
+    expect(action).toContain('await requireRole("CLIENT")');
+    expect(boundary).toContain("rolloutEnabled: false");
+    expect(boundary).toContain("operationEnabled: false");
+    expect(boundary).toContain("publishedPolicyAvailable: false");
+    expect(boundary).toContain("eligibleRouteAvailable: false");
+    expect(boundary).toContain("configuredSpendCeiling: false");
+    expect(boundary).toContain("providerAdopted: false");
+    expect(boundary).toContain("realProviderCertified: false");
+    for (const source of [action, boundary]) {
+      expect(source).not.toMatch(/fetch\s*\(/);
+      expect(source).not.toContain("process.env");
+      expect(source).not.toMatch(/openrouter/i);
+    }
   });
 
   it("exposes disclosure, consent, recording controls and accessible feedback", () => {

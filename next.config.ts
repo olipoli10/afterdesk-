@@ -28,6 +28,13 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      // One independently bounded voice segment is at most 2 MB. Leave room
+      // for the action envelope without permitting an unbounded upload.
+      bodySizeLimit: "3mb",
+    },
+  },
   /**
    * STANDING CAPACITY IS UNPUBLISHED, NOT DELETED.
    *
@@ -78,7 +85,8 @@ const nextConfig: NextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains",
           },
-          // This app never needs these browser capabilities.
+          // Voice rollout is still disabled. A later, separately authorized
+          // release gate must change this policy before the mic can activate.
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(), payment=()",
