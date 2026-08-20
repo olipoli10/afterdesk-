@@ -11,8 +11,9 @@ datasource db {
   // Pooled connection for the running app.
   url        = env("DATABASE_URL")
   // Unpooled connection for migrations: the migration engine uses prepared
-  // statements, which a transaction pooler (pgbouncer) breaks.
-  directUrl  = env("DIRECT_URL")
+  // statements, which a transaction pooler (pgbouncer) breaks. Neon/Vercel
+  // provides this connection as DATABASE_URL_UNPOOLED.
+  directUrl  = env("DATABASE_URL_UNPOOLED")
   // Pricing-reference embeddings (TaskEmbedding, below). Confirmed working
   // on both managed Postgres and the local PGlite dev server (0.8.1) before
   // this was added — see the commit that introduced AI pricing suggestions.
