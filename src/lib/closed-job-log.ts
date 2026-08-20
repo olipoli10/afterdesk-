@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma, ClosedJobOutcome, LostReasonCategory } from "@prisma/client";
+import type { Prisma, ClosedJobOutcome, LostReasonCategory } from "@prisma-client";
 import { prisma } from "@/lib/db";
 
 type Db = Prisma.TransactionClient | typeof prisma;

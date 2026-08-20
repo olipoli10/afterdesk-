@@ -1,4 +1,4 @@
-import type { TaskStatus } from "@prisma/client";
+import type { TaskStatus } from "@prisma-client";
 import { ALLOWED_TRANSITIONS } from "@/lib/state";
 
 /**

@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma, TaskTier } from "@prisma/client";
+import type { Prisma, TaskTier } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { eligibleVaUserIds } from "@/lib/queries/va-profile";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { TaskStatus } from "@prisma/client";
+import type { TaskStatus } from "@prisma-client";
 import { ALLOWED_TRANSITIONS, isAllowedTransition } from "@/lib/state";
 import {
   CLIENT_STATUS_LABELS,

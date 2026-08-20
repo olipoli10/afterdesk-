@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { succeedAiOperation, SupersededOperationError } from "@/server/ai-operations";
 import { settleAccountSpendHold } from "@/server/account-spend";

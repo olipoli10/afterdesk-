@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { TaskStatus } from "@prisma/client";
+import type { TaskStatus } from "@prisma-client";
 import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { runOperatorSweeps } from "@/server/sweeps";

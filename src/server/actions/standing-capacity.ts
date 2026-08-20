@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { requireRole, requireApprovedVa } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";

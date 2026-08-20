@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { addHours } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { requireRole, consumeRateLimit } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";

@@ -11,7 +11,7 @@
  *
  *   DATABASE_URL="<prod pooled url>" npx tsx prisma/seed-demo-showcase.ts
  */
-import { PrismaClient, type TaskTier } from "@prisma/client";
+import { PrismaClient, type TaskTier } from "@prisma-client";
 import { hashPassword } from "better-auth/crypto";
 import { randomBytes } from "node:crypto";
 

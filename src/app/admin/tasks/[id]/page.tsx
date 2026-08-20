@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { FileScanStatus } from "@prisma/client";
+import type { FileScanStatus } from "@prisma-client";
 import { requireRole } from "@/lib/authz";
 import { taskForAdmin, taskEventsForAdmin } from "@/lib/queries/tasks";
 import { ADMIN_STATUS_LABELS, statusBadgeClass, TERMINAL_STATUSES } from "@/lib/status";

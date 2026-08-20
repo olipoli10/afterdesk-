@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { QuoteTier } from "@prisma/client";
+import { QuoteTier } from "@prisma-client";
 import {
   aiSuggestionColumns,
   computeClientPriceCents,

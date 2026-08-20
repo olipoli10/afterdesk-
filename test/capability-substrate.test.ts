@@ -668,13 +668,18 @@ describe("a local inspection result is not an external-provider authorization", 
     expect(callers.map(shortName)).toEqual([shortName(COMPILE)]);
 
     /**
-     * And the reach itself is named in code in exactly three places: the table
-     * that declares it, the type that spells it, and the one rule that consults
-     * it. A fourth is a second authority on who may receive client data.
+     * The capability reach itself remains named in the original three places.
+     * Model Gateway also has a closed `provider` breaker scope; that label can
+     * stop dispatch but cannot grant a provider client data.
      */
     const namesTheReach = ALL_SOURCES.filter((f) => /["'`]provider["'`]/.test(codeOf(f)));
     expect(namesTheReach.map(shortName).sort()).toEqual(
-      [shortName(VOCABULARY), shortName(DATA_CLASS), shortName(COMPILE)].sort()
+      [
+        shortName(VOCABULARY),
+        shortName(DATA_CLASS),
+        shortName(COMPILE),
+        "server/model-gateway/breakers.ts",
+      ].sort()
     );
   });
 

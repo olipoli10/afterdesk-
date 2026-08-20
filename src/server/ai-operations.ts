@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 
 /**
  * DURABLE AI OPERATIONS — the reservation layer in front of every logical

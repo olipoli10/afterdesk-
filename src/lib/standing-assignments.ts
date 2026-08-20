@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 
 /**
  * Closing a worker's Standing Capacity assignments when they lose the pool.

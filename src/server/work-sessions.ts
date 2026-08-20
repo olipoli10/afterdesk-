@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma, type WorkSessionPhase, type WorkSessionRole } from "@prisma/client";
+import { Prisma, type WorkSessionPhase, type WorkSessionRole } from "@prisma-client";
 import { prisma } from "@/lib/db";
 
 /**

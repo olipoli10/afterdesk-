@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma, type PaymentStatus, type TaskStatus } from "@prisma/client";
+import { Prisma, type PaymentStatus, type TaskStatus } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { formatMetricsForClient, type MetricRow } from "@/lib/delivery-metrics";
 import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";

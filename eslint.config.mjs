@@ -11,6 +11,7 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    ".prisma-client/**",
     "next-env.d.ts",
     ".tmp-voice-*/**",
     "docs/evidence/endvera-portal-voice/**/chrome-profile-*/**",

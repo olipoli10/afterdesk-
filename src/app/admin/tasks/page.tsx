@@ -5,7 +5,7 @@ import { ADMIN_STATUS_LABELS, statusBadgeClass } from "@/lib/status";
 import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
 import { Badge, Card, EmptyState, PageTitle, moneyClient, moneyPayout } from "@/components/ui";
-import type { TaskStatus } from "@prisma/client";
+import type { TaskStatus } from "@prisma-client";
 
 const FILTERS: (TaskStatus | "all")[] = [
   "all",

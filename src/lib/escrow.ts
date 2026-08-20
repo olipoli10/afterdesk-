@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 
 /**
  * Releases a one-off task's held money: the worker's payout moves from

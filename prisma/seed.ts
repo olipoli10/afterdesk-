@@ -15,7 +15,7 @@
  * Settings are intentionally NOT seeded: defaults live in src/lib/settings.ts
  * and the Setting table only stores overrides.
  */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma-client";
 import { hashPassword } from "better-auth/crypto";
 
 const prisma = new PrismaClient();

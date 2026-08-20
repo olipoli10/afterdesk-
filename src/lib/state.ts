@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma, type TaskStatus } from "@prisma/client";
+import { Prisma, type TaskStatus } from "@prisma-client";
 import { prisma } from "@/lib/db";
 
 /** The task was not in the expected state — someone else moved it first. */

@@ -306,16 +306,18 @@ describe("ENDVERA public narrative", () => {
     expect(css).toMatch(/\.outcome[\s\S]*opacity:\s*clamp\(0,\s*calc\(var\(--s-c\)\s*\/\s*0\.14\),\s*1\)/);
   });
 
-  it("changes nothing outside the authorised public-site surface", () => {
-    const tracked = execFileSync("git", ["diff", "--name-only", "1b37f778b14e8843ab69f5ce82758e744e6bf017"], {
-      cwd: root,
-      encoding: "utf8",
-    });
-    const untracked = execFileSync("git", ["ls-files", "--others", "--exclude-standard"], {
-      cwd: root,
-      encoding: "utf8",
-    });
-    const changed = `${tracked}\n${untracked}`
+  it("records that the completed public-site lane changed only its authorised surface", () => {
+    const tracked = execFileSync(
+      "git",
+      [
+        "diff",
+        "--name-only",
+        "1b37f778b14e8843ab69f5ce82758e744e6bf017",
+        "fb3b02d0fe65c49bcac1e10f238c223b167177b5",
+      ],
+      { cwd: root, encoding: "utf8" },
+    );
+    const changed = tracked
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean);

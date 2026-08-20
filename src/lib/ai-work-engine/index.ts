@@ -32,7 +32,7 @@ import {
   succeedAiOperation,
   SupersededOperationError,
 } from "@/server/ai-operations";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 
 /**
  * THE WORK ENGINE PIPELINE — Phase 1A shape, Phase 1C accounting. Three

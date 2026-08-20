@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma-client";
 import { classifyProviderError } from "@/lib/ai-work-engine/provider-error";
 import {
   BUDGET_POLICY_VERSION,

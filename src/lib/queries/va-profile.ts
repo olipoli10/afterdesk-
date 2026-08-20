@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import type { Prisma, TaskTier } from "@prisma/client";
+import type { Prisma, TaskTier } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 

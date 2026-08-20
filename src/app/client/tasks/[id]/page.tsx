@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import type { PaymentStatus } from "@prisma/client";
+import type { PaymentStatus } from "@prisma-client";
 import { requireRole } from "@/lib/authz";
 import {
   taskForClient,

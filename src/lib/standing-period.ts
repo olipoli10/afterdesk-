@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 

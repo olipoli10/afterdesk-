@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { canonicalFingerprint } from "../evidence";
 import { VOICE_LIMITS, type VoiceTranscriptSuccess } from "./types";

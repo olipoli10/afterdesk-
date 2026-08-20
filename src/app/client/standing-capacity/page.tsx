@@ -1,4 +1,4 @@
-import type { TaskStatus } from "@prisma/client";
+import type { TaskStatus } from "@prisma-client";
 import { requireRole } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
 import { standingCapacityForClient } from "@/lib/queries/standing-capacity";

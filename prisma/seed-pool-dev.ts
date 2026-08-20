@@ -9,7 +9,7 @@
  *
  *   npm run db:seed:pool
  */
-import { PrismaClient, type TaskTier } from "@prisma/client";
+import { PrismaClient, type TaskTier } from "@prisma-client";
 
 const prisma = new PrismaClient();
 

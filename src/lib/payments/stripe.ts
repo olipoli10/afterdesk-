@@ -2,7 +2,7 @@ import "server-only";
 import { after } from "next/server";
 import Stripe from "stripe";
 import { addHours } from "date-fns";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";

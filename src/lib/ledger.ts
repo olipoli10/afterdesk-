@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import type { LedgerKind, Prisma } from "@prisma/client";
+import type { LedgerKind, Prisma } from "@prisma-client";
 
 type LedgerInput = {
   kind: LedgerKind;

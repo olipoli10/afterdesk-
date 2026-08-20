@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 import { COST_CATALOG, COST_CATALOG_VERSION } from "@/lib/ai-work-engine/cost-catalog";
 import {
   EXECUTION_KEY_VERSION,
