@@ -51,8 +51,11 @@ describe("ENDVERA entrepreneur portal experience", () => {
     expect(workerRegister).toMatch(/VaRegisterForm[\s\S]*emailEnabled=\{emailSignupEnabled\}/);
     expect(forms).toContain("emailEnabled: boolean");
     expect(forms).toContain("copy.emailSignupUnavailable");
+    expect(forms).toContain("copy.signupUnavailable");
+    expect(forms).toMatch(/googleEnabled\s*\?\s*copy\.emailSignupUnavailable\s*:\s*copy\.signupUnavailable/);
     expect(forms).toMatch(/emailEnabled\s*\?\s*\(\s*<form/);
     expect(i18n.match(/emailSignupUnavailable:/g)).toHaveLength(5);
+    expect(i18n.match(/signupUnavailable:/g)).toHaveLength(5);
   });
 
   it("uses the ENDVERA night shell for every authenticated client route", () => {

@@ -118,7 +118,7 @@ export function ClientRegisterForm({
               : "border-[#D8D5CF] bg-[#F7F6F3] text-[#5B6069]"
           }`}
         >
-          {copy.emailSignupUnavailable}
+          {googleEnabled ? copy.emailSignupUnavailable : copy.signupUnavailable}
         </p>
       )}
     </div>

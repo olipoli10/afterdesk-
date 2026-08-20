@@ -96,6 +96,7 @@ export type ClientPortalAuthFormCopy = {
   signInFailed: string;
   signUpFailed: string;
   emailSignupUnavailable: string;
+  signupUnavailable: string;
   workerNote: string;
 };
 
@@ -235,6 +236,7 @@ const en: ClientPortalDictionary = {
       passwordTooShort: "Password must be at least {min} characters.", passwordMismatch: "Passwords do not match.",
       signInFailed: "Sign-in failed.", signUpFailed: "Sign-up failed.",
       emailSignupUnavailable: "Email sign-up is temporarily unavailable. Use Google to create your client account.",
+      signupUnavailable: "Account creation is temporarily unavailable. Existing clients can still sign in.",
       workerNote: "Specialist accounts sign in with email and password — Google sign-in always opens a client account.",
     },
   },
@@ -387,6 +389,7 @@ const fr: ClientPortalDictionary = {
       passwordTooShort: "Le mot de passe doit contenir au moins {min} caractères.", passwordMismatch: "Les mots de passe ne correspondent pas.",
       signInFailed: "Échec de la connexion.", signUpFailed: "Échec de l’inscription.",
       emailSignupUnavailable: "L’inscription par courriel est temporairement indisponible. Utilisez Google pour créer votre compte client.",
+      signupUnavailable: "La création de compte est temporairement indisponible. Les clients existants peuvent toujours se connecter.",
       workerNote: "Les spécialistes se connectent avec leur courriel et leur mot de passe; Google ouvre toujours un compte client.",
     },
   },
@@ -541,6 +544,7 @@ const es: ClientPortalDictionary = {
       passwordTooShort: "La contraseña debe tener al menos {min} caracteres.", passwordMismatch: "Las contraseñas no coinciden.",
       signInFailed: "No se pudo iniciar sesión.", signUpFailed: "No se pudo crear la cuenta.",
       emailSignupUnavailable: "El registro por correo no está disponible temporalmente. Usa Google para crear tu cuenta de cliente.",
+      signupUnavailable: "La creación de cuentas no está disponible temporalmente. Los clientes existentes aún pueden iniciar sesión.",
       workerNote: "Los especialistas entran con correo y contraseña; Google siempre abre una cuenta de cliente.",
     },
   },
@@ -695,6 +699,7 @@ const tl: ClientPortalDictionary = {
       passwordTooShort: "Dapat hindi bababa sa {min} character ang password.", passwordMismatch: "Hindi magkapareho ang mga password.",
       signInFailed: "Hindi makapag-sign in.", signUpFailed: "Hindi magawa ang account.",
       emailSignupUnavailable: "Pansamantalang hindi available ang email sign-up. Gamitin ang Google para gumawa ng client account.",
+      signupUnavailable: "Pansamantalang hindi available ang paggawa ng account. Maaari pa ring mag-sign in ang mga kasalukuyang client.",
       workerNote: "Email at password ang gamit ng specialist; palaging client account ang binubuksan ng Google sign-in.",
     },
   },
