@@ -56,4 +56,3 @@ Protocol viewport emulation through `scripts/capture-local-publicsite.mjs`.
 
 Public-site candidate score: **8.8 / 10 for local design review**. The portal
 was not evaluated or modified because the explicit mandate is Block 1 only.
-
