@@ -46,14 +46,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <AppShell
-      areaLabel="Operator"
+      areaLabel="Control room"
       width="wide"
+      tone="night"
       userName={user.name}
       notificationCount={notificationCount}
       nav={[
-        { href: "/admin", label: "Overview" },
-        { href: "/admin/pricing", label: "Pricing", badge: pricingCount },
-        { href: "/admin/qc", label: "QC", badge: qcCount },
+        { href: "/admin", label: "Command" },
+        { href: "/admin/pricing", label: "Pricing queue", badge: pricingCount },
+        { href: "/admin/qc", label: "Quality review", badge: qcCount },
         { href: "/admin/workers", label: "Workers", badge: workerCount },
         { href: "/admin/tasks", label: "All tasks" },
         { href: "/admin/standing-capacity", label: "Standing capacity", badge: draftNoteCount },

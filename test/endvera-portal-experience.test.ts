@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -30,6 +30,13 @@ describe("ENDVERA entrepreneur portal experience", () => {
     expect(genericSwitch).toContain("new URLSearchParams(search)");
   });
 
+  it("clears the intercepted sign-in window before client registration", () => {
+    const catchAll = "src/app/@modal/[...catchAll]/page.tsx";
+
+    expect(existsSync(join(ROOT, catchAll))).toBe(true);
+    expect(read(catchAll)).toMatch(/return\s+null/);
+  });
+
   it("uses the ENDVERA night shell for every authenticated client route", () => {
     const layout = read("src/app/client/layout.tsx");
     const appShell = read("src/components/app-shell.tsx");
@@ -38,6 +45,18 @@ describe("ENDVERA entrepreneur portal experience", () => {
     expect(layout).toMatch(/<AppShell[\s\S]*width="wide"/);
     expect(layout).toContain("CLIENT_PORTAL_I18N");
     expect(appShell).toContain("data-endvera-portal");
+  });
+
+  it("gives the operator overview an ENDVERA command surface without changing its queue links", () => {
+    const layout = read("src/app/admin/layout.tsx");
+    const overview = read("src/app/admin/page.tsx");
+
+    expect(layout).toMatch(/<AppShell[\s\S]*tone="night"/);
+    expect(layout).toContain('href: "/admin/qc"');
+    expect(overview).toContain("data-endvera-operator-overview");
+    expect(overview).toContain("The work that needs your judgment.");
+    expect(overview).toContain('href: "/admin/pricing"');
+    expect(overview).toContain('href: "/admin/tasks"');
   });
 
   it("makes the dashboard lead with action, status and a direct A2 request door", () => {
