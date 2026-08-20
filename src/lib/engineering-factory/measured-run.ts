@@ -45,8 +45,8 @@ function serializeRun(run: DevBenchRun): string {
   return JSON.stringify(run);
 }
 
-function validateOrRefuse(run: DevBenchRun, catalog: DevBenchCatalog): void {
-  const report = validateDevBenchRun(run, catalog);
+function validateOrRefuse(run: DevBenchRun, catalog: DevBenchCatalog, expectedCaseIds?: readonly string[]): void {
+  const report = validateDevBenchRun(run, catalog, expectedCaseIds);
   if (!report.ok) {
     throw new MeasuredRunRefusal(report.errors.join("; "));
   }
@@ -93,11 +93,14 @@ export async function captureMeasuredRun({
   declaration,
   catalog,
   capture,
+  expectedCaseIds,
   monotonicNow = process.hrtime.bigint,
 }: {
   declaration: MeasuredRunDeclaration;
   catalog: DevBenchCatalog;
   capture: () => Promise<MeasuredRunEvidence & Record<string, unknown>>;
+  /** Defaults to the complete catalog; focused plans must declare their one case explicitly. */
+  expectedCaseIds?: readonly string[];
   monotonicNow?: () => bigint;
 }): Promise<DevBenchRun> {
   const startedAt = monotonicNow();
@@ -121,7 +124,7 @@ export async function captureMeasuredRun({
     reviewerVerdict: evidence.reviewerVerdict,
   };
 
-  validateOrRefuse(run, catalog);
+  validateOrRefuse(run, catalog, expectedCaseIds);
   return run;
 }
 
@@ -134,12 +137,14 @@ export async function persistMeasuredRun({
   run,
   catalog,
   directory = MEASURED_RUN_LOCAL_DIRECTORY,
+  expectedCaseIds,
 }: {
   run: DevBenchRun;
   catalog: DevBenchCatalog;
   directory?: string;
+  expectedCaseIds?: readonly string[];
 }): Promise<string> {
-  validateOrRefuse(run, catalog);
+  validateOrRefuse(run, catalog, expectedCaseIds);
 
   const root = resolve(directory);
   const fileName = safeRunFileName(run.runId);
@@ -170,9 +175,11 @@ export async function persistMeasuredRun({
 export async function readPersistedMeasuredRun({
   file,
   catalog,
+  expectedCaseIds,
 }: {
   file: string;
   catalog: DevBenchCatalog;
+  expectedCaseIds?: readonly string[];
 }): Promise<DevBenchRun> {
   let parsed: unknown;
   try {
@@ -186,6 +193,6 @@ export async function readPersistedMeasuredRun({
   if (artifact.integritySha256 !== sha256(serializedRun)) {
     throw new MeasuredRunRefusal("run evidence integrity check failed");
   }
-  validateOrRefuse(artifact.run, catalog);
+  validateOrRefuse(artifact.run, catalog, expectedCaseIds);
   return artifact.run;
 }
