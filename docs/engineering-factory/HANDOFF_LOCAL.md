@@ -25,6 +25,9 @@
 - Preserved EF-003 as frozen historical evidence: Claude's candidate remains
   the technical winner for that one case, but no result is a measured-cost or
   provider-adoption decision.
+- Completed the focused EF-001 review from one frozen seed. Codex and Claude
+  both passed the same oracle, mutation and hostile runtime values; the
+  technical verdict is a tie and no cost or speed rank exists.
 
 ## Green evidence
 
@@ -53,8 +56,8 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The Control Tower should schedule the next two-candidate bake-off on a frozen
-clone of this catalog. Score reviewer-accepted technical evidence first; score
-time or cost only when the hardened harness records a supported measurement
-source. The winner remains a candidate until the evidence is independently
-reviewed.
+The Control Tower should schedule EF-002 as the next two-candidate bake-off on
+a frozen clone of the generated-capability-contract case. Score
+reviewer-accepted technical evidence first; score time or cost only when the
+hardened harness records a supported measurement source. A winner remains a
+candidate until broader evidence is independently reviewed.
