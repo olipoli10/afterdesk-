@@ -42,6 +42,12 @@
   stored request bytes. Claude is the narrow technical winner because it also
   rejects a malformed on-disk tools value instead of normalizing it to an
   empty tool list. No cost or elapsed ranking exists.
+- Completed EF-006 from the repaired frozen synthetic-provider seed. Both
+  candidates reject malformed synthetic responder output before accounting and
+  preserve valid provider wire shapes. Codex is the narrow technical winner:
+  the named typed response-shape guard is equivalent under the frozen oracle
+  while remaining smaller and reusable. The original invalid-seed candidates
+  are excluded from the comparison. No cost or elapsed ranking exists.
 
 ## Green evidence
 
@@ -70,8 +76,9 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The Control Tower should schedule the next catalog case as a two-candidate
-bake-off from a frozen clone, with a named mutation and supported elapsed and
+The Control Tower should schedule EF-007 as the next catalog case from a
+frozen clone. Continue the two-candidate bake-off with a named mutation and
+supported elapsed and
 cost measurement sources. Score reviewer-accepted technical evidence first;
 score time or cost only when the hardened harness records a supported
 measurement source. A winner remains a candidate until broader evidence is
