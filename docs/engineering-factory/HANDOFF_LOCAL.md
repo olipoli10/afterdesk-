@@ -33,6 +33,10 @@
   technical winner for the narrow case because it reuses the repository's
   existing `structuredClone` pattern rather than adding a bespoke recursive
   JSON clone. Neither run has measured cost or elapsed evidence.
+- Completed EF-004 from a frozen client/server-boundary seed. Codex and Claude
+  produced the exact same two-line source deletion, final Git tree and source
+  blob; the technical verdict is an exact tie, with no measured cost or
+  elapsed rank.
 
 ## Green evidence
 
@@ -61,7 +65,7 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The Control Tower should schedule EF-004 as the next two-candidate bake-off
+The Control Tower should schedule EF-005 as the next two-candidate bake-off
 from the catalog, with a frozen clone, named mutation, and supported elapsed
 and cost measurement sources. Score reviewer-accepted technical evidence
 first; score time or cost only when the hardened harness records a supported
