@@ -80,6 +80,10 @@
   rejects placeholders and sensitive field names recursively, and cannot yield
   a trial plan until an evaluator provides two approved non-secret candidate
   descriptions plus supported meter sources.
+- Added `npm run devbench:trial:preflight`: a local, read-only gate that
+  refuses a DRAFT or invalid manifest before any candidate process, provider
+  or network activity can begin. `PREFLIGHT_READY` is preparation evidence,
+  never execution evidence.
 
 ## Green evidence
 

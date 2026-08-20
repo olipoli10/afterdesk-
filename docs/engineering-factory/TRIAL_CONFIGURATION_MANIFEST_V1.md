@@ -16,8 +16,10 @@ outputs, attachments, customer data, tokens, secrets or provider traffic.
 2. An evaluator replaces every placeholder with two approved, non-secret
    candidate descriptions and chooses a supported cost source for each.
 3. The evaluator explicitly changes `status` to `APPROVED`.
-4. `readApprovedTrialManifest` validates the file and only then produces the
-   counterbalanced measured-trial plan.
+4. `npm run devbench:trial:preflight` validates the file and only then
+   produces the counterbalanced measured-trial plan for inspection. It prints
+   `PREFLIGHT_READY` only for an approved configuration; otherwise it exits
+   non-zero without launching a candidate, provider or network request.
 
 An edited manifest is configuration input, not a historical run record. The
 measured-run harness remains the create-only, integrity-checked record of a

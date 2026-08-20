@@ -13,6 +13,7 @@
     "devbench:validate": "tsx scripts/validate-engineering-devbench.ts",
     "devbench:packet": "tsx scripts/print-engineering-bakeoff-packet.ts",
     "devbench:bakeoff:validate": "tsx scripts/validate-engineering-bakeoff.ts",
+    "devbench:trial:preflight": "tsx scripts/preflight-engineering-measured-trial.ts",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",

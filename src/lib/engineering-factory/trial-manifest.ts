@@ -192,12 +192,27 @@ export async function readApprovedTrialManifest({
   file: string;
   catalog: DevBenchCatalog;
 }): Promise<TrialConfigurationManifest> {
+  return (await preflightApprovedTrialManifest({ file, catalog })).manifest;
+}
+
+/**
+ * Performs read-only local validation before a human authorizes any candidate
+ * process. It intentionally returns a plan but never starts a trial.
+ */
+export async function preflightApprovedTrialManifest({
+  file,
+  catalog,
+}: {
+  file: string;
+  catalog: DevBenchCatalog;
+}): Promise<{ manifest: TrialConfigurationManifest; plan: MeasuredTrialPlan }> {
   let parsed: unknown;
   try {
     parsed = JSON.parse(await readFile(file, "utf8"));
   } catch {
     throw new TrialManifestRefusal("trial configuration manifest is malformed");
   }
-  createApprovedTrialPlanFromManifest({ manifest: parsed, catalog });
-  return parseManifest(parsed);
+  const manifest = parseManifest(parsed);
+  const plan = createApprovedTrialPlanFromManifest({ manifest, catalog });
+  return { manifest, plan };
 }

@@ -8,6 +8,7 @@ import { DEV_BENCH_V1 } from "@/lib/engineering-factory/catalog";
 import {
   createApprovedTrialPlanFromManifest,
   createTrialManifestTemplate,
+  preflightApprovedTrialManifest,
   readApprovedTrialManifest,
   writeTrialManifestTemplate,
 } from "@/lib/engineering-factory/trial-manifest";
@@ -77,9 +78,16 @@ describe("Engineering Factory trial configuration manifest", () => {
     await expect(writeTrialManifestTemplate({ startingCommit: STARTING_COMMIT, directory })).rejects.toThrow(
       "trial configuration manifest already exists"
     );
+    await expect(preflightApprovedTrialManifest({ file, catalog: DEV_BENCH_V1 })).rejects.toThrow(
+      "trial configuration manifest is not approved"
+    );
 
     await writeFile(file, JSON.stringify(approvedManifest()), "utf8");
     await expect(readApprovedTrialManifest({ file, catalog: DEV_BENCH_V1 })).resolves.toMatchObject({ status: "APPROVED" });
+    await expect(preflightApprovedTrialManifest({ file, catalog: DEV_BENCH_V1 })).resolves.toMatchObject({
+      manifest: { status: "APPROVED" },
+      plan: { schedule: expect.any(Array) },
+    });
     await writeFile(file, JSON.stringify({ ...approvedManifest(), secret: "redacted-value" }), "utf8");
     await expect(readApprovedTrialManifest({ file, catalog: DEV_BENCH_V1 })).rejects.toThrow(
       "sensitive field is forbidden: secret"
