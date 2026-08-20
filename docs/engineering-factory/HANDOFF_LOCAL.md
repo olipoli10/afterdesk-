@@ -28,6 +28,11 @@
 - Completed the focused EF-001 review from one frozen seed. Codex and Claude
   both passed the same oracle, mutation and hostile runtime values; the
   technical verdict is a tie and no cost or speed rank exists.
+- Completed EF-002 from a frozen generated-capability-contract seed. Both
+  candidates isolated the mutable published schema snapshots; Codex is the
+  technical winner for the narrow case because it reuses the repository's
+  existing `structuredClone` pattern rather than adding a bespoke recursive
+  JSON clone. Neither run has measured cost or elapsed evidence.
 
 ## Green evidence
 
@@ -56,8 +61,9 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The Control Tower should schedule EF-002 as the next two-candidate bake-off on
-a frozen clone of the generated-capability-contract case. Score
-reviewer-accepted technical evidence first; score time or cost only when the
-hardened harness records a supported measurement source. A winner remains a
-candidate until broader evidence is independently reviewed.
+The Control Tower should schedule EF-004 as the next two-candidate bake-off
+from the catalog, with a frozen clone, named mutation, and supported elapsed
+and cost measurement sources. Score reviewer-accepted technical evidence
+first; score time or cost only when the hardened harness records a supported
+measurement source. A winner remains a candidate until broader evidence is
+independently reviewed.
