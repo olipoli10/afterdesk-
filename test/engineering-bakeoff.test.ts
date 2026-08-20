@@ -23,7 +23,13 @@ const COMPLETE_RUN: DevBenchRun = {
     contextMode: "sanitized-frozen-checkout",
     networkAccess: "none",
   },
-  measurements: { elapsedSeconds: 600, costCents: 92, humanInterventions: 1 },
+  measurements: {
+    elapsedSeconds: 600,
+    elapsedSource: "harness-monotonic",
+    costCents: 92,
+    costSource: "harness-meter",
+    humanInterventions: 1,
+  },
   outcomes: DEV_BENCH_V1.cases.map((benchCase) => ({
     caseId: benchCase.id,
     oracle: "pass",
@@ -65,7 +71,13 @@ describe("Engineering Factory bake-off protocol", () => {
       {
         ...COMPLETE_RUN,
         reviewerVerdict: "rejected",
-        measurements: { elapsedSeconds: 1, costCents: 0, humanInterventions: 0 },
+        measurements: {
+          elapsedSeconds: 1,
+          elapsedSource: "harness-monotonic",
+          costCents: 0,
+          costSource: "harness-meter",
+          humanInterventions: 0,
+        },
       },
       DEV_BENCH_V1
     );
@@ -73,6 +85,45 @@ describe("Engineering Factory bake-off protocol", () => {
     expect(scorecard.comparable).toBe(false);
     expect(scorecard.blockers).toContain("reviewerVerdict must be accepted");
     expect(scorecard.costPerAcceptedCaseCents).toBeNull();
+  });
+
+  it("mutation bakeoff-unavailable-cost cannot receive a price rank", () => {
+    const scorecard = scoreDevBenchRun(
+      {
+        ...COMPLETE_RUN,
+        measurements: {
+          ...COMPLETE_RUN.measurements,
+          elapsedSource: "harness-monotonic",
+          costCents: null,
+          costSource: "unavailable",
+        },
+      },
+      DEV_BENCH_V1
+    );
+
+    expect(scorecard.comparable).toBe(false);
+    expect(scorecard.acceptedCases).toBe(8);
+    expect(scorecard.blockers).toContain("cost measurement is unavailable");
+    expect(scorecard.costPerAcceptedCaseCents).toBeNull();
+  });
+
+  it("mutation bakeoff-unavailable-elapsed-time cannot receive a speed rank", () => {
+    const scorecard = scoreDevBenchRun(
+      {
+        ...COMPLETE_RUN,
+        measurements: {
+          ...COMPLETE_RUN.measurements,
+          elapsedSeconds: null,
+          elapsedSource: "unavailable",
+        },
+      },
+      DEV_BENCH_V1
+    );
+
+    expect(scorecard.comparable).toBe(false);
+    expect(scorecard.acceptedCases).toBe(8);
+    expect(scorecard.blockers).toContain("elapsed measurement is unavailable");
+    expect(scorecard.elapsedSeconds).toBeNull();
   });
 
   it("mutation bakeoff-mismatched-packet is caught", () => {

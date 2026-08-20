@@ -51,14 +51,22 @@ This is deliberately not a cost winner and not an adoption decision:
 - one focused security case cannot establish general coding quality,
   operational reliability or a provider/tool decision.
 
-## Follow-up before any adoption decision
+## C-002 follow-through — local harness hardening
 
-1. Add the expanded NAT64 spelling as a permanent oracle in a future focused
-   case or the catalog's EF-003 strengthening pass; do not rewrite this frozen
-   run after the fact.
-2. Instrument elapsed time and measured cost at the harness boundary.
-3. Run additional independent catalog families before selecting a primary
-   coding workflow.
+After this review, the Engineering Factory worktree added two safeguards for
+**future** runs. These changes do not alter either frozen candidate, its
+score, or this review's decision:
+
+1. The fully expanded NAT64 spelling is now a permanent oracle in the local
+   URL-safety suite. The frozen candidates remain historical evidence; the
+   new oracle is not retroactively attributed to either run.
+2. Every future run must declare elapsed and cost measurement sources. A
+   missing meter is represented explicitly as `unavailable` with a null
+   value, and blocks time or cost ranking while preserving other evidence.
+
+The follow-up required before any adoption decision is therefore to collect
+measured, source-backed evidence through that hardened harness across several
+independent catalog families.
 
 ## Local-only statement
 

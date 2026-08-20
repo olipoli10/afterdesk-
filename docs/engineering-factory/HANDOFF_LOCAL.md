@@ -16,22 +16,32 @@
   `catalog-missing-source-evidence`, and `catalog-provider-exposure`.
 - Added the operating rule that the catalog never stores prompts, model output,
   credentials, client data or a provider decision.
+- Hardened the run evidence envelope with explicit elapsed and cost measurement
+  sources. A value is comparable only when it has a supported source; an
+  honest `unavailable` source requires a null value and blocks only the
+  affected ranking dimension.
+- Added a permanent expanded NAT64 oracle so the pure URL-safety predicate
+  rejects `64:ff9b:0:0:0:0:a9fe:a9fe`, not only its compressed spelling.
+- Preserved EF-003 as frozen historical evidence: Claude's candidate remains
+  the technical winner for that one case, but no result is a measured-cost or
+  provider-adoption decision.
 
 ## Green evidence
 
 - `npm run devbench:validate` — 8 cases / 8 families / provider exposure none.
-- Targeted DevBench tests — 6/6.
+- Targeted DevBench, bake-off and URL-safety tests — 64/64.
 - Nine benchmark-family suites — 214/214.
-- Full fast suite — 56 files / 1,200 tests.
+- Full suite — 58 files / 1,216 tests.
 - Lint and TypeScript — pass.
 - `git diff --check` — pass.
 
 ## Build boundary
 
-`next build --webpack` compiled the application and completed TypeScript, then
-failed while collecting `/api/cron/maintenance` because no R2 production
-credentials are present. This is intentionally not bypassed with placeholder
-or production credentials. It does not affect the local-only benchmark code.
+`next build --webpack` is currently blocked before Next.js compilation because
+its build script first runs `prisma migrate deploy` and the local environment
+does not provide `DATABASE_URL_UNPOOLED`, required by `prisma/schema.prisma`.
+No database operation, placeholder credential or production credential was
+used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## What this does not authorize
 
@@ -43,7 +53,8 @@ or production credentials. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The Control Tower should schedule a two-candidate bake-off on a frozen clone
-of this catalog. Score accepted-result cost and reviewer acceptance, not raw
-test count. The winner remains a candidate until the evidence is independently
+The Control Tower should schedule the next two-candidate bake-off on a frozen
+clone of this catalog. Score reviewer-accepted technical evidence first; score
+time or cost only when the hardened harness records a supported measurement
+source. The winner remains a candidate until the evidence is independently
 reviewed.

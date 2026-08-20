@@ -17,6 +17,11 @@ only when every safety, scope, oracle, mutation and review gate passes.
 4. Set the same wall-time and evaluator cost ceiling outside the repository.
 5. Provide no client data, production credentials, prompt corpus, attachment
    or network access. A sanitized frozen checkout is the only allowed context.
+6. Record elapsed time and cost with their source. Only
+   `harness-monotonic` elapsed time and `harness-meter` or
+   `provider-billing-export` cost can enter a ranking. If either is
+   unavailable, record `null` with source `unavailable`; the technical result
+   remains reviewable but has no price or speed rank.
 
 ## Focused trial before the full benchmark
 

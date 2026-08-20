@@ -8,6 +8,17 @@ export type DevBenchRunOutcome = {
   commands: readonly { command: string; exitCode: number }[];
 };
 
+export type ElapsedMeasurementSource = "harness-monotonic" | "manual-timed" | "unavailable";
+export type CostMeasurementSource = "harness-meter" | "provider-billing-export" | "unavailable";
+
+export type DevBenchMeasurements = {
+  elapsedSeconds: number | null;
+  elapsedSource: ElapsedMeasurementSource;
+  costCents: number | null;
+  costSource: CostMeasurementSource;
+  humanInterventions: number;
+};
+
 export type DevBenchRun = {
   schemaVersion: 1;
   runId: string;
@@ -21,11 +32,7 @@ export type DevBenchRun = {
     contextMode: "sanitized-frozen-checkout";
     networkAccess: "none";
   };
-  measurements: {
-    elapsedSeconds: number;
-    costCents: number;
-    humanInterventions: number;
-  };
+  measurements: DevBenchMeasurements;
   outcomes: readonly DevBenchRunOutcome[];
   reviewerVerdict: "accepted" | "rejected";
 };
@@ -34,6 +41,10 @@ export type DevBenchRunReport = {
   ok: boolean;
   errors: string[];
   acceptedCaseCount: number;
+  measurementReadiness: {
+    elapsedComparable: boolean;
+    costComparable: boolean;
+  };
 };
 
 const FORBIDDEN_FIELD = /(?:prompt|output|secret|token|authorization|attachment|content)/i;
@@ -61,6 +72,13 @@ function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
+const ELAPSED_SOURCES = ["harness-monotonic", "manual-timed", "unavailable"] as const;
+const COST_SOURCES = ["harness-meter", "provider-billing-export", "unavailable"] as const;
+
+function emptyMeasurementReadiness() {
+  return { elapsedComparable: false, costComparable: false };
+}
+
 /**
  * Validates only evidence metadata. It intentionally cannot accept or retain
  * provider requests, responses, credentials or customer content.
@@ -73,7 +91,12 @@ export function validateDevBenchRun(
   const errors: string[] = [];
   scanForbiddenFields(value, errors);
   if (!isRecord(value)) {
-    return { ok: false, errors: ["run record must be an object"], acceptedCaseCount: 0 };
+    return {
+      ok: false,
+      errors: ["run record must be an object"],
+      acceptedCaseCount: 0,
+      measurementReadiness: emptyMeasurementReadiness(),
+    };
   }
 
   if (value.schemaVersion !== 1) errors.push("unsupported run schema version");
@@ -102,12 +125,45 @@ export function validateDevBenchRun(
   }
 
   const measurements = value.measurements;
+  let measurementReadiness = emptyMeasurementReadiness();
   if (!isRecord(measurements)) {
     errors.push("measurements are required");
   } else {
-    for (const key of ["elapsedSeconds", "costCents", "humanInterventions"] as const) {
-      if (!isNonNegativeInteger(measurements[key])) errors.push(`${key} must be a non-negative integer`);
+    const elapsedSource = measurements.elapsedSource;
+    const costSource = measurements.costSource;
+    if (!(ELAPSED_SOURCES as readonly unknown[]).includes(elapsedSource)) {
+      errors.push("elapsedSource is invalid");
     }
+    if (!(COST_SOURCES as readonly unknown[]).includes(costSource)) {
+      errors.push("costSource is invalid");
+    }
+
+    if (elapsedSource === "unavailable") {
+      if (measurements.elapsedSeconds !== null) {
+        errors.push("elapsedSeconds must be null when elapsedSource is unavailable");
+      }
+    } else if (!isNonNegativeInteger(measurements.elapsedSeconds)) {
+      errors.push("elapsedSeconds must be a non-negative integer");
+    }
+
+    if (costSource === "unavailable") {
+      if (measurements.costCents !== null) {
+        errors.push("costCents must be null when costSource is unavailable");
+      }
+    } else if (!isNonNegativeInteger(measurements.costCents)) {
+      errors.push("costCents must be a non-negative integer");
+    }
+
+    if (!isNonNegativeInteger(measurements.humanInterventions)) {
+      errors.push("humanInterventions must be a non-negative integer");
+    }
+
+    measurementReadiness = {
+      elapsedComparable: elapsedSource === "harness-monotonic" && isNonNegativeInteger(measurements.elapsedSeconds),
+      costComparable:
+        (costSource === "harness-meter" || costSource === "provider-billing-export") &&
+        isNonNegativeInteger(measurements.costCents),
+    };
   }
 
   const outcomes = value.outcomes;
@@ -183,7 +239,7 @@ export function validateDevBenchRun(
   }
   if (value.reviewerVerdict !== "accepted") errors.push("reviewerVerdict must be accepted");
 
-  return { ok: errors.length === 0, errors, acceptedCaseCount };
+  return { ok: errors.length === 0, errors, acceptedCaseCount, measurementReadiness };
 }
 
 /**

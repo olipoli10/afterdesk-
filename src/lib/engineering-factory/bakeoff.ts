@@ -2,6 +2,7 @@ import type { DevBenchCatalog } from "@/lib/engineering-factory/devbench";
 import {
   validateDevBenchRun,
   validateFocusedDevBenchRun,
+  type DevBenchRunReport,
   type DevBenchRun,
 } from "@/lib/engineering-factory/devbench-run";
 
@@ -110,6 +111,10 @@ export function packetsAreEquivalent(left: CandidatePacket, right: CandidatePack
  */
 export function scoreDevBenchRun(run: DevBenchRun, catalog: DevBenchCatalog): BakeoffScorecard {
   const report = validateDevBenchRun(run, catalog);
+  return scoreValidatedRun(run, report);
+}
+
+function scoreValidatedRun(run: DevBenchRun, report: DevBenchRunReport): BakeoffScorecard {
   if (!report.ok) {
     return {
       comparable: false,
@@ -122,14 +127,21 @@ export function scoreDevBenchRun(run: DevBenchRun, catalog: DevBenchCatalog): Ba
     };
   }
 
+  const blockers: string[] = [];
+  if (!report.measurementReadiness.elapsedComparable) blockers.push("elapsed measurement is unavailable");
+  if (!report.measurementReadiness.costComparable) blockers.push("cost measurement is unavailable");
+  const elapsedSeconds = report.measurementReadiness.elapsedComparable ? run.measurements.elapsedSeconds : null;
+  const costCents = report.measurementReadiness.costComparable ? run.measurements.costCents : null;
+
   return {
-    comparable: true,
-    blockers: [],
+    comparable: blockers.length === 0,
+    blockers,
     acceptedCases: report.acceptedCaseCount,
-    elapsedSeconds: run.measurements.elapsedSeconds,
-    costCents: run.measurements.costCents,
+    elapsedSeconds,
+    costCents,
     humanInterventions: run.measurements.humanInterventions,
-    costPerAcceptedCaseCents: run.measurements.costCents / report.acceptedCaseCount,
+    costPerAcceptedCaseCents:
+      costCents === null ? null : costCents / report.acceptedCaseCount,
   };
 }
 
@@ -140,25 +152,5 @@ export function scoreFocusedDevBenchRun(
   caseId: string
 ): BakeoffScorecard {
   const report = validateFocusedDevBenchRun(run, catalog, caseId);
-  if (!report.ok) {
-    return {
-      comparable: false,
-      blockers: report.errors,
-      acceptedCases: 0,
-      elapsedSeconds: null,
-      costCents: null,
-      humanInterventions: null,
-      costPerAcceptedCaseCents: null,
-    };
-  }
-
-  return {
-    comparable: true,
-    blockers: [],
-    acceptedCases: report.acceptedCaseCount,
-    elapsedSeconds: run.measurements.elapsedSeconds,
-    costCents: run.measurements.costCents,
-    humanInterventions: run.measurements.humanInterventions,
-    costPerAcceptedCaseCents: run.measurements.costCents / report.acceptedCaseCount,
-  };
+  return scoreValidatedRun(run, report);
 }

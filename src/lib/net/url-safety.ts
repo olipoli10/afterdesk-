@@ -159,6 +159,19 @@ export function unwrapEmbeddedIpv4(host: string): string | null {
   // 64:ff9b::/96 NAT64 carries an IPv4 in its last 32 bits.
   const nat64 = /^64:ff9b::(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(h);
   if (nat64) return nat64[1];
+  // Equivalent NAT64 spellings must share one address decision. Parse the
+  // groups structurally rather than matching only the compressed text.
+  const nat64Groups = expandIpv6(h);
+  if (
+    nat64Groups !== null &&
+    nat64Groups[0] === 0x0064 &&
+    nat64Groups[1] === 0xff9b &&
+    nat64Groups.slice(2, 6).every((group) => group === 0)
+  ) {
+    const hi = nat64Groups[6];
+    const lo = nat64Groups[7];
+    return [hi >> 8, hi & 0xff, lo >> 8, lo & 0xff].join(".");
+  }
   return null;
 }
 

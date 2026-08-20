@@ -116,6 +116,15 @@ describe("blocked addresses", () => {
     expect(isBlockedAddress("[::ffff:169.254.169.254]")).toBe(true);
   });
 
+  it("blocks the fully expanded NAT64 hexadecimal spelling of metadata", () => {
+    // A future pinned fetch applies the pure predicate to resolved addresses,
+    // not only to URL-normalized text. Equivalent IPv6 spellings must share
+    // the same decision.
+    const nat64Metadata = "64:ff9b:0:0:0:0:a9fe:a9fe";
+    expect(unwrapEmbeddedIpv4(nat64Metadata)).toBe("169.254.169.254");
+    expect(isBlockedAddress(nat64Metadata)).toBe(true);
+  });
+
   it("refuses anything it cannot positively classify as a public address", () => {
     // A guard that fails open is not a guard. A NAME is not an address.
     expect(isBlockedAddress("example.com")).toBe(true);

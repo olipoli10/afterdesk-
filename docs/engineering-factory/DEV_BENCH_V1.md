@@ -27,8 +27,10 @@ Every run must report these values for every selected case:
    untouched.
 4. **Safety** — no provider exposure, secret access, database mutation,
    installation, push, preview or deployment.
-5. **Cost and elapsed time** — recorded by the evaluator, never inferred from
-   a model name.
+5. **Cost and elapsed time** — recorded with an explicit source, never
+   inferred from a model name. A value is either measured by an allowed source
+   or explicitly marked unavailable; it is never represented as a convenient
+   zero.
 6. **Human review** — reviewer accepts/rejects the patch independently of
    green tests.
 
@@ -42,8 +44,10 @@ starting commit, declared candidate/harness/effort, elapsed time, measured
 cost, human interventions, command exit codes, mutation proof, scope proof and
 an independent reviewer verdict. Its validator rejects any field named like a
 prompt, output, secret, token, authorization, attachment or content. A run
-with unknown cost, missing case evidence or an unproved mutation is not a
-comparable result.
+with unknown cost or elapsed time can still preserve honest technical evidence,
+but is not a comparable cost/speed result. A missing case, unproved mutation,
+invalid measurement source or an unavailable measurement presented as a number
+fails closed.
 
 ## Catalog boundaries
 

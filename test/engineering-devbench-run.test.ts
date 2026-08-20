@@ -21,7 +21,9 @@ const VALID_RUN: DevBenchRun = {
   },
   measurements: {
     elapsedSeconds: 420,
+    elapsedSource: "harness-monotonic",
     costCents: 73,
+    costSource: "harness-meter",
     humanInterventions: 0,
   },
   outcomes: DEV_BENCH_V1.cases.map((benchCase) => ({
@@ -50,6 +52,42 @@ describe("Engineering Factory DevBench run evidence", () => {
 
     expect(report.ok).toBe(false);
     expect(report.errors).toContain("costCents must be a non-negative integer");
+  });
+
+  it("accepts explicitly unavailable cost without making it comparable", () => {
+    const report = validateDevBenchRun(
+      {
+        ...VALID_RUN,
+        measurements: {
+          ...VALID_RUN.measurements,
+          elapsedSource: "harness-monotonic",
+          costCents: null,
+          costSource: "unavailable",
+        },
+      },
+      DEV_BENCH_V1
+    );
+
+    expect(report.ok, report.errors.join("\n")).toBe(true);
+    expect(report.measurementReadiness).toEqual({ elapsedComparable: true, costComparable: false });
+  });
+
+  it("mutation run-unavailable-cost-with-number is caught", () => {
+    const report = validateDevBenchRun(
+      {
+        ...VALID_RUN,
+        measurements: {
+          ...VALID_RUN.measurements,
+          elapsedSource: "harness-monotonic",
+          costCents: 0,
+          costSource: "unavailable",
+        },
+      },
+      DEV_BENCH_V1
+    );
+
+    expect(report.ok).toBe(false);
+    expect(report.errors).toContain("costCents must be null when costSource is unavailable");
   });
 
   it("mutation run-unproven-mutation is caught", () => {
