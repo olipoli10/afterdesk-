@@ -2,8 +2,10 @@
 
 ## Status
 
-**LOCAL ONLY — benchmark-definition foundation.** This is not a model routing
-change, provider adoption, production feature or claim of coding-agent quality.
+**LOCAL ONLY — technical catalog complete; adoption evidence incomplete.**
+This is not a model routing change, provider adoption, production feature or
+claim of coding-agent quality. The eight focused case reviews are summarized in
+`DEV_BENCH_V1_CLOSEOUT.md`.
 
 ## Decision it supports
 
@@ -62,7 +64,12 @@ fails closed.
 
 ## Next decision gate
 
-Run two candidates against a frozen copy of this catalog. Keep the same task
-brief, allowed tools, starting commit and maximum reviewer intervention. Adopt
-nothing unless both runs are reproducible and the winning configuration has a
-clear advantage in accepted-result cost, not just a higher raw test count.
+The focused EF-001 through EF-008 series is technically complete, with three
+Codex wins, three Claude wins and two ties. That count does not select a model.
+Before any adoption decision, build and mutation-prove the measured-run harness
+described in `DEV_BENCH_V1_CLOSEOUT.md`, then run unchanged candidate
+configurations through equivalent frozen packets. Keep the same task brief,
+allowed tools and reviewer-intervention rule. Adopt nothing unless both runs
+are reproducible and the winning configuration has a clear advantage in
+accepted-result cost from a supported measurement source, not just a higher raw
+test count.

@@ -61,6 +61,11 @@
   compiling an inverted CSV/XLSX pairing. Its comments are more verbose than
   the narrow change requires. No candidate was merged or adopted, and no cost
   or elapsed ranking exists.
+- Closed DevBench v1 after reconciling all eight reviews and freshly replaying
+  the full suite on all 16 admissible candidate commits. The technical record
+  is Codex 3 wins, Claude 3 wins and 2 ties. This is explicitly a no-adoption
+  result because exact stable configurations, intervention counts and
+  supported cost/time measurements were not persisted.
 
 ## Green evidence
 
@@ -70,6 +75,10 @@
 - Full suite — 58 files / 1,216 tests.
 - Lint and TypeScript — pass.
 - `git diff --check` — pass.
+- Closeout replay — all 16 admissible candidate full suites pass; every direct
+  parent and lockfile matches its frozen seed; all 16 reviewed worktrees are
+  clean. Counts range from 1,209 to 1,219 because the repository evolved across
+  focused cases.
 
 ## Build boundary
 
@@ -89,11 +98,11 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The eight-case DevBench v1 catalog is now technically complete. The Control
-Tower should not invent EF-009 inside V1. It should run a local closeout that
-reconciles EF-001 through EF-008, verifies every review against its frozen
-seed, distinguishes technical case wins from unsupported cost/speed claims,
-and decides whether the evidence supports a candidate configuration for a
-separate adoption trial. No merge, provider adoption or rollout is authorized
-by that closeout. If a V2 catalog is needed, its new families and measurement
-contract must be proposed and reviewed separately before another candidate run.
+The eight-case DevBench v1 closeout is complete. The Control Tower should not
+invent EF-009 inside V1 and should not adopt either candidate from the 3-3-2
+technical record. The next local block is the measured-run harness: persist the
+exact candidate configuration, monotonic elapsed time, meter-backed or honestly
+unavailable cost, intervention count and all eight outcomes in the existing
+fail-closed envelope. Mutation-prove that missing or unsupported measurements
+cannot produce a ranking. No merge, provider adoption or rollout is authorized
+by that work. A V2 catalog remains a separate future decision.
