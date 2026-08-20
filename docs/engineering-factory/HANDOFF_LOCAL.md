@@ -71,6 +71,11 @@
   intervention count in the existing privacy-validated envelope. Evidence is
   create-only and SHA-256 checked in the local `.scratch` directory; it does
   not call providers, create a process boundary or authorize a trial.
+- Added the measured-trial plan gate: exactly two approved candidate
+  configurations run in A→B then B→A order, with equal packet fingerprint and
+  a per-slot check that rejects commit/configuration/cost-source drift before
+  ranking. It is local preparation only; no candidate configuration, meter or
+  actual provider trial is stored in the repository.
 
 ## Green evidence
 
@@ -107,6 +112,8 @@ The eight-case DevBench v1 closeout is complete. The Control Tower should not
 invent EF-009 inside V1 and should not adopt either candidate from the 3-3-2
 technical record. The measured-run harness is now local and must be exercised
 only after a reviewer supplies two approved, identical candidate configurations
-and a supported metering source. Until then, no merge, provider adoption,
-rollout or model-selection claim is authorized. A V2 catalog remains a
-separate future decision.
+and a supported metering source. The counterbalanced four-slot trial protocol
+now refuses configuration or packet drift before ranking. Until an evaluator
+actually executes that protocol, no merge, provider adoption, rollout or
+model-selection claim is authorized. A V2 catalog remains a separate future
+decision.

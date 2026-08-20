@@ -71,6 +71,11 @@ The local measured-run harness now exists and is documented in
 monotonic elapsed time, cost source, intervention count and create-only local
 evidence. It has not run a candidate or authorized an adoption.
 
+`MEASURED_TRIAL_PROTOCOL_V1.md` now adds the executable comparison gate: two
+approved configurations, four counterbalanced slots, equal packet fingerprint,
+one intervention rule and a run-to-plan match before scorecard ranking. The
+protocol also has no candidate configuration or provider trial recorded yet.
+
 Before any adoption decision, run unchanged approved candidate configurations
 through equivalent frozen packets. Keep the same task brief, allowed tools and
 reviewer-intervention rule. Adopt nothing unless both runs are reproducible and
