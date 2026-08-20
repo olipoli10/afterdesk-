@@ -124,6 +124,41 @@ describe("ENDVERA public narrative", () => {
     expect(engine).toMatch(/if \(next === "hero"\)[\s\S]*removeProperty\("--a2-stop-x"\)[\s\S]*removeProperty\("--a2-stop-y"\)/);
   });
 
+  it("routes managed-run power through its frame only on mobile", () => {
+    const engine = read(ENGINE);
+    const mobileAt = engine.indexOf("@media (max-width: 639px)");
+    const reducedAt = engine.indexOf("@media (prefers-reduced-motion: reduce)");
+    expect(mobileAt).toBeGreaterThan(0);
+    expect(reducedAt).toBeGreaterThan(mobileAt);
+    const desktopRules = engine.slice(0, mobileAt);
+    const mobileRules = engine.slice(mobileAt, reducedAt);
+    const reducedRules = engine.slice(reducedAt);
+
+    expect((engine.match(/data-managed-run-frame-current=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-managed-run-frame-bed=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-managed-run-frame-flow=/g) ?? []).length).toBe(1);
+    expect(desktopRules).toMatch(/\[data-managed-run-frame-current\][^{]*\{[^}]*display:\s*none/);
+    expect(desktopRules).not.toMatch(/\[data-managed-run-channel\][^{]*\{[^}]*display:\s*none/);
+    expect(mobileRules).toMatch(/\[data-managed-run-channel\][^{]*\{[^}]*display:\s*none/);
+    expect(mobileRules).toMatch(/\[data-managed-run-frame-current\][^{]*\{[^}]*display:\s*block/);
+    expect(engine).toMatch(/@keyframes\s+v7frameflow/);
+    expect(reducedRules).toMatch(/\[data-managed-run-frame-flow\][^{]*\{[^}]*animation:\s*none/);
+  });
+
+  it("removes only the founder-marked engine summaries from mobile layout", () => {
+    const engine = read(ENGINE);
+    const mobileAt = engine.indexOf("@media (max-width: 639px)");
+    const reducedAt = engine.indexOf("@media (prefers-reduced-motion: reduce)");
+    const desktopRules = engine.slice(0, mobileAt);
+    const mobileRules = engine.slice(mobileAt, reducedAt);
+
+    for (const marker of ["data-engine-boundary", "data-engine-result", "data-engine-standard"]) {
+      expect((engine.match(new RegExp(`${marker}=`, "g")) ?? []).length, marker).toBe(1);
+      expect(mobileRules, marker).toMatch(new RegExp(`\\[${marker}\\][^{]*\\{[^}]*display:\\s*none`));
+      expect(desktopRules, marker).not.toMatch(new RegExp(`\\[${marker}\\][^{]*\\{[^}]*display:\\s*none`));
+    }
+  });
+
   it("routes one powered vein through the managed run and the actual heart", () => {
     const engine = read(ENGINE);
     expect((engine.match(/data-primary-vein=/g) ?? []).length).toBe(1);

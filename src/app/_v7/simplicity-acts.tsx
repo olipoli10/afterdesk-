@@ -284,6 +284,30 @@ export function SimplicityActs({ copy, concierge, children }: {
         [data-managed-run] {
           animation: v7managedpulse 4.6s ease-in-out infinite;
         }
+        [data-managed-run-frame-current] {
+          display: none;
+          position: absolute;
+          inset: -1px;
+          z-index: 2;
+          width: calc(100% + 2px);
+          height: calc(100% + 2px);
+          overflow: visible;
+          pointer-events: none;
+        }
+        [data-managed-run-frame-bed] {
+          fill: none;
+          stroke: rgba(111, 76, 41, .72);
+          stroke-width: 1.5;
+        }
+        [data-managed-run-frame-flow] {
+          fill: none;
+          stroke: url(#v7-managed-frame-gradient);
+          stroke-width: 2.25;
+          stroke-linecap: round;
+          stroke-dasharray: .08 .92;
+          filter: drop-shadow(0 0 4px rgba(240,161,74,.95));
+          animation: v7frameflow 2.8s linear infinite;
+        }
         [data-managed-run-channel], [data-heart-throughput] {
           background: linear-gradient(180deg, rgba(111,76,41,.25), #FFD28E 42%, #D87526 58%, rgba(111,76,41,.25));
           box-shadow: 0 0 14px rgba(240,161,74,.52);
@@ -348,6 +372,7 @@ export function SimplicityActs({ copy, concierge, children }: {
           0%, 100% { opacity: .46; filter: brightness(.8); }
           50% { opacity: 1; filter: brightness(1.35); }
         }
+        @keyframes v7frameflow { to { stroke-dashoffset: -1; } }
         @media (max-width: 639px) {
           [data-site-header] + main [data-act="1"] {
             min-height: 0;
@@ -403,10 +428,14 @@ export function SimplicityActs({ copy, concierge, children }: {
             padding-top: 0;
           }
           [data-mobile-fragment-stack] { display: none; }
+          [data-managed-run-channel] { display: none; }
+          [data-managed-run-frame-current] { display: block; }
+          [data-engine-boundary], [data-engine-result], [data-engine-standard] { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {
           [data-primary-vein-current] { animation: none; stroke-dasharray: .14 .86; }
           [data-managed-run], [data-managed-run-channel], [data-heart-throughput] { animation: none; }
+          [data-managed-run-frame-flow] { animation: none; stroke-dasharray: .16 .84; }
           [data-core-heart] { animation: none; filter: brightness(1.08); }
         }
       `}</style>
@@ -515,6 +544,18 @@ export function SimplicityActs({ copy, concierge, children }: {
             data-managed-run-intake=""
             className="absolute left-1/2 top-[-9px] z-[4] h-[18px] w-[18px] -translate-x-1/2 rotate-45 rounded-[3px] border border-[#D87526] bg-[#17110A]"
           />
+          <svg aria-hidden focusable="false" data-managed-run-frame-current="" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="v7-managed-frame-gradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#6F4C29" />
+                <stop offset=".48" stopColor="#F0A14A" />
+                <stop offset=".62" stopColor="#FFD28E" />
+                <stop offset="1" stopColor="#D87526" />
+              </linearGradient>
+            </defs>
+            <rect data-managed-run-frame-bed="" x="1" y="1" width="98" height="98" rx="2.4" pathLength="1" vectorEffect="non-scaling-stroke" />
+            <path data-managed-run-frame-flow="" d="M 50 1 H 96 Q 99 1 99 4 V 96 Q 99 99 96 99 H 50" pathLength="1" vectorEffect="non-scaling-stroke" />
+          </svg>
           <span aria-hidden data-managed-run-channel="" className="absolute bottom-0 left-1/2 top-0 z-0 w-[2px] -translate-x-1/2 opacity-70" />
           <span
             aria-hidden
