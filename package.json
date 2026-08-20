@@ -15,6 +15,7 @@
     "devbench:bakeoff:validate": "tsx scripts/validate-engineering-bakeoff.ts",
     "devbench:trial:preflight": "tsx scripts/preflight-engineering-measured-trial.ts",
     "devbench:dry-run:preflight": "tsx scripts/preflight-engineering-dry-run-trial.ts",
+    "devbench:dry-run:rehearse": "tsx scripts/rehearse-engineering-dry-run.ts",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
