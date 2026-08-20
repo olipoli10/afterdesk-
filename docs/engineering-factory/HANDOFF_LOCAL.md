@@ -5,6 +5,9 @@
 - Added a vendor-neutral catalog of eight representative, locally verifiable
   engineering task families.
 - Added a fail-closed catalog validator and `npm run devbench:validate`.
+- Added a fail-closed `DevBenchRun` evidence envelope that makes cost,
+  mutation, command and reviewer evidence mandatory while rejecting sensitive
+  field names by construction.
 - Added six tests, including four named in-memory mutations:
   `catalog-duplicate-id`, `catalog-destructive-command`,
   `catalog-missing-source-evidence`, and `catalog-provider-exposure`.

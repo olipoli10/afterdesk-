@@ -35,6 +35,16 @@ Every run must report these values for every selected case:
 No aggregate score can hide a safety, scope or mutation failure. Those are
 fail-closed gates.
 
+## Run-record rule
+
+`DevBenchRun` is a typed, fail-closed result envelope. It records a frozen
+starting commit, declared candidate/harness/effort, elapsed time, measured
+cost, human interventions, command exit codes, mutation proof, scope proof and
+an independent reviewer verdict. Its validator rejects any field named like a
+prompt, output, secret, token, authorization, attachment or content. A run
+with unknown cost, missing case evidence or an unproved mutation is not a
+comparable result.
+
 ## Catalog boundaries
 
 - Eight cases cover deterministic logic, contract drift, SSRF resistance,
