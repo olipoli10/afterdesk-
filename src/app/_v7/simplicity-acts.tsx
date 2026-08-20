@@ -641,10 +641,10 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
     };
   }, [reduced]);
 
-  const mono = "font-mono text-[11px] uppercase tracking-[0.16em]";
+  const mono = "font-mono text-[12px] uppercase tracking-[0.14em]";
 
   return (
-    <div ref={rootRef} data-v7-acts="" className="relative bg-[#08090B] text-[#F7F6F3]">
+    <div ref={rootRef} data-v7-acts="" className="relative overflow-x-clip bg-[#08090B] text-[#F7F6F3]">
       {/* while the being escorts the slip, its launcher hail stays silent -
           the affordance belongs to the resting dock, not to the story.
           P8.1: during the story the being doubles (integer scale, feet
@@ -703,15 +703,15 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           Native sticky only - the finger is never intercepted, there is no
           snap and no automatic advance. Desktop (sm:) keeps the accepted
           compact rhythm, and every engine anchor stays in normal flow. */}
-      <section data-act="1" data-v7-sem="what" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.15)] sm:min-h-[82vh] sm:justify-center sm:pt-24">
-        <h1 className="sticky top-[10vh] z-10 max-w-[15ch] text-[clamp(2.5rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.04em] sm:static">
+      <section data-act="1" data-v7-sem="what" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*0.82)] w-full max-w-[1180px] box-border flex-col px-5 pt-[calc(var(--v7vh,100vh)*0.15)] sm:min-h-[82vh] sm:justify-center sm:px-6 sm:pt-24">
+        <h1 className="sticky top-[10vh] z-10 max-w-[17ch] text-[clamp(2.25rem,6vw,4.4rem)] font-semibold leading-[1.02] tracking-[-0.04em] sm:static">
           {copy.act1.h}
         </h1>
         {/* the composition fills its plateau: the pinned heading always has
             one of its OWN elements beside it, at every settle */}
-        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.08)] pt-[calc(var(--v7vh,100vh)*0.04)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
+        <div className="flex flex-col gap-5 pb-[calc(var(--v7vh,100vh)*0.05)] pt-[calc(var(--v7vh,100vh)*0.035)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
         <p className="max-w-[44ch] text-[clamp(1.05rem,1.6vw,1.25rem)] leading-[1.6] text-[#9AA1AB] sm:mt-5">{copy.act1.sub}</p>
-        <div className="flex w-full max-w-[520px] items-center gap-3 rounded-lg border border-white/15 bg-[#171A20] px-4 py-3.5 sm:mt-8">
+        <div className="flex w-full max-w-[520px] box-border items-center gap-3 rounded-lg border border-white/15 bg-[#171A20] px-4 py-3.5 sm:mt-8">
           <span aria-hidden className="text-[#C9A76A]">▍</span>
           <input
             value={typed}
@@ -722,14 +722,14 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
           />
           <span data-v7-anchor="request" className="h-px w-px" />
         </div>
-        <p className="font-mono text-[10.5px] text-[#78808B] sm:mt-3">{copy.act1.note}</p>
+        <p className="font-mono text-[12px] leading-[1.5] text-[#9AA1AB] sm:mt-3">{copy.act1.note}</p>
         {reduced && <StaticArtifact state="request" className="mt-4" />}
         </div>
       </section>
 
       {/* ── ACT 2 — the gauntlet, child-simple, bounded grid ─────────── */}
-      <section data-act="2" data-v7-sem="problem" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:block sm:min-h-0 sm:py-[7vh]">
-        <h2 className="sticky top-[10vh] z-10 max-w-[20ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] sm:static sm:max-w-[22ch]">
+      <section data-act="2" data-v7-sem="problem" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] box-border flex-col px-5 pt-[calc(var(--v7vh,100vh)*0.13)] sm:block sm:min-h-0 sm:px-6 sm:py-[7vh]">
+        <h2 className="sticky top-[10vh] z-10 max-w-[15ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] sm:static sm:max-w-[22ch]">
           {copy.act2.h}
         </h2>
         {/* the slip hovers above the gauntlet - contained flex-wrap, no
@@ -762,8 +762,8 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         </div>
       </section>
 
-      {/* ── SOLUTION — AfterDesk takes the request ───────────────────── */}
-      <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.13)] sm:min-h-0 sm:justify-start sm:py-[9vh]">
+      {/* ── SOLUTION — ENDVERA coordinates the request ───────────────── */}
+      <section data-act="2b" data-v7-sem="solution" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] box-border flex-col px-5 pt-[calc(var(--v7vh,100vh)*0.13)] sm:min-h-0 sm:justify-start sm:px-6 sm:py-[9vh]">
         <h2 className="sticky top-[10vh] z-10 max-w-[14ch] text-[clamp(1.5rem,3.2vw,2.3rem)] font-semibold leading-[1.16] tracking-[-0.03em] sm:static sm:max-w-[24ch]">
           {copy.solution.h}
         </h2>
@@ -787,7 +787,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
         {/* the HOW plateau: its heading stays with its own stations for the
             whole act, exactly like the other mobile plateaus */}
         <div data-v7-stage="" className={reduced ? "" : "sticky top-0 flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-center sm:min-h-screen"}>
-          <div className={`mx-auto w-full max-w-[1180px] px-6 ${reduced ? "py-[6vh]" : "flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-between pb-[8vh] pt-[8vh] sm:min-h-screen sm:pb-[10vh] sm:pt-[10vh]"}`}>
+          <div className={`mx-auto w-full max-w-[1180px] box-border px-5 sm:px-6 ${reduced ? "py-[6vh]" : "flex min-h-[calc(var(--v7vh,100vh)*0.88)] flex-col justify-between pb-[8vh] pt-[8vh] sm:min-h-screen sm:pb-[10vh] sm:pt-[10vh]"}`}>
             <h2 className="max-w-[14ch] text-[clamp(1.15rem,3vw,2.1rem)] font-semibold leading-[1.2] tracking-[-0.03em] sm:max-w-[72%]">
               {copy.act3.h}
             </h2>
@@ -809,7 +809,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
                   <p className={`${mono} text-[#E2C486]`} style={reduced ? undefined : { opacity: `calc(0.45 + 0.55 * clamp(0, calc((var(--walk, 0) - ${i * 0.25}) * 8), 1))` }}>
                     {s.name}
                   </p>
-                  <p className="mt-1.5 font-mono text-[10.5px] leading-[1.5] text-[#78808B]">{s.truth}</p>
+                  <p className="mt-1.5 font-mono text-[12px] leading-[1.5] text-[#9AA1AB]">{s.truth}</p>
                 </div>
               ))}
             </div>
@@ -818,7 +818,7 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
       </section>
 
       {/* ── ACT 4 — the sealed result, ONYX (no paper hard-cut) ──────── */}
-      <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] flex-col px-6 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[80vh] sm:justify-center sm:pb-16 sm:pt-0">
+      <section data-act="4" data-v7-sem="example-intro" className="relative mx-auto flex min-h-[calc(var(--v7vh,100vh)*1.26)] w-full max-w-[1180px] box-border flex-col px-5 pt-[calc(var(--v7vh,100vh)*0.02)] sm:min-h-[80vh] sm:justify-center sm:px-6 sm:pb-16 sm:pt-0">
         <h2 className="sticky top-[10vh] z-10 max-w-[14ch] text-[clamp(1.4rem,3vw,2.1rem)] font-semibold leading-[1.18] tracking-[-0.03em] sm:static sm:max-w-[26ch]">
           {copy.act4.h}
         </h2>
@@ -826,13 +826,13 @@ export function SimplicityActs({ copy, concierge }: { copy: V7ActsCopy; concierg
             onyx - the world stays night, the deliverable glows. The walk
             seals INTO this card: --seal reveals it as the story completes
             (default 1 so no-JS and reduced readers always see it). */}
-        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.04)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
+        <div className="flex flex-1 flex-col justify-between pb-[calc(var(--v7vh,100vh)*0.06)] pt-[calc(var(--v7vh,100vh)*0.10)] sm:block sm:flex-none sm:pb-0 sm:pt-0">
         <div className="flex flex-wrap items-center gap-6 sm:mt-10">
           <div
             className="relative max-w-[300px] rounded-md border border-[#C9A76A] bg-[#F7F6F3] p-5 text-[#14161A] shadow-[0_0_40px_rgba(201,167,106,0.12)]"
             style={reduced ? undefined : { opacity: "calc(1 - 0.85 * (1 - var(--seal, 1)))" }}
           >
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6b5d3f]">AfterDesk · result</p>
+            <p className="font-mono text-[12px] uppercase tracking-[0.12em] text-[#6b5d3f]">ENDVERA · documented result</p>
             <p className="mt-2 text-[15px] font-semibold leading-[1.4]">✓ {copy.act4.chips[3]}</p>
             <span data-v7-anchor="result" className="absolute right-4 top-4 h-px w-px" />
             {reduced && <StaticArtifact state="checked" className="mt-3" />}

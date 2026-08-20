@@ -75,10 +75,10 @@ type PageKey = "services" | "how" | "inside" | "about" | "workers";
 /* per-page opening QUESTIONS - UI labels, not claims */
 const PAGE_QUESTION: Record<PageKey, Record<SiteLang, string>> = {
   services: {
-    en: "What can AfterDesk take on?",
-    fr: "Que peut prendre AfterDesk?",
-    es: "¿Qué puede tomar AfterDesk?",
-    tl: "Ano ang kayang gawin ng AfterDesk?",
+    en: "What can ENDVERA take on?",
+    fr: "Que peut prendre ENDVERA?",
+    es: "¿Qué puede tomar ENDVERA?",
+    tl: "Ano ang kayang gawin ng ENDVERA?",
   },
   how: {
     en: "How does the fixed price work?",
@@ -121,26 +121,26 @@ export const CONCIERGE_SOURCES: Record<PageKey, { route: string; dict: string; e
 export function composeVerified(page: PageKey, lang: SiteLang): { a: string; cite: string; href: string } {
   if (page === "services") {
     const d = SERVICES_I18N[lang];
-    return { a: d.intro, cite: `afterdesk.co/services · ${d.eyebrow}`, href: "/services" };
+    return { a: d.intro, cite: `endvera.com/services · ${d.eyebrow}`, href: "/services" };
   }
   if (page === "how") {
     const d = INSIDE_I18N[lang];
-    return { a: d.model.items[1][1], cite: `afterdesk.co/inside · ${d.model.h2}`, href: "/inside" };
+    return { a: d.model.items[1][1], cite: `endvera.com/inside · ${d.model.h2}`, href: "/inside" };
   }
   if (page === "inside") {
     const d = INSIDE_I18N[lang];
     return {
       a: d.registry.available.items.map(([claim]) => claim).join(". ") + ".",
-      cite: `afterdesk.co/inside · ${d.registry.h2}`,
+      cite: `endvera.com/inside · ${d.registry.h2}`,
       href: "/inside",
     };
   }
   if (page === "about") {
     const d = ABOUT_I18N[lang];
-    return { a: d.solutionLede, cite: `afterdesk.co/about · ${d.solutionHead}`, href: "/about" };
+    return { a: d.solutionLede, cite: `endvera.com/about · ${d.solutionHead}`, href: "/about" };
   }
   const d = WORKERS_I18N[lang];
-  return { a: `${d.hero.h1} ${d.hero.sub}`, cite: `afterdesk.co/workers · ${d.ch03.label}`, href: "/workers" };
+  return { a: `${d.hero.h1} ${d.hero.sub}`, cite: `endvera.com/workers · ${d.ch03.label}`, href: "/workers" };
 }
 
 export function pageConcierge(page: PageKey, lang: SiteLang): ConciergeCopy {

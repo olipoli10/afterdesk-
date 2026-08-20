@@ -1,10 +1,10 @@
 /* Phase 1.4B.6 guards - written RED against 8ef3953.
    Codex's final release review confirmed two visible defects in the shipped
-   Preview: (1) HOME_META titles already end in "| AfterDesk" and the root
-   layout template appends "· AfterDesk", so the rendered title carries the
+   Preview: (1) HOME_META titles already carry the brand and the root layout
+   template appends it, so the rendered title can carry the brand
    brand twice; (2) page.tsx renders an absolute utility header with an
-   AfterDesk link while AssemblyExperience renders its own absolute nav and
-   AfterDesk mark in the same top-left region - two overlapping wordmarks,
+   wordmark while AssemblyExperience renders its own absolute nav and mark
+   in the same top-left region - two overlapping wordmarks,
    conspicuous at 390px/360px.
 
    The physical non-overlap proof (pairwise rects at 1440/390/360/200% in all
@@ -24,7 +24,7 @@ const layout = () => read("src/app/layout.tsx");
 const assembly = () => read("src/app/_home/assembly-experience.tsx");
 
 /* Reproduce Next's title resolution for this page: layout declares a
-   `template: "%s · AfterDesk"`; a page title given as a plain string goes
+   `template: "%s · ENDVERA"`; a page title given as a plain string goes
    through it, a `title: { absolute: ... }` skips it. */
 function finalTitleFor(pageTitle: string): string {
   const src = layout();
@@ -43,16 +43,16 @@ function homeMetaTitles(): string[] {
 }
 
 describe("H1 - the final rendered title carries the brand exactly once", () => {
-  it("every language's resolved <title> contains exactly one 'AfterDesk'", () => {
+  it("every language's resolved <title> contains exactly one 'ENDVERA'", () => {
     for (const t of homeMetaTitles()) {
       const rendered = finalTitleFor(t);
-      const count = (rendered.match(/AfterDesk/g) ?? []).length;
+      const count = (rendered.match(/ENDVERA/g) ?? []).length;
       expect(count, `rendered title: ${JSON.stringify(rendered)}`).toBe(1);
     }
   });
   it("the approved positioning text itself is preserved untouched", () => {
     const [en] = homeMetaTitles();
-    expect(en).toBe("One request in. One verified result out. | AfterDesk");
+    expect(en).toBe("One request in. One verified result out. | ENDVERA");
   });
 });
 
@@ -62,17 +62,17 @@ describe("H2 - exactly one visible header wordmark, and it is a real link", () =
        from the first viewport, so page.tsx owns the single header and the
        V5.5 machine renders in continuation mode (its nav is conditional
        and off). The single-wordmark contract is unchanged and proven at
-       runtime by v7-guard-rig (exactly one visible AfterDesk text node). */
+       runtime by the narrow-screen capture matrix. */
     const s = page();
     expect(s.match(/<header/g) ?? [], "exactly one page header").toHaveLength(1);
-    expect(s.match(/>\s*AfterDesk\s*</g) ?? [], "exactly one wordmark text node").toHaveLength(1);
+    expect(s.match(/<Wordmark\b/g) ?? [], "exactly one wordmark component").toHaveLength(1);
     expect(s).toMatch(/<AssemblyExperience[^>]*continuation/);
   });
   it("the assembly nav's mark is the single wordmark and links home", () => {
     const s = assembly();
     const markUses = s.match(/styles\.mark/g) ?? [];
     expect(markUses).toHaveLength(1);
-    expect(s).toMatch(/<Link\s+href="\/"\s+className=\{styles\.mark\}>\s*AfterDesk\s*<\/Link>/);
+    expect(s).toMatch(/<Link\s+href="\/"[^>]*className=\{styles\.mark\}>\s*<Wordmark\s+tone="paper"\s*\/>\s*<\/Link>/);
     expect(s).not.toMatch(/<span[^>]*className=\{styles\.mark\}/);
   });
 });

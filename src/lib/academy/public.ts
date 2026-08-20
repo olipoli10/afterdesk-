@@ -170,25 +170,30 @@ export type PublicLesson = {
 
 export type PublicCourseFull = PublicCourse & { lessons: PublicLesson[] };
 
+// The curriculum is shared with the protected worker portal, where the
+// historical name remains out of this lane. Brand only the explicit public
+// projection so the public Academy cannot reintroduce AfterDesk.
+const publicBrand = (text: string) => text.replaceAll("AfterDesk", "ENDVERA");
+
 export function publicCourseFull(slug: string): PublicCourseFull | null {
   if (!isPublished(slug)) return null;
   const c = allCourses().find((x) => x.slug === slug);
   if (!c) return null;
   return {
     slug: c.slug,
-    title: c.title,
+    title: publicBrand(c.title),
     track: c.track,
-    tagline: c.tagline,
-    summary: c.summary,
+    tagline: publicBrand(c.tagline),
+    summary: publicBrand(c.summary),
     lessonCount: c.lessons.length,
     minutes: courseMinutes(c),
-    lessonTitles: c.lessons.map((l) => l.title),
-    outcomes: c.outcomes,
+    lessonTitles: c.lessons.map((l) => publicBrand(l.title)),
+    outcomes: c.outcomes.map(publicBrand),
     lessons: c.lessons.map((l) => ({
-      title: l.title,
+      title: publicBrand(l.title),
       minutes: l.minutes,
-      sections: l.sections.map((s) => ({ heading: s.heading, body: s.body })),
-      keyPoints: l.keyPoints,
+      sections: l.sections.map((s) => ({ heading: publicBrand(s.heading), body: publicBrand(s.body) })),
+      keyPoints: l.keyPoints.map(publicBrand),
     })),
   };
 }
@@ -206,14 +211,14 @@ export type AcademyStats = {
 export function publicCourses(): PublicCourse[] {
   return allCourses().map((c) => ({
     slug: c.slug,
-    title: c.title,
+    title: publicBrand(c.title),
     track: c.track,
-    tagline: c.tagline,
-    summary: c.summary,
+    tagline: publicBrand(c.tagline),
+    summary: publicBrand(c.summary),
     lessonCount: c.lessons.length,
     minutes: courseMinutes(c),
-    lessonTitles: c.lessons.map((l) => l.title),
-    outcomes: c.outcomes,
+    lessonTitles: c.lessons.map((l) => publicBrand(l.title)),
+    outcomes: c.outcomes.map(publicBrand),
   }));
 }
 
@@ -254,11 +259,11 @@ export function publicSampleQuestion(): PublicSample | null {
   const q = course?.exam.questions[SAMPLE.index];
   if (!course || !q) return null;
   return {
-    courseTitle: course.title,
-    prompt: q.prompt,
-    options: q.options,
+    courseTitle: publicBrand(course.title),
+    prompt: publicBrand(q.prompt),
+    options: q.options.map(publicBrand),
     correct: q.correct,
-    explain: q.explain,
+    explain: publicBrand(q.explain),
   };
 }
 

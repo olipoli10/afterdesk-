@@ -11,6 +11,7 @@ import {
   conceptAssemblyLangOf,
   HOME_CONCIERGE_I18N,
 } from "@/lib/i18n/home-assembly";
+import { Wordmark } from "@/components/logo";
 import { AssemblyExperience } from "./_home/assembly-experience";
 import { SimplicityActs } from "@/app/_v7/simplicity-acts";
 import { V7_ACTS_I18N } from "@/lib/i18n/v7-acts";
@@ -18,7 +19,7 @@ import { V7_ACTS_I18N } from "@/lib/i18n/v7-acts";
 /* ---------------------------------------------------------------------------
    The real homepage IS the accepted V5.5 "Assembly Lock" experience
    (Codex GO 9.2/10), ported faithfully from the frozen prototype, plus the
-   single A2 concierge (Phase 1.4B). One request enters; AfterDesk assembles
+   single A2 concierge (Phase 1.4B). One request enters; ENDVERA coordinates
    software, models, connected tools, a browser and bounded human judgment;
    problems are recovered; the result is checked; a finished result leaves.
 
@@ -32,24 +33,24 @@ import { V7_ACTS_I18N } from "@/lib/i18n/v7-acts";
 
 const HOME_META: Record<SiteLang, { title: string; description: string }> = {
   en: {
-    title: "One request in. One verified result out. | AfterDesk",
+    title: "One request in. One verified result out. | ENDVERA",
     description:
-      "Describe the result you need. AfterDesk assembles software, models, connected tools, browser work and bounded human review, then delivers one checked result at an approved fixed price.",
+      "Give ENDVERA a bounded workflow. AI, software, browser work, authorized systems and human judgment are coordinated; a person verifies the finished, documented result.",
   },
   fr: {
-    title: "Une demande entre. Un résultat vérifié ressort. | AfterDesk",
+    title: "Une demande entre. Un résultat vérifié ressort. | ENDVERA",
     description:
-      "Décrivez le résultat qu'il vous faut. AfterDesk assemble logiciels, modèles, outils connectés, travail navigateur et révision humaine bornée, puis livre un résultat vérifié à un prix fixe approuvé.",
+      "Confiez un workflow borné à ENDVERA. IA, logiciels, travail navigateur, systèmes autorisés et jugement humain sont coordonnés; une personne vérifie le résultat fini et documenté.",
   },
   es: {
-    title: "Entra una solicitud. Sale un resultado verificado. | AfterDesk",
+    title: "Entra una solicitud. Sale un resultado verificado. | ENDVERA",
     description:
-      "Describa el resultado que necesita. AfterDesk ensambla software, modelos, herramientas conectadas, trabajo de navegador y revisión humana acotada, y entrega un resultado verificado a un precio fijo aprobado.",
+      "Entregue a ENDVERA un flujo de trabajo acotado. Se coordinan IA, software, navegador, sistemas autorizados y criterio humano; una persona verifica el resultado terminado y documentado.",
   },
   tl: {
-    title: "Isang kahilingan ang pumapasok. Isang beripikadong resulta ang lumalabas. | AfterDesk",
+    title: "Isang kahilingan ang pumapasok. Isang beripikadong resulta ang lumalabas. | ENDVERA",
     description:
-      "Ilarawan ang resultang kailangan mo. Binubuo ng AfterDesk ang software, mga modelo, konektadong tools, browser na trabaho at may hangganang pagsusuri ng tao, at naghahatid ng isang siniyasat na resulta sa aprubadong fixed na presyo.",
+      "Ibigay sa ENDVERA ang isang nakatakdang workflow. Kino-coordinate ang AI, software, browser work, mga awtorisadong system at paghatol ng tao; isang tao ang sumusuri sa tapos at dokumentadong resulta.",
   },
 };
 
@@ -60,8 +61,8 @@ export async function generateMetadata({
 }) {
   const sp = await searchParams;
   const lang = clientLangOf(sp.lang);
-  /* HOME_META titles already carry "| AfterDesk"; absolute keeps the root
-     layout's "%s · AfterDesk" template from adding the brand a second time */
+  /* HOME_META titles already carry "| ENDVERA"; absolute keeps the root
+     layout's "%s · ENDVERA" template from adding the brand a second time */
   return {
     ...HOME_META[lang],
     title: { absolute: HOME_META[lang].title },
@@ -73,10 +74,10 @@ const ORG_JSONLD = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": `${SITE_URL}/#organization`,
-  name: "AfterDesk",
+  name: "ENDVERA",
   url: SITE_URL,
   description:
-    "AfterDesk assembles software, models, connected tools, browser work and bounded human review, and delivers one checked result at an approved fixed price. Early Access.",
+    "ENDVERA coordinates bounded workflows across AI, software, browser work, authorized systems and human judgment. A person checks the finished, documented result; the verified result is then delivered. Early Access.",
 });
 
 export default async function Home({
@@ -107,31 +108,31 @@ export default async function Home({
       {/* V7: ONE premium header for the whole story - the single wordmark
           of the document. The V5.5 machine below renders in continuation
           mode and no longer draws its own nav. */}
-      <header className="absolute inset-x-0 top-0 z-50">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-5 gap-y-2 px-6 pt-9 text-[#F7F6F3]">
-          <Link href="/" className="text-[1.0625rem] font-[640] tracking-[-0.02em] text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]">
-            AfterDesk
+      <header data-site-header="" className="absolute inset-x-0 top-0 z-50 overflow-x-clip">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-3 gap-y-1 px-4 pt-3 text-[#F7F6F3] sm:gap-x-5 sm:gap-y-2 sm:px-6 sm:pt-9">
+          <Link data-site-wordmark="" href="/" aria-label="ENDVERA home" className="inline-flex min-h-11 min-w-0 items-center text-[0.875rem] text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486] sm:text-[1.0625rem]">
+            <Wordmark tone="paper" />
           </Link>
           <span
             key="page-utilities"
-            className="order-3 flex basis-full items-center gap-4 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e] md:order-none md:basis-auto"
+            className="order-3 flex min-w-0 basis-full items-center gap-4 font-mono text-[12px] uppercase tracking-[0.14em] text-[#9AA1AB] md:order-none md:basis-auto"
           >
             {portal ? (
-              <Link href={portal} className="transition-colors hover:text-[#c9a76a]">
+              <Link href={portal} className="inline-flex min-h-11 items-center transition-colors hover:text-[#c9a76a]">
                 {nav.nav.portal}
               </Link>
             ) : (
-              <Link href="/login" className="transition-colors hover:text-[#c9a76a]">
+              <Link href="/login" className="inline-flex min-h-11 items-center transition-colors hover:text-[#c9a76a]">
                 {nav.nav.signIn}
               </Link>
             )}
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="night" />
           </span>
-          <span className="ml-auto flex items-center gap-8">
+          <span className="ml-auto flex shrink-0 items-center gap-8">
             <a href="#outcomes" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.outcomes}</a>
             <a href="#how" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.how}</a>
             <a href="#inside" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.inside}</a>
-            <span className="inline-flex items-center gap-[0.4375rem] whitespace-nowrap rounded-full border border-white/15 px-3 py-1.5 font-mono text-[0.71875rem] uppercase tracking-[0.06em] text-[#8a919e]">
+            <span data-early-access="" className="inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-full border border-white/15 px-2 py-1 font-mono text-[12px] uppercase tracking-[0.04em] text-[#9AA1AB] sm:gap-[0.4375rem] sm:px-3 sm:py-1.5 sm:tracking-[0.06em]">
               <span aria-hidden className="h-1 w-1 rounded-full bg-[#C9A76A]" />
               {t.nav.earlyAccess}
             </span>
@@ -139,7 +140,7 @@ export default async function Home({
         </div>
       </header>
 
-      <main>
+      <main className="overflow-x-clip bg-[#08090B]">
         {/* V7 - the four simplicity acts tell the whole opening story; the
             accepted V5.5 machine continues it (internal geometry frozen).
             The acts own the single A2 being. */}
@@ -151,7 +152,7 @@ export default async function Home({
 
       {/* real routes under the world's coda - quiet, mono, indexable */}
       <footer className="bg-[#08090b] px-5 pb-10 pt-2">
-        <nav className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8a919e]">
+        <nav className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[12px] uppercase tracking-[0.14em] text-[#9AA1AB]">
           <Link href="/services" className="transition-colors hover:text-[#c9a76a]">{nav.footer.services}</Link>
           <Link href="/how-it-works" className="transition-colors hover:text-[#c9a76a]">{nav.footer.how}</Link>
           <Link href="/inside" className="transition-colors hover:text-[#c9a76a]">{nav.footer.inside}</Link>

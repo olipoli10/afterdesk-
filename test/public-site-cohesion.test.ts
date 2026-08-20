@@ -141,14 +141,14 @@ describe("C5 - shell chrome and mobile navigation, four languages in parallel", 
 describe("C6 - the wordmark contract is rendered, not commented", () => {
   it("PublicShell renders exactly one brand link to /, with the homepage typography", () => {
     const s = noComments(read("src/components/public-shell.tsx"));
-    const marks = s.match(/>\s*AfterDesk\s*</g) ?? [];
-    expect(marks, "exactly one rendered AfterDesk text node").toHaveLength(1);
+    const marks = s.match(/<Wordmark\b/g) ?? [];
+    expect(marks, "exactly one rendered ENDVERA wordmark").toHaveLength(1);
     expect(s).toMatch(/href="\/"[\s\S]{0,200}?text-\[1\.0625rem\] font-\[640\]/);
   });
   it("no secondary page renders its own brand text node", () => {
     for (const p of SECONDARY) {
       const s = noComments(read(p));
-      expect(s.match(/>\s*AfterDesk\s*</g) ?? [], `${p} must not add a wordmark`).toHaveLength(0);
+      expect(s.match(/>\s*ENDVERA\s*</g) ?? [], `${p} must not add a typed wordmark`).toHaveLength(0);
     }
   });
 });

@@ -19,12 +19,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: "Managed back-office execution for data, research and CRM work",
-    template: "%s · AfterDesk",
+    template: "%s · ENDVERA",
   },
   description:
-    "AfterDesk scopes, manages and reviews bounded CRM, research, data and document work. Approve the scope and price, then receive a checked, usable deliverable.",
+    "ENDVERA coordinates bounded CRM, research, data and document workflows. Approve the scope and price, then receive a checked, documented result.",
   openGraph: {
-    siteName: "AfterDesk",
+    siteName: "ENDVERA",
     type: "website",
     locale: "en_US",
   },
@@ -54,7 +54,7 @@ export default async function RootLayout({
       lang={lang}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col overflow-x-clip">
         {children}
         {modal}
       </body>

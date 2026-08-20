@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "AfterDesk: Send the work. Get a reviewed deliverable.";
+export const alt = "ENDVERA: Send the work. Get a reviewed deliverable.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -28,7 +28,7 @@ export default function OgImage() {
             textTransform: "uppercase",
           }}
         >
-          AfterDesk
+          ENDVERA
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 72, color: "#767C86", letterSpacing: "-0.02em" }}>
@@ -46,7 +46,7 @@ export default function OgImage() {
             style={{
               width: 220,
               height: 6,
-              backgroundColor: "#1E7F5C",
+              backgroundColor: "#D87526",
               borderRadius: 3,
             }}
           />

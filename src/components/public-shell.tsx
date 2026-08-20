@@ -9,6 +9,7 @@ import { TrustLinks } from "@/components/trust-links";
 import { MobileNav } from "@/components/mobile-nav";
 import { A2Concierge, type ConciergeCopy } from "@/app/_home/a2-concierge";
 import { PUBLIC_SHELL_I18N, type SiteLang } from "@/lib/i18n/public-shell";
+import { Wordmark } from "@/components/logo";
 
 const NAV_ROUTES = [
   ["/services", "services"],
@@ -51,7 +52,7 @@ export function PublicShell({
             href="/"
             className="text-[1.0625rem] font-[640] tracking-[-0.02em] text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]"
           >
-            AfterDesk
+            <Wordmark tone={night ? "paper" : "ink"} />
           </Link>
           <span className={`order-3 flex basis-full items-center gap-4 font-mono text-[11px] uppercase tracking-[0.16em] ${dim} md:order-none md:basis-auto`}>
             {portalHref ? (
