@@ -79,18 +79,28 @@
 - Added the ignored local configuration-manifest template. It starts in DRAFT,
   rejects placeholders and sensitive field names recursively, and cannot yield
   a trial plan until an evaluator provides two approved non-secret candidate
-  descriptions plus supported meter sources.
-- Added `npm run devbench:trial:preflight`: a local, read-only gate that
+  descriptions plus the exact per-case frozen seed map. V2 cost remains
+  explicitly unavailable and cannot be ranked.
+- Added `npm run devbench:dry-run:preflight`: a local, read-only gate that
   refuses a DRAFT or invalid manifest before any candidate process, provider
-  or network activity can begin. `PREFLIGHT_READY` is preparation evidence,
-  never execution evidence.
+  or network activity can begin. `DRY_RUN_PREFLIGHT_READY` is preparation
+  evidence, never execution evidence.
+- Rehearsed all 32 V2 schedule slots in detached case-specific worktrees. The
+  rehearsal verifies frozen seeds, clean state, challenge-document hashes and
+  cleanup while proving `candidateInvocations: 0` and `providerCalls: 0`.
+- Added the Candidate Execution Boundary v1. Its create-only DRAFT binds the
+  exact V2 plan fingerprint to exact runner artifact fingerprints plus opaque
+  references for network policy, provider data boundary and independent
+  review. The read-only `devbench:execution:preflight` fails closed without
+  those approved proofs and contains no process launcher.
 
 ## Green evidence
 
 - `npm run devbench:validate` — 8 cases / 8 families / provider exposure none.
 - Targeted DevBench, bake-off and URL-safety tests — 64/64.
+- Candidate Execution Boundary and adjacent V2 gates — 16/16.
 - Nine benchmark-family suites — 214/214.
-- Full suite — 58 files / 1,216 tests.
+- Full suite — 65 files / 1,243 tests.
 - Lint and TypeScript — pass.
 - `git diff --check` — pass.
 - Closeout replay — all 16 admissible candidate full suites pass; every direct
@@ -118,10 +128,13 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 The eight-case DevBench v1 closeout is complete. The Control Tower should not
 invent EF-009 inside V1 and should not adopt either candidate from the 3-3-2
-technical record. The measured-run harness is now local and must be exercised
-only after a reviewer supplies two approved, identical candidate configurations
-and a supported metering source. The counterbalanced four-slot trial protocol
-now refuses configuration or packet drift before ranking. Until an evaluator
-actually executes that protocol, no merge, provider adoption, rollout or
-model-selection claim is authorized. A V2 catalog remains a separate future
+technical record. The measured-run harness and counterbalanced 32-slot V2 plan
+are local. Their Git mechanics have been rehearsed, but a real model CLI still
+requires provider egress that the repository does not create or prove. The next
+decision is an independent review of the actual external network policy,
+provider data boundary and exact runner binaries/wrappers. Until that evidence
+is referenced by an APPROVED Candidate Execution Boundary file and independently
+verified, the execution preflight must refuse and no candidate may run. Even a
+successful preflight would authorize review only: no merge, provider adoption,
+rollout or model-selection claim follows. A V2 catalog remains a separate future
 decision.
