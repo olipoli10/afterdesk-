@@ -48,6 +48,12 @@
   the named typed response-shape guard is equivalent under the frozen oracle
   while remaining smaller and reusable. The original invalid-seed candidates
   are excluded from the comparison. No cost or elapsed ranking exists.
+- Completed EF-007 from a frozen account-spend reservation-identity seed. Both
+  candidates reject amount or UTC-period drift before any aggregate or new hold
+  while preserving exact replay idempotency. Codex is the narrow technical
+  winner because it closes the same authorization gap without adding
+  task/run-correlated identifiers to the conflict error object. No candidate
+  was merged or adopted, and no cost or elapsed ranking exists.
 
 ## Green evidence
 
@@ -76,7 +82,7 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The Control Tower should schedule EF-007 as the next catalog case from a
+The Control Tower should schedule EF-008 as the next catalog case from a
 frozen clone. Continue the two-candidate bake-off with a named mutation and
 supported elapsed and
 cost measurement sources. Score reviewer-accepted technical evidence first;
