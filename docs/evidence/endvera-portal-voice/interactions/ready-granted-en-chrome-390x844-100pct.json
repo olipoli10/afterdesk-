@@ -1,0 +1,59 @@
+{
+  "createdAt": "2026-08-20T18:31:20.037Z",
+  "base": "http://localhost:3217",
+  "scenario": "ready",
+  "permission": "granted",
+  "language": "en",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "zoom": 100,
+  "browser": "chrome",
+  "recordMs": 46200,
+  "screenshots": [
+    "ready-granted-en-chrome-390x844-100pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nREADY WHEN YOU ARE\nHi. What can I help you finish?\n\nDescribe the issue, the workflow you do today, or the result you want back. Start wherever it makes sense.\n\nI’ll ask a few useful questions and turn the conversation into a brief for you to review.\n\nDescribe your problem or workflow\n\nTranscript ready\n\nReview and edit the text. Send it only when it says what you mean.\n\nRecord again\nSend to A2\n\nA2 prepares the brief. An operator confirms scope, timing and one fixed price before work starts.\n\nEnter to send · Shift+Enter for a new line",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Record again",
+        "width": 104,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "Our weekly client report takes three hours: export the CRM, reconcile missing values, flag exceptions, and prepare the reviewed spreadsheet.",
+    "composerValue": "Our weekly client report takes three hours: export the CRM, reconcile missing values, flag exceptions, and prepare the reviewed spreadsheet.",
+    "alerts": [],
+    "primaryStatus": null,
+    "trackStops": 1,
+    "recorderSessions": [
+      {
+        "bytes": 718335,
+        "chunks": 149,
+        "startedAt": 5228,
+        "stoppedAt": 49681.5,
+        "mimeType": "audio/webm;codecs=opus",
+        "durationMs": 44454
+      },
+      {
+        "bytes": 67023,
+        "chunks": 14,
+        "startedAt": 49789,
+        "stoppedAt": 53872,
+        "mimeType": "audio/webm;codecs=opus",
+        "durationMs": 4083
+      }
+    ],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

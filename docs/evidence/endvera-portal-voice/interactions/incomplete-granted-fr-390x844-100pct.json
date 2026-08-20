@@ -1,0 +1,53 @@
+{
+  "createdAt": "2026-08-20T18:26:39.650Z",
+  "base": "http://localhost:3217",
+  "scenario": "incomplete",
+  "permission": "granted",
+  "language": "fr",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "zoom": 100,
+  "browser": "chrome",
+  "recordMs": 1200,
+  "screenshots": [
+    "incomplete-granted-fr-390x844-100pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nPRÊT QUAND VOUS L’ÊTES\nBonjour. Qu’est-ce que je peux vous aider à terminer?\n\nDécrivez le problème, votre workflow actuel ou le résultat que vous voulez recevoir. Commencez où cela vous semble naturel.\n\nJe poserai quelques questions utiles et transformerai la discussion en brief à réviser.\n\nDécrivez votre problème ou workflow\n\nUne partie n’a pas pu être transcrite. Rien n’a été envoyé à A2. Recommencez ou complétez la description par écrit.\n\nRecommencer\nEnvoyer à A2\n\nA2 prépare le brief. Un opérateur confirme le périmètre, le délai et un prix fixe avant le début du travail.\n\nEntrée pour envoyer · Maj+Entrée pour une nouvelle ligne",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Recommencer",
+        "width": 88,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "Recommencer",
+    "composerValue": "",
+    "alerts": [
+      "Une partie n’a pas pu être transcrite. Rien n’a été envoyé à A2. Recommencez ou complétez la description par écrit.Recommencer"
+    ],
+    "primaryStatus": null,
+    "trackStops": 1,
+    "recorderSessions": [
+      {
+        "bytes": 59279,
+        "chunks": 13,
+        "startedAt": 3714.2999999970198,
+        "stoppedAt": 7350.5,
+        "mimeType": "audio/webm;codecs=opus",
+        "durationMs": 3636
+      }
+    ],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

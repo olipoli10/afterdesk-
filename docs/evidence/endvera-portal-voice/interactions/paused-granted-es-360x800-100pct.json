@@ -1,0 +1,61 @@
+{
+  "createdAt": "2026-08-20T18:27:19.862Z",
+  "base": "http://localhost:3217",
+  "scenario": "paused",
+  "permission": "granted",
+  "language": "es",
+  "viewport": {
+    "width": 360,
+    "height": 800
+  },
+  "zoom": 100,
+  "browser": "chrome",
+  "recordMs": 1200,
+  "screenshots": [
+    "paused-granted-es-360x800-100pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nLISTO CUANDO TÚ LO ESTÉS\nHola. ¿Qué puedo ayudarte a terminar?\n\nDescribe el problema, el flujo que haces hoy o el resultado que quieres recibir. Empieza por donde te resulte natural.\n\nHaré algunas preguntas útiles y convertiré la conversación en un brief para que lo revises.\n\nDescribe tu problema o flujo\n\nGrabando · 00:02 de 10:00 · En pausa\n\nContinuar\nFinalizar y transcribir\nCancelar grabación\nEnviar a A2\n\nA2 prepara el brief. Un operador confirma alcance, plazo y precio fijo antes de empezar.\n\nEnter para enviar · Mayús+Enter para nueva línea",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Continuar",
+        "width": 94,
+        "height": 44
+      },
+      {
+        "text": "Finalizar y transcribir",
+        "width": 164,
+        "height": 44
+      },
+      {
+        "text": "Cancelar grabación",
+        "width": 152,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "BODY",
+    "composerValue": "",
+    "alerts": [],
+    "primaryStatus": "Grabando · 00:02 de 10:00 · En pausa",
+    "trackStops": 0,
+    "recorderSessions": [
+      {
+        "bytes": 37948,
+        "chunks": 8,
+        "startedAt": 3686.7000000029802,
+        "stoppedAt": null,
+        "mimeType": "audio/webm;codecs=opus",
+        "durationMs": null
+      }
+    ],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

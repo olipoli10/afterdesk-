@@ -181,7 +181,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
   [data-a2-portal-presence],
   [data-a2-portal-presence] *,
-  [data-a2-thinking-box] * {
+  [data-a2-thinking-box] *,
+  [data-voice-intake],
+  [data-voice-intake] * {
     animation: none !important;
     transition-duration: 0.01ms !important;
     transform: none !important;

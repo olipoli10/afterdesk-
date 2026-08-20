@@ -74,7 +74,7 @@ describe("ENDVERA entrepreneur portal experience", () => {
     expect(page).not.toContain('<ol aria-label="Request process"');
     expect(chat).toContain("data-a2-opening");
     expect(chat).toContain("turns.slice(1)");
-    expect(chat).toContain("copy.start");
+    expect(chat).toContain("copy.sendToA2");
     expect(a2).toContain('size?: "compact" | "standard" | "hero"');
     expect(i18n).toContain("start: string");
   });

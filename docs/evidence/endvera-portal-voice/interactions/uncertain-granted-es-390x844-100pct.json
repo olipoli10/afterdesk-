@@ -1,0 +1,47 @@
+{
+  "createdAt": "2026-08-20T18:27:02.533Z",
+  "base": "http://localhost:3217",
+  "scenario": "uncertain",
+  "permission": "granted",
+  "language": "es",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "zoom": 100,
+  "browser": "chrome",
+  "recordMs": 1200,
+  "screenshots": [
+    "uncertain-granted-es-390x844-100pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nLISTO CUANDO TÚ LO ESTÉS\nHola. ¿Qué puedo ayudarte a terminar?\n\nDescribe el problema, el flujo que haces hoy o el resultado que quieres recibir. Empieza por donde te resulte natural.\n\nHaré algunas preguntas útiles y convertiré la conversación en un brief para que lo revises.\n\nDescribe tu problema o flujo\n\nAún no podemos confirmar una parte. No se envió nada a A2. Mantén esta página abierta o continúa escribiendo.\n\nEnviar a A2\n\nA2 prepara el brief. Un operador confirma alcance, plazo y precio fijo antes de empezar.\n\nEnter para enviar · Mayús+Enter para nueva línea",
+    "horizontalOverflow": false,
+    "targets": [],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "TEXTAREA",
+    "composerValue": "",
+    "alerts": [
+      "Aún no podemos confirmar una parte. No se envió nada a A2. Mantén esta página abierta o continúa escribiendo."
+    ],
+    "primaryStatus": null,
+    "trackStops": 1,
+    "recorderSessions": [
+      {
+        "bytes": 59279,
+        "chunks": 13,
+        "startedAt": 3700.7999999970198,
+        "stoppedAt": 7336.29999999702,
+        "mimeType": "audio/webm;codecs=opus",
+        "durationMs": 3636
+      }
+    ],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

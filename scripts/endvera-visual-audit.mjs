@@ -198,6 +198,7 @@ async function main() {
   const height = viewport[1];
   const reducedMotion = arg("reduced-motion", "false") === "true";
   const capture = arg("capture", "core");
+  const settleMs = Number(arg("settle", reducedMotion ? "120" : "350"));
   const port = Number(arg("port", String(9300 + Math.floor(Math.random() * 300))));
   const profile = path.join(out, `chrome-profile-${port}`);
   await mkdir(out, { recursive: true });
@@ -263,7 +264,7 @@ async function main() {
         const loaded = cdp.once("Page.loadEventFired");
         await cdp.call("Page.navigate", { url });
         await loaded;
-        await new Promise((resolve) => setTimeout(resolve, reducedMotion ? 120 : 350));
+        await new Promise((resolve) => setTimeout(resolve, settleMs));
         const evaluated = await cdp.call("Runtime.evaluate", {
           expression: MEASURE,
           returnByValue: true,

@@ -7,10 +7,12 @@ import { sendIntakeTurn } from "@/server/actions/intake";
 import { submitTask } from "@/server/actions/client-tasks";
 import { FileUpload, type UploadedFile } from "@/components/file-upload";
 import { A2PortalPresence } from "@/components/a2-portal-presence";
+import { VoiceIntake } from "@/components/voice-intake";
 import type { IntakeDraft } from "@/lib/ai";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   CLIENT_PORTAL_I18N,
+  type ClientPortalLang,
   type ClientPortalIntakeCopy,
 } from "@/lib/i18n/client-portal";
 import {
@@ -31,11 +33,13 @@ export function TaskChat({
   maxFiles,
   allowedExtensions,
   copy = CLIENT_PORTAL_I18N.en.intake,
+  language = "en",
 }: {
   maxFileSizeMB: number;
   maxFiles: number;
   allowedExtensions: string[];
   copy?: ClientPortalIntakeCopy;
+  language?: ClientPortalLang;
 }) {
   const router = useRouter();
   const [turns, setTurns] = useState<Turn[]>([
@@ -50,6 +54,7 @@ export function TaskChat({
   const [thinking, startThinking] = useTransition();
   const [submitting, startSubmit] = useTransition();
   const paneRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   // On touch/small screens Enter must make a newline; only a fine pointer
   // gets bare Enter-to-send.
   const desktop = useMediaQuery("(hover: hover) and (pointer: fine)");
@@ -197,30 +202,44 @@ export function TaskChat({
 
         <div className="bg-black/10 p-4 sm:p-5">
           <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
-            <textarea
-              rows={conversationStarted ? 3 : 4}
-              className={`${inputClassNight} resize-y ${
-                conversationStarted ? "min-h-[92px]" : "min-h-[132px] text-[17px] leading-relaxed"
-              }`}
-              aria-label={copy.inputLabel}
-              placeholder={copy.placeholder}
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") return;
-                if (event.ctrlKey || event.metaKey || (desktop && !event.shiftKey)) {
-                  event.preventDefault();
-                  send();
+            <div className="min-w-0 flex-1">
+              <label htmlFor="a2-request-composer" className="mb-2 block text-[13px] font-medium text-[#B7BDC7]">
+                {copy.inputLabel}
+              </label>
+              <textarea
+                ref={composerRef}
+                id="a2-request-composer"
+                rows={conversationStarted ? 3 : 4}
+                className={`${inputClassNight} resize-y ${
+                  conversationStarted ? "min-h-[92px]" : "min-h-[132px] text-[17px] leading-relaxed"
+                }`}
+                placeholder={copy.placeholder}
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") return;
+                  if (event.ctrlKey || event.metaKey || (desktop && !event.shiftKey)) {
+                    event.preventDefault();
+                    send();
+                  }
+                }}
+              />
+              <VoiceIntake
+                copy={copy.voice}
+                language={language}
+                composerRef={composerRef}
+                onTranscript={(transcript) =>
+                  setInput((current) => current.trim() ? `${current.trim()}\n\n${transcript}` : transcript)
                 }
-              }}
-            />
+              />
+            </div>
             <button
               type="button"
               onClick={send}
               disabled={thinking || input.trim().length === 0}
               className="inline-flex min-h-12 items-center justify-center rounded-[7px] bg-[#C9A76A] px-5 text-[14px] font-semibold text-[#14161A] transition-colors hover:bg-[#E2C486] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E2C486] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0E1014] disabled:cursor-not-allowed disabled:opacity-40 sm:min-w-28"
             >
-              {thinking ? copy.sendingReply : conversationStarted ? copy.send : copy.start}
+              {thinking ? copy.sendingReply : copy.sendToA2}
             </button>
           </div>
           <div className="mt-3 flex flex-col gap-1 text-[12px] leading-relaxed text-[#78808B] sm:flex-row sm:items-center sm:justify-between sm:gap-4">

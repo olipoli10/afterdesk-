@@ -38,6 +38,7 @@ export default async function NewTaskPage({
           maxFiles={settings.maxFilesPerTask}
           allowedExtensions={settings.allowedExtensions}
           copy={copy}
+          language={lang}
         />
         <div className="mt-4 flex flex-col gap-2 px-1 text-[12px] leading-relaxed text-[#747C88] sm:flex-row sm:items-center sm:justify-between sm:gap-5">
           <p>

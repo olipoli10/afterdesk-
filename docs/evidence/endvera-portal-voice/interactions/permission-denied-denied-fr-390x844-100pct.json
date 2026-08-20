@@ -1,0 +1,49 @@
+{
+  "createdAt": "2026-08-20T18:27:54.461Z",
+  "base": "http://localhost:3217",
+  "scenario": "permission-denied",
+  "permission": "denied",
+  "language": "fr",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "zoom": 100,
+  "browser": "chrome",
+  "recordMs": 1200,
+  "screenshots": [
+    "permission-denied-denied-fr-390x844-100pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nPRÊT QUAND VOUS L’ÊTES\nBonjour. Qu’est-ce que je peux vous aider à terminer?\n\nDécrivez le problème, votre workflow actuel ou le résultat que vous voulez recevoir. Commencez où cela vous semble naturel.\n\nJe poserai quelques questions utiles et transformerai la discussion en brief à réviser.\n\nDécrivez votre problème ou workflow\nParler au lieu d’écrire\n\nL’accès au microphone est désactivé. Autorisez-le dans votre navigateur ou écrivez votre demande.\n\nRecommencer\nEnvoyer à A2\n\nA2 prépare le brief. Un opérateur confirme le périmètre, le délai et un prix fixe avant le début du travail.\n\nEntrée pour envoyer · Maj+Entrée pour une nouvelle ligne",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Parler au lieu d’écrire",
+        "width": 181,
+        "height": 44
+      },
+      {
+        "text": "Recommencer",
+        "width": 88,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "Recommencer",
+    "composerValue": "",
+    "alerts": [
+      "L’accès au microphone est désactivé. Autorisez-le dans votre navigateur ou écrivez votre demande.Recommencer"
+    ],
+    "primaryStatus": null,
+    "trackStops": 0,
+    "recorderSessions": [],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

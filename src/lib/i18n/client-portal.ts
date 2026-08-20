@@ -5,6 +5,35 @@ export type ClientPortalLang = SiteLang;
 export const CLIENT_PORTAL_LANGS = SITE_LANGS;
 export const clientPortalLangOf = siteLangOf;
 
+export type ClientPortalVoiceCopy = {
+  speak: string;
+  checking: string;
+  disclosureTitle: string;
+  disclosure: string;
+  consent: string;
+  start: string;
+  recording: string;
+  paused: string;
+  pause: string;
+  resume: string;
+  finish: string;
+  cancel: string;
+  transcribing: string;
+  readyTitle: string;
+  readyHelp: string;
+  disabled: string;
+  permissionDenied: string;
+  deviceMissing: string;
+  limit: string;
+  incomplete: string;
+  uncertain: string;
+  unavailable: string;
+  cancelConfirmation: string;
+  confirmCancel: string;
+  keepRecording: string;
+  recordAgain: string;
+};
+
 export type ClientPortalIntakeCopy = {
   kicker: string;
   title: string;
@@ -22,6 +51,7 @@ export type ClientPortalIntakeCopy = {
   placeholder: string;
   start: string;
   send: string;
+  sendToA2: string;
   sendingReply: string;
   keyboard: string;
   fallback: string;
@@ -39,6 +69,7 @@ export type ClientPortalIntakeCopy = {
   keepTalking: string;
   approvalNote: string;
   stages: [string, string, string, string];
+  voice: ClientPortalVoiceCopy;
 };
 
 export type ClientPortalAuthFormCopy = {
@@ -220,8 +251,9 @@ const en: ClientPortalDictionary = {
     writing: "A2 is thinking…",
     inputLabel: "Describe your problem or workflow",
     placeholder: "Describe your issue or workflow…",
-    start: "Start with A2",
-    send: "Send",
+    start: "Send to A2",
+    send: "Send to A2",
+    sendToA2: "Send to A2",
     sendingReply: "Thinking",
     keyboard: "Enter to send · Shift+Enter for a new line",
     fallback: "Write the brief myself",
@@ -239,6 +271,34 @@ const en: ClientPortalDictionary = {
     keepTalking: "Keep talking",
     approvalNote: "A2 prepares the brief. An operator confirms scope, timing and one fixed price before work starts.",
     stages: ["Describe", "Review brief", "Approve scope + price", "Receive checked result"],
+    voice: {
+      speak: "Speak instead",
+      checking: "Checking voice input…",
+      disclosureTitle: "Describe it out loud",
+      disclosure: "When you finish, your recording is sent for transcription. Review the text before you send it to A2.",
+      consent: "I’m ready to send this recording for transcription.",
+      start: "Start recording",
+      recording: "Recording · {time} of 10:00",
+      paused: "Paused",
+      pause: "Pause",
+      resume: "Resume",
+      finish: "Finish and transcribe",
+      cancel: "Cancel recording",
+      transcribing: "Transcribing {current} of {total}…",
+      readyTitle: "Transcript ready",
+      readyHelp: "Review and edit the text. Send it only when it says what you mean.",
+      disabled: "Voice input isn’t available yet. You can still type your request.",
+      permissionDenied: "Microphone access is off. Allow it in your browser, or type your request instead.",
+      deviceMissing: "No microphone was found. Connect one, or type your request instead.",
+      limit: "You reached the 10-minute limit. We’ll transcribe what you recorded.",
+      incomplete: "One part couldn’t be transcribed. Nothing was sent to A2. Record again or finish the description by typing.",
+      uncertain: "We can’t confirm one part yet. Nothing was sent to A2. Keep this page open or continue by typing.",
+      unavailable: "Transcription isn’t available right now. Your text hasn’t been sent. Try again or type your request.",
+      cancelConfirmation: "Cancel this recording? The unsent recording and draft transcript will be discarded.",
+      confirmCancel: "Cancel recording",
+      keepRecording: "Keep recording",
+      recordAgain: "Record again",
+    },
   },
 };
 
@@ -342,8 +402,9 @@ const fr: ClientPortalDictionary = {
     writing: "A2 réfléchit…",
     inputLabel: "Décrivez votre problème ou workflow",
     placeholder: "Décrivez votre problème ou workflow…",
-    start: "Commencer avec A2",
-    send: "Envoyer",
+    start: "Envoyer à A2",
+    send: "Envoyer à A2",
+    sendToA2: "Envoyer à A2",
     sendingReply: "Réflexion",
     keyboard: "Entrée pour envoyer · Maj+Entrée pour une nouvelle ligne",
     fallback: "Rédiger le brief moi-même",
@@ -361,6 +422,34 @@ const fr: ClientPortalDictionary = {
     keepTalking: "Continuer la discussion",
     approvalNote: "A2 prépare le brief. Un opérateur confirme le périmètre, le délai et un prix fixe avant le début du travail.",
     stages: ["Décrire", "Réviser le brief", "Approuver périmètre + prix", "Recevoir le résultat vérifié"],
+    voice: {
+      speak: "Parler au lieu d’écrire",
+      checking: "Vérification de la saisie vocale…",
+      disclosureTitle: "Décrivez-le à voix haute",
+      disclosure: "Quand vous terminez, votre enregistrement est envoyé pour transcription. Relisez le texte avant de l’envoyer à A2.",
+      consent: "Je suis prêt à envoyer cet enregistrement pour transcription.",
+      start: "Commencer l’enregistrement",
+      recording: "Enregistrement · {time} sur 10:00",
+      paused: "En pause",
+      pause: "Mettre en pause",
+      resume: "Reprendre",
+      finish: "Terminer et transcrire",
+      cancel: "Annuler l’enregistrement",
+      transcribing: "Transcription {current} sur {total}…",
+      readyTitle: "Transcription prête",
+      readyHelp: "Relisez et modifiez le texte. Envoyez-le seulement lorsqu’il exprime bien votre demande.",
+      disabled: "La saisie vocale n’est pas encore disponible. Vous pouvez quand même écrire votre demande.",
+      permissionDenied: "L’accès au microphone est désactivé. Autorisez-le dans votre navigateur ou écrivez votre demande.",
+      deviceMissing: "Aucun microphone n’a été détecté. Branchez-en un ou écrivez votre demande.",
+      limit: "Vous avez atteint la limite de 10 minutes. Nous allons transcrire ce qui a été enregistré.",
+      incomplete: "Une partie n’a pas pu être transcrite. Rien n’a été envoyé à A2. Recommencez ou complétez la description par écrit.",
+      uncertain: "Nous ne pouvons pas encore confirmer une partie. Rien n’a été envoyé à A2. Gardez cette page ouverte ou continuez par écrit.",
+      unavailable: "La transcription est indisponible pour le moment. Votre texte n’a pas été envoyé. Réessayez ou écrivez votre demande.",
+      cancelConfirmation: "Annuler cet enregistrement? L’enregistrement non envoyé et le brouillon seront supprimés.",
+      confirmCancel: "Annuler l’enregistrement",
+      keepRecording: "Continuer l’enregistrement",
+      recordAgain: "Recommencer",
+    },
   },
 };
 
@@ -466,8 +555,9 @@ const es: ClientPortalDictionary = {
     writing: "A2 está pensando…",
     inputLabel: "Describe tu problema o flujo",
     placeholder: "Describe tu problema o flujo…",
-    start: "Empezar con A2",
-    send: "Enviar",
+    start: "Enviar a A2",
+    send: "Enviar a A2",
+    sendToA2: "Enviar a A2",
     sendingReply: "Pensando",
     keyboard: "Enter para enviar · Mayús+Enter para nueva línea",
     fallback: "Escribir el brief yo",
@@ -485,6 +575,34 @@ const es: ClientPortalDictionary = {
     keepTalking: "Seguir hablando",
     approvalNote: "A2 prepara el brief. Un operador confirma alcance, plazo y precio fijo antes de empezar.",
     stages: ["Describir", "Revisar brief", "Aprobar alcance + precio", "Recibir resultado revisado"],
+    voice: {
+      speak: "Hablar en vez de escribir",
+      checking: "Comprobando la entrada de voz…",
+      disclosureTitle: "Descríbelo en voz alta",
+      disclosure: "Cuando termines, tu grabación se enviará para transcribirla. Revisa el texto antes de enviarlo a A2.",
+      consent: "Estoy listo para enviar esta grabación para su transcripción.",
+      start: "Iniciar grabación",
+      recording: "Grabando · {time} de 10:00",
+      paused: "En pausa",
+      pause: "Pausar",
+      resume: "Continuar",
+      finish: "Finalizar y transcribir",
+      cancel: "Cancelar grabación",
+      transcribing: "Transcribiendo {current} de {total}…",
+      readyTitle: "Transcripción lista",
+      readyHelp: "Revisa y edita el texto. Envíalo solo cuando exprese lo que quieres decir.",
+      disabled: "La entrada de voz aún no está disponible. Puedes escribir tu solicitud.",
+      permissionDenied: "El acceso al micrófono está desactivado. Actívalo en el navegador o escribe tu solicitud.",
+      deviceMissing: "No se encontró ningún micrófono. Conecta uno o escribe tu solicitud.",
+      limit: "Llegaste al límite de 10 minutos. Transcribiremos lo que grabaste.",
+      incomplete: "No se pudo transcribir una parte. No se envió nada a A2. Graba de nuevo o completa la descripción por escrito.",
+      uncertain: "Aún no podemos confirmar una parte. No se envió nada a A2. Mantén esta página abierta o continúa escribiendo.",
+      unavailable: "La transcripción no está disponible ahora. Tu texto no se envió. Inténtalo de nuevo o escribe tu solicitud.",
+      cancelConfirmation: "¿Cancelar esta grabación? Se descartarán la grabación no enviada y el borrador.",
+      confirmCancel: "Cancelar grabación",
+      keepRecording: "Seguir grabando",
+      recordAgain: "Grabar de nuevo",
+    },
   },
 };
 
@@ -590,8 +708,9 @@ const tl: ClientPortalDictionary = {
     writing: "Nag-iisip si A2…",
     inputLabel: "Ilarawan ang problema o workflow",
     placeholder: "Ilarawan ang problema o workflow…",
-    start: "Magsimula kay A2",
-    send: "Ipadala",
+    start: "Ipadala kay A2",
+    send: "Ipadala kay A2",
+    sendToA2: "Ipadala kay A2",
     sendingReply: "Nag-iisip",
     keyboard: "Enter para ipadala · Shift+Enter para bagong linya",
     fallback: "Ako ang susulat ng brief",
@@ -609,6 +728,34 @@ const tl: ClientPortalDictionary = {
     keepTalking: "Magpatuloy sa usapan",
     approvalNote: "Ihahanda ni A2 ang brief. Operator ang magkukumpirma ng scope, timing at fixed na presyo bago magsimula.",
     stages: ["Ilarawan", "I-review ang brief", "Aprubahan ang scope + presyo", "Tanggapin ang sinuring resulta"],
+    voice: {
+      speak: "Magsalita sa halip na mag-type",
+      checking: "Tinitingnan ang voice input…",
+      disclosureTitle: "Ikuwento ito nang malakas",
+      disclosure: "Kapag tapos ka na, ipapadala ang recording mo para ma-transcribe. Suriin ang text bago mo ito ipadala kay A2.",
+      consent: "Handa akong ipadala ang recording na ito para ma-transcribe.",
+      start: "Simulan ang recording",
+      recording: "Nagre-record · {time} sa 10:00",
+      paused: "Naka-pause",
+      pause: "I-pause",
+      resume: "Ituloy",
+      finish: "Tapusin at i-transcribe",
+      cancel: "Kanselahin ang recording",
+      transcribing: "Tina-transcribe ang {current} sa {total}…",
+      readyTitle: "Handa na ang transcript",
+      readyHelp: "Suriin at i-edit ang text. Ipadala lamang kapag malinaw nitong nasasabi ang ibig mong sabihin.",
+      disabled: "Hindi pa available ang voice input. Maaari mo pa ring i-type ang request mo.",
+      permissionDenied: "Naka-off ang microphone access. I-allow ito sa browser, o i-type na lang ang request mo.",
+      deviceMissing: "Walang nakitang microphone. Magkabit ng isa, o i-type na lang ang request mo.",
+      limit: "Naabot mo na ang 10-minute limit. Ita-transcribe namin ang na-record mo.",
+      incomplete: "May bahaging hindi na-transcribe. Walang ipinadala kay A2. Mag-record ulit o kumpletuhin ito sa pag-type.",
+      uncertain: "Hindi pa namin makumpirma ang isang bahagi. Walang ipinadala kay A2. Panatilihing bukas ang page o ituloy sa pag-type.",
+      unavailable: "Hindi available ang transcription ngayon. Hindi naipadala ang text mo. Subukan ulit o i-type ang request mo.",
+      cancelConfirmation: "Kanselahin ang recording na ito? Buburahin ang hindi naipadalang recording at draft.",
+      confirmCancel: "Kanselahin ang recording",
+      keepRecording: "Ituloy ang recording",
+      recordAgain: "Mag-record ulit",
+    },
   },
 };
 

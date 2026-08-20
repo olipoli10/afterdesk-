@@ -1,0 +1,59 @@
+{
+  "createdAt": "2026-08-20T18:31:20.138Z",
+  "base": "http://localhost:3217",
+  "scenario": "ready",
+  "permission": "granted",
+  "language": "fr",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "zoom": 100,
+  "browser": "edge",
+  "recordMs": 46200,
+  "screenshots": [
+    "ready-granted-fr-edge-390x844-100pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nPRÊT QUAND VOUS L’ÊTES\nBonjour. Qu’est-ce que je peux vous aider à terminer?\n\nDécrivez le problème, votre workflow actuel ou le résultat que vous voulez recevoir. Commencez où cela vous semble naturel.\n\nJe poserai quelques questions utiles et transformerai la discussion en brief à réviser.\n\nDécrivez votre problème ou workflow\n\nTranscription prête\n\nRelisez et modifiez le texte. Envoyez-le seulement lorsqu’il exprime bien votre demande.\n\nRecommencer\nEnvoyer à A2\n\nA2 prépare le brief. Un opérateur confirme le périmètre, le délai et un prix fixe avant le début du travail.\n\nEntrée pour envoyer · Maj+Entrée pour une nouvelle ligne",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Recommencer",
+        "width": 112,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "Our weekly client report takes three hours: export the CRM, reconcile missing values, flag exceptions, and prepare the reviewed spreadsheet.",
+    "composerValue": "Our weekly client report takes three hours: export the CRM, reconcile missing values, flag exceptions, and prepare the reviewed spreadsheet.",
+    "alerts": [],
+    "primaryStatus": null,
+    "trackStops": 1,
+    "recorderSessions": [
+      {
+        "bytes": 724147,
+        "chunks": 150,
+        "startedAt": 5214.9000000059605,
+        "stoppedAt": 50028.70000000298,
+        "mimeType": "audio/webm;codecs=opus",
+        "durationMs": 44814
+      },
+      {
+        "bytes": 61211,
+        "chunks": 13,
+        "startedAt": 50125.10000000894,
+        "stoppedAt": 53850,
+        "mimeType": "audio/webm;codecs=opus",
+        "durationMs": 3725
+      }
+    ],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

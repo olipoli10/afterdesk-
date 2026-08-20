@@ -1,0 +1,49 @@
+{
+  "createdAt": "2026-08-20T18:28:05.806Z",
+  "base": "http://localhost:3217",
+  "scenario": "device-missing",
+  "permission": "missing",
+  "language": "en",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "zoom": 100,
+  "browser": "chrome",
+  "recordMs": 1200,
+  "screenshots": [
+    "device-missing-missing-en-390x844-100pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nREADY WHEN YOU ARE\nHi. What can I help you finish?\n\nDescribe the issue, the workflow you do today, or the result you want back. Start wherever it makes sense.\n\nI’ll ask a few useful questions and turn the conversation into a brief for you to review.\n\nDescribe your problem or workflow\nSpeak instead\n\nNo microphone was found. Connect one, or type your request instead.\n\nRecord again\nSend to A2\n\nA2 prepares the brief. An operator confirms scope, timing and one fixed price before work starts.\n\nEnter to send · Shift+Enter for a new line",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Speak instead",
+        "width": 140,
+        "height": 44
+      },
+      {
+        "text": "Record again",
+        "width": 80,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "Record again",
+    "composerValue": "",
+    "alerts": [
+      "No microphone was found. Connect one, or type your request instead.Record again"
+    ],
+    "primaryStatus": null,
+    "trackStops": 0,
+    "recorderSessions": [],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}
