@@ -9,7 +9,8 @@ maintainer completes the production-specific checks below.
 | Claim | Evidence label | What is actually established |
 |---|---|---|
 | Constraint and transition behavior | TEST | Unit and real PostgreSQL integration tests exercise the typed state, DB constraints, triggers, claim fencing, resume and recovery paths. |
-| Build and deployment readiness | UNKNOWN | This document does not authorize a production build or deployment. The build gate must run against a named disposable database first. |
+| Local build readiness | TEST | The full build gate passed against the named disposable `hwu-integration` database after all 35 migrations were applied. |
+| Production deployment readiness | UNKNOWN | This document does not authorize a production build or deployment. Target-environment configuration and approval remain outside this local evidence. |
 | Demand, frequency, coverage gain, willingness to pay, revenue and margin impact | **UNKNOWN** | No customer or production-operation evidence was collected by this feature work. |
 | Machine / Work Compiler coverage | **UNKNOWN** | Human work through this path is not machine coverage and must not be counted as Work Compiler coverage. |
 
@@ -81,12 +82,12 @@ raw client input, credentials or cross-tenant content:
 - [x] Database-free checks: lint, typecheck and fast suite pass locally.
 - [x] Full real-PostgreSQL integration suite passes against a disposable
       `hwu-integration` cluster.
-- [ ] Build has passed only after an explicit confirmation that `DATABASE_URL`
+- [x] Build has passed only after an explicit confirmation that `DATABASE_URL`
       targets a disposable, non-production database; the build executes
       `prisma migrate deploy`.
 - [ ] HumanWorkUnit flag remains off in every environment until the designated
       release owner has approved this checklist.
-- [ ] A review records the constitution check for Principles III and IV.
+- [x] A review records the constitution check for Principles III and IV.
 
 ## 5. Truthful external language
 
