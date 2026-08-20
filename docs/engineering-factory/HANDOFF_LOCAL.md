@@ -54,6 +54,13 @@
   winner because it closes the same authorization gap without adding
   task/run-correlated identifiers to the conflict error object. No candidate
   was merged or adopted, and no cost or elapsed ranking exists.
+- Completed EF-008 from a frozen final-suffix file-admission seed. Both
+  candidates reject compound or mismatched suffixes before reading file bytes
+  and preserve valid bounded ingestion. Claude is the narrow technical winner
+  because a typed primitive-to-suffix table prevents a future caller from
+  compiling an inverted CSV/XLSX pairing. Its comments are more verbose than
+  the narrow change requires. No candidate was merged or adopted, and no cost
+  or elapsed ranking exists.
 
 ## Green evidence
 
@@ -82,10 +89,11 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The Control Tower should schedule EF-008 as the next catalog case from a
-frozen clone. Continue the two-candidate bake-off with a named mutation and
-supported elapsed and
-cost measurement sources. Score reviewer-accepted technical evidence first;
-score time or cost only when the hardened harness records a supported
-measurement source. A winner remains a candidate until broader evidence is
-independently reviewed.
+The eight-case DevBench v1 catalog is now technically complete. The Control
+Tower should not invent EF-009 inside V1. It should run a local closeout that
+reconciles EF-001 through EF-008, verifies every review against its frozen
+seed, distinguishes technical case wins from unsupported cost/speed claims,
+and decides whether the evidence supports a candidate configuration for a
+separate adoption trial. No merge, provider adoption or rollout is authorized
+by that closeout. If a V2 catalog is needed, its new families and measurement
+contract must be proposed and reviewed separately before another candidate run.
