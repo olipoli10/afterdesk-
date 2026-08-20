@@ -54,15 +54,20 @@ export default async function StandingCapacityPage() {
         denial of the thing they were promised. Clients WITH an account see
         everything below, unchanged.
       */
-      <EmptyState
-        title="No standing capacity account"
-        body="Nothing is set up on this account yet. Send a one-off task instead: you describe the result, approve one fixed price, and receive it verified."
-        action={
-          <LinkButton href="/client/tasks/new" variant="secondary">
-            Describe a task
-          </LinkButton>
-        }
-      />
+      <div
+        data-client-document=""
+        className="mx-auto max-w-3xl rounded-[14px] border border-[#C9A76A]/25 bg-[#F7F6F3] p-4 shadow-[0_28px_90px_rgba(0,0,0,.24)] sm:p-6"
+      >
+        <EmptyState
+          title="No standing capacity account"
+          body="Nothing is set up on this account yet. Send a one-off task instead: you describe the result, approve one fixed price, and receive it verified."
+          action={
+            <LinkButton href="/client/tasks/new" variant="secondary">
+              Describe a task
+            </LinkButton>
+          }
+        />
+      </div>
     );
   }
 
@@ -71,7 +76,10 @@ export default async function StandingCapacityPage() {
   const usedPct = Math.min(100, Math.round((account.minutesUsedThisPeriod / capacityMinutes) * 100));
 
   return (
-    <div className="space-y-8">
+    <div
+      data-client-document=""
+      className="mx-auto max-w-4xl space-y-8 rounded-[14px] border border-[#C9A76A]/25 bg-[#F7F6F3] p-4 shadow-[0_28px_90px_rgba(0,0,0,.24)] sm:p-6"
+    >
       <div>
         <SectionLabel>Standing capacity</SectionLabel>
         <h1 className="mt-1 text-2xl font-semibold text-[#14161A]">

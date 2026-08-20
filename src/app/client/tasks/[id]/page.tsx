@@ -85,7 +85,10 @@ export default async function ClientTaskPage({
   const quotedScope = cs === "quote_ready" ? await quotedScopeForClient(id, user.id) : null;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div
+      data-client-document=""
+      className="mx-auto max-w-3xl rounded-[14px] border border-[#C9A76A]/25 bg-[#F7F6F3] p-4 shadow-[0_28px_90px_rgba(0,0,0,.24)] sm:p-6"
+    >
       <PageTitle
         title={task.title}
         action={<Badge className={clientBadgeClass(cs)}>{CLIENT_STATUS_LABELS[cs]}</Badge>}

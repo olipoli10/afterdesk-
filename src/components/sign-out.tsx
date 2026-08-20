@@ -12,9 +12,13 @@ import { authClient } from "@/lib/auth-client";
 export function SignOutButton({
   tone = "paper",
   home = "/",
+  label = "Sign out",
+  busyLabel = "Signing out…",
 }: {
   tone?: "paper" | "night";
   home?: string;
+  label?: string;
+  busyLabel?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ export function SignOutButton({
   return (
     <span className="relative inline-flex">
       <button type="button" className={cls} disabled={busy} onClick={signOut}>
-        {busy ? "Signing out…" : "Sign out"}
+        {busy ? busyLabel : label}
       </button>
       {error ? (
         <span

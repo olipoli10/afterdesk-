@@ -33,6 +33,11 @@ export function AppShell({
   width = "default",
   tone = "paper",
   signedOutTo = "/",
+  portal = false,
+  utility,
+  notificationLabel = "Notifications",
+  signOutLabel = "Sign out",
+  signingOutLabel = "Signing out…",
 }: {
   areaLabel: string;
   nav: { href: string; label: string; badge?: number }[];
@@ -42,6 +47,13 @@ export function AppShell({
   /** "wide" for the admin console — the densest surface earns more columns. */
   width?: "default" | "wide";
   tone?: "paper" | "night";
+  /** Client workspace treatment: ENDVERA plate, data hook and wider workbench. */
+  portal?: boolean;
+  /** Small contextual control such as the client language switcher. */
+  utility?: ReactNode;
+  notificationLabel?: string;
+  signOutLabel?: string;
+  signingOutLabel?: string;
   /**
    * Where signing out lands. Signing out should return you to the storefront
    * you came from, not to a login form you didn't ask for — so the worker
@@ -55,7 +67,10 @@ export function AppShell({
   const hairline = night ? "border-white/8" : "border-[#14161A]/10";
 
   return (
-    <div className={night ? "relative min-h-screen overflow-hidden bg-[#0A0B0D]" : "min-h-screen bg-[#F7F6F3]"}>
+    <div
+      data-endvera-portal={portal ? "" : undefined}
+      className={night ? "relative min-h-screen overflow-hidden bg-[#0A0B0D]" : "min-h-screen bg-[#F7F6F3]"}
+    >
       {/* The grid + glow every glass Card (src/components/ui.tsx) blurs
           against — without something textured behind it, a translucent
           card over a flat #0A0B0D reads almost identically to an opaque
@@ -84,8 +99,8 @@ export function AppShell({
                 you look at it, so the brand read as broken (a full RSC round
                 trip, a loading flash, same route) and the app had no exit at
                 all. The portal root keeps its own nav item right below. */}
-            <Link href="/" className="text-[12px]">
-              <Wordmark tone={night ? "paper" : "ink"} />
+            <Link href="/" className="inline-flex min-h-11 items-center text-[12px]">
+              <Wordmark tone={night ? "paper" : "ink"} plate={portal} />
             </Link>
             {/* The area chip is redundant on a phone — the nav row right
                 below already names the room — and it is the 54px that
@@ -93,8 +108,8 @@ export function AppShell({
             <span
               className={
                 night
-                  ? "hidden rounded-[3px] border border-white/20 px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] text-[#8A9099] md:inline-block"
-                  : "hidden rounded-[3px] border border-[#14161A]/20 px-1.5 py-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.14em] text-[#5B6069] md:inline-block"
+                  ? "hidden rounded-[3px] border border-white/20 px-1.5 py-[3px] font-mono text-[12px] uppercase leading-none tracking-[0.14em] text-[#8A9099] md:inline-block"
+                  : "hidden rounded-[3px] border border-[#14161A]/20 px-1.5 py-[3px] font-mono text-[12px] uppercase leading-none tracking-[0.14em] text-[#5B6069] md:inline-block"
               }
             >
               {areaLabel}
@@ -115,6 +130,7 @@ export function AppShell({
             ))}
           </nav>
           <div className="ml-auto flex h-14 shrink-0 items-center gap-3">
+            {utility}
             <Link
               href="/notifications"
               className={
@@ -123,9 +139,9 @@ export function AppShell({
                   : "relative inline-flex min-h-11 items-center rounded px-2 text-[12px] font-medium text-[#5B6069] transition-colors hover:text-[#14161A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A]"
               }
             >
-              Notifications
+              {notificationLabel}
               {notificationCount > 0 ? (
-                <span className="ml-1.5 rounded-full bg-[#A82318] px-1.5 py-0.5 font-mono text-[10px] leading-none text-white">
+                <span className="ml-1.5 rounded-full bg-[#A82318] px-1.5 py-0.5 font-mono text-[12px] leading-none text-white">
                   {notificationCount > 99 ? "99+" : notificationCount}
                 </span>
               ) : null}
@@ -139,11 +155,16 @@ export function AppShell({
             >
               {userName}
             </span>
-            <SignOutButton tone={tone} home={signedOutTo} />
+            <SignOutButton
+              tone={tone}
+              home={signedOutTo}
+              label={signOutLabel}
+              busyLabel={signingOutLabel}
+            />
           </div>
         </div>
       </header>
-      <main className={`relative z-10 mx-auto w-full ${container} px-5 py-7`}>{children}</main>
+      <main className={`relative z-10 mx-auto w-full ${container} px-4 py-5 sm:px-5 sm:py-7`}>{children}</main>
     </div>
   );
 }

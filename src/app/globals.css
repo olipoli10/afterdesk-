@@ -161,6 +161,33 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* ENDVERA client room. The public story and authenticated workbench now share
+   one material system: onyx floor, graphite instruments, gilt/amber state and
+   ivory only for the client-owned document being reviewed. */
+[data-endvera-portal],
+[data-endvera-auth] {
+  color-scheme: dark;
+}
+
+[data-endvera-portal] * {
+  scrollbar-color: rgba(201, 167, 106, 0.45) rgba(255, 255, 255, 0.04);
+  scrollbar-width: thin;
+}
+
+[data-a2-thinking-box] textarea::placeholder {
+  color: rgba(183, 189, 199, 0.58);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-a2-portal-presence],
+  [data-a2-portal-presence] *,
+  [data-a2-thinking-box] * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}
+
 .display {
   letter-spacing: -0.035em;
   line-height: 1.05;

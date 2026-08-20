@@ -24,6 +24,9 @@ export function AuthShell({
   aside,
   asideTone = "paper",
   exit = "site",
+  tone = "paper",
+  backLabel = "Back to site",
+  utility,
 }: {
   /** Mono eyebrow naming the door — "Sign in" / "Client sign-up" / etc. */
   kicker: string;
@@ -35,6 +38,11 @@ export function AuthShell({
   aside?: { title: string; body: string }[];
   /** "night" folds a panel of the night homepage beside the form (client register). */
   asideTone?: "night" | "paper";
+  /** Client entry uses the same onyx/graphite/amber room as ENDVERA. */
+  tone?: "paper" | "endvera";
+  /** Localized exit label and optional language control for client entry. */
+  backLabel?: string;
+  utility?: ReactNode;
   /**
    * How the header lets you leave. "sign-out" is for a page held open by a
    * signed-in but unverified session (/verify-email): for that session "/" is
@@ -47,36 +55,57 @@ export function AuthShell({
 }) {
   const hasAside = aside && aside.length > 0;
   const stuck = exit === "sign-out";
+  const endvera = tone === "endvera";
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F6F3]">
-      <header className="border-b border-[#14161A]/10 bg-[#F7F6F3]">
+    <div
+      data-endvera-auth={endvera ? "" : undefined}
+      className={
+        endvera
+          ? "relative flex min-h-screen flex-col overflow-hidden bg-[#0A0B0D]"
+          : "flex min-h-screen flex-col bg-[#F7F6F3]"
+      }
+    >
+      {endvera ? (
+        <>
+          <div aria-hidden className="night-grid pointer-events-none fixed inset-0" />
+          <div aria-hidden className="glow-dusk pointer-events-none fixed -top-48 left-[5%] h-[620px] w-[820px] opacity-60" />
+        </>
+      ) : null}
+      <header className={endvera ? "relative z-10 border-b border-white/[0.08] bg-[#0A0B0D]/75 backdrop-blur-md" : "border-b border-[#14161A]/10 bg-[#F7F6F3]"}>
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5">
           {stuck ? (
-            <Wordmark className="text-[12px]" />
+            <Wordmark className="text-[12px]" tone={endvera ? "paper" : "ink"} plate={endvera} />
           ) : (
-            <Link href="/" className="text-[12px]">
-              <Wordmark />
+            <Link href="/" className="inline-flex min-h-11 items-center text-[12px]">
+              <Wordmark tone={endvera ? "paper" : "ink"} plate={endvera} />
             </Link>
           )}
-          {stuck ? (
-            <SignOutButton home="/" />
-          ) : (
-            <Link
-              href="/"
-              className="text-[13px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
-            >
-              ← Back to site
-            </Link>
-          )}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {utility}
+            {stuck ? (
+              <SignOutButton home="/" />
+            ) : (
+              <Link
+                href="/"
+                className={
+                  endvera
+                    ? "inline-flex min-h-11 items-center text-[13px] font-medium text-[#A1A8B3] transition-colors duration-150 hover:text-[#E2C486]"
+                    : "text-[13px] font-medium text-[#5B6069] transition-colors duration-150 hover:text-[#14161A]"
+                }
+              >
+                ← {backLabel}
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
       <main
         className={
           hasAside
-            ? "mx-auto flex w-full max-w-5xl flex-1 items-center px-5 py-12 sm:py-16"
-            : "mx-auto flex w-full max-w-[440px] flex-1 flex-col justify-center px-5 py-12 sm:py-16"
+            ? "relative z-10 mx-auto flex w-full max-w-5xl flex-1 items-center px-5 py-10 sm:py-16"
+            : "relative z-10 mx-auto flex w-full max-w-[440px] flex-1 flex-col justify-center px-5 py-10 sm:py-16"
         }
       >
         <div
@@ -85,16 +114,16 @@ export function AuthShell({
           }
         >
           <div>
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-[#5B6069]">
+            <p className={`font-mono text-[12px] font-medium uppercase tracking-[0.16em] ${endvera ? "text-[#C9A76A]" : "text-[#5B6069]"}`}>
               {kicker}
             </p>
-            <h1 className="mt-2 text-[clamp(1.6rem,5vw,2rem)] font-semibold leading-[1.1] tracking-[-0.025em] text-[#14161A]">
+            <h1 className={`mt-2 text-[clamp(1.7rem,5vw,2.2rem)] font-semibold leading-[1.08] tracking-[-0.035em] ${endvera ? "text-[#F7F6F3]" : "text-[#14161A]"}`}>
               {title}
             </h1>
-            <p className="mt-2.5 max-w-[38ch] text-[15px] leading-relaxed text-[#5B6069]">{sub}</p>
-            <div className="mt-7 overflow-hidden rounded-xl border border-[#14161A]/10 bg-white shadow-[0_1px_2px_rgba(20,22,26,0.04),0_16px_36px_-24px_rgba(20,22,26,0.22)]">
+            <p className={`mt-2.5 max-w-[42ch] text-[15px] leading-relaxed ${endvera ? "text-[#A1A8B3]" : "text-[#5B6069]"}`}>{sub}</p>
+            <div className={endvera ? "mt-7 overflow-hidden rounded-xl border border-[#6F4C29] bg-[#111317]/90 shadow-[inset_0_1px_0_rgba(226,196,134,0.08),0_24px_60px_-24px_rgba(0,0,0,0.72)] backdrop-blur-xl" : "mt-7 overflow-hidden rounded-xl border border-[#14161A]/10 bg-white shadow-[0_1px_2px_rgba(20,22,26,0.04),0_16px_36px_-24px_rgba(20,22,26,0.22)]"}>
               <div className="p-5 sm:p-6">{children}</div>
-              <div className="border-t border-[#14161A]/[0.07] bg-[#FBFAF8] px-5 py-3.5 text-[13px] leading-relaxed text-[#5B6069] sm:px-6">
+              <div className={endvera ? "border-t border-white/[0.08] bg-black/15 px-5 py-3.5 text-[13px] leading-relaxed text-[#A1A8B3] sm:px-6" : "border-t border-[#14161A]/[0.07] bg-[#FBFAF8] px-5 py-3.5 text-[13px] leading-relaxed text-[#5B6069] sm:px-6"}>
                 {footer}
               </div>
             </div>

@@ -6,35 +6,41 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { sendIntakeTurn } from "@/server/actions/intake";
 import { submitTask } from "@/server/actions/client-tasks";
 import { FileUpload, type UploadedFile } from "@/components/file-upload";
+import { A2PortalPresence } from "@/components/a2-portal-presence";
 import type { IntakeDraft } from "@/lib/ai";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import {
+  CLIENT_PORTAL_I18N,
+  type ClientPortalIntakeCopy,
+} from "@/lib/i18n/client-portal";
 import {
   Card,
   CardBody,
   Field,
   SectionLabel,
   inputClass,
+  inputClassNight,
   buttonPrimary,
   buttonSecondary,
 } from "@/components/ui";
 
 type Turn = { role: "user" | "assistant"; content: string };
 
-// The chat speaks as "we" — it is Endvera talking, never an "assistant".
-const OPENER =
-  "Tell us what you need returned, the source material involved, the rules that matter, and what a correct result looks like. We'll ask questions if anything is unclear, then structure a brief for you to review.";
-
 export function TaskChat({
   maxFileSizeMB,
   maxFiles,
   allowedExtensions,
+  copy = CLIENT_PORTAL_I18N.en.intake,
 }: {
   maxFileSizeMB: number;
   maxFiles: number;
   allowedExtensions: string[];
+  copy?: ClientPortalIntakeCopy;
 }) {
   const router = useRouter();
-  const [turns, setTurns] = useState<Turn[]>([{ role: "assistant", content: OPENER }]);
+  const [turns, setTurns] = useState<Turn[]>([
+    { role: "assistant", content: copy.opener },
+  ]);
   const [input, setInput] = useState("");
   const [draft, setDraft] = useState<IntakeDraft | null>(null);
   const [files, setFiles] = useState<UploadedFile[]>([]);
@@ -44,14 +50,13 @@ export function TaskChat({
   const [thinking, startThinking] = useTransition();
   const [submitting, startSubmit] = useTransition();
   const paneRef = useRef<HTMLDivElement>(null);
-  // On touch/small screens Enter must make a newline (virtual keyboards have
-  // no Shift+Enter); only a fine pointer gets Enter-to-send.
+  // On touch/small screens Enter must make a newline; only a fine pointer
+  // gets bare Enter-to-send.
   const desktop = useMediaQuery("(hover: hover) and (pointer: fine)");
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
-    // Scroll the transcript pane only — never yank the whole document.
     const pane = paneRef.current;
     if (pane) pane.scrollTop = pane.scrollHeight;
   }, [turns, draft, thinking]);
@@ -65,20 +70,20 @@ export function TaskChat({
     setError(null);
 
     startThinking(async () => {
-      // The opener is ours, not the model's — don't replay it as context.
+      // The local opener is presentation, not model context. A2 structures the brief;
+      // the authenticated intake action remains the only real conversation boundary.
       const result = await sendIntakeTurn(next.slice(1));
       if (!result.ok) {
         setError(result.error);
-        // Put the message back so it is never lost, and drop the turn that
-        // was never answered — the transcript must stay strictly alternating.
         setTurns(next.slice(0, -1));
         setInput(text);
         if (result.kind === "unavailable" || result.kind === "limit") setFellBack(true);
         return;
       }
-      setTurns((t) => [...t, { role: "assistant", content: result.reply }]);
-      // Always reconcile: a draft from an earlier turn must not survive a
-      // conversation that has moved on.
+      setTurns((current) => [
+        ...current,
+        { role: "assistant", content: result.reply },
+      ]);
       setDraft(result.ready && result.draft ? result.draft : null);
     });
   }
@@ -93,7 +98,7 @@ export function TaskChat({
         quantity: draft.quantity || undefined,
         deadlineLocal: deadlineLocal || undefined,
         timezone,
-        fileIds: files.map((f) => f.id),
+        fileIds: files.map((file) => file.id),
       });
       if (!result.ok) {
         setError(result.error);
@@ -105,153 +110,162 @@ export function TaskChat({
 
   return (
     <div className="space-y-4">
-      <Card>
+      <section
+        data-a2-thinking-box=""
+        aria-labelledby="a2-intake-title"
+        className="overflow-hidden rounded-[14px] border border-[#4A3A26] bg-[linear-gradient(145deg,#15171C,#0E1014_72%)] shadow-[inset_0_1px_0_rgba(226,196,134,0.08),0_28px_70px_-38px_rgba(0,0,0,0.95)]"
+      >
+        <header className="grid gap-4 border-b border-white/[0.08] p-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:p-5">
+          <A2PortalPresence label={copy.a2Label} />
+          <div className="min-w-0 self-center">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 id="a2-intake-title" className="text-[18px] font-semibold tracking-[-0.02em] text-[#F7F6F3]">
+                {copy.a2Label}
+              </h2>
+              <span className="rounded-[3px] border border-[#6F4C29] bg-[#1B1510] px-2 py-1 font-mono text-[12px] uppercase tracking-[0.12em] text-[#E2C486]">
+                {copy.a2Status}
+              </span>
+            </div>
+            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[#8F97A3]">
+              {copy.approvalNote}
+            </p>
+          </div>
+        </header>
+
         <div
           ref={paneRef}
           role="log"
           aria-live="polite"
-          aria-label="Conversation"
-          className="max-h-[min(420px,55dvh)] space-y-4 overflow-y-auto p-4 sm:p-5"
+          aria-label={copy.conversation}
+          className="max-h-[min(480px,54dvh)] space-y-3 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5"
         >
-          {turns.map((t, i) => (
+          {turns.map((turn, index) => (
             <div
-              key={i}
-              className={t.role === "user" ? "flex justify-end" : "flex justify-start"}
+              key={index}
+              className={
+                turn.role === "user"
+                  ? "ml-auto max-w-[88%] rounded-[7px] border border-white/[0.13] bg-white/[0.07] px-4 py-3 text-[14px] leading-relaxed text-[#F7F6F3] sm:max-w-[76%]"
+                  : "max-w-3xl border-l-2 border-[#D87526] bg-[#D87526]/[0.045] px-4 py-3 text-[14px] leading-relaxed text-[#D7DBE1]"
+              }
             >
-              <div
-                className={
-                  t.role === "user"
-                    ? "max-w-[85%] rounded-2xl rounded-br-sm bg-[#14161A] px-4 py-2.5 text-sm leading-relaxed text-[#F7F6F3]"
-                    : "max-w-[85%] rounded-2xl rounded-bl-sm bg-[#14161A]/[0.05] px-4 py-2.5 text-sm leading-relaxed text-[#14161A]"
-                }
-              >
-                <span className="sr-only">
-                  {t.role === "user" ? "You: " : "Endvera: "}
-                </span>
-                {t.content}
-              </div>
+              <span className="sr-only">
+                {turn.role === "user" ? "You: " : `${copy.a2Label}: `}
+              </span>
+              {turn.content}
             </div>
           ))}
           {thinking ? (
-            <div className="flex justify-start">
-              <div className="rounded-2xl rounded-bl-sm bg-[#14161A]/[0.05] px-4 py-3">
-                <span className="flex gap-1">
-                  {[0, 1, 2].map((i) => (
+            <div className="max-w-3xl border-l-2 border-[#D87526] bg-[#D87526]/[0.045] px-4 py-3">
+              <span className="flex items-center gap-2 text-[13px] text-[#A1A8B3]">
+                <span aria-hidden className="flex gap-1">
+                  {[0, 1, 2].map((index) => (
                     <span
-                      key={i}
-                      aria-hidden
-                      className="h-1.5 w-1.5 rounded-full bg-[#5B6069] motion-safe:animate-bounce"
-                      style={{ animationDelay: `${i * 120}ms` }}
+                      key={index}
+                      className="h-1.5 w-1.5 rounded-full bg-[#D87526] motion-safe:animate-pulse"
+                      style={{ animationDelay: `${index * 160}ms` }}
                     />
                   ))}
-                  <span className="sr-only">Writing a reply…</span>
                 </span>
-              </div>
+                {copy.writing}
+              </span>
             </div>
           ) : null}
         </div>
 
-        <div className="border-t border-[#14161A]/10 p-3">
-          <div className="flex items-end gap-2">
+        <div className="border-t border-white/[0.08] bg-black/10 p-3 sm:p-4">
+          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-end">
             <textarea
-              rows={2}
-              className={`${inputClass} resize-none`}
-              aria-label="Describe your task"
-              placeholder="e.g. Return a clean CRM import with duplicates merged, required fields normalized, sources noted, and uncertain records in an exception log…"
+              rows={3}
+              className={`${inputClassNight} min-h-[92px] resize-y`}
+              aria-label={copy.inputLabel}
+              placeholder={copy.placeholder}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key !== "Enter") return;
-                // Ctrl/Cmd+Enter always sends; bare Enter sends only with a
-                // fine pointer — on touch keyboards it makes a newline.
-                if (e.ctrlKey || e.metaKey || (desktop && !e.shiftKey)) {
-                  e.preventDefault();
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                if (event.ctrlKey || event.metaKey || (desktop && !event.shiftKey)) {
+                  event.preventDefault();
                   send();
                 }
               }}
             />
             <button
+              type="button"
               onClick={send}
               disabled={thinking || input.trim().length === 0}
-              className={buttonPrimary}
+              className="inline-flex min-h-12 items-center justify-center rounded-[7px] bg-[#C9A76A] px-5 text-[14px] font-semibold text-[#14161A] transition-colors hover:bg-[#E2C486] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E2C486] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0E1014] disabled:cursor-not-allowed disabled:opacity-40 sm:min-w-28"
             >
-              Send
+              {thinking ? copy.sendingReply : copy.send}
             </button>
           </div>
           {desktop ? (
-            <p className="mt-1.5 text-xs text-[#5B6069]">
-              Enter to send · Shift+Enter for a new line
-            </p>
+            <p className="mt-2 text-[12px] text-[#78808B]">{copy.keyboard}</p>
           ) : null}
         </div>
-      </Card>
+      </section>
 
       {error ? (
         <div
           role="alert"
-          className="rounded-md border border-[#A23B2E]/40 bg-[#A23B2E]/10 px-4 py-3"
+          className="rounded-[8px] border border-[#FF9A8B]/30 bg-[#A23B2E]/15 px-4 py-3"
         >
-          <p className="text-sm text-[#8C2F23]">{error}</p>
+          <p className="text-sm text-[#FFB1A5]">{error}</p>
           {fellBack ? (
             <Link
               href="/client/tasks/new?mode=form"
-              className="mt-1.5 inline-block text-sm font-medium text-[#8C2F23] underline decoration-[#8C2F23]/40 underline-offset-2 transition-colors duration-150 hover:decoration-[#8C2F23]"
+              className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-[#F7C1B8] underline decoration-[#F7C1B8]/40 underline-offset-2"
             >
-              Write the task out myself
+              {copy.fallback}
             </Link>
           ) : null}
         </div>
       ) : null}
 
       {draft ? (
-        <Card className="border-[#14161A]/20">
-          <CardBody>
-            <SectionLabel as="h2">Your brief: edit anything before sending</SectionLabel>
+        <Card className="border-[#C9A76A]/30 bg-[#F7F6F3] shadow-[0_24px_60px_-40px_rgba(0,0,0,0.95)]">
+          <CardBody className="sm:p-6">
+            <SectionLabel as="h2">{copy.briefHeading}</SectionLabel>
             <div className="mt-4 space-y-4">
-              <Field label="Title">
+              <Field label={copy.titleLabel}>
                 <input
                   className={inputClass}
                   value={draft.title}
-                  onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                  onChange={(event) => setDraft({ ...draft, title: event.target.value })}
                 />
               </Field>
-              <Field label="Deliverable, rules and definition of done">
+              <Field label={copy.descriptionLabel}>
                 <textarea
                   rows={7}
                   className={inputClass}
                   value={draft.description}
-                  onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                  onChange={(event) => setDraft({ ...draft, description: event.target.value })}
                 />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Quantity / volume">
+                <Field label={copy.quantityLabel}>
                   <input
                     className={inputClass}
                     value={draft.quantity}
-                    onChange={(e) => setDraft({ ...draft, quantity: e.target.value })}
+                    onChange={(event) => setDraft({ ...draft, quantity: event.target.value })}
                   />
                 </Field>
                 <Field
-                  label="Deadline"
+                  label={copy.deadlineLabel}
                   hint={
                     draft.deadlineHint
-                      ? `You said: “${draft.deadlineHint}”. Set the exact time (${timezone}).`
-                      : `Optional. Your local time (${timezone}).`
+                      ? copy.deadlineSaid.replace("{hint}", `“${draft.deadlineHint}”`).replace("{timezone}", timezone)
+                      : copy.deadlineOptional.replace("{timezone}", timezone)
                   }
                 >
                   <input
                     type="datetime-local"
                     className={inputClass}
                     value={deadlineLocal}
-                    onChange={(e) => setDeadlineLocal(e.target.value)}
+                    onChange={(event) => setDeadlineLocal(event.target.value)}
                   />
                 </Field>
               </div>
-              <Field
-                label="Files"
-                hint="Source material the work operates on: an export, a list, spreadsheets or documents."
-                group
-              >
+              <Field label={copy.filesLabel} hint={copy.filesHint} group>
                 <FileUpload
                   maxFileSizeMB={maxFileSizeMB}
                   maxFiles={maxFiles}
@@ -261,15 +275,15 @@ export function TaskChat({
                 />
               </Field>
 
-              <div className="flex flex-wrap items-center gap-3 border-t border-[#14161A]/[0.06] pt-4">
-                <button onClick={submit} disabled={submitting} className={buttonPrimary}>
-                  {submitting ? "Sending…" : "Send this task"}
+              <div className="flex flex-wrap items-center gap-3 border-t border-[#14161A]/[0.08] pt-4">
+                <button type="button" onClick={submit} disabled={submitting} className={buttonPrimary}>
+                  {submitting ? copy.submitting : copy.submit}
                 </button>
-                <button onClick={() => setDraft(null)} className={buttonSecondary}>
-                  Keep talking
+                <button type="button" onClick={() => setDraft(null)} className={buttonSecondary}>
+                  {copy.keepTalking}
                 </button>
-                <span className="text-xs text-[#5B6069]">
-                  You&apos;ll get one fixed price to approve. Nothing starts before you do.
+                <span className="max-w-md text-xs leading-relaxed text-[#5B6069]">
+                  {copy.approvalNote}
                 </span>
               </div>
             </div>

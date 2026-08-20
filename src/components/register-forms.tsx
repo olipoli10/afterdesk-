@@ -6,10 +6,11 @@ import { authClient } from "@/lib/auth-client";
 import { registerVa } from "@/server/actions/auth";
 import { GoogleButton, OrDivider } from "@/components/google-button";
 import { PasswordFields, passwordProblem } from "@/components/password-fields";
-import { Field, inputClass, buttonPrimary } from "@/components/ui";
+import { Field, inputClass, inputClassNight, buttonPrimary } from "@/components/ui";
+import { CLIENT_PORTAL_I18N, type ClientPortalAuthFormCopy } from "@/lib/i18n/client-portal";
 
 const fieldLabelClass =
-  "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[#5B6069]";
+  "font-mono text-[12px] font-medium uppercase tracking-[0.1em] text-[#5B6069]";
 
 /** The login modal's dark-glass button: inverted from buttonPrimary (light on
  *  dark instead of dark on light) so it still reads as the primary action
@@ -17,7 +18,15 @@ const fieldLabelClass =
 const buttonPrimaryGlass =
   "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md bg-white px-4 py-2 text-sm font-medium text-[#14161A] transition-colors duration-150 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-40";
 
-export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }) {
+export function ClientRegisterForm({
+  googleEnabled,
+  tone = "paper",
+  copy = CLIENT_PORTAL_I18N.en.auth.form,
+}: {
+  googleEnabled: boolean;
+  tone?: "paper" | "glass";
+  copy?: ClientPortalAuthFormCopy;
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,19 +34,24 @@ export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const glass = tone === "glass";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const problem = passwordProblem(password, confirm);
     if (problem) {
-      setError(problem);
+      setError(
+        password.length < 10
+          ? copy.passwordTooShort.replace("{min}", "10")
+          : copy.passwordMismatch,
+      );
       return;
     }
     setBusy(true);
     setError(null);
     const { error } = await authClient.signUp.email({ name, email, password });
     if (error) {
-      setError(error.message ?? "Sign-up failed.");
+      setError(error.message ?? copy.signUpFailed);
       setBusy(false);
       return;
     }
@@ -49,28 +63,28 @@ export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }
     <div className="space-y-5">
       {googleEnabled ? (
         <>
-          <GoogleButton label="Sign up with Google" />
-          <OrDivider />
+          <GoogleButton label={copy.googleSignUp} busyLabel={copy.googleBusy} tone={tone} />
+          <OrDivider tone={tone} labelText={copy.or} />
         </>
       ) : null}
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <Field label="Company or contact name">
+        <Field label={copy.name} tone={tone}>
           <input
             required
             minLength={2}
             autoComplete="organization"
-            className={inputClass}
+            className={glass ? inputClassNight : inputClass}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </Field>
-        <Field label="Email">
+        <Field label={copy.email} tone={tone}>
           <input
             type="email"
             required
             autoComplete="email"
-            className={inputClass}
+            className={glass ? inputClassNight : inputClass}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -80,14 +94,16 @@ export function ClientRegisterForm({ googleEnabled }: { googleEnabled: boolean }
           confirm={confirm}
           onPasswordChange={setPassword}
           onConfirmChange={setConfirm}
+          tone={tone}
+          copy={copy}
         />
         {error ? (
-          <p role="alert" className="text-sm text-[#8C2F23]">
+          <p role="alert" className={`text-sm ${glass ? "text-[#FF9A8B]" : "text-[#8C2F23]"}`}>
             {error}
           </p>
         ) : null}
-        <button type="submit" disabled={busy} className={`${buttonPrimary} w-full`}>
-          {busy ? "Creating account…" : "Create account"}
+        <button type="submit" disabled={busy} className={`${glass ? buttonPrimaryGlass : buttonPrimary} w-full`}>
+          {busy ? copy.creating : copy.create}
         </button>
       </form>
     </div>
@@ -239,6 +255,7 @@ export function LoginForm({
   next,
   tone = "paper",
   workerAudience = false,
+  copy = CLIENT_PORTAL_I18N.en.auth.form,
 }: {
   googleEnabled: boolean;
   /** Same-origin path to return to after sign-in — already validated server-side. */
@@ -268,6 +285,7 @@ export function LoginForm({
    * email + password they applied with.
    */
   workerAudience?: boolean;
+  copy?: ClientPortalAuthFormCopy;
 }) {
   const router = useRouter();
   const passwordId = useId();
@@ -298,7 +316,7 @@ export function LoginForm({
     setError(null);
     const { error } = await authClient.signIn.email({ email, password, rememberMe });
     if (error) {
-      setError(error.message ?? "Sign-in failed.");
+      setError(error.message ?? copy.signInFailed);
       setBusy(false);
       return;
     }
@@ -325,26 +343,25 @@ export function LoginForm({
           {/* OAuth returns through a full document load and the account's role
               is unknowable until it completes, so "/" — which redirects a
               signed-in visitor to their portal — stays the right fallback. */}
-          <GoogleButton label="Continue with Google" callbackURL={deepLink ?? "/"} />
-          <OrDivider tone={tone} />
+          <GoogleButton label={copy.googleSignIn} busyLabel={copy.googleBusy} callbackURL={deepLink ?? "/"} tone={tone} />
+          <OrDivider tone={tone} labelText={copy.or} />
         </>
       ) : null}
       {workerAudience ? (
         <p
           className={`text-[13px] leading-relaxed ${tone === "paper" ? "text-[#5B6069]" : "text-white/55"}`}
         >
-          Specialist accounts sign in with email and password — Google sign-in always opens a
-          client account.
+          {copy.workerNote}
         </p>
       ) : null}
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <Field label="Email" tone={tone}>
+        <Field label={copy.email} tone={tone}>
           <input
             type="email"
             required
             autoComplete="email"
-            className={inputClass}
+            className={tone === "glass" ? inputClassNight : inputClass}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -353,9 +370,9 @@ export function LoginForm({
           <div className="mb-1.5 flex items-baseline justify-between">
             <label
               htmlFor={passwordId}
-              className={tone === "glass" ? "font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-white/55" : fieldLabelClass}
+              className={tone === "glass" ? "font-mono text-[12px] font-medium uppercase tracking-[0.1em] text-white/55" : fieldLabelClass}
             >
-              Password
+              {copy.password}
             </label>
             <button
               type="button"
@@ -367,7 +384,7 @@ export function LoginForm({
               }
               aria-pressed={show}
             >
-              {show ? "Hide password" : "Show password"}
+              {show ? copy.hidePassword : copy.showPassword}
             </button>
           </div>
           <input
@@ -375,7 +392,7 @@ export function LoginForm({
             type={show ? "text" : "password"}
             required
             autoComplete="current-password"
-            className={inputClass}
+            className={tone === "glass" ? inputClassNight : inputClass}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -387,11 +404,11 @@ export function LoginForm({
           <input
             id={rememberMeId}
             type="checkbox"
-            className={tone === "glass" ? "accent-[#F7F6F3]" : "accent-[#14161A]"}
+            className={tone === "glass" ? "h-4 w-4 accent-[#F7F6F3]" : "h-4 w-4 accent-[#14161A]"}
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
           />
-          Keep me signed in on this device
+          {copy.remember}
         </label>
         {error ? (
           <p role="alert" className={`text-sm ${tone === "glass" ? "text-[#FF9A8B]" : "text-[#8C2F23]"}`}>
@@ -403,7 +420,7 @@ export function LoginForm({
           disabled={busy}
           className={`${tone === "glass" ? buttonPrimaryGlass : buttonPrimary} w-full`}
         >
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? copy.signingIn : copy.signIn}
         </button>
       </form>
     </div>

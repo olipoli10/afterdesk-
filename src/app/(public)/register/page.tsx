@@ -1,33 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { googleEnabled } from "@/lib/auth";
 import { getSessionUser, roleHome } from "@/lib/authz";
 import { AuthShell } from "@/components/auth-shell";
 import { ClientRegisterForm } from "@/components/register-forms";
-import { linkInline } from "@/components/ui";
+import { linkInlineNight } from "@/components/ui";
+import { ClientLanguageSwitch } from "@/components/client-language-switch";
+import { CLIENT_PORTAL_I18N, clientPortalLangOf } from "@/lib/i18n/client-portal";
 
-export const metadata: Metadata = {
-  title: "Client sign-up",
-  description: "Create an Endvera client account: describe a deliverable, approve a fixed price and download reviewed work.",
-  robots: { index: false, follow: false },
-};
-
-/* The night homepage's promise, folded beside the paper form. */
-const ASIDE = [
-  {
-    title: "Scope and price come first",
-    body: "Describe the deliverable, receive one fixed price for a one-off task, and approve it before work begins.",
-  },
-  {
-    title: "Reviewed before you see it",
-    body: "Every delivery is checked against your brief before it reaches you. You get the corrected version, not the first attempt.",
-  },
-  {
-    title: "One-off work needs no subscription",
-    body: "Use a one-off task without a retainer or minimum. You approve one fixed price per deliverable before anything starts.",
-  },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = clientPortalLangOf((await headers()).get("x-site-lang"));
+  const copy = CLIENT_PORTAL_I18N[lang].auth;
+  return { title: copy.registerKicker, description: copy.registerSub, robots: { index: false, follow: false } };
+}
 
 export default async function RegisterClientPage() {
   // Same guard as both /login copies (src/app/(public)/login and
@@ -40,24 +27,29 @@ export default async function RegisterClientPage() {
   // duplicate email.
   const user = await getSessionUser();
   if (user) redirect(roleHome(user.role));
+  const lang = clientPortalLangOf((await headers()).get("x-site-lang"));
+  const copy = CLIENT_PORTAL_I18N[lang].auth;
 
   return (
     <AuthShell
-      kicker="Client sign-up"
-      title="Create your account."
-      sub="Describe deliverables, approve one-off pricing, and download reviewed work."
-      aside={ASIDE}
+      tone="endvera"
+      kicker={copy.registerKicker}
+      title={copy.registerTitle}
+      sub={copy.registerSub}
+      aside={copy.registerAside}
       asideTone="night"
+      backLabel={copy.backToSite}
+      utility={<ClientLanguageSwitch current={lang} />}
       footer={
         <>
-          Already registered?{" "}
-          <Link href="/login" className={linkInline}>
-            Sign in
+          {copy.alreadyRegistered}{" "}
+          <Link href="/login" className={`inline-flex min-h-11 items-center ${linkInlineNight}`}>
+            {copy.signInLink}
           </Link>
         </>
       }
     >
-      <ClientRegisterForm googleEnabled={googleEnabled} />
+      <ClientRegisterForm googleEnabled={googleEnabled} tone="glass" copy={copy.form} />
     </AuthShell>
   );
 }

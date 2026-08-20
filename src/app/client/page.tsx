@@ -1,59 +1,53 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { requireRole } from "@/lib/authz";
 import { tasksForClient, type ClientTaskView } from "@/lib/queries/tasks";
 import {
   clientStatusOf,
   clientBadgeClass,
-  CLIENT_STATUS_LABELS,
   type ClientStatus,
 } from "@/lib/status";
 import { formatCents } from "@/lib/money";
 import { LocalTime } from "@/components/local-time";
+import { A2PortalPresence } from "@/components/a2-portal-presence";
+import { Badge, Card, moneyClient } from "@/components/ui";
 import {
-  Badge,
-  Card,
-  EmptyState,
-  LinkButton,
-  PageTitle,
-  SectionLabel,
-  moneyClient,
-} from "@/components/ui";
+  CLIENT_PORTAL_I18N,
+  clientPortalLangOf,
+} from "@/lib/i18n/client-portal";
 
-/**
- * Section titles in display order. Typed as Record<ClientStatus, string> so a
- * new client status can never be silently unlisted — the compiler forces an
- * entry here, and Object.keys preserves this insertion order.
- */
-const SECTION_TITLES: Record<ClientStatus, string> = {
-  quote_ready: "Action needed — your price is ready",
-  awaiting_payment: "Awaiting your payment",
-  being_priced: "Being priced",
-  awaiting_routing: "Waiting to be scheduled",
-  in_progress: "In progress",
-  revision_in_progress: "Revision in progress",
-  under_review: "Under review",
-  completed: "Completed",
-  declined: "Declined",
-  expired: "Expired",
-  cancelled: "Cancelled",
-};
+const SECTION_ORDER: ClientStatus[] = [
+  "quote_ready",
+  "awaiting_payment",
+  "being_priced",
+  "awaiting_routing",
+  "in_progress",
+  "revision_in_progress",
+  "under_review",
+  "completed",
+  "declined",
+  "expired",
+  "cancelled",
+];
 
-const SECTION_ORDER = Object.keys(SECTION_TITLES) as ClientStatus[];
+type DashboardCopy = (typeof CLIENT_PORTAL_I18N)["en"]["dashboard"];
 
-function TaskRow({ task }: { task: ClientTaskView }) {
+function TaskRow({ task, copy }: { task: ClientTaskView; copy: DashboardCopy }) {
   const cs = clientStatusOf(task.status, task.standingCapacityAccountId !== null);
   return (
     <Link
       href={`/client/tasks/${task.id}`}
-      className="flex items-center justify-between gap-4 px-4 py-3 transition-colors duration-150 hover:bg-[#14161A]/[0.02]"
+      className="flex min-h-16 flex-col items-start justify-between gap-3 px-4 py-3.5 transition-colors duration-150 hover:bg-[#14161A]/[0.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#D87526] sm:flex-row sm:items-center"
     >
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-[#14161A]">{task.title}</p>
-        <p className="mt-0.5 text-xs text-[#5B6069]">
-          Submitted <LocalTime iso={task.createdAt} dateStyle="short" />
+        <p className="line-clamp-2 text-[15px] font-medium text-[#14161A] sm:truncate">
+          {task.title}
+        </p>
+        <p className="mt-1 text-[12px] leading-relaxed text-[#5B6069]">
+          {copy.submitted} <LocalTime iso={task.createdAt} dateStyle="short" />
           {task.clientDeadlineUtc ? (
             <>
-              {" · "}Deadline <LocalTime iso={task.clientDeadlineUtc} dateStyle="short" />
+              {" · "}{copy.deadline} <LocalTime iso={task.clientDeadlineUtc} dateStyle="short" />
             </>
           ) : null}
         </p>
@@ -65,7 +59,7 @@ function TaskRow({ task }: { task: ClientTaskView }) {
             {formatCents(task.clientPriceCents, task.currency)}
           </span>
         ) : null}
-        <Badge className={clientBadgeClass(cs)}>{CLIENT_STATUS_LABELS[cs]}</Badge>
+        <Badge className={clientBadgeClass(cs)}>{copy.statusLabels[cs]}</Badge>
       </div>
     </Link>
   );
@@ -73,49 +67,112 @@ function TaskRow({ task }: { task: ClientTaskView }) {
 
 export default async function ClientDashboard() {
   const user = await requireRole("CLIENT");
+  const lang = clientPortalLangOf((await headers()).get("x-site-lang"));
+  const copy = CLIENT_PORTAL_I18N[lang].dashboard;
   const tasks = await tasksForClient(user.id);
 
-  if (tasks.length === 0) {
-    return (
-      <>
-        <PageTitle title="My tasks" />
-        <EmptyState
-          title="No tasks yet"
-          body="Describe what you need done — CRM cleanup, data entry, list research, prospecting — and attach the files it operates on. We review it, you get one fixed price to approve, and the work comes back quality-checked."
-          action={<LinkButton href="/client/tasks/new">Submit your first task</LinkButton>}
-        />
-      </>
-    );
+  const grouped = new Map<ClientStatus, ClientTaskView[]>();
+  for (const task of tasks) {
+    const status = clientStatusOf(task.status, task.standingCapacityAccountId !== null);
+    grouped.set(status, [...(grouped.get(status) ?? []), task]);
   }
 
-  const grouped = new Map<ClientStatus, ClientTaskView[]>();
-  for (const t of tasks) {
-    const cs = clientStatusOf(t.status, t.standingCapacityAccountId !== null);
-    grouped.set(cs, [...(grouped.get(cs) ?? []), t]);
-  }
+  const needsAction = (grouped.get("quote_ready")?.length ?? 0) + (grouped.get("awaiting_payment")?.length ?? 0);
+  const inMotion = ["being_priced", "awaiting_routing", "in_progress", "revision_in_progress"]
+    .reduce((total, status) => total + (grouped.get(status as ClientStatus)?.length ?? 0), 0);
+  const inReview = grouped.get("under_review")?.length ?? 0;
+  const delivered = grouped.get("completed")?.length ?? 0;
+
+  const overview = [
+    { label: copy.needsAction, value: needsAction, accent: needsAction > 0 },
+    { label: copy.inMotion, value: inMotion },
+    { label: copy.inReview, value: inReview },
+    { label: copy.delivered, value: delivered },
+  ];
 
   return (
-    <>
-      <PageTitle
-        title="My tasks"
-        action={<LinkButton href="/client/tasks/new">New task</LinkButton>}
-      />
-      <div className="space-y-6">
-        {SECTION_ORDER.filter((key) => grouped.has(key)).map((key) => (
-          <section key={key}>
-            <SectionLabel as="h2" className="mb-2">
-              {SECTION_TITLES[key]}
-            </SectionLabel>
-            <Card>
-              <div className="divide-y divide-[#14161A]/[0.06]">
-                {grouped.get(key)!.map((t) => (
-                  <TaskRow key={t.id} task={t} />
-                ))}
-              </div>
-            </Card>
-          </section>
-        ))}
-      </div>
-    </>
+    <div className="space-y-6 text-[#F7F6F3]">
+      <header>
+        <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-[#C9A76A]">
+          {copy.kicker}
+        </p>
+        <h1 className="mt-2 max-w-[24ch] text-[clamp(1.75rem,4vw,2.7rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
+          {copy.title}
+        </h1>
+        <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[#A1A8B3]">{copy.sub}</p>
+      </header>
+
+      <section
+        data-portal-request=""
+        className="relative overflow-hidden rounded-[14px] border border-[#4A3A26] bg-[linear-gradient(135deg,rgba(29,23,16,.98),rgba(13,15,19,.99)_62%)] p-5 shadow-[inset_0_1px_0_rgba(226,196,134,0.09),0_24px_60px_-36px_rgba(0,0,0,0.9)] sm:p-7"
+      >
+        <div aria-hidden className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(226,196,134,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(226,196,134,.05)_1px,transparent_1px)] [background-size:40px_40px]" />
+        <div className="relative grid items-center gap-5 md:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="flex items-start gap-4">
+            <A2PortalPresence label="A2" />
+            <div className="min-w-0 pt-1">
+              <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-[#D87526]">
+                {copy.requestKicker}
+              </p>
+              <h2 className="mt-2 text-[clamp(1.25rem,3vw,1.75rem)] font-semibold leading-tight tracking-[-0.025em]">
+                {copy.requestTitle}
+              </h2>
+              <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-[#B7BDC7]">
+                {copy.requestBody}
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/client/tasks/new"
+            className="inline-flex min-h-12 items-center justify-center rounded-[7px] border border-[#C9A76A] bg-[#C9A76A] px-5 text-[14px] font-semibold text-[#14161A] transition-colors hover:bg-[#E2C486] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E2C486] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0B0D]"
+          >
+            {copy.requestCta}
+          </Link>
+        </div>
+      </section>
+
+      <section data-portal-overview="" aria-labelledby="portal-overview-title">
+        <h2 id="portal-overview-title" className="mb-3 font-mono text-[12px] uppercase tracking-[0.14em] text-[#8F97A3]">
+          {copy.overview}
+        </h2>
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+          {overview.map((item) => (
+            <div key={item.label} className="rounded-[10px] border border-white/[0.11] bg-white/[0.045] px-4 py-3.5 backdrop-blur-xl">
+              <p className={`font-mono text-[clamp(1.45rem,4vw,2rem)] tabular-nums ${item.accent ? "text-[#E2C486]" : "text-[#F7F6F3]"}`}>
+                {item.value.toString().padStart(2, "0")}
+              </p>
+              <p className="mt-1 text-[12px] text-[#A1A8B3]">{item.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section aria-label={CLIENT_PORTAL_I18N[lang].shell.tasks} className="space-y-5 pb-6">
+        {tasks.length === 0 ? (
+          <div className="rounded-[12px] border border-dashed border-white/20 bg-white/[0.035] px-5 py-10">
+            <h2 className="text-[15px] font-medium">{copy.noTasks}</h2>
+            <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-[#A1A8B3]">{copy.noTasksBody}</p>
+            <Link href="/client/tasks/new" className="mt-5 inline-flex min-h-11 items-center rounded-md border border-[#C9A76A] px-4 text-sm font-medium text-[#E2C486]">
+              {copy.firstTask}
+            </Link>
+          </div>
+        ) : (
+          SECTION_ORDER.filter((status) => grouped.has(status)).map((status) => (
+            <section key={status}>
+              <h2 className="mb-2.5 font-mono text-[12px] uppercase tracking-[0.13em] text-[#A1A8B3]">
+                {copy.sectionTitles[status]}
+              </h2>
+              <Card className="overflow-hidden border-[#C9A76A]/20 bg-[#F7F6F3] shadow-[0_18px_44px_-34px_rgba(0,0,0,0.95)]">
+                <div className="divide-y divide-[#14161A]/[0.07]">
+                  {grouped.get(status)!.map((task) => (
+                    <TaskRow key={task.id} task={task} copy={copy} />
+                  ))}
+                </div>
+              </Card>
+            </section>
+          ))
+        )}
+      </section>
+    </div>
   );
 }

@@ -30,6 +30,7 @@ export function LangSwitch<T extends string>({
   current,
   options,
   tone,
+  search = "",
 }: {
   path: string;
   current: T;
@@ -39,6 +40,8 @@ export function LangSwitch<T extends string>({
      belongs to the instrument instead of glaring against it. "night" and
      "paper" render byte-identical to before. */
   tone: "night" | "paper" | "onyx";
+  /** Existing safe query state to preserve while replacing only `lang`. */
+  search?: string;
 }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
@@ -55,6 +58,12 @@ export function LangSwitch<T extends string>({
 
   function closeMenu() {
     if (detailsRef.current) detailsRef.current.open = false;
+  }
+
+  function languageHref(code: T) {
+    const query = new URLSearchParams(search);
+    query.set("lang", code);
+    return `${path}?${query.toString()}`;
   }
 
   const active =
@@ -75,7 +84,7 @@ export function LangSwitch<T extends string>({
       <details ref={detailsRef} className="group relative sm:hidden">
         <summary
           aria-label="Choose language"
-          className={`flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded font-mono text-[11px] uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current ${active}`}
+          className={`flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded font-mono text-[12px] uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current ${active}`}
         >
           {options.find((option) => option.code === current)?.label ?? current}
         </summary>
@@ -90,7 +99,7 @@ export function LangSwitch<T extends string>({
           {options.map((option) => (
             <Link
               key={option.code}
-              href={`${path}?lang=${option.code}`}
+              href={languageHref(option.code)}
               hrefLang={option.code}
               aria-current={option.code === current ? "true" : undefined}
               onClick={closeMenu}
@@ -105,12 +114,12 @@ export function LangSwitch<T extends string>({
       </details>
       <nav
         aria-label="Language"
-        className="hidden items-center gap-0.5 font-mono text-[11px] sm:flex"
+        className="hidden items-center gap-0.5 font-mono text-[12px] sm:flex"
       >
         {options.map((option) => (
           <Link
             key={option.code}
-            href={`${path}?lang=${option.code}`}
+            href={languageHref(option.code)}
             hrefLang={option.code}
             aria-current={option.code === current ? "true" : undefined}
             className={`flex min-h-11 items-center whitespace-nowrap rounded px-1.5 transition-colors duration-150 ${

@@ -106,7 +106,7 @@ export function assertSingleA2() {
   }
 }
 
-function A2Sprite({ rects, px, label }: { rects: Rect[]; px: number; label?: string }) {
+export function A2Sprite({ rects, px, label }: { rects: Rect[]; px: number; label?: string }) {
   return (
     <svg
       data-a2-being=""

@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { googleEnabled } from "@/lib/auth";
 import { getSessionUser, roleHome, safeNextParam } from "@/lib/authz";
 import { AuthShell } from "@/components/auth-shell";
 import { LoginForm } from "@/components/register-forms";
-import { linkInline } from "@/components/ui";
+import { linkInlineNight } from "@/components/ui";
+import { ClientLanguageSwitch } from "@/components/client-language-switch";
+import { CLIENT_PORTAL_I18N, clientPortalLangOf } from "@/lib/i18n/client-portal";
 
 /*
  * THE FULL-PAGE FALLBACK. A soft navigation to /login from anywhere inside
@@ -18,11 +21,11 @@ import { linkInline } from "@/components/ui";
  * modal, it is the page every one of those direct arrivals actually gets.
  */
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your Endvera dashboard.",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = clientPortalLangOf((await headers()).get("x-site-lang"));
+  const copy = CLIENT_PORTAL_I18N[lang].auth;
+  return { title: copy.loginKicker, description: copy.loginSub, robots: { index: false, follow: false } };
+}
 
 export default async function LoginPage({
   searchParams,
@@ -47,21 +50,31 @@ export default async function LoginPage({
   const next = safeNextParam(params.next);
   const applied = params.applied === "1";
   const workerAudience = params.audience === "worker";
+  const lang = clientPortalLangOf((await headers()).get("x-site-lang"));
+  const copy = CLIENT_PORTAL_I18N[lang].auth;
+  const languageParams = new URLSearchParams();
+  if (next) languageParams.set("next", next);
+  if (applied) languageParams.set("applied", "1");
+  if (workerAudience) languageParams.set("audience", "worker");
+  const languageSearch = languageParams.toString();
 
   return (
     <AuthShell
-      kicker="Sign in"
-      title="Welcome back."
-      sub="Sign in to your dashboard."
+      tone="endvera"
+      kicker={copy.loginKicker}
+      title={copy.loginTitle}
+      sub={copy.loginSub}
+      backLabel={copy.backToSite}
+      utility={<ClientLanguageSwitch current={lang} search={languageSearch} />}
       footer={
         <>
-          No account yet?{" "}
-          <Link href="/register" className={linkInline}>
-            Client sign-up
+          {copy.noAccount}{" "}
+          <Link href="/register" className={`inline-flex min-h-11 items-center ${linkInlineNight}`}>
+            {copy.clientSignup}
           </Link>{" "}
           ·{" "}
-          <Link href="/register/va" className={linkInline}>
-            Specialist application
+          <Link href="/register/va" className={`inline-flex min-h-11 items-center ${linkInlineNight}`}>
+            {copy.specialistApplication}
           </Link>
         </>
       }
@@ -69,12 +82,18 @@ export default async function LoginPage({
       {applied ? (
         <p
           role="status"
-          className="mb-5 rounded-md border-l-[3px] border-[#166049] bg-[#166049]/[0.06] px-3 py-2.5 text-sm leading-relaxed text-[#14161A]"
+          className="mb-5 rounded-md border-l-[3px] border-[#3DDCA0] bg-[#3DDCA0]/[0.08] px-3 py-2.5 text-sm leading-relaxed text-[#D7F7EA]"
         >
-          Application received — sign in to continue.
+          {copy.applicationReceived}
         </p>
       ) : null}
-      <LoginForm googleEnabled={googleEnabled} next={next} workerAudience={workerAudience} />
+      <LoginForm
+        googleEnabled={googleEnabled}
+        next={next}
+        workerAudience={workerAudience}
+        tone="glass"
+        copy={copy.form}
+      />
     </AuthShell>
   );
 }

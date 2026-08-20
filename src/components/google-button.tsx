@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { buttonSecondary } from "@/components/ui";
+import { buttonSecondary, buttonSecondaryNight } from "@/components/ui";
 
 /**
  * Google sign-in. Rendered only when the server reports credentials are
@@ -12,10 +12,14 @@ import { buttonSecondary } from "@/components/ui";
 export function GoogleButton({
   label = "Continue with Google",
   callbackURL = "/",
+  tone = "paper",
+  busyLabel = "Redirecting…",
 }: {
   label?: string;
   /** Same-origin path to land on after OAuth — callers validate it. */
   callbackURL?: string;
+  tone?: "paper" | "glass";
+  busyLabel?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +38,7 @@ export function GoogleButton({
             setBusy(false);
           }
         }}
-        className={`${buttonSecondary} lift w-full`}
+        className={`${tone === "glass" ? buttonSecondaryNight : buttonSecondary} lift w-full`}
       >
         <svg aria-hidden viewBox="0 0 18 18" className="h-[18px] w-[18px]">
           <path
@@ -54,10 +58,10 @@ export function GoogleButton({
             d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"
           />
         </svg>
-        {busy ? "Redirecting…" : label}
+        {busy ? busyLabel : label}
       </button>
       {error ? (
-        <p role="alert" className="text-sm text-[#8C2F23]">
+        <p role="alert" className={`text-sm ${tone === "glass" ? "text-[#FF9A8B]" : "text-[#8C2F23]"}`}>
           {error}
         </p>
       ) : null}
@@ -65,13 +69,13 @@ export function GoogleButton({
   );
 }
 
-export function OrDivider({ tone = "paper" }: { tone?: "paper" | "glass" }) {
+export function OrDivider({ tone = "paper", labelText = "or" }: { tone?: "paper" | "glass"; labelText?: string }) {
   const line = tone === "glass" ? "bg-white/15" : "bg-[#14161A]/10";
   const label = tone === "glass" ? "text-white/45" : "text-[#5B6069]";
   return (
     <div className="flex items-center gap-3 py-1">
       <span className={`h-px flex-1 ${line}`} />
-      <span className={`font-mono text-[10px] font-medium uppercase tracking-[0.14em] ${label}`}>or</span>
+      <span className={`font-mono text-[12px] font-medium uppercase tracking-[0.14em] ${label}`}>{labelText}</span>
       <span className={`h-px flex-1 ${line}`} />
     </div>
   );

@@ -77,7 +77,7 @@ export function SectionLabel({
 }) {
   const muted = tone === "night" ? "text-[#8A9099]" : "text-[#5B6069]";
   return (
-    <Tag className={`font-mono text-[11px] font-medium uppercase tracking-[0.14em] ${muted} ${className}`}>
+    <Tag className={`font-mono text-[12px] font-medium uppercase tracking-[0.14em] ${muted} ${className}`}>
       {children}
     </Tag>
   );
@@ -87,7 +87,7 @@ export function SectionLabel({
 export function Badge({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-[3px] border px-1.5 py-[3px] font-mono text-[11px] font-medium uppercase leading-none tracking-[0.08em] ${className}`}
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-[3px] border px-1.5 py-[3px] font-mono text-[12px] font-medium uppercase leading-none tracking-[0.08em] ${className}`}
     >
       {children}
     </span>
@@ -141,7 +141,7 @@ export function Field({
   const muted = tone === "paper" ? "text-[#5B6069]" : "text-white/55";
   const content = (
     <>
-      <span className={`mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.1em] ${muted}`}>
+      <span className={`mb-1.5 block font-mono text-[12px] font-medium uppercase tracking-[0.1em] ${muted}`}>
         {label}
       </span>
       {children}
@@ -174,12 +174,12 @@ export function Field({
    gives focus a second signal beyond the ring, which matters most on the
    long client forms where several fields sit in a column. */
 export const inputClass =
-  "w-full rounded-md border border-[#14161A]/20 bg-[#E8E5DE] px-3 py-2 text-[16px] text-[#14161A] placeholder:text-[#5B6069] focus:border-[#14161A] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14161A]/30 sm:text-sm";
+  "min-h-11 w-full rounded-md border border-[#14161A]/20 bg-[#E8E5DE] px-3 py-2 text-[16px] text-[#14161A] placeholder:text-[#5B6069] focus:border-[#14161A] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14161A]/30 sm:text-sm";
 
 /** Worker-portal dark equivalent — same recessed-at-rest / lighter-on-focus
  *  logic as inputClass, inverted for a dark ground. */
 export const inputClassNight =
-  "w-full rounded-md border border-white/15 bg-white/[0.06] px-3 py-2 text-[16px] text-[#F7F6F3] placeholder:text-white/40 focus:border-white/40 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/25 sm:text-sm";
+  "min-h-11 w-full rounded-md border border-white/15 bg-white/[0.06] px-3 py-2 text-[16px] text-[#F7F6F3] placeholder:text-white/40 focus:border-white/40 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/25 sm:text-sm";
 
 export const buttonPrimary =
   "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md bg-[#14161A] px-4 py-2 text-sm font-medium text-[#F7F6F3] transition-colors duration-150 hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14161A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3] disabled:cursor-not-allowed disabled:opacity-40";
@@ -224,6 +224,9 @@ export const moneyPayoutNight = "font-mono tabular-nums text-[#3DDCA0]";
 /** Inline text link — ink with a soft underline; replaces every stray blue anchor. */
 export const linkInline =
   "font-medium text-[#14161A] underline decoration-[#14161A]/30 underline-offset-2 transition-colors duration-150 hover:decoration-[#14161A]";
+
+export const linkInlineNight =
+  "font-medium text-[#E2C486] underline decoration-[#C9A76A]/40 underline-offset-2 transition-colors duration-150 hover:text-[#F7F6F3] hover:decoration-[#E2C486]";
 
 export function LinkButton({
   href,

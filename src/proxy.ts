@@ -29,6 +29,9 @@ const DOC_PATHS = [
 
 const LANG_COOKIE: Record<string, { name: string; allowed: string[] }> = {
   "/": { name: "ss-lang-client", allowed: LANGS },
+  "/login": { name: "ss-lang-client", allowed: LANGS },
+  "/register": { name: "ss-lang-client", allowed: LANGS },
+  "/verify-email": { name: "ss-lang-client", allowed: LANGS },
   "/workers": { name: "ss-lang-worker", allowed: LANGS },
   // /academy is worker-side and shares their cookie: someone who picked FIL on
   // /workers should land on the Academy in FIL, and a worker who arrives on
@@ -72,7 +75,11 @@ export function proxy(req: NextRequest) {
   const headers = new Headers(req.headers);
   headers.set("x-pathname", req.nextUrl.pathname);
 
-  const rule = LANG_COOKIE[req.nextUrl.pathname];
+  const rule =
+    LANG_COOKIE[req.nextUrl.pathname] ??
+    (req.nextUrl.pathname === "/client" || req.nextUrl.pathname.startsWith("/client/")
+      ? { name: "ss-lang-client", allowed: LANGS }
+      : null);
   const explicitLang = req.nextUrl.searchParams.get("lang");
   const validExplicitLang = explicitLang && LANGS.includes(explicitLang) ? explicitLang : null;
   const resolvedLang = validExplicitLang ?? (
