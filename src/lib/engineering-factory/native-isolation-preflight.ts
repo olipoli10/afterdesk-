@@ -8,6 +8,7 @@ export type NativeIsolationInventory = {
   commands: {
     docker: boolean;
     podman: boolean;
+    wslPodman?: boolean;
     wsl: boolean;
     windowsSandbox: boolean;
     vmconnect: boolean;
@@ -63,7 +64,7 @@ function hasInstalledWsl(inventory: NativeIsolationInventory): boolean {
 }
 
 function hasContainerRuntime(inventory: NativeIsolationInventory): boolean {
-  return inventory.commands.docker || inventory.commands.podman;
+  return inventory.commands.docker || inventory.commands.podman || inventory.commands.wslPodman === true;
 }
 
 export function assessNativeIsolationBackend(

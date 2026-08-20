@@ -88,6 +88,21 @@ describe("Engineering Factory native isolation preflight", () => {
     expect(report.executionAuthorized).toBe(false);
   });
 
+  it("recognizes a rootless container runtime installed inside functional WSL", () => {
+    const report = assessNativeIsolationBackend({
+      ...WINDOWS_HOME_WITHOUT_BACKEND,
+      commands: {
+        ...WINDOWS_HOME_WITHOUT_BACKEND.commands,
+        wslPodman: true,
+      },
+      wslStatusExitCode: 0,
+    });
+
+    expect(report.status).toBe("NATIVE_ISOLATION_CONTROL_REVIEW_REQUIRED");
+    expect(report.blockers).toEqual(["control_evidence_not_reviewed"]);
+    expect(report.executionAuthorized).toBe(false);
+  });
+
   it("rejects Windows Sandbox as the selected backend on this host", () => {
     const report = assessNativeIsolationBackend(WINDOWS_HOME_WITHOUT_BACKEND);
 

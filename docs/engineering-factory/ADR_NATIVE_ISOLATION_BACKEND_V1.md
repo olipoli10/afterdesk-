@@ -1,6 +1,6 @@
 # ADR: Native isolation backend for Engineering Factory candidates
 
-**Status:** Proposed setup path / execution blocked
+**Status:** Setup candidate installed / synthetic controls proved / execution blocked
 
 **Date:** 2026-08-20
 
@@ -8,10 +8,11 @@
 
 ## Decision
 
-Use a hardened Linux container inside WSL2 as the **recommended backend
-candidate for a separately authorized setup review** on the present Windows 11
-Home host. This is not an installation decision, an adopted runtime or an
-execution authorization.
+Use a hardened rootless Linux container inside WSL2 as the **installed backend
+candidate under control review** on the present Windows 11 Home host. The
+separately authorized setup spike is recorded in
+`NATIVE_ISOLATION_CONTROL_EVIDENCE_V1.md`. Installation and synthetic proof do
+not adopt the runtime for real candidates and do not authorize execution.
 
 The repository preflight can inventory the host and name missing controls. It
 can never prove those controls merely because `wsl`, Docker or Podman exists.
@@ -70,7 +71,7 @@ is insufficient evidence for any of these controls.
 
 ## Options considered
 
-### A. WSL2 plus hardened Linux container — proposed setup path
+### A. WSL2 plus hardened Linux container — installed setup candidate
 
 This is the lowest-friction route available on Windows Home for Linux-native
 candidate CLIs. WSL alone is not the boundary: Windows drives are mounted under
@@ -79,7 +80,8 @@ The container must therefore receive only copied bundle bytes and no host
 mounts. Docker networking is also enabled by default, so `network none` or a
 separately reviewed proxy-only network must be explicit.
 
-**Decision:** proposed for a later setup review; unavailable now; not adopted.
+**Decision:** installed and synthetically proved; independent review and
+proxy-only egress evidence remain absent; not adopted for real candidates.
 
 ### B. Dedicated Hyper-V VM — strongest Windows-native alternative
 
@@ -141,11 +143,11 @@ kernel isolation.
 
 ## Consequences and next gate
 
-- No install, elevation, host feature enablement, reboot, candidate invocation,
-  provider call, rollout or adoption occurs in this decision.
-- The next authorized action, if the founder approves it separately, is a
-  bounded setup spike for WSL2 plus a hardened Linux container runtime.
-- That spike must finish with synthetic mutation evidence and a second
-  independent control review. It must not run Codex, Claude or a provider.
+- The separately authorized setup installed WSL2, Debian and rootless Podman;
+  it requested elevation for WSL installation but required no Windows reboot.
+- The setup spike finished with provider-free synthetic control evidence. It
+  did not run Codex, Claude, a benchmark candidate or a provider.
+- A second independent control review and a separate proxy-only egress design
+  are still required.
 - Native candidate execution remains blocked until the Candidate Execution
   Boundary references approved control evidence and its independent review.

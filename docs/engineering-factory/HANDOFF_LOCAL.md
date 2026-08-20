@@ -118,6 +118,16 @@
   candidate/provider calls and no host mutation. WSL2 plus a hardened Linux
   container is proposed only as a separately authorized setup candidate. A
   dedicated Hyper-V VM remains the deferred stronger Windows-native option.
+- Completed the separately authorized native setup spike. WSL2 2.7.12.0,
+  Debian 13 and rootless Podman 5.4.2 are installed. Windows drive automount
+  and interop are disabled for the distro, the Podman user socket is masked,
+  and the runtime uses cgroups v2, crun and seccomp.
+- Added the provider-free native synthetic supervisor and its digest-pinned
+  Alpine control bundle. It proves no network, read-only root, bounded tmpfs,
+  non-root UID, zero capabilities, no-new-privileges, seccomp, CPU/memory/PID/
+  wall-clock/output limits, stdin-only input, environment allowlisting,
+  no runtime socket and destroy-before-persist cleanup. It records zero real
+  candidates and zero provider calls while keeping execution authority DRAFT.
 
 ## Green evidence
 
@@ -125,8 +135,8 @@
 - Targeted DevBench, bake-off and URL-safety tests — 64/64.
 - Candidate Execution Boundary and adjacent V2 gates — 16/16.
 - Synthetic isolated runner — 9/9.
-- Native isolation preflight — 7/7; current host exits 1 fail-closed with setup
-  required.
+- Native isolation preflight and control contract — 15/15; current host exits
+  1 fail-closed with independent control review required.
 - Nine benchmark-family suites — 214/214.
 - Full suite — 67 files / 1,259 tests.
 - Lint and TypeScript — pass.

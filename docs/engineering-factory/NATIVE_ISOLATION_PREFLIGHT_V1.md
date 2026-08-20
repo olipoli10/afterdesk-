@@ -1,6 +1,6 @@
 # Native isolation preflight v1
 
-**Status:** CODE + TEST + READ-ONLY HOST EVIDENCE / setup required
+**Status:** CODE + TEST + READ-ONLY HOST EVIDENCE / control review required
 
 **Date:** 2026-08-20
 
@@ -17,15 +17,14 @@ execution readiness. Software presence is not control evidence.
 
 ## Current result
 
-The current host returns exit code 1 with:
+After the separately authorized setup spike, the current host returns exit
+code 1 with:
 
 ```text
-status: NATIVE_ISOLATION_SETUP_REQUIRED
+status: NATIVE_ISOLATION_CONTROL_REVIEW_REQUIRED
 recommendedBackendCandidate: wsl2-hardened-linux-container
 decisionStatus: PROPOSED_FOR_SETUP_REVIEW
 blockers:
-  - wsl_not_installed
-  - container_runtime_not_installed
   - control_evidence_not_reviewed
 executionAuthorized: false
 realCandidateInvocations: 0
@@ -34,7 +33,9 @@ osMutationPerformed: false
 elevationRequested: false
 ```
 
-The complete JSON contains only OS/runtime inventory, named blockers, rejected
+The inventory now observes functional WSL2 and rootless Podman inside Debian.
+It still refuses execution because installed software and synthetic evidence
+do not replace the independent control review. The complete JSON contains only OS/runtime inventory, named blockers, rejected
 backend reasons and the required control list. It contains no prompts, outputs,
 credentials, client data, environment values or command output.
 
@@ -48,9 +49,9 @@ credentials, client data, environment values or command output.
   provider command.
 - Every report records zero candidate/provider calls and false authorization.
 
-This preflight is a decision aid only. A future setup spike needs its own
-explicit authorization and must produce new control evidence rather than
-changing these facts optimistically.
+This preflight is a decision aid only. The setup evidence is recorded in
+`NATIVE_ISOLATION_CONTROL_EVIDENCE_V1.md`; it does not change the execution
+authority optimistically.
 
 ## RED and mutation evidence
 

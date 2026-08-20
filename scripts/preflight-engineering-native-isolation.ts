@@ -33,6 +33,7 @@ $hasWsl = Has-Command "wsl.exe"
   commands = [pscustomobject]@{
     docker = Has-Command "docker.exe"
     podman = Has-Command "podman.exe"
+    wslPodman = $false
     wsl = $hasWsl
     windowsSandbox = Has-Command "WindowsSandbox.exe"
     vmconnect = Has-Command "vmconnect.exe"
@@ -73,6 +74,14 @@ function collectInventory(): NativeIsolationInventory {
       windowsHide: true,
     });
     inventory.wslStatusExitCode = wslStatus.status;
+    if (wslStatus.status === 0) {
+      const wslPodman = spawnSync(
+        "wsl.exe",
+        ["-d", "Debian", "--exec", "podman", "version", "--format", "{{.Client.Version}}"],
+        { encoding: "utf8", windowsHide: true }
+      );
+      inventory.commands.wslPodman = wslPodman.status === 0 && Boolean(wslPodman.stdout.trim());
+    }
   }
   return inventory;
 }
