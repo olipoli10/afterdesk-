@@ -66,10 +66,13 @@ fails closed.
 
 The focused EF-001 through EF-008 series is technically complete, with three
 Codex wins, three Claude wins and two ties. That count does not select a model.
-Before any adoption decision, build and mutation-prove the measured-run harness
-described in `DEV_BENCH_V1_CLOSEOUT.md`, then run unchanged candidate
-configurations through equivalent frozen packets. Keep the same task brief,
-allowed tools and reviewer-intervention rule. Adopt nothing unless both runs
-are reproducible and the winning configuration has a clear advantage in
-accepted-result cost from a supported measurement source, not just a higher raw
-test count.
+The local measured-run harness now exists and is documented in
+`MEASURED_RUN_HARNESS_V1.md`; it freezes evaluator-owned identity,
+monotonic elapsed time, cost source, intervention count and create-only local
+evidence. It has not run a candidate or authorized an adoption.
+
+Before any adoption decision, run unchanged approved candidate configurations
+through equivalent frozen packets. Keep the same task brief, allowed tools and
+reviewer-intervention rule. Adopt nothing unless both runs are reproducible and
+the winning configuration has a clear advantage in accepted-result cost from a
+supported measurement source, not just a higher raw test count.

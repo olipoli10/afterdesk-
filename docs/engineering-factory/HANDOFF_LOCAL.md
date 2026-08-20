@@ -66,6 +66,11 @@
   is Codex 3 wins, Claude 3 wins and 2 ties. This is explicitly a no-adoption
   result because exact stable configurations, intervention counts and
   supported cost/time measurements were not persisted.
+- Added the local measured-run harness. It records evaluator-owned monotonic
+  elapsed time, fixed candidate configuration, metered-or-unavailable cost and
+  intervention count in the existing privacy-validated envelope. Evidence is
+  create-only and SHA-256 checked in the local `.scratch` directory; it does
+  not call providers, create a process boundary or authorize a trial.
 
 ## Green evidence
 
@@ -100,9 +105,8 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 The eight-case DevBench v1 closeout is complete. The Control Tower should not
 invent EF-009 inside V1 and should not adopt either candidate from the 3-3-2
-technical record. The next local block is the measured-run harness: persist the
-exact candidate configuration, monotonic elapsed time, meter-backed or honestly
-unavailable cost, intervention count and all eight outcomes in the existing
-fail-closed envelope. Mutation-prove that missing or unsupported measurements
-cannot produce a ranking. No merge, provider adoption or rollout is authorized
-by that work. A V2 catalog remains a separate future decision.
+technical record. The measured-run harness is now local and must be exercised
+only after a reviewer supplies two approved, identical candidate configurations
+and a supported metering source. Until then, no merge, provider adoption,
+rollout or model-selection claim is authorized. A V2 catalog remains a
+separate future decision.
