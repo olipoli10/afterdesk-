@@ -93,3 +93,10 @@ remain replaceable artifacts behind the same evidence contract.
 4. Implement and independently review an OS isolation backend for native CLIs.
 5. Freeze dedicated benchmark accounts and retention controls.
 6. Only after those controls are approved, create an `APPROVED` authority.
+
+The backend decision is now narrowed by
+`ADR_NATIVE_ISOLATION_BACKEND_V1.md`. On the current Windows 11 Home host, the
+recommended candidate is WSL2 plus a hardened Linux container. The read-only
+preflight reports setup required; it installs nothing and does not authorize
+candidate execution. A dedicated Hyper-V VM remains the stronger deferred
+Windows-native option if the host edition and parity requirement change.

@@ -117,3 +117,9 @@ This proof does not authorize or claim:
 The next release gate is an operating-system isolation backend with independent
 review. Until that exists and the exact artifacts are bound by an APPROVED
 Candidate Execution Boundary file, execution preflight must continue to fail.
+
+`ADR_NATIVE_ISOLATION_BACKEND_V1.md` now proposes WSL2 plus a hardened Linux
+container as the setup path for this Windows 11 Home host. The accompanying
+read-only preflight confirms that WSL and a container runtime are not currently
+installed and keeps execution blocked. This is a backend decision and host
+inventory only, not an extension of the synthetic proof.

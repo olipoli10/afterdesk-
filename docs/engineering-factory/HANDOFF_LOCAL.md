@@ -112,6 +112,12 @@
   output and profile parity. This remains `CODE + TEST + SYNTHETIC`: Node's
   Permission Model is not an OS security boundary, so native CLI execution and
   the execution authority remain blocked.
+- Added the native-isolation backend ADR and a read-only fail-closed host
+  preflight. The current Windows 11 Home machine has no functional WSL or
+  Docker/Podman backend; it records `NATIVE_ISOLATION_SETUP_REQUIRED`, zero
+  candidate/provider calls and no host mutation. WSL2 plus a hardened Linux
+  container is proposed only as a separately authorized setup candidate. A
+  dedicated Hyper-V VM remains the deferred stronger Windows-native option.
 
 ## Green evidence
 
@@ -119,8 +125,10 @@
 - Targeted DevBench, bake-off and URL-safety tests — 64/64.
 - Candidate Execution Boundary and adjacent V2 gates — 16/16.
 - Synthetic isolated runner — 9/9.
+- Native isolation preflight — 7/7; current host exits 1 fail-closed with setup
+  required.
 - Nine benchmark-family suites — 214/214.
-- Full suite — 66 files / 1,252 tests.
+- Full suite — 67 files / 1,259 tests.
 - Lint and TypeScript — pass.
 - `git diff --check` — pass.
 - Closeout replay — all 16 admissible candidate full suites pass; every direct
