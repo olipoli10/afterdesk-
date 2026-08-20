@@ -817,6 +817,8 @@ model AiUsage {
   operation   AiOperation? @relation(fields: [operationId], references: [id], onDelete: Restrict)
   attempt     Int?
 
+  gatewayAttempt ModelGatewayAttempt?
+
   @@index([userId, createdAt])
   @@index([taskId])
   @@index([operationId])
@@ -2292,6 +2294,8 @@ model AccountProviderSpendHold {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  gatewayAttempt ModelGatewayAttempt?
+
   @@unique([provider, operationKey, attempt])
   @@index([provider, periodKey, status])
 }
@@ -2344,6 +2348,7 @@ model TaskHumanWorkPackage {
 
   @@index([taskId])
 }
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PHASE 1C — OPERATIONAL INTELLIGENCE
@@ -2466,8 +2471,181 @@ model AiOperation {
 
   usages AiUsage[]
 
+  gatewayOperation ModelGatewayOperation?
+
   @@index([taskId])
   @@index([status, nextAttemptAt])
+}
+
+// ---------- Model Gateway v1 ----------
+
+/// Immutable once published, except for the one-way published -> retired
+/// lifecycle transition. JSON fields contain closed, canonically hashed
+/// structures validated by the server registry before publication.
+model ModelGatewayPolicyVersion {
+  id                     String    @id @default(cuid())
+  policyKey              String
+  version                Int
+  operationType          String
+  status                 String    @default("draft")
+  routeOrder             Json
+  fallbackRules          Json
+  maxAttempts            Int
+  maxTotalCostMicros     BigInt
+  requiredPrivacyPosture String
+  canonicalHash          String    @unique
+  createdBy              String
+  createdAt              DateTime  @default(now())
+  publishedAt            DateTime?
+  retiredAt              DateTime?
+
+  gatewayOperations ModelGatewayOperation[]
+
+  @@unique([policyKey, version])
+  @@index([operationType, status])
+}
+
+/// One exact path/model/endpoint certification. Published decision-bearing
+/// fields are immutable; expiry changes eligibility, never historical facts.
+model ModelGatewayRouteProfile {
+  id                 String    @id @default(cuid())
+  routeKey           String
+  version            Int
+  status             String    @default("draft")
+  pathKind           String
+  adapterKey         String
+  billingProvider    String
+  intermediary       String?
+  endpointKey        String
+  modelKey           String
+  operationTypes     String[]
+  allowedDataClasses String[]
+  privacyPosture     String
+  residency          String[]
+  pricingEvidence    Json
+  privacyEvidence    Json
+  maxInputTokens     Int
+  maxOutputTokens    Int
+  canonicalHash      String    @unique
+  createdBy          String
+  createdAt          DateTime  @default(now())
+  publishedAt        DateTime?
+  retiredAt          DateTime?
+
+  decisions ModelGatewayDecision[]
+
+  @@unique([routeKey, version])
+  @@index([adapterKey, status])
+}
+
+/// Immutable gateway admission bound one-to-one to the existing logical
+/// operation/lease authority.
+model ModelGatewayOperation {
+  id                 String                    @id @default(cuid())
+  aiOperationId      String                    @unique
+  aiOperation        AiOperation               @relation(fields: [aiOperationId], references: [id], onDelete: Cascade)
+  tenantId           String
+  operationType      String
+  requestFingerprint String
+  outputContractHash String
+  dataClass          String
+  privacyRequirement String
+  policyVersionId    String
+  policyVersion      ModelGatewayPolicyVersion @relation(fields: [policyVersionId], references: [id], onDelete: Restrict)
+  maxTotalCostMicros BigInt
+  status             String                    @default("admitted")
+  finalAttemptId     String?                   @unique
+  resultEvidenceRef  String?
+  createdAt          DateTime                  @default(now())
+  finishedAt         DateTime?
+
+  decisions ModelGatewayDecision[]
+
+  @@index([tenantId, status])
+  @@index([policyVersionId])
+}
+
+/// Immutable policy authorization or refusal, written before any attempt.
+model ModelGatewayDecision {
+  id                  String                    @id @default(cuid())
+  gatewayOperationId  String
+  gatewayOperation    ModelGatewayOperation     @relation(fields: [gatewayOperationId], references: [id], onDelete: Cascade)
+  attempt             Int
+  disposition         String
+  routeProfileId      String?
+  routeProfile        ModelGatewayRouteProfile? @relation(fields: [routeProfileId], references: [id], onDelete: Restrict)
+  reasonClass         String
+  policyHash          String
+  routeHash           String?
+  privacyEvidenceHash String?
+  breakerGeneration   BigInt
+  remainingCostMicros BigInt
+  decisionFingerprint String                    @unique
+  decidedAt           DateTime                  @default(now())
+
+  gatewayAttempt ModelGatewayAttempt?
+
+  @@unique([gatewayOperationId, attempt])
+  @@index([routeProfileId])
+}
+
+/// One persisted attempt under one route_authorized decision and one unique
+/// conservative account reservation.
+model ModelGatewayAttempt {
+  id                   String                   @id @default(cuid())
+  decisionId           String                   @unique
+  decision             ModelGatewayDecision     @relation(fields: [decisionId], references: [id], onDelete: Restrict)
+  accountSpendHoldId   String                   @unique
+  accountSpendHold     AccountProviderSpendHold @relation(fields: [accountSpendHoldId], references: [id], onDelete: Restrict)
+  status               String                   @default("prepared")
+  providerRequestRef   String?
+  dispatchState        String                   @default("not_dispatched")
+  errorClass           String?
+  httpStatus           Int?
+  resultContractStatus String                   @default("not_evaluated")
+  requestEvidenceRef   String?
+  responseEvidenceRef  String?
+  aiUsageId            String?                  @unique
+  aiUsage              AiUsage?                 @relation(fields: [aiUsageId], references: [id], onDelete: Restrict)
+  startedAt            DateTime                 @default(now())
+  dispatchedAt         DateTime?
+  finishedAt           DateTime?
+
+  @@index([status, startedAt])
+}
+
+/// Current mutable eligibility for one breaker scope. Generation is a CAS
+/// fence; every transition also writes an immutable event.
+model ModelGatewayBreaker {
+  id          String   @id @default(cuid())
+  scopeKind   String
+  scopeKey    String
+  generation  BigInt   @default(0)
+  state       String   @default("closed")
+  reasonClass String
+  changedBy   String
+  changedAt   DateTime @default(now())
+
+  @@unique([scopeKind, scopeKey])
+  @@index([state, scopeKind])
+}
+
+/// Append-only breaker transition history.
+model ModelGatewayBreakerEvent {
+  id              String   @id @default(cuid())
+  scopeKind       String
+  scopeKey        String
+  priorGeneration BigInt
+  newGeneration   BigInt
+  priorState      String
+  newState        String
+  reasonClass     String
+  actorId         String
+  correlationId   String
+  createdAt       DateTime @default(now())
+
+  @@unique([scopeKind, scopeKey, newGeneration])
+  @@index([correlationId])
 }
 
 /**
@@ -2839,7 +3017,6 @@ model WorkflowCalibrationStratum {
 
   @@unique([profileId, dimension, policyVersion])
 }
-
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HUMAN WORK UNIT — SAFE RESUME

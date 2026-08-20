@@ -20,12 +20,12 @@
 
 **Purpose**: Preserve the accepted codebase and make later claims reproducible.
 
-- [ ] T001 Record branch, HEAD, Git status, protected-worktree fingerprints, lockfile hash and disposable-PostgreSQL identity in `specs/002-model-gateway-v1/evidence/preflight.md`
-- [ ] T002 Run the existing lint, typecheck, fast suite and disposable-PostgreSQL integration baseline and record exact inherited results in `specs/002-model-gateway-v1/evidence/baseline.md`
-- [ ] T003 [P] Inventory every current provider-bound model call and its retry, usage, privacy and caller-result semantics in `specs/002-model-gateway-v1/evidence/provider-call-inventory.md`
-- [ ] T004 [P] Record the current classification prompt, model pin, output schema, failure mapping and caller-visible fixtures in `test/fixtures/model-gateway/classification-baseline.ts`
-- [ ] T005 [P] Add test support for deterministic provider fixtures and call counting in `test/support/model-gateway-provider.ts`
-- [ ] T006 Create the server-only module skeleton and explicit public exports in `src/server/model-gateway/index.ts` and `src/server/model-gateway/adapters/contract.ts`
+- [X] T001 Record branch, HEAD, Git status, protected-worktree fingerprints, lockfile hash and disposable-PostgreSQL identity in `specs/002-model-gateway-v1/evidence/preflight.md`
+- [X] T002 Run the existing lint, typecheck, fast suite and disposable-PostgreSQL integration baseline and record exact inherited results in `specs/002-model-gateway-v1/evidence/baseline.md`
+- [X] T003 [P] Inventory every current provider-bound model call and its retry, usage, privacy and caller-result semantics in `specs/002-model-gateway-v1/evidence/provider-call-inventory.md`
+- [X] T004 [P] Record the current classification prompt, model pin, output schema, failure mapping and caller-visible fixtures in `test/fixtures/model-gateway/classification-baseline.ts`
+- [X] T005 [P] Add test support for deterministic provider fixtures and call counting in `test/support/model-gateway-provider.ts`
+- [X] T006 Create the server-only module skeleton and explicit public exports in `src/server/model-gateway/index.ts` and `src/server/model-gateway/adapters/contract.ts`
 
 **Checkpoint**: The baseline and current classification contract are reproducible before gateway behaviour exists.
 
@@ -37,20 +37,20 @@
 
 **CRITICAL**: No user-story implementation begins until T007–T020 are GREEN.
 
-- [ ] T007 [P] Write RED closed-world type and canonicalization tests in `test/model-gateway-types.test.ts`
-- [ ] T008 [P] Write RED registry tests for unknown operation, adapter, route and policy identifiers in `test/model-gateway-registry.test.ts`
-- [ ] T009 [P] Write RED content-redaction and protected-reference tests in `test/model-gateway-evidence.test.ts`
-- [ ] T010 Define closed operation, data, privacy, provider-error, refusal and terminal-result types in `src/server/model-gateway/types.ts`
-- [ ] T011 Implement canonical hashing and content-free evidence helpers in `src/server/model-gateway/evidence.ts`
-- [ ] T012 Implement the closed adapter and operation registries in `src/server/model-gateway/registry.ts`
-- [ ] T013 Write RED schema-presence, uniqueness, immutability and historical-meaning integration tests in `test/integration/model-gateway-immutability.itest.ts`
-- [ ] T014 Add `ModelGatewayPolicyVersion`, `ModelGatewayRouteProfile`, `ModelGatewayOperation`, `ModelGatewayDecision`, `ModelGatewayAttempt`, `ModelGatewayBreaker` and `ModelGatewayBreakerEvent` models to `prisma/schema.prisma`
-- [ ] T015 Add the optional unique gateway-attempt association to the existing spend-hold model in `prisma/schema.prisma`
-- [ ] T016 Create an additive versioned migration with constraints and triggers in `prisma/migrations/<timestamp>_model_gateway_v1/migration.sql`
-- [ ] T017 Apply the migration only to disposable PostgreSQL and observe the RED-to-GREEN invariant suite in `test/integration/model-gateway-immutability.itest.ts`
-- [ ] T018 [P] Add typed factories for policy, route, operation, decision and attempt rows in `test/support/model-gateway-db.ts`
-- [ ] T019 Implement transactional repository primitives for immutable bindings, decisions and attempts in `src/server/model-gateway/operations.ts`
-- [ ] T020 Run the foundational targeted tests and record exact migrations, RED causes and GREEN results in `specs/002-model-gateway-v1/evidence/foundation.md`
+- [X] T007 [P] Write RED closed-world type and canonicalization tests in `test/model-gateway-types.test.ts`
+- [X] T008 [P] Write RED registry tests for unknown operation, adapter, route and policy identifiers in `test/model-gateway-registry.test.ts`
+- [X] T009 [P] Write RED content-redaction and protected-reference tests in `test/model-gateway-evidence.test.ts`
+- [X] T010 Define closed operation, data, privacy, provider-error, refusal and terminal-result types in `src/server/model-gateway/types.ts`
+- [X] T011 Implement canonical hashing and content-free evidence helpers in `src/server/model-gateway/evidence.ts`
+- [X] T012 Implement the closed adapter and operation registries in `src/server/model-gateway/registry.ts`
+- [X] T013 Write RED schema-presence, uniqueness, immutability and historical-meaning integration tests in `test/integration/model-gateway-immutability.itest.ts`
+- [X] T014 Add `ModelGatewayPolicyVersion`, `ModelGatewayRouteProfile`, `ModelGatewayOperation`, `ModelGatewayDecision`, `ModelGatewayAttempt`, `ModelGatewayBreaker` and `ModelGatewayBreakerEvent` models to `prisma/schema.prisma`
+- [X] T015 Add the optional unique gateway-attempt association to the existing spend-hold model in `prisma/schema.prisma`
+- [X] T016 Create an additive versioned migration with constraints and triggers in `prisma/migrations/<timestamp>_model_gateway_v1/migration.sql`
+- [X] T017 Apply the migration only to disposable PostgreSQL and observe the RED-to-GREEN invariant suite in `test/integration/model-gateway-immutability.itest.ts`
+- [X] T018 [P] Add typed factories for policy, route, operation, decision and attempt rows in `test/support/model-gateway-db.ts`
+- [X] T019 Implement transactional repository primitives for immutable bindings, decisions and attempts in `src/server/model-gateway/operations.ts`
+- [X] T020 Run the foundational targeted tests and record exact migrations, RED causes and GREEN results in `specs/002-model-gateway-v1/evidence/foundation.md`
 
 **Checkpoint**: Published facts are immutable; an attempt cannot exist without durable lineage.
 
