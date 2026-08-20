@@ -127,12 +127,13 @@ export default async function Home({
           page: the official ENDVERA lockup component, never a typed name.
           The machine below runs in continuation mode and no longer draws
           its own nav, so this header is the single owner of the identity. */}
-      <header className="absolute inset-x-0 top-0 z-50">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-5 gap-y-1.5 px-6 pt-5 text-[#F7F6F3] sm:pt-9">
+      <header data-site-header="" className="absolute inset-x-0 top-0 z-50">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-3 gap-y-1 px-4 pt-3 text-[#F7F6F3] sm:gap-x-5 sm:gap-y-1.5 sm:px-6 sm:pt-9">
           <Link
+            data-site-wordmark=""
             href="/"
             aria-label="Endvera home"
-            className="text-[1.0625rem] no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486]"
+            className="text-[.875rem] no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E2C486] sm:text-[1.0625rem]"
           >
             {/* the name-plate lockup: the mark mounted on a machined
                 graphite plate that sits on the console's upper rail */}
@@ -159,7 +160,7 @@ export default async function Home({
             <a href="#outcomes" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.outcomes}</a>
             <a href="#how" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.how}</a>
             <a href="#inside" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.inside}</a>
-            <span className="inline-flex items-center gap-[0.4375rem] whitespace-nowrap rounded-full border border-[#262B35] bg-[#0F1116] px-3 py-1.5 font-mono text-[0.71875rem] uppercase tracking-[0.06em] text-[#8a919e]">
+            <span data-early-access="" className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-[#262B35] bg-[#0F1116] px-2 py-1 font-mono text-[.625rem] uppercase tracking-[0.05em] text-[#8a919e] sm:gap-[0.4375rem] sm:px-3 sm:py-1.5 sm:text-[0.71875rem] sm:tracking-[0.06em]">
               <span aria-hidden className="h-1 w-1 rounded-full bg-[#C9A76A]" />
               {t.nav.earlyAccess}
             </span>

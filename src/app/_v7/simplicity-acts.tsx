@@ -76,11 +76,14 @@ export function SimplicityActs({ copy, concierge, children }: {
 
     const dock = root.querySelector<HTMLElement>("[data-a2-dock]");
     const start = root.querySelector<HTMLElement>("[data-primary-vein-start]");
-    const heart = root.querySelector<HTMLElement>("[data-heart-intake]");
+    const runIn = root.querySelector<HTMLElement>("[data-managed-run-intake]");
+    const runOut = root.querySelector<HTMLElement>("[data-managed-run-output]");
+    const heartIntake = root.querySelector<HTMLElement>("[data-heart-intake]");
+    const heartTarget = root.querySelector<HTMLElement>("[data-heart-target]");
     const stops = [...root.querySelectorAll<HTMLElement>("[data-a2-stop-anchor]")];
     const bed = vein.querySelector<SVGPathElement>("[data-primary-vein-bed]");
     const current = vein.querySelector<SVGPathElement>("[data-primary-vein-current]");
-    if (!dock || !start || !heart || stops.length !== 3 || !bed || !current) return;
+    if (!dock || !start || !runIn || !runOut || !heartIntake || !heartTarget || stops.length !== 3 || !bed || !current) return;
 
     let active: "hero" | "off" | StopName = "hero";
     let popTimer: ReturnType<typeof setTimeout> | null = null;
@@ -115,6 +118,8 @@ export function SimplicityActs({ copy, concierge, children }: {
       }
 
       if (next === "hero") {
+        dock.style.removeProperty("--a2-stop-x");
+        dock.style.removeProperty("--a2-stop-y");
         dock.removeAttribute("data-a2-stop");
         dock.setAttribute("data-a2-scene", "hero");
         dock.removeAttribute("aria-hidden");
@@ -149,18 +154,32 @@ export function SimplicityActs({ copy, concierge, children }: {
 
     const measureVein = () => {
       const rootBox = root.getBoundingClientRect();
-      const startBox = start.getBoundingClientRect();
-      const heartBox = heart.getBoundingClientRect();
       const width = Math.max(1, root.clientWidth);
       const height = Math.max(1, root.scrollHeight);
-      const sx = startBox.left - rootBox.left + startBox.width / 2;
-      const sy = startBox.top - rootBox.top + startBox.height / 2;
-      const hx = heartBox.left - rootBox.left + heartBox.width / 2;
-      const hy = heartBox.top - rootBox.top + heartBox.height / 2;
-      const gutter = Math.min(width - 24, Math.max(sx, width * 0.88));
-      const firstBend = sy + Math.max(90, (hy - sy) * 0.28);
-      const lastBend = hy - Math.max(120, (hy - sy) * 0.22);
-      const path = `M ${sx} ${sy} C ${gutter} ${firstBend}, ${gutter} ${lastBend}, ${hx} ${hy}`;
+      const pointAt = (element: HTMLElement) => {
+        const box = element.getBoundingClientRect();
+        return {
+          x: box.left - rootBox.left + box.width / 2,
+          y: box.top - rootBox.top + box.height / 2,
+        };
+      };
+      const startPoint = pointAt(start);
+      const runInPoint = pointAt(runIn);
+      const runOutPoint = pointAt(runOut);
+      const heartIntakePoint = pointAt(heartIntake);
+      const heartTargetPoint = pointAt(heartTarget);
+      const gutter = Math.min(width - 24, Math.max(startPoint.x, width * 0.88));
+      const firstBend = startPoint.y + Math.max(90, (runInPoint.y - startPoint.y) * 0.28);
+      const runApproach = runInPoint.y - Math.max(84, (runInPoint.y - startPoint.y) * 0.18);
+      const heartDeparture = runOutPoint.y + Math.max(72, (heartIntakePoint.y - runOutPoint.y) * 0.3);
+      const heartApproach = heartIntakePoint.y - Math.max(72, (heartIntakePoint.y - runOutPoint.y) * 0.24);
+      const path = [
+        `M ${startPoint.x} ${startPoint.y}`,
+        `C ${gutter} ${firstBend}, ${gutter} ${runApproach}, ${runInPoint.x} ${runInPoint.y}`,
+        `L ${runOutPoint.x} ${runOutPoint.y}`,
+        `C ${runOutPoint.x} ${heartDeparture}, ${heartIntakePoint.x} ${heartApproach}, ${heartIntakePoint.x} ${heartIntakePoint.y}`,
+        `L ${heartTargetPoint.x} ${heartTargetPoint.y}`,
+      ].join(" ");
 
       vein.setAttribute("viewBox", `0 0 ${width} ${height}`);
       vein.style.height = `${height}px`;
@@ -176,7 +195,10 @@ export function SimplicityActs({ copy, concierge, children }: {
     const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measureVein);
     resizeObserver?.observe(root);
     resizeObserver?.observe(start);
-    resizeObserver?.observe(heart);
+    resizeObserver?.observe(runIn);
+    resizeObserver?.observe(runOut);
+    resizeObserver?.observe(heartIntake);
+    resizeObserver?.observe(heartTarget);
     measureVein();
     void document.fonts?.ready.then(measureVein);
 
@@ -256,8 +278,16 @@ export function SimplicityActs({ copy, concierge, children }: {
           filter: drop-shadow(0 0 5px rgba(240, 161, 74, .9));
           animation: v7powerflow 3.4s linear infinite;
         }
-        [data-primary-vein-start], [data-heart-intake] {
+        [data-primary-vein-start], [data-managed-run-intake], [data-managed-run-output], [data-heart-intake] {
           box-shadow: inset 0 0 6px rgba(255,210,142,.58), 0 0 15px rgba(216,117,38,.36);
+        }
+        [data-managed-run] {
+          animation: v7managedpulse 4.6s ease-in-out infinite;
+        }
+        [data-managed-run-channel], [data-heart-throughput] {
+          background: linear-gradient(180deg, rgba(111,76,41,.25), #FFD28E 42%, #D87526 58%, rgba(111,76,41,.25));
+          box-shadow: 0 0 14px rgba(240,161,74,.52);
+          animation: v7channelpulse 2.3s ease-in-out infinite;
         }
         [data-a2-stop-anchor] {
           position: relative;
@@ -309,8 +339,74 @@ export function SimplicityActs({ copy, concierge, children }: {
           66% { transform: scale(1.018); filter: brightness(1.3); }
           76% { transform: scale(1.012); filter: brightness(1.2); }
         }
+        @keyframes v7managedpulse {
+          0%, 62%, 72%, 100% { border-color: #332A20; box-shadow: 0 0 0 rgba(216,117,38,0); filter: brightness(1); }
+          66% { border-color: #8A582E; box-shadow: 0 0 34px rgba(216,117,38,.17); filter: brightness(1.12); }
+          76% { border-color: #614124; box-shadow: 0 0 24px rgba(216,117,38,.11); filter: brightness(1.07); }
+        }
+        @keyframes v7channelpulse {
+          0%, 100% { opacity: .46; filter: brightness(.8); }
+          50% { opacity: 1; filter: brightness(1.35); }
+        }
+        @media (max-width: 639px) {
+          [data-site-header] + main [data-act="1"] {
+            min-height: 0;
+            align-items: flex-start;
+            padding: 6.25rem 1rem 1.5rem;
+          }
+          [data-hero-shell] {
+            padding: 1rem;
+            border-radius: 11px;
+          }
+          [data-hero-grid] { gap: .75rem; }
+          [data-hero-title] {
+            margin-top: 0;
+            font-size: clamp(2.15rem, 11.5vw, 2.8rem);
+            line-height: .92;
+          }
+          [data-hero-copy] {
+            margin-top: .8rem;
+            font-size: .78rem;
+            line-height: 1.48;
+          }
+          [data-hero-field] { margin-top: .85rem; }
+          [data-hero-field-control] { min-height: 44px; padding-inline: .75rem; }
+          [data-hero-field-control] input { padding-block: .65rem; font-size: .76rem; }
+          [data-hero-field-note] { margin-top: .25rem; font-size: .5rem; }
+          [data-intake-console] {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 76px;
+            grid-template-areas:
+              "status a2"
+              "title a2"
+              "manifest a2";
+            column-gap: .65rem;
+            padding: .7rem;
+          }
+          [data-console-status] { grid-area: status; }
+          [data-console-manifest-title] { grid-area: title; margin-top: .45rem; }
+          [data-console-manifest] {
+            grid-area: manifest;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: .32rem .5rem;
+            margin-top: .45rem;
+          }
+          [data-console-manifest] li { gap: .3rem; font-size: .61rem; line-height: 1.25; }
+          [data-console-manifest] li > span:nth-child(2) { display: none; }
+          [data-a2-home] {
+            grid-area: a2;
+            min-height: 76px;
+            margin-top: 0;
+            align-self: center;
+            border-top: 0;
+            padding-top: 0;
+          }
+          [data-mobile-fragment-stack] { display: none; }
+        }
         @media (prefers-reduced-motion: reduce) {
           [data-primary-vein-current] { animation: none; stroke-dasharray: .14 .86; }
+          [data-managed-run], [data-managed-run-channel], [data-heart-throughput] { animation: none; }
           [data-core-heart] { animation: none; filter: brightness(1.08); }
         }
       `}</style>
@@ -331,22 +427,21 @@ export function SimplicityActs({ copy, concierge, children }: {
       </svg>
 
       <section data-act="1" data-v7-sem="what" className="relative z-30 mx-auto flex min-h-[92svh] w-full max-w-[1180px] items-center px-5 pb-16 pt-28 sm:px-8 sm:pb-24 sm:pt-36">
-        <div className="relative w-full overflow-visible rounded-[14px] border border-[#252B35] bg-[linear-gradient(155deg,rgba(25,29,37,.98),rgba(10,12,16,.99))] px-5 py-8 shadow-[0_36px_100px_rgba(0,0,0,.52)] sm:px-10 sm:py-12">
+        <div data-hero-shell="" className="relative w-full overflow-visible rounded-[14px] border border-[#252B35] bg-[linear-gradient(155deg,rgba(25,29,37,.98),rgba(10,12,16,.99))] px-5 py-8 shadow-[0_36px_100px_rgba(0,0,0,.52)] sm:px-10 sm:py-12">
           <span aria-hidden className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#C9A76A]/75 to-transparent" />
           <span aria-hidden className="absolute left-4 top-4 h-3 w-3 border-l border-t border-[#48505E]" />
           <span aria-hidden className="absolute right-4 top-4 h-3 w-3 border-r border-t border-[#48505E]" />
 
-          <div className="relative z-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_310px] lg:items-end">
+          <div data-hero-grid="" className="relative z-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_310px] lg:items-end">
             <div>
-              <p className={`${mono} text-[#C9A76A]`}>{copy.instrument.intake}</p>
-              <h1 className="mt-5 max-w-[16ch] text-[clamp(2.65rem,7vw,5.8rem)] font-semibold leading-[.94] tracking-[-.065em]">
+              <h1 data-hero-title="" className="max-w-[16ch] text-[clamp(2.65rem,7vw,5.8rem)] font-semibold leading-[.94] tracking-[-.065em]">
                 <AccentLine text={copy.act1.h} accent={copy.act1.accent} />
               </h1>
-              <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.7] text-[#A6ADB8] sm:text-[17px]">{copy.act1.sub}</p>
+              <p data-hero-copy="" className="mt-6 max-w-[60ch] text-[15px] leading-[1.7] text-[#A6ADB8] sm:text-[17px]">{copy.act1.sub}</p>
 
-              <label className="mt-9 block max-w-[670px]">
+              <label data-hero-field="" className="mt-9 block max-w-[670px]">
                 <span className="sr-only">{copy.act1.placeholder}</span>
-                <span className="relative flex min-h-14 items-center rounded-[7px] border border-[#343B47] bg-[#0C0F14] px-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,.015)] focus-within:border-[#C9A76A]/70">
+                <span data-hero-field-control="" className="relative flex min-h-14 items-center rounded-[7px] border border-[#343B47] bg-[#0C0F14] px-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,.015)] focus-within:border-[#C9A76A]/70">
                   <input
                     value={typed}
                     onChange={(event) => setTyped(event.target.value)}
@@ -355,17 +450,17 @@ export function SimplicityActs({ copy, concierge, children }: {
                   />
                   <span aria-hidden className="ml-3 h-2 w-2 rotate-45 border border-[#D87526] bg-[#23170E] shadow-[0_0_9px_rgba(216,117,38,.45)]" />
                 </span>
-                <span className="mt-2 block font-mono text-[9.5px] leading-relaxed text-[#69717E]">{copy.act1.note}</span>
+                <span data-hero-field-note="" className="mt-2 block font-mono text-[9.5px] leading-relaxed text-[#69717E]">{copy.act1.note}</span>
               </label>
             </div>
 
-            <aside className="relative rounded-[9px] border border-[#2C333E] bg-[#0D1015]/95 p-4">
-              <div className="flex items-center justify-between gap-4">
+            <aside data-intake-console="" className="relative rounded-[9px] border border-[#2C333E] bg-[#0D1015]/95 p-4">
+              <div data-console-status="" className="flex items-center justify-between gap-4">
                 <span className={`${mono} text-[#8F98A6]`}>{typed ? copy.instrument.receiving : copy.instrument.awaiting}</span>
                 <StaticArtifact state={typed ? "locked" : "request"} />
               </div>
-              <p className="mt-5 font-mono text-[10px] uppercase tracking-[.14em] text-[#D87526]">{copy.instrument.manifestTitle}</p>
-              <ul className="mt-3 space-y-2.5">
+              <p data-console-manifest-title="" className="mt-5 font-mono text-[10px] uppercase tracking-[.14em] text-[#D87526]">{copy.instrument.manifestTitle}</p>
+              <ul data-console-manifest="" className="mt-3 space-y-2.5">
                 {copy.instrument.manifest.map((item, index) => (
                   <li key={item} className="flex items-center gap-3 text-[12px] text-[#AAB1BC]">
                     <span className="font-mono text-[9px] text-[#6F4C29]">0{index + 1}</span>
@@ -380,11 +475,14 @@ export function SimplicityActs({ copy, concierge, children }: {
             </aside>
           </div>
 
-          <span
-            aria-hidden
-            data-primary-vein-start=""
-            className="absolute -bottom-[9px] right-[12%] z-[3] h-[18px] w-[18px] rotate-45 rounded-[3px] border border-[#D87526] bg-[#17110A]"
-          />
+          <span aria-hidden data-intake-bus="" className="absolute inset-x-0 bottom-0 z-[4] flex items-center">
+            <i className="h-px flex-1 bg-gradient-to-r from-transparent via-[#6F4C29] to-[#D87526]" />
+            <i
+              data-primary-vein-start=""
+              className="h-[18px] w-[18px] shrink-0 translate-y-1/2 rotate-45 rounded-[3px] border border-[#D87526] bg-[#17110A]"
+            />
+            <i className="h-px flex-1 bg-gradient-to-l from-transparent via-[#6F4C29] to-[#D87526]" />
+          </span>
         </div>
       </section>
 
@@ -397,7 +495,7 @@ export function SimplicityActs({ copy, concierge, children }: {
             </h2>
             <p className="mt-6 max-w-[54ch] text-[15px] leading-[1.75] text-[#9FA7B3]">{copy.act2.sub}</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div data-mobile-fragment-stack="" className="grid gap-3 sm:grid-cols-2">
             {copy.act2.fragments.map((fragment, index) => (
               <article key={fragment.label} className="relative min-h-[112px] overflow-hidden rounded-[8px] border border-[#252B35] bg-[#101319]/92 p-4">
                 <span aria-hidden className="absolute right-3 top-3 font-mono text-[9px] text-[#4D5561]">0{index + 1}</span>
@@ -411,9 +509,20 @@ export function SimplicityActs({ copy, concierge, children }: {
       </section>
 
       <section data-act="2b" data-v7-sem="solution" className="relative z-10 mx-auto w-full max-w-[1180px] px-5 py-20 sm:px-8 sm:py-28">
-        <div className="relative overflow-hidden rounded-[12px] border border-[#332A20] bg-[linear-gradient(135deg,rgba(29,23,16,.94),rgba(12,14,18,.98)_58%)] px-6 py-10 sm:px-10 sm:py-14">
+        <div data-managed-run="" className="relative overflow-visible rounded-[12px] border border-[#332A20] bg-[linear-gradient(135deg,rgba(29,23,16,.98),rgba(12,14,18,.99)_58%)] px-6 py-10 sm:px-10 sm:py-14">
+          <span
+            aria-hidden
+            data-managed-run-intake=""
+            className="absolute left-1/2 top-[-9px] z-[4] h-[18px] w-[18px] -translate-x-1/2 rotate-45 rounded-[3px] border border-[#D87526] bg-[#17110A]"
+          />
+          <span aria-hidden data-managed-run-channel="" className="absolute bottom-0 left-1/2 top-0 z-0 w-[2px] -translate-x-1/2 opacity-70" />
+          <span
+            aria-hidden
+            data-managed-run-output=""
+            className="absolute bottom-[-9px] left-1/2 z-[4] h-[18px] w-[18px] -translate-x-1/2 rotate-45 rounded-[3px] border border-[#D87526] bg-[#17110A]"
+          />
           <span aria-hidden className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-[#D87526] to-transparent opacity-70" />
-          <div className="flex items-start justify-between gap-5">
+          <div className="relative z-10 flex items-start justify-between gap-5">
             <div>
               <p className={`${mono} text-[#D87526]`}>{copy.solution.eyebrow}</p>
               <h2 className="mt-5 max-w-[19ch] text-[clamp(2rem,4.7vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.055em]">
@@ -428,7 +537,7 @@ export function SimplicityActs({ copy, concierge, children }: {
               aria-label={concierge.guide.solution}
             />
           </div>
-          <div className="mt-9 grid gap-3 sm:grid-cols-3">
+          <div className="relative z-10 mt-9 grid gap-3 sm:grid-cols-3">
             {copy.engine.boundaryItems.map((item, index) => (
               <div key={item} className="rounded-[6px] border border-[#3A3025] bg-[#111217]/80 px-4 py-3">
                 <span className="font-mono text-[9px] text-[#D87526]">0{index + 1}</span>
@@ -483,8 +592,8 @@ export function SimplicityActs({ copy, concierge, children }: {
               <div data-coordination-heart="" className="relative mx-auto max-w-[420px] pt-4">
                 <div data-core-heart="" className="relative isolate min-h-[160px] overflow-hidden rounded-[10px] border border-[#6F4C29] bg-[#0C0F14] px-5 py-7 text-center">
                   <span aria-hidden data-heart-aura="" className="absolute inset-3 rounded-[8px] border border-[#3D3124]" />
-                  <span aria-hidden data-heart-seam="" className="absolute bottom-5 left-1/2 top-5 w-px -translate-x-1/2" />
-                  <span aria-hidden className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-[#D87526]/45 bg-[#2A1B0E]/65 shadow-[0_0_30px_rgba(216,117,38,.22)]" />
+                  <span aria-hidden data-heart-seam="" data-heart-throughput="" className="absolute bottom-5 left-1/2 top-5 w-px -translate-x-1/2" />
+                  <span aria-hidden data-heart-target="" className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-[#D87526]/45 bg-[#2A1B0E]/65 shadow-[0_0_30px_rgba(216,117,38,.22)]" />
                   <div className="relative z-10">
                     <p className="font-mono text-[11px] uppercase tracking-[.18em] text-[#F0A14A]">{copy.engine.core}</p>
                     <p className="mx-auto mt-5 max-w-[35ch] text-[12px] leading-[1.65] text-[#B8B0A1]">{copy.engine.coreSub}</p>

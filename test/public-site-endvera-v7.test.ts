@@ -109,15 +109,41 @@ describe("ENDVERA public narrative", () => {
     expect(engine).toMatch(/className="relative z-10 mx-auto w-full[^\"]*py-20/);
   });
 
-  it("renders one primary powered vein from intake to the technological heart", () => {
+  it("keeps A2 inside the first mobile viewport and removes only the phone fragment stack", () => {
+    const page = read(PAGE);
+    const engine = read(ENGINE);
+    expect(page).toMatch(/data-site-header=/);
+    expect(page).toMatch(/data-site-wordmark=/);
+    expect(page).toMatch(/data-early-access=/);
+    expect(engine).not.toMatch(/\{copy\.instrument\.intake\}/);
+    expect(engine).toMatch(/data-hero-shell=/);
+    expect(engine).toMatch(/data-intake-console=/);
+    expect(engine).toMatch(/data-mobile-fragment-stack=/);
+    expect(engine).toMatch(/@media \(max-width:\s*639px\)[\s\S]*\[data-mobile-fragment-stack\][^{]*\{[^}]*display:\s*none/);
+    expect(engine).toMatch(/@media \(max-width:\s*639px\)[\s\S]*\[data-intake-console\][^{]*\{[^}]*grid-template-columns/);
+    expect(engine).toMatch(/if \(next === "hero"\)[\s\S]*removeProperty\("--a2-stop-x"\)[\s\S]*removeProperty\("--a2-stop-y"\)/);
+  });
+
+  it("routes one powered vein through the managed run and the actual heart", () => {
     const engine = read(ENGINE);
     expect((engine.match(/data-primary-vein=/g) ?? []).length).toBe(1);
     expect((engine.match(/data-primary-vein-start=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-intake-bus=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-managed-run=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-managed-run-intake=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-managed-run-output=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-managed-run-channel=/g) ?? []).length).toBe(1);
     expect((engine.match(/data-heart-intake=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-heart-target=/g) ?? []).length).toBe(1);
+    expect((engine.match(/data-heart-throughput=/g) ?? []).length).toBe(1);
     expect(engine).toMatch(/data-primary-vein-bed/);
     expect(engine).toMatch(/data-primary-vein-current/);
-    expect(engine).toMatch(/const path = `M \$\{sx\} \$\{sy\} C/);
+    expect(engine).toMatch(/querySelector<HTMLElement>\("\[data-managed-run-intake\]"\)/);
+    expect(engine).toMatch(/querySelector<HTMLElement>\("\[data-managed-run-output\]"\)/);
+    expect(engine).toMatch(/querySelector<HTMLElement>\("\[data-heart-target\]"\)/);
+    expect(engine).toMatch(/const path = \[[\s\S]*runInPoint[\s\S]*runOutPoint[\s\S]*heartTargetPoint/);
     expect(engine).toMatch(/@keyframes\s+v7powerflow/);
+    expect(engine).toMatch(/@keyframes\s+v7managedpulse/);
     expect(engine).not.toMatch(/data-main-vein=|data-a2-rail=|data-service-drop=|data-bay-approach=|data-bay-exit=|data-vein-jog=|data-release-deck=/);
   });
 
@@ -210,6 +236,7 @@ describe("ENDVERA public narrative", () => {
     const engine = read(ENGINE);
     const css = read(A2_CSS);
     expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-primary-vein-current[\s\S]*animation:\s*none/);
+    expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-managed-run[\s\S]*animation:\s*none/);
     expect(engine).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-core-heart[\s\S]*animation:\s*none/);
     expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*data-a2-stop[\s\S]*animation:\s*none/);
     expect(engine).toMatch(/reduced \? 0 : 90/);
