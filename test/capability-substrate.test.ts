@@ -528,6 +528,8 @@ describe("a local inspection result is not an external-provider authorization", 
   const VOCABULARY = join(ENGINE, "primitive-vocabulary.ts");
   const REGISTRY = join(ENGINE, "registry.ts");
   const ENGINE_INDEX = join(ENGINE, "index.ts");
+  const MODEL_GATEWAY_BREAKERS = join(SRC, "server", "model-gateway", "breakers.ts");
+  const ADMIN_MODEL_GATEWAY_ACTION = join(SRC, "server", "actions", "admin-model-gateway.ts");
 
   const sourceOf = (file: string) => readFileSync(file, "utf8");
   /** Repo-relative and slash-normalised, so a failure reads the same on any host. */
@@ -779,8 +781,20 @@ describe("a local inspection result is not an external-provider authorization", 
      */
     const namesTheReach = ALL_SOURCES.filter((f) => /["'`]provider["'`]/.test(codeOf(f)));
     expect(namesTheReach.map(shortName).sort()).toEqual(
-      [shortName(VOCABULARY), shortName(DATA_CLASS), shortName(COMPILE)].sort()
+      [
+        shortName(VOCABULARY),
+        shortName(DATA_CLASS),
+        shortName(COMPILE),
+        // This is an operational stop scope, not a data-reach authority. It
+        // can only deny dispatch and contains no provider client or reach call.
+        shortName(MODEL_GATEWAY_BREAKERS),
+        // The admin action may name the same operational stop scope. It is
+        // authenticated before mutation and never grants data reach.
+        shortName(ADMIN_MODEL_GATEWAY_ACTION),
+      ].sort()
     );
+    expect(codeOf(MODEL_GATEWAY_BREAKERS)).not.toContain("reachMayProcess");
+    expect(codeOf(ADMIN_MODEL_GATEWAY_ACTION)).not.toContain("reachMayProcess");
   });
 
   it("every provider-reach capability is refused on every class but public_business", () => {

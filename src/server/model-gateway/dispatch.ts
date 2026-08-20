@@ -183,9 +183,10 @@ export async function dispatchGatewayAttempt(input: {
     row.holdStatus !== "held" ||
     input.adapter.key !== admission.route.adapterKey ||
     breaker?.status === "open" ||
-    breaker?.generation !== admission.decision.breakerGeneration
+    (breaker !== null && breaker.generation !== admission.decision.breakerGeneration)
   ) {
-    const reasonClass = breaker?.status === "open" || breaker?.generation !== admission.decision.breakerGeneration
+    const reasonClass = breaker?.status === "open" ||
+      (breaker !== null && breaker.generation !== admission.decision.breakerGeneration)
       ? "open_breaker"
       : "ineligible_route";
     await refuseBeforeDispatch(admission, reasonClass);

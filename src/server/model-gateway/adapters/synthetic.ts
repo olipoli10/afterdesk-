@@ -76,7 +76,10 @@ export function createSyntheticAdapter(input: {
           providerRequestRef: `synthetic:${envelope.attemptId}`,
           response: null,
           usage: null,
-          errorClass: "unknown_dispatched_outcome",
+          errorClass:
+            normalized.errorClass === "unknown_failure"
+              ? "unknown_dispatched_outcome"
+              : normalized.errorClass,
           httpStatus: null,
           responseEvidenceRef: null,
         };

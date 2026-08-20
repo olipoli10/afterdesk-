@@ -3,10 +3,28 @@ import { prisma } from "@/lib/db";
 import { admitGatewayClassification } from "@/server/model-gateway/operations";
 import { dispatchGatewayAttempt } from "@/server/model-gateway/dispatch";
 import { createSyntheticAdapter } from "@/server/model-gateway/adapters/synthetic";
+import { transitionGatewayBreaker } from "@/server/model-gateway/breakers";
 import { createGatewayFoundationFixture } from "../support/model-gateway-db";
 import { CLASSIFICATION_BASELINE_INPUT, CLASSIFICATION_BASELINE_OUTPUT } from "../fixtures/model-gateway/classification-baseline";
 
 describe("Model Gateway classification admission", () => {
+  it("refuses a tenant that does not own the operation task before reservation or dispatch", async () => {
+    const fixture = await createGatewayFoundationFixture();
+    await expect(admitGatewayClassification({
+      aiOperationId: fixture.aiOperationId,
+      logicalOperationKey: fixture.operationKey,
+      tenantId: "other-tenant",
+      taskId: fixture.taskId,
+      policyId: fixture.policyId,
+      dataClass: "business_confidential",
+      privacyRequirement: "zero_retention",
+      input: CLASSIFICATION_BASELINE_INPUT,
+      maxTotalCostMicros: 100_000n,
+    })).resolves.toEqual({ status: "refused", reasonClass: "invalid_request" });
+    await expect(prisma.accountProviderSpendHold.count({ where: { operationKey: fixture.operationKey } })).resolves.toBe(0);
+    await expect(prisma.modelGatewayOperation.count({ where: { aiOperationId: fixture.aiOperationId } })).resolves.toBe(0);
+  });
+
   it("persists the decision and spend hold before the first dispatch and converges replay", async () => {
     const fixture = await createGatewayFoundationFixture();
     const admission = await admitGatewayClassification({
@@ -80,6 +98,33 @@ describe("Model Gateway classification admission", () => {
     ).toHaveLength(0);
   });
 
+  it("refuses a new admission when a provider breaker is already open", async () => {
+    const fixture = await createGatewayFoundationFixture();
+    const route = await prisma.modelGatewayRouteProfile.findUniqueOrThrow({
+      where: { id: fixture.routeId },
+      select: { routeKey: true, version: true },
+    });
+    await transitionGatewayBreaker({
+      scope: { scopeKind: "route", scopeKey: `${route.routeKey}@${route.version}` },
+      expectedGeneration: 0n,
+      nextState: "open",
+      reasonClass: "operator_stop",
+      actorId: "admin-test",
+    });
+    await expect(admitGatewayClassification({
+      aiOperationId: fixture.aiOperationId,
+      logicalOperationKey: fixture.operationKey,
+      tenantId: fixture.tenantId,
+      taskId: "task-fixture",
+      policyId: fixture.policyId,
+      dataClass: "business_confidential",
+      privacyRequirement: "zero_retention",
+      input: CLASSIFICATION_BASELINE_INPUT,
+      maxTotalCostMicros: 100_000n,
+    })).resolves.toMatchObject({ status: "refused", reasonClass: "open_breaker" });
+    await expect(prisma.accountProviderSpendHold.count({ where: { operationKey: fixture.operationKey } })).resolves.toBe(0);
+  });
+
   it("rechecks exact route eligibility immediately before dispatch", async () => {
     const fixture = await createGatewayFoundationFixture();
     const admission = await admitGatewayClassification({
@@ -117,6 +162,81 @@ describe("Model Gateway classification admission", () => {
       select: { status: true },
     });
     expect(hold.status).toBe("released");
+  });
+
+  it("stops an admitted attempt when its route breaker opens before dispatch", async () => {
+    const fixture = await createGatewayFoundationFixture();
+    const admission = await admitGatewayClassification({
+      aiOperationId: fixture.aiOperationId,
+      logicalOperationKey: fixture.operationKey,
+      tenantId: fixture.tenantId,
+      taskId: "task-fixture",
+      policyId: fixture.policyId,
+      dataClass: "business_confidential",
+      privacyRequirement: "zero_retention",
+      input: CLASSIFICATION_BASELINE_INPUT,
+      maxTotalCostMicros: 100_000n,
+    });
+    expect(admission.status).toBe("authorized");
+    if (admission.status !== "authorized") return;
+    await transitionGatewayBreaker({
+      scope: { scopeKind: "route", scopeKey: `${admission.route.routeKey}@${admission.route.version}` },
+      expectedGeneration: 0n,
+      nextState: "open",
+      reasonClass: "operator_stop",
+      actorId: "admin-test",
+    });
+    let calls = 0;
+    const adapter = createSyntheticAdapter({
+      endpointKey: "messages",
+      modelKey: "synthetic-classifier",
+      transport: async () => {
+        calls += 1;
+        return { response: {}, inputTokens: 1, outputTokens: 1 };
+      },
+    });
+    await expect(dispatchGatewayAttempt({ admission, adapter, abortSignal: new AbortController().signal }))
+      .resolves.toEqual({ status: "refused", reasonClass: "open_breaker" });
+    expect(calls).toBe(0);
+    await expect(prisma.accountProviderSpendHold.findUniqueOrThrow({ where: { id: admission.attempt.accountSpendHoldId } }))
+      .resolves.toMatchObject({ status: "released", settledMicros: 0n });
+  });
+
+  it("reconciles an already-dispatched response under its frozen route after a breaker opens", async () => {
+    const fixture = await createGatewayFoundationFixture();
+    const admission = await admitGatewayClassification({
+      aiOperationId: fixture.aiOperationId,
+      logicalOperationKey: fixture.operationKey,
+      tenantId: fixture.tenantId,
+      taskId: "task-fixture",
+      policyId: fixture.policyId,
+      dataClass: "business_confidential",
+      privacyRequirement: "zero_retention",
+      input: CLASSIFICATION_BASELINE_INPUT,
+      maxTotalCostMicros: 100_000n,
+    });
+    expect(admission.status).toBe("authorized");
+    if (admission.status !== "authorized") return;
+    const adapter = createSyntheticAdapter({
+      endpointKey: "messages",
+      modelKey: "synthetic-classifier",
+      transport: async () => {
+        await transitionGatewayBreaker({
+          scope: { scopeKind: "route", scopeKey: `${admission.route.routeKey}@${admission.route.version}` },
+          expectedGeneration: 0n,
+          nextState: "open",
+          reasonClass: "operator_stop",
+          actorId: "admin-test",
+        });
+        return { response: CLASSIFICATION_BASELINE_OUTPUT, inputTokens: 1, outputTokens: 1 };
+      },
+    });
+    await expect(dispatchGatewayAttempt({ admission, adapter, abortSignal: new AbortController().signal }))
+      .resolves.toMatchObject({ status: "succeeded", finalAttemptId: admission.attempt.id });
+    await expect(prisma.modelGatewayDecision.findUniqueOrThrow({ where: { id: admission.decision.id } }))
+      .resolves.toMatchObject({ routeProfileId: admission.route.id, breakerGeneration: 0n });
+    await expect(prisma.modelGatewayAttempt.findUniqueOrThrow({ where: { id: admission.attempt.id } }))
+      .resolves.toMatchObject({ status: "settled", dispatchState: "settled" });
   });
 
   it("binds malformed output to terminal invalid evidence", async () => {

@@ -63,11 +63,12 @@ describe("synthetic adapter contract", () => {
       },
     });
     const result = await adapter.dispatch(envelope);
-    expect(result).toMatchObject({ dispatchKnowledge: "dispatched_unknown", errorClass: "unknown_dispatched_outcome" });
+    expect(result).toMatchObject({ dispatchKnowledge: "dispatched_unknown", errorClass: "timeout" });
     expect(calls).toBe(1);
   });
 
   it.each([
+    [402, "provider_refusal"],
     [429, "rate_limit"],
     [401, "authentication"],
     [400, "malformed_request"],
@@ -87,6 +88,27 @@ describe("synthetic adapter contract", () => {
       errorClass,
       usage: null,
       httpStatus: status,
+    });
+    expect(calls).toBe(1);
+  });
+
+  it.each([
+    ["timeout", new Error("request timed out")],
+    ["abort", Object.assign(new Error("request aborted"), { name: "AbortError" })],
+  ])("keeps %s as an ambiguous single dispatch", async (_name, error) => {
+    let calls = 0;
+    const adapter = createSyntheticAdapter({
+      endpointKey: "messages",
+      modelKey: "synthetic-classifier",
+      transport: async () => {
+        calls += 1;
+        throw error;
+      },
+    });
+    await expect(adapter.dispatch(envelope)).resolves.toMatchObject({
+      dispatchKnowledge: "dispatched_unknown",
+      errorClass: "timeout",
+      usage: null,
     });
     expect(calls).toBe(1);
   });

@@ -10,6 +10,13 @@ import { projectGatewayAttemptLineage } from "@/server/model-gateway/evidence";
 
 const hash = (char: string): `sha256:${string}` => `sha256:${char.repeat(64)}`;
 const now = new Date("2026-08-19T12:00:00.000Z");
+const certifiedEvidence = (modelKey: string) => ({
+  adapterKey: "synthetic", allowedDataClasses: ["business_confidential"], billingProvider: "synthetic",
+  certificationOwner: "privacy-reviewer:test", effectiveAt: "2026-08-18T00:00:00.000Z",
+  endpointKey: "messages", expiresAt: "2027-08-19T00:00:00.000Z", intermediary: null,
+  modelKey, operationTypes: ["classification"], pathKind: "direct_provider",
+  privacyPosture: "zero_retention", residency: ["CA"], tenancyMode: "route_isolated",
+});
 const request: GatewayOperationRequest = {
   logicalOperationKey: "engine:task-1:initial:classify",
   tenantId: "tenant-1",
@@ -30,6 +37,7 @@ const primary: GatewayRouteSnapshot = {
   routeKey: "primary",
   version: 1,
   status: "published",
+  pathKind: "direct_provider",
   adapterKey: "synthetic",
   billingProvider: "synthetic",
   intermediary: null,
@@ -38,12 +46,13 @@ const primary: GatewayRouteSnapshot = {
   operationTypes: ["classification"],
   allowedDataClasses: ["business_confidential"],
   privacyPosture: "zero_retention",
-  privacyEvidence: { expiresAt: "2027-08-19T00:00:00.000Z" },
+  residency: ["CA"],
+  privacyEvidence: certifiedEvidence("synthetic-primary"),
   maxInputTokens: 10_000,
   maxOutputTokens: 4_000,
   canonicalHash: hash("3"),
 };
-const fallback: GatewayRouteSnapshot = { ...primary, id: "route-fallback", routeKey: "fallback", modelKey: "synthetic-fallback", canonicalHash: hash("4") };
+const fallback: GatewayRouteSnapshot = { ...primary, id: "route-fallback", routeKey: "fallback", modelKey: "synthetic-fallback", privacyEvidence: certifiedEvidence("synthetic-fallback"), canonicalHash: hash("4") };
 const policy: GatewayPolicySnapshot = {
   id: "policy-1",
   policyKey: "classification-v1",

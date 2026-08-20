@@ -119,18 +119,18 @@
 
 ### RED tests
 
-- [ ] T044 [P] [US3] Write RED pure breaker-scope, generation and authorization tests in `test/model-gateway-breakers.test.ts`
-- [ ] T045 [US3] Write RED disposable-PostgreSQL CAS, stale-generation and append-only event tests in `test/integration/model-gateway-breaker.itest.ts`
-- [ ] T046 [US3] Write RED race tests for breaker opening between admission and dispatch in `test/integration/model-gateway-admission.itest.ts`
+- [x] T044 [P] [US3] Write RED pure breaker-scope, generation and authorization tests in `test/model-gateway-breakers.test.ts`
+- [x] T045 [US3] Write RED disposable-PostgreSQL CAS, stale-generation and append-only event tests in `test/integration/model-gateway-breaker.itest.ts`
+- [x] T046 [US3] Write RED race tests for breaker opening between admission and dispatch in `test/integration/model-gateway-admission.itest.ts`
 
 ### Implementation
 
-- [ ] T047 [US3] Implement route, model, provider and policy breaker resolution in `src/server/model-gateway/breakers.ts`
-- [ ] T048 [US3] Implement generation-fenced breaker transitions and append-only events in `src/server/model-gateway/breakers.ts`
-- [ ] T049 [US3] Implement admin-only breaker and certification actions with point-of-use authorization in `src/server/actions/admin-model-gateway.ts`
-- [ ] T050 [US3] Recheck current breaker generation immediately before external dispatch in `src/server/model-gateway/dispatch.ts`
-- [ ] T051 [US3] Preserve frozen identity and reconcile responses that arrive after a breaker opens in `src/server/model-gateway/operations.ts`
-- [ ] T052 [US3] Prove named mutation `gateway-stale-breaker-generation-wins`, restore byte-exactly, and record stop/resume evidence in `specs/002-model-gateway-v1/evidence/us3-breakers.md`
+- [x] T047 [US3] Implement route, model, provider and policy breaker resolution in `src/server/model-gateway/breakers.ts`
+- [x] T048 [US3] Implement generation-fenced breaker transitions and append-only events in `src/server/model-gateway/breakers.ts`
+- [x] T049 [US3] Implement admin-only breaker and certification actions with point-of-use authorization in `src/server/actions/admin-model-gateway.ts`
+- [x] T050 [US3] Recheck current breaker generation immediately before external dispatch in `src/server/model-gateway/dispatch.ts`
+- [x] T051 [US3] Preserve frozen identity and reconcile responses that arrive after a breaker opens in `src/server/model-gateway/operations.ts`
+- [x] T052 [US3] Prove named mutation `gateway-stale-breaker-generation-wins`, restore byte-exactly, and record stop/resume evidence in `specs/002-model-gateway-v1/evidence/us3-breakers.md`
 
 **Checkpoint**: Operators have an audited hard stop; already-dispatched work is never silently rerouted.
 
@@ -144,14 +144,14 @@
 
 ### RED tests
 
-- [ ] T053 [P] [US4] Write RED route-profile certification, expiry, endpoint/model scope and privacy-posture tests in `test/model-gateway-privacy.test.ts`
-- [ ] T054 [P] [US4] Write RED credential, raw-content, prompt-injection and unrelated-context projection tests in `test/model-gateway-projection.test.ts`
+- [x] T053 [P] [US4] Write RED route-profile certification, expiry, endpoint/model scope and privacy-posture tests in `test/model-gateway-privacy.test.ts`
+- [x] T054 [P] [US4] Write RED credential, raw-content, prompt-injection and unrelated-context projection tests in `test/model-gateway-projection.test.ts`
 - [ ] T055 [US4] Write RED disposable-PostgreSQL cross-tenant binding and historical-evidence tests in `test/integration/model-gateway-privacy.itest.ts`
 
 ### Implementation
 
-- [ ] T056 [US4] Implement exact path/model/endpoint privacy evidence matching and expiry refusal in `src/server/model-gateway/privacy.ts`
-- [ ] T057 [US4] Implement closed data-class reach comparison and minimum outbound projection in `src/server/model-gateway/privacy.ts`
+- [x] T056 [US4] Implement exact path/model/endpoint privacy evidence matching and expiry refusal in `src/server/model-gateway/policy.ts`
+- [x] T057 [US4] Implement closed data-class reach comparison and minimum outbound projection in `src/server/model-gateway/privacy.ts`
 - [ ] T058 [US4] Isolate credential lookup to the certified route/environment after admission in `src/server/model-gateway/dispatch.ts`
 - [ ] T059 [US4] Enforce tenant-consistent operation, task, content, policy and spend bindings in `src/server/model-gateway/operations.ts`
 - [ ] T060 [US4] Prove named mutation `gateway-cross-tenant-binding`, restore byte-exactly, and record privacy matrix evidence in `specs/002-model-gateway-v1/evidence/us4-privacy.md`

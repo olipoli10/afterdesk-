@@ -12,6 +12,7 @@ import {
   reserveAccountProviderSpend,
 } from "@/server/account-spend";
 import { canonicalFingerprint } from "./evidence";
+import { loadGatewayBreakerResolution } from "./breakers";
 import {
   buildClassificationGatewayRequest,
   type ClassificationProjection,
@@ -178,7 +179,10 @@ export async function createGatewayAttempt(
 }
 
 type PolicyDbRow = Omit<GatewayPolicySnapshot, "routeOrder" | "fallbackRules"> & { routeOrder: unknown; fallbackRules: unknown };
-type RouteDbRow = Omit<GatewayRouteSnapshot, "privacyEvidence"> & { privacyEvidence: unknown };
+type RouteDbRow = Omit<GatewayRouteSnapshot, "privacyEvidence" | "residency"> & {
+  privacyEvidence: unknown;
+  residency: unknown;
+};
 
 function parseRouteOrder(value: unknown): GatewayPolicySnapshot["routeOrder"] {
   if (!Array.isArray(value)) throw new Error("INVALID_GATEWAY_ROUTE_ORDER");
@@ -210,14 +214,16 @@ export async function loadGatewayPolicySnapshot(policyId: string): Promise<Gatew
 
 export async function loadGatewayRouteSnapshots(): Promise<GatewayRouteSnapshot[]> {
   const rows = await prisma.$queryRawUnsafe<RouteDbRow[]>(
-    `SELECT id,"routeKey",version,status,"adapterKey","billingProvider",intermediary,"endpointKey","modelKey","operationTypes","allowedDataClasses","privacyPosture","privacyEvidence","maxInputTokens","maxOutputTokens","canonicalHash" FROM "ModelGatewayRouteProfile"`
+    `SELECT id,"routeKey",version,status,"pathKind","adapterKey","billingProvider",intermediary,"endpointKey","modelKey","operationTypes","allowedDataClasses","privacyPosture",residency,"privacyEvidence","maxInputTokens","maxOutputTokens","canonicalHash" FROM "ModelGatewayRouteProfile"`
   );
   return rows.map((row) => {
-    if (row.privacyEvidence === null || typeof row.privacyEvidence !== "object" || Array.isArray(row.privacyEvidence)) {
+    if (row.privacyEvidence === null || typeof row.privacyEvidence !== "object" || Array.isArray(row.privacyEvidence) ||
+      !Array.isArray(row.residency) || row.residency.some((value) => typeof value !== "string")) {
       throw new Error("INVALID_GATEWAY_PRIVACY_EVIDENCE");
     }
     return Object.freeze({
       ...row,
+      residency: Object.freeze([...row.residency] as string[]),
       privacyEvidence: Object.freeze({ ...(row.privacyEvidence as Record<string, unknown>) }),
     });
   });
@@ -274,6 +280,24 @@ async function existingAdmission(aiOperationId: string): Promise<GatewayAdmissio
   return Object.freeze({ status: "busy" as const });
 }
 
+/**
+ * The caller never gets to supply a tenant label that merely looks plausible.
+ * Admission binds the existing operation to its task's actual client before
+ * it reads policy, reserves spend or builds an external attempt.
+ */
+async function admissionTenantBindingMatches(input: {
+  aiOperationId: string;
+  taskId: string;
+  tenantId: string;
+}): Promise<boolean> {
+  const rows = await prisma.$queryRawUnsafe<Array<{ taskId: string | null; clientId: string | null }>>(
+    `SELECT ai."taskId",task."clientId" FROM "AiOperation" ai LEFT JOIN "Task" task ON task.id=ai."taskId" WHERE ai.id=$1`,
+    input.aiOperationId
+  );
+  const row = rows[0];
+  return row?.taskId === input.taskId && row.clientId === input.tenantId;
+}
+
 export async function admitGatewayClassification(input: {
   aiOperationId: string;
   logicalOperationKey: string;
@@ -285,6 +309,9 @@ export async function admitGatewayClassification(input: {
   input: ClassificationSourceInput;
   maxTotalCostMicros: bigint;
 }): Promise<GatewayAdmission> {
+  if (!await admissionTenantBindingMatches(input)) {
+    return Object.freeze({ status: "refused" as const, reasonClass: "invalid_request" as const });
+  }
   const prior = await existingAdmission(input.aiOperationId);
   if (prior) return prior;
   const policy = await loadGatewayPolicySnapshot(input.policyId);
@@ -348,6 +375,54 @@ export async function admitGatewayClassification(input: {
     });
   }
 
+  const breaker = await loadGatewayBreakerResolution({
+    policy: resolution.policy,
+    route: resolution.route,
+  });
+  if (breaker.status === "open") {
+    return succeedAiOperation({
+      claim,
+      taskId: input.taskId,
+      purpose: "classification",
+      usage: null,
+      writeResult: async (tx) => {
+        const operation = await bindGatewayOperation(tx, {
+          aiOperationId: input.aiOperationId,
+          tenantId: input.tenantId,
+          operationType: "classification",
+          requestFingerprint: request.requestFingerprint,
+          outputContractHash: request.outputContractHash,
+          dataClass: request.dataClass,
+          privacyRequirement: request.privacyRequirement,
+          policyVersionId: policy.id,
+          maxTotalCostMicros: request.maxTotalCostMicros,
+        });
+        const decision = await persistGatewayDecision(tx, {
+          gatewayOperationId: operation.id,
+          attempt: claim.attempt,
+          disposition: "refused",
+          routeProfileId: null,
+          reasonClass: "open_breaker",
+          policyHash: policy.canonicalHash,
+          routeHash: null,
+          privacyEvidenceHash: null,
+          breakerGeneration: breaker.generation,
+          remainingCostMicros: request.maxTotalCostMicros,
+        });
+        await tx.$executeRawUnsafe(
+          `UPDATE "ModelGatewayOperation" SET status='refused',"finishedAt"=now() WHERE id=$1`,
+          operation.id
+        );
+        const value = Object.freeze({
+          status: "refused" as const,
+          reasonClass: "open_breaker" as const,
+          decisionId: decision.id,
+        });
+        return { resultKind: "modelGatewayOperation", resultId: operation.id, value };
+      },
+    });
+  }
+
   const grant = await reserveAccountProviderSpend({
     provider: resolution.route.billingProvider,
     operationKey: input.logicalOperationKey,
@@ -382,7 +457,7 @@ export async function admitGatewayClassification(input: {
         policyHash: policy.canonicalHash,
         routeHash: resolution.route.canonicalHash,
         privacyEvidenceHash: resolution.privacyEvidenceHash,
-        breakerGeneration: 0n,
+        breakerGeneration: breaker.generation,
         remainingCostMicros: request.maxTotalCostMicros,
       });
       const attempt = await createGatewayAttempt(tx, {

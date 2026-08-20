@@ -35,6 +35,7 @@ export type GatewayRouteSnapshot = Readonly<{
   routeKey: string;
   version: number;
   status: string;
+  pathKind: string;
   adapterKey: CertifiedAdapterKey;
   billingProvider: string;
   intermediary: string | null;
@@ -43,6 +44,7 @@ export type GatewayRouteSnapshot = Readonly<{
   operationTypes: readonly string[];
   allowedDataClasses: readonly string[];
   privacyPosture: string;
+  residency: readonly string[];
   privacyEvidence: Readonly<Record<string, unknown>>;
   maxInputTokens: number;
   maxOutputTokens: number;
@@ -70,11 +72,58 @@ function privacySatisfies(actual: string, required: GatewayPrivacyRequirement): 
   return actual in privacyRank && privacyRank[actual as GatewayPrivacyRequirement] >= privacyRank[required];
 }
 
-function evidenceExpiry(evidence: Readonly<Record<string, unknown>>): Date | null {
-  const raw = evidence.expiresAt;
-  if (typeof raw !== "string") return null;
-  const date = new Date(raw);
+const PRIVACY_EVIDENCE_KEYS = [
+  "adapterKey", "allowedDataClasses", "billingProvider", "certificationOwner",
+  "effectiveAt", "endpointKey", "expiresAt", "intermediary", "modelKey",
+  "operationTypes", "pathKind", "privacyPosture", "residency", "tenancyMode",
+] as const;
+
+function sameStringSet(actual: unknown, expected: readonly string[]): boolean {
+  return Array.isArray(actual) && actual.length === expected.length &&
+    [...actual].every((value) => typeof value === "string") &&
+    [...actual].sort().every((value, index) => value === [...expected].sort()[index]);
+}
+
+function validDate(value: unknown): Date | null {
+  if (typeof value !== "string") return null;
+  const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/**
+ * A profile is not evidence for itself. Its certificate must restate every
+ * path-bearing fact it authorizes, with a bounded effective period and a
+ * closed tenancy posture. A provider-family marketing statement cannot pass
+ * this comparison because it is missing exact fields.
+ */
+function certifiedRoutePrivacyStatus(
+  route: GatewayRouteSnapshot,
+  now: Date
+): "eligible" | "missing_privacy_evidence" | "expired_privacy_evidence" {
+  const evidence = route.privacyEvidence;
+  const keys = Object.keys(evidence).sort();
+  if (keys.length !== PRIVACY_EVIDENCE_KEYS.length || keys.some((key, index) => key !== PRIVACY_EVIDENCE_KEYS[index])) {
+    return "missing_privacy_evidence";
+  }
+  const effectiveAt = validDate(evidence.effectiveAt);
+  const expiresAt = validDate(evidence.expiresAt);
+  if (!effectiveAt || !expiresAt || typeof evidence.certificationOwner !== "string" || evidence.certificationOwner.length === 0 ||
+    evidence.tenancyMode !== "route_isolated" ||
+    evidence.pathKind !== route.pathKind ||
+    evidence.adapterKey !== route.adapterKey ||
+    evidence.billingProvider !== route.billingProvider ||
+    evidence.intermediary !== route.intermediary ||
+    evidence.endpointKey !== route.endpointKey ||
+    evidence.modelKey !== route.modelKey ||
+    evidence.privacyPosture !== route.privacyPosture ||
+    !sameStringSet(evidence.operationTypes, route.operationTypes) ||
+    !sameStringSet(evidence.allowedDataClasses, route.allowedDataClasses) ||
+    !sameStringSet(evidence.residency, route.residency)
+  ) return "missing_privacy_evidence";
+  if (effectiveAt.getTime() > now.getTime() || expiresAt.getTime() <= now.getTime()) {
+    return "expired_privacy_evidence";
+  }
+  return "eligible";
 }
 
 export function parseGatewayFallbackRules(value: unknown): GatewayPolicySnapshot["fallbackRules"] {
@@ -111,10 +160,7 @@ function routeEligible(request: GatewayOperationRequest, route: GatewayRouteSnap
     !route.allowedDataClasses.includes(request.dataClass as GatewayDataClass) ||
     !privacySatisfies(route.privacyPosture, request.privacyRequirement)
   ) return "ineligible_route";
-  const expiresAt = evidenceExpiry(route.privacyEvidence);
-  if (!expiresAt) return "missing_privacy_evidence";
-  if (expiresAt.getTime() <= now.getTime()) return "expired_privacy_evidence";
-  return "eligible";
+  return certifiedRoutePrivacyStatus(route, now);
 }
 
 export function resolveGatewayPolicy(input: {
