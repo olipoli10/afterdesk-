@@ -18,6 +18,20 @@ only when every safety, scope, oracle, mutation and review gate passes.
 5. Provide no client data, production credentials, prompt corpus, attachment
    or network access. A sanitized frozen checkout is the only allowed context.
 
+## Focused trial before the full benchmark
+
+The first trial may exercise one case only when it uses
+`createFocusedCandidatePacket(...)` and `scoreFocusedDevBenchRun(...)` with
+the same catalog and one explicit case ID. This is not a shortcut around the
+full benchmark:
+
+- both packets must have the same one-case tree and the same starting commit;
+- the run record must contain that case and no additional case;
+- it is rejected by the same privacy, scope, mutation, command and reviewer
+  gates as a full run;
+- a focused result is evidence about that case only. It never adopts a model,
+  provider, gateway or general-purpose coding workflow.
+
 ## Candidate rules
 
 - One case at a time, in the frozen catalog order.

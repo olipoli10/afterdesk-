@@ -67,7 +67,8 @@ function isNonNegativeInteger(value: unknown): value is number {
  */
 export function validateDevBenchRun(
   value: unknown,
-  catalog: DevBenchCatalog
+  catalog: DevBenchCatalog,
+  expectedCaseIds: readonly string[] = catalog.cases.map((benchCase) => benchCase.id)
 ): DevBenchRunReport {
   const errors: string[] = [];
   scanForbiddenFields(value, errors);
@@ -110,7 +111,22 @@ export function validateDevBenchRun(
   }
 
   const outcomes = value.outcomes;
-  const expectedCases = new Map(catalog.cases.map((benchCase) => [benchCase.id, benchCase]));
+  const catalogCases = new Map(catalog.cases.map((benchCase) => [benchCase.id, benchCase]));
+  const expectedCases = new Map<string, (typeof catalog.cases)[number]>();
+  const requestedCaseIds = new Set<string>();
+  for (const caseId of expectedCaseIds) {
+    if (requestedCaseIds.has(caseId)) {
+      errors.push(`duplicate requested case: ${caseId}`);
+      continue;
+    }
+    requestedCaseIds.add(caseId);
+    const benchCase = catalogCases.get(caseId);
+    if (!benchCase) {
+      errors.push(`unknown requested case: ${caseId}`);
+      continue;
+    }
+    expectedCases.set(caseId, benchCase);
+  }
   const outcomeIds = new Set<string>();
   let acceptedCaseCount = 0;
   if (!Array.isArray(outcomes)) {
@@ -168,4 +184,17 @@ export function validateDevBenchRun(
   if (value.reviewerVerdict !== "accepted") errors.push("reviewerVerdict must be accepted");
 
   return { ok: errors.length === 0, errors, acceptedCaseCount };
+}
+
+/**
+ * A single-case trial uses the same evidence schema and fail-closed checks as
+ * the full benchmark. It differs only in the explicitly named expected case;
+ * an extra result is rejected rather than silently ignored.
+ */
+export function validateFocusedDevBenchRun(
+  value: unknown,
+  catalog: DevBenchCatalog,
+  caseId: string
+): DevBenchRunReport {
+  return validateDevBenchRun(value, catalog, [caseId]);
 }
