@@ -2,6 +2,18 @@
 
 Status: **NO-GO LOCAL for rollout; candidate implementation complete for review.**
 
+## 2026-08-20 browser/localization follow-up
+
+The bounded follow-up is recorded under `browser-localization-certification/` at source commit `e914887`.
+
+- Chrome and Edge now have fresh EN/FR/ES/TL evidence at 100% and true 200% reflow.
+- The follow-up contains 16 interactive reports/captures plus 5 canonical-disabled audit reports covering 20 observations.
+- All fresh local observations report zero horizontal overflow, zero small visible voice target, zero small voice text and zero framework error overlay.
+- The build wrapper now forwards the explicitly allowlisted `--webpack` argument, and the actual preview build reports Webpack and 96/96 generated pages.
+- Firefox, Safari and native Tagalog review remain missing. This is not full certification and does not change the rollout decision.
+
+The older `final-disabled/audit-1440x1000.json` is superseded because its internal document metrics remained 390 pixels wide. The older 200% disclosure artifact is also superseded because it used page-scale emulation rather than CSS reflow. Both remain in history for traceability and must not be cited as current certification.
+
 This packet reconciles the Audio Intake portal contract into the ENDVERA portal without merging or copying the divergent Audio Intake runtime. The portal exposes a typed server-action seam whose canonical implementation returns explicit negative readiness facts and disabled command results. Voice therefore remains unavailable unless a later, separately authorized integration supplies every required readiness fact coherently and positively.
 
 ## Authority and boundaries
