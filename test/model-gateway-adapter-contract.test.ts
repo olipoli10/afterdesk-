@@ -66,4 +66,28 @@ describe("synthetic adapter contract", () => {
     expect(result).toMatchObject({ dispatchKnowledge: "dispatched_unknown", errorClass: "unknown_dispatched_outcome" });
     expect(calls).toBe(1);
   });
+
+  it.each([
+    [429, "rate_limit"],
+    [401, "authentication"],
+    [400, "malformed_request"],
+    [503, "provider_server_failure"],
+  ])("returns normalized %s failures without a hidden retry", async (status, errorClass) => {
+    let calls = 0;
+    const adapter = createSyntheticAdapter({
+      endpointKey: "messages",
+      modelKey: "synthetic-classifier",
+      transport: async () => {
+        calls += 1;
+        throw Object.assign(new Error("fixture"), { status });
+      },
+    });
+    await expect(adapter.dispatch(envelope)).resolves.toMatchObject({
+      dispatchKnowledge: "response_received",
+      errorClass,
+      usage: null,
+      httpStatus: status,
+    });
+    expect(calls).toBe(1);
+  });
 });

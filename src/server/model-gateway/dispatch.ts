@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { succeedAiOperation, SupersededOperationError } from "@/server/ai-operations";
 import { settleAccountSpendHold } from "@/server/account-spend";
 import type { ModelGatewayAdapter } from "./adapters/contract";
+import { loadGatewayBreakerResolution } from "./breakers";
 import { canonicalFingerprint, validateClassificationResponse } from "./evidence";
 import {
   loadGatewayPolicySnapshot,
@@ -105,6 +106,41 @@ async function refuseBeforeDispatch(
   });
 }
 
+/** A dispatched request with no trustworthy cost/result never releases its hold. */
+async function retainAmbiguousDispatch(
+  admission: AuthorizedGatewayAdmission,
+  input: { errorClass: string | null; httpStatus: number | null; providerRequestRef: string | null }
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(
+      `UPDATE "ModelGatewayAttempt" SET status='uncertain',"dispatchState"='unaccounted',"providerRequestRef"=$2,"errorClass"=$3,"httpStatus"=$4,"resultContractStatus"='not_evaluated',"finishedAt"=now() WHERE id=$1 AND status='dispatched'`,
+      admission.attempt.id,
+      input.providerRequestRef,
+      input.errorClass,
+      input.httpStatus
+    );
+    await tx.$executeRawUnsafe(
+      `UPDATE "ModelGatewayOperation" SET status='uncertain' WHERE id=$1 AND status='admitted'`,
+      admission.operation.id
+    );
+  });
+}
+
+/** A known provider refusal without measured usage is also not zero-cost. */
+async function retainUnsettledProviderFailure(
+  admission: AuthorizedGatewayAdmission,
+  input: { errorClass: string; httpStatus: number | null; providerRequestRef: string | null; responseEvidenceRef: string | null }
+): Promise<void> {
+  await prisma.$executeRawUnsafe(
+    `UPDATE "ModelGatewayAttempt" SET status='failed',"dispatchState"='unaccounted',"providerRequestRef"=$2,"responseEvidenceRef"=$3,"errorClass"=$4,"httpStatus"=$5,"resultContractStatus"='not_evaluated',"finishedAt"=now() WHERE id=$1 AND status='dispatched'`,
+    admission.attempt.id,
+    input.providerRequestRef,
+    input.responseEvidenceRef,
+    input.errorClass,
+    input.httpStatus
+  );
+}
+
 export async function dispatchGatewayAttempt(input: {
   admission: AuthorizedGatewayAdmission;
   adapter: ModelGatewayAdapter;
@@ -129,6 +165,9 @@ export async function dispatchGatewayAttempt(input: {
     ),
   ]);
   const current = resolveGatewayPolicy({ request: admission.request, policy, routes });
+  const breaker = current.disposition === "route_authorized"
+    ? await loadGatewayBreakerResolution({ policy: current.policy, route: current.route })
+    : null;
   const row = lineage[0];
   if (!row || row.aiStatus !== "running" || row.lockedBy !== admission.claim.lockedBy) {
     throw new SupersededOperationError(admission.claim.operationKey);
@@ -142,10 +181,15 @@ export async function dispatchGatewayAttempt(input: {
     row.attemptStatus !== "prepared" ||
     row.dispatchState !== "not_dispatched" ||
     row.holdStatus !== "held" ||
-    input.adapter.key !== admission.route.adapterKey
+    input.adapter.key !== admission.route.adapterKey ||
+    breaker?.status === "open" ||
+    breaker?.generation !== admission.decision.breakerGeneration
   ) {
-    await refuseBeforeDispatch(admission, "ineligible_route");
-    return Object.freeze({ status: "refused" as const, reasonClass: "ineligible_route" as const });
+    const reasonClass = breaker?.status === "open" || breaker?.generation !== admission.decision.breakerGeneration
+      ? "open_breaker"
+      : "ineligible_route";
+    await refuseBeforeDispatch(admission, reasonClass);
+    return Object.freeze({ status: "refused" as const, reasonClass });
   }
 
   await prisma.$executeRawUnsafe(
@@ -168,16 +212,10 @@ export async function dispatchGatewayAttempt(input: {
   });
 
   if (result.dispatchKnowledge === "dispatched_unknown") {
-    await closeGatewayOperation(admission, {
-      operationStatus: "uncertain",
-      attemptStatus: "uncertain",
-      dispatchState: "unaccounted",
-      resultContractStatus: "not_evaluated",
+    await retainAmbiguousDispatch(admission, {
       providerRequestRef: result.providerRequestRef,
-      responseEvidenceRef: null,
       errorClass: result.errorClass,
       httpStatus: result.httpStatus,
-      actualCostMicros: admission.request.maxTotalCostMicros,
     });
     return Object.freeze({ status: "uncertain", reasonClass: "unknown_dispatched_outcome" });
   }
@@ -185,9 +223,21 @@ export async function dispatchGatewayAttempt(input: {
     await refuseBeforeDispatch(admission, result.errorClass ?? "invalid_request");
     return Object.freeze({ status: "refused", reasonClass: "invalid_request" });
   }
-  if (result.dispatchKnowledge !== "response_received" || result.usage === null) {
+  if (result.dispatchKnowledge !== "response_received") {
     await refuseBeforeDispatch(admission, "invalid_request");
     return Object.freeze({ status: "refused", reasonClass: "invalid_request" });
+  }
+  if (result.usage === null) {
+    const failureClass = result.errorClass === "unknown_dispatched_outcome"
+      ? "unknown_failure"
+      : result.errorClass ?? "unknown_failure";
+    await retainUnsettledProviderFailure(admission, {
+      providerRequestRef: result.providerRequestRef,
+      responseEvidenceRef: result.responseEvidenceRef,
+      errorClass: failureClass,
+      httpStatus: result.httpStatus,
+    });
+    return Object.freeze({ status: "failed", failureClass });
   }
 
   const validation = validateClassificationResponse(result.response);

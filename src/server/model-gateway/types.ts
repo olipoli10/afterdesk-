@@ -26,6 +26,7 @@ export const GATEWAY_PROVIDER_ERROR_CLASSES = [
   "malformed_request",
   "timeout",
   "provider_server_failure",
+  "unknown_failure",
   "unknown_dispatched_outcome",
 ] as const;
 export type GatewayProviderErrorClass = (typeof GATEWAY_PROVIDER_ERROR_CLASSES)[number];
@@ -47,8 +48,10 @@ export const GATEWAY_TERMINAL_FAILURE_CLASSES = [
   "provider_refusal",
   "rate_limit",
   "authentication",
+  "malformed_request",
   "timeout",
   "provider_server_failure",
+  "unknown_failure",
   "attempts_exhausted",
 ] as const;
 export type GatewayTerminalFailureClass = (typeof GATEWAY_TERMINAL_FAILURE_CLASSES)[number];

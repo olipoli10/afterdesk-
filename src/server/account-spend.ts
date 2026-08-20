@@ -173,6 +173,8 @@ export type AccountSpendGrant = {
   holdId: string;
   grantedMicros: bigint;
   periodKey: string;
+  /** Whether this call created the unique attempt reservation. */
+  created: boolean;
 };
 
 export type AccountSpendRefusal = {
@@ -253,6 +255,7 @@ export async function reserveAccountProviderSpend(input: {
         holdId: existing.id,
         grantedMicros: existing.amountMicros,
         periodKey: existing.periodKey,
+        created: false,
       };
     }
 
@@ -323,6 +326,7 @@ export async function reserveAccountProviderSpend(input: {
       holdId: hold.id,
       grantedMicros: input.worstCaseMicros,
       periodKey,
+      created: true,
     };
   });
 }

@@ -1,5 +1,6 @@
 import "server-only";
 import { canonicalFingerprint } from "../evidence";
+import { normalizeGatewayProviderError } from "@/lib/ai-work-engine/provider-error";
 import type { AdapterAttemptEnvelope, AdapterAttemptResult } from "../types";
 import type { ModelGatewayAdapter } from "./contract";
 
@@ -57,7 +58,19 @@ export function createSyntheticAdapter(input: {
             outputTokens: result.outputTokens,
           }),
         };
-      } catch {
+      } catch (error) {
+        const normalized = normalizeGatewayProviderError(error);
+        if (normalized.httpStatus !== null) {
+          return {
+            dispatchKnowledge: "response_received",
+            providerRequestRef: `synthetic:${envelope.attemptId}`,
+            response: null,
+            usage: null,
+            errorClass: normalized.errorClass,
+            httpStatus: normalized.httpStatus,
+            responseEvidenceRef: canonicalFingerprint({ providerRequestRef: `synthetic:${envelope.attemptId}`, ...normalized }),
+          };
+        }
         return {
           dispatchKnowledge: "dispatched_unknown",
           providerRequestRef: `synthetic:${envelope.attemptId}`,

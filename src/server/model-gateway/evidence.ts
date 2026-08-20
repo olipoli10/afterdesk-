@@ -101,3 +101,51 @@ export function validateClassificationResponse(response: unknown): Classificatio
     }),
   });
 }
+
+/** Content-free, operator-readable lineage for one logical gateway operation. */
+export type GatewayAttemptLineageInput = Readonly<{
+  attempt: number;
+  routeKey: string | null;
+  routeVersion: number | null;
+  decision: "route_authorized" | "refused";
+  reasonClass: string;
+  holdStatus: "held" | "settled" | "released";
+  heldMicros: bigint;
+  settledMicros: bigint | null;
+  dispatchState: "not_dispatched" | "settled" | "unaccounted";
+  attemptStatus: string;
+  errorClass: GatewayProviderErrorClass | null;
+  providerRequestRef: string | null;
+}>;
+
+export type GatewayAttemptLineage = Readonly<{
+  attempt: number;
+  route: string | null;
+  decision: string;
+  reasonClass: string;
+  spend: "held" | "settled" | "released";
+  exposureMicros: bigint;
+  dispatchState: string;
+  attemptStatus: string;
+  errorClass: GatewayProviderErrorClass | null;
+  providerRequestRef: string | null;
+}>;
+
+export function projectGatewayAttemptLineage(
+  attempts: readonly GatewayAttemptLineageInput[]
+): readonly GatewayAttemptLineage[] {
+  return Object.freeze(attempts.slice().sort((left, right) => left.attempt - right.attempt).map((attempt) =>
+    Object.freeze({
+      attempt: attempt.attempt,
+      route: attempt.routeKey === null || attempt.routeVersion === null ? null : `${attempt.routeKey}@${attempt.routeVersion}`,
+      decision: attempt.decision,
+      reasonClass: attempt.reasonClass,
+      spend: attempt.holdStatus,
+      exposureMicros: attempt.holdStatus === "settled" ? (attempt.settledMicros ?? 0n) : attempt.holdStatus === "held" ? attempt.heldMicros : 0n,
+      dispatchState: attempt.dispatchState,
+      attemptStatus: attempt.attemptStatus,
+      errorClass: attempt.errorClass,
+      providerRequestRef: attempt.providerRequestRef,
+    })
+  ));
+}

@@ -92,20 +92,20 @@
 
 ### RED tests
 
-- [ ] T033 [P] [US2] Write RED normalized provider-error and fallback-eligibility tests in `test/model-gateway-fallback.test.ts`
-- [ ] T034 [P] [US2] Write RED adapter fixtures for refusal, rate limit, authentication, malformed request, provider 5xx, timeout and abort in `test/model-gateway-adapter-contract.test.ts`
-- [ ] T035 [US2] Write RED disposable-PostgreSQL reservation, settlement, release and uncertain-exposure tests in `test/integration/model-gateway-spend.itest.ts`
-- [ ] T036 [US2] Write RED concurrent fallback and total logical-ceiling tests in `test/integration/model-gateway-fallback.itest.ts`
+- [x] T033 [P] [US2] Write RED normalized provider-error and fallback-eligibility tests in `test/model-gateway-fallback.test.ts`
+- [x] T034 [P] [US2] Write RED adapter fixtures for refusal, rate limit, authentication, malformed request, provider 5xx, timeout and abort in `test/model-gateway-adapter-contract.test.ts`
+- [x] T035 [US2] Write RED disposable-PostgreSQL reservation, settlement, release and uncertain-exposure tests in `test/integration/model-gateway-spend.itest.ts`
+- [x] T036 [US2] Write RED concurrent fallback and total logical-ceiling tests in `test/integration/model-gateway-fallback.itest.ts`
 
 ### Implementation
 
-- [ ] T037 [P] [US2] Extend normalized provider error classes without changing existing caller semantics in `src/lib/ai-work-engine/provider-error.ts`
-- [ ] T038 [US2] Implement frozen fallback evaluation and new-attempt authorization in `src/server/model-gateway/policy.ts`
-- [ ] T039 [US2] Integrate conservative per-attempt reservation with the existing account-spend authority in `src/server/model-gateway/dispatch.ts` and `src/server/account-spend.ts`
-- [ ] T040 [US2] Implement conclusive settlement, conclusive non-dispatch release and dispatched-unknown retention in `src/server/model-gateway/operations.ts`
-- [ ] T041 [US2] Enforce total primary-plus-fallback exposure below the immutable logical ceiling in `src/server/model-gateway/operations.ts`
-- [ ] T042 [US2] Add operator-readable attempt/fallback/refusal lineage projection in `src/server/model-gateway/evidence.ts`
-- [ ] T043 [US2] Prove named mutations `gateway-dispatch-without-hold`, `gateway-releases-ambiguous-spend` and `gateway-silent-route-substitution`, restore byte-exactly, and record results in `specs/002-model-gateway-v1/evidence/us2-fallback-spend.md`
+- [x] T037 [P] [US2] Extend normalized provider error classes without changing existing caller semantics in `src/lib/ai-work-engine/provider-error.ts`
+- [x] T038 [US2] Implement frozen fallback evaluation and new-attempt authorization in `src/server/model-gateway/policy.ts`
+- [x] T039 [US2] Integrate conservative per-attempt reservation with the existing account-spend authority in `src/server/model-gateway/dispatch.ts` and `src/server/account-spend.ts`
+- [x] T040 [US2] Implement conclusive settlement, conclusive non-dispatch release and dispatched-unknown retention in `src/server/model-gateway/operations.ts`
+- [x] T041 [US2] Enforce total primary-plus-fallback exposure below the immutable logical ceiling in `src/server/model-gateway/operations.ts`
+- [x] T042 [US2] Add operator-readable attempt/fallback/refusal lineage projection in `src/server/model-gateway/evidence.ts`
+- [x] T043 [US2] Prove named mutations `gateway-dispatch-without-hold`, `gateway-releases-ambiguous-spend` and `gateway-silent-route-substitution`, restore byte-exactly, and record results in `specs/002-model-gateway-v1/evidence/us2-fallback-spend.md`
 
 **Checkpoint**: No hidden retry, unbounded fallback or fabricated zero-cost outcome remains possible.
 

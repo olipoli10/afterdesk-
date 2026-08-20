@@ -18,6 +18,8 @@ import {
   type ClassificationSourceInput,
 } from "./privacy";
 import {
+  parseGatewayFallbackRules,
+  resolveGatewayFallback,
   resolveGatewayPolicy,
   type GatewayPolicySnapshot,
   type GatewayRouteSnapshot,
@@ -27,11 +29,14 @@ import type {
   GatewayDataClass,
   GatewayOperationType,
   GatewayPrivacyRequirement,
+  GatewayProviderErrorClass,
 } from "./types";
 
 type Tx = Prisma.TransactionClient;
 
 const uid = (prefix: string) => `${prefix}_${randomUUID().replaceAll("-", "")}`;
+const toMicros = (value: bigint | number | string | null | undefined): bigint =>
+  typeof value === "bigint" ? value : value === null || value === undefined ? 0n : BigInt(value);
 
 export type GatewayOperationRow = {
   id: string;
@@ -172,7 +177,7 @@ export async function createGatewayAttempt(
   return row;
 }
 
-type PolicyDbRow = Omit<GatewayPolicySnapshot, "routeOrder"> & { routeOrder: unknown };
+type PolicyDbRow = Omit<GatewayPolicySnapshot, "routeOrder" | "fallbackRules"> & { routeOrder: unknown; fallbackRules: unknown };
 type RouteDbRow = Omit<GatewayRouteSnapshot, "privacyEvidence"> & { privacyEvidence: unknown };
 
 function parseRouteOrder(value: unknown): GatewayPolicySnapshot["routeOrder"] {
@@ -196,11 +201,11 @@ function parseRouteOrder(value: unknown): GatewayPolicySnapshot["routeOrder"] {
 
 export async function loadGatewayPolicySnapshot(policyId: string): Promise<GatewayPolicySnapshot | null> {
   const rows = await prisma.$queryRawUnsafe<PolicyDbRow[]>(
-    `SELECT id,"policyKey",status,"operationType","routeOrder","maxAttempts","maxTotalCostMicros","requiredPrivacyPosture","canonicalHash" FROM "ModelGatewayPolicyVersion" WHERE id=$1`,
+    `SELECT id,"policyKey",status,"operationType","routeOrder","fallbackRules","maxAttempts","maxTotalCostMicros","requiredPrivacyPosture","canonicalHash" FROM "ModelGatewayPolicyVersion" WHERE id=$1`,
     policyId
   );
   const row = rows[0];
-  return row ? Object.freeze({ ...row, routeOrder: parseRouteOrder(row.routeOrder) }) : null;
+  return row ? Object.freeze({ ...row, routeOrder: parseRouteOrder(row.routeOrder), fallbackRules: parseGatewayFallbackRules(row.fallbackRules) }) : null;
 }
 
 export async function loadGatewayRouteSnapshots(): Promise<GatewayRouteSnapshot[]> {
@@ -353,7 +358,10 @@ export async function admitGatewayClassification(input: {
     return Object.freeze({ status: "refused", reasonClass: "insufficient_spend_headroom" });
   }
   try {
-    const durable = await withModelGatewayTransaction(async (tx) => {
+    // Reservation is the concurrency authority for this exact attempt; use a
+    // plain transaction here so Prisma does not try to alter isolation after
+    // the account-spend transaction has returned its pooled connection.
+    const durable = await prisma.$transaction(async (tx) => {
       const operation = await bindGatewayOperation(tx, {
         aiOperationId: input.aiOperationId,
         tenantId: input.tenantId,
@@ -399,7 +407,114 @@ export async function admitGatewayClassification(input: {
       ...durable,
     });
   } catch (error) {
-    await releaseAccountSpendHold(grant.holdId);
+    try { await releaseAccountSpendHold(grant.holdId); } catch { /* preserve original durable failure */ }
+    throw error;
+  }
+}
+
+/**
+ * A fallback is a separate, immutable authorization and a separate account
+ * reservation.  It never reuses a first-attempt decision or hold.
+ */
+export async function authorizeGatewayFallback(input: {
+  admission: AuthorizedGatewayAdmission;
+  errorClass: GatewayProviderErrorClass;
+}): Promise<GatewayAdmission> {
+  const { admission } = input;
+  const [policy, routes, lineage] = await Promise.all([
+    loadGatewayPolicySnapshot(admission.policy.id),
+    loadGatewayRouteSnapshots(),
+    prisma.$queryRawUnsafe<Array<{
+      status: string;
+      dispatchState: string;
+      errorClass: string | null;
+      holdStatus: string;
+      aiStatus: string;
+      lockedBy: string | null;
+      operationStatus: string;
+      maxTotalCostMicros: bigint | number | string;
+      settledMicros: bigint | number | string | null;
+      heldMicros: bigint | number | string | null;
+    }>>(
+      `SELECT a.status,a."dispatchState",a."errorClass",h.status "holdStatus",ai.status "aiStatus",ai."lockedBy",o.status "operationStatus",o."maxTotalCostMicros",
+        COALESCE((SELECT SUM("settledMicros") FROM "AccountProviderSpendHold" WHERE "operationKey"=ai."operationKey" AND status='settled'),0) "settledMicros",
+        COALESCE((SELECT SUM("amountMicros") FROM "AccountProviderSpendHold" WHERE "operationKey"=ai."operationKey" AND status='held'),0) "heldMicros"
+       FROM "ModelGatewayOperation" o
+       JOIN "AiOperation" ai ON ai.id=o."aiOperationId"
+       JOIN "ModelGatewayAttempt" a ON a.id=$2
+       JOIN "AccountProviderSpendHold" h ON h.id=a."accountSpendHoldId"
+       WHERE o.id=$1`,
+      admission.operation.id,
+      admission.attempt.id
+    ),
+  ]);
+  const prior = lineage[0];
+  if (
+    !prior || prior.aiStatus !== "running" || prior.lockedBy !== admission.claim.lockedBy ||
+    prior.operationStatus !== "admitted" || prior.status !== "failed" ||
+    prior.dispatchState !== "settled" || prior.holdStatus !== "settled" ||
+    prior.errorClass !== input.errorClass
+  ) return Object.freeze({ status: "busy" as const });
+
+  const remaining = toMicros(prior.maxTotalCostMicros) - toMicros(prior.settledMicros) - toMicros(prior.heldMicros);
+  const resolution = resolveGatewayFallback({
+    request: admission.request,
+    policy,
+    routes,
+    priorRoute: admission.route,
+    errorClass: input.errorClass,
+    priorAttempt: admission.decision.attempt,
+    remainingCostMicros: remaining,
+  });
+  if (resolution.disposition === "refused") {
+    return Object.freeze({ status: "refused" as const, reasonClass: resolution.reasonClass });
+  }
+  const grant = await reserveAccountProviderSpend({
+    provider: resolution.route.billingProvider,
+    operationKey: admission.claim.operationKey,
+    attempt: resolution.attempt,
+    worstCaseMicros: remaining,
+  });
+  if (!grant.ok) return Object.freeze({ status: "refused" as const, reasonClass: "insufficient_spend_headroom" });
+  if (!grant.created) return Object.freeze({ status: "busy" as const });
+  try {
+    const durable = await prisma.$transaction(async (tx) => {
+      const decision = await persistGatewayDecision(tx, {
+        gatewayOperationId: admission.operation.id,
+        attempt: resolution.attempt,
+        disposition: "route_authorized",
+        routeProfileId: resolution.route.id,
+        reasonClass: resolution.reasonClass,
+        policyHash: resolution.policy.canonicalHash,
+        routeHash: resolution.route.canonicalHash,
+        privacyEvidenceHash: resolution.privacyEvidenceHash,
+        breakerGeneration: 0n,
+        remainingCostMicros: remaining,
+      });
+      const attempt = await createGatewayAttempt(tx, {
+        decisionId: decision.id,
+        accountSpendHoldId: grant.holdId,
+        requestEvidenceRef: canonicalFingerprint({
+          operationType: admission.request.operationType,
+          requestFingerprint: admission.request.requestFingerprint,
+          outputContractHash: admission.request.outputContractHash,
+          routeHash: resolution.route.canonicalHash,
+        }),
+      });
+      return { decision, attempt };
+    });
+    return Object.freeze({
+      status: "authorized" as const,
+      claim: admission.claim,
+      request: admission.request,
+      projection: admission.projection,
+      policy: resolution.policy,
+      route: resolution.route,
+      operation: admission.operation,
+      ...durable,
+    });
+  } catch (error) {
+    try { await releaseAccountSpendHold(grant.holdId); } catch { /* preserve original durable failure */ }
     throw error;
   }
 }
