@@ -8,6 +8,9 @@
 - Added a fail-closed `DevBenchRun` evidence envelope that makes cost,
   mutation, command and reviewer evidence mandatory while rejecting sensitive
   field names by construction.
+- Added an equal-packet protocol and lexicographic scorecard: a candidate with
+  any safety/scope/mutation/reviewer failure is non-comparable, regardless of
+  speed or cost.
 - Added six tests, including four named in-memory mutations:
   `catalog-duplicate-id`, `catalog-destructive-command`,
   `catalog-missing-source-evidence`, and `catalog-provider-exposure`.
