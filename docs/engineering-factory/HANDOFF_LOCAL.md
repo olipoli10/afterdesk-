@@ -37,6 +37,11 @@
   produced the exact same two-line source deletion, final Git tree and source
   blob; the technical verdict is an exact tie, with no measured cost or
   elapsed rank.
+- Completed EF-005 from a frozen replay-fixture-provenance seed. Both
+  candidates fingerprinted complete tool definitions and rejected altered
+  stored request bytes. Claude is the narrow technical winner because it also
+  rejects a malformed on-disk tools value instead of normalizing it to an
+  empty tool list. No cost or elapsed ranking exists.
 
 ## Green evidence
 
@@ -65,9 +70,9 @@ used to bypass that boundary. It does not affect the local-only benchmark code.
 
 ## Next decision
 
-The Control Tower should schedule EF-005 as the next two-candidate bake-off
-from the catalog, with a frozen clone, named mutation, and supported elapsed
-and cost measurement sources. Score reviewer-accepted technical evidence
-first; score time or cost only when the hardened harness records a supported
+The Control Tower should schedule the next catalog case as a two-candidate
+bake-off from a frozen clone, with a named mutation and supported elapsed and
+cost measurement sources. Score reviewer-accepted technical evidence first;
+score time or cost only when the hardened harness records a supported
 measurement source. A winner remains a candidate until broader evidence is
 independently reviewed.
