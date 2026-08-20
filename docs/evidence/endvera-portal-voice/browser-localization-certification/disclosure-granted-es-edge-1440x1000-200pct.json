@@ -1,0 +1,56 @@
+{
+  "createdAt": "2026-08-20T19:28:56.382Z",
+  "base": "http://localhost:3218",
+  "scenario": "disclosure",
+  "permission": "granted",
+  "language": "es",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "cssViewport": {
+    "width": 720,
+    "height": 500
+  },
+  "zoom": 200,
+  "browser": "edge",
+  "recordMs": 1200,
+  "screenshots": [
+    "disclosure-granted-es-edge-1440x1000-200pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nLISTO CUANDO TÚ LO ESTÉS\nHola. ¿Qué puedo ayudarte a terminar?\n\nDescribe el problema, el flujo que haces hoy o el resultado que quieres recibir. Empieza por donde te resulte natural.\n\nHaré algunas preguntas útiles y convertiré la conversación en un brief para que lo revises.\n\nDescribe tu problema o flujo\n\nDescríbelo en voz alta\n\nCuando termines, tu grabación se enviará para transcribirla. Revisa el texto antes de enviarlo a A2.\n\nEstoy listo para enviar esta grabación para su transcripción.\nIniciar grabación\nCancelar grabación\nEnviar a A2\n\nA2 prepara el brief. Un operador confirma alcance, plazo y precio fijo antes de empezar.\n\nEnter para enviar · Mayús+Enter para nueva línea",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Estoy listo para enviar esta grabación para su transcripción.",
+        "width": 449,
+        "height": 44
+      },
+      {
+        "text": "Iniciar grabación",
+        "width": 160,
+        "height": 44
+      },
+      {
+        "text": "Cancelar grabación",
+        "width": 152,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "BODY",
+    "composerValue": "",
+    "alerts": [],
+    "primaryStatus": null,
+    "trackStops": 0,
+    "recorderSessions": [],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

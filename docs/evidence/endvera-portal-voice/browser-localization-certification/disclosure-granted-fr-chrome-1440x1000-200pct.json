@@ -1,0 +1,56 @@
+{
+  "createdAt": "2026-08-20T19:28:23.503Z",
+  "base": "http://localhost:3218",
+  "scenario": "disclosure",
+  "permission": "granted",
+  "language": "fr",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "cssViewport": {
+    "width": 720,
+    "height": 500
+  },
+  "zoom": 200,
+  "browser": "chrome",
+  "recordMs": 1200,
+  "screenshots": [
+    "disclosure-granted-fr-chrome-1440x1000-200pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nPRÊT QUAND VOUS L’ÊTES\nBonjour. Qu’est-ce que je peux vous aider à terminer?\n\nDécrivez le problème, votre workflow actuel ou le résultat que vous voulez recevoir. Commencez où cela vous semble naturel.\n\nJe poserai quelques questions utiles et transformerai la discussion en brief à réviser.\n\nDécrivez votre problème ou workflow\n\nDécrivez-le à voix haute\n\nQuand vous terminez, votre enregistrement est envoyé pour transcription. Relisez le texte avant de l’envoyer à A2.\n\nJe suis prêt à envoyer cet enregistrement pour transcription.\nCommencer l’enregistrement\nAnnuler l’enregistrement\nEnvoyer à A2\n\nA2 prépare le brief. Un opérateur confirme le périmètre, le délai et un prix fixe avant le début du travail.\n\nEntrée pour envoyer · Maj+Entrée pour une nouvelle ligne",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Je suis prêt à envoyer cet enregistrement pour transcription.",
+        "width": 437,
+        "height": 44
+      },
+      {
+        "text": "Commencer l’enregistrement",
+        "width": 237,
+        "height": 44
+      },
+      {
+        "text": "Annuler l’enregistrement",
+        "width": 184,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "BODY",
+    "composerValue": "",
+    "alerts": [],
+    "primaryStatus": null,
+    "trackStops": 0,
+    "recorderSessions": [],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

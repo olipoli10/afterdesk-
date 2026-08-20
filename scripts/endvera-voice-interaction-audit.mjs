@@ -110,6 +110,12 @@ async function main() {
   const permission = arg("permission", "granted");
   const [width, height] = arg("viewport", "390x844").split("x").map(Number);
   const zoom = Number(arg("zoom", "100"));
+  if (!Number.isFinite(zoom) || zoom < 100 || zoom > 400) {
+    throw new Error(`Unsupported zoom percentage: ${zoom}`);
+  }
+  const zoomScale = zoom / 100;
+  const cssWidth = Math.round(width / zoomScale);
+  const cssHeight = Math.round(height / zoomScale);
   const browser = arg("browser", "chrome");
   const browserExecutable = BROWSERS[browser];
   if (!browserExecutable) throw new Error(`Unsupported browser: ${browser}`);
@@ -143,18 +149,15 @@ async function main() {
     await cdp.call("Page.enable");
     await cdp.call("Runtime.enable");
     await cdp.call("Emulation.setDeviceMetricsOverride", {
-      width,
-      height,
-      deviceScaleFactor: 1,
-      mobile: width <= 500,
+      width: cssWidth,
+      height: cssHeight,
+      deviceScaleFactor: zoomScale,
+      mobile: cssWidth <= 500,
     });
     await cdp.call("Emulation.setEmulatedMedia", {
       media: "screen",
       features: [{ name: "prefers-reduced-motion", value: "reduce" }],
     });
-    if (zoom === 200) {
-      await cdp.call("Emulation.setPageScaleFactor", { pageScaleFactor: 2 });
-    }
     await cdp.call("Page.addScriptToEvaluateOnNewDocument", {
       source: `(() => {
         window.__voiceTrackStops = 0;
@@ -359,6 +362,7 @@ async function main() {
       permission,
       language,
       viewport: { width, height },
+      cssViewport: { width: cssWidth, height: cssHeight },
       zoom,
       browser,
       recordMs,
@@ -369,7 +373,11 @@ async function main() {
     await writeFile(reportPath, JSON.stringify(report, null, 2));
     console.log(JSON.stringify({ reportPath, screenshots, metrics }, null, 2));
   } finally {
-    cdp?.close();
+    if (cdp) {
+      await cdp.call("Browser.close").catch(() => {});
+      cdp.close();
+    }
+    await sleep(500);
     await stopBrowserProcessTree(chrome);
     await sleep(500);
     await rm(profile, { recursive: true, force: true }).catch(() => {});

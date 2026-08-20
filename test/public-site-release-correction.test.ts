@@ -83,6 +83,21 @@ describe("C7/C8 - the preview pipeline can NEVER migrate", () => {
     expect(plan.commands[plan.commands.length - 1]).toMatch(/next build/);
     expect(() => computePlan({ VERCEL_ENV: "production" })).toThrow(/DIRECT_URL/);
   });
+  it("forwards an explicitly allowed webpack flag to next build only", async () => {
+    const { computePlan, resolveCommands } = await import("../scripts/vercel-build.mjs");
+    expect(resolveCommands(computePlan({ VERCEL_ENV: "preview" }), ["--webpack"])).toEqual([
+      "next build --webpack",
+    ]);
+    expect(
+      resolveCommands(
+        computePlan({ VERCEL_ENV: "production", DIRECT_URL: "set" }),
+        ["--webpack"],
+      ),
+    ).toEqual(["prisma migrate deploy", "next build --webpack"]);
+    expect(() =>
+      resolveCommands(computePlan({ VERCEL_ENV: "preview" }), ["--debug; echo unsafe"]),
+    ).toThrow(/unsupported build argument/i);
+  });
   it("an unknown environment fails closed", async () => {
     const { computePlan } = await import("../scripts/vercel-build.mjs");
     expect(() => computePlan({})).toThrow(/fail.*closed|unknown/i);

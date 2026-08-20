@@ -1,0 +1,56 @@
+{
+  "createdAt": "2026-08-20T19:29:03.978Z",
+  "base": "http://localhost:3218",
+  "scenario": "disclosure",
+  "permission": "granted",
+  "language": "tl",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "cssViewport": {
+    "width": 720,
+    "height": 500
+  },
+  "zoom": 200,
+  "browser": "edge",
+  "recordMs": 1200,
+  "screenshots": [
+    "disclosure-granted-tl-edge-1440x1000-200pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nHANDA KAPAG HANDA KA\nHi. Ano ang maitutulong kong tapusin?\n\nIlarawan ang problema, ang workflow na ginagawa mo ngayon, o ang resultang gusto mong matanggap. Magsimula kung saan natural para sa iyo.\n\nMagtatanong ako ng ilang mahalagang detalye at gagawing brief ang usapan para ma-review mo.\n\nIlarawan ang problema o workflow\n\nIkuwento ito nang malakas\n\nKapag tapos ka na, ipapadala ang recording mo para ma-transcribe. Suriin ang text bago mo ito ipadala kay A2.\n\nHanda akong ipadala ang recording na ito para ma-transcribe.\nSimulan ang recording\nKanselahin ang recording\nIpadala kay A2\n\nIhahanda ni A2 ang brief. Operator ang magkukumpirma ng scope, timing at fixed na presyo bago magsimula.\n\nEnter para ipadala · Shift+Enter para bagong linya",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "Handa akong ipadala ang recording na ito para ma-transcribe.",
+        "width": 426,
+        "height": 44
+      },
+      {
+        "text": "Simulan ang recording",
+        "width": 196,
+        "height": 44
+      },
+      {
+        "text": "Kanselahin ang recording",
+        "width": 188,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "BODY",
+    "composerValue": "",
+    "alerts": [],
+    "primaryStatus": null,
+    "trackStops": 0,
+    "recorderSessions": [],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

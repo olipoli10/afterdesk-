@@ -70,4 +70,23 @@ describe("ENDVERA portal microphone candidate", () => {
     expect(voice).toContain("flex-wrap");
     expect(voice).not.toMatch(/requestAnimationFrame/);
   });
+
+  it("models 200% zoom as a reflowed CSS viewport rather than pinch zoom", () => {
+    const interactionAudit = read("scripts/endvera-voice-interaction-audit.mjs");
+    const visualAudit = read("scripts/endvera-visual-audit.mjs");
+    for (const audit of [interactionAudit, visualAudit]) {
+      expect(audit).toContain("const zoomScale = zoom / 100");
+      expect(audit).toContain("const cssWidth = Math.round(width / zoomScale)");
+      expect(audit).toContain("deviceScaleFactor: zoomScale");
+      expect(audit).not.toContain("Emulation.setPageScaleFactor");
+    }
+  });
+
+  it("asks the browser to close before cleaning its disposable evidence profile", () => {
+    const interactionAudit = read("scripts/endvera-voice-interaction-audit.mjs");
+    const closeBrowser = interactionAudit.indexOf('cdp.call("Browser.close")');
+    const closeConnection = interactionAudit.indexOf("cdp.close()", closeBrowser);
+    expect(closeBrowser).toBeGreaterThan(-1);
+    expect(closeConnection).toBeGreaterThan(closeBrowser);
+  });
 });

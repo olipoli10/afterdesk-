@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".tmp-voice-*/**",
+    "docs/evidence/endvera-portal-voice/**/chrome-profile-*/**",
   ]),
   {
     // The AI assistant's isolation from task/client data (see the doc

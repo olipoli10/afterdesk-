@@ -13,8 +13,9 @@
                      deliberate `npm run db:migrate`).
      anything else (including unset) -> fail closed.
 
-   computePlan is exported so the test suite (and its mutations) can prove
-   the preview path can never reach a migration. */
+   computePlan and resolveCommands are exported so the test suite (and its
+   mutations) can prove the preview path can never reach a migration and CLI
+   bundler selection cannot become shell injection. */
 
 import { execSync } from "node:child_process";
 
@@ -43,13 +44,29 @@ export function computePlan(env) {
   );
 }
 
+const ALLOWED_BUILD_ARGUMENTS = new Set(["--webpack", "--turbopack"]);
+
+export function resolveCommands(plan, cliArguments = []) {
+  for (const argument of cliArguments) {
+    if (!ALLOWED_BUILD_ARGUMENTS.has(argument)) {
+      throw new Error(`unsupported build argument ${JSON.stringify(argument)} - failing closed`);
+    }
+  }
+  if (cliArguments.includes("--webpack") && cliArguments.includes("--turbopack")) {
+    throw new Error("conflicting build arguments --webpack and --turbopack - failing closed");
+  }
+  const suffix = cliArguments.length > 0 ? ` ${cliArguments.join(" ")}` : "";
+  return plan.commands.map((command) => (command === "next build" ? `${command}${suffix}` : command));
+}
+
 const invokedDirectly =
   process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/").split("/").pop());
 
 if (invokedDirectly) {
   const plan = computePlan(process.env);
-  console.log(`[vercel-build] env=${plan.env} plan=${plan.commands.join(" && ")}`);
-  for (const cmd of plan.commands) {
+  const commands = resolveCommands(plan, process.argv.slice(2));
+  console.log(`[vercel-build] env=${plan.env} plan=${commands.join(" && ")}`);
+  for (const cmd of commands) {
     execSync(cmd, { stdio: "inherit", env: process.env });
   }
 }

@@ -45,3 +45,7 @@ storage/
 
 .next-dev.log
 .prisma-dev.log
+
+# Disposable local browser evidence profiles and scratch captures.
+.tmp-voice-*/
+docs/evidence/endvera-portal-voice/**/chrome-profile-*/

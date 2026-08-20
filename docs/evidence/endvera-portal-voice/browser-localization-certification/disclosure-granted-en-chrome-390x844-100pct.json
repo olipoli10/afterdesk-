@@ -1,0 +1,56 @@
+{
+  "createdAt": "2026-08-20T19:27:20.567Z",
+  "base": "http://localhost:3218",
+  "scenario": "disclosure",
+  "permission": "granted",
+  "language": "en",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "cssViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "zoom": 100,
+  "browser": "chrome",
+  "recordMs": 1200,
+  "screenshots": [
+    "disclosure-granted-en-chrome-390x844-100pct.png"
+  ],
+  "metrics": {
+    "bodyText": "A2\nA2\nREADY WHEN YOU ARE\nHi. What can I help you finish?\n\nDescribe the issue, the workflow you do today, or the result you want back. Start wherever it makes sense.\n\nI’ll ask a few useful questions and turn the conversation into a brief for you to review.\n\nDescribe your problem or workflow\n\nDescribe it out loud\n\nWhen you finish, your recording is sent for transcription. Review the text before you send it to A2.\n\nI’m ready to send this recording for transcription.\nStart recording\nCancel recording\nSend to A2\n\nA2 prepares the brief. An operator confirms scope, timing and one fixed price before work starts.\n\nEnter to send · Shift+Enter for a new line",
+    "horizontalOverflow": false,
+    "targets": [
+      {
+        "text": "I’m ready to send this recording for transcription.",
+        "width": 302,
+        "height": 44
+      },
+      {
+        "text": "Start recording",
+        "width": 150,
+        "height": 44
+      },
+      {
+        "text": "Cancel recording",
+        "width": 137,
+        "height": 44
+      }
+    ],
+    "smallTargets": [],
+    "smallText": [],
+    "activeElement": "BODY",
+    "composerValue": "",
+    "alerts": [],
+    "primaryStatus": null,
+    "trackStops": 0,
+    "recorderSessions": [],
+    "mediaRecorderSupported": true,
+    "supportedMimeTypes": [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4"
+    ]
+  }
+}

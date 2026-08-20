@@ -196,6 +196,13 @@ async function main() {
   const viewport = arg("viewport", "390x844").split("x").map(Number);
   const width = viewport[0];
   const height = viewport[1];
+  const zoom = Number(arg("zoom", "100"));
+  if (!Number.isFinite(zoom) || zoom < 100 || zoom > 400) {
+    throw new Error(`Unsupported zoom percentage: ${zoom}`);
+  }
+  const zoomScale = zoom / 100;
+  const cssWidth = Math.round(width / zoomScale);
+  const cssHeight = Math.round(height / zoomScale);
   const reducedMotion = arg("reduced-motion", "false") === "true";
   const capture = arg("capture", "core");
   const settleMs = Number(arg("settle", reducedMotion ? "120" : "350"));
@@ -218,6 +225,8 @@ async function main() {
     base,
     createdAt: new Date().toISOString(),
     viewport: { width, height },
+    cssViewport: { width: cssWidth, height: cssHeight },
+    zoom,
     reducedMotion,
     routes: [],
   };
@@ -232,10 +241,10 @@ async function main() {
     await cdp.call("Runtime.enable");
     await cdp.call("Network.enable");
     await cdp.call("Emulation.setDeviceMetricsOverride", {
-      width,
-      height,
-      deviceScaleFactor: 1,
-      mobile: width <= 500,
+      width: cssWidth,
+      height: cssHeight,
+      deviceScaleFactor: zoomScale,
+      mobile: cssWidth <= 500,
     });
     await cdp.call("Emulation.setEmulatedMedia", {
       media: "screen",
@@ -281,7 +290,7 @@ async function main() {
             format: "png",
             captureBeyondViewport: false,
           });
-          screenshot = `${slug(route)}-${lang}-${width}x${height}${reducedMotion ? "-reduce" : ""}.png`;
+          screenshot = `${slug(route)}-${lang}-${width}x${height}${zoom !== 100 ? `-zoom${zoom}` : ""}${reducedMotion ? "-reduce" : ""}.png`;
           await writeFile(path.join(out, screenshot), Buffer.from(image.data, "base64"));
         }
         report.routes.push({ route, lang, url, status: documentStatus, screenshot, ...metrics });
@@ -305,7 +314,7 @@ async function main() {
     await rm(profile, { recursive: true, force: true }).catch(() => {});
   }
 
-  const reportPath = path.join(out, `audit-${width}x${height}${reducedMotion ? "-reduce" : ""}.json`);
+  const reportPath = path.join(out, `audit-${width}x${height}${zoom !== 100 ? `-zoom${zoom}` : ""}${reducedMotion ? "-reduce" : ""}.json`);
   await writeFile(reportPath, JSON.stringify(report, null, 2));
   const failures = report.routes.filter((item) => item.status !== 200 || item.errorOverlay || item.horizontalOverflow);
   console.log(JSON.stringify({ reportPath, audited: report.routes.length, failures: failures.length }, null, 2));
