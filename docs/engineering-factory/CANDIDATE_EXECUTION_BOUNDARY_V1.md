@@ -73,3 +73,12 @@ not a provider call and not an adoption decision.
 The future external runner remains a separately reviewed component. It may
 consume a successful report only after the referenced evidence is independently
 validated outside this schema.
+
+## Independent runner review result
+
+The first local evidence review is recorded in
+`INDEPENDENT_RUNNER_EVIDENCE_REVIEW_V1.md`. It identified exact local artifact
+fingerprints but found that the current wrappers do not enforce the declared
+environment, filesystem, egress, input, parity or result boundaries. The
+authority therefore remains `DRAFT`; the review is blocking evidence, not an
+approval.

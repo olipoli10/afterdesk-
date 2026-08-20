@@ -1,0 +1,89 @@
+# ADR: Independent candidate runner boundary
+
+**Status:** Proposed / blocked on external implementation and review  
+**Date:** 2026-08-20  
+**Deciders:** Control Tower plus an independent security/privacy reviewer
+
+## Context
+
+DevBench V2 has a frozen 32-slot counterbalanced plan and rehearsed Git
+mechanics. A real coding candidate requires provider egress and write access to
+a frozen case, while the product repository must remain unable to expose
+credentials, unrelated files, raw model text or client data. The current
+PowerShell wrappers are convenience launchers, not isolation controls.
+
+## Decision
+
+Use a separate, deny-by-default candidate-runner supervisor outside the product
+runtime. The repository may produce a review-ready evidence request, but it
+must not launch the candidate itself. The supervisor receives an isolated
+candidate bundle, a frozen invocation profile and scoped benchmark credentials;
+it returns only privacy-checked measured evidence and the case-local Git result.
+
+Candidate execution remains blocked until the supervisor and its network/data
+controls are independently reviewed.
+
+## Options considered
+
+### A. Run the current local wrappers directly
+
+| Dimension | Assessment |
+|---|---|
+| Complexity | Low |
+| Evidence quality | Low |
+| Secret/file isolation | Unproven |
+| Candidate parity | Broken |
+| Decision | Rejected |
+
+The scripts inherit the environment, expose prompts in process arguments, rely
+on a linked worktree and do not enforce egress or result projection.
+
+### B. Add more flags to the current wrappers
+
+| Dimension | Assessment |
+|---|---|
+| Complexity | Medium |
+| Evidence quality | Medium at best |
+| Secret/file isolation | Still not OS-enforced |
+| Candidate parity | Fragile |
+| Decision | Rejected as the final boundary |
+
+Flags can disable session persistence, tools or telemetry, but cannot prove
+that inherited credentials, filesystem traversal, child processes and network
+escape are blocked.
+
+### C. External isolated supervisor with an egress proxy
+
+| Dimension | Assessment |
+|---|---|
+| Complexity | High |
+| Evidence quality | High when independently tested |
+| Secret/file isolation | Enforceable |
+| Candidate parity | Explicit profile per candidate |
+| Decision | Selected, not yet implemented |
+
+The supervisor must own process creation, environment construction, filesystem
+boundary, egress, time/output caps and destruction of raw output. Vendor CLIs
+remain replaceable artifacts behind the same evidence contract.
+
+## Consequences
+
+- The V2 benchmark cannot start from the current repository or wrappers.
+- Exact local fingerprints remain useful but are not authorization.
+- The frozen plan needs a reviewed distinction between provider control-plane
+  egress and candidate tool/network access before measured results can claim
+  `networkAccess: none` honestly.
+- A provider account's verified retention setting becomes part of the candidate
+  configuration, not a generic vendor claim.
+- The first independent-runner milestone is a synthetic no-provider isolation
+  test. A real provider call comes only after that test and independent review.
+
+## Action items
+
+1. Define the isolated bundle and complete invocation-profile schema.
+2. Implement a synthetic runner with a fake local provider endpoint.
+3. Prove environment, filesystem, egress, prompt and result boundaries with
+   named mutations.
+4. Freeze dedicated benchmark accounts and retention controls.
+5. Obtain independent approval and only then create an `APPROVED` authority.
+

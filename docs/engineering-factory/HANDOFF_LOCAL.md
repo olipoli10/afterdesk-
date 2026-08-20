@@ -93,6 +93,14 @@
   references for network policy, provider data boundary and independent
   review. The read-only `devbench:execution:preflight` fails closed without
   those approved proofs and contains no process launcher.
+- Completed the first independent-runner evidence review without launching a
+  candidate. Exact installed Codex/Claude versions, binary signatures and
+  SHA-256 fingerprints are recorded, but execution remains NO-GO: current
+  wrappers inherit the environment, expose the prompt in process arguments,
+  use a linked worktree without OS file isolation, provide unequal candidate
+  capabilities, do not enforce egress and stream raw output to the console.
+  `ADR_INDEPENDENT_CANDIDATE_RUNNER_V1.md` selects a future external isolated
+  supervisor; the authority remains DRAFT.
 
 ## Green evidence
 
