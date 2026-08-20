@@ -1,5 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import { approxTokens, worstCaseMicros } from "@/lib/ai-work-engine/metered-call";
+import { costMicrosFor } from "@/lib/ai-work-engine/tool-cost";
 
 /**
  * The single place the AI provider lives. Swapping to another provider means
@@ -29,6 +31,14 @@ export type IntakeUsage = {
   inputTokens: number;
   outputTokens: number;
   cacheReadTokens: number;
+  /**
+   * R5.2 — cache WRITES are billed at 1.25x the input rate, and this call sets
+   * cache_control: ephemeral on its system prompt, so it writes the cache on
+   * the first turn of every conversation. Omitting this field settled the
+   * account hold BELOW what Anthropic actually charged — understatement, the
+   * one direction the ledger may never take.
+   */
+  cacheWriteTokens: number;
   stopReason: string | null;
 };
 
@@ -44,6 +54,38 @@ export class IntakeTooLongError extends Error {
     super("The model ran out of room before finishing.");
     this.name = "IntakeTooLongError";
   }
+}
+
+/**
+ * R5.2 — the two numbers the account-level spend gate needs, kept PURE and in
+ * this file because the model and token bounds live here.
+ *
+ * Both reuse the work engine's existing estimator and its verified rate table
+ * (tool-cost.ts). No new pricing constant is introduced anywhere in R5.2: the
+ * reservation is the same worst case the engine already reserves for a call of
+ * this shape, and the settlement is the same arithmetic it already settles with.
+ *
+ * They stay pure (no Prisma, no reservation call) for the reason R5 established:
+ * the reservation belongs in the already DB-coupled server action, so this
+ * module remains directly callable and testable without a database.
+ */
+export function intakeReservationMicros(turns: IntakeTurn[]): number {
+  return worstCaseMicros({
+    model: AI_MODEL,
+    maxOutputTokens: MAX_TOKENS,
+    approxInputTokens:
+      approxTokens(SYSTEM) + turns.reduce((n, t) => n + approxTokens(t.content), 0),
+    maxSearches: 0,
+  });
+}
+
+export function intakeCostMicros(usage: IntakeUsage): number {
+  return costMicrosFor(AI_MODEL, {
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    cacheReadTokens: usage.cacheReadTokens,
+    cacheWriteTokens: usage.cacheWriteTokens,
+  });
 }
 
 const SYSTEM = `You are the intake assistant for AfterDesk, a managed back-office execution service. Businesses describe a bounded outcome; an AfterDesk operator confirms fit, scope, price, access requirements and timing before work begins.
@@ -100,10 +142,18 @@ const FALLBACK_REPLY = "Here's the brief. Take a look below and edit anything th
 export async function runIntake(turns: IntakeTurn[]): Promise<IntakeResult> {
   const client = new Anthropic({
     // TypeScript timeouts are milliseconds. Bounded so a stalled call cannot
-    // hold a server action open, and one retry so a transient blip recovers
-    // without re-billing the transcript repeatedly.
+    // hold a server action open.
     timeout: 60_000,
-    maxRetries: 1,
+    /**
+     * R5.2 — maxRetries: 0, the doctrine R5.1 established (research.ts:94-99).
+     * The previous comment here claimed one retry recovered a blip "without
+     * re-billing the transcript" — that was simply wrong: an SDK retry issues a
+     * second full billable POST. Now that this call reserves account-level
+     * capacity first, that retry would be a second charge funded by one
+     * reservation. A failed turn surfaces to the client, who can send again —
+     * and that is a new server-action invocation with its own reservation.
+     */
+    maxRetries: 0,
   });
 
   const response = await client.messages.create({
@@ -123,6 +173,7 @@ export async function runIntake(turns: IntakeTurn[]): Promise<IntakeResult> {
     inputTokens: response.usage?.input_tokens ?? 0,
     outputTokens: response.usage?.output_tokens ?? 0,
     cacheReadTokens: response.usage?.cache_read_input_tokens ?? 0,
+    cacheWriteTokens: response.usage?.cache_creation_input_tokens ?? 0,
     stopReason: response.stop_reason ?? null,
   };
 

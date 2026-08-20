@@ -9,6 +9,14 @@ import {
   reserveSpend,
   settleHold,
 } from "@/server/workflow-budget";
+import {
+  ACCOUNT_SPEND_BLOCKED_EVENT_ACTION,
+  ACCOUNT_SPEND_CEILING_REASON_KEY,
+  ACCOUNT_SPEND_UNCONFIGURED_REASON_KEY,
+  releaseAccountSpendHold,
+  reserveAccountProviderSpend,
+  settleAccountSpendHold,
+} from "@/server/account-spend";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
@@ -751,10 +759,25 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
   return null;
 }
 
+/**
+ * R5.1 — the runner's outer deadline, made DISTINGUISHABLE from every other
+ * throw. It is the one failure where "nothing was dispatched" cannot be
+ * assumed: the timer races the primitive as a whole, so it can fire while a
+ * provider POST is still open and `recordInvocation` has not run yet. The
+ * catch below must therefore NOT hand the reservations back on this error —
+ * see the release site for the full reasoning.
+ */
+export class StepTimeoutError extends Error {
+  constructor(label: string, ms: number) {
+    super(`${label} exceeded ${ms}ms`);
+    this.name = "StepTimeoutError";
+  }
+}
+
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   let timer: NodeJS.Timeout;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`${label} exceeded ${ms}ms`)), ms);
+    timer = setTimeout(() => reject(new StepTimeoutError(label, ms)), ms);
   });
   try {
     return await Promise.race([promise, timeout]);
@@ -909,6 +932,7 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
        * where that must be noticed.
        */
       let reservation: Awaited<ReturnType<typeof reserveSpend>> | null = null;
+      let accountHold: Awaited<ReturnType<typeof reserveAccountProviderSpend>> | null = null;
       let recordedAnInvocation = false;
 
       try {
@@ -994,6 +1018,89 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
           });
           await pauseRunForBudget(run.id, run.task.id, reservation);
           break;
+        }
+
+        /**
+         * R5 — THE ACCOUNT-LEVEL CIRCUIT BREAKER, AFTER THE PER-RUN GATE,
+         * BEFORE THE PRIMITIVE EVER RUNS.
+         *
+         * validate accepted execution -> validate per-run allowance (above)
+         * -> reserve account-level allowance (here) -> dispatch (below) ->
+         * settle. Never the reverse: a call that already left AfterDesk
+         * cannot be un-made by a check that runs afterwards.
+         *
+         * Reuses the SAME frozen worst-case ceiling as the per-run
+         * reservation (`maxCostMicrosPerAttemptAtQuote`) — this is not a new
+         * quote-time estimate recomputed at execution, it is the identical
+         * already-frozen number, read twice for two different ceilings.
+         */
+        if (primitive.billable) {
+          accountHold = await reserveAccountProviderSpend({
+            operationKey: `${primitive.id}:${run.snapshotId}:${step.order}`,
+            attempt: step.attempts,
+            worstCaseMicros: step.maxCostMicrosPerAttemptAtQuote!,
+          });
+
+          if (!accountHold.ok) {
+            /**
+             * Give back the per-run hold this attempt is not going to use —
+             * the same "a refusal is not an attempt" rule as the per-run
+             * budget refusal above, applied to a different reservation.
+             */
+            if (reservation !== null && reservation.ok) {
+              await releaseHold(reservation.holdId);
+            }
+            await prisma.taskWorkflowStepRun.updateMany({
+              where: { id: step.id, lockedBy: step.lockedBy },
+              data: {
+                status: "pending",
+                attempts: { decrement: 1 },
+                leaseExpiresAt: null,
+                lockedAt: null,
+                lockedBy: null,
+              },
+            });
+            const reasonKey =
+              accountHold.reason === "ceiling_not_configured"
+                ? ACCOUNT_SPEND_UNCONFIGURED_REASON_KEY
+                : ACCOUNT_SPEND_CEILING_REASON_KEY;
+            await prisma.taskEvent.create({
+              data: {
+                taskId: run.task.id,
+                action: ACCOUNT_SPEND_BLOCKED_EVENT_ACTION,
+                meta: {
+                  reasonKey,
+                  stepRunId: step.id,
+                  order: step.order,
+                  primitiveId: primitive.id,
+                  provider: accountHold.provider,
+                  periodKey: accountHold.periodKey,
+                  ceilingMicros: accountHold.ceilingMicros?.toString() ?? null,
+                  committedMicros: accountHold.committedMicros.toString(),
+                  requestedMicros: accountHold.requestedMicros.toString(),
+                },
+              },
+            });
+            /**
+             * SAFE TO ALWAYS DEMOTE: a step only reaches execution after the
+             * compiler already proved it automatable (data class, reach,
+             * mode — compile.ts) and it was never running because it was
+             * unsafe for a person, only because it was cheaper than one.
+             * Handing it to a human here is the existing, already-proven
+             * fallback (identical mechanism as a primitive-version mismatch),
+             * and the existing downstream safety net — finishRun's
+             * `residual.overBudget` pause — is what stops an unsafe/
+             * over-reserved human fallback from silently overspending the
+             * ACCEPTED contract. Nothing new is built for that; it already
+             * runs on every human residual, including this one.
+             */
+            await handOffStepToHuman(
+              step.id,
+              run.id,
+              "AfterDesk's own provider spend safety ceiling is at capacity right now; a person completes this step."
+            );
+            continue;
+          }
         }
 
         /**
@@ -1117,6 +1224,23 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
                       });
                     }
                   }
+                  /**
+                   * R5 — the account-level hold, resolved in the SAME
+                   * transaction and by the SAME rule: settled on a settled
+                   * dispatch, released only when we know nothing was
+                   * dispatched, kept `held` on either uncertain outcome.
+                   */
+                  if (accountHold !== null && accountHold.ok) {
+                    const acctHoldId = accountHold.holdId;
+                    if (record.dispatchState === "settled") {
+                      await settleAccountSpendHold(tx, acctHoldId, BigInt(record.costMicros));
+                    } else if (record.dispatchState === "cancelled_before_dispatch") {
+                      await tx.accountProviderSpendHold.updateMany({
+                        where: { id: acctHoldId, status: "held" },
+                        data: { status: "released", settledMicros: 0n },
+                      });
+                    }
+                  }
                   // Split at the point of record: searches are billed per
                   // query by the provider, tokens by volume, and an operator
                   // reading "we spent X" needs to know which lever moves it.
@@ -1169,6 +1293,9 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         // rather than let a phantom hold squeeze every later step.
         if (reservation !== null && reservation.ok && !recordedAnInvocation) {
           await releaseHold(reservation.holdId);
+        }
+        if (accountHold !== null && accountHold.ok && !recordedAnInvocation) {
+          await releaseAccountSpendHold(accountHold.holdId);
         }
 
         /**
@@ -1227,10 +1354,34 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
          *    us again and we do not.
          */
         const classified = classifyProviderError(error);
-        // The same release as the success path: a throw BEFORE the provider
-        // call (no API key, a bad argument) reserved money it never spent.
-        if (reservation !== null && reservation.ok && !recordedAnInvocation) {
+        /**
+         * The same release as the success path: a throw BEFORE the provider
+         * call (no API key, a bad argument) reserved money it never spent.
+         *
+         * R5.1 — EXCEPT ON THE RUNNER'S OWN DEADLINE. `withTimeout` races the
+         * primitive AS A WHOLE, and the primitive does pre-dispatch work
+         * first (`await getSettings()`, a DB round trip). The inner call
+         * deadline is designed to fire first — 180s inside a 200s outer bound
+         * (research.ts:42-46) — but that margin is only 20s, so a slow enough
+         * pre-dispatch step inverts the order: the outer timer fires while the
+         * POST is still open and `recordInvocation` has not run, leaving
+         * `recordedAnInvocation` false for a request the provider will still
+         * bill. Releasing there would hand a real charge's room straight back
+         * to the day's ceiling — the exact understatement this ledger exists
+         * to prevent.
+         *
+         * So a timeout keeps BOTH holds, which is precisely the rule the
+         * settlement path already applies to `dispatched_then_cancelled`:
+         * an unknown outcome stays reserved. Over-holding is safe and the
+         * daily window releases it at the next UTC rollover; under-counting a
+         * billed call is not recoverable at all.
+         */
+        const mayHaveDispatched = error instanceof StepTimeoutError;
+        if (reservation !== null && reservation.ok && !recordedAnInvocation && !mayHaveDispatched) {
           await releaseHold(reservation.holdId);
+        }
+        if (accountHold !== null && accountHold.ok && !recordedAnInvocation && !mayHaveDispatched) {
+          await releaseAccountSpendHold(accountHold.holdId);
         }
         /**
          * `classified.message` is the REDACTED, bounded form. Recomputing a

@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/authz";
 import { exceptionMetricsForAdmin } from "@/lib/queries/exception-metrics";
 import { budgetHealthForAdmin } from "@/lib/queries/budget-health";
+import { accountSpendHealthForAdmin } from "@/server/account-spend";
 import { Card, CardBody, EmptyState, PageTitle } from "@/components/ui";
 
 export const metadata = { title: "Reliability" };
@@ -25,7 +26,18 @@ const usdOf = (micros: bigint) => `$${(Number(micros / 10_000n) / 100).toFixed(2
 
 export default async function ReliabilityPage() {
   await requireRole("ADMIN");
-  const [m, budget] = await Promise.all([exceptionMetricsForAdmin(), budgetHealthForAdmin()]);
+  /**
+   * R5.2 — one readout PER PROVIDER. Their ceilings are separate, so summing
+   * them into a single "remaining capacity" would invent a number that governs
+   * nothing: exhausting Anthropic does not free Voyage, and vice versa.
+   */
+  const [m, budget, anthropicSpend, voyageSpend] = await Promise.all([
+    exceptionMetricsForAdmin(),
+    budgetHealthForAdmin(),
+    accountSpendHealthForAdmin({ provider: "anthropic" }),
+    accountSpendHealthForAdmin({ provider: "voyage" }),
+  ]);
+  const providerSpend = [anthropicSpend, voyageSpend];
 
   return (
     <>
@@ -163,6 +175,64 @@ export default async function ReliabilityPage() {
           </CardBody>
         </Card>
       </div>
+
+      <Card className="mt-4">
+        <CardBody>
+          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-[#5B6069]">
+            Committed exposure vs daily ceiling (R5) — {anthropicSpend.periodKey} UTC
+          </p>
+          {/*
+            R5.1 — "committed" is NOT "spent". `held` is the worst case reserved
+            for attempts whose outcome is still unknown, and it is deliberately
+            larger than what those calls will actually cost. Naming the two
+            halves separately matters because the natural reaction to a headline
+            sitting near the ceiling is to RAISE the ceiling, and that is a
+            spend-increasing decision made against a padded number.
+
+            R5.2 — per provider, never summed: separate ceilings mean a combined
+            "remaining" would govern nothing.
+          */}
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            {providerSpend.map((s) => (
+              <div key={s.provider}>
+                <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-[#5B6069]">
+                  {s.provider}
+                </p>
+                <p className="mt-0.5 font-mono text-xl tabular-nums">
+                  {usdOf(s.committedMicros)}
+                  {s.ceilingMicros !== null
+                    ? ` / ${usdOf(s.ceilingMicros)}`
+                    : " (no ceiling configured)"}
+                </p>
+                <p className="text-xs text-[#5B6069]">
+                  {usdOf(s.settledMicros)} actually settled + {usdOf(s.heldMicros)} reserved
+                  worst-case for attempts still in flight
+                  {s.remainingMicros !== null
+                    ? ` · ${usdOf(s.remainingMicros)} headroom left today`
+                    : ""}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-[#5B6069]">
+            {anthropicSpend.blockedEventCount} call
+            {anthropicSpend.blockedEventCount === 1 ? "" : "s"} blocked today
+          </p>
+          {/*
+            R5.2 — the scope statement, now that the perimeter is closed. It
+            still says what is NOT here, because "covers everything" is exactly
+            the sentence that stops being true first.
+          */}
+          <p className="mt-2 text-xs leading-relaxed text-[#5B6069]">
+            Covers every billable AI provider call: workflow primitives, the Phase 1A
+            pricing pipeline, Voyage embeddings, client intake chat, the worker assistant
+            and closed-job analysis — for this deployment&apos;s database only. Non-AI
+            vendors (email, storage, payments) bill on other axes and are not governed
+            here. The window is a UTC calendar day; every provider-side spend cap is per
+            calendar month, so the two never cancel out and both are required.
+          </p>
+        </CardBody>
+      </Card>
 
       <Card className="mt-4">
         <CardBody>

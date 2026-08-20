@@ -1,5 +1,5 @@
 /**
- * THE SIX-CONDITION GUARD in front of every destructive integration-test
+ * THE SEVEN-CONDITION GUARD in front of every destructive integration-test
  * operation. FAIL CLOSED: a missing condition throws and names itself; no
  * cleanup code is reachable past a failed check, and the suite must never
  * mark itself skipped — a silently skipped integration suite is worse than
@@ -7,7 +7,11 @@
  * template, which is exactly the database an accidental TRUNCATE must never
  * reach — and which condition 3 rejects by name).
  *
- * Pure module: importable by unit tests to prove the guard itself.
+ * Pure module: importable by unit tests to prove the guard itself. Condition
+ * 6 takes the L3/canary database's identity as an explicit optional input
+ * rather than reading `.env.l3.local` itself, so this file stays a pure
+ * function of its arguments — the caller (global-setup.ts) does the one file
+ * read, read-only, and passes the result in.
  */
 
 export type GuardedTestDb = {
@@ -31,8 +35,26 @@ function identityOf(rawUrl: string): { host: string; port: string; database: str
   }
 }
 
+/**
+ * Neon aliases the same logical endpoint across a POOLED and a DIRECT
+ * hostname, differing only by a "-pooler" suffix on the first DNS label
+ * (mirrors `.scratch/l3.e2e.ts`'s identical normaliser — that file compares
+ * its own pooled/direct pair this way for exactly the same reason). Used
+ * ONLY by condition 6 below: a plain string-equal host comparison would
+ * treat the pooled and direct URLs for the SAME L3/canary database as two
+ * different databases, missing the exact collision this condition exists
+ * to catch. Conditions 2 and 5 keep the plain, unnormalised comparison —
+ * changing their behaviour is out of scope here.
+ */
+function neonEndpointIdentity(hostname: string): string {
+  const [first, ...rest] = hostname.split(".");
+  const endpoint = first.endsWith("-pooler") ? first.slice(0, -"-pooler".length) : first;
+  return [endpoint, ...rest].join(".");
+}
+
 export function assertSafeIntegrationDb(
-  env: Record<string, string | undefined>
+  env: Record<string, string | undefined>,
+  opts?: { l3TestDatabaseUrl?: string }
 ): GuardedTestDb {
   const fail = (condition: string, detail: string): never => {
     throw new Error(
@@ -113,7 +135,49 @@ export function assertSafeIntegrationDb(
     }
   }
 
-  // 6 is the shape of this function: any missing condition threw above, and
+  /**
+   * 6. Different from the L3/canary database, when one is configured.
+   *
+   * This suite's own test URL can independently satisfy every condition
+   * above — remote, explicitly named, disposable-looking, reset opted-in —
+   * while still being the EXACT database `.scratch/l3.e2e.ts` and
+   * `.scratch/canaries.e2e.ts` run `prisma migrate deploy` against via
+   * `.env.l3.local`. That happened once: this suite's raw `DROP SCHEMA
+   * CASCADE` rebuild does not populate Prisma's own `_prisma_migrations`
+   * ledger (only the `migrate deploy` CLI does), so a later `migrate
+   * deploy` against the same database fails closed with P3005 ("schema not
+   * empty"). The caller reads `.env.l3.local` read-only and passes its
+   * identity here; a checkout with no `.env.l3.local` (CI, another
+   * developer) passes nothing, and this condition is then a no-op.
+   *
+   * Host is compared via `neonEndpointIdentity()`, NOT the plain string
+   * equality condition 5 uses: Neon splits the same logical database across
+   * a pooled and a direct hostname (`.env.l3.local` itself carries both —
+   * `AFTERDESK_TEST_DATABASE_URL` pooled, `AFTERDESK_TEST_DIRECT_URL`
+   * direct), and this suite's own test URL could independently be pointed
+   * at either variant. A plain string comparison would silently miss that
+   * collision — the exact one this condition exists to catch — the moment
+   * the two URLs used the different-but-equivalent hostname form.
+   */
+  if (opts?.l3TestDatabaseUrl) {
+    const l3Id = identityOf(opts.l3TestDatabaseUrl);
+    if (
+      l3Id &&
+      neonEndpointIdentity(l3Id.host) === neonEndpointIdentity(id.host) &&
+      l3Id.port === id.port &&
+      l3Id.database === id.database
+    ) {
+      return fail(
+        "SAME_AS_L3_DB",
+        "the test URL points at the same database as .env.l3.local's " +
+          "AFTERDESK_TEST_DATABASE_URL — the L3/canary harness's `prisma migrate deploy` " +
+          "depends on that database's _prisma_migrations ledger, which this suite's raw " +
+          "schema rebuild does not maintain."
+      );
+    }
+  }
+
+  // 7 is the shape of this function: any missing condition threw above, and
   // no destructive code exists before this return.
   return { url: raw, host: id.host, database: id.database };
 }

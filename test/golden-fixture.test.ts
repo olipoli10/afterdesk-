@@ -237,6 +237,7 @@ describe("a paid call that bought no asset makes the run INCOMPLETE", () => {
     synthetic: 0,
     misses: [],
     uncapitalised,
+    liveCallErrors: [],
     budget: { calls: 4, spentMicros: 900_000, maxCalls: 15, maxSpendMicros: 1_500_000 },
   });
 

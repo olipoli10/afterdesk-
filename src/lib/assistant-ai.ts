@@ -1,6 +1,8 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { aiEnabled } from "@/lib/ai";
+import { approxTokens, worstCaseMicros } from "@/lib/ai-work-engine/metered-call";
+import { costMicrosFor } from "@/lib/ai-work-engine/tool-cost";
 
 /**
  * The worker-facing AI assistant — method/technique questions during an
@@ -33,6 +35,8 @@ export type AssistantUsage = {
   inputTokens: number;
   outputTokens: number;
   cacheReadTokens: number;
+  /** R5.2 — cache writes bill at 1.25x input; see the note in ai.ts. */
+  cacheWriteTokens: number;
 };
 
 export type AssistantResult = {
@@ -99,11 +103,45 @@ const FALLBACK_ANSWER =
  * the feature being disabled entirely (no API key) — the caller checks
  * assistantEnabled before calling this at all.
  */
+/**
+ * R5.2 — pure worst-case / actual-cost pair for the account-level spend gate,
+ * reusing the work engine's estimator and verified rate table. No new pricing
+ * constant. The reservation itself lives in the caller (va-assistant.ts),
+ * which is already DB-coupled.
+ */
+export function assistantReservationMicros(turns: AssistantTurn[]): number {
+  return worstCaseMicros({
+    model: ASSISTANT_MODEL,
+    maxOutputTokens: MAX_TOKENS,
+    approxInputTokens:
+      approxTokens(STATIC_ASSISTANT_RULES) +
+      turns.reduce((n, t) => n + approxTokens(t.content), 0),
+    maxSearches: 0,
+  });
+}
+
+export function assistantCostMicros(usage: AssistantUsage): number {
+  return costMicrosFor(ASSISTANT_MODEL, {
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    cacheReadTokens: usage.cacheReadTokens,
+    cacheWriteTokens: usage.cacheWriteTokens,
+  });
+}
+
 export async function askAssistant(turns: AssistantTurn[]): Promise<AssistantResult> {
-  const zeroUsage: AssistantUsage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
+  const zeroUsage: AssistantUsage = {
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+  };
 
   try {
-    const client = new Anthropic({ timeout: 30_000, maxRetries: 1 });
+    // R5.2 — maxRetries: 0. An SDK retry is a second billable POST under the
+    // one account reservation taken by the caller (va-assistant.ts). See the
+    // doctrine at primitives/research.ts:94-99.
+    const client = new Anthropic({ timeout: 30_000, maxRetries: 0 });
     const response = await client.messages.create({
       model: ASSISTANT_MODEL,
       max_tokens: MAX_TOKENS,
@@ -116,6 +154,7 @@ export async function askAssistant(turns: AssistantTurn[]): Promise<AssistantRes
       inputTokens: response.usage?.input_tokens ?? 0,
       outputTokens: response.usage?.output_tokens ?? 0,
       cacheReadTokens: response.usage?.cache_read_input_tokens ?? 0,
+      cacheWriteTokens: response.usage?.cache_creation_input_tokens ?? 0,
     };
 
     if (response.stop_reason === "refusal") {

@@ -12,6 +12,7 @@ import {
 import { usageFromResponse, type StageResult } from "@/lib/ai-work-engine/stage-usage";
 import { plannerCapabilityContract } from "@/lib/ai-work-engine/capability-contract";
 import type { ReferenceTask } from "@/lib/ai-work-engine/references";
+import { approxTokens, worstCaseMicros } from "@/lib/ai-work-engine/metered-call";
 
 /**
  * Stage 2: the execution plan. The deep-reasoning call — uses
@@ -127,7 +128,7 @@ ${PRIMITIVE_GUIDE}
  */
 export const PLAN_SYSTEM_PROMPT = SYSTEM;
 
-export async function runPlanGeneration(input: {
+type PlanInput = {
   title: string;
   description: string;
   quantity: string | null;
@@ -142,24 +143,13 @@ export async function runPlanGeneration(input: {
    * about attachments arrives as data. Never ids, never headers, never rows.
    */
   attachmentLines: string[];
-}): Promise<StageResult<PlanOutput>> {
-  const settings = await getSettings();
-  const client = new Anthropic({ timeout: 120_000, maxRetries: 1 });
+};
 
+function buildUserContent(input: PlanInput): string {
   const categoryLines = input.categories
     .map((c) => `- ${c.slug} (${c.name})${c.disputeCriteria ? `: ${c.disputeCriteria}` : ""}`)
     .join("\n");
-
-  const response = await client.messages.create({
-    model: settings.pricingModel,
-    max_tokens: MAX_TOKENS,
-    thinking: { type: "adaptive" },
-    system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-    output_config: { format: { type: "json_schema", schema: PLAN_JSON_SCHEMA } },
-    messages: [
-      {
-        role: "user",
-        content: `BRIEF
+  return `BRIEF
 Title: ${input.title}
 Description: ${input.description}
 Quantity/volume: ${input.quantity || "not specified"}
@@ -174,9 +164,41 @@ ACTIVE CATEGORIES (slug (name): the written delivery standard)
 ${categoryLines || "none configured"}
 
 REFERENCE_TASKS (${input.referenceTasks.length} comparable past mandates, MEASUREMENTS ONLY — no brief text from them is available to you, by design. Use their units, estimated minutes and measured worker/reviewer minutes to calibrate your own estimates; their prices are historical context, not your output. A null means that mandate was never measured on that axis, not a zero.)
-${JSON.stringify(input.referenceTasks, null, 2)}`,
-      },
-    ],
+${JSON.stringify(input.referenceTasks, null, 2)}`;
+}
+
+/**
+ * R5 — the worst-case cost estimate for one plan attempt, PURE and DB-free.
+ * `model` is an explicit parameter rather than read from getSettings()
+ * internally, for the same reason as classify.ts's estimator: the caller
+ * (index.ts) already resolves settings and is already fully DB-coupled, and
+ * this file's only DB touch remains the one it already had — none, until
+ * runPlanGeneration itself calls getSettings() for the real dispatch.
+ */
+export function planReservationMicros(input: PlanInput & { model: string }): number {
+  return worstCaseMicros({
+    model: input.model,
+    maxOutputTokens: MAX_TOKENS,
+    approxInputTokens: approxTokens(SYSTEM) + approxTokens(buildUserContent(input)),
+    maxSearches: 0,
+  });
+}
+
+export async function runPlanGeneration(input: PlanInput): Promise<StageResult<PlanOutput>> {
+  const settings = await getSettings();
+  // R5.1 — maxRetries: 0, see the note in classify.ts. An SDK-internal retry
+  // bills a second POST under the same claim.attempt, i.e. two charges funded
+  // by one AccountProviderSpendHold. Retrying belongs to claimAiOperation,
+  // which takes a fresh attempt and a fresh reservation.
+  const client = new Anthropic({ timeout: 120_000, maxRetries: 0 });
+
+  const response = await client.messages.create({
+    model: settings.pricingModel,
+    max_tokens: MAX_TOKENS,
+    thinking: { type: "adaptive" },
+    system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+    output_config: { format: { type: "json_schema", schema: PLAN_JSON_SCHEMA } },
+    messages: [{ role: "user", content: buildUserContent(input) }],
   });
 
   const usage = usageFromResponse(settings.pricingModel, response);

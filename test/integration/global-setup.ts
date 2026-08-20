@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { assertSafeIntegrationDb } from "./guard";
+import { resolveL3TestDatabaseUrl } from "./resolve-l3-db";
 
 /**
  * Runs ONCE before the suite: guard, announce, rebuild, migrate.
@@ -141,7 +142,9 @@ function identityDiffers(a: string, b: string): boolean {
 }
 
 export default async function globalSetup() {
-  const db = assertSafeIntegrationDb(process.env);
+  const db = assertSafeIntegrationDb(process.env, {
+    l3TestDatabaseUrl: resolveL3TestDatabaseUrl() ?? undefined,
+  });
 
   console.log(
     `\n[integration] target database: host=${db.host} db=${db.database}\n` +
