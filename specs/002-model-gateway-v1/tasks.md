@@ -64,21 +64,21 @@
 
 ### RED tests
 
-- [ ] T021 [P] [US1] Write RED pure admission tests for allowed, unknown, expired, contradictory and non-classification requests in `test/model-gateway-policy.test.ts`
-- [ ] T022 [P] [US1] Write RED adapter single-attempt, exact-pin and hidden-retry tests in `test/model-gateway-adapter-contract.test.ts`
-- [ ] T023 [P] [US1] Write RED output-contract tests for valid, malformed and semantically invalid classifications in `test/model-gateway-classification-contract.test.ts`
-- [ ] T024 [US1] Write RED disposable-PostgreSQL tests for durable pre-dispatch decision, hold-before-dispatch and replay convergence in `test/integration/model-gateway-admission.itest.ts`
+- [x] T021 [P] [US1] Write RED pure admission tests for allowed, unknown, expired, contradictory and non-classification requests in `test/model-gateway-policy.test.ts`
+- [x] T022 [P] [US1] Write RED adapter single-attempt, exact-pin and hidden-retry tests in `test/model-gateway-adapter-contract.test.ts`
+- [x] T023 [P] [US1] Write RED output-contract tests for valid, malformed and semantically invalid classifications in `test/model-gateway-classification-contract.test.ts`
+- [x] T024 [US1] Write RED disposable-PostgreSQL tests for durable pre-dispatch decision, hold-before-dispatch and replay convergence in `test/integration/model-gateway-admission.itest.ts`
 
 ### Implementation
 
-- [ ] T025 [P] [US1] Implement immutable request construction and minimum classification projection in `src/server/model-gateway/privacy.ts`
-- [ ] T026 [P] [US1] Implement published-policy and exact-route eligibility resolution in `src/server/model-gateway/policy.ts`
-- [ ] T027 [P] [US1] Implement a synthetic one-attempt adapter for deterministic boundary proof in `src/server/model-gateway/adapters/synthetic.ts`
-- [ ] T028 [US1] Implement transactional admission, decision persistence and refusal handling in `src/server/model-gateway/operations.ts`
-- [ ] T029 [US1] Implement one-attempt dispatch with immediate pre-dispatch eligibility recheck in `src/server/model-gateway/dispatch.ts`
-- [ ] T030 [US1] Implement certified classification output validation and terminal evidence binding in `src/server/model-gateway/evidence.ts`
-- [ ] T031 [US1] Integrate logical-operation claim, lease and fence semantics from `src/server/ai-operations.ts` into `src/server/model-gateway/operations.ts`
-- [ ] T032 [US1] Prove allowed/refused/replay scenarios end to end and record exact evidence in `specs/002-model-gateway-v1/evidence/us1-classification.md`
+- [x] T025 [P] [US1] Implement immutable request construction and minimum classification projection in `src/server/model-gateway/privacy.ts`
+- [x] T026 [P] [US1] Implement published-policy and exact-route eligibility resolution in `src/server/model-gateway/policy.ts`
+- [x] T027 [P] [US1] Implement a synthetic one-attempt adapter for deterministic boundary proof in `src/server/model-gateway/adapters/synthetic.ts`
+- [x] T028 [US1] Implement transactional admission, decision persistence and refusal handling in `src/server/model-gateway/operations.ts`
+- [x] T029 [US1] Implement one-attempt dispatch with immediate pre-dispatch eligibility recheck in `src/server/model-gateway/dispatch.ts`
+- [x] T030 [US1] Implement certified classification output validation and terminal evidence binding in `src/server/model-gateway/evidence.ts`
+- [x] T031 [US1] Integrate logical-operation claim, lease and fence semantics from `src/server/ai-operations.ts` into `src/server/model-gateway/operations.ts`
+- [x] T032 [US1] Prove allowed/refused/replay scenarios end to end and record exact evidence in `specs/002-model-gateway-v1/evidence/us1-classification.md`
 
 **Checkpoint**: Classification works through the synthetic boundary with rollout still disabled and no vendor selection.
 

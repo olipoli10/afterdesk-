@@ -5,6 +5,7 @@ import {
   type GatewayProviderErrorClass,
   type ProtectedContentRef,
 } from "./types";
+import { classificationOutputSchema, type ClassificationOutput } from "@/lib/ai-work-engine/schemas";
 
 type Canonical = null | boolean | number | string | Canonical[] | { [key: string]: Canonical };
 
@@ -63,4 +64,40 @@ export function redactProviderFailure(errorClass: GatewayProviderErrorClass, htt
     throw new Error("INVALID_PROVIDER_HTTP_STATUS");
   }
   return Object.freeze({ errorClass, httpStatus });
+}
+
+export type ClassificationValidation =
+  | Readonly<{
+      status: "valid";
+      value: ClassificationOutput;
+      responseEvidenceRef: `sha256:${string}`;
+    }>
+  | Readonly<{
+      status: "invalid";
+      failureClass: "malformed_provider_response";
+      responseEvidenceRef: `sha256:${string}`;
+    }>;
+
+export function validateClassificationResponse(response: unknown): ClassificationValidation {
+  const parsed = classificationOutputSchema.safeParse(response);
+  if (!parsed.success) {
+    return Object.freeze({
+      status: "invalid" as const,
+      failureClass: "malformed_provider_response" as const,
+      responseEvidenceRef: canonicalFingerprint({
+        contract: "classification-v1",
+        valid: false,
+        issueCodes: parsed.error.issues.map((issue) => issue.code).sort(),
+      }),
+    });
+  }
+  return Object.freeze({
+    status: "valid" as const,
+    value: parsed.data,
+    responseEvidenceRef: canonicalFingerprint({
+      contract: "classification-v1",
+      valid: true,
+      outputFingerprint: canonicalFingerprint(parsed.data),
+    }),
+  });
 }

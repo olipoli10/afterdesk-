@@ -1,0 +1,229 @@
+import "server-only";
+import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { succeedAiOperation, SupersededOperationError } from "@/server/ai-operations";
+import { settleAccountSpendHold } from "@/server/account-spend";
+import type { ModelGatewayAdapter } from "./adapters/contract";
+import { canonicalFingerprint, validateClassificationResponse } from "./evidence";
+import {
+  loadGatewayPolicySnapshot,
+  loadGatewayRouteSnapshots,
+  type AuthorizedGatewayAdmission,
+} from "./operations";
+import { resolveGatewayPolicy } from "./policy";
+import type { GatewayOperationResult } from "./types";
+import type { ClassificationOutput } from "@/lib/ai-work-engine/schemas";
+
+async function closeGatewayOperation(
+  admission: AuthorizedGatewayAdmission,
+  input: {
+    operationStatus: "succeeded" | "failed" | "uncertain";
+    attemptStatus: "settled" | "failed" | "uncertain";
+    dispatchState: "settled" | "unaccounted";
+    resultContractStatus: "valid" | "invalid" | "not_evaluated";
+    providerRequestRef: string | null;
+    responseEvidenceRef: string | null;
+    errorClass: string | null;
+    httpStatus: number | null;
+    actualCostMicros: bigint;
+  }
+): Promise<void> {
+  await succeedAiOperation({
+    claim: admission.claim,
+    taskId: admission.request.taskId,
+    purpose: "classification",
+    usage: null,
+    writeResult: async (tx: Prisma.TransactionClient) => {
+      await settleAccountSpendHold(tx, admission.attempt.accountSpendHoldId, input.actualCostMicros);
+      await tx.$executeRawUnsafe(
+        `UPDATE "ModelGatewayAttempt" SET status=$2,"dispatchState"=$3,"providerRequestRef"=$4,"responseEvidenceRef"=$5,"errorClass"=$6,"httpStatus"=$7,"resultContractStatus"=$8,"dispatchedAt"=COALESCE("dispatchedAt",now()),"finishedAt"=now() WHERE id=$1`,
+        admission.attempt.id,
+        input.attemptStatus,
+        input.dispatchState,
+        input.providerRequestRef,
+        input.responseEvidenceRef,
+        input.errorClass,
+        input.httpStatus,
+        input.resultContractStatus
+      );
+      await tx.$executeRawUnsafe(
+        `UPDATE "ModelGatewayOperation" SET status=$2,"finalAttemptId"=$3,"resultEvidenceRef"=$4,"finishedAt"=now() WHERE id=$1`,
+        admission.operation.id,
+        input.operationStatus,
+        admission.attempt.id,
+        input.responseEvidenceRef
+      );
+      return {
+        resultKind: "modelGatewayOperation",
+        resultId: admission.operation.id,
+        value: undefined,
+      };
+    },
+  });
+}
+
+async function refuseBeforeDispatch(
+  admission: AuthorizedGatewayAdmission,
+  reasonClass: string
+): Promise<void> {
+  const evidence = canonicalFingerprint({
+    attemptId: admission.attempt.id,
+    policyHash: admission.decision.policyHash,
+    routeHash: admission.decision.routeHash,
+    requestFingerprint: admission.request.requestFingerprint,
+    disposition: "refused_before_dispatch",
+    reasonClass,
+  });
+  await succeedAiOperation({
+    claim: admission.claim,
+    taskId: admission.request.taskId,
+    purpose: "classification",
+    usage: null,
+    writeResult: async (tx) => {
+      await tx.accountProviderSpendHold.updateMany({
+        where: { id: admission.attempt.accountSpendHoldId, status: "held" },
+        data: { status: "released", settledMicros: 0n },
+      });
+      await tx.$executeRawUnsafe(
+        `UPDATE "ModelGatewayAttempt" SET status='cancelled_before_dispatch',"dispatchState"='not_dispatched',"errorClass"=$2,"resultContractStatus"='not_evaluated',"responseEvidenceRef"=$3,"finishedAt"=now() WHERE id=$1`,
+        admission.attempt.id,
+        reasonClass,
+        evidence
+      );
+      await tx.$executeRawUnsafe(
+        `UPDATE "ModelGatewayOperation" SET status='refused',"finalAttemptId"=$2,"resultEvidenceRef"=$3,"finishedAt"=now() WHERE id=$1`,
+        admission.operation.id,
+        admission.attempt.id,
+        evidence
+      );
+      return {
+        resultKind: "modelGatewayOperation",
+        resultId: admission.operation.id,
+        value: undefined,
+      };
+    },
+  });
+}
+
+export async function dispatchGatewayAttempt(input: {
+  admission: AuthorizedGatewayAdmission;
+  adapter: ModelGatewayAdapter;
+  abortSignal: AbortSignal;
+}): Promise<GatewayOperationResult<ClassificationOutput>> {
+  const { admission } = input;
+  const [policy, routes, lineage] = await Promise.all([
+    loadGatewayPolicySnapshot(admission.policy.id),
+    loadGatewayRouteSnapshots(),
+    prisma.$queryRawUnsafe<Array<{
+      disposition: string;
+      routeProfileId: string | null;
+      attemptStatus: string;
+      dispatchState: string;
+      holdStatus: string;
+      aiStatus: string;
+      lockedBy: string | null;
+    }>>(
+      `SELECT d.disposition,d."routeProfileId",a.status "attemptStatus",a."dispatchState",h.status "holdStatus",ai.status "aiStatus",ai."lockedBy" FROM "ModelGatewayDecision" d JOIN "ModelGatewayOperation" o ON o.id=d."gatewayOperationId" JOIN "AiOperation" ai ON ai.id=o."aiOperationId" JOIN "ModelGatewayAttempt" a ON a."decisionId"=d.id JOIN "AccountProviderSpendHold" h ON h.id=a."accountSpendHoldId" WHERE d.id=$1 AND a.id=$2`,
+      admission.decision.id,
+      admission.attempt.id
+    ),
+  ]);
+  const current = resolveGatewayPolicy({ request: admission.request, policy, routes });
+  const row = lineage[0];
+  if (!row || row.aiStatus !== "running" || row.lockedBy !== admission.claim.lockedBy) {
+    throw new SupersededOperationError(admission.claim.operationKey);
+  }
+  if (
+    current.disposition !== "route_authorized" ||
+    current.route.id !== admission.route.id ||
+    current.route.canonicalHash !== admission.decision.routeHash ||
+    row.disposition !== "route_authorized" ||
+    row.routeProfileId !== admission.route.id ||
+    row.attemptStatus !== "prepared" ||
+    row.dispatchState !== "not_dispatched" ||
+    row.holdStatus !== "held" ||
+    input.adapter.key !== admission.route.adapterKey
+  ) {
+    await refuseBeforeDispatch(admission, "ineligible_route");
+    return Object.freeze({ status: "refused" as const, reasonClass: "ineligible_route" as const });
+  }
+
+  await prisma.$executeRawUnsafe(
+    `UPDATE "ModelGatewayAttempt" SET status='dispatched',"dispatchedAt"=now() WHERE id=$1 AND status='prepared' AND "dispatchState"='not_dispatched'`,
+    admission.attempt.id
+  );
+  const result = await input.adapter.dispatch({
+    operationId: admission.operation.id,
+    attemptId: admission.attempt.id,
+    tenantId: admission.request.tenantId,
+    adapterKey: admission.route.adapterKey,
+    billingProvider: admission.route.billingProvider,
+    intermediary: admission.route.intermediary,
+    endpointKey: admission.route.endpointKey,
+    modelKey: admission.route.modelKey,
+    boundedInput: admission.projection,
+    outputContractHash: admission.request.outputContractHash,
+    requestEvidenceRef: admission.attempt.requestEvidenceRef!,
+    abortSignal: input.abortSignal,
+  });
+
+  if (result.dispatchKnowledge === "dispatched_unknown") {
+    await closeGatewayOperation(admission, {
+      operationStatus: "uncertain",
+      attemptStatus: "uncertain",
+      dispatchState: "unaccounted",
+      resultContractStatus: "not_evaluated",
+      providerRequestRef: result.providerRequestRef,
+      responseEvidenceRef: null,
+      errorClass: result.errorClass,
+      httpStatus: result.httpStatus,
+      actualCostMicros: admission.request.maxTotalCostMicros,
+    });
+    return Object.freeze({ status: "uncertain", reasonClass: "unknown_dispatched_outcome" });
+  }
+  if (result.dispatchKnowledge === "not_dispatched") {
+    await refuseBeforeDispatch(admission, result.errorClass ?? "invalid_request");
+    return Object.freeze({ status: "refused", reasonClass: "invalid_request" });
+  }
+  if (result.dispatchKnowledge !== "response_received" || result.usage === null) {
+    await refuseBeforeDispatch(admission, "invalid_request");
+    return Object.freeze({ status: "refused", reasonClass: "invalid_request" });
+  }
+
+  const validation = validateClassificationResponse(result.response);
+  const terminalEvidence = canonicalFingerprint({
+    attemptId: admission.attempt.id,
+    policyHash: admission.decision.policyHash,
+    routeHash: admission.decision.routeHash,
+    requestFingerprint: admission.request.requestFingerprint,
+    providerEvidenceRef: result.responseEvidenceRef,
+    contractEvidenceRef: validation.responseEvidenceRef,
+    usage: result.usage,
+  });
+  if (validation.status === "invalid") {
+    await closeGatewayOperation(admission, {
+      operationStatus: "failed",
+      attemptStatus: "failed",
+      dispatchState: "settled",
+      resultContractStatus: "invalid",
+      providerRequestRef: result.providerRequestRef,
+      responseEvidenceRef: terminalEvidence,
+      errorClass: validation.failureClass,
+      httpStatus: result.httpStatus,
+      actualCostMicros: result.usage.measuredCostMicros,
+    });
+    return Object.freeze({ status: "failed", failureClass: "malformed_provider_response" });
+  }
+  await closeGatewayOperation(admission, {
+    operationStatus: "succeeded",
+    attemptStatus: "settled",
+    dispatchState: "settled",
+    resultContractStatus: "valid",
+    providerRequestRef: result.providerRequestRef,
+    responseEvidenceRef: terminalEvidence,
+    errorClass: null,
+    httpStatus: result.httpStatus,
+    actualCostMicros: result.usage.measuredCostMicros,
+  });
+  return Object.freeze({ status: "succeeded", value: validation.value, finalAttemptId: admission.attempt.id });
+}

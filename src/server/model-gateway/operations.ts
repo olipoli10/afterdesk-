@@ -2,8 +2,28 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import {
+  claimAiOperation,
+  succeedAiOperation,
+  type AiOperationClaim,
+} from "@/server/ai-operations";
+import {
+  releaseAccountSpendHold,
+  reserveAccountProviderSpend,
+} from "@/server/account-spend";
 import { canonicalFingerprint } from "./evidence";
+import {
+  buildClassificationGatewayRequest,
+  type ClassificationProjection,
+  type ClassificationSourceInput,
+} from "./privacy";
+import {
+  resolveGatewayPolicy,
+  type GatewayPolicySnapshot,
+  type GatewayRouteSnapshot,
+} from "./policy";
 import type {
+  GatewayOperationRequest,
   GatewayDataClass,
   GatewayOperationType,
   GatewayPrivacyRequirement,
@@ -150,4 +170,236 @@ export async function createGatewayAttempt(
     throw new Error("GATEWAY_ATTEMPT_BINDING_CONFLICT");
   }
   return row;
+}
+
+type PolicyDbRow = Omit<GatewayPolicySnapshot, "routeOrder"> & { routeOrder: unknown };
+type RouteDbRow = Omit<GatewayRouteSnapshot, "privacyEvidence"> & { privacyEvidence: unknown };
+
+function parseRouteOrder(value: unknown): GatewayPolicySnapshot["routeOrder"] {
+  if (!Array.isArray(value)) throw new Error("INVALID_GATEWAY_ROUTE_ORDER");
+  return Object.freeze(
+    value.map((pin) => {
+      if (
+        pin === null ||
+        typeof pin !== "object" ||
+        typeof (pin as { routeKey?: unknown }).routeKey !== "string" ||
+        !Number.isInteger((pin as { version?: unknown }).version) ||
+        Number((pin as { version: number }).version) < 1
+      ) throw new Error("INVALID_GATEWAY_ROUTE_ORDER");
+      return Object.freeze({
+        routeKey: (pin as { routeKey: string }).routeKey,
+        version: (pin as { version: number }).version,
+      });
+    })
+  );
+}
+
+export async function loadGatewayPolicySnapshot(policyId: string): Promise<GatewayPolicySnapshot | null> {
+  const rows = await prisma.$queryRawUnsafe<PolicyDbRow[]>(
+    `SELECT id,"policyKey",status,"operationType","routeOrder","maxAttempts","maxTotalCostMicros","requiredPrivacyPosture","canonicalHash" FROM "ModelGatewayPolicyVersion" WHERE id=$1`,
+    policyId
+  );
+  const row = rows[0];
+  return row ? Object.freeze({ ...row, routeOrder: parseRouteOrder(row.routeOrder) }) : null;
+}
+
+export async function loadGatewayRouteSnapshots(): Promise<GatewayRouteSnapshot[]> {
+  const rows = await prisma.$queryRawUnsafe<RouteDbRow[]>(
+    `SELECT id,"routeKey",version,status,"adapterKey","billingProvider",intermediary,"endpointKey","modelKey","operationTypes","allowedDataClasses","privacyPosture","privacyEvidence","maxInputTokens","maxOutputTokens","canonicalHash" FROM "ModelGatewayRouteProfile"`
+  );
+  return rows.map((row) => {
+    if (row.privacyEvidence === null || typeof row.privacyEvidence !== "object" || Array.isArray(row.privacyEvidence)) {
+      throw new Error("INVALID_GATEWAY_PRIVACY_EVIDENCE");
+    }
+    return Object.freeze({
+      ...row,
+      privacyEvidence: Object.freeze({ ...(row.privacyEvidence as Record<string, unknown>) }),
+    });
+  });
+}
+
+export type AuthorizedGatewayAdmission = Readonly<{
+  status: "authorized";
+  claim: AiOperationClaim;
+  request: GatewayOperationRequest;
+  projection: ClassificationProjection;
+  policy: GatewayPolicySnapshot;
+  route: GatewayRouteSnapshot;
+  operation: GatewayOperationRow;
+  decision: GatewayDecisionRow;
+  attempt: GatewayAttemptRow;
+}>;
+
+export type GatewayAdmission =
+  | AuthorizedGatewayAdmission
+  | Readonly<{ status: "refused"; reasonClass: string; decisionId?: string }>
+  | Readonly<{ status: "replay"; finalAttemptId: string; resultEvidenceRef: string }>
+  | Readonly<{ status: "busy" }>;
+
+async function existingAdmission(aiOperationId: string): Promise<GatewayAdmission | null> {
+  const rows = await prisma.$queryRawUnsafe<Array<{
+    id: string;
+    status: string;
+    finalAttemptId: string | null;
+    resultEvidenceRef: string | null;
+  }>>(
+    `SELECT id,status,"finalAttemptId","resultEvidenceRef" FROM "ModelGatewayOperation" WHERE "aiOperationId"=$1`,
+    aiOperationId
+  );
+  const row = rows[0];
+  if (!row) return null;
+  if (row.status === "succeeded" && row.finalAttemptId && row.resultEvidenceRef) {
+    return Object.freeze({
+      status: "replay" as const,
+      finalAttemptId: row.finalAttemptId,
+      resultEvidenceRef: row.resultEvidenceRef,
+    });
+  }
+  if (row.status === "refused") {
+    const decisions = await prisma.$queryRawUnsafe<Array<{ id: string; reasonClass: string }>>(
+      `SELECT id,"reasonClass" FROM "ModelGatewayDecision" WHERE "gatewayOperationId"=$1 ORDER BY attempt DESC LIMIT 1`,
+      row.id
+    );
+    return Object.freeze({
+      status: "refused" as const,
+      reasonClass: decisions[0]?.reasonClass ?? "invalid_request",
+      decisionId: decisions[0]?.id,
+    });
+  }
+  return Object.freeze({ status: "busy" as const });
+}
+
+export async function admitGatewayClassification(input: {
+  aiOperationId: string;
+  logicalOperationKey: string;
+  tenantId: string;
+  taskId: string;
+  policyId: string;
+  dataClass: GatewayDataClass;
+  privacyRequirement: GatewayPrivacyRequirement;
+  input: ClassificationSourceInput;
+  maxTotalCostMicros: bigint;
+}): Promise<GatewayAdmission> {
+  const prior = await existingAdmission(input.aiOperationId);
+  if (prior) return prior;
+  const policy = await loadGatewayPolicySnapshot(input.policyId);
+  if (!policy) return Object.freeze({ status: "refused", reasonClass: "unpublished_policy" });
+  const { request, projection } = buildClassificationGatewayRequest({
+    logicalOperationKey: input.logicalOperationKey,
+    tenantId: input.tenantId,
+    taskId: input.taskId,
+    policyKey: policy.policyKey,
+    dataClass: input.dataClass,
+    privacyRequirement: input.privacyRequirement,
+    maxTotalCostMicros: input.maxTotalCostMicros,
+    source: input.input,
+  });
+  const routes = await loadGatewayRouteSnapshots();
+  const resolution = resolveGatewayPolicy({ request, policy, routes });
+  const claim = await claimAiOperation(input.logicalOperationKey);
+  if (!claim || claim.operationId !== input.aiOperationId) return Object.freeze({ status: "busy" });
+
+  if (resolution.disposition === "refused") {
+    return succeedAiOperation({
+      claim,
+      taskId: input.taskId,
+      purpose: "classification",
+      usage: null,
+      writeResult: async (tx) => {
+        const operation = await bindGatewayOperation(tx, {
+          aiOperationId: input.aiOperationId,
+          tenantId: input.tenantId,
+          operationType: "classification",
+          requestFingerprint: request.requestFingerprint,
+          outputContractHash: request.outputContractHash,
+          dataClass: request.dataClass,
+          privacyRequirement: request.privacyRequirement,
+          policyVersionId: policy.id,
+          maxTotalCostMicros: request.maxTotalCostMicros,
+        });
+        const decision = await persistGatewayDecision(tx, {
+          gatewayOperationId: operation.id,
+          attempt: claim.attempt,
+          disposition: "refused",
+          routeProfileId: null,
+          reasonClass: resolution.reasonClass,
+          policyHash: policy.canonicalHash,
+          routeHash: null,
+          privacyEvidenceHash: null,
+          breakerGeneration: 0n,
+          remainingCostMicros: request.maxTotalCostMicros,
+        });
+        await tx.$executeRawUnsafe(
+          `UPDATE "ModelGatewayOperation" SET status='refused',"finishedAt"=now() WHERE id=$1`,
+          operation.id
+        );
+        const value = Object.freeze({
+          status: "refused" as const,
+          reasonClass: resolution.reasonClass,
+          decisionId: decision.id,
+        });
+        return { resultKind: "modelGatewayOperation", resultId: operation.id, value };
+      },
+    });
+  }
+
+  const grant = await reserveAccountProviderSpend({
+    provider: resolution.route.billingProvider,
+    operationKey: input.logicalOperationKey,
+    attempt: claim.attempt,
+    worstCaseMicros: request.maxTotalCostMicros,
+  });
+  if (!grant.ok) {
+    return Object.freeze({ status: "refused", reasonClass: "insufficient_spend_headroom" });
+  }
+  try {
+    const durable = await withModelGatewayTransaction(async (tx) => {
+      const operation = await bindGatewayOperation(tx, {
+        aiOperationId: input.aiOperationId,
+        tenantId: input.tenantId,
+        operationType: "classification",
+        requestFingerprint: request.requestFingerprint,
+        outputContractHash: request.outputContractHash,
+        dataClass: request.dataClass,
+        privacyRequirement: request.privacyRequirement,
+        policyVersionId: policy.id,
+        maxTotalCostMicros: request.maxTotalCostMicros,
+      });
+      const decision = await persistGatewayDecision(tx, {
+        gatewayOperationId: operation.id,
+        attempt: claim.attempt,
+        disposition: "route_authorized",
+        routeProfileId: resolution.route.id,
+        reasonClass: resolution.reasonClass,
+        policyHash: policy.canonicalHash,
+        routeHash: resolution.route.canonicalHash,
+        privacyEvidenceHash: resolution.privacyEvidenceHash,
+        breakerGeneration: 0n,
+        remainingCostMicros: request.maxTotalCostMicros,
+      });
+      const attempt = await createGatewayAttempt(tx, {
+        decisionId: decision.id,
+        accountSpendHoldId: grant.holdId,
+        requestEvidenceRef: canonicalFingerprint({
+          operationType: request.operationType,
+          requestFingerprint: request.requestFingerprint,
+          outputContractHash: request.outputContractHash,
+          routeHash: resolution.route.canonicalHash,
+        }),
+      });
+      return { operation, decision, attempt };
+    });
+    return Object.freeze({
+      status: "authorized" as const,
+      claim,
+      request,
+      projection,
+      policy,
+      route: resolution.route,
+      ...durable,
+    });
+  } catch (error) {
+    await releaseAccountSpendHold(grant.holdId);
+    throw error;
+  }
 }
