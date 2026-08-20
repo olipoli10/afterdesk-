@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { googleEnabled } from "@/lib/auth";
+import { emailSignupEnabled, googleEnabled } from "@/lib/auth";
 import { getSessionUser, roleHome } from "@/lib/authz";
 import { AuthShell } from "@/components/auth-shell";
 import { ClientRegisterForm } from "@/components/register-forms";
@@ -49,7 +49,12 @@ export default async function RegisterClientPage() {
         </>
       }
     >
-      <ClientRegisterForm googleEnabled={googleEnabled} tone="glass" copy={copy.form} />
+      <ClientRegisterForm
+        googleEnabled={googleEnabled}
+        emailEnabled={emailSignupEnabled}
+        tone="glass"
+        copy={copy.form}
+      />
     </AuthShell>
   );
 }

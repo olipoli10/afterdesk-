@@ -4,6 +4,7 @@ import { AuthShell } from "@/components/auth-shell";
 import { VaRegisterForm } from "@/components/register-forms";
 import { linkInline } from "@/components/ui";
 import { academyStats } from "@/lib/academy/public";
+import { emailSignupEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Apply to join the pool",
@@ -52,7 +53,7 @@ export default function RegisterVaPage() {
     >
       {/* Workers apply through this form only — the flow creates their
           profile server-side, which a Google sign-up cannot do. */}
-      <VaRegisterForm />
+      <VaRegisterForm emailEnabled={emailSignupEnabled} />
     </AuthShell>
   );
 }

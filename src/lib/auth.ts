@@ -14,6 +14,16 @@ export const googleEnabled = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
 );
 
+/**
+ * Local development can deliver verification codes to the console. Production
+ * must not offer email sign-up unless both the provider and an explicit sender
+ * identity exist; otherwise Better Auth can create an account that the user
+ * has no way to verify.
+ */
+export const emailSignupEnabled =
+  process.env.NODE_ENV !== "production" ||
+  Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+
 // Fail fast: without a secret, Better Auth falls back to a known development
 // default — every session cookie guarding admin, pricing and QC would be
 // forgeable. A misconfigured deploy must crash at boot, not serve traffic.

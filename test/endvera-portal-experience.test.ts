@@ -37,6 +37,24 @@ describe("ENDVERA entrepreneur portal experience", () => {
     expect(read(catchAll)).toMatch(/return\s+null/);
   });
 
+  it("only offers production email sign-up when verification delivery is ready", () => {
+    const auth = read("src/lib/auth.ts");
+    const clientRegister = read("src/app/(public)/register/page.tsx");
+    const workerRegister = read("src/app/(public)/register/va/page.tsx");
+    const forms = read("src/components/register-forms.tsx");
+    const i18n = read("src/lib/i18n/client-portal.ts");
+
+    expect(auth).toContain("emailSignupEnabled");
+    expect(auth).toContain("process.env.RESEND_API_KEY");
+    expect(auth).toContain("process.env.EMAIL_FROM");
+    expect(clientRegister).toMatch(/ClientRegisterForm[\s\S]*emailEnabled=\{emailSignupEnabled\}/);
+    expect(workerRegister).toMatch(/VaRegisterForm[\s\S]*emailEnabled=\{emailSignupEnabled\}/);
+    expect(forms).toContain("emailEnabled: boolean");
+    expect(forms).toContain("copy.emailSignupUnavailable");
+    expect(forms).toMatch(/emailEnabled\s*\?\s*\(\s*<form/);
+    expect(i18n.match(/emailSignupUnavailable:/g)).toHaveLength(5);
+  });
+
   it("uses the ENDVERA night shell for every authenticated client route", () => {
     const layout = read("src/app/client/layout.tsx");
     const appShell = read("src/components/app-shell.tsx");

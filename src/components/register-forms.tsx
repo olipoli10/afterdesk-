@@ -20,10 +20,12 @@ const buttonPrimaryGlass =
 
 export function ClientRegisterForm({
   googleEnabled,
+  emailEnabled,
   tone = "paper",
   copy = CLIENT_PORTAL_I18N.en.auth.form,
 }: {
   googleEnabled: boolean;
+  emailEnabled: boolean;
   tone?: "paper" | "glass";
   copy?: ClientPortalAuthFormCopy;
 }) {
@@ -64,53 +66,66 @@ export function ClientRegisterForm({
       {googleEnabled ? (
         <>
           <GoogleButton label={copy.googleSignUp} busyLabel={copy.googleBusy} tone={tone} />
-          <OrDivider tone={tone} labelText={copy.or} />
+          {emailEnabled ? <OrDivider tone={tone} labelText={copy.or} /> : null}
         </>
       ) : null}
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        <Field label={copy.name} tone={tone}>
-          <input
-            required
-            minLength={2}
-            autoComplete="organization"
-            className={glass ? inputClassNight : inputClass}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+      {emailEnabled ? (
+        <form onSubmit={onSubmit} className="space-y-4">
+          <Field label={copy.name} tone={tone}>
+            <input
+              required
+              minLength={2}
+              autoComplete="organization"
+              className={glass ? inputClassNight : inputClass}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Field>
+          <Field label={copy.email} tone={tone}>
+            <input
+              type="email"
+              required
+              autoComplete="email"
+              className={glass ? inputClassNight : inputClass}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Field>
+          <PasswordFields
+            password={password}
+            confirm={confirm}
+            onPasswordChange={setPassword}
+            onConfirmChange={setConfirm}
+            tone={tone}
+            copy={copy}
           />
-        </Field>
-        <Field label={copy.email} tone={tone}>
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            className={glass ? inputClassNight : inputClass}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Field>
-        <PasswordFields
-          password={password}
-          confirm={confirm}
-          onPasswordChange={setPassword}
-          onConfirmChange={setConfirm}
-          tone={tone}
-          copy={copy}
-        />
-        {error ? (
-          <p role="alert" className={`text-sm ${glass ? "text-[#FF9A8B]" : "text-[#8C2F23]"}`}>
-            {error}
-          </p>
-        ) : null}
-        <button type="submit" disabled={busy} className={`${glass ? buttonPrimaryGlass : buttonPrimary} w-full`}>
-          {busy ? copy.creating : copy.create}
-        </button>
-      </form>
+          {error ? (
+            <p role="alert" className={`text-sm ${glass ? "text-[#FF9A8B]" : "text-[#8C2F23]"}`}>
+              {error}
+            </p>
+          ) : null}
+          <button type="submit" disabled={busy} className={`${glass ? buttonPrimaryGlass : buttonPrimary} w-full`}>
+            {busy ? copy.creating : copy.create}
+          </button>
+        </form>
+      ) : (
+        <p
+          role="status"
+          className={`rounded-lg border px-4 py-3 text-sm leading-relaxed ${
+            glass
+              ? "border-white/10 bg-white/[0.035] text-white/65"
+              : "border-[#D8D5CF] bg-[#F7F6F3] text-[#5B6069]"
+          }`}
+        >
+          {copy.emailSignupUnavailable}
+        </p>
+      )}
     </div>
   );
 }
 
-export function VaRegisterForm() {
+export function VaRegisterForm({ emailEnabled }: { emailEnabled: boolean }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -156,6 +171,14 @@ export function VaRegisterForm() {
     }
     router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     router.refresh();
+  }
+
+  if (!emailEnabled) {
+    return (
+      <p role="status" className="rounded-lg border border-[#D8D5CF] bg-[#F7F6F3] px-4 py-3 text-sm leading-relaxed text-[#5B6069]">
+        Specialist applications by email are temporarily unavailable. Existing specialists can still sign in.
+      </p>
+    );
   }
 
   return (
