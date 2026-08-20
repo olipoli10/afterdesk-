@@ -82,3 +82,17 @@ fingerprints but found that the current wrappers do not enforce the declared
 environment, filesystem, egress, input, parity or result boundaries. The
 authority therefore remains `DRAFT`; the review is blocking evidence, not an
 approval.
+
+## Synthetic control proof
+
+`SYNTHETIC_ISOLATED_RUNNER_V1.md` records the provider-free next step. Two
+synthetic participants execute under an identical Node 26 permission profile,
+with zero real candidate invocations and zero provider calls. Named mutations
+exercise the selected environment, input, filesystem, network, child/worker,
+parity and durable-output controls.
+
+That result does not change this gate's status. Node's own documentation says
+its Permission Model does not protect against malicious code, so the synthetic
+runner cannot satisfy the required native candidate boundary. It is evidence
+that the supervisor contract is testable, not evidence that Codex or Claude is
+safe to launch. The authority remains DRAFT and preflight remains fail-closed.

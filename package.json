@@ -18,6 +18,7 @@
     "devbench:dry-run:rehearse": "tsx scripts/rehearse-engineering-dry-run.ts",
     "devbench:execution:template": "tsx scripts/create-engineering-candidate-execution-authority.ts",
     "devbench:execution:preflight": "tsx scripts/preflight-engineering-candidate-execution.ts",
+    "devbench:synthetic-runner:rehearse": "tsx scripts/rehearse-engineering-synthetic-isolation.ts",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",

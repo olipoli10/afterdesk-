@@ -101,14 +101,26 @@
   capabilities, do not enforce egress and stream raw output to the console.
   `ADR_INDEPENDENT_CANDIDATE_RUNNER_V1.md` selects a future external isolated
   supervisor; the authority remains DRAFT.
+- Added the provider-free Synthetic Isolated Runner v1. It executes two local
+  deterministic synthetic participants with the same Node 26 permission
+  profile, fresh allowlisted environments, stdin-only input, bundle-only read,
+  result-only write, no network/child/worker grant, bounded raw streams and
+  destroy-before-return semantics. The rehearsal records source and bundle
+  fingerprints plus control metadata while proving 0 real candidate
+  invocations and 0 provider calls. Eight named mutations cover environment,
+  filesystem, SQLite bypass, network, child process, input arguments, raw
+  output and profile parity. This remains `CODE + TEST + SYNTHETIC`: Node's
+  Permission Model is not an OS security boundary, so native CLI execution and
+  the execution authority remain blocked.
 
 ## Green evidence
 
 - `npm run devbench:validate` — 8 cases / 8 families / provider exposure none.
 - Targeted DevBench, bake-off and URL-safety tests — 64/64.
 - Candidate Execution Boundary and adjacent V2 gates — 16/16.
+- Synthetic isolated runner — 9/9.
 - Nine benchmark-family suites — 214/214.
-- Full suite — 65 files / 1,243 tests.
+- Full suite — 66 files / 1,252 tests.
 - Lint and TypeScript — pass.
 - `git diff --check` — pass.
 - Closeout replay — all 16 admissible candidate full suites pass; every direct
@@ -142,7 +154,9 @@ requires provider egress that the repository does not create or prove. The next
 decision is an independent review of the actual external network policy,
 provider data boundary and exact runner binaries/wrappers. Until that evidence
 is referenced by an APPROVED Candidate Execution Boundary file and independently
-verified, the execution preflight must refuse and no candidate may run. Even a
-successful preflight would authorize review only: no merge, provider adoption,
+verified, the execution preflight must refuse and no candidate may run. The
+provider-free synthetic runner proves that the intended control contract is
+testable but cannot replace an OS isolation boundary for native candidate code.
+Even a successful preflight would authorize review only: no merge, provider adoption,
 rollout or model-selection claim follows. A V2 catalog remains a separate future
 decision.

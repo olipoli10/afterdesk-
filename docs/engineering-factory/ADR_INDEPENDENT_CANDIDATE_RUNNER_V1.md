@@ -1,6 +1,6 @@
 # ADR: Independent candidate runner boundary
 
-**Status:** Proposed / blocked on external implementation and review  
+**Status:** Selected / synthetic control proof complete / native execution blocked
 **Date:** 2026-08-20  
 **Deciders:** Control Tower plus an independent security/privacy reviewer
 
@@ -75,15 +75,21 @@ remain replaceable artifacts behind the same evidence contract.
   `networkAccess: none` honestly.
 - A provider account's verified retention setting becomes part of the candidate
   configuration, not a generic vendor claim.
-- The first independent-runner milestone is a synthetic no-provider isolation
-  test. A real provider call comes only after that test and independent review.
+- The first independent-runner milestone is a synthetic no-provider control
+  proof. That proof now exists in `SYNTHETIC_ISOLATED_RUNNER_V1.md`, using Node
+  26's Permission Model with both participant profiles kept
+  capability-identical. It is not the selected production boundary: Node
+  documents the feature as a seat belt for trusted code, not a security
+  mechanism for malicious code. A real provider call remains blocked until an
+  OS-isolated supervisor and its controls are independently reviewed.
 
 ## Action items
 
-1. Define the isolated bundle and complete invocation-profile schema.
-2. Implement a synthetic runner with a fake local provider endpoint.
-3. Prove environment, filesystem, egress, prompt and result boundaries with
-   named mutations.
-4. Freeze dedicated benchmark accounts and retention controls.
-5. Obtain independent approval and only then create an `APPROVED` authority.
-
+1. **Complete:** define the synthetic bundle and invocation profile.
+2. **Complete:** implement a provider-free deterministic synthetic candidate.
+3. **Complete for the Node synthetic profile only:** exercise environment,
+   filesystem, network, process, worker, input and result controls with named
+   mutations.
+4. Implement and independently review an OS isolation backend for native CLIs.
+5. Freeze dedicated benchmark accounts and retention controls.
+6. Only after those controls are approved, create an `APPROVED` authority.
