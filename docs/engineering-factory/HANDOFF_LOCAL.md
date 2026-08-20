@@ -76,6 +76,10 @@
   a per-slot check that rejects commit/configuration/cost-source drift before
   ranking. It is local preparation only; no candidate configuration, meter or
   actual provider trial is stored in the repository.
+- Added the ignored local configuration-manifest template. It starts in DRAFT,
+  rejects placeholders and sensitive field names recursively, and cannot yield
+  a trial plan until an evaluator provides two approved non-secret candidate
+  descriptions plus supported meter sources.
 
 ## Green evidence
 

@@ -76,6 +76,11 @@ approved configurations, four counterbalanced slots, equal packet fingerprint,
 one intervention rule and a run-to-plan match before scorecard ranking. The
 protocol also has no candidate configuration or provider trial recorded yet.
 
+`TRIAL_CONFIGURATION_MANIFEST_V1.md` defines the ignored local `DRAFT` input
+file for those two configurations. It accepts only non-secret metadata and
+cannot yield a plan until an evaluator explicitly supplies and approves both
+candidate records.
+
 Before any adoption decision, run unchanged approved candidate configurations
 through equivalent frozen packets. Keep the same task brief, allowed tools and
 reviewer-intervention rule. Adopt nothing unless both runs are reproducible and
