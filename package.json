@@ -21,6 +21,7 @@
     "devbench:synthetic-runner:rehearse": "tsx scripts/rehearse-engineering-synthetic-isolation.ts",
     "devbench:native-isolation:preflight": "tsx scripts/preflight-engineering-native-isolation.ts",
     "devbench:native-isolation:rehearse": "tsx scripts/rehearse-engineering-native-isolation.ts",
+    "devbench:proxy-lab:rehearse": "tsx scripts/rehearse-engineering-proxy-lab.ts",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
