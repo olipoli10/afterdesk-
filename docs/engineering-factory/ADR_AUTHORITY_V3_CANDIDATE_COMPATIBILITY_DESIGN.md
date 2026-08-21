@@ -1,12 +1,12 @@
-# ADR: Authority V3 candidate compatibility design revision R2
+# ADR: Authority V3 candidate compatibility design revision R3
 
-Status: proposed R2 design; independent review required
+Status: proposed R3 design; independent review required
 
 Date: 2026-08-21
 
 Decision owner: Control Tower plus independent security review
 
-Design verdict: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`
+Design verdict: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R3`
 
 Execution state: `executionAuthorized:false`
 
@@ -18,28 +18,44 @@ This revision started only after the following state was observed clean.
 | --- | --- |
 | Engineering Factory worktree | `C:\dev\nightlexicon-engineering-factory` |
 | Engineering Factory branch | `codex/engineering-factory-devbench` |
-| Engineering Factory start commit | `0590773d3531e5db051cd51fb65bbdf2689cba31` |
-| Engineering Factory start tree | `059ba7993004918ed95452fccfc43a583f5263e4` |
+| Engineering Factory R3 frozen base | `db26064df0de743eb757cb71f2be56dd5ff346ad` |
+| Engineering Factory R3 frozen tree | `e1ee4b23328d94e22dfada0f3865f5ff69a1d258` |
 | Canonical Brain | `C:\dev\afterdesk-project-brain` |
-| Authority V3 Brain checkpoint | `c280d2d083271b24d4654a64fea06ffd33652d92` |
-| Brain observed commit | `b7c8198296eb1173b69a8181e3be2daff2cfcf1d` |
+| Independent R2 review checkpoint | `462c1384a4abcbf4fd890e19b4e81865d2dc1627` |
+| Brain observed commit | `2398f95ed6647edbc41cc5661b93e15d89a91af1` |
 
-The only Brain commit after the Authority V3 checkpoint is the unrelated
-Firefox V4 synthetic portal checkpoint. It does not change the Engineering
-Factory authority boundary. Both repositories were tracked-clean before R2.
+Both repositories were tracked-clean before R3. The Brain authorizes this R3
+design correction but does not authorize a candidate, provider, privileged
+host mutation, WSL networking change, TPM provisioning or PASS publication.
 
-## 2. Reviewer findings and decision
+## 2. R2 RED record and R3 decision
 
-The independent verdict `DESIGN_NEEDS_REVISION` is accepted. R1 is not an
-implementation-ready security contract for three decisive reasons.
+The independent verdict `DESIGN_NEEDS_REVISION_R3` is accepted. Before any R3
+correction, the frozen R2 package had these five observed RED defects:
 
-| Observed finding | R2 decision |
+1. `PREPARED` existed only inside the SQLite transaction that remained open
+   while the TPM counter advanced, so the promised crash-recovery bytes were
+   not durably committed.
+2. the 24 gate decision components used prose aliases that did not resolve to
+   the closed role registry;
+3. M35 allowed a compromised cleanup verifier to certify its own false
+   equivalence;
+4. P0-P5 manifests allowed generic producer and signer selection rather than
+   phase-bound ownership; and
+5. TPM NV public/provisioning and D4/P5 crash finalization were incomplete.
+
+R3 replaces each of those structures rather than relabeling R2.
+
+| Observed finding | R3 decision |
 | --- | --- |
 | The executable JSON Schema does not enforce the prose invariants | Replace the monolith with five versioned document schemas plus a mandatory deterministic semantic validator. |
 | The resolver manifest requires review and PASS before those artifacts exist | Replace the future-dependent manifest with six ordered phase roots. A manifest contains only artifacts already produced in that phase. |
 | The ledger can be restored from a valid backup or copied to another machine | Bind every committed ledger event to a non-migratable TPM machine anchor whose generation and head hash are outside disk backup state. |
+| TPM can advance while `PREPARED` is uncommitted | Split disk prepare and TPM publication into two committed SQLite transactions; the TPM step never begins until a post-commit readback proves the exact prepare bytes durable. |
+| Gate aliases and self-attestation | Bind every gate to exact producer and acceptor role tokens; the acceptor resolves to a distinct OS identity, binary and key for every security-critical claim. |
+| Generic phase ownership | Freeze P0-P5 producer, signer, acceptor, predecessor and terminal transition in schema plus semantic validation. |
 
-R2 does not weaken the claim. It narrows it to the exact proposition that can
+R3 does not weaken the claim. It narrows it to the exact proposition that can
 eventually be proved:
 
 > One exact deterministic fake CLI fixture completed one exact provider-free
@@ -51,15 +67,15 @@ It never proves compatibility with Codex, Claude, a model or a provider.
 
 ## 3. Five document families
 
-All document schemas have version `3.2.0`. Their schema IDs are immutable.
+All document schemas have version `3.3.0`. Their schema IDs are immutable.
 
 | Order | Kind | Schema ID | Producer | First consumer |
 | --- | --- | --- | --- | --- |
-| D0 | `authority-v3-static-design` | `urn:endvera:ef:authority-v3:static-design:3.2.0` | design authority | design reviewer |
-| D1 | `authority-v3-issued-run-authority` | `urn:endvera:ef:authority-v3:issued-run-authority:3.2.0` | policy authority | admission verifier |
-| D2 | `authority-v3-post-run-evidence` | `urn:endvera:ef:authority-v3:post-run-evidence:3.2.0` | evidence assembler | evidence resolver |
-| D3 | `authority-v3-independent-review-decision` | `urn:endvera:ef:authority-v3:independent-review-decision:3.2.0` | independent reviewer and final approver | replay ledger and PASS publisher |
-| D4 | `authority-v3-final-pass-publication` | `urn:endvera:ef:authority-v3:final-pass-publication:3.2.0` | PASS publisher through evidence broker | result reader |
+| D0 | `authority-v3-static-design` | `urn:endvera:ef:authority-v3:static-design:3.3.0` | design authority | design reviewer |
+| D1 | `authority-v3-issued-run-authority` | `urn:endvera:ef:authority-v3:issued-run-authority:3.3.0` | policy authority | admission verifier |
+| D2 | `authority-v3-post-run-evidence` | `urn:endvera:ef:authority-v3:post-run-evidence:3.3.0` | evidence assembler | evidence resolver |
+| D3 | `authority-v3-independent-review-decision` | `urn:endvera:ef:authority-v3:independent-review-decision:3.3.0` | independent reviewer and final approver | replay ledger and PASS publisher |
+| D4 | `authority-v3-final-pass-publication` | `urn:endvera:ef:authority-v3:final-pass-publication:3.3.0` | PASS publisher through evidence broker | result reader |
 
 There is no polymorphic runtime document. A verifier is invoked with one
 expected schema ID and refuses every other ID, version or kind. D0 has every
@@ -71,7 +87,7 @@ provider and credential authority false and counters at zero.
 
 ## 4. Authorization ceiling
 
-The R2 package and its embedded example have these exact values:
+The R3 package and its embedded example have these exact values:
 
 | Field | Value |
 | --- | --- |
@@ -92,7 +108,7 @@ old Authority V2 artifact is never authorization.
 
 ### 5.1 Authoritative roles
 
-R2 names eighteen authoritative components:
+R3 names eighteen authoritative components:
 
 1. design authority;
 2. trust-registry maintainer;
@@ -146,7 +162,7 @@ and starts a new ledger ID. It cannot rehabilitate an old PASS.
 ## 6. Exact signed bytes and parsing
 
 All signed payloads use UTF-8 without BOM and RFC 8785 JSON Canonicalization
-Scheme, profile `JCS-IJSON-INT53-R2`: duplicate keys forbidden, Unicode scalar
+Scheme, profile `JCS-IJSON-INT53-R3`: duplicate keys forbidden, Unicode scalar
 values only, no NaN/Infinity, integers only, and integers restricted to the
 exact range `[-9007199254740991, 9007199254740991]`. Timestamps are UTC with
 exactly three fractional digits.
@@ -158,7 +174,7 @@ canonical bytes must equal the submitted payload bytes byte-for-byte.
 The signature preimage is exactly:
 
 ```text
-ASCII("EF-AUTHORITY-V3-R2\0")
+ASCII("EF-AUTHORITY-V3-R3\0")
 || UINT32_BE(length(UTF8(schemaId)))
 || UTF8(schemaId)
 || UINT64_BE(length(canonicalPayloadBytes))
@@ -180,7 +196,7 @@ in the pre-anchored registry, loads only those local bytes, and requires exact
 
 JSON Schema enforces local shape, constants, typed arrays and conditional
 document variants. Cross-document, cryptographic, ordering, uniqueness and
-state invariants are enforced by `EF-AUTHORITY-V3-SEMVAL` version `3.2.0`.
+state invariants are enforced by `EF-AUTHORITY-V3-SEMVAL` version `3.3.0`.
 Schema success without semantic success is invalid.
 
 The validator input is: raw document bytes, expected schema ID, compiled-schema
@@ -200,7 +216,7 @@ synthetic evidence as real authority.
 
 ## 8. Acyclic evidence protocol
 
-R2 uses six append-only phase manifests. A manifest is produced only after all
+R3 uses six append-only phase manifests. A manifest is produced only after all
 artifacts it lists exist and is never edited. It contains no expected future
 artifact.
 
@@ -237,28 +253,57 @@ hold `ledgerId`, `machineIdHash`, counter generation, event-head hash and the
 non-migratable ledger signing-key name. The current head is the highest valid
 quoted slot whose generation equals the counter.
 
-Every ledger transition uses this crash-safe order:
+Every ledger transition uses two SQLite transactions separated by the TPM
+operation. No SQLite transaction is held across TPM I/O.
 
-1. `BEGIN IMMEDIATE`; verify disk head equals a fresh TPM quote.
-2. Insert one `PREPARED` event for expected generation `n+1` and the unique
-   nonce/lease state; FULL fsync.
-3. Atomically increment the TPM `TPMA_NV_COUNTER` index from `n` to `n+1`.
-4. Write the inactive A/B NV head slot with generation `n+1` and the prepared
-   event hash, read back both slots, quote counter+slots and verify the quote.
-5. Store the quote receipt, mark the event `COMMITTED`, update the disk head and
-   FULL fsync; commit.
+1. **T1 PREPARE.** `BEGIN IMMEDIATE`; verify the committed disk head equals a
+   fresh TPM quote; reserve the unique `(nonceHash, authorityGeneration)` and
+   concurrency-domain lease; insert one immutable `anchor_prepared` row and one
+   `nonce_events` row with `commit_state=PREPARED`; commit T1.
+2. **Durability proof.** With no transaction open, call
+   `sqlite3_wal_checkpoint_v2(..., SQLITE_CHECKPOINT_FULL, ...)`, require zero
+   busy frames, fsync the database file and containing directory, reopen the
+   database read-only through a new handle and verify the complete canonical
+   prepare record, event hash, prior head, expected generation and idempotency
+   key. Only the hash of these committed bytes may enter the TPM step.
+3. **TPM advance.** Compare the quoted counter to `n`, increment the counter to
+   `n+1`, write the inactive A/B head slot for `n+1`, read back both NV public
+   areas and slot bytes, then quote counter plus slots. Any uncertainty after
+   increment enters recovery; it never retries an increment blindly.
+4. **T2 FINALIZE.** `BEGIN IMMEDIATE`; compare-and-swap the one PREPARED row by
+   `transaction_id`, `expected_generation`, `prepared_event_hash` and prior
+   disk head; store the verified quote receipt, mark the event `COMMITTED`,
+   publish the new disk head and commit T2. A second T2 is idempotent only when
+   every resulting byte and quote hash is already identical.
+5. **Post-commit acceptance.** The semantic validator, under a different role,
+   reopens the ledger and verifies disk head, TPM public names, counter, slots,
+   quote and the transition receipt before any later gate can consume it.
 
-Recovery accepts only: disk/counter/head all agree; or exactly one fsynced
-PREPARED row at disk generation plus one while the counter is plus one and the
-head slot is either old or new. In that single-gap case recovery writes/verifies
-the missing head slot if needed, finalizes that same event and immediately
-consumes an active run as failed with a new counter advance. A gap above one,
-two competing PREPARED rows, mismatched slot hash or missing prepared bytes is
-unrecoverable corruption. A restored valid backup is behind the TPM counter and
-is rejected with `E_LEDGER_BACKUP_RESTORE`. A cross-machine copy lacks the
-non-migratable key/name and machine-bound NV indices and is rejected with
-`E_LEDGER_CROSS_MACHINE_COPY`. TPM unavailable, cleared, rolled back or
-unquotable means no issuance, no barrier release and no PASS.
+Authoritative recovery bytes are the committed T1 rows: ledger ID, machine and
+key names, nonce/authority generation, lease and concurrency domain, transition,
+prior event/head hashes, prepared event hash, expected TPM generation,
+transaction ID, intended terminal disposition and canonical-byte hash. A WAL
+frame that was written but not committed is never authoritative.
+
+Recovery accepts only the total rows in the R3 crash matrix. The important
+cases are: a committed and durably proven PREPARED with TPM still at `n` is an
+orphan that must complete that exact prepared transition to `n+1` and then use
+a separate anchored transition to consume the active run as failed; a committed
+PREPARED with TPM at `n+1` and an old or new slot completes that same
+transaction, publishes the missing slot if required, then likewise anchors the
+failure transition; a fully matching committed transition is returned
+idempotently. If the durability proof cannot be completed, recovery halts
+without changing TPM or claiming a burn. Missing prepare bytes,
+multiple PREPARED rows, a gap above one, wrong NV public name, contradictory
+slot, foreign machine or unknown state is permanent fail-closed corruption. A
+restored valid backup is rejected with `E_LEDGER_BACKUP_RESTORE`; a cross-machine
+copy is rejected with `E_LEDGER_CROSS_MACHINE_COPY`.
+
+Nonce/evidence generation is bound to the unique tuple `(ledgerId, nonceHash,
+authorityGeneration, transactionId, expectedGeneration)`. That tuple is never
+deleted or reused. `CONSUMED_PASS` and `CONSUMED_FAIL` are terminal and have
+unique partial indexes preventing a second terminal event or a second D4
+publication receipt.
 
 Reservation, nonce state and the unique concurrency-domain lease change in one
 transaction and one TPM anchor advance. `RESERVED` never returns to `ISSUED`.
@@ -341,6 +386,25 @@ the reviewer cannot advance the TPM ledger, and the ledger cannot create a
 cleanup attestation. Compromise of any one component is insufficient to create
 a valid D4.
 
+### 11.1 D4/P5 crash-safe finalization
+
+After D3 approval, the replay-ledger anchor prepares and commits exactly one
+`SEALED_PENDING_REVIEW -> CONSUMED_PASS` transition whose event bytes bind the
+D3 hash, P4 root, intended D4 object ID and publication idempotency key. It then
+uses the two-transaction protocol above. The lease is released only in the T2
+commit that finalizes `CONSUMED_PASS`.
+
+The PASS publisher submits one create request keyed by the committed consume
+event. The evidence broker either creates and seals the exact D4 bytes or
+returns the already sealed byte-identical object. It may never create a second
+object ID. P5 is accepted only after the evidence resolver independently reads
+the D4 object by handle, matches it to the consume event and records the single
+publication receipt. A crash before consume commit resumes the same transition;
+a crash after consume commit but before D4 resumes the same publication key; a
+crash after D4 but before P5 resumes resolution. No recovery path increments the
+generation again, reuses the nonce, creates another PASS or returns to an active
+state.
+
 ## 12. Failure disposition
 
 Every normative dependency fails closed. Active-run failures execute the safest
@@ -361,7 +425,7 @@ PASS waiver.
   broker crash model require independent implementation proof.
 - The exact fake CLI result remains candidate-shaped synthetic evidence only.
 - No implementation phase, local database, service, WSL change, observer,
-  firewall, fake process or mutation is authorized by R2.
+  firewall, fake process or mutation is authorized by R3.
 
 The remaining unknowns are assigned to future gates, not left to implementer
 judgment: schema/validator conformance; TPM ledger recovery; signer custody;
@@ -370,10 +434,10 @@ mutation restoration; independent review; PASS publication.
 
 ## 14. Decision record
 
-DECISION: adopt R2 as the proposed Authority V3 design package for independent
+DECISION: adopt R3 as the proposed Authority V3 design package for independent
 review only.
 
-FINAL CLAIM: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`.
+FINAL CLAIM: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R3`.
 
 PROHIBITION: design completion is not execution authority.
 

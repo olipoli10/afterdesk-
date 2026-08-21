@@ -1,4 +1,4 @@
-# Authority V3 R2 control graph and mutation matrix
+# Authority V3 R3 control graph and mutation matrix
 
 Status: implementation-ready design only
 
@@ -8,7 +8,7 @@ Gate count: 24
 
 Mutation count: 39
 
-Accepted R1/V2 mutation evidence for R2: 0
+Accepted R1/V2 mutation evidence for R3: 0
 
 ## 1. Ordered control graph
 
@@ -46,32 +46,45 @@ not make later success gates pass.
 
 ## 2. Exact 24-gate registry
 
-| # | Gate ID | Required input produced earlier | Sole decision component | Success output |
-| ---: | --- | --- | --- | --- |
-| 1 | `GATE_V3_R2_DESIGN_SCHEMA_VALID` | D0, five schema hashes, semantic-validator contract | design validator | P0 design root |
-| 2 | `GATE_V3_R2_TRUST_ROOTS_PREANCHORED` | P0 root, registry bytes, TPM registry quote | trust verifier | registry acceptance receipt |
-| 3 | `GATE_V3_R2_ISSUED_AUTHORITY_VALID` | D1 and policy signature | admission verifier | issuance acceptance receipt |
-| 4 | `GATE_V3_R2_OBSERVER_SERVICE_READY` | observer process/config/key measurement | observer signer | service-ready receipt |
-| 5 | `GATE_V3_R2_WINDOWS_OUTER_DENY_ACTIVE` | boot-time WFP/Hyper-V objects and readback | outer-deny verifier | outer-deny receipt |
-| 6 | `GATE_V3_R2_REPLAY_AND_LEASE_RESERVED` | D1, service-ready, outer-deny, TPM/disk heads | replay-ledger anchor | atomic reservation and exclusive-lease receipts |
-| 7 | `GATE_V3_R2_SOURCE_AND_CONTRACT_BOUND` | source/bundle/fake contract and exhaustive absence bytes | evidence resolver | source-contract receipt |
-| 8 | `GATE_V3_R2_RUNTIME_CHAIN_BOUND` | exact OCI/runtime/mount/device/map/cgroup/shim bytes | runtime verifier | closed-barrier runtime receipt |
-| 9 | `GATE_V3_R2_NAMESPACE_PREBIND_VALID` | namespace/process/cgroup/FD/socket state | enforcement verifier | namespace-prebind receipt |
-| 10 | `GATE_V3_R2_INNER_FIREWALL_INSTALLED` | atomic nft transaction result | enforcement verifier | installed-object receipt |
-| 11 | `GATE_V3_R2_INNER_FIREWALL_READBACK_EXACT` | kernel nft/netlink/interface/route readback | independent resolver | canonical readback receipt |
-| 12 | `GATE_V3_R2_OBSERVER_CAPTURE_READY` | exact link-down capture socket set | observer signer | capture-ready receipt |
-| 13 | `GATE_V3_R2_FINAL_REBIND_STABLE` | controller and observer independent rereads | barrier authority | dual rebind receipt |
-| 14 | `GATE_V3_R2_BARRIER_RELEASE_AUTHORIZED` | gates 1-13 and held lease | barrier authority | exactly-once release receipt |
-| 15 | `GATE_V3_R2_CONTINUOUS_CONTAINMENT_CLEAR` | ordered drift/netlink/process/FD/WFP/nft stream | containment monitor | drift-clear or latched-failure receipt |
-| 16 | `GATE_V3_R2_OBSERVER_COMPLETE` | event roots, interface distributions, PACKET_STATISTICS | observer verifier | completeness/shutdown receipt |
-| 17 | `GATE_V3_R2_BLOCK_BEFORE_KILL_VERIFIED` | counted WFP+nft deny with cgroup alive | enforcement verifier | block-before-kill receipt |
-| 18 | `GATE_V3_R2_PROCESS_CGROUP_TEARDOWN` | kill receipt and process/cgroup inventory | cleanup coordinator | empty-cgroup receipt |
-| 19 | `GATE_V3_R2_PRIVILEGED_CLEANUP_ACKNOWLEDGED` | exact created-object journal | cleanup verifier | typed deletion set |
-| 20 | `GATE_V3_R2_EXTERNAL_CLEANUP_VERIFIED` | independent before/after inventories | external cleanup verifier | cleanup attestation |
-| 21 | `GATE_V3_R2_EVIDENCE_SEALED_AND_RESOLVED` | P0-P3 objects, broker journal and D2 | evidence resolver | byte-resolution and broker-seal report |
-| 22 | `GATE_V3_R2_SIGNER_CHAIN_AND_LEDGER_VALID` | all signatures, TPM quote, pre-review state | signer/ledger verifier | P3 accepted-for-review receipt |
-| 23 | `GATE_V3_R2_INDEPENDENT_REVIEW_APPROVED` | P0-P3 roots and D2 | reviewer plus distinct final approver | D3 and P4 root |
-| 24 | `GATE_V3_R2_PASS_PUBLICATION` | D3, P4 root and anchored consume-pass receipt | pass publisher; broker independently enforces create preconditions | D4 and P5 root |
+There are no prose decision aliases in R3. `P` is the sole producer of the
+claim under decision and `A` is the sole accepting authority. Each token
+resolves through D1 as:
+
+```text
+roleBindings[role] -> operatingSystemIdentity, identityId, binarySha256,
+configurationSha256, keyId, publicKeySpkiSha256
+```
+
+All six values are exact and immutable for the run. For every row, `P != A` and
+all six identity dimensions differ. The semantic validator rejects a missing
+binding, alias, shared identity, shared binary or shared key before the gate.
+
+| # | Gate ID | P: exact producer role | A: exact accepting role | Acceptor reads | Acceptor may write | Forbidden to acceptor | Failure |
+| ---: | --- | --- | --- | --- | --- | --- | --- |
+| 1 | `GATE_V3_R3_DESIGN_SCHEMA_VALID` | `design-authority` | `semantic-validator` | D0 + local schema hashes | signed validation receipt | edit D0/schema | `E_GATE_ROLE_MAPPING_INVALID` |
+| 2 | `GATE_V3_R3_TRUST_ROOTS_PREANCHORED` | `trust-registry-maintainer` | `semantic-validator` | registry bytes + TPM public/quote | registry acceptance receipt | provision/rotate TPM or key | `E_TRUST_ROOT_NOT_PREANCHORED` |
+| 3 | `GATE_V3_R3_ISSUED_AUTHORITY_VALID` | `policy-authority` | `semantic-validator` | D1 + policy signature | issuance acceptance receipt | issue/modify D1 | `E_GATE_ACCEPTOR_NOT_INDEPENDENT` |
+| 4 | `GATE_V3_R3_OBSERVER_SERVICE_READY` | `observer-service` | `observer-signer` | process/config/key measurement | service-ready signature | launch or alter observer | `OBSERVER_SERVICE_NOT_READY` |
+| 5 | `GATE_V3_R3_WINDOWS_OUTER_DENY_ACTIVE` | `windows-outer-deny-controller` | `evidence-resolver` | WFP/Hyper-V readback | outer-deny acceptance receipt | install/delete filters | `WINDOWS_OUTER_DENY_INCOMPLETE` |
+| 6 | `GATE_V3_R3_REPLAY_AND_LEASE_RESERVED` | `replay-ledger-anchor` | `barrier-authority` | committed prepare + TPM quote | reservation acceptance receipt | write ledger/TPM | `E_LEDGER_ANCHOR_MISMATCH` |
+| 7 | `GATE_V3_R3_SOURCE_AND_CONTRACT_BOUND` | `design-authority` | `evidence-resolver` | bundle, source, absence evidence | source-contract receipt | build/replace bundle | `CONTRACT_BUNDLE_BYTES_MISMATCH` |
+| 8 | `GATE_V3_R3_RUNTIME_CHAIN_BOUND` | `runtime-supervisor` | `evidence-resolver` | OCI/runtime/mount/device/cgroup | runtime acceptance receipt | launch/kill runtime | `RUNTIME_HELPER_CHAIN_DRIFT` |
+| 9 | `GATE_V3_R3_NAMESPACE_PREBIND_VALID` | `wsl-enforcement-controller` | `evidence-resolver` | namespace/cgroup/FD/socket readback | prebind acceptance receipt | create/alter namespace | `ROOTLESS_RUNTIME_EDIT_SUCCEEDED` |
+| 10 | `GATE_V3_R3_INNER_FIREWALL_INSTALLED` | `wsl-enforcement-controller` | `evidence-resolver` | nft transaction + kernel objects | install acceptance receipt | install/alter nft | `FIREWALL_TABLE_MISSING` |
+| 11 | `GATE_V3_R3_INNER_FIREWALL_READBACK_EXACT` | `wsl-enforcement-controller` | `evidence-resolver` | kernel nft/netlink/routes | canonical readback receipt | alter kernel network state | `FIREWALL_BASE_CHAIN_CANONICAL_MISMATCH` |
+| 12 | `GATE_V3_R3_OBSERVER_CAPTURE_READY` | `observer-service` | `observer-signer` | exact link-down socket set | capture-ready signature | create interfaces or sockets | `OBSERVER_CAPTURE_SET_INCOMPLETE` |
+| 13 | `GATE_V3_R3_FINAL_REBIND_STABLE` | `wsl-enforcement-controller` | `barrier-authority` | controller + observer rereads | dual-rebind acceptance | alter bindings | `NETWORK_NAMESPACE_REPLACED` |
+| 14 | `GATE_V3_R3_BARRIER_RELEASE_AUTHORIZED` | `barrier-authority` | `runtime-supervisor` | gates 1-13 + held lease | release-consumption receipt | sign/alter prerequisite gates | `E_GATE_VERDICT_INCONSISTENT` |
+| 15 | `GATE_V3_R3_CONTINUOUS_CONTAINMENT_CLEAR` | `observer-service` | `semantic-validator` | ordered drift streams | drift acceptance/refusal | alter observer stream | `E_GATE_VERDICT_INCONSISTENT` |
+| 16 | `GATE_V3_R3_OBSERVER_COMPLETE` | `observer-signer` | `evidence-resolver` | event root + PACKET_STATISTICS | completeness receipt | capture/sign observer events | `OBSERVER_KERNEL_DROPS_NONZERO` |
+| 17 | `GATE_V3_R3_BLOCK_BEFORE_KILL_VERIFIED` | `wsl-enforcement-controller` | `runtime-supervisor` | counted deny + live cgroup | block-before-kill acceptance | install deny or sign it | `KILL_BEFORE_BLOCK` |
+| 18 | `GATE_V3_R3_PROCESS_CGROUP_TEARDOWN` | `runtime-supervisor` | `external-cleanup-verifier` | kill + process/cgroup inventories | teardown acceptance | kill processes or edit cgroup | `PROCESS_CGROUP_LEAK` |
+| 19 | `GATE_V3_R3_PRIVILEGED_CLEANUP_ACKNOWLEDGED` | `wsl-enforcement-controller` | `external-cleanup-verifier` | created-object journal + acks | deletion-set acceptance | delete objects or author acks | `PRIVILEGED_DELETE_NOT_ACKNOWLEDGED` |
+| 20 | `GATE_V3_R3_EXTERNAL_CLEANUP_VERIFIED` | `external-cleanup-verifier` | `evidence-resolver` | raw before/after inventories + acks | independent equivalence receipt | create/delete objects or trust claimed boolean | `CLEANUP_EQUIVALENCE_FALSE` |
+| 21 | `GATE_V3_R3_EVIDENCE_SEALED_AND_RESOLVED` | `evidence-broker` | `evidence-resolver` | P0-P3 handles + journal + D2 | resolution report | write/seal broker objects | `E_EVIDENCE_STORE_DURABILITY` |
+| 22 | `GATE_V3_R3_SIGNER_CHAIN_AND_LEDGER_VALID` | `replay-ledger-anchor` | `semantic-validator` | signatures + TPM public/quote + disk | signer/ledger acceptance | write ledger/TPM or sign producers | `E_LEDGER_ANCHOR_MISMATCH` |
+| 23 | `GATE_V3_R3_INDEPENDENT_REVIEW_APPROVED` | `independent-reviewer` | `final-approver` | P0-P3 + D2 + review | approval signature/P4 acceptance | produce evidence or advance ledger | `E_FINAL_APPROVER_UNAVAILABLE_OR_REUSED` |
+| 24 | `GATE_V3_R3_PASS_PUBLICATION` | `pass-publisher` | `evidence-broker` | D3/P4 + consume-pass + intended D4 ID | create-only D4/P5 receipt | review, advance ledger or overwrite D4 | `E_LEDGER_FINALIZATION_INVALID` |
 
 The barrier authority is an explicit pre-anchored role and executable. It cannot
 install rules, sign observation, advance the ledger, review evidence or write
@@ -180,6 +193,48 @@ Any drift invokes one atomic controller transaction: install/read back outer WFP
 and inner nft counted deny for every bound tuple, record target cgroup still
 alive, then issue cgroup kill. Kill before verified block is gate 17 failure.
 
+### 4.4 Phase-root ownership graph
+
+```text
+P0 design-authority/design-authority -> semantic-validator
+P1 policy-authority/policy-authority -> semantic-validator
+P2 evidence-assembler/evidence-assembler -> semantic-validator
+P3 evidence-assembler/evidence-assembler -> evidence-resolver
+P4 independent-reviewer/independent-reviewer -> final-approver
+P5 pass-publisher/pass-publisher -> evidence-broker
+```
+
+Each line is `producer/signer -> acceptor`. P0 alone has no predecessor and a
+null run ID. Every later phase has exactly the preceding root and the D1 run ID.
+A consumer cannot substitute a phase, signer or acceptor, and no phase can skip
+or point sideways. The P5 broker additionally requires the exact committed
+consume-pass transition and intended D4 idempotency key.
+
+### 4.5 TPM public-area and finalization graph
+
+The replay ledger uses four pre-provisioned OWNER-hierarchy NV indices: one
+8-byte SHA-256 counter, two 256-byte SHA-256 head slots, and one 64-byte SHA-256
+write-locked registry anchor. The complete attributes, policies, expected
+public names and allowed operations are part of D0/D1, not implementation
+defaults. `replay-ledger-anchor` is the only provisioner/writer;
+`semantic-validator` independently verifies public areas and quotes.
+
+The transition graph is:
+
+```text
+T1 PREPARED COMMIT -> FULL checkpoint + fsync + reopen/readback
+-> TPM compare/increment -> inactive slot write/readback/quote
+-> T2 COMMITTED CAS -> independent acceptance
+
+CONSUMED_PASS binds D3 + P4 + intended D4 ID
+-> broker CREATE_NEW/idempotent same bytes
+-> resolver D4 readback
+-> evidence-broker accepts P5 once
+```
+
+No retry edge returns to TPM increment after its outcome is uncertain. No edge
+creates another nonce, generation, D4 object or terminal transition.
+
 ## 5. Observer protocol
 
 The observer service and signer have distinct OS, key and binary identities.
@@ -233,13 +288,38 @@ Restoration classes:
 Every class ends with a fresh pristine verification under a new nonce. Failed
 restoration blocks all later runs.
 
+### 6.1 Independent mutation observation
+
+Every mutation has three mutually distinct functions:
+
+1. the driver changes a real control and emits before/after object hashes;
+2. an observer proves the change reached the real guard input; and
+3. the gate acceptor refuses it without trusting the mutated producer's
+   verdict.
+
+The driver, observer and acceptor resolve to different OS identities, binaries
+and keys. The mutation evidence stores the actual changed object, guard-input
+readback, refusal and restoration readback. A lying producer can provide bytes,
+but cannot produce the acceptor's signature or broker receipt.
+
+| Mutation | Mutated producer/control | Independent observer | Independent accepting verifier | Canonical refusal gate | Restoration evidence |
+| --- | --- | --- | --- | --- | --- |
+| M12 | `observer-signer` substitute key signs service-ready | `evidence-resolver` reads envelope/key against registry | `semantic-validator` | G4 | resolver proves original signer key/binary restored; new pristine nonce |
+| M34 | substitute `external-cleanup-verifier` identity | `semantic-validator` resolves role/OS/binary/key bindings | `evidence-resolver` | G20 | binding registry and service measurement byte-equal; new pristine nonce |
+| M35 | pinned mutation cleanup verifier lies about unequal inventories | `semantic-validator` proves the two raw inventory hashes differ | `evidence-resolver` recomputes normalized equality from broker handles | G20 | original verifier binary/config hash plus independently equal pristine inventories |
+
+M12 therefore cannot be detected only by the substituted signer. M34 cannot be
+accepted by the substituted verifier. M35 cannot be detected or certified by
+the lying cleanup verifier. If observer and acceptor identities collapse, the
+run fails `E_MUTATION_OBSERVER_NOT_INDEPENDENT` before mutation credit.
+
 ## 7. Explicit 26 mandatory R1 requirement IDs
 
-These requirement aliases remain visible and are mapped transparently into R2.
-Combined R2 mutations change one real compound control and still emit one error;
+These requirement aliases remain visible and are mapped transparently into R3.
+Combined R3 mutations change one real compound control and still emit one error;
 M15 is split into service-ready and capture-ready cases.
 
-| Mandatory ID | Required scenario | R2 mutation |
+| Mandatory ID | Required scenario | R3 mutation |
 | --- | --- | --- |
 | `R1-M01` | real-binary sentinel present | M01 |
 | `R1-M02` | provider route present | M02 |
@@ -270,9 +350,9 @@ M15 is split into service-ready and capture-ready cases.
 
 The remaining R1 IDs map transparently as follows. Compound mappings mutate one
 compound real control and have one deterministic gate; split mappings are the
-former multi-gate cases the R2 review required separating.
+former multi-gate cases the R3 review required separating.
 
-| R1 ID(s) | R2 mutation(s) | Disposition |
+| R1 ID(s) | R3 mutation(s) | Disposition |
 | --- | --- | --- |
 | `R1-M27`, `R1-M28` | M25 | key substitution is expressed as one unapproved real rotation transition |
 | `R1-M29`, `R1-M30` | M26 | sealed path replacement changes both file ID and bytes and is one broker identity failure |
@@ -284,60 +364,64 @@ former multi-gate cases the R2 review required separating.
 | `R1-M37` | M32, M33 | split reservation-time and post-evidence corruption gates |
 | `R1-M38` | M34, M35 | split cleanup-verifier identity and semantic false-equivalence gates |
 | `R1-M39` | M36, M37 | split Windows prebarrier deny and postcleanup inventory gates |
-| new R2 | M38, M39 | explicit valid-backup restore and cross-machine-copy rejection |
+| new R3 | M38, M39 | explicit valid-backup restore and cross-machine-copy rejection |
 
-## 8. R2 matrix: exactly 39 mutations
+## 8. R3 matrix: exactly 39 mutations
 
 Each row names one real changed object/control, exactly one gate and one
 deterministic error. Restoration always includes the class procedure plus a new
-pristine run.
+pristine run. The same 39 `(mutationId, expectedGateId, expectedErrorId)` tuples
+are embedded in D0 `mutationExpectations`; D2 must carry the matching non-null
+mutation case, failed gate and observed error. The gate's independently bound
+accepting role is the acceptor for that mutation; the changed producer cannot
+accept its own row.
 
 | ID | Real mutation operation | Expected gate | Deterministic error | Restore |
 | --- | --- | --- | --- | --- |
-| `M01_REAL_BINARY_PRESENT` | Add only the committed harmless M01 sentinel file to the actual bundle/OCI tree. | `GATE_V3_R2_SOURCE_AND_CONTRACT_BOUND` | `REAL_BINARY_SENTINEL_PRESENT` | SRC |
-| `M02_PROVIDER_ROUTE_PRESENT` | Add a reserved-prefix kernel route through an existing enforcement interface; send no packet. | `GATE_V3_R2_INNER_FIREWALL_READBACK_EXACT` | `PROVIDER_ROUTE_PRESENT` | OBJECT |
-| `M03_CONTRACT_ARTIFACT_BYTES_MISMATCH` | Replace the signed snapshot+wrapper compound bundle object with a rebuilt different-byte object. | `GATE_V3_R2_SOURCE_AND_CONTRACT_BOUND` | `CONTRACT_BUNDLE_BYTES_MISMATCH` | SRC |
-| `M04_FIREWALL_TABLE_MISSING` | Before gate 10 evaluates, use the mutation install transaction that omits the required enforcement table from actual kernel state. | `GATE_V3_R2_INNER_FIREWALL_INSTALLED` | `FIREWALL_TABLE_MISSING` | OBJECT |
-| `M05_FIREWALL_POLICY_HOOK_PRIORITY_WRONG` | Replace one real base chain so policy is accept and hook priority is not `-300`. | `GATE_V3_R2_INNER_FIREWALL_READBACK_EXACT` | `FIREWALL_BASE_CHAIN_CANONICAL_MISMATCH` | OBJECT |
-| `M06_ROOTLESS_RUNTIME_CAN_EDIT` | Change namespace ownership/map and perform one actual nft edit as runtime owner. | `GATE_V3_R2_NAMESPACE_PREBIND_VALID` | `ROOTLESS_RUNTIME_EDIT_SUCCEEDED` | RUN |
-| `M07_NAMESPACE_REPLACED` | Recreate/reattach candidate to a new network namespace after prebind. | `GATE_V3_R2_FINAL_REBIND_STABLE` | `NETWORK_NAMESPACE_REPLACED` | RUN |
-| `M08_EXTRA_INTERFACE_OR_ROUTE` | Add one actual link and bound extra route to candidate namespace. | `GATE_V3_R2_FINAL_REBIND_STABLE` | `EXTRA_INTERFACE_OR_ROUTE` | OBJECT |
-| `M09_DNS_IPV6_BYPASS` | Add one IPv4-mapped-IPv6 UDP/53 address, route and accept rule as one transaction. | `GATE_V3_R2_INNER_FIREWALL_READBACK_EXACT` | `DNS_IPV6_BYPASS_PRESENT` | OBJECT |
-| `M10_RELAY_EXTERNAL_EGRESS` | Add a reserved external-test prefix route/allow from relay. | `GATE_V3_R2_INNER_FIREWALL_READBACK_EXACT` | `RELAY_EXTERNAL_EGRESS_PRESENT` | OBJECT |
-| `M11_INHERITED_SOCKET_OR_FD` | Pass one bound unapproved socket through actual OCI preserve-fds. | `GATE_V3_R2_NAMESPACE_PREBIND_VALID` | `INHERITED_SOCKET_OR_FD` | RUN |
-| `M12_OBSERVER_SIGNER_SUBSTITUTED` | Sign real service readiness with an unpinned same-algorithm key. | `GATE_V3_R2_OBSERVER_SERVICE_READY` | `OBSERVER_SIGNER_SUBSTITUTED` | RUN |
-| `M13_REPLAY_AFTER_RESTART` | Reserve, restart ledger service, then attempt the same authority/barrier. | `GATE_V3_R2_REPLAY_AND_LEASE_RESERVED` | `NONCE_ALREADY_RESERVED_OR_CONSUMED` | LEDGER |
-| `M14_OBSERVER_SERVICE_NOT_READY` | Delay/terminate observer service before service-ready signature. | `GATE_V3_R2_OBSERVER_SERVICE_READY` | `OBSERVER_SERVICE_NOT_READY` | RUN |
-| `M15_OBSERVER_CAPTURE_NOT_READY` | Keep one real interface but omit its link-down capture socket/readiness entry. | `GATE_V3_R2_OBSERVER_CAPTURE_READY` | `OBSERVER_CAPTURE_SET_INCOMPLETE` | RUN |
-| `M16_OBSERVER_PACKET_LOSS` | Use the exact M16 bounded load and 4,096-byte receive buffer until kernel drop count is positive. | `GATE_V3_R2_OBSERVER_COMPLETE` | `OBSERVER_KERNEL_DROPS_NONZERO` | RUN |
-| `M17_UNCLASSIFIED_PACKET` | Emit exactly one M17 64-byte local packet absent from the classifier. | `GATE_V3_R2_OBSERVER_COMPLETE` | `UNCLASSIFIED_PACKET_EXACTLY_ONE` | RUN |
-| `M18_KILL_SWITCH_ORDER_BROKEN` | Execute cgroup kill before counted outer+inner deny readback. | `GATE_V3_R2_BLOCK_BEFORE_KILL_VERIFIED` | `KILL_BEFORE_BLOCK` | SRC |
-| `M19_RULE_DELETE_FAILURE` | Hold a namespace reference so deletion returns nonzero or object remains. | `GATE_V3_R2_PRIVILEGED_CLEANUP_ACKNOWLEDGED` | `PRIVILEGED_DELETE_NOT_ACKNOWLEDGED` | OBJECT |
-| `M20_PROCESS_CGROUP_LEAK` | Use the mutation fixture child that remains in the real cgroup after parent exit. | `GATE_V3_R2_PROCESS_CGROUP_TEARDOWN` | `PROCESS_CGROUP_LEAK` | RUN |
-| `M21_TEMP_ROOT_OR_SECRET_LEAK` | Retain one fake-only sentinel inode/mount after teardown. | `GATE_V3_R2_EXTERNAL_CLEANUP_VERIFIED` | `TEMP_ROOT_OR_FAKE_SECRET_LEAK` | OBJECT |
-| `M22_CONCURRENT_RUN` | Race two valid distinct nonces for one concurrency domain in real transactions. | `GATE_V3_R2_REPLAY_AND_LEASE_RESERVED` | `CONCURRENT_RUN_LEASE_CONFLICT` | LEDGER |
-| `M23_POST_CLEANUP_DRIFT` | Create one run-labelled link after deletion and before external after-snapshot. | `GATE_V3_R2_EXTERNAL_CLEANUP_VERIFIED` | `POST_CLEANUP_DRIFT` | OBJECT |
-| `M24_PASS_WRITTEN_BEFORE_CLEANUP` | Ask broker to CREATE_NEW D4 before P3 cleanup root or D3. | `GATE_V3_R2_PASS_PUBLICATION` | `PASS_PREREQUISITE_ORDER_INVALID` | STORE |
-| `M25_SIGNER_KEY_OR_ROTATION_INVALID` | Activate a real substitute key/epoch without old/new/maintainer/approver rotation signatures. | `GATE_V3_R2_SIGNER_CHAIN_AND_LEDGER_VALID` | `SIGNER_ROTATION_INVALID` | RUN |
-| `M26_SEALED_EVIDENCE_OBJECT_REPLACED` | Delete/recreate a sealed object at the same path with a new file ID and bytes while index retains old identity. | `GATE_V3_R2_EVIDENCE_SEALED_AND_RESOLVED` | `EVIDENCE_FILE_ID_OR_BYTES_MISMATCH` | STORE |
-| `M27_PACKET_STATISTICS_UNAVAILABLE` | Run mutation observer that omits the real PACKET_STATISTICS call at shutdown. | `GATE_V3_R2_OBSERVER_COMPLETE` | `PACKET_STATISTICS_UNAVAILABLE` | SRC |
-| `M28_RUNTIME_HELPER_CHAIN_DRIFT` | Only after gate 5 outer deny, replace the approved absent/helper set by starting a measured slirp/pasta helper attached to the still-barriered candidate; send no packet. | `GATE_V3_R2_RUNTIME_CHAIN_BOUND` | `RUNTIME_HELPER_CHAIN_DRIFT` | RUN |
-| `M29_MONOTONIC_CLOCK_PRE_RESERVATION` | Measured clock adapter returns duplicate/rollback during TPM reservation. | `GATE_V3_R2_REPLAY_AND_LEASE_RESERVED` | `MONOTONIC_CLOCK_INVALID_PRE_RESERVATION` | SRC |
-| `M30_MONOTONIC_CLOCK_RUNTIME` | Measured clock adapter rolls back after barrier release. | `GATE_V3_R2_CONTINUOUS_CONTAINMENT_CLEAR` | `MONOTONIC_CLOCK_INVALID_RUNTIME` | SRC |
-| `M31_LEDGER_UNAVAILABLE` | Stop/lock the real disposable ledger during reservation. | `GATE_V3_R2_REPLAY_AND_LEASE_RESERVED` | `REPLAY_LEDGER_UNAVAILABLE` | LEDGER |
-| `M32_LEDGER_CORRUPT_AT_RESERVATION` | Flip one closed disk event byte before disk/TPM comparison. | `GATE_V3_R2_REPLAY_AND_LEASE_RESERVED` | `LEDGER_CORRUPT_AT_RESERVATION` | LEDGER |
-| `M33_LEDGER_CORRUPT_AFTER_EVIDENCE` | Alter one prior event/hash after D2 but before signer/ledger verification. | `GATE_V3_R2_SIGNER_CHAIN_AND_LEDGER_VALID` | `LEDGER_CORRUPT_PRE_REVIEW` | LEDGER |
-| `M34_CLEANUP_VERIFIER_IDENTITY_SUBSTITUTED` | Use a different real verifier binary/key on equal inventories. | `GATE_V3_R2_EXTERNAL_CLEANUP_VERIFIED` | `CLEANUP_VERIFIER_IDENTITY_INVALID` | RUN |
-| `M35_CLEANUP_VERIFIER_FALSE_EQUIVALENCE` | Pinned mutation verifier signs unequal real before/after inventories as equal. | `GATE_V3_R2_EXTERNAL_CLEANUP_VERIFIED` | `CLEANUP_EQUIVALENCE_FALSE` | SRC |
-| `M36_WINDOWS_OUTER_DENY_PREBARRIER_DRIFT` | Remove one actual WFP V6 filter after the install API returns but before gate 5 performs its independent readback. | `GATE_V3_R2_WINDOWS_OUTER_DENY_ACTIVE` | `WINDOWS_OUTER_DENY_INCOMPLETE` | OBJECT |
-| `M37_WINDOWS_NETWORK_POSTCLEANUP_DRIFT` | Add one reserved-prefix Windows route after cleanup and before external after-snapshot. | `GATE_V3_R2_EXTERNAL_CLEANUP_VERIFIED` | `WINDOWS_NETWORK_POSTCLEANUP_DRIFT` | OBJECT |
-| `M38_LEDGER_VALID_BACKUP_RESTORE` | Restore an internally valid older SQLite backup while TPM NV head stays newer. | `GATE_V3_R2_REPLAY_AND_LEASE_RESERVED` | `LEDGER_BACKUP_RESTORE_REJECTED` | LEDGER |
-| `M39_LEDGER_CROSS_MACHINE_COPY` | Copy an internally valid ledger to a machine lacking the bound TPM key/NV identity. | `GATE_V3_R2_REPLAY_AND_LEASE_RESERVED` | `LEDGER_CROSS_MACHINE_COPY_REJECTED` | LEDGER |
+| `M01_REAL_BINARY_PRESENT` | Add only the committed harmless M01 sentinel file to the actual bundle/OCI tree. | `GATE_V3_R3_SOURCE_AND_CONTRACT_BOUND` | `REAL_BINARY_SENTINEL_PRESENT` | SRC |
+| `M02_PROVIDER_ROUTE_PRESENT` | Add a reserved-prefix kernel route through an existing enforcement interface; send no packet. | `GATE_V3_R3_INNER_FIREWALL_READBACK_EXACT` | `PROVIDER_ROUTE_PRESENT` | OBJECT |
+| `M03_CONTRACT_ARTIFACT_BYTES_MISMATCH` | Replace the signed snapshot+wrapper compound bundle object with a rebuilt different-byte object. | `GATE_V3_R3_SOURCE_AND_CONTRACT_BOUND` | `CONTRACT_BUNDLE_BYTES_MISMATCH` | SRC |
+| `M04_FIREWALL_TABLE_MISSING` | Before gate 10 evaluates, use the mutation install transaction that omits the required enforcement table from actual kernel state. | `GATE_V3_R3_INNER_FIREWALL_INSTALLED` | `FIREWALL_TABLE_MISSING` | OBJECT |
+| `M05_FIREWALL_POLICY_HOOK_PRIORITY_WRONG` | Replace one real base chain so policy is accept and hook priority is not `-300`. | `GATE_V3_R3_INNER_FIREWALL_READBACK_EXACT` | `FIREWALL_BASE_CHAIN_CANONICAL_MISMATCH` | OBJECT |
+| `M06_ROOTLESS_RUNTIME_CAN_EDIT` | Change namespace ownership/map and perform one actual nft edit as runtime owner. | `GATE_V3_R3_NAMESPACE_PREBIND_VALID` | `ROOTLESS_RUNTIME_EDIT_SUCCEEDED` | RUN |
+| `M07_NAMESPACE_REPLACED` | Recreate/reattach candidate to a new network namespace after prebind. | `GATE_V3_R3_FINAL_REBIND_STABLE` | `NETWORK_NAMESPACE_REPLACED` | RUN |
+| `M08_EXTRA_INTERFACE_OR_ROUTE` | Add one actual link and bound extra route to candidate namespace. | `GATE_V3_R3_FINAL_REBIND_STABLE` | `EXTRA_INTERFACE_OR_ROUTE` | OBJECT |
+| `M09_DNS_IPV6_BYPASS` | Add one IPv4-mapped-IPv6 UDP/53 address, route and accept rule as one transaction. | `GATE_V3_R3_INNER_FIREWALL_READBACK_EXACT` | `DNS_IPV6_BYPASS_PRESENT` | OBJECT |
+| `M10_RELAY_EXTERNAL_EGRESS` | Add a reserved external-test prefix route/allow from relay. | `GATE_V3_R3_INNER_FIREWALL_READBACK_EXACT` | `RELAY_EXTERNAL_EGRESS_PRESENT` | OBJECT |
+| `M11_INHERITED_SOCKET_OR_FD` | Pass one bound unapproved socket through actual OCI preserve-fds. | `GATE_V3_R3_NAMESPACE_PREBIND_VALID` | `INHERITED_SOCKET_OR_FD` | RUN |
+| `M12_OBSERVER_SIGNER_SUBSTITUTED` | Sign real service readiness with an unpinned same-algorithm key. | `GATE_V3_R3_OBSERVER_SERVICE_READY` | `OBSERVER_SIGNER_SUBSTITUTED` | RUN |
+| `M13_REPLAY_AFTER_RESTART` | Reserve, restart ledger service, then attempt the same authority/barrier. | `GATE_V3_R3_REPLAY_AND_LEASE_RESERVED` | `NONCE_ALREADY_RESERVED_OR_CONSUMED` | LEDGER |
+| `M14_OBSERVER_SERVICE_NOT_READY` | Delay/terminate observer service before service-ready signature. | `GATE_V3_R3_OBSERVER_SERVICE_READY` | `OBSERVER_SERVICE_NOT_READY` | RUN |
+| `M15_OBSERVER_CAPTURE_NOT_READY` | Keep one real interface but omit its link-down capture socket/readiness entry. | `GATE_V3_R3_OBSERVER_CAPTURE_READY` | `OBSERVER_CAPTURE_SET_INCOMPLETE` | RUN |
+| `M16_OBSERVER_PACKET_LOSS` | Use the exact M16 bounded load and 4,096-byte receive buffer until kernel drop count is positive. | `GATE_V3_R3_OBSERVER_COMPLETE` | `OBSERVER_KERNEL_DROPS_NONZERO` | RUN |
+| `M17_UNCLASSIFIED_PACKET` | Emit exactly one M17 64-byte local packet absent from the classifier. | `GATE_V3_R3_OBSERVER_COMPLETE` | `UNCLASSIFIED_PACKET_EXACTLY_ONE` | RUN |
+| `M18_KILL_SWITCH_ORDER_BROKEN` | Execute cgroup kill before counted outer+inner deny readback. | `GATE_V3_R3_BLOCK_BEFORE_KILL_VERIFIED` | `KILL_BEFORE_BLOCK` | SRC |
+| `M19_RULE_DELETE_FAILURE` | Hold a namespace reference so deletion returns nonzero or object remains. | `GATE_V3_R3_PRIVILEGED_CLEANUP_ACKNOWLEDGED` | `PRIVILEGED_DELETE_NOT_ACKNOWLEDGED` | OBJECT |
+| `M20_PROCESS_CGROUP_LEAK` | Use the mutation fixture child that remains in the real cgroup after parent exit. | `GATE_V3_R3_PROCESS_CGROUP_TEARDOWN` | `PROCESS_CGROUP_LEAK` | RUN |
+| `M21_TEMP_ROOT_OR_SECRET_LEAK` | Retain one fake-only sentinel inode/mount after teardown. | `GATE_V3_R3_EXTERNAL_CLEANUP_VERIFIED` | `TEMP_ROOT_OR_FAKE_SECRET_LEAK` | OBJECT |
+| `M22_CONCURRENT_RUN` | Race two valid distinct nonces for one concurrency domain in real transactions. | `GATE_V3_R3_REPLAY_AND_LEASE_RESERVED` | `CONCURRENT_RUN_LEASE_CONFLICT` | LEDGER |
+| `M23_POST_CLEANUP_DRIFT` | Create one run-labelled link after deletion and before external after-snapshot. | `GATE_V3_R3_EXTERNAL_CLEANUP_VERIFIED` | `POST_CLEANUP_DRIFT` | OBJECT |
+| `M24_PASS_WRITTEN_BEFORE_CLEANUP` | Ask broker to CREATE_NEW D4 before P3 cleanup root or D3. | `GATE_V3_R3_PASS_PUBLICATION` | `PASS_PREREQUISITE_ORDER_INVALID` | STORE |
+| `M25_SIGNER_KEY_OR_ROTATION_INVALID` | Activate a real substitute key/epoch without old/new/maintainer/approver rotation signatures. | `GATE_V3_R3_SIGNER_CHAIN_AND_LEDGER_VALID` | `SIGNER_ROTATION_INVALID` | RUN |
+| `M26_SEALED_EVIDENCE_OBJECT_REPLACED` | Delete/recreate a sealed object at the same path with a new file ID and bytes while index retains old identity. | `GATE_V3_R3_EVIDENCE_SEALED_AND_RESOLVED` | `EVIDENCE_FILE_ID_OR_BYTES_MISMATCH` | STORE |
+| `M27_PACKET_STATISTICS_UNAVAILABLE` | Run mutation observer that omits the real PACKET_STATISTICS call at shutdown. | `GATE_V3_R3_OBSERVER_COMPLETE` | `PACKET_STATISTICS_UNAVAILABLE` | SRC |
+| `M28_RUNTIME_HELPER_CHAIN_DRIFT` | Only after gate 5 outer deny, replace the approved absent/helper set by starting a measured slirp/pasta helper attached to the still-barriered candidate; send no packet. | `GATE_V3_R3_RUNTIME_CHAIN_BOUND` | `RUNTIME_HELPER_CHAIN_DRIFT` | RUN |
+| `M29_MONOTONIC_CLOCK_PRE_RESERVATION` | Measured clock adapter returns duplicate/rollback during TPM reservation. | `GATE_V3_R3_REPLAY_AND_LEASE_RESERVED` | `MONOTONIC_CLOCK_INVALID_PRE_RESERVATION` | SRC |
+| `M30_MONOTONIC_CLOCK_RUNTIME` | Measured clock adapter rolls back after barrier release. | `GATE_V3_R3_CONTINUOUS_CONTAINMENT_CLEAR` | `MONOTONIC_CLOCK_INVALID_RUNTIME` | SRC |
+| `M31_LEDGER_UNAVAILABLE` | Stop/lock the real disposable ledger during reservation. | `GATE_V3_R3_REPLAY_AND_LEASE_RESERVED` | `REPLAY_LEDGER_UNAVAILABLE` | LEDGER |
+| `M32_LEDGER_CORRUPT_AT_RESERVATION` | Flip one closed disk event byte before disk/TPM comparison. | `GATE_V3_R3_REPLAY_AND_LEASE_RESERVED` | `LEDGER_CORRUPT_AT_RESERVATION` | LEDGER |
+| `M33_LEDGER_CORRUPT_AFTER_EVIDENCE` | Alter one prior event/hash after D2 but before signer/ledger verification. | `GATE_V3_R3_SIGNER_CHAIN_AND_LEDGER_VALID` | `LEDGER_CORRUPT_PRE_REVIEW` | LEDGER |
+| `M34_CLEANUP_VERIFIER_IDENTITY_SUBSTITUTED` | Use a different real verifier binary/key on equal inventories. | `GATE_V3_R3_EXTERNAL_CLEANUP_VERIFIED` | `CLEANUP_VERIFIER_IDENTITY_INVALID` | RUN |
+| `M35_CLEANUP_VERIFIER_FALSE_EQUIVALENCE` | Pinned mutation verifier signs unequal real before/after inventories as equal. | `GATE_V3_R3_EXTERNAL_CLEANUP_VERIFIED` | `CLEANUP_EQUIVALENCE_FALSE` | SRC |
+| `M36_WINDOWS_OUTER_DENY_PREBARRIER_DRIFT` | Remove one actual WFP V6 filter after the install API returns but before gate 5 performs its independent readback. | `GATE_V3_R3_WINDOWS_OUTER_DENY_ACTIVE` | `WINDOWS_OUTER_DENY_INCOMPLETE` | OBJECT |
+| `M37_WINDOWS_NETWORK_POSTCLEANUP_DRIFT` | Add one reserved-prefix Windows route after cleanup and before external after-snapshot. | `GATE_V3_R3_EXTERNAL_CLEANUP_VERIFIED` | `WINDOWS_NETWORK_POSTCLEANUP_DRIFT` | OBJECT |
+| `M38_LEDGER_VALID_BACKUP_RESTORE` | Restore an internally valid older SQLite backup while TPM NV head stays newer. | `GATE_V3_R3_REPLAY_AND_LEASE_RESERVED` | `LEDGER_BACKUP_RESTORE_REJECTED` | LEDGER |
+| `M39_LEDGER_CROSS_MACHINE_COPY` | Copy an internally valid ledger to a machine lacking the bound TPM key/NV identity. | `GATE_V3_R3_REPLAY_AND_LEASE_RESERVED` | `LEDGER_CROSS_MACHINE_COPY_REJECTED` | LEDGER |
 
 R1 multi-gate cases are now split: service/capture readiness (M14/M15),
 pre/runtime clock failure (M29/M30), reservation/post-evidence corruption
 (M32/M33), cleanup identity/semantic compromise (M34/M35), and Windows
-prebarrier/postcleanup drift (M36/M37). Every R2 row has one gate only.
+prebarrier/postcleanup drift (M36/M37). Every R3 row has one gate only.
 
 M04 corrects the R1 sequencing defect: the actual mutation occurs inside the
 install transaction before gate 10 produces any success receipt. It cannot

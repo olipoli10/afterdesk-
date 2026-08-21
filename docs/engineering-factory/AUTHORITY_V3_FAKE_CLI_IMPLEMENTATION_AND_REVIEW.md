@@ -1,8 +1,8 @@
-# Authority V3 R2 fake CLI, future implementation phases and review
+# Authority V3 R3 fake CLI, future implementation phases and review
 
 Status: design-only
 
-Design verdict: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`
+Design verdict: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R3`
 
 Execution verdict: NO-GO
 
@@ -13,7 +13,7 @@ Execution verdict: NO-GO
 The only permitted future candidate-shaped process is a deterministic fake CLI
 built from committed synthetic source. A green result could prove only:
 
-> The exact fake CLI bytes accepted the exact R2 framing and lifecycle contract
+> The exact fake CLI bytes accepted the exact R3 framing and lifecycle contract
 > in one exact source/runtime/host snapshot under one non-reusable authority.
 
 It cannot prove real Codex/Claude compatibility, model quality, provider safety,
@@ -52,7 +52,7 @@ The exact token array is:
 [0] ef-fake-candidate
 [1] compatibility-rehearsal
 [2] --contract-version
-[3] 3.2.0
+[3] 3.3.0
 [4] --stdin-framing
 [5] u32be-jcs-json-lf-v1
 [6] --stdout-framing
@@ -76,7 +76,7 @@ Framing ID is `u32be-jcs-json-lf-v1`. Every stdin/stdout/stderr frame is exactly
 
 ```text
 4-byte unsigned big-endian integer N
-N bytes canonical JCS-IJSON-INT53-R2 UTF-8 JSON
+N bytes canonical JCS-IJSON-INT53-R3 UTF-8 JSON
 one byte 0x0A
 ```
 
@@ -92,7 +92,7 @@ re-serialized JCS bytes must equal the received N bytes.
 
 ### 4.2 Hash chain
 
-Every frame has `schemaVersion:"3.2.0"`, `frameSequence`,
+Every frame has `schemaVersion:"3.3.0"`, `frameSequence`,
 `priorFrameSha256` and `frameSha256`. Sequence starts at 1 and increments by one
 per stream. For sequence 1, prior hash is 64 zeroes; otherwise it equals the
 preceding frame's `frameSha256` on that stream. To compute the current value,
@@ -240,8 +240,8 @@ unbounded buffering.
 The child environment is created from an empty block. Sorted exact entries are:
 
 ```text
-EF_AUTHORITY_SCHEMA_VERSION=3.2.0
-EF_COMPATIBILITY_CONTRACT_VERSION=3.2.0
+EF_AUTHORITY_SCHEMA_VERSION=3.3.0
+EF_COMPATIBILITY_CONTRACT_VERSION=3.3.0
 EF_FAKE_RELAY_HOST=198.18.0.2
 EF_FAKE_RELAY_PORT=47001
 EF_RUN_ID=<exact lowercase D1 UUIDv4>
@@ -315,14 +315,14 @@ route to Windows or a physical interface.
 No phase below is started by this document. Each needs a new explicit user
 decision naming worktree, source/tree, host boundary and allowed writes/tests.
 
-### I0 - R2 independent design review
+### I0 - R3 independent design review
 
 Authorized milestone now: review these five documents only.
 
-Success: reviewer returns R2 acceptance, revision request or DESIGN_BLOCKED.
+Success: reviewer returns R3 acceptance, revision request or DESIGN_BLOCKED.
 
 Stop: any unresolved normative placeholder, schema contradiction or claim that
-R2 authorizes implementation.
+R3 authorizes implementation.
 
 ### I1 - static schema tests
 
@@ -492,11 +492,30 @@ reuse the nonce.
 | I8 | broker guard makes a single-component forged D4 impossible |
 
 These unknowns block implementation/rehearsal/PASS claims, but not independent
-review of this completed R2 design.
+review of this completed R3 design.
 
-## 15. Final state
+## 15. R3 mandated adversarial answers
 
-`DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`
+The static R3 package answers each mandated question **NO**. These answers are
+design evidence only; they do not substitute for I1-I8 implementation proof.
+
+| # | Answer | Static evidence and refusal boundary |
+| ---: | --- | --- |
+| 1 | NO | ADR 9 commits and read-backs the complete PREPARED record in T1 before any TPM operation; the crash matrix refuses missing or non-durable preparation with `E_LEDGER_PREPARE_NOT_DURABLE`. |
+| 2 | NO | `phaseContracts` freezes P0-P5 producer, signer, acceptor, predecessor and state; schema-valid wrong-role or wrong-phase documents fail `E_PHASE_ROLE_INVALID` or `E_PHASE_PREDECESSOR_INVALID`. |
+| 3 | NO | Every gate binding names a distinct accepting role; the M12/M34/M35 provenance table assigns an observer and acceptor distinct from the mutated producer and fails collapsed provenance with `E_MUTATION_OBSERVER_NOT_INDEPENDENT`. |
+| 4 | NO | D1 role binding resolution compares OS identity, key/SPKI, binary hash and config hash; any equality across a producer/acceptor pair fails `E_GATE_ACCEPTOR_NOT_INDEPENDENT`. |
+| 5 | NO | The four TPM profiles bind hierarchy, name algorithm, attributes, policy, size and expected public name; independent read-public/quote mismatch, cleared TPM or foreign machine state fails `E_TPM_NV_PUBLIC_MISMATCH` or `E_TPM_PROVISIONING_INVALID`. |
+| 6 | NO | Terminal and publication idempotency keys are unique; the final three crash rows permit only same-key recovery or idempotent return and fail contradictory finalization with `E_LEDGER_FINALIZATION_INVALID`. |
+| 7 | NO | Gates 17-21 require block-before-kill, process/cgroup teardown, privileged cleanup acknowledgement, external cleanup verification and sealed/resolved evidence before review or publication. |
+| 8 | NO | The semantic validator has an exhaustive ordered failure registry; unknown, missing, reordered or contradictory state never defaults to retry or PASS, and every recovery row names its only legal retry class. |
+
+Independent review must reproduce these eight answers from the schema bundle,
+not accept this table as an attestation by the design author.
+
+## 16. Final state
+
+`DESIGN_READY_FOR_INDEPENDENT_REVIEW_R3`
 
 - `executionAuthorized:false`
 - `syntheticFixtureExecutionAuthorized:false`
