@@ -605,6 +605,77 @@ export function validateAuthorityV3R3TerminalPublication(
   };
 }
 
+/** Refuses schema-valid phase manifests that violate the frozen D0 contract. */
+export function validateAuthorityV3R3PhaseTransition(
+  transition: unknown,
+  phaseContracts: unknown
+): {
+  status: "AUTHORITY_V3_R3_PHASE_TRANSITION_VALID";
+  phase: string;
+  nextPhase: string;
+} {
+  const observed = record(transition, "E_PHASE_PREDECESSOR_INVALID");
+  const contracts = array(phaseContracts, "E_PHASE_PREDECESSOR_INVALID").map((item) =>
+    record(item, "E_PHASE_PREDECESSOR_INVALID")
+  );
+  const expected = contracts.find((contract) => contract.phase === observed.phase);
+  if (!expected || typeof observed.phase !== "string") refuse("E_PHASE_PREDECESSOR_INVALID");
+  for (const field of ["producerRole", "signerRole", "acceptorRole"] as const) {
+    if (observed[field] !== expected[field]) refuse("E_PHASE_ROLE_INVALID");
+  }
+  for (const field of [
+    "predecessorPhase",
+    "requiredPriorState",
+    "resultingState",
+    "outputSchemaId",
+    "nextPhase",
+  ] as const) {
+    if (observed[field] !== expected[field]) refuse("E_PHASE_PREDECESSOR_INVALID");
+  }
+  for (const field of ["requiredInputArtifactKinds", "requiredPriorAttestationKinds"] as const) {
+    if (JSON.stringify(observed[field]) !== JSON.stringify(expected[field])) {
+      refuse("E_PHASE_PREDECESSOR_INVALID");
+    }
+  }
+  if (typeof observed.nextPhase !== "string") refuse("E_PHASE_PREDECESSOR_INVALID");
+  return {
+    status: "AUTHORITY_V3_R3_PHASE_TRANSITION_VALID",
+    phase: observed.phase,
+    nextPhase: observed.nextPhase,
+  };
+}
+
+/** Compares a TPM ReadPublic result to the complete pre-authorized D0 profile. */
+export function validateAuthorityV3R3TpmPublicArea(
+  publicArea: unknown,
+  tpmNvPublicProfiles: unknown
+): {
+  status: "AUTHORITY_V3_R3_TPM_PUBLIC_AREA_VALID";
+  purpose: string;
+  nvIndex: number;
+} {
+  const observed = record(publicArea, "E_TPM_NV_PUBLIC_MISMATCH");
+  const profiles = array(tpmNvPublicProfiles, "E_TPM_NV_PUBLIC_MISMATCH").map((item) =>
+    record(item, "E_TPM_NV_PUBLIC_MISMATCH")
+  );
+  const expected = profiles.find((profile) => profile.purpose === observed.purpose);
+  if (!expected) refuse("E_TPM_NV_PUBLIC_MISMATCH");
+  assertExactKeys(observed, Object.keys(expected), "E_TPM_NV_PUBLIC_MISMATCH");
+  for (const [field, expectedValue] of Object.entries(expected)) {
+    if (JSON.stringify(observed[field]) !== JSON.stringify(expectedValue)) {
+      refuse("E_TPM_NV_PUBLIC_MISMATCH");
+    }
+  }
+  if (typeof observed.purpose !== "string" || typeof observed.nvIndex !== "number") {
+    refuse("E_TPM_NV_PUBLIC_MISMATCH");
+  }
+  return {
+    status: "AUTHORITY_V3_R3_TPM_PUBLIC_AREA_VALID",
+    purpose: observed.purpose,
+    nvIndex: observed.nvIndex,
+  };
+}
+
 export function validateAuthorityV3R3DesignBundle(raw: string): AuthorityV3R3StaticReport {
   rejectDuplicateJsonKeys(raw);
   let parsed: unknown;

@@ -27,6 +27,11 @@ fail-closed local admission checks without authorizing or launching a candidate.
   refused.
 - I2 terminal semantics: the terminal transition is unique; D4 and P5 share
   one publication key and are created or returned idempotently.
+- I2 phase semantics: a schema-valid P0-P5 transition is accepted only when its
+  predecessor, producer, signer, acceptor, states, inputs, attestations, output
+  schema, and next phase equal the frozen D0 contract.
+- I2 TPM semantics: a future `ReadPublic` result must equal the complete
+  pre-authorized public-area profile; matching an NV index alone is refused.
 
 The implementation is exposed through:
 
@@ -43,7 +48,7 @@ The new test suite was first observed RED because the R3 admission module did
 not exist. The recovery and terminal-publication tests were also observed RED
 before their functions existed.
 
-Six named mutations were then observed failing by their exact test names:
+Eight named mutations were then observed failing by their exact test names:
 
 1. `r3-design-authority-bypass`
 2. `r3-gate-acceptor-collapse`
@@ -51,19 +56,21 @@ Six named mutations were then observed failing by their exact test names:
 4. `r3-mutation-gate-drift`
 5. `r3-ledger-recovery-boundary-only`
 6. `r3-terminal-transition-duplicate`
+7. `r3-phase-signer-not-bound`
+8. `r3-tpm-index-only-admission`
 
 Each source mutation was restored byte-exactly before the pristine rerun. The
 final source SHA-256 after the last two restorations was:
 
 ```text
-02DB4BE5B6AC2624E77CF4E0FA18293380F086C6654BFD940BADD9816F84DF43
+866C9EC9747CF0410630A01FE992C389DE07750FF5E9D97C8A7456A438978C32
 ```
 
 ## Pristine validation
 
-- R3 targeted tests: 12/12 PASS.
+- R3 targeted tests: 14/14 PASS.
 - Adjacent Engineering Factory gates: 8 files, 53/53 PASS.
-- Full repository suite: 74 files PASS, one skipped; 1,303 tests PASS, one
+- Full repository suite: 74 files PASS, one skipped; 1,307 tests PASS, one
   skipped.
 - TypeScript: PASS.
 - ESLint: zero errors; two pre-existing warnings in `bakeoff.ts`.

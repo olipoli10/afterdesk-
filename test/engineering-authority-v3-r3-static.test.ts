@@ -8,8 +8,10 @@ import {
   classifyAuthorityV3R3LedgerRecovery,
   validateAuthorityV3R3DesignBundle,
   validateAuthorityV3R3MutationEvidence,
+  validateAuthorityV3R3PhaseTransition,
   validateAuthorityV3R3RoleSeparation,
   validateAuthorityV3R3TerminalPublication,
+  validateAuthorityV3R3TpmPublicArea,
 } from "@/lib/engineering-factory/authority-v3-r3-static";
 
 const BUNDLE = join(
@@ -217,5 +219,32 @@ describe("Authority V3 R3 static design admission", () => {
       d4PublicationKey: "run-7:terminal",
       p5PublicationKey: "run-7:terminal",
     })).toThrow("E_LEDGER_TERMINAL_TRANSITION_DUPLICATE");
+  });
+
+  it("rejects a schema-valid phase transition owned by the wrong signer", () => {
+    const contracts = JSON.parse(raw).examples[0].payload.phaseContracts;
+    const p4 = contracts[4];
+    expect(validateAuthorityV3R3PhaseTransition({ ...p4 }, contracts)).toEqual({
+      status: "AUTHORITY_V3_R3_PHASE_TRANSITION_VALID",
+      phase: "P4",
+      nextPhase: "P5",
+    });
+    expect(() => validateAuthorityV3R3PhaseTransition({
+      ...p4,
+      signerRole: "evidence-assembler",
+    }, contracts)).toThrow("E_PHASE_ROLE_INVALID");
+  });
+
+  it("requires the complete TPM NV public area, not only the index", () => {
+    const profiles = JSON.parse(raw).examples[0].payload.tpmNvPublicProfiles;
+    expect(validateAuthorityV3R3TpmPublicArea({ ...profiles[0] }, profiles)).toEqual({
+      status: "AUTHORITY_V3_R3_TPM_PUBLIC_AREA_VALID",
+      purpose: "MONOTONIC_COUNTER",
+      nvIndex: 22020100,
+    });
+    expect(() => validateAuthorityV3R3TpmPublicArea({
+      ...profiles[0],
+      attributes: profiles[0].attributes.filter((item: string) => item !== "NO_DA"),
+    }, profiles)).toThrow("E_TPM_NV_PUBLIC_MISMATCH");
   });
 });
