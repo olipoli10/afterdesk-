@@ -1,5 +1,20 @@
 # Engineering Factory / DevBench v1 — local handoff
 
+## Privileged provider-free Proxy Lab v2 update
+
+- Implementation commit: `0f262fb682d36446ab80cd1010ea1cbb0d64a6d8`.
+- A WSL UID 0 controller now applies unique nftables default-deny tables to the
+  exact synthetic candidate and relay network namespaces and runs independent
+  root-owned `AF_PACKET` metadata observers outside their cgroups.
+- Final run `78cbf79a-7d0d-4500-ba1b-6bd70be56f5a` passed the main exact route,
+  16/16 hostile scenarios, 18/18 named mutations, kill-before-terminate and
+  exact before/after cleanup.
+- Result: `GO_NEXT_SYNTHETIC_MILESTONE_ONLY`, with
+  `executionAuthorized:false`, real candidate invocations 0 and provider calls
+  0. It does not authorize Codex, Claude, a model/native candidate or provider.
+- See `ADR_PRIVILEGED_PROXY_LAB_V2.md` and
+  `PRIVILEGED_PROXY_LAB_EVIDENCE_V2.md`.
+
 ## Provider-free Proxy Lab v1 update
 
 - Commit `3bfbebb` adds a local Authority V2, fixed-route relay, fake DNS, fake
