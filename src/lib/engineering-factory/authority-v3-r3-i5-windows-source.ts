@@ -153,7 +153,10 @@ export function validateAuthorityV3R3WindowsOuterDenyReadback({
     acceptingBinding,
   });
 
-  const readbackFilters = readback.filters.map(({ filterId: _filterId, ...filter }) => filter);
+  const readbackFilters = readback.filters.map(({ filterId, ...filter }) => {
+    void filterId;
+    return filter;
+  });
   const hasExactFilters =
     readback.filters.length === WINDOWS_LAYERS.length &&
     new Set(readback.filters.map((filter) => filter.filterId)).size === WINDOWS_LAYERS.length &&
