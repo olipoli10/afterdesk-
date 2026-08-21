@@ -16,6 +16,15 @@ MODE = os.environ.get("EF_CANDIDATE_MODE", "probe")
 CURRENT_STAGE = "startup"
 
 
+START_BARRIER = os.environ.get("EF_PRIVILEGED_START_BARRIER")
+if START_BARRIER:
+    deadline = time.monotonic() + 10
+    while not Path(START_BARRIER).exists():
+        if time.monotonic() >= deadline:
+            raise RuntimeError("privileged start barrier was not released")
+        time.sleep(0.02)
+
+
 def redacted_excepthook(error_type, _error, traceback) -> None:
     last = traceback
     while last.tb_next is not None:
@@ -76,13 +85,18 @@ if MODE == "orphan-timeout":
     while True:
         pass
 
+if MODE == "kill-switch-loop":
+    while True:
+        tcp_open(RELAY_IP, RELAY_PORT, 0.1)
+        time.sleep(0.03)
+
 if MODE == "single-probe":
     status, body = request("POST", f"/v1/routes/{ROUTE_ID}", [("Content-Type", "application/json")], b"{}")
     sys.stdout.write(json.dumps({"status": status, "genericRefusal": body == b'{"error":"synthetic-relay-refused"}'}, sort_keys=True, separators=(",", ":")) + "\n")
     raise SystemExit(0)
 
 allowed_env = {
-    "EF_CANDIDATE_MODE", "EF_RELAY_IP", "EF_RELAY_PORT", "EF_ROUTE_ID", "HOME", "HOSTNAME", "LANG", "PATH", "PWD", "container",
+    "EF_CANDIDATE_MODE", "EF_PRIVILEGED_START_BARRIER", "EF_RELAY_IP", "EF_RELAY_PORT", "EF_ROUTE_ID", "HOME", "HOSTNAME", "LANG", "PATH", "PWD", "container",
 }
 environment_names = set(os.environ)
 proxy_names = {name for name in environment_names if "proxy" in name.lower()}

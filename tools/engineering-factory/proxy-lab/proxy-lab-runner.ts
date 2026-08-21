@@ -25,6 +25,38 @@ const RAW_LIMIT = 4 * 1024 * 1024;
 
 type CommandResult = { stdout: Buffer; stderr: Buffer };
 
+export type ProxyLabPrivilegedHooks = {
+  onRouteAuthority(args: {
+    scenario: string;
+    routeId: string;
+    providerPort: number;
+    bundle: Awaited<ReturnType<typeof createProxyLabAuthorityBundle>>;
+    authoritySigningKey: Buffer;
+  }): Promise<void>;
+  onRelayReady(args: {
+    scenario: string;
+    routeId: string;
+    providerPort: number;
+    containerName: string;
+    pid: number;
+  }): Promise<void>;
+  onRelayFinished(args: { scenario: string; containerName: string; pid: number }): Promise<void>;
+  onCandidateReady(args: {
+    scenario: string;
+    mode: "probe" | "single-probe" | "kill-switch-loop";
+    containerName: string;
+    pid: number;
+  }): Promise<void>;
+  onCandidateFinished(args: {
+    scenario: string;
+    mode: "probe" | "single-probe" | "kill-switch-loop";
+    containerName: string;
+    pid: number;
+  }): Promise<void>;
+  onKillSwitch(args: { scenario: string; containerName: string; pid: number }): Promise<void>;
+  onLabArtifactsRemoved(): Promise<void>;
+};
+
 export type ProviderFreeProxyLabEvidence = {
   schemaVersion: 1;
   status: "PROVIDER_FREE_PROXY_LAB_PROVED_WITH_PRIVILEGED_GAP";
@@ -529,9 +561,11 @@ async function runCandidate(args: {
   routeId: string;
   mode: "probe" | "single-probe";
   label: string;
+  scenario: string;
+  privilegedHooks?: ProxyLabPrivilegedHooks;
 }): Promise<CommandResult> {
   const command = [
-    "podman", "run", "--name", args.name, "--pull=never", "--network", args.network, "--ip", CANDIDATE_IP,
+    "podman", args.privilegedHooks ? "create" : "run", "--name", args.name, "--pull=never", "--network", args.network, "--ip", CANDIDATE_IP,
     "--http-proxy=false", "--no-hosts", "--dns", "none", "--sysctl", "net.ipv6.conf.all.disable_ipv6=1",
     "--sysctl", "net.ipv6.conf.default.disable_ipv6=1", "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=16777216",
     "--tmpfs", "/home/synthetic:rw,noexec,nosuid,nodev,size=16777216", "--user", "65532:65532", "--cap-drop=ALL",
@@ -539,12 +573,77 @@ async function runCandidate(args: {
     "--cpus=0.5", "--pids-limit=64", "--log-driver=none", "--label", args.label,
     "--env", `EF_RELAY_IP=${RELAY_CANDIDATE_IP}`, "--env", `EF_RELAY_PORT=${RELAY_PORT}`, "--env", `EF_ROUTE_ID=${args.routeId}`,
     "--env", `EF_CANDIDATE_MODE=${args.mode}`, "--env", "HOME=/home/synthetic", "--env", "PATH=/usr/bin", "--env", "LANG=C.UTF-8",
+    ...(args.privilegedHooks ? ["--env", "EF_PRIVILEGED_START_BARRIER=/tmp/ef-privileged-ready"] : []),
     args.image,
   ];
+  let pid = 0;
   try {
-    return await runWsl(command, { label: `run hostile synthetic candidate ${args.mode}`, timeoutMs: 30_000, rawLimitBytes: 1024 * 1024 });
+    if (!args.privilegedHooks) {
+      return await runWsl(command, { label: `run hostile synthetic candidate ${args.mode}`, timeoutMs: 30_000, rawLimitBytes: 1024 * 1024 });
+    }
+    await runWsl(command, { label: `create hostile synthetic candidate ${args.mode}` });
+    await runWsl(["podman", "start", args.name], { label: `start barriered hostile synthetic candidate ${args.mode}` });
+    pid = Number(await wslText(["podman", "inspect", "--format", "{{.State.Pid}}", args.name], "inspect hostile synthetic candidate PID"));
+    if (!Number.isSafeInteger(pid) || pid <= 1) throw new Error("hostile synthetic candidate PID is malformed");
+    await args.privilegedHooks.onCandidateReady({ scenario: args.scenario, mode: args.mode, containerName: args.name, pid });
+    const attached = runWsl(["podman", "attach", "--no-stdin", args.name], {
+      label: `attach hostile synthetic candidate ${args.mode}`,
+      timeoutMs: 30_000,
+      rawLimitBytes: 1024 * 1024,
+    });
+    await new Promise((resolveWait) => setTimeout(resolveWait, 100));
+    await runWsl(
+      ["podman", "exec", args.name, "python3", "-I", "-S", "-c", "import pathlib;pathlib.Path('/tmp/ef-privileged-ready').touch(mode=0o600)"],
+      { label: "release root-owned candidate start barrier" }
+    );
+    return await attached;
   } finally {
-    await runWsl(["podman", "rm", "-f", args.name], { label: "remove synthetic candidate container" }).catch(() => undefined);
+    if (args.privilegedHooks && pid > 1) {
+      await args.privilegedHooks.onCandidateFinished({ scenario: args.scenario, mode: args.mode, containerName: args.name, pid }).catch(() => undefined);
+    }
+    await runWsl(["podman", "rm", "-f", "--time", "0", args.name], { label: "remove synthetic candidate container" }).catch(() => undefined);
+  }
+}
+
+async function runPrivilegedKillSwitchProof(args: {
+  name: string;
+  image: string;
+  network: string;
+  routeId: string;
+  label: string;
+  scenario: string;
+  privilegedHooks: ProxyLabPrivilegedHooks;
+}): Promise<void> {
+  const command = [
+    "podman", "create", "--name", args.name, "--pull=never", "--network", args.network, "--ip", CANDIDATE_IP,
+    "--http-proxy=false", "--no-hosts", "--dns", "none", "--sysctl", "net.ipv6.conf.all.disable_ipv6=1",
+    "--sysctl", "net.ipv6.conf.default.disable_ipv6=1", "--read-only", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=16777216",
+    "--tmpfs", "/home/synthetic:rw,noexec,nosuid,nodev,size=16777216", "--user", "65532:65532", "--cap-drop=ALL",
+    "--security-opt=no-new-privileges", "--security-opt=seccomp=/usr/share/containers/seccomp.json", "--memory=256m",
+    "--cpus=0.5", "--pids-limit=64", "--log-driver=none", "--label", args.label,
+    "--env", `EF_RELAY_IP=${RELAY_CANDIDATE_IP}`, "--env", `EF_RELAY_PORT=${RELAY_PORT}`, "--env", `EF_ROUTE_ID=${args.routeId}`,
+    "--env", "EF_CANDIDATE_MODE=kill-switch-loop", "--env", "EF_PRIVILEGED_START_BARRIER=/tmp/ef-privileged-ready",
+    "--env", "HOME=/home/synthetic", "--env", "PATH=/usr/bin", "--env", "LANG=C.UTF-8", args.image,
+  ];
+  let pid = 0;
+  try {
+    await runWsl(command, { label: "create kill-switch hostile fixture" });
+    await runWsl(["podman", "start", args.name], { label: "start barriered kill-switch hostile fixture" });
+    pid = Number(await wslText(["podman", "inspect", "--format", "{{.State.Pid}}", args.name], "inspect kill-switch fixture PID"));
+    if (!Number.isSafeInteger(pid) || pid <= 1) throw new Error("kill-switch fixture PID is malformed");
+    await args.privilegedHooks.onCandidateReady({ scenario: args.scenario, mode: "kill-switch-loop", containerName: args.name, pid });
+    await runWsl(
+      ["podman", "exec", args.name, "python3", "-I", "-S", "-c", "import pathlib;pathlib.Path('/tmp/ef-privileged-ready').touch(mode=0o600)"],
+      { label: "release kill-switch fixture start barrier" }
+    );
+    await new Promise((resolveWait) => setTimeout(resolveWait, 350));
+    await args.privilegedHooks.onKillSwitch({ scenario: args.scenario, containerName: args.name, pid });
+    await runWsl(["podman", "wait", args.name], { label: "wait for post-block candidate termination", timeoutMs: 10_000 });
+  } finally {
+    if (pid > 1) {
+      await args.privilegedHooks.onCandidateFinished({ scenario: args.scenario, mode: "kill-switch-loop", containerName: args.name, pid }).catch(() => undefined);
+    }
+    await runWsl(["podman", "rm", "-f", "--time", "0", args.name], { label: "remove kill-switch hostile fixture" }).catch(() => undefined);
   }
 }
 
@@ -575,7 +674,7 @@ async function removeIfExists(kind: "container" | "network" | "volume" | "image"
   for (const name of names.reverse()) {
     const command =
       kind === "container"
-        ? ["podman", "rm", "-f", name]
+        ? ["podman", "rm", "-f", "--time", "0", name]
         : kind === "network"
           ? ["podman", "network", "rm", name]
           : kind === "volume"
@@ -587,7 +686,13 @@ async function removeIfExists(kind: "container" | "network" | "volume" | "image"
   }
 }
 
-export async function runProviderFreeProxyLab({ evidenceDirectory }: { evidenceDirectory: string }): Promise<ProviderFreeProxyLabEvidence> {
+export async function runProviderFreeProxyLab({
+  evidenceDirectory,
+  privilegedHooks,
+}: {
+  evidenceDirectory: string;
+  privilegedHooks?: ProxyLabPrivilegedHooks;
+}): Promise<ProviderFreeProxyLabEvidence> {
   const runId = randomUUID();
   const short = runId.replaceAll("-", "").slice(0, 10);
   const label = `ef.proxy.lab.run=${runId}`;
@@ -664,6 +769,13 @@ export async function runProviderFreeProxyLab({ evidenceDirectory }: { evidenceD
         now: new Date(issuedAt.getTime() + 1_000),
         replayLedger,
       });
+      await privilegedHooks?.onRouteAuthority({
+        scenario: scenario.name,
+        routeId,
+        providerPort: scenario.port,
+        bundle,
+        authoritySigningKey: authorityKey,
+      });
       const authorityVolume = `ef-authority-${short}-${index}`;
       const auditVolume = `ef-audit-${short}-${index}`;
       await runWsl(["podman", "volume", "create", authorityVolume], { label: "create trusted authority volume" });
@@ -688,10 +800,28 @@ export async function runProviderFreeProxyLab({ evidenceDirectory }: { evidenceD
       await runWsl(["podman", "start", relayName], { label: `start relay for ${scenario.name}` });
       await waitForRelay(relayName);
       await waitForTrustedServices(relayName, providerName, dnsName);
+      const relayPid = Number(await wslText(["podman", "inspect", "--format", "{{.State.Pid}}", relayName], "inspect relay PID"));
+      if (!Number.isSafeInteger(relayPid) || relayPid <= 1) throw new Error("relay PID is malformed");
+      await privilegedHooks?.onRelayReady({
+        scenario: scenario.name,
+        routeId,
+        providerPort: scenario.port,
+        containerName: relayName,
+        pid: relayPid,
+      });
 
       if (index === 0) {
         const candidateName = `ef-candidate-${short}`;
-        const result = await runCandidate({ name: candidateName, image: images.candidate, network: candidateNetwork, routeId, mode: "probe", label });
+        const result = await runCandidate({
+          name: candidateName,
+          image: images.candidate,
+          network: candidateNetwork,
+          routeId,
+          mode: "probe",
+          label,
+          scenario: scenario.name,
+          privilegedHooks,
+        });
         const parsed = JSON.parse(result.stdout.toString("utf8")) as Record<string, unknown>;
         if (parsed.redactedFailure) {
           const relayState = await readTransientState(images.base, auditVolume);
@@ -707,13 +837,34 @@ export async function runProviderFreeProxyLab({ evidenceDirectory }: { evidenceD
           const lastReason = debugAudit.trim() ? (JSON.parse(debugAudit.trim().split(/\r?\n/)[0]) as { reason: string }).reason : "absent";
           throw new Error(`hostile candidate found unclosed boundaries: ${failedBoundaries.join(",")}; first audit reason ${lastReason}`);
         }
+        if (privilegedHooks) {
+          await runPrivilegedKillSwitchProof({
+            name: `ef-kill-switch-${short}`,
+            image: images.candidate,
+            network: candidateNetwork,
+            routeId,
+            label,
+            scenario: scenario.name,
+            privilegedHooks,
+          });
+        }
       } else {
         const candidateName = `ef-probe-${short}-${index}`;
-        const result = await runCandidate({ name: candidateName, image: images.candidate, network: candidateNetwork, routeId, mode: "single-probe", label });
+        const result = await runCandidate({
+          name: candidateName,
+          image: images.candidate,
+          network: candidateNetwork,
+          routeId,
+          mode: "single-probe",
+          label,
+          scenario: scenario.name,
+          privilegedHooks,
+        });
         const parsed = JSON.parse(result.stdout.toString("utf8")) as { status: number; genericRefusal: boolean };
         if (parsed.status !== 403 || !parsed.genericRefusal) throw new Error(`adversarial scenario ${scenario.name} did not fail closed`);
       }
-      await runWsl(["podman", "rm", "-f", relayName], { label: `stop and remove relay for ${scenario.name}` });
+      await privilegedHooks?.onRelayFinished({ scenario: scenario.name, containerName: relayName, pid: relayPid });
+      await runWsl(["podman", "rm", "-f", "--time", "0", relayName], { label: `stop and remove relay for ${scenario.name}` });
       createdContainers.splice(createdContainers.indexOf(relayName), 1);
       const auditRaw = await readAudit(images.base, auditVolume);
       const validation = validateAudit(auditRaw, auditKey, scenario.expectedReason);
@@ -759,6 +910,7 @@ export async function runProviderFreeProxyLab({ evidenceDirectory }: { evidenceD
     const leftovers = await wslText(["podman", "ps", "-a", "--filter", `label=${label}`, "--format", "{{.Names}}"], "verify proxy-lab containers are gone").catch(() => "unknown");
     const rootGone = await wslText(["sh", "-c", "test ! -e \"$1\" && printf gone", "sh", runRoot], "verify disposable proxy-lab root is gone").catch(() => "missing");
     cleanupVerified = leftovers === "" && rootGone === "gone";
+    await privilegedHooks?.onLabArtifactsRemoved();
   }
 
   if (!evidenceWithoutFile || !cleanupVerified) throw new Error("proxy-lab cleanup failed; PASS evidence is quarantined");
