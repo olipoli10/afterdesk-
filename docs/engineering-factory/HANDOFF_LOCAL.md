@@ -1,5 +1,19 @@
 # Engineering Factory / DevBench v1 — local handoff
 
+## Provider-free Proxy Lab v1 update
+
+- Commit `3bfbebb` adds a local Authority V2, fixed-route relay, fake DNS, fake
+  TLS provider, deterministic hostile candidate and rootless-Podman supervisor.
+- The full real local hostile matrix passed without a provider or real model,
+  and the R0-R8 mutations each failed their named gate before byte-exact source
+  restoration.
+- The result remains `NO_GO_ROOT_OWNED_FIREWALL_PROOF_MISSING`: rootless
+  topology is exercised, but no independent root-owned firewall/packet
+  observer is available without separately authorized privileged setup.
+- `executionAuthorized:false`; zero real candidate invocations; zero provider
+  calls. See `ADR_PROVIDER_FREE_PROXY_LAB_V1.md` and
+  `PROVIDER_FREE_PROXY_LAB_EVIDENCE_V1.md`.
+
 ## What changed
 
 - Added a vendor-neutral catalog of eight representative, locally verifiable
