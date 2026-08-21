@@ -195,7 +195,8 @@ Exact fields:
 - `phase`: `P0`, `P1`, `P2`, `P3`, `P4` or `P5`;
 - `producerRole`, `producerIdentityId`;
 - `consumerRoles`: typed unique non-empty role array;
-- `signerKeyId`;
+- `signerKeyIds`: typed unique array of one key, or exactly two keys where the
+  artifact mapping requires dual signatures;
 - `relativePath`, `volumeGuid`, `fileId128`, `linkCount` constant 1;
 - `byteSize`, `sha256`, `mediaType`;
 - `storageObjectId`, `storeReceiptSha256`, `producedSequence`;
@@ -236,7 +237,8 @@ The issued authority carries `ArtifactKindMappingR2` expectations instead.
 ### 4.7 ArtifactKindMappingR2
 
 Exact fields are `artifactKind`, `schemaId`, `phase`, `producerRole`,
-`requiredSignerRole`, `firstConsumerRole`, `minimumCount`, `maximumCount`.
+`requiredSignerRoles` (typed unique array of one or two exact component roles),
+`firstConsumerRole`, `minimumCount`, `maximumCount`.
 Every artifact kind maps to exactly one producer role and phase. The semantic
 validator rejects producer or signer substitutions even when the artifact
 reference is otherwise well formed.
@@ -508,15 +510,15 @@ lease or PASS-with-real authority does not validate structurally.
 The D1 registry MUST contain these mappings. `consumer` is the first typed
 consumer; later consumer sets are declared on each reference.
 
-| Phase | Artifact kind | Sole producer | Required signer | First consumer |
+| Phase | Artifact kind | Sole producer | Required signer set | First consumer |
 | --- | --- | --- | --- | --- |
-| P0 | static-design | design authority | design authority | policy-authority |
-| P0 | schema-bundle | design authority | design authority | semantic-validator |
-| P0 | semantic-validator-contract | design authority | design authority | semantic-validator |
-| P0 | gate-registry | design authority | design authority | policy-authority |
-| P0 | mutation-registry | design authority | design authority | policy-authority |
+| P0 | static-design | design-authority | design-authority | policy-authority |
+| P0 | schema-bundle | design-authority | design-authority | semantic-validator |
+| P0 | semantic-validator-contract | design-authority | design-authority | semantic-validator |
+| P0 | gate-registry | design-authority | design-authority | policy-authority |
+| P0 | mutation-registry | design-authority | design-authority | policy-authority |
 | P1 | trust-root-registry | trust-registry-maintainer | trust-registry-maintainer | policy-authority |
-| P1 | issued-run-authority | policy-authority | policy-authority | admission-verifier |
+| P1 | issued-run-authority | policy-authority | policy-authority | semantic-validator |
 | P2 | observer-service-ready | observer-service | observer-signer | replay-ledger-anchor |
 | P2 | replay-reservation | replay-ledger-anchor | replay-ledger-anchor | barrier-authority |
 | P2 | exclusive-lease | replay-ledger-anchor | replay-ledger-anchor | barrier-authority |
@@ -546,7 +548,7 @@ consumer; later consumer sets are declared on each reference.
 | P4 | resolution-report | evidence-resolver | evidence-resolver | independent-reviewer |
 | P4 | semantic-validation-report | semantic-validator | semantic-validator | independent-reviewer |
 | P4 | signer-chain-report | independent-reviewer | independent-reviewer | final-approver |
-| P4 | independent-review-decision | independent-reviewer | reviewer and final-approver | replay-ledger-anchor |
+| P4 | independent-review-decision | independent-reviewer | independent-reviewer + final-approver | replay-ledger-anchor |
 | P5 | ledger-consume-pass | replay-ledger-anchor | replay-ledger-anchor | pass-publisher |
 | P5 | final-pass-publication | pass-publisher | pass-publisher | result-reader |
 | P3 | ledger-consume-fail | replay-ledger-anchor | replay-ledger-anchor | failure-auditor |
