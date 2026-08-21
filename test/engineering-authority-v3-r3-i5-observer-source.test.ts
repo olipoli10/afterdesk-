@@ -7,6 +7,15 @@ import {
 
 const hash = (digit: string) => digit.repeat(64);
 
+const subjectBinding = {
+  runId: "run-r3-i5-source",
+  authorityGeneration: 5,
+  nonceSha256: hash("e"),
+  machineIdSha256: hash("f"),
+  windowsBootId: "windows-boot-i5",
+  wslBootId: "wsl-boot-i5",
+};
+
 const service = {
   role: "observer-service" as const,
   identityId: "observer-service-source",
@@ -62,6 +71,7 @@ const contract = {
 function exactReadback() {
   const plan = buildAuthorityV3R3ObserverServicePlan({
     contract,
+    subjectBinding,
     serviceBinding: service,
     signerBinding: signer,
   });
@@ -92,6 +102,7 @@ describe("Authority V3 R3 I5 observer service source", () => {
   it("plans service readiness and every interface-direction capture before link-up", () => {
     const plan = buildAuthorityV3R3ObserverServicePlan({
       contract,
+      subjectBinding,
       serviceBinding: service,
       signerBinding: signer,
     });
@@ -117,6 +128,7 @@ describe("Authority V3 R3 I5 observer service source", () => {
   it("accepts only exact independently accepted readiness", () => {
     expect(validateAuthorityV3R3ObserverServiceReadiness({
       contract,
+      subjectBinding,
       readback: exactReadback(),
       serviceBinding: service,
       signerBinding: signer,
@@ -154,6 +166,7 @@ describe("Authority V3 R3 I5 observer service source", () => {
     mutate(readback);
     expect(() => validateAuthorityV3R3ObserverServiceReadiness({
       contract,
+      subjectBinding,
       readback,
       serviceBinding: service,
       signerBinding: signer,
@@ -163,6 +176,7 @@ describe("Authority V3 R3 I5 observer service source", () => {
   it("rejects signer substitution and role collapse", () => {
     expect(() => buildAuthorityV3R3ObserverServicePlan({
       contract,
+      subjectBinding,
       serviceBinding: service,
       signerBinding: {
         ...signer,
@@ -172,6 +186,7 @@ describe("Authority V3 R3 I5 observer service source", () => {
 
     expect(() => buildAuthorityV3R3ObserverServicePlan({
       contract,
+      subjectBinding,
       serviceBinding: service,
       signerBinding: {
         ...signer,

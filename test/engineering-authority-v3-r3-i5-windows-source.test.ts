@@ -7,6 +7,15 @@ import {
 
 const hash = (digit: string) => digit.repeat(64);
 
+const subjectBinding = {
+  runId: "run-r3-i5-source",
+  authorityGeneration: 5,
+  nonceSha256: hash("e"),
+  machineIdSha256: hash("f"),
+  windowsBootId: "windows-boot-i5",
+  wslBootId: "wsl-boot-i5",
+};
+
 const producer = {
   role: "windows-outer-deny-controller" as const,
   identityId: "windows-outer-deny-source",
@@ -38,6 +47,7 @@ const contract = {
 function exactReadback() {
   const plan = buildAuthorityV3R3WindowsOuterDenyPlan({
     contract,
+    subjectBinding,
     wslDistributionState: "STOPPED",
     producerBinding: producer,
     acceptingBinding: acceptor,
@@ -67,6 +77,7 @@ describe("Authority V3 R3 I5 Windows outer-deny source", () => {
   it("builds only the exact persistent six-layer block plan before WSL starts", () => {
     const plan = buildAuthorityV3R3WindowsOuterDenyPlan({
       contract,
+      subjectBinding,
       wslDistributionState: "STOPPED",
       producerBinding: producer,
       acceptingBinding: acceptor,
@@ -99,6 +110,7 @@ describe("Authority V3 R3 I5 Windows outer-deny source", () => {
   it("fails closed unless WSL is stopped before source planning", () => {
     expect(() => buildAuthorityV3R3WindowsOuterDenyPlan({
       contract,
+      subjectBinding,
       wslDistributionState: "RUNNING",
       producerBinding: producer,
       acceptingBinding: acceptor,
@@ -108,6 +120,7 @@ describe("Authority V3 R3 I5 Windows outer-deny source", () => {
   it("accepts only an independently resolvable exact readback", () => {
     expect(validateAuthorityV3R3WindowsOuterDenyReadback({
       contract,
+      subjectBinding,
       readback: exactReadback(),
       producerBinding: producer,
       acceptingBinding: acceptor,
@@ -135,6 +148,7 @@ describe("Authority V3 R3 I5 Windows outer-deny source", () => {
     mutate(readback);
     expect(() => validateAuthorityV3R3WindowsOuterDenyReadback({
       contract,
+      subjectBinding,
       readback,
       producerBinding: producer,
       acceptingBinding: acceptor,
@@ -144,6 +158,7 @@ describe("Authority V3 R3 I5 Windows outer-deny source", () => {
   it("rejects producer and acceptor identity collapse", () => {
     expect(() => buildAuthorityV3R3WindowsOuterDenyPlan({
       contract,
+      subjectBinding,
       wslDistributionState: "STOPPED",
       producerBinding: producer,
       acceptingBinding: {

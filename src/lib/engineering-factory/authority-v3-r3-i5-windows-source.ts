@@ -1,6 +1,8 @@
 import {
   AUTHORITY_V3_R3_I5_SOURCE_CEILING,
   type AuthorityV3R3I5Binding,
+  type AuthorityV3R3I5SubjectBinding,
+  authorityV3R3I5SubjectBindingSha256,
   authorityV3R3I5Sha256,
   deepFreezeAuthorityV3R3I5,
   refuseAuthorityV3R3I5,
@@ -45,6 +47,7 @@ type EvidenceResolver = AuthorityV3R3I5Binding<"evidence-resolver">;
 
 type WindowsPlanInput = {
   contract: AuthorityV3R3WindowsOuterDenyContract;
+  subjectBinding: AuthorityV3R3I5SubjectBinding;
   wslDistributionState: "STOPPED" | "RUNNING" | "UNKNOWN";
   producerBinding: WindowsProducer;
   acceptingBinding: EvidenceResolver;
@@ -111,9 +114,12 @@ export function buildAuthorityV3R3WindowsOuterDenyPlan(input: WindowsPlanInput) 
   return deepFreezeAuthorityV3R3I5({
     ...AUTHORITY_V3_R3_I5_SOURCE_CEILING,
     status: "AUTHORITY_V3_R3_I5_WINDOWS_SOURCE_PLANNED" as const,
+    componentId: "windows-outer-deny" as const,
     gateId: "GATE_V3_R3_WINDOWS_OUTER_DENY_ACTIVE" as const,
+    gateIds: ["GATE_V3_R3_WINDOWS_OUTER_DENY_ACTIVE"] as const,
     producerRole: "windows-outer-deny-controller" as const,
     acceptingRole: "evidence-resolver" as const,
+    subjectBindingSha256: authorityV3R3I5SubjectBindingSha256(input.subjectBinding),
     filters,
     hyperV: {
       inboundDefault: "BLOCK" as const,
@@ -126,11 +132,13 @@ export function buildAuthorityV3R3WindowsOuterDenyPlan(input: WindowsPlanInput) 
 
 export function validateAuthorityV3R3WindowsOuterDenyReadback({
   contract,
+  subjectBinding,
   readback,
   producerBinding,
   acceptingBinding,
 }: {
   contract: AuthorityV3R3WindowsOuterDenyContract;
+  subjectBinding: AuthorityV3R3I5SubjectBinding;
   readback: AuthorityV3R3WindowsOuterDenyReadback;
   producerBinding: WindowsProducer;
   acceptingBinding: EvidenceResolver;
@@ -139,6 +147,7 @@ export function validateAuthorityV3R3WindowsOuterDenyReadback({
   validateBindings(producerBinding, acceptingBinding);
   const exactPlan = buildAuthorityV3R3WindowsOuterDenyPlan({
     contract,
+    subjectBinding,
     wslDistributionState: "STOPPED",
     producerBinding,
     acceptingBinding,
@@ -169,9 +178,12 @@ export function validateAuthorityV3R3WindowsOuterDenyReadback({
   return deepFreezeAuthorityV3R3I5({
     ...AUTHORITY_V3_R3_I5_SOURCE_CEILING,
     status: "AUTHORITY_V3_R3_I5_WINDOWS_SOURCE_READBACK_VALID" as const,
+    componentId: "windows-outer-deny" as const,
     gateId: "GATE_V3_R3_WINDOWS_OUTER_DENY_ACTIVE" as const,
+    gateIds: ["GATE_V3_R3_WINDOWS_OUTER_DENY_ACTIVE"] as const,
     producerRole: "windows-outer-deny-controller" as const,
     acceptingRole: "evidence-resolver" as const,
+    subjectBindingSha256: authorityV3R3I5SubjectBindingSha256(subjectBinding),
     normalizedReadbackSha256: authorityV3R3I5Sha256(readback),
   });
 }

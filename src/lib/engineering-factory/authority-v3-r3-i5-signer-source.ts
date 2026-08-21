@@ -1,6 +1,8 @@
 import {
   AUTHORITY_V3_R3_I5_SOURCE_CEILING,
   type AuthorityV3R3I5Binding,
+  type AuthorityV3R3I5SubjectBinding,
+  authorityV3R3I5SubjectBindingSha256,
   authorityV3R3I5Sha256,
   deepFreezeAuthorityV3R3I5,
   refuseAuthorityV3R3I5,
@@ -77,12 +79,14 @@ function validateContract(contract: AuthorityV3R3ObserverSignerContract): void {
 
 export function validateAuthorityV3R3ObserverCompletenessForSigning({
   contract,
+  subjectBinding,
   observation,
   serviceBinding,
   signerBinding,
   acceptingBinding,
 }: {
   contract: AuthorityV3R3ObserverSignerContract;
+  subjectBinding: AuthorityV3R3I5SubjectBinding;
   observation: AuthorityV3R3ObserverCompletenessObservation;
   serviceBinding: ObserverService;
   signerBinding: ObserverSigner;
@@ -141,9 +145,12 @@ export function validateAuthorityV3R3ObserverCompletenessForSigning({
   return deepFreezeAuthorityV3R3I5({
     ...AUTHORITY_V3_R3_I5_SOURCE_CEILING,
     status: "AUTHORITY_V3_R3_I5_SIGNER_SOURCE_VALIDATED" as const,
+    componentId: "observer-signer" as const,
     gateId: "GATE_V3_R3_OBSERVER_COMPLETE" as const,
+    gateIds: ["GATE_V3_R3_OBSERVER_COMPLETE"] as const,
     producerRole: "observer-signer" as const,
     acceptingRole: "evidence-resolver" as const,
+    subjectBindingSha256: authorityV3R3I5SubjectBindingSha256(subjectBinding),
     signingPerformed: false as const,
     signatureRequiredAtRuntime: true as const,
     signatureAlgorithm: "ECDSA_P256_SHA256" as const,

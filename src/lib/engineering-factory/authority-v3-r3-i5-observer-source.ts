@@ -1,6 +1,8 @@
 import {
   AUTHORITY_V3_R3_I5_SOURCE_CEILING,
   type AuthorityV3R3I5Binding,
+  type AuthorityV3R3I5SubjectBinding,
+  authorityV3R3I5SubjectBindingSha256,
   authorityV3R3I5Sha256,
   deepFreezeAuthorityV3R3I5,
   refuseAuthorityV3R3I5,
@@ -116,10 +118,12 @@ function expectedCaptures(contract: AuthorityV3R3ObserverServiceContract): Expec
 
 export function buildAuthorityV3R3ObserverServicePlan({
   contract,
+  subjectBinding,
   serviceBinding,
   signerBinding,
 }: {
   contract: AuthorityV3R3ObserverServiceContract;
+  subjectBinding: AuthorityV3R3I5SubjectBinding;
   serviceBinding: ObserverService;
   signerBinding: ObserverSigner;
 }) {
@@ -132,8 +136,14 @@ export function buildAuthorityV3R3ObserverServicePlan({
   return deepFreezeAuthorityV3R3I5({
     ...AUTHORITY_V3_R3_I5_SOURCE_CEILING,
     status: "AUTHORITY_V3_R3_I5_OBSERVER_SOURCE_PLANNED" as const,
+    componentId: "observer-service" as const,
     producerRole: "observer-service" as const,
     acceptingRole: "observer-signer" as const,
+    gateIds: [
+      "GATE_V3_R3_OBSERVER_SERVICE_READY",
+      "GATE_V3_R3_OBSERVER_CAPTURE_READY",
+    ] as const,
+    subjectBindingSha256: authorityV3R3I5SubjectBindingSha256(subjectBinding),
     prePinnedSignerKeyId: contract.prePinnedSignerKeyId,
     packetStatisticsRequired: true as const,
     afPacketVersion: contract.afPacketVersion,
@@ -145,17 +155,20 @@ export function buildAuthorityV3R3ObserverServicePlan({
 
 export function validateAuthorityV3R3ObserverServiceReadiness({
   contract,
+  subjectBinding,
   readback,
   serviceBinding,
   signerBinding,
 }: {
   contract: AuthorityV3R3ObserverServiceContract;
+  subjectBinding: AuthorityV3R3I5SubjectBinding;
   readback: AuthorityV3R3ObserverServiceReadiness;
   serviceBinding: ObserverService;
   signerBinding: ObserverSigner;
 }) {
   const plan = buildAuthorityV3R3ObserverServicePlan({
     contract,
+    subjectBinding,
     serviceBinding,
     signerBinding,
   });
@@ -219,9 +232,15 @@ export function validateAuthorityV3R3ObserverServiceReadiness({
   return deepFreezeAuthorityV3R3I5({
     ...AUTHORITY_V3_R3_I5_SOURCE_CEILING,
     status: "AUTHORITY_V3_R3_I5_OBSERVER_SOURCE_READY" as const,
+    componentId: "observer-service" as const,
     producerRole: "observer-service" as const,
     acceptingRole: "observer-signer" as const,
+    subjectBindingSha256: authorityV3R3I5SubjectBindingSha256(subjectBinding),
     gates: [
+      "GATE_V3_R3_OBSERVER_SERVICE_READY",
+      "GATE_V3_R3_OBSERVER_CAPTURE_READY",
+    ] as const,
+    gateIds: [
       "GATE_V3_R3_OBSERVER_SERVICE_READY",
       "GATE_V3_R3_OBSERVER_CAPTURE_READY",
     ] as const,

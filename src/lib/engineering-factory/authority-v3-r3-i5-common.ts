@@ -22,6 +22,15 @@ export type AuthorityV3R3I5Binding<Role extends AuthorityV3R3I5Role = AuthorityV
   publicKeySpkiSha256: string;
 };
 
+export type AuthorityV3R3I5SubjectBinding = {
+  runId: string;
+  authorityGeneration: number;
+  nonceSha256: string;
+  machineIdSha256: string;
+  windowsBootId: string;
+  wslBootId: string;
+};
+
 export class AuthorityV3R3I5Refusal extends Error {
   constructor(errorId: string) {
     super(errorId);
@@ -42,6 +51,20 @@ export function requireAuthorityV3R3I5Sha256(value: string, errorId: string): vo
 
 export function requireAuthorityV3R3I5SafeId(value: string, errorId: string): void {
   if (!SAFE_ID.test(value)) refuseAuthorityV3R3I5(errorId);
+}
+
+export function authorityV3R3I5SubjectBindingSha256(
+  binding: AuthorityV3R3I5SubjectBinding
+): string {
+  requireAuthorityV3R3I5SafeId(binding.runId, "E_GATE_VERDICT_INCONSISTENT");
+  requireAuthorityV3R3I5SafeId(binding.windowsBootId, "E_GATE_VERDICT_INCONSISTENT");
+  requireAuthorityV3R3I5SafeId(binding.wslBootId, "E_GATE_VERDICT_INCONSISTENT");
+  if (!Number.isSafeInteger(binding.authorityGeneration) || binding.authorityGeneration <= 0) {
+    refuseAuthorityV3R3I5("E_GATE_VERDICT_INCONSISTENT");
+  }
+  requireAuthorityV3R3I5Sha256(binding.nonceSha256, "E_GATE_VERDICT_INCONSISTENT");
+  requireAuthorityV3R3I5Sha256(binding.machineIdSha256, "E_GATE_VERDICT_INCONSISTENT");
+  return authorityV3R3I5Sha256(binding);
 }
 
 export function validateAuthorityV3R3I5Binding<Role extends AuthorityV3R3I5Role>(

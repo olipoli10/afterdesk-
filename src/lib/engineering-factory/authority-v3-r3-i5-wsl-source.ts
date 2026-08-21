@@ -1,6 +1,8 @@
 import {
   AUTHORITY_V3_R3_I5_SOURCE_CEILING,
   type AuthorityV3R3I5Binding,
+  type AuthorityV3R3I5SubjectBinding,
+  authorityV3R3I5SubjectBindingSha256,
   authorityV3R3I5Sha256,
   deepFreezeAuthorityV3R3I5,
   refuseAuthorityV3R3I5,
@@ -114,10 +116,12 @@ function validateContract(contract: AuthorityV3R3WslControllerContract): void {
 
 export function buildAuthorityV3R3WslControllerPlan({
   contract,
+  subjectBinding,
   producerBinding,
   acceptingBinding,
 }: {
   contract: AuthorityV3R3WslControllerContract;
+  subjectBinding: AuthorityV3R3I5SubjectBinding;
   producerBinding: WslProducer;
   acceptingBinding: EvidenceResolver;
 }) {
@@ -127,8 +131,15 @@ export function buildAuthorityV3R3WslControllerPlan({
   return deepFreezeAuthorityV3R3I5({
     ...AUTHORITY_V3_R3_I5_SOURCE_CEILING,
     status: "AUTHORITY_V3_R3_I5_WSL_SOURCE_PLANNED" as const,
+    componentId: "wsl-controller" as const,
     producerRole: "wsl-enforcement-controller" as const,
     acceptingRole: "evidence-resolver" as const,
+    gateIds: [
+      "GATE_V3_R3_NAMESPACE_PREBIND_VALID",
+      "GATE_V3_R3_INNER_FIREWALL_INSTALLED",
+      "GATE_V3_R3_INNER_FIREWALL_READBACK_EXACT",
+    ] as const,
+    subjectBindingSha256: authorityV3R3I5SubjectBindingSha256(subjectBinding),
     workloadNetworkMode: "none" as const,
     namespaceCreationOrder: ["enforcement", "workload"] as const,
     interfaces: contract.interfaces.map((iface) => ({ ...iface })),
@@ -153,17 +164,20 @@ export function buildAuthorityV3R3WslControllerPlan({
 
 export function validateAuthorityV3R3WslControllerReadback({
   contract,
+  subjectBinding,
   readback,
   producerBinding,
   acceptingBinding,
 }: {
   contract: AuthorityV3R3WslControllerContract;
+  subjectBinding: AuthorityV3R3I5SubjectBinding;
   readback: AuthorityV3R3WslControllerReadback;
   producerBinding: WslProducer;
   acceptingBinding: EvidenceResolver;
 }) {
   const plan = buildAuthorityV3R3WslControllerPlan({
     contract,
+    subjectBinding,
     producerBinding,
     acceptingBinding,
   });
@@ -218,9 +232,16 @@ export function validateAuthorityV3R3WslControllerReadback({
   return deepFreezeAuthorityV3R3I5({
     ...AUTHORITY_V3_R3_I5_SOURCE_CEILING,
     status: "AUTHORITY_V3_R3_I5_WSL_SOURCE_READBACK_VALID" as const,
+    componentId: "wsl-controller" as const,
     producerRole: "wsl-enforcement-controller" as const,
     acceptingRole: "evidence-resolver" as const,
+    subjectBindingSha256: authorityV3R3I5SubjectBindingSha256(subjectBinding),
     gates: [
+      "GATE_V3_R3_NAMESPACE_PREBIND_VALID",
+      "GATE_V3_R3_INNER_FIREWALL_INSTALLED",
+      "GATE_V3_R3_INNER_FIREWALL_READBACK_EXACT",
+    ] as const,
+    gateIds: [
       "GATE_V3_R3_NAMESPACE_PREBIND_VALID",
       "GATE_V3_R3_INNER_FIREWALL_INSTALLED",
       "GATE_V3_R3_INNER_FIREWALL_READBACK_EXACT",

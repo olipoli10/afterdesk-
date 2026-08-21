@@ -7,6 +7,15 @@ import {
 
 const hash = (digit: string) => digit.repeat(64);
 
+const subjectBinding = {
+  runId: "run-r3-i5-source",
+  authorityGeneration: 5,
+  nonceSha256: hash("e"),
+  machineIdSha256: hash("f"),
+  windowsBootId: "windows-boot-i5",
+  wslBootId: "wsl-boot-i5",
+};
+
 const producer = {
   role: "wsl-enforcement-controller" as const,
   identityId: "wsl-controller-source",
@@ -44,6 +53,7 @@ const contract = {
 function exactReadback() {
   const plan = buildAuthorityV3R3WslControllerPlan({
     contract,
+    subjectBinding,
     producerBinding: producer,
     acceptingBinding: acceptor,
   });
@@ -77,6 +87,7 @@ describe("Authority V3 R3 I5 WSL controller source", () => {
   it("builds a no-uplink, default-drop prebind plan with only three fake tuples", () => {
     const plan = buildAuthorityV3R3WslControllerPlan({
       contract,
+      subjectBinding,
       producerBinding: producer,
       acceptingBinding: acceptor,
     });
@@ -107,6 +118,7 @@ describe("Authority V3 R3 I5 WSL controller source", () => {
   it("accepts only the exact prebind and inner-firewall readback", () => {
     expect(validateAuthorityV3R3WslControllerReadback({
       contract,
+      subjectBinding,
       readback: exactReadback(),
       producerBinding: producer,
       acceptingBinding: acceptor,
@@ -142,6 +154,7 @@ describe("Authority V3 R3 I5 WSL controller source", () => {
     mutate(readback);
     expect(() => validateAuthorityV3R3WslControllerReadback({
       contract,
+      subjectBinding,
       readback,
       producerBinding: producer,
       acceptingBinding: acceptor,
@@ -151,6 +164,7 @@ describe("Authority V3 R3 I5 WSL controller source", () => {
   it("rejects a controller that is also its own acceptor", () => {
     expect(() => buildAuthorityV3R3WslControllerPlan({
       contract,
+      subjectBinding,
       producerBinding: producer,
       acceptingBinding: {
         ...acceptor,

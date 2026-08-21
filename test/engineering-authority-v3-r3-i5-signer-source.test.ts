@@ -6,6 +6,15 @@ import {
 
 const hash = (digit: string) => digit.repeat(64);
 
+const subjectBinding = {
+  runId: "run-r3-i5-source",
+  authorityGeneration: 5,
+  nonceSha256: hash("e"),
+  machineIdSha256: hash("f"),
+  windowsBootId: "windows-boot-i5",
+  wslBootId: "wsl-boot-i5",
+};
+
 const service = {
   role: "observer-service" as const,
   identityId: "observer-service-source",
@@ -70,6 +79,7 @@ describe("Authority V3 R3 I5 observer signer source", () => {
   it("prepares a source-only completeness envelope without performing a signature", () => {
     const result = validateAuthorityV3R3ObserverCompletenessForSigning({
       contract,
+      subjectBinding,
       observation: exactObservation(),
       serviceBinding: service,
       signerBinding: signer,
@@ -116,6 +126,7 @@ describe("Authority V3 R3 I5 observer signer source", () => {
     mutate(observation);
     expect(() => validateAuthorityV3R3ObserverCompletenessForSigning({
       contract,
+      subjectBinding,
       observation,
       serviceBinding: service,
       signerBinding: signer,
@@ -126,6 +137,7 @@ describe("Authority V3 R3 I5 observer signer source", () => {
   it("rejects service or signer substitution", () => {
     expect(() => validateAuthorityV3R3ObserverCompletenessForSigning({
       contract,
+      subjectBinding,
       observation: exactObservation(),
       serviceBinding: { ...service, identityId: "substituted-observer" },
       signerBinding: signer,
@@ -134,6 +146,7 @@ describe("Authority V3 R3 I5 observer signer source", () => {
 
     expect(() => validateAuthorityV3R3ObserverCompletenessForSigning({
       contract,
+      subjectBinding,
       observation: exactObservation(),
       serviceBinding: service,
       signerBinding: { ...signer, keyId: "substituted-key" },
@@ -144,6 +157,7 @@ describe("Authority V3 R3 I5 observer signer source", () => {
   it("rejects a signer that shares an authority identity with the resolver", () => {
     expect(() => validateAuthorityV3R3ObserverCompletenessForSigning({
       contract,
+      subjectBinding,
       observation: exactObservation(),
       serviceBinding: service,
       signerBinding: signer,
