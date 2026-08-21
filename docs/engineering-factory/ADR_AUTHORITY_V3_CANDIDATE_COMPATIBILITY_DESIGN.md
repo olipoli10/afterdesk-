@@ -1,426 +1,385 @@
-# ADR: Authority V3 candidate-specific provider-free compatibility
+# ADR: Authority V3 candidate compatibility design revision R2
 
-Status: proposed design, ready only for independent design review
+Status: proposed R2 design; independent review required
 
 Date: 2026-08-21
 
-Decision owner: Control Tower plus an independent security reviewer
+Decision owner: Control Tower plus independent security review
 
-Final design verdict: DESIGN_READY_FOR_INDEPENDENT_REVIEW
+Design verdict: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`
 
-Execution state: executionAuthorized:false
+Execution state: `executionAuthorized:false`
 
-## Reconciled authority and repository base
+## 1. Reconciled authority and repository base
 
-This design was written only after reconciling the current local authorities.
+This revision started only after the following state was observed clean.
 
-| Authority | Reconciled value |
+| Authority | Observed value |
 | --- | --- |
-| Engineering Factory worktree | C:\dev\nightlexicon-engineering-factory |
-| Engineering Factory branch | codex/engineering-factory-devbench |
-| Engineering Factory base commit | 50d862b9808cf962a439c538dbf2d26ca832f136 |
-| Engineering Factory base tree | 90ab5fa9fc6477711cb1adb1fe51715b5ff159b0 |
-| Engineering Factory state before design | tracked-clean, no Git lock |
-| package-lock.json SHA-256 | 0B01B24159591440E08F8F78FAF3C6E17EF5CE293304B773651F69EC7F60A7CD |
-| Canonical Brain | C:\dev\afterdesk-project-brain |
-| Reviewer Brain starting commit | 51c344a01c6d7281c67211f0f7dbb1f5da7147ec |
-| Reconciled Brain commit | 6f5ff39cfd53ec2d1c8e54453942c820a3bd661f |
-| Reconciled Brain tree | 49183689d9eb1fcf4ccded8ba120d40404c97e07 |
-| Brain state before design | tracked-clean, no Git lock |
+| Engineering Factory worktree | `C:\dev\nightlexicon-engineering-factory` |
+| Engineering Factory branch | `codex/engineering-factory-devbench` |
+| Engineering Factory start commit | `0590773d3531e5db051cd51fb65bbdf2689cba31` |
+| Engineering Factory start tree | `059ba7993004918ed95452fccfc43a583f5263e4` |
+| Canonical Brain | `C:\dev\afterdesk-project-brain` |
+| Authority V3 Brain checkpoint | `c280d2d083271b24d4654a64fea06ffd33652d92` |
+| Brain observed commit | `b7c8198296eb1173b69a8181e3be2daff2cfcf1d` |
 
-The only Brain commit after the reviewer starting commit was
-6f5ff39cfd53ec2d1c8e54453942c820a3bd661f, checkpoint(endvera): reconcile
-operator story T044-T052. It changed ENDVERA state, handoff, roadmap, risk,
-session-log and spec-manifest records. It did not change Engineering Factory
-Authority or evidence artifacts and does not conflict with this design-only
-mandate.
+The only Brain commit after the Authority V3 checkpoint is the unrelated
+Firefox V4 synthetic portal checkpoint. It does not change the Engineering
+Factory authority boundary. Both repositories were tracked-clean before R2.
 
-The original product checkout and HumanWorkUnit checkout contain pre-existing
-untracked instruction/specification material. Those protected paths are outside
-this lane and are preserved without inspection-driven edits. Model Gateway and
-the inspected ENDVERA/EARN worktrees were tracked-clean.
+## 2. Reviewer findings and decision
 
-## Decision
+The independent verdict `DESIGN_NEEDS_REVISION` is accepted. R1 is not an
+implementation-ready security contract for three decisive reasons.
 
-Define Authority V3 as a candidate-specific, provider-free, synthetic-fixture
-compatibility authority. It is a design contract, not a runtime authority.
-
-Authority V3 separates policy issuance, privileged enforcement, observation,
-runtime orchestration, durable evidence, durable replay, and final approval.
-No single process or signing identity may create the policy, operate the
-candidate fixture, fabricate observer evidence, approve cleanup, and publish
-PASS.
-
-The current Authority V2 implementation and retained evidence remain historical
-local evidence. The adversarial review supersedes their milestone verdict for
-all future execution decisions:
-
-- 0 of the claimed 18 mutations is accepted as an adversarial mutation of a
-  real control;
-- the retained v2 signature proves integrity under a self-created key, not
-  independently anchored provenance;
-- root-owned nftables inside rootless-container network namespaces proves only
-  a narrow namespace ruleset, not runtime-owner inability to replace or bypass
-  that namespace;
-- current cleanup, observer, replay and evidence-resolution claims are
-  insufficient for Authority V3.
-
-Every execution and rehearsal remains NO-GO. The only permitted milestone is
-AUTHORITY_V3_CANDIDATE_COMPATIBILITY_DESIGN_ONLY.
-
-## Structural authorization ceiling
-
-Every design example and every future pre-approval artifact starts with:
-
-| Field | Required value in this milestone |
+| Observed finding | R2 decision |
 | --- | --- |
-| executionAuthorized | false |
-| syntheticFixtureExecutionAuthorized | false |
-| realCandidateExecutionAuthorized | false |
-| modelExecutionAuthorized | false |
-| providerExecutionAuthorized | false |
-| credentialsAuthorized | false |
-| realCandidateInvocations | 0 |
-| providerCalls | 0 |
+| The executable JSON Schema does not enforce the prose invariants | Replace the monolith with five versioned document schemas plus a mandatory deterministic semantic validator. |
+| The resolver manifest requires review and PASS before those artifacts exist | Replace the future-dependent manifest with six ordered phase roots. A manifest contains only artifacts already produced in that phase. |
+| The ledger can be restored from a valid backup or copied to another machine | Bind every committed ledger event to a non-migratable TPM machine anchor whose generation and head hash are outside disk backup state. |
 
-Only syntheticFixtureExecutionAuthorized may become true, and only in a future
-authority instance signed after a separate implementation review and an
-explicit user authorization for one named synthetic fixture run. None of the
-other booleans may become true under this schema or this ADR.
+R2 does not weaken the claim. It narrows it to the exact proposition that can
+eventually be proved:
 
-## Goals
+> One exact deterministic fake CLI fixture completed one exact provider-free
+> compatibility protocol under one issued authority, with external containment,
+> independent observation, durable cleanup evidence, independent review and a
+> non-reusable nonce.
 
-1. Freeze a complete Authority V3 schema and gate registry before runtime code.
-2. Make every required artifact resolvable and byte-verifiable.
-3. Make observer provenance pre-anchored and independent from the supervisor.
-4. Make replay prevention durable across process and machine restart.
-5. Bind the exact runtime, namespaces, interfaces, routes, file descriptors and
-   controller identities immediately before barrier release.
-6. Require zero unclassified packet events and zero kernel-reported packet
-   drops.
-7. Require real-control mutations that alter source, binary, policy, privileged
-   state, namespace, evidence bytes or durable ledger state.
-8. Make cleanup externally verified and strictly precede any PASS publication.
+It never proves compatibility with Codex, Claude, a model or a provider.
 
-## Non-goals
+## 3. Five document families
 
-- No Authority V3 runtime, controller, observer, signer, ledger or fake CLI is
-  implemented by this milestone.
-- No WSL, Podman, container, network namespace, firewall, observer or candidate
-  process is started or changed.
-- No synthetic rehearsal is performed.
-- No real Codex, Claude, model, provider SDK, provider endpoint, account,
-  credential, prompt, output or client data is inspected or invoked.
-- No claim is made that the design is feasible on the current host until the
-  RED-first implementation and independent privileged review prove it.
-- No Production, Preview, shared database, migration, install, push or
-  deployment is authorized.
+All document schemas have version `3.2.0`. Their schema IDs are immutable.
 
-## Observed V2 defects that V3 must close
+| Order | Kind | Schema ID | Producer | First consumer |
+| --- | --- | --- | --- | --- |
+| D0 | `authority-v3-static-design` | `urn:endvera:ef:authority-v3:static-design:3.2.0` | design authority | design reviewer |
+| D1 | `authority-v3-issued-run-authority` | `urn:endvera:ef:authority-v3:issued-run-authority:3.2.0` | policy authority | admission verifier |
+| D2 | `authority-v3-post-run-evidence` | `urn:endvera:ef:authority-v3:post-run-evidence:3.2.0` | evidence assembler | evidence resolver |
+| D3 | `authority-v3-independent-review-decision` | `urn:endvera:ef:authority-v3:independent-review-decision:3.2.0` | independent reviewer and final approver | replay ledger and PASS publisher |
+| D4 | `authority-v3-final-pass-publication` | `urn:endvera:ef:authority-v3:final-pass-publication:3.2.0` | PASS publisher through evidence broker | result reader |
 
-These are observed in the current source at the reconciled base, not inferred
-from the old PASS label.
+There is no polymorphic runtime document. A verifier is invoked with one
+expected schema ID and refuses every other ID, version or kind. D0 has every
+authorization boolean false. D1 is the only family that can ever contain
+`executionAuthorized:true` and `syntheticFixtureExecutionAuthorized:true`, and
+only after a new explicit one-shot user authority. D2-D4 contain
+`furtherExecutionAuthorized:false`. Every family keeps real candidate, model,
+provider and credential authority false and counters at zero.
 
-| Defect | V3 design response |
+## 4. Authorization ceiling
+
+The R2 package and its embedded example have these exact values:
+
+| Field | Value |
 | --- | --- |
-| Mutation runner flips fields in PASSING_CONTROL_OBSERVATION | Mutations alter a real source, binary, ruleset, namespace, process, artifact or durable ledger and must fail a named gate |
-| Controller generates its own RSA key and signs its payload | Observer signer and policy signer are pre-anchored, separate identities whose public keys are pinned before the run |
-| Enforcement is installed inside rootless-owned network namespaces | Root-owned enforcement namespace, immutable binding, runtime-owner edit challenge, namespace replacement detection and outer-boundary inventory are required |
-| Host snapshot omits anonymous container namespaces | External snapshots enumerate every named and anonymous namespace and bind its inode, owner, interfaces, routes and rulesets |
-| nft delete errors are ignored | Every deletion has an acknowledgment; any failure is fatal and prevents final cleanup attestation |
-| Cleanup booleans can be constants | Cleanup claims derive from resolved before/after inventory objects and independent verifier signatures |
-| PASS data can be assembled before final cleanup | PASS publication is a separate final state transition after external cleanup verification and evidence resolution |
-| 629 of 1,072 events were unclassified | Zero unclassified events is mandatory; per-observer distributions and raw metadata-log hashes are retained |
-| No PACKET_STATISTICS or kernel-drop proof | Every observer records buffer sizing, PACKET_STATISTICS availability and zero kernel drops |
-| Authority resolves only a subset of asserted artifacts | A resolver manifest lists every required artifact, and verification reads and hashes every byte before approval |
-| Replay ledgers are in-memory Sets | A local durable transactional ledger owns reservation, consume, recovery and concurrency state |
-| Relay readiness can precede nft and observer readiness | Candidate and fake fixture barriers remain closed until firewall readback, observer readiness and final rebind all pass |
+| `executionAuthorized` | `false` |
+| `syntheticFixtureExecutionAuthorized` | `false` |
+| `realCandidateExecutionAuthorized` | `false` |
+| `modelExecutionAuthorized` | `false` |
+| `providerExecutionAuthorized` | `false` |
+| `credentialsAuthorized` | `false` |
+| `realCandidateInvocations` | `0` |
+| `providerCalls` | `0` |
 
-## Trust boundaries
+An executable D1 schema is part of the design, but no D1 instance is issued by
+this milestone. Possession of D0, source code, tests, a signer, a ledger or an
+old Authority V2 artifact is never authorization.
 
-### Components
+## 5. Trust and role separation
 
-1. Independent policy authority
+### 5.1 Authoritative roles
 
-   A pre-existing local authority identity issues the one-shot Authority V3
-   envelope. It may read the approved design, source/tree hashes, compatibility
-   snapshot and trust-root registry. It may create and sign the authority and
-   reserve a nonce through the replay service. It may not start a runtime,
-   install a firewall, observe packets, write run evidence, verify cleanup or
-   publish PASS.
+R2 names eighteen authoritative components:
 
-2. Pre-anchored observer and observer signer
+1. design authority;
+2. trust-registry maintainer;
+3. policy authority;
+4. replay ledger and TPM-anchor broker;
+5. Windows outer-deny controller;
+6. WSL enforcement controller;
+7. observer service;
+8. observer signer;
+9. barrier authority;
+10. runtime supervisor;
+11. evidence broker;
+12. evidence resolver;
+13. semantic validator;
+14. evidence assembler;
+15. external cleanup verifier;
+16. independent reviewer;
+17. final approver;
+18. PASS publisher.
 
-   The observer service and signer become ready independently before durable
-   nonce reservation. After the runtime creates closed, unconnected namespaces,
-   the service attaches the exact per-interface capture set and signs a second
-   capture-ready attestation before barrier release. Its binary, runtime,
-   configuration, public-key fingerprint and signer identity are pinned in the
-   issued authority. The signer holds a pre-existing, non-ephemeral key outside
-   the run root. It signs service readiness, capture readiness, the ordered
-   event-chain root, packet statistics and shutdown completeness. It may not
-   issue policy, install or remove rules, operate Podman, approve cleanup or
-   publish PASS.
+The rootless runtime owner, fake CLI,
+fake relay, fake DNS and fake provider are untrusted subjects, not authorities.
 
-3. Privileged enforcement controller
+Every authoritative binding has a unique Windows SID or Linux UID/service
+identity, unique key ID, unique executable SHA-256 and unique configuration
+SHA-256. Sharing any one of OS identity, key identity or binary identity across
+two authoritative roles is a normative failure. A shared interpreter or
+multi-role service process is forbidden. The semantic validator returns
+`E_ROLE_OS_REUSE`, `E_ROLE_KEY_REUSE` or `E_ROLE_BINARY_REUSE` before issuance.
 
-   The controller owns the host enforcement namespace, veth binding, nftables
-   objects, block-before-kill switch and privileged cleanup. It may read the
-   signed authority and runtime fingerprint. It signs controller readback with
-   its distinct pre-anchored controller identity. It may not possess the
-   observer private key, policy private key or final approver key and may not
-   publish PASS.
+No authoritative private key is generated in a run root, repository, WSL
+filesystem or evidence root. Policy, observer, controller, cleanup, reviewer,
+approver, ledger-anchor and publisher keys are pre-existing non-exportable CNG
+or TPM keys under their distinct service identities.
 
-4. Runtime supervisor
+### 5.2 Trust-root registry
 
-   The supervisor coordinates state transitions and consumes signed outputs.
-   It may stage only approved fixture bytes, start the fake services and
-   rootless runtime through exact profiles, hold/release the barrier and request
-   teardown. It may not mint authority, edit firewall objects directly, sign
-   observer evidence, alter the durable ledger, approve cleanup or publish
-   PASS.
+The reviewer-owned registry maps exactly one active key to each signing role and
+maps every document/artifact kind to an exact schema ID, producer role and
+signer role. It includes registry generation, prior registry hash, key epoch,
+validity interval, revocations, schema byte hashes and the TPM registry-anchor
+receipt. D1 pins the exact registry generation and hash.
 
-5. Rootless runtime owner
+Rotation is valid only when a transition is signed by the old key, new key,
+registry maintainer and final approver before its effective generation. A
+revoked key is invalid at and after `effectiveAnchorGeneration`. Emergency
+compromise recovery requires two offline recovery keys plus the final approver,
+revokes every affected generation, consumes every outstanding nonce as failed
+and starts a new ledger ID. It cannot rehabilitate an old PASS.
 
-   The rootless runtime identity creates only the exact OCI objects permitted
-   by the signed profile. It is explicitly untrusted. It may not access signer
-   keys, policy storage, evidence storage, replay storage or privileged
-   controller channels. It must be unable to add an interface, attach
-   slirp/pasta/netavark/aardvark egress, replace the bound namespace, inherit a
-   socket, edit nftables, mount the host, or change the OCI spec without a
-   gate failure.
+## 6. Exact signed bytes and parsing
 
-6. Untrusted synthetic fake CLI
+All signed payloads use UTF-8 without BOM and RFC 8785 JSON Canonicalization
+Scheme, profile `JCS-IJSON-INT53-R2`: duplicate keys forbidden, Unicode scalar
+values only, no NaN/Infinity, integers only, and integers restricted to the
+exact range `[-9007199254740991, 9007199254740991]`. Timestamps are UTC with
+exactly three fractional digits.
 
-   This is the only candidate-shaped process the future authority may ever
-   permit. Its bytes are exact, deterministic and content-addressed. It receives
-   only fake frames and may reach only the local relay tuple. It owns no
-   authority, key, credential, provider SDK or runtime socket.
+Duplicate-key detection is performed by a raw-token scanner before ordinary
+JSON parsing. A parse tree created before that scan is never trusted. The
+canonical bytes must equal the submitted payload bytes byte-for-byte.
 
-7. Fake relay, fake DNS and fake provider
+The signature preimage is exactly:
 
-   These are deterministic local fixtures. Each binary and configuration is
-   content-addressed. The relay enforces one exact signed local route; fake DNS
-   answers only the invalid-domain fixture; fake provider accepts only fake
-   payloads. None may reach Windows, the Internet or a real provider.
+```text
+ASCII("EF-AUTHORITY-V3-R2\0")
+|| UINT32_BE(length(UTF8(schemaId)))
+|| UTF8(schemaId)
+|| UINT64_BE(length(canonicalPayloadBytes))
+|| canonicalPayloadBytes
+```
 
-8. Durable evidence store
+Signatures are `ECDSA_P256_SHA256_IEEE_P1363`; the signature is exactly 64 raw
+bytes encoded as unpadded base64url. A signed envelope keeps `payload` and
+`signatures` separate so a signature never signs itself.
 
-   This append-only, local, immutable store accepts content-free artifacts by
-   expected hash and create-only path. It exposes resolution and byte-read
-   operations to verifiers. It does not decide gates and cannot sign policy,
-   observation or approval.
+Network schema retrieval is forbidden. The verifier receives an expected
+schema ID from its compiled admission point, looks up the exact schema SHA-256
+in the pre-anchored registry, loads only those local bytes, and requires exact
+`schemaId`, `schemaVersion` and `kind`. Unknown IDs, aliases, older versions,
+`$ref` redirection and kind/schema mismatches fail with
+`E_SCHEMA_CONFUSION_OR_DOWNGRADE`.
 
-9. Durable replay ledger
+## 7. Mandatory semantic validation
 
-   A separate local transactional service owns nonce reservation, lease,
-   consume and recovery. The supervisor receives signed receipts, not direct
-   write access. The ledger is not a Production or shared database.
+JSON Schema enforces local shape, constants, typed arrays and conditional
+document variants. Cross-document, cryptographic, ordering, uniqueness and
+state invariants are enforced by `EF-AUTHORITY-V3-SEMVAL` version `3.2.0`.
+Schema success without semantic success is invalid.
 
-10. Independent reviewer and final approver
+The validator input is: raw document bytes, expected schema ID, compiled-schema
+hash, pre-anchored registry bytes, current TPM anchor quote, current
+machine/boot binding, prior phase root and resolver access to every referenced
+artifact byte. Output is one canonical signed validation report containing
+input hashes, validator binary/config hashes, ordered checks, ordered error IDs,
+`valid`, and exit code. Exit `0` means valid, `64` means normative refusal and
+`70` means validator/internal dependency failure; exit 70 also fails closed.
 
-    The reviewer verifies the authority signature, resolved evidence,
-    observer/controller signatures, gate sequence, mutation evidence and
-    external cleanup proof. Only the final approver identity may sign the
-    review decision that permits a synthetic PASS publication. The reviewer
-    cannot retroactively authorize a run that lacked prior
-    syntheticFixtureExecutionAuthorized:true.
+The exact checks and error IDs are specified in
+`AUTHORITY_V3_SCHEMA_SPEC.md`. At minimum they enforce authorization constants,
+state transitions, gate/verdict consistency, role separation, trust roots,
+signature preimages, one-producer ordering, cleanup-before-review,
+review-before-PASS, ledger/anchor state and the prohibition on relabeling any
+synthetic evidence as real authority.
 
-### Explicit non-trust
+## 8. Acyclic evidence protocol
 
-- The runtime supervisor is not trusted to report its own readiness.
-- The controller is not trusted to attest observer completeness.
-- The observer is not trusted to attest firewall correctness.
-- The rootless runtime owner and fake CLI are hostile.
-- A local filesystem path, hash string, PID, container name, boolean or exit
-  code is not evidence unless its producer, resolver, bytes and signature are
-  bound.
-- Wall-clock time alone is not trusted for ordering.
-- WSL root, the WSL kernel and the Windows host are not independent of one
-  another. Host or kernel compromise is outside the achievable local proof and
-  invalidates the entire run.
+R2 uses six append-only phase manifests. A manifest is produced only after all
+artifacts it lists exist and is never edited. It contains no expected future
+artifact.
 
-## Artifact authority matrix
+| Phase | Root | Contains | Must not contain |
+| --- | --- | --- | --- |
+| P0 | `designRoot` | D0, schema bundle, semantic-validator contract, gate/mutation registries | run artifacts |
+| P1 | `issuanceRoot` | trust registry snapshot, D1, policy signature | reservation, runtime or future evidence |
+| P2 | `admissionRoot` | service-ready, TPM reserve/lease, source/runtime binding, outer deny, firewall, capture-ready, final rebind and barrier receipts in production order | post-run, review or PASS |
+| P3 | `postRunRoot` | observer logs/statistics/shutdown, block/kill, teardown, typed deletions, external cleanup, broker seal and D2 | review or PASS |
+| P4 | `reviewRoot` | resolved P0-P3 roots, semantic reports, D3 and dual review/approval signatures | PASS |
+| P5 | `publicationRoot` | review root, TPM-anchored `CONSUMED_PASS` receipt and D4 | any new run authority |
 
-Legend: C=create, R=read/resolve, S=sign, V=verify, M=mutate, D=delete. A dash
-means forbidden.
+Each root signs the prior root hash. P0 has `runId:null`; P1-P5 bind the exact
+D1 run ID. Each artifact reference declares one producer and one or more typed
+expected consumers. Each later phase records typed consumption receipts with a
+strictly greater sequence. The issued authority contains an
+expected-kind registry, not references to future bytes. The semantic validator
+rejects a missing producer, multiple producers, consumption at or before the
+production sequence, an unreachable producer root or any root cycle. A
+same-phase consumption is valid only when its producer already exists at a lower
+sequence, so mutual same-phase dependency is impossible.
 
-| Artifact | Policy authority | Observer signer | Controller | Supervisor | Runtime owner / fake CLI | Evidence store | Replay ledger | Reviewer |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Authority V3 envelope | C/S | R | R/V | R/V | - | C-once/R | receipt only | R/V |
-| Trust-root registry | R | R | R | R | - | R | - | C/S/V outside run |
-| Replay reservation/consume events | request | - | receipt R | receipt R | - | receipt C-once/R | C/M/S | R/V |
-| Candidate compatibility snapshot | R/hash | - | R | R/V | read-only projected bytes | C-once/R | - | R/V |
-| OCI/runtime profile | R/hash | - | R/V | C request only | runtime owner consumes exact profile | C-once/R | - | R/V |
-| Host enforcement namespace/rules | - | observe R | C/R/M/D/S readback | request only | forbidden | snapshots C-once/R | - | R/V |
-| Observer raw metadata log | - | C/R/S chain | no content access | receipt only | - | C-once/R | - | R/V |
-| Observer summary/statistics | - | C/S | R | R/V | - | C-once/R | - | R/V |
-| Runtime stdout/stderr metadata | - | - | - | C reduced counters only | produces raw ephemeral bytes | content-free projection C-once | - | R/V |
-| Cleanup inventory/acknowledgments | - | shutdown S | C/D/S own actions | request/read | no delete authority | C-once/R | - | R/V |
-| External cleanup verification | - | R | R | R | - | C-once/R | - | C/S/V |
-| Final review decision | - | - | - | R | - | C-once/R | consume receipt R | C/S |
-| Synthetic PASS pointer | - | - | - | proposal only | - | C-once after gate | final state R | S/approve |
+If the final approver is unavailable before the D1 expiry, no D3 or D4 is
+created. The ledger anchor broker appends `CONSUMED_FAIL` under the expiry
+transition, releases the lease and emits a failure receipt in a failure-only
+phase record. It may not retry with the same nonce.
 
-The durable evidence store creates storage objects but does not author their
-semantic contents. Producer and storage identities are both retained.
+## 9. Rollback-resistant replay and concurrency
 
-## Failure domains and fail-closed behavior
+SQLite remains only the transactional disk journal. It is not the replay trust
+root. The authoritative external state is a TPM 2.0 NV monotonic counter plus
+two alternating fixed-size NV head slots outside disk/backup state. The slots
+hold `ledgerId`, `machineIdHash`, counter generation, event-head hash and the
+non-migratable ledger signing-key name. The current head is the highest valid
+quoted slot whose generation equals the counter.
 
-| Failure domain | Required detection | Required response |
-| --- | --- | --- |
-| Supervisor compromise | sequence, signature, barrier or resolved-artifact mismatch | keep barrier closed or trip kill switch; consume nonce as failed; no PASS |
-| Controller compromise | controller signature mismatch, forbidden state, observer/controller disagreement, mutation gate | block all traffic, tear down, mark controller-compromise-suspected |
-| Observer compromise | signer mismatch, chain gap, unclassified event, drop counter, missing interface or shutdown proof | block before kill; quarantine all run evidence |
-| Runtime-owner compromise | namespace, OCI, process, cgroup, interface, route, FD or helper drift | immediate block-before-kill and fatal teardown |
-| WSL kernel or Windows host compromise | cannot be independently disproved locally | invalidate proof; final reviewer must refuse |
-| Concurrent run | durable one-shot lease or controller namespace collision | second run refused before staging; first run remains isolated |
-| Restart or replay | boot ID, durable reservation and prior consume event | recover to failed/consumed; never re-release barrier |
-| Partial cleanup | missing deletion acknowledgment or before/after mismatch | no final cleanup attestation and no PASS |
-| Evidence-store failure | create, fsync, resolve or byte-verify failure | block/kill if active; nonce failed; no PASS |
-| Signer substitution | trust-root fingerprint or key epoch mismatch | refuse before observer readiness or approval |
-| Clock failure | invalid wall/monotonic relationship, rollback or unavailable source | refuse issuance or stop active run |
-| Namespace replacement | inode or owner changes at prebind, rebind or continuous monitor | block-before-kill; record drift; no PASS |
-| Replay-ledger corruption/unavailability | integrity check, monotonic sequence or transaction failure | authority issuance and barrier release refused |
-| Cleanup verifier compromise | reviewer key mismatch or verifier binary/config mismatch | final approval refused |
+Every ledger transition uses this crash-safe order:
 
-## Enforcement topology
+1. `BEGIN IMMEDIATE`; verify disk head equals a fresh TPM quote.
+2. Insert one `PREPARED` event for expected generation `n+1` and the unique
+   nonce/lease state; FULL fsync.
+3. Atomically increment the TPM `TPMA_NV_COUNTER` index from `n` to `n+1`.
+4. Write the inactive A/B NV head slot with generation `n+1` and the prepared
+   event hash, read back both slots, quote counter+slots and verify the quote.
+5. Store the quote receipt, mark the event `COMMITTED`, update the disk head and
+   FULL fsync; commit.
 
-The future implementation must not treat a rootless container namespace as the
-outer firewall boundary. The required topology is:
+Recovery accepts only: disk/counter/head all agree; or exactly one fsynced
+PREPARED row at disk generation plus one while the counter is plus one and the
+head slot is either old or new. In that single-gap case recovery writes/verifies
+the missing head slot if needed, finalizes that same event and immediately
+consumes an active run as failed with a new counter advance. A gap above one,
+two competing PREPARED rows, mismatched slot hash or missing prepared bytes is
+unrecoverable corruption. A restored valid backup is behind the TPM counter and
+is rejected with `E_LEDGER_BACKUP_RESTORE`. A cross-machine copy lacks the
+non-migratable key/name and machine-bound NV indices and is rejected with
+`E_LEDGER_CROSS_MACHINE_COPY`. TPM unavailable, cleared, rolled back or
+unquotable means no issuance, no barrier release and no PASS.
 
-1. A controller-owned host enforcement namespace in the initial WSL user
-   namespace, with no unmanaged interface and no default route.
-2. Controller-created veth links from the exact candidate, relay, fake DNS and
-   fake provider namespaces into that enforcement namespace.
-3. Deny-by-default nftables base chains in the controller-owned namespace and
-   narrow defensive tables inside each workload namespace.
-4. The candidate runtime starts with network none. The rootless owner does not
-   create the authorized network path; the privileged controller attaches the
-   exact path after namespace fingerprinting.
-5. Candidate-to-relay, relay-to-fake-DNS and relay-to-fake-provider are the only
-   allowed routes. There is no physical, Windows, Internet, metadata, host
-   gateway, provider, default or unmanaged route.
-6. slirp, pasta, netavark, aardvark and runtime sockets are explicitly absent or
-   content-addressed and bound as required components. A helper appearing or
-   changing is fatal.
-7. Immediately before barrier release, controller and observer independently
-   re-read namespace inodes, interfaces, routes, rulesets, OCI spec, process
-   tree, cgroup, FDs and sockets.
-8. A separately controlled outer Windows/WSL egress deny must prevent a
-   transient rootless slirp/pasta helper from using the ordinary WSL uplink
-   between drift-monitor samples. Its exact mechanism, identity and normalized
-   rule objects must be approved and mutation-proved before rehearsal. Process
-   monitoring alone is not a packet firewall.
+Reservation, nonce state and the unique concurrency-domain lease change in one
+transaction and one TPM anchor advance. `RESERVED` never returns to `ISSUED`.
+A crash, boot-ID change, lease expiry, approver timeout or uncertain commit
+recovers only to `CONSUMED_FAIL`. Compromise recovery creates a new ledger ID
+through the trust-registry emergency transition and leaves an anchored tombstone
+for the retired ledger.
 
-If the future host cannot implement this topology or independently prove that
-the rootless runtime owner cannot create a bypass, implementation must stop.
-The design does not permit replacing that proof with a boolean assertion.
+## 10. Containment, observation and evidence decisions
 
-## Key custody and provenance
+### 10.1 Outer Windows/WSL deny
 
-- Policy, observer, controller and final-approver keys are four distinct
-  pre-existing identities.
-- Public keys, algorithms, key IDs, validity intervals and rotation epochs are
-  pinned in a reviewer-owned trust-root registry before nonce reservation.
-- Private keys are never generated inside a run, never stored in a run root and
-  never returned to the supervisor.
-- A key rotation is a separate signed registry transition that names the old
-  and new key, effective authority generation and independent approval. An
-  unannounced new key is substitution, not rotation.
-- The observer signs readiness before candidate staging, then signs an ordered
-  hash-chain root and shutdown record.
-- The controller signs exact enforcement readbacks and deletion
-  acknowledgments.
-- The final approver signs only after all artifacts resolve and external cleanup
-  verification is complete.
+Before a future WSL distribution or risky helper can start, a separate Windows
+outer-deny controller must install persistent boot-time WFP block filters at
+ALE authorization and outbound transport layers for IPv4 and IPv6, bound to the
+dedicated WSL VM/vNIC/compartment identifiers. A Hyper-V firewall default
+outbound block is required as defense in depth. No allow filter exists because
+all fake traffic remains inside controller-created WSL namespaces.
 
-The concrete implementation target is separate Windows-host signer services
-using non-exportable persisted Windows CNG keys under distinct local service
-identities. The WSL run root never contains those private keys. A signer service
-accepts only typed, bounded, content-free digest receipts over an authenticated
-one-shot channel created by its independent launcher. Whether that channel and
-process measurement are strong enough is an independent implementation-review
-gate; a plain pipe owned by the supervisor is insufficient.
+The BFE/WFP provider, sublayer GUIDs, filter IDs, weights, conditions, vNIC GUID,
+compartment, Hyper-V policy and normalized Windows route/DNS inventory are
+signed and read back before WSL start and again immediately before barrier
+release. If the boot-time filter cannot precede WSL networking, the host is
+ineligible. Process monitoring is not an outer firewall.
 
-## Durable evidence-store decision
+### 10.2 Inner topology and drift
 
-The concrete implementation target is a Windows-host evidence-store broker
-under a local service identity distinct from supervisor, controller, signer and
-reviewer identities. It stores content-addressed objects in a dedicated NTFS
-directory outside every repository, WSL mount and run root. Producers receive a
-write-once submission handle, never filesystem mutation or delete access.
+The WSL controller creates a no-uplink enforcement namespace first, with nft
+base chains already default-drop, then creates workload namespaces with
+`network=none`. Each veth remains down and unaddressed until its observer is
+attached. Exact nft family/hook/priority/policy bindings are defined in the
+control-graph specification. There is no default, Windows, metadata, loopback
+cross-namespace, link-local, multicast, IPv6, mapped-address, NAT64, DNS,
+provider or unmanaged route.
 
-For each object the broker must use create-new semantics, write-through,
-FlushFileBuffers, a directory/index durability barrier, exact readback, then an
-ACL transition that removes producer write/delete rights. It appends a
-hash-chained store receipt and refuses replacement of an existing object ID.
-The final resolver opens objects through the broker under a separate read-only
-identity. Host-administrator compromise remains outside the proof and
-invalidates it; ordinary supervisor or WSL-root compromise must not grant store
-mutation.
+slirp, pasta, netavark, aardvark, runtime shims, netlink, eBPF, procfs, sysfs,
+devices, mounts, inherited FDs/sockets and namespace membership are exact bound
+sets. Any new object or inode change trips an atomic controller operation that
+first replaces all Windows and WSL allow paths with counted deny, verifies the
+deny readback while the target cgroup is alive, and only then kills it.
 
-This is a design selection only. It does not authorize creating a service,
-account, directory or evidence object in this milestone.
+### 10.3 Observer
 
-## Durable replay and concurrency decision
+The observer service and signer identities are distinct and pre-pinned. Netlink
+observation begins before the first connected interface is created. Capture is
+attached while each link is down, before address assignment or `UP`. The signed
+capture-ready set is the exact interface/direction set derived from readback.
 
-The implementation target is a local, single-host transactional ledger owned by
-the independent policy authority. SQLite 3 is the selected candidate mechanism
-for the implementation specification because BEGIN IMMEDIATE, unique
-constraints, FULL synchronous durability and an append-only event table can
-provide atomic reservation across processes. This ADR authorizes no database
-creation or code.
+Pristine success requires zero kernel drops, zero sequence gaps and zero
+unclassified events. Mutation M16 intentionally requires at least one
+kernel-reported drop while keeping unclassified events zero. Mutation M17
+requires exactly one unclassified event and zero kernel drops. Neither mutation
+can PASS. Exact packet rates, sizes, burst, duration, CPU and memory envelopes
+are in the control-graph specification. Every AF_PACKET socket must return
+`PACKET_STATISTICS`; unavailable statistics are not zero.
 
-Required logical tables are:
+### 10.4 NTFS evidence broker
 
-- ledger_meta: schema version, ledger UUID, last sequence, last verified hash;
-- nonce_current: nonce hash, authority generation, state, boot ID, lease ID,
-  owner identity, issued/expires times, monotonic issuance value and final
-  event sequence;
-- nonce_events: append-only sequence, prior hash, event hash, nonce hash,
-  transition, wall time, monotonic time, boot ID, actor key ID and signed
-  receipt hash;
-- run_leases: unique active lease for the declared concurrency domain.
+The broker uses create-new, non-inheritable handles and validates the final path
+by opened handle, volume GUID, 128-bit file ID, link count, reparse tag and stream
+inventory. It refuses junctions, symlinks, hard links, alternate streams,
+cross-volume paths and file-ID changes. The exact DACL/SACL/owner/service SID,
+share modes, write/flush/readback/seal/index sequence and every crash boundary
+are normative in the schema specification. A path string is never evidence.
 
-Allowed nonce transitions are:
+## 11. PASS cannot be forged by one component
 
-ISSUED to RESERVED to CONSUMED_PASS, CONSUMED_FAIL or EXPIRED.
+The evidence broker accepts a D4 create request only when it independently
+verifies all of the following bytes and signatures:
 
-After RESERVED, a crash or boot-ID change may recover only to CONSUMED_FAIL.
-There is no transition back to ISSUED and no barrier release from a recovered
-lease. A reservation transaction atomically appends the event, updates current
-state and acquires the unique concurrency lease. A final transaction appends
-the consume event and releases the lease. Ledger unavailable, corrupt,
-unfsynced or unverifiable means refusal.
+- D1 under the policy key and current trust registry;
+- D2 and P3 root after external cleanup;
+- D3 under distinct reviewer and final-approver keys;
+- the TPM-anchored `CONSUMED_PASS` receipt for the same nonce and review hash;
+- role-separation and semantic-validation reports;
+- exact P0-P4 phase-root continuity.
 
-## Consequences
+The PASS publisher cannot write broker storage, the broker cannot sign review,
+the reviewer cannot advance the TPM ledger, and the ledger cannot create a
+cleanup attestation. Compromise of any one component is insufficient to create
+a valid D4.
 
-- Authority V3 is larger and operationally more expensive than V2.
-- A local synthetic run can remain blocked even after all code exists if the
-  host cannot prove runtime-owner containment or independent observation.
-- Evidence size increases because normalized rulesets, inventories,
-  per-observer distributions and resolver metadata are retained.
-- Cryptographic integrity becomes meaningful provenance only when keys are
-  pre-anchored and custody is separated.
-- The compatibility result can certify only the deterministic fake CLI contract
-  at one exact source/runtime snapshot. It cannot certify a real client.
-- Design completion is never execution authority.
+## 12. Failure disposition
 
-## Related specifications
+Every normative dependency fails closed. Active-run failures execute the safest
+available outer+inner block, verify block-before-kill, tear down, attempt typed
+cleanup, seal failure evidence if possible and anchor `CONSUMED_FAIL`. Failure
+of cleanup, evidence storage, anchor, signer or semantic validation prevents
+review approval and PASS. Failure evidence is never upgraded to success.
 
-- AUTHORITY_V3_SCHEMA_SPEC.md
-- AUTHORITY_V3_CONTROL_GRAPH_AND_MUTATIONS.md
-- AUTHORITY_V3_FAKE_CLI_IMPLEMENTATION_AND_REVIEW.md
-- AUTHORITY_V3_CANDIDATE_COMPATIBILITY_SCHEMA_EXAMPLE.json
+Host administrator, Windows kernel, WSL kernel or TPM compromise is outside the
+local proof and invalidates the run. That limitation cannot be converted into a
+PASS waiver.
 
-## Decision record
+## 13. Consequences and future proof gates
 
-DECISION: adopt this document as the proposed Authority V3 design for
-independent review only.
+- The design is substantially more expensive than R1 and may prove infeasible
+  on the current host.
+- A TPM 2.0 NV compare-and-write protocol, boot-time WFP ordering and the NTFS
+  broker crash model require independent implementation proof.
+- The exact fake CLI result remains candidate-shaped synthetic evidence only.
+- No implementation phase, local database, service, WSL change, observer,
+  firewall, fake process or mutation is authorized by R2.
 
-UNKNOWN: whether the current Windows/WSL host can satisfy the outer enforcement,
-pre-anchored signer and runtime-owner non-bypass gates. Only a separately
-authorized implementation and privileged review can answer this.
+The remaining unknowns are assigned to future gates, not left to implementer
+judgment: schema/validator conformance; TPM ledger recovery; signer custody;
+Windows outer deny; WSL containment; observer load; broker crash durability;
+mutation restoration; independent review; PASS publication.
 
-PROHIBITION: no implementation or execution may be inferred from
-DESIGN_READY_FOR_INDEPENDENT_REVIEW.
+## 14. Decision record
+
+DECISION: adopt R2 as the proposed Authority V3 design package for independent
+review only.
+
+FINAL CLAIM: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`.
+
+PROHIBITION: design completion is not execution authority.
+
+- `executionAuthorized:false`
+- `syntheticFixtureExecutionAuthorized:false`
+- `realCandidateExecutionAuthorized:false`
+- `providerExecutionAuthorized:false`
+- `realCandidateInvocations:0`
+- `providerCalls:0`

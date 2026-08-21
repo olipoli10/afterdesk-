@@ -1,739 +1,506 @@
-# Authority V3 fake CLI compatibility, implementation plan and review checklist
+# Authority V3 R2 fake CLI, future implementation phases and review
 
 Status: design-only
 
-Design verdict: DESIGN_READY_FOR_INDEPENDENT_REVIEW
+Design verdict: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`
 
 Execution verdict: NO-GO
 
-executionAuthorized:false
+`executionAuthorized:false`
 
 ## 1. Compatibility claim boundary
 
-The future fake CLI is a deterministic interface fixture shaped like a possible
-candidate command-line surface. It is not Codex, Claude or another product. A
-green synthetic compatibility run could establish only:
+The only permitted future candidate-shaped process is a deterministic fake CLI
+built from committed synthetic source. A green result could prove only:
 
-The exact fake CLI build accepted the exact fake framing and lifecycle contract
-under the exact Authority V3 source/runtime snapshot.
+> The exact fake CLI bytes accepted the exact R2 framing and lifecycle contract
+> in one exact source/runtime/host snapshot under one non-reusable authority.
 
-It could not establish:
+It cannot prove real Codex/Claude compatibility, model quality, provider safety,
+authentication, tool use, file-edit quality, pricing, latency or arbitrary-code
+containment. No real candidate or provider component is used as a sentinel,
+fixture, dependency or reference implementation.
 
-- real Codex or Claude compatibility;
-- real CLI flag, output, update, authentication or provider behavior;
-- model quality, latency, cost, tool use or file-edit behavior;
-- provider account, endpoint, retention or credential safety;
-- safe execution of arbitrary native code;
-- authority to inspect, install or execute a real candidate.
+## 2. Executable and process identity
 
-## 2. Deterministic fake CLI contract
+Logical token: `ef-fake-candidate`
 
-### 2.1 Executable identity
+Candidate kind: `deterministic-fake-cli`
 
-Logical executable token: ef-fake-candidate
+The future wrapper uses direct process creation with shell disabled and executes
+only one pinned fake binary through an already-open executable descriptor. It
+does not search PATH at launch, load a profile, resolve a package, read Git
+configuration or discover plugins/connectors.
 
-Candidate kind: deterministic-fake-cli
+The wrapper, binary, source tree, schema bundle and compatibility snapshot have
+independent hashes in D1. The default cgroup contains the fake CLI plus only the
+exact runtime shims listed in D1. No child process is permitted. The separately
+hashed M20 mutation fixture may create one synthetic child solely to exercise
+cgroup teardown; that build can never produce PASS.
 
-The future binary, wrapper, source tree and compatibility snapshot each have an
-independent SHA-256 in CandidateContractV3. The wrapper may exec only the pinned
-fake binary. It may not search PATH, a package manager, a registry, a user
-profile or a plugin directory.
+M01 uses the only synthetic real-binary sentinel in the entire protocol. It is
+a committed harmless inert file named `ef-real-binary-sentinel`, has no vendor
+bytes or executable format, is never executed and exists only in M01's disposable
+bundle. No other mutation or pristine run may create, copy or label such a
+sentinel.
 
-No actual Codex, Claude, model client, vendor library or provider SDK may be
-linked, imported, loaded, discovered or invoked.
+## 3. Exact argv contract
 
-### 2.2 argv grammar
+The exact token array is:
 
-The only accepted normalized grammar is:
+```text
+[0] ef-fake-candidate
+[1] compatibility-rehearsal
+[2] --contract-version
+[3] 3.2.0
+[4] --stdin-framing
+[5] u32be-jcs-json-lf-v1
+[6] --stdout-framing
+[7] u32be-jcs-json-lf-v1
+[8] --run-id
+[9] <exact lowercase D1 UUIDv4>
+```
 
-    ef-fake-candidate compatibility-rehearsal
-      --contract-version 3
-      --stdin-framing length-prefixed-json-lines
-      --stdout-framing length-prefixed-json-lines
-      --run-id UUID
+Exactly ten tokens are accepted. Duplicate, missing, reordered, abbreviated,
+combined or unknown tokens fail with exit 20 before opening the relay. Response
+files, shell/metacharacter expansion, wildcard expansion and alternate platform
+argument parsing are disabled. No prompt, payload, path, model, provider,
+endpoint, account, login, OAuth, credential, plugin or environment value occurs
+in argv. The canonical length-prefixed token vector is hashed in D1.
 
-Rules:
+## 4. Frame byte contract
 
-1. The four flags occur once, in that order.
-2. contract-version is exactly 3.
-3. framing values are exact constants.
-4. run-id equals the signed authority runId.
-5. Unknown, duplicate, abbreviated, combined or reordered flags are refused.
-6. No input frame, prompt, payload, path, endpoint, model, provider, token,
-   account, OAuth value, environment value or credential appears in argv.
-7. Response files, shell expansion, globbing and platform-specific alternate
-   argument parsing are disabled.
-8. The normalized argv token array, excluding no values, is bound by hash
-   because all permitted values are content-free.
+### 4.1 Transport
 
-The wrapper uses direct process creation with shell disabled.
+Framing ID is `u32be-jcs-json-lf-v1`. Every stdin/stdout/stderr frame is exactly:
 
-### 2.3 stdin frames
+```text
+4-byte unsigned big-endian integer N
+N bytes canonical JCS-IJSON-INT53-R2 UTF-8 JSON
+one byte 0x0A
+```
 
-Transport is a binary length prefix followed by canonical UTF-8 JSON. Each
-frame contains exact keys:
+`N` counts JSON bytes only; it does not include the 4-byte prefix or LF. Valid
+range is 2 through the stream-specific signed maximum. Prefix value 0/1,
+overflow, a JSON length mismatch, CR/CRLF, missing LF, extra byte before the next
+prefix or partial prefix/body/newline at EOF is a framing failure. There is no
+text line mode and no platform newline translation.
 
-- schemaVersion: 3;
-- frameType: start, request, cancel or end;
-- frameSequence: positive integer;
-- priorFrameSha256;
-- runId;
-- fakeRequestId;
-- payloadClass;
-- fakePayload.
+Raw JSON must already be canonical. The raw-token scanner rejects BOM, invalid
+UTF-8, floats/out-of-range integers and duplicate keys before parse. Parsed then
+re-serialized JCS bytes must equal the received N bytes.
 
-start occurs once at sequence 1. request occurs one or more times. cancel is
-optional and may occur once. end occurs once and is terminal.
+### 4.2 Hash chain
 
-fakePayload is generated locally from a committed synthetic schema. It contains
-no prompt, model instruction, repository content, client data, secret,
-credential, real endpoint or provider identifier. A seeded fake canary is
-allowed only in ephemeral memory to prove non-persistence and must never appear
-in durable evidence.
+Every frame has `schemaVersion:"3.2.0"`, `frameSequence`,
+`priorFrameSha256` and `frameSha256`. Sequence starts at 1 and increments by one
+per stream. For sequence 1, prior hash is 64 zeroes; otherwise it equals the
+preceding frame's `frameSha256` on that stream. To compute the current value,
+remove the `frameSha256` member, set `B=JCS(remainingObject)`, then compute
+`SHA256(UINT32_BE(length(B)) || B || 0x0A)` and insert that lowercase hash as
+`frameSha256`. The transported prefix is then recomputed from the final JCS
+object including the hash. Verification repeats the removal algorithm exactly.
+Cross-stream ordering is never inferred from hashes; the supervisor maintains
+an independent monotonic event ledger.
 
-Limits are signed in CandidateContractV3:
+## 5. stdin state machine
 
-- maximum frame size;
-- maximum frame count;
-- maximum total bytes;
-- maximum idle interval;
-- required end-of-stream.
+Every stdin frame has exact common keys plus the frame-specific keys allowed by
+its schema. Unknown keys fail.
 
-Malformed length, JSON, schema, sequence, prior hash, run ID, request ID,
-payload class or extra field causes refusal before any relay operation.
+```text
+START -> REQUEST{1..64} -> [CANCEL] -> END
+START -> REQUEST{1..64} -> END
+```
 
-### 2.4 stdout envelope
+- `start` occurs once at sequence 1 and binds run ID and contract hash.
+- `request` contains a synthetic request ID, payload-class enum and fake payload
+  that validates against the committed fake schema.
+- `cancel` occurs at most once and names only a prior accepted fake request.
+- `end` occurs once and is terminal input.
 
-stdout uses the same length-prefixed canonical JSON framing. Allowed exact frame
-types are:
+Maximum frame size is 65,536 bytes, maximum frame count 67 and maximum total
+stdin bytes 1,048,576. Values are also pinned in D1 and may only be lower.
+Malformed schema/sequence/hash/run/request/payload or early EOF returns 21 and
+performs no relay operation.
 
-- ready;
-- accepted;
-- progress;
-- result;
-- cancelled;
-- refused;
-- terminal.
+The fake payload contains no prompt, instruction, repository content, client
+data, credential, real domain/IP, provider identifier or vendor wire shape. The
+ephemeral canary used to verify non-persistence is generated in memory, never
+written and never hashed into durable evidence.
 
-Every stdout frame contains:
+## 6. stdout and stderr
 
-- schemaVersion;
-- frameType;
-- frameSequence;
-- priorFrameSha256;
-- runId;
-- fakeRequestId or null;
-- statusClass;
-- fakeResultClass or null;
-- byteCountClass;
-- terminal boolean.
+### 6.1 stdout
 
-fakeResultClass is an enum, not raw content. The process may emit only committed
-synthetic classes. The supervisor validates framing in an ephemeral bounded
-buffer, persists only counters/classes, and destroys raw bytes.
+Allowed stdout frame types are:
 
-ready is emitted only after stdin and local relay descriptors are validated.
-terminal is emitted exactly once. A successful terminal follows one result per
-accepted request. Missing, duplicate, reordered or unknown frames fail.
+```text
+ready, accepted, progress, result, cancelled, refused, terminal
+```
 
-### 2.5 stderr envelope
+Exact common fields are schema/version, type, stream sequence/hash, run ID,
+fake request ID or null, status-class enum, result-class enum or null,
+byte-count-class enum and terminal boolean. No raw result text exists.
 
-stderr is empty on success. On refusal or internal failure, it may contain at
-most one canonical content-free error envelope with:
+`ready` is emitted only after open-descriptor, environment, filesystem and relay
+tuple validation. One `accepted` precedes progress/result for each request. A
+successful run emits one result per accepted request and exactly one terminal
+frame. Any frame after terminal fails. Maximum stdout frame is 16,384 bytes and
+maximum stdout total is 1,048,576 bytes.
 
-- schemaVersion;
-- errorClass;
-- gateHintClass;
-- retryable: false;
-- contentIncluded: false.
+### 6.2 stderr
 
-No exception text, path, environment value, payload, request body, stack trace,
-provider detail or raw system error is allowed. Any non-envelope byte, second
-envelope, truncation or size overflow causes kill-and-fail.
+stderr is zero bytes on success. On refusal/failure it contains exactly one
+framed canonical envelope with exact fields:
 
-### 2.6 Exit codes
+```text
+schemaVersion
+errorClass
+gateHintClass
+retryable:false
+contentIncluded:false
+```
 
-| Code | Meaning |
-| --- | --- |
-| 0 | all accepted fake requests reached terminal result |
-| 20 | argv contract refusal |
-| 21 | stdin framing/schema refusal |
-| 22 | environment or filesystem contract refusal |
+Maximum JSON payload is 1,024 bytes and maximum stderr total is 1,029 bytes
+(prefix + payload + LF). A second frame, raw exception, path, environment value,
+stack, body, header or partial frame fails. stderr never carries a prompt or
+output.
+
+### 6.3 Concurrent drain and pipe closure
+
+stdout and stderr reader tasks start before stdin is written and drain
+concurrently until their independent EOF. The supervisor never waits for process
+exit before draining either pipe and never reads one stream to completion before
+the other. Each reader has a 65,536-byte ring and reports framed events to one
+bounded arbiter queue; maximum combined unvalidated raw bytes is 131,072.
+
+Pipe rules are exact:
+
+- stdout EOF before a valid terminal frame is `STDOUT_EOF_BEFORE_TERMINAL`;
+- stdout EOF after terminal is valid even if stderr remains open briefly;
+- stderr EOF with zero bytes is valid; stderr EOF after one complete error frame
+  is valid only for a nonzero/refusal exit;
+- stdin `EPIPE` before the complete planned input sequence is
+  `STDIN_CLOSED_EARLY`;
+- a pipe remaining open after child exit until the drain deadline is
+  `PIPE_HELD_BY_UNAPPROVED_DESCENDANT`;
+- a partial prefix/body/LF on either output is `PARTIAL_FRAME_AT_EOF`;
+- closure of one pipe never stops draining the other.
+
+Raw frames stay in bounded memory and are zeroed after validation. Durable
+evidence contains only frame counts, size/status/result classes, state events and
+schema/config hashes.
+
+## 7. Exit, cancel and timeout arbitration
+
+| Exit | Exact meaning |
+| ---: | --- |
+| 0 | valid terminal success for all accepted fake requests |
+| 20 | argv refusal |
+| 21 | stdin/frame/schema refusal |
+| 22 | environment/filesystem/descriptor refusal |
 | 23 | local relay contract refusal |
-| 24 | cancellation completed |
-| 25 | bounded timeout observed by fake CLI |
-| 26 | backpressure/output limit refusal |
+| 24 | graceful cancellation completed |
+| 25 | fake CLI self-observed bounded timeout |
+| 26 | backpressure or output-limit refusal |
 | 70 | deterministic internal fixture failure |
 
-Every other exit code is UNKNOWN_EXIT and fails the run. Exit 0 without a valid
-terminal stdout frame also fails.
-
-### 2.7 Signals, cancellation and timeout
-
-- The supervisor may send one named graceful cancellation signal defined by
-  the compatibility snapshot.
-- The fake CLI stops accepting frames, emits cancelled and terminal envelopes,
-  closes its relay connection and exits 24 within the signed grace interval.
-- If it misses the deadline, the controller blocks network before cgroup kill.
-- SIGKILL or platform-equivalent forced termination cannot be caught and must
-  be preceded by the signed kill-switch block receipt.
-- Any signal not declared by the contract fails the run.
-- Timeout is measured by the independent monotonic source. Wall time is
-  recorded only for human correlation.
-
-### 2.8 Streaming and backpressure
-
-1. stdin, stdout and stderr use bounded pipes.
-2. The supervisor never buffers more than the signed per-stream and combined
-   limits.
-3. Backpressure is blocking with a signed maximum stall interval.
-4. Output after cancellation, terminal or pipe close is a contract failure.
-5. Partial frames on EOF fail.
-6. A process blocked beyond the stall interval enters block-before-kill.
-7. Raw frames are never durable. Only content-free frame counts, size classes,
-   state transitions and hashes of schema/configuration objects are evidence.
-
-### 2.9 Environment allowlist
-
-The exact environment variable names are:
-
-- EF_AUTHORITY_SCHEMA_VERSION
-- EF_COMPATIBILITY_CONTRACT_VERSION
-- EF_FAKE_RELAY_HOST
-- EF_FAKE_RELAY_PORT
-- EF_RUN_ID
-- HOME
-- LANG
-- PATH
-- TMPDIR
-
-Rules:
-
-- The child environment is constructed from empty state.
-- PATH contains one immutable fixture bin directory and is never searched for a
-  real candidate.
-- EF_FAKE_RELAY_HOST and port identify the local synthetic relay only.
-- No inherited proxy, auth, token, key, account, provider, telemetry, update,
-  package, connector, plugin, cloud, SSH, Git credential or user-profile
-  variable is present.
-- Evidence records only the sorted variable names and their configuration hash,
-  never values.
-
-### 2.10 Filesystem and workspace
-
-The fake CLI sees:
-
-- one read-only content-addressed fixture bundle;
-- one bounded writable workspace;
-- one bounded writable result directory;
-- exact tmpfs paths;
-- no host repository mount, shared .git link, user profile, Windows drive,
-  runtime socket, device, credential directory or unrelated worktree.
-
-Allowed writes are:
-
-- workspace/state.json;
-- workspace/operations.jsonl;
-- result/result.json.
-
-All writes are create-only or atomic replace within the private workspace,
-bounded by file count and total bytes. Symlinks, hard links, alternate streams,
-device nodes and path traversal are refused. The final workspace tree and
-result schema are hashed; content is fake and remains subject to the
-content-free evidence projection.
+Every other code is `UNKNOWN_EXIT`. Exit 0 without a valid terminal frame, or a
+terminal-success frame with nonzero exit, fails.
+
+One supervisor arbiter owns the terminal cause. It serializes events using a
+single monotonic read and incrementing `arbiterSequence`; sources cannot assign
+their own order. At one sampling boundary, precedence is:
+
+1. framing/schema/output-limit violation;
+2. explicit user/supervisor cancellation already queued;
+3. overall timeout deadline reached;
+4. child exit;
+5. ordinary frame event.
+
+The first accepted terminal cause is set by compare-and-swap and cannot change.
+Explicit cancellation at exactly the deadline wins over timeout; a violation
+already queued wins over both. Overall timeout is `startReceiptMonotonic +
+timeoutMilliseconds`; it is not reset by progress. Cancellation deadline is
+`cancelAcceptedMonotonic + graceMilliseconds`.
+
+On cancel, stdin closes after the cancel frame, the CLI stops accepting requests,
+closes relay, emits `cancelled` then `terminal`, closes stdout and exits 24. On
+missed grace/timeout, the controller proves outer+inner counted block while the
+cgroup is alive and then kills the cgroup. Any forced kill without the gate 17
+receipt is fatal.
+
+Backpressure is bounded blocking. Stall deadline is 2,000 ms from the
+independent monotonic source. The child may not discard, truncate or switch to
+unbounded buffering.
+
+## 8. Exact environment
+
+The child environment is created from an empty block. Sorted exact entries are:
+
+```text
+EF_AUTHORITY_SCHEMA_VERSION=3.2.0
+EF_COMPATIBILITY_CONTRACT_VERSION=3.2.0
+EF_FAKE_RELAY_HOST=198.18.0.2
+EF_FAKE_RELAY_PORT=47001
+EF_RUN_ID=<exact lowercase D1 UUIDv4>
+HOME=/nonexistent
+LANG=C.UTF-8
+LC_ALL=C.UTF-8
+PATH=/ef/bin
+TMPDIR=/ef/tmp
+```
 
-### 2.11 Subprocess tree
+There are no other variables. The wrapper compares the exact UTF-8 name/value
+set and its D1 hash before ready. `/ef/bin` contains only the pinned already-open
+fake executable; PATH lookup is disabled after validation. Evidence records the
+environment-contract hash and names, never a runtime memory dump.
 
-The default contract permits no child process. The wrapper execs the fake CLI
-so the cgroup contains one fixture process plus runtime shims explicitly named
-in the OCI profile. Threads are bounded; worker processes, shells, interpreters,
-package tools, downloaders and runtime helpers are absent.
-
-Mutation M22 may use a separately hashed mutation build that creates one
-sentinel child solely to prove cgroup teardown. That mutation build can never
-yield PASS.
+Proxy, auth, token, key, account, provider, telemetry, update, package,
+connector, plugin, cloud, SSH, Git credential, Windows interop and user-profile
+variables are forbidden.
 
-### 2.12 Local relay and fake payloads
+## 9. Filesystem and replacement resistance
 
-The fake CLI receives one numeric local relay tuple from the signed environment.
-It may not accept a hostname, URL, endpoint flag, proxy variable or discovered
-route.
+Visible roots are exact:
 
-The relay accepts only:
+```text
+/ef/bundle      read-only content-addressed fixture
+/ef/workspace   bounded private writable root
+/ef/result      bounded private writable root
+/ef/tmp         tmpfs, bounded and noexec
+```
 
-- the exact candidate namespace/interface;
-- the exact runId and routeId;
-- the exact fake request schema;
-- bounded fake payload classes;
-- one fake DNS route and one fake provider route.
+Allowed writes are only:
 
-The relay rejects real provider names, FQDNs, IPs, TLS roots, SDK wire formats,
-auth headers, OAuth, API keys, redirects, updates, downloads, telemetry and
-connector traffic.
+```text
+/ef/workspace/state.json
+/ef/workspace/operations.jsonl
+/ef/result/result.json
+```
 
-## 3. Authority required before any real candidate work
+Maximum is 16 files and 1,048,576 total written bytes. No host repository,
+`.git`, Windows drive, profile, runtime socket, credential directory, device or
+unrelated worktree is mounted.
 
-Even read-only inspection of a real candidate later requires a new explicit
-user mandate naming:
+Before launch the supervisor opens each root and records mount ID, device,
+inode, owner, mode and expected path. Every file operation is relative to these
+descriptors using `openat2` with `RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS|
+RESOLVE_NO_MAGICLINKS|RESOLVE_NO_XDEV`. It rereads mount/device/inode before
+ready, before each create/replace and at shutdown. Root rename, bind replacement,
+mount replacement, symlink, hardlink, magic link, device-node, alternate stream
+or mount-ID change fails with 22. Path-string equality is insufficient.
+
+Writes use create-new or temp-file+fsync+same-directory atomic rename beneath the
+opened root. Final workspace/result trees are independently inventoried and
+hashed as fake-content artifacts; raw fake result content is not promoted to
+durable compatibility evidence.
 
-- candidate product and exact version;
-- permitted inspection operation;
-- exact binary/source paths;
-- whether hashing, signature verification or documentation reading is allowed;
-- protected repository boundary;
-- content/secret handling rules;
-- whether Internet lookup is allowed;
-- expected non-execution evidence and stop point.
+## 10. Relay and fake fixtures
 
-Execution of a real candidate requires a still-separate authority that cannot
-be issued by Authority V3. At minimum it must add:
+The fake CLI receives only numeric `198.18.0.2:47001`. It cannot accept a URL,
+hostname, endpoint flag, proxy or discovered route. The relay accepts only the
+candidate namespace/ifindex, D1 run/route IDs, committed frame schema and bounded
+fake classes. Fake DNS is `198.18.0.3:5300`; fake provider is
+`198.18.0.4:47002`.
 
-1. realCandidateExecutionAuthorized:true in a new schema/kind expressly created
-   for the named candidate;
-2. modelExecutionAuthorized and providerExecutionAuthorized decisions;
-3. exact candidate binary, wrapper, bootstrap and library-chain hashes;
-4. exact invocation/model/effort/tool profile;
-5. dedicated benchmark identity and credential broker;
-6. provider endpoint and control-plane allowlist;
-7. independently verified provider retention and account controls;
-8. real provider egress firewall and observer design;
-9. prompt/output/client-data policy;
-10. cost, rate, kill-switch and incident limits;
-11. independent security/privacy approval;
-12. one-shot explicit user authorization for the exact run.
+The relay rejects provider names/FQDNs/IPs, public roots, vendor SDK formats,
+auth/OAuth/API-key shapes, redirects, updates, downloads, telemetry and
+connectors. All addresses are benchmark-network synthetic addresses and have no
+route to Windows or a physical interface.
 
-None of those authorities is present or implied here.
+## 11. Future authorization ladder
 
-## 4. RED-first implementation plan
+No phase below is started by this document. Each needs a new explicit user
+decision naming worktree, source/tree, host boundary and allowed writes/tests.
 
-The plan is ordered so privileged execution cannot begin while static contracts
-are incomplete.
+### I0 - R2 independent design review
 
-### Phase I0: freeze design and test names
+Authorized milestone now: review these five documents only.
 
-Authorized in a future documentation/test-planning task only.
+Success: reviewer returns R2 acceptance, revision request or DESIGN_BLOCKED.
 
-Work:
+Stop: any unresolved normative placeholder, schema contradiction or claim that
+R2 authorizes implementation.
 
-- accept or revise the four design artifacts;
-- freeze schema identifiers, gate names and all 39 mutation IDs;
-- define the exact static test file names and fixture data shapes;
-- confirm the design-only JSON Schema is not imported by runtime code.
+### I1 - static schema tests
 
-Success gate:
+Requires only `I1_STATIC_SCHEMA_TESTS`. It authorizes unprivileged static tests
+for the five schemas/semantic vectors; no process beyond the approved test
+harness, datastore or network.
 
-- independent reviewer checks every required field and returns
-  DESIGN_READY_FOR_IMPLEMENTATION_PLANNING.
+RED cases include duplicate keys, schema downgrade, authorization constants,
+role reuse, state/gate/PASS combinations and DAG cycles.
 
-Stop:
+### I2 - resolver and semantic model
 
-- any contradictory authority, unknown security behavior or attempt to weaken a
-  mandatory gate.
+Requires `I2_RESOLVER_MODEL_IMPLEMENTATION`. Disposable filesystem fixtures
+only. It does not authorize a signer service, real broker, database, WSL or fake
+process.
 
-Do not build:
+### I3 - replay ledger
 
-- runtime code, signer, controller, observer, datastore or CLI.
+Requires `I3_DISPOSABLE_LEDGER_IMPLEMENTATION`. It names disposable disk paths
+and a simulated anchor only until a later separately reviewed TPM authority.
+Real TPM/NV creation is not implied.
 
-### Phase I1: failing static schema and contract tests
+RED cases: reserve/consume atomicity, torn writes, valid-backup restore,
+cross-machine binding, boot change, concurrent lease, corruption and approver
+timeout.
 
-Requires a separate user authorization for unprivileged test/code work.
+### I4 - fake process contract
 
-RED first:
+Requires `I4_FAKE_PROCESS_IMPLEMENTATION`. It can build/run only the deterministic
+fake CLI with network disabled in a disposable unprivileged harness. No WSL,
+container, relay, real candidate or provider.
 
-- schema rejects missing/unknown fields and every forbidden authorization true;
-- resolver requires all 45 artifact kinds;
-- gate registry order is exact;
-- PASS-before-cleanup is structurally impossible;
-- fake CLI grammar/environment/filesystem contracts reject all unapproved
-  values;
-- content-sensitive field scanner rejects seeded canaries;
-- design artifact cannot be imported into runtime entry points.
+RED cases cover exact argv, u32be framing/LF, duplicate keys, concurrent drains,
+partial pipes, timeout/cancel arbitration, environment, root replacement,
+backpressure and subprocess leaks.
 
-Success gate:
+### I5 - privileged source implementation, split authority
 
-- all new tests fail for the intended missing implementation, with no WSL,
-  container, network, database or build command.
+There is no transitive Gate A. Each component requires its own source-only grant:
 
-Stop:
+- `I5_WINDOWS_OUTER_DENY_SOURCE`;
+- `I5_WSL_CONTROLLER_SOURCE`;
+- `I5_OBSERVER_SOURCE`;
+- `I5_SIGNER_SOURCE`;
+- `I5_EVIDENCE_BROKER_SOURCE`;
+- `I5_CLEANUP_VERIFIER_SOURCE`.
 
-- a test launches a process beyond the approved static harness or writes outside
-  its disposable temp root.
+One grant cannot write another component. Source/static dependency-injected tests
+do not authorize WFP, WSL, namespace, firewall, capture, service account, key,
+TPM, evidence directory or rehearsal mutation.
 
-### Phase I2: unprivileged canonical schema, resolver and evidence model
+### I6 - privileged mutation rehearsal, split families
+
+There is no transitive Gate B. A future pristine run requires
+`I6_PRISTINE_SYNTHETIC_RUN`. Each mutation requires one of these later grants
+plus its exact mutation ID:
 
-Requires a separate unprivileged implementation mandate.
-
-Work:
-
-- implement canonical parsing and exact schema validation;
-- implement content-free artifact references and resolver manifest;
-- implement local immutable-store interface against disposable filesystem
-  fixtures only;
-- implement signature verification against fixture public keys;
-- implement fake CLI parser/framing as a library-level deterministic fixture;
-- keep every authorization boolean false.
-
-Success gate:
-
-- static RED tests turn green;
-- artifact missing/changed, signer substitution and PASS ordering mutations fail
-  exact gates using disposable files;
-- no privileged process or network path exists.
-
-Stop:
-
-- any need for WSL, Podman, firewall, persistent signer key, shared database or
-  real binary.
-
-### Phase I3: durable replay-ledger implementation
-
-Requires new user authorization specifically for a local disposable datastore
-implementation. It does not authorize a rehearsal.
-
-RED first:
-
-- restart/replay, concurrent reservation, boot-ID change, unavailable ledger,
-  corruption and crash-between-reserve/consume cases fail.
-
-Work:
-
-- implement the local single-host transactional ledger with append-only events,
-  unique nonce and lease constraints, FULL durability and signed receipts;
-- use only disposable local test ledgers;
-- never connect Production or shared databases.
-
-Success gate:
-
-- mutations M19, M24 and M35-M37 fail their exact gates;
-- crash recovery can only consume fail;
-- byte/integrity evidence is independently reproducible.
-
-Stop:
-
-- shared DB, network DB, migration of an existing database, uncertain consume
-  state or reusable reserved nonce.
-
-### Phase I4: unprivileged fake CLI process contract
-
-Requires a new user authorization for local provider-free fake process tests.
-This is not a container or privileged rehearsal.
-
-RED first:
-
-- argv/input/output/environment/workspace/backpressure/timeout/cancellation and
-  subprocess cases fail.
-
-Work:
-
-- build only the deterministic fake CLI;
-- run only fake local frames with network disabled;
-- retain no raw stream content.
-
-Success gate:
-
-- exact process contract passes in an unprivileged disposable harness;
-- zero real candidate binaries and provider components are present;
-- realCandidateInvocations:0 and providerCalls:0.
-
-Stop:
-
-- any real candidate, SDK, account, credential, endpoint, model or external
-  network requirement.
-
-### STOP AUTHORIZATION GATE A
-
-Completion of I0-I4 does not authorize WSL, Podman, namespaces, firewall,
-observer capture or a rehearsal.
-
-Required new decision:
-
-- explicit user authorization for privileged implementation only;
-- named worktree/commit;
-- named controller/observer scope;
-- exact host boundary;
-- allowed mutation mechanisms;
-- explicit statement that execution remains forbidden.
-
-### Phase I5: privileged controller and independent observer implementation
-
-Only after Gate A.
-
-RED first in source/static fixtures:
-
-- namespace binding, ruleset object, interface/route, observer readiness,
-  PACKET_STATISTICS, signer and deletion-acknowledgment contracts fail.
-
-Work:
-
-- implement controller-owned enforcement namespace;
-- implement exact runtime/network fingerprints;
-- implement pre-anchored independent observer signer;
-- implement dual final rebind;
-- implement block-before-kill and acknowledged cleanup.
-
-No rehearsal is authorized in this phase. Static and dependency-injected tests
-must not mutate host state.
-
-Success gate:
-
-- implementation is source-complete and independently reviewed;
-- no security behavior was invented beyond accepted design;
-- executionAuthorized:false.
-
-Stop:
-
-- inability to separate signer custody, inability to prove runtime-owner
-  non-bypass, or requirement to treat rootless namespace ownership as outer
-  enforcement.
-
-### STOP AUTHORIZATION GATE B
-
-Source completion is not authority for a privileged rehearsal.
-
-Required new decision:
-
-- explicit one-time user authorization for a privileged provider-free mutation
-  rehearsal;
-- exact host, boot ID, commit/tree, controller/observer/signers and mutation
-  subset;
-- rollback and incident plan;
-- independent reviewer assigned;
-- syntheticFixtureExecutionAuthorized:true in a separately signed one-shot
-  authority.
-
-### Phase I6: privileged provider-free mutation rehearsal
-
-Only after Gate B.
-
-Work:
-
-- run one pristine control and all 39 true mutations under distinct nonces;
-- retain complete content-free evidence;
-- stop immediately on failed cleanup, signer/ledger/store failure or unexpected
-  state.
-
-Success gate:
-
-- every mutation fails its exact named gate;
-- every restoration is source-byte and privileged-state exact;
-- zero kernel drops and zero unclassified events;
-- external cleanup verified before evidence resolution;
-- no PASS yet.
-
-Stop:
-
-- any restoration failure, outer-boundary uncertainty, host/kernel compromise
-  suspicion or evidence gap.
-
-### STOP AUTHORIZATION GATE C
-
-Rehearsal completion is not PASS and not real-candidate authority.
-
-Required new decision:
-
-- independent review authorization for the retained provider-free bundle.
-
-### Phase I7: independent evidence review
-
-Only after Gate C.
-
-Work:
-
-- reproduce all hashes from bytes;
-- verify keys, ledger, timelines, mutation objects, cleanup ordering and store
-  sequence;
-- verify reviewer independence;
-- sign approve/refuse decision.
-
-Success gate:
-
-- GATE_V3_INDEPENDENT_REVIEW_APPROVED.
-
-Stop:
-
-- missing/unresolvable artifact, self-signed provenance, cleanup/PASS ordering
-  defect, non-real mutation or content-sensitive evidence.
-
-### STOP AUTHORIZATION GATE D
-
-An approved synthetic bundle may permit only publication of its
-candidate-specific fake compatibility result. It never permits another run or
-a real candidate.
-
-### Phase I8: possible synthetic PASS publication
-
-Only after Gate D and only for the already completed exact run.
-
-Success gate:
-
-- append-only PASS pointer created after final approval;
-- replay nonce already consumed;
-- all authorization constants for real/model/provider/credentials remain false.
-
-Stop:
-
-- any attempt to use PASS as preauthorization for execution.
-
-## 5. What must not be built before proof
-
-- a generic multi-candidate runner;
-- provider proxy or credential broker;
-- real CLI adapter;
-- model/provider account integration;
-- UI dashboard;
-- Production/shared evidence service;
-- generalized plugin/connector discovery;
-- telemetry, auto-update or package bootstrap;
-- compatibility claims for any real product;
-- retry logic that can reuse a nonce or weaken a failed gate.
-
-## 6. Independent reviewer checklist
-
-### 6.1 Schema completeness
-
-- [ ] Top-level schemaVersion, kind and scope are exact.
-- [ ] All six authorization booleans are present; only future
-  syntheticFixtureExecutionAuthorized is variable.
-- [ ] realCandidateInvocations and providerCalls are zero.
-- [ ] Run identity includes nonce, clocks, boot ID, source commit/tree, durable
-  ledger entry and exclusive lease.
-- [ ] Candidate, runtime, network, observer, evidence, cleanup, approvals and
-  result objects include every normative field.
-- [ ] Unknown fields and content-sensitive fields are refused.
-
-### 6.2 Trust separation
-
-- [ ] Policy, observer, controller and final-approver keys pre-exist the run and
-  are independently pinned.
-- [ ] No run-root key is accepted.
-- [ ] Supervisor cannot sign observer/controller/reviewer claims.
-- [ ] Controller cannot create the observer chain or final approval.
-- [ ] Reviewer identity differs from every producer/store/ledger identity.
-- [ ] Rotation requires old/new cross-signature and reviewer approval.
-
-### 6.3 Real mutation quality
-
-- [ ] All 39 mutation IDs exist.
-- [ ] Every mutation changes real source, bytes, privileged state, process,
-  namespace, artifact or persistent ledger.
-- [ ] expectedGate equals observedFailedGate.
-- [ ] Earlier guard neutralizations are declared and do not disable the target
-  detector.
-- [ ] Source restoration is byte-exact and Git-clean.
-- [ ] Privileged-state restoration is externally verified.
-- [ ] No boolean flip, final-decision mock or assertion-only mutation receives
-  credit.
-
-### 6.4 Observer coverage
-
-- [ ] Observer service signs readiness before durable nonce reservation.
-- [ ] Complete per-interface capture set signs readiness after namespaces exist
-  and before barrier release.
-- [ ] Every interface and direction is covered.
-- [ ] Namespace inode, process, cgroup, UID/GID, capabilities, binary, runtime
-  and config are bound.
-- [ ] Raw metadata logs are content-addressed and resolved.
-- [ ] Per-observer/per-interface distributions are retained.
-- [ ] Timeline uses a signed monotonic source.
-- [ ] PACKET_STATISTICS is available for every capture socket.
-- [ ] Effective buffer size is recorded.
-- [ ] Kernel drops equal zero.
-- [ ] Unclassified events equal zero.
-- [ ] Shutdown completeness is signed.
-
-### 6.5 Network and runtime ownership
-
-- [ ] Outer enforcement is not merely a table inside a rootless-owned namespace.
-- [ ] Rootless runtime owner edit challenge is real.
-- [ ] Namespace replacement is detected at final rebind and continuously.
-- [ ] OCI spec, image, UID/GID maps, capabilities, mounts, devices, cgroup,
-  namespaces, FDs and sockets resolve from bytes/state.
-- [ ] netavark, aardvark, slirp and pasta are bound or explicitly proven absent.
-- [ ] There is no unmanaged interface, default route, Windows/provider route,
-  real FQDN/IP, DNS bypass, IPv6 bypass, metadata route or host gateway.
-
-### 6.6 Rollback and cleanup completeness
-
-- [ ] External before snapshot precedes run objects.
-- [ ] Every named and anonymous namespace is inventoried.
-- [ ] Every ruleset/interface/route/process/cgroup/filesystem/Podman object is
-  included.
-- [ ] Observer, signer, key and temp-root inventories are included.
-- [ ] Every deletion has a successful signed acknowledgment and absent-after
-  readback.
-- [ ] Deletion failures are fatal.
-- [ ] External after snapshot is equivalent to before within the declared
-  boundary.
-- [ ] Windows inventory exists or the claim is explicitly narrowed without
-  leaving a possible egress path.
-- [ ] PASS is absent until final cleanup verification.
-
-### 6.7 Durable replay
-
-- [ ] Nonce reservation is transactional and persistent.
-- [ ] Unique active lease prevents concurrent runs.
-- [ ] RESERVED cannot return to ISSUED.
-- [ ] Crash or boot change recovers only to consumed fail.
-- [ ] Append sequence and prior-event hash verify.
-- [ ] Ledger unavailability/corruption fails closed.
-- [ ] Replay after process/service restart is rejected.
-- [ ] No Production/shared database is used.
-
-### 6.8 Evidence and content safety
-
-- [ ] Resolver manifest lists all 45 artifact kinds.
-- [ ] Every artifact path is safe and every byte/hash/size/schema/signer is
-  verified.
-- [ ] Store is create-only, fsynced and immutable for the run.
-- [ ] Hash-chain root and independent review bundle resolve.
-- [ ] Raw prompts, outputs, bodies, headers, credentials, client data and
-  environment values are absent.
-- [ ] Fake canaries do not enter durable evidence.
-
-### 6.9 Protected repositories and authorization
-
-- [ ] Work was limited to the named Engineering Factory worktree and minimum
-  Brain checkpoint.
-- [ ] package-lock.json is unchanged.
-- [ ] Protected product worktrees are unchanged.
-- [ ] No WSL/container/firewall/network/database/build/test/runner command ran
-  during design.
-- [ ] No install, elevation, push, Preview, Production, deployment or migration
-  occurred.
-- [ ] The exact future authorization gates A-D are preserved.
-- [ ] Design completion is not presented as execution GO.
-
-## 7. Residual unknowns requiring later proof
-
-1. Whether the current host can provide a truly controller-owned outer
-   enforcement namespace that the rootless runtime owner cannot bypass.
-2. Whether a pre-anchored observer signer can be isolated from the controller
-   while still binding the exact capture process and namespace set.
-3. Whether complete interface capture with PACKET_STATISTICS yields zero drops
-   under the bounded mutation load.
-4. Whether Windows network state must be inside the proof boundary to exclude
-   every WSL escape route.
-5. Which concrete local immutable-store mechanism satisfies create-only,
-   fsync, resolution and independent-review requirements.
-6. Which final signature algorithms and key-custody mechanism the independent
-   reviewer will accept.
-7. Whether all 39 mutations can be executed without creating a restoration
-   risk unacceptable on the current host.
-
-These unknowns do not block review of the design. They do block every
-implementation-readiness, rehearsal and execution claim until proven.
-
-## 8. Final design verdict
-
-DESIGN_READY_FOR_INDEPENDENT_REVIEW
-
-This is not an execution GO.
-
-- executionAuthorized:false
-- syntheticFixtureExecutionAuthorized:false
-- realCandidateExecutionAuthorized:false
-- modelExecutionAuthorized:false
-- providerExecutionAuthorized:false
-- credentialsAuthorized:false
-- realCandidateInvocations:0
-- providerCalls:0
+- `I6_WINDOWS_OUTER_DENY_MUTATIONS`;
+- `I6_WSL_ROUTE_FIREWALL_MUTATIONS`;
+- `I6_RUNTIME_NAMESPACE_MUTATIONS`;
+- `I6_OBSERVER_MUTATIONS`;
+- `I6_SIGNER_MUTATIONS`;
+- `I6_BROKER_MUTATIONS`;
+- `I6_CLEANUP_MUTATIONS`;
+- `I6_LEDGER_CORRUPTION_MUTATIONS`.
+
+The D1 grant names one host/boot, component, mutation set, expiry and maximum use
+1. An observer grant cannot mutate Windows; a route grant cannot mutate signer,
+broker, cleanup or ledger; a subset cannot silently authorize 39 mutations.
+Outer deny must already be active before any WSL/helper/route mutation.
+
+### I7 - independent evidence review
+
+Requires `I7_INDEPENDENT_REVIEW` for one retained P0-P3 bundle. It authorizes
+read/verify/sign only. Reviewer and final approver remain distinct. Approver
+unavailable at expiry means no approval and anchored `CONSUMED_FAIL`.
+
+### I8 - PASS publication
+
+Requires `I8_PASS_PUBLICATION` for one already approved D3/P4 root. It can only
+ask the broker to create one D4 after anchored consume-pass. It cannot execute or
+reuse the nonce.
+
+## 12. What must not be built before proof
+
+- generic multi-candidate runner;
+- real CLI adapter or provider proxy;
+- credential/account/model integration;
+- UI/dashboard;
+- shared/Production evidence or replay service;
+- generalized plugin/connector/tool discovery;
+- telemetry, updater, downloader or package bootstrap;
+- retry path that reuses a nonce;
+- compatibility claim for a real product.
+
+## 13. Independent reviewer checklist
+
+### Schemas and semantics
+
+- [ ] Five separate schema IDs/kinds/versions are exact.
+- [ ] Every nested object is closed and every array typed/bounded.
+- [ ] D0 example validates and has every authorization false.
+- [ ] D4 has no structurally valid unsafe combination.
+- [ ] Duplicate keys are rejected before parse; JCS bytes and signature preimage
+  are exact.
+- [ ] Semantic validator inputs, outputs, exit codes and error IDs are complete.
+
+### Trust, DAG and ledger
+
+- [ ] OS, key and binary identities are pairwise unique across roles.
+- [ ] Trust roots/schema hashes are pre-anchored; rotation/revocation/recovery are
+  exact.
+- [ ] P0-P5 manifests contain no future artifact and each artifact has one
+  producer plus later typed consumers.
+- [ ] TPM NV head makes valid backup restore and cross-machine copy fail closed.
+- [ ] Reserve/lease/consume are atomic; crash/boot/expiry/approver timeout only
+  consume fail.
+
+### Windows/WSL and observer
+
+- [ ] Boot-time WFP/Hyper-V deny precedes WSL and every risky helper/route.
+- [ ] nft family/hook/priority/policy, interfaces and routes are exact.
+- [ ] DNS, IPv6, NAT64, mapped, metadata, loopback, link-local, multicast and
+  runtime-helper bypasses are closed.
+- [ ] netlink/eBPF/procfs/sysfs/devices/mounts/FDs/sockets are bound and watched.
+- [ ] Observer starts before first connected interface and capture attaches
+  while links are down.
+- [ ] Pristine, M16 and M17 envelopes/criteria are mutually coherent.
+- [ ] PACKET_STATISTICS and shutdown-after-kill are complete.
+
+### Broker, cleanup and mutations
+
+- [ ] Broker validates final path by handle, volume/file IDs, link/reparse/stream
+  state, exact share modes and security descriptor.
+- [ ] Every write/flush/readback/seal/index boundary and crash disposition is
+  deterministic.
+- [ ] Every created object has one typed deletion acknowledgment.
+- [ ] All 39 IDs have one real mutation, one gate and one error.
+- [ ] M04 mutates before gate 10; service/capture, clock, corruption, cleanup and
+  Windows multi-gate cases are split.
+- [ ] Restoration is byte/object exact and followed by a new pristine run.
+
+### Fake CLI and authority
+
+- [ ] Frame prefix is 4-byte big-endian; N excludes LF; LF is exactly 0x0A.
+- [ ] stdout/stderr drain concurrently and partial closures are deterministic.
+- [ ] timeout/cancel arbitration and environment values are exact.
+- [ ] opened-root identity prevents path/root replacement.
+- [ ] M01 is the only inert synthetic sentinel.
+- [ ] No real Codex/Claude/model/provider binary, module, SDK, account, login,
+  OAuth, key, endpoint, plugin, prompt, output or client data exists.
+- [ ] I1-I8 grants are explicit, one-shot where relevant and non-transitive.
+
+## 14. Residual unknowns by future gate
+
+| Future gate | Unknown requiring proof |
+| --- | --- |
+| I1/I2 | executable schema and semantic-validator conformance on adversarial vectors |
+| I3 | TPM NV availability, atomic recovery behavior and backup/copy rejection |
+| I4 | fake process byte/pipe behavior under the bounded harness |
+| I5 Windows | boot-time WFP binding can precede every WSL route |
+| I5 WSL | runtime owner cannot replace/bypass controller namespaces |
+| I5 observer | zero-loss pristine capture within the exact envelope |
+| I5 broker | NTFS crash/durability and security-descriptor behavior |
+| I6 | all real mutations can be restored exactly without unacceptable host risk |
+| I7 | independent reviewer accepts key custody, evidence and boundaries |
+| I8 | broker guard makes a single-component forged D4 impossible |
+
+These unknowns block implementation/rehearsal/PASS claims, but not independent
+review of this completed R2 design.
+
+## 15. Final state
+
+`DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`
+
+- `executionAuthorized:false`
+- `syntheticFixtureExecutionAuthorized:false`
+- `realCandidateExecutionAuthorized:false`
+- `providerExecutionAuthorized:false`
+- `realCandidateInvocations:0`
+- `providerCalls:0`

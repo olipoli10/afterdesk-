@@ -1,950 +1,838 @@
-# Authority V3 schema specification
+# Authority V3 R2 schema and semantic-validation specification
 
-Status: design-only; no runtime import is authorized
+Status: design-only; no runtime import or execution is authorized
 
-Schema version: 3
+Protocol version: `3.2.0`
 
-Kind: provider-free-synthetic-candidate-compatibility-authority
+Design verdict: `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`
 
-Scope: candidate-specific-provider-free-rehearsal
+## 1. Conformance model
 
-## 1. Normative rules
+The words MUST, MUST NOT, REQUIRED, SHALL and SHALL NOT are normative. An R2
+document is valid only when all four layers pass:
 
-The words MUST, MUST NOT, REQUIRED, SHALL and SHALL NOT are normative.
+1. raw-byte preparse validation;
+2. the exact JSON Schema identified by the admission point;
+3. canonical-byte and signature verification;
+4. `EF-AUTHORITY-V3-SEMVAL` version `3.2.0`.
 
-1. The authority is canonical UTF-8 JSON with sorted object keys, no duplicate
-   keys, no insignificant whitespace, integers only where the schema declares
-   integers, and RFC 3339 UTC timestamps with millisecond precision.
-2. Unknown fields are refused at every object level.
-3. All SHA-256 values are lowercase 64-character hexadecimal strings over the
-   exact stored bytes.
-4. Every artifact reference contains artifactId, kind, relativePath, sha256,
-   byteSize, mediaType, schemaId, producerIdentity, signerKeyId and
-   storageObjectId. Empty signerKeyId is permitted only for source bytes whose
-   integrity is anchored by Git and the signed resolver manifest.
-5. relativePath is a normalized relative path beneath one immutable evidence
-   root. Absolute paths, drive letters, parent segments, alternate data streams,
-   symlinks, junctions and hard links are refused.
-6. Any content-sensitive field name or value is forbidden. Forbidden classes
-   include prompt, completion, output text, client data, credentials, tokens,
-   cookies, authorization headers, request or response bodies, raw argv values
-   beyond the approved grammar tokens, and environment values.
-7. Artifact hashes alone are not evidence. Every required artifact MUST appear
-   in evidence.resolverManifest.artifacts and MUST be opened, size-checked,
-   hashed and schema-validated before GATE_V3_EVIDENCE_RESOLVED passes.
-8. No result with verdict SYNTHETIC_PASS may exist before
-   cleanup.finalExternalCleanupAttestation is resolved and
-   GATE_V3_EXTERNAL_CLEANUP_VERIFIED passes.
-9. The design instance has all authorization booleans false. A future issued
-   run may set only syntheticFixtureExecutionAuthorized to true after separate
-   explicit authorization. All other authorization constants remain false.
+Failure or unavailability of any layer is a refusal. JSON Schema success alone
+is never Authority V3 validity.
 
-## 2. Top-level object
+The executable bundle is
+`AUTHORITY_V3_CANDIDATE_COMPATIBILITY_SCHEMA_EXAMPLE.json`. It contains five
+separate schema definitions and one embedded D0 example. Product/runtime code
+MUST NOT import the design example.
 
-The exact top-level keys are:
+## 2. Document schema registry
 
-| Field | Type | Required rule |
-| --- | --- | --- |
-| schemaVersion | integer | constant 3 |
-| kind | string | constant provider-free-synthetic-candidate-compatibility-authority |
-| scope | string | constant candidate-specific-provider-free-rehearsal |
-| designMilestone | string | constant AUTHORITY_V3_CANDIDATE_COMPATIBILITY_DESIGN_ONLY in design artifacts |
-| executionAuthorized | boolean | constant false |
-| syntheticFixtureExecutionAuthorized | boolean | false in this milestone; the only field that a future separately approved run authority may set true |
-| realCandidateExecutionAuthorized | boolean | constant false |
-| modelExecutionAuthorized | boolean | constant false |
-| providerExecutionAuthorized | boolean | constant false |
-| credentialsAuthorized | boolean | constant false |
-| realCandidateInvocations | integer | constant 0 |
-| providerCalls | integer | constant 0 |
-| run | RunV3 | required |
-| candidateContract | CandidateContractV3 | required |
-| runtime | RuntimeV3 | required |
-| networkPolicy | NetworkPolicyV3 | required |
-| observer | ObserverV3 | required |
-| evidence | EvidenceV3 | required |
-| cleanup | CleanupV3 | required |
-| approvals | ApprovalsV3 | required |
-| result | ResultV3 | required |
+| Kind | Exact schema ID | Version | Authorization meaning |
+| --- | --- | --- | --- |
+| `authority-v3-static-design` | `urn:endvera:ef:authority-v3:static-design:3.2.0` | `3.2.0` | documentation only; every authorization false |
+| `authority-v3-issued-run-authority` | `urn:endvera:ef:authority-v3:issued-run-authority:3.2.0` | `3.2.0` | a future one-shot fake-fixture run only |
+| `authority-v3-post-run-evidence` | `urn:endvera:ef:authority-v3:post-run-evidence:3.2.0` | `3.2.0` | completed run evidence; no future execution |
+| `authority-v3-independent-review-decision` | `urn:endvera:ef:authority-v3:independent-review-decision:3.2.0` | `3.2.0` | approve/refuse one D2 only |
+| `authority-v3-final-pass-publication` | `urn:endvera:ef:authority-v3:final-pass-publication:3.2.0` | `3.2.0` | publish one already completed synthetic result only |
 
-## 3. Common types
+Each admission API supplies the expected schema ID out of band. The document
+cannot select its own verifier. The registry maps `(kind, schemaId, version)` to
+one local schema SHA-256. Network references, version ranges, aliases and
+fallback to an older schema are forbidden.
 
-### 3.1 IdentityV3
+## 3. Raw bytes, canonicalization and signatures
 
-Exact fields:
+### 3.1 Preparse
 
-- identityId: stable opaque identifier, 1 to 128 safe ASCII characters;
-- role: one of policy-authority, observer-signer, enforcement-controller,
-  runtime-supervisor, rootless-runtime-owner, evidence-store, replay-ledger,
-  cleanup-verifier or final-approver;
-- operatingSystemIdentity: content-free UID, SID or service-account identifier;
-- binarySha256: exact executable bytes;
-- configurationSha256: exact configuration bytes;
-- keyId: pinned key identifier or null when the role never signs;
-- publicKeySha256: pinned DER SubjectPublicKeyInfo hash or null;
-- authorityGeneration: positive integer;
-- trustRootRegistrySha256: hash of the pre-run trust-root registry.
+Before ordinary JSON parsing, a streaming tokenizer MUST reject:
 
-IdentityV3 MUST NOT include display names, email addresses, secrets or private
-key locations.
+- a UTF-8 BOM;
+- invalid UTF-8 or non-Unicode scalar values;
+- duplicate object keys at any depth;
+- comments, trailing commas or concatenated JSON values;
+- floating-point, exponential, NaN or Infinity tokens;
+- integers outside `[-9007199254740991, 9007199254740991]`.
 
-### 3.2 ArtifactReferenceV3
+The parser consumes exactly one JSON value and then EOF. Duplicate-key rejection
+MUST NOT rely on a parser whose object map has already overwritten a key.
 
-Exact fields:
+### 3.2 Canonical bytes
 
-- artifactId: unique opaque ID;
-- kind: registered artifact kind;
-- relativePath: safe path beneath the immutable evidence root;
-- sha256: exact-byte hash;
-- byteSize: non-negative integer;
-- mediaType: allowlisted media type;
-- schemaId: exact schema identifier or null for opaque binary bytes;
-- producerIdentity: IdentityV3 identityId;
-- signerKeyId: pinned signer key ID or null;
-- storageObjectId: create-only store receipt ID;
-- createdSequence: positive evidence-store sequence;
-- contentSensitive: constant false;
-- resolved: boolean, false until independent verification;
-- resolutionReceiptSha256: hash of the resolver receipt or null before
-  resolution.
+Profile `JCS-IJSON-INT53-R2` is RFC 8785 JCS with the preparse restrictions
+above. Submitted payload bytes MUST equal the JCS output exactly: UTF-8 without
+BOM, sorted object keys, no insignificant whitespace. Timestamps match
+`YYYY-MM-DDTHH:mm:ss.sssZ` exactly. SHA-256 is lowercase hexadecimal over exact
+stored bytes.
 
-### 3.3 SignedReceiptV3
+### 3.3 Signed envelope
 
-Exact fields:
-
-- receiptKind;
-- subjectSha256;
-- sequence;
-- issuedAt;
-- machineBootId;
-- monotonicNanoseconds;
-- signerKeyId;
-- signatureAlgorithm: an allowlisted algorithm pinned in the trust registry;
-- signatureBase64;
-- trustRootRegistrySha256.
-
-The receipt bytes themselves are an ArtifactReferenceV3.
-
-### 3.4 AbsentAttestationV3
-
-Exact fields:
-
-- componentName;
-- expectedPathOrLocatorClass;
-- searchBoundarySha256;
-- searchMethodSha256;
-- observedAbsent: constant true;
-- observerIdentity;
-- observedAtSequence;
-- receipt: ArtifactReferenceV3.
-
-An absent attestation is valid only when the search boundary and method are
-resolved and signed. A missing field or failed search is not absence.
-
-## 4. run: RunV3
-
-Exact fields and rules:
+Every signed object uses this shape, with `additionalProperties:false`:
 
 | Field | Type | Rule |
 | --- | --- | --- |
-| runId | UUID | unique v4 UUID |
-| oneShotNonce | SHA-256 | 256-bit random nonce represented by its SHA-256 |
-| issuedAt | timestamp | policy-authority wall time |
-| expiresAt | timestamp | later than issuedAt and within the approved maximum |
-| monotonicTimeSourceIdentity | string | exact clock source and implementation fingerprint |
-| monotonicIssuedNanoseconds | integer | non-negative |
-| machineBootId | string | exact boot identifier, not a hostname |
-| durableReplayLedgerEntry | DurableReplayLedgerEntryV3 | required |
-| sourceCommitSha | Git SHA-1 | exact Engineering Factory commit |
-| sourceTreeSha | Git tree SHA-1 | exact source tree |
-| sourceRepositoryIdentitySha256 | SHA-256 | repository identity without remote credentials |
-| authorityGenerationIdentity | IdentityV3 | policy authority |
-| approvalGenerationIdentity | IdentityV3 | independent final approver |
-| oneShotLease | OneShotLeaseV3 | required |
-| concurrencyIdentity | string | exact single-host concurrency domain |
-| runState | enum | DESIGN_ONLY, ISSUED, RESERVED, ACTIVE, TEARDOWN, CLEANUP_VERIFIED, REVIEWED, PASS_PUBLISHED or FAILED |
-| stateSequence | integer | positive, monotonically increasing |
-| priorStateReceiptSha256 | SHA-256 or null | null only for DESIGN_ONLY |
+| `payload` | object | exact family payload schema |
+| `signatures` | array | typed `SignatureR2`; `minItems:1`; unique `keyId` semantically |
 
-### 4.1 DurableReplayLedgerEntryV3
+`SignatureR2` has exact fields `keyId`, `role`, `algorithm`, `registryGeneration`,
+`signedAt`, `payloadSha256`, `signatureBase64Url`. `algorithm` is constant
+`ECDSA_P256_SHA256_IEEE_P1363`; decoded signature length is exactly 64 bytes.
 
-Exact fields:
+The signed bytes are exactly:
 
-- ledgerId;
-- ledgerSchemaVersion;
-- ledgerFileIdentitySha256;
-- nonceHash;
-- authorityGeneration;
-- state: DESIGN_ONLY, ISSUED, RESERVED, CONSUMED_PASS, CONSUMED_FAIL or
-  EXPIRED;
-- appendSequence;
-- priorEventHash;
-- eventHash;
-- transactionId;
-- reservationReceipt: ArtifactReferenceV3 or null in DESIGN_ONLY;
-- consumeReceipt: ArtifactReferenceV3 or null until consumed;
-- fsyncReceiptSha256;
-- integrityCheckReceiptSha256;
-- bootIdBinding;
-- expiresAt;
-- recoveryDisposition: none or fail-consumed-after-crash.
+```text
+ASCII("EF-AUTHORITY-V3-R2\0")
+|| UINT32_BE(length(UTF8(schemaId)))
+|| UTF8(schemaId)
+|| UINT64_BE(length(canonicalPayloadBytes))
+|| canonicalPayloadBytes
+```
 
-The ledger MUST enforce a unique constraint on nonceHash plus
-authorityGeneration and a unique active concurrency lease. RESERVED MUST never
-transition back to ISSUED.
+The signature array is outside `payload` and is not self-covered. Signature
+cardinality and required signer roles are family-specific and verified against
+the pre-anchored registry.
 
-### 4.2 OneShotLeaseV3
+## 4. Common closed structures
+
+Every object below has `additionalProperties:false`. Every array declares
+typed `items`, finite cardinality and `uniqueItems:true` where item equality is
+meaningful. Cross-item keys use semantic uniqueness rules.
+
+### 4.1 Scalar profiles
+
+- `Sha256R2`: lowercase 64-character hex.
+- `UuidR2`: lowercase RFC 4122 UUID string; D1 `runId` MUST be version 4.
+- `SafeIdR2`: 1-128 characters from `[A-Za-z0-9._:-]`.
+- `RelativePathR2`: 1-512 ASCII characters, `/` separator, no absolute prefix,
+  drive, colon, empty segment, `.`/`..`, trailing dot/space or alternate stream.
+- `UtcMillisR2`: exact UTC millisecond timestamp.
+- `SequenceR2`: integer 1 through `9007199254740991`.
+- `Base64Url64R2`: unpadded base64url encoding of exactly 64 bytes.
+
+### 4.2 RoleBindingR2
 
 Exact fields:
 
-- leaseId;
-- concurrencyIdentity;
-- ownerIdentity;
-- nonceHash;
-- acquiredSequence;
-- acquiredAt;
-- monotonicAcquiredNanoseconds;
-- bootId;
-- expiresAt;
-- state: DESIGN_ONLY, HELD, RELEASED_PASS, RELEASED_FAIL or RECOVERED_FAIL;
-- signedReceipt: ArtifactReferenceV3 or null in DESIGN_ONLY.
+- `role`: one value from the authoritative role registry;
+- `identityId`: `SafeIdR2`;
+- `operatingSystemIdentity`: canonical SID or `uid:<decimal>`;
+- `binarySha256` and `configurationSha256`;
+- `keyId`, `publicKeySpkiSha256` and `keyEpoch`;
+- `machineIdSha256` and `serviceLauncherSha256`;
+- `registryGeneration`.
 
-## 5. candidateContract: CandidateContractV3
+The authoritative role registry is:
 
-Exact fields:
+```text
+design-authority
+trust-registry-maintainer
+policy-authority
+replay-ledger-anchor
+windows-outer-deny-controller
+wsl-enforcement-controller
+observer-service
+observer-signer
+barrier-authority
+runtime-supervisor
+evidence-broker
+evidence-resolver
+semantic-validator
+evidence-assembler
+external-cleanup-verifier
+independent-reviewer
+final-approver
+pass-publisher
+```
 
-| Field | Type | Rule |
-| --- | --- | --- |
-| candidateKind | string | constant deterministic-fake-cli |
-| targetSurface | string | exact future candidate surface being shaped; not a product certification claim |
-| compatibilitySnapshotSha256 | SHA-256 | canonical snapshot containing only the approved interface contract |
-| fakeCliBinarySha256 | SHA-256 | exact future fake CLI executable bytes |
-| fakeCliWrapperSha256 | SHA-256 | exact wrapper bytes |
-| fakeCliSourceTreeSha256 | SHA-256 | source bundle tree fingerprint |
-| argvContract | ArgvContractV3 | required |
-| stdinContract | StdinContractV3 | required |
-| stdoutContract | StreamContractV3 | required |
-| stderrContract | StreamContractV3 | required |
-| exitContract | ExitContractV3 | required |
-| signalContract | SignalContractV3 | required |
-| environmentAllowlist | array | sorted unique variable names; values never persisted |
-| filesystemWorkspaceContract | FilesystemContractV3 | required |
-| forbiddenRealBinaryHashes | array of SHA-256 | non-empty when future real candidate hashes are known; exact absence is still required |
-| forbiddenRealBinaryPaths | array | canonical path classes; no user-specific secret path values |
-| providerSdkAbsenceAttestations | array of AbsentAttestationV3 | one per declared SDK/binary class |
-| noUpdateTelemetryBootstrapDiscoveryContract | NegativeCapabilityContractV3 | all fields true |
-| localRelayTuple | string | exact local synthetic relay IP and port |
-| fakePayloadSchemaSha256 | SHA-256 | fake-only request/response schema |
-| subprocessContract | SubprocessContractV3 | exact allowed process tree |
-| timeoutMilliseconds | integer | positive bounded value |
-| cancellationGraceMilliseconds | integer | non-negative bounded value |
-| maxCombinedRawStreamBytes | integer | positive bounded value |
+All eighteen bindings MUST be present exactly once in D1. `identityId`, OS
+identity, `keyId` and `binarySha256` are pairwise unique across all eighteen.
+The runtime owner and fixture identities are separate `SubjectBindingR2`
+objects and cannot equal an authoritative binding on any identity dimension.
 
-### 5.1 ArgvContractV3
+### 4.3 TrustRootRegistryR2
 
 Exact fields:
 
-- executableToken: constant ef-fake-candidate;
-- grammarVersion;
-- allowedSubcommand: constant compatibility-rehearsal;
-- allowedFlags: sorted exact flag descriptors;
-- forbiddenFlagPatterns: login, auth, provider, model, endpoint, update,
-  telemetry, connector, plugin, install, download and package-bootstrap
-  patterns;
-- dynamicValuesAllowed: runId, contract version, input framing version and
-  output framing version only;
-- promptOrPayloadInArguments: constant false;
-- unknownArgumentsRefused: constant true;
-- normalizedArgvSha256.
+- `registryId`, `registryGeneration`, `previousRegistrySha256`;
+- `createdAt`, `effectiveAnchorGeneration`;
+- `machineIdSha256`, `tpmRegistryNvIndex`, `tpmKeyNameSha256`;
+- `schemaMappings`: 5 typed unique `SchemaMappingR2` entries;
+- `artifactMappings`: exact typed `ArtifactKindMappingR2` registry;
+- `keys`: 18 typed unique `TrustKeyR2` entries;
+- `recoveryKeys`: exactly three offline distinct-custodian public keys;
+- `rotations`: typed array, 0-64 items;
+- `revocations`: typed array, 0-64 items;
+- `compromiseRecoveries`: typed array, 0-16 items;
+- `recoveryPolicySha256`;
+- `tpmAnchorReceipt`: typed `AnchorReceiptR2`.
 
-### 5.2 StdinContractV3
+`SchemaMappingR2` has `kind`, `schemaId`, `schemaVersion`, `schemaSha256` and
+`semanticProfileId`. `TrustKeyR2` has role, key ID, SPKI hash, constant
+algorithm, epoch, validity interval, status (`ACTIVE` or `REVOKED`) and effective
+anchor generations. A `RotationR2` names old/new keys and epochs and carries
+old-key, new-key, registry-maintainer and final-approver signature references.
+A `RevocationR2` names the key, reason-class enum, effective anchor generation,
+registry signature and final-approver signature.
 
-Exact fields:
+`CompromiseRecoveryR2` names old/new registry hashes and ledger IDs, every
+revoked key, the receipt consuming all outstanding nonces as failed, exactly two
+of the three offline recovery signatures, the final-approver signature and the
+new TPM anchor receipt. No recovery key is a run role or stored online.
 
-- framing: length-prefixed-json-lines;
-- schemaSha256;
-- maximumFrameBytes;
-- maximumFrameCount;
-- fakePayloadOnly: constant true;
-- endOfStreamRequired: constant true;
-- malformedFrameBehavior: constant refuse-before-relay;
-- sensitiveContentAllowed: constant false;
-- inputDigestProjectedToEvidence: constant false.
+### 4.4 SignedReceiptR2
 
-### 5.3 StreamContractV3
+Every gate/authority/signature receipt is a closed typed object with receipt ID,
+one exact receipt-kind enum, subject hash, sequence, UTC/monotonic time,
+machine/Windows-boot/WSL-boot bindings, signer role, registry hash and one
+`SignatureR2`. The executable receipt-kind registry covers admission, observer,
+outer deny, reserve/lease, source/runtime/prebind, firewall, capture/rebind,
+barrier, drift, block/kill, teardown, deletion, cleanup, store, resolution,
+review, consume and PASS-create receipts.
 
-Exact fields:
-
-- framing;
-- allowedEnvelopeSchemaSha256;
-- maximumFrameBytes;
-- maximumTotalBytes;
-- backpressureMode: bounded-blocking;
-- rawBytesEphemeral: constant true;
-- rawBytesPersisted: constant false;
-- contentFieldsPersisted: constant false;
-- truncationBehavior: constant kill-and-fail;
-- malformedEnvelopeBehavior: constant kill-and-fail.
-
-### 5.4 ExitContractV3 and SignalContractV3
-
-ExitContractV3 exact fields:
-
-- successCode: 0;
-- refusalCodes: exact map of named code to gate-safe reason class;
-- internalFailureCode;
-- timeoutCode;
-- cancellationCode;
-- unknownExitFails: true.
-
-SignalContractV3 exact fields:
-
-- acceptedSupervisorSignals: exact ordered list;
-- candidateMayHandle: false for KILL and true only for the named graceful
-  cancellation signal;
-- cancellationSequenceSha256;
-- blockBeforeKillRequired: true;
-- unexpectedSignalFails: true.
-
-### 5.5 FilesystemContractV3
+### 4.5 ArtifactReferenceR2
 
 Exact fields:
 
-- bundleRootReadOnly;
-- workspaceRoot;
-- resultRoot;
-- tmpfsRoots;
-- allowedReadObjects: array of ArtifactReferenceV3;
-- allowedWriteRelativePaths: exact allowlist;
-- maximumWriteBytes;
-- maximumFiles;
-- symlinksAllowed: false;
-- hardLinksAllowed: false;
-- deviceNodesAllowed: false;
-- hostMountsAllowed: false;
-- runtimeSocketMountsAllowed: false;
-- gitMetadataMode: none or private-detached-copy;
-- parentRepositoryReachable: false;
-- postRunWorkspaceTreeSha256;
+- `artifactId`, `artifactKind`, `schemaId`;
+- `phase`: `P0`, `P1`, `P2`, `P3`, `P4` or `P5`;
+- `producerRole`, `producerIdentityId`;
+- `consumerRoles`: typed unique non-empty role array;
+- `signerKeyId`;
+- `relativePath`, `volumeGuid`, `fileId128`, `linkCount` constant 1;
+- `byteSize`, `sha256`, `mediaType`;
+- `storageObjectId`, `storeReceiptSha256`, `producedSequence`;
+- `contentSensitive` constant false.
 
-### 5.6 NegativeCapabilityContractV3
+An artifact reference never has a mutable `resolved` boolean. Resolution is a
+separate signed `ResolutionReceiptR2`, so production cannot claim its own later
+verification.
 
-All exact boolean fields are true:
+`ArtifactConsumptionR2` has artifact ID, consumer role/identity, strictly later
+consumption sequence, exact purpose enum and receipt hash. The producer declares
+expected consumer roles; actual consumption is recorded only in a later-created
+manifest, never predicted as future evidence.
 
-- providerSdkAbsent;
-- providerBinaryAbsent;
-- modelBinaryAbsent;
-- loginDisabled;
-- accountDiscoveryDisabled;
-- oauthDisabled;
-- apiKeyInputDisabled;
-- updateDisabled;
-- downloadDisabled;
-- packageBootstrapDisabled;
-- telemetryDisabled;
-- connectorDiscoveryDisabled;
-- pluginDiscoveryDisabled;
-- externalToolDiscoveryDisabled;
-- inheritedProxyDisabled;
-- inheritedCredentialDiscoveryDisabled.
+`ResolutionReceiptR2` contains artifact ID, opened final path, volume/file IDs,
+link count, reparse tag, stream names, observed size/hash/schema/kind/signer,
+expected values, resolver identity, sequence and result. PASS requires result
+`MATCH` for every referenced artifact.
 
-## 6. runtime: RuntimeV3
+### 4.6 PhaseManifestR2
 
 Exact fields:
 
-- wsl: ComponentMeasurementV3;
-- kernel: ComponentMeasurementV3;
-- podman: ComponentMeasurementV3;
-- crun: ComponentMeasurementV3;
-- netavark: ComponentOrAbsentV3;
-- aardvark: ComponentOrAbsentV3;
-- slirp4netns: ComponentOrAbsentV3;
-- pasta: ComponentOrAbsentV3;
-- seccompProfile: ComponentMeasurementV3;
-- ociSpec: ArtifactReferenceV3;
-- imageDigest: OCI digest;
-- imageManifest: ArtifactReferenceV3;
-- uidMap: exact ordered mappings;
-- gidMap: exact ordered mappings;
-- capabilities: exact permitted, effective, inheritable, ambient and bounding
-  sets, all empty for the fake CLI;
-- mounts: exact ordered mount objects;
-- devices: exact ordered device objects, empty unless the design names one;
-- inheritedFileDescriptors: exact array, only stdin/stdout/stderr plus approved
-  barrier descriptors;
-- inheritedSockets: exact array, empty;
-- cgroupIdentity;
-- cgroupControllers and exact limits;
-- pidNamespaceInode;
-- userNamespaceInode;
-- networkNamespaceInode;
-- mountNamespaceInode;
-- controllerIdentity: IdentityV3;
-- runtimeOwnerIdentity: IdentityV3;
-- supervisorIdentity: IdentityV3;
-- immutableNamespaceBinding: NamespaceBindingV3;
-- runtimeInspectArtifact: ArtifactReferenceV3;
-- ociStateArtifact: ArtifactReferenceV3;
-- processTreeArtifact: ArtifactReferenceV3;
-- fdSocketInventoryArtifact: ArtifactReferenceV3;
-
-### 6.1 ComponentMeasurementV3
-
-Exact fields:
-
-- name;
-- version;
-- binaryPathClass;
-- binarySha256;
-- packageOrBuildIdentitySha256;
-- configurationSha256;
-- observedByIdentity;
-- measurementReceipt: ArtifactReferenceV3.
-
-ComponentOrAbsentV3 is exactly one of ComponentMeasurementV3 or
-AbsentAttestationV3.
-
-### 6.2 NamespaceBindingV3
-
-Exact fields:
-
-- bindingSequence;
-- capturedAt;
-- monotonicNanoseconds;
-- machineBootId;
-- candidatePid;
-- candidatePidStartTimeTicks;
-- pidNamespaceInode;
-- userNamespaceInode;
-- networkNamespaceInode;
-- mountNamespaceInode;
-- enforcementNamespaceInode;
-- namespaceOwnerUid;
-- interfaceInventorySha256;
-- routeInventorySha256;
-- rulesetSha256;
-- ociSpecSha256;
-- processTreeSha256;
-- cgroupSha256;
-- fdSocketInventorySha256;
-- controllerReceipt: ArtifactReferenceV3;
-- observerReceipt: ArtifactReferenceV3;
-- stableThroughBarrierRelease: boolean.
-
-The final binding MUST be captured after firewall readback and observer
-readiness, immediately before barrier release.
-
-## 7. networkPolicy: NetworkPolicyV3
-
-Exact fields:
-
-- policyId;
-- policyGeneration;
-- hostEnforcementNamespaceInode;
-- hostEnforcementNamespaceOwnerIdentity;
-- candidateNamespaceInode;
-- relayNamespaceInode;
-- fakeDnsNamespaceInode;
-- fakeProviderNamespaceInode;
-- canonicalRulesetObjects: non-empty ordered array of CanonicalRulesetV3;
-- normalizedRulesetSha256;
-- familyHookPriorityPolicyBindings: exact ordered array;
-- interfaceIdentities: exact ordered array of name, ifindex, MAC hash, peer
-  ifindex, namespace inode and owner;
-- routeObjects: exact ordered array of RouteObjectV3;
-- candidateToRelayRoute: exact tuple;
-- relayToFakeDnsRoute: exact tuple;
-- relayToFakeProviderRoute: exact tuple;
-- allOtherTrafficDeny: true;
-- windowsRoutesPresent: false;
-- providerRoutesPresent: false;
-- providerFqdnOrIpPresent: false;
-- unmanagedInterfacePresent: false;
-- defaultRoutePresent: false;
-- dnsControls: DnsControlsV3;
-- ipv6Controls: Ipv6ControlsV3;
-- metadataControls: MetadataControlsV3;
-- hostGatewayControls: HostGatewayControlsV3;
-- runtimeHelperControls: RuntimeHelperControlsV3;
-- installReceipt: ArtifactReferenceV3;
-- readbackReceipt: ArtifactReferenceV3;
-- finalRebindReceipt: ArtifactReferenceV3;
-- continuousDriftLog: ArtifactReferenceV3;
-
-### 7.1 CanonicalRulesetV3
-
-Exact fields:
-
-- namespaceInode;
-- family;
-- table;
-- chain;
-- hook;
-- priority;
-- policy;
-- interfaceMatch;
-- sourcePrefix;
-- destinationPrefix;
-- protocol;
-- sourcePort;
-- destinationPort;
-- conntrackStates;
-- verdict;
-- counterName;
-- ruleHandle;
-- normalizedObjectSha256.
-
-The complete normalized object array is retained. A single aggregate hash is
-insufficient.
-
-### 7.2 RouteObjectV3
-
-Exact fields:
-
-- namespaceInode;
-- family;
-- destinationPrefix;
-- sourcePrefix;
-- gateway;
-- outputInterfaceIfindex;
-- routeTable;
-- routeType;
-- metric;
-- protocol;
-- scope;
-- allowedPurpose.
-
-No Windows route, Internet route, provider FQDN/IP, default route, unmanaged
-interface or host gateway route is allowed.
-
-### 7.3 DNS, IPv6, metadata, host gateway and helper controls
-
-DnsControlsV3 exact fields:
-
-- candidateResolverConfigured: false;
-- directUdp53Allowed: false;
-- directTcp53Allowed: false;
-- dotAllowed: false;
-- dohAllowed: false;
-- relayFakeDnsTuple;
-- resolvConfSha256;
-- hostsFileSha256.
-
-Ipv6ControlsV3 exact fields:
-
-- candidateIpv6Addresses: empty array;
-- candidateIpv6Routes: empty array;
-- ipv6RulesetPolicyDrop: true;
-- ipv4MappedIpv6Denied: true;
-- nat64Denied: true.
-
-MetadataControlsV3 exact fields:
-
-- ipv4LinkLocalDenied: true;
-- ipv6LinkLocalDenied: true;
-- cloudMetadataPrefixes: exact denied list;
-- unixMetadataSockets: empty.
-
-HostGatewayControlsV3 exact fields:
-
-- loopbackExceptSelfDenied: true;
-- hostGatewayRoutePresent: false;
-- hostAliasesPresent: false;
-- windowsInteropPresent: false;
-- runtimeSocketPresent: false.
-
-RuntimeHelperControlsV3 exact fields:
-
-- netavark: ComponentOrAbsentV3;
-- aardvark: ComponentOrAbsentV3;
-- slirp4netns: ComponentOrAbsentV3;
-- pasta: ComponentOrAbsentV3;
-- helperProcessInventory: ArtifactReferenceV3;
-- unexpectedHelperCount: 0.
-
-## 8. observer: ObserverV3
-
-Exact fields:
-
-- observerId;
-- trustRootRegistrySha256;
-- prePinnedPublicKeySha256;
-- signerKeyId;
-- signerIdentity: IdentityV3;
-- signerRotationPolicySha256;
-- observerBinarySha256;
-- observerRuntimeSha256;
-- observerConfigurationSha256;
-- namespaceInodes: non-empty sorted array;
-- cgroupIdentity;
-- capabilities;
-- uid;
-- gid;
-- completeInterfaceSet: non-empty array of ObserverInterfaceV3;
-- serviceReadyAttestation: ArtifactReferenceV3;
-- serviceReadyBeforeNonceReservation: true;
-- captureReadyAttestation: ArtifactReferenceV3;
-- captureReadyBeforeBarrierRelease: true;
-- monotonicTimeline: ArtifactReferenceV3;
-- rawMetadataLog: ArtifactReferenceV3;
-- perObserverDistribution: ArtifactReferenceV3;
-- packetStatistics: array of PacketStatisticsV3;
-- socketBufferBytes;
-- kernelDrops: 0;
-- unclassifiedEvents: 0;
-- sequenceGapCount: 0;
-- shutdownAttestation: ArtifactReferenceV3;
-- shutdownComplete: boolean;
-- signerSubstitutionRefused: boolean;
-- contentCaptureEnabled: false.
-
-### 8.1 ObserverInterfaceV3
-
-Exact fields:
-
-- namespaceInode;
-- interfaceName;
-- ifindex;
-- peerIfindex;
-- linkType;
-- observedDirections: exact array containing ingress and egress;
-- expectedPurpose;
-- observerProcessIdentity;
-- observerConfigurationSha256;
-- readySequence;
-- shutdownSequence;
-- eventCount;
-- classifiedEventCount;
-- unclassifiedEventCount: 0;
-- firstMonotonicNanoseconds;
-- lastMonotonicNanoseconds.
-
-### 8.2 PacketStatisticsV3
-
-Exact fields:
-
-- observerProcessIdentity;
-- namespaceInode;
-- ifindex;
-- socketBufferRequestedBytes;
-- socketBufferEffectiveBytes;
-- packetStatisticsAvailable: true;
-- packetsDelivered;
-- packetsDroppedByKernel: 0;
-- queueFreezeCount;
-- statisticsReadAtShutdown: true;
-- receipt: ArtifactReferenceV3.
-
-An unavailable PACKET_STATISTICS result is fatal. It cannot be represented as
-zero drops.
-
-### 8.3 Observer event schema
-
-Every metadata event has:
-
-- schemaVersion: 3;
-- observerId;
-- signerEpoch;
-- sequence;
-- priorEventHash;
-- eventHash;
-- monotonicNanoseconds;
-- timeSourceIdentity;
-- machineBootId;
-- namespaceInode;
-- ifindex;
-- direction;
-- linkProtocolClass;
-- networkProtocolClass;
-- sourceClass;
-- destinationClass;
-- sourcePortClass;
-- destinationPortClass;
-- packetLength;
-- classification;
-- killSwitchPhase;
-- contentCaptured: false.
-
-No address, body, header, query, credential, prompt or output content is
-retained. Exact allowed synthetic tuple identities are represented by stable
-classes bound in the policy, not user content.
-
-## 9. evidence: EvidenceV3
-
-The selected implementation target is the separate Windows-host,
-service-identity NTFS evidence broker defined by the ADR. Its create-new,
-write-through, FlushFileBuffers, ACL-seal and readback receipts are required
-artifacts. This specification does not authorize creating that service or
-store.
-
-Exact fields:
-
-- storeIdentity: IdentityV3;
-- storeRootIdentitySha256;
-- immutableStoragePolicySha256;
-- createOnly: true;
-- resolverManifest: ResolverManifestV3;
-- allArtifactsResolved: boolean;
-- allArtifactsByteVerified: boolean;
-- signedHashChainRoot: ArtifactReferenceV3;
-- independentReviewerBundle: ArtifactReferenceV3;
-- contentSensitiveFieldsPresent: false;
-- storeFsyncReceipt: ArtifactReferenceV3;
-- storeCloseReceipt: ArtifactReferenceV3;
-- evidenceGenerationSequence;
-- passArtifactReference: ArtifactReferenceV3 or null;
-
-### 9.1 ResolverManifestV3
-
-Exact fields:
-
-- schemaVersion: 3;
-- runId;
-- authoritySha256;
-- evidenceRootIdentitySha256;
-- artifacts: exact non-empty array of ArtifactReferenceV3;
-- requiredArtifactKinds: exact sorted array;
-- hashAlgorithm: sha256;
-- pathPolicySha256;
-- symlinkCount: 0;
-- hardLinkCount: 0;
-- missingArtifactCount: 0;
-- sizeMismatchCount: 0;
-- hashMismatchCount: 0;
-- schemaMismatchCount: 0;
-- signerMismatchCount: 0;
-- resolverIdentity: IdentityV3;
-- resolverBinarySha256;
-- resolutionSequenceStart;
-- resolutionSequenceEnd;
-- resolutionReceipt: ArtifactReferenceV3.
-
-Required artifact kinds are:
-
-1. authority-v3;
-2. trust-root-registry;
-3. replay-reservation-receipt;
-4. replay-consume-receipt;
-5. compatibility-snapshot;
-6. fake-cli-binary;
-7. fake-cli-wrapper;
-8. fake-cli-source-tree;
-9. fake-payload-schema;
-10. provider-sdk-absence-attestations;
-11. runtime-component-measurements;
-12. oci-spec;
-13. image-manifest;
-14. runtime-inspect;
-15. oci-state;
-16. process-tree;
-17. fd-socket-inventory;
-18. namespace-prebind;
-19. canonical-ruleset-objects;
-20. route-and-interface-inventory;
-21. firewall-install-receipt;
-22. firewall-readback-receipt;
-23. observer-service-ready-attestation;
-24. observer-capture-ready-attestation;
-25. observer-raw-metadata-log;
-26. observer-monotonic-timeline;
-27. observer-per-interface-distribution;
-28. observer-packet-statistics;
-29. final-rebind-receipt;
-30. continuous-drift-log;
-31. kill-switch-proof;
-32. process-cgroup-teardown;
-33. privileged-deletion-acknowledgments;
-34. external-before-snapshot;
-35. external-after-snapshot;
-36. external-cleanup-verification;
-37. observer-shutdown-attestation;
-38. signer-chain-verification;
-39. real-mutation-manifest;
-40. per-mutation-evidence;
-41. source-and-state-restoration-proof;
-42. evidence-hash-chain-root;
-43. independent-reviewer-bundle;
-44. final-review-decision;
-45. synthetic-pass-pointer, only when all gates passed.
-
-## 10. cleanup: CleanupV3
-
-Exact fields:
-
-- externalBeforeSnapshot: ArtifactReferenceV3;
-- externalAfterSnapshot: ArtifactReferenceV3;
-- anonymousNamespaceInventories: array of NamespaceInventoryV3;
-- rulesetInventoryBefore: ArtifactReferenceV3;
-- rulesetInventoryAfter: ArtifactReferenceV3;
-- interfaceInventoryBefore: ArtifactReferenceV3;
-- interfaceInventoryAfter: ArtifactReferenceV3;
-- routeInventoryBefore: ArtifactReferenceV3;
-- routeInventoryAfter: ArtifactReferenceV3;
-- processInventoryBefore: ArtifactReferenceV3;
-- processInventoryAfter: ArtifactReferenceV3;
-- cgroupInventoryBefore: ArtifactReferenceV3;
-- cgroupInventoryAfter: ArtifactReferenceV3;
-- filesystemInventoryBefore: ArtifactReferenceV3;
-- filesystemInventoryAfter: ArtifactReferenceV3;
-- podmanInventoryBefore: ArtifactReferenceV3;
-- podmanInventoryAfter: ArtifactReferenceV3;
-- observerInventoryBefore: ArtifactReferenceV3;
-- observerInventoryAfter: ArtifactReferenceV3;
-- signerInventoryBefore: ArtifactReferenceV3;
-- signerInventoryAfter: ArtifactReferenceV3;
-- keyInventoryBefore: ArtifactReferenceV3;
-- keyInventoryAfter: ArtifactReferenceV3;
-- tempRootInventoryBefore: ArtifactReferenceV3;
-- tempRootInventoryAfter: ArtifactReferenceV3;
-- windowsNetworkInventory: ArtifactReferenceV3 or BoundaryLimitationV3;
-- deletionAcknowledgments: non-empty array of DeletionAcknowledgmentV3;
-- deletionFailureCount: 0;
-- residualObjectCount: 0;
-- beforeAfterEquivalent: true;
-- finalExternalCleanupAttestation: ArtifactReferenceV3 or null until complete;
-- finalCleanupAttestationSequence;
-- passArtifactObservedBeforeFinalCleanup: false;
-
-NamespaceInventoryV3 exact fields include every namespace inode, type, owner,
-open-reference process, interfaces, routes, rulesets, peer relationships and
-inventory receipt. Anonymous namespaces MUST be enumerated through process and
-runtime references; named ip-netns output alone is insufficient.
-
-DeletionAcknowledgmentV3 exact fields:
-
-- objectKind;
-- objectIdentity;
-- deleteRequestedSequence;
-- deleteCompletedSequence;
-- commandOrApiIdentitySha256;
-- exitStatus;
-- stderrClass;
-- objectAbsentAfterDelete: true;
-- controllerSignerKeyId;
-- receipt: ArtifactReferenceV3.
-
-Any missing acknowledgment, non-zero exit, unverifiable stderr class or object
-still present makes cleanup fatal.
-
-BoundaryLimitationV3 exact fields:
-
-- boundaryName;
-- limitation;
-- affectedClaims;
-- reviewerDisposition: must-refuse or accepted-non-claim;
-- signedReceipt.
-
-A Windows inventory limitation can only narrow the proof to a boundary with no
-Windows claim. It cannot waive evidence of a route that could carry fixture
-traffic outside WSL.
-
-## 11. approvals: ApprovalsV3
-
-Exact fields:
-
-- policyAuthorityReceipt: ArtifactReferenceV3;
-- observerSignerReceipt: ArtifactReferenceV3;
-- controllerReadbackReceipt: ArtifactReferenceV3;
-- signerChainVerification: ArtifactReferenceV3;
-- cleanupVerifierReceipt: ArtifactReferenceV3 or null until cleanup;
-- independentReviewerBundle: ArtifactReferenceV3 or null until review;
-- finalReviewDecision: ArtifactReferenceV3 or null until review;
-- reviewerIdentity: IdentityV3;
-- reviewerIndependentFromProducers: boolean;
-- requiredGateNames: exact ordered gate registry;
-- passedGateNames: exact ordered subset;
-- failedGateNames: exact ordered subset;
-- approvalState: DESIGN_ONLY, NOT_REVIEWED, REFUSED or APPROVED_SYNTHETIC_PASS;
-
-reviewerIndependentFromProducers is true only when the reviewer key ID, OS
-identity and binary identity differ from policy, observer, controller,
-supervisor, runtime owner, evidence-store and replay-ledger producers.
-
-## 12. result: ResultV3
-
-Exact fields:
-
-- verdict: DESIGN_ONLY, SYNTHETIC_PASS, SYNTHETIC_FAIL or QUARANTINED;
-- designVerdict: DESIGN_READY_FOR_INDEPENDENT_REVIEW,
-  DESIGN_NEEDS_REVISION or DESIGN_BLOCKED;
-- syntheticPassPublished: boolean;
-- passPublicationSequence: integer or null;
-- passPublicationReceipt: ArtifactReferenceV3 or null;
-- cleanupVerifiedBeforePass: boolean;
-- allEvidenceResolvedBeforePass: boolean;
-- independentApprovalBeforePass: boolean;
-- executionAuthorized: false;
-- realCandidateExecutionAuthorized: false;
-- modelExecutionAuthorized: false;
-- providerExecutionAuthorized: false;
-- credentialsAuthorized: false;
-- realCandidateInvocations: 0;
-- providerCalls: 0;
-- residualUnknowns: array of content-free reason codes.
-
-In a design artifact, verdict is DESIGN_ONLY and syntheticPassPublished is
-false. SYNTHETIC_PASS requires syntheticFixtureExecutionAuthorized true in the
-pre-run authority plus every gate through GATE_V3_PASS_PUBLICATION.
-
-## 13. Gate registry
-
-The exact ordered gate names are:
-
-1. GATE_V3_DESIGN_SCOPE_STATIC
-2. GATE_V3_AUTHORITY_SIGNATURE_VALID
-3. GATE_V3_OBSERVER_SERVICE_READY
-4. GATE_V3_REPLAY_RESERVATION_DURABLE
-5. GATE_V3_SINGLE_RUN_LEASE_HELD
-6. GATE_V3_SOURCE_AND_CONTRACT_BOUND
-7. GATE_V3_PROVIDER_COMPONENTS_ABSENT
-8. GATE_V3_RUNTIME_CHAIN_BOUND
-9. GATE_V3_NAMESPACE_PREBIND_VALID
-10. GATE_V3_FIREWALL_INSTALLED
-11. GATE_V3_FIREWALL_READBACK_EXACT
-12. GATE_V3_OBSERVER_READY_INDEPENDENT
-13. GATE_V3_FINAL_REBIND_STABLE
-14. GATE_V3_BARRIER_RELEASE_AUTHORIZED
-15. GATE_V3_CONTINUOUS_DRIFT_CLEAR
-16. GATE_V3_OBSERVER_COMPLETENESS
-17. GATE_V3_KILL_SWITCH_BLOCK_BEFORE_KILL
-18. GATE_V3_PROCESS_CGROUP_TEARDOWN
-19. GATE_V3_PRIVILEGED_CLEANUP_ACKNOWLEDGED
-20. GATE_V3_EXTERNAL_CLEANUP_VERIFIED
-21. GATE_V3_EVIDENCE_RESOLVED
-22. GATE_V3_SIGNER_CHAIN_VALID
-23. GATE_V3_INDEPENDENT_REVIEW_APPROVED
-24. GATE_V3_PASS_PUBLICATION
-
-No gate may be skipped. A later gate receipt MUST bind the prior gate receipt
-hash and monotonically greater sequence. Any failure transitions the durable
-nonce to CONSUMED_FAIL after the safest available block and cleanup sequence.
-
-## 14. Signature verification order
-
-The verifier MUST:
-
-1. parse exact canonical JSON and reject unknown fields;
-2. resolve and verify the pre-run trust-root registry;
-3. verify policy-authority key ID, generation and signature;
-4. verify observer-service readiness under the pre-pinned observer key before
-   durable nonce reservation;
-5. verify source commit/tree and compatibility-snapshot bytes;
-6. verify durable replay reservation and active lease receipts;
-7. verify per-interface observer capture readiness before barrier release;
-8. verify controller readback under the controller key;
-9. resolve every artifact and recompute every hash and size;
-10. verify observer event chain, packet statistics and shutdown signature;
-11. verify controller deletion acknowledgments;
-12. verify external cleanup attestation under the cleanup-verifier identity;
-13. verify replay consume receipt;
-14. verify independent reviewer identity and final approval signature;
-15. verify PASS was absent before step 14 and published only afterward.
-
-Clock, ledger, signer, evidence store or trust-root unavailability is a refusal,
-not a retry under weaker controls.
-
-## 15. Design-only example
-
-AUTHORITY_V3_CANDIDATE_COMPATIBILITY_SCHEMA_EXAMPLE.json is a non-runtime JSON
-Schema example for static review. Product or runtime code MUST NOT import it.
-It does not authorize a ledger, signer, controller, observer or rehearsal.
+- `manifestId`, `runId`, `phase`; run ID is null only for P0 and exact D1 run ID
+  for P1-P5;
+- `priorPhaseRootSha256`: null only for P0;
+- `artifacts`: 1-256 typed unique references;
+- `consumptions`: 0-256 typed unique consumption receipts;
+- `firstProducedSequence`, `lastProducedSequence`;
+- `artifactMerkleRootSha256`, `manifestRootSha256`;
+- `producerRole`, `signerKeyId`, `signatureReceiptSha256`.
+
+A phase manifest lists only already stored artifacts from its own phase and only
+consumptions that already occurred. It does not list itself, its storage
+receipt, a future phase or an expected artifact.
+The issued authority carries `ArtifactKindMappingR2` expectations instead.
+
+### 4.7 ArtifactKindMappingR2
+
+Exact fields are `artifactKind`, `schemaId`, `phase`, `producerRole`,
+`requiredSignerRole`, `firstConsumerRole`, `minimumCount`, `maximumCount`.
+Every artifact kind maps to exactly one producer role and phase. The semantic
+validator rejects producer or signer substitutions even when the artifact
+reference is otherwise well formed.
+
+## 5. D0 static design payload
+
+D0 has exactly these fields:
+
+- `schemaId`, `schemaVersion`, `kind`;
+- `designMilestone` constant
+  `AUTHORITY_V3_CANDIDATE_COMPATIBILITY_DESIGN_REVISION_R2_ONLY`;
+- `designVerdict` constant `DESIGN_READY_FOR_INDEPENDENT_REVIEW_R2`;
+- the six authorization booleans, all false;
+- `realCandidateInvocations:0`, `providerCalls:0`;
+- `schemaFamily`: exact five schema IDs in document order;
+- `gateRegistry`: exact 24 gates in order;
+- `mutationRegistry`: exact 39 R2 mutation IDs in order;
+- `semanticValidator`: `id`, `version`, `required:true`, exact error-ID registry;
+- `claimBoundary` constant `SYNTHETIC_FIXTURE_COMPATIBILITY_ONLY`.
+
+No D0 field can be interpreted as a nonce, lease, signature authority or run
+grant. The embedded JSON example is a D0 payload and visibly keeps
+`executionAuthorized:false`.
+
+## 6. D1 issued run authority payload
+
+D1 can be created only in a future separately authorized phase. It has exactly:
+
+### 6.1 Header and one-shot authority
+
+- `schemaId`, `schemaVersion`, `kind`;
+- `claimBoundary:SYNTHETIC_FIXTURE_COMPATIBILITY_ONLY`;
+- `executionAuthorized:true`;
+- `syntheticFixtureExecutionAuthorized:true`;
+- real candidate/model/provider/credential booleans false;
+- invocation/provider counters 0;
+- `runId`, `nonceHash`, `issuedAt`, `expiresAt`;
+- `authorityGeneration`, `machineBinding`, `sourceBinding`;
+- `trustRegistrySha256`, `designRootSha256`;
+- exact `roleBindings` and untrusted `subjectBindings`;
+- exact, non-transitive `authorityGrants`;
+- `expectedArtifactRegistry`;
+- `candidateContract`, `runtimeContract`, `networkContract`, `observerContract`,
+  `evidenceBrokerContract`, `ledgerContract`.
+
+`MachineBindingR2` contains TPM endorsement-key-name hash, non-migratable ledger
+key name hash, machine ID hash, Windows boot instance ID, WSL boot ID, Secure
+Boot state, PCR selection and expected PCR digest. Hostname alone is forbidden.
+
+`SourceBindingR2` contains repository identity hash, commit/tree IDs, bundle tree
+hash, fake binary/wrapper/source hashes, payload-schema hash and schema-bundle
+hash. It contains no real candidate hash except the M01 synthetic sentinel hash.
+
+### 6.2 Non-transitive grants
+
+`AuthorityGrantR2` exact fields are grant ID, authority class, component role,
+mutation IDs, host/machine/boot binding, source/tree, not-before/expires, one-shot
+boolean, maximum uses and parent decision hash. `maximumUses` is 1 for any
+mutation/rehearsal grant.
+
+The authority classes are exact:
+
+```text
+I1_STATIC_SCHEMA_TESTS
+I2_RESOLVER_MODEL_IMPLEMENTATION
+I3_DISPOSABLE_LEDGER_IMPLEMENTATION
+I4_FAKE_PROCESS_IMPLEMENTATION
+I5_WINDOWS_OUTER_DENY_SOURCE
+I5_WSL_CONTROLLER_SOURCE
+I5_OBSERVER_SOURCE
+I5_SIGNER_SOURCE
+I5_EVIDENCE_BROKER_SOURCE
+I5_CLEANUP_VERIFIER_SOURCE
+I6_WINDOWS_OUTER_DENY_MUTATIONS
+I6_WSL_ROUTE_FIREWALL_MUTATIONS
+I6_RUNTIME_NAMESPACE_MUTATIONS
+I6_OBSERVER_MUTATIONS
+I6_SIGNER_MUTATIONS
+I6_BROKER_MUTATIONS
+I6_CLEANUP_MUTATIONS
+I6_LEDGER_CORRUPTION_MUTATIONS
+I6_PRISTINE_SYNTHETIC_RUN
+I7_INDEPENDENT_REVIEW
+I8_PASS_PUBLICATION
+```
+
+A grant authorizes only its exact component and mutation set. Empty or omitted
+mutation sets authorize none. No grant implies a later class. No Gate A/B
+umbrella or subset grant can authorize all 39 mutations.
+
+### 6.3 RuntimeContractR2
+
+Exact closed structures:
+
+- `components`: 1-32 `ComponentMeasurementR2` objects with name, version,
+  canonical path class, binary/package/config hashes, producer and receipt;
+- `uidMap` and `gidMap`: 1-16 `IdMapEntryR2` objects with container start, host
+  start and positive length; ranges MUST be disjoint;
+- `capabilities`: exact permitted/effective/inheritable/ambient/bounding arrays,
+  all empty for the fake CLI;
+- `mounts`: 1-32 `MountR2` objects containing source object ID, destination,
+  filesystem type, flags, propagation, read-only, nodev/nosuid/noexec and
+  expected mount ID;
+- `devices`: 0-8 `DeviceR2` objects containing type, major, minor, mode, UID/GID
+  and cgroup permission; pristine fake CLI count is zero;
+- `cgroup`: version, path, controllers, exact CPU/memory/pids/io limits, owner,
+  namespace and kill semantics;
+- `shims`: 0-16 `RuntimeShimR2` objects with PID/start time, parent, binary/config
+  hash, namespaces, cgroup and allowed purpose;
+- exact PID/user/network/mount/IPC/UTS namespace inode bindings;
+- inherited FD array with only 0,1,2 and named barrier FDs; inherited socket
+  array empty;
+- procfs/sysfs visibility contracts; netlink and eBPF contracts;
+- seccomp, LSM and `noNewPrivileges:true`;
+- OCI spec, image manifest, runtime inspect, state, process, cgroup and FD
+  inventory artifact expectations.
+
+Every nested object is typed and closed in the executable schema. Generic
+objects or untyped arrays are forbidden.
+
+### 6.4 NetworkContractR2
+
+`WindowsOuterDenyR2` has exact provider/sublayer/filter GUIDs, BFE state,
+boot-time/persistent flags, WFP layers, address families, WSL vNIC GUID,
+compartment ID, VM creator ID, Hyper-V default actions, allow-filter count
+constant zero, normalized object hash and signed install/readback expectations.
+
+`NftTopologyR2` contains typed namespaces, interfaces, addresses, routes, base
+chains and rules. The exact base-chain bindings are:
+
+| Namespace class | Family | Hook | Priority | Policy |
+| --- | --- | --- | --- | --- |
+| enforcement | `inet` | `input` | `-300` | `drop` |
+| enforcement | `inet` | `forward` | `-300` | `drop` |
+| enforcement | `inet` | `output` | `-300` | `drop` |
+| each workload | `inet` | `input` | `-300` | `drop` |
+| each workload | `inet` | `output` | `-300` | `drop` |
+
+Only candidate-to-relay, relay-to-fake-DNS and relay-to-fake-provider tuples are
+accepted. Established/related state is accepted only for those tuple IDs. Drop
+rules explicitly cover DNS outside fake DNS, IPv4/IPv6 link-local, metadata,
+loopback cross-namespace, multicast/broadcast, IPv6, IPv4-mapped IPv6, NAT64,
+default routes, Windows/host gateways and all unmatched traffic. No physical or
+WSL uplink belongs to any workload namespace.
+
+`RuntimeHelperSetR2` has exact typed entries for netavark, aardvark,
+slirp4netns, pasta and every runtime shim, each either measured or accompanied
+by a signed exhaustive absence attestation. `unexpectedHelperCount` is zero.
+
+### 6.5 ObserverContractR2
+
+Exact fields include observer/signer bindings, pre-pinned key, service-ready
+deadline before reservation, netlink subscription before first link creation,
+typed interface expectations, capture-ready deadline before link-up/barrier,
+taxonomy, pristine/mutation load envelopes, AF_PACKET version/fanout, requested
+buffer, PACKET_STATISTICS requirement, event-chain profile and shutdown steps.
+
+`ObserverInterfaceR2` contains namespace inode, interface name, ifindex,
+peer-ifindex, link type, both directions, observer PID/start time, socket ID,
+fanout ID, attach/link-up sequences and expected purpose. Exact-set equality is
+semantic; duplicates or omissions fail.
+
+`LoadEnvelopeR2` contains purpose, packets/second, packet-size array, burst,
+duration milliseconds, emitter CPU quota/memory/pids, observer CPU quota/memory,
+expected drop range and expected unclassified range.
+
+### 6.6 EvidenceBrokerContractR2
+
+Exact fields bind NTFS volume GUID, root directory file ID, broker/resolver SIDs,
+service SID, DACL/SACL/owner descriptor hash, required privileges, allowed file
+share masks, create flags, reparse/stream/link policy, write/flush/readback/seal
+steps, index journal schema/hash chain and crash recovery table hash.
+
+### 6.7 LedgerContractR2
+
+Exact fields bind ledger ID/schema, SQLite page/application IDs, FULL synchronous
+and WAL settings, concurrency domain, one TPM counter index, alternating head
+indices A/B, registry index, machine/key names, PCR policy, transition table,
+maximum lease, anchor update protocol hash, recovery table hash and
+compromise-recovery policy hash.
+
+## 7. D2 post-run evidence payload
+
+D2 cannot authorize or publish anything. Exact header fields keep
+`furtherExecutionAuthorized:false`, all real/model/provider/credential flags
+false, counters zero and claim boundary synthetic-only.
+
+Other exact fields:
+
+- D1 payload hash and signature receipt;
+- P0, P1 and P2 phase-root hashes;
+- the P3 pre-D2 data-set root and broker data-set seal receipt;
+- typed `ObserverSummaryR2`;
+- typed `ContainmentSummaryR2`;
+- typed `CleanupSummaryR2`;
+- typed `LedgerPreReviewStateR2` with state `SEALED_PENDING_REVIEW` or terminal
+  `CONSUMED_FAIL`;
+- the D1 admission semantic-report hash;
+- exact passed/failed gate lists through gate 20;
+- verdict `EVIDENCE_READY_FOR_REVIEW`, `SYNTHETIC_FAIL` or `QUARANTINED`;
+- `passArtifactPresent:false`.
+
+`ObserverSummaryR2` includes one typed interface record and one packet-statistics
+record per capture socket, event counts, classification counts, sequence gaps,
+kernel drops, buffer values, shutdown ordering and signed event root.
+
+`DeletionAcknowledgmentR2` exact fields are object kind/ID, volume-or-namespace
+identity, request/completion sequences, API/binary hash, return code, stderr
+class enum, absent-after result, independent readback artifact and controller
+signature. Every created object ID has exactly one acknowledgment. Deleting an
+already absent object is not a successful acknowledgment unless its create
+receipt proves the object was never committed.
+
+`CleanupSummaryR2` includes typed before/after inventories for Windows filters,
+routes/DNS, WSL namespaces, nft objects, links, addresses, routes, processes,
+cgroups, mounts, files, runtime objects, observer/signer handles and temp roots;
+the complete acknowledgment set; external verifier identity/signature; zero
+residual count; exact-equivalence true; and PASS-absent true.
+
+## 8. D3 independent review decision payload
+
+D3 has two schema-disjoint variants.
+
+### 8.1 APPROVED
+
+An approved payload requires:
+
+- exact D1, D2 and P0-P3 root hashes;
+- all resolution and semantic reports valid;
+- gate list 1-22 exactly passed, no failed gate;
+- cleanup verified and PASS absent;
+- ledger state `SEALED_PENDING_REVIEW`;
+- reviewer and final-approver role bindings distinct from every producer;
+- decision `APPROVED_SYNTHETIC_PASS`;
+- `finalApproverAvailable:true`;
+- empty error IDs;
+- one independent-reviewer and one final-approver signature.
+
+### 8.2 REFUSED
+
+A refused payload has decision `REFUSED`, at least one exact error ID, no PASS
+authorization and reviewer signature. A final-approver signature may record the
+refusal but cannot convert it to approval. If the final approver is unavailable,
+the expiry service does not synthesize approval: it anchors `CONSUMED_FAIL`; no
+D4 can validate.
+
+## 9. D4 final PASS publication payload
+
+D4 is intentionally rigid. Every success fact is a constant or required exact
+reference:
+
+- claim `SYNTHETIC_FIXTURE_COMPATIBILITY_ONLY`;
+- D1/D2/D3 hashes and P0-P4 roots;
+- D3 decision `APPROVED_SYNTHETIC_PASS`;
+- TPM-anchored ledger receipt state `CONSUMED_PASS` binding the D3 and P4 hashes;
+- gates 1-23 passed before publication and gate 24 passed by this create;
+- cleanup/evidence/signatures/role separation all true;
+- `passPublished:true` and exactly one create-new broker receipt;
+- `furtherExecutionAuthorized:false`;
+- real candidate/model/provider/credential authority false;
+- invocation/provider counters zero.
+
+There is no nullable success field and no alternative combination. Therefore a
+PASS-before-cleanup, PASS-with-refusal, PASS-with-missing review, PASS-with-live
+lease or PASS-with-real authority does not validate structurally.
+
+## 10. Exact artifact producer registry
+
+The D1 registry MUST contain these mappings. `consumer` is the first typed
+consumer; later consumer sets are declared on each reference.
+
+| Phase | Artifact kind | Sole producer | Required signer | First consumer |
+| --- | --- | --- | --- | --- |
+| P0 | static-design | design authority | design authority | policy-authority |
+| P0 | schema-bundle | design authority | design authority | semantic-validator |
+| P0 | semantic-validator-contract | design authority | design authority | semantic-validator |
+| P0 | gate-registry | design authority | design authority | policy-authority |
+| P0 | mutation-registry | design authority | design authority | policy-authority |
+| P1 | trust-root-registry | trust-registry-maintainer | trust-registry-maintainer | policy-authority |
+| P1 | issued-run-authority | policy-authority | policy-authority | admission-verifier |
+| P2 | observer-service-ready | observer-service | observer-signer | replay-ledger-anchor |
+| P2 | replay-reservation | replay-ledger-anchor | replay-ledger-anchor | barrier-authority |
+| P2 | exclusive-lease | replay-ledger-anchor | replay-ledger-anchor | barrier-authority |
+| P2 | source-contract-readback | evidence-resolver | evidence-resolver | runtime-supervisor |
+| P2 | provider-absence | evidence-resolver | evidence-resolver | runtime-supervisor |
+| P2 | windows-outer-deny-readback | windows-outer-deny-controller | windows-outer-deny-controller | barrier-authority |
+| P2 | runtime-chain-readback | runtime-supervisor | runtime-supervisor | wsl-enforcement-controller |
+| P2 | namespace-prebind | wsl-enforcement-controller | wsl-enforcement-controller | observer-service |
+| P2 | inner-firewall-install | wsl-enforcement-controller | wsl-enforcement-controller | evidence-resolver |
+| P2 | inner-firewall-readback | evidence-resolver | evidence-resolver | observer-service |
+| P2 | observer-capture-ready | observer-service | observer-signer | barrier-authority |
+| P2 | final-rebind | barrier-authority | barrier-authority | runtime-supervisor |
+| P2 | barrier-release | barrier-authority | barrier-authority | runtime-supervisor |
+| P3 | continuous-drift-log | observer-service | observer-signer | evidence-assembler |
+| P3 | observer-metadata-chain | observer-service | observer-signer | evidence-assembler |
+| P3 | observer-packet-statistics | observer-service | observer-signer | evidence-assembler |
+| P3 | observer-shutdown | observer-service | observer-signer | external-cleanup-verifier |
+| P3 | block-before-kill | wsl-enforcement-controller | wsl-enforcement-controller | runtime-supervisor |
+| P3 | process-cgroup-teardown | runtime-supervisor | runtime-supervisor | external-cleanup-verifier |
+| P3 | deletion-acknowledgment-set | wsl-enforcement-controller | wsl-enforcement-controller | external-cleanup-verifier |
+| P3 | external-cleanup-verification | external-cleanup-verifier | external-cleanup-verifier | evidence-assembler |
+| P3 | broker-data-set-seal | evidence-broker | evidence-broker | evidence-assembler |
+| P3 | ledger-pre-review-state | replay-ledger-anchor | replay-ledger-anchor | independent-reviewer |
+| P3 | mutation-observation | semantic-validator | semantic-validator | evidence-assembler |
+| P3 | restoration-verification | external-cleanup-verifier | external-cleanup-verifier | evidence-assembler |
+| P3 | post-run-evidence | evidence-assembler | evidence-assembler | evidence-resolver |
+| P4 | resolution-report | evidence-resolver | evidence-resolver | independent-reviewer |
+| P4 | semantic-validation-report | semantic-validator | semantic-validator | independent-reviewer |
+| P4 | signer-chain-report | independent-reviewer | independent-reviewer | final-approver |
+| P4 | independent-review-decision | independent-reviewer | reviewer and final-approver | replay-ledger-anchor |
+| P5 | ledger-consume-pass | replay-ledger-anchor | replay-ledger-anchor | pass-publisher |
+| P5 | final-pass-publication | pass-publisher | pass-publisher | result-reader |
+| P3 | ledger-consume-fail | replay-ledger-anchor | replay-ledger-anchor | failure-auditor |
+
+The phase manifest is the root container, not an artifact inside itself. This
+registry is acyclic: every first consumer is in a later production step, and D3,
+consume-pass and D4 are absent from P0-P3.
+
+## 11. Deterministic semantic validator
+
+### 11.1 Input and output
+
+Command contract, for a future separately authorized implementation:
+
+```text
+ef-authority-v3-semval
+  --expected-schema-id <exact SafeId/URN token>
+  --document-handle <broker handle token>
+  --registry-handle <broker handle token>
+  --prior-phase-root <sha256-or-NONE>
+  --anchor-quote-handle <ledger receipt token>
+```
+
+No path, network URI or schema URL is accepted. Handles are broker-issued,
+single-use, content-free tokens. Input bytes are read once from broker handles.
+
+Output is one canonical semantic-validation report with exact fields:
+`validatorId`, `validatorVersion`, `binarySha256`, `configurationSha256`,
+`expectedSchemaId`, input/registry/schema/anchor hashes, `checks` (exact ordered
+check IDs), `errorIds` (sorted unique), `valid`, `exitCode`, `producedSequence`,
+and validator signature. stdout contains only the framed report; stderr is a
+single error class. Exit codes are 0 valid, 64 normative invalid, 70 internal or
+dependency failure.
+
+### 11.2 Ordered checks and exact error IDs
+
+| Check | Failure ID |
+| --- | --- |
+| raw UTF-8/BOM/token scan | `E_PARSE_UTF8_OR_BOM` |
+| duplicate-key scan | `E_PARSE_DUPLICATE_KEY` |
+| integer/profile scan | `E_PARSE_NUMBER_PROFILE` |
+| canonical-byte equality | `E_CANONICAL_BYTES_MISMATCH` |
+| expected schema/kind/version/hash | `E_SCHEMA_CONFUSION_OR_DOWNGRADE` |
+| JSON Schema | `E_SCHEMA_INVALID` |
+| design authorization constants | `E_DESIGN_AUTHORITY_TRUE` |
+| real/model/provider/credential constants | `E_FORBIDDEN_EXECUTION_AUTHORITY` |
+| state transition | `E_STATE_TRANSITION_INVALID` |
+| gate order and cardinality | `E_GATE_ORDER_INVALID` |
+| gate/verdict consistency | `E_GATE_VERDICT_INCONSISTENT` |
+| OS identity uniqueness | `E_ROLE_OS_REUSE` |
+| key identity uniqueness | `E_ROLE_KEY_REUSE` |
+| binary identity uniqueness | `E_ROLE_BINARY_REUSE` |
+| subject/authority separation | `E_ROLE_FORBIDDEN_COMBINATION` |
+| trust registry pre-anchor | `E_TRUST_ROOT_NOT_PREANCHORED` |
+| key status/epoch | `E_KEY_REVOKED_OR_EPOCH_INVALID` |
+| rotation/recovery signatures | `E_KEY_ROTATION_OR_RECOVERY_INVALID` |
+| signature preimage/signature | `E_SIGNATURE_INVALID` |
+| artifact producer count | `E_ARTIFACT_PRODUCER_COUNT` |
+| kind/producer/signer/schema mapping | `E_ARTIFACT_MAPPING_INVALID` |
+| consumption sequence strictly after reachable producer | `E_ARTIFACT_ORDER_INVALID` |
+| phase root cycle/prior root | `E_PHASE_DAG_INVALID` |
+| handle/path/volume/file ID/link/stream | `E_ARTIFACT_HANDLE_IDENTITY_INVALID` |
+| byte size/hash | `E_ARTIFACT_BYTES_INVALID` |
+| schema/kind from bytes | `E_ARTIFACT_SCHEMA_KIND_INVALID` |
+| broker write/flush/seal/index journal | `E_EVIDENCE_STORE_DURABILITY` |
+| deletion acknowledgment exact set | `E_CLEANUP_ACK_MISSING_OR_INVALID` |
+| external before/after equivalence | `E_EXTERNAL_CLEANUP_INVALID` |
+| review strictly after cleanup/P3 | `E_REVIEW_BEFORE_CLEANUP` |
+| final approver present and distinct | `E_FINAL_APPROVER_UNAVAILABLE_OR_REUSED` |
+| PASS strictly after D3/consume-pass | `E_PASS_ORDER_INVALID` |
+| D4 success constants | `E_PASS_COMBINATION_INVALID` |
+| synthetic-only claim and artifact kinds | `E_SYNTHETIC_RELABELLED_REAL` |
+| machine/TPM key binding | `E_LEDGER_MACHINE_BINDING` |
+| boot binding | `E_LEDGER_BOOT_BINDING` |
+| disk/TPM head relation | `E_LEDGER_ANCHOR_MISMATCH` |
+| valid backup behind anchor | `E_LEDGER_BACKUP_RESTORE` |
+| different TPM/machine | `E_LEDGER_CROSS_MACHINE_COPY` |
+| unique nonce/lease transaction | `E_LEDGER_LEASE_OR_NONCE_CONFLICT` |
+| torn-write recovery state | `E_LEDGER_TORN_WRITE_UNRECOVERABLE` |
+| content-sensitive scanner | `E_CONTENT_SENSITIVE_EVIDENCE` |
+
+The validator emits every deterministically discoverable error after safe parse,
+but `valid` is false if any error exists. It does not select a weaker path based
+on which error appears first.
+
+## 12. State and gate invariants
+
+Allowed ledger transitions are exactly:
+
+```text
+ISSUED -> RESERVED
+ISSUED -> EXPIRED_UNUSED
+RESERVED -> ACTIVE
+RESERVED -> CONSUMED_FAIL
+ACTIVE -> TEARDOWN
+ACTIVE -> CONSUMED_FAIL
+TEARDOWN -> SEALED_PENDING_REVIEW
+TEARDOWN -> CONSUMED_FAIL
+SEALED_PENDING_REVIEW -> CONSUMED_PASS
+SEALED_PENDING_REVIEW -> CONSUMED_FAIL
+```
+
+Terminal states have no outgoing transition. Boot change, crash during an active
+lease, expiry, final-approver timeout, uncertain anchor update and any gate
+failure select only `CONSUMED_FAIL`. `CONSUMED_PASS` requires approved D3, P4
+root, cleanup true and gates 1-23 passed. D4 is created afterward.
+
+The exact 24 gate names and their mutation mapping are normative in the control
+graph. D2 success has gates 1-20 passed and no PASS. Gate 21 then resolves P0-P3
+including D2; gate 22 validates signer/ledger state; D3 approval adds gate 23.
+D4 adds gate 24. A failure verdict has one first failed gate and no later passed
+gate. Mutation evidence requires `expectedGate == observedFailedGate`.
+
+## 13. Observer event and load structures
+
+`ObserverEventR2` exact fields are schema/version, observer/socket IDs, sequence,
+prior/event hashes, monotonic time, boot ID, namespace/ifindex/direction,
+link/network/transport classes, source/destination class, port class, packet
+length, taxonomy class, mutation ID or null, kill-switch phase and
+`contentCaptured:false`.
+
+The exhaustive pristine taxonomy is:
+
+```text
+AUTHORIZED_CANDIDATE_RELAY
+AUTHORIZED_RELAY_FAKE_DNS
+AUTHORIZED_RELAY_FAKE_PROVIDER
+DENIED_DNS
+DENIED_IPV6
+DENIED_IPV4_MAPPED
+DENIED_NAT64
+DENIED_METADATA
+DENIED_LOOPBACK_CROSS_NAMESPACE
+DENIED_LINK_LOCAL
+DENIED_MULTICAST_OR_BROADCAST
+DENIED_UNMANAGED_ROUTE
+DENIED_OTHER
+```
+
+Mutation-only classes are `M16_BOUNDED_LOAD` and
+`M17_INTENTIONALLY_UNCLASSIFIED`. The latter increments unclassified count
+instead of being accepted as a normal class.
+
+Exact envelopes:
+
+| Run | pps | Packet sizes | Burst | Duration | Emitter limit | Observer limit | Expected drops | Expected unclassified |
+| --- | ---: | --- | ---: | ---: | --- | --- | --- | --- |
+| pristine | 2,000 | 64, 256, 1024 | 250 | 30,000 ms | 1 CPU, 64 MiB, 16 pids | 2 CPU, 256 MiB, 32 pids | exactly 0 | exactly 0 |
+| M16 | 100,000 | 64 | 10,000 | at most 5,000 ms | 1 CPU, 64 MiB, 16 pids | 1 CPU, 64 MiB, 32 pids; socket buffer 4,096 bytes | at least 1 | exactly 0 |
+| M17 | 1 | 64 | 1 | at most 1,000 ms | 0.25 CPU, 32 MiB, 8 pids | pristine observer limits | exactly 0 | exactly 1 |
+
+M16/M17 are failing mutation runs and are never evaluated against pristine PASS
+criteria. If M16 cannot produce a kernel-reported drop within its envelope, the
+mutation verdict is `NOT_EXERCISED`; the run still follows the exact
+block/kill/cleanup sequence below. If M17 loses the packet, its mutation verdict
+is likewise `NOT_EXERCISED` and cleanup remains mandatory.
+
+Shutdown order is exact: outer+inner counted block readback; target cgroup kill;
+capture drain to kernel queue empty; PACKET_STATISTICS per socket; final netlink
+inventory; signed last event/root; close sockets; verify observer cgroup empty;
+observer-signer shutdown receipt. Missing any step is incomplete.
+
+## 14. NTFS broker handle protocol
+
+### 14.1 Open and identity rules
+
+The broker pins an NTFS volume GUID and opens the root directory by handle. A
+submission uses `CreateFileW(..., CREATE_NEW)` under a broker-generated pending
+name with `GENERIC_READ|GENERIC_WRITE|READ_CONTROL|WRITE_DAC|ACCESS_SYSTEM_SECURITY`,
+share mode `0`, `FILE_FLAG_WRITE_THROUGH|FILE_FLAG_OPEN_REPARSE_POINT`, and
+`SECURITY_ATTRIBUTES.bInheritHandle=FALSE`. `SetHandleInformation` confirms
+inheritance disabled.
+
+Before and after every boundary it obtains:
+
+- `GetFinalPathNameByHandleW(FILE_NAME_NORMALIZED|VOLUME_NAME_GUID)`;
+- `GetFileInformationByHandleEx(FileIdInfo)` volume serial and 128-bit file ID;
+- `FileStandardInfo` link count exactly 1;
+- reparse-point info: none;
+- stream enumeration: exactly unnamed `::$DATA`;
+- owner, protected DACL and SACL hashes.
+
+The final path must remain under the opened root directory on the pinned volume.
+Any reparse tag, junction, symbolic link, hard-link count above 1, alternate
+stream, volume/file-ID change or normalized-path escape is fatal.
+
+### 14.2 Security descriptor and read handles
+
+Owner is the dedicated evidence-broker service SID. The protected DACL grants
+broker full object rights, resolver `FILE_READ_DATA|READ_CONTROL` only, and no
+write/delete/owner/DACL right to policy, controller, supervisor, runtime owner,
+WSL users, reviewer or publisher. The SACL audits every failed write/delete/
+owner/DACL attempt and every successful broker seal. Host administrator
+compromise remains out of scope and invalidates the proof.
+
+After seal, resolver opens with `GENERIC_READ|READ_CONTROL`, share mode
+`FILE_SHARE_READ`, `OPEN_EXISTING`, non-inheritable and open-reparse-point flags.
+No `FILE_SHARE_WRITE` or `FILE_SHARE_DELETE` is permitted.
+
+### 14.3 Durable state machine
+
+Exact broker states:
+
+```text
+REQUEST_ACCEPTED -> PENDING_CREATED -> BYTES_WRITTEN -> FILE_FLUSHED
+-> SAME_HANDLE_READBACK -> ACL_SEALED -> FINAL_NAME_COMMITTED
+-> INDEX_PREPARED -> INDEX_FLUSHED -> FINAL_HANDLE_READBACK -> RECEIPT_SIGNED
+```
+
+The broker writes exact declared bytes, calls `FlushFileBuffers`, seeks and
+rehashes through the same handle, applies owner/DACL/SACL, flushes again, and
+commits the final create-only name with `MoveFileExW(MOVEFILE_WRITE_THROUGH)`
+after proving the final name absent. Its append-only hash-chained index journal
+records a PREPARED entry and is flushed, then records COMMITTED with the final
+handle identity and is flushed. Only then is the signed receipt returned.
+
+Crash disposition is exact:
+
+| Boundary | Recovery |
+| --- | --- |
+| before PENDING_CREATED | no object; request may be retried with a new submission ID |
+| partial write through pre-flush | quarantine pending file; object ID permanently burned |
+| FILE_FLUSHED/SAME_HANDLE_READBACK | recover only if bytes and prepared request match; otherwise quarantine |
+| ACL_SEALED before final rename | finish same prepared transaction after full revalidation |
+| final rename before INDEX_PREPARED | orphan final object quarantined; never auto-indexed |
+| INDEX_PREPARED before INDEX_FLUSHED | quarantine unless journal checksum proves full record |
+| INDEX_FLUSHED before COMMITTED | complete only from exact prepared record and final handle identity |
+| COMMITTED before receipt return | idempotently return the already signed receipt after readback |
+
+An object is evidence only in `RECEIPT_SIGNED`. No recovery overwrites bytes,
+reuses a burned object ID or accepts path-only identity.
+
+## 15. Replay anchor protocol
+
+The disk journal has exactly five logical tables:
+
+- `ledger_meta(ledger_id PRIMARY KEY, schema_version, disk_generation,
+  disk_head_hash, machine_id_hash, ledger_key_name_hash)`;
+- `nonce_current(nonce_hash, authority_generation, state, run_id, lease_id,
+  windows_boot_id, wsl_boot_id, expires_at, final_event_sequence,
+  PRIMARY KEY(nonce_hash, authority_generation))`;
+- `nonce_events(event_sequence PRIMARY KEY, nonce_hash, authority_generation,
+  prior_event_hash, event_hash, transition, transaction_id, anchor_generation,
+  anchor_quote_hash, commit_state)`; rows are append-only;
+- `run_leases(concurrency_domain PRIMARY KEY, lease_id UNIQUE, nonce_hash,
+  authority_generation, owner_identity, acquired_at, expires_at, state)` with a
+  partial unique constraint permitting one `HELD` lease per domain;
+- `anchor_prepared(transaction_id PRIMARY KEY, expected_generation UNIQUE,
+  prepared_event_hash UNIQUE, disk_fsync_receipt_hash, state)`.
+
+Triggers refuse UPDATE/DELETE of committed event rows, state transitions outside
+the exact table, release without a terminal consume event, and more than one
+prepared transaction. `BEGIN IMMEDIATE`, WAL, `synchronous=FULL`, application
+ID and page size are verified before every transition. Reservation inserts the
+nonce event, current state, held lease and prepared anchor row in one disk
+transaction; final consume inserts the terminal event, updates current state and
+releases that same lease in one disk transaction and one TPM counter advance.
+
+The TPM external state is one `TPMA_NV_COUNTER` index and two alternating
+fixed-size head indices. A head record contains exact canonical fields
+`ledgerId`, `machineIdSha256`, counter generation, `eventHeadSha256`,
+`ledgerKeyNameSha256`, `registryHash` and `lastBootBindingHash`. Counter and both
+slots are quoted under a non-migratable TPM key and selected PCRs. The highest
+valid quoted slot whose generation equals the counter is authoritative. Disk
+rows contain the matching quote receipt hash.
+
+Reserve/consume and exclusive lease updates follow the prepare, counter
+increment, inactive-slot write/readback/quote, then disk-commit protocol in the
+ADR. A second run cannot acquire the unique active concurrency domain in the
+same transaction. Only the exact one-generation PREPARED crash state can be
+completed; any larger/mismatched gap is rejected. A disk backup that is
+internally valid but behind the TPM generation is deliberately unrecoverable.
+A copied ledger cannot use another TPM key or NV indices. TPM clear/loss does
+not permit fallback; only the independently authorized compromise-recovery
+transition can start a new ledger ID, and it consumes/tombstones all prior
+outstanding authority.
+
+## 16. Design-only conclusion
+
+The executable D0 example validates only the design family. It demonstrates:
+
+- `executionAuthorized:false`;
+- `syntheticFixtureExecutionAuthorized:false`;
+- `realCandidateExecutionAuthorized:false`;
+- `providerExecutionAuthorized:false`;
+- `realCandidateInvocations:0`;
+- `providerCalls:0`.
+
+No schema, validator contract or example authorizes implementation or execution.
