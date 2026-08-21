@@ -23,6 +23,7 @@
     "devbench:native-isolation:rehearse": "tsx scripts/rehearse-engineering-native-isolation.ts",
     "devbench:proxy-lab:rehearse": "tsx scripts/rehearse-engineering-proxy-lab.ts",
     "devbench:proxy-lab:privileged": "tsx scripts/rehearse-engineering-privileged-proxy-lab.ts",
+    "devbench:authority-v3:r3:validate": "tsx scripts/validate-engineering-authority-v3-r3.ts",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
