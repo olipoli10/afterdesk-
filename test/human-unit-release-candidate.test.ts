@@ -21,6 +21,15 @@ function between(text: string, start: string, end: string): string {
 }
 
 describe("T078 — local release-candidate structural guards", () => {
+  it("keeps the T001-T078 registry contiguous, unique and closed", () => {
+    const tasks = source("specs/001-human-workunit-resume/tasks.md");
+    const rows = [...tasks.matchAll(/^- \[[xX ]\] T(\d{3})\b/gm)];
+    const ids = rows.map((row) => Number(row[1]));
+    expect(ids).toEqual(Array.from({ length: 78 }, (_, index) => index + 1));
+    expect(new Set(ids).size).toBe(78);
+    expect(tasks).toMatch(/^- \[[xX]\] T078\b/m);
+  });
+
   it("hwu-rollout-gate-bypass", () => {
     const workflow = source("src/server/workflow-runs.ts");
     const compile = between(
