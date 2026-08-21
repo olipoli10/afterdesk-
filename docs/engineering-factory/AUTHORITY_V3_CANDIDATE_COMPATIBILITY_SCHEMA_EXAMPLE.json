@@ -1,0 +1,1398 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:afterdesk:engineering-factory:authority-v3:candidate-compatibility:design-example",
+  "$comment": "NON-RUNTIME DESIGN EXAMPLE. MUST NOT BE IMPORTED BY PRODUCT OR RUNNER CODE. DOES NOT AUTHORIZE EXECUTION.",
+  "title": "Authority V3 candidate-specific provider-free compatibility authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "scope",
+    "designMilestone",
+    "executionAuthorized",
+    "syntheticFixtureExecutionAuthorized",
+    "realCandidateExecutionAuthorized",
+    "modelExecutionAuthorized",
+    "providerExecutionAuthorized",
+    "credentialsAuthorized",
+    "realCandidateInvocations",
+    "providerCalls",
+    "run",
+    "candidateContract",
+    "runtime",
+    "networkPolicy",
+    "observer",
+    "evidence",
+    "cleanup",
+    "approvals",
+    "result"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "kind": { "const": "provider-free-synthetic-candidate-compatibility-authority" },
+    "scope": { "const": "candidate-specific-provider-free-rehearsal" },
+    "designMilestone": { "const": "AUTHORITY_V3_CANDIDATE_COMPATIBILITY_DESIGN_ONLY" },
+    "executionAuthorized": { "const": false },
+    "syntheticFixtureExecutionAuthorized": { "const": false },
+    "realCandidateExecutionAuthorized": { "const": false },
+    "modelExecutionAuthorized": { "const": false },
+    "providerExecutionAuthorized": { "const": false },
+    "credentialsAuthorized": { "const": false },
+    "realCandidateInvocations": { "const": 0 },
+    "providerCalls": { "const": 0 },
+    "run": { "$ref": "#/$defs/run" },
+    "candidateContract": { "$ref": "#/$defs/candidateContract" },
+    "runtime": { "$ref": "#/$defs/runtime" },
+    "networkPolicy": { "$ref": "#/$defs/networkPolicy" },
+    "observer": { "$ref": "#/$defs/observer" },
+    "evidence": { "$ref": "#/$defs/evidence" },
+    "cleanup": { "$ref": "#/$defs/cleanup" },
+    "approvals": { "$ref": "#/$defs/approvals" },
+    "result": { "$ref": "#/$defs/result" }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitSha1": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "safeId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identityId",
+        "role",
+        "operatingSystemIdentity",
+        "binarySha256",
+        "configurationSha256",
+        "keyId",
+        "publicKeySha256",
+        "authorityGeneration",
+        "trustRootRegistrySha256"
+      ],
+      "properties": {
+        "identityId": { "$ref": "#/$defs/safeId" },
+        "role": {
+          "enum": [
+            "policy-authority",
+            "observer-signer",
+            "enforcement-controller",
+            "runtime-supervisor",
+            "rootless-runtime-owner",
+            "evidence-store",
+            "replay-ledger",
+            "cleanup-verifier",
+            "final-approver"
+          ]
+        },
+        "operatingSystemIdentity": { "$ref": "#/$defs/safeId" },
+        "binarySha256": { "$ref": "#/$defs/sha256" },
+        "configurationSha256": { "$ref": "#/$defs/sha256" },
+        "keyId": {
+          "oneOf": [
+            { "$ref": "#/$defs/safeId" },
+            { "type": "null" }
+          ]
+        },
+        "publicKeySha256": {
+          "oneOf": [
+            { "$ref": "#/$defs/sha256" },
+            { "type": "null" }
+          ]
+        },
+        "authorityGeneration": { "type": "integer", "minimum": 1 },
+        "trustRootRegistrySha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifactId",
+        "kind",
+        "relativePath",
+        "sha256",
+        "byteSize",
+        "mediaType",
+        "schemaId",
+        "producerIdentity",
+        "signerKeyId",
+        "storageObjectId",
+        "createdSequence",
+        "contentSensitive",
+        "resolved",
+        "resolutionReceiptSha256"
+      ],
+      "properties": {
+        "artifactId": { "$ref": "#/$defs/safeId" },
+        "kind": { "$ref": "#/$defs/safeId" },
+        "relativePath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^(?!/)(?!.*[.][.])(?!.+:)[A-Za-z0-9._/-]+$"
+        },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "byteSize": { "type": "integer", "minimum": 0 },
+        "mediaType": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "schemaId": {
+          "oneOf": [
+            { "$ref": "#/$defs/safeId" },
+            { "type": "null" }
+          ]
+        },
+        "producerIdentity": { "$ref": "#/$defs/safeId" },
+        "signerKeyId": {
+          "oneOf": [
+            { "$ref": "#/$defs/safeId" },
+            { "type": "null" }
+          ]
+        },
+        "storageObjectId": { "$ref": "#/$defs/safeId" },
+        "createdSequence": { "type": "integer", "minimum": 1 },
+        "contentSensitive": { "const": false },
+        "resolved": { "type": "boolean" },
+        "resolutionReceiptSha256": {
+          "oneOf": [
+            { "$ref": "#/$defs/sha256" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "componentMeasurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "binaryPathClass",
+        "binarySha256",
+        "packageOrBuildIdentitySha256",
+        "configurationSha256",
+        "observedByIdentity",
+        "measurementReceipt"
+      ],
+      "properties": {
+        "name": { "$ref": "#/$defs/safeId" },
+        "version": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "binaryPathClass": { "$ref": "#/$defs/safeId" },
+        "binarySha256": { "$ref": "#/$defs/sha256" },
+        "packageOrBuildIdentitySha256": { "$ref": "#/$defs/sha256" },
+        "configurationSha256": { "$ref": "#/$defs/sha256" },
+        "observedByIdentity": { "$ref": "#/$defs/safeId" },
+        "measurementReceipt": { "$ref": "#/$defs/artifact" }
+      }
+    },
+    "absentAttestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "componentName",
+        "expectedPathOrLocatorClass",
+        "searchBoundarySha256",
+        "searchMethodSha256",
+        "observedAbsent",
+        "observerIdentity",
+        "observedAtSequence",
+        "receipt"
+      ],
+      "properties": {
+        "componentName": { "$ref": "#/$defs/safeId" },
+        "expectedPathOrLocatorClass": { "$ref": "#/$defs/safeId" },
+        "searchBoundarySha256": { "$ref": "#/$defs/sha256" },
+        "searchMethodSha256": { "$ref": "#/$defs/sha256" },
+        "observedAbsent": { "const": true },
+        "observerIdentity": { "$ref": "#/$defs/safeId" },
+        "observedAtSequence": { "type": "integer", "minimum": 1 },
+        "receipt": { "$ref": "#/$defs/artifact" }
+      }
+    },
+    "componentOrAbsent": {
+      "oneOf": [
+        { "$ref": "#/$defs/componentMeasurement" },
+        { "$ref": "#/$defs/absentAttestation" }
+      ]
+    },
+    "durableReplayLedgerEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ledgerId",
+        "ledgerSchemaVersion",
+        "ledgerFileIdentitySha256",
+        "nonceHash",
+        "authorityGeneration",
+        "state",
+        "appendSequence",
+        "priorEventHash",
+        "eventHash",
+        "transactionId",
+        "reservationReceipt",
+        "consumeReceipt",
+        "fsyncReceiptSha256",
+        "integrityCheckReceiptSha256",
+        "bootIdBinding",
+        "expiresAt",
+        "recoveryDisposition"
+      ],
+      "properties": {
+        "ledgerId": { "$ref": "#/$defs/safeId" },
+        "ledgerSchemaVersion": { "type": "integer", "minimum": 1 },
+        "ledgerFileIdentitySha256": { "$ref": "#/$defs/sha256" },
+        "nonceHash": { "$ref": "#/$defs/sha256" },
+        "authorityGeneration": { "type": "integer", "minimum": 1 },
+        "state": {
+          "enum": [
+            "DESIGN_ONLY",
+            "ISSUED",
+            "RESERVED",
+            "CONSUMED_PASS",
+            "CONSUMED_FAIL",
+            "EXPIRED"
+          ]
+        },
+        "appendSequence": { "type": "integer", "minimum": 0 },
+        "priorEventHash": { "$ref": "#/$defs/sha256" },
+        "eventHash": { "$ref": "#/$defs/sha256" },
+        "transactionId": { "$ref": "#/$defs/safeId" },
+        "reservationReceipt": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        },
+        "consumeReceipt": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        },
+        "fsyncReceiptSha256": { "$ref": "#/$defs/sha256" },
+        "integrityCheckReceiptSha256": { "$ref": "#/$defs/sha256" },
+        "bootIdBinding": { "$ref": "#/$defs/safeId" },
+        "expiresAt": { "$ref": "#/$defs/timestamp" },
+        "recoveryDisposition": {
+          "enum": ["none", "fail-consumed-after-crash"]
+        }
+      }
+    },
+    "oneShotLease": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "leaseId",
+        "concurrencyIdentity",
+        "ownerIdentity",
+        "nonceHash",
+        "acquiredSequence",
+        "acquiredAt",
+        "monotonicAcquiredNanoseconds",
+        "bootId",
+        "expiresAt",
+        "state",
+        "signedReceipt"
+      ],
+      "properties": {
+        "leaseId": { "$ref": "#/$defs/safeId" },
+        "concurrencyIdentity": { "$ref": "#/$defs/safeId" },
+        "ownerIdentity": { "$ref": "#/$defs/safeId" },
+        "nonceHash": { "$ref": "#/$defs/sha256" },
+        "acquiredSequence": { "type": "integer", "minimum": 0 },
+        "acquiredAt": { "$ref": "#/$defs/timestamp" },
+        "monotonicAcquiredNanoseconds": { "type": "integer", "minimum": 0 },
+        "bootId": { "$ref": "#/$defs/safeId" },
+        "expiresAt": { "$ref": "#/$defs/timestamp" },
+        "state": {
+          "enum": [
+            "DESIGN_ONLY",
+            "HELD",
+            "RELEASED_PASS",
+            "RELEASED_FAIL",
+            "RECOVERED_FAIL"
+          ]
+        },
+        "signedReceipt": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runId",
+        "oneShotNonce",
+        "issuedAt",
+        "expiresAt",
+        "monotonicTimeSourceIdentity",
+        "monotonicIssuedNanoseconds",
+        "machineBootId",
+        "durableReplayLedgerEntry",
+        "sourceCommitSha",
+        "sourceTreeSha",
+        "sourceRepositoryIdentitySha256",
+        "authorityGenerationIdentity",
+        "approvalGenerationIdentity",
+        "oneShotLease",
+        "concurrencyIdentity",
+        "runState",
+        "stateSequence",
+        "priorStateReceiptSha256"
+      ],
+      "properties": {
+        "runId": { "type": "string", "format": "uuid" },
+        "oneShotNonce": { "$ref": "#/$defs/sha256" },
+        "issuedAt": { "$ref": "#/$defs/timestamp" },
+        "expiresAt": { "$ref": "#/$defs/timestamp" },
+        "monotonicTimeSourceIdentity": { "$ref": "#/$defs/safeId" },
+        "monotonicIssuedNanoseconds": { "type": "integer", "minimum": 0 },
+        "machineBootId": { "$ref": "#/$defs/safeId" },
+        "durableReplayLedgerEntry": { "$ref": "#/$defs/durableReplayLedgerEntry" },
+        "sourceCommitSha": { "$ref": "#/$defs/gitSha1" },
+        "sourceTreeSha": { "$ref": "#/$defs/gitSha1" },
+        "sourceRepositoryIdentitySha256": { "$ref": "#/$defs/sha256" },
+        "authorityGenerationIdentity": { "$ref": "#/$defs/identity" },
+        "approvalGenerationIdentity": { "$ref": "#/$defs/identity" },
+        "oneShotLease": { "$ref": "#/$defs/oneShotLease" },
+        "concurrencyIdentity": { "$ref": "#/$defs/safeId" },
+        "runState": {
+          "enum": [
+            "DESIGN_ONLY",
+            "ISSUED",
+            "RESERVED",
+            "ACTIVE",
+            "TEARDOWN",
+            "CLEANUP_VERIFIED",
+            "REVIEWED",
+            "PASS_PUBLISHED",
+            "FAILED"
+          ]
+        },
+        "stateSequence": { "type": "integer", "minimum": 0 },
+        "priorStateReceiptSha256": {
+          "oneOf": [
+            { "$ref": "#/$defs/sha256" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "argvContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executableToken",
+        "grammarVersion",
+        "allowedSubcommand",
+        "allowedFlags",
+        "forbiddenFlagPatterns",
+        "dynamicValuesAllowed",
+        "promptOrPayloadInArguments",
+        "unknownArgumentsRefused",
+        "normalizedArgvSha256"
+      ],
+      "properties": {
+        "executableToken": { "const": "ef-fake-candidate" },
+        "grammarVersion": { "const": 3 },
+        "allowedSubcommand": { "const": "compatibility-rehearsal" },
+        "allowedFlags": { "type": "array", "minItems": 4, "uniqueItems": true },
+        "forbiddenFlagPatterns": { "type": "array", "minItems": 1, "uniqueItems": true },
+        "dynamicValuesAllowed": {
+          "const": [
+            "runId",
+            "contractVersion",
+            "inputFramingVersion",
+            "outputFramingVersion"
+          ]
+        },
+        "promptOrPayloadInArguments": { "const": false },
+        "unknownArgumentsRefused": { "const": true },
+        "normalizedArgvSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "stdinContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "framing",
+        "schemaSha256",
+        "maximumFrameBytes",
+        "maximumFrameCount",
+        "fakePayloadOnly",
+        "endOfStreamRequired",
+        "malformedFrameBehavior",
+        "sensitiveContentAllowed",
+        "inputDigestProjectedToEvidence"
+      ],
+      "properties": {
+        "framing": { "const": "length-prefixed-json-lines" },
+        "schemaSha256": { "$ref": "#/$defs/sha256" },
+        "maximumFrameBytes": { "type": "integer", "minimum": 1 },
+        "maximumFrameCount": { "type": "integer", "minimum": 1 },
+        "fakePayloadOnly": { "const": true },
+        "endOfStreamRequired": { "const": true },
+        "malformedFrameBehavior": { "const": "refuse-before-relay" },
+        "sensitiveContentAllowed": { "const": false },
+        "inputDigestProjectedToEvidence": { "const": false }
+      }
+    },
+    "streamContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "framing",
+        "allowedEnvelopeSchemaSha256",
+        "maximumFrameBytes",
+        "maximumTotalBytes",
+        "backpressureMode",
+        "rawBytesEphemeral",
+        "rawBytesPersisted",
+        "contentFieldsPersisted",
+        "truncationBehavior",
+        "malformedEnvelopeBehavior"
+      ],
+      "properties": {
+        "framing": { "const": "length-prefixed-json-lines" },
+        "allowedEnvelopeSchemaSha256": { "$ref": "#/$defs/sha256" },
+        "maximumFrameBytes": { "type": "integer", "minimum": 1 },
+        "maximumTotalBytes": { "type": "integer", "minimum": 1 },
+        "backpressureMode": { "const": "bounded-blocking" },
+        "rawBytesEphemeral": { "const": true },
+        "rawBytesPersisted": { "const": false },
+        "contentFieldsPersisted": { "const": false },
+        "truncationBehavior": { "const": "kill-and-fail" },
+        "malformedEnvelopeBehavior": { "const": "kill-and-fail" }
+      }
+    },
+    "exitContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "successCode",
+        "refusalCodes",
+        "internalFailureCode",
+        "timeoutCode",
+        "cancellationCode",
+        "unknownExitFails"
+      ],
+      "properties": {
+        "successCode": { "const": 0 },
+        "refusalCodes": { "type": "object", "minProperties": 1 },
+        "internalFailureCode": { "const": 70 },
+        "timeoutCode": { "const": 25 },
+        "cancellationCode": { "const": 24 },
+        "unknownExitFails": { "const": true }
+      }
+    },
+    "signalContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "acceptedSupervisorSignals",
+        "candidateMayHandle",
+        "cancellationSequenceSha256",
+        "blockBeforeKillRequired",
+        "unexpectedSignalFails"
+      ],
+      "properties": {
+        "acceptedSupervisorSignals": { "type": "array", "minItems": 1, "uniqueItems": true },
+        "candidateMayHandle": { "type": "boolean" },
+        "cancellationSequenceSha256": { "$ref": "#/$defs/sha256" },
+        "blockBeforeKillRequired": { "const": true },
+        "unexpectedSignalFails": { "const": true }
+      }
+    },
+    "filesystemContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundleRootReadOnly",
+        "workspaceRoot",
+        "resultRoot",
+        "tmpfsRoots",
+        "allowedReadObjects",
+        "allowedWriteRelativePaths",
+        "maximumWriteBytes",
+        "maximumFiles",
+        "symlinksAllowed",
+        "hardLinksAllowed",
+        "deviceNodesAllowed",
+        "hostMountsAllowed",
+        "runtimeSocketMountsAllowed",
+        "gitMetadataMode",
+        "parentRepositoryReachable",
+        "postRunWorkspaceTreeSha256"
+      ],
+      "properties": {
+        "bundleRootReadOnly": { "const": true },
+        "workspaceRoot": { "type": "string", "minLength": 1 },
+        "resultRoot": { "type": "string", "minLength": 1 },
+        "tmpfsRoots": { "type": "array", "minItems": 1, "uniqueItems": true },
+        "allowedReadObjects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/artifact" },
+          "minItems": 1
+        },
+        "allowedWriteRelativePaths": { "type": "array", "minItems": 1, "uniqueItems": true },
+        "maximumWriteBytes": { "type": "integer", "minimum": 1 },
+        "maximumFiles": { "type": "integer", "minimum": 1 },
+        "symlinksAllowed": { "const": false },
+        "hardLinksAllowed": { "const": false },
+        "deviceNodesAllowed": { "const": false },
+        "hostMountsAllowed": { "const": false },
+        "runtimeSocketMountsAllowed": { "const": false },
+        "gitMetadataMode": { "enum": ["none", "private-detached-copy"] },
+        "parentRepositoryReachable": { "const": false },
+        "postRunWorkspaceTreeSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "negativeCapabilityContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "providerSdkAbsent",
+        "providerBinaryAbsent",
+        "modelBinaryAbsent",
+        "loginDisabled",
+        "accountDiscoveryDisabled",
+        "oauthDisabled",
+        "apiKeyInputDisabled",
+        "updateDisabled",
+        "downloadDisabled",
+        "packageBootstrapDisabled",
+        "telemetryDisabled",
+        "connectorDiscoveryDisabled",
+        "pluginDiscoveryDisabled",
+        "externalToolDiscoveryDisabled",
+        "inheritedProxyDisabled",
+        "inheritedCredentialDiscoveryDisabled"
+      ],
+      "properties": {
+        "providerSdkAbsent": { "const": true },
+        "providerBinaryAbsent": { "const": true },
+        "modelBinaryAbsent": { "const": true },
+        "loginDisabled": { "const": true },
+        "accountDiscoveryDisabled": { "const": true },
+        "oauthDisabled": { "const": true },
+        "apiKeyInputDisabled": { "const": true },
+        "updateDisabled": { "const": true },
+        "downloadDisabled": { "const": true },
+        "packageBootstrapDisabled": { "const": true },
+        "telemetryDisabled": { "const": true },
+        "connectorDiscoveryDisabled": { "const": true },
+        "pluginDiscoveryDisabled": { "const": true },
+        "externalToolDiscoveryDisabled": { "const": true },
+        "inheritedProxyDisabled": { "const": true },
+        "inheritedCredentialDiscoveryDisabled": { "const": true }
+      }
+    },
+    "candidateContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidateKind",
+        "targetSurface",
+        "compatibilitySnapshotSha256",
+        "fakeCliBinarySha256",
+        "fakeCliWrapperSha256",
+        "fakeCliSourceTreeSha256",
+        "argvContract",
+        "stdinContract",
+        "stdoutContract",
+        "stderrContract",
+        "exitContract",
+        "signalContract",
+        "environmentAllowlist",
+        "filesystemWorkspaceContract",
+        "forbiddenRealBinaryHashes",
+        "forbiddenRealBinaryPaths",
+        "providerSdkAbsenceAttestations",
+        "noUpdateTelemetryBootstrapDiscoveryContract",
+        "localRelayTuple",
+        "fakePayloadSchemaSha256",
+        "subprocessContract",
+        "timeoutMilliseconds",
+        "cancellationGraceMilliseconds",
+        "maxCombinedRawStreamBytes"
+      ],
+      "properties": {
+        "candidateKind": { "const": "deterministic-fake-cli" },
+        "targetSurface": { "$ref": "#/$defs/safeId" },
+        "compatibilitySnapshotSha256": { "$ref": "#/$defs/sha256" },
+        "fakeCliBinarySha256": { "$ref": "#/$defs/sha256" },
+        "fakeCliWrapperSha256": { "$ref": "#/$defs/sha256" },
+        "fakeCliSourceTreeSha256": { "$ref": "#/$defs/sha256" },
+        "argvContract": { "$ref": "#/$defs/argvContract" },
+        "stdinContract": { "$ref": "#/$defs/stdinContract" },
+        "stdoutContract": { "$ref": "#/$defs/streamContract" },
+        "stderrContract": { "$ref": "#/$defs/streamContract" },
+        "exitContract": { "$ref": "#/$defs/exitContract" },
+        "signalContract": { "$ref": "#/$defs/signalContract" },
+        "environmentAllowlist": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" }
+        },
+        "filesystemWorkspaceContract": { "$ref": "#/$defs/filesystemContract" },
+        "forbiddenRealBinaryHashes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sha256" },
+          "uniqueItems": true
+        },
+        "forbiddenRealBinaryPaths": { "type": "array", "uniqueItems": true },
+        "providerSdkAbsenceAttestations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/absentAttestation" },
+          "minItems": 1
+        },
+        "noUpdateTelemetryBootstrapDiscoveryContract": {
+          "$ref": "#/$defs/negativeCapabilityContract"
+        },
+        "localRelayTuple": { "type": "string", "minLength": 3, "maxLength": 64 },
+        "fakePayloadSchemaSha256": { "$ref": "#/$defs/sha256" },
+        "subprocessContract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["allowedChildren", "runtimeShimIdentities", "shellAllowed", "workerAllowed"],
+          "properties": {
+            "allowedChildren": { "type": "array", "maxItems": 0 },
+            "runtimeShimIdentities": { "type": "array", "uniqueItems": true },
+            "shellAllowed": { "const": false },
+            "workerAllowed": { "const": false }
+          }
+        },
+        "timeoutMilliseconds": { "type": "integer", "minimum": 1 },
+        "cancellationGraceMilliseconds": { "type": "integer", "minimum": 0 },
+        "maxCombinedRawStreamBytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "namespaceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bindingSequence",
+        "capturedAt",
+        "monotonicNanoseconds",
+        "machineBootId",
+        "candidatePid",
+        "candidatePidStartTimeTicks",
+        "pidNamespaceInode",
+        "userNamespaceInode",
+        "networkNamespaceInode",
+        "mountNamespaceInode",
+        "enforcementNamespaceInode",
+        "namespaceOwnerUid",
+        "interfaceInventorySha256",
+        "routeInventorySha256",
+        "rulesetSha256",
+        "ociSpecSha256",
+        "processTreeSha256",
+        "cgroupSha256",
+        "fdSocketInventorySha256",
+        "controllerReceipt",
+        "observerReceipt",
+        "stableThroughBarrierRelease"
+      ],
+      "properties": {
+        "bindingSequence": { "type": "integer", "minimum": 1 },
+        "capturedAt": { "$ref": "#/$defs/timestamp" },
+        "monotonicNanoseconds": { "type": "integer", "minimum": 0 },
+        "machineBootId": { "$ref": "#/$defs/safeId" },
+        "candidatePid": { "type": "integer", "minimum": 2 },
+        "candidatePidStartTimeTicks": { "type": "integer", "minimum": 1 },
+        "pidNamespaceInode": { "type": "integer", "minimum": 1 },
+        "userNamespaceInode": { "type": "integer", "minimum": 1 },
+        "networkNamespaceInode": { "type": "integer", "minimum": 1 },
+        "mountNamespaceInode": { "type": "integer", "minimum": 1 },
+        "enforcementNamespaceInode": { "type": "integer", "minimum": 1 },
+        "namespaceOwnerUid": { "type": "integer", "minimum": 0 },
+        "interfaceInventorySha256": { "$ref": "#/$defs/sha256" },
+        "routeInventorySha256": { "$ref": "#/$defs/sha256" },
+        "rulesetSha256": { "$ref": "#/$defs/sha256" },
+        "ociSpecSha256": { "$ref": "#/$defs/sha256" },
+        "processTreeSha256": { "$ref": "#/$defs/sha256" },
+        "cgroupSha256": { "$ref": "#/$defs/sha256" },
+        "fdSocketInventorySha256": { "$ref": "#/$defs/sha256" },
+        "controllerReceipt": { "$ref": "#/$defs/artifact" },
+        "observerReceipt": { "$ref": "#/$defs/artifact" },
+        "stableThroughBarrierRelease": { "type": "boolean" }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wsl",
+        "kernel",
+        "podman",
+        "crun",
+        "netavark",
+        "aardvark",
+        "slirp4netns",
+        "pasta",
+        "seccompProfile",
+        "ociSpec",
+        "imageDigest",
+        "imageManifest",
+        "uidMap",
+        "gidMap",
+        "capabilities",
+        "mounts",
+        "devices",
+        "inheritedFileDescriptors",
+        "inheritedSockets",
+        "cgroupIdentity",
+        "cgroupControllers",
+        "pidNamespaceInode",
+        "userNamespaceInode",
+        "networkNamespaceInode",
+        "mountNamespaceInode",
+        "controllerIdentity",
+        "runtimeOwnerIdentity",
+        "supervisorIdentity",
+        "immutableNamespaceBinding",
+        "runtimeInspectArtifact",
+        "ociStateArtifact",
+        "processTreeArtifact",
+        "fdSocketInventoryArtifact"
+      ],
+      "properties": {
+        "wsl": { "$ref": "#/$defs/componentMeasurement" },
+        "kernel": { "$ref": "#/$defs/componentMeasurement" },
+        "podman": { "$ref": "#/$defs/componentMeasurement" },
+        "crun": { "$ref": "#/$defs/componentMeasurement" },
+        "netavark": { "$ref": "#/$defs/componentOrAbsent" },
+        "aardvark": { "$ref": "#/$defs/componentOrAbsent" },
+        "slirp4netns": { "$ref": "#/$defs/componentOrAbsent" },
+        "pasta": { "$ref": "#/$defs/componentOrAbsent" },
+        "seccompProfile": { "$ref": "#/$defs/componentMeasurement" },
+        "ociSpec": { "$ref": "#/$defs/artifact" },
+        "imageDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "imageManifest": { "$ref": "#/$defs/artifact" },
+        "uidMap": { "type": "array", "minItems": 1 },
+        "gidMap": { "type": "array", "minItems": 1 },
+        "capabilities": {
+          "type": "object",
+          "required": ["permitted", "effective", "inheritable", "ambient", "bounding"],
+          "properties": {
+            "permitted": { "type": "array", "maxItems": 0 },
+            "effective": { "type": "array", "maxItems": 0 },
+            "inheritable": { "type": "array", "maxItems": 0 },
+            "ambient": { "type": "array", "maxItems": 0 },
+            "bounding": { "type": "array", "maxItems": 0 }
+          },
+          "additionalProperties": false
+        },
+        "mounts": { "type": "array" },
+        "devices": { "type": "array" },
+        "inheritedFileDescriptors": { "type": "array", "minItems": 3, "uniqueItems": true },
+        "inheritedSockets": { "type": "array", "maxItems": 0 },
+        "cgroupIdentity": { "$ref": "#/$defs/safeId" },
+        "cgroupControllers": { "type": "object", "minProperties": 1 },
+        "pidNamespaceInode": { "type": "integer", "minimum": 1 },
+        "userNamespaceInode": { "type": "integer", "minimum": 1 },
+        "networkNamespaceInode": { "type": "integer", "minimum": 1 },
+        "mountNamespaceInode": { "type": "integer", "minimum": 1 },
+        "controllerIdentity": { "$ref": "#/$defs/identity" },
+        "runtimeOwnerIdentity": { "$ref": "#/$defs/identity" },
+        "supervisorIdentity": { "$ref": "#/$defs/identity" },
+        "immutableNamespaceBinding": { "$ref": "#/$defs/namespaceBinding" },
+        "runtimeInspectArtifact": { "$ref": "#/$defs/artifact" },
+        "ociStateArtifact": { "$ref": "#/$defs/artifact" },
+        "processTreeArtifact": { "$ref": "#/$defs/artifact" },
+        "fdSocketInventoryArtifact": { "$ref": "#/$defs/artifact" }
+      }
+    },
+    "canonicalRuleset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespaceInode",
+        "family",
+        "table",
+        "chain",
+        "hook",
+        "priority",
+        "policy",
+        "interfaceMatch",
+        "sourcePrefix",
+        "destinationPrefix",
+        "protocol",
+        "sourcePort",
+        "destinationPort",
+        "conntrackStates",
+        "verdict",
+        "counterName",
+        "ruleHandle",
+        "normalizedObjectSha256"
+      ],
+      "properties": {
+        "namespaceInode": { "type": "integer", "minimum": 1 },
+        "family": { "enum": ["inet", "ip", "ip6"] },
+        "table": { "$ref": "#/$defs/safeId" },
+        "chain": { "$ref": "#/$defs/safeId" },
+        "hook": { "enum": ["input", "output", "forward"] },
+        "priority": { "type": "integer" },
+        "policy": { "enum": ["drop", "accept"] },
+        "interfaceMatch": { "type": ["string", "null"] },
+        "sourcePrefix": { "type": ["string", "null"] },
+        "destinationPrefix": { "type": ["string", "null"] },
+        "protocol": { "type": ["string", "null"] },
+        "sourcePort": { "type": ["integer", "null"], "minimum": 0, "maximum": 65535 },
+        "destinationPort": { "type": ["integer", "null"], "minimum": 0, "maximum": 65535 },
+        "conntrackStates": { "type": "array", "uniqueItems": true },
+        "verdict": { "enum": ["accept", "drop"] },
+        "counterName": { "$ref": "#/$defs/safeId" },
+        "ruleHandle": { "type": "integer", "minimum": 1 },
+        "normalizedObjectSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "networkPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policyId",
+        "policyGeneration",
+        "hostEnforcementNamespaceInode",
+        "hostEnforcementNamespaceOwnerIdentity",
+        "candidateNamespaceInode",
+        "relayNamespaceInode",
+        "fakeDnsNamespaceInode",
+        "fakeProviderNamespaceInode",
+        "canonicalRulesetObjects",
+        "normalizedRulesetSha256",
+        "familyHookPriorityPolicyBindings",
+        "interfaceIdentities",
+        "routeObjects",
+        "candidateToRelayRoute",
+        "relayToFakeDnsRoute",
+        "relayToFakeProviderRoute",
+        "allOtherTrafficDeny",
+        "windowsRoutesPresent",
+        "providerRoutesPresent",
+        "providerFqdnOrIpPresent",
+        "unmanagedInterfacePresent",
+        "defaultRoutePresent",
+        "dnsControls",
+        "ipv6Controls",
+        "metadataControls",
+        "hostGatewayControls",
+        "runtimeHelperControls",
+        "installReceipt",
+        "readbackReceipt",
+        "finalRebindReceipt",
+        "continuousDriftLog"
+      ],
+      "properties": {
+        "policyId": { "$ref": "#/$defs/safeId" },
+        "policyGeneration": { "type": "integer", "minimum": 1 },
+        "hostEnforcementNamespaceInode": { "type": "integer", "minimum": 1 },
+        "hostEnforcementNamespaceOwnerIdentity": { "$ref": "#/$defs/safeId" },
+        "candidateNamespaceInode": { "type": "integer", "minimum": 1 },
+        "relayNamespaceInode": { "type": "integer", "minimum": 1 },
+        "fakeDnsNamespaceInode": { "type": "integer", "minimum": 1 },
+        "fakeProviderNamespaceInode": { "type": "integer", "minimum": 1 },
+        "canonicalRulesetObjects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/canonicalRuleset" },
+          "minItems": 1
+        },
+        "normalizedRulesetSha256": { "$ref": "#/$defs/sha256" },
+        "familyHookPriorityPolicyBindings": { "type": "array", "minItems": 1 },
+        "interfaceIdentities": { "type": "array", "minItems": 1 },
+        "routeObjects": { "type": "array", "minItems": 3 },
+        "candidateToRelayRoute": { "type": "object", "minProperties": 1 },
+        "relayToFakeDnsRoute": { "type": "object", "minProperties": 1 },
+        "relayToFakeProviderRoute": { "type": "object", "minProperties": 1 },
+        "allOtherTrafficDeny": { "const": true },
+        "windowsRoutesPresent": { "const": false },
+        "providerRoutesPresent": { "const": false },
+        "providerFqdnOrIpPresent": { "const": false },
+        "unmanagedInterfacePresent": { "const": false },
+        "defaultRoutePresent": { "const": false },
+        "dnsControls": { "type": "object", "minProperties": 1 },
+        "ipv6Controls": { "type": "object", "minProperties": 1 },
+        "metadataControls": { "type": "object", "minProperties": 1 },
+        "hostGatewayControls": { "type": "object", "minProperties": 1 },
+        "runtimeHelperControls": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "netavark",
+            "aardvark",
+            "slirp4netns",
+            "pasta",
+            "helperProcessInventory",
+            "unexpectedHelperCount"
+          ],
+          "properties": {
+            "netavark": { "$ref": "#/$defs/componentOrAbsent" },
+            "aardvark": { "$ref": "#/$defs/componentOrAbsent" },
+            "slirp4netns": { "$ref": "#/$defs/componentOrAbsent" },
+            "pasta": { "$ref": "#/$defs/componentOrAbsent" },
+            "helperProcessInventory": { "$ref": "#/$defs/artifact" },
+            "unexpectedHelperCount": { "const": 0 }
+          }
+        },
+        "installReceipt": { "$ref": "#/$defs/artifact" },
+        "readbackReceipt": { "$ref": "#/$defs/artifact" },
+        "finalRebindReceipt": { "$ref": "#/$defs/artifact" },
+        "continuousDriftLog": { "$ref": "#/$defs/artifact" }
+      }
+    },
+    "packetStatistics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observerProcessIdentity",
+        "namespaceInode",
+        "ifindex",
+        "socketBufferRequestedBytes",
+        "socketBufferEffectiveBytes",
+        "packetStatisticsAvailable",
+        "packetsDelivered",
+        "packetsDroppedByKernel",
+        "queueFreezeCount",
+        "statisticsReadAtShutdown",
+        "receipt"
+      ],
+      "properties": {
+        "observerProcessIdentity": { "$ref": "#/$defs/safeId" },
+        "namespaceInode": { "type": "integer", "minimum": 1 },
+        "ifindex": { "type": "integer", "minimum": 1 },
+        "socketBufferRequestedBytes": { "type": "integer", "minimum": 1 },
+        "socketBufferEffectiveBytes": { "type": "integer", "minimum": 1 },
+        "packetStatisticsAvailable": { "const": true },
+        "packetsDelivered": { "type": "integer", "minimum": 0 },
+        "packetsDroppedByKernel": { "const": 0 },
+        "queueFreezeCount": { "type": "integer", "minimum": 0 },
+        "statisticsReadAtShutdown": { "const": true },
+        "receipt": { "$ref": "#/$defs/artifact" }
+      }
+    },
+    "observer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observerId",
+        "trustRootRegistrySha256",
+        "prePinnedPublicKeySha256",
+        "signerKeyId",
+        "signerIdentity",
+        "signerRotationPolicySha256",
+        "observerBinarySha256",
+        "observerRuntimeSha256",
+        "observerConfigurationSha256",
+        "namespaceInodes",
+        "cgroupIdentity",
+        "capabilities",
+        "uid",
+        "gid",
+        "completeInterfaceSet",
+        "serviceReadyAttestation",
+        "serviceReadyBeforeNonceReservation",
+        "captureReadyAttestation",
+        "captureReadyBeforeBarrierRelease",
+        "monotonicTimeline",
+        "rawMetadataLog",
+        "perObserverDistribution",
+        "packetStatistics",
+        "socketBufferBytes",
+        "kernelDrops",
+        "unclassifiedEvents",
+        "sequenceGapCount",
+        "shutdownAttestation",
+        "shutdownComplete",
+        "signerSubstitutionRefused",
+        "contentCaptureEnabled"
+      ],
+      "properties": {
+        "observerId": { "$ref": "#/$defs/safeId" },
+        "trustRootRegistrySha256": { "$ref": "#/$defs/sha256" },
+        "prePinnedPublicKeySha256": { "$ref": "#/$defs/sha256" },
+        "signerKeyId": { "$ref": "#/$defs/safeId" },
+        "signerIdentity": { "$ref": "#/$defs/identity" },
+        "signerRotationPolicySha256": { "$ref": "#/$defs/sha256" },
+        "observerBinarySha256": { "$ref": "#/$defs/sha256" },
+        "observerRuntimeSha256": { "$ref": "#/$defs/sha256" },
+        "observerConfigurationSha256": { "$ref": "#/$defs/sha256" },
+        "namespaceInodes": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "cgroupIdentity": { "$ref": "#/$defs/safeId" },
+        "capabilities": { "type": "array", "uniqueItems": true },
+        "uid": { "type": "integer", "minimum": 0 },
+        "gid": { "type": "integer", "minimum": 0 },
+        "completeInterfaceSet": { "type": "array", "minItems": 1 },
+        "serviceReadyAttestation": { "$ref": "#/$defs/artifact" },
+        "serviceReadyBeforeNonceReservation": { "const": true },
+        "captureReadyAttestation": { "$ref": "#/$defs/artifact" },
+        "captureReadyBeforeBarrierRelease": { "const": true },
+        "monotonicTimeline": { "$ref": "#/$defs/artifact" },
+        "rawMetadataLog": { "$ref": "#/$defs/artifact" },
+        "perObserverDistribution": { "$ref": "#/$defs/artifact" },
+        "packetStatistics": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/packetStatistics" },
+          "minItems": 1
+        },
+        "socketBufferBytes": { "type": "integer", "minimum": 1 },
+        "kernelDrops": { "const": 0 },
+        "unclassifiedEvents": { "const": 0 },
+        "sequenceGapCount": { "const": 0 },
+        "shutdownAttestation": { "$ref": "#/$defs/artifact" },
+        "shutdownComplete": { "type": "boolean" },
+        "signerSubstitutionRefused": { "type": "boolean" },
+        "contentCaptureEnabled": { "const": false }
+      }
+    },
+    "resolverManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "runId",
+        "authoritySha256",
+        "evidenceRootIdentitySha256",
+        "artifacts",
+        "requiredArtifactKinds",
+        "hashAlgorithm",
+        "pathPolicySha256",
+        "symlinkCount",
+        "hardLinkCount",
+        "missingArtifactCount",
+        "sizeMismatchCount",
+        "hashMismatchCount",
+        "schemaMismatchCount",
+        "signerMismatchCount",
+        "resolverIdentity",
+        "resolverBinarySha256",
+        "resolutionSequenceStart",
+        "resolutionSequenceEnd",
+        "resolutionReceipt"
+      ],
+      "properties": {
+        "schemaVersion": { "const": 3 },
+        "runId": { "type": "string", "format": "uuid" },
+        "authoritySha256": { "$ref": "#/$defs/sha256" },
+        "evidenceRootIdentitySha256": { "$ref": "#/$defs/sha256" },
+        "artifacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/artifact" },
+          "minItems": 45
+        },
+        "requiredArtifactKinds": {
+          "type": "array",
+          "minItems": 45,
+          "uniqueItems": true
+        },
+        "hashAlgorithm": { "const": "sha256" },
+        "pathPolicySha256": { "$ref": "#/$defs/sha256" },
+        "symlinkCount": { "const": 0 },
+        "hardLinkCount": { "const": 0 },
+        "missingArtifactCount": { "const": 0 },
+        "sizeMismatchCount": { "const": 0 },
+        "hashMismatchCount": { "const": 0 },
+        "schemaMismatchCount": { "const": 0 },
+        "signerMismatchCount": { "const": 0 },
+        "resolverIdentity": { "$ref": "#/$defs/identity" },
+        "resolverBinarySha256": { "$ref": "#/$defs/sha256" },
+        "resolutionSequenceStart": { "type": "integer", "minimum": 1 },
+        "resolutionSequenceEnd": { "type": "integer", "minimum": 1 },
+        "resolutionReceipt": { "$ref": "#/$defs/artifact" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "storeIdentity",
+        "storeRootIdentitySha256",
+        "immutableStoragePolicySha256",
+        "createOnly",
+        "resolverManifest",
+        "allArtifactsResolved",
+        "allArtifactsByteVerified",
+        "signedHashChainRoot",
+        "independentReviewerBundle",
+        "contentSensitiveFieldsPresent",
+        "storeFsyncReceipt",
+        "storeCloseReceipt",
+        "evidenceGenerationSequence",
+        "passArtifactReference"
+      ],
+      "properties": {
+        "storeIdentity": { "$ref": "#/$defs/identity" },
+        "storeRootIdentitySha256": { "$ref": "#/$defs/sha256" },
+        "immutableStoragePolicySha256": { "$ref": "#/$defs/sha256" },
+        "createOnly": { "const": true },
+        "resolverManifest": { "$ref": "#/$defs/resolverManifest" },
+        "allArtifactsResolved": { "type": "boolean" },
+        "allArtifactsByteVerified": { "type": "boolean" },
+        "signedHashChainRoot": { "$ref": "#/$defs/artifact" },
+        "independentReviewerBundle": { "$ref": "#/$defs/artifact" },
+        "contentSensitiveFieldsPresent": { "const": false },
+        "storeFsyncReceipt": { "$ref": "#/$defs/artifact" },
+        "storeCloseReceipt": { "$ref": "#/$defs/artifact" },
+        "evidenceGenerationSequence": { "type": "integer", "minimum": 1 },
+        "passArtifactReference": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "externalBeforeSnapshot",
+        "externalAfterSnapshot",
+        "anonymousNamespaceInventories",
+        "rulesetInventoryBefore",
+        "rulesetInventoryAfter",
+        "interfaceInventoryBefore",
+        "interfaceInventoryAfter",
+        "routeInventoryBefore",
+        "routeInventoryAfter",
+        "processInventoryBefore",
+        "processInventoryAfter",
+        "cgroupInventoryBefore",
+        "cgroupInventoryAfter",
+        "filesystemInventoryBefore",
+        "filesystemInventoryAfter",
+        "podmanInventoryBefore",
+        "podmanInventoryAfter",
+        "observerInventoryBefore",
+        "observerInventoryAfter",
+        "signerInventoryBefore",
+        "signerInventoryAfter",
+        "keyInventoryBefore",
+        "keyInventoryAfter",
+        "tempRootInventoryBefore",
+        "tempRootInventoryAfter",
+        "windowsNetworkInventory",
+        "deletionAcknowledgments",
+        "deletionFailureCount",
+        "residualObjectCount",
+        "beforeAfterEquivalent",
+        "finalExternalCleanupAttestation",
+        "finalCleanupAttestationSequence",
+        "passArtifactObservedBeforeFinalCleanup"
+      ],
+      "properties": {
+        "externalBeforeSnapshot": { "$ref": "#/$defs/artifact" },
+        "externalAfterSnapshot": { "$ref": "#/$defs/artifact" },
+        "anonymousNamespaceInventories": { "type": "array", "minItems": 1 },
+        "rulesetInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "rulesetInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "interfaceInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "interfaceInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "routeInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "routeInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "processInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "processInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "cgroupInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "cgroupInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "filesystemInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "filesystemInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "podmanInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "podmanInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "observerInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "observerInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "signerInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "signerInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "keyInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "keyInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "tempRootInventoryBefore": { "$ref": "#/$defs/artifact" },
+        "tempRootInventoryAfter": { "$ref": "#/$defs/artifact" },
+        "windowsNetworkInventory": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "object", "minProperties": 1 }
+          ]
+        },
+        "deletionAcknowledgments": { "type": "array", "minItems": 1 },
+        "deletionFailureCount": { "const": 0 },
+        "residualObjectCount": { "const": 0 },
+        "beforeAfterEquivalent": { "const": true },
+        "finalExternalCleanupAttestation": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        },
+        "finalCleanupAttestationSequence": { "type": "integer", "minimum": 0 },
+        "passArtifactObservedBeforeFinalCleanup": { "const": false }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policyAuthorityReceipt",
+        "observerSignerReceipt",
+        "controllerReadbackReceipt",
+        "signerChainVerification",
+        "cleanupVerifierReceipt",
+        "independentReviewerBundle",
+        "finalReviewDecision",
+        "reviewerIdentity",
+        "reviewerIndependentFromProducers",
+        "requiredGateNames",
+        "passedGateNames",
+        "failedGateNames",
+        "approvalState"
+      ],
+      "properties": {
+        "policyAuthorityReceipt": { "$ref": "#/$defs/artifact" },
+        "observerSignerReceipt": { "$ref": "#/$defs/artifact" },
+        "controllerReadbackReceipt": { "$ref": "#/$defs/artifact" },
+        "signerChainVerification": { "$ref": "#/$defs/artifact" },
+        "cleanupVerifierReceipt": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        },
+        "independentReviewerBundle": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        },
+        "finalReviewDecision": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        },
+        "reviewerIdentity": { "$ref": "#/$defs/identity" },
+        "reviewerIndependentFromProducers": { "type": "boolean" },
+        "requiredGateNames": {
+          "const": [
+            "GATE_V3_DESIGN_SCOPE_STATIC",
+            "GATE_V3_AUTHORITY_SIGNATURE_VALID",
+            "GATE_V3_OBSERVER_SERVICE_READY",
+            "GATE_V3_REPLAY_RESERVATION_DURABLE",
+            "GATE_V3_SINGLE_RUN_LEASE_HELD",
+            "GATE_V3_SOURCE_AND_CONTRACT_BOUND",
+            "GATE_V3_PROVIDER_COMPONENTS_ABSENT",
+            "GATE_V3_RUNTIME_CHAIN_BOUND",
+            "GATE_V3_NAMESPACE_PREBIND_VALID",
+            "GATE_V3_FIREWALL_INSTALLED",
+            "GATE_V3_FIREWALL_READBACK_EXACT",
+            "GATE_V3_OBSERVER_READY_INDEPENDENT",
+            "GATE_V3_FINAL_REBIND_STABLE",
+            "GATE_V3_BARRIER_RELEASE_AUTHORIZED",
+            "GATE_V3_CONTINUOUS_DRIFT_CLEAR",
+            "GATE_V3_OBSERVER_COMPLETENESS",
+            "GATE_V3_KILL_SWITCH_BLOCK_BEFORE_KILL",
+            "GATE_V3_PROCESS_CGROUP_TEARDOWN",
+            "GATE_V3_PRIVILEGED_CLEANUP_ACKNOWLEDGED",
+            "GATE_V3_EXTERNAL_CLEANUP_VERIFIED",
+            "GATE_V3_EVIDENCE_RESOLVED",
+            "GATE_V3_SIGNER_CHAIN_VALID",
+            "GATE_V3_INDEPENDENT_REVIEW_APPROVED",
+            "GATE_V3_PASS_PUBLICATION"
+          ]
+        },
+        "passedGateNames": { "type": "array", "uniqueItems": true },
+        "failedGateNames": { "type": "array", "uniqueItems": true },
+        "approvalState": {
+          "enum": [
+            "DESIGN_ONLY",
+            "NOT_REVIEWED",
+            "REFUSED",
+            "APPROVED_SYNTHETIC_PASS"
+          ]
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verdict",
+        "designVerdict",
+        "syntheticPassPublished",
+        "passPublicationSequence",
+        "passPublicationReceipt",
+        "cleanupVerifiedBeforePass",
+        "allEvidenceResolvedBeforePass",
+        "independentApprovalBeforePass",
+        "executionAuthorized",
+        "realCandidateExecutionAuthorized",
+        "modelExecutionAuthorized",
+        "providerExecutionAuthorized",
+        "credentialsAuthorized",
+        "realCandidateInvocations",
+        "providerCalls",
+        "residualUnknowns"
+      ],
+      "properties": {
+        "verdict": {
+          "enum": ["DESIGN_ONLY", "SYNTHETIC_PASS", "SYNTHETIC_FAIL", "QUARANTINED"]
+        },
+        "designVerdict": {
+          "enum": [
+            "DESIGN_READY_FOR_INDEPENDENT_REVIEW",
+            "DESIGN_NEEDS_REVISION",
+            "DESIGN_BLOCKED"
+          ]
+        },
+        "syntheticPassPublished": { "type": "boolean" },
+        "passPublicationSequence": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "null" }
+          ]
+        },
+        "passPublicationReceipt": {
+          "oneOf": [
+            { "$ref": "#/$defs/artifact" },
+            { "type": "null" }
+          ]
+        },
+        "cleanupVerifiedBeforePass": { "type": "boolean" },
+        "allEvidenceResolvedBeforePass": { "type": "boolean" },
+        "independentApprovalBeforePass": { "type": "boolean" },
+        "executionAuthorized": { "const": false },
+        "realCandidateExecutionAuthorized": { "const": false },
+        "modelExecutionAuthorized": { "const": false },
+        "providerExecutionAuthorized": { "const": false },
+        "credentialsAuthorized": { "const": false },
+        "realCandidateInvocations": { "const": 0 },
+        "providerCalls": { "const": 0 },
+        "residualUnknowns": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/safeId" },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
