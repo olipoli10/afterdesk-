@@ -96,3 +96,17 @@ must not claim demand, recurring coverage, savings, worker capacity, margin,
 or autonomous execution. The truthful statement is narrower: a typed,
 fail-closed human step can be safely scoped, claimed, reviewed and resumed in a
 verified workflow under the configured controls.
+
+## 6. T080 release-readiness checkpoint
+
+T080 completed a fresh local and read-only external review with verdict
+**NO-GO LIVE**. See
+`specs/001-human-workunit-resume/evidence/t080-release-readiness-no-go.md` and
+`docs/human-work-unit-rollback-runbook.md`.
+
+Local code, disposable-PostgreSQL and build gates are green. Release gates are
+not: there is no remote candidate or CI, the current Preview configuration does
+not build, the exact target/recovery/owner chain is unproved, the HumanWorkUnit
+migrations are absent from the likely target, operational owners are unnamed,
+and the high-severity dependency audit gate fails. None of the unchecked
+Production-specific boxes above is closed by T080.
