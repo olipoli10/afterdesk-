@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "founderObservationSource": "REAL_OLIVIER_SUBMISSION_ONLY",
+  "consoleRequiresProviderIdCopy": false,
+  "duplicateReusesSameProviderId": true,
+  "timerStartsAt": "FIRST_FOUNDER_ACTION",
+  "manualTechnicalSuccessAllowed": false,
+  "clearAppointmentExpectedCount": 1,
+  "ambiguityConsequentialWriteCount": 0,
+  "tomorrowAnswerSource": "POSTGRESQL",
+  "inboundResultSource": "POSTGRESQL",
+  "duplicateCanonicalEffectCount": 0,
+  "approvalPreview": {
+    "recipientVisible": true,
+    "channelVisible": true,
+    "bodyVisible": true
+  },
+  "firstApprovalSimulatedDeliveryCount": 1,
+  "secondApprovalAttempted": true,
+  "secondApprovalSimulatedDeliveryCount": 0,
+  "projectsCalendarInboxProjectionsAgree": true,
+  "unknownObservationFieldsAccepted": false,
+  "externalTransportCount": 0
+}

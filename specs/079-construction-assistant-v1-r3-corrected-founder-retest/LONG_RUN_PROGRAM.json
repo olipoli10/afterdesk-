@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "programId": "endvera-construction-assistant-v1-r3-corrected-founder-retest-v1",
+  "objective": "Run one real founder-owned local retest of the corrected Construction Assistant loop from a single guided authenticated screen, derive technical success from disposable PostgreSQL state, seal the human result and stop without any provider, external transport or customer data.",
+  "worktree": "C:\\dev\\nightlexicon-endvera-construction-assistant-v1-r3-observed",
+  "branch": "codex/endvera-construction-assistant-v1-r3-corrected-founder-retest",
+  "baseHead": "682eddc528eb564fb4c13e56ef18328e42ad0ba7",
+  "authority": "FOUNDER-OWNED LOCAL CORRECTED CONSTRUCTION LOOP RETEST ONLY; PROVIDER, CUSTOMER DATA, REAL SEND, EXTERNAL TRANSPORT, EXECUTE, EXTERNAL WRITE, PUSH, PREVIEW AND PRODUCTION NO-GO",
+  "estimatedHours": { "min": 2, "max": 3 },
+  "referenceRuns": [
+    {
+      "id": "endvera-construction-assistant-v1-r2-founder-observed-loop",
+      "observedMinutes": 133,
+      "workUnits": "One real founder session, bounded product correction, 1183 fast tests, 97 integrations, PostgreSQL proof and 99-page build"
+    }
+  ],
+  "completionCommand": "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-long-run-program.ps1 -ManifestPath C:\\dev\\nightlexicon-endvera-construction-assistant-v1-r3-observed\\specs\\079-construction-assistant-v1-r3-corrected-founder-retest\\LONG_RUN_PROGRAM.json -RequireComplete",
+  "stopConditions": [
+    "Brain, base or source-tree mismatch",
+    "Concurrent modification of the test lane, immutable source or canonical Brain",
+    "Material is neither synthetic nor explicitly owned by Olivier",
+    "A provider, external transport, real identity or customer data becomes necessary",
+    "A Prisma, migration, dependency or lockfile change becomes necessary",
+    "A shared or non-disposable database becomes necessary",
+    "A temporary change cannot be restored",
+    "A second founder observation would be required",
+    "Push, Preview, Production, deployment, EXECUTE or external WRITE becomes necessary"
+  ],
+  "forbidden": [
+    "Customer or prospect data",
+    "Real phone number, SMS or email",
+    "Twilio, OAuth or any provider",
+    "Live or fabricated ChatGPT comparison",
+    "External transport",
+    "Prisma schema, migration, dependency or package-lock change",
+    "Authentication bypass or production-accessible test route",
+    "Founder-marked technical success",
+    "A second human retest",
+    "Push, Preview, Production or deployment"
+  ],
+  "chapters": [
+    {
+      "id": "CH-001",
+      "title": "Retest contract, guided UX and RED",
+      "objective": "Freeze the immutable corrected subject, one-screen founder sequence, closed evidence contract, adjudication rubric and non-vacuous RED.",
+      "status": "DONE",
+      "estimatedMinutes": 45,
+      "dependencies": [],
+      "allowedScope": [
+        "specs/079-construction-assistant-v1-r3-corrected-founder-retest",
+        "test/construction-assistant-v1-r3-founder-retest*.test.ts"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/079-construction-assistant-v1-r3-corrected-founder-retest/scripts/validate-retest-contract.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-001-retest-contract-guided-ux-and-red.md",
+        "evidence/dashboard-baseline.md"
+      ],
+      "result": "Exact R3 contract, one-screen UX, closed founder answers and 17 non-vacuous RED mutations admitted; 5 targeted tests passed and every mutation was killed and restored byte-exactly.",
+      "completedAtUtc": "2026-08-31T23:52:22.7795660Z"
+    },
+    {
+      "id": "CH-002",
+      "title": "Integrated console, disposable database and dry run",
+      "objective": "Build the guarded one-screen console, run the exact sequence against disposable PostgreSQL, restore RED mutations and complete all pre-observation gates without creating human evidence.",
+      "status": "OPEN",
+      "estimatedMinutes": 70,
+      "dependencies": ["CH-001"],
+      "allowedScope": [
+        "specs/079-construction-assistant-v1-r3-corrected-founder-retest",
+        "test/construction-assistant-v1-r3-founder-retest*.test.ts",
+        "src/app/client/construction-retest",
+        "src/components/construction-assistant-v1/founder-retest",
+        "src/server/actions/construction-assistant-v1-r3-retest.ts"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/079-construction-assistant-v1-r3-corrected-founder-retest/scripts/validate-preflight.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-002-console-database-and-dry-run.md",
+        "evidence/preflight-packet.json",
+        "evidence/mutation-results.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-003",
+      "title": "One real corrected founder observation",
+      "objective": "Have Olivier complete the nine guided steps once, record only his seven non-technical answers, recompute PostgreSQL measurements and seal the immutable human result.",
+      "status": "OPEN",
+      "estimatedMinutes": 45,
+      "dependencies": ["CH-002"],
+      "allowedScope": ["specs/079-construction-assistant-v1-r3-corrected-founder-retest"],
+      "acceptanceCommands": [
+        "pwsh specs/079-construction-assistant-v1-r3-corrected-founder-retest/scripts/validate-founder-observation.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-003-founder-observed-retest.md",
+        "evidence/founder-observation.json",
+        "evidence/technical-measurements.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-004",
+      "title": "Adjudication, validations, commits and Brain checkpoint",
+      "objective": "Adjudicate the frozen verdict, close the temporary console, validate artifacts and repositories, commit locally, checkpoint exact Brain facts and stop.",
+      "status": "OPEN",
+      "estimatedMinutes": 45,
+      "dependencies": ["CH-003"],
+      "allowedScope": [
+        "specs/079-construction-assistant-v1-r3-corrected-founder-retest",
+        "test/construction-assistant-v1-r3-founder-retest*.test.ts",
+        "C:\\dev\\afterdesk-project-brain checkpoint files after lane release"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/079-construction-assistant-v1-r3-corrected-founder-retest/scripts/validate-closeout.ps1",
+        "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-brain.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-004-adjudication-dashboard-and-closeout.md",
+        "evidence/dashboard-closeout.md"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}

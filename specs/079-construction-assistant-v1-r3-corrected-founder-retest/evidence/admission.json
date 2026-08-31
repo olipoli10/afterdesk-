@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "admittedAtUtc": "2026-08-31T23:45:00.000Z",
+  "brainHead": "ea426fe2286677e69bf0c5fee694c0ffe4163d42",
+  "brainTree": "0f7f0d0d7937d19bb58ad53191fbc7d20e5ecd03",
+  "sourceHead": "682eddc528eb564fb4c13e56ef18328e42ad0ba7",
+  "sourceTree": "8a89ef281e3c8df81f5a60ccc25c08f610d57da2",
+  "packageLockBlob": "f0663f30d007cb2664f7944749cfb0cc12849fd8",
+  "correctionCommitPresent": true,
+  "brainTrackedClean": true,
+  "sourceTrackedClean": true,
+  "targetWasAbsent": true,
+  "concurrentOwnerPresent": false,
+  "verdict": "ADMISSION_READY"
+}

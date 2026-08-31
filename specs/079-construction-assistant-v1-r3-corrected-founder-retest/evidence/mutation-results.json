@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "mutationCount": 17,
+  "allKilled": true,
+  "allByteRestored": true,
+  "externalCallCount": 0,
+  "results": [
+    {
+      "id": "founder-observation-is-replaced-by-fixture",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "founder-observation-is-replaced-by-fixture",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "9c0bdb9ce797594e8a08dc892b55c2e2cd0a97e98ce1b2101ca11ea99f02b36d",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "console-requires-provider-id-copy",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "console-requires-provider-id-copy",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "e31a00189fa6aacd65200813785695be0734ea03cc7a57c405646a6564dcf75d",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "duplicate-uses-a-different-provider-id",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "duplicate-uses-a-different-provider-id",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "493d83f16ef9edea56e07476c322361ed095497aac8d4e7157160f39ee20bf9f",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "timer-starts-before-first-founder-action",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "timer-starts-before-first-founder-action",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "295c6e050316feb3ef831c5b5bd4c01920d027b3b65b02db8f894cc75d06a154",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "step-can-be-manually-marked-success",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "step-can-be-manually-marked-success",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "902d7a688bde7722d46c53e1b0c3f60e358a3d8a265216e3581df6a1d836c241",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "clear-appointment-creates-zero-or-two-items",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "clear-appointment-creates-zero-or-two-items",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "79e7b0fd7350c620f654554c22ee811c69dfaab15bd1c2f3d0c7acd6b7034325",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "ambiguity-creates-consequential-write",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "ambiguity-creates-consequential-write",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "ae8b84a36ef8d3bde027c0f3fb5eff1f1965fc820a7a20925c3f2c920e2e0b63",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "tomorrow-answer-uses-static-copy",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "tomorrow-answer-uses-static-copy",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "0f34cca4f618a7433ae83d0b6d0bece9b2b0119a56c2717cd169361b3909b677",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "inbound-result-is-not-postgres-backed",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "inbound-result-is-not-postgres-backed",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "0239f353dbf0f8bd7cd68868fb5101eda6def5899bbdd65d09b2703fe9be8cb2",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "duplicate-creates-second-canonical-effect",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "duplicate-creates-second-canonical-effect",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "c6965b0fdc9daf5a22e36dab4447f5d0cc96bd535dcca3698a5a3b204993939b",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "approval-hides-recipient-channel-or-body",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "approval-hides-recipient-channel-or-body",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "04c16beec949358c8c500e23ee451cabf1eb6ddf70ca44202c1c3aa397063611",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "first-approval-creates-zero-or-two-local-deliveries",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "first-approval-creates-zero-or-two-local-deliveries",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "4517b83d2ab880acee1f6f6825e6f6b5983a818aa5e63cb45458c471e2718830",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "second-approval-is-not-attempted",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "second-approval-is-not-attempted",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "fb52a8d3c16679d2f2f55f93a07b69f5a47232ed36e906b575a9a241c17ad564",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "second-approval-creates-delivery",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "second-approval-creates-delivery",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "7c075639f3b7a55262dee0914edc9a444fe8334e60913e75b0a02739bee707b3",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "projects-calendar-inbox-projections-disagree",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "projects-calendar-inbox-projections-disagree",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "e1a1670482d9f7ad29fe9e66380151e7287047931f4d56c2ffd39010fe23aed5",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "unknown-observation-field-is-accepted",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "unknown-observation-field-is-accepted",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "6a1bb95f6274db9a37e3692f98a5dd1ea8d1b076a1215ed25598f61667206042",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    },
+    {
+      "id": "external-transport-becomes-possible",
+      "status": "KILLED_AND_RESTORED",
+      "killedBy": "external-transport-becomes-possible",
+      "beforeSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "mutatedSha256": "ae83d5f9e655f486430107c92d13f27ae88366d3272712211bdcd9df1406e35d",
+      "afterSha256": "9633b760facd2c0250d3a8cc935819bb7f095843d4d57861fe25de2b2ea6757c",
+      "pristineRerun": "PASS"
+    }
+  ]
+}
