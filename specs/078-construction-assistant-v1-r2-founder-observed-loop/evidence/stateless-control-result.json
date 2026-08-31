@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "controlId": "STATELESS_CHAT_STYLE_CONTROL",
+  "persistentMemory": false,
+  "databaseBacked": false,
+  "auditTrail": false,
+  "idempotencyProtection": false,
+  "exactApprovalMechanism": false,
+  "humanObserved": false,
+  "statelessControlActiveMinutes": null,
+  "statelessControlContextRestatementCount": null,
+  "comparisonVerdict": "NOT_ADJUDICABLE_AS_HUMAN_TIMED_CONTROL"
+}

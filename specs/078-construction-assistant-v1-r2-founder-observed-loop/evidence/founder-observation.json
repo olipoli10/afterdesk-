@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "observer": "Olivier",
+  "founderCompleted": true,
+  "sessionStartedAtUtc": "2026-08-31T23:12:28.424Z",
+  "sessionCompletedAtUtc": "2026-08-31T23:12:39.485Z",
+  "clarificationUnderstandabilityRating": 3,
+  "approvalComprehensionRating": 1,
+  "founderCorrectionCount": 5,
+  "founderActiveMinutes": 0.18,
+  "manualContextRestatementCount": 0,
+  "nextDecisionIdentified": true,
+  "actionabilityRating": 1,
+  "observableAdvantageRating": -2,
+  "observedManagedAdvantages": [
+    "DUPLICATE_REPLAY_REFUSAL",
+    "EXACT_APPROVAL",
+    "RECONSTRUCTIBLE_HISTORY"
+  ],
+  "founderNotes": "",
+  "observationSha256": "de072152fcfbaf2c55797347106b5fe8f73a9ad71fb489d603193a3de653f073"
+}

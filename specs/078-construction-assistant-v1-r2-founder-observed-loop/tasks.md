@@ -22,15 +22,15 @@
 
 ## Phase 4 — US2 Founder observation
 
-- [ ] T012 [US2] Run the single real founder session and create `specs/078-construction-assistant-v1-r2-founder-observed-loop/evidence/founder-observation.json`
-- [ ] T013 [US2] Extract database-backed technical measurements in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/measure-session.ts`
-- [ ] T014 [US2] Validate founder identity, completeness and seal in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/validate-founder-observation.ps1`
+- [x] T012 [US2] Run the single real founder session and create `specs/078-construction-assistant-v1-r2-founder-observed-loop/evidence/founder-observation.json`
+- [x] T013 [US2] Extract database-backed technical measurements in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/measure-session.ts`
+- [x] T014 [US2] Validate founder identity, completeness and seal in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/validate-founder-observation.ps1`
 
 ## Phase 5 — US3 Adjudication and closeout
 
-- [ ] T015 [US3] Implement frozen verdict guards in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/adjudicate.ts`
-- [ ] T016 [US3] Produce control/result/dashboard evidence under `specs/078-construction-assistant-v1-r2-founder-observed-loop/evidence/`
-- [ ] T017 [US3] Correct only a reproduced bounded product defect if required and add an exact regression test
+- [x] T015 [US3] Implement frozen verdict guards in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/adjudicate.ts`
+- [x] T016 [US3] Produce control/result/dashboard evidence under `specs/078-construction-assistant-v1-r2-founder-observed-loop/evidence/`
+- [x] T017 [US3] Correct only a reproduced bounded product defect if required and add an exact regression test
 - [ ] T018 [US3] Run proportional final gates and `git diff --check`
 - [ ] T019 [US3] Complete manifest, create local commits and checkpoint `C:/dev/afterdesk-project-brain`
 

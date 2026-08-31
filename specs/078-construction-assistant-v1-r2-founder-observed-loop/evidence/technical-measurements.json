@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "measuredAtUtc": "2026-08-31T23:18:24.040Z",
+  "dataClass": "SYNTHETIC_LOCAL_ONLY",
+  "observedFounderAttemptCount": 6,
+  "projectAssociationAccuracy": {
+    "numerator": 0,
+    "denominator": 3,
+    "percent": 0
+  },
+  "appointmentAccuracy": 0,
+  "ambiguousRequestConsequentialWriteCount": 0,
+  "clarificationProduced": false,
+  "tomorrowAnswerAccuracy": 0,
+  "duplicateCanonicalEffectCount": 0,
+  "duplicateReplayProtectionObserved": false,
+  "replayedOutboundDeliveryCount": 0,
+  "exactApprovalObserved": false,
+  "inventedFactCount": 0,
+  "timeToActionableStateMinutes": null,
+  "databaseState": {
+    "projects": 1,
+    "messages": 0,
+    "calendarItems": 0,
+    "actions": 0,
+    "audits": 3
+  },
+  "externalProviderCallCount": 0,
+  "externalTransportCount": 0
+}

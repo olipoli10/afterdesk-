@@ -89,7 +89,7 @@
       "id": "CH-003",
       "title": "One real founder-observed conversation loop",
       "objective": "Have Olivier complete the exact local workflow once, record active minutes, corrections, comprehension and decision usefulness directly in the local observation form, and seal the immutable result.",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 45,
       "dependencies": ["CH-002"],
       "allowedScope": ["specs/078-construction-assistant-v1-r2-founder-observed-loop"],
@@ -101,8 +101,8 @@
         "evidence/founder-observation.json",
         "evidence/stateless-control-result.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Olivier completed one real local UI session. Five reproducible defects prevented the managed loop; actionability was 1/5, observable advantage was -2, and the sealed adjudication is REWORK.",
+      "completedAtUtc": "2026-08-31T23:12:39.485Z"
     },
     {
       "id": "CH-004",
