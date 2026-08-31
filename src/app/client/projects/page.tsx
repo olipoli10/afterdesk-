@@ -1,18 +1,22 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { requireRole } from "@/lib/authz";
 import { constructionWorkspaceForUser } from "@/server/construction-assistant-v1/workspace";
 import { initializeConstructionDemo } from "@/server/actions/construction-assistant-v1";
 import { A2ConstructionComposer } from "@/components/construction-assistant-v1/a2-composer";
 import { Card, CardBody, EmptyState, PageTitle, SectionLabel } from "@/components/ui";
+import { clientPortalLangOf } from "@/lib/i18n/client-portal";
+import { CONSTRUCTION_ASSISTANT_I18N } from "@/lib/i18n/construction-assistant-v1";
 
 export default async function ConstructionProjectsPage() {
   const user = await requireRole("CLIENT");
+  const copy = CONSTRUCTION_ASSISTANT_I18N[clientPortalLangOf((await headers()).get("x-site-lang"))];
   const workspace = await constructionWorkspaceForUser(user.id);
   return (
     <div className="space-y-6 text-[#F7F6F3]">
-      <PageTitle tone="night" title="Chantiers" sub="ENDVERA garde l’état opérationnel. Vous parlez; le cockpit se met à jour." />
+      <PageTitle tone="night" title={copy.projects} sub={copy.projectsSub} />
       {!workspace ? (
-        <EmptyState tone="night" title="Aucun espace Construction" body="Créez le dossier synthétique Laval pour essayer le loop complet sans provider ni donnée client." action={<form action={initializeConstructionDemo}><button className="rounded-md bg-[#D87526] px-4 py-2.5 text-sm font-semibold text-white">Créer le dossier synthétique</button></form>} />
+        <EmptyState tone="night" title={copy.noWorkspace} body={copy.noWorkspaceBody} action={<form action={initializeConstructionDemo}><button className="rounded-md bg-[#D87526] px-4 py-2.5 text-sm font-semibold text-white">{copy.createDemo}</button></form>} />
       ) : (
         <>
           <A2ConstructionComposer workspaceId={workspace.id} />
