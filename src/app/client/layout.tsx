@@ -39,6 +39,9 @@ export default async function ClientLayout({ children }: { children: ReactNode }
       utility={<ClientLanguageSwitch current={lang} />}
       nav={[
         { href: "/client", label: copy.tasks },
+        { href: "/client/projects", label: lang === "fr" ? "Chantiers" : "Projects" },
+        { href: "/client/calendar", label: lang === "fr" ? "Calendrier" : "Calendar" },
+        { href: "/client/inbox", label: lang === "fr" ? "Boîte de réception" : "Inbox" },
         { href: "/client/tasks/new", label: copy.newTask },
         // Only a client with an active-or-ever-opened block sees this tab —
         // it is not a general upsell surface, just where the account lives
