@@ -108,7 +108,7 @@
       "id": "CH-004",
       "title": "Adjudication, bounded correction if required and closeout",
       "objective": "Adjudicate PASS, REWORK or REJECT, correct only a reproduced bounded defect if necessary, run proportional final gates, checkpoint exact Brain facts and stop.",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 45,
       "dependencies": ["CH-003"],
       "allowedScope": [
@@ -131,8 +131,8 @@
         "evidence/ch-004-adjudication-dashboard-and-closeout.md",
         "evidence/dashboard-closeout.md"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Founder verdict remains REWORK; bounded fixes passed targeted and disposable-PostgreSQL verification, 1183 fast tests, 97 integrations, lint, typecheck, 34 migrations and a 99-page build; Brain checkpoint ea426fe is validated.",
+      "completedAtUtc": "2026-08-31T23:30:13.4159779Z"
     }
   ]
 }

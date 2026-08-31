@@ -31,8 +31,8 @@
 - [x] T015 [US3] Implement frozen verdict guards in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/adjudicate.ts`
 - [x] T016 [US3] Produce control/result/dashboard evidence under `specs/078-construction-assistant-v1-r2-founder-observed-loop/evidence/`
 - [x] T017 [US3] Correct only a reproduced bounded product defect if required and add an exact regression test
-- [ ] T018 [US3] Run proportional final gates and `git diff --check`
-- [ ] T019 [US3] Complete manifest, create local commits and checkpoint `C:/dev/afterdesk-project-brain`
+- [x] T018 [US3] Run proportional final gates and `git diff --check`
+- [x] T019 [US3] Complete manifest, create local commits and checkpoint `C:/dev/afterdesk-project-brain`
 
 ## Dependencies
 
