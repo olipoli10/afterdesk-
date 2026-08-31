@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "verifiedAtUtc": "2026-08-31T23:20:05.000Z",
+  "verificationClass": "POST_CORRECTION_SYNTHETIC_LOCAL_ONLY",
+  "testFile": "test/construction-assistant-v1-r2-corrected-postgres.test.ts",
+  "clearAppointmentCreated": true,
+  "ambiguousClarification": "Est-ce 2 h ou 14 h?",
+  "tomorrowAnswerUsesPostgreSQL": true,
+  "calendarCanonicalEffectCount": 1,
+  "firstInboundAdmitted": true,
+  "secondInboundReplayed": true,
+  "providerMessageCount": 1,
+  "outboundDraftCreated": true,
+  "firstSimulatedApprovalDelivered": true,
+  "secondSimulatedApprovalReason": "REPLAY_REFUSED",
+  "externalProviderCallCount": 0,
+  "externalTransportCount": 0,
+  "verdict": "CORRECTED_LOOP_SYNTHETIC_PASS"
+}

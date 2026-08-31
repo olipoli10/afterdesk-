@@ -10,11 +10,7 @@ const initial: ConstructionActionResult = { ok: true, message: "Aucun réseau: c
 
 export function LocalConstructionSimulator({ workspaceId }: { workspaceId: string }) {
   const [providerMessageId, setProviderMessageId] = useState(() => `local-${crypto.randomUUID()}`);
-  const [state, action, pending] = useActionState(async (previous: ConstructionActionResult, formData: FormData) => {
-    const result = await submitLocalConstructionSimulation(previous, formData);
-    if (result.ok && !result.message.startsWith("Rejeu")) setProviderMessageId(`local-${crypto.randomUUID()}`);
-    return result;
-  }, initial);
+  const [state, action, pending] = useActionState(submitLocalConstructionSimulation, initial);
   return (
     <form action={action} className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
       <input type="hidden" name="workspaceId" value={workspaceId} />

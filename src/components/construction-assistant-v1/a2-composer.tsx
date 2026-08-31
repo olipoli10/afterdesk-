@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import {
   submitA2ConstructionMessage,
   type ConstructionActionResult,
@@ -9,17 +9,19 @@ import {
 const initial: ConstructionActionResult = { ok: true, message: "Dites-moi ce qui doit arriver sur le chantier." };
 
 export function A2ConstructionComposer({ workspaceId }: { workspaceId: string }) {
-  const [requestId, setRequestId] = useState(() => crypto.randomUUID());
-  const [state, action, pending] = useActionState(async (previous: ConstructionActionResult, formData: FormData) => {
-    const result = await submitA2ConstructionMessage(previous, formData);
-    setRequestId(crypto.randomUUID());
-    return result;
-  }, initial);
+  const [state, action, pending] = useActionState(submitA2ConstructionMessage, initial);
 
   return (
-    <form action={action} className="rounded-xl border border-[#C9A76A]/25 bg-[#111317] p-4 shadow-xl">
+    <form
+      action={action}
+      onSubmit={(event) => {
+        const field = event.currentTarget.elements.namedItem("requestId");
+        if (field instanceof HTMLInputElement) field.value = crypto.randomUUID();
+      }}
+      className="rounded-xl border border-[#C9A76A]/25 bg-[#111317] p-4 shadow-xl"
+    >
       <input type="hidden" name="workspaceId" value={workspaceId} />
-      <input type="hidden" name="requestId" value={requestId} />
+      <input type="hidden" name="requestId" />
       <div className="flex items-center gap-3">
         <span className="grid size-10 place-items-center rounded-full border border-[#D87526]/50 bg-[#D87526]/10 font-mono text-sm text-[#FFCB7A]">A2</span>
         <div>

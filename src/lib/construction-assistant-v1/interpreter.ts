@@ -31,7 +31,11 @@ function matchingProjects(text: string, context: InterpreterContext) {
   return context.projects.filter((project) => {
     const code = normalize(project.code);
     const name = normalize(project.name);
-    return normalized.includes(name) || new RegExp(`(^|\\W)${code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\W|$)`).test(normalized);
+    const nameTokens = name.split(/\s+/).filter((token) => token.length >= 4);
+    const hasUniqueNameToken = nameTokens.some((token) =>
+      new RegExp(`(^|\\W)${token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\W|$)`).test(normalized),
+    );
+    return normalized.includes(name) || hasUniqueNameToken || new RegExp(`(^|\\W)${code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\W|$)`).test(normalized);
   });
 }
 

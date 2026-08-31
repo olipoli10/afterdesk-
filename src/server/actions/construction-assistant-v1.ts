@@ -123,7 +123,6 @@ export async function submitLocalConstructionSimulation(
     providerMessageId: parsed.data.providerMessageId,
     channel: parsed.data.channel,
     normalizedSender: sender,
-    normalizedRecipients: ["ENDVERA"],
     body: parsed.data.body,
     receivedAt: new Date().toISOString(),
     signatureValid: true,
