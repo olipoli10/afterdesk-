@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "programId": "endvera-construction-assistant-v1-r2-founder-observed-loop-v1",
+  "objective": "Run one real founder-observed local Construction Assistant conversation loop using synthetic or explicitly founder-owned material, compare it fairly with a stateless chat-style control and measure whether persistent operational state creates observable decision value without any external provider or customer data.",
+  "worktree": "C:\\dev\\nightlexicon-endvera-construction-assistant-v1-r2-observed",
+  "branch": "codex/endvera-construction-assistant-v1-r2-founder-observed-loop",
+  "baseHead": "1dcd7c8874c7039bfc0bc9cf7cbfc5bd90ef0fa7",
+  "authority": "FOUNDER-OWNED LOCAL OBSERVED CONSTRUCTION ASSISTANT TEST ONLY; PROVIDER, CUSTOMER DATA, EXTERNAL SEND, EXECUTE, EXTERNAL WRITE, PUSH, PREVIEW AND PRODUCTION NO-GO",
+  "estimatedHours": {
+    "min": 2,
+    "max": 3
+  },
+  "referenceRuns": [
+    {
+      "id": "endvera-construction-assistant-v1",
+      "observedMinutes": 111.45,
+      "workUnits": "Construction Assistant V1 local product closure; 1163 tests; 97 integrations; 5 PostgreSQL tests; 34 migrations; 99-page build"
+    }
+  ],
+  "completionCommand": "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-long-run-program.ps1 -ManifestPath C:\\dev\\nightlexicon-endvera-construction-assistant-v1-r2-observed\\specs\\078-construction-assistant-v1-r2-founder-observed-loop\\LONG_RUN_PROGRAM.json -RequireComplete",
+  "stopConditions": [
+    "Brain, base or source-tree mismatch",
+    "Concurrent modification of the test lane, immutable source or canonical Brain",
+    "Material is neither synthetic nor explicitly owned by Olivier",
+    "A client, prospect, real phone number, provider, OAuth or external transport becomes necessary",
+    "The founder observation is replaced by a simulated fixture",
+    "A product defect requires a schema redesign, destructive migration or broad architectural rewrite",
+    "A shared or non-disposable database becomes necessary",
+    "A mutation cannot be restored byte-exactly",
+    "Push, Preview, Production, deployment, EXECUTE or external WRITE becomes necessary"
+  ],
+  "forbidden": [
+    "Customer or prospect data",
+    "Live SMS or email",
+    "Twilio or any messaging provider",
+    "Live ChatGPT comparison without separate authority",
+    "External transport",
+    "General mailbox or phone access",
+    "OAuth or credentials",
+    "Destructive migration or prisma db push",
+    "Push, Preview, Production or deployment",
+    "Claiming founder observation from a synthetic fixture",
+    "Changing a dashboard metric without satisfying its canonical rubric"
+  ],
+  "chapters": [
+    {
+      "id": "CH-001",
+      "title": "Observation contract, fair control and RED",
+      "objective": "Freeze the immutable V1 subject, exact founder workflow, equal-input stateless control, measurement rubric and non-vacuous RED proving that simulated founder feedback or unequal inputs cannot pass.",
+      "status": "DONE",
+      "estimatedMinutes": 45,
+      "dependencies": [],
+      "allowedScope": [
+        "specs/078-construction-assistant-v1-r2-founder-observed-loop",
+        "test/construction-assistant-v1-r2-observed*.test.ts"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/validate-observation-contract.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-001-observation-contract-and-red.md",
+        "evidence/dashboard-baseline.md"
+      ],
+      "result": "Observation contract, equal stateless control and six non-vacuous RED guards admitted; 7 targeted tests passed.",
+      "completedAtUtc": "2026-08-31T15:53:01.000Z"
+    },
+    {
+      "id": "CH-002",
+      "title": "Disposable founder test environment and dry run",
+      "objective": "Prepare a disposable PostgreSQL database, synthetic CLIENT identity, exact Laval dossier, local observation form and stateless control, then prove the complete path without recording a founder verdict.",
+      "status": "OPEN",
+      "estimatedMinutes": 45,
+      "dependencies": ["CH-001"],
+      "allowedScope": [
+        "specs/078-construction-assistant-v1-r2-founder-observed-loop",
+        "test/construction-assistant-v1-r2-observed*.test.ts"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/validate-founder-test-preflight.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-002-disposable-environment-and-preflight.md",
+        "evidence/preflight-packet.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-003",
+      "title": "One real founder-observed conversation loop",
+      "objective": "Have Olivier complete the exact local workflow once, record active minutes, corrections, comprehension and decision usefulness directly in the local observation form, and seal the immutable result.",
+      "status": "OPEN",
+      "estimatedMinutes": 45,
+      "dependencies": ["CH-002"],
+      "allowedScope": ["specs/078-construction-assistant-v1-r2-founder-observed-loop"],
+      "acceptanceCommands": [
+        "pwsh specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/validate-founder-observation.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-003-founder-observed-session.md",
+        "evidence/founder-observation.json",
+        "evidence/stateless-control-result.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-004",
+      "title": "Adjudication, bounded correction if required and closeout",
+      "objective": "Adjudicate PASS, REWORK or REJECT, correct only a reproduced bounded defect if necessary, run proportional final gates, checkpoint exact Brain facts and stop.",
+      "status": "OPEN",
+      "estimatedMinutes": 45,
+      "dependencies": ["CH-003"],
+      "allowedScope": [
+        "specs/078-construction-assistant-v1-r2-founder-observed-loop",
+        "test/construction-assistant-v1-r2-observed*.test.ts",
+        "src/lib/construction-assistant-v1",
+        "src/server/construction-assistant-v1",
+        "src/server/actions/construction-assistant-v1.ts",
+        "src/components/construction-assistant-v1",
+        "src/app/client/projects",
+        "src/app/client/calendar",
+        "src/app/client/inbox",
+        "C:\\dev\\afterdesk-project-brain checkpoint files after test-lane release"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/validate-closeout.ps1",
+        "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-brain.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-004-adjudication-dashboard-and-closeout.md",
+        "evidence/dashboard-closeout.md"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}

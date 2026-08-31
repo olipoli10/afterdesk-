@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "admittedAtUtc": "2026-08-31T15:52:50.1719187Z",
+  "brain": {
+    "path": "C:\\dev\\afterdesk-project-brain",
+    "head": "f8c5f74246f401c9371f5734b85674235225b7d5",
+    "tree": "1feafac8cf10026f195b2931ace689cc5c2e3bfd",
+    "trackedClean": true
+  },
+  "source": {
+    "path": "C:\\dev\\nightlexicon-endvera-construction-assistant-v1",
+    "head": "1dcd7c8874c7039bfc0bc9cf7cbfc5bd90ef0fa7",
+    "tree": "c0c9dbcb800e469775b9c4339da914cbc16da1dd",
+    "trackedClean": true
+  },
+  "lane": {
+    "path": "C:\\dev\\nightlexicon-endvera-construction-assistant-v1-r2-observed",
+    "branch": "codex/endvera-construction-assistant-v1-r2-founder-observed-loop"
+  },
+  "packageLockBlob": "f0663f30d007cb2664f7944749cfb0cc12849fd8",
+  "materialClass": "SYNTHETIC_OR_FOUNDER_OWNED_ONLY",
+  "externalProviderAuthorized": false,
+  "customerDataAuthorized": false
+}
