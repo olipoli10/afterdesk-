@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUtc": "2026-08-31T16:08:21.2956732Z",
+  "subjectHead": "1dcd7c8874c7039bfc0bc9cf7cbfc5bd90ef0fa7",
+  "subjectTree": "c0c9dbcb800e469775b9c4339da914cbc16da1dd",
+  "productSourceModified": false,
+  "database": {
+    "kind": "PRISMA_DEV_POSTGRESQL",
+    "name": "endvera-construction-v1-r2",
+    "host": "localhost",
+    "port": 51282,
+    "disposable": true,
+    "migrationCount": 34,
+    "shared": false
+  },
+  "account": {
+    "email": "olivier.r2@example.invalid",
+    "role": "CLIENT",
+    "verified": true,
+    "synthetic": true
+  },
+  "constructionWorkspaceCountBeforeFounderSession": 0,
+  "productUrl": "http://127.0.0.1:3000/login",
+  "observationUrl": "http://127.0.0.1:4178/",
+  "productHttpStatus": 200,
+  "observationHttpStatus": 200,
+  "founderObservationPresent": false,
+  "providerCalls": 0,
+  "networkScope": "LOOPBACK_ONLY",
+  "v1AttestationReused": {
+    "fastTests": 1163,
+    "serializedIntegrations": 97,
+    "postgresqlConstructionTests": 5,
+    "migrations": 34,
+    "buildPages": "99/99"
+  }
+}

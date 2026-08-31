@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "executedAtUtc": "2026-08-31T16:08:21.2956732Z",
+  "method": "IN_MEMORY_COMPILED_VARIANTS_WITH_FROZEN_FIXTURE_HASH_VERIFICATION",
+  "networkCalls": 0,
+  "providerCalls": 0,
+  "fixtureSha256Before": "c97d35ac94b4e8aa1c1dd8860e606fbbb47f74b5ff10243dbacb6290aa1751a9",
+  "fixtureSha256After": "c97d35ac94b4e8aa1c1dd8860e606fbbb47f74b5ff10243dbacb6290aa1751a9",
+  "contractSha256Before": "35be8601882f3f0db991210a6d6a80734b85a9696747bdb8c2b4326144f2a5a4",
+  "contractSha256After": "35be8601882f3f0db991210a6d6a80734b85a9696747bdb8c2b4326144f2a5a4",
+  "results": [
+    { "id": "founder-observation-is-replaced-by-fixture", "guard": "OBSERVER_LITERAL_OLIVIER", "killed": true },
+    { "id": "stateless-control-receives-fewer-facts", "guard": "CONTROL_INPUTS_NOT_EQUAL", "killed": true },
+    { "id": "observation-input-order-drifts", "guard": "CONTROL_INPUTS_NOT_EQUAL", "killed": true },
+    { "id": "timer-starts-before-founder-action", "guard": "SESSION_TIMER_INVALID", "killed": true },
+    { "id": "clear-appointment-links-wrong-project", "guard": "PROJECT_ID_EXACT", "killed": true },
+    { "id": "ambiguity-creates-calendar-item", "guard": "CLARIFICATION_WITH_NULL_START", "killed": true },
+    { "id": "tomorrow-answer-uses-chat-transcript", "guard": "CANONICAL_QUERY_WINDOW", "killed": true },
+    { "id": "duplicate-event-creates-second-effect", "guard": "STABLE_PROVIDER_IDEMPOTENCY_KEY", "killed": true },
+    { "id": "replay-creates-second-delivery", "guard": "STALE_VERSION", "killed": true },
+    { "id": "approval-hides-recipient-or-body", "guard": "PAYLOAD_CHANGED", "killed": true },
+    { "id": "cross-workspace-result-is-visible", "guard": "PAYLOAD_CHANGED", "killed": true },
+    { "id": "stateless-control-claims-persistent-memory", "guard": "PERSISTENT_MEMORY_FALSE", "killed": true },
+    { "id": "unknown-observation-field-is-accepted", "guard": "STRICT_SCHEMA", "killed": true }
+  ],
+  "restoredByteExactly": true
+}

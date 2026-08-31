@@ -9,16 +9,16 @@
 
 ## Phase 2 — Foundational local environment
 
-- [ ] T005 Create the loopback-only founder guide in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/founder-observation-server.ts`
-- [ ] T006 Create disposable environment orchestration in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/start-founder-test.ps1`
-- [ ] T007 Create the synthetic account/dossier seed in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/prepare-founder-test.ts`
-- [ ] T008 Create preflight validation in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/validate-founder-test-preflight.ps1`
+- [x] T005 Create the loopback-only founder guide in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/founder-observation-server.ts`
+- [x] T006 Create disposable environment orchestration in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/start-founder-test.ps1`
+- [x] T007 Create the synthetic account/dossier seed in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/prepare-founder-test.ts`
+- [x] T008 Create preflight validation in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/validate-founder-test-preflight.ps1`
 
 ## Phase 3 — US1 Fair comparison
 
-- [ ] T009 [US1] Freeze exact ordered inputs in `specs/078-construction-assistant-v1-r2-founder-observed-loop/fixtures/equal-input-sequence.json`
-- [ ] T010 [US1] Implement the stateless control in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/stateless-control.ts`
-- [ ] T011 [US1] Prove equal facts/order/reference time in `test/construction-assistant-v1-r2-observed-control.test.ts`
+- [x] T009 [US1] Freeze exact ordered inputs in `specs/078-construction-assistant-v1-r2-founder-observed-loop/fixtures/equal-input-sequence.json`
+- [x] T010 [US1] Implement the stateless control in `specs/078-construction-assistant-v1-r2-founder-observed-loop/scripts/stateless-control.ts`
+- [x] T011 [US1] Prove equal facts/order/reference time in `test/construction-assistant-v1-r2-observed-control.test.ts`
 
 ## Phase 4 — US2 Founder observation
 

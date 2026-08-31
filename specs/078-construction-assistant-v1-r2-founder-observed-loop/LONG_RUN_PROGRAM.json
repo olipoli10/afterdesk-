@@ -68,7 +68,7 @@
       "id": "CH-002",
       "title": "Disposable founder test environment and dry run",
       "objective": "Prepare a disposable PostgreSQL database, synthetic CLIENT identity, exact Laval dossier, local observation form and stateless control, then prove the complete path without recording a founder verdict.",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 45,
       "dependencies": ["CH-001"],
       "allowedScope": [
@@ -82,8 +82,8 @@
         "evidence/ch-002-disposable-environment-and-preflight.md",
         "evidence/preflight-packet.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Disposable PostgreSQL migrated, synthetic CLIENT admitted, loopback product and observation surfaces dry-run, 27 targeted tests passed, 13 mutations killed and byte-restored.",
+      "completedAtUtc": "2026-08-31T16:08:21.2956732Z"
     },
     {
       "id": "CH-003",
