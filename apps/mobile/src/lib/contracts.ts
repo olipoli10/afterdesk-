@@ -62,6 +62,20 @@ const projectIdentitySchema = z
 const contactIdentitySchema = z
   .object({ id: z.string().min(1), displayName: z.string().min(1) })
   .strict();
+const contactFieldSchema = contactIdentitySchema
+  .extend({
+    companyName: z.string().min(1).nullable(),
+    role: z.string().min(1).nullable(),
+    preferredLanguage: z.string().min(1),
+    project: projectIdentitySchema.nullable(),
+  })
+  .strict();
+const contactOwnerSchema = contactFieldSchema
+  .extend({
+    normalizedPhone: z.string().min(3).nullable(),
+    normalizedEmail: z.string().email().nullable(),
+  })
+  .strict();
 const projectSummarySchema = projectIdentitySchema
   .extend({
     status: z.string().min(1),
@@ -191,6 +205,7 @@ function cockpitSchemaForRole(role: MobileRole) {
       workspace: workspaceCockpitSchema.extend({ role: z.literal(role) }).strict(),
       permissions: permissionsSchema,
       projects: z.array(projectSummarySchema),
+      contacts: z.array(fieldWorker ? contactFieldSchema : contactOwnerSchema).default([]),
       calendar: z.array(fieldWorker ? calendarFieldSchema : calendarOwnerSchema),
       openLoops: z.array(fieldWorker ? loopFieldSchema : loopOwnerSchema),
       actions: z.array(fieldWorker ? actionFieldSchema : actionOwnerSchema),
@@ -209,6 +224,8 @@ const FORBIDDEN_FIELD_KEYS = new Set([
   "payloadHash",
   "nextAction",
   "title",
+  "normalizedPhone",
+  "normalizedEmail",
 ]);
 
 function rejectForbiddenFieldWorkerKeys(value: unknown): void {

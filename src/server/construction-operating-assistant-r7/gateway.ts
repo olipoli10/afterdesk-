@@ -104,7 +104,7 @@ export async function constructionSharedCockpitForUser(input: {
   const permissions = constructionPermissionsForRole(role);
   const financialsVisible = permissions.financialsVisible;
 
-  const [workspace, calendarItems, openLoops, actions, receivables] =
+  const [workspace, contacts, calendarItems, openLoops, actions, receivables] =
     await Promise.all([
       prisma.constructionWorkspace.findFirst({
         where: { id: input.workspaceId, status: "active" },
@@ -130,6 +130,21 @@ export async function constructionSharedCockpitForUser(input: {
               },
             },
           },
+        },
+      }),
+      prisma.constructionContact.findMany({
+        where: { workspaceId: input.workspaceId, status: "active" },
+        orderBy: [{ displayName: "asc" }, { id: "asc" }],
+        take: 200,
+        select: {
+          id: true,
+          displayName: true,
+          companyName: true,
+          role: true,
+          normalizedPhone: true,
+          normalizedEmail: true,
+          preferredLanguage: true,
+          project: { select: { id: true, code: true, name: true } },
         },
       }),
       prisma.constructionCalendarItem.findMany({
@@ -215,6 +230,18 @@ export async function constructionSharedCockpitForUser(input: {
     },
     permissions,
     projects: workspace.projects,
+    contacts: contacts.map((contact) =>
+      financialsVisible
+        ? contact
+        : {
+            id: contact.id,
+            displayName: contact.displayName,
+            companyName: contact.companyName,
+            role: contact.role,
+            preferredLanguage: contact.preferredLanguage,
+            project: contact.project,
+          },
+    ),
     calendar: calendarItems.map((item) =>
       financialsVisible
         ? item
