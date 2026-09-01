@@ -71,7 +71,7 @@
       "title": "Exact prepared-action decisions",
       "objective": "Add idempotent and concurrency-safe exact approval, rejection and revocation with immutable audit and zero dispatch.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R10-INSPECTION"
       ],
@@ -96,17 +96,17 @@
       "evidencePaths": [
         "../091-prepared-action-decisions/evidence/r11-decisions-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "18f52fb2d86dc40fb0b0eba85db7bbb97581b5ce",
+      "outputTree": "a82629e2ce4effa486e82856ee59e7dd30177d86",
+      "result": "Exact approve, reject and revoke decisions are transactional, idempotent, role-bound, audited and transport-free.",
+      "completedAtUtc": "2026-09-01T20:25:41Z"
     },
     {
       "id": "R12-NATIVE-CONTROL",
       "title": "Native prepared-action control center",
       "objective": "Deliver strict mobile inspection and stable approve, reject and revoke controls that refresh canonical state and never dispatch.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "R11-DECISIONS"
       ],
