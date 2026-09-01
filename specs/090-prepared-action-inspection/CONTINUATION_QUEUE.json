@@ -317,7 +317,7 @@
       "title": "Offline-safe mobile outbox and recovery",
       "objective": "Persist bounded mobile commands with stable idempotency across connectivity loss and app restart, with explicit recovery and zero automatic external send.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R16-PERMISSION-CENTER"
       ],
@@ -339,22 +339,22 @@
         "test/integration/construction-operating-assistant-r17*.itest.ts"
       ],
       "planPath": "../097-mobile-offline-retry/plan.md",
-      "planSha256": "57421df1ea92712d09a3a937f6c19e2c3bb7055ad09869c3e064428c296de150",
+      "planSha256": "8be90fd8f4dc6b60f7f4cbaae4b5aadd3e4903374a7cea5a3f568a0e07c18c32",
       "completionCommand": "npm --prefix apps/mobile test -- --run test/outbox.test.ts",
       "evidencePaths": [
         "../097-mobile-offline-retry/evidence/r17-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "8660002a0e8c023835fef2fb4ed0606e0e407535",
+      "outputTree": "c0f3c8b3f09d4cb69ac588e7eb96a0e98f102a84",
+      "result": "Bounded protected mobile outbox restores interrupted commands with exact stable identifiers, explicit foreground retry/discard, workspace and sign-out isolation, and zero automatic transport.",
+      "completedAtUtc": "2026-09-01T22:55:32Z"
     },
     {
       "id": "R18-UNIFIED-INTENT",
       "title": "Unified intent and entity resolution",
       "objective": "Normalize text, local voice transcripts and selected-file observations into one provider-neutral intent envelope with clarification and canonical transition guards.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "R17-OFFLINE-RETRY"
       ],

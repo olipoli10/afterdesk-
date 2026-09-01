@@ -33,13 +33,13 @@
     {
       "id": "S1-NATIVE-COCKPIT",
       "title": "Complete native contractor cockpit",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "releases": ["R13-CALENDAR-CONTACTS", "R14-EVIDENCE-INTAKE", "R15-PROJECT-TIMELINE", "R16-PERMISSION-CENTER", "R17-OFFLINE-RETRY"]
     },
     {
       "id": "S2-OPERATING-CORE",
       "title": "Persistent work execution and economic operations",
-      "status": "PLANNED",
+      "status": "IN_PROGRESS",
       "releases": ["R18-UNIFIED-INTENT", "R19-JOB-SCHEDULING", "R20-FOLLOW-UP-ENGINE", "R21-RECEIVABLES-INVOICE", "R22-HUMAN-ESCALATION"]
     },
     {
@@ -72,8 +72,8 @@
     {"id":"R14-EVIDENCE-INTAKE","status":"DONE","authority":"LOCAL","dependsOn":["R13-CALENDAR-CONTACTS"],"outcome":"Secure native photo and document intake with stable retry."},
     {"id":"R15-PROJECT-TIMELINE","status":"DONE","authority":"LOCAL","dependsOn":["R14-EVIDENCE-INTAKE"],"outcome":"Reconstructible project timeline and daily operating brief."},
     {"id":"R16-PERMISSION-CENTER","status":"DONE","authority":"LOCAL","dependsOn":["R15-PROJECT-TIMELINE"],"outcome":"One web/mobile center for grants, capabilities, revocation and disabled connector readiness."},
-    {"id":"R17-OFFLINE-RETRY","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R16-PERMISSION-CENTER"],"outcome":"Offline-safe mobile commands, durable outbox, replay protection and recovery UX."},
-    {"id":"R18-UNIFIED-INTENT","status":"PLANNED","authority":"LOCAL","dependsOn":["R17-OFFLINE-RETRY"],"outcome":"Unified entity resolution and intent routing across text, voice transcript and files without invented facts."},
+    {"id":"R17-OFFLINE-RETRY","status":"DONE","authority":"LOCAL","dependsOn":["R16-PERMISSION-CENTER"],"outcome":"Offline-safe mobile commands, durable outbox, replay protection and recovery UX."},
+    {"id":"R18-UNIFIED-INTENT","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R17-OFFLINE-RETRY"],"outcome":"Unified entity resolution and intent routing across text, voice transcript and files without invented facts."},
     {"id":"R19-JOB-SCHEDULING","status":"PLANNED","authority":"LOCAL","dependsOn":["R18-UNIFIED-INTENT"],"outcome":"Jobs, crews, subcontractors, dependencies, availability, conflicts and schedule-impact state."},
     {"id":"R20-FOLLOW-UP-ENGINE","status":"PLANNED","authority":"LOCAL","dependsOn":["R19-JOB-SCHEDULING"],"outcome":"Durable reminders, follow-ups, escalation policies and next-owner assignment."},
     {"id":"R21-RECEIVABLES-INVOICE","status":"PLANNED","authority":"LOCAL","dependsOn":["R20-FOLLOW-UP-ENGINE"],"outcome":"Invoice readiness, receivables, payment promises, evidence gaps and prepared collections."},

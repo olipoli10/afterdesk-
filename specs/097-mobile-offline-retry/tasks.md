@@ -27,7 +27,7 @@
 
 - [x] T009 Run the mobile outbox and existing mobile test suites from apps/mobile
 - [x] T010 Run mobile lint, typecheck, Doctor, and iOS/Android/Web local export gates from apps/mobile
-- [ ] T011 Record the R17 closeout evidence and advance the rolling queue in specs/097-mobile-offline-retry/evidence/r17-closeout.md and specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json
+- [x] T011 Record the R17 closeout evidence and advance the rolling queue in specs/097-mobile-offline-retry/evidence/r17-closeout.md and specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json
 
 ## Dependencies
 
