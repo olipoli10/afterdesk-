@@ -13,6 +13,7 @@ import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
 import { closeStandingAssignmentsForWorker } from "@/lib/standing-assignments";
+import { withdrawHumanUnit } from "@/server/human-unit";
 
 export type QcResult =
   | { ok: true; nextId: string | null }
@@ -212,6 +213,11 @@ export async function approveDeliverable(input: unknown): Promise<QcResult> {
           disputeWindowEndsAt: addHours(now, settings.disputeWindowHours),
           windowPausedAt: null,
         },
+      });
+      await withdrawHumanUnit(tx, {
+        taskId: submission.taskId,
+        cause: "lifecycle_exit",
+        actorId: admin.id,
       });
 
       // Closed Job Log — advisory-only foundation, see the doc comment on

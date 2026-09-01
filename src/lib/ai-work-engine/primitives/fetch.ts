@@ -11,10 +11,11 @@ import {
   meteredCall,
   worstCaseMicros,
 } from "@/lib/ai-work-engine/metered-call";
-import type {
-  PrimitiveContext,
-  PrimitiveResult,
-  WorkflowRow,
+import {
+  withRows,
+  type PrimitiveContext,
+  type PrimitiveResult,
+  type WorkflowRow,
 } from "@/lib/ai-work-engine/primitives/types";
 
 /**
@@ -536,7 +537,7 @@ ${candidates.map((u, i) => `${i + 1}. ${u}`).join("\n")}`;
   });
 
   return {
-    payload: { ...ctx.input, rows, researchNarrative: narrative },
+    payload: { ...withRows(ctx.input, rows), researchNarrative: narrative },
     summary: {
       /**
        * `fetchesBilled` is the provider's own count from the invocation

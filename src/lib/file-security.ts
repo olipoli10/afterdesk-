@@ -1,6 +1,5 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import net from "node:net";
 import { unzipSync, zipSync } from "fflate";
 import { scrubPdfIdentity, PdfIdentityError } from "./pdf-identity";
 
@@ -299,56 +298,71 @@ function validateCsv(buffer: Buffer) {
   }
 }
 
-async function scanWithClamAv(buffer: Buffer): Promise<string> {
-  const host = process.env.CLAMAV_HOST;
+const CLOUDMERSIVE_DEFAULT_URL = "https://api.cloudmersive.com/virus/scan/file";
+
+/**
+ * Gate C.1 found clamd architecturally unreachable from Vercel (no TLS, no
+ * auth, expects a trusted local network — none of which a serverless
+ * function can give it). This calls Cloudmersive's hosted scanner over
+ * HTTPS instead. One request per upload attempt, no retry: a scanner-side
+ * retry would double-bill and only delay an already-decided fail-closed
+ * outcome.
+ */
+type CloudmersiveResult = { CleanResult?: unknown; FoundViruses?: unknown };
+
+async function scanWithCloudmersive(buffer: Buffer): Promise<string> {
+  const apiKey = process.env.CLOUDMERSIVE_API_KEY;
   const required =
     process.env.NODE_ENV === "production" || process.env.FILE_SCAN_MODE === "required";
-  if (!host) {
+  if (!apiKey) {
     if (required) throw new ScannerUnavailableError();
     return "heuristic-only";
   }
-  const port = Number(process.env.CLAMAV_PORT || 3310);
-  return new Promise((resolve, reject) => {
-    const socket = net.createConnection({ host, port });
-    const replies: Buffer[] = [];
-    let settled = false;
-    const fail = (error: Error) => {
-      if (settled) return;
-      settled = true;
-      socket.destroy();
-      reject(new ScannerUnavailableError(error.message));
-    };
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      const reply = Buffer.concat(replies).toString("utf8").replace(/\0/g, "").trim();
-      socket.destroy();
-      if (/\bOK$/i.test(reply)) resolve("clamav");
-      else if (/\bFOUND$/i.test(reply)) {
-        reject(new FileRejectedError("The file was rejected by malware protection."));
-      } else {
-        reject(new ScannerUnavailableError(`Unexpected scanner response: ${reply || "empty"}`));
-      }
-    };
-    socket.setTimeout(15_000, () => fail(new Error("File scanner timed out.")));
-    socket.on("error", fail);
-    socket.on("data", (chunk) => {
-      replies.push(chunk);
-      if (chunk.includes(0) || chunk.includes(10)) finish();
+  const endpoint = process.env.CLOUDMERSIVE_API_URL || CLOUDMERSIVE_DEFAULT_URL;
+
+  const form = new FormData();
+  // Buffer's ArrayBufferLike backing can widen to SharedArrayBuffer, which
+  // BlobPart rejects; Uint8Array.from guarantees a plain ArrayBuffer.
+  form.set("inputFile", new Blob([Uint8Array.from(buffer)]), "upload");
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: { Apikey: apiKey },
+      body: form,
+      signal: AbortSignal.timeout(15_000),
     });
-    socket.on("connect", () => {
-      socket.write("zINSTREAM\0");
-      for (let offset = 0; offset < buffer.length; offset += 64 * 1024) {
-        const chunk = buffer.subarray(offset, Math.min(offset + 64 * 1024, buffer.length));
-        const size = Buffer.alloc(4);
-        size.writeUInt32BE(chunk.length);
-        socket.write(size);
-        socket.write(chunk);
-      }
-      socket.write(Buffer.alloc(4));
-    });
-    socket.on("end", finish);
-  });
+  } catch (error) {
+    throw new ScannerUnavailableError(
+      error instanceof Error ? error.message : "File scanner request failed."
+    );
+  }
+
+  if (!response.ok) {
+    throw new ScannerUnavailableError(`Scanner returned HTTP ${response.status}.`);
+  }
+
+  let result: CloudmersiveResult;
+  try {
+    result = await response.json();
+  } catch {
+    throw new ScannerUnavailableError("Scanner returned a malformed response.");
+  }
+
+  const foundViruses = Array.isArray(result.FoundViruses) ? result.FoundViruses : [];
+  // A populated FoundViruses is decisive even if CleanResult disagrees —
+  // never fail open on a provider response that contradicts itself.
+  if (foundViruses.length > 0) {
+    throw new FileRejectedError("The file was rejected by malware protection.");
+  }
+  if (typeof result.CleanResult !== "boolean") {
+    throw new ScannerUnavailableError("Scanner returned an ambiguous result.");
+  }
+  if (!result.CleanResult) {
+    throw new FileRejectedError("The file was rejected by malware protection.");
+  }
+  return "cloudmersive";
 }
 
 export async function inspectAndSanitizeFile(buffer: Buffer, ext: string): Promise<ScanResult> {
@@ -370,7 +384,7 @@ export async function inspectAndSanitizeFile(buffer: Buffer, ext: string): Promi
   if (ext === "jpg" || ext === "jpeg") sanitized = stripJpegMetadata(buffer);
   if (ext === "png") sanitized = stripPngMetadata(buffer);
   if (ext === "csv") validateCsv(buffer);
-  const scanner = await scanWithClamAv(sanitized);
+  const scanner = await scanWithCloudmersive(sanitized);
   return {
     buffer: sanitized,
     detectedMime: MIME[ext] ?? "application/octet-stream",

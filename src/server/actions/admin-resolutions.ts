@@ -16,6 +16,7 @@ import {
   restitutionMessage,
   type StandingRestitution,
 } from "@/lib/standing-restitution";
+import { withdrawHumanUnit } from "@/server/human-unit";
 
 export type ResolutionResult = { ok: true } | { ok: false; error: string };
 
@@ -168,6 +169,11 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
             revisionInstructions: null,
           },
         });
+        await withdrawHumanUnit(tx, {
+          taskId,
+          cause: "lifecycle_exit",
+          actorId: admin.id,
+        });
         // The client's complaint didn't hold up, so this delivery is final
         // right now — same "release everything" call the dispute-window
         // sweep makes when nothing gets disputed at all (releaseHeldFunds,
@@ -210,6 +216,11 @@ export async function decideDispute(input: unknown): Promise<ResolutionResult> {
             cancelledAt: now,
             cancelReason: "Client dispute upheld against the written delivery standard.",
           },
+        });
+        await withdrawHumanUnit(tx, {
+          taskId,
+          cause: "lifecycle_exit",
+          actorId: admin.id,
         });
 
         // Gap found and fixed while auditing the full task-lifecycle path:

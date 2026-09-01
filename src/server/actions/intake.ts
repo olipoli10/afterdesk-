@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/authz";
@@ -8,8 +9,15 @@ import {
   aiEnabled,
   AI_MODEL,
   IntakeTooLongError,
+  intakeCostMicros,
+  intakeReservationMicros,
   type IntakeDraft,
 } from "@/lib/ai";
+import {
+  ACCOUNT_SPEND_BLOCKED_USAGE_STOP_REASON,
+  reserveAccountProviderSpend,
+  settleAccountSpendHoldDirect,
+} from "@/server/account-spend";
 
 /** Per-user ceilings. The endpoint spends money on every call. */
 const MAX_TURNS_PER_HOUR = 25;
@@ -103,8 +111,64 @@ export async function sendIntakeTurn(input: unknown): Promise<IntakeActionResult
     };
   }
 
+  /**
+   * R5.2 — THE ACCOUNT-LEVEL SPEND GATE, BEFORE THE CALL LEAVES AFTERDESK.
+   *
+   * Intake is synchronous and client-facing, but user-facing does not mean
+   * financially unbounded: the per-user caps above bound ONE client, nothing
+   * bounded the sum across all of them until now.
+   *
+   * IDENTITY: `intake:{userId}:{uuid}`, one per server-action invocation. A
+   * per-invocation id is correct HERE — unlike the work engine, this path has
+   * no durable operation row and no automatic retry layer, so one invocation
+   * is one and only one dispatch. A content hash would be worse: two
+   * simultaneous submissions of the same transcript would collide onto one
+   * hold and that single reservation would fund two real charges, which is
+   * exactly the defect R5.1 removed elsewhere.
+   */
+  const accountHold = await reserveAccountProviderSpend({
+    operationKey: `intake:${user.id}:${randomUUID()}`,
+    attempt: 1,
+    worstCaseMicros: BigInt(intakeReservationMicros(parsed.data)),
+  });
+  if (!accountHold.ok) {
+    /**
+     * No provider call. The durable internal fact is the AiUsage row's
+     * stopReason — a stable, queryable value, and the right home here because
+     * intake has no taskId to hang a TaskEvent on. The CLIENT is told only
+     * that the chat is unavailable: never a ceiling, never a dollar figure,
+     * never the provider's name.
+     */
+    console.warn("[intake] account spend ceiling refused a turn", {
+      reason: accountHold.reason,
+      periodKey: accountHold.periodKey,
+    });
+    await prisma.aiUsage
+      .create({
+        data: {
+          userId: user.id,
+          turnCount: parsed.data.length,
+          model: AI_MODEL,
+          stopReason: ACCOUNT_SPEND_BLOCKED_USAGE_STOP_REASON,
+        },
+      })
+      .catch(() => {});
+    return {
+      ok: false,
+      kind: "unavailable",
+      error: "The chat is unavailable right now. Write the task out yourself instead.",
+    };
+  }
+
   try {
     const result = await runIntake(parsed.data);
+    // The response arrived, so the real cost is known. A throw below never
+    // reaches this line and the hold correctly stays `held` — an unknown
+    // outcome is never optimistically released.
+    await settleAccountSpendHoldDirect(
+      accountHold.holdId,
+      BigInt(intakeCostMicros(result.usage))
+    );
 
     await prisma.aiUsage.create({
       data: {

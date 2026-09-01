@@ -12,6 +12,8 @@ import { getSettings } from "@/lib/settings";
 import { releaseHeldFunds } from "@/lib/escrow";
 import { upsertClosedJobLog } from "@/lib/closed-job-log";
 import { lockStandingAccount, rollForwardPeriods } from "@/lib/standing-period";
+import { sweepHumanWorkUnitDeadlines } from "@/server/human-unit-deadlines";
+import { recoverPendingHumanUnitResumes } from "@/server/human-unit-resume";
 import { releaseToPoolWithoutAutomation } from "@/server/workflow-runs";
 
 /**
@@ -333,6 +335,11 @@ export async function runOperatorSweeps(): Promise<void> {
       await closeStaleWorkSessions();
       await closeExpiredRepeatWindows();
       await recomputeStaleOperationalActuals();
+      // Human Work Unit recovery mirrors the other replay-safe, opportunistic
+      // sweeps above. Each helper isolates a poisoned unit so one lifecycle
+      // failure never prevents the remaining units from being revisited.
+      await sweepHumanWorkUnitDeadlines();
+      await recoverPendingHumanUnitResumes();
     } catch (e) {
       console.error("[sweeps] operator sweep failed:", e);
     }

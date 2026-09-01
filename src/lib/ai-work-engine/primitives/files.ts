@@ -4,6 +4,7 @@ import type { Table } from "@/lib/ai-work-engine/codecs/table";
 import {
   aggregate,
   compare,
+  concat,
   dedupe,
   filter,
   join,
@@ -16,6 +17,7 @@ import type {
   BuildXlsxParams,
   DataAggregateParams,
   DataCompareParams,
+  DataConcatParams,
   DataDedupeParams,
   DataFilterParams,
   DataJoinParams,
@@ -141,6 +143,10 @@ function withDataset(
     ...input,
     rows,
     datasets: { ...(input.datasets ?? {}), [name]: rows },
+    // The invariant the whole resolver rests on: after this write, the working
+    // set IS the dataset called `name`, and the payload says so out loud
+    // instead of leaving a later reader to infer it.
+    workingDataset: name,
     requestedFields,
     provenance: "client_file",
   };
@@ -194,25 +200,85 @@ function accumulateExceptions(
   return out;
 }
 
+/**
+ * The name a step means when its params name no dataset. An ALIAS for the
+ * working set, never a place to look something up by name.
+ */
+const WORKING_SET_ALIAS = "main";
+
+/**
+ * WHY `main` CANNOT BE ANSWERED ON THIS PAYLOAD, or null when it can.
+ *
+ * The previous rule was `{...datasets, main: rows}` — the working set always
+ * wins for the alias. That was itself a fix (a STORED `main` used to shadow the
+ * live rows and hand the client back their own original file), and it traded
+ * one silent wrong answer for another: after a second ingest into a different
+ * name, `main` quietly meant the second file while the first sat in
+ * `datasets.main`, whole, correct and unreachable.
+ *
+ * Both versions answer a question that has two candidate answers. The fix is
+ * not a third preference order. It is to REFUSE:
+ *
+ *   ambiguous dataset resolution -> fail closed, never "take the most recent"
+ *
+ * A refused step is retried, then handed to a person with the reason recorded,
+ * which is a mandate somebody finishes by hand. The alternative is a
+ * deliverable built from the wrong source that nobody can tell apart from a
+ * correct one, found months later by the client reconciling against it.
+ */
+function workingSetAmbiguity(input: WorkflowPayload): string | null {
+  const working = input.workingDataset;
+  const stored = input.datasets ?? {};
+  const names = Object.keys(stored).sort();
+
+  if (working === undefined) {
+    /**
+     * No named dataset has ever been written: `main` is the only set there is,
+     * which is every web-research payload and every single-source plan that
+     * used the default throughout.
+     *
+     * Named sets WITHOUT a working name is the legacy case — a payload written
+     * before this field existed, replayed by a run compiled before the fix. It
+     * cannot say which dataset its rows are, and inferring is the defect, so it
+     * refuses. Fail-closed: that mandate becomes a person's.
+     */
+    if (names.length === 0) return null;
+    return (
+      `"main" cannot be resolved: this payload names datasets (${names.join(", ")}) but was ` +
+      `written before the engine recorded which one the working set is. Nothing here can say ` +
+      `whether "main" means one of them or the rows alongside them, so this step is a person's.`
+    );
+  }
+
+  if (working === WORKING_SET_ALIAS) return null;
+
+  if (Object.hasOwn(stored, WORKING_SET_ALIAS)) {
+    return (
+      `"main" is ambiguous: a dataset named "main" was written earlier in this run and the ` +
+      `working set has since moved to "${working}". Both are real and they are different rows. ` +
+      `The step must name the one it means (available: ${names.join(", ")}).`
+    );
+  }
+
+  return (
+    `"main" is ambiguous: this run works with named datasets (${names.join(", ")}) and the ` +
+    `working set is currently "${working}". Reading "main" here would silently mean ` +
+    `"${working}" — the most recent one — which is exactly the guess this engine refuses. ` +
+    `Name the dataset this step means.`
+  );
+}
+
+/**
+ * Every dataset a step may look up by name. `main` appears only when it is
+ * unambiguous, so a caller that indexes this map directly (join, compare) gets
+ * a miss rather than a guess; `rowsOfDataset` turns that miss into the precise
+ * reason.
+ */
 function datasetsOf(input: WorkflowPayload): Record<string, WorkflowRow[]> {
-  /**
-   * THE WORKING SET WINS FOR THE DEFAULT NAME, and the order of this spread is
-   * the whole reason why.
-   *
-   * It used to read `{ main: input.rows, ...input.datasets }`, which let a
-   * STORED `main` override the live rows. Every transform writes both, so
-   * `datasets.main` exists the moment any step uses the default name, and it
-   * then stayed frozen at that step's output while the working set moved on.
-   * A plan that mapped into "mapped" and then built with the default dataset
-   * delivered the client's ORIGINAL file back, under the original headers,
-   * with no error anywhere. Silently returning the input as the deliverable is
-   * the worst failure this module can have.
-   *
-   * A plan that genuinely needs the earlier table keeps it by naming it: two
-   * ingests into "source" and "updates" both survive here untouched. What
-   * cannot survive is an unnamed stale copy shadowing the live one.
-   */
-  return { ...(input.datasets ?? {}), main: input.rows };
+  const stored = { ...(input.datasets ?? {}) };
+  if (workingSetAmbiguity(input) === null) stored[WORKING_SET_ALIAS] = input.rows;
+  else delete stored[WORKING_SET_ALIAS];
+  return stored;
 }
 
 /**
@@ -327,12 +393,27 @@ export async function runIngestXlsx(ctx: PrimitiveContext): Promise<PrimitiveRes
 /* ─────────────────────────────── transforms ─────────────────────────────── */
 
 function rowsOfDataset(input: WorkflowPayload, name: string): WorkflowRow[] {
+  assertResolvable(input, [name]);
   const sets = datasetsOf(input);
   const rows = sets[name];
   if (rows === undefined) {
     throw new PrimitiveRefusal(`no dataset named "${name}" is present in this run`);
   }
   return rows;
+}
+
+/**
+ * Refuse BEFORE any work when a step names a dataset that cannot be resolved.
+ *
+ * Used by the capabilities that take a whole dataset map — join, compare,
+ * concat — because `datasetNamed` would otherwise report a plain "no dataset
+ * named main", which is true and useless. The operator needs to be told that
+ * `main` exists twice over, not that it does not exist.
+ */
+function assertResolvable(input: WorkflowPayload, names: string[]): void {
+  if (!names.includes(WORKING_SET_ALIAS)) return;
+  const ambiguity = workingSetAmbiguity(input);
+  if (ambiguity !== null) throw new PrimitiveRefusal(ambiguity);
 }
 
 export async function runDataDedupe(ctx: PrimitiveContext): Promise<PrimitiveResult> {
@@ -357,7 +438,23 @@ export async function runDataNormalize(ctx: PrimitiveContext): Promise<Primitive
 
 export async function runDataJoin(ctx: PrimitiveContext): Promise<PrimitiveResult> {
   const p = ctx.params as DataJoinParams;
+  assertResolvable(ctx.input, [p.left, p.right]);
   return applyOutcome(ctx.input, join(datasetsOf(ctx.input), p), p.into, "data.join");
+}
+
+/**
+ * data.concat — datasets stacked one under another, in the order given.
+ *
+ * The capability the vocabulary was missing, found by measuring a mandate that
+ * said "three regional lists, one file back": sixteen capabilities and not one
+ * of them puts two tables end to end. `data.join` is not it — a join matches
+ * keys and returns the LEFT side, so three lists of 40, 35 and 30 came out as
+ * 40 rows and a plan that looked like it had worked.
+ */
+export async function runDataConcat(ctx: PrimitiveContext): Promise<PrimitiveResult> {
+  const p = ctx.params as DataConcatParams;
+  assertResolvable(ctx.input, p.datasets);
+  return applyOutcome(ctx.input, concat(datasetsOf(ctx.input), p), p.into, "data.concat");
 }
 
 export async function runDataFilter(ctx: PrimitiveContext): Promise<PrimitiveResult> {
@@ -382,6 +479,7 @@ export async function runDataAggregate(ctx: PrimitiveContext): Promise<Primitive
 
 export async function runDataCompare(ctx: PrimitiveContext): Promise<PrimitiveResult> {
   const p = ctx.params as DataCompareParams;
+  assertResolvable(ctx.input, [p.left, p.right]);
   return applyOutcome(ctx.input, compare(datasetsOf(ctx.input), p), p.into, "data.compare");
 }
 

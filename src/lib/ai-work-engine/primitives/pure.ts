@@ -1,9 +1,10 @@
-import type {
-  PrimitiveContext,
-  PrimitiveResult,
-  RowStatus,
-  WorkflowPayload,
-  WorkflowRow,
+import {
+  withRows,
+  type PrimitiveContext,
+  type PrimitiveResult,
+  type RowStatus,
+  type WorkflowPayload,
+  type WorkflowRow,
 } from "@/lib/ai-work-engine/primitives/types";
 import {
   addToTally,
@@ -126,7 +127,12 @@ export async function runNormalizeContactFields(
     (r, i) => JSON.stringify(r.fields) !== JSON.stringify(ctx.input.rows[i]?.fields)
   ).length;
   return {
-    payload: { ...ctx.input, rows },
+    // withRows, not a spread: this step rewrites the working set, and if that
+    // set has a name its stored copy must move with it. A spread would leave
+    // `datasets[workingDataset]` holding the pre-normalisation rows, so the
+    // same records would read differently depending on which name a later
+    // step used — the divergence the dataset-identity rule exists to forbid.
+    payload: withRows(ctx.input, rows),
     summary: { rowsIn: ctx.input.rows.length, rowsChanged: changed },
   };
 }
@@ -292,7 +298,10 @@ export function unitsRemainingFrom(split: {
 export async function runSplitExceptions(ctx: PrimitiveContext): Promise<PrimitiveResult> {
   const split = splitExceptions(ctx.input);
   return {
-    payload: split.payload,
+    // Same reason as normalize: the statuses it writes are a rewrite of the
+    // working set, and a named working set must not be left holding the
+    // pre-split rows.
+    payload: withRows(ctx.input, split.payload.rows),
     summary: {
       verified: split.verified,
       needsReview: split.needsReview,

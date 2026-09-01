@@ -4,16 +4,35 @@ import { getSettings } from "@/lib/settings";
 import { classifyMandateData } from "@/lib/ai-work-engine/data-class";
 import { inspectFiles } from "@/lib/ai-work-engine/file-inspection";
 import { readObject } from "@/lib/storage";
-import { embedWithUsage, embeddingsEnabled } from "@/lib/embeddings";
+import {
+  embedWithUsage,
+  embeddingsEnabled,
+  voyageActualMicros,
+  voyageMicrosPerMillionTokens,
+  voyageWorstCaseMicros,
+  VOYAGE_PROVIDER,
+} from "@/lib/embeddings";
 import { aiEnabled } from "@/lib/ai";
 import { findSimilarPricedTasks, upsertEmbedding } from "@/lib/ai-work-engine/references";
-import { runClassification } from "@/lib/ai-work-engine/classify";
-import { runPlanGeneration } from "@/lib/ai-work-engine/plan";
-import { runCritique, shouldCritique } from "@/lib/ai-work-engine/critique";
+import { classifyReservationMicros, runClassification } from "@/lib/ai-work-engine/classify";
+import { planReservationMicros, runPlanGeneration } from "@/lib/ai-work-engine/plan";
+import {
+  buildAttachmentManifest,
+  plannerAttachmentLines,
+  resolveFileParams,
+} from "@/lib/ai-work-engine/attachments";
+import { critiqueReservationMicros, runCritique, shouldCritique } from "@/lib/ai-work-engine/critique";
+import {
+  AccountSpendCeilingError,
+  recordAccountSpendBlocked,
+  reserveAccountProviderSpend,
+  settleAccountSpendHoldDirect,
+} from "@/server/account-spend";
 import { aiSuggestionColumns, pricePlan, type PricingStepInput } from "@/lib/ai-work-engine/pricing";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { floorConfidenceForCritique, resolveConfidence } from "@/lib/ai-work-engine/confidence";
 import {
+  applyIntakeFraming,
   classificationOutputSchema,
   currentPrimitiveVersion,
   type ClassificationOutput,
@@ -23,6 +42,11 @@ import {
   CURRENT_AUTOMATION_COST_POLICY,
 } from "@/lib/ai-work-engine/automation-cost-policy";
 import { runAutomationPreflight } from "@/lib/ai-work-engine/automation-preflight";
+import { compileDecisions } from "@/lib/ai-work-engine/compile";
+import {
+  assessDemotionPricing,
+  HUMAN_COST_UNKNOWN_NOTICE,
+} from "@/lib/ai-work-engine/demotion-pricing";
 import {
   claimAiOperation,
   engineOperationKey,
@@ -117,6 +141,23 @@ function reprice(
   };
 }
 
+/**
+ * LOT A: the persist-side half of the attachment manifest. A file-reading
+ * step's params go through the deterministic ref -> File.id resolution; every
+ * other step's params pass through untouched. An unresolvable reference
+ * (invented, out of range, or a raw id the model produced) loses its fileId
+ * here, which makes the ingest schema's required-field check fail at compile
+ * and the step a person's — a quote-time fact instead of a runtime surprise.
+ */
+function resolvePlannedParams(
+  manifest: ReturnType<typeof buildAttachmentManifest>,
+  primitiveId: string | null,
+  rawParams: unknown
+): Prisma.InputJsonValue | undefined {
+  const resolution = resolveFileParams(manifest, primitiveId, rawParams);
+  return (resolution.params ?? undefined) as Prisma.InputJsonValue | undefined;
+}
+
 function planStepsToPricingInput(plan: PlanOutput): PricingStepInput[] {
   return plan.steps.map((s) => ({
     executor: s.executor,
@@ -179,6 +220,55 @@ export async function runWorkEngine(
     if (existingPlan) return;
 
     const settings = await getSettings();
+
+    /**
+     * R5.2 — THE VOYAGE GATE, BEFORE THE EMBEDDING POST.
+     *
+     * This is the earliest billable call the platform makes for a task, and
+     * until R5.2 it ran ahead of every reservation — so "production with no
+     * ceiling configured spends nothing" was false by exactly one Voyage
+     * charge per submission, on the one provider the admin card could not see.
+     *
+     * NO RATE IS INVENTED. embeddings.ts still contains no Voyage price; the
+     * operator supplies the current published rate, and without it production
+     * simply does not make the call. That is the same early return
+     * `!embeddingsEnabled` above already performs, i.e. an existing, supported
+     * product state: no AI pricing suggestion, the admin prices manually.
+     */
+    const voyageRate = voyageMicrosPerMillionTokens();
+    let embedHold: Awaited<ReturnType<typeof reserveAccountProviderSpend>> | null = null;
+    if (voyageRate === null) {
+      if (process.env.NODE_ENV === "production") {
+        console.error(
+          "[work-engine] VOYAGE_EMBEDDING_MICROS_PER_MILLION_TOKENS is not configured; " +
+            "refusing to dispatch an unmeterable billable embedding call. AI pricing is " +
+            "skipped for this task and the admin prices it manually."
+        );
+        return;
+      }
+      // Non-production keeps its historical behaviour so every existing
+      // harness (which mocks the provider outright, spending nothing) is
+      // unaffected. Production is where the money is, and production is closed.
+      console.warn("[work-engine] Voyage rate unconfigured; embedding is unmetered in non-production.");
+    } else {
+      embedHold = await reserveAccountProviderSpend({
+        provider: VOYAGE_PROVIDER,
+        operationKey: engineOperationKey(taskId, runKey, "embed"),
+        attempt: 1,
+        worstCaseMicros: voyageWorstCaseMicros(voyageRate),
+      });
+      if (!embedHold.ok) {
+        await recordAccountSpendBlocked({
+          taskId,
+          stage: "embedding",
+          operationKey: engineOperationKey(taskId, runKey, "embed"),
+          attempt: 1,
+          refusal: embedHold,
+        });
+        return;
+      }
+    }
+
     const [embedding, categories] = await Promise.all([
       embedWithUsage(`${task.title}\n\n${task.description}`, "query"),
       prisma.taskCategory.findMany({
@@ -188,6 +278,17 @@ export async function runWorkEngine(
       }),
     ]);
     const vector = embedding.vector;
+
+    /**
+     * R5.2 — settle the Voyage hold at the EXACT measured cost. Voyage returns
+     * total_tokens, so this is a measurement rather than an estimate. When it
+     * reports nothing, the hold deliberately stays `held`: an unmeasured call
+     * is never settled to a number nobody observed.
+     */
+    if (embedHold !== null && embedHold.ok && voyageRate !== null) {
+      const actual = voyageActualMicros(embedding.usage.totalTokens, voyageRate);
+      if (actual !== null) await settleAccountSpendHoldDirect(embedHold.holdId, actual);
+    }
 
     /**
      * 1D-alpha0: the embedding provider stops being an invisible paying
@@ -220,6 +321,19 @@ export async function runWorkEngine(
       settings.pricingSimilarityMaxDistance
     );
 
+    /**
+     * COMMERCIAL READINESS, LOTS A+C: the attachment manifest, built ONCE over
+     * the exact file set the query above loaded (scanned, unpurged,
+     * createdAt-ordered — the same set the acceptance freeze pins later).
+     * Both model stages receive only the provider-safe lines (ref, name,
+     * kind, size — never ids, never content): the classifier so source_shape
+     * is grounded in what actually exists, the planner so ingest refs are
+     * real. This module keeps the full manifest to resolve refs back to
+     * fileIds at persist time.
+     */
+    const attachmentManifest = buildAttachmentManifest(task.files);
+    const attachmentLines = plannerAttachmentLines(attachmentManifest);
+
     // ── Stage 1: classification, as a durable operation ──
     const classifyKey = engineOperationKey(taskId, runKey, "classify");
     await reserveAiOperation({ taskId, purpose: "classification", operationKey: classifyKey });
@@ -243,7 +357,12 @@ export async function runWorkEngine(
       });
       const revalidated = classificationOutputSchema.safeParse(stored?.rawOutput);
       if (revalidated.success) {
-        classificationOutput = revalidated.data;
+        // LOT C: the framing gate applies on the resume path too (a pre-LOT-C
+        // rawOutput gets the schema's conservative defaults, then the same
+        // tightening) — both paths must hand downstream the same framed tier.
+        classificationOutput = applyIntakeFraming(revalidated.data, {
+          attachmentCount: attachmentManifest.length,
+        });
       } else {
         /**
          * PERMANENT wedge, said out loud: the operation is `succeeded` so no
@@ -272,14 +391,62 @@ export async function runWorkEngine(
         return;
       }
 
+      /**
+       * R5 — THE ACCOUNT-LEVEL CIRCUIT BREAKER, BEFORE THIS CALL LEAVES
+       * AFTERDESK. Phase 1A has no run and no step, so this is the only
+       * pre-dispatch cost gate it has ever had. Reserved here, in the
+       * already fully DB-coupled orchestrator, rather than inside
+       * classify.ts itself — that keeps classify.ts free of any Prisma
+       * dependency, which is what lets test/synthetic-provider.test.ts keep
+       * calling runClassification directly against the mocked SDK alone.
+       *
+       * A refusal throws BEFORE the real call, inside the SAME try the
+       * ordinary provider-failure path already uses: failAiOperation runs,
+       * the error re-raises, and the call simply never happens — no new
+       * failure path, the identical one a timeout or a rate limit takes.
+       */
+      const classifyReservedMicros = classifyReservationMicros({
+        title: task.title,
+        description: task.description,
+        quantity: task.quantity,
+        categories,
+        attachmentLines,
+      });
+      const classifyAccountHold = await reserveAccountProviderSpend({
+        operationKey: claim.operationKey,
+        attempt: claim.attempt,
+        worstCaseMicros: BigInt(classifyReservedMicros),
+      });
+
       let classified: Awaited<ReturnType<typeof runClassification>>;
       try {
+        if (!classifyAccountHold.ok) {
+          // R5.1 — the block is a durable, queryable fact before it is a throw.
+          await recordAccountSpendBlocked({
+            taskId,
+            stage: "classification",
+            operationKey: claim.operationKey,
+            attempt: claim.attempt,
+            refusal: classifyAccountHold,
+          });
+          throw new AccountSpendCeilingError(classifyAccountHold);
+        }
         classified = await runClassification({
           title: task.title,
           description: task.description,
           quantity: task.quantity,
           categories,
+          attachmentLines,
         });
+        // The response arrived, so the real cost is known: settle now,
+        // always. A refusal above never reaches this line (nothing was
+        // reserved to settle). A throw from the real call itself
+        // (network/timeout) also never reaches this line, and the hold
+        // correctly stays `held` — an unknown outcome, never optimistically
+        // released.
+        if (classified.usage) {
+          await settleAccountSpendHoldDirect(classifyAccountHold.holdId, BigInt(classified.usage.costMicros));
+        }
       } catch (error) {
         // No response arrived at all — nothing billable to record, and if a
         // call WAS emitted before the death, the operation's attempt count
@@ -309,7 +476,19 @@ export async function runWorkEngine(
         return;
       }
 
-      const output = classified.result.output;
+      /**
+       * LOT C: the code-enforced half of the intake framing, applied to the
+       * model output BEFORE anything reads it. A recurring ask or an
+       * artifact no primitive produces is forced to the manual tier here —
+       * in code, not in the prompt — so shouldCritique, the persisted row
+       * and the admin screen all see the same framed tier, and a prompt
+       * drift can never relax the gate. rawOutput stays the model's own
+       * JSON: the row records what the model said, the columns record what
+       * the platform decided.
+       */
+      const output = applyIntakeFraming(classified.result.output, {
+        attachmentCount: attachmentManifest.length,
+      });
       const baseConfidence = resolveConfidence(output.confidence, referenceTasks.length);
       const raw = classified.result.raw;
 
@@ -328,6 +507,12 @@ export async function runWorkEngine(
         assumptions: output.assumptions,
         quoteTier: output.quote_tier,
         confidence: baseConfidence,
+        // LOT C: the intake framing, persisted so the admin screen and the
+        // Level-2 measurement read the same distinctions the planner routed on.
+        sourceShape: output.source_shape,
+        verificationExpectation: output.verification_expectation,
+        outputFormatCode: output.output_format_code,
+        recurrence: output.recurrence,
         model: classified.usage?.model ?? "unknown",
         rawOutput: raw as Prisma.InputJsonValue,
       };
@@ -408,8 +593,37 @@ export async function runWorkEngine(
       return;
     }
 
+    // R5 — same account-level gate as classify's, same reasoning: reserved
+    // here (already DB-coupled) rather than inside plan.ts.
+    const planReservedMicros = planReservationMicros({
+      title: task.title,
+      description: task.description,
+      quantity: task.quantity,
+      classification: classificationOutput,
+      categories,
+      referenceTasks,
+      attachmentLines,
+      model: settings.pricingModel,
+    });
+    const planAccountHold = await reserveAccountProviderSpend({
+      operationKey: planClaim.operationKey,
+      attempt: planClaim.attempt,
+      worstCaseMicros: BigInt(planReservedMicros),
+    });
+
     let planned: Awaited<ReturnType<typeof runPlanGeneration>>;
     try {
+      if (!planAccountHold.ok) {
+        // R5.1 — the block is a durable, queryable fact before it is a throw.
+        await recordAccountSpendBlocked({
+          taskId,
+          stage: "planning",
+          operationKey: planClaim.operationKey,
+          attempt: planClaim.attempt,
+          refusal: planAccountHold,
+        });
+        throw new AccountSpendCeilingError(planAccountHold);
+      }
       planned = await runPlanGeneration({
         title: task.title,
         description: task.description,
@@ -417,7 +631,11 @@ export async function runWorkEngine(
         classification: classificationOutput,
         categories,
         referenceTasks,
+        attachmentLines,
       });
+      if (planned.usage) {
+        await settleAccountSpendHoldDirect(planAccountHold.holdId, BigInt(planned.usage.costMicros));
+      }
     } catch (error) {
       await failAiOperation({
         claim: planClaim,
@@ -447,29 +665,80 @@ export async function runWorkEngine(
     const rates = {
       workerHourlyUsd: Math.max(COST_CATALOG.workerHourlyUsdBase, settings.minWorkerHourlyUsd),
     };
+    const rawPriced = pricePlan(planStepsToPricingInput(plannedOutput), rates);
+
+    /**
+     * THE REAL COMPILER, RUN AT PRICING TIME — not a proxy for it.
+     *
+     * Until this fix, this stage asked ONE question about automatability:
+     * "did the planner mark this step ai/deterministic_code and give it a
+     * primitive". That is `compileDecisions`'s topology check and nothing
+     * else — blind to the mandate-level sensitivity/access gate, to reach and
+     * data-class rules, to whether the step's own params actually parse. A
+     * mandate flagged `personal_sensitive` priced every step as if it would
+     * run on a machine, because nothing at pricing time had ever asked
+     * compile.ts what it would actually decide.
+     *
+     * L3 on Neon found exactly that: two refusal mandates compiled to 100%
+     * human at both preview time and real execution — compile-preview.ts and
+     * workflow-runs.ts both call compileDecisions for real — while their
+     * SUGGESTED PRICE, computed here, survived un-suppressed, because this
+     * was the one place in the whole pipeline that never ran the real
+     * compiler at all.
+     *
+     * Params are resolved through the SAME attachment-manifest substitution
+     * that will be persisted a few dozen lines below (`resolvePlannedParams`),
+     * not the raw planner tokens — an invented file reference must compile to
+     * human HERE, at pricing time, exactly as it will at quote-preview time
+     * and at real execution, or this fix would still miss that one shape.
+     */
+    const compileGate = {
+      sensitiveData: classificationOutput.sensitive_data,
+      requiredAccessCount: classificationOutput.required_access.length,
+      // Always computed above (classifyMandateData never returns an absent
+      // class); unlike compile-preview.ts's version this is never reading a
+      // nullable STORED column, so no fallback is needed.
+      dataClass: dataVerdict.dataClass,
+    };
+    const compiled = compileDecisions(
+      plannedOutput.steps.map((s, i) => ({
+        planStepId: String(i + 1), // no DB row exists yet; order is the only identity that matters here
+        order: i + 1,
+        title: s.title,
+        executor: s.executor,
+        primitiveId: s.primitive_id,
+        primitiveVersion: currentPrimitiveVersion(s.primitive_id),
+        dependsOnOrder: s.depends_on_order,
+        params: resolvePlannedParams(attachmentManifest, s.primitive_id, s.params),
+      })),
+      compileGate
+    );
+    const compiledByOrder = new Map(compiled.steps.map((s) => [s.order, s]));
+
     /**
      * THE ECONOMIC PREFLIGHT, BEFORE ANYTHING IS PERSISTED.
      *
-     * Sequence, in memory, one write at the end: price the raw plan, ask the
-     * preflight what it would cost to run and whether the economic rule will
-     * carry that risk, demote what it will not, then RE-PRICE the demoted plan
-     * so the quote describes the work that will actually happen.
+     * Sequence, in memory, one write at the end: compile the raw plan for
+     * real, price it, ask the preflight what it would cost to run the steps
+     * the COMPILER — not a guess about the compiler — says are automatable,
+     * demote what the economic rule will not carry, then RE-PRICE the demoted
+     * plan so the quote describes the work that will actually happen.
      *
      * Never "persist then correct until affordable": a plan version that
      * exists is one other code can already read, and repairing it afterwards
      * opens a window where the stored price does not match the stored plan.
      */
-    const rawPriced = pricePlan(planStepsToPricingInput(plannedOutput), rates);
     const preflight = runAutomationPreflight({
       steps: plannedOutput.steps.map((s, i) => ({
         order: i + 1,
         primitiveId: s.primitive_id,
         primitiveVersion: currentPrimitiveVersion(s.primitive_id),
-        // The topology's own verdict is not available here (the compiler runs
-        // later), so the preflight is conservative: any step the planner marked
-        // machine-executable is treated as billable. Over-reserving at quote
-        // time is safe; under-reserving is what this correction removes.
-        automatable: s.executor !== "human" && s.primitive_id !== null,
+        // The real compiled verdict, not an approximation of it. A step the
+        // mandate-level gate or a capability/reach/class/params check already
+        // refused is never offered to the budget preflight as billable — it
+        // was never going to run on a machine, so reserving money against it
+        // would fund automation nobody could ever spend it on.
+        automatable: compiledByOrder.get(i + 1)?.executionMode === "automated",
         estimatedAiCostCents: s.estimated_ai_cost_cents,
         // 1E-beta1: the plan's own edges, so an economic demotion takes every
         // transitive consumer with it and the quote never prices a machine
@@ -491,6 +760,47 @@ export async function runWorkEngine(
       preflight.demotedCount === 0
         ? rawPriced
         : reprice(rawPriced, planStepsToPricingInput(plannedOutput), demotedByOrder, rates);
+
+    /**
+     * PRICING INTEGRITY, GENERALISED (2026-08-12): a step humanised for ANY
+     * reason, whose human cost nobody estimated, must not produce a suggested
+     * price.
+     *
+     * `executesAsHuman` is the UNION of two independent verdicts: the real
+     * compiler (`compiled`, above — sensitivity, access, capability, reach,
+     * class, topology, params) OR the budget preflight (`demotedByOrder`).
+     * Nothing here asks WHY beyond that; demotion-pricing.ts's whole point is
+     * that the reason must never matter to the suppression decision, only to
+     * the audit trail (`humanizedReason`). A step already planned human, with
+     * real minutes on it, still clears `carriesHumanCost` on its own and never
+     * appears in `unpricedOrders` — this generalisation adds coverage, it does
+     * not add false positives on ordinary human steps.
+     *
+     * There is no honest number to substitute — nobody has measured what these
+     * steps cost by hand — so the engine says so instead of guessing. See
+     * demotion-pricing.ts for why the refusal is the correct branch.
+     */
+    const demotionPricing = assessDemotionPricing(
+      plannedOutput.steps.map((s, i) => {
+        const order = i + 1;
+        const compiledStep = compiledByOrder.get(order);
+        const budgetDemoted = demotedByOrder.get(order)?.demotedForBudget ?? false;
+        const executesAsHuman = compiledStep?.executionMode === "human" || budgetDemoted;
+        return {
+          order,
+          executesAsHuman,
+          humanizedReason: !executesAsHuman
+            ? null
+            : budgetDemoted
+              ? "Demoted for budget by the economic preflight."
+              : (compiledStep?.handoffReason ?? "Handed to a person by the compiler."),
+          estimatedMinutesLikely: s.estimated_minutes_likely,
+          estimatedMinutesConservative: s.estimated_minutes_conservative,
+          fixedMinutes: s.fixed_minutes,
+          secondsPerUnit: s.seconds_per_unit,
+        };
+      })
+    );
 
     let planVersion: { id: string };
     try {
@@ -554,8 +864,18 @@ export async function runWorkEngine(
                    * for the same reason. A demoted step keeps its params: they
                    * describe what the client approved, and a person reading
                    * the handoff needs to know which columns were meant.
+                   *
+                   * LOT A: file-reading params pass through the manifest
+                   * resolution FIRST, so what freezes is either a real, owned
+                   * File.id or a params object whose missing fileId makes the
+                   * compiler hand the step to a person at quote time. An
+                   * invented reference can no longer survive to the runtime.
                    */
-                  params: (s.params ?? undefined) as Prisma.InputJsonValue | undefined,
+                  params: resolvePlannedParams(
+                    attachmentManifest,
+                    demotedByOrder.get(i + 1)?.primitiveId ?? null,
+                    s.params
+                  ),
                   /**
                    * The step's own economics, frozen. The runner reserves
                    * against THIS number and never reads the policy table, so
@@ -576,6 +896,9 @@ export async function runWorkEngine(
                   estimatedMinutesConservative: s.estimated_minutes_conservative,
                   estimatedAiCostCents: s.estimated_ai_cost_cents,
                   estimatedToolUnits: s.estimated_tool_units,
+                  humanOutputSchema:
+                    (s.human_output_schema ?? undefined) as Prisma.InputJsonValue | undefined,
+                  humanRequiredArtifactKinds: s.human_required_artifact_kinds,
                   verificationMethod: s.verification_method,
                   acceptanceCriteria: s.acceptance_criteria,
                   riskLevel: s.risk_level,
@@ -616,8 +939,34 @@ export async function runWorkEngine(
       await reserveAiOperation({ taskId, purpose: "critique", operationKey: critiqueOpKey });
       const critiqueClaim = await claimAiOperation(critiqueOpKey);
       if (critiqueClaim) {
+        // R5 — same account-level gate as classify's and plan's.
+        const critiqueReservedMicros = critiqueReservationMicros({
+          title: task.title,
+          description: task.description,
+          quantity: task.quantity,
+          classification: classificationOutput,
+          plan: plannedOutput,
+          model: settings.pricingModel,
+        });
+        const critiqueAccountHold = await reserveAccountProviderSpend({
+          operationKey: critiqueClaim.operationKey,
+          attempt: critiqueClaim.attempt,
+          worstCaseMicros: BigInt(critiqueReservedMicros),
+        });
+
         let critiqued: Awaited<ReturnType<typeof runCritique>> | null = null;
         try {
+          if (!critiqueAccountHold.ok) {
+            // R5.1 — the block is a durable, queryable fact before it is a throw.
+            await recordAccountSpendBlocked({
+              taskId,
+              stage: "critique",
+              operationKey: critiqueClaim.operationKey,
+              attempt: critiqueClaim.attempt,
+              refusal: critiqueAccountHold,
+            });
+            throw new AccountSpendCeilingError(critiqueAccountHold);
+          }
           critiqued = await runCritique({
             title: task.title,
             description: task.description,
@@ -625,6 +974,9 @@ export async function runWorkEngine(
             classification: classificationOutput,
             plan: plannedOutput,
           });
+          if (critiqued.usage) {
+            await settleAccountSpendHoldDirect(critiqueAccountHold.holdId, BigInt(critiqued.usage.costMicros));
+          }
         } catch (error) {
           await failAiOperation({
             claim: critiqueClaim,
@@ -701,16 +1053,37 @@ export async function runWorkEngine(
         : critiqueTriggered
           ? "Critique: triggered but failed; review this plan as if unchecked."
           : "Critique: not triggered.",
+      // Leads the operator to the one fact that invalidates every figure above.
+      demotionPricing.humanCostUnknown
+        ? `${HUMAN_COST_UNKNOWN_NOTICE} (steps ${demotionPricing.unpricedOrders.join(", ")})`
+        : "",
     ]
+      .filter(Boolean)
       .join(" ")
       .slice(0, 2000);
 
     await prisma.task.update({
       where: { id: taskId },
       data: {
-        ...aiSuggestionColumns(priced),
+        /**
+         * The suggestion is SUPPRESSED, not corrected, when a demotion left
+         * human work nobody costed: there is no honest number to write, and a
+         * wrong one is worse than none because it is the one an operator can
+         * approve in a single click. The plan, its steps and its economics are
+         * all still on record — only the price stays the admin's to write.
+         */
+        ...(demotionPricing.humanCostUnknown
+          ? {
+              aiSuggestedPriceCents: null,
+              aiLowCents: null,
+              aiHighCents: null,
+              aiSuggestedVaPayoutCents: null,
+              aiEstimatedMinutes: null,
+            }
+          : aiSuggestionColumns(priced)),
         aiReasoning: reasoning,
-        aiConfidence: finalConfidence,
+        // A quote the engine refuses to price is never a confident one.
+        aiConfidence: demotionPricing.humanCostUnknown ? "low" : finalConfidence,
         aiSuggestedCategorySlug: classificationOutput.category_slug_guess,
         aiComputedAt: new Date(),
       },

@@ -33,6 +33,13 @@ import type { FileInspection } from "@/lib/ai-work-engine/data-class";
  * one. A payment-card column that starts with three empty rows would slip past
  * a sample that only read row one, and the cost of reading a few hundred cells
  * is nothing against the cost of missing that.
+ *
+ * The sample is taken ROW BY ROW rather than column by column, and the global
+ * cap is applied across the row sweep. That ordering is what keeps a wide file
+ * fair: each row contributes at most one cell to every column, so forty columns
+ * share the four hundred cells as ten rows each rather than the first sixteen
+ * columns eating the whole budget and the rest arriving unsampled — which would
+ * silently mean "we looked" for columns nobody looked at.
  */
 const SAMPLE_ROWS = 25;
 const MAX_SAMPLED_VALUES = 400;
@@ -62,8 +69,8 @@ export async function inspectFile(file: InspectableFile): Promise<FileInspection
   const unreadable: FileInspection = {
     fileId: file.id,
     inspected: false,
-    headers: [],
-    sampledValues: [],
+    columns: [],
+    unkeyedValues: [],
   };
 
   if (file.sizeBytes > MAX_INSPECT_BYTES) return unreadable;
@@ -79,20 +86,36 @@ export async function inspectFile(file: InspectableFile): Promise<FileInspection
         : parseXlsx(bytes, { sheet: null, hasHeaderRow: true });
     if (!parsed.ok) return unreadable;
 
-    const sampled: string[] = [];
+    const columns = parsed.table.headers.map((header) => ({ header, values: [] as string[] }));
+    const unkeyedValues: string[] = [];
+    let sampled = 0;
     for (const row of parsed.table.rows.slice(0, SAMPLE_ROWS)) {
-      for (const cell of row) {
-        if (sampled.length >= MAX_SAMPLED_VALUES) break;
-        if (cell !== "") sampled.push(cell);
+      for (let i = 0; i < row.length; i++) {
+        if (sampled >= MAX_SAMPLED_VALUES) break;
+        const cell = row[i];
+        if (cell === "") continue;
+        /**
+         * A cell past the last header belongs to no column, and a rule that
+         * needs a name must not be handed one it invented.
+         *
+         * Both codecs refuse a ragged file outright today, so this branch does
+         * not fire — csv.ts rejects rather than pads, for the same reason. It
+         * is kept because the alternative is to drop such a cell on the floor:
+         * if a future codec ever admits a wider row, the value-shape scan must
+         * still see those cells rather than silently stop looking at them.
+         */
+        if (i < columns.length) columns[i].values.push(cell);
+        else unkeyedValues.push(cell);
+        sampled++;
       }
-      if (sampled.length >= MAX_SAMPLED_VALUES) break;
+      if (sampled >= MAX_SAMPLED_VALUES) break;
     }
 
     return {
       fileId: file.id,
       inspected: true,
-      headers: parsed.table.headers,
-      sampledValues: sampled,
+      columns,
+      unkeyedValues,
     };
   } catch {
     /**

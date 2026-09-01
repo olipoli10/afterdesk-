@@ -87,6 +87,14 @@ export const PLAN_PRIMITIVES = {
   "data.normalize": 1,
   /** Join two ingested sets on a declared key. Unmatched rows are reported. */
   "data.join": 1,
+  /**
+   * Stack two or more sets end to end. NOT a join: no key, nothing matched,
+   * nothing merged, nothing deduplicated. Added after a mandate saying "three
+   * branch exports, one file back" was measured producing 40 rows out of 105 —
+   * `data.join` was the only capability taking two sets and returning one, and
+   * it silently answered a different question.
+   */
+  "data.concat": 1,
   /** Keep or drop rows by declared predicates. */
   "data.filter": 1,
   /** Group and count/sum into a summary set. */
@@ -142,6 +150,7 @@ export const PLAN_PRIMITIVE_MODES = {
   "data.dedupe": "PREPARE",
   "data.normalize": "PREPARE",
   "data.join": "PREPARE",
+  "data.concat": "PREPARE",
   "data.filter": "PREPARE",
   "data.aggregate": "PREPARE",
   "data.compare": "PREPARE",
@@ -180,6 +189,7 @@ export const PLAN_PRIMITIVE_REACH = {
   "data.dedupe": "local",
   "data.normalize": "local",
   "data.join": "local",
+  "data.concat": "local",
   "data.filter": "local",
   "data.aggregate": "local",
   "data.compare": "local",

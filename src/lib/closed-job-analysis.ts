@@ -3,6 +3,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getSettings } from "@/lib/settings";
 import { aiEnabled } from "@/lib/ai";
 import type { CategoryStat } from "@/lib/queries/closed-jobs";
+import { approxTokens, worstCaseMicros } from "@/lib/ai-work-engine/metered-call";
+import { costMicrosFor } from "@/lib/ai-work-engine/tool-cost";
 
 /**
  * Advisory only — this is the whole point, not a detail. See the doc
@@ -22,7 +24,13 @@ export type Observation = {
   suggestion: string;
 };
 
-export type AnalysisUsage = { inputTokens: number; outputTokens: number; cacheReadTokens: number };
+export type AnalysisUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  /** R5.2 — cache writes bill at 1.25x input; see the note in ai.ts. */
+  cacheWriteTokens: number;
+};
 
 export type AnalysisResult = {
   observations: Observation[];
@@ -72,12 +80,49 @@ ${JSON.stringify(categories, null, 2)}`;
 
 export const closedJobAnalysisEnabled = aiEnabled;
 
+/**
+ * R5.2 — pure worst-case / actual-cost pair for the account-level spend gate.
+ * `model` is an explicit parameter rather than a getSettings() call so this
+ * stays pure and DB-free; the caller (admin-closed-jobs.ts) already resolves
+ * settings and already touches Prisma.
+ */
+export function closedJobAnalysisReservationMicros(input: {
+  model: string;
+  total: number;
+  categories: CategoryStat[];
+}): number {
+  return worstCaseMicros({
+    model: input.model,
+    maxOutputTokens: MAX_TOKENS,
+    approxInputTokens:
+      approxTokens(STATIC_RULES) + approxTokens(buildUserMessage(input.total, input.categories)),
+    maxSearches: 0,
+  });
+}
+
+export function closedJobAnalysisCostMicros(model: string, usage: AnalysisUsage): number {
+  return costMicrosFor(model, {
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    cacheReadTokens: usage.cacheReadTokens,
+    cacheWriteTokens: usage.cacheWriteTokens,
+  });
+}
+
 export async function analyzeClosedJobs(total: number, categories: CategoryStat[]): Promise<AnalysisResult> {
-  const zeroUsage: AnalysisUsage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
+  const zeroUsage: AnalysisUsage = {
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+  };
   const settings = await getSettings();
 
   try {
-    const client = new Anthropic({ timeout: 60_000, maxRetries: 1 });
+    // R5.2 — maxRetries: 0. An SDK retry is a second billable POST under the
+    // one account reservation taken by the caller (admin-closed-jobs.ts). See
+    // the doctrine at primitives/research.ts:94-99.
+    const client = new Anthropic({ timeout: 60_000, maxRetries: 0 });
     const response = await client.messages.create({
       model: settings.closedJobAnalysisModel,
       max_tokens: MAX_TOKENS,
@@ -91,6 +136,7 @@ export async function analyzeClosedJobs(total: number, categories: CategoryStat[
       inputTokens: response.usage?.input_tokens ?? 0,
       outputTokens: response.usage?.output_tokens ?? 0,
       cacheReadTokens: response.usage?.cache_read_input_tokens ?? 0,
+      cacheWriteTokens: response.usage?.cache_creation_input_tokens ?? 0,
     };
 
     if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") {

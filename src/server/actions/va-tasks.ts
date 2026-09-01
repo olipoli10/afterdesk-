@@ -11,6 +11,19 @@ import { recomputeOperationalIntelligence } from "@/server/operational-actuals";
 import { getSettings } from "@/lib/settings";
 import { metricsSchemaFor } from "@/lib/delivery-metrics";
 import { transitionTask, TransitionError, IllegalTransitionError } from "@/lib/state";
+import {
+  bindClaimToHumanUnit,
+  HumanUnitBindError,
+  recordReleasedHumanUnit,
+} from "@/server/human-unit";
+import {
+  ACTIVE_CLAIM_STATUSES,
+  activeClaimCapRefusal,
+  categoryCertificationRefusal,
+  highValueRefusal,
+  priorRejectionRefusal,
+  vaStatusRefusal,
+} from "@/lib/worker-eligibility";
 
 export type VaActionResult = { ok: true } | { ok: false; error: string };
 
@@ -19,6 +32,17 @@ class Refused extends Error {}
 
 function surfaced(e: unknown): VaActionResult | null {
   if (e instanceof Refused) return { ok: false, error: e.message };
+  /**
+   * A required human-work-unit binding failed, so the whole claim rolled back.
+   * Surfaced with the SAME wording as a task that is no longer available:
+   * telling a worker which of the two happened would describe the internal
+   * state of a unit they have no business seeing, and neither answer changes
+   * what they can do next.
+   */
+  if (e instanceof HumanUnitBindError) {
+    console.error("human work unit binding failed; claim rolled back", e);
+    return { ok: false, error: "This task is no longer available." };
+  }
   if (e instanceof IllegalTransitionError) {
     console.error("illegal transition in VA action", e);
     return { ok: false, error: "That action is not possible right now. Nothing was changed." };
@@ -44,9 +68,20 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
         where: { userId: user.id },
         select: { status: true, scoreCache: true, ratedCount: true },
       });
-      if (profile?.status !== "approved") {
-        throw new Refused("Your account is not currently able to claim tasks.");
-      }
+      /**
+       * The eligibility predicates live in `@/lib/worker-eligibility` so the
+       * human work unit can apply the IDENTICAL set at submission and at
+       * residual publication without a second definition drifting from this
+       * one. The reads stay here, inside the compare-and-swap: read them
+       * outside and they are advisory, and moving the conditional ones would
+       * change the order in which a worker meets a refusal.
+       */
+      const statusRefusal = vaStatusRefusal(profile?.status);
+      if (statusRefusal !== null) throw new Refused(statusRefusal);
+      // Unreachable: `vaStatusRefusal` returns null only for status
+      // "approved", which an absent row cannot have. Restated so the type
+      // checker keeps the narrowing the inline `profile?.status` check gave it.
+      if (!profile) throw new Refused("Your account is not currently able to claim tasks.");
 
       const task = await tx.task.findUnique({
         where: { id: taskId },
@@ -70,49 +105,49 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
        * payout at all (which is exactly why the database payout guard exempts
        * it), and a standing task is paid through its client's weekly block to
        * an assigned specialist, not per task to whoever arrives first.
+       *
+       * Deliberately NOT extracted into `worker-eligibility.ts`: this is a
+       * property of the TASK, not of the worker, and `test/price-wall.test.ts`
+       * pins the expression to this file to prove the refusal happens inside
+       * the transaction, before the compare-and-swap. The human work unit does
+       * not need it — an admitted unit is commercial by construction, because
+       * admission already requires a positive `vaPayoutCents`, which is exactly
+       * what an internal task lacks.
        */
       if (task.isInternal || task.standingCapacityAccountId !== null) {
         throw new Refused("This task is no longer available.");
       }
 
-      // Category certification, when the operator has switched it on. A course
-      // slug IS the category slug (data-cleanup, research, writing...), so the
-      // certificate for a kind of work is evidence for that kind of work
-      // specifically. Checked inside the claim transaction rather than by
-      // filtering the pool: a worker who passes the exam in another tab can
-      // claim immediately, and one who sees a task they cannot take is told
-      // which exam opens it instead of watching it silently disappear.
+      // The certification count stays CONDITIONAL: a worker who passes the exam
+      // in another tab can claim immediately, and one who sees a task they
+      // cannot take is told which exam opens it instead of watching it silently
+      // disappear. Reading it unconditionally would add a query to every claim.
       if (settings.requireCategoryCertification && task.category) {
         const certified = await tx.certification.count({
           where: { userId: user.id, courseSlug: task.category.slug },
         });
-        if (certified === 0) {
-          throw new Refused(
-            `${task.category.name} work opens up once you pass its Academy exam. The course is free and you can take it now.`
-          );
-        }
+        const certificationRefusal = categoryCertificationRefusal({
+          requireCategoryCertification: settings.requireCategoryCertification,
+          category: task.category,
+          certifiedCount: certified,
+        });
+        if (certificationRefusal !== null) throw new Refused(certificationRefusal);
       }
 
-      // A worker who already failed this task out of QC cannot pick it up
-      // again — the reassignment exists to put fresh eyes on it.
       const previouslyFailed = await tx.submission.count({
         where: { taskId, vaId: user.id, qcStatus: "rejected" },
       });
-      if (previouslyFailed > 0) {
-        throw new Refused("This task was reassigned after your earlier delivery. It is open to other workers now.");
-      }
+      const rejectionRefusal = priorRejectionRefusal(previouslyFailed);
+      if (rejectionRefusal !== null) throw new Refused(rejectionRefusal);
 
-      if (task.tier === "high_value") {
-        const eligible =
-          profile.scoreCache !== null &&
-          profile.scoreCache >= settings.highValueThreshold &&
-          profile.ratedCount >= settings.minRatedDeliveries;
-        if (!eligible) {
-          throw new Refused(
-            `High-value tasks open up at a ${settings.highValueThreshold.toFixed(1)} score across ${settings.minRatedDeliveries} rated deliveries.`
-          );
-        }
-      }
+      const tierRefusal = highValueRefusal({
+        tier: task.tier,
+        scoreCache: profile.scoreCache,
+        ratedCount: profile.ratedCount,
+        highValueThreshold: settings.highValueThreshold,
+        minRatedDeliveries: settings.minRatedDeliveries,
+      });
+      if (tierRefusal !== null) throw new Refused(tierRefusal);
 
       // Work-in-progress cap: without it one fast worker can hoard the pool.
       // The advisory lock serializes this check per worker so two concurrent
@@ -124,14 +159,14 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
       const activeCount = await tx.task.count({
         where: {
           claimedById: user.id,
-          status: { in: ["claimed", "submitted_for_qc", "qc_rejected", "revision_requested"] },
+          status: { in: [...ACTIVE_CLAIM_STATUSES] },
         },
       });
-      if (activeCount >= settings.maxActiveClaims) {
-        throw new Refused(
-          `You already have ${activeCount} tasks in progress. Finish one before claiming another.`
-        );
-      }
+      const capRefusal = activeClaimCapRefusal({
+        activeCount,
+        maxActiveClaims: settings.maxActiveClaims,
+      });
+      if (capRefusal !== null) throw new Refused(capRefusal);
 
       await transitionTask({
         tx,
@@ -143,6 +178,19 @@ export async function claimTask(taskId: string): Promise<VaActionResult> {
         guard: { claimedById: null },
         data: { claimedById: user.id, claimedAt: new Date() },
       });
+
+      /**
+       * ONE ACT, TWO RECORDS.
+       *
+       * The task assignment above is the decision; this mirrors it onto the
+       * human work unit inside the SAME transaction, so the two can never be
+       * observed disagreeing about who holds the work. A no-op for every task
+       * without a unit, which is every ordinary pool claim.
+       *
+       * Placed AFTER the transition on purpose: `INV-13` checks the unit's
+       * claimant against the task's, so the task must already carry it.
+       */
+      await bindClaimToHumanUnit(tx, { taskId, workerId: user.id });
     });
   } catch (e) {
     const handled = surfaced(e);
@@ -178,6 +226,8 @@ export async function releaseTask(taskId: string): Promise<VaActionResult> {
         guard: { claimedById: user.id },
         data: { claimedById: null, claimedAt: null },
       });
+
+      await recordReleasedHumanUnit(tx, { taskId, actorId: user.id });
 
       await tx.vaProfile.update({
         where: { userId: user.id },
@@ -308,6 +358,39 @@ export async function submitDeliverable(input: unknown): Promise<VaActionResult>
       }
       if (task.status === "revision_requested" && !task.revisionInstructions) {
         throw new Refused("The operator is still preparing the revision instructions.");
+      }
+
+      /**
+       * R4 — HUMAN TIME INTEGRITY. A job this worker actually performed must
+       * leave a durable time record: operational-actuals.ts computes
+       * `workerActiveSeconds` from TaskWorkSession rows in phase
+       * residual_work/manual_fallback, and treats zero such rows as UNKNOWN
+       * (MISSING_WORKER_TIME), not zero — which silently drops human cost
+       * out of bookedAndMeteredCostMicros and disqualifies the task from
+       * cost/performance calibration.
+       *
+       * The check is EXISTENCE, not accumulated duration: a session's
+       * accumulatedSeconds only updates on pause/resume/stop
+       * (src/server/work-sessions.ts), so an active, never-paused session
+       * legitimately still reads 0 here. stopAllOpenSessions below finalizes
+       * it with the real elapsed seconds right after this transaction
+       * commits — this gate only has to prove the worker started a timer at
+       * least once; it does not (and must not) infer duration itself, which
+       * is exactly the submittedAt-minus-claimedAt shortcut this lot exists
+       * to refuse.
+       */
+      const timedAtLeastOnce = await tx.taskWorkSession.count({
+        where: {
+          taskId,
+          userId: user.id,
+          role: "worker",
+          phase: { in: ["residual_work", "manual_fallback"] },
+        },
+      });
+      if (timedAtLeastOnce === 0) {
+        throw new Refused(
+          "Start your timer before delivering — use Start above, do the work, then come back to submit. We need a real record of how long this took."
+        );
       }
 
       /**

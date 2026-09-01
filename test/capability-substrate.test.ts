@@ -17,6 +17,7 @@ import {
   mostRestrictive,
   reachMayProcess,
 } from "@/lib/ai-work-engine/data-class";
+import { inspectedFile, uninspectableFile } from "@/../test/support/inspection";
 import { compileDecisions, HANDOFF_REASONS } from "@/lib/ai-work-engine/compile";
 
 /**
@@ -142,18 +143,13 @@ describe("the local classifier fails closed", () => {
      */
     const v = clean({
       fileCount: 1,
-      inspections: [
-        { fileId: "f1", inspected: true, headers: ["sku", "price"], sampledValues: ["A-12", "9.99"] },
-      ],
+      inspections: [inspectedFile("f1", ["sku", "price"], [["A-12", "9.99"]])],
     });
     expect(v.dataClass).toBe("business_confidential");
   });
 
   it("a file that could not be inspected is human-only, not assumed safe", () => {
-    const v = clean({
-      fileCount: 1,
-      inspections: [{ fileId: "f1", inspected: false, headers: [], sampledValues: [] }],
-    });
+    const v = clean({ fileCount: 1, inspections: [uninspectableFile("f1")] });
     expect(v.dataClass).toBe("personal_sensitive");
   });
 
@@ -161,9 +157,7 @@ describe("the local classifier fails closed", () => {
     // Two attachments, one inspection: the missing one must not be ignored.
     const v = clean({
       fileCount: 2,
-      inspections: [
-        { fileId: "f1", inspected: true, headers: ["company"], sampledValues: ["Acme"] },
-      ],
+      inspections: [inspectedFile("f1", ["company"], [["Acme"]])],
     });
     expect(v.dataClass).toBe("personal_sensitive");
   });
@@ -177,12 +171,11 @@ describe("the local classifier fails closed", () => {
     const v = clean({
       fileCount: 1,
       inspections: [
-        {
-          fileId: "f1",
-          inspected: true,
-          headers: ["first name", "company", "work email", "phone"],
-          sampledValues: ["Dana", "Acme Ltd", "dana@acme.com", "+1 514 555 0100"],
-        },
+        inspectedFile(
+          "f1",
+          ["first name", "company", "work email", "phone"],
+          [["Dana", "Acme Ltd", "dana@acme.com", "+1 514 555 0100"]]
+        ),
       ],
     });
     expect(v.dataClass).toBe("business_confidential");
@@ -203,10 +196,29 @@ describe("the local classifier fails closed", () => {
     ["accented French payroll", ["nom", "Rémunération"]],
     ["accented French account", ["fournisseur", "Numéro de compte"]],
   ])("a %s column escalates to human-only", (_label, headers) => {
-    const v = clean({
-      fileCount: 1,
-      inspections: [{ fileId: "f1", inspected: true, headers, sampledValues: [] }],
-    });
+    const v = clean({ fileCount: 1, inspections: [inspectedFile("f1", headers)] });
+    expect(v.dataClass).toBe("personal_sensitive");
+  });
+
+  it.each([
+    ["snake_case", "date_of_birth"],
+    ["camelCase", "dateOfBirth"],
+    ["kebab-case", "date-of-birth"],
+    ["snake_case SSN", "social_security_number"],
+    ["snake_case account", "bank_account_number"],
+    ["camelCase card", "creditCardNumber"],
+    ["dotted French payroll", "employe.remuneration"],
+    ["screaming snake", "DATE_OF_BIRTH"],
+    ["the plain spelling", "Date of Birth"],
+  ])("a sensitive column spelled in %s still escalates", (_label, header) => {
+    /**
+     * The separator bug. Every multi-word pattern in the list is written with
+     * spaces, `_` is a word character, and real exports use `_`. So the list
+     * that stands between a payroll file and the automation was matching only
+     * the spelling a human types by hand, and `date_of_birth` — the single most
+     * common spelling in existence — sailed straight through it.
+     */
+    const v = clean({ fileCount: 1, inspections: [inspectedFile("f1", ["name", header])] });
     expect(v.dataClass).toBe("personal_sensitive");
   });
 
@@ -214,15 +226,91 @@ describe("the local classifier fails closed", () => {
     ["a nine-digit government id", "123-45-6789"],
     ["a Luhn-valid payment card", "4111 1111 1111 1111"],
     ["an IBAN", "DE89370400440532013000"],
-    ["a birth date", "1979-04-12"],
   ])("%s in the VALUES escalates even under an innocent header", (_label, value) => {
     const v = clean({
       fileCount: 1,
-      inspections: [
-        { fileId: "f1", inspected: true, headers: ["reference"], sampledValues: [value] },
-      ],
+      inspections: [inspectedFile("f1", ["reference"], [[value]])],
     });
     expect(v.dataClass).toBe("personal_sensitive");
+  });
+
+  it.each([
+    ["a signup timestamp", "signup_date", "2024-01-12"],
+    ["an invoice date", "invoice_date", "2026-08-01"],
+    ["a verification stamp", "last_checked", "2026-07-31"],
+    ["a creation stamp", "created_at", "2023-11-04"],
+    ["a contract date", "contract_date", "2025-02-28"],
+    ["a European-order business date", "date_facture", "28/02/2025"],
+  ])("%s is an ordinary business date, not a birth date", (_label, header, value) => {
+    /**
+     * THE REGRESSION THIS FIX EXISTS FOR. An ISO date used to be a value-alone
+     * signal called `date_of_birth`, so one timestamp cell in a sample sent the
+     * whole mandate to a human. On a product whose market is cleaning exported
+     * spreadsheets, that is the most common column there is, and the engine was
+     * disarmed by it. A date value alone proves nothing.
+     */
+    const v = clean({
+      fileCount: 1,
+      inspections: [inspectedFile("f1", ["company", header], [["Acme Ltd", value]])],
+    });
+    expect(v.dataClass).toBe("business_confidential");
+  });
+
+  it.each([
+    ["date_of_birth", "date_of_birth", "1994-03-14"],
+    ["dob with slashes", "dob", "1994/03/14"],
+    ["birthday", "birthday", "1994-03-14"],
+    ["date de naissance", "date de naissance", "14/03/1994"],
+  ])("%s is unambiguous and escalates on the NAME alone", (_label, header, value) => {
+    // Unambiguous spellings do not need a value to agree with them: a column
+    // called `dob` full of blanks is still a date-of-birth column.
+    expect(clean({ fileCount: 1, inspections: [inspectedFile("f1", ["name", header])] }).dataClass).toBe(
+      "personal_sensitive"
+    );
+    expect(
+      clean({
+        fileCount: 1,
+        inspections: [inspectedFile("f1", ["name", header], [["Dana", value]])],
+      }).dataClass
+    ).toBe("personal_sensitive");
+  });
+
+  it.each([
+    ["birth", "birth"],
+    ["born", "born"],
+    ["naissance", "naissance"],
+    ["ne le", "ne le"],
+  ])("a loose birth word (%s) escalates only when dates sit under it", (_label, header) => {
+    /**
+     * The replacement rule, in both directions. Column semantics plus a
+     * compatible value — never one alone. `Birth` with city names under it is a
+     * place of birth column in a form the engine can clean; `birth` with dates
+     * under it is a date of birth and a person does the mandate.
+     */
+    const withDates = clean({
+      fileCount: 1,
+      inspections: [inspectedFile("f1", ["name", header], [["Dana", "1994-03-14"]])],
+    });
+    expect(withDates.dataClass).toBe("personal_sensitive");
+
+    const withoutDates = clean({
+      fileCount: 1,
+      inspections: [inspectedFile("f1", ["name", header], [["Dana", "Montreal"]])],
+    });
+    expect(withoutDates.dataClass).toBe("business_confidential");
+  });
+
+  it("a date in a NEIGHBOURING column does not confirm a birth column", () => {
+    // The association is the whole point of carrying columns instead of two
+    // flat lists: the date must be under the birth-named header, not merely
+    // somewhere in the same file.
+    const v = clean({
+      fileCount: 1,
+      inspections: [
+        inspectedFile("f1", ["birth", "signup_date"], [["Montreal", "2024-01-12"]]),
+      ],
+    });
+    expect(v.dataClass).toBe("business_confidential");
   });
 
   it("an order number that is not Luhn-valid does not escalate", () => {
@@ -230,11 +318,34 @@ describe("the local classifier fails closed", () => {
     // would fire, and the class would mean nothing.
     const v = clean({
       fileCount: 1,
-      inspections: [
-        { fileId: "f1", inspected: true, headers: ["order"], sampledValues: ["4111111111111112"] },
-      ],
+      inspections: [inspectedFile("f1", ["order"], [["4111111111111112"]])],
     });
     expect(v.dataClass).toBe("business_confidential");
+  });
+
+  it("a sensitive shape in a ragged cell past the last header still escalates", () => {
+    // A value with no column is still a value. The shapes that stand alone
+    // must see it; only the rules that need a NAME may skip it.
+    const v = clean({
+      fileCount: 1,
+      inspections: [inspectedFile("f1", ["company"], [["Acme Ltd", "123-45-6789"]])],
+    });
+    expect(v.dataClass).toBe("personal_sensitive");
+  });
+
+  it("the model saying 'not sensitive' can never lower what inspection found", () => {
+    /**
+     * The 1E-alpha rule, asserted against the exact failure it forbids: a
+     * classifier returning sensitive_data=false on a payroll file. The verdict
+     * is the maximum of every signal and the declaration contributes none when
+     * it is false, so there is no arithmetic by which it can subtract.
+     */
+    const v = clean({
+      declaredSensitive: false,
+      fileCount: 1,
+      inspections: [inspectedFile("f1", ["employee", "salaire"], [["Dana", "52000"]])],
+    });
+    expect(v.dataClass).toBe("personal_sensitive");
   });
 
   it("the brief's own declaration still escalates, files or not", () => {
@@ -245,18 +356,12 @@ describe("the local classifier fails closed", () => {
   it("every verdict explains itself without quoting a client value", () => {
     const v = clean({
       fileCount: 1,
-      inspections: [
-        {
-          fileId: "f1",
-          inspected: true,
-          headers: ["ssn"],
-          sampledValues: ["123-45-6789"],
-        },
-      ],
+      inspections: [inspectedFile("f1", ["ssn", "birth"], [["123-45-6789", "1994-03-14"]])],
     });
     expect(v.signals.length).toBeGreaterThan(0);
     for (const s of v.signals) {
       expect(s.reason).not.toContain("123-45-6789");
+      expect(s.reason).not.toContain("1994-03-14");
     }
   });
 });
@@ -834,6 +939,112 @@ describe("provider clients form a closed set whose closure never reaches the loc
     for (const m of PROVIDER_CLIENT_MODULES) {
       expect(existsSync(join(ROOT2, m)), m + " no longer exists; update the list").toBe(true);
     }
+  });
+
+  /**
+   * R5.2 — THE FINANCIAL PERIMETER, enforced on the SAME allowlist the
+   * security perimeter already uses.
+   *
+   * The list above answers "may this module talk to a provider at all". This
+   * one answers the question R5.2 exists to close: "and is that call
+   * accounted for before it leaves". Every entry must declare HOW it is
+   * metered, and the declaration is checked against the real source — so a
+   * future developer who adds a provider call has to either wire it into the
+   * account-spend boundary or consciously write a lie in this table.
+   *
+   *   type-only               constructs no client (import type only)
+   *   metered-call            dispatches through meteredCall, and its runner
+   *                           reserves account capacity around it
+   *   account-spend-at-caller the named caller reserves before dispatching
+   *
+   * `account-spend-at-caller` exists because R5 deliberately kept the
+   * reservation in the DB-coupled orchestrator rather than in the stage
+   * modules, so those stay pure and directly testable without a database.
+   */
+  const METERED_BY_METERED_CALL = "metered-call" as const;
+  const TYPE_ONLY = "type-only" as const;
+  const METERING: Record<string, typeof TYPE_ONLY | typeof METERED_BY_METERED_CALL | string> = {
+    [join("src", "lib", "ai-work-engine", "metered-call.ts")]: TYPE_ONLY,
+    [join("src", "lib", "ai-work-engine", "stage-usage.ts")]: TYPE_ONLY,
+    [join("src", "lib", "ai-work-engine", "primitives", "research.ts")]: METERED_BY_METERED_CALL,
+    [join("src", "lib", "ai-work-engine", "primitives", "extract.ts")]: METERED_BY_METERED_CALL,
+    [join("src", "lib", "ai-work-engine", "primitives", "fetch.ts")]: METERED_BY_METERED_CALL,
+    // Phase 1A stages + the embedding provider: reserved by the orchestrator.
+    [join("src", "lib", "ai-work-engine", "classify.ts")]: join("src", "lib", "ai-work-engine", "index.ts"),
+    [join("src", "lib", "ai-work-engine", "plan.ts")]: join("src", "lib", "ai-work-engine", "index.ts"),
+    [join("src", "lib", "ai-work-engine", "critique.ts")]: join("src", "lib", "ai-work-engine", "index.ts"),
+    [join("src", "lib", "embeddings.ts")]: join("src", "lib", "ai-work-engine", "index.ts"),
+    // R5.2's newly covered surfaces: reserved in their server actions.
+    [join("src", "lib", "ai.ts")]: join("src", "server", "actions", "intake.ts"),
+    [join("src", "lib", "assistant-ai.ts")]: join("src", "server", "actions", "va-assistant.ts"),
+    [join("src", "lib", "closed-job-analysis.ts")]: join("src", "server", "actions", "admin-closed-jobs.ts"),
+  };
+
+  it("R5.2 — every provider-client module declares how it is metered, and the declaration is true", () => {
+    // 1. The two lists cannot drift apart: a new provider module must make an
+    //    explicit metering decision, it cannot simply be added to one list.
+    expect(
+      PROVIDER_CLIENT_MODULES.filter((m) => !(m in METERING)),
+      "A provider-client module has no metering declaration. Decide how its " +
+        "spend is accounted BEFORE allowing the call — that is the whole point of R5.2."
+    ).toEqual([]);
+    expect(
+      Object.keys(METERING).filter((m) => !PROVIDER_CLIENT_MODULES.includes(m)),
+      "A metering declaration names a module that is no longer a provider client."
+    ).toEqual([]);
+
+    const read = (rel: string) => readFileSync(join(ROOT2, rel), "utf8").replace(/\r\n/g, "\n");
+
+    for (const [rel, mechanism] of Object.entries(METERING)) {
+      const source = read(rel);
+      const constructsClient = /new Anthropic\(/.test(source) || /fetch\("https:\/\/api\.voyageai\.com/.test(source);
+
+      if (mechanism === TYPE_ONLY) {
+        expect(constructsClient, `${rel} is declared type-only but builds a provider client`).toBe(false);
+        continue;
+      }
+
+      // 2. Anything not type-only really does dispatch, and must never let the
+      //    SDK retry behind the ledger's back (the R5.1 doctrine).
+      //
+      //    Comments are STRIPPED before the check. Without that, a doc comment
+      //    that merely mentions `maxRetries: 0` — which the one in ai.ts does,
+      //    explaining the rule — satisfies a naive `toContain` even while the
+      //    code below it says 1. That false negative was observed, not
+      //    theorised: it silently swallowed a deliberate mutation test.
+      expect(constructsClient, `${rel} is declared metered but constructs no client`).toBe(true);
+      const code = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+      const constructions = code.match(/new Anthropic\(\{[^}]*\}\)/g) ?? [];
+      if (/new Anthropic\(/.test(code)) {
+        expect(constructions.length, `${rel}: could not parse its Anthropic construction`).toBeGreaterThan(0);
+      }
+      for (const construction of constructions) {
+        expect(construction, `${rel}: a metered client must set maxRetries: 0`).toContain("maxRetries: 0");
+        expect(construction, `${rel}: must never re-enable SDK retries`).not.toMatch(/maxRetries:\s*[1-9]/);
+      }
+
+      if (mechanism === METERED_BY_METERED_CALL) {
+        expect(source, `${rel} must dispatch through meteredCall`).toContain("metered-call");
+        continue;
+      }
+
+      // 3. `account-spend-at-caller`: the named caller must really reserve.
+      const callerSource = read(mechanism);
+      expect(
+        callerSource,
+        `${rel} is declared as reserved by ${mechanism}, which does not import the account-spend boundary`
+      ).toContain("@/server/account-spend");
+      expect(
+        callerSource,
+        `${rel} is declared as reserved by ${mechanism}, which never calls reserveAccountProviderSpend`
+      ).toContain("reserveAccountProviderSpend(");
+    }
+  });
+
+  it("R5.2 — the runner that hosts meteredCall primitives reserves account capacity", () => {
+    const runner = readFileSync(join(ROOT2, "src", "server", "workflow-runs.ts"), "utf8").replace(/\r\n/g, "\n");
+    expect(runner).toContain("@/server/account-spend");
+    expect(runner).toContain("reserveAccountProviderSpend(");
   });
 
   it("no provider-client module can reach the inspection, even transitively", () => {

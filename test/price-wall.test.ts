@@ -268,6 +268,94 @@ describe("the worker's residual brief carries no money and no engine internals",
 });
 
 /**
+ * HUMAN WORK UNIT — the worker's unit read is an allowlist at the SQL
+ * boundary, not merely a carefully shaped return value.  This deliberately
+ * pins the SELECT keys between the active unit query and resolution of the
+ * declared inputs: adding a field there fetches it for a worker even if a
+ * later mapper happens not to return it today.
+ */
+describe("the HumanWorkUnit worker projection selects only its declared contract", () => {
+  const source = readFileSync(join(__dirname, "..", "src/lib/queries/human-unit.ts"), "utf8");
+  const workerRead = source.slice(
+    source.indexOf("export async function humanUnitForWorker"),
+    source.indexOf("export type AdminUnitView")
+  );
+  const projection = workerRead.slice(
+    workerRead.indexOf("const unit ="),
+    workerRead.indexOf("const resolved:")
+  );
+
+  it("pins the active projection slice itself", () => {
+    expect(workerRead).toContain("const unit =");
+    expect(projection).toContain("select: {");
+    expect(projection.length).toBeGreaterThan(700);
+  });
+
+  it("has exactly the approved primitive select keys", () => {
+    const selected = [...projection.matchAll(/\b([A-Za-z][A-Za-z0-9]*): true\b/g)]
+      .map((match) => match[1])
+      .sort();
+    expect(selected).toEqual([
+      "acceptanceCriteria",
+      "declaredInputs",
+      "instructions",
+      "outputSchema",
+      "payload",
+      "remainingRevisions",
+      "requiredArtifactKinds",
+      "revisionInstructions",
+      "state",
+      "status",
+      "submissionDeadlineAt",
+    ].sort());
+  });
+
+  it("does not select money, identity, engine or audit internals", () => {
+    const forbidden = [
+      "clientPriceCents",
+      "clientId",
+      "client",
+      "clientDeadlineUtc",
+      "computedPayoutCents",
+      "reservedBudgetCents",
+      "runAutomationBudgetMicros",
+      "actualAiCostMicros",
+      "actualToolCostMicros",
+      "budgetHolds",
+      "spendHolds",
+      "workflowBudgetHold",
+      "accountProviderSpendHold",
+      "steps",
+      "stepRuns",
+      "handoffReason",
+    ];
+    for (const field of forbidden) {
+      expect(projection).not.toMatch(new RegExp(`\\b${field}\\s*:\\s*true\\b`));
+    }
+    expect(projection).not.toMatch(/^\s*[A-Za-z][A-Za-z0-9]*Id:\s*true,/gm);
+    expect(projection).not.toMatch(/^\s*ai[A-Za-z0-9]*:\s*true,/gim);
+  });
+});
+
+describe("the HumanWorkUnit admin projection remains the complete operator read", () => {
+  const source = readFileSync(join(__dirname, "..", "src/lib/queries/human-unit.ts"), "utf8");
+  const adminRead = source.slice(source.indexOf("export async function humanUnitForAdmin"));
+
+  it("is role-gated and retains every operator-only relation", () => {
+    expect(adminRead).toContain('requireRole("ADMIN")');
+    for (const relation of [
+      "definition: true",
+      "candidates:",
+      "decisions:",
+      "acceptance: true",
+      "resume: true",
+      "transitions:",
+      "alerts:",
+    ]) expect(adminRead).toContain(relation);
+  });
+});
+
+/**
  * The keysDeep check above walks the EXPORTED select objects — but
  * src/lib/queries/tasks.ts also builds selects inline (the leak reviewer's
  * finding), and an inline `operationalActual: { select: ... }` added to a

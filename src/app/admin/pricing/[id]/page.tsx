@@ -3,7 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { taskForAdmin } from "@/lib/queries/tasks";
-import { planReviewForAdmin } from "@/lib/queries/plan";
+import { compilePreviewForAdmin, planReviewForAdmin } from "@/lib/queries/plan";
+import { CompilePreviewCard } from "@/components/compile-preview";
 import { LocalTime } from "@/components/local-time";
 import { PricingForm } from "@/components/pricing-form";
 import { PlanReview } from "@/components/plan-review";
@@ -41,13 +42,16 @@ export default async function PricingDetailPage({
   }
 
   const inputFiles = task.files.filter((f) => f.kind === "input");
-  const [categories, planReview] = await Promise.all([
+  const [categories, planReview, compilePreview] = await Promise.all([
     prisma.taskCategory.findMany({
       where: { active: true },
       select: { id: true, name: true, slug: true },
       orderBy: { sortOrder: "asc" },
     }),
     planReviewForAdmin(task.id),
+    // LOT B: the pure compiler's verdict, computed BEFORE the quote so the
+    // human firewall sees what would actually run. Zero side effects.
+    compilePreviewForAdmin(task.id),
   ]);
   // The model names a category by slug (it has no idea what internal ids
   // exist); resolved to an id here so PricingForm's <select> — which is
@@ -192,6 +196,11 @@ export default async function PricingDetailPage({
         </div>
       </div>
 
+      {/* LOT B: the compile preview — machine vs human per step, with the
+          compiler's reasons and the fact badges — ABOVE the editable plan,
+          because it is the thing the firewall decision is made on. */}
+      {compilePreview ? <CompilePreviewCard preview={compilePreview} /> : null}
+
       {/* Blocks A-C of the work engine: understanding, plan (versioned,
           editable), deterministic estimate with the calibration banner.
           Renders nothing at all for a task the pipeline never ran on. */}
@@ -213,6 +222,11 @@ export default async function PricingDetailPage({
                 assumptions: planReview.classification.assumptions,
                 quoteTier: planReview.classification.quoteTier,
                 confidence: planReview.classification.confidence,
+                // LOT C intake framing (null on pre-LOT-C classifications).
+                sourceShape: planReview.classification.sourceShape,
+                verificationExpectation: planReview.classification.verificationExpectation,
+                outputFormatCode: planReview.classification.outputFormatCode,
+                recurrence: planReview.classification.recurrence,
               }
             : null,
           version: planReview.latestVersion
@@ -249,6 +263,14 @@ export default async function PricingDetailPage({
             editNote: h.editNote,
             suggestedPriceCents: h.suggestedPriceCents,
             suggestedVaPayoutCents: h.suggestedVaPayoutCents,
+          })),
+          // LOT A: the file-step params picker selects among these — the
+          // task's own input uploads, never a typed id. The edit action
+          // re-verifies ownership server-side on every save.
+          attachments: inputFiles.map((f) => ({
+            id: f.id,
+            fileName: f.fileName,
+            sizeBytes: f.sizeBytes,
           })),
         }}
       />

@@ -261,8 +261,10 @@ describe("direct outbound HTTP anywhere in src/ is an allowlist", () => {
   const SRC_DIR = join(__dirname, "..", "src");
 
   /** Files whose fetch( is reviewed and legitimate: first-party API calls
-   *  (mail, embeddings) and browser-side uploads. None of them takes a URL
-   *  derived from client text or model output. authz.ts is deliberately NOT
+   *  (mail, embeddings, malware scanning) and browser-side uploads. None of
+   *  them takes a URL derived from client text or model output — the
+   *  Cloudmersive endpoint in file-security.ts is a fixed, code-controlled
+   *  constant, never a value from a request. authz.ts is deliberately NOT
    *  here: its only "fetch(" was a word in a comment, and an allowlist entry
    *  bought by prose would have exempted the auth module — the worst possible
    *  file — from this scan forever. */
@@ -272,6 +274,7 @@ describe("direct outbound HTTP anywhere in src/ is an allowlist", () => {
     join("src", "components", "quote-actions.tsx"),
     join("src", "lib", "email.ts"),
     join("src", "lib", "embeddings.ts"),
+    join("src", "lib", "file-security.ts"),
   ];
 
   /**

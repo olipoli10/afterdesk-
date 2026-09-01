@@ -163,6 +163,36 @@ export type WorkflowPayload = {
    */
   datasets?: Record<string, WorkflowRow[]>;
   /**
+   * THE NAME OF THE DATASET `rows` CURRENTLY IS. The field that makes `main`
+   * safe, and the reason it exists is a defect that shipped without it.
+   *
+   * `main` is the working-set alias: a step that names no dataset reads it,
+   * and it used to resolve to `input.rows` unconditionally. In a single-source
+   * plan that is exactly right and always was. In a multi-source plan it is a
+   * silent lie:
+   *
+   *   ingest file A into "main"   -> rows = A, datasets.main = A
+   *   ingest file B into "src2"   -> rows = B, datasets.src2 = B
+   *   any step asking for "main"  -> B
+   *
+   * A is still in `datasets.main`, whole and correct, and unreachable. No step
+   * fails. The deliverable is built from the wrong file and looks perfect. That
+   * is the one outcome this engine treats as worse than a crash, and it was
+   * reachable from the schema's own DEFAULT dataset name.
+   *
+   * Recording WHICH dataset the working set is turns the question from
+   * unanswerable into decidable, so the resolver can refuse instead of guess.
+   * The invariant every writer maintains: when this is set,
+   * `datasets[workingDataset]` and `rows` are the same rows.
+   *
+   * Absent means "no named dataset has been written" — every web-research
+   * payload, and every payload written before this field existed. The second
+   * case is why absent-WITH-datasets is treated as ambiguous rather than as
+   * the old behaviour: a payload from before the fix cannot say what its rows
+   * are, and guessing is the defect.
+   */
+  workingDataset?: string;
+  /**
    * WHERE THESE ROWS CAME FROM, which decides what may be claimed about them.
    *
    * `web_research`  assembled from public sources. Field-level `sources` and
@@ -213,6 +243,29 @@ export const emptyPayload = (unitsTotal: number, requestedFields: string[]): Wor
   unitsTotal,
   requestedFields,
 });
+
+/**
+ * REWRITE THE WORKING SET, KEEPING ITS NAME IN STEP.
+ *
+ * Several primitives replace `rows` without naming a dataset — normalising
+ * contact fields, splitting exceptions, structuring research. Spreading the
+ * input and overwriting `rows` is the obvious way to do that and it breaks the
+ * invariant `datasets[workingDataset] === rows`: the stored copy keeps the old
+ * rows while the working set moves on, and the two then disagree depending on
+ * which name a later step happens to use.
+ *
+ * So every rewrite goes through here. When the working set has a name, the
+ * named entry is rewritten with it; when it has none (a web-research payload),
+ * there is nothing to keep in step and nothing is invented.
+ *
+ * Pure, in the types module, with no imports — the same reason the rest of this
+ * file is here: the pure primitives are unit-tested without a server.
+ */
+export function withRows(input: WorkflowPayload, rows: WorkflowRow[]): WorkflowPayload {
+  const name = input.workingDataset;
+  if (name === undefined) return { ...input, rows };
+  return { ...input, rows, datasets: { ...(input.datasets ?? {}), [name]: rows } };
+}
 
 /** One recorded attempt at an external call. Append-only, cost included. */
 export type InvocationRecord = {

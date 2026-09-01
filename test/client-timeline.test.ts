@@ -88,6 +88,30 @@ const MUST_NEVER_APPEAR: [string, string][] = [
   ["suspend", "an AdminEvent action about a worker's standing"],
 ];
 
+/**
+ * HumanWorkUnit audit rows are operational evidence, not client progress
+ * copy.  Keep this list explicit so adding a new transition needs an
+ * intentional client-language decision instead of inheriting visibility.
+ */
+const HUMAN_UNIT_ACTIONS = [
+  "human_unit_accepted",
+  "human_unit_claimed",
+  "human_unit_deadline_lapsed",
+  "human_unit_exhausted",
+  "human_unit_not_admitted",
+  "human_unit_paused",
+  "human_unit_published",
+  "human_unit_refused",
+  "human_unit_rejected",
+  "human_unit_released",
+  "human_unit_residual_scope_published",
+  "human_unit_resumed",
+  "human_unit_revision_requested",
+  "human_unit_run_finished",
+  "human_unit_submitted",
+  "human_unit_withdrawn",
+] as const;
+
 describe("RULE 1 — the client execution report", () => {
   it("projects no actor, no reason and no meta", () => {
     const keys = keysDeep(clientTimelineEventSelect);
@@ -117,6 +141,32 @@ describe("RULE 1 — the client execution report", () => {
       expect(clientTimelineEntries([{ action, createdAt: new Date(0) }])).toEqual([]);
     });
   }
+
+  it("never publishes a HumanWorkUnit audit action", () => {
+    for (const action of HUMAN_UNIT_ACTIONS) {
+      expect(action.startsWith("human_unit_")).toBe(true);
+      expect(Object.hasOwn(CLIENT_TIMELINE_LABELS, action)).toBe(false);
+      expect(clientTimelineEntries([{ action, createdAt: new Date(0) }])).toEqual([]);
+    }
+  });
+
+  it("keeps the client timeline and execution report identical when unit rows exist", () => {
+    const clientRows = [
+      { action: "client_submitted", createdAt: new Date("2026-01-01T10:00:00Z") },
+      { action: "va_claimed", createdAt: new Date("2026-01-01T10:01:00Z") },
+      { action: "va_submitted_deliverable", createdAt: new Date("2026-01-01T10:02:00Z") },
+      { action: "admin_qc_approved", createdAt: new Date("2026-01-01T10:03:00Z") },
+    ];
+    const withUnitRows = [
+      ...clientRows,
+      ...HUMAN_UNIT_ACTIONS.map((action, index) => ({
+        action,
+        createdAt: new Date(`2026-01-02T00:${String(index).padStart(2, "0")}:00Z`),
+      })),
+    ];
+    expect(clientTimelineEntries(withUnitRows)).toEqual(clientTimelineEntries(clientRows));
+    expect(executionSummary(withUnitRows)).toEqual(executionSummary(clientRows));
+  });
 
   it("drops an unrecognised action instead of showing it", () => {
     // The whole point: a feature that adds an audit action next year is

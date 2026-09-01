@@ -1,11 +1,23 @@
 "use server";
+import { randomUUID } from "node:crypto";
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireApprovedVa } from "@/lib/authz";
 import { getSettings } from "@/lib/settings";
-import { askAssistant, assistantEnabled, type AssistantTurn } from "@/lib/assistant-ai";
+import {
+  askAssistant,
+  assistantCostMicros,
+  assistantEnabled,
+  assistantReservationMicros,
+  type AssistantTurn,
+} from "@/lib/assistant-ai";
+import {
+  recordAccountSpendBlocked,
+  reserveAccountProviderSpend,
+  settleAccountSpendHoldDirect,
+} from "@/server/account-spend";
 import { scrubCheck } from "@/lib/assistant-scrub";
 import { containsForbiddenVocabulary } from "@/lib/forbidden-vocabulary";
 
@@ -95,7 +107,46 @@ export async function sendAssistantMessage(input: unknown): Promise<AssistantSen
     { role: "user" as const, content: message },
   ];
 
+  /**
+   * R5.2 — THE ACCOUNT-LEVEL SPEND GATE, BEFORE THE CALL LEAVES AFTERDESK.
+   *
+   * The assistant is AUXILIARY: the worker claims, executes and submits the
+   * deliverable without it (nothing in the submit path calls this), so a
+   * refusal degrades this one feature and never blocks the actual job. That is
+   * why the refusal returns the same shape the disabled-assistant branch above
+   * already returns, rather than failing the action.
+   *
+   * IDENTITY: per-invocation uuid. There is no automatic retry layer here, so
+   * one invocation is exactly one dispatch; a stable per-turn key would risk
+   * one reservation funding two charges on a double submit.
+   */
+  const accountHold = await reserveAccountProviderSpend({
+    operationKey: `assistant:${taskId}:${user.id}:${randomUUID()}`,
+    attempt: 1,
+    worstCaseMicros: BigInt(assistantReservationMicros(turns)),
+  });
+  if (!accountHold.ok) {
+    await recordAccountSpendBlocked({
+      taskId,
+      stage: "va_assistant",
+      operationKey: `assistant:${taskId}`,
+      attempt: 1,
+      refusal: accountHold,
+    });
+    // The worker is told the assistant is unavailable — never a ceiling, a
+    // dollar figure, or the provider's name.
+    return { ok: false, error: "The assistant isn't available right now." };
+  }
+
   const result = await askAssistant(turns);
+  // A response arrived, so the real cost is known. askAssistant never throws
+  // for a provider failure, and it reports zero usage in that case, which
+  // settles honestly at zero for a call that produced nothing billable.
+  await settleAccountSpendHoldDirect(
+    accountHold.holdId,
+    BigInt(assistantCostMicros(result.usage))
+  );
+
   const safeAnswer = containsForbiddenVocabulary(result.answer)
     ? "Sorry, I can't phrase that one safely — use \"Ask a question\" for an operator."
     : result.answer;

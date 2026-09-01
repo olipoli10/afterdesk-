@@ -9,10 +9,35 @@ import {
   reserveSpend,
   settleHold,
 } from "@/server/workflow-budget";
+import {
+  ACCOUNT_SPEND_BLOCKED_EVENT_ACTION,
+  ACCOUNT_SPEND_CEILING_REASON_KEY,
+  ACCOUNT_SPEND_UNCONFIGURED_REASON_KEY,
+  releaseAccountSpendHold,
+  reserveAccountProviderSpend,
+  settleAccountSpendHold,
+} from "@/server/account-spend";
 import { getSettings } from "@/lib/settings";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { COST_CATALOG } from "@/lib/ai-work-engine/cost-catalog";
 import { compileDecisions, type CompileStepInput } from "@/lib/ai-work-engine/compile";
+import {
+  admitHumanCut,
+  type AdmissionRefusalCause,
+} from "@/lib/ai-work-engine/human-unit-admission";
+import {
+  freezeHumanUnitDefinition,
+  type FrozenEligibility,
+  type FrozenHumanUnitDefinition,
+} from "@/lib/ai-work-engine/human-unit-definition";
+import {
+  ACTIVE_CLAIM_STATUSES,
+  activeClaimCapRefusal,
+  categoryCertificationRefusal,
+  highValueRefusal,
+  priorRejectionRefusal,
+  vaStatusRefusal,
+} from "@/lib/worker-eligibility";
 import { resolvePrimitive } from "@/lib/ai-work-engine/registry";
 import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
 import { primitiveReachOf } from "@/lib/ai-work-engine/primitive-vocabulary";
@@ -21,10 +46,14 @@ import { attemptsAllowedForStep } from "@/lib/ai-work-engine/automation-cost-pol
 import { computeResidual, type ResidualStepInput } from "@/lib/ai-work-engine/residual";
 import { fetchCostMicros, searchCostMicros } from "@/lib/ai-work-engine/tool-cost";
 import { buildHumanPackageCopy } from "@/lib/ai-work-engine/human-package-copy";
-import { emptyPayload } from "@/lib/ai-work-engine/primitives/types";
+import {
+  emptyPayload,
+  type WorkflowPayload,
+} from "@/lib/ai-work-engine/primitives/types";
 import { loadLatestPayload, persistPayload, writeArtifact } from "@/server/workflow-artifacts";
 import { readObject } from "@/lib/storage";
 import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notifications";
+import { publishHumanWorkUnit, withdrawHumanUnit } from "@/server/human-unit";
 
 /**
  * THE DURABLE STEP PROCESSOR.
@@ -131,7 +160,14 @@ export async function startWorkflow(taskId: string): Promise<void> {
  */
 export async function releaseToPoolWithoutAutomation(
   taskId: string,
-  reason: string
+  reason: string,
+  /**
+   * LOT B: the admin who pressed the release button, when one did. The two
+   * historical callers (no-plan exit, stall sweep) are system actions and
+   * pass nothing; the new admin action passes its actor so the TaskEvent
+   * says WHO decided not to wait for the sweep.
+   */
+  actorId?: string
 ): Promise<void> {
   /**
    * The audience is resolved OUTSIDE the transaction, the same split finishRun
@@ -181,6 +217,7 @@ export async function releaseToPoolWithoutAutomation(
         from: "ai_processing",
         to: "open",
         action: "automated_processing_skipped",
+        actorId,
         reason,
         meta: { reason },
       });
@@ -225,6 +262,15 @@ export async function compileWorkflowForTask(
       },
       aiClassification: { select: { sensitiveData: true, requiredAccess: true } },
       workflowRun: { select: { id: true, automatedStepCount: true } },
+      /**
+       * T032 — the accepted economics admission reads, and the facts the
+       * eligibility snapshot freezes. Read from the contract, never
+       * recomputed: the verdict must be reproducible by replay.
+       */
+      vaPayoutCents: true,
+      estimatedMinutes: true,
+      tier: true,
+      category: { select: { slug: true } },
     },
   });
   if (!task) return null;
@@ -242,6 +288,8 @@ export async function compileWorkflowForTask(
 
   const snapshot = task.acceptanceSnapshot;
   if (!snapshot || !snapshot.planVersionId) return null;
+  // Hoisted: property narrowing does not survive into the transaction closure.
+  const planVersionId = snapshot.planVersionId;
 
   const planSteps = await prisma.taskExecutionPlanStep.findMany({
     where: { planVersionId: snapshot.planVersionId },
@@ -265,6 +313,28 @@ export async function compileWorkflowForTask(
       maxCostMicrosPerAttemptAtQuote: true,
       demotedForBudget: true,
       params: true,
+      /**
+       * T031 — THE COLUMNS ADMISSION AND THE DEFINITION FREEZE READ.
+       *
+       * All frozen at quote time on the accepted plan step, and all read from
+       * HERE rather than recomputed: the admission verdict has to be
+       * reproducible by replay, which it is not if any input can be derived
+       * differently later.
+       *
+       * `fixedMinutes` is the one that decides economic admission, and null
+       * means UNKNOWN rather than zero — the distinction that once paid twenty
+       * minutes on a mandate quoted at two hundred and forty.
+       */
+      fixedMinutes: true,
+      secondsPerUnit: true,
+      estimatedMinutesOptimistic: true,
+      estimatedMinutesLikely: true,
+      estimatedMinutesConservative: true,
+      description: true,
+      verificationMethod: true,
+      acceptanceCriteria: true,
+      humanOutputSchema: true,
+      humanRequiredArtifactKinds: true,
     },
   });
   if (planSteps.length === 0) return null;
@@ -278,6 +348,7 @@ export async function compileWorkflowForTask(
     primitiveVersion: s.primitiveVersion,
     dependsOnOrder: s.dependsOnOrder,
     params: s.params,
+    demotedForBudget: s.demotedForBudget,
   }));
 
   /**
@@ -291,11 +362,126 @@ export async function compileWorkflowForTask(
    * that as `public_business` — correct for those mandates, none of which
    * could read a file.
    */
-  const compiled = compileDecisions(input, {
+  const gate = {
     sensitiveData: task.aiClassification?.sensitiveData ?? false,
     requiredAccessCount: task.aiClassification?.requiredAccess.length ?? 0,
     dataClass: isDataClass(snapshot.dataClass) ? snapshot.dataClass : undefined,
-  });
+  };
+
+  /**
+   * T1 — HUMAN WORK UNIT ADMISSION (T032).
+   *
+   * THE FLAG IS READ HERE AND NOWHERE ELSE (C10). It decides whether a NEW
+   * workflow may be admitted; it is never consulted again for a workflow that
+   * already has a unit. Turning it off must not strand a person who is already
+   * holding work on a mandate a client has paid for.
+   *
+   * Everything below refuses rather than degrades. A plan that does not admit
+   * compiles exactly as it does today — which is the behaviour that shipped
+   * long before this feature and remains correct.
+   */
+  const settings = await getSettings();
+  let admittedCut: { order: number } | undefined;
+  let frozenDefinition: FrozenHumanUnitDefinition | null = null;
+  let admissionRefusalCause: AdmissionRefusalCause | null = null;
+
+  if (settings.humanWorkUnitResumeEnabled) {
+    const verdict = admitHumanCut(
+      planSteps.map((s) => ({
+        order: s.order,
+        executor: s.executor as "ai" | "human" | "deterministic_code",
+        dependsOnOrder: s.dependsOnOrder,
+        fixedMinutes: s.fixedMinutes,
+        secondsPerUnit: s.secondsPerUnit,
+        estimatedMinutesOptimistic: s.estimatedMinutesOptimistic,
+        estimatedMinutesLikely: s.estimatedMinutesLikely,
+        estimatedMinutesConservative: s.estimatedMinutesConservative,
+      })),
+      { vaPayoutCents: task.vaPayoutCents, estimatedMinutes: task.estimatedMinutes }
+    );
+
+    if (verdict.admitted) {
+      const cut = planSteps.find((s) => s.order === verdict.cutOrder);
+      /**
+       * The freeze returns null when the accepted step carries no compilable
+       * output contract — a plan accepted before those columns existed. Not
+       * admitted, fail-closed: inventing a default would put an obligation on
+       * a worker that no client ever accepted. The not-admitted RECORDING is
+       * T050; this only declines to admit.
+       */
+      if (cut) {
+        frozenDefinition = freezeHumanUnitDefinition({
+          planVersionId,
+          cut: {
+            id: cut.id,
+            order: cut.order,
+            title: cut.title,
+            description: cut.description,
+            verificationMethod: cut.verificationMethod,
+            acceptanceCriteria: cut.acceptanceCriteria,
+            humanOutputSchema: cut.humanOutputSchema,
+            humanRequiredArtifactKinds: cut.humanRequiredArtifactKinds,
+            fixedMinutes: cut.fixedMinutes,
+            secondsPerUnit: cut.secondsPerUnit,
+            estimatedMinutesOptimistic: cut.estimatedMinutesOptimistic,
+            estimatedMinutesLikely: cut.estimatedMinutesLikely,
+            estimatedMinutesConservative: cut.estimatedMinutesConservative,
+          },
+          // Non-null by construction: admission already refused a null or
+          // non-positive payout as `unmapped_economics`.
+          acceptedTaskPayoutCents: task.vaPayoutCents!,
+          acceptedEstimatedMinutes: task.estimatedMinutes!,
+          dataClass: gate.dataClass ?? "public_business",
+          /**
+           * WHAT THE WORKER MAY SEE, and the whole of it (FR-014): the outputs
+           * of the steps this cut directly depends on. Derived from the
+           * accepted graph, never operator-authored.
+           */
+          declaredInputs: cut.dependsOnOrder.flatMap((order) => {
+            const producer = planSteps.find((s) => s.order === order);
+            if (!producer) return [];
+            return [
+              {
+                kind: "artifact" as const,
+                ref: `step:${producer.order}`,
+                label: producer.title,
+                dataClass: gate.dataClass ?? "public_business",
+              },
+            ];
+          }),
+          settings: {
+            revisionBound: settings.humanWorkUnitRevisionBound,
+            publicationDeadlineHours: settings.humanWorkUnitPublicationDeadlineHours,
+            submissionDeadlineHours: settings.humanWorkUnitSubmissionDeadlineHours,
+            claimLeaseHours: settings.humanWorkUnitClaimLeaseHours,
+          },
+          /**
+           * CRITERIA are frozen; the worker's own facts stay live (FR-009). A
+           * later change to the platform configuration therefore affects only
+           * units admitted afterwards, while a change to the individual
+           * worker's status or score affects access immediately.
+           */
+          eligibility: {
+            categorySlug: task.category?.slug ?? null,
+            tier: task.tier,
+            requireCategoryCertification: settings.requireCategoryCertification,
+            highValueThreshold: settings.highValueThreshold,
+            minRatedDeliveries: settings.minRatedDeliveries,
+            maxActiveClaims: settings.maxActiveClaims,
+          },
+        });
+        if (frozenDefinition) admittedCut = { order: verdict.cutOrder };
+        else admissionRefusalCause = "unmapped_economics";
+      } else {
+        // Defensive only: admission and freezing read the same accepted plan.
+        admissionRefusalCause = "malformed_topology";
+      }
+    } else {
+      admissionRefusalCause = verdict.cause;
+    }
+  }
+
+  const compiled = compileDecisions(input, { ...gate, humanCut: admittedCut });
 
   /**
    * THE CEILING IS COPIED FROM THE CONTRACT, NOT COMPUTED HERE.
@@ -310,31 +496,125 @@ export async function compileWorkflowForTask(
    * fail-closed by design, not an oversight.
    */
 
-  const run = await prisma.taskWorkflowRun.create({
-    data: {
-      snapshotId: snapshot.id,
-      taskId,
-      planVersionId: snapshot.planVersionId,
-      status: compiled.fullyHuman ? "awaiting_human" : "running",
-      automatedStepCount: compiled.automatedStepCount,
-      humanStepCount: compiled.humanStepCount,
-      runAutomationBudgetMicros: snapshot.automationSpendCeilingMicros,
-      budgetPolicyVersion: BUDGET_POLICY_VERSION,
-      compiledAt: new Date(),
-      startedAt: compiled.fullyHuman ? null : new Date(),
-      steps: {
-        create: compiled.steps.map((s) => ({
-          planStepId: s.planStepId,
-          order: s.order,
-          primitiveId: s.primitiveId,
-          primitiveVersion: s.primitiveVersion,
-          executionMode: s.executionMode,
-          status: s.executionMode === "automated" ? "pending" : "handed_to_human",
-          handoffReason: s.handoffReason,
-        })),
+  /**
+   * ONE TRANSACTION. The run, its steps, the frozen definition and the unit
+   * state commit together or not at all: a run that exists without its unit
+   * would be a mandate the machine believes it may finish alone, and a unit
+   * without its run would be a person waiting on nothing.
+   */
+  const admitted = admittedCut !== undefined && frozenDefinition !== null;
+  const run = await prisma.$transaction(async (tx) => {
+    const created = await tx.taskWorkflowRun.create({
+      data: {
+        snapshotId: snapshot.id,
+        taskId,
+        planVersionId,
+        status: compiled.fullyHuman ? "awaiting_human" : "running",
+        automatedStepCount: compiled.automatedStepCount,
+        humanStepCount: compiled.humanStepCount,
+        runAutomationBudgetMicros: snapshot.automationSpendCeilingMicros,
+        budgetPolicyVersion: BUDGET_POLICY_VERSION,
+        humanUnitAdmissionRefusalCause: admissionRefusalCause,
+        compiledAt: new Date(),
+        startedAt: compiled.fullyHuman ? null : new Date(),
+        steps: {
+          create: compiled.steps.map((s) => ({
+            planStepId: s.planStepId,
+            order: s.order,
+            primitiveId: s.primitiveId,
+            primitiveVersion: s.primitiveVersion,
+            executionMode: s.executionMode,
+            /**
+             * A blocked step is machine work that is WAITING. It is not
+             * pending — nothing may claim it — and it is not handed to a
+             * person, because no person is going to do it. The resume makes it
+             * pending again exactly once.
+             */
+            status: s.blockedOnHumanUnit
+              ? "blocked_on_human_unit"
+              : s.executionMode === "automated"
+                ? "pending"
+                : "handed_to_human",
+            handoffReason: s.handoffReason,
+          })),
+        },
       },
-    },
-    select: { id: true },
+      select: { id: true },
+    });
+
+    if (admissionRefusalCause) {
+      await tx.taskEvent.create({
+        data: {
+          taskId,
+          action: "human_unit_not_admitted",
+          meta: {
+            runId: created.id,
+            cause: admissionRefusalCause,
+          },
+        },
+      });
+    }
+
+    if (admitted && frozenDefinition && admittedCut) {
+      const cutStep = planSteps.find((s) => s.order === admittedCut.order)!;
+      const definition = await tx.humanWorkUnitDefinition.create({
+        data: {
+          planVersionId,
+          planStepId: cutStep.id,
+          instructions: frozenDefinition.instructions,
+          declaredInputs: frozenDefinition.declaredInputs as Prisma.InputJsonValue,
+          outputSchema: frozenDefinition.outputSchema as Prisma.InputJsonValue,
+          requiredArtifactKinds: frozenDefinition.requiredArtifactKinds,
+          acceptanceCriteria: frozenDefinition.acceptanceCriteria,
+          verificationMethod: frozenDefinition.verificationMethod,
+          eligibility: frozenDefinition.eligibility as unknown as Prisma.InputJsonValue,
+          reviewerAuthority: frozenDefinition.reviewerAuthority,
+          expectedMinutes: frozenDefinition.expectedMinutes,
+          revisionBound: frozenDefinition.revisionBound,
+          publicationDeadlineHours: frozenDefinition.publicationDeadlineHours,
+          submissionDeadlineHours: frozenDefinition.submissionDeadlineHours,
+          claimLeaseHours: frozenDefinition.claimLeaseHours,
+          economicProvenance:
+            frozenDefinition.economicProvenance as unknown as Prisma.InputJsonValue,
+          dataClass: frozenDefinition.dataClass,
+        },
+        select: { id: true, revisionBound: true },
+      });
+
+      /**
+       * `transitionSeq` is incremented in the SAME write that allocates the
+       * audit row's `seq` (C7/INV-T1). `MAX(seq)+1` is forbidden: two
+       * concurrent writers both read the same maximum and both claim it.
+       */
+      const unit = await tx.humanWorkUnitRunState.create({
+        data: {
+          runId: created.id,
+          taskId,
+          snapshotId: snapshot.id,
+          definitionId: definition.id,
+          cutOrder: admittedCut.order,
+          state: "admitted",
+          remainingRevisions: definition.revisionBound,
+          transitionSeq: 1,
+        },
+        select: { id: true, claimGeneration: true, resumeGeneration: true },
+      });
+
+      await tx.humanWorkUnitTransition.create({
+        data: {
+          unitStateId: unit.id,
+          seq: 1,
+          actorRole: "system",
+          fromState: null,
+          toState: "admitted",
+          cause: "admitted",
+          claimGeneration: unit.claimGeneration,
+          resumeGeneration: unit.resumeGeneration,
+        },
+      });
+    }
+
+    return created;
   });
 
   return { runId: run.id, fullyHuman: compiled.fullyHuman };
@@ -383,6 +663,30 @@ type ClaimedStep = {
 };
 
 /**
+ * THE ACCEPTED HUMAN RESULT IS THE RESUME INPUT, NOT A SIDE EFFECT.
+ *
+ * Review validates the frozen output schema before an acceptance can exist,
+ * but the workflow runner has a narrower, non-negotiable interface: machine
+ * primitives consume a WorkflowPayload. Refuse a corrupt or incompatible
+ * accepted row here instead of quietly falling back to the pre-cut artifact —
+ * that fallback would make the durable acceptance irrelevant while still
+ * marking the downstream work successful.
+ */
+function acceptedHumanWorkflowPayload(value: unknown): WorkflowPayload {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    !Array.isArray((value as WorkflowPayload).rows) ||
+    typeof (value as WorkflowPayload).unitsTotal !== "number" ||
+    !Array.isArray((value as WorkflowPayload).requestedFields) ||
+    !(value as WorkflowPayload).requestedFields.every((field) => typeof field === "string")
+  ) {
+    throw new Error("The accepted human result is not a workflow payload.");
+  }
+  return value as WorkflowPayload;
+}
+
+/**
  * Ends a claimed step, but ONLY if this invocation still holds the lease.
  *
  * Without the `lockedBy` predicate the lease was decorative. The sequence that
@@ -419,6 +723,22 @@ async function pauseRunForExhaustedStep(input: {
   attempts: number;
   message: string;
 }): Promise<void> {
+  /**
+   * Once a human result has resumed this run, a permanent machine failure is
+   * no longer an ordinary automation pause. The task already has its one
+   * claimant and its accepted fixed payout, so the only safe handover is T14:
+   * publish the remaining scope to that same claimant without reopening the
+   * pool or recomputing money.
+   */
+  const admittedUnit = await prisma.humanWorkUnitRunState.findUnique({
+    where: { runId: input.runId },
+    select: { state: true },
+  });
+  if (admittedUnit?.state === "resumed" || admittedUnit?.state === "exhausted") {
+    await publishAdmittedResidualScope(input.runId);
+    return;
+  }
+
   const paused = await prisma.taskWorkflowRun.updateMany({
     where: { id: input.runId, status: { in: ["running", "compiling"] } },
     data: {
@@ -743,10 +1063,25 @@ async function claimNextStep(runId: string): Promise<ClaimedStep | null> {
   return null;
 }
 
+/**
+ * R5.1 — the runner's outer deadline, made DISTINGUISHABLE from every other
+ * throw. It is the one failure where "nothing was dispatched" cannot be
+ * assumed: the timer races the primitive as a whole, so it can fire while a
+ * provider POST is still open and `recordInvocation` has not run yet. The
+ * catch below must therefore NOT hand the reservations back on this error —
+ * see the release site for the full reasoning.
+ */
+export class StepTimeoutError extends Error {
+  constructor(label: string, ms: number) {
+    super(`${label} exceeded ${ms}ms`);
+    this.name = "StepTimeoutError";
+  }
+}
+
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   let timer: NodeJS.Timeout;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`${label} exceeded ${ms}ms`)), ms);
+    timer = setTimeout(() => reject(new StepTimeoutError(label, ms)), ms);
   });
   try {
     return await Promise.race([promise, timeout]);
@@ -771,6 +1106,20 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         id: true,
         snapshotId: true,
         status: true,
+        /**
+         * T034 — the admitted human work unit, if this run has one. Its
+         * presence changes what the drain tail means and what the lifecycle
+         * guard is allowed to do.
+         */
+        humanWorkUnit: {
+          select: {
+            id: true,
+            state: true,
+            cutOrder: true,
+            acceptance: { select: { resultPayload: true } },
+            resume: { select: { resumedStepRunIds: true } },
+          },
+        },
         task: {
           select: {
             id: true,
@@ -800,15 +1149,60 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
      * picked up by every cron tick because its run row still says "running".
      */
     if (run.task.status !== "ai_processing") {
-      await prisma.taskWorkflowRun.updateMany({
-        where: { id: run.id, status: "running" },
-        data: {
-          status: "abandoned",
-          finishedAt: new Date(),
-          pausedReason: `Task left ai_processing (${run.task.status}); execution stopped.`,
-        },
-      });
-      return { steps: 0, finished: false };
+      /**
+       * T034 — THE ONE EXCEPTION, AND ONLY FOR AN ADMITTED RUN.
+       *
+       * The rule above is right for every other run: a task that left
+       * `ai_processing` was cancelled or finished elsewhere, and a run still
+       * executing against it burns money on a mandate nobody wants.
+       *
+       * An admitted run is the case that rule never anticipated. Publication
+       * DELIBERATELY moves the task to `open` so a worker can claim it, and a
+       * claim moves it to `claimed`. Abandoning there would discard the machine
+       * block sitting behind a person who is at that moment doing the work, and
+       * there is no way back from `abandoned`.
+       *
+       * Everything else keeps failing closed: `cancelled`, `expired`,
+       * `completed` and any other status still stop the run, admitted or not.
+       * Nobody is owed that work any more.
+       */
+      const heldByAPerson =
+        run.humanWorkUnit !== null &&
+        (run.task.status === "open" || run.task.status === "claimed");
+
+      if (!heldByAPerson) {
+        await prisma.$transaction(async (tx) => {
+          await tx.taskWorkflowRun.updateMany({
+            where: { id: run.id, status: "running" },
+            data: {
+              status: "abandoned",
+              finishedAt: new Date(),
+              pausedReason: `Task left ai_processing (${run.task.status}); execution stopped.`,
+            },
+          });
+          await withdrawHumanUnit(tx, {
+            taskId: run.task.id,
+            cause: "lifecycle_exit",
+          });
+        });
+        return { steps: 0, finished: false };
+      }
+
+      /**
+       * Before acceptance, the run survives but no machine step may move: the
+       * blocked block is released exactly once by `applyResume`. AFTER that
+       * durable `resumed` state, however, the whole point of the admitted path
+       * is to continue the downstream machine block while the SAME claimant
+       * keeps the task. Returning unconditionally here left every resumed run
+       * marked `running` but permanently unable to execute.
+       *
+       * `open` is retained only as the pre-claim publication state. A resumed
+       * unit must still have the claimed task assignment before any machine
+       * continuation is allowed.
+       */
+      const mayContinueAfterResume =
+        run.humanWorkUnit?.state === "resumed" && run.task.status === "claimed";
+      if (!mayContinueAfterResume) return { steps: 0, finished: false };
     }
 
     const classification = run.task.aiClassification;
@@ -901,6 +1295,7 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
        * where that must be noticed.
        */
       let reservation: Awaited<ReturnType<typeof reserveSpend>> | null = null;
+      let accountHold: Awaited<ReturnType<typeof reserveAccountProviderSpend>> | null = null;
       let recordedAnInvocation = false;
 
       try {
@@ -912,7 +1307,26 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         // path so the step backs off and retries with the data intact —
         // outside the try it escaped to the run-level handler, which left the
         // step running under a dead lease with no recorded error.
+        /**
+         * The first step released by T10 starts a NEW machine block. Its
+         * predecessor is the human cut, so its input is the immutable result
+         * copied onto HumanWorkUnitAcceptance — never the last machine payload
+         * from before the cut. `applyResume` records ids in dependency order;
+         * only index zero takes this branch. Every later resumed step reads the
+         * persisted output of its machine predecessor through the ordinary
+         * artifact path below.
+         *
+         * This also preserves replay safety: if the first resumed step wrote
+         * its payload and crashed before the fenced status write, its retry is
+         * still fed the accepted result, not the output it partially wrote.
+         */
+        const firstResumedStepId = run.humanWorkUnit?.resume?.resumedStepRunIds[0];
+        const acceptedResumeInput =
+          run.humanWorkUnit?.state === "resumed" && firstResumedStepId === step.id
+            ? acceptedHumanWorkflowPayload(run.humanWorkUnit.acceptance?.resultPayload)
+            : null;
         const input =
+          acceptedResumeInput ??
           (await loadLatestPayload(run.id, step.order)) ??
           emptyPayload(
             classification?.quantityInterpreted ?? 0,
@@ -986,6 +1400,89 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
           });
           await pauseRunForBudget(run.id, run.task.id, reservation);
           break;
+        }
+
+        /**
+         * R5 — THE ACCOUNT-LEVEL CIRCUIT BREAKER, AFTER THE PER-RUN GATE,
+         * BEFORE THE PRIMITIVE EVER RUNS.
+         *
+         * validate accepted execution -> validate per-run allowance (above)
+         * -> reserve account-level allowance (here) -> dispatch (below) ->
+         * settle. Never the reverse: a call that already left AfterDesk
+         * cannot be un-made by a check that runs afterwards.
+         *
+         * Reuses the SAME frozen worst-case ceiling as the per-run
+         * reservation (`maxCostMicrosPerAttemptAtQuote`) — this is not a new
+         * quote-time estimate recomputed at execution, it is the identical
+         * already-frozen number, read twice for two different ceilings.
+         */
+        if (primitive.billable) {
+          accountHold = await reserveAccountProviderSpend({
+            operationKey: `${primitive.id}:${run.snapshotId}:${step.order}`,
+            attempt: step.attempts,
+            worstCaseMicros: step.maxCostMicrosPerAttemptAtQuote!,
+          });
+
+          if (!accountHold.ok) {
+            /**
+             * Give back the per-run hold this attempt is not going to use —
+             * the same "a refusal is not an attempt" rule as the per-run
+             * budget refusal above, applied to a different reservation.
+             */
+            if (reservation !== null && reservation.ok) {
+              await releaseHold(reservation.holdId);
+            }
+            await prisma.taskWorkflowStepRun.updateMany({
+              where: { id: step.id, lockedBy: step.lockedBy },
+              data: {
+                status: "pending",
+                attempts: { decrement: 1 },
+                leaseExpiresAt: null,
+                lockedAt: null,
+                lockedBy: null,
+              },
+            });
+            const reasonKey =
+              accountHold.reason === "ceiling_not_configured"
+                ? ACCOUNT_SPEND_UNCONFIGURED_REASON_KEY
+                : ACCOUNT_SPEND_CEILING_REASON_KEY;
+            await prisma.taskEvent.create({
+              data: {
+                taskId: run.task.id,
+                action: ACCOUNT_SPEND_BLOCKED_EVENT_ACTION,
+                meta: {
+                  reasonKey,
+                  stepRunId: step.id,
+                  order: step.order,
+                  primitiveId: primitive.id,
+                  provider: accountHold.provider,
+                  periodKey: accountHold.periodKey,
+                  ceilingMicros: accountHold.ceilingMicros?.toString() ?? null,
+                  committedMicros: accountHold.committedMicros.toString(),
+                  requestedMicros: accountHold.requestedMicros.toString(),
+                },
+              },
+            });
+            /**
+             * SAFE TO ALWAYS DEMOTE: a step only reaches execution after the
+             * compiler already proved it automatable (data class, reach,
+             * mode — compile.ts) and it was never running because it was
+             * unsafe for a person, only because it was cheaper than one.
+             * Handing it to a human here is the existing, already-proven
+             * fallback (identical mechanism as a primitive-version mismatch),
+             * and the existing downstream safety net — finishRun's
+             * `residual.overBudget` pause — is what stops an unsafe/
+             * over-reserved human fallback from silently overspending the
+             * ACCEPTED contract. Nothing new is built for that; it already
+             * runs on every human residual, including this one.
+             */
+            await handOffStepToHuman(
+              step.id,
+              run.id,
+              "AfterDesk's own provider spend safety ceiling is at capacity right now; a person completes this step."
+            );
+            continue;
+          }
         }
 
         /**
@@ -1109,6 +1606,23 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
                       });
                     }
                   }
+                  /**
+                   * R5 — the account-level hold, resolved in the SAME
+                   * transaction and by the SAME rule: settled on a settled
+                   * dispatch, released only when we know nothing was
+                   * dispatched, kept `held` on either uncertain outcome.
+                   */
+                  if (accountHold !== null && accountHold.ok) {
+                    const acctHoldId = accountHold.holdId;
+                    if (record.dispatchState === "settled") {
+                      await settleAccountSpendHold(tx, acctHoldId, BigInt(record.costMicros));
+                    } else if (record.dispatchState === "cancelled_before_dispatch") {
+                      await tx.accountProviderSpendHold.updateMany({
+                        where: { id: acctHoldId, status: "held" },
+                        data: { status: "released", settledMicros: 0n },
+                      });
+                    }
+                  }
                   // Split at the point of record: searches are billed per
                   // query by the provider, tokens by volume, and an operator
                   // reading "we spent X" needs to know which lever moves it.
@@ -1161,6 +1675,9 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         // rather than let a phantom hold squeeze every later step.
         if (reservation !== null && reservation.ok && !recordedAnInvocation) {
           await releaseHold(reservation.holdId);
+        }
+        if (accountHold !== null && accountHold.ok && !recordedAnInvocation) {
+          await releaseAccountSpendHold(accountHold.holdId);
         }
 
         /**
@@ -1219,10 +1736,34 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
          *    us again and we do not.
          */
         const classified = classifyProviderError(error);
-        // The same release as the success path: a throw BEFORE the provider
-        // call (no API key, a bad argument) reserved money it never spent.
-        if (reservation !== null && reservation.ok && !recordedAnInvocation) {
+        /**
+         * The same release as the success path: a throw BEFORE the provider
+         * call (no API key, a bad argument) reserved money it never spent.
+         *
+         * R5.1 — EXCEPT ON THE RUNNER'S OWN DEADLINE. `withTimeout` races the
+         * primitive AS A WHOLE, and the primitive does pre-dispatch work
+         * first (`await getSettings()`, a DB round trip). The inner call
+         * deadline is designed to fire first — 180s inside a 200s outer bound
+         * (research.ts:42-46) — but that margin is only 20s, so a slow enough
+         * pre-dispatch step inverts the order: the outer timer fires while the
+         * POST is still open and `recordInvocation` has not run, leaving
+         * `recordedAnInvocation` false for a request the provider will still
+         * bill. Releasing there would hand a real charge's room straight back
+         * to the day's ceiling — the exact understatement this ledger exists
+         * to prevent.
+         *
+         * So a timeout keeps BOTH holds, which is precisely the rule the
+         * settlement path already applies to `dispatched_then_cancelled`:
+         * an unknown outcome stays reserved. Over-holding is safe and the
+         * daily window releases it at the next UTC rollover; under-counting a
+         * billed call is not recoverable at all.
+         */
+        const mayHaveDispatched = error instanceof StepTimeoutError;
+        if (reservation !== null && reservation.ok && !recordedAnInvocation && !mayHaveDispatched) {
           await releaseHold(reservation.holdId);
+        }
+        if (accountHold !== null && accountHold.ok && !recordedAnInvocation && !mayHaveDispatched) {
+          await releaseAccountSpendHold(accountHold.holdId);
         }
         /**
          * `classified.message` is the REDACTED, bounded form. Recomputing a
@@ -1272,6 +1813,61 @@ export async function advanceWorkflow(taskId: string): Promise<{ steps: number; 
         // after the backoff, rather than spinning here.
         return { steps, finished: false };
       }
+    }
+
+    /**
+     * T034 — THE DRAIN TAIL FOR AN ADMITTED RUN.
+     *
+     * Kept entirely separate from the ordinary tail below, which stays
+     * byte-identical for every run without a unit.
+     *
+     * The ordinary tail counts unfinished AUTOMATED steps, and an admitted
+     * run's blocked descendants are exactly that: `automated`, and not `done`.
+     * Falling through would mean the run could never finish, and the mandate
+     * would sit in the drain forever with nobody told.
+     */
+    if (run.humanWorkUnit) {
+      const unit = run.humanWorkUnit;
+      const nextIncomplete = await prisma.taskWorkflowStepRun.findFirst({
+        where: { runId: run.id, status: { not: "done" } },
+        orderBy: { order: "asc" },
+        select: { order: true },
+      });
+
+      if (!nextIncomplete) {
+        await finishAdmittedRun(run.id);
+        return { steps, finished: true };
+      }
+
+      /**
+       * The pre-cut block has drained exactly when the FIRST unfinished step is
+       * the cut itself. Anything earlier still incomplete means a producer has
+       * not run, and publishing would hand a worker a unit whose inputs do not
+       * exist.
+       */
+      if (nextIncomplete.order === unit.cutOrder && unit.state === "admitted") {
+        const outcome = await publishHumanWorkUnit(run.id);
+        if (outcome.published) {
+          /**
+           * CAS off `running`, and the RESULT IS CHECKED. A blind updateMany
+           * here would silently do nothing if a concurrent tick had already
+           * moved the run, and the caller would be told the run is waiting on a
+           * person when it might be paused or abandoned.
+           */
+          const moved = await prisma.taskWorkflowRun.updateMany({
+            where: { id: run.id, status: "running" },
+            data: { status: "awaiting_human_unit" },
+          });
+          if (moved.count === 0) {
+            console.warn("[workflow] run left running before awaiting_human_unit", {
+              runId: run.id,
+            });
+          }
+        }
+      }
+      // Either way the machine has nothing more to do on this tick: the
+      // remaining steps are blocked behind a person.
+      return { steps, finished: false };
     }
 
     const remaining = await prisma.taskWorkflowStepRun.count({
@@ -1372,6 +1968,7 @@ export async function finishRun(runId: string): Promise<void> {
       planVersionId: true,
       status: true,
       automatedStepCount: true,
+      humanWorkUnit: { select: { id: true } },
       task: {
         select: {
           id: true,
@@ -1387,7 +1984,11 @@ export async function finishRun(runId: string): Promise<void> {
       },
     },
   });
-  if (!run || run.task.status !== "ai_processing") return;
+  // An admitted run carries the fixed payout the worker already saw. Sending
+  // it through this ordinary residual path would recompute that promise and
+  // create a second human-work package. The caller already branches, but this
+  // guard is the fail-closed boundary for every future caller (T037).
+  if (!run || run.humanWorkUnit !== null || run.task.status !== "ai_processing") return;
 
   if (
     await handoverBlockedForUnknownPayout({
@@ -1566,6 +2167,355 @@ export async function finishRun(runId: string): Promise<void> {
     });
   } catch (error) {
     if (error instanceof TransitionError) return;
+    throw error;
+  }
+}
+
+/**
+ * END AN ADMITTED RUN — and do NOTHING else.
+ *
+ * Marks the run `done`, stamps `finishedAt`, writes the audit event. No
+ * residual payout computation, no `vaPayoutCents` or `estimatedMinutes` write,
+ * no `TaskHumanWorkPackage`, and no task transition: the same claimant delivers
+ * through the existing `submitDeliverable -> submitted_for_qc ->
+ * approveDeliverable` path at the accepted fixed payout (FR-057).
+ *
+ * Run state and audit event are one transaction. A crash or an audit failure
+ * therefore exposes both or neither; `done` without its reason is forbidden.
+ */
+export async function finishAdmittedRun(runId: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const run = await tx.taskWorkflowRun.findUnique({
+      where: { id: runId },
+      select: { taskId: true },
+    });
+    if (!run) return;
+
+    // CAS, and the result is checked: a run already finished by a concurrent
+    // tick must not produce a second audit event.
+    const finished = await tx.taskWorkflowRun.updateMany({
+      where: { id: runId, status: { in: ["running", "awaiting_human_unit"] } },
+      data: { status: "done", finishedAt: new Date() },
+    });
+    if (finished.count === 0) return;
+
+    await tx.taskEvent.create({
+      data: {
+        taskId: run.taskId,
+        action: "human_unit_run_finished",
+        meta: { runId },
+      },
+    });
+  });
+}
+
+/**
+ * A frozen definition was written by our compiler, but it is stored as JSON.
+ * Treat an unreadable historical row as ineligible instead of casting it and
+ * accidentally turning missing criteria into permission.
+ */
+function parseFrozenEligibility(value: unknown): FrozenEligibility | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const e = value as Record<string, unknown>;
+  if (
+    !(e.categorySlug === null || typeof e.categorySlug === "string") ||
+    typeof e.tier !== "string" ||
+    typeof e.requireCategoryCertification !== "boolean" ||
+    typeof e.highValueThreshold !== "number" ||
+    !Number.isFinite(e.highValueThreshold) ||
+    typeof e.minRatedDeliveries !== "number" ||
+    !Number.isInteger(e.minRatedDeliveries) ||
+    e.minRatedDeliveries < 0 ||
+    typeof e.maxActiveClaims !== "number" ||
+    !Number.isInteger(e.maxActiveClaims) ||
+    e.maxActiveClaims < 1
+  ) {
+    return null;
+  }
+  return {
+    categorySlug: e.categorySlug as string | null,
+    tier: e.tier,
+    requireCategoryCertification: e.requireCategoryCertification,
+    highValueThreshold: e.highValueThreshold,
+    minRatedDeliveries: e.minRatedDeliveries,
+    maxActiveClaims: e.maxActiveClaims,
+  };
+}
+
+/**
+ * PUBLISH ONLY THE WORK THAT REMAINS AFTER AN ADMITTED RESUME FAILED.
+ *
+ * This is deliberately not `finishRun`. The task is already claimed, its
+ * payout was accepted before that claim, and the claimant already produced the
+ * human result that resumed the machine. T14 changes only the worker's brief:
+ * it never changes the task, its assignment, its estimate or its money.
+ *
+ * All durable writes share one transaction. The run CAS serializes concurrent
+ * calls; the package's existing `runId` and `taskId` unique keys are the final
+ * replay guard if stale run state is presented. A unique-key loser rolls back
+ * its run move and audit with it.
+ */
+export async function publishAdmittedResidualScope(runId: string): Promise<void> {
+  const scope = await prisma.taskWorkflowRun.findUnique({
+    where: { id: runId },
+    select: {
+      taskId: true,
+      unitsTotal: true,
+    },
+  });
+  if (!scope) return;
+
+  // Scope is descriptive, not economic. It may shrink after automation, but
+  // neither this read nor the package copy enters the payout calculation.
+  const payload = await loadLatestPayload(runId);
+  const unitsTotal = payload?.unitsTotal ?? scope.unitsTotal ?? 0;
+  const unitsRemaining = payload
+    ? payload.rows.filter((row) => row.status !== "verified").length +
+      Math.max(0, unitsTotal - payload.rows.length)
+    : unitsTotal;
+  const hasCandidate =
+    (await prisma.file.count({
+      where: { workflowRunId: runId, artifactVisibility: "deliverable_candidate", purgedAt: null },
+    })) > 0;
+  const draftedRows = payload?.rows.length ?? 0;
+  const verifiedRows = payload?.rows.filter((row) => row.status === "verified").length ?? 0;
+  const copy = buildHumanPackageCopy({
+    unitsRemaining,
+    unitsTotal,
+    hasCandidate,
+    draftedRows,
+    verifiedRows,
+  });
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const run = await tx.taskWorkflowRun.findUnique({
+        where: { id: runId },
+        select: {
+          id: true,
+          taskId: true,
+          planVersionId: true,
+          status: true,
+          humanWorkUnit: {
+            select: {
+              id: true,
+              state: true,
+              claimedById: true,
+              claimGeneration: true,
+              definition: { select: { eligibility: true } },
+            },
+          },
+          task: {
+            select: {
+              status: true,
+              claimedById: true,
+              vaPayoutCents: true,
+              estimatedMinutes: true,
+              category: { select: { slug: true, name: true } },
+            },
+          },
+        },
+      });
+      if (
+        !run ||
+        !["running", "awaiting_human_unit"].includes(run.status) ||
+        !run.humanWorkUnit ||
+        !["resumed", "exhausted"].includes(run.humanWorkUnit.state)
+      ) {
+        return;
+      }
+
+      const unit = run.humanWorkUnit;
+      const eligibility = parseFrozenEligibility(unit.definition.eligibility);
+      const claimantId = unit.claimedById;
+      let refusal: string | null = null;
+
+      /**
+       * The task assignment is the authority. A missing or divergent mirror
+       * is not permission to invent a payee; it is an admin-owned stop.
+       */
+      if (
+        claimantId === null ||
+        run.task.claimedById !== claimantId ||
+        run.task.status !== "claimed"
+      ) {
+        refusal = "The current task assignment cannot be verified.";
+      } else if (eligibility === null) {
+        refusal = "The frozen worker eligibility rules cannot be verified.";
+      } else if (
+        run.task.vaPayoutCents === null ||
+        run.task.vaPayoutCents <= 0 ||
+        run.task.estimatedMinutes === null ||
+        run.task.estimatedMinutes <= 0
+      ) {
+        refusal = "The accepted task economics cannot be verified.";
+      }
+
+      if (refusal === null && claimantId !== null && eligibility !== null) {
+        const profile = await tx.vaProfile.findUnique({
+          where: { userId: claimantId },
+          select: { status: true, scoreCache: true, ratedCount: true },
+        });
+        refusal = vaStatusRefusal(profile?.status);
+
+        if (refusal === null && profile) {
+          const frozenCategory =
+            eligibility.categorySlug === null
+              ? null
+              : {
+                  slug: eligibility.categorySlug,
+                  name:
+                    run.task.category?.slug === eligibility.categorySlug
+                      ? run.task.category.name
+                      : eligibility.categorySlug,
+                };
+          let certifiedCount = 0;
+          if (eligibility.requireCategoryCertification && frozenCategory) {
+            certifiedCount = await tx.certification.count({
+              where: { userId: claimantId, courseSlug: frozenCategory.slug },
+            });
+          }
+          refusal = categoryCertificationRefusal({
+            requireCategoryCertification: eligibility.requireCategoryCertification,
+            category: frozenCategory,
+            certifiedCount,
+          });
+
+          if (refusal === null) {
+            const previouslyFailed = await tx.submission.count({
+              where: { taskId: run.taskId, vaId: claimantId, qcStatus: "rejected" },
+            });
+            refusal = priorRejectionRefusal(previouslyFailed);
+          }
+
+          if (refusal === null) {
+            refusal = highValueRefusal({
+              tier: eligibility.tier,
+              scoreCache: profile.scoreCache,
+              ratedCount: profile.ratedCount,
+              highValueThreshold: eligibility.highValueThreshold,
+              minRatedDeliveries: eligibility.minRatedDeliveries,
+            });
+          }
+
+          if (refusal === null) {
+            // Identical lock and statuses as claimTask. The current task is
+            // excluded because this is a RE-check of the capacity that existed
+            // immediately before its already-established claim.
+            await tx.$executeRaw`
+              SELECT pg_advisory_xact_lock(hashtext(${`claim-cap:${claimantId}`}))
+            `;
+            const activeCount = await tx.task.count({
+              where: {
+                id: { not: run.taskId },
+                claimedById: claimantId,
+                status: { in: [...ACTIVE_CLAIM_STATUSES] },
+              },
+            });
+            refusal = activeClaimCapRefusal({
+              activeCount,
+              maxActiveClaims: eligibility.maxActiveClaims,
+            });
+          }
+        }
+      }
+
+      if (refusal !== null) {
+        const pausedAt = new Date();
+        const paused = await tx.taskWorkflowRun.updateMany({
+          where: { id: run.id, status: { in: ["running", "awaiting_human_unit"] } },
+          data: {
+            status: "paused",
+            pausedReason: `${refusal} An administrator must review the existing assignment.`,
+          },
+        });
+        if (paused.count === 0) return;
+
+        await tx.humanWorkUnitAlert.create({
+          data: {
+            unitStateId: unit.id,
+            kind: "admin_pause",
+            dueAt: pausedAt,
+            claimGeneration: unit.claimGeneration,
+          },
+        });
+        await tx.taskEvent.create({
+          data: {
+            taskId: run.taskId,
+            action: "human_unit_paused",
+            meta: { runId, cause: "paused:claimant_ineligible" },
+          },
+        });
+
+        const admins = await tx.user.findMany({
+          where: { role: "ADMIN" },
+          select: { id: true },
+        });
+        const recipients = new Set(admins.map((admin) => admin.id));
+        if (claimantId !== null) recipients.add(claimantId);
+        if (recipients.size > 0) {
+          await tx.notification.createMany({
+            data: [...recipients].map((userId) => ({
+              userId,
+              taskId: run.taskId,
+              type: "human_unit_paused",
+              title: "Remaining work needs an administrator",
+              body: "The downstream automation stopped and the current assignment must be reviewed before the remaining scope can be published. No payout or assignment changed.",
+            })),
+          });
+        }
+        return;
+      }
+
+      // Narrowing above proves these accepted values exist. Restated as local
+      // integers so no fallback can silently turn an unknown promise into 0.
+      const frozenPayoutCents = run.task.vaPayoutCents!;
+      const frozenEstimatedMinutes = run.task.estimatedMinutes!;
+      const finishedAt = new Date();
+      const moved = await tx.taskWorkflowRun.updateMany({
+        where: { id: run.id, status: { in: ["running", "awaiting_human_unit"] } },
+        data: {
+          status: "awaiting_human",
+          finishedAt,
+          unitsTotal,
+          unitsResolvedAutomatically: Math.max(0, unitsTotal - unitsRemaining),
+          unitsPrefilled: draftedRows,
+          unitsVerifiedByMachine: verifiedRows,
+        },
+      });
+      if (moved.count === 0) return;
+
+      await tx.taskHumanWorkPackage.create({
+        data: {
+          runId: run.id,
+          taskId: run.taskId,
+          planVersionId: run.planVersionId,
+          objective: copy.objective,
+          whatIsAlreadyDone: copy.whatIsAlreadyDone,
+          instructions: copy.instructions,
+          checklist: copy.checklist,
+          unitsRemaining,
+          unitsTotal,
+          // References only: no payout calculation is called on this path.
+          estimatedMinutes: frozenEstimatedMinutes,
+          computedPayoutCents: frozenPayoutCents,
+          reservedBudgetCents: frozenPayoutCents,
+        },
+      });
+      await tx.taskEvent.create({
+        data: {
+          taskId: run.taskId,
+          action: "human_unit_residual_scope_published",
+          meta: { runId, unitStateId: unit.id, claimantPreserved: true },
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      // The existing runId/taskId constraints are the replay guard. The whole
+      // transaction, including its CAS and audit, has already rolled back.
+      return;
+    }
     throw error;
   }
 }

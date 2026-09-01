@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 import { CODEC_LIMITS } from "@/lib/ai-work-engine/codecs/table";
 import { buildXlsx, parseXlsx } from "@/lib/ai-work-engine/codecs/xlsx";
 import { classifyMandateData } from "@/lib/ai-work-engine/data-class";
+import { inspectedFile } from "@/../test/support/inspection";
+import { inspectFile } from "@/lib/ai-work-engine/file-inspection";
 import { compileDecisions, HANDOFF_REASONS } from "@/lib/ai-work-engine/compile";
 import {
   allInInternalCostMicros,
@@ -651,12 +653,11 @@ describe("7. a sensitive file sends nothing to a provider", () => {
       declaredRequiredAccessCount: 0,
       fileCount: 1,
       inspections: [
-        {
-          fileId: "f_payroll",
-          inspected: true,
-          headers: ["employee", "salaire", "email"],
-          sampledValues: ["Dana", "52000", "dana@acme.com"],
-        },
+        inspectedFile(
+          "f_payroll",
+          ["employee", "salaire", "email"],
+          [["Dana", "52000", "dana@acme.com"]]
+        ),
       ],
     });
     expect(verdict.dataClass).toBe("personal_sensitive");
@@ -1127,27 +1128,27 @@ describe("defects found by this suite, now closed", () => {
   );
 
   it(
-    "FIXED: a transform writing into a named dataset is no longer shadowed by a stale default",
+    "FIXED: a plan that maps into a named dataset and then builds the default REFUSES",
     async () => {
       /**
-       * src/lib/ai-work-engine/primitives/files.ts, datasetsOf:
-       *   return { main: input.rows, ...(input.datasets ?? {}) };
+       * THE DESIGN CALL THIS TEST LEFT OPEN, NOW MADE.
        *
-       * The spread lets a STORED `main` win over the live working set. Every
-       * transform writes both `rows` and `datasets[into]`, so `datasets.main`
-       * exists as soon as any step uses the default name, and it then stays
-       * frozen at that step's output while the working set moves on.
+       * The original defect was `{ main: input.rows, ...(input.datasets ?? {}) }`:
+       * a STORED `main` won over the live working set, so a plan that mapped
+       * into "mapped" and built the default handed the client back their own
+       * ORIGINAL file, under the original headers, with no error anywhere.
        *
-       * A plan that maps into "mapped" and then builds with the default
-       * dataset therefore delivers the client's ORIGINAL file back, under the
-       * original headers, with no error anywhere. Observed: the artifact's
-       * header is "Company Name" while the payload's working rows carry
-       * "company".
+       * The first fix flipped the spread — the working set wins for `main` —
+       * and that traded one silent wrong answer for another, measured later on
+       * a three-file mandate: after a second ingest into a different name,
+       * `main` quietly meant the second file while the first sat in
+       * `datasets.main`, whole and unreachable.
        *
-       * The assertion below is written as "the deliverable is the run's own
-       * working set" rather than as one particular header, because which of
-       * the two meanings of `main` should win is a design call for whoever
-       * fixes it, and both defensible fixes satisfy this.
+       * Both versions answer a question with two candidate answers. The rule
+       * now is that it has none: `main` is the working set's alias, and once
+       * the working set has a NAME that is not `main`, asking for `main`
+       * refuses. This test therefore asserts the refusal, and then asserts
+       * that the plan which says what it means gets exactly what it meant.
        */
       const csv = "Company Name\nClinique Nord\n";
       const file = frozenFile("f_defect2", "companies.csv", utf8(csv));
@@ -1159,9 +1160,15 @@ describe("defects found by this suite, now closed", () => {
         { input: ingested.payload }
       );
       const mapped = await runDataSchemaMap(map.ctx);
-      const build = makeContext("build.csv", {}, { input: mapped.payload });
-      await runBuildCsvV2(build.ctx);
 
+      const refusal = await refusalFrom(
+        runBuildCsvV2(makeContext("build.csv", {}, { input: mapped.payload }).ctx)
+      );
+      expect(refusal.message).toContain("ambiguous");
+      expect(refusal.message).toContain("mapped");
+
+      const build = makeContext("build.csv", { dataset: "mapped" }, { input: mapped.payload });
+      await runBuildCsvV2(build.ctx);
       const [header] = build.artifacts[0].body.toString("utf8").split("\n");
       expect(header.split(",")).toEqual(Object.keys(mapped.payload.rows[0].fields));
     }
@@ -1240,5 +1247,116 @@ describe("a forecast never becomes a measurement", () => {
     });
     // And with no plan either, the honest answer is still nothing.
     expect(preferMeasured(null, nothingRecorded)).toBeNull();
+  });
+});
+
+/* ─────────── the inspector: real bytes in, columns with their cells out ─────────── */
+
+describe("inspectFile reads a real file into columns that keep their values", () => {
+  const csvFile = (name: string, text: string) => ({
+    id: `f_${name}`,
+    fileName: `${name}.csv`,
+    sizeBytes: Buffer.byteLength(text),
+    read: async () => Buffer.from(text, "utf8"),
+  });
+
+  const classify = async (name: string, text: string) =>
+    classifyMandateData({
+      declaredSensitive: false,
+      declaredRequiredAccessCount: 0,
+      fileCount: 1,
+      inspections: [await inspectFile(csvFile(name, text))],
+    });
+
+  it("keeps each cell under its own header", async () => {
+    const insp = await inspectFile(
+      csvFile("crm", "company,signup_date\nAcme Ltd,2024-01-12\nBorealis,2025-06-30\n")
+    );
+    expect(insp.inspected).toBe(true);
+    expect(insp.columns.map((c) => c.header)).toEqual(["company", "signup_date"]);
+    expect(insp.columns[0].values).toEqual(["Acme Ltd", "Borealis"]);
+    expect(insp.columns[1].values).toEqual(["2024-01-12", "2025-06-30"]);
+    // Both codecs refuse ragged rows, so nothing should ever land here.
+    expect(insp.unkeyedValues).toEqual([]);
+  });
+
+  it("an ordinary CRM export with timestamps stays automatable", async () => {
+    /**
+     * The end-to-end form of the regression. Every column below is the
+     * substance of the product's core market, and the file used to come back
+     * human-only because `2024-01-12` matched a value-alone pattern named
+     * date_of_birth.
+     */
+    const v = await classify(
+      "crm",
+      [
+        "company,contact,work_email,signup_date,last_checked,created_at",
+        "Acme Ltd,Dana Reid,ops@acme.example,2024-01-12,2026-07-31,2023-11-04",
+        "Borealis,Sam Okafor,sam@borealis.example,2025-06-30,2026-07-30,2024-02-19",
+      ].join("\n")
+    );
+    expect(v.dataClass).toBe("business_confidential");
+  });
+
+  it("an HR export spelled the way a database writes it is still human-only", async () => {
+    // `date_of_birth`, not `date of birth`: the spelling the header list used
+    // to miss entirely, caught now by normalisation rather than by the
+    // accidental value-shape backstop that was removed.
+    const v = await classify(
+      "hr",
+      "employee,date_of_birth,start_date\nDana Reid,1988-04-12,2019-03-01\n"
+    );
+    expect(v.dataClass).toBe("personal_sensitive");
+  });
+
+  it("a loose birth column is decided by what is actually under it", async () => {
+    const dates = await classify("f1", "name,birth\nDana Reid,1994-03-14\n");
+    expect(dates.dataClass).toBe("personal_sensitive");
+
+    const places = await classify("f2", "name,birth\nDana Reid,Montreal\n");
+    expect(places.dataClass).toBe("business_confidential");
+  });
+
+  it("every column of a wide file is sampled, not just the ones the budget reached", async () => {
+    /**
+     * The sample is capped at 400 cells. A 40-column file has 1000 in 25 rows,
+     * so something must be dropped — and WHICH cells are dropped decides
+     * whether the last columns were inspected or merely declared inspected. A
+     * column-major fill would leave column 40 empty while reporting a clean
+     * scan, which is the same failure mode as reading only row one.
+     */
+    const headers = Array.from({ length: 40 }, (_, i) => `col_${i}`);
+    const row = (n: number) => headers.map((_, i) => `v${n}_${i}`).join(",");
+    const text = [headers.join(","), ...Array.from({ length: 25 }, (_, r) => row(r))].join("\n");
+
+    const insp = await inspectFile(csvFile("wide", text));
+    expect(insp.inspected).toBe(true);
+    expect(insp.columns).toHaveLength(40);
+    for (const col of insp.columns) expect(col.values.length).toBeGreaterThan(0);
+    const total = insp.columns.reduce((n, c) => n + c.values.length, 0);
+    expect(total).toBeLessThanOrEqual(400);
+
+    // And the sensitive shape in the LAST column is still found.
+    const withSin = [
+      [...headers.slice(0, 39), "reference"].join(","),
+      ...Array.from({ length: 25 }, (_, r) =>
+        [...headers.slice(0, 39).map((_, i) => `v${r}_${i}`), "046-454-286"].join(",")
+      ),
+    ].join("\n");
+    const v = classifyMandateData({
+      declaredSensitive: false,
+      declaredRequiredAccessCount: 0,
+      fileCount: 1,
+      inspections: [await inspectFile(csvFile("wide2", withSin))],
+    });
+    expect(v.dataClass).toBe("personal_sensitive");
+  });
+
+  it("a file the codec refuses is human-only, with no columns invented", async () => {
+    // A ragged CSV: the codec refuses rather than padding, and a refusal is
+    // an uninspected file, which is the conservative branch.
+    const insp = await inspectFile(csvFile("ragged", "a,b\n1,2,3\n"));
+    expect(insp.inspected).toBe(false);
+    expect(insp.columns).toEqual([]);
   });
 });

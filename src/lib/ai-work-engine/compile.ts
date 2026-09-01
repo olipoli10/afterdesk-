@@ -37,6 +37,12 @@ export type CompileStepInput = TopologyStep & {
    * than throwing halfway through an accepted mandate.
    */
   params?: unknown;
+  /**
+   * The economic preflight deliberately clears primitiveId when it demotes a
+   * step. This frozen boolean is therefore the only durable fact that can
+   * distinguish "budget chose a person" from "no capability was chosen".
+   */
+  demotedForBudget?: boolean;
 };
 
 export type CompileGate = {
@@ -52,6 +58,20 @@ export type CompileGate = {
    * mandates, because none of them could read a file.
    */
   dataClass?: DataClass;
+  /**
+   * THE ADMITTED HUMAN CUT (T030).
+   *
+   * Present only when this run was admitted as a human work unit: the accepted
+   * plan `order` of the single human step the machine stops at. Absent is the
+   * whole of today's behaviour, byte for byte.
+   *
+   * Its ONLY effect is to reclassify steps whose sole reason for being human is
+   * the pure `depends_on_human` cascade behind that one step. It is not a
+   * licence to run anything else: a step refused on its own merits stays human
+   * and keeps its own reason, because "waiting on a person" is a lie about a
+   * step that will not run whatever the person does.
+   */
+  humanCut?: { order: number };
 };
 
 export type CompiledStep = {
@@ -69,6 +89,13 @@ export type CompiledStep = {
    * parse. The runner hands this to the primitive and never re-parses.
    */
   params: Record<string, unknown> | null;
+  /**
+   * Machine work that is merely WAITING on the admitted human step. Persisted
+   * as `blocked_on_human_unit`, and made `pending` again exactly once by the
+   * resume. False everywhere else, including on every step that is human for
+   * its own reasons.
+   */
+  blockedOnHumanUnit: boolean;
 };
 
 export type CompiledPlan = {
@@ -103,6 +130,7 @@ export const HANDOFF_REASONS = {
     "The mandate reads a client file, so no step in it may send data to an outside service.",
   invalid_params: "The step's frozen configuration does not satisfy its capability.",
   unknown_reach: "The named primitive does not declare where it sends data.",
+  budget_demoted: "Demoted for budget by the economic preflight.",
 } as const;
 
 /**
@@ -138,6 +166,10 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       executionMode: "human" as const,
       handoffReason: gateReason,
       params: null,
+      // The mandate-level gate fires before the cut is ever considered. A
+      // sensitive or access-gated mandate is never admitted in practice; this
+      // does not rely on that being true upstream.
+      blockedOnHumanUnit: false,
     }));
     return {
       steps: compiled,
@@ -169,7 +201,7 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
    */
   const mandateReadsFiles = steps.some((s) => primitiveReadsFiles(s.primitiveId));
 
-  const compiled: CompiledStep[] = steps.map((s) => {
+  const prelim = steps.map((s) => {
     const decision = byOrder.get(s.order);
     /**
      * THE MODE CHECK, WHICH USED TO BE A COMMENT.
@@ -209,6 +241,30 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
 
     const automatable =
       decision?.automatable === true &&
+      !s.demotedForBudget &&
+      modeAllowed &&
+      reachKnown &&
+      reachAllowedForClass &&
+      reachAllowedBesideFiles &&
+      paramsOk;
+
+    /**
+     * THE STEP'S OWN MERITS, SEPARATED FROM THE CASCADE.
+     *
+     * `automatable` above deliberately conflates the two: a descendant of a
+     * human step is not automatable, full stop. That is the right answer for
+     * today's compiler and the wrong input for the human cut, which needs to
+     * know whether a step would run IF its producer existed.
+     *
+     * `depends_on_human` is therefore the one topology reason that does not
+     * disqualify a step here. Every other reason — not in the registry, moved
+     * version, planned as human work — is about the step itself and survives.
+     */
+    const ownReasonOk =
+      (decision?.reason ?? null) === null || decision?.reason === "depends_on_human";
+    const ownMeritsOk =
+      ownReasonOk &&
+      !s.demotedForBudget &&
       modeAllowed &&
       reachKnown &&
       reachAllowedForClass &&
@@ -221,9 +277,13 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
       title: s.title,
       primitiveId: s.primitiveId,
       primitiveVersion: s.primitiveVersion,
-      executionMode: automatable ? "automated" : "human",
+      dependsOnOrder: s.dependsOnOrder,
+      automatable,
+      ownMeritsOk,
       handoffReason: automatable
         ? null
+        : s.demotedForBudget
+          ? HANDOFF_REASONS.budget_demoted
         : // The topology's own verdict wins when it has one: "not in the
           // registry" and "depends on a human step" are more useful to an
           // operator than a generic mode refusal, and an unknown id has no
@@ -242,7 +302,105 @@ export function compileDecisions(steps: CompileStepInput[], gate: CompileGate): 
                   : !paramsOk
                     ? HANDOFF_REASONS.invalid_params
                     : HANDOFF_REASONS.no_primitive),
-      params: automatable ? parsedParams : null,
+      parsedParams,
+    };
+  });
+
+  /**
+   * RULE 3, EXTENDED TO EVERY COMPILE-LEVEL REFUSAL (LOT A).
+   *
+   * The topology cascades its OWN reasons (human executor, missing primitive,
+   * version mismatch) through the dependency graph — but the compiler's later
+   * gates (invalid params, reach, class, mode) did not cascade, so a step
+   * whose params were refused could leave its DEPENDENTS compiled "automated"
+   * with no producer: a dedupe scheduled to run on rows an ingest will never
+   * produce. Found by the LOT A hostile test (an invented file reference must
+   * yield a FULLY human plan, not a decapitated machine chain).
+   *
+   * Same discipline as the preflight's economic cascade: a machine step is
+   * finally automatable only if everything it transitively consumes is.
+   * Cycle-safe (planner data can contain cycles; a cycle proves dependence on
+   * nothing provable, so it demotes).
+   */
+  const byOrderPrelim = new Map(prelim.map((p) => [p.order, p]));
+  const finalOk = new Map<number, boolean>();
+  const visiting = new Set<number>();
+  const finallyAutomatable = (order: number): boolean => {
+    const cached = finalOk.get(order);
+    if (cached !== undefined) return cached;
+    if (visiting.has(order)) return false;
+    const p = byOrderPrelim.get(order);
+    if (!p || !p.automatable) {
+      finalOk.set(order, false);
+      return false;
+    }
+    visiting.add(order);
+    const ok = p.dependsOnOrder.every((d) => finallyAutomatable(d));
+    visiting.delete(order);
+    finalOk.set(order, ok);
+    return ok;
+  };
+
+  /**
+   * BEHIND THE CUT, AND ONLY BEHIND THE CUT.
+   *
+   * A step counts as blocked on the human unit when it is automatable on its
+   * own merits AND every dependency is either finally automatable, the cut
+   * itself, or itself blocked on the unit. That recursion is what keeps the
+   * conversion honest: it reaches exactly the steps whose single obstacle is
+   * the person, and stops dead at the first step that is human for any other
+   * reason — which then keeps its own reason and blocks everything behind it
+   * in turn.
+   *
+   * Cycle-safe by the same in-progress set as `finallyAutomatable`, and for
+   * the same reason: plan data can contain cycles, and a cycle proves
+   * dependence on nothing provable.
+   */
+  const cutOrder = gate.humanCut?.order;
+  const cutAdmitted = cutOrder !== undefined && byOrderPrelim.has(cutOrder);
+  const blockedCache = new Map<number, boolean>();
+  const blockedVisiting = new Set<number>();
+  const blockedOnUnit = (order: number): boolean => {
+    if (!cutAdmitted || order === cutOrder) return false;
+    const cached = blockedCache.get(order);
+    if (cached !== undefined) return cached;
+    if (blockedVisiting.has(order)) return false;
+    const p = byOrderPrelim.get(order);
+    // OWN merits, not `automatable`: every descendant of the cut fails the
+    // latter by construction, which is the very condition being reclassified.
+    if (!p || !p.ownMeritsOk) {
+      blockedCache.set(order, false);
+      return false;
+    }
+    blockedVisiting.add(order);
+    const ok = p.dependsOnOrder.every(
+      (d) => d === cutOrder || finallyAutomatable(d) || blockedOnUnit(d)
+    );
+    blockedVisiting.delete(order);
+    blockedCache.set(order, ok);
+    return ok;
+  };
+
+  const compiled: CompiledStep[] = prelim.map((p) => {
+    const finallyOk = p.automatable && finallyAutomatable(p.order);
+    // Only consulted when the step is not already runnable, so a step
+    // unrelated to the cut can never be flagged.
+    const blocked = !finallyOk && blockedOnUnit(p.order);
+    const runnable = finallyOk || blocked;
+    return {
+      planStepId: p.planStepId,
+      order: p.order,
+      title: p.title,
+      primitiveId: p.primitiveId,
+      primitiveVersion: p.primitiveVersion,
+      // A blocked step IS machine work. It carries its parsed params because
+      // the resume runs it later without re-parsing anything.
+      executionMode: runnable ? "automated" : "human",
+      handoffReason: runnable
+        ? null
+        : (p.handoffReason ?? HANDOFF_REASONS.depends_on_human),
+      params: runnable ? p.parsedParams : null,
+      blockedOnHumanUnit: blocked,
     };
   });
 

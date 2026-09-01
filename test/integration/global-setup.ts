@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PrismaClient } from "@prisma-client";
 import { assertSafeIntegrationDb } from "./guard";
+import { resolveL3TestDatabaseUrl } from "./resolve-l3-db";
 
 /**
  * Runs ONCE before the suite: guard, announce, rebuild, migrate.
@@ -141,7 +142,9 @@ function identityDiffers(a: string, b: string): boolean {
 }
 
 export default async function globalSetup() {
-  const db = assertSafeIntegrationDb(process.env);
+  const db = assertSafeIntegrationDb(process.env, {
+    l3TestDatabaseUrl: resolveL3TestDatabaseUrl() ?? undefined,
+  });
 
   console.log(
     `\n[integration] target database: host=${db.host} db=${db.database}\n` +
@@ -171,10 +174,25 @@ export default async function globalSetup() {
         datasourceUrl: appUrl.includes("pgbouncer=") ? appUrl : `${appUrl}&pgbouncer=true`,
       });
       try {
-        const seen = await appClient.$queryRawUnsafe<{ v: boolean }[]>(
-          `SELECT to_regclass('public.${probe}') IS NOT NULL AS v`
-        );
-        if (seen[0]?.v) {
+        /**
+         * An app connection that cannot be opened at all proves nothing about
+         * aliasing, so it is reported rather than read as a pass. It is also
+         * not fatal: aliasing is a property of ONE server multiplexing names,
+         * and a test URL on a different host than a dead local cluster is not
+         * that. The remote path already required the operator to name the host.
+         */
+        const seen = await appClient
+          .$queryRawUnsafe<{ v: boolean }[]>(
+            `SELECT to_regclass('public.${probe}') IS NOT NULL AS v`
+          )
+          .catch((error: unknown) => {
+            console.log(
+              `[integration] the app's own database is unreachable, so the aliasing probe ` +
+                `could not run: ${String(error).slice(0, 160)}`
+            );
+            return null;
+          });
+        if (seen?.[0]?.v) {
           throw new Error(
             `INTEGRATION DB GUARD FAILED [ALIASED_DATABASE]: a table created in ` +
               `${db.database} is visible through the app's DATABASE_URL — the server ` +
@@ -236,8 +254,9 @@ export default async function globalSetup() {
   } catch (error) {
     throw new Error(
       `[integration] schema rebuild failed against ${db.database}. If the local cluster is ` +
-        `down: kill stray node processes, remove the stale .lock/server.json/postmaster.pid ` +
-        `under AppData/Local/prisma-dev-nodejs/Data, then relaunch \`npx prisma dev\`. ` +
+        `down: inspect \`npx prisma dev ls\`, then stop/start only the named disposable ` +
+        `integration instance. If it cannot recover, remove and recreate only that exact ` +
+        `named disposable instance; never delete Prisma Dev's global Data directory. ` +
         `${String(error).slice(0, 700)}`
     );
   } finally {

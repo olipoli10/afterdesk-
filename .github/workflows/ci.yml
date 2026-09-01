@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["master"]
   pull_request:
 
 permissions:
@@ -33,6 +33,19 @@ jobs:
       APP_URL: http://localhost:3000
       FILE_SCAN_MODE: optional
       CRON_SECRET: ci-only-cron-secret
+      # R2_* is a module-level, NODE_ENV=production fail-closed check in
+      # src/lib/storage.ts, evaluated at import time — Next's build-time page
+      # data collection loads every route's module graph, so it fires even
+      # though no route handler is ever invoked and no upload/download occurs.
+      # These four values only satisfy that boolean presence check and get
+      # embedded, unresolved, into an S3Client config object: the AWS SDK v3
+      # never opens a connection at construction, only inside .send(), which
+      # no code path here reaches during a build. Synthetic, non-authenticating,
+      # CI-only — never written to .env.example or any real environment.
+      R2_ACCOUNT_ID: ci-test-account
+      R2_ACCESS_KEY_ID: ci-test-key
+      R2_SECRET_ACCESS_KEY: ci-test-secret
+      R2_BUCKET: ci-test-bucket
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
