@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { sha256Canonical } from "@/lib/construction-assistant-v1/canonical";
 import { interpretConstructionMessage } from "@/lib/construction-assistant-v1/interpreter";
 import { buildActionFingerprint } from "@/lib/construction-assistant-v1/outbound";
+import { recordWorkFinishedInTransaction } from "@/server/construction-operating-assistant-r0/open-loops";
 import { appendConstructionAudit } from "./audit";
 import { tomorrowAnswer } from "./queries";
 import { requireActiveConstructionMember } from "./workspace";
@@ -16,6 +17,7 @@ export type ConstructionIntakeResult = {
   reply: string;
   calendarItemId?: string;
   actionId?: string;
+  openLoopId?: string;
   replayed: boolean;
 };
 
@@ -28,6 +30,7 @@ function intentForDb(intent: string) {
     | "calendar_item_create"
     | "calendar_query"
     | "outbound_message_draft"
+    | "report_work_finished"
     | "clarification_required"
     | "unsupported";
 }
@@ -41,20 +44,30 @@ async function reconstructResult(tx: Prisma.TransactionClient, messageId: string
       interpretation: { select: { intent: true, clarification: true } },
       calendarItem: { select: { id: true, title: true, verificationState: true } },
       action: { select: { id: true } },
+      openedOpenLoops: {
+        orderBy: { createdAt: "asc" },
+        take: 1,
+        select: { id: true, status: true, nextAction: true },
+      },
+      relatedOpenLoop: { select: { id: true, status: true, nextAction: true } },
     },
   });
   const clarification = row.interpretation?.clarification as { question?: string } | null;
+  const openLoop = row.relatedOpenLoop ?? row.openedOpenLoops[0];
   return {
     messageId: row.id,
     intent: row.interpretation?.intent?.toLocaleUpperCase("en-CA") ?? "UNSUPPORTED",
     status: row.status,
-    reply: row.calendarItem
+    reply: openLoop
+      ? `Dossier de facturation retrouvé. Statut: ${openLoop.status}. Prochaine action: ${openLoop.nextAction}.`
+      : row.calendarItem
       ? `Ajouté au calendrier: ${row.calendarItem.title}. Statut: ${row.calendarItem.verificationState === "proposed" ? "proposé" : "vérifié"}.`
       : row.action
         ? "Le message est préparé. Vérifiez le destinataire et le texte avant l’approbation."
         : clarification?.question ?? "La demande est conservée, mais aucune action n’a été inventée.",
     calendarItemId: row.calendarItem?.id,
     actionId: row.action?.id,
+    openLoopId: openLoop?.id,
     replayed: true,
   };
 }
@@ -150,8 +163,40 @@ export async function processConstructionMessage(input: {
       let status: "interpreted" | "needs_clarification" | "proposed" = "interpreted";
       let calendarItemId: string | undefined;
       let actionId: string | undefined;
+      let openLoopId: string | undefined;
+
+      if (interpretation.projectId) {
+        await tx.constructionMessage.update({
+          where: { id: message.id },
+          data: { projectId: interpretation.projectId },
+        });
+      }
 
       if (
+        interpretation.intent === "REPORT_WORK_FINISHED" &&
+        interpretation.projectId &&
+        interpretation.openLoopDraft
+      ) {
+        const opened = await recordWorkFinishedInTransaction(tx, {
+          schemaVersion: 1,
+          commandId: sha256Canonical({
+            source: "construction-intake-v1",
+            workspaceId: input.workspaceId,
+            messageId: message.id,
+            commandType: "REPORT_WORK_FINISHED",
+          }),
+          workspaceId: input.workspaceId,
+          projectId: interpretation.projectId,
+          actorId: input.userId,
+          sourceMessageId: message.id,
+          commandType: "REPORT_WORK_FINISHED",
+          claims: interpretation.openLoopDraft,
+        });
+        openLoopId = opened.loopId;
+        reply = opened.decision.ready
+          ? "Le dossier est prêt pour la préparation de la facture. Aucun envoi externe n’a été fait."
+          : `Dossier ouvert. Il manque: ${opened.decision.missing.join(", ") || "vérification"}. Prochaine action: ${opened.decision.nextAction}.`;
+      } else if (
         interpretation.intent === "CALENDAR_ITEM_CREATE" &&
         interpretation.projectId &&
         interpretation.contactId &&
@@ -262,6 +307,7 @@ export async function processConstructionMessage(input: {
         reply,
         calendarItemId,
         actionId,
+        openLoopId,
         replayed: false,
       } satisfies ConstructionIntakeResult;
     });

@@ -83,7 +83,28 @@ function base(context: InterpreterContext): Omit<ConstructionInterpretation, "in
     clarification: null,
     queryWindow: null,
     outboundDraft: null,
+    openLoopDraft: null,
   };
+}
+
+function parseExplicitCadAmountMinor(normalized: string): number | null {
+  const after = normalized.match(/(\d[\d\s.,]*?)\s*(?:\$|cad|dollars?)(?:\s|$|[.,;])/i)?.[1];
+  const before = normalized.match(/(?:\$|cad)\s*(\d[\d\s.,]*\d|\d)(?:\s|$|[.,;])/i)?.[1];
+  const raw = (after ?? before)?.trim();
+  if (!raw) return null;
+
+  const compact = raw.replace(/\s/g, "");
+  const separators = [...compact.matchAll(/[.,]/g)];
+  if (separators.length > 1) return null;
+  if (separators.length === 1) {
+    const separator = separators[0][0];
+    const [whole, fractional] = compact.split(separator);
+    // `1,200` and `1.200` are locale-ambiguous. ENDVERA asks rather than
+    // silently choosing $1.20 or $1,200.
+    if (!whole || !fractional || fractional.length !== 2) return null;
+    return Number(whole) * 100 + Number(fractional.padEnd(2, "0"));
+  }
+  return Number(compact) * 100;
 }
 
 function nextWeekday(referenceNow: string, timezone: string, targetDay: number): Date {
@@ -159,6 +180,33 @@ export function interpretConstructionMessage(
 
   const projects = matchingProjects(text, context);
   const contacts = matchingContacts(text, context);
+
+  if (/\b(travail|travaux|job|work)\b.*\b(termine|termines|finie|finished|complete)\b/.test(normalized)) {
+    if (projects.length === 0) {
+      return clarification(context, "PROJECT_NOT_FOUND", "Pour quel chantier ce travail est-il terminé?");
+    }
+    if (projects.length > 1) {
+      return clarification(context, "AMBIGUOUS_PROJECT", "Quel chantier dois-je utiliser?", projects.length);
+    }
+    const approvalState = /\b(approuve|accepte|approved|accepted)\b/.test(normalized)
+      ? "APPROVED"
+      : /\b(refuse|rejete|rejected|denied)\b/.test(normalized)
+        ? "REJECTED"
+        : "UNKNOWN";
+    return constructionInterpretationSchema.parse({
+      ...base(context),
+      intent: "REPORT_WORK_FINISHED",
+      projectId: projects[0].id,
+      openLoopDraft: {
+        billingBasis: "CHANGE_ORDER",
+        workDescription: text,
+        amountMinor: parseExplicitCadAmountMinor(normalized),
+        currency: "CAD",
+        completion: true,
+        approvalState,
+      },
+    });
+  }
 
   if (/^(texte|text|envoie un texto)/.test(normalized)) {
     if (contacts.length === 0) return clarification(context, "CONTACT_NOT_FOUND", "À quel contact dois-je préparer le message?");

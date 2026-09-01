@@ -18,20 +18,20 @@ import { simulateInboundMessage } from "@/server/construction-assistant-v1/simul
 import { approveAndSimulateOutbound } from "@/server/construction-assistant-v1/outbound";
 
 const messageSchema = z.object({
-  workspaceId: z.string().uuid(),
+  workspaceId: z.string().min(1).max(160),
   body: z.string().trim().min(1).max(4_000),
   requestId: z.string().uuid(),
 });
 
 const simulationSchema = z.object({
-  workspaceId: z.string().uuid(),
+  workspaceId: z.string().min(1).max(160),
   channel: z.enum(["SMS", "EMAIL"]),
   providerMessageId: z.string().trim().min(1).max(160),
   body: z.string().trim().min(1).max(4_000),
 });
 
 const approvalSchema = z.object({
-  workspaceId: z.string().uuid(),
+  workspaceId: z.string().min(1).max(160),
   actionId: z.string().uuid(),
   expectedVersion: z.coerce.number().int().positive(),
   expectedPayloadHash: z.string().regex(/^[a-f0-9]{64}$/),

@@ -20,6 +20,7 @@ describe("Construction Assistant V1 closed interpretation", () => {
       "CALENDAR_ITEM_CREATE",
       "CALENDAR_QUERY",
       "OUTBOUND_MESSAGE_DRAFT",
+      "REPORT_WORK_FINISHED",
       "CLARIFICATION_REQUIRED",
       "UNSUPPORTED",
     ]);

@@ -4,6 +4,7 @@ export const CONSTRUCTION_INTENTS = [
   "CALENDAR_ITEM_CREATE",
   "CALENDAR_QUERY",
   "OUTBOUND_MESSAGE_DRAFT",
+  "REPORT_WORK_FINISHED",
   "CLARIFICATION_REQUIRED",
   "UNSUPPORTED",
 ] as const;
@@ -19,6 +20,7 @@ export const clarificationSchema = z
       "CONTACT_NOT_FOUND",
       "AMBIGUOUS_DATE",
       "AMBIGUOUS_TIME",
+      "AMBIGUOUS_AMOUNT",
       "UNSUPPORTED_REQUEST",
     ]),
     question: z.string().min(1).max(280),
@@ -54,6 +56,18 @@ export const constructionInterpretationSchema = z
       })
       .strict()
       .nullable(),
+    openLoopDraft: z
+      .object({
+        billingBasis: z.literal("CHANGE_ORDER"),
+        workDescription: z.string().min(1).max(4000),
+        amountMinor: z.number().int().positive().nullable(),
+        currency: z.literal("CAD"),
+        completion: z.literal(true),
+        approvalState: z.enum(["APPROVED", "REJECTED", "UNKNOWN"]),
+      })
+      .strict()
+      .nullable()
+      .default(null),
   })
   .strict();
 

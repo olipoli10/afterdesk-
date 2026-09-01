@@ -35,7 +35,7 @@ export function A2ConstructionComposer({ workspaceId }: { workspaceId: string })
         maxLength={4000}
         rows={3}
         className="mt-4 w-full resize-y rounded-lg border border-white/15 bg-white/[0.06] px-3 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-[#D87526]"
-        placeholder="Ex.: Rendez-vous avec Marc pour Rénovation Laval mardi à 14 h"
+        placeholder="Ex.: Le travail de l’extra cuisine est terminé pour Rénovation Laval, 1 200 $. Le client dit que c’est approuvé."
       />
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <p aria-live="polite" className={`text-sm ${state.ok ? "text-[#B7BDC7]" : "text-[#FF9A8B]"}`}>{state.message}</p>

@@ -263,6 +263,7 @@ enum ConstructionIntent {
   calendar_item_create
   calendar_query
   outbound_message_draft
+  report_work_finished
   clarification_required
   unsupported
 }
@@ -284,6 +285,49 @@ enum ConstructionActionStatus {
   approved
   simulated_delivered
   revoked
+}
+
+enum ConstructionOpenLoopType {
+  invoice_ready
+}
+
+enum ConstructionBillingBasis {
+  change_order
+}
+
+enum ConstructionOpenLoopStatus {
+  open
+  waiting_for_evidence
+  waiting_for_verification
+  ready_to_invoice
+  closed
+  revoked
+}
+
+enum ConstructionOpenLoopFactState {
+  unknown
+  claimed
+  verified
+  disputed
+  revoked
+}
+
+enum ConstructionOpenLoopEvidenceKind {
+  written_approval
+  photo
+  document
+}
+
+enum ConstructionOpenLoopEvidenceState {
+  present_unverified
+  verified
+  rejected
+  revoked
+}
+
+enum ConstructionOpenLoopContradictionStatus {
+  open
+  resolved
 }
 
 // ---------- Auth (Better Auth owns these shapes) ----------
@@ -3187,6 +3231,7 @@ model ConstructionWorkspace {
   calendarItems   ConstructionCalendarItem[]
   actions         ConstructionAction[]
   auditEvents     ConstructionAuditEvent[]
+  openLoops       ConstructionOpenLoop[]
 
   @@index([ownerUserId, status])
 }
@@ -3245,6 +3290,7 @@ model ConstructionProject {
   messages      ConstructionMessage[]
   calendarItems ConstructionCalendarItem[]
   actions       ConstructionAction[]
+  openLoops     ConstructionOpenLoop[]
 
   @@unique([workspaceId, code])
   @@index([workspaceId, name])
@@ -3297,17 +3343,21 @@ model ConstructionMessage {
   status            ConstructionMessageStatus    @default(received)
   receivedAt        DateTime?
   sentAt            DateTime?
+  relatedOpenLoopId String?
+  relatedOpenLoop   ConstructionOpenLoop?        @relation("ConstructionOpenLoopSourceMessages", fields: [relatedOpenLoopId], references: [id], onDelete: SetNull)
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
 
-  interpretation ConstructionInterpretation?
-  calendarItem   ConstructionCalendarItem?
-  action         ConstructionAction?
+  interpretation  ConstructionInterpretation?
+  calendarItem    ConstructionCalendarItem?
+  action          ConstructionAction?
+  openedOpenLoops ConstructionOpenLoop[]      @relation("ConstructionOpenLoopOpenedByMessage")
 
   @@unique([workspaceId, idempotencyKey])
   @@unique([provider, providerMessageId])
   @@index([workspaceId, createdAt])
   @@index([workspaceId, status])
+  @@index([relatedOpenLoopId, createdAt])
 }
 
 model ConstructionInterpretation {
@@ -3363,6 +3413,8 @@ model ConstructionAction {
   project                ConstructionProject?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
   contactId              String?
   contact                ConstructionContact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  openLoopId             String?
+  openLoop               ConstructionOpenLoop?    @relation(fields: [openLoopId], references: [id], onDelete: SetNull)
   sourceMessageId        String                   @unique
   sourceMessage          ConstructionMessage      @relation(fields: [sourceMessageId], references: [id], onDelete: Restrict)
   type                   ConstructionActionType
@@ -3383,6 +3435,7 @@ model ConstructionAction {
 
   @@index([workspaceId, status, dueAt])
   @@index([contactId, status])
+  @@index([openLoopId, status])
 }
 
 model ConstructionAuditEvent {
@@ -3401,4 +3454,144 @@ model ConstructionAuditEvent {
 
   @@index([workspaceId, createdAt])
   @@index([entityType, entityId, createdAt])
+}
+
+// ENDVERA Construction Operating Assistant R0 — durable outcome closure.
+// A model may propose facts, but only server-side policy transitions these records.
+model ConstructionOpenLoop {
+  id                  String                     @id @default(cuid())
+  workspaceId         String
+  workspace           ConstructionWorkspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projectId           String
+  project             ConstructionProject        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  openedByMessageId   String
+  openedByMessage     ConstructionMessage        @relation("ConstructionOpenLoopOpenedByMessage", fields: [openedByMessageId], references: [id], onDelete: Restrict)
+  type                ConstructionOpenLoopType   @default(invoice_ready)
+  billingBasis        ConstructionBillingBasis   @default(change_order)
+  desiredOutcome      String
+  status              ConstructionOpenLoopStatus @default(open)
+  priority            Int                        @default(50)
+  dueAt               DateTime?
+  dueState            String                     @default("actionable_now")
+  policyVersion       String
+  stateVersion        Int                        @default(1)
+  idempotencyKey      String
+  semanticKey         String
+  nextResponsibleRole String
+  nextAction          String
+  decisionHash        String
+  readyAt             DateTime?
+  closedAt            DateTime?
+  revokedAt           DateTime?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+
+  facts          ConstructionOpenLoopFact[]
+  evidence       ConstructionOpenLoopEvidence[]
+  contradictions ConstructionOpenLoopContradiction[]
+  transitions    ConstructionOpenLoopTransition[]
+  snapshots      ConstructionOpenLoopSnapshot[]
+  actions        ConstructionAction[]
+  sourceMessages ConstructionMessage[]               @relation("ConstructionOpenLoopSourceMessages")
+
+  @@unique([workspaceId, idempotencyKey])
+  @@unique([workspaceId, semanticKey])
+  @@index([workspaceId, status, updatedAt])
+  @@index([projectId, status, updatedAt])
+  @@index([workspaceId, nextResponsibleRole, status])
+  @@index([workspaceId, dueAt, status])
+}
+
+model ConstructionOpenLoopFact {
+  id           String                        @id @default(cuid())
+  loopId       String
+  loop         ConstructionOpenLoop          @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  workspaceId  String
+  projectId    String
+  field        String
+  value        Json
+  state        ConstructionOpenLoopFactState
+  sourceType   String
+  sourceId     String
+  suppliedById String?
+  observedAt   DateTime?
+  createdAt    DateTime                      @default(now())
+
+  @@index([loopId, field, createdAt])
+  @@index([workspaceId, projectId, field])
+}
+
+model ConstructionOpenLoopEvidence {
+  id           String                            @id @default(cuid())
+  loopId       String
+  loop         ConstructionOpenLoop              @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  workspaceId  String
+  projectId    String
+  evidenceKey  String
+  kind         ConstructionOpenLoopEvidenceKind
+  state        ConstructionOpenLoopEvidenceState
+  sourceRef    String
+  contentHash  String?
+  suppliedById String?
+  createdAt    DateTime                          @default(now())
+  updatedAt    DateTime                          @updatedAt
+
+  @@unique([loopId, evidenceKey])
+  @@index([loopId, kind, state])
+  @@index([workspaceId, projectId, state])
+}
+
+model ConstructionOpenLoopContradiction {
+  id           String                                  @id @default(cuid())
+  loopId       String
+  loop         ConstructionOpenLoop                    @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  workspaceId  String
+  projectId    String
+  field        String
+  claimIds     String[]
+  status       ConstructionOpenLoopContradictionStatus @default(open)
+  resolution   Json?
+  resolvedById String?
+  resolvedAt   DateTime?
+  createdAt    DateTime                                @default(now())
+  updatedAt    DateTime                                @updatedAt
+
+  @@index([loopId, status, createdAt])
+  @@index([workspaceId, projectId, status])
+}
+
+model ConstructionOpenLoopTransition {
+  id                String                      @id @default(cuid())
+  loopId            String
+  loop              ConstructionOpenLoop        @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  workspaceId       String
+  priorStatus       ConstructionOpenLoopStatus?
+  nextStatus        ConstructionOpenLoopStatus
+  priorVersion      Int
+  nextVersion       Int
+  reasonCodes       String[]
+  actorUserId       String?
+  authorityDecision String
+  inputHash         String
+  idempotencyKey    String
+  createdAt         DateTime                    @default(now())
+
+  @@unique([loopId, idempotencyKey])
+  @@unique([loopId, nextVersion])
+  @@index([workspaceId, createdAt])
+}
+
+model ConstructionOpenLoopSnapshot {
+  id            String               @id @default(cuid())
+  loopId        String
+  loop          ConstructionOpenLoop @relation(fields: [loopId], references: [id], onDelete: Cascade)
+  workspaceId   String
+  stateVersion  Int
+  snapshot      Json
+  canonicalHash String
+  createdAt     DateTime             @default(now())
+
+  @@unique([loopId, stateVersion])
+  @@index([workspaceId, createdAt])
+  @@index([canonicalHash])
 }

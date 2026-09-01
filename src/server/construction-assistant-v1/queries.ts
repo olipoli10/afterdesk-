@@ -81,11 +81,12 @@ export async function inboxForUser(userId: string) {
       },
     }),
     prisma.constructionAction.findMany({
-      where: { workspaceId: workspace.id, type: "outbound_message" },
+      where: { workspaceId: workspace.id, type: { in: ["outbound_message", "follow_up"] } },
       orderBy: { createdAt: "desc" },
       take: 20,
       select: {
         id: true,
+        type: true,
         version: true,
         payloadHash: true,
         payload: true,
