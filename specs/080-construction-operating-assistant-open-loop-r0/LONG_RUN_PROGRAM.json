@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "programId": "endvera-construction-operating-assistant-open-loop-r0-v1",
+  "objective": "Reset ENDVERA around a construction operating assistant, freeze the A-to-Z architecture and implement one local durable work-finished-to-invoice-ready open-loop workflow with evidence, authority, next-actor, restart, replay and role-isolation proof before any live connector or customer test.",
+  "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0",
+  "branch": "codex/endvera-construction-operating-assistant-r0",
+  "baseHead": "3a7f07300e4b5fa79360c130959ab2514d6b51b1",
+  "authority": "LOCAL CONSTRUCTION OPERATING ASSISTANT PRODUCT RESET, OPEN-LOOP INVOICE-READINESS IMPLEMENTATION AND SYNTHETIC OR EXPLICITLY FOUNDER-OWNED PROOF ONLY; PROVIDER, CUSTOMER OR PROSPECT DATA, EXTERNAL TRANSPORT, OAUTH, ACCOUNTING WRITE, EXECUTE, EXTERNAL WRITE, PUSH, PREVIEW, PRODUCTION AND DEPLOYMENT NO-GO",
+  "estimatedHours": {
+    "min": 5,
+    "max": 8
+  },
+  "referenceRuns": [
+    {
+      "id": "endvera-construction-assistant-v1-r2-founder-observed-loop",
+      "observedMinutes": 133,
+      "workUnits": "One real founder session, bounded product correction, 1183 fast tests, 97 integrations, PostgreSQL proof and 99-page build"
+    }
+  ],
+  "completionCommand": "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-long-run-program.ps1 -ManifestPath C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0\\specs\\080-construction-operating-assistant-open-loop-r0\\LONG_RUN_PROGRAM.json -RequireComplete",
+  "stopConditions": [
+    "Canonical Brain, admitted product base or protected R3 source diverges",
+    "A customer, prospect, live provider, OAuth grant, external transport or non-disposable database becomes necessary",
+    "The first workflow cannot remain bounded to work finished through invoice-ready",
+    "A model output, connector event or field role can mutate or view canonical state beyond explicit authority",
+    "A destructive migration, package dependency or lockfile change becomes necessary",
+    "A mutation or synthetic evidence fixture cannot be restored byte-exactly",
+    "The missing R3 founder observation would need to be fabricated or upgraded",
+    "An invariant remains impossible after safe local alternatives are exhausted"
+  ],
+  "forbidden": [
+    "Live SMS, MMS, voice, email, calendar, accounting or AI provider call",
+    "Customer or prospect data and real phone/email contact",
+    "General phone, mailbox, address-book or photo-library access",
+    "External send, accounting write, payment, contract, spending or legal commitment",
+    "Native iOS or Android implementation before design-partner validation",
+    "Generic workflow builder, ERP rewrite or second construction/messaging engine",
+    "Destructive migration, prisma db push, dependency or package-lock modification",
+    "Push, Preview, Production or deployment",
+    "Claiming customer/provider E2E, product-market fit or R3 observed PASS"
+  ],
+  "chapters": [
+    {
+      "id": "CH-001",
+      "title": "Product reset, evidence reconciliation and asset audit",
+      "objective": "Reconcile canonical Brain and latest construction source, preserve the unresolved R3 human state, audit reusable assets and freeze the outcome-based product decision.",
+      "status": "IN_PROGRESS",
+      "estimatedMinutes": 60,
+      "dependencies": [],
+      "allowedScope": [
+        "specs/080-construction-operating-assistant-open-loop-r0",
+        ".specify/feature.json"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/080-construction-operating-assistant-open-loop-r0/scripts/validate-product-reset.ps1"
+      ],
+      "evidencePaths": [
+        "ASSET_REUSE_AUDIT.md",
+        "evidence/dashboard-baseline.md"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-002",
+      "title": "A-to-Z architecture, permissions, connectors and Spec Kit closure",
+      "objective": "Freeze Open-Loop Core, action authority, permission matrix, mobile/portal strategy, connector sequence, roadmap, tasks and a coherent pre-implementation analysis.",
+      "status": "OPEN",
+      "estimatedMinutes": 75,
+      "dependencies": [
+        "CH-001"
+      ],
+      "allowedScope": [
+        "specs/080-construction-operating-assistant-open-loop-r0",
+        ".specify/feature.json"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/080-construction-operating-assistant-open-loop-r0/scripts/validate-product-reset.ps1",
+        "git diff --check"
+      ],
+      "evidencePaths": [
+        "PRODUCT_ROADMAP_A_TO_Z.md",
+        "CONNECTOR_AND_PLATFORM_PLAN.md",
+        "evidence/spec-kit-analysis.md"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-003",
+      "title": "OpenLoop invoice-readiness implementation",
+      "objective": "Implement the local deterministic invoice-readiness loop by extending Construction Assistant V1 with additive persistence, atomic transitions, evidence, contradictions, verification, next actor and role-safe projections.",
+      "status": "OPEN",
+      "estimatedMinutes": 150,
+      "dependencies": [
+        "CH-002"
+      ],
+      "allowedScope": [
+        "specs/080-construction-operating-assistant-open-loop-r0",
+        "src/lib/construction-operating-assistant-r0",
+        "src/server/construction-operating-assistant-r0",
+        "src/lib/construction-assistant-v1/contracts.ts",
+        "src/lib/construction-assistant-v1/interpreter.ts",
+        "src/server/construction-assistant-v1/intake.ts",
+        "src/server/construction-assistant-v1/queries.ts",
+        "src/server/actions/construction-assistant-v1.ts",
+        "src/components/construction-assistant-v1/a2-composer.tsx",
+        "src/app/client/projects",
+        "src/app/client/inbox",
+        "src/app/client/today",
+        "prisma/schema.prisma",
+        "one additive forward-only migration",
+        "test/construction-operating-assistant-r0*.test.ts",
+        "matching disposable PostgreSQL integration tests"
+      ],
+      "acceptanceCommands": [
+        "npm.cmd run test:run -- test/construction-operating-assistant-r0*.test.ts"
+      ],
+      "evidencePaths": [
+        "evidence/ch-003-open-loop-implementation.md",
+        "evidence/red-and-mutation-results.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-004",
+      "title": "Disposable PostgreSQL local workflow proof",
+      "objective": "Run the frozen invoice-readiness scenario through missing evidence, contradiction, verification, readiness, restart, replay and differentiated role projections with zero external transport.",
+      "status": "OPEN",
+      "estimatedMinutes": 90,
+      "dependencies": [
+        "CH-003"
+      ],
+      "allowedScope": [
+        "specs/080-construction-operating-assistant-open-loop-r0",
+        "src/lib/construction-operating-assistant-r0",
+        "src/server/construction-operating-assistant-r0",
+        "src/lib/construction-assistant-v1/contracts.ts",
+        "src/lib/construction-assistant-v1/interpreter.ts",
+        "src/server/construction-assistant-v1/intake.ts",
+        "src/server/construction-assistant-v1/queries.ts",
+        "src/server/actions/construction-assistant-v1.ts",
+        "src/components/construction-assistant-v1/a2-composer.tsx",
+        "src/app/client/projects",
+        "src/app/client/inbox",
+        "src/app/client/today",
+        "test/construction-operating-assistant-r0*.test.ts",
+        "matching disposable PostgreSQL integration tests"
+      ],
+      "acceptanceCommands": [
+        "pwsh specs/080-construction-operating-assistant-open-loop-r0/scripts/validate-local-proof.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-004-local-proof.md",
+        "evidence/local-proof-result.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-005",
+      "title": "Pristine validation, dashboard, commits and Brain checkpoint",
+      "objective": "Run proportional regression and build gates, close Spec Kit and constitution checks, drain the campaign, commit a clean local lane and checkpoint only demonstrated facts in the canonical Brain.",
+      "status": "OPEN",
+      "estimatedMinutes": 75,
+      "dependencies": [
+        "CH-004"
+      ],
+      "allowedScope": [
+        "specs/080-construction-operating-assistant-open-loop-r0",
+        "all product files changed in CH-003 and CH-004",
+        "C:\\dev\\afterdesk-project-brain checkpoint files after product-lane release"
+      ],
+      "acceptanceCommands": [
+        "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-long-run-program.ps1 -ManifestPath C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0\\specs\\080-construction-operating-assistant-open-loop-r0\\LONG_RUN_PROGRAM.json -RequireComplete",
+        "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-continuation-queue.ps1 -QueuePath C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0\\specs\\080-construction-operating-assistant-open-loop-r0\\CONTINUATION_QUEUE.json -RequireDrained",
+        "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-brain.ps1"
+      ],
+      "evidencePaths": [
+        "evidence/ch-005-pristine-dashboard-and-closeout.md",
+        "evidence/dashboard-closeout.md"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}

@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 2,
+  "queueMode": "PINNED_SEQUENTIAL_CAMPAIGN",
+  "queueId": "endvera-construction-operating-assistant-open-loop-r0-v1",
+  "campaignObjective": "Freeze the construction operating assistant product reset, implement one local invoice-readiness OpenLoop, prove it through disposable PostgreSQL and close with an honest local-only verdict and canonical Brain checkpoint.",
+  "authority": "LOCAL CONSTRUCTION OPERATING ASSISTANT PRODUCT RESET, OPEN-LOOP INVOICE-READINESS IMPLEMENTATION AND SYNTHETIC OR EXPLICITLY FOUNDER-OWNED PROOF ONLY; PROVIDER, CUSTOMER OR PROSPECT DATA, EXTERNAL TRANSPORT, OAUTH, ACCOUNTING WRITE, EXECUTE, EXTERNAL WRITE, PUSH, PREVIEW, PRODUCTION AND DEPLOYMENT NO-GO",
+  "forbiddenActions": [
+    "provider, OAuth or external transport",
+    "customer, prospect or real contact data",
+    "external send, accounting write, EXECUTE or external WRITE",
+    "native mobile implementation in R0",
+    "destructive migration, prisma db push, dependency or lockfile modification",
+    "push, Preview, Production or deployment",
+    "claiming R3 founder observation, customer E2E or product-market fit"
+  ],
+  "stopConditions": [
+    "Canonical Brain, admitted base or protected R3 source diverges",
+    "The workflow cannot remain bounded to work finished through invoice-ready",
+    "A provider, customer datum, external transport or shared database becomes necessary",
+    "Workspace/project/role/authority or canonical-state isolation cannot fail closed",
+    "A mutation cannot be restored byte-exactly",
+    "An invariant remains impossible after safe local alternatives are exhausted"
+  ],
+  "communication": {
+    "informationalLabel": "INFO — aucune réponse requise",
+    "blockingLabel": "BLOCAGE — réponse requise",
+    "authorityLabel": "AUTORITÉ — signature requise",
+    "completionLabel": "TERMINÉ — résultat",
+    "maxRoutineFounderPrompts": 0
+  },
+  "entries": [
+    {
+      "id": "COA-R0-PRODUCT-RESET-001",
+      "title": "Construction Operating Assistant product reset",
+      "objective": "Freeze the A-to-Z product, architecture, permission, connector, mobile, commercial and first-workflow plan while preserving exact evidence labels.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0",
+      "branch": "codex/endvera-construction-operating-assistant-r0",
+      "baseRef": {
+        "kind": "FIXED_HEAD",
+        "head": "3a7f07300e4b5fa79360c130959ab2514d6b51b1"
+      },
+      "authority": "LOCAL CONSTRUCTION OPERATING ASSISTANT PRODUCT RESET, OPEN-LOOP INVOICE-READINESS IMPLEMENTATION AND SYNTHETIC OR EXPLICITLY FOUNDER-OWNED PROOF ONLY; PROVIDER, CUSTOMER OR PROSPECT DATA, EXTERNAL TRANSPORT, OAUTH, ACCOUNTING WRITE, EXECUTE, EXTERNAL WRITE, PUSH, PREVIEW, PRODUCTION AND DEPLOYMENT NO-GO",
+      "allowedScope": [
+        ".specify/feature.json",
+        "specs/080-construction-operating-assistant-open-loop-r0"
+      ],
+      "planPath": "plans/COA-R0-PRODUCT-RESET-001.md",
+      "planSha256": "a32717e24f3368313fb86904ebbbd263d95fe47ff64692781e55ab58f9ca4b25",
+      "completionCommand": "pwsh specs/080-construction-operating-assistant-open-loop-r0/scripts/validate-product-reset.ps1",
+      "evidencePaths": [
+        "ASSET_REUSE_AUDIT.md",
+        "PRODUCT_ROADMAP_A_TO_Z.md",
+        "CONNECTOR_AND_PLATFORM_PLAN.md",
+        "evidence/dashboard-baseline.md",
+        "evidence/spec-kit-analysis.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "COA-R0-OPEN-LOOP-IMPLEMENT-001",
+      "title": "Invoice-readiness OpenLoop implementation",
+      "objective": "Extend Construction Assistant V1 with one deterministic durable invoice-readiness loop, evidence, contradictions, verification, next actor and role-safe projections.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": [
+        "COA-R0-PRODUCT-RESET-001"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0",
+      "branch": "codex/endvera-construction-operating-assistant-r0",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "COA-R0-PRODUCT-RESET-001"
+      },
+      "authority": "LOCAL CONSTRUCTION OPERATING ASSISTANT PRODUCT RESET, OPEN-LOOP INVOICE-READINESS IMPLEMENTATION AND SYNTHETIC OR EXPLICITLY FOUNDER-OWNED PROOF ONLY; PROVIDER, CUSTOMER OR PROSPECT DATA, EXTERNAL TRANSPORT, OAUTH, ACCOUNTING WRITE, EXECUTE, EXTERNAL WRITE, PUSH, PREVIEW, PRODUCTION AND DEPLOYMENT NO-GO",
+      "allowedScope": [
+        "specs/080-construction-operating-assistant-open-loop-r0",
+        "src/lib/construction-operating-assistant-r0",
+        "src/server/construction-operating-assistant-r0",
+        "src/lib/construction-assistant-v1/contracts.ts",
+        "src/lib/construction-assistant-v1/interpreter.ts",
+        "src/server/construction-assistant-v1/intake.ts",
+        "src/server/construction-assistant-v1/queries.ts",
+        "src/server/actions/construction-assistant-v1.ts",
+        "src/components/construction-assistant-v1/a2-composer.tsx",
+        "src/app/client/projects",
+        "src/app/client/inbox",
+        "src/app/client/today",
+        "prisma/schema.prisma and one additive migration",
+        "test/construction-operating-assistant-r0*.test.ts",
+        "matching disposable PostgreSQL integration tests"
+      ],
+      "planPath": "plans/COA-R0-OPEN-LOOP-IMPLEMENT-001.md",
+      "planSha256": "ab06e14a99deb080364f8496e6d45caa0335386ef34f248a2f36a8d06519312b",
+      "completionCommand": "npm.cmd run test:run -- test/construction-operating-assistant-r0*.test.ts",
+      "evidencePaths": [
+        "evidence/ch-003-open-loop-implementation.md",
+        "evidence/red-and-mutation-results.json"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "COA-R0-LOCAL-PROOF-001",
+      "title": "Disposable PostgreSQL invoice-readiness proof",
+      "objective": "Prove the complete local loop through missing evidence, contradiction, verification, readiness, restart, replay, prepared-unsent follow-up and differentiated role projections.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": [
+        "COA-R0-OPEN-LOOP-IMPLEMENT-001"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0",
+      "branch": "codex/endvera-construction-operating-assistant-r0",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "COA-R0-OPEN-LOOP-IMPLEMENT-001"
+      },
+      "authority": "LOCAL CONSTRUCTION OPERATING ASSISTANT PRODUCT RESET, OPEN-LOOP INVOICE-READINESS IMPLEMENTATION AND SYNTHETIC OR EXPLICITLY FOUNDER-OWNED PROOF ONLY; PROVIDER, CUSTOMER OR PROSPECT DATA, EXTERNAL TRANSPORT, OAUTH, ACCOUNTING WRITE, EXECUTE, EXTERNAL WRITE, PUSH, PREVIEW, PRODUCTION AND DEPLOYMENT NO-GO",
+      "allowedScope": [
+        "specs/080-construction-operating-assistant-open-loop-r0",
+        "OpenLoop R0 product files",
+        "Construction Assistant V1 bridge/projection files explicitly admitted by the implementation entry",
+        "test/construction-operating-assistant-r0*.test.ts",
+        "matching disposable PostgreSQL integration tests"
+      ],
+      "planPath": "plans/COA-R0-LOCAL-PROOF-001.md",
+      "planSha256": "5521d139102b4c16a5760313ded04411d23cd65157cc4b7f42094356a1bf8d50",
+      "completionCommand": "pwsh specs/080-construction-operating-assistant-open-loop-r0/scripts/validate-local-proof.ps1",
+      "evidencePaths": [
+        "evidence/ch-004-local-proof.md",
+        "evidence/local-proof-result.json"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "COA-R0-CLOSEOUT-001",
+      "title": "OpenLoop R0 pristine closeout",
+      "objective": "Run proportional final gates, close Spec Kit and dashboard evidence, drain the queue, commit a clean local lane and checkpoint only demonstrated facts in the canonical Brain.",
+      "role": "CLOSEOUT",
+      "status": "OPEN",
+      "dependencies": [
+        "COA-R0-LOCAL-PROOF-001"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0",
+      "branch": "codex/endvera-construction-operating-assistant-r0",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "COA-R0-LOCAL-PROOF-001"
+      },
+      "authority": "LOCAL CONSTRUCTION OPERATING ASSISTANT PRODUCT RESET, OPEN-LOOP INVOICE-READINESS IMPLEMENTATION AND SYNTHETIC OR EXPLICITLY FOUNDER-OWNED PROOF ONLY; PROVIDER, CUSTOMER OR PROSPECT DATA, EXTERNAL TRANSPORT, OAUTH, ACCOUNTING WRITE, EXECUTE, EXTERNAL WRITE, PUSH, PREVIEW, PRODUCTION AND DEPLOYMENT NO-GO",
+      "allowedScope": [
+        "specs/080-construction-operating-assistant-open-loop-r0",
+        "all R0 product files",
+        "C:\\dev\\afterdesk-project-brain checkpoint files after product-lane release"
+      ],
+      "planPath": "plans/COA-R0-CLOSEOUT-001.md",
+      "planSha256": "41076de26ccb65d9446a640fb75698c081147837817824b8485205527a76e1c8",
+      "completionCommand": "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-brain.ps1",
+      "evidencePaths": [
+        "evidence/ch-005-pristine-dashboard-and-closeout.md",
+        "evidence/dashboard-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}
