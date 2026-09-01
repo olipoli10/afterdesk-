@@ -348,6 +348,40 @@ enum ConstructionHumanEscalationState {
   paused
 }
 
+enum ConstructionReceivableStatus {
+  open
+  partial
+  paid
+  disputed
+  void
+}
+
+enum ConstructionReceivableEventKind {
+  issued
+  payment_received
+  promise_to_pay
+  disputed
+  note
+}
+
+enum ConstructionFollowUpKind {
+  receivable_payment
+  missing_evidence
+}
+
+enum ConstructionFollowUpStatus {
+  scheduled
+  prepared_unsent
+  completed
+  cancelled
+}
+
+enum ConstructionFollowUpChannel {
+  SMS
+  EMAIL
+  HUMAN_CALL
+}
+
 // ---------- Auth (Better Auth owns these shapes) ----------
 
 model User {
@@ -393,6 +427,9 @@ model User {
   humanUnitDecisions                    HumanWorkUnitReviewDecision[] @relation("HumanUnitDecidedBy")
   humanUnitAcceptances                  HumanWorkUnitAcceptance[]     @relation("HumanUnitAcceptedBy")
   constructionHumanEscalationsRequested ConstructionHumanEscalation[] @relation("ConstructionHumanEscalationRequestedBy")
+  constructionReceivablesCreated        ConstructionReceivable[]      @relation("ConstructionReceivableCreatedBy")
+  constructionReceivableEventsAuthored  ConstructionReceivableEvent[] @relation("ConstructionReceivableEventActor")
+  constructionFollowUpsRequested        ConstructionFollowUp[]        @relation("ConstructionFollowUpRequestedBy")
 }
 
 /**
@@ -3343,6 +3380,9 @@ model ConstructionWorkspace {
   openLoops         ConstructionOpenLoop[]
   connectorAccounts ConstructionConnectorAccount[]
   humanEscalations  ConstructionHumanEscalation[]
+  receivables       ConstructionReceivable[]
+  receivableEvents  ConstructionReceivableEvent[]
+  followUps         ConstructionFollowUp[]
 
   @@index([ownerUserId, status])
 }
@@ -3403,6 +3443,8 @@ model ConstructionProject {
   actions          ConstructionAction[]
   openLoops        ConstructionOpenLoop[]
   humanEscalations ConstructionHumanEscalation[]
+  receivables      ConstructionReceivable[]
+  followUps        ConstructionFollowUp[]
 
   @@unique([workspaceId, code])
   @@index([workspaceId, name])
@@ -3429,6 +3471,8 @@ model ConstructionContact {
   messages      ConstructionMessage[]
   calendarItems ConstructionCalendarItem[]
   actions       ConstructionAction[]
+  receivables   ConstructionReceivable[]
+  followUps     ConstructionFollowUp[]
 
   @@index([workspaceId, displayName])
   @@index([workspaceId, normalizedPhone])
@@ -3544,6 +3588,8 @@ model ConstructionAction {
   simulatedDeliveredAt   DateTime?
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
+
+  followUp ConstructionFollowUp?
 
   @@index([workspaceId, status, dueAt])
   @@index([contactId, status])
@@ -3679,6 +3725,7 @@ model ConstructionOpenLoop {
   actions          ConstructionAction[]
   sourceMessages   ConstructionMessage[]               @relation("ConstructionOpenLoopSourceMessages")
   humanEscalations ConstructionHumanEscalation[]
+  followUps        ConstructionFollowUp[]
 
   @@unique([workspaceId, idempotencyKey])
   @@unique([workspaceId, semanticKey])
@@ -3818,6 +3865,102 @@ model ConstructionHumanEscalation {
   @@unique([workspaceId, idempotencyKey])
   @@index([openLoopId, state, createdAt])
   @@index([workspaceId, state, createdAt])
+}
+
+/// Current operational projection of one issued invoice. Append-only events
+/// below retain how this balance became true.
+model ConstructionReceivable {
+  id                     String                       @id @default(cuid())
+  workspaceId            String
+  workspace              ConstructionWorkspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  projectId              String
+  project                ConstructionProject          @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  contactId              String?
+  contact                ConstructionContact?         @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  invoiceReference       String
+  originalAmountMinor    Int
+  outstandingAmountMinor Int
+  currency               String                       @default("CAD")
+  issuedAt               DateTime
+  dueAt                  DateTime
+  status                 ConstructionReceivableStatus @default(open)
+  version                Int                          @default(1)
+  idempotencyKey         String
+  createdById            String
+  createdBy              User                         @relation("ConstructionReceivableCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  paidAt                 DateTime?
+  createdAt              DateTime                     @default(now())
+  updatedAt              DateTime                     @updatedAt
+
+  events    ConstructionReceivableEvent[]
+  followUps ConstructionFollowUp[]
+
+  @@unique([workspaceId, invoiceReference])
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, status, dueAt])
+  @@index([projectId, status])
+}
+
+/// Immutable provenance for every receivable assertion and balance change.
+model ConstructionReceivableEvent {
+  id                        String                          @id @default(cuid())
+  workspaceId               String
+  workspace                 ConstructionWorkspace           @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  receivableId              String
+  receivable                ConstructionReceivable          @relation(fields: [receivableId], references: [id], onDelete: Restrict)
+  kind                      ConstructionReceivableEventKind
+  eventKey                  String
+  amountMinor               Int?
+  resultingOutstandingMinor Int
+  note                      String?
+  sourceRef                 String?
+  actorId                   String
+  actor                     User                            @relation("ConstructionReceivableEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+  occurredAt                DateTime
+  createdAt                 DateTime                        @default(now())
+
+  @@unique([receivableId, eventKey])
+  @@index([workspaceId, createdAt])
+  @@index([receivableId, createdAt])
+}
+
+/// Durable local schedule. Becoming due prepares an approval-gated action; it
+/// never sends through a connector in R6.
+model ConstructionFollowUp {
+  id             String                      @id @default(cuid())
+  workspaceId    String
+  workspace      ConstructionWorkspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  projectId      String
+  project        ConstructionProject         @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  contactId      String
+  contact        ConstructionContact         @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  receivableId   String?
+  receivable     ConstructionReceivable?     @relation(fields: [receivableId], references: [id], onDelete: Restrict)
+  openLoopId     String?
+  openLoop       ConstructionOpenLoop?       @relation(fields: [openLoopId], references: [id], onDelete: Restrict)
+  kind           ConstructionFollowUpKind
+  status         ConstructionFollowUpStatus  @default(scheduled)
+  dueAt          DateTime
+  channel        ConstructionFollowUpChannel
+  body           String
+  bodyHash       String
+  idempotencyKey String
+  requestedById  String
+  requestedBy    User                        @relation("ConstructionFollowUpRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+  actionId       String?                     @unique
+  action         ConstructionAction?         @relation(fields: [actionId], references: [id], onDelete: Restrict)
+  attempt        Int                         @default(0)
+  preparedAt     DateTime?
+  completedAt    DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([status, dueAt])
+  @@index([workspaceId, status, dueAt])
+  @@index([receivableId, status])
+  @@index([openLoopId, status])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

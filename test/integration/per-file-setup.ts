@@ -84,6 +84,10 @@ const TRUNCATE_GUARDED_TABLES = [
     table: "ConstructionHumanEscalation",
     trigger: "ConstructionHumanEscalation_guard_truncate",
   },
+  {
+    table: "ConstructionReceivableEvent",
+    trigger: "ConstructionReceivableEvent_guard_truncate",
+  },
 ];
 
 beforeAll(async () => {
