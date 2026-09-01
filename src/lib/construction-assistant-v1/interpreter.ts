@@ -185,6 +185,10 @@ export function interpretConstructionMessage(
   return constructionInterpretationSchema.parse({
     ...base(context),
     intent: "UNSUPPORTED",
+    // An unsupported operational update can still be safely filed when its
+    // project identity is exact. This records provenance without inventing a
+    // fact or creating a consequential action.
+    projectId: projects.length === 1 ? projects[0].id : null,
     confidence: 0,
     clarification: {
       reason: "UNSUPPORTED_REQUEST",

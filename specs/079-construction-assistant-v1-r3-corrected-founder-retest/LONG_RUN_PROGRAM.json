@@ -64,7 +64,7 @@
       "id": "CH-002",
       "title": "Integrated console, disposable database and dry run",
       "objective": "Build the guarded one-screen console, run the exact sequence against disposable PostgreSQL, restore RED mutations and complete all pre-observation gates without creating human evidence.",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 70,
       "dependencies": ["CH-001"],
       "allowedScope": [
@@ -82,8 +82,8 @@
         "evidence/preflight-packet.json",
         "evidence/mutation-results.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Single authenticated development-only console, pristine 34-migration PostgreSQL database and exact nine-step dry run validated. A reproduced Laval association defect was corrected with a targeted regression; 1189 fast tests, 97 integrations, lint, typecheck and the 99-page Webpack build passed with zero external activity.",
+      "completedAtUtc": "2026-09-01T00:15:00.000Z"
     },
     {
       "id": "CH-003",

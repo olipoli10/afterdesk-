@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "candidateFrozenAtUtc": "2026-09-01T00:15:00.000Z",
+  "sourceHead": "682eddc528eb564fb4c13e56ef18328e42ad0ba7",
+  "sourceTree": "8a89ef281e3c8df81f5a60ccc25c08f610d57da2",
+  "candidateCommit": "73c7a0efde3483b2e6e329a6ff823ed8763db94f",
+  "route": "http://localhost:3000/client/construction-retest",
+  "singleSurface": true,
+  "authenticatedClientOnly": true,
+  "developmentGuarded": true,
+  "providerMessageIdServerOwned": true,
+  "technicalSuccessFounderEditable": false,
+  "disposableDatabase": {
+    "name": "endvera-construction-v1-r3",
+    "host": "localhost",
+    "freshMigrationApplied": true,
+    "migrationCount": 34,
+    "workspaceCountBeforeFounder": 0
+  },
+  "exactDryRun": {
+    "clearAppointmentCanonicalCount": 1,
+    "ambiguousRequestConsequentialWriteCount": 0,
+    "tomorrowAnswerAccuracy": true,
+    "firstInboundCanonicalEffectCount": 1,
+    "inboundAssociatedToLaval": true,
+    "duplicateCanonicalEffectCount": 0,
+    "outboundPreparedCount": 1,
+    "firstApprovalSimulatedDeliveryCount": 1,
+    "secondApprovalSimulatedDeliveryCount": 0,
+    "replayRefusalObserved": true,
+    "externalTransportCount": 0
+  },
+  "boundedCorrection": {
+    "reproducedBeforeChange": true,
+    "defect": "An exact single-project inbound update was persisted at workspace scope instead of the uniquely named Laval project.",
+    "behavior": "Persist the exact interpreter-derived project identity while preserving UNSUPPORTED intent and creating no consequential action.",
+    "regressionTest": "test/construction-assistant-v1-r3-founder-retest-postgres.test.ts"
+  },
+  "validation": {
+    "r3Targeted": { "passed": true, "passedTests": 16 },
+    "fullSuite": { "passed": true, "passedFiles": 83, "skippedFiles": 2, "passedTests": 1189, "skippedTests": 2 },
+    "integrations": { "passed": true, "passedFiles": 14, "passedTests": 97 },
+    "lint": { "passed": true },
+    "typecheck": { "passed": true },
+    "build": { "passed": true, "nextVersion": "16.2.12", "bundler": "webpack", "staticPages": 99 },
+    "specKitAnalyze": { "passed": true, "findings": 0 },
+    "gitDiffCheck": { "passed": true }
+  },
+  "externalProviderCallCount": 0,
+  "externalTransportCount": 0,
+  "founderObservationCreated": false,
+  "verdict": "FOUNDER_RETEST_PREFLIGHT_READY"
+}

@@ -10,7 +10,6 @@ import { prisma } from "@/lib/db";
 import { localInboundEnvelopeSchema } from "@/lib/construction-assistant-v1/messaging";
 import { boundOutboundActionSchema } from "@/lib/construction-assistant-v1/outbound";
 import {
-  FOUNDER_RETEST_STEPS,
   founderAnswersSchema,
   INITIAL_RETEST_ACTION_STATE,
   R3_MESSAGES,
@@ -62,7 +61,10 @@ function assertLocalRetestMode() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error("R3_DATABASE_URL_MISSING");
   const url = new URL(databaseUrl);
-  if (!(["localhost", "127.0.0.1"].includes(url.hostname)) || !url.pathname.toLocaleLowerCase("en-CA").includes("r3")) {
+  if (
+    !["localhost", "127.0.0.1"].includes(url.hostname) ||
+    process.env.ENDVERA_R3_DISPOSABLE_DB_NAME !== "endvera-construction-v1-r3"
+  ) {
     throw new Error("R3_DATABASE_NOT_DISPOSABLE_LOCAL");
   }
 }
@@ -168,7 +170,13 @@ async function projectionFor(userId: string, session: StoredSession): Promise<Re
       select: { title: true, startsAt: true, timezone: true, projectId: true, contactId: true, sourceMessage: { select: { originalBody: true } } },
     }),
     prisma.constructionMessage.count({
-      where: { workspaceId: session.workspaceId, provider: "ENDVERA_LOCAL_SIMULATOR", providerMessageId: session.providerMessageId, direction: "inbound" },
+      where: {
+        workspaceId: session.workspaceId,
+        projectId: session.projectId,
+        provider: "ENDVERA_LOCAL_SIMULATOR",
+        providerMessageId: session.providerMessageId,
+        direction: "inbound",
+      },
     }),
     prisma.constructionAction.findMany({
       where: { workspaceId: session.workspaceId, type: "outbound_message", sourceMessage: { originalBody: R3_MESSAGES.outbound } },

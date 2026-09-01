@@ -9,13 +9,13 @@
 
 ## Phase 2 — Guided console and disposable preflight
 
-- [ ] T005 [US1] Add the fail-closed local-only authenticated route and one-screen console
-- [ ] T006 [US1] Add server-owned sequential orchestration without new business logic
-- [ ] T007 [US2] Add integrated PostgreSQL-backed Projects, Calendar and Inbox projections
-- [ ] T008 [US2] Add server-owned duplicate identity and two-attempt approval flow
-- [ ] T009 Prepare the named disposable PostgreSQL environment and synthetic R3 CLIENT identity
-- [ ] T010 Complete the dry run without writing founder-observation evidence
-- [ ] T011 Run all pre-observation validation gates and freeze the candidate
+- [x] T005 [US1] Add the fail-closed local-only authenticated route and one-screen console
+- [x] T006 [US1] Add server-owned sequential orchestration without new business logic
+- [x] T007 [US2] Add integrated PostgreSQL-backed Projects, Calendar and Inbox projections
+- [x] T008 [US2] Add server-owned duplicate identity and two-attempt approval flow
+- [x] T009 Prepare the named disposable PostgreSQL environment and synthetic R3 CLIENT identity
+- [x] T010 Complete the dry run without writing founder-observation evidence
+- [x] T011 Run all pre-observation validation gates and freeze the candidate
 
 ## Phase 3 — Real founder observation
 

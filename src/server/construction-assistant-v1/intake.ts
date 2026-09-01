@@ -241,7 +241,10 @@ export async function processConstructionMessage(input: {
         reply = interpretation.clarification.question;
       }
 
-      await tx.constructionMessage.update({ where: { id: message.id }, data: { status } });
+      await tx.constructionMessage.update({
+        where: { id: message.id },
+        data: { status, projectId: interpretation.projectId ?? null },
+      });
       await appendConstructionAudit(tx, {
         workspaceId: input.workspaceId,
         actorUserId: input.userId,

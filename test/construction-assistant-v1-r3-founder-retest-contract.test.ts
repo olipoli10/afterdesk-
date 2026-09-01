@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { founderAnswersSchema, FOUNDER_RETEST_STEPS, R3_MESSAGES } from "../src/components/construction-assistant-v1/founder-retest/contract";
+import { interpretConstructionMessage } from "../src/lib/construction-assistant-v1/interpreter";
 import { validateRetestContract } from "../specs/079-construction-assistant-v1-r3-corrected-founder-retest/scripts/retest-contract";
 
 const root = process.cwd();
@@ -47,5 +48,18 @@ describe("Construction Assistant V1 R3 founder retest contract", () => {
     const feature = readFileSync(path.join(root, "specs/079-construction-assistant-v1-r3-corrected-founder-retest/spec.md"), "utf8");
     expect(feature).toContain("No stateless or live ChatGPT comparison");
     expect(feature).not.toContain("observableAdvantageRating");
+  });
+
+  it("files the exact non-consequential Laval update without inventing an action", () => {
+    const result = interpretConstructionMessage(R3_MESSAGES.inbound, {
+      referenceNow: "2026-08-31T13:00:00.000Z",
+      locale: "fr-CA",
+      timezone: "America/Toronto",
+      projects: [{ id: "project-laval", code: "LAVAL-001", name: "Rénovation Laval" }],
+      contacts: [{ id: "contact-marc", displayName: "Marc", preferredLanguage: "fr" }],
+    });
+    expect(result).toMatchObject({ intent: "UNSUPPORTED", projectId: "project-laval" });
+    expect(result.outboundDraft).toBeNull();
+    expect(result.clarification?.reason).toBe("UNSUPPORTED_REQUEST");
   });
 });
