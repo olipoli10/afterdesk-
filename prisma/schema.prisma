@@ -3227,16 +3227,17 @@ model ConstructionWorkspace {
   createdAt       DateTime                    @default(now())
   updatedAt       DateTime                    @updatedAt
 
-  members         ConstructionWorkspaceMember[]
-  identities      ConstructionCommunicationIdentity[]
-  projects        ConstructionProject[]
-  contacts        ConstructionContact[]
-  messages        ConstructionMessage[]
-  interpretations ConstructionInterpretation[]
-  calendarItems   ConstructionCalendarItem[]
-  actions         ConstructionAction[]
-  auditEvents     ConstructionAuditEvent[]
-  openLoops       ConstructionOpenLoop[]
+  members           ConstructionWorkspaceMember[]
+  identities        ConstructionCommunicationIdentity[]
+  projects          ConstructionProject[]
+  contacts          ConstructionContact[]
+  messages          ConstructionMessage[]
+  interpretations   ConstructionInterpretation[]
+  calendarItems     ConstructionCalendarItem[]
+  actions           ConstructionAction[]
+  auditEvents       ConstructionAuditEvent[]
+  openLoops         ConstructionOpenLoop[]
+  connectorAccounts ConstructionConnectorAccount[]
 
   @@index([ownerUserId, status])
 }
@@ -3459,6 +3460,79 @@ model ConstructionAuditEvent {
 
   @@index([workspaceId, createdAt])
   @@index([entityType, entityId, createdAt])
+}
+
+// Connector authority is workspace-scoped and fail-closed. OAuth access and
+// refresh tokens never live in these rows: credentialRef and syncCursorRef are
+// opaque references to a future encrypted secret store.
+model ConstructionConnectorAccount {
+  id                     String                @id @default(cuid())
+  workspaceId            String
+  workspace              ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  provider               String
+  status                 String                @default("prepared")
+  requestedScopes        String[]              @default([])
+  grantedScopes          String[]              @default([])
+  externalAccountKeyHash String?
+  credentialRef          String?
+  syncCursorRef          String?
+  calendarRef            String                @default("primary")
+  stateVersion           Int                   @default(1)
+  connectedAt            DateTime?
+  revokedAt              DateTime?
+  createdByUserId        String
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+
+  grants     ConstructionConnectorGrant[]
+  operations ConstructionConnectorOperation[]
+
+  @@unique([workspaceId, provider])
+  @@unique([id, workspaceId])
+  @@index([workspaceId, status])
+}
+
+model ConstructionConnectorGrant {
+  id                 String                       @id @default(cuid())
+  connectorAccountId String
+  account            ConstructionConnectorAccount @relation(fields: [connectorAccountId], references: [id], onDelete: Cascade)
+  capability         String
+  status             String                       @default("requested")
+  requestedScopes    String[]                     @default([])
+  grantedScopes      String[]                     @default([])
+  stateVersion       Int                          @default(1)
+  grantedAt          DateTime?
+  revokedAt          DateTime?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+
+  @@unique([connectorAccountId, capability])
+  @@index([connectorAccountId, status])
+}
+
+model ConstructionConnectorOperation {
+  id                         String                       @id @default(cuid())
+  workspaceId                String
+  connectorAccountId         String
+  account                    ConstructionConnectorAccount @relation(fields: [connectorAccountId, workspaceId], references: [id, workspaceId], onDelete: Cascade)
+  kind                       String
+  status                     String                       @default("prepared")
+  idempotencyKey             String
+  request                    Json
+  requestHash                String
+  result                     Json?
+  resultHash                 String?
+  externalTransportPerformed Boolean                      @default(false)
+  createdByUserId            String
+  preparedAt                 DateTime                     @default(now())
+  appliedAt                  DateTime?
+  refusedAt                  DateTime?
+  createdAt                  DateTime                     @default(now())
+  updatedAt                  DateTime                     @updatedAt
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([connectorAccountId, status, createdAt])
+  @@index([workspaceId, kind, status])
 }
 
 // ENDVERA Construction Operating Assistant R0 — durable outcome closure.
