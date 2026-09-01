@@ -35,6 +35,7 @@ import {
   type EvidenceAttempt,
 } from "@/lib/evidence";
 import type { MobileProjectTimeline } from "@/lib/timeline";
+import type { MobileJobCommand, MobileJobSchedule } from "@/lib/jobs";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -68,6 +69,8 @@ type MobileSessionValue = {
   latestEvidenceAttempt: EvidenceAttempt | null;
   timeline: MobileProjectTimeline | null;
   timelineLoadState: LoadState;
+  jobSchedule: MobileJobSchedule | null;
+  jobScheduleLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -82,6 +85,8 @@ type MobileSessionValue = {
   ) => Promise<PreparedActionAttempt>;
   submitEvidenceAttempt: (attempt: EvidenceAttempt) => Promise<EvidenceAttempt>;
   loadTimeline: (projectId: string) => Promise<void>;
+  loadJobSchedule: (projectId?: string) => Promise<void>;
+  submitJobCommand: (command: MobileJobCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -138,6 +143,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     useState<EvidenceAttempt | null>(null);
   const [timeline, setTimeline] = useState<MobileProjectTimeline | null>(null);
   const [timelineLoadState, setTimelineLoadState] = useState<LoadState>("IDLE");
+  const [jobSchedule, setJobSchedule] = useState<MobileJobSchedule | null>(null);
+  const [jobScheduleLoadState, setJobScheduleLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -147,6 +154,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingPreparedActionRequest = useRef<string | null>(null);
   const dispatchingEvidenceRequest = useRef<string | null>(null);
   const dispatchingPermissionRequest = useRef<string | null>(null);
+  const dispatchingJobRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -197,6 +205,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setActiveWorkspace(workspace);
       setTimeline(null);
       setTimelineLoadState("IDLE");
+      setJobSchedule(null);
+      setJobScheduleLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setOutboxEntries([]);
         setOutboxLoadState("LOADING");
@@ -555,6 +565,69 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     [activeWorkspace, api, cockpit?.projects],
   );
 
+  const loadJobSchedule = useCallback(async (projectId?: string) => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    if (projectId && !cockpit?.projects.some((project) => project.id === projectId)) {
+      throw new Error("MOBILE_JOB_PROJECT_REFUSED");
+    }
+    setJobScheduleLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.jobSchedule(activeWorkspace.id, projectId);
+      if (result.role !== activeWorkspace.role) throw new MobileApiError("INVALID_RESPONSE");
+      setJobSchedule(result);
+      setJobScheduleLoadState("READY");
+    } catch (error) {
+      setJobSchedule(null);
+      setJobScheduleLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api, cockpit?.projects]);
+
+  const submitJobCommand = useCallback(async (command: MobileJobCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_JOB_COMMAND_PERMISSION_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) throw new Error("MOBILE_JOB_WORKSPACE_REFUSED");
+    if (dispatchingJobRequest.current) throw new Error("MOBILE_JOB_COMMAND_ALREADY_DISPATCHED");
+    dispatchingJobRequest.current = command.commandId;
+    setJobScheduleLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await prepareOutboxEntry("JOB_COMMAND", command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.jobCommand(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
+      const refreshed = await api.jobSchedule(activeWorkspace.id);
+      setJobSchedule(refreshed);
+      setJobScheduleLoadState("READY");
+    } catch (error) {
+      setJobScheduleLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      await settleOutboxEntry(command.commandId, state, activeWorkspace.id, publicMessage(error));
+      if (error instanceof MobileApiError && error.code === "CONFLICT") {
+        const refreshed = await api.jobSchedule(activeWorkspace.id).catch(() => null);
+        if (refreshed) {
+          setJobSchedule(refreshed);
+          setJobScheduleLoadState("READY");
+        }
+      }
+    } finally {
+      dispatchingJobRequest.current = null;
+    }
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -649,8 +722,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         result: null,
         publicError: null,
       });
-    } else {
+    } else if (entry.kind === "PERMISSION_REVOCATION") {
       await revokePermission(entry.command);
+    } else {
+      await submitJobCommand(entry.command);
     }
     await refreshOutbox(activeWorkspace.id);
   }, [
@@ -661,6 +736,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitAssistantAttempt,
     submitAttempt,
     submitPreparedActionAttempt,
+    submitJobCommand,
   ]);
 
   const discardOutboxEntry = useCallback(async (entryId: string) => {
@@ -694,6 +770,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setLatestEvidenceAttempt(null);
     setTimeline(null);
     setTimelineLoadState("IDLE");
+    setJobSchedule(null);
+    setJobScheduleLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -718,6 +796,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestEvidenceAttempt,
       timeline,
       timelineLoadState,
+      jobSchedule,
+      jobScheduleLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -730,6 +810,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitPreparedActionAttempt,
       submitEvidenceAttempt,
       loadTimeline,
+      loadJobSchedule,
+      submitJobCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -748,6 +830,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestEvidenceAttempt,
       timeline,
       timelineLoadState,
+      jobSchedule,
+      jobScheduleLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -765,6 +849,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitPreparedActionAttempt,
       submitEvidenceAttempt,
       loadTimeline,
+      loadJobSchedule,
+      submitJobCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

@@ -3,6 +3,7 @@ import { mobileAssistantRequestSchema } from "@/lib/assistant";
 import { mobileCommandSchema } from "@/lib/commands";
 import { mobilePreparedActionDecisionCommandSchema } from "@/lib/prepared-actions";
 import { mobileRevokePermissionCommandSchema } from "@/lib/permissions";
+import { mobileJobCommandSchema } from "@/lib/jobs";
 
 export const MOBILE_OUTBOX_VERSION = 1 as const;
 export const MOBILE_OUTBOX_LIMIT = 20;
@@ -34,6 +35,7 @@ export const mobileOutboxEntrySchema = z.discriminatedUnion("kind", [
   z.object({ ...base, kind: z.literal("ASSISTANT_REQUEST"), command: mobileAssistantRequestSchema }).strict(),
   z.object({ ...base, kind: z.literal("PREPARED_ACTION_DECISION"), command: mobilePreparedActionDecisionCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("PERMISSION_REVOCATION"), command: mobileRevokePermissionCommandSchema }).strict(),
+  z.object({ ...base, kind: z.literal("JOB_COMMAND"), command: mobileJobCommandSchema }).strict(),
 ]);
 
 const indexSchema = z.object({
@@ -73,6 +75,10 @@ function commandIdentity(kind: MobileOutboxKind, command: unknown) {
   }
   if (kind === "PREPARED_ACTION_DECISION") {
     const parsed = mobilePreparedActionDecisionCommandSchema.parse(command);
+    return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
+  }
+  if (kind === "JOB_COMMAND") {
+    const parsed = mobileJobCommandSchema.parse(command);
     return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
   }
   const parsed = mobileRevokePermissionCommandSchema.parse(command);
@@ -234,6 +240,7 @@ export function mobileOutboxLabel(entry: MobileOutboxEntry) {
   if (entry.kind === "ASSISTANT_REQUEST") return "Commande à l’assistant";
   if (entry.kind === "PREPARED_ACTION_DECISION") return "Décision sur une action préparée";
   if (entry.kind === "PERMISSION_REVOCATION") return "Révocation locale";
+  if (entry.kind === "JOB_COMMAND") return "Décision d’horaire";
   if (entry.command.type === "RECORD_RECEIVABLE") return "Compte à recevoir";
   if (entry.command.type === "RECORD_PAYMENT") return "Paiement reçu";
   return "Suivi planifié";

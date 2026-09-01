@@ -382,6 +382,25 @@ enum ConstructionFollowUpChannel {
   HUMAN_CALL
 }
 
+enum ConstructionJobStatus {
+  proposed
+  scheduled
+  blocked
+  in_progress
+  completed
+  cancelled
+}
+
+enum ConstructionJobAssigneeKind {
+  member
+  contact
+}
+
+enum ConstructionAvailabilityKind {
+  available
+  unavailable
+}
+
 // ---------- Auth (Better Auth owns these shapes) ----------
 
 model User {
@@ -430,6 +449,8 @@ model User {
   constructionReceivablesCreated        ConstructionReceivable[]      @relation("ConstructionReceivableCreatedBy")
   constructionReceivableEventsAuthored  ConstructionReceivableEvent[] @relation("ConstructionReceivableEventActor")
   constructionFollowUpsRequested        ConstructionFollowUp[]        @relation("ConstructionFollowUpRequestedBy")
+  constructionJobsCreated               ConstructionJob[]             @relation("ConstructionJobCreatedBy")
+  constructionJobTransitionsAuthored    ConstructionJobTransition[]   @relation("ConstructionJobTransitionActor")
 }
 
 /**
@@ -3383,6 +3404,11 @@ model ConstructionWorkspace {
   receivables       ConstructionReceivable[]
   receivableEvents  ConstructionReceivableEvent[]
   followUps         ConstructionFollowUp[]
+  jobs              ConstructionJob[]
+  jobAssignments    ConstructionJobAssignment[]
+  jobDependencies   ConstructionJobDependency[]
+  jobAvailability   ConstructionResourceAvailability[]
+  jobTransitions    ConstructionJobTransition[]
 
   @@index([ownerUserId, status])
 }
@@ -3445,6 +3471,7 @@ model ConstructionProject {
   humanEscalations ConstructionHumanEscalation[]
   receivables      ConstructionReceivable[]
   followUps        ConstructionFollowUp[]
+  jobs             ConstructionJob[]
 
   @@unique([workspaceId, code])
   @@index([workspaceId, name])
@@ -3467,12 +3494,13 @@ model ConstructionContact {
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
 
-  identities    ConstructionCommunicationIdentity[]
-  messages      ConstructionMessage[]
-  calendarItems ConstructionCalendarItem[]
-  actions       ConstructionAction[]
-  receivables   ConstructionReceivable[]
-  followUps     ConstructionFollowUp[]
+  identities     ConstructionCommunicationIdentity[]
+  messages       ConstructionMessage[]
+  calendarItems  ConstructionCalendarItem[]
+  actions        ConstructionAction[]
+  receivables    ConstructionReceivable[]
+  followUps      ConstructionFollowUp[]
+  jobAssignments ConstructionJobAssignment[]
 
   @@index([workspaceId, displayName])
   @@index([workspaceId, normalizedPhone])
@@ -3961,6 +3989,114 @@ model ConstructionFollowUp {
   @@index([workspaceId, status, dueAt])
   @@index([receivableId, status])
   @@index([openLoopId, status])
+}
+
+/// Canonical project-scoped work block. Calendar records describe appointments;
+/// jobs describe accountable operational work and its dependency graph.
+model ConstructionJob {
+  id          String                @id @default(cuid())
+  workspaceId String
+  workspace   ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  projectId   String
+  project     ConstructionProject   @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  title       String
+  description String?
+  startsAt    DateTime
+  endsAt      DateTime
+  timezone    String
+  status      ConstructionJobStatus @default(proposed)
+  priority    Int                   @default(0)
+  version     Int                   @default(1)
+  sourceRef   String?
+  createdById String
+  createdBy   User                  @relation("ConstructionJobCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  assignments      ConstructionJobAssignment[]
+  predecessorLinks ConstructionJobDependency[] @relation("ConstructionJobPredecessor")
+  successorLinks   ConstructionJobDependency[] @relation("ConstructionJobSuccessor")
+  transitions      ConstructionJobTransition[]
+
+  @@index([workspaceId, startsAt, endsAt])
+  @@index([projectId, status, startsAt])
+}
+
+/// A server-validated pointer to either an active workspace member or an active
+/// construction contact. Identity is immutable once attached to a job.
+model ConstructionJobAssignment {
+  id           String                      @id @default(cuid())
+  workspaceId  String
+  workspace    ConstructionWorkspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  jobId        String
+  job          ConstructionJob             @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  assigneeKind ConstructionJobAssigneeKind
+  assigneeId   String
+  roleLabel    String?
+  contact      ConstructionContact?        @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  contactId    String?
+  createdAt    DateTime                    @default(now())
+
+  @@unique([jobId, assigneeKind, assigneeId])
+  @@index([workspaceId, assigneeKind, assigneeId])
+}
+
+/// Immutable directed edge: predecessor must complete before successor can be
+/// considered conflict-free. The service rejects cycles before insertion.
+model ConstructionJobDependency {
+  id               String                @id @default(cuid())
+  workspaceId      String
+  workspace        ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  predecessorJobId String
+  predecessorJob   ConstructionJob       @relation("ConstructionJobPredecessor", fields: [predecessorJobId], references: [id], onDelete: Restrict)
+  successorJobId   String
+  successorJob     ConstructionJob       @relation("ConstructionJobSuccessor", fields: [successorJobId], references: [id], onDelete: Restrict)
+  createdAt        DateTime              @default(now())
+
+  @@unique([predecessorJobId, successorJobId])
+  @@index([workspaceId, successorJobId])
+}
+
+/// Explicit resource availability. Rows are immutable facts; a later change is
+/// represented by another interval rather than overwriting source history.
+model ConstructionResourceAvailability {
+  id           String                       @id @default(cuid())
+  workspaceId  String
+  workspace    ConstructionWorkspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  assigneeKind ConstructionJobAssigneeKind
+  assigneeId   String
+  kind         ConstructionAvailabilityKind
+  startsAt     DateTime
+  endsAt       DateTime
+  sourceRef    String?
+  createdAt    DateTime                     @default(now())
+
+  @@index([workspaceId, assigneeKind, assigneeId, startsAt, endsAt])
+}
+
+/// One immutable replay ledger row per accepted command. It contains the exact
+/// before/after/result snapshots needed to reconstruct or replay the outcome.
+model ConstructionJobTransition {
+  id            String                @id @default(cuid())
+  workspaceId   String
+  workspace     ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  jobId         String?
+  job           ConstructionJob?      @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  commandId     String
+  commandHash   String
+  action        String
+  versionBefore Int?
+  versionAfter  Int?
+  beforeState   Json?
+  afterState    Json?
+  result        Json
+  actorId       String
+  actor         User                  @relation("ConstructionJobTransitionActor", fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt     DateTime              @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([jobId, createdAt])
+  @@index([workspaceId, createdAt])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

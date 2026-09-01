@@ -28,6 +28,11 @@ import {
   mobileUnifiedIntentEnvelopeSchema,
   mobileUnifiedIntentResultSchema,
 } from "@/lib/intent";
+import {
+  mobileJobCommandResultSchema,
+  mobileJobCommandSchema,
+  parseMobileJobSchedule,
+} from "@/lib/jobs";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -266,6 +271,41 @@ export class MobileApi {
       const result = parseMobileProjectTimeline(value);
       if (result.workspaceId !== workspaceId || result.project.id !== projectId) {
         throw new Error("MOBILE_TIMELINE_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async jobSchedule(workspaceId: string, projectId?: string) {
+    const query = new URLSearchParams({ workspaceId });
+    if (projectId) query.set("projectId", projectId);
+    const value = await this.request(`/api/endvera/v1/mobile/jobs?${query.toString()}`, { method: "GET" });
+    try {
+      const result = parseMobileJobSchedule(value);
+      if (result.workspaceId !== workspaceId) throw new Error("MOBILE_JOB_WORKSPACE_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async jobCommand(command: unknown) {
+    const parsedCommand = mobileJobCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/jobs", {
+      method: "POST",
+      body: JSON.stringify(parsedCommand),
+    });
+    try {
+      const result = mobileJobCommandResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.jobId !== parsedCommand.jobId ||
+        result.action !== parsedCommand.action
+      ) {
+        throw new Error("MOBILE_JOB_RESULT_MISMATCH");
       }
       return result;
     } catch {

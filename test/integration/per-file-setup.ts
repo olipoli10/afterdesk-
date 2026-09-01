@@ -88,6 +88,10 @@ const TRUNCATE_GUARDED_TABLES = [
     table: "ConstructionReceivableEvent",
     trigger: "ConstructionReceivableEvent_guard_truncate",
   },
+  {
+    table: "ConstructionJobTransition",
+    trigger: "ConstructionJobTransition_guard_truncate",
+  },
 ];
 
 beforeAll(async () => {
