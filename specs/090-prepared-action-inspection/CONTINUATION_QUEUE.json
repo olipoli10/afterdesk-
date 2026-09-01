@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 2,
+  "queueMode": "PINNED_SEQUENTIAL_CAMPAIGN",
+  "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
+  "campaignObjective": "Prove fail-closed autonomous continuation across three consecutive local product blocks while delivering exact prepared-action inspection, canonical decisions and a native control center without founder prompts or external transport.",
+  "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+  "forbiddenActions": [
+    "provider or credential use",
+    "customer or prospect data",
+    "real SMS call email calendar payment or external transport",
+    "external write or spending",
+    "push Preview Production deployment EAS or app-store action",
+    "goal completion or final report while the queue is not DRAINED"
+  ],
+  "stopConditions": [
+    "source or Brain Git divergence",
+    "new external authority is required",
+    "a destructive migration or broad architecture rewrite becomes necessary",
+    "the continuation queue becomes invalid or cannot be restored exactly"
+  ],
+  "communication": {
+    "informationalLabel": "INFO — aucune réponse requise",
+    "blockingLabel": "BLOCAGE — réponse requise",
+    "authorityLabel": "AUTORITÉ — signature requise",
+    "completionLabel": "TERMINÉ — résultat",
+    "maxRoutineFounderPrompts": 0
+  },
+  "completionGuard": {
+    "minimumConsecutiveBlocks": 3,
+    "proofPath": "evidence/autonomous-continuation-proof.json",
+    "brainPath": "C:\\dev\\afterdesk-project-brain",
+    "watchdogStatePath": "C:\\Users\\oliro\\.codex\\automations\\endvera-r10-r12-autonomous-continuation\\automation.toml",
+    "requireWatchdogPaused": true
+  },
+  "entries": [
+    {
+      "id": "R10-INSPECTION",
+      "title": "Exact prepared-action inspection",
+      "objective": "Expose an exact role-safe prepared-action projection with recipient, channel, body, provenance, version and fingerprint while transport remains false.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "FIXED_HEAD",
+        "head": "a01ef13ef8da1ecf6c1137dae26e84ca4358ed45"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/090-prepared-action-inspection",
+        "src/lib/construction-operating-assistant-r10",
+        "src/server/construction-operating-assistant-r10",
+        "src/server/construction-operating-assistant-r7/gateway.ts",
+        "test/construction-operating-assistant-r10*.test.ts",
+        "test/integration/construction-operating-assistant-r10*.itest.ts"
+      ],
+      "planPath": "plan.md",
+      "planSha256": "9b6746074047fc28c30252269281b58af73ff8f3843361d4b687690105757e96",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r10-prepared-action-inspection.test.ts",
+      "evidencePaths": [
+        "evidence/r10-inspection-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "R11-DECISIONS",
+      "title": "Exact prepared-action decisions",
+      "objective": "Add idempotent and concurrency-safe exact approval, rejection and revocation with immutable audit and zero dispatch.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": [
+        "R10-INSPECTION"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R10-INSPECTION"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/091-prepared-action-decisions",
+        "src/lib/construction-operating-assistant-r11",
+        "src/server/construction-operating-assistant-r11",
+        "src/app/api/endvera/v1/mobile/prepared-actions/route.ts",
+        "test/construction-operating-assistant-r11*.test.ts",
+        "test/integration/construction-operating-assistant-r11*.itest.ts"
+      ],
+      "planPath": "../091-prepared-action-decisions/plan.md",
+      "planSha256": "e61a42fee8113e2b18ad93d987cf817a99b3daf144753d816c982415a4e17585",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r11-prepared-action-decisions.test.ts",
+      "evidencePaths": [
+        "../091-prepared-action-decisions/evidence/r11-decisions-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "R12-NATIVE-CONTROL",
+      "title": "Native prepared-action control center",
+      "objective": "Deliver strict mobile inspection and stable approve, reject and revoke controls that refresh canonical state and never dispatch.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": [
+        "R11-DECISIONS"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R11-DECISIONS"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/092-native-prepared-action-control",
+        "apps/mobile/src/app/(app)/actions.tsx",
+        "apps/mobile/src/lib/prepared-actions.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/prepared-actions.test.ts",
+        "test/integration/construction-operating-assistant-r12*.itest.ts"
+      ],
+      "planPath": "../092-native-prepared-action-control/plan.md",
+      "planSha256": "de8364a8b27ab152fb612496ae1b080d2672cde0b6e9082f257852e7a8e38469",
+      "completionCommand": "npm --prefix apps/mobile test -- --run test/prepared-actions.test.ts",
+      "evidencePaths": [
+        "../092-native-prepared-action-control/evidence/r12-native-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}
