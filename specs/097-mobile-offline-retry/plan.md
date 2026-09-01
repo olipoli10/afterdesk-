@@ -16,6 +16,27 @@ retry and what needs a fresh decision.
 - add recovery and explicit discard controls without background provider work;
 - add unit and local export proof.
 
+## Architecture and boundaries
+
+- the mobile app retains a versioned bounded entry in protected device storage
+  before foreground dispatch;
+- the canonical server remains the authority for authorization, tenancy,
+  idempotency and final effects;
+- app restart may demote only `SENDING` to `OUTCOME_UNKNOWN`; it never promotes
+  an unknown result to success;
+- the recovery list projects metadata and state, never the retained command
+  body;
+- clearing protected keys is a precondition of sign-out;
+- no database, server contract, connector, background task or new dependency is
+  introduced.
+
+## Rollout and rollback
+
+- rollout is local export proof only, with no customer or provider activation;
+- rollback removes the route and session integration, then clears the versioned
+  protected keys; canonical server records require no rollback;
+- readiness, roadmap and Verified-E2E metrics do not advance from R17 alone.
+
 ## Completion gate
 
 - restart restores the same pending command and stable identifier;

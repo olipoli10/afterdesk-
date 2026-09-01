@@ -39,6 +39,16 @@ import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
 } from "@/lib/permissions";
+import {
+  clearMobileOutbox,
+  discardMobileOutboxEntry as discardStoredOutboxEntry,
+  enqueueMobileOutbox,
+  loadMobileOutbox,
+  transitionMobileOutbox,
+  type MobileOutboxEntry,
+  type MobileOutboxKind,
+  type MobileOutboxState,
+} from "@/lib/outbox";
 
 type LoadState = "IDLE" | "LOADING" | "READY" | "UNAVAILABLE";
 
@@ -60,6 +70,8 @@ type MobileSessionValue = {
   timelineLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
+  outboxEntries: MobileOutboxEntry[];
+  outboxLoadState: LoadState;
   selectWorkspace: (workspaceId: string) => Promise<void>;
   refresh: () => Promise<void>;
   refreshAssistant: () => Promise<void>;
@@ -72,6 +84,8 @@ type MobileSessionValue = {
   loadTimeline: (projectId: string) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
+  retryOutboxEntry: (entryId: string) => Promise<void>;
+  discardOutboxEntry: (entryId: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -126,12 +140,51 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [timelineLoadState, setTimelineLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
+  const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
+  const [outboxLoadState, setOutboxLoadState] = useState<LoadState>("IDLE");
   const dispatchingRequest = useRef<string | null>(null);
   const dispatchingAssistantRequest = useRef<string | null>(null);
   const dispatchingPreparedActionRequest = useRef<string | null>(null);
   const dispatchingEvidenceRequest = useRef<string | null>(null);
   const dispatchingPermissionRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
+
+  const refreshOutbox = useCallback(async (workspaceId: string) => {
+    setOutboxLoadState("LOADING");
+    try {
+      const entries = await loadMobileOutbox({ workspaceId });
+      setOutboxEntries(entries);
+      setOutboxLoadState("READY");
+    } catch {
+      setOutboxEntries([]);
+      setOutboxLoadState("UNAVAILABLE");
+    }
+  }, []);
+
+  const prepareOutboxEntry = useCallback(async (
+    kind: MobileOutboxKind,
+    command: unknown,
+    workspaceId: string,
+  ) => {
+    const entry = await enqueueMobileOutbox({ kind, command });
+    await transitionMobileOutbox({ entryId: entry.entryId, state: "SENDING" });
+    await refreshOutbox(workspaceId);
+    return entry;
+  }, [refreshOutbox]);
+
+  const settleOutboxEntry = useCallback(async (
+    entryId: string,
+    state: Exclude<MobileOutboxState, "QUEUED" | "SENDING">,
+    workspaceId: string,
+    error: string | null = null,
+  ) => {
+    try {
+      await transitionMobileOutbox({ entryId, state, publicError: error });
+      await refreshOutbox(workspaceId);
+    } catch {
+      setOutboxLoadState("UNAVAILABLE");
+    }
+  }, [refreshOutbox]);
 
   const loadCockpit = useCallback(
     async (workspace: MobileWorkspace) => {
@@ -145,6 +198,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setTimeline(null);
       setTimelineLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
+        setOutboxEntries([]);
+        setOutboxLoadState("LOADING");
         setAssistantHistory(null);
         setAssistantLoadState("IDLE");
         setLatestAssistantAttempt(null);
@@ -154,9 +209,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setPermissionLoadState("IDLE");
       }
       activeWorkspaceId.current = workspace.id;
+      await refreshOutbox(workspace.id);
       return next;
     },
-    [api],
+    [api, refreshOutbox],
   );
 
   const loadBootstrap = useCallback(async () => {
@@ -175,6 +231,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setActiveWorkspace(null);
         activeWorkspaceId.current = null;
         setCockpit(null);
+        setOutboxEntries([]);
+        setOutboxLoadState("IDLE");
       }
       setLoadState("READY");
     } catch (error) {
@@ -251,6 +309,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setLatestAttempt(sending);
       setPublicError(null);
       try {
+        await prepareOutboxEntry("OPERATING_COMMAND", sending.command, activeWorkspace.id);
         await assertNetworkAvailable();
         const result = await api.command(sending.command);
         if (result.requestId !== sending.command.requestId) {
@@ -258,8 +317,14 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         }
         const completed = finishAttempt(sending, result.replayed ? "REPLAYED" : "CONFIRMED");
         setLatestAttempt(completed);
-        await loadCockpit(activeWorkspace);
-        setLoadState("READY");
+        await settleOutboxEntry(
+          sending.command.requestId,
+          result.replayed ? "REPLAYED" : "CONFIRMED",
+          activeWorkspace.id,
+        );
+        await loadCockpit(activeWorkspace)
+          .then(() => setLoadState("READY"))
+          .catch(() => setLoadState("UNAVAILABLE"));
         return completed;
       } catch (error) {
         const state =
@@ -271,13 +336,19 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         const failed = finishAttempt(sending, state, publicMessage(error));
         setLatestAttempt(failed);
         setPublicError(failed.publicError);
+        await settleOutboxEntry(
+          sending.command.requestId,
+          state,
+          activeWorkspace.id,
+          failed.publicError,
+        );
         if (state === "CONFLICT") await loadCockpit(activeWorkspace).catch(() => undefined);
         return failed;
       } finally {
         dispatchingRequest.current = null;
       }
     },
-    [activeWorkspace, api, loadCockpit],
+    [activeWorkspace, api, loadCockpit, prepareOutboxEntry, settleOutboxEntry],
   );
 
   const submitAssistantAttempt = useCallback(
@@ -296,6 +367,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setLatestAssistantAttempt(sending);
       setPublicError(null);
       try {
+        await prepareOutboxEntry("ASSISTANT_REQUEST", sending.request, activeWorkspace.id);
         await assertNetworkAvailable();
         const result = await api.assistant(sending.request);
         const completed = finishAssistantAttempt(sending, {
@@ -303,13 +375,21 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
           result,
         });
         setLatestAssistantAttempt(completed);
-        const [history] = await Promise.all([
-          api.assistantHistory(activeWorkspace.id),
-          loadCockpit(activeWorkspace),
-        ]);
-        setAssistantHistory(history);
-        setAssistantLoadState("READY");
-        setLoadState("READY");
+        await settleOutboxEntry(
+          sending.request.requestId,
+          result.replayed ? "REPLAYED" : "CONFIRMED",
+          activeWorkspace.id,
+        );
+        const history = await api.assistantHistory(activeWorkspace.id).catch(() => null);
+        if (history) {
+          setAssistantHistory(history);
+          setAssistantLoadState("READY");
+        } else {
+          setAssistantLoadState("UNAVAILABLE");
+        }
+        await loadCockpit(activeWorkspace)
+          .then(() => setLoadState("READY"))
+          .catch(() => setLoadState("UNAVAILABLE"));
         return completed;
       } catch (error) {
         const state =
@@ -322,12 +402,18 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         });
         setLatestAssistantAttempt(failed);
         setPublicError(failed.publicError);
+        await settleOutboxEntry(
+          sending.request.requestId,
+          state,
+          activeWorkspace.id,
+          failed.publicError,
+        );
         return failed;
       } finally {
         dispatchingAssistantRequest.current = null;
       }
     },
-    [activeWorkspace, api, loadCockpit],
+    [activeWorkspace, api, loadCockpit, prepareOutboxEntry, settleOutboxEntry],
   );
 
   const submitPreparedActionAttempt = useCallback(
@@ -346,6 +432,11 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setLatestPreparedActionAttempt(sending);
       setPublicError(null);
       try {
+        await prepareOutboxEntry(
+          "PREPARED_ACTION_DECISION",
+          sending.command,
+          activeWorkspace.id,
+        );
         await assertNetworkAvailable();
         const result = await api.decidePreparedAction(sending.command);
         const completed = finishPreparedActionAttempt(sending, {
@@ -353,8 +444,14 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
           result,
         });
         setLatestPreparedActionAttempt(completed);
-        await loadCockpit(activeWorkspace);
-        setLoadState("READY");
+        await settleOutboxEntry(
+          sending.command.commandId,
+          result.replayed ? "REPLAYED" : "CONFIRMED",
+          activeWorkspace.id,
+        );
+        await loadCockpit(activeWorkspace)
+          .then(() => setLoadState("READY"))
+          .catch(() => setLoadState("UNAVAILABLE"));
         return completed;
       } catch (error) {
         const state =
@@ -369,6 +466,12 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         });
         setLatestPreparedActionAttempt(failed);
         setPublicError(failed.publicError);
+        await settleOutboxEntry(
+          sending.command.commandId,
+          state,
+          activeWorkspace.id,
+          failed.publicError,
+        );
         if (state === "CONFLICT") {
           await loadCockpit(activeWorkspace).catch(() => undefined);
         }
@@ -377,7 +480,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         dispatchingPreparedActionRequest.current = null;
       }
     },
-    [activeWorkspace, api, loadCockpit],
+    [activeWorkspace, api, loadCockpit, prepareOutboxEntry, settleOutboxEntry],
   );
 
   const submitEvidenceAttempt = useCallback(
@@ -485,20 +588,99 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setPermissionLoadState("LOADING");
     setPublicError(null);
     try {
+      await prepareOutboxEntry("PERMISSION_REVOCATION", command, activeWorkspace.id);
       await assertNetworkAvailable();
-      await api.revokePermission(command);
-      const refreshed = await api.permissionCenter(activeWorkspace.id);
-      setPermissionCenter(refreshed);
-      setPermissionLoadState("READY");
+      const result = await api.revokePermission(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
+      const refreshed = await api.permissionCenter(activeWorkspace.id).catch(() => null);
+      if (refreshed) {
+        setPermissionCenter(refreshed);
+        setPermissionLoadState("READY");
+      } else {
+        setPermissionLoadState("UNAVAILABLE");
+      }
     } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
       setPermissionLoadState("UNAVAILABLE");
       setPublicError(publicMessage(error));
+      await settleOutboxEntry(
+        command.commandId,
+        state,
+        activeWorkspace.id,
+        publicMessage(error),
+      );
     } finally {
       dispatchingPermissionRequest.current = null;
     }
-  }, [activeWorkspace, api]);
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
+  const retryOutboxEntry = useCallback(async (entryId: string) => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    const entry = outboxEntries.find((candidate) => candidate.entryId === entryId);
+    if (!entry || entry.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_OUTBOX_WORKSPACE_REFUSED");
+    }
+    if (entry.state !== "QUEUED" && entry.state !== "OUTCOME_UNKNOWN") {
+      throw new Error("MOBILE_OUTBOX_RETRY_REFUSED");
+    }
+    const attemptState = entry.state === "OUTCOME_UNKNOWN" ? "OUTCOME_UNKNOWN" : "READY";
+    if (entry.kind === "OPERATING_COMMAND") {
+      await submitAttempt({ command: entry.command, state: attemptState, publicError: null });
+    } else if (entry.kind === "ASSISTANT_REQUEST") {
+      await submitAssistantAttempt({
+        request: entry.command,
+        state: attemptState,
+        result: null,
+        publicError: null,
+      });
+    } else if (entry.kind === "PREPARED_ACTION_DECISION") {
+      await submitPreparedActionAttempt({
+        command: entry.command,
+        state: attemptState,
+        result: null,
+        publicError: null,
+      });
+    } else {
+      await revokePermission(entry.command);
+    }
+    await refreshOutbox(activeWorkspace.id);
+  }, [
+    activeWorkspace,
+    outboxEntries,
+    refreshOutbox,
+    revokePermission,
+    submitAssistantAttempt,
+    submitAttempt,
+    submitPreparedActionAttempt,
+  ]);
+
+  const discardOutboxEntry = useCallback(async (entryId: string) => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    const entry = outboxEntries.find((candidate) => candidate.entryId === entryId);
+    if (!entry || entry.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_OUTBOX_WORKSPACE_REFUSED");
+    }
+    await discardStoredOutboxEntry({ entryId });
+    await refreshOutbox(activeWorkspace.id);
+  }, [activeWorkspace, outboxEntries, refreshOutbox]);
 
   const signOut = useCallback(async () => {
+    try {
+      await clearMobileOutbox();
+    } catch {
+      setOutboxLoadState("UNAVAILABLE");
+      setPublicError("La déconnexion est bloquée tant que la boîte locale chiffrée ne peut pas être effacée.");
+      return;
+    }
     await authClient.signOut();
     setBootstrap(null);
     setActiveWorkspace(null);
@@ -514,6 +696,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setTimelineLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
+    setOutboxEntries([]);
+    setOutboxLoadState("IDLE");
     setLoadState("IDLE");
   }, []);
 
@@ -536,6 +720,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       timelineLoadState,
       permissionCenter,
       permissionLoadState,
+      outboxEntries,
+      outboxLoadState,
       selectWorkspace,
       refresh,
       refreshAssistant,
@@ -546,6 +732,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadTimeline,
       loadPermissions,
       revokePermission,
+      retryOutboxEntry,
+      discardOutboxEntry,
       signOut,
     }),
     [
@@ -562,6 +750,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       timelineLoadState,
       permissionCenter,
       permissionLoadState,
+      outboxEntries,
+      outboxLoadState,
       loadState,
       publicError,
       refresh,
@@ -577,6 +767,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadTimeline,
       loadPermissions,
       revokePermission,
+      retryOutboxEntry,
+      discardOutboxEntry,
     ],
   );
 
