@@ -31,5 +31,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", ".prisma-client"]
+  "exclude": ["node_modules", ".prisma-client", "apps/mobile"]
 }

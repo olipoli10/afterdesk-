@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     ".tmp-voice-*/**",
     "docs/evidence/endvera-portal-voice/**/chrome-profile-*/**",
+    // The Expo client is an isolated package with its own SDK-aware lint gate.
+    "apps/mobile/**",
   ]),
   {
     // The AI assistant's isolation from task/client data (see the doc
