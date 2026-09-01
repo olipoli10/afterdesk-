@@ -34,6 +34,7 @@ export function constructionPermissionsForRole(
     canManageReceivables: role !== "FIELD_WORKER",
     canScheduleFollowUps: role !== "FIELD_WORKER",
     canApprovePreparedActions: role !== "FIELD_WORKER",
+    canAddEvidence: true,
     externalTransportAuthorized: false as const,
   };
 }

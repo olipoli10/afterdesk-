@@ -14,6 +14,10 @@ import {
   mobilePreparedActionDecisionCommandSchema,
   mobilePreparedActionDecisionResultSchema,
 } from "@/lib/prepared-actions";
+import {
+  mobileEvidenceUploadCommandSchema,
+  mobileEvidenceUploadResultSchema,
+} from "@/lib/evidence";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -67,7 +71,9 @@ export class MobileApi {
           signal: controller.signal,
           headers: {
             Accept: "application/json",
-            ...(init.body ? { "Content-Type": "application/json" } : {}),
+            ...(init.body && !(init.body instanceof FormData)
+              ? { "Content-Type": "application/json" }
+              : {}),
             ...(cookie ? { Cookie: cookie } : {}),
             ...init.headers,
           },
@@ -177,6 +183,42 @@ export class MobileApi {
         result.fingerprint !== parsedCommand.expectedFingerprint
       ) {
         throw new Error("MOBILE_PREPARED_ACTION_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async uploadEvidence(command: unknown) {
+    const parsedCommand = mobileEvidenceUploadCommandSchema.parse(command);
+    const form = new FormData();
+    for (const [key, value] of Object.entries(parsedCommand)) {
+      if (key === "uri") continue;
+      form.append(key, String(value));
+    }
+    form.append(
+      "file",
+      {
+        uri: parsedCommand.uri,
+        name: parsedCommand.fileName,
+        type: parsedCommand.mimeType,
+      } as unknown as Blob,
+    );
+    const value = await this.request("/api/endvera/v1/mobile/evidence", {
+      method: "POST",
+      body: form,
+    });
+    try {
+      const result = mobileEvidenceUploadResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.projectId !== parsedCommand.projectId ||
+        result.loopId !== parsedCommand.loopId ||
+        result.kind !== parsedCommand.kind
+      ) {
+        throw new Error("MOBILE_EVIDENCE_RESULT_MISMATCH");
       }
       return result;
     } catch {

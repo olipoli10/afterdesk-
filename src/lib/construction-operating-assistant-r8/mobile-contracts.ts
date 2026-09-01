@@ -14,6 +14,7 @@ export const constructionMobilePermissionsSchema = z
     canManageReceivables: z.boolean(),
     canScheduleFollowUps: z.boolean(),
     canApprovePreparedActions: z.boolean(),
+    canAddEvidence: z.boolean(),
     externalTransportAuthorized: z.literal(false),
   })
   .strict();
@@ -50,7 +51,8 @@ export const constructionMobileBootstrapResponseSchema = z
         workspace.permissions.financialsVisible !== expected ||
         workspace.permissions.canManageReceivables !== expected ||
         workspace.permissions.canScheduleFollowUps !== expected ||
-        workspace.permissions.canApprovePreparedActions !== expected
+        workspace.permissions.canApprovePreparedActions !== expected ||
+        workspace.permissions.canAddEvidence !== true
       ) {
         context.addIssue({
           code: "custom",

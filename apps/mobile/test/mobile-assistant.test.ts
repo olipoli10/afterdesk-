@@ -22,6 +22,7 @@ function workspace(role: "OWNER" | "OFFICE_MANAGER" | "FIELD_WORKER" = "OWNER"):
       canManageReceivables: allowed,
       canScheduleFollowUps: allowed,
       canApprovePreparedActions: allowed,
+      canAddEvidence: true,
       externalTransportAuthorized: false,
     },
   };

@@ -29,6 +29,11 @@ import {
   finishPreparedActionAttempt,
   type PreparedActionAttempt,
 } from "@/lib/prepared-actions";
+import {
+  beginEvidenceAttempt,
+  finishEvidenceAttempt,
+  type EvidenceAttempt,
+} from "@/lib/evidence";
 
 type LoadState = "IDLE" | "LOADING" | "READY" | "UNAVAILABLE";
 
@@ -45,6 +50,7 @@ type MobileSessionValue = {
   assistantLoadState: LoadState;
   latestAssistantAttempt: AssistantAttempt | null;
   latestPreparedActionAttempt: PreparedActionAttempt | null;
+  latestEvidenceAttempt: EvidenceAttempt | null;
   selectWorkspace: (workspaceId: string) => Promise<void>;
   refresh: () => Promise<void>;
   refreshAssistant: () => Promise<void>;
@@ -53,6 +59,7 @@ type MobileSessionValue = {
   submitPreparedActionAttempt: (
     attempt: PreparedActionAttempt,
   ) => Promise<PreparedActionAttempt>;
+  submitEvidenceAttempt: (attempt: EvidenceAttempt) => Promise<EvidenceAttempt>;
   signOut: () => Promise<void>;
 };
 
@@ -101,9 +108,12 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [latestAssistantAttempt, setLatestAssistantAttempt] = useState<AssistantAttempt | null>(null);
   const [latestPreparedActionAttempt, setLatestPreparedActionAttempt] =
     useState<PreparedActionAttempt | null>(null);
+  const [latestEvidenceAttempt, setLatestEvidenceAttempt] =
+    useState<EvidenceAttempt | null>(null);
   const dispatchingRequest = useRef<string | null>(null);
   const dispatchingAssistantRequest = useRef<string | null>(null);
   const dispatchingPreparedActionRequest = useRef<string | null>(null);
+  const dispatchingEvidenceRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const loadCockpit = useCallback(
@@ -120,6 +130,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setAssistantLoadState("IDLE");
         setLatestAssistantAttempt(null);
         setLatestPreparedActionAttempt(null);
+        setLatestEvidenceAttempt(null);
       }
       activeWorkspaceId.current = workspace.id;
       return next;
@@ -348,6 +359,56 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     [activeWorkspace, api, loadCockpit],
   );
 
+  const submitEvidenceAttempt = useCallback(
+    async (value: EvidenceAttempt) => {
+      if (!activeWorkspace?.permissions.canAddEvidence) {
+        throw new Error("MOBILE_EVIDENCE_PERMISSION_REFUSED");
+      }
+      if (value.command.workspaceId !== activeWorkspace.id) {
+        throw new Error("MOBILE_EVIDENCE_WORKSPACE_REFUSED");
+      }
+      if (dispatchingEvidenceRequest.current) {
+        throw new Error("MOBILE_EVIDENCE_ALREADY_DISPATCHED");
+      }
+      const sending = beginEvidenceAttempt(value);
+      dispatchingEvidenceRequest.current = sending.command.commandId;
+      setLatestEvidenceAttempt(sending);
+      setPublicError(null);
+      try {
+        await assertNetworkAvailable();
+        const result = await api.uploadEvidence(sending.command);
+        const completed = finishEvidenceAttempt(sending, {
+          state: result.replayed ? "REPLAYED" : "CONFIRMED",
+          result,
+        });
+        setLatestEvidenceAttempt(completed);
+        await loadCockpit(activeWorkspace);
+        setLoadState("READY");
+        return completed;
+      } catch (error) {
+        const state =
+          error instanceof MobileApiError && error.code === "CONFLICT"
+            ? "CONFLICT"
+            : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+              ? "OUTCOME_UNKNOWN"
+              : "REFUSED";
+        const failed = finishEvidenceAttempt(sending, {
+          state,
+          publicError: publicMessage(error),
+        });
+        setLatestEvidenceAttempt(failed);
+        setPublicError(failed.publicError);
+        if (state === "CONFLICT") {
+          await loadCockpit(activeWorkspace).catch(() => undefined);
+        }
+        return failed;
+      } finally {
+        dispatchingEvidenceRequest.current = null;
+      }
+    },
+    [activeWorkspace, api, loadCockpit],
+  );
+
   const signOut = useCallback(async () => {
     await authClient.signOut();
     setBootstrap(null);
@@ -359,6 +420,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setAssistantLoadState("IDLE");
     setLatestAssistantAttempt(null);
     setLatestPreparedActionAttempt(null);
+    setLatestEvidenceAttempt(null);
     setLoadState("IDLE");
   }, []);
 
@@ -376,12 +438,14 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       assistantLoadState,
       latestAssistantAttempt,
       latestPreparedActionAttempt,
+      latestEvidenceAttempt,
       selectWorkspace,
       refresh,
       refreshAssistant,
       submitAttempt,
       submitAssistantAttempt,
       submitPreparedActionAttempt,
+      submitEvidenceAttempt,
       signOut,
     }),
     [
@@ -393,6 +457,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestAttempt,
       latestAssistantAttempt,
       latestPreparedActionAttempt,
+      latestEvidenceAttempt,
       loadState,
       publicError,
       refresh,
@@ -404,6 +469,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitAttempt,
       submitAssistantAttempt,
       submitPreparedActionAttempt,
+      submitEvidenceAttempt,
     ],
   );
 

@@ -26,6 +26,7 @@ function workspace(
       canManageReceivables: allowed,
       canScheduleFollowUps: allowed,
       canApprovePreparedActions: allowed,
+      canAddEvidence: true,
       externalTransportAuthorized: false,
     },
   };

@@ -24,6 +24,7 @@ function cockpit(role: "OWNER" | "FIELD_WORKER") {
       canManageReceivables: owner,
       canScheduleFollowUps: owner,
       canApprovePreparedActions: owner,
+      canAddEvidence: true,
       externalTransportAuthorized: false,
     },
     projects: [{ ...project, status: "active", _count: { contacts: 1, calendarItems: 1, openLoops: 0 } }],

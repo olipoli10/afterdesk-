@@ -104,6 +104,7 @@ describe("Construction Operating Assistant R8 mobile bootstrap on disposable Pos
         canManageReceivables: false,
         canScheduleFollowUps: false,
         canApprovePreparedActions: false,
+        canAddEvidence: true,
         externalTransportAuthorized: false,
       },
     });

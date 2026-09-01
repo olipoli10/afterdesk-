@@ -72,6 +72,7 @@ describe("construction mobile bootstrap contract", () => {
       canManageReceivables: false,
       canScheduleFollowUps: false,
       canApprovePreparedActions: false,
+      canAddEvidence: true,
       externalTransportAuthorized: false,
     });
   });

@@ -53,6 +53,7 @@
         "src/lib/construction-operating-assistant-r10",
         "src/server/construction-operating-assistant-r10",
         "src/server/construction-operating-assistant-r7/gateway.ts",
+        "src/lib/construction-operating-assistant-r8/mobile-contracts.ts",
         "test/construction-operating-assistant-r10*.test.ts",
         "test/integration/construction-operating-assistant-r10*.itest.ts"
       ],
@@ -204,12 +205,20 @@
         "apps/mobile/src/lib/evidence.ts",
         "apps/mobile/src/lib/api.ts",
         "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/package.json",
+        "apps/mobile/package-lock.json",
         "apps/mobile/test/evidence.test.ts",
+        "apps/mobile/test/calendar-contacts.test.ts",
+        "apps/mobile/test/mobile-assistant.test.ts",
+        "apps/mobile/test/mobile-foundation.test.ts",
+        "apps/mobile/test/prepared-actions.test.ts",
+        "test/construction-operating-assistant-r8-mobile-foundation.test.ts",
+        "test/integration/construction-operating-assistant-r8-mobile-foundation.itest.ts",
         "test/construction-operating-assistant-r14*.test.ts",
         "test/integration/construction-operating-assistant-r14*.itest.ts"
       ],
       "planPath": "../094-native-evidence-intake/plan.md",
-      "planSha256": "ae1ef3a32e611be1829834013d3679916a2717e9ec4d3135bbe14e04b9500462",
+      "planSha256": "62b09251fa04edd3b3a95c67bd030c2763ded3e39e796b6060e4fe05cff4cf71",
       "completionCommand": "npm --prefix apps/mobile test -- --run test/evidence.test.ts",
       "evidencePaths": [
         "../094-native-evidence-intake/evidence/r14-closeout.md"

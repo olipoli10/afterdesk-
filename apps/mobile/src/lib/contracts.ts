@@ -9,6 +9,7 @@ const permissionsSchema = z
     canManageReceivables: z.boolean(),
     canScheduleFollowUps: z.boolean(),
     canApprovePreparedActions: z.boolean(),
+    canAddEvidence: z.boolean(),
     externalTransportAuthorized: z.literal(false),
   })
   .strict();
@@ -45,7 +46,8 @@ export const mobileBootstrapSchema = z
         workspace.permissions.financialsVisible !== expected ||
         workspace.permissions.canManageReceivables !== expected ||
         workspace.permissions.canScheduleFollowUps !== expected ||
-        workspace.permissions.canApprovePreparedActions !== expected
+        workspace.permissions.canApprovePreparedActions !== expected ||
+        workspace.permissions.canAddEvidence !== true
       ) {
         context.addIssue({
           code: "custom",
@@ -252,7 +254,8 @@ export function parseMobileCockpit(value: unknown) {
     parsed.permissions.financialsVisible !== expected ||
     parsed.permissions.canManageReceivables !== expected ||
     parsed.permissions.canScheduleFollowUps !== expected ||
-    parsed.permissions.canApprovePreparedActions !== expected
+    parsed.permissions.canApprovePreparedActions !== expected ||
+    parsed.permissions.canAddEvidence !== true
   ) {
     throw new Error("MOBILE_ROLE_PERMISSIONS_REFUSED");
   }

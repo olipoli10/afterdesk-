@@ -22,6 +22,7 @@ export default function AppLayout() {
       <Tabs.Screen name="projects" options={{ title: "Chantiers", tabBarIcon: ({ color }) => <TabGlyph value="▦" color={color} /> }} />
       <Tabs.Screen name="calendar" options={{ title: "Agenda", tabBarIcon: ({ color }) => <TabGlyph value="◷" color={color} /> }} />
       <Tabs.Screen name="contacts" options={{ title: "Contacts", tabBarIcon: ({ color }) => <TabGlyph value="◎" color={color} /> }} />
+      <Tabs.Screen name="evidence" options={{ title: "Preuves", tabBarIcon: ({ color }) => <TabGlyph value="＋" color={color} /> }} />
       <Tabs.Screen name="receivables" options={{ title: "À recevoir", tabBarIcon: ({ color }) => <TabGlyph value="$" color={color} /> }} />
       <Tabs.Screen name="actions" options={{ title: "Actions", tabBarIcon: ({ color }) => <TabGlyph value="✓" color={color} /> }} />
       <Tabs.Screen name="settings" options={{ title: "Compte", tabBarIcon: ({ color }) => <TabGlyph value="•" color={color} /> }} />
