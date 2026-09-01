@@ -106,7 +106,7 @@
       "title": "Native prepared-action control center",
       "objective": "Deliver strict mobile inspection and stable approve, reject and revoke controls that refresh canonical state and never dispatch.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R11-DECISIONS"
       ],
@@ -132,10 +132,10 @@
       "evidencePaths": [
         "../092-native-prepared-action-control/evidence/r12-native-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "38fe950e80d4863f9a287214739124c15c947708",
+      "outputTree": "7fdfb68b146f7bf1dcb99291842cff8713c6233a",
+      "result": "Native exact-content approval, rejection and revocation controls refresh canonical state, retry with one stable command and remain transport-free.",
+      "completedAtUtc": "2026-09-01T20:38:20Z"
     }
   ]
 }

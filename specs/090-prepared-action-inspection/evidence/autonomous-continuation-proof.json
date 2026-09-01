@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
+  "routineFounderPromptCount": 0,
+  "intermediateFinalReportCount": 0,
+  "consecutiveBlocksCompleted": 3,
+  "goalStayedActiveUntilDrain": true,
+  "completionValidatorVerdict": "DRAINED"
+}
