@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "queueMode": "PINNED_SEQUENTIAL_CAMPAIGN",
+  "queueMode": "ROLLING_PROJECT_WAVE",
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
-  "campaignObjective": "Prove fail-closed autonomous continuation across three consecutive local product blocks while delivering exact prepared-action inspection, canonical decisions and a native control center without founder prompts or external transport.",
+  "campaignObjective": "Execute the current rolling wave of the ENDVERA Construction Operating Assistant A-to-Z project and auto-promote the next eligible backlog work when this wave drains.",
   "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
   "forbiddenActions": [
     "provider or credential use",
@@ -10,13 +10,13 @@
     "real SMS call email calendar payment or external transport",
     "external write or spending",
     "push Preview Production deployment EAS or app-store action",
-    "goal completion or final report while the queue is not DRAINED"
+    "goal completion or final report before PROJECT_BACKLOG.json reaches its proven terminal release"
   ],
   "stopConditions": [
-    "source or Brain Git divergence",
-    "new external authority is required",
-    "a destructive migration or broad architecture rewrite becomes necessary",
-    "the continuation queue becomes invalid or cannot be restored exactly"
+    "an unrecoverable source or Brain Git divergence makes all authorized critical-path work unsafe",
+    "no authorized critical-path work remains and an external authority is truly unavoidable",
+    "a destructive operation is unavoidable and cannot be replaced by a safe forward-only design",
+    "the continuation queue and project backlog are both invalid and cannot be restored exactly"
   ],
   "communication": {
     "informationalLabel": "INFO — aucune réponse requise",
@@ -28,6 +28,7 @@
   "completionGuard": {
     "minimumConsecutiveBlocks": 3,
     "proofPath": "evidence/autonomous-continuation-proof.json",
+    "projectBacklogPath": "PROJECT_BACKLOG.json",
     "brainPath": "C:\\dev\\afterdesk-project-brain",
     "watchdogStatePath": "C:\\Users\\oliro\\.codex\\automations\\endvera-r10-r12-autonomous-continuation\\automation.toml",
     "requireWatchdogPaused": true

@@ -8,7 +8,10 @@
   "completionValidatorVerdict": "DRAINED",
   "projectTerminalState": "INCOMPLETE",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 5,
+  "remainingAuthorizedWorkCount": 24,
+  "remainingRoadmapItemCount": 28,
+  "terminalRelease": "R40-PRODUCTION-V1",
+  "projectBacklogPath": "PROJECT_BACKLOG.json",
   "nextAction": "R13-CALENDAR-CONTACTS",
   "urgentAssistanceReason": ""
 }
