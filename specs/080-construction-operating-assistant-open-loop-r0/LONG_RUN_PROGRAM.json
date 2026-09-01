@@ -127,7 +127,7 @@
       "id": "CH-004",
       "title": "Disposable PostgreSQL local workflow proof",
       "objective": "Run the frozen invoice-readiness scenario through missing evidence, contradiction, verification, readiness, restart, replay and differentiated role projections with zero external transport.",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "estimatedMinutes": 90,
       "dependencies": [
         "CH-003"
@@ -155,14 +155,14 @@
         "evidence/ch-004-local-proof.md",
         "evidence/local-proof-result.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "READY_FOR_FOUNDER_OWNED_INVOICE_READINESS_LOOP_TEST; one synthetic Laval loop proved missing evidence, contradiction preservation, verification, READY_TO_INVOICE, restart equivalence, replay refusal, readiness regression, prepared-unsent follow-up and role-safe projections in disposable PostgreSQL",
+      "completedAtUtc": "2026-09-01T02:57:23Z"
     },
     {
       "id": "CH-005",
       "title": "Pristine validation, dashboard, commits and Brain checkpoint",
       "objective": "Run proportional regression and build gates, close Spec Kit and constitution checks, drain the campaign, commit a clean local lane and checkpoint only demonstrated facts in the canonical Brain.",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "estimatedMinutes": 75,
       "dependencies": [
         "CH-004"

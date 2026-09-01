@@ -112,7 +112,7 @@
       "title": "Disposable PostgreSQL invoice-readiness proof",
       "objective": "Prove the complete local loop through missing evidence, contradiction, verification, readiness, restart, replay, prepared-unsent follow-up and differentiated role projections.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "COA-R0-OPEN-LOOP-IMPLEMENT-001"
       ],
@@ -137,17 +137,17 @@
         "evidence/ch-004-local-proof.md",
         "evidence/local-proof-result.json"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "f94c3361df2208b3b97afb28a3c8805e854d5c00",
+      "outputTree": "e7854fd02188bbe030a0c8a00ac83fc45d5178ce",
+      "result": "READY_FOR_FOUNDER_OWNED_INVOICE_READINESS_LOOP_TEST; 23 focused tests, 110 relevant regressions, 1206 unit tests, 9 focused PostgreSQL tests, 106 serialized integrations, 35 migrations, 37 byte-restored mutations and 99/99 build with zero provider or transport",
+      "completedAtUtc": "2026-09-01T02:57:23Z"
     },
     {
       "id": "COA-R0-CLOSEOUT-001",
       "title": "OpenLoop R0 pristine closeout",
       "objective": "Run proportional final gates, close Spec Kit and dashboard evidence, drain the queue, commit a clean local lane and checkpoint only demonstrated facts in the canonical Brain.",
       "role": "CLOSEOUT",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "COA-R0-LOCAL-PROOF-001"
       ],
