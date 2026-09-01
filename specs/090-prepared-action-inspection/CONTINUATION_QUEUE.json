@@ -233,7 +233,7 @@
       "title": "Native project timeline and daily operating brief",
       "objective": "Project canonical appointments, loops, evidence, actions and receivables into one role-safe reconstructible timeline and brief.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R14-EVIDENCE-INTAKE"
       ],
@@ -263,6 +263,125 @@
       "completionCommand": "npm --prefix apps/mobile test -- --run test/timeline.test.ts",
       "evidencePaths": [
         "../095-native-project-timeline/evidence/r15-closeout.md"
+      ],
+      "outputHead": "e044fffe4b30b11ec5af2ce0627e9e935f751d8a",
+      "outputTree": "4f0de8ce80d3a0200dff4c85c150c8261f3aa215",
+      "result": "Native deterministic project timeline and daily brief reconstruct canonical appointments, loops, evidence, actions and role-safe receivables with exact database provenance.",
+      "completedAtUtc": "2026-09-01T22:19:15Z"
+    },
+    {
+      "id": "R16-PERMISSION-CENTER",
+      "title": "Native permission and connector readiness center",
+      "objective": "Expose exact effective roles, internal capabilities, disabled connector readiness and idempotent local revocation without exposing secrets or activating providers.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R15-PROJECT-TIMELINE"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R15-PROJECT-TIMELINE"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/096-native-permission-center",
+        "src/lib/construction-operating-assistant-r16",
+        "src/server/construction-operating-assistant-r16",
+        "src/app/api/endvera/v1/mobile/permissions",
+        "src/app/client/permissions",
+        "src/components/construction-operating-assistant-r16",
+        "apps/mobile/src/app/(app)/permissions.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/permissions.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/permissions.test.ts",
+        "test/construction-operating-assistant-r16*.test.ts",
+        "test/integration/construction-operating-assistant-r16*.itest.ts"
+      ],
+      "planPath": "../096-native-permission-center/plan.md",
+      "planSha256": "077428e5034dfe523c70ed7d93ad147d78017d05cc58ddfd26dd76a1042dab71",
+      "completionCommand": "npm --prefix apps/mobile test -- --run test/permissions.test.ts",
+      "evidencePaths": [
+        "../096-native-permission-center/evidence/r16-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "R17-OFFLINE-RETRY",
+      "title": "Offline-safe mobile outbox and recovery",
+      "objective": "Persist bounded mobile commands with stable idempotency across connectivity loss and app restart, with explicit recovery and zero automatic external send.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": [
+        "R16-PERMISSION-CENTER"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R16-PERMISSION-CENTER"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/097-mobile-offline-retry",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/src/app/(app)/outbox.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/test/outbox.test.ts",
+        "test/construction-operating-assistant-r17*.test.ts",
+        "test/integration/construction-operating-assistant-r17*.itest.ts"
+      ],
+      "planPath": "../097-mobile-offline-retry/plan.md",
+      "planSha256": "57421df1ea92712d09a3a937f6c19e2c3bb7055ad09869c3e064428c296de150",
+      "completionCommand": "npm --prefix apps/mobile test -- --run test/outbox.test.ts",
+      "evidencePaths": [
+        "../097-mobile-offline-retry/evidence/r17-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "R18-UNIFIED-INTENT",
+      "title": "Unified intent and entity resolution",
+      "objective": "Normalize text, local voice transcripts and selected-file observations into one provider-neutral intent envelope with clarification and canonical transition guards.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": [
+        "R17-OFFLINE-RETRY"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R17-OFFLINE-RETRY"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/098-unified-intent-routing",
+        "src/lib/construction-operating-assistant-r18",
+        "src/server/construction-operating-assistant-r18",
+        "src/app/api/endvera/v1/mobile/intent",
+        "apps/mobile/src/lib/intent.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/intent.test.ts",
+        "test/construction-operating-assistant-r18*.test.ts",
+        "test/integration/construction-operating-assistant-r18*.itest.ts"
+      ],
+      "planPath": "../098-unified-intent-routing/plan.md",
+      "planSha256": "54b67b83a8b384de486e530cf845b107eb07230f47ccebb90d48a61799a7eff9",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r18-unified-intent.test.ts",
+      "evidencePaths": [
+        "../098-unified-intent-routing/evidence/r18-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
