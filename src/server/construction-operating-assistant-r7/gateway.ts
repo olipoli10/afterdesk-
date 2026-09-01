@@ -16,12 +16,25 @@ import {
   scheduleConstructionFollowUp,
 } from "@/server/construction-operating-assistant-r6/receivables";
 
-function projectionRole(role: "owner" | "admin" | "member") {
+export function constructionProjectionRole(role: "owner" | "admin" | "member") {
   return role === "owner"
     ? ("OWNER" as const)
     : role === "admin"
       ? ("OFFICE_MANAGER" as const)
       : ("FIELD_WORKER" as const);
+}
+
+export function constructionPermissionsForRole(
+  role: "OWNER" | "OFFICE_MANAGER" | "FIELD_WORKER",
+) {
+  const financialsVisible = role !== "FIELD_WORKER";
+  return {
+    financialsVisible,
+    canManageReceivables: role !== "FIELD_WORKER",
+    canScheduleFollowUps: role !== "FIELD_WORKER",
+    canApprovePreparedActions: role !== "FIELD_WORKER",
+    externalTransportAuthorized: false as const,
+  };
 }
 
 export async function processConstructionSharedApiCommand(input: {
@@ -86,8 +99,9 @@ export async function constructionSharedCockpitForUser(input: {
     input.userId,
     input.workspaceId,
   );
-  const role = projectionRole(membership.role);
-  const financialsVisible = role !== "FIELD_WORKER";
+  const role = constructionProjectionRole(membership.role);
+  const permissions = constructionPermissionsForRole(role);
+  const financialsVisible = permissions.financialsVisible;
 
   const [workspace, calendarItems, openLoops, actions, receivables] =
     await Promise.all([
@@ -183,13 +197,7 @@ export async function constructionSharedCockpitForUser(input: {
       ...workspace,
       role,
     },
-    permissions: {
-      financialsVisible,
-      canManageReceivables: role !== "FIELD_WORKER",
-      canScheduleFollowUps: role !== "FIELD_WORKER",
-      canApprovePreparedActions: role !== "FIELD_WORKER",
-      externalTransportAuthorized: false,
-    },
+    permissions,
     projects: workspace.projects,
     calendar: calendarItems.map((item) =>
       financialsVisible

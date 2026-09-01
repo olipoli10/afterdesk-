@@ -19,10 +19,11 @@
     "db:backfill-operational": "tsx --require ./scripts/register-server-only.cjs scripts/backfill-operational-actuals.ts"
   },
   "dependencies": {
+    "@better-auth/expo": "1.6.25",
     "@anthropic-ai/sdk": "^0.115.0",
     "@aws-sdk/client-s3": "^3.1099.0",
     "@prisma/client": "^6.19.3",
-    "better-auth": "^1.6.25",
+    "better-auth": "1.6.25",
     "date-fns": "^4.4.0",
     "date-fns-tz": "^3.2.0",
     "fflate": "^0.8.3",

@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { expo } from "@better-auth/expo";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 
@@ -37,6 +38,12 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: [
+    "endvera://",
+    ...(process.env.NODE_ENV === "development"
+      ? ["exp://", "exp://**", "exp://192.168.*.*:*/**", "exp://10.*.*.*:*/**"]
+      : []),
+  ],
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 10,
@@ -88,6 +95,7 @@ export const auth = betterAuth({
       }
     : {}),
   plugins: [
+    expo(),
     emailOTP({
       otpLength: 6,
       expiresIn: 600, // 10 minutes

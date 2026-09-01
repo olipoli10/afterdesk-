@@ -590,7 +590,7 @@ export async function constructionReceivablesForRole(input: {
     select: {
       id: true,
       project: { select: { code: true, name: true } },
-      contact: { select: { displayName: true } },
+      contact: { select: { id: true, displayName: true } },
       invoiceReference: true,
       originalAmountMinor: true,
       outstandingAmountMinor: true,
