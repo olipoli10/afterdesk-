@@ -15,6 +15,7 @@ import {
   recordConstructionReceivablePayment,
   scheduleConstructionFollowUp,
 } from "@/server/construction-operating-assistant-r6/receivables";
+import { projectOwnerConstructionAction } from "@/server/construction-operating-assistant-r10/projection";
 
 export function constructionProjectionRole(role: "owner" | "admin" | "member") {
   return role === "owner"
@@ -173,10 +174,25 @@ export async function constructionSharedCockpitForUser(input: {
           status: true,
           dueAt: true,
           version: true,
+          workspaceId: true,
           payloadHash: true,
           payload: true,
+          approvalRequired: true,
+          approvedVersion: true,
+          approvedPayloadHash: true,
+          approvedAt: true,
+          simulatedDeliveryCount: true,
           project: { select: { id: true, code: true, name: true } },
           contact: { select: { id: true, displayName: true } },
+          sourceMessage: {
+            select: {
+              id: true,
+              channel: true,
+              direction: true,
+              receivedAt: true,
+              createdAt: true,
+            },
+          },
         },
       }),
       constructionReceivablesForRole({
@@ -226,7 +242,7 @@ export async function constructionSharedCockpitForUser(input: {
     ),
     actions: actions.map((action) =>
       financialsVisible
-        ? action
+        ? projectOwnerConstructionAction(action)
         : {
             id: action.id,
             type: action.type,
