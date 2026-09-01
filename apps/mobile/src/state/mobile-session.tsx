@@ -34,6 +34,7 @@ import {
   finishEvidenceAttempt,
   type EvidenceAttempt,
 } from "@/lib/evidence";
+import type { MobileProjectTimeline } from "@/lib/timeline";
 
 type LoadState = "IDLE" | "LOADING" | "READY" | "UNAVAILABLE";
 
@@ -51,6 +52,8 @@ type MobileSessionValue = {
   latestAssistantAttempt: AssistantAttempt | null;
   latestPreparedActionAttempt: PreparedActionAttempt | null;
   latestEvidenceAttempt: EvidenceAttempt | null;
+  timeline: MobileProjectTimeline | null;
+  timelineLoadState: LoadState;
   selectWorkspace: (workspaceId: string) => Promise<void>;
   refresh: () => Promise<void>;
   refreshAssistant: () => Promise<void>;
@@ -60,6 +63,7 @@ type MobileSessionValue = {
     attempt: PreparedActionAttempt,
   ) => Promise<PreparedActionAttempt>;
   submitEvidenceAttempt: (attempt: EvidenceAttempt) => Promise<EvidenceAttempt>;
+  loadTimeline: (projectId: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -110,6 +114,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     useState<PreparedActionAttempt | null>(null);
   const [latestEvidenceAttempt, setLatestEvidenceAttempt] =
     useState<EvidenceAttempt | null>(null);
+  const [timeline, setTimeline] = useState<MobileProjectTimeline | null>(null);
+  const [timelineLoadState, setTimelineLoadState] = useState<LoadState>("IDLE");
   const dispatchingRequest = useRef<string | null>(null);
   const dispatchingAssistantRequest = useRef<string | null>(null);
   const dispatchingPreparedActionRequest = useRef<string | null>(null);
@@ -125,6 +131,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       }
       setCockpit(next);
       setActiveWorkspace(workspace);
+      setTimeline(null);
+      setTimelineLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setAssistantHistory(null);
         setAssistantLoadState("IDLE");
@@ -409,6 +417,28 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     [activeWorkspace, api, loadCockpit],
   );
 
+  const loadTimeline = useCallback(
+    async (projectId: string) => {
+      if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+      if (!cockpit?.projects.some((project) => project.id === projectId)) {
+        throw new Error("MOBILE_TIMELINE_PROJECT_REFUSED");
+      }
+      setTimelineLoadState("LOADING");
+      setPublicError(null);
+      try {
+        await assertNetworkAvailable();
+        const result = await api.projectTimeline(activeWorkspace.id, projectId);
+        setTimeline(result);
+        setTimelineLoadState("READY");
+      } catch (error) {
+        setTimeline(null);
+        setTimelineLoadState("UNAVAILABLE");
+        setPublicError(publicMessage(error));
+      }
+    },
+    [activeWorkspace, api, cockpit?.projects],
+  );
+
   const signOut = useCallback(async () => {
     await authClient.signOut();
     setBootstrap(null);
@@ -421,6 +451,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setLatestAssistantAttempt(null);
     setLatestPreparedActionAttempt(null);
     setLatestEvidenceAttempt(null);
+    setTimeline(null);
+    setTimelineLoadState("IDLE");
     setLoadState("IDLE");
   }, []);
 
@@ -439,6 +471,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestAssistantAttempt,
       latestPreparedActionAttempt,
       latestEvidenceAttempt,
+      timeline,
+      timelineLoadState,
       selectWorkspace,
       refresh,
       refreshAssistant,
@@ -446,6 +480,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitAssistantAttempt,
       submitPreparedActionAttempt,
       submitEvidenceAttempt,
+      loadTimeline,
       signOut,
     }),
     [
@@ -458,6 +493,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestAssistantAttempt,
       latestPreparedActionAttempt,
       latestEvidenceAttempt,
+      timeline,
+      timelineLoadState,
       loadState,
       publicError,
       refresh,
@@ -470,6 +507,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitAssistantAttempt,
       submitPreparedActionAttempt,
       submitEvidenceAttempt,
+      loadTimeline,
     ],
   );
 
