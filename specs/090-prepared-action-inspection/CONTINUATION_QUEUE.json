@@ -184,7 +184,7 @@
       "title": "Native secured evidence intake",
       "objective": "Bind selected local photos and documents to canonical project evidence through existing secured contracts with stable retry.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R13-CALENDAR-CONTACTS"
       ],
@@ -223,17 +223,17 @@
       "evidencePaths": [
         "../094-native-evidence-intake/evidence/r14-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "0af136cd2e43f15f218bafa9d0274e3a3c8c720d",
+      "outputTree": "80e5a3cbc71a46111ea9def2204a524eafe3adcf",
+      "result": "Native selected-file evidence intake is exact-project bound, scanned, transactionally recorded, replay-safe, unverified by default and role-safe with zero external transport.",
+      "completedAtUtc": "2026-09-01T22:07:51Z"
     },
     {
       "id": "R15-PROJECT-TIMELINE",
       "title": "Native project timeline and daily operating brief",
       "objective": "Project canonical appointments, loops, evidence, actions and receivables into one role-safe reconstructible timeline and brief.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "R14-EVIDENCE-INTAKE"
       ],
