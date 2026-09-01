@@ -67,7 +67,7 @@
       "title": "Invoice-readiness OpenLoop implementation",
       "objective": "Extend Construction Assistant V1 with one deterministic durable invoice-readiness loop, evidence, contradictions, verification, next actor and role-safe projections.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "COA-R0-PRODUCT-RESET-001"
       ],
@@ -102,17 +102,17 @@
         "evidence/ch-003-open-loop-implementation.md",
         "evidence/red-and-mutation-results.json"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "0741f68c4e09c4d36d61c101265f5b72cb047363",
+      "outputTree": "1dd1e482b9d2716b6cf205f638faddba03e8b408",
+      "result": "OPEN_LOOP_INVOICE_READINESS_IMPLEMENTED_LOCAL_R0; deterministic policy, additive schema, atomic persistence, semantic deduplication, contradiction/evidence lifecycle, role-safe projections, Today/Tomorrow focus and prepared-unsent follow-up committed locally",
+      "completedAtUtc": "2026-09-01T02:55:37Z"
     },
     {
       "id": "COA-R0-LOCAL-PROOF-001",
       "title": "Disposable PostgreSQL invoice-readiness proof",
       "objective": "Prove the complete local loop through missing evidence, contradiction, verification, readiness, restart, replay, prepared-unsent follow-up and differentiated role projections.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "COA-R0-OPEN-LOOP-IMPLEMENT-001"
       ],

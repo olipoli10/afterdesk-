@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "redCases": [
+    "duplicate-completion-creates-second-loop",
+    "wrong-or-ambiguous-project-is-accepted",
+    "missing-approval-becomes-invoice-ready",
+    "missing-supporting-evidence-becomes-invoice-ready",
+    "unknown-amount-becomes-zero",
+    "contradiction-is-overwritten",
+    "field-worker-sees-financial-amount",
+    "model-proposal-directly-verifies-fact"
+  ],
+  "redCasesObserved": 8,
+  "redCasesClosed": 8,
+  "mutationCount": 37,
+  "mutationsKilled": 37,
+  "mutationsByteRestored": 37,
+  "beforeSha256": "fe7501130e3ac6d17c6d3f80bd6b74e4c3a330a530c0f33357010fc39f224c74",
+  "afterSha256": "fe7501130e3ac6d17c6d3f80bd6b74e4c3a330a530c0f33357010fc39f224c74",
+  "truthLedgerSha256": "cf3c2991c5ee5807e4167ed2ca430212b0ebd567bfd12a999b29d88bcf49d8ac",
+  "externalCallCount": 0,
+  "verdict": "RED_CLOSED_MUTATIONS_RESTORED"
+}

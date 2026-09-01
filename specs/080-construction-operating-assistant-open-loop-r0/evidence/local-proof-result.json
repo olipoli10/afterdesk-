@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "WORK_FINISHED_TO_INVOICE_READY_LOCAL_R0",
+  "materialClass": "SYNTHETIC_ONLY",
+  "databaseClass": "DISPOSABLE_LOCAL_POSTGRESQL",
+  "verdict": "READY_FOR_FOUNDER_OWNED_INVOICE_READINESS_LOOP_TEST",
+  "canonicalEffects": {
+    "authorizedCompletionReports": 1,
+    "canonicalOpenLoops": 1,
+    "equivalentEnvelopeCanonicalEffects": 1,
+    "duplicateCanonicalEffects": 0,
+    "replayCanonicalEffects": 0,
+    "externalTransports": 0,
+    "providerInvocations": 0
+  },
+  "invoiceReadiness": {
+    "incompleteStateObserved": true,
+    "missingEvidenceObserved": true,
+    "contradictionPreserved": true,
+    "verifiedEvidenceRequired": true,
+    "readyToInvoiceReached": true,
+    "revokedEvidenceRegressedReadiness": true,
+    "restartProjectionIdentical": true,
+    "snapshotHashRecomputable": true,
+    "nextActorPersisted": true,
+    "preparedFollowUpStatus": "PREPARED_UNSENT",
+    "transportAuthorized": false
+  },
+  "isolation": {
+    "workspaceProjectAssociationAccuracyPercent": 100,
+    "wrongProjectEvidenceAdmitted": 0,
+    "crossWorkspaceReadsAdmitted": 0,
+    "fieldWorkerFinancialLeakCount": 0,
+    "inventedFactCount": 0
+  },
+  "validation": {
+    "focusedPolicyBridgeSchemaTestsPassed": 23,
+    "relevantRegressionTestsPassed": 110,
+    "relevantRegressionTestsSkipped": 2,
+    "fullUnitTestsPassed": 1206,
+    "fullUnitTestsSkipped": 2,
+    "focusedPostgresqlTestsPassed": 9,
+    "serializedIntegrationTestsPassed": 106,
+    "migrationCountApplied": 35,
+    "mutationCount": 37,
+    "mutationsKilled": 37,
+    "mutationsByteRestored": 37,
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "buildPagesPassed": 99,
+    "buildPagesExpected": 99,
+    "gitDiffCheck": "PASS",
+    "packageLockChanged": false
+  },
+  "limits": {
+    "founderObserved": false,
+    "customerObserved": false,
+    "providerObserved": false,
+    "verifiedE2EObservedCoveragePercent": 0,
+    "r3FounderObservationUpgraded": false
+  },
+  "sealedAtUtc": "2026-09-01T02:53:03.2592977Z"
+}

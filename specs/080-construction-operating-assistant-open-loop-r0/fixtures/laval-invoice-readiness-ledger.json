@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "laval-change-order-invoice-readiness-r0",
+  "workspace": {
+    "name": "ENDVERA Construction — Synthetic R0",
+    "timezone": "America/Toronto",
+    "locale": "fr-CA"
+  },
+  "project": {
+    "code": "LAVAL-CO-001",
+    "name": "Rénovation Laval — Extra cuisine",
+    "address": "Laval, Québec — dossier entièrement synthétique"
+  },
+  "report": {
+    "billingBasis": "CHANGE_ORDER",
+    "workDescription": "Ajout de deux prises et déplacement du luminaire de cuisine",
+    "amountMinor": 120000,
+    "currency": "CAD",
+    "completion": true,
+    "approvalState": "APPROVED"
+  },
+  "evidence": [
+    {
+      "kind": "WRITTEN_APPROVAL",
+      "sourceRef": "synthetic://laval/approval/co-001",
+      "contentHash": "4d5d430818ffed2f38fd83a0fc860755473daf427dae314d00d74549a84dad07"
+    },
+    {
+      "kind": "PHOTO",
+      "sourceRef": "synthetic://laval/photo/completion-001",
+      "contentHash": "06f060e968a6adac165498541dbc25cf9aee69fc70d36c3917fe6a4382db91fe"
+    }
+  ],
+  "expected": {
+    "initialStatus": "WAITING_FOR_EVIDENCE",
+    "finalStatus": "READY_TO_INVOICE",
+    "externalDispatchCount": 0,
+    "inventedFactCount": 0
+  }
+}

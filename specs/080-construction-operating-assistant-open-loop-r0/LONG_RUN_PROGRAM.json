@@ -90,7 +90,7 @@
       "id": "CH-003",
       "title": "OpenLoop invoice-readiness implementation",
       "objective": "Implement the local deterministic invoice-readiness loop by extending Construction Assistant V1 with additive persistence, atomic transitions, evidence, contradictions, verification, next actor and role-safe projections.",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "estimatedMinutes": 150,
       "dependencies": [
         "CH-002"
@@ -120,14 +120,14 @@
         "evidence/ch-003-open-loop-implementation.md",
         "evidence/red-and-mutation-results.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "OPEN_LOOP_INVOICE_READINESS_IMPLEMENTED_LOCAL_R0; additive PostgreSQL state, deterministic policy, atomic transition/snapshot/audit, semantic deduplication, contradiction preservation, role-safe projections and prepared-unsent follow-up committed locally",
+      "completedAtUtc": "2026-09-01T02:55:37Z"
     },
     {
       "id": "CH-004",
       "title": "Disposable PostgreSQL local workflow proof",
       "objective": "Run the frozen invoice-readiness scenario through missing evidence, contradiction, verification, readiness, restart, replay and differentiated role projections with zero external transport.",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "estimatedMinutes": 90,
       "dependencies": [
         "CH-003"
