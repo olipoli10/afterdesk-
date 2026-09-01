@@ -24,6 +24,10 @@ import {
   mobileRevokePermissionResultSchema,
   parseMobilePermissionCenter,
 } from "@/lib/permissions";
+import {
+  mobileUnifiedIntentEnvelopeSchema,
+  mobileUnifiedIntentResultSchema,
+} from "@/lib/intent";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -166,6 +170,27 @@ export class MobileApi {
       const result = mobileAssistantResultSchema.parse(value);
       if (result.commandId !== parsedRequest.requestId) {
         throw new Error("MOBILE_ASSISTANT_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async unifiedIntent(envelope: unknown) {
+    const parsedEnvelope = mobileUnifiedIntentEnvelopeSchema.parse(envelope);
+    const value = await this.request("/api/endvera/v1/mobile/intent", {
+      method: "POST",
+      body: JSON.stringify(parsedEnvelope),
+    });
+    try {
+      const result = mobileUnifiedIntentResultSchema.parse(value);
+      if (
+        result.envelopeId !== parsedEnvelope.envelopeId ||
+        result.workspaceId !== parsedEnvelope.workspaceId ||
+        result.provenance.sourceId !== parsedEnvelope.source.sourceId
+      ) {
+        throw new Error("MOBILE_INTENT_RESULT_MISMATCH");
       }
       return result;
     } catch {
