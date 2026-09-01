@@ -44,7 +44,7 @@
       "id": "CH-001",
       "title": "Product reset, evidence reconciliation and asset audit",
       "objective": "Reconcile canonical Brain and latest construction source, preserve the unresolved R3 human state, audit reusable assets and freeze the outcome-based product decision.",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "estimatedMinutes": 60,
       "dependencies": [],
       "allowedScope": [
@@ -58,14 +58,14 @@
         "ASSET_REUSE_AUDIT.md",
         "evidence/dashboard-baseline.md"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Product direction, exact base/Brain evidence and reuse audit frozen; Construction Assistant becomes an Open-Loop Closure system with invoice-readiness as the first measurable workflow and no provider/customer claim",
+      "completedAtUtc": "2026-09-01T01:54:30.0386073Z"
     },
     {
       "id": "CH-002",
       "title": "A-to-Z architecture, permissions, connectors and Spec Kit closure",
       "objective": "Freeze Open-Loop Core, action authority, permission matrix, mobile/portal strategy, connector sequence, roadmap, tasks and a coherent pre-implementation analysis.",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 75,
       "dependencies": [
         "CH-001"
@@ -83,14 +83,14 @@
         "CONNECTOR_AND_PLATFORM_PLAN.md",
         "evidence/spec-kit-analysis.md"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Spec Kit specification, implementation plan, tasks, data model, authority, permissions, connectors, mobile strategy and A-to-Z roadmap validated with no critical or high inconsistency",
+      "completedAtUtc": "2026-09-01T01:54:30.0386073Z"
     },
     {
       "id": "CH-003",
       "title": "OpenLoop invoice-readiness implementation",
       "objective": "Implement the local deterministic invoice-readiness loop by extending Construction Assistant V1 with additive persistence, atomic transitions, evidence, contradictions, verification, next actor and role-safe projections.",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "estimatedMinutes": 150,
       "dependencies": [
         "CH-002"

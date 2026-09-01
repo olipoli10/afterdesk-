@@ -34,7 +34,7 @@
       "title": "Construction Operating Assistant product reset",
       "objective": "Freeze the A-to-Z product, architecture, permission, connector, mobile, commercial and first-workflow plan while preserving exact evidence labels.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r0",
       "branch": "codex/endvera-construction-operating-assistant-r0",
@@ -57,17 +57,17 @@
         "evidence/dashboard-baseline.md",
         "evidence/spec-kit-analysis.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "ae464cc9596437833d6c241077616a137d072c08",
+      "outputTree": "dcc8e74bcc275db48649d9013aecf1e88d8bea10",
+      "result": "PRODUCT_RESET_READY_FOR_IMPLEMENTATION; 25 functional requirements, 10 success criteria, 63 ordered tasks, exact reuse/connector/mobile/permission plans and clear Spec Kit analysis committed locally",
+      "completedAtUtc": "2026-09-01T01:54:30.0386073Z"
     },
     {
       "id": "COA-R0-OPEN-LOOP-IMPLEMENT-001",
       "title": "Invoice-readiness OpenLoop implementation",
       "objective": "Extend Construction Assistant V1 with one deterministic durable invoice-readiness loop, evidence, contradictions, verification, next actor and role-safe projections.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "COA-R0-PRODUCT-RESET-001"
       ],

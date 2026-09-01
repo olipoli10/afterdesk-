@@ -18,9 +18,9 @@
 - [x] T011 Define OpenLoop data model and closure contract.
 - [x] T012 Define action authority and permission matrix.
 - [x] T013 Define connector boundaries and A-to-Z roadmap.
-- [ ] T014 Create and validate long-run manifest and sequential continuation queue.
-- [ ] T015 Run Spec Kit Analyze and resolve only pre-implementation inconsistencies.
-- [ ] T016 Commit the frozen product reset.
+- [x] T014 Create and validate long-run manifest and sequential continuation queue.
+- [x] T015 Run Spec Kit Analyze and resolve only pre-implementation inconsistencies.
+- [x] T016 Commit the frozen product reset.
 
 ## Phase 3 — RED and pure OpenLoop policy
 
@@ -86,4 +86,3 @@
 - [ ] T061 Prepare founder-owned invoice-readiness loop test.
 - [ ] T062 Prepare ten-interview/three-walkthrough discovery packet for the same failure.
 - [ ] T063 Do not activate messaging/calendar/accounting providers until a separate authority and sandbox plan exist.
-
