@@ -274,7 +274,7 @@
       "title": "Native permission and connector readiness center",
       "objective": "Expose exact effective roles, internal capabilities, disabled connector readiness and idempotent local revocation without exposing secrets or activating providers.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R15-PROJECT-TIMELINE"
       ],
@@ -307,17 +307,17 @@
       "evidencePaths": [
         "../096-native-permission-center/evidence/r16-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "1e57f309df84225fd6f9583715c9a127865c5ff3",
+      "outputTree": "adb1b92b55d5e98b4b4f3430e36e848f97a9708d",
+      "result": "Canonical web/mobile permission center exposes exact role-safe capabilities and prepared connector readiness, with atomic replay-safe local account/grant revocation, secret redaction and zero external transport.",
+      "completedAtUtc": "2026-09-01T22:37:07Z"
     },
     {
       "id": "R17-OFFLINE-RETRY",
       "title": "Offline-safe mobile outbox and recovery",
       "objective": "Persist bounded mobile commands with stable idempotency across connectivity loss and app restart, with explicit recovery and zero automatic external send.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "R16-PERMISSION-CENTER"
       ],
