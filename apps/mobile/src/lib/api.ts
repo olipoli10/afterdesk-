@@ -10,6 +10,10 @@ import {
   mobileAssistantRequestSchema,
   mobileAssistantResultSchema,
 } from "@/lib/assistant";
+import {
+  mobilePreparedActionDecisionCommandSchema,
+  mobilePreparedActionDecisionResultSchema,
+} from "@/lib/prepared-actions";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -150,6 +154,29 @@ export class MobileApi {
       const result = mobileAssistantResultSchema.parse(value);
       if (result.commandId !== parsedRequest.requestId) {
         throw new Error("MOBILE_ASSISTANT_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async decidePreparedAction(command: unknown) {
+    const parsedCommand = mobilePreparedActionDecisionCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/prepared-actions", {
+      method: "POST",
+      body: JSON.stringify(parsedCommand),
+    });
+    try {
+      const result = mobilePreparedActionDecisionResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.actionId !== parsedCommand.actionId ||
+        result.decision !== parsedCommand.decision ||
+        result.version !== parsedCommand.expectedVersion ||
+        result.fingerprint !== parsedCommand.expectedFingerprint
+      ) {
+        throw new Error("MOBILE_PREPARED_ACTION_RESULT_MISMATCH");
       }
       return result;
     } catch {
