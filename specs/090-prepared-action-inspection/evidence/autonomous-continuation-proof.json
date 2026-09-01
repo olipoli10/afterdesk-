@@ -5,5 +5,10 @@
   "intermediateFinalReportCount": 0,
   "consecutiveBlocksCompleted": 3,
   "goalStayedActiveUntilDrain": true,
-  "completionValidatorVerdict": "DRAINED"
+  "completionValidatorVerdict": "DRAINED",
+  "projectTerminalState": "INCOMPLETE",
+  "canonicalRoadmapComplete": false,
+  "remainingAuthorizedWorkCount": 5,
+  "nextAction": "R13-CALENDAR-CONTACTS",
+  "urgentAssistanceReason": ""
 }

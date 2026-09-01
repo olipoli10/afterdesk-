@@ -136,6 +136,128 @@
       "outputTree": "7fdfb68b146f7bf1dcb99291842cff8713c6233a",
       "result": "Native exact-content approval, rejection and revocation controls refresh canonical state, retry with one stable command and remain transport-free.",
       "completedAtUtc": "2026-09-01T20:38:20Z"
+    },
+    {
+      "id": "R13-CALENDAR-CONTACTS",
+      "title": "Native canonical Calendar and Contacts cockpit",
+      "objective": "Expose role-safe canonical contacts and calendar state in dedicated native surfaces while reusing conversational commands.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R12-NATIVE-CONTROL"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "FIXED_HEAD",
+        "head": "9fd69cf3ce4282158a4bc80fcfa538f56492770d"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/093-native-calendar-contacts",
+        "src/lib/construction-operating-assistant-r13",
+        "src/server/construction-operating-assistant-r13",
+        "src/server/construction-operating-assistant-r7/gateway.ts",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/app/(app)/calendar.tsx",
+        "apps/mobile/src/app/(app)/contacts.tsx",
+        "apps/mobile/src/lib/contracts.ts",
+        "apps/mobile/test/calendar-contacts.test.ts",
+        "test/construction-operating-assistant-r13*.test.ts",
+        "test/integration/construction-operating-assistant-r13*.itest.ts"
+      ],
+      "planPath": "../093-native-calendar-contacts/plan.md",
+      "planSha256": "30bb1c9e25d11011f739bbd4fa3014aea24083e4f813edf45c7315c449adb6e8",
+      "completionCommand": "npm --prefix apps/mobile test -- --run test/calendar-contacts.test.ts",
+      "evidencePaths": [
+        "../093-native-calendar-contacts/evidence/r13-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "R14-EVIDENCE-INTAKE",
+      "title": "Native secured evidence intake",
+      "objective": "Bind selected local photos and documents to canonical project evidence through existing secured contracts with stable retry.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": [
+        "R13-CALENDAR-CONTACTS"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R13-CALENDAR-CONTACTS"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/094-native-evidence-intake",
+        "src/lib/construction-operating-assistant-r14",
+        "src/server/construction-operating-assistant-r14",
+        "src/app/api/endvera/v1/mobile/evidence",
+        "apps/mobile/src/app/(app)/evidence.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/evidence.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/evidence.test.ts",
+        "test/construction-operating-assistant-r14*.test.ts",
+        "test/integration/construction-operating-assistant-r14*.itest.ts"
+      ],
+      "planPath": "../094-native-evidence-intake/plan.md",
+      "planSha256": "ae1ef3a32e611be1829834013d3679916a2717e9ec4d3135bbe14e04b9500462",
+      "completionCommand": "npm --prefix apps/mobile test -- --run test/evidence.test.ts",
+      "evidencePaths": [
+        "../094-native-evidence-intake/evidence/r14-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "R15-PROJECT-TIMELINE",
+      "title": "Native project timeline and daily operating brief",
+      "objective": "Project canonical appointments, loops, evidence, actions and receivables into one role-safe reconstructible timeline and brief.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": [
+        "R14-EVIDENCE-INTAKE"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R14-EVIDENCE-INTAKE"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/095-native-project-timeline",
+        "src/lib/construction-operating-assistant-r15",
+        "src/server/construction-operating-assistant-r15",
+        "src/app/api/endvera/v1/mobile/timeline",
+        "apps/mobile/src/app/(app)/timeline.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/timeline.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/timeline.test.ts",
+        "test/construction-operating-assistant-r15*.test.ts",
+        "test/integration/construction-operating-assistant-r15*.itest.ts"
+      ],
+      "planPath": "../095-native-project-timeline/plan.md",
+      "planSha256": "5ca98f1e77901db7c6c2e40b27821be0b5172882d164fef8f8f6756d5d624ab4",
+      "completionCommand": "npm --prefix apps/mobile test -- --run test/timeline.test.ts",
+      "evidencePaths": [
+        "../095-native-project-timeline/evidence/r15-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }
