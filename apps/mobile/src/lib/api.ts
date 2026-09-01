@@ -5,6 +5,11 @@ import {
 } from "@/lib/contracts";
 import { mobileApiBaseUrl } from "@/lib/config";
 import { mobileCommandSchema } from "@/lib/commands";
+import {
+  mobileAssistantHistorySchema,
+  mobileAssistantRequestSchema,
+  mobileAssistantResultSchema,
+} from "@/lib/assistant";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -114,6 +119,37 @@ export class MobileApi {
       }[parsedCommand.type];
       if (result.resultType !== expectedResult || result.requestId !== parsedCommand.requestId) {
         throw new Error("MOBILE_COMMAND_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async assistantHistory(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/assistant?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const history = mobileAssistantHistorySchema.parse(value);
+      if (history.workspaceId !== workspaceId) throw new Error("MOBILE_ASSISTANT_HISTORY_MISMATCH");
+      return history;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async assistant(request: unknown) {
+    const parsedRequest = mobileAssistantRequestSchema.parse(request);
+    const value = await this.request("/api/endvera/v1/mobile/assistant", {
+      method: "POST",
+      body: JSON.stringify(parsedRequest),
+    });
+    try {
+      const result = mobileAssistantResultSchema.parse(value);
+      if (result.commandId !== parsedRequest.requestId) {
+        throw new Error("MOBILE_ASSISTANT_RESULT_MISMATCH");
       }
       return result;
     } catch {

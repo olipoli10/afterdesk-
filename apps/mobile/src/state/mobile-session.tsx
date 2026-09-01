@@ -18,6 +18,12 @@ import {
   finishAttempt,
   type CommandAttempt,
 } from "@/lib/commands";
+import {
+  beginAssistantAttempt,
+  finishAssistantAttempt,
+  type AssistantAttempt,
+  type MobileAssistantHistory,
+} from "@/lib/assistant";
 
 type LoadState = "IDLE" | "LOADING" | "READY" | "UNAVAILABLE";
 
@@ -30,9 +36,14 @@ type MobileSessionValue = {
   loadState: LoadState;
   publicError: string | null;
   latestAttempt: CommandAttempt | null;
+  assistantHistory: MobileAssistantHistory | null;
+  assistantLoadState: LoadState;
+  latestAssistantAttempt: AssistantAttempt | null;
   selectWorkspace: (workspaceId: string) => Promise<void>;
   refresh: () => Promise<void>;
+  refreshAssistant: () => Promise<void>;
   submitAttempt: (attempt: CommandAttempt) => Promise<CommandAttempt>;
+  submitAssistantAttempt: (attempt: AssistantAttempt) => Promise<AssistantAttempt>;
   signOut: () => Promise<void>;
 };
 
@@ -76,7 +87,11 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [loadState, setLoadState] = useState<LoadState>("IDLE");
   const [publicError, setPublicError] = useState<string | null>(null);
   const [latestAttempt, setLatestAttempt] = useState<CommandAttempt | null>(null);
+  const [assistantHistory, setAssistantHistory] = useState<MobileAssistantHistory | null>(null);
+  const [assistantLoadState, setAssistantLoadState] = useState<LoadState>("IDLE");
+  const [latestAssistantAttempt, setLatestAssistantAttempt] = useState<AssistantAttempt | null>(null);
   const dispatchingRequest = useRef<string | null>(null);
+  const dispatchingAssistantRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const loadCockpit = useCallback(
@@ -88,6 +103,11 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       }
       setCockpit(next);
       setActiveWorkspace(workspace);
+      if (activeWorkspaceId.current !== workspace.id) {
+        setAssistantHistory(null);
+        setAssistantLoadState("IDLE");
+        setLatestAssistantAttempt(null);
+      }
       activeWorkspaceId.current = workspace.id;
       return next;
     },
@@ -155,6 +175,26 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, loadBootstrap, loadCockpit]);
 
+  const refreshAssistant = useCallback(async () => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      setAssistantHistory(null);
+      setAssistantLoadState("IDLE");
+      return;
+    }
+    setAssistantLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const history = await api.assistantHistory(activeWorkspace.id);
+      setAssistantHistory(history);
+      setAssistantLoadState("READY");
+    } catch (error) {
+      setAssistantHistory(null);
+      setAssistantLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
   const submitAttempt = useCallback(
     async (value: CommandAttempt) => {
       if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
@@ -195,6 +235,56 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     [activeWorkspace, api, loadCockpit],
   );
 
+  const submitAssistantAttempt = useCallback(
+    async (value: AssistantAttempt) => {
+      if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+        throw new Error("MOBILE_ASSISTANT_PERMISSION_REFUSED");
+      }
+      if (value.request.workspaceId !== activeWorkspace.id) {
+        throw new Error("MOBILE_ASSISTANT_WORKSPACE_REFUSED");
+      }
+      if (dispatchingAssistantRequest.current) {
+        throw new Error("MOBILE_ASSISTANT_ALREADY_DISPATCHED");
+      }
+      const sending = beginAssistantAttempt(value);
+      dispatchingAssistantRequest.current = sending.request.requestId;
+      setLatestAssistantAttempt(sending);
+      setPublicError(null);
+      try {
+        await assertNetworkAvailable();
+        const result = await api.assistant(sending.request);
+        const completed = finishAssistantAttempt(sending, {
+          state: result.replayed ? "REPLAYED" : "CONFIRMED",
+          result,
+        });
+        setLatestAssistantAttempt(completed);
+        const [history] = await Promise.all([
+          api.assistantHistory(activeWorkspace.id),
+          loadCockpit(activeWorkspace),
+        ]);
+        setAssistantHistory(history);
+        setAssistantLoadState("READY");
+        setLoadState("READY");
+        return completed;
+      } catch (error) {
+        const state =
+          error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+        const failed = finishAssistantAttempt(sending, {
+          state,
+          publicError: publicMessage(error),
+        });
+        setLatestAssistantAttempt(failed);
+        setPublicError(failed.publicError);
+        return failed;
+      } finally {
+        dispatchingAssistantRequest.current = null;
+      }
+    },
+    [activeWorkspace, api, loadCockpit],
+  );
+
   const signOut = useCallback(async () => {
     await authClient.signOut();
     setBootstrap(null);
@@ -202,6 +292,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     activeWorkspaceId.current = null;
     setCockpit(null);
     setLatestAttempt(null);
+    setAssistantHistory(null);
+    setAssistantLoadState("IDLE");
+    setLatestAssistantAttempt(null);
     setLoadState("IDLE");
   }, []);
 
@@ -215,24 +308,34 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadState,
       publicError,
       latestAttempt,
+      assistantHistory,
+      assistantLoadState,
+      latestAssistantAttempt,
       selectWorkspace,
       refresh,
+      refreshAssistant,
       submitAttempt,
+      submitAssistantAttempt,
       signOut,
     }),
     [
       activeWorkspace,
+      assistantHistory,
+      assistantLoadState,
       bootstrap,
       cockpit,
       latestAttempt,
+      latestAssistantAttempt,
       loadState,
       publicError,
       refresh,
+      refreshAssistant,
       selectWorkspace,
       session.data?.user,
       session.isPending,
       signOut,
       submitAttempt,
+      submitAssistantAttempt,
     ],
   );
 
