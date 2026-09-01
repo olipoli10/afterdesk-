@@ -59,7 +59,16 @@ async function requireEnvelopeAuthority(
   tx: Prisma.TransactionClient,
   input: { userId: string; envelope: OperatingCommandEnvelope },
 ) {
-  await requireActiveConstructionMember(tx, input.userId, input.envelope.workspaceId);
+  const membership = await requireActiveConstructionMember(tx, input.userId, input.envelope.workspaceId);
+  if (input.envelope.channel === "PORTAL") {
+    if (
+      input.envelope.senderAddress !== `user:${input.userId}` ||
+      (membership.role !== "owner" && membership.role !== "admin")
+    ) {
+      throw new ConstructionAccessDenied();
+    }
+    return;
+  }
   const identity = await tx.constructionCommunicationIdentity.findUnique({
     where: {
       workspaceId_channel_normalizedAddress: {
