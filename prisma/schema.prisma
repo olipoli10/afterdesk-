@@ -241,6 +241,7 @@ enum ConstructionChannel {
   portal
   sms
   email
+  voice
 }
 
 enum ConstructionMessageDirection {
@@ -251,6 +252,7 @@ enum ConstructionMessageDirection {
 enum ConstructionMessageStatus {
   received
   interpreted
+  answered
   needs_clarification
   proposed
   approved
@@ -262,6 +264,9 @@ enum ConstructionMessageStatus {
 enum ConstructionIntent {
   calendar_item_create
   calendar_query
+  calendar_item_reschedule
+  reminder_create
+  daily_briefing
   outbound_message_draft
   report_work_finished
   clarification_required
