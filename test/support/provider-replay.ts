@@ -140,7 +140,12 @@ export function stageOf(params: Record<string, unknown>): string {
    * other" rather than exercising the critique layer at all. Matched on the
    * prompt's own opening sentence instead, which is stable and unique to it.
    */
-  if (sys.includes("independent plan critic for AfterDesk")) return "critique";
+  if (
+    sys.includes("independent plan critic for Endvera") ||
+    sys.includes("independent plan critic for AfterDesk")
+  ) {
+    return "critique";
+  }
   // Recognised by its own system text, because it declares no tool at all —
   // deliberately, so the model reading untrusted web prose has no verb.
   if (sys.includes("convert gathered research into structured rows")) return "extract";
