@@ -43,7 +43,8 @@ describe("ENDVERA operating assistant R2 contracts", () => {
   it("reports connector truth without implying live transport", () => {
     const capabilities = connectorCapabilities();
     expect(capabilities.find((item) => item.id === "PORTAL")?.status).toBe("LOCAL_READY");
-    expect(capabilities.find((item) => item.id === "SMS")?.status).toBe("CONTRACT_READY");
+    expect(capabilities.find((item) => item.id === "SMS")?.status).toBe("LOCAL_READY");
+    expect(capabilities.find((item) => item.id === "VOICE")?.status).toBe("LOCAL_READY");
     expect(capabilities.find((item) => item.id === "GOOGLE_CALENDAR")?.externalWriteEnabled).toBe(false);
     expect(capabilities.every((item) => item.externalTransportEnabled === false)).toBe(true);
   });
