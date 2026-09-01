@@ -393,7 +393,7 @@
       "title": "Canonical job, crew and dependency scheduling",
       "objective": "Persist jobs, assignments, dependencies, availability, conflicts and schedule-impact state with exact role-safe projections and replay-safe transitions.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R18-UNIFIED-INTENT"
       ],
@@ -427,6 +427,51 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r19-job-scheduling.test.ts",
       "evidencePaths": [
         "../099-job-scheduling/evidence/r19-closeout.md"
+      ],
+      "outputHead": "ba75c45f6d4f6499d818916697107df8860cf9a1",
+      "outputTree": "b612bcfea829514c84491d9d2a9db1e3a8532a56",
+      "result": "Canonical PostgreSQL job, crew and dependency scheduling now provides deterministic conflict inspection, immutable replay-safe transitions, downstream impact, role-safe mobile projections and zero external transport.",
+      "completedAtUtc": "2026-09-01T23:51:01Z"
+    },
+    {
+      "id": "R20-FOLLOW-UP-ENGINE",
+      "title": "Durable follow-up, escalation and next-owner engine",
+      "objective": "Persist operational follow-ups with explicit targets, accountable owners, escalation policies, deterministic due preparation and exact role-safe reconstruction.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R19-JOB-SCHEDULING"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R19-JOB-SCHEDULING"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/100-follow-up-engine",
+        "src/lib/construction-operating-assistant-r20",
+        "src/server/construction-operating-assistant-r20",
+        "src/app/api/endvera/v1/mobile/follow-ups",
+        "apps/mobile/src/app/(app)/follow-ups.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/follow-ups.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/follow-ups.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r20_follow_up_engine",
+        "test/construction-operating-assistant-r20*.test.ts",
+        "test/integration/construction-operating-assistant-r20*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../100-follow-up-engine/plan.md",
+      "planSha256": "dc6d417e93964620b8a816f10d245c73c9cf407fec7d8da90116ef42b0d5f714",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r20-follow-up-engine.test.ts",
+      "evidencePaths": [
+        "../100-follow-up-engine/evidence/r20-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
