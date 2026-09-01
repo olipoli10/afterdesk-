@@ -354,7 +354,7 @@
       "title": "Unified intent and entity resolution",
       "objective": "Normalize text, local voice transcripts and selected-file observations into one provider-neutral intent envelope with clarification and canonical transition guards.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R17-OFFLINE-RETRY"
       ],
@@ -382,6 +382,49 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r18-unified-intent.test.ts",
       "evidencePaths": [
         "../098-unified-intent-routing/evidence/r18-closeout.md"
+      ],
+      "outputHead": "bfc4575dc700c0be3771563a22c3eefaec334f49",
+      "outputTree": "150d5f2715346c35b6b77367c6fed36d944e23cb",
+      "result": "Provider-neutral text, confirmed voice and selected-file intent resolution now shares one deterministic canonical transition bridge with strict clarification, provenance, replay, concurrency and workspace guards.",
+      "completedAtUtc": "2026-09-01T23:20:21Z"
+    },
+    {
+      "id": "R19-JOB-SCHEDULING",
+      "title": "Canonical job, crew and dependency scheduling",
+      "objective": "Persist jobs, assignments, dependencies, availability, conflicts and schedule-impact state with exact role-safe projections and replay-safe transitions.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R18-UNIFIED-INTENT"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R18-UNIFIED-INTENT"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/099-job-scheduling",
+        "src/lib/construction-operating-assistant-r19",
+        "src/server/construction-operating-assistant-r19",
+        "src/app/api/endvera/v1/mobile/jobs",
+        "apps/mobile/src/app/(app)/jobs.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/jobs.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/jobs.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r19_job_scheduling",
+        "test/construction-operating-assistant-r19*.test.ts",
+        "test/integration/construction-operating-assistant-r19*.itest.ts"
+      ],
+      "planPath": "../099-job-scheduling/plan.md",
+      "planSha256": "63cc7ddedf64024619f77d74a37107e5d5fe4269d322826bf9f65fbcebf0a611",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r19-job-scheduling.test.ts",
+      "evidencePaths": [
+        "../099-job-scheduling/evidence/r19-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
