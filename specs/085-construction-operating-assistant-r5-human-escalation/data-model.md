@@ -26,6 +26,8 @@
 
 - a bridge cannot cross workspace/project/open-loop ancestry;
 - a bridge cannot change generic execution identity after activation;
+- PREPARED cannot become ACTIVE unless the bound task has an authorized or
+  received Payment covering its frozen client price;
 - an applied acceptance id and payload hash cannot be replaced;
 - only one accepted application changes construction state;
 - terminal withdrawn/exhausted bridges never reopen;

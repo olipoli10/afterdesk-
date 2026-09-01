@@ -3,9 +3,17 @@
 ## Request
 
 `requestConstructionHumanEscalation({ workspaceId, projectId, openLoopId,
-purpose, sourceVersion, idempotencyKey, actorId })`
+purpose, sourceVersion, idempotencyKey, actorId, acceptedClientPriceCents,
+acceptedWorkerPayoutCents, acceptedEstimatedMinutes, acceptedCurrency })`
 
-Returns `created`, `existing` or a typed refusal. It never dispatches externally.
+Returns the same `PREPARED` binding under retry. It never dispatches externally.
+
+## Funded activation
+
+`activateFundedConstructionHumanEscalation({ escalationId, workspaceId,
+actorId, paymentId })` verifies that the bound task already has an authorized or
+received payment covering its frozen price, then activates and locally
+publishes the HumanWorkUnit. It never creates or captures a payment.
 
 ## Worker packet
 
@@ -16,9 +24,9 @@ unrelated project data are absent from the SQL projection.
 
 ## Resume
 
-`applyAcceptedConstructionHumanResult(escalationId)` consumes one immutable
+`applyAcceptedConstructionHumanEscalation(escalationId)` consumes one immutable
 acceptance. It returns `applied`, `already_applied`, `not_ready` or a typed
-refusal. `recoverPendingConstructionHumanResults()` may call it repeatedly.
+refusal. `recoverPendingConstructionHumanEscalations()` may call it repeatedly.
 
 Exactly-once is enforced by unique database constraints and a single
 transaction containing the construction transition, snapshot, audit event and

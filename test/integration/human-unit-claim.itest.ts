@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import {
   bindClaimToHumanUnit,

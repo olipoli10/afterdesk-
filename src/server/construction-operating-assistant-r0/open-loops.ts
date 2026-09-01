@@ -38,7 +38,11 @@ const addInvoiceEvidenceSchema = z
     kind: z.enum(["WRITTEN_APPROVAL", "PHOTO", "DOCUMENT"]),
     state: z.enum(["PRESENT_UNVERIFIED", "VERIFIED"]),
     sourceRef: z.string().min(1).max(500),
-    contentHash: z.string().regex(/^[0-9a-f]{64}$/).nullable().default(null),
+    contentHash: z
+      .string()
+      .regex(/^[0-9a-f]{64}$/)
+      .nullable()
+      .default(null),
   })
   .strict();
 
@@ -78,7 +82,11 @@ const recordContradictionSchema = z
   .strict()
   .superRefine((value, ctx) => {
     if (new Set(value.claimIds).size !== value.claimIds.length) {
-      ctx.addIssue({ code: "custom", path: ["claimIds"], message: "Claim IDs must be unique" });
+      ctx.addIssue({
+        code: "custom",
+        path: ["claimIds"],
+        message: "Claim IDs must be unique",
+      });
     }
   });
 
@@ -115,8 +123,13 @@ function asJson(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
-function toDatabaseStatus(status: ReadinessDecision["status"]): ConstructionOpenLoopStatus {
-  const statuses: Record<ReadinessDecision["status"], ConstructionOpenLoopStatus> = {
+function toDatabaseStatus(
+  status: ReadinessDecision["status"],
+): ConstructionOpenLoopStatus {
+  const statuses: Record<
+    ReadinessDecision["status"],
+    ConstructionOpenLoopStatus
+  > = {
     OPEN: "open",
     WAITING_FOR_EVIDENCE: "waiting_for_evidence",
     WAITING_FOR_VERIFICATION: "waiting_for_verification",
@@ -127,7 +140,9 @@ function toDatabaseStatus(status: ReadinessDecision["status"]): ConstructionOpen
   return statuses[status];
 }
 
-function fromDatabaseFactState(state: string): InvoiceReadinessInput["facts"]["amount"]["state"] {
+function fromDatabaseFactState(
+  state: string,
+): InvoiceReadinessInput["facts"]["amount"]["state"] {
   const states = {
     unknown: "UNKNOWN",
     claimed: "CLAIMED",
@@ -239,7 +254,11 @@ async function buildEvaluationInput(
   });
 }
 
-async function decisionFromSnapshot(tx: Tx, loopId: string, stateVersion: number) {
+async function decisionFromSnapshot(
+  tx: Tx,
+  loopId: string,
+  stateVersion: number,
+) {
   const snapshot = await tx.constructionOpenLoopSnapshot.findUniqueOrThrow({
     where: { loopId_stateVersion: { loopId, stateVersion } },
     select: { snapshot: true, canonicalHash: true },
@@ -265,7 +284,8 @@ async function replayedTransition(
     select: { inputHash: true, nextVersion: true },
   });
   if (!replay) return null;
-  if (replay.inputHash !== input.inputHash) throw new Error("OPEN_LOOP_IDEMPOTENCY_CONFLICT");
+  if (replay.inputHash !== input.inputHash)
+    throw new Error("OPEN_LOOP_IDEMPOTENCY_CONFLICT");
   return {
     loopId: input.loopId,
     decision: await decisionFromSnapshot(tx, input.loopId, replay.nextVersion),
@@ -292,7 +312,11 @@ async function persistEvaluatedTransition(
   },
 ) {
   const nextVersion = input.loop.stateVersion + 1;
-  const evaluationInput = await buildEvaluationInput(tx, input.loop.id, nextVersion);
+  const evaluationInput = await buildEvaluationInput(
+    tx,
+    input.loop.id,
+    nextVersion,
+  );
   const decision = evaluateInvoiceReadiness(evaluationInput);
   const update = await tx.constructionOpenLoop.updateMany({
     where: {
@@ -309,7 +333,8 @@ async function persistEvaluatedTransition(
       readyAt: decision.ready ? new Date() : null,
     },
   });
-  if (update.count !== 1) throw new Error("OPEN_LOOP_CONCURRENT_TRANSITION_REFUSED");
+  if (update.count !== 1)
+    throw new Error("OPEN_LOOP_CONCURRENT_TRANSITION_REFUSED");
   await tx.constructionOpenLoopTransition.create({
     data: {
       loopId: input.loop.id,
@@ -362,18 +387,25 @@ async function replayForCommand(input: {
     const loop = await tx.constructionOpenLoop.findFirst({
       where: {
         workspaceId: input.workspaceId,
-        OR: [{ idempotencyKey: input.idempotencyKey }, { semanticKey: input.semanticKey }],
+        OR: [
+          { idempotencyKey: input.idempotencyKey },
+          { semanticKey: input.semanticKey },
+        ],
       },
       select: { id: true, stateVersion: true, idempotencyKey: true },
     });
     if (!loop) throw new Error("OPEN_LOOP_REPLAY_NOT_FOUND");
     if (loop.idempotencyKey === input.idempotencyKey) {
-      const transition = await tx.constructionOpenLoopTransition.findUniqueOrThrow({
-        where: {
-          loopId_idempotencyKey: { loopId: loop.id, idempotencyKey: input.idempotencyKey },
-        },
-        select: { inputHash: true },
-      });
+      const transition =
+        await tx.constructionOpenLoopTransition.findUniqueOrThrow({
+          where: {
+            loopId_idempotencyKey: {
+              loopId: loop.id,
+              idempotencyKey: input.idempotencyKey,
+            },
+          },
+          select: { inputHash: true },
+        });
       if (transition.inputHash !== input.inputHash) {
         throw new Error("OPEN_LOOP_IDEMPOTENCY_CONFLICT");
       }
@@ -396,233 +428,255 @@ function reportSemanticKey(command: ReportWorkFinishedCommand) {
   });
 }
 
-export async function recordWorkFinishedInTransaction(tx: Tx, rawCommand: unknown) {
+export async function recordWorkFinishedInTransaction(
+  tx: Tx,
+  rawCommand: unknown,
+) {
   const command = reportWorkFinishedCommandSchema.parse(rawCommand);
   const inputHash = sha256Canonical(command);
   const semanticKey = reportSemanticKey(command);
-  await requireActiveConstructionMember(tx, command.actorId, command.workspaceId);
-        const project = await tx.constructionProject.findFirst({
-          where: { id: command.projectId, workspaceId: command.workspaceId, status: "active" },
-          select: { id: true },
-        });
-        const message = await tx.constructionMessage.findFirst({
-          where: {
-            id: command.sourceMessageId,
-            workspaceId: command.workspaceId,
-            projectId: command.projectId,
-          },
-          select: { id: true },
-        });
-        if (!project || !message) throw new ConstructionAccessDenied();
+  await requireActiveConstructionMember(
+    tx,
+    command.actorId,
+    command.workspaceId,
+  );
+  const project = await tx.constructionProject.findFirst({
+    where: {
+      id: command.projectId,
+      workspaceId: command.workspaceId,
+      status: "active",
+    },
+    select: { id: true },
+  });
+  const message = await tx.constructionMessage.findFirst({
+    where: {
+      id: command.sourceMessageId,
+      workspaceId: command.workspaceId,
+      projectId: command.projectId,
+    },
+    select: { id: true },
+  });
+  if (!project || !message) throw new ConstructionAccessDenied();
 
-        // Different providers can wrap the same business update in different
-        // event IDs. Serialize only the canonical business report so both
-        // envelopes converge on one durable outcome loop.
-        await tx.$queryRaw(Prisma.sql`
+  // Different providers can wrap the same business update in different
+  // event IDs. Serialize only the canonical business report so both
+  // envelopes converge on one durable outcome loop.
+  await tx.$queryRaw(Prisma.sql`
           SELECT pg_advisory_xact_lock(
             hashtextextended(${`${command.workspaceId}:${semanticKey}`}, 0)
           )::text AS acquired
         `);
 
-        const existing = await tx.constructionOpenLoop.findFirst({
+  const existing = await tx.constructionOpenLoop.findFirst({
+    where: {
+      workspaceId: command.workspaceId,
+      OR: [{ idempotencyKey: command.commandId }, { semanticKey }],
+    },
+    select: { id: true, stateVersion: true, idempotencyKey: true },
+  });
+  if (existing) {
+    if (existing.idempotencyKey === command.commandId) {
+      const transition =
+        await tx.constructionOpenLoopTransition.findUniqueOrThrow({
           where: {
-            workspaceId: command.workspaceId,
-            OR: [{ idempotencyKey: command.commandId }, { semanticKey }],
+            loopId_idempotencyKey: {
+              loopId: existing.id,
+              idempotencyKey: command.commandId,
+            },
           },
-          select: { id: true, stateVersion: true, idempotencyKey: true },
+          select: { inputHash: true },
         });
-        if (existing) {
-          if (existing.idempotencyKey === command.commandId) {
-            const transition = await tx.constructionOpenLoopTransition.findUniqueOrThrow({
-              where: {
-                loopId_idempotencyKey: { loopId: existing.id, idempotencyKey: command.commandId },
-              },
-              select: { inputHash: true },
-            });
-            if (transition.inputHash !== inputHash) {
-              throw new Error("OPEN_LOOP_IDEMPOTENCY_CONFLICT");
-            }
-          }
-          await tx.constructionMessage.update({
-            where: { id: command.sourceMessageId },
-            data: { relatedOpenLoopId: existing.id },
-          });
-          return {
-            loopId: existing.id,
-            decision: await decisionFromSnapshot(tx, existing.id, existing.stateVersion),
-            replayed: true,
-          };
-        }
+      if (transition.inputHash !== inputHash) {
+        throw new Error("OPEN_LOOP_IDEMPOTENCY_CONFLICT");
+      }
+    }
+    await tx.constructionMessage.update({
+      where: { id: command.sourceMessageId },
+      data: { relatedOpenLoopId: existing.id },
+    });
+    return {
+      loopId: existing.id,
+      decision: await decisionFromSnapshot(
+        tx,
+        existing.id,
+        existing.stateVersion,
+      ),
+      replayed: true,
+    };
+  }
 
-        const loopId = randomUUID();
-        const evaluationInput = invoiceReadinessInputSchema.parse({
-          schemaVersion: 1,
-          loopId,
-          workspaceId: command.workspaceId,
-          projectId: command.projectId,
-          stateVersion: 1,
-          billingBasis: "CHANGE_ORDER",
-          facts: {
-            projectAssociation: { value: true, state: "VERIFIED" },
-            workDescription: {
-              value: command.claims.workDescription,
-              state: command.claims.workDescription ? "CLAIMED" : "UNKNOWN",
-            },
-            amount: {
-              value:
-                command.claims.amountMinor === null
-                  ? null
-                  : { amountMinor: command.claims.amountMinor, currency: "CAD" },
-              state: command.claims.amountMinor === null ? "UNKNOWN" : "CLAIMED",
-            },
-            completion: {
-              value: command.claims.completion,
-              state: command.claims.completion === null ? "UNKNOWN" : "CLAIMED",
-            },
-            approval: {
-              value: command.claims.approvalState,
-              state:
-                command.claims.approvalState === null || command.claims.approvalState === "UNKNOWN"
-                  ? "UNKNOWN"
-                  : "CLAIMED",
-            },
-          },
-          evidence: [],
-          contradictions: [],
-        });
-        const decision = evaluateInvoiceReadiness(evaluationInput);
-        const snapshotHash = sha256Canonical(decision);
+  const loopId = randomUUID();
+  const evaluationInput = invoiceReadinessInputSchema.parse({
+    schemaVersion: 1,
+    loopId,
+    workspaceId: command.workspaceId,
+    projectId: command.projectId,
+    stateVersion: 1,
+    billingBasis: "CHANGE_ORDER",
+    facts: {
+      projectAssociation: { value: true, state: "VERIFIED" },
+      workDescription: {
+        value: command.claims.workDescription,
+        state: command.claims.workDescription ? "CLAIMED" : "UNKNOWN",
+      },
+      amount: {
+        value:
+          command.claims.amountMinor === null
+            ? null
+            : { amountMinor: command.claims.amountMinor, currency: "CAD" },
+        state: command.claims.amountMinor === null ? "UNKNOWN" : "CLAIMED",
+      },
+      completion: {
+        value: command.claims.completion,
+        state: command.claims.completion === null ? "UNKNOWN" : "CLAIMED",
+      },
+      approval: {
+        value: command.claims.approvalState,
+        state:
+          command.claims.approvalState === null ||
+          command.claims.approvalState === "UNKNOWN"
+            ? "UNKNOWN"
+            : "CLAIMED",
+      },
+    },
+    evidence: [],
+    contradictions: [],
+  });
+  const decision = evaluateInvoiceReadiness(evaluationInput);
+  const snapshotHash = sha256Canonical(decision);
 
-        await tx.constructionOpenLoop.create({
-          data: {
-            id: loopId,
-            workspaceId: command.workspaceId,
-            projectId: command.projectId,
-            openedByMessageId: command.sourceMessageId,
-            type: "invoice_ready",
-            billingBasis: "change_order",
-            desiredOutcome: "Assemble a verified package ready for invoice preparation",
-            status: toDatabaseStatus(decision.status),
-            policyVersion: POLICY_VERSION,
-            stateVersion: 1,
-            idempotencyKey: command.commandId,
-            semanticKey,
-            nextResponsibleRole: decision.nextResponsible.role,
-            nextAction: decision.nextAction,
-            decisionHash: decision.decisionHash,
-            readyAt: decision.ready ? new Date() : null,
-          },
-        });
+  await tx.constructionOpenLoop.create({
+    data: {
+      id: loopId,
+      workspaceId: command.workspaceId,
+      projectId: command.projectId,
+      openedByMessageId: command.sourceMessageId,
+      type: "invoice_ready",
+      billingBasis: "change_order",
+      desiredOutcome:
+        "Assemble a verified package ready for invoice preparation",
+      status: toDatabaseStatus(decision.status),
+      policyVersion: POLICY_VERSION,
+      stateVersion: 1,
+      idempotencyKey: command.commandId,
+      semanticKey,
+      nextResponsibleRole: decision.nextResponsible.role,
+      nextAction: decision.nextAction,
+      decisionHash: decision.decisionHash,
+      readyAt: decision.ready ? new Date() : null,
+    },
+  });
 
-        await tx.constructionOpenLoopFact.createMany({
-          data: [
-            {
-              loopId,
-              workspaceId: command.workspaceId,
-              projectId: command.projectId,
-              field: "PROJECT_ASSOCIATION",
-              value: asJson({ value: true }),
-              state: "verified",
-              sourceType: "message_resolution",
-              sourceId: command.sourceMessageId,
-              suppliedById: command.actorId,
-            },
-            {
-              loopId,
-              workspaceId: command.workspaceId,
-              projectId: command.projectId,
-              field: "WORK_DESCRIPTION",
-              value: asJson({ value: command.claims.workDescription }),
-              state: command.claims.workDescription ? "claimed" : "unknown",
-              sourceType: "message_claim",
-              sourceId: command.sourceMessageId,
-              suppliedById: command.actorId,
-            },
-            {
-              loopId,
-              workspaceId: command.workspaceId,
-              projectId: command.projectId,
-              field: "AMOUNT",
-              value: asJson({
-                value:
-                  command.claims.amountMinor === null
-                    ? null
-                    : { amountMinor: command.claims.amountMinor, currency: "CAD" },
-              }),
-              state: command.claims.amountMinor === null ? "unknown" : "claimed",
-              sourceType: "message_claim",
-              sourceId: command.sourceMessageId,
-              suppliedById: command.actorId,
-            },
-            {
-              loopId,
-              workspaceId: command.workspaceId,
-              projectId: command.projectId,
-              field: "COMPLETION_ASSERTION",
-              value: asJson({ value: command.claims.completion }),
-              state: command.claims.completion === null ? "unknown" : "claimed",
-              sourceType: "message_claim",
-              sourceId: command.sourceMessageId,
-              suppliedById: command.actorId,
-            },
-            {
-              loopId,
-              workspaceId: command.workspaceId,
-              projectId: command.projectId,
-              field: "APPROVAL_STATE",
-              value: asJson({ value: command.claims.approvalState }),
-              state:
-                command.claims.approvalState === null || command.claims.approvalState === "UNKNOWN"
-                  ? "unknown"
-                  : "claimed",
-              sourceType: "message_claim",
-              sourceId: command.sourceMessageId,
-              suppliedById: command.actorId,
-            },
-          ],
-        });
-        await tx.constructionOpenLoopTransition.create({
-          data: {
-            loopId,
-            workspaceId: command.workspaceId,
-            priorStatus: null,
-            nextStatus: toDatabaseStatus(decision.status),
-            priorVersion: 0,
-            nextVersion: 1,
-            reasonCodes: decision.reasons,
-            actorUserId: command.actorId,
-            authorityDecision: "ACTIVE_MEMBER_REPORT_ACCEPTED",
-            inputHash,
-            idempotencyKey: command.commandId,
-          },
-        });
-        await tx.constructionOpenLoopSnapshot.create({
-          data: {
-            loopId,
-            workspaceId: command.workspaceId,
-            stateVersion: 1,
-            snapshot: asJson(decision),
-            canonicalHash: snapshotHash,
-          },
-        });
-        await appendConstructionAudit(tx, {
-          workspaceId: command.workspaceId,
-          actorUserId: command.actorId,
-          entityType: "open_loop",
-          entityId: loopId,
-          action: "construction_invoice_readiness_loop_opened",
-          reasonCode: decision.status,
-          metadata: {
-            policyVersion: POLICY_VERSION,
-            stateVersion: 1,
-            decisionHash: decision.decisionHash,
-            sourceMessageId: command.sourceMessageId,
-          },
-        });
-        await tx.constructionMessage.update({
-          where: { id: command.sourceMessageId },
-          data: { relatedOpenLoopId: loopId },
-        });
+  await tx.constructionOpenLoopFact.createMany({
+    data: [
+      {
+        loopId,
+        workspaceId: command.workspaceId,
+        projectId: command.projectId,
+        field: "PROJECT_ASSOCIATION",
+        value: asJson({ value: true }),
+        state: "verified",
+        sourceType: "message_resolution",
+        sourceId: command.sourceMessageId,
+        suppliedById: command.actorId,
+      },
+      {
+        loopId,
+        workspaceId: command.workspaceId,
+        projectId: command.projectId,
+        field: "WORK_DESCRIPTION",
+        value: asJson({ value: command.claims.workDescription }),
+        state: command.claims.workDescription ? "claimed" : "unknown",
+        sourceType: "message_claim",
+        sourceId: command.sourceMessageId,
+        suppliedById: command.actorId,
+      },
+      {
+        loopId,
+        workspaceId: command.workspaceId,
+        projectId: command.projectId,
+        field: "AMOUNT",
+        value: asJson({
+          value:
+            command.claims.amountMinor === null
+              ? null
+              : { amountMinor: command.claims.amountMinor, currency: "CAD" },
+        }),
+        state: command.claims.amountMinor === null ? "unknown" : "claimed",
+        sourceType: "message_claim",
+        sourceId: command.sourceMessageId,
+        suppliedById: command.actorId,
+      },
+      {
+        loopId,
+        workspaceId: command.workspaceId,
+        projectId: command.projectId,
+        field: "COMPLETION_ASSERTION",
+        value: asJson({ value: command.claims.completion }),
+        state: command.claims.completion === null ? "unknown" : "claimed",
+        sourceType: "message_claim",
+        sourceId: command.sourceMessageId,
+        suppliedById: command.actorId,
+      },
+      {
+        loopId,
+        workspaceId: command.workspaceId,
+        projectId: command.projectId,
+        field: "APPROVAL_STATE",
+        value: asJson({ value: command.claims.approvalState }),
+        state:
+          command.claims.approvalState === null ||
+          command.claims.approvalState === "UNKNOWN"
+            ? "unknown"
+            : "claimed",
+        sourceType: "message_claim",
+        sourceId: command.sourceMessageId,
+        suppliedById: command.actorId,
+      },
+    ],
+  });
+  await tx.constructionOpenLoopTransition.create({
+    data: {
+      loopId,
+      workspaceId: command.workspaceId,
+      priorStatus: null,
+      nextStatus: toDatabaseStatus(decision.status),
+      priorVersion: 0,
+      nextVersion: 1,
+      reasonCodes: decision.reasons,
+      actorUserId: command.actorId,
+      authorityDecision: "ACTIVE_MEMBER_REPORT_ACCEPTED",
+      inputHash,
+      idempotencyKey: command.commandId,
+    },
+  });
+  await tx.constructionOpenLoopSnapshot.create({
+    data: {
+      loopId,
+      workspaceId: command.workspaceId,
+      stateVersion: 1,
+      snapshot: asJson(decision),
+      canonicalHash: snapshotHash,
+    },
+  });
+  await appendConstructionAudit(tx, {
+    workspaceId: command.workspaceId,
+    actorUserId: command.actorId,
+    entityType: "open_loop",
+    entityId: loopId,
+    action: "construction_invoice_readiness_loop_opened",
+    reasonCode: decision.status,
+    metadata: {
+      policyVersion: POLICY_VERSION,
+      stateVersion: 1,
+      decisionHash: decision.decisionHash,
+      sourceMessageId: command.sourceMessageId,
+    },
+  });
+  await tx.constructionMessage.update({
+    where: { id: command.sourceMessageId },
+    data: { relatedOpenLoopId: loopId },
+  });
   return { loopId, decision, replayed: false };
 }
 
@@ -631,9 +685,14 @@ export async function recordWorkFinished(rawCommand: unknown) {
   const inputHash = sha256Canonical(command);
   const semanticKey = reportSemanticKey(command);
   try {
-    return await prisma.$transaction((tx) => recordWorkFinishedInTransaction(tx, command));
+    return await prisma.$transaction((tx) =>
+      recordWorkFinishedInTransaction(tx, command),
+    );
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       return replayForCommand({
         userId: command.actorId,
         workspaceId: command.workspaceId,
@@ -646,109 +705,130 @@ export async function recordWorkFinished(rawCommand: unknown) {
   }
 }
 
-export async function addInvoiceReadinessEvidence(rawInput: unknown) {
+export async function addInvoiceReadinessEvidenceInTransaction(
+  tx: Prisma.TransactionClient,
+  rawInput: unknown,
+) {
   const input = addInvoiceEvidenceSchema.parse(rawInput);
   const inputHash = sha256Canonical(input);
-  return prisma.$transaction(async (tx) => {
-      const membership = await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
-      if (input.state === "VERIFIED" && membership.role === "member") {
-        throw new ConstructionAccessDenied();
-      }
-      const loop = await tx.constructionOpenLoop.findFirst({
-        where: { id: input.loopId, workspaceId: input.workspaceId },
-        select: { id: true, projectId: true, stateVersion: true, status: true },
-      });
-      if (!loop) throw new ConstructionAccessDenied();
-      const replay = await tx.constructionOpenLoopTransition.findUnique({
-        where: { loopId_idempotencyKey: { loopId: loop.id, idempotencyKey: input.eventId } },
-        select: { inputHash: true, nextVersion: true },
-      });
-      if (replay) {
-        if (replay.inputHash !== inputHash) throw new Error("OPEN_LOOP_IDEMPOTENCY_CONFLICT");
-        return {
-          loopId: loop.id,
-          decision: await decisionFromSnapshot(tx, loop.id, replay.nextVersion),
-          replayed: true,
-        };
-      }
-      if (loop.stateVersion !== input.expectedStateVersion) {
-        throw new Error("OPEN_LOOP_STALE_STATE_VERSION");
-      }
+  const membership = await requireActiveConstructionMember(
+    tx,
+    input.userId,
+    input.workspaceId,
+  );
+  if (input.state === "VERIFIED" && membership.role === "member") {
+    throw new ConstructionAccessDenied();
+  }
+  const loop = await tx.constructionOpenLoop.findFirst({
+    where: { id: input.loopId, workspaceId: input.workspaceId },
+    select: { id: true, projectId: true, stateVersion: true, status: true },
+  });
+  if (!loop) throw new ConstructionAccessDenied();
+  const replay = await tx.constructionOpenLoopTransition.findUnique({
+    where: {
+      loopId_idempotencyKey: { loopId: loop.id, idempotencyKey: input.eventId },
+    },
+    select: { inputHash: true, nextVersion: true },
+  });
+  if (replay) {
+    if (replay.inputHash !== inputHash)
+      throw new Error("OPEN_LOOP_IDEMPOTENCY_CONFLICT");
+    return {
+      loopId: loop.id,
+      decision: await decisionFromSnapshot(tx, loop.id, replay.nextVersion),
+      replayed: true,
+    };
+  }
+  if (loop.stateVersion !== input.expectedStateVersion) {
+    throw new Error("OPEN_LOOP_STALE_STATE_VERSION");
+  }
 
-      await tx.constructionOpenLoopEvidence.create({
-        data: {
-          loopId: loop.id,
-          workspaceId: input.workspaceId,
-          projectId: loop.projectId,
-          evidenceKey: input.eventId,
-          kind:
-            input.kind === "WRITTEN_APPROVAL"
-              ? "written_approval"
-              : input.kind === "PHOTO"
-                ? "photo"
-                : "document",
-          state: input.state === "VERIFIED" ? "verified" : "present_unverified",
-          sourceRef: input.sourceRef,
-          contentHash: input.contentHash,
-          suppliedById: input.userId,
-        },
-      });
-      const nextVersion = loop.stateVersion + 1;
-      const evaluationInput = await buildEvaluationInput(tx, loop.id, nextVersion);
-      const decision = evaluateInvoiceReadiness(evaluationInput);
-      const update = await tx.constructionOpenLoop.updateMany({
-        where: { id: loop.id, workspaceId: input.workspaceId, stateVersion: loop.stateVersion },
-        data: {
-          stateVersion: nextVersion,
-          status: toDatabaseStatus(decision.status),
-          nextResponsibleRole: decision.nextResponsible.role,
-          nextAction: decision.nextAction,
-          decisionHash: decision.decisionHash,
-          readyAt: decision.ready ? new Date() : null,
-        },
-      });
-      if (update.count !== 1) throw new Error("OPEN_LOOP_CONCURRENT_TRANSITION_REFUSED");
-      await tx.constructionOpenLoopTransition.create({
-        data: {
-          loopId: loop.id,
-          workspaceId: input.workspaceId,
-          priorStatus: loop.status,
-          nextStatus: toDatabaseStatus(decision.status),
-          priorVersion: loop.stateVersion,
-          nextVersion,
-          reasonCodes: decision.reasons,
-          actorUserId: input.userId,
-          authorityDecision:
-            input.state === "VERIFIED" ? "OWNER_OR_ADMIN_VERIFICATION_ACCEPTED" : "MEMBER_EVIDENCE_ACCEPTED_UNVERIFIED",
-          inputHash,
-          idempotencyKey: input.eventId,
-        },
-      });
-      await tx.constructionOpenLoopSnapshot.create({
-        data: {
-          loopId: loop.id,
-          workspaceId: input.workspaceId,
-          stateVersion: nextVersion,
-          snapshot: asJson(decision),
-          canonicalHash: sha256Canonical(decision),
-        },
-      });
-      await appendConstructionAudit(tx, {
-        workspaceId: input.workspaceId,
-        actorUserId: input.userId,
-        entityType: "open_loop",
-        entityId: loop.id,
-        action: "construction_invoice_readiness_evidence_added",
-        reasonCode: input.kind,
-        metadata: {
-          evidenceKey: input.eventId,
-          evidenceState: input.state,
-          stateVersion: nextVersion,
-          decisionHash: decision.decisionHash,
-        },
-      });
-      return { loopId: loop.id, decision, replayed: false };
-    });
+  await tx.constructionOpenLoopEvidence.create({
+    data: {
+      loopId: loop.id,
+      workspaceId: input.workspaceId,
+      projectId: loop.projectId,
+      evidenceKey: input.eventId,
+      kind:
+        input.kind === "WRITTEN_APPROVAL"
+          ? "written_approval"
+          : input.kind === "PHOTO"
+            ? "photo"
+            : "document",
+      state: input.state === "VERIFIED" ? "verified" : "present_unverified",
+      sourceRef: input.sourceRef,
+      contentHash: input.contentHash,
+      suppliedById: input.userId,
+    },
+  });
+  const nextVersion = loop.stateVersion + 1;
+  const evaluationInput = await buildEvaluationInput(tx, loop.id, nextVersion);
+  const decision = evaluateInvoiceReadiness(evaluationInput);
+  const update = await tx.constructionOpenLoop.updateMany({
+    where: {
+      id: loop.id,
+      workspaceId: input.workspaceId,
+      stateVersion: loop.stateVersion,
+    },
+    data: {
+      stateVersion: nextVersion,
+      status: toDatabaseStatus(decision.status),
+      nextResponsibleRole: decision.nextResponsible.role,
+      nextAction: decision.nextAction,
+      decisionHash: decision.decisionHash,
+      readyAt: decision.ready ? new Date() : null,
+    },
+  });
+  if (update.count !== 1)
+    throw new Error("OPEN_LOOP_CONCURRENT_TRANSITION_REFUSED");
+  await tx.constructionOpenLoopTransition.create({
+    data: {
+      loopId: loop.id,
+      workspaceId: input.workspaceId,
+      priorStatus: loop.status,
+      nextStatus: toDatabaseStatus(decision.status),
+      priorVersion: loop.stateVersion,
+      nextVersion,
+      reasonCodes: decision.reasons,
+      actorUserId: input.userId,
+      authorityDecision:
+        input.state === "VERIFIED"
+          ? "OWNER_OR_ADMIN_VERIFICATION_ACCEPTED"
+          : "MEMBER_EVIDENCE_ACCEPTED_UNVERIFIED",
+      inputHash,
+      idempotencyKey: input.eventId,
+    },
+  });
+  await tx.constructionOpenLoopSnapshot.create({
+    data: {
+      loopId: loop.id,
+      workspaceId: input.workspaceId,
+      stateVersion: nextVersion,
+      snapshot: asJson(decision),
+      canonicalHash: sha256Canonical(decision),
+    },
+  });
+  await appendConstructionAudit(tx, {
+    workspaceId: input.workspaceId,
+    actorUserId: input.userId,
+    entityType: "open_loop",
+    entityId: loop.id,
+    action: "construction_invoice_readiness_evidence_added",
+    reasonCode: input.kind,
+    metadata: {
+      evidenceKey: input.eventId,
+      evidenceState: input.state,
+      stateVersion: nextVersion,
+      decisionHash: decision.decisionHash,
+    },
+  });
+  return { loopId: loop.id, decision, replayed: false };
+}
+
+export async function addInvoiceReadinessEvidence(rawInput: unknown) {
+  return prisma.$transaction((tx) =>
+    addInvoiceReadinessEvidenceInTransaction(tx, rawInput),
+  );
 }
 
 export async function recordOpenLoopContradiction(rawInput: unknown) {
@@ -758,7 +838,13 @@ export async function recordOpenLoopContradiction(rawInput: unknown) {
     await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
     const loop = await tx.constructionOpenLoop.findFirst({
       where: { id: input.loopId, workspaceId: input.workspaceId },
-      select: { id: true, workspaceId: true, projectId: true, stateVersion: true, status: true },
+      select: {
+        id: true,
+        workspaceId: true,
+        projectId: true,
+        stateVersion: true,
+        status: true,
+      },
     });
     if (!loop || loop.status === "closed" || loop.status === "revoked") {
       throw new ConstructionAccessDenied();
@@ -802,11 +888,21 @@ export async function resolveOpenLoopContradiction(rawInput: unknown) {
   const input = resolveContradictionSchema.parse(rawInput);
   const inputHash = sha256Canonical(input);
   return prisma.$transaction(async (tx) => {
-    const membership = await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
+    const membership = await requireActiveConstructionMember(
+      tx,
+      input.userId,
+      input.workspaceId,
+    );
     if (membership.role === "member") throw new ConstructionAccessDenied();
     const loop = await tx.constructionOpenLoop.findFirst({
       where: { id: input.loopId, workspaceId: input.workspaceId },
-      select: { id: true, workspaceId: true, projectId: true, stateVersion: true, status: true },
+      select: {
+        id: true,
+        workspaceId: true,
+        projectId: true,
+        stateVersion: true,
+        status: true,
+      },
     });
     if (!loop || loop.status === "closed" || loop.status === "revoked") {
       throw new ConstructionAccessDenied();
@@ -830,7 +926,10 @@ export async function resolveOpenLoopContradiction(rawInput: unknown) {
       },
       select: { id: true, claimIds: true },
     });
-    if (!contradiction || !contradiction.claimIds.includes(input.acceptedClaimId)) {
+    if (
+      !contradiction ||
+      !contradiction.claimIds.includes(input.acceptedClaimId)
+    ) {
       throw new ConstructionAccessDenied();
     }
     const resolvedAt = new Date();
@@ -846,7 +945,8 @@ export async function resolveOpenLoopContradiction(rawInput: unknown) {
         resolvedAt,
       },
     });
-    if (resolved.count !== 1) throw new Error("OPEN_LOOP_CONCURRENT_TRANSITION_REFUSED");
+    if (resolved.count !== 1)
+      throw new Error("OPEN_LOOP_CONCURRENT_TRANSITION_REFUSED");
     return persistEvaluatedTransition(tx, {
       loop,
       actorUserId: input.userId,
@@ -867,11 +967,21 @@ export async function revokeOpenLoopEvidence(rawInput: unknown) {
   const input = revokeEvidenceSchema.parse(rawInput);
   const inputHash = sha256Canonical(input);
   return prisma.$transaction(async (tx) => {
-    const membership = await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
+    const membership = await requireActiveConstructionMember(
+      tx,
+      input.userId,
+      input.workspaceId,
+    );
     if (membership.role === "member") throw new ConstructionAccessDenied();
     const loop = await tx.constructionOpenLoop.findFirst({
       where: { id: input.loopId, workspaceId: input.workspaceId },
-      select: { id: true, workspaceId: true, projectId: true, stateVersion: true, status: true },
+      select: {
+        id: true,
+        workspaceId: true,
+        projectId: true,
+        stateVersion: true,
+        status: true,
+      },
     });
     if (!loop || loop.status === "closed" || loop.status === "revoked") {
       throw new ConstructionAccessDenied();
@@ -894,12 +1004,14 @@ export async function revokeOpenLoopEvidence(rawInput: unknown) {
       },
       select: { id: true, evidenceKey: true, state: true },
     });
-    if (!evidence || evidence.state === "revoked") throw new ConstructionAccessDenied();
+    if (!evidence || evidence.state === "revoked")
+      throw new ConstructionAccessDenied();
     const revoked = await tx.constructionOpenLoopEvidence.updateMany({
       where: { id: evidence.id, loopId: loop.id, state: evidence.state },
       data: { state: "revoked" },
     });
-    if (revoked.count !== 1) throw new Error("OPEN_LOOP_CONCURRENT_TRANSITION_REFUSED");
+    if (revoked.count !== 1)
+      throw new Error("OPEN_LOOP_CONCURRENT_TRANSITION_REFUSED");
     return persistEvaluatedTransition(tx, {
       loop,
       actorUserId: input.userId,
@@ -923,7 +1035,11 @@ export async function openLoopProjectionForUser(input: {
   loopId: string;
 }) {
   return prisma.$transaction(async (tx) => {
-    const membership = await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
+    const membership = await requireActiveConstructionMember(
+      tx,
+      input.userId,
+      input.workspaceId,
+    );
     const loop = await tx.constructionOpenLoop.findFirst({
       where: { id: input.loopId, workspaceId: input.workspaceId },
       select: { id: true, stateVersion: true },
@@ -947,7 +1063,11 @@ export async function projectOpenLoopsForUser(input: {
   projectId: string;
 }) {
   return prisma.$transaction(async (tx) => {
-    const membership = await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
+    const membership = await requireActiveConstructionMember(
+      tx,
+      input.userId,
+      input.workspaceId,
+    );
     const project = await tx.constructionProject.findFirst({
       where: { id: input.projectId, workspaceId: input.workspaceId },
       select: { id: true },
@@ -962,7 +1082,9 @@ export async function projectOpenLoopsForUser(input: {
         policyVersion: true,
         createdAt: true,
         updatedAt: true,
-        openedByMessage: { select: { originalBody: true, channel: true, createdAt: true } },
+        openedByMessage: {
+          select: { originalBody: true, channel: true, createdAt: true },
+        },
         evidence: {
           orderBy: [{ createdAt: "asc" }, { id: "asc" }],
           select: {
@@ -976,7 +1098,13 @@ export async function projectOpenLoopsForUser(input: {
         },
         contradictions: {
           orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-          select: { id: true, field: true, status: true, claimIds: true, createdAt: true },
+          select: {
+            id: true,
+            field: true,
+            status: true,
+            claimIds: true,
+            createdAt: true,
+          },
         },
         transitions: {
           orderBy: { nextVersion: "asc" },
@@ -993,7 +1121,14 @@ export async function projectOpenLoopsForUser(input: {
         actions: {
           where: { status: "proposed" },
           orderBy: { createdAt: "desc" },
-          select: { id: true, type: true, status: true, version: true, payload: true, payloadHash: true },
+          select: {
+            id: true,
+            type: true,
+            status: true,
+            version: true,
+            payload: true,
+            payloadHash: true,
+          },
         },
       },
     });
@@ -1007,12 +1142,21 @@ export async function projectOpenLoopsForUser(input: {
     return Promise.all(
       loops.map(async (loop) => {
         const evaluationInput = await buildEvaluationInput(tx, loop.id);
-        const decision = await decisionFromSnapshot(tx, loop.id, loop.stateVersion);
-        const projection = projectOpenLoopProjection(evaluationInput, decision, role);
+        const decision = await decisionFromSnapshot(
+          tx,
+          loop.id,
+          loop.stateVersion,
+        );
+        const projection = projectOpenLoopProjection(
+          evaluationInput,
+          decision,
+          role,
+        );
         const canSeeFinancials = role !== "FIELD_WORKER";
         return {
           ...projection,
-          canManageEvidence: membership.role === "owner" || membership.role === "admin",
+          canManageEvidence:
+            membership.role === "owner" || membership.role === "admin",
           stateVersion: loop.stateVersion,
           policyVersion: loop.policyVersion,
           createdAt: loop.createdAt,
@@ -1021,16 +1165,28 @@ export async function projectOpenLoopsForUser(input: {
           evidence: loop.evidence.map((item) =>
             canSeeFinancials
               ? item
-              : { id: item.id, kind: item.kind, state: item.state, createdAt: item.createdAt },
+              : {
+                  id: item.id,
+                  kind: item.kind,
+                  state: item.state,
+                  createdAt: item.createdAt,
+                },
           ),
           contradictions: loop.contradictions.map((item) =>
             canSeeFinancials
               ? item
-              : { id: item.id, field: item.field, status: item.status, createdAt: item.createdAt },
+              : {
+                  id: item.id,
+                  field: item.field,
+                  status: item.status,
+                  createdAt: item.createdAt,
+                },
           ),
           transitions: loop.transitions,
           preparedActions: loop.actions.map((action) => {
-            const parsed = preparedEvidenceRequestSchema.safeParse(action.payload);
+            const parsed = preparedEvidenceRequestSchema.safeParse(
+              action.payload,
+            );
             return {
               id: action.id,
               type: action.type,
@@ -1060,7 +1216,11 @@ export async function openLoopFocusForUser(input: {
   referenceNow: Date;
 }) {
   return prisma.$transaction(async (tx) => {
-    const membership = await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
+    const membership = await requireActiveConstructionMember(
+      tx,
+      input.userId,
+      input.workspaceId,
+    );
     const workspace = await tx.constructionWorkspace.findFirst({
       where: { id: input.workspaceId, status: "active" },
       select: { id: true, defaultTimezone: true },
@@ -1074,8 +1234,14 @@ export async function openLoopFocusForUser(input: {
           : "FIELD_WORKER";
     const zonedNow = toZonedTime(input.referenceNow, workspace.defaultTimezone);
     const localToday = startOfDay(zonedNow);
-    const tomorrowFrom = fromZonedTime(addDays(localToday, 1), workspace.defaultTimezone);
-    const dayAfterTomorrowFrom = fromZonedTime(addDays(localToday, 2), workspace.defaultTimezone);
+    const tomorrowFrom = fromZonedTime(
+      addDays(localToday, 1),
+      workspace.defaultTimezone,
+    );
+    const dayAfterTomorrowFrom = fromZonedTime(
+      addDays(localToday, 2),
+      workspace.defaultTimezone,
+    );
     const loops = await tx.constructionOpenLoop.findMany({
       where: {
         workspaceId: input.workspaceId,
@@ -1098,7 +1264,11 @@ export async function openLoopFocusForUser(input: {
     const items = await Promise.all(
       loops.map(async (loop) => {
         const evaluationInput = await buildEvaluationInput(tx, loop.id);
-        const decision = await decisionFromSnapshot(tx, loop.id, loop.stateVersion);
+        const decision = await decisionFromSnapshot(
+          tx,
+          loop.id,
+          loop.stateVersion,
+        );
         return {
           ...projectOpenLoopProjection(evaluationInput, decision, role),
           project: loop.project,
@@ -1118,12 +1288,13 @@ export async function openLoopFocusForUser(input: {
       REVOKED: 5,
     };
     items.sort((left, right) => {
-      const statusDifference = statusRank[left.status] - statusRank[right.status];
+      const statusDifference =
+        statusRank[left.status] - statusRank[right.status];
       if (statusDifference !== 0) return statusDifference;
       const priorityDifference = right.priority - left.priority;
       if (priorityDifference !== 0) return priorityDifference;
-      const leftAmount = "amountMinor" in left ? left.amountMinor ?? 0 : 0;
-      const rightAmount = "amountMinor" in right ? right.amountMinor ?? 0 : 0;
+      const leftAmount = "amountMinor" in left ? (left.amountMinor ?? 0) : 0;
+      const rightAmount = "amountMinor" in right ? (right.amountMinor ?? 0) : 0;
       if (leftAmount !== rightAmount) return rightAmount - leftAmount;
       return left.updatedAt.getTime() - right.updatedAt.getTime();
     });
@@ -1131,7 +1302,10 @@ export async function openLoopFocusForUser(input: {
       timezone: workspace.defaultTimezone,
       today: items.filter((item) => !item.dueAt || item.dueAt < tomorrowFrom),
       tomorrow: items.filter(
-        (item) => item.dueAt && item.dueAt >= tomorrowFrom && item.dueAt < dayAfterTomorrowFrom,
+        (item) =>
+          item.dueAt &&
+          item.dueAt >= tomorrowFrom &&
+          item.dueAt < dayAfterTomorrowFrom,
       ),
     };
   });
@@ -1140,7 +1314,11 @@ export async function openLoopFocusForUser(input: {
 export async function prepareInvoiceEvidenceRequest(rawInput: unknown) {
   const input = prepareEvidenceRequestInputSchema.parse(rawInput);
   return prisma.$transaction(async (tx) => {
-    const membership = await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
+    const membership = await requireActiveConstructionMember(
+      tx,
+      input.userId,
+      input.workspaceId,
+    );
     if (membership.role === "member") throw new ConstructionAccessDenied();
     const loop = await tx.constructionOpenLoop.findFirst({
       where: { id: input.loopId, workspaceId: input.workspaceId },
@@ -1195,8 +1373,11 @@ export async function prepareInvoiceEvidenceRequest(rawInput: unknown) {
     });
     if (!contact) throw new ConstructionAccessDenied();
     const normalizedRecipient =
-      input.channel === "SMS" ? contact.normalizedPhone : contact.normalizedEmail;
-    if (!normalizedRecipient) throw new Error("OPEN_LOOP_RECIPIENT_UNAVAILABLE");
+      input.channel === "SMS"
+        ? contact.normalizedPhone
+        : contact.normalizedEmail;
+    if (!normalizedRecipient)
+      throw new Error("OPEN_LOOP_RECIPIENT_UNAVAILABLE");
 
     const actionId = randomUUID();
     const payload = preparedEvidenceRequestSchema.parse({

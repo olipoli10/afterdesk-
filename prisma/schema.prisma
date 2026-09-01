@@ -335,6 +335,19 @@ enum ConstructionOpenLoopContradictionStatus {
   resolved
 }
 
+enum ConstructionHumanEscalationPurpose {
+  obtain_missing_evidence
+}
+
+enum ConstructionHumanEscalationState {
+  prepared
+  active
+  resumed
+  withdrawn
+  exhausted
+  paused
+}
+
 // ---------- Auth (Better Auth owns these shapes) ----------
 
 model User {
@@ -375,10 +388,11 @@ model User {
   /// HUMAN WORK UNIT — les quatre roles distincts qu'une personne peut tenir
   /// autour d'une unite. Nommes separement pour qu'aucun ne puisse etre
   /// confondu avec un autre dans une requete.
-  humanUnitsClaimed    HumanWorkUnitRunState[]       @relation("HumanUnitClaimedBy")
-  humanUnitCandidates  HumanWorkUnitCandidate[]      @relation("HumanUnitSubmittedBy")
-  humanUnitDecisions   HumanWorkUnitReviewDecision[] @relation("HumanUnitDecidedBy")
-  humanUnitAcceptances HumanWorkUnitAcceptance[]     @relation("HumanUnitAcceptedBy")
+  humanUnitsClaimed                     HumanWorkUnitRunState[]       @relation("HumanUnitClaimedBy")
+  humanUnitCandidates                   HumanWorkUnitCandidate[]      @relation("HumanUnitSubmittedBy")
+  humanUnitDecisions                    HumanWorkUnitReviewDecision[] @relation("HumanUnitDecidedBy")
+  humanUnitAcceptances                  HumanWorkUnitAcceptance[]     @relation("HumanUnitAcceptedBy")
+  constructionHumanEscalationsRequested ConstructionHumanEscalation[] @relation("ConstructionHumanEscalationRequestedBy")
 }
 
 /**
@@ -660,15 +674,16 @@ model Task {
   qualityReviews      TaskQualityReview[]
   aiOperations        AiOperation[]
 
+  /// HUMAN WORK UNIT — denormalise pour qu'un trigger sur Task trouve l'unite
+  /// en une seule lecture d'index.
+  humanWorkUnit               HumanWorkUnitRunState?
+  constructionHumanEscalation ConstructionHumanEscalation?
+
   @@index([status])
   @@index([clientId])
   @@index([claimedById])
   @@index([categoryId])
   @@index([standingCapacityAccountId])
-
-  /// HUMAN WORK UNIT — denormalise pour qu'un trigger sur Task trouve l'unite
-  /// en une seule lecture d'index.
-  humanWorkUnit HumanWorkUnitRunState?
 }
 
 /**
@@ -811,13 +826,13 @@ model File {
   /// 1E-alpha : les contrats acceptes qui epinglent ce fichier.
   acceptanceSnapshotFiles TaskAcceptanceSnapshotFile[]
 
+  /// HUMAN WORK UNIT — artefacts declares portes par un candidat.
+  humanUnitCandidateFiles HumanWorkUnitCandidateFile[]
+
   @@index([taskId])
   @@index([uploaderId])
   @@index([scanStatus])
   @@index([workflowRunId])
-
-  /// HUMAN WORK UNIT — artefacts declares portes par un candidat.
-  humanUnitCandidateFiles HumanWorkUnitCandidateFile[]
 }
 
 model FileAccessLog {
@@ -1638,9 +1653,9 @@ model TaskAiClassification {
   /// l'opérateur ; rien ne réactive Standing Capacity automatiquement.
   recurrence              String?
 
-  model               String
-  rawOutput           Json?
-  computedAt          DateTime            @default(now())
+  model      String
+  rawOutput  Json?
+  computedAt DateTime @default(now())
 }
 
 /// Une version du plan d'exécution. APPEND-ONLY : une version n'est jamais
@@ -1729,10 +1744,10 @@ model TaskExecutionPlanVersion {
   snapshots     TaskAcceptanceSnapshot[]
   workflowRuns  TaskWorkflowRun[]
 
-  @@unique([taskId, version])
-
   /// HUMAN WORK UNIT — la definition appartient a la version de plan acceptee.
   humanUnitDefinitions HumanWorkUnitDefinition[]
+
+  @@unique([taskId, version])
 }
 
 model TaskExecutionPlanStep {
@@ -1867,10 +1882,10 @@ model TaskExecutionPlanStep {
   /// Phase 1B — les exécutions de cette étape (une par run).
   stepRuns TaskWorkflowStepRun[]
 
-  @@unique([planVersionId, order])
-
   /// HUMAN WORK UNIT — au plus une definition par etape acceptee.
   humanUnitDefinition HumanWorkUnitDefinition?
+
+  @@unique([planVersionId, order])
 }
 
 /// Étape critique, CONDITIONNELLE (jamais systématique — décision fondateur,
@@ -2152,12 +2167,12 @@ model TaskWorkflowRun {
   artifacts    File[]
   budgetHolds  WorkflowBudgetHold[]
 
-  @@index([status])
-  @@index([taskId])
-
   /// HUMAN WORK UNIT
   humanWorkUnit   HumanWorkUnitRunState?
   humanUnitResume HumanWorkUnitResumeRecord?
+
+  @@index([status])
+  @@index([taskId])
 }
 
 /// UNE LIGNE PAR ÉTAPE COMPILÉE, machine ou humaine.
@@ -3327,6 +3342,7 @@ model ConstructionWorkspace {
   auditEvents       ConstructionAuditEvent[]
   openLoops         ConstructionOpenLoop[]
   connectorAccounts ConstructionConnectorAccount[]
+  humanEscalations  ConstructionHumanEscalation[]
 
   @@index([ownerUserId, status])
 }
@@ -3381,11 +3397,12 @@ model ConstructionProject {
   createdAt     DateTime                  @default(now())
   updatedAt     DateTime                  @updatedAt
 
-  contacts      ConstructionContact[]
-  messages      ConstructionMessage[]
-  calendarItems ConstructionCalendarItem[]
-  actions       ConstructionAction[]
-  openLoops     ConstructionOpenLoop[]
+  contacts         ConstructionContact[]
+  messages         ConstructionMessage[]
+  calendarItems    ConstructionCalendarItem[]
+  actions          ConstructionAction[]
+  openLoops        ConstructionOpenLoop[]
+  humanEscalations ConstructionHumanEscalation[]
 
   @@unique([workspaceId, code])
   @@index([workspaceId, name])
@@ -3654,13 +3671,14 @@ model ConstructionOpenLoop {
   createdAt           DateTime                   @default(now())
   updatedAt           DateTime                   @updatedAt
 
-  facts          ConstructionOpenLoopFact[]
-  evidence       ConstructionOpenLoopEvidence[]
-  contradictions ConstructionOpenLoopContradiction[]
-  transitions    ConstructionOpenLoopTransition[]
-  snapshots      ConstructionOpenLoopSnapshot[]
-  actions        ConstructionAction[]
-  sourceMessages ConstructionMessage[]               @relation("ConstructionOpenLoopSourceMessages")
+  facts            ConstructionOpenLoopFact[]
+  evidence         ConstructionOpenLoopEvidence[]
+  contradictions   ConstructionOpenLoopContradiction[]
+  transitions      ConstructionOpenLoopTransition[]
+  snapshots        ConstructionOpenLoopSnapshot[]
+  actions          ConstructionAction[]
+  sourceMessages   ConstructionMessage[]               @relation("ConstructionOpenLoopSourceMessages")
+  humanEscalations ConstructionHumanEscalation[]
 
   @@unique([workspaceId, idempotencyKey])
   @@unique([workspaceId, semanticKey])
@@ -3764,6 +3782,44 @@ model ConstructionOpenLoopSnapshot {
   @@index([canonicalHash])
 }
 
+/// Durable binding between one Construction open-loop escalation and the
+/// existing HumanWorkUnit safe-resume engine. The accepted result is applied
+/// to Construction exactly once; retries recover the same binding.
+model ConstructionHumanEscalation {
+  id                 String                             @id @default(cuid())
+  workspaceId        String
+  workspace          ConstructionWorkspace              @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  projectId          String
+  project            ConstructionProject                @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  openLoopId         String
+  openLoop           ConstructionOpenLoop               @relation(fields: [openLoopId], references: [id], onDelete: Restrict)
+  purpose            ConstructionHumanEscalationPurpose
+  evidenceKind       ConstructionOpenLoopEvidenceKind
+  sourceStateVersion Int
+  contractVersion    Int                                @default(1)
+  requestId          String
+  idempotencyKey     String
+  inputHash          String
+  requestedById      String
+  requestedBy        User                               @relation("ConstructionHumanEscalationRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+  taskId             String                             @unique
+  task               Task                               @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  unitStateId        String                             @unique
+  unitState          HumanWorkUnitRunState              @relation(fields: [unitStateId], references: [id], onDelete: Restrict)
+  state              ConstructionHumanEscalationState   @default(prepared)
+  acceptanceId       String?                            @unique
+  acceptance         HumanWorkUnitAcceptance?           @relation(fields: [acceptanceId], references: [id], onDelete: Restrict)
+  acceptedResultHash String?
+  appliedAt          DateTime?
+  withdrawnAt        DateTime?
+  createdAt          DateTime                           @default(now())
+  updatedAt          DateTime                           @updatedAt
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([openLoopId, state, createdAt])
+  @@index([workspaceId, state, createdAt])
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // HUMAN WORK UNIT — SAFE RESUME
 //
@@ -3851,7 +3907,7 @@ model HumanWorkUnitDefinition {
   planStepId String                @unique
   planStep   TaskExecutionPlanStep @relation(fields: [planStepId], references: [id], onDelete: Restrict)
 
-  instructions String
+  instructions          String
   /// TOUT ce que le travailleur peut voir. Rien d'autre n'est projeté.
   declaredInputs        Json
   outputSchema          Json
@@ -3911,12 +3967,12 @@ model HumanWorkUnitRunState {
   /// exactement une fois par réassignation par le trigger. Les deux sont
   /// disjoints : la garde `OLD."claimedById" IS NOT NULL` du trigger fait que
   /// la première réclamation n'est jamais doublement incrémentée.
-  claimGeneration Int @default(0)
+  claimGeneration  Int @default(0)
   /// Monotone. Incrémenté une seule fois, par la reprise.
   resumeGeneration Int @default(0)
   /// Allocateur d'audit monotone : chaque mutation auditée l'incrémente dans
   /// le MÊME CAS et utilise la nouvelle valeur. Jamais `MAX(seq)+1`.
-  transitionSeq Int @default(0)
+  transitionSeq    Int @default(0)
 
   remainingRevisions Int
 
@@ -3939,12 +3995,13 @@ model HumanWorkUnitRunState {
   admittedAt DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  candidates  HumanWorkUnitCandidate[]
-  decisions   HumanWorkUnitReviewDecision[]
-  acceptance  HumanWorkUnitAcceptance?
-  resume      HumanWorkUnitResumeRecord?
-  transitions HumanWorkUnitTransition[]
-  alerts      HumanWorkUnitAlert[]
+  candidates             HumanWorkUnitCandidate[]
+  decisions              HumanWorkUnitReviewDecision[]
+  acceptance             HumanWorkUnitAcceptance?
+  resume                 HumanWorkUnitResumeRecord?
+  transitions            HumanWorkUnitTransition[]
+  alerts                 HumanWorkUnitAlert[]
+  constructionEscalation ConstructionHumanEscalation?
 
   @@index([state])
   @@index([state, publicationDeadlineAt])
@@ -4052,17 +4109,18 @@ model HumanWorkUnitAcceptance {
   /// candidats était un jour touchée.
   resultPayload Json
   /// Empreinte de la sérialisation canonique : une altération est détectable.
-  resultSha256 String
+  resultSha256  String
 
   /// Hérite de la classe gelée du mandat et d'au moins la plus restrictive des
   /// entrées déclarées. Jamais rétrogradée.
-  dataClass String
+  dataClass          String
   /// Contre QUELS critères gelés — la provenance de la décision.
   criteriaVersionRef String
 
   acceptedAt DateTime @default(now())
 
-  resume HumanWorkUnitResumeRecord?
+  resume                 HumanWorkUnitResumeRecord?
+  constructionEscalation ConstructionHumanEscalation?
 }
 
 /// UNE reprise par run. CETTE CONTRAINTE UNIQUE EST LA GARANTIE
@@ -4080,7 +4138,7 @@ model HumanWorkUnitResumeRecord {
   acceptanceId String                  @unique
   acceptance   HumanWorkUnitAcceptance @relation(fields: [acceptanceId], references: [id], onDelete: Restrict)
 
-  resumeGeneration Int
+  resumeGeneration  Int
   /// Quelles étapes d'aval cette reprise a rendues exécutables.
   resumedStepRunIds String[]
   /// Étapes NON reprises, qui conservent leur propre raison.
@@ -4109,10 +4167,10 @@ model HumanWorkUnitTransition {
   fromState HumanWorkUnitState?
   toState   HumanWorkUnitState
   /// Vocabulaire FERMÉ (contracts/audit-events.md §1).
-  cause String
+  cause     String
 
-  claimGeneration  Int
-  resumeGeneration Int
+  claimGeneration       Int
+  resumeGeneration      Int
   /// true = l'affectation a été créée ici ; false = elle correspondait déjà ;
   /// null = sans objet.
   assignmentEstablished Boolean?

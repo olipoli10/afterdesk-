@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Prisma, type HumanWorkUnitState } from "@prisma/client";
+import { Prisma, type HumanWorkUnitState } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { VA_FILE_ACCESS_STATUSES } from "@/lib/status";
 import { ACTIVE_CLAIM_STATUSES } from "@/lib/worker-eligibility";

@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma-client";
 import { transitionTask, TransitionError } from "@/lib/state";
 import { resolvePoolAudience, writePoolNotifications } from "@/server/pool-notifications";
 import type {

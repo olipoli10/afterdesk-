@@ -24,6 +24,8 @@ Acceptance:
 - the escalation is bound to one workspace, project and open loop;
 - the human objective, required result schema, evidence requirements and
   acceptance criteria are frozen before publication;
+- admission prepares the unit in `PREPARED` and publication remains blocked
+  until an authorized or received payment for the same frozen task is verified;
 - no client price, construction amount, credential, raw phone number or
   unrelated project context reaches the worker;
 - local publication creates no provider call, notification transport or spend.
@@ -84,12 +86,14 @@ accepted evidence all fail closed with a typed result and no construction write.
 
 ## Economics
 
-R5 changes no customer price or worker payout. Existing HumanWorkUnit economics
-remain frozen. No provider or transport spend is authorized.
+R5 freezes the explicitly accepted customer price, worker payout, currency and
+effort before preparation. It never fabricates payment: activation requires an
+existing authorized or received Payment bound to the same task. No provider or
+transport spend is authorized by this feature.
 
 ## Explicit non-goals
 
-Real worker dispatch, customer/prospect data, SMS/email/call transport, Twilio,
+Real worker dispatch, payment capture, customer/prospect data, SMS/email/call transport, Twilio,
 OAuth, Google Calendar, accounting writes, payments, mobile shells, new
 dependencies, destructive migration, package-lock changes, push, Preview,
 Production or deployment.

@@ -19,7 +19,8 @@ No dependency or lockfile change is required.
   acceptance.
 - Evidence: immutable acceptance, resume record, construction transition,
   snapshot and audit event.
-- Economics: existing frozen payout; no new spend or external transport.
+- Economics: accepted price/payout/currency/effort freeze at preparation;
+  publication requires pre-existing authorized funding and performs no capture.
 - Incremental change: one bridge and one forward-only migration.
 
 ## Implementation sequence

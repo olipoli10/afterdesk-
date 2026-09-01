@@ -54,8 +54,14 @@ if (process.env.DATABASE_URL !== process.env.AFTERDESK_TEST_DATABASE_URL) {
  */
 const TRUNCATE_GUARDED_TABLES = [
   { table: "LedgerEntry", trigger: "LedgerEntry_no_truncate" },
-  { table: "TaskAcceptanceSnapshot", trigger: "TaskAcceptanceSnapshot_no_truncate" },
-  { table: "TaskOperationalBaseline", trigger: "TaskOperationalBaseline_no_truncate" },
+  {
+    table: "TaskAcceptanceSnapshot",
+    trigger: "TaskAcceptanceSnapshot_no_truncate",
+  },
+  {
+    table: "TaskOperationalBaseline",
+    trigger: "TaskOperationalBaseline_no_truncate",
+  },
   /**
    * HUMAN WORK UNIT. Both refuse TRUNCATE by design — an acceptance is the
    * frozen record of what a reviewer signed off on, and a transition trail
@@ -74,22 +80,30 @@ const TRUNCATE_GUARDED_TABLES = [
     table: "HumanWorkUnitTransition",
     trigger: "afterdesk_human_unit_transition_no_truncate",
   },
+  {
+    table: "ConstructionHumanEscalation",
+    trigger: "ConstructionHumanEscalation_guard_truncate",
+  },
 ];
 
 beforeAll(async () => {
   const { prisma } = await import("@/lib/db");
   const tables = await prisma.$queryRawUnsafe<{ tablename: string }[]>(
-    `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT IN ('_prisma_migrations', 'it_schema_marker')`
+    `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT IN ('_prisma_migrations', 'it_schema_marker')`,
   );
   if (tables.length === 0) return;
   const list = tables.map((t) => `"${t.tablename}"`).join(", ");
   await prisma.$transaction([
     ...TRUNCATE_GUARDED_TABLES.map(({ table, trigger }) =>
-      prisma.$executeRawUnsafe(`ALTER TABLE "${table}" DISABLE TRIGGER "${trigger}"`)
+      prisma.$executeRawUnsafe(
+        `ALTER TABLE "${table}" DISABLE TRIGGER "${trigger}"`,
+      ),
     ),
     prisma.$executeRawUnsafe(`TRUNCATE TABLE ${list} RESTART IDENTITY CASCADE`),
     ...TRUNCATE_GUARDED_TABLES.map(({ table, trigger }) =>
-      prisma.$executeRawUnsafe(`ALTER TABLE "${table}" ENABLE TRIGGER "${trigger}"`)
+      prisma.$executeRawUnsafe(
+        `ALTER TABLE "${table}" ENABLE TRIGGER "${trigger}"`,
+      ),
     ),
   ]);
 });

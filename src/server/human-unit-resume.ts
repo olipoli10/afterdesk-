@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { HANDOFF_REASONS } from "@/lib/ai-work-engine/compile";
 import { parsePrimitiveParams } from "@/lib/ai-work-engine/primitive-params";
 import { REGISTRY, resolvePrimitive } from "@/lib/ai-work-engine/registry";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma-client";
 
 export type ResumeRefusalCause =
   | "not_found"

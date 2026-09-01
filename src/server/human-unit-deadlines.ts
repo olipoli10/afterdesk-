@@ -1,6 +1,6 @@
 import "server-only";
 
-import { type HumanWorkUnitAlertKind, type HumanWorkUnitRefusalCause, type HumanWorkUnitState } from "@prisma/client";
+import { type HumanWorkUnitAlertKind, type HumanWorkUnitRefusalCause, type HumanWorkUnitState } from "@prisma-client";
 import { prisma } from "@/lib/db";
 
 const DEADLINE_BATCH = 100;

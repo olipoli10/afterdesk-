@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma-client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { splitSqlStatements } from "./global-setup";
 
