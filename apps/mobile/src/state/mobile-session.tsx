@@ -35,6 +35,10 @@ import {
   type EvidenceAttempt,
 } from "@/lib/evidence";
 import type { MobileProjectTimeline } from "@/lib/timeline";
+import type {
+  MobilePermissionCenter,
+  MobileRevokePermissionCommand,
+} from "@/lib/permissions";
 
 type LoadState = "IDLE" | "LOADING" | "READY" | "UNAVAILABLE";
 
@@ -54,6 +58,8 @@ type MobileSessionValue = {
   latestEvidenceAttempt: EvidenceAttempt | null;
   timeline: MobileProjectTimeline | null;
   timelineLoadState: LoadState;
+  permissionCenter: MobilePermissionCenter | null;
+  permissionLoadState: LoadState;
   selectWorkspace: (workspaceId: string) => Promise<void>;
   refresh: () => Promise<void>;
   refreshAssistant: () => Promise<void>;
@@ -64,6 +70,8 @@ type MobileSessionValue = {
   ) => Promise<PreparedActionAttempt>;
   submitEvidenceAttempt: (attempt: EvidenceAttempt) => Promise<EvidenceAttempt>;
   loadTimeline: (projectId: string) => Promise<void>;
+  loadPermissions: () => Promise<void>;
+  revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -116,10 +124,13 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     useState<EvidenceAttempt | null>(null);
   const [timeline, setTimeline] = useState<MobileProjectTimeline | null>(null);
   const [timelineLoadState, setTimelineLoadState] = useState<LoadState>("IDLE");
+  const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
+  const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const dispatchingRequest = useRef<string | null>(null);
   const dispatchingAssistantRequest = useRef<string | null>(null);
   const dispatchingPreparedActionRequest = useRef<string | null>(null);
   const dispatchingEvidenceRequest = useRef<string | null>(null);
+  const dispatchingPermissionRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const loadCockpit = useCallback(
@@ -139,6 +150,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setLatestAssistantAttempt(null);
         setLatestPreparedActionAttempt(null);
         setLatestEvidenceAttempt(null);
+        setPermissionCenter(null);
+        setPermissionLoadState("IDLE");
       }
       activeWorkspaceId.current = workspace.id;
       return next;
@@ -439,6 +452,52 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     [activeWorkspace, api, cockpit?.projects],
   );
 
+  const loadPermissions = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setPermissionLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.permissionCenter(activeWorkspace.id);
+      if (result.currentUser.role !== activeWorkspace.role) {
+        throw new MobileApiError("INVALID_RESPONSE");
+      }
+      setPermissionCenter(result);
+      setPermissionLoadState("READY");
+    } catch (error) {
+      setPermissionCenter(null);
+      setPermissionLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const revokePermission = useCallback(async (command: MobileRevokePermissionCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_PERMISSION_MANAGEMENT_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_PERMISSION_WORKSPACE_REFUSED");
+    }
+    if (dispatchingPermissionRequest.current) {
+      throw new Error("MOBILE_PERMISSION_ALREADY_DISPATCHED");
+    }
+    dispatchingPermissionRequest.current = command.commandId;
+    setPermissionLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      await api.revokePermission(command);
+      const refreshed = await api.permissionCenter(activeWorkspace.id);
+      setPermissionCenter(refreshed);
+      setPermissionLoadState("READY");
+    } catch (error) {
+      setPermissionLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    } finally {
+      dispatchingPermissionRequest.current = null;
+    }
+  }, [activeWorkspace, api]);
+
   const signOut = useCallback(async () => {
     await authClient.signOut();
     setBootstrap(null);
@@ -453,6 +512,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setLatestEvidenceAttempt(null);
     setTimeline(null);
     setTimelineLoadState("IDLE");
+    setPermissionCenter(null);
+    setPermissionLoadState("IDLE");
     setLoadState("IDLE");
   }, []);
 
@@ -473,6 +534,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestEvidenceAttempt,
       timeline,
       timelineLoadState,
+      permissionCenter,
+      permissionLoadState,
       selectWorkspace,
       refresh,
       refreshAssistant,
@@ -481,6 +544,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitPreparedActionAttempt,
       submitEvidenceAttempt,
       loadTimeline,
+      loadPermissions,
+      revokePermission,
       signOut,
     }),
     [
@@ -495,6 +560,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestEvidenceAttempt,
       timeline,
       timelineLoadState,
+      permissionCenter,
+      permissionLoadState,
       loadState,
       publicError,
       refresh,
@@ -508,6 +575,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitPreparedActionAttempt,
       submitEvidenceAttempt,
       loadTimeline,
+      loadPermissions,
+      revokePermission,
     ],
   );
 

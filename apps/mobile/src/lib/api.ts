@@ -19,6 +19,11 @@ import {
   mobileEvidenceUploadResultSchema,
 } from "@/lib/evidence";
 import { parseMobileProjectTimeline } from "@/lib/timeline";
+import {
+  mobileRevokePermissionCommandSchema,
+  mobileRevokePermissionResultSchema,
+  parseMobilePermissionCenter,
+} from "@/lib/permissions";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -236,6 +241,44 @@ export class MobileApi {
       const result = parseMobileProjectTimeline(value);
       if (result.workspaceId !== workspaceId || result.project.id !== projectId) {
         throw new Error("MOBILE_TIMELINE_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async permissionCenter(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/permissions?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = parseMobilePermissionCenter(value);
+      if (result.workspace.id !== workspaceId) {
+        throw new Error("MOBILE_PERMISSION_WORKSPACE_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async revokePermission(command: unknown) {
+    const parsedCommand = mobileRevokePermissionCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/permissions", {
+      method: "POST",
+      body: JSON.stringify(parsedCommand),
+    });
+    try {
+      const result = mobileRevokePermissionResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.accountId !== parsedCommand.accountId ||
+        result.grantId !== (parsedCommand.action === "REVOKE_GRANT_LOCAL" ? parsedCommand.grantId : null)
+      ) {
+        throw new Error("MOBILE_PERMISSION_RESULT_MISMATCH");
       }
       return result;
     } catch {
