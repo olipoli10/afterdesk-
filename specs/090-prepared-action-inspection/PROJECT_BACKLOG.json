@@ -68,8 +68,8 @@
     }
   ],
   "releases": [
-    {"id":"R13-CALENDAR-CONTACTS","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R12-NATIVE-CONTROL"],"outcome":"Role-safe native canonical calendar and contacts."},
-    {"id":"R14-EVIDENCE-INTAKE","status":"READY","authority":"LOCAL","dependsOn":["R13-CALENDAR-CONTACTS"],"outcome":"Secure native photo and document intake with stable retry."},
+    {"id":"R13-CALENDAR-CONTACTS","status":"DONE","authority":"LOCAL","dependsOn":["R12-NATIVE-CONTROL"],"outcome":"Role-safe native canonical calendar and contacts."},
+    {"id":"R14-EVIDENCE-INTAKE","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R13-CALENDAR-CONTACTS"],"outcome":"Secure native photo and document intake with stable retry."},
     {"id":"R15-PROJECT-TIMELINE","status":"READY","authority":"LOCAL","dependsOn":["R14-EVIDENCE-INTAKE"],"outcome":"Reconstructible project timeline and daily operating brief."},
     {"id":"R16-PERMISSION-CENTER","status":"PLANNED","authority":"LOCAL","dependsOn":["R15-PROJECT-TIMELINE"],"outcome":"One web/mobile center for grants, capabilities, revocation and disabled connector readiness."},
     {"id":"R17-OFFLINE-RETRY","status":"PLANNED","authority":"LOCAL","dependsOn":["R16-PERMISSION-CENTER"],"outcome":"Offline-safe mobile commands, durable outbox, replay protection and recovery UX."},

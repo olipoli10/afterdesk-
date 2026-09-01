@@ -143,7 +143,7 @@
       "title": "Native canonical Calendar and Contacts cockpit",
       "objective": "Expose role-safe canonical contacts and calendar state in dedicated native surfaces while reusing conversational commands.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R12-NATIVE-CONTROL"
       ],
@@ -173,17 +173,17 @@
       "evidencePaths": [
         "../093-native-calendar-contacts/evidence/r13-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "09a0adfd9cabf7935eec9cdddbf5f86ff9764acd",
+      "outputTree": "f7b63b48058516bf36491c3c04cb0eadb758b5bc",
+      "result": "Native canonical Calendar and Contacts surfaces are role-safe, PostgreSQL-grounded and provider-free on iOS and Android.",
+      "completedAtUtc": "2026-09-01T21:46:32Z"
     },
     {
       "id": "R14-EVIDENCE-INTAKE",
       "title": "Native secured evidence intake",
       "objective": "Bind selected local photos and documents to canonical project evidence through existing secured contracts with stable retry.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "R13-CALENDAR-CONTACTS"
       ],
