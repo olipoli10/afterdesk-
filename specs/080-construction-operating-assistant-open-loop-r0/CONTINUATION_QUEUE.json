@@ -147,7 +147,7 @@
       "title": "OpenLoop R0 pristine closeout",
       "objective": "Run proportional final gates, close Spec Kit and dashboard evidence, drain the queue, commit a clean local lane and checkpoint only demonstrated facts in the canonical Brain.",
       "role": "CLOSEOUT",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "COA-R0-LOCAL-PROOF-001"
       ],
@@ -170,10 +170,10 @@
         "evidence/ch-005-pristine-dashboard-and-closeout.md",
         "evidence/dashboard-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "80c752c95ef846eeea5d30a400100cd7759abe05",
+      "outputTree": "bba4a41ca71bce4776f0e16d6612b4b0f26869cd",
+      "result": "READY_FOR_FOUNDER_OWNED_INVOICE_READINESS_LOOP_TEST; all proportional gates passed, metrics remained 22%/46.75%/18-of-18/NO-GO/0%, disposable PostgreSQL stopped and Brain checkpoint ec6de9ce9b44e91c8190a1cedc1d0cdcaaf0025c validated locally",
+      "completedAtUtc": "2026-09-01T03:00:39.7013639Z"
     }
   ]
 }

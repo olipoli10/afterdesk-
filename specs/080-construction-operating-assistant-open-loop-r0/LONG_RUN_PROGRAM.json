@@ -162,7 +162,7 @@
       "id": "CH-005",
       "title": "Pristine validation, dashboard, commits and Brain checkpoint",
       "objective": "Run proportional regression and build gates, close Spec Kit and constitution checks, drain the campaign, commit a clean local lane and checkpoint only demonstrated facts in the canonical Brain.",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "estimatedMinutes": 75,
       "dependencies": [
         "CH-004"
@@ -181,8 +181,8 @@
         "evidence/ch-005-pristine-dashboard-and-closeout.md",
         "evidence/dashboard-closeout.md"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "READY_FOR_FOUNDER_OWNED_INVOICE_READINESS_LOOP_TEST; pristine local gates passed, dashboard remained exact, disposable PostgreSQL stopped, canonical Brain checkpoint ec6de9ce9b44e91c8190a1cedc1d0cdcaaf0025c validated and no external authority was exercised",
+      "completedAtUtc": "2026-09-01T03:00:39.7013639Z"
     }
   ]
 }

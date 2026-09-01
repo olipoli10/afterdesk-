@@ -77,9 +77,9 @@
 - [x] T055 Run lint, typecheck, git diff check and migration checks.
 - [x] T056 Run proportional full suite/build when product/schema code changed.
 - [x] T057 Run final Spec Kit Analyze and Constitution Check.
-- [ ] T058 Complete/drain long-run program and continuation queue.
-- [ ] T059 Commit coherent local changes and leave lane tracked clean.
-- [ ] T060 Checkpoint canonical Brain facts without changing unearned dashboard metrics.
+- [x] T058 Complete/drain long-run program and continuation queue.
+- [x] T059 Commit coherent local changes and leave lane tracked clean.
+- [x] T060 Checkpoint canonical Brain facts without changing unearned dashboard metrics.
 
 ## Phase 8 — Next admitted campaign, no new GO required
 
