@@ -38,7 +38,7 @@
       "title": "Exact prepared-action inspection",
       "objective": "Expose an exact role-safe prepared-action projection with recipient, channel, body, provenance, version and fingerprint while transport remains false.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -61,17 +61,17 @@
       "evidencePaths": [
         "evidence/r10-inspection-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "674705501cd57c719e67b52a3ef34af83514b81a",
+      "outputTree": "c6d2649b23f910213fba5d661c8b3769db1c2f4b",
+      "result": "Exact authorized-office inspection with canonical binding and fingerprint validation; field projection redacted; zero transport.",
+      "completedAtUtc": "2026-09-01T20:20:31Z"
     },
     {
       "id": "R11-DECISIONS",
       "title": "Exact prepared-action decisions",
       "objective": "Add idempotent and concurrency-safe exact approval, rejection and revocation with immutable audit and zero dispatch.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "dependencies": [
         "R10-INSPECTION"
       ],
