@@ -3,7 +3,7 @@
   "candidateFrozenAtUtc": "2026-09-01T00:15:00.000Z",
   "sourceHead": "682eddc528eb564fb4c13e56ef18328e42ad0ba7",
   "sourceTree": "8a89ef281e3c8df81f5a60ccc25c08f610d57da2",
-  "candidateCommit": "73c7a0efde3483b2e6e329a6ff823ed8763db94f",
+  "candidateCommit": "8ea35243864559c9324899209291e4baa8878feb",
   "route": "http://localhost:3000/client/construction-retest",
   "singleSurface": true,
   "authenticatedClientOnly": true,
