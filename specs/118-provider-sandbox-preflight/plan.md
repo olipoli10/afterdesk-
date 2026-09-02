@@ -8,14 +8,14 @@ Extend R36A with a credential-free provider boundary that prepares strict Perple
 
 ## Technical Context
 
-**Language/Version**: TypeScript under the existing Node.js toolchain  
-**Primary Dependencies**: Existing Zod schemas and canonical hashing only; no provider SDK or new dependency  
-**Storage**: No runtime storage; immutable specification fixtures and sealed local evidence only  
-**Testing**: Vitest contract tests plus targeted R36A/Model Gateway regression, lint and typecheck  
-**Target Platform**: Server-only ENDVERA routing/provider-preflight modules  
-**Project Type**: Existing Next.js/TypeScript monolith  
-**Performance Goals**: Deterministic local compilation; replay produces byte-stable fingerprints  
-**Constraints**: Zero network, zero secret read, zero provider dispatch, integer microdollars, strict unknown-field refusal  
+**Language/Version**: TypeScript under the existing Node.js toolchain
+**Primary Dependencies**: Existing Zod schemas and canonical hashing only; no provider SDK or new dependency
+**Storage**: No runtime storage; immutable specification fixtures and sealed local evidence only
+**Testing**: Vitest contract tests plus targeted R36A/Model Gateway regression, lint and typecheck
+**Target Platform**: Server-only ENDVERA routing/provider-preflight modules
+**Project Type**: Existing Next.js/TypeScript monolith
+**Performance Goals**: Deterministic local compilation; replay produces byte-stable fingerprints
+**Constraints**: Zero network, zero secret read, zero provider dispatch, integer microdollars, strict unknown-field refusal
 **Scale/Scope**: Three candidate route families, bounded cases, maximum twelve proposed R37 calls
 
 ## Constitution Check

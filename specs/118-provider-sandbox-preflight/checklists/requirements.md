@@ -1,7 +1,7 @@
 # Specification Quality Checklist: Provider Sandbox Preflight
 
-**Purpose**: Validate specification completeness before implementation  
-**Created**: 2026-09-02  
+**Purpose**: Validate specification completeness before implementation
+**Created**: 2026-09-02
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -32,4 +32,3 @@
 ## Notes
 
 All 16 checks pass. Provider performance remains UNKNOWN until R37.
-

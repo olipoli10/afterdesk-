@@ -1,8 +1,8 @@
 # Feature Specification: ENDVERA Provider Sandbox Preflight R36B
 
-**Feature Branch**: `codex/endvera-construction-operating-assistant-r10-r12-autonomous`  
-**Created**: 2026-09-02  
-**Status**: Accepted for local implementation  
+**Feature Branch**: `codex/endvera-construction-operating-assistant-r10-r12-autonomous`
+**Created**: 2026-09-02
+**Status**: Accepted for local implementation
 **Evidence basis**: founder direction, existing R36A routing code, and current official provider documentation. Provider quality, privacy behavior and cost remain `UNKNOWN` until R37 observation.
 
 ## Problem Statement
@@ -167,4 +167,3 @@ secret-reference names only, permits zero calls locally and cannot produce PASS.
 - OpenRouter is evaluated as an aggregation transport, not as routing authority.
 - ENDVERA policy selects exact model profiles and owns all cross-model fallback.
 - Exact model IDs, prices and privacy evidence are frozen only when R37 starts.
-
