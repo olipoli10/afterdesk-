@@ -585,7 +585,7 @@
         "kind": "ENTRY_OUTPUT",
         "entryId": "R22-HUMAN-ESCALATION"
       },
-      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; CONNECTORS REMAIN DISABLED; NO PROVIDER CREDENTIAL OAUTH CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": [
         "specs/103-calendar-connectors",
         "src/lib/construction-operating-assistant-r23",
@@ -632,7 +632,7 @@
         "kind": "ENTRY_OUTPUT",
         "entryId": "R23-CALENDAR-CONNECTORS"
       },
-      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; SMS/MMS CONNECTOR REMAINS DISABLED; NO PROVIDER CREDENTIAL REAL NUMBER PUBLIC WEBHOOK CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": [
         "specs/104-sms-mms",
         "src/lib/construction-operating-assistant-r24",
@@ -669,7 +669,7 @@
       "title": "Permissioned voice calls and voice notes",
       "objective": "Extend the existing R4 voice and R18 intent engines with durable call memory, disclosure and consent controls, selected foreground voice notes, exact prepared outbound call work and one shared mobile cockpit while external calling remains disabled.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R24-SMS-MMS"
       ],
@@ -679,7 +679,7 @@
         "kind": "ENTRY_OUTPUT",
         "entryId": "R24-SMS-MMS"
       },
-      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; VOICE CONNECTOR REMAINS DISABLED; NO PROVIDER CREDENTIAL REAL NUMBER PUBLIC WEBHOOK CUSTOMER DATA EXTERNAL CALL SYNTHETIC VOICE BACKGROUND RECORDING EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": [
         "specs/105-voice-calls",
         "src/lib/construction-operating-assistant-r25",
@@ -688,6 +688,7 @@
         "src/server/construction-operating-assistant-r4",
         "src/lib/construction-operating-assistant-r18",
         "src/server/construction-operating-assistant-r18",
+        "src/lib/file-security.ts",
         "src/app/api/endvera/v1/mobile/voice-calls",
         "apps/mobile/src/app/(app)/calls.tsx",
         "apps/mobile/src/app/(app)/_layout.tsx",
@@ -702,14 +703,66 @@
         "prisma/schema.prisma",
         "prisma/migrations/*_construction_operating_assistant_r25_voice_calls",
         "test/construction-operating-assistant-r25*.test.ts",
+        "test/url-safety.test.ts",
         "test/integration/construction-operating-assistant-r25*.itest.ts",
         "test/integration/per-file-setup.ts"
       ],
       "planPath": "../105-voice-calls/plan.md",
-      "planSha256": "b6360d6447dc50e402a1f31d2d896bd59457ff0d67a969f24926704ec99dea42",
+      "planSha256": "87f7fc76b918fc21b99ec81855f5b79ffe7b0ef233b60c280d323fa38f1e7244",
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r25-voice-calls.test.ts",
       "evidencePaths": [
         "../105-voice-calls/evidence/r25-closeout.md"
+      ],
+      "outputHead": "48efa058b84539db19aadcf782f43a1c5a9a1541",
+      "outputTree": "068bdb6dc451ccd19d4587c3740139d2a2fdf9bc",
+      "result": "Permissioned voice calls and selected foreground voice notes now retain disclosure, consent, transcript proof, immutable lifecycle and exact prepared call work in one role-safe mobile cockpit with zero external calling.",
+      "completedAtUtc": "2026-09-02T03:47:55Z"
+    },
+    {
+      "id": "R26-EMAIL-INBOX",
+      "title": "Permissioned project email inbox",
+      "objective": "Add one provider-neutral project email inbox with narrow Google and Microsoft account preparation, exact inbound routing, selected evidence, version-bound prepared replies and role-safe mobile inspection while provider access and sending remain disabled.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R25-VOICE-CALLS"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R25-VOICE-CALLS"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/106-email-inbox",
+        "src/lib/construction-operating-assistant-r26",
+        "src/server/construction-operating-assistant-r26",
+        "src/lib/construction-operating-assistant-r18",
+        "src/server/construction-operating-assistant-r18",
+        "src/lib/construction-operating-assistant-r14",
+        "src/server/construction-operating-assistant-r14",
+        "src/lib/construction-operating-assistant-r24",
+        "src/server/construction-operating-assistant-r24",
+        "src/app/api/endvera/v1/mobile/email-inbox",
+        "apps/mobile/src/app/(app)/email.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/email-inbox.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/email-inbox.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r26_email_inbox",
+        "test/construction-operating-assistant-r26*.test.ts",
+        "test/integration/construction-operating-assistant-r26*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../106-email-inbox/plan.md",
+      "planSha256": "027794dd95acb1c98949c6adc5db67ac80d04bef73abefa00b41b5ca86d5aec9",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r26-email-inbox.test.ts",
+      "evidencePaths": [
+        "../106-email-inbox/evidence/r26-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

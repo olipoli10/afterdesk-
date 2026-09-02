@@ -30,4 +30,4 @@
 
 - [x] T015 Run R25 and relevant R4/R18/R22 gates.
 - [x] T016 Run fresh migration, full mobile/export, lint, typecheck, build, diff and lockfile review.
-- [ ] T017 Record R25 closeout, commit locally and advance automatically to R26.
+- [x] T017 Record R25 closeout, commit locally and advance automatically to R26.
