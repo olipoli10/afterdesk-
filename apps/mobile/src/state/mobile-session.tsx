@@ -49,6 +49,10 @@ import type {
   MobileHumanEscalationCommand,
 } from "@/lib/human-escalations";
 import type {
+  MobileCalendarConnectorCockpit,
+  MobileCalendarConnectorCommand,
+} from "@/lib/calendar-connectors";
+import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
 } from "@/lib/permissions";
@@ -89,6 +93,8 @@ type MobileSessionValue = {
   economicCockpitLoadState: LoadState;
   humanEscalationCockpit: MobileHumanEscalationCockpit | null;
   humanEscalationLoadState: LoadState;
+  calendarConnectorCockpit: MobileCalendarConnectorCockpit | null;
+  calendarConnectorLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -111,6 +117,8 @@ type MobileSessionValue = {
   submitEconomicCommand: (command: MobileEconomicCommand) => Promise<void>;
   loadHumanEscalations: () => Promise<void>;
   submitHumanEscalationCommand: (command: MobileHumanEscalationCommand) => Promise<void>;
+  loadCalendarConnectors: () => Promise<void>;
+  submitCalendarConnectorCommand: (command: MobileCalendarConnectorCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -177,6 +185,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     useState<MobileHumanEscalationCockpit | null>(null);
   const [humanEscalationLoadState, setHumanEscalationLoadState] =
     useState<LoadState>("IDLE");
+  const [calendarConnectorCockpit, setCalendarConnectorCockpit] =
+    useState<MobileCalendarConnectorCockpit | null>(null);
+  const [calendarConnectorLoadState, setCalendarConnectorLoadState] =
+    useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -190,6 +202,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingFollowUpRequest = useRef<string | null>(null);
   const dispatchingEconomicRequest = useRef<string | null>(null);
   const dispatchingHumanEscalationRequest = useRef<string | null>(null);
+  const dispatchingCalendarConnectorRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -248,6 +261,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setEconomicCockpitLoadState("IDLE");
       setHumanEscalationCockpit(null);
       setHumanEscalationLoadState("IDLE");
+      setCalendarConnectorCockpit(null);
+      setCalendarConnectorLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setOutboxEntries([]);
         setOutboxLoadState("LOADING");
@@ -877,6 +892,79 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadCalendarConnectors = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setCalendarConnectorLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.calendarConnectorCockpit(activeWorkspace.id);
+      const fieldMismatch =
+        (activeWorkspace.role === "FIELD_WORKER") !== (result.role === "field_worker");
+      if (fieldMismatch) throw new MobileApiError("INVALID_RESPONSE");
+      setCalendarConnectorCockpit(result);
+      setCalendarConnectorLoadState("READY");
+    } catch (error) {
+      setCalendarConnectorCockpit(null);
+      setCalendarConnectorLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitCalendarConnectorCommand = useCallback(async (
+    command: MobileCalendarConnectorCommand,
+  ) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_CALENDAR_CONNECTOR_PERMISSION_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_CALENDAR_CONNECTOR_WORKSPACE_REFUSED");
+    }
+    if (dispatchingCalendarConnectorRequest.current) {
+      throw new Error("MOBILE_CALENDAR_CONNECTOR_ALREADY_DISPATCHED");
+    }
+    dispatchingCalendarConnectorRequest.current = command.commandId;
+    setCalendarConnectorLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await prepareOutboxEntry("CALENDAR_CONNECTOR_COMMAND", command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.calendarConnectorCommand(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
+      const refreshed = await api.calendarConnectorCockpit(activeWorkspace.id);
+      setCalendarConnectorCockpit(refreshed);
+      setCalendarConnectorLoadState("READY");
+    } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      setCalendarConnectorLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(
+        command.commandId,
+        state,
+        activeWorkspace.id,
+        publicMessage(error),
+      );
+      if (error instanceof MobileApiError && error.code === "CONFLICT") {
+        const refreshed = await api.calendarConnectorCockpit(activeWorkspace.id).catch(() => null);
+        if (refreshed) {
+          setCalendarConnectorCockpit(refreshed);
+          setCalendarConnectorLoadState("READY");
+        }
+      }
+    } finally {
+      dispatchingCalendarConnectorRequest.current = null;
+    }
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -979,6 +1067,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitEconomicCommand(entry.command);
     } else if (entry.kind === "HUMAN_ESCALATION_COMMAND") {
       await submitHumanEscalationCommand(entry.command);
+    } else if (entry.kind === "CALENDAR_CONNECTOR_COMMAND") {
+      await submitCalendarConnectorCommand(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -994,6 +1084,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitJobCommand,
     submitEconomicCommand,
     submitHumanEscalationCommand,
+    submitCalendarConnectorCommand,
     submitFollowUpCommand,
   ]);
 
@@ -1036,6 +1127,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setEconomicCockpitLoadState("IDLE");
     setHumanEscalationCockpit(null);
     setHumanEscalationLoadState("IDLE");
+    setCalendarConnectorCockpit(null);
+    setCalendarConnectorLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -1068,6 +1161,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       economicCockpitLoadState,
       humanEscalationCockpit,
       humanEscalationLoadState,
+      calendarConnectorCockpit,
+      calendarConnectorLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1088,6 +1183,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitEconomicCommand,
       loadHumanEscalations,
       submitHumanEscalationCommand,
+      loadCalendarConnectors,
+      submitCalendarConnectorCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1114,6 +1211,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       economicCockpitLoadState,
       humanEscalationCockpit,
       humanEscalationLoadState,
+      calendarConnectorCockpit,
+      calendarConnectorLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1139,6 +1238,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitEconomicCommand,
       loadHumanEscalations,
       submitHumanEscalationCommand,
+      loadCalendarConnectors,
+      submitCalendarConnectorCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

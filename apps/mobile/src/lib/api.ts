@@ -48,6 +48,11 @@ import {
   mobileHumanEscalationResultSchema,
   parseMobileHumanEscalationCockpit,
 } from "@/lib/human-escalations";
+import {
+  mobileCalendarConnectorCommandResultSchema,
+  mobileCalendarConnectorCommandSchema,
+  parseMobileCalendarConnectorCockpit,
+} from "@/lib/calendar-connectors";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -430,6 +435,43 @@ export class MobileApi {
         result.action !== parsedCommand.action
       ) {
         throw new Error("MOBILE_HUMAN_SUPPORT_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async calendarConnectorCockpit(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/calendar-connectors?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = parseMobileCalendarConnectorCockpit(value);
+      if (result.workspaceId !== workspaceId) {
+        throw new Error("MOBILE_CALENDAR_CONNECTOR_WORKSPACE_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async calendarConnectorCommand(command: unknown) {
+    const parsedCommand = mobileCalendarConnectorCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/calendar-connectors", {
+      method: "POST",
+      body: JSON.stringify(parsedCommand),
+    });
+    try {
+      const result = mobileCalendarConnectorCommandResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.provider !== parsedCommand.provider
+      ) {
+        throw new Error("MOBILE_CALENDAR_CONNECTOR_RESULT_MISMATCH");
       }
       return result;
     } catch {

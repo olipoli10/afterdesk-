@@ -22,6 +22,22 @@ Google uses Calendar API event scopes, `syncToken`, event `etag` and
 dispositions while provider-specific builders retain the exact native request
 shape. No provider SDK is needed to prepare those shapes.
 
+Official provider documentation was rechecked on 2026-09-01:
+
+- Google Calendar authorization scopes distinguish event read-only from event
+  write access: https://developers.google.com/workspace/calendar/api/auth
+- Google incremental synchronization uses opaque sync tokens and requires a
+  new full synchronization after an expired token returns HTTP 410:
+  https://developers.google.com/workspace/calendar/api/guides/sync
+- Microsoft Graph distinguishes `Calendars.Read` and `Calendars.ReadWrite`:
+  https://learn.microsoft.com/en-us/graph/permissions-overview
+- Microsoft calendar-view delta tracking is range-bound and returns opaque
+  next/delta links:
+  https://learn.microsoft.com/en-us/graph/delta-query-events
+
+These sources support deterministic request preparation only. They are not
+evidence of a live provider connection.
+
 ## No live OAuth in R23
 
 OAuth would require credentials, redirect registration, a secret store,
