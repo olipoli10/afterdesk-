@@ -21,7 +21,7 @@
 - [x] T008 [US2] Prepare citation-required specialist research candidates in src/lib/construction-operating-assistant-r36a/router.ts
 - [x] T009 [US2] Refuse restricted-person research before route selection in src/lib/construction-operating-assistant-r36a/router.ts
 
-## Phase 5 — User Story 3: best certified controller
+## Phase 5 — User Story 3: best eligible controller candidate
 
 - [x] T010 [US3] Resolve version-pinned controller candidates by policy, privacy, budget and availability in src/lib/construction-operating-assistant-r36a/router.ts
 - [x] T011 [US3] Keep OpenRouter, direct-model and Perplexity candidates non-dispatchable in src/lib/construction-operating-assistant-r36a/registry.ts
@@ -38,8 +38,8 @@
 
 ## Phase 8 — Closure
 
-- [ ] T016 Run R36A, existing Model Gateway and R36 regressions and record results in specs/117-ai-routing-brain/evidence/r36a-closeout.md
-- [ ] T017 Run typecheck, lint, diff, lockfile, provider and secret gates and update specs/117-ai-routing-brain/evidence/spec-kit-analysis.md
+- [x] T016 Run R36A, existing Model Gateway and R36 regressions and record results in specs/117-ai-routing-brain/evidence/r36a-closeout.md
+- [x] T017 Run typecheck, lint, diff, lockfile, provider and secret gates and update specs/117-ai-routing-brain/evidence/spec-kit-analysis.md
 - [ ] T018 Commit R36A and update the rolling queue/backlog so R37 depends on R36A in specs/090-prepared-action-inspection
 
 ## Dependencies

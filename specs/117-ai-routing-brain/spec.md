@@ -53,25 +53,26 @@ address or sensitive personal data is refused.
 **Acceptance Scenarios**:
 
 1. **Given** a public professional research request, **when** it is routed,
-   **then** a certified specialized-research route is preferred and citations
-   are mandatory.
+   **then** a specialized-research candidate is prepared, citations are
+   mandatory, and execution remains disabled until that route is certified.
 2. **Given** a named-person request, **when** only public professional facts are
    requested, **then** the route uses the personal-data privacy ceiling.
 3. **Given** a request for restricted personal information, **when** it is
    classified, **then** the request is refused before any provider dispatch.
 
-### User Story 3 — Best certified controller, not a hard-coded vendor (Priority: P1)
+### User Story 3 — Best eligible controller candidate, not a hard-coded vendor (Priority: P1)
 
-For complex or ambiguous work, ENDVERA selects the strongest currently certified
-controller route allowed by the operation policy, privacy requirement, budget,
-availability and evidence instead of hard-coding one vendor.
+For complex or ambiguous work, ENDVERA selects the first eligible controller
+candidate allowed by the operation policy, privacy requirement, budget,
+availability and evidence instead of hard-coding one vendor. A candidate cannot
+execute until a later release certifies and authorizes it.
 
 **Independent Test**: Changing the versioned route order changes the prepared
 controller candidate while the same safety and budget constraints remain in force.
 
 **Acceptance Scenarios**:
 
-1. **Given** multiple certified candidates, **when** policy is evaluated, **then**
+1. **Given** multiple eligible candidates, **when** policy is evaluated, **then**
    the first eligible version-pinned route is selected.
 2. **Given** an OpenRouter candidate and a direct-provider candidate, **when**
    neither has external authority, **then** a candidate may be prepared but no
@@ -86,8 +87,8 @@ When a specialist route is unavailable, ENDVERA follows only an explicit
 fallback chain. If no safe model or tool remains, it creates a bounded human
 handoff with a machine resume point.
 
-**Independent Test**: A research route can fall back to a certified general
-research route and then to human review, but never to an unregistered route.
+**Independent Test**: A research route can fall back to the next registered
+eligible candidate and then to human review, but never to an unregistered route.
 
 ### User Story 5 — Reconstructible and private decisions (Priority: P2)
 
@@ -207,4 +208,3 @@ fingerprints, reason codes, cost/privacy ceilings and zero raw content.
 - Perplexity and OpenRouter are candidate examples, not adopted vendors.
 - Provider comparison, benchmarks, privacy certification, pricing and exact API
   contracts will be researched and observed under R37 authority.
-
