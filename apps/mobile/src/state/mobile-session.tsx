@@ -67,6 +67,7 @@ import {
 import type { MobileEmailCockpit, MobileEmailCommand } from "@/lib/email-inbox";
 import type { MobileAccountingCockpit, MobileAccountingCommand } from "@/lib/accounting";
 import type { MobileAuthorityCockpit, MobileAuthorityCommand } from "@/lib/authority-policies";
+import type { MobilePrivacyCockpit, MobilePrivacyCommand } from "@/lib/privacy";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -123,6 +124,8 @@ type MobileSessionValue = {
   accountingLoadState: LoadState;
   authorityCockpit: MobileAuthorityCockpit | null;
   authorityLoadState: LoadState;
+  privacyCockpit: MobilePrivacyCockpit | null;
+  privacyLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -159,6 +162,8 @@ type MobileSessionValue = {
   submitAccountingCommand: (command: MobileAccountingCommand) => Promise<void>;
   loadAuthority: () => Promise<void>;
   submitAuthorityCommand: (command: MobileAuthorityCommand) => Promise<void>;
+  loadPrivacy: () => Promise<void>;
+  submitPrivacyCommand: (command: MobilePrivacyCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -242,6 +247,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [accountingLoadState, setAccountingLoadState] = useState<LoadState>("IDLE");
   const [authorityCockpit, setAuthorityCockpit] = useState<MobileAuthorityCockpit | null>(null);
   const [authorityLoadState, setAuthorityLoadState] = useState<LoadState>("IDLE");
+  const [privacyCockpit, setPrivacyCockpit] = useState<MobilePrivacyCockpit | null>(null);
+  const [privacyLoadState, setPrivacyLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -262,6 +269,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingEmailRequest = useRef<string | null>(null);
   const dispatchingAccountingRequest = useRef<string | null>(null);
   const dispatchingAuthorityRequest = useRef<string | null>(null);
+  const dispatchingPrivacyRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -341,6 +349,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setLatestPreparedActionAttempt(null);
         setLatestEvidenceAttempt(null);
         setLatestVoiceNoteAttempt(null);
+        setAuthorityCockpit(null);
+        setAuthorityLoadState("IDLE");
+        setPrivacyCockpit(null);
+        setPrivacyLoadState("IDLE");
         setPermissionCenter(null);
         setPermissionLoadState("IDLE");
       }
@@ -1414,6 +1426,48 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, loadAuthority, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadPrivacy = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setPrivacyLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.privacyCockpit(activeWorkspace.id);
+      if (result.role !== activeWorkspace.role) throw new MobileApiError("INVALID_RESPONSE");
+      setPrivacyCockpit(result);
+      setPrivacyLoadState("READY");
+    } catch (error) {
+      setPrivacyCockpit(null);
+      setPrivacyLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitPrivacyCommand = useCallback(async (command: MobilePrivacyCommand) => {
+    if (!activeWorkspace || command.workspaceId !== activeWorkspace.id) throw new Error("MOBILE_PRIVACY_WORKSPACE_REFUSED");
+    if (activeWorkspace.role !== "OWNER") throw new Error("MOBILE_PRIVACY_MANAGEMENT_REFUSED");
+    if (dispatchingPrivacyRequest.current) throw new Error("MOBILE_PRIVACY_ALREADY_DISPATCHED");
+    dispatchingPrivacyRequest.current = command.commandId;
+    setPrivacyLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await prepareOutboxEntry("PRIVACY_COMMAND", command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.privacyCommand(command);
+      await settleOutboxEntry(command.commandId, result.replayed ? "REPLAYED" : "CONFIRMED", activeWorkspace.id);
+      setPrivacyCockpit(await api.privacyCockpit(activeWorkspace.id));
+      setPrivacyLoadState("READY");
+    } catch (error) {
+      const state = error instanceof MobileApiError && error.code === "CONFLICT" ? "CONFLICT" : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN" ? "OUTCOME_UNKNOWN" : "REFUSED";
+      setPrivacyLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(command.commandId, state, activeWorkspace.id, publicMessage(error));
+      if (state === "CONFLICT") await loadPrivacy();
+    } finally {
+      dispatchingPrivacyRequest.current = null;
+    }
+  }, [activeWorkspace, api, loadPrivacy, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -1528,6 +1582,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitAccountingCommand(entry.command);
     } else if (entry.kind === "AUTHORITY_POLICY_COMMAND" || entry.kind === "AUTHORITY_EVALUATE" || entry.kind === "AUTHORITY_DECIDE") {
       await submitAuthorityCommand(entry.command);
+    } else if (entry.kind === "PRIVACY_COMMAND") {
+      await submitPrivacyCommand(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -1549,6 +1605,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitEmailCommand,
     submitAccountingCommand,
     submitAuthorityCommand,
+    submitPrivacyCommand,
     submitFollowUpCommand,
   ]);
 
@@ -1606,6 +1663,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setAccountingLoadState("IDLE");
     setAuthorityCockpit(null);
     setAuthorityLoadState("IDLE");
+    setPrivacyCockpit(null);
+    setPrivacyLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -1653,6 +1712,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       accountingLoadState,
       authorityCockpit,
       authorityLoadState,
+      privacyCockpit,
+      privacyLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1687,6 +1748,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitAccountingCommand,
       loadAuthority,
       submitAuthorityCommand,
+      loadPrivacy,
+      submitPrivacyCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1728,6 +1791,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       accountingLoadState,
       authorityCockpit,
       authorityLoadState,
+      privacyCockpit,
+      privacyLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1767,6 +1832,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitAccountingCommand,
       loadAuthority,
       submitAuthorityCommand,
+      loadPrivacy,
+      submitPrivacyCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

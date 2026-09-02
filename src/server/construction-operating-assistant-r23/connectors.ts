@@ -340,7 +340,7 @@ export async function prepareCalendarConnectionR23(input: {
       },
     });
     return result;
-  }, { isolationLevel: "Serializable" });
+  });
 }
 
 export async function revokeCalendarConnectionR23(input: {
@@ -470,7 +470,7 @@ export async function revokeCalendarConnectionR23(input: {
       metadata: { operationId: operation.id, externalTransportPerformed: false },
     });
     return result;
-  }, { isolationLevel: "Serializable" });
+  });
 }
 
 export function canonicalCalendarItemFingerprint(item: {
@@ -665,5 +665,5 @@ export async function prepareCalendarWorkR23(input: {
       },
     });
     return result;
-  }, { isolationLevel: "Serializable" });
+  });
 }

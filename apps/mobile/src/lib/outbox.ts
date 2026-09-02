@@ -17,6 +17,7 @@ import {
   mobileAuthorityEvaluateCommandSchema,
   mobileAuthorityPolicyCommandSchema,
 } from "@/lib/authority-policies";
+import { mobilePrivacyCommandSchema } from "@/lib/privacy";
 
 export const MOBILE_OUTBOX_VERSION = 1 as const;
 export const MOBILE_OUTBOX_LIMIT = 20;
@@ -62,6 +63,7 @@ export const mobileOutboxEntrySchema = z.discriminatedUnion("kind", [
   z.object({ ...base, kind: z.literal("AUTHORITY_POLICY_COMMAND"), command: mobileAuthorityPolicyCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("AUTHORITY_EVALUATE"), command: mobileAuthorityEvaluateCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("AUTHORITY_DECIDE"), command: mobileAuthorityDecisionCommandSchema }).strict(),
+  z.object({ ...base, kind: z.literal("PRIVACY_COMMAND"), command: mobilePrivacyCommandSchema }).strict(),
 ]);
 
 const indexSchema = z.object({
@@ -157,6 +159,10 @@ function commandIdentity(kind: MobileOutboxKind, command: unknown) {
   }
   if (kind === "AUTHORITY_DECIDE") {
     const parsed = mobileAuthorityDecisionCommandSchema.parse(command);
+    return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
+  }
+  if (kind === "PRIVACY_COMMAND") {
+    const parsed = mobilePrivacyCommandSchema.parse(command);
     return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
   }
   const parsed = mobileRevokePermissionCommandSchema.parse(command);
@@ -332,6 +338,7 @@ export function mobileOutboxLabel(entry: MobileOutboxEntry) {
   if (entry.kind === "AUTHORITY_POLICY_COMMAND") return "Politique d’autorité";
   if (entry.kind === "AUTHORITY_EVALUATE") return "Évaluation d’autorité";
   if (entry.kind === "AUTHORITY_DECIDE") return "Décision d’autorité";
+  if (entry.kind === "PRIVACY_COMMAND") return "Décision de confidentialité";
   if (entry.command.type === "RECORD_RECEIVABLE") return "Compte à recevoir";
   if (entry.command.type === "RECORD_PAYMENT") return "Paiement reçu";
   return "Suivi planifié";

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/endvera-construction-operating-assistant-r10-r12-autonomous`
 **Created**: 2026-09-02
-**Status**: In progress
+**Status**: Complete
 **Input**: R30 of the canonical ENDVERA Construction Operating Assistant roadmap.
 
 ## Product outcome
@@ -79,7 +79,7 @@ deletion.
 - **FR-009**: Export manifests must exclude authentication data, credentials, storage keys, provider tokens, hidden worker economics and other-workspace data recursively.
 - **FR-010**: Exact command replay returns the original result; altered command reuse, concurrent duplicate and stale expected versions refuse durably.
 - **FR-011**: Support closed deletion target types only; workspace-wide, wildcard, raw SQL and arbitrary table targets are prohibited.
-- **FR-012**: Deletion lifecycle must be `REQUESTED`, `BLOCKED`, `ELIGIBLE`, `APPROVED`, `TOMBSTONED`, `EXTERNAL_DELETION_PENDING` or `REFUSED`.
+- **FR-012**: Deletion lifecycle must be `REQUESTED`, `BLOCKED`, `ELIGIBLE`, `APPROVED`, `TOMBSTONED`, `EXTERNAL_DELETION_PENDING`, `REFUSED` or `REVOKED`.
 - **FR-013**: Approval must bind target, requester, policy version, eligibility fingerprint and expected lifecycle version.
 - **FR-014**: Immutable audit, financial, contradiction, authority-decision and accepted human-result records may never be physically deleted by R30.
 - **FR-015**: Eligible synthetic evidence deletion creates a workspace-scoped tombstone and preserves non-sensitive proof that deletion was requested and adjudicated.

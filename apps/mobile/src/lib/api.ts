@@ -75,6 +75,11 @@ import {
   mobileAuthorityResultSchema,
   parseMobileAuthorityCockpit,
 } from "@/lib/authority-policies";
+import {
+  mobilePrivacyCommandSchema,
+  mobilePrivacyResultSchema,
+  parseMobilePrivacyCockpit,
+} from "@/lib/privacy";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -668,6 +673,29 @@ export class MobileApi {
       if (result.commandId !== parsed.commandId || result.workspaceId !== parsed.workspaceId) {
         throw new Error("MOBILE_AUTHORITY_RESULT_MISMATCH");
       }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async privacyCockpit(workspaceId: string) {
+    const value = await this.request(`/api/endvera/v1/mobile/privacy?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" });
+    try {
+      const result = parseMobilePrivacyCockpit(value);
+      if (result.workspace.id !== workspaceId) throw new Error("MOBILE_PRIVACY_WORKSPACE_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async privacyCommand(command: unknown) {
+    const parsed = mobilePrivacyCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/privacy", { method: "POST", body: JSON.stringify(parsed) });
+    try {
+      const result = mobilePrivacyResultSchema.parse(value);
+      if (result.commandId !== parsed.commandId || result.workspaceId !== parsed.workspaceId) throw new Error("MOBILE_PRIVACY_RESULT_MISMATCH");
       return result;
     } catch {
       throw new MobileApiError("INVALID_RESPONSE");

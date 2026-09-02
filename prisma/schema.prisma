@@ -3414,50 +3414,55 @@ model ConstructionWorkspace {
   createdAt       DateTime                    @default(now())
   updatedAt       DateTime                    @updatedAt
 
-  members                ConstructionWorkspaceMember[]
-  identities             ConstructionCommunicationIdentity[]
-  projects               ConstructionProject[]
-  contacts               ConstructionContact[]
-  messages               ConstructionMessage[]
-  interpretations        ConstructionInterpretation[]
-  calendarItems          ConstructionCalendarItem[]
-  actions                ConstructionAction[]
-  auditEvents            ConstructionAuditEvent[]
-  openLoops              ConstructionOpenLoop[]
-  connectorAccounts      ConstructionConnectorAccount[]
-  humanEscalations       ConstructionHumanEscalation[]
-  receivables            ConstructionReceivable[]
-  receivableEvents       ConstructionReceivableEvent[]
-  followUps              ConstructionFollowUp[]
-  followUpAttempts       ConstructionFollowUpAttempt[]
-  followUpTransitions    ConstructionFollowUpTransition[]
-  paymentPromises        ConstructionPaymentPromise[]
-  economicCommands       ConstructionEconomicCommand[]
-  jobs                   ConstructionJob[]
-  jobAssignments         ConstructionJobAssignment[]
-  jobDependencies        ConstructionJobDependency[]
-  jobAvailability        ConstructionResourceAvailability[]
-  jobTransitions         ConstructionJobTransition[]
-  messagingPermissions   ConstructionMessagingPermission[]
-  messageMediaReferences ConstructionMessageMediaReference[]
-  messageDeliveryEvents  ConstructionMessageDeliveryEvent[]
-  messagingTransitions   ConstructionMessagingTransition[]
-  callSessions           ConstructionCallSession[]
-  callTransitions        ConstructionCallTransition[]
-  voiceNoteReferences    ConstructionVoiceNoteReference[]
-  callWork               ConstructionCallWork[]
-  emailAccounts          ConstructionEmailAccount[]
-  emailEvents            ConstructionEmailEvent[]
-  emailDrafts            ConstructionEmailDraft[]
-  accountingAccounts     ConstructionAccountingAccount[]
-  accountingObservations ConstructionAccountingObservation[]
-  accountingDrafts       ConstructionAccountingDraft[]
-  accountingRefusals     ConstructionAccountingRefusal[]
-  authorityPolicySets    ConstructionAuthorityPolicySet[]
-  authorityEvaluations   ConstructionAuthorityEvaluation[]
-  authorityDecisions     ConstructionAuthorityDecision[]
-  authorityRefusals      ConstructionAuthorityRefusal[]
-  authorityOperations    ConstructionAuthorityOperation[]
+  members                 ConstructionWorkspaceMember[]
+  identities              ConstructionCommunicationIdentity[]
+  projects                ConstructionProject[]
+  contacts                ConstructionContact[]
+  messages                ConstructionMessage[]
+  interpretations         ConstructionInterpretation[]
+  calendarItems           ConstructionCalendarItem[]
+  actions                 ConstructionAction[]
+  auditEvents             ConstructionAuditEvent[]
+  openLoops               ConstructionOpenLoop[]
+  connectorAccounts       ConstructionConnectorAccount[]
+  humanEscalations        ConstructionHumanEscalation[]
+  receivables             ConstructionReceivable[]
+  receivableEvents        ConstructionReceivableEvent[]
+  followUps               ConstructionFollowUp[]
+  followUpAttempts        ConstructionFollowUpAttempt[]
+  followUpTransitions     ConstructionFollowUpTransition[]
+  paymentPromises         ConstructionPaymentPromise[]
+  economicCommands        ConstructionEconomicCommand[]
+  jobs                    ConstructionJob[]
+  jobAssignments          ConstructionJobAssignment[]
+  jobDependencies         ConstructionJobDependency[]
+  jobAvailability         ConstructionResourceAvailability[]
+  jobTransitions          ConstructionJobTransition[]
+  messagingPermissions    ConstructionMessagingPermission[]
+  messageMediaReferences  ConstructionMessageMediaReference[]
+  messageDeliveryEvents   ConstructionMessageDeliveryEvent[]
+  messagingTransitions    ConstructionMessagingTransition[]
+  callSessions            ConstructionCallSession[]
+  callTransitions         ConstructionCallTransition[]
+  voiceNoteReferences     ConstructionVoiceNoteReference[]
+  callWork                ConstructionCallWork[]
+  emailAccounts           ConstructionEmailAccount[]
+  emailEvents             ConstructionEmailEvent[]
+  emailDrafts             ConstructionEmailDraft[]
+  accountingAccounts      ConstructionAccountingAccount[]
+  accountingObservations  ConstructionAccountingObservation[]
+  accountingDrafts        ConstructionAccountingDraft[]
+  accountingRefusals      ConstructionAccountingRefusal[]
+  authorityPolicySets     ConstructionAuthorityPolicySet[]
+  authorityEvaluations    ConstructionAuthorityEvaluation[]
+  authorityDecisions      ConstructionAuthorityDecision[]
+  authorityRefusals       ConstructionAuthorityRefusal[]
+  authorityOperations     ConstructionAuthorityOperation[]
+  privacyPolicySets       ConstructionPrivacyPolicySet[]
+  privacyOperations       ConstructionPrivacyOperation[]
+  privacyRefusals         ConstructionPrivacyRefusal[]
+  privacyDeletionRequests ConstructionPrivacyDeletionRequest[]
+  privacyTombstones       ConstructionPrivacyTombstone[]
 
   @@index([ownerUserId, status])
 }
@@ -4302,6 +4307,120 @@ model ConstructionAuthorityOperation {
 
   @@unique([workspaceId, commandId])
   @@index([workspaceId, operationKind, createdAt])
+}
+
+// R30 tenant privacy control plane. These rows retain policy and adjudication
+// history; they never store raw credentials, provider tokens or deleted payloads.
+model ConstructionPrivacyPolicySet {
+  id                String                               @id @default(cuid())
+  workspaceId       String
+  workspace         ConstructionWorkspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  version           Int
+  stateVersion      Int                                  @default(1)
+  status            String                               @default("DRAFT")
+  policyHash        String
+  sourcePolicySetId String?
+  createdByUserId   String
+  activatedByUserId String?
+  activatedAt       DateTime?
+  supersededAt      DateTime?
+  revokedAt         DateTime?
+  createdAt         DateTime                             @default(now())
+  updatedAt         DateTime                             @updatedAt
+  rules             ConstructionPrivacyRetentionRule[]
+  deletionRequests  ConstructionPrivacyDeletionRequest[]
+
+  @@unique([workspaceId, version])
+  @@unique([id, workspaceId])
+  @@index([workspaceId, status, version])
+}
+
+model ConstructionPrivacyRetentionRule {
+  id            String                       @id @default(cuid())
+  policySetId   String
+  policySet     ConstructionPrivacyPolicySet @relation(fields: [policySetId], references: [id], onDelete: Cascade)
+  dataClass     String
+  retentionDays Int
+  deletionMode  String
+  holdBehavior  String
+  ruleHash      String
+  createdAt     DateTime                     @default(now())
+  updatedAt     DateTime                     @updatedAt
+
+  @@unique([policySetId, dataClass])
+  @@index([dataClass, retentionDays])
+}
+
+model ConstructionPrivacyOperation {
+  id            String                @id @default(cuid())
+  workspaceId   String
+  workspace     ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  commandId     String
+  commandHash   String
+  operationKind String
+  result        Json
+  actorId       String
+  createdAt     DateTime              @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, operationKind, createdAt])
+}
+
+model ConstructionPrivacyRefusal {
+  id            String                @id @default(cuid())
+  workspaceId   String
+  workspace     ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  operationId   String
+  operationKind String
+  inputHash     String
+  refusalCode   String
+  actorId       String
+  createdAt     DateTime              @default(now())
+
+  @@index([workspaceId, operationKind, createdAt])
+  @@index([operationId, createdAt])
+}
+
+model ConstructionPrivacyDeletionRequest {
+  id                     String                        @id @default(cuid())
+  workspaceId            String
+  workspace              ConstructionWorkspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  policySetId            String
+  policySet              ConstructionPrivacyPolicySet  @relation(fields: [policySetId, workspaceId], references: [id, workspaceId], onDelete: Restrict)
+  policySetVersion       Int
+  targetType             String
+  targetId               String
+  targetFingerprint      String
+  eligibilityFingerprint String
+  status                 String                        @default("REQUESTED")
+  reasonCodes            String[]
+  stateVersion           Int                           @default(1)
+  requestedByUserId      String
+  approvedByUserId       String?
+  requestedAt            DateTime                      @default(now())
+  approvedAt             DateTime?
+  revokedAt              DateTime?
+  updatedAt              DateTime                      @updatedAt
+  tombstone              ConstructionPrivacyTombstone?
+
+  @@index([workspaceId, status, requestedAt])
+  @@index([workspaceId, targetType, targetId])
+}
+
+model ConstructionPrivacyTombstone {
+  id                    String                             @id @default(cuid())
+  workspaceId           String
+  workspace             ConstructionWorkspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  deletionRequestId     String                             @unique
+  deletionRequest       ConstructionPrivacyDeletionRequest @relation(fields: [deletionRequestId], references: [id], onDelete: Restrict)
+  targetType            String
+  targetId              String
+  targetFingerprint     String
+  externalDeletionState String                             @default("NOT_REQUESTED")
+  tombstonedAt          DateTime                           @default(now())
+
+  @@unique([workspaceId, targetType, targetId])
+  @@index([workspaceId, tombstonedAt])
 }
 
 // Connector authority is workspace-scoped and fail-closed. OAuth access and
