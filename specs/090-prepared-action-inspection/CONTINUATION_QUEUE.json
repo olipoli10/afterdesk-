@@ -1234,7 +1234,7 @@
       "title": "Provider-neutral AI Routing Brain",
       "objective": "Route every authorized assistant request to canonical internal truth, a deterministic tool, a citation-required research candidate, the strongest eligible controller candidate or bounded human support without exposing providers or dispatching externally.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R36-INTERNAL-E2E"
       ],
@@ -1261,10 +1261,10 @@
       "evidencePaths": [
         "../117-ai-routing-brain/evidence/r36a-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "467972d67332932f8decc6987a3c82bdb299ab30",
+      "outputTree": "4c08edb77d570328094e641139df0b1a454dba6a",
+      "result": "One provider-neutral AI Routing Brain now selects canonical internal truth, deterministic tools, citation-required research candidates, version-pinned controller candidates or bounded human support across portal, mobile, SMS, voice transcript and email while every external candidate remains non-dispatchable.",
+      "completedAtUtc": "2026-09-02T15:47:34Z"
     }
   ]
 }
