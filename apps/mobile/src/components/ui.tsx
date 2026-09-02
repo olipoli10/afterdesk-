@@ -9,6 +9,7 @@ import {
   View,
   type PressableProps,
 } from "react-native";
+import { MINIMUM_TOUCH_TARGET } from "@/lib/accessibility";
 
 export const colors = {
   background: "#09090b",
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   empty: { color: colors.muted, fontSize: 15, paddingVertical: 6 },
   notice: { color: colors.success, fontSize: 14, lineHeight: 20 },
   noticeDanger: { color: colors.danger },
-  button: { backgroundColor: colors.accent, borderRadius: 14, minHeight: 48, alignItems: "center", justifyContent: "center", paddingHorizontal: 18 },
+  button: { backgroundColor: colors.accent, borderRadius: 14, minHeight: MINIMUM_TOUCH_TARGET, alignItems: "center", justifyContent: "center", paddingHorizontal: 18 },
   buttonSecondary: { backgroundColor: colors.panelStrong, borderWidth: 1, borderColor: colors.border },
   buttonPressed: { opacity: 0.78 },
   buttonDisabled: { opacity: 0.4 },

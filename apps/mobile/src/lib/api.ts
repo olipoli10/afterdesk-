@@ -90,6 +90,7 @@ import {
   mobileOnboardingResultSchema,
   parseMobileOnboardingCockpit,
 } from "@/lib/onboarding";
+import { parseMobileGoldenWorkflow } from "@/lib/golden-workflow";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -741,6 +742,17 @@ export class MobileApi {
     try {
       const result = parseMobileOnboardingCockpit(value);
       if (workspaceId && result.workspace?.id !== workspaceId) throw new Error("MOBILE_ONBOARDING_WORKSPACE_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async goldenWorkflow(workspaceId: string) {
+    const value = await this.request(`/api/endvera/v1/mobile/golden-workflow?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" });
+    try {
+      const result = parseMobileGoldenWorkflow(value);
+      if (result.workspace.id !== workspaceId) throw new Error("MOBILE_GOLDEN_WORKFLOW_WORKSPACE_MISMATCH");
       return result;
     } catch {
       throw new MobileApiError("INVALID_RESPONSE");

@@ -70,6 +70,7 @@ import type { MobileAuthorityCockpit, MobileAuthorityCommand } from "@/lib/autho
 import type { MobilePrivacyCockpit, MobilePrivacyCommand } from "@/lib/privacy";
 import type { MobileReliabilityCockpit, MobileReliabilityCommand } from "@/lib/reliability";
 import type { MobileOnboardingCockpit, MobileOnboardingCommand } from "@/lib/onboarding";
+import type { MobileGoldenWorkflow } from "@/lib/golden-workflow";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -132,6 +133,8 @@ type MobileSessionValue = {
   reliabilityLoadState: LoadState;
   onboardingCockpit: MobileOnboardingCockpit | null;
   onboardingLoadState: LoadState;
+  goldenWorkflow: MobileGoldenWorkflow | null;
+  goldenWorkflowLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -174,6 +177,7 @@ type MobileSessionValue = {
   submitReliabilityCommand: (command: MobileReliabilityCommand) => Promise<void>;
   loadOnboarding: (workspaceId?: string) => Promise<void>;
   submitOnboardingCommand: (command: MobileOnboardingCommand) => Promise<void>;
+  loadGoldenWorkflow: () => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -263,6 +267,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [reliabilityLoadState, setReliabilityLoadState] = useState<LoadState>("IDLE");
   const [onboardingCockpit, setOnboardingCockpit] = useState<MobileOnboardingCockpit | null>(null);
   const [onboardingLoadState, setOnboardingLoadState] = useState<LoadState>("IDLE");
+  const [goldenWorkflow, setGoldenWorkflow] = useState<MobileGoldenWorkflow | null>(null);
+  const [goldenWorkflowLoadState, setGoldenWorkflowLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -1565,6 +1571,24 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, loadBootstrap, loadOnboarding, onboardingCockpit]);
 
+  const loadGoldenWorkflow = useCallback(async () => {
+    if (!activeWorkspace) {
+      setGoldenWorkflow(null);
+      setGoldenWorkflowLoadState("UNAVAILABLE");
+      return;
+    }
+    setGoldenWorkflowLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      setGoldenWorkflow(await api.goldenWorkflow(activeWorkspace.id));
+      setGoldenWorkflowLoadState("READY");
+    } catch (error) {
+      setGoldenWorkflowLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -1819,6 +1843,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       reliabilityLoadState,
       onboardingCockpit,
       onboardingLoadState,
+      goldenWorkflow,
+      goldenWorkflowLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1859,6 +1885,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitReliabilityCommand,
       loadOnboarding,
       submitOnboardingCommand,
+      loadGoldenWorkflow,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1906,6 +1933,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       reliabilityLoadState,
       onboardingCockpit,
       onboardingLoadState,
+      goldenWorkflow,
+      goldenWorkflowLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1951,6 +1980,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitReliabilityCommand,
       loadOnboarding,
       submitOnboardingCommand,
+      loadGoldenWorkflow,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

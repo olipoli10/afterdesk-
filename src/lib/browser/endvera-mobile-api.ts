@@ -1,11 +1,12 @@
 "use client";
 
-type EndveraMobileResource = "privacy" | "reliability" | "onboarding";
+type EndveraMobileResource = "privacy" | "reliability" | "onboarding" | "goldenWorkflow";
 
 const ENDPOINTS: Record<EndveraMobileResource, string> = {
   privacy: "/api/endvera/v1/mobile/privacy",
   reliability: "/api/endvera/v1/mobile/reliability",
   onboarding: "/api/endvera/v1/mobile/onboarding",
+  goldenWorkflow: "/api/endvera/v1/mobile/golden-workflow",
 };
 
 async function requestJson<T>(endpoint: string, init: RequestInit): Promise<T> {

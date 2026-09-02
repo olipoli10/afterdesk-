@@ -38,6 +38,7 @@ export default async function ClientLayout({ children }: { children: ReactNode }
       portal
       utility={<ClientLanguageSwitch current={lang} />}
       nav={[
+        { href: "/client/cockpit", label: lang === "fr" ? "Aujourd’hui" : "Today" },
         { href: "/client/onboarding", label: lang === "fr" ? "Démarrage" : "Get started" },
         { href: "/client/assistant", label: lang === "fr" ? "Assistant" : "Assistant" },
         { href: "/client", label: copy.tasks },
