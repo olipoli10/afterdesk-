@@ -869,7 +869,7 @@
       "title": "Plain-language provenance and trust cockpit",
       "objective": "Expose fact, inference, decision, action, human result and verified-state provenance as one reconstructible, role-safe plain-language chain for each project while preserving exact canonical references and zero external effects.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R28-AUTHORITY-POLICIES"
       ],
@@ -901,6 +901,53 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r29-provenance-ux.test.ts",
       "evidencePaths": [
         "../109-provenance-ux/evidence/r29-closeout.md"
+      ],
+      "outputHead": "1ece39a6ef19f10cf1c914f2fb6f2a943b4fada7",
+      "outputTree": "98a1785d2f12675ac132361cee63c492308f0b2c",
+      "result": "One deterministic role-safe project provenance chain now distinguishes facts, inferences, decisions, actions, human results and verified state across web and shared mobile surfaces with exact canonical references and zero external effect.",
+      "completedAtUtc": "2026-09-02T06:29:59Z"
+    },
+    {
+      "id": "R30-TENANT-PRIVACY",
+      "title": "Tenant privacy control plane",
+      "objective": "Add one workspace-scoped privacy control plane for versioned retention, deterministic inventory, minimized export manifests, exact deletion eligibility and tombstones, opaque secret lifecycle and role-safe evidence lifecycle while provider and external deletion remain disabled.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R29-PROVENANCE-UX"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R29-PROVENANCE-UX"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/110-tenant-privacy",
+        "src/lib/construction-operating-assistant-r30",
+        "src/server/construction-operating-assistant-r30",
+        "src/app/api/endvera/v1/mobile/privacy",
+        "src/app/client/permissions",
+        "src/components/construction-operating-assistant-r30",
+        "apps/mobile/src/app/(app)/privacy.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/privacy.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/privacy.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r30_tenant_privacy",
+        "test/construction-operating-assistant-r30*.test.ts",
+        "test/integration/construction-operating-assistant-r30*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../110-tenant-privacy/plan.md",
+      "planSha256": "e11bbcd4af23456b2f7dfa35787c807dc801285decfce7bf3775ed8e2d589aa1",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r30-tenant-privacy.test.ts",
+      "evidencePaths": [
+        "../110-tenant-privacy/evidence/r30-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
