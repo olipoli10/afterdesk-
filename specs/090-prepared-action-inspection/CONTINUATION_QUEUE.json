@@ -959,7 +959,7 @@
       "title": "Observability and recovery control plane",
       "objective": "Add workspace-scoped structured signals, traces, denominator-bearing metrics, durable alerts, closed-registry queue recovery, minimized checkpoints, real disposable restore drills and bounded concurrency/load gates without sensitive logs or external effects.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R30-TENANT-PRIVACY"
       ],
@@ -995,6 +995,56 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r31-observability-recovery.test.ts",
       "evidencePaths": [
         "../111-observability-recovery/evidence/r31-closeout.md"
+      ],
+      "outputHead": "9afd2c7d1cbdc1a875361023973589aaaf1beafb",
+      "outputTree": "7286c1dcf2a8703df9dda9d8df19411b90acfb68",
+      "result": "Workspace-scoped signals, alerts, exact R20 recovery, connector quarantine, closed checkpoints, actual disposable restore, bounded load gates and role-safe web/mobile cockpit pass with zero external effect.",
+      "completedAtUtc": "2026-09-02T10:08:21Z"
+    },
+    {
+      "id": "R32-ONBOARDING-IMPORT",
+      "title": "Contractor onboarding and bounded import",
+      "objective": "Create or resume one canonical contractor workspace, reach first operational value and safely preview, decide and atomically commit bounded contact or project CSV imports across web, iOS and Android without silent merge or external effect.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R31-OBSERVABILITY-RECOVERY"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R31-OBSERVABILITY-RECOVERY"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/112-onboarding-import",
+        "src/lib/construction-operating-assistant-r32",
+        "src/server/construction-operating-assistant-r32",
+        "src/server/construction-assistant-v1/workspace.ts",
+        "src/server/construction-assistant-v1/audit.ts",
+        "src/lib/browser/endvera-mobile-api.ts",
+        "src/app/api/endvera/v1/mobile/onboarding",
+        "src/app/client/onboarding",
+        "src/app/client/client-nav.tsx",
+        "src/components/construction-operating-assistant-r32",
+        "apps/mobile/src/app/(app)/onboarding.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/onboarding.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/onboarding.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r32_onboarding_import",
+        "test/construction-operating-assistant-r32*.test.ts",
+        "test/integration/construction-operating-assistant-r32*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../112-onboarding-import/plan.md",
+      "planSha256": "8fa9284044aee59bf2e1181c9f9e3478a2b0848002f2e81d14cb31df9159d78d",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r32-onboarding-import.test.ts",
+      "evidencePaths": [
+        "../112-onboarding-import/evidence/r32-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

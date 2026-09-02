@@ -72,7 +72,7 @@
 - [x] T029 Run R31/R20/R23/R28-R30 unit and disposable PostgreSQL integration gates and record results in `specs/111-observability-recovery/evidence/r31-closeout.md`
 - [x] T030 Run root/mobile lint, typecheck, tests, fresh migration, restore drill, Expo Doctor/exports and Next.js Webpack build in `specs/111-observability-recovery/evidence/r31-closeout.md`
 - [x] T031 Run Spec Kit analysis, diff/lockfile/forbidden-effect audits and close all tasks in `specs/111-observability-recovery/tasks.md`
-- [ ] T032 Commit R31, mark S4/R31 DONE and promote R32 in `specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json` and `specs/090-prepared-action-inspection/PROJECT_BACKLOG.json`
+- [x] T032 Commit R31, mark S4/R31 DONE and promote R32 in `specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json` and `specs/090-prepared-action-inspection/PROJECT_BACKLOG.json`
 
 ## Dependencies and execution order
 
