@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Prisma } from "@prisma-client";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sha256Canonical } from "@/lib/construction-assistant-v1/canonical";
 import {
@@ -20,8 +21,18 @@ import {
   type OperatingInterpretation,
   type OperatingInterpreterContext,
 } from "@/lib/construction-operating-assistant-r2/contracts";
+import {
+  clientAssistantRoutingProjectionSchema,
+  type ClientAssistantRoutingProjection,
+} from "@/lib/construction-operating-assistant-r36c/contracts";
 import { interpretOperatingAssistantCommand } from "@/lib/construction-operating-assistant-r2/interpreter";
 import { processOperatingAssistantCommand } from "@/server/construction-operating-assistant-r2/core";
+import {
+  createTrustedAssistantRoutingRequest,
+  projectClientAssistantRouting,
+  replyForNonInternalRouting,
+} from "@/server/construction-operating-assistant-r36c/orchestrator";
+import { prepareAssistantRoutingDecision } from "@/server/model-gateway/assistant-routing";
 import {
   ConstructionAccessDenied,
   requireActiveConstructionMember,
@@ -44,6 +55,93 @@ type LoadedContext = Readonly<{
 
 function asJson(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+export function unifiedIntentRoutingChannel(sourceKind: UnifiedIntentEnvelope["source"]["kind"]) {
+  if (sourceKind === "VOICE_TRANSCRIPT") return "VOICE_TRANSCRIPT" as const;
+  if (sourceKind === "EMAIL_MESSAGE") return "EMAIL" as const;
+  return "PORTAL" as const;
+}
+
+function routingInterpretation(input: {
+  loaded: LoadedContext;
+  clarification: boolean;
+  reply: string;
+  approvalRequired: boolean;
+}): OperatingInterpretation {
+  return operatingInterpretationSchema.parse({
+    schemaVersion: 2,
+    intent: input.clarification ? "CLARIFICATION_REQUIRED" : "UNSUPPORTED",
+    confidence: 1,
+    language: input.loaded.interpreter.locale === "en-CA" ? "en" : "fr",
+    timezone: input.loaded.interpreter.timezone,
+    projectId: input.loaded.projectId,
+    contactId: input.loaded.contactId,
+    calendarItemId: null,
+    startsAtUtc: null,
+    endsAtUtc: null,
+    dueAtUtc: null,
+    title: null,
+    approvalRequired: input.approvalRequired,
+    queryWindow: null,
+    clarification: input.clarification
+      ? {
+          reason: "UNSUPPORTED_REQUEST",
+          question: input.reply,
+          candidateCount: 0,
+        }
+      : null,
+    legacy: null,
+  });
+}
+
+async function retainRoutingDecision(input: {
+  userId: string;
+  envelope: UnifiedIntentEnvelope;
+  routing: ClientAssistantRoutingProjection;
+  deferred: {
+    intent: "CLARIFICATION_REQUIRED" | "UNSUPPORTED";
+    status: "CLARIFICATION_REQUIRED" | "REFUSED";
+    reply: string;
+  } | null;
+}) {
+  const fingerprint = sha256Canonical({
+    scope: "endvera-context-routing-r36e",
+    workspaceId: input.envelope.workspaceId,
+    sourceId: input.envelope.source.sourceId,
+  });
+  const event = await prisma.constructionAuditEvent.upsert({
+    where: { fingerprint },
+    create: {
+      workspaceId: input.envelope.workspaceId,
+      actorUserId: input.userId,
+      entityType: "assistant_routing_decision",
+      entityId: input.envelope.source.sourceId,
+      action: "assistant_routing_decision_recorded",
+      reasonCode: input.routing.disposition,
+      metadata: asJson({
+        schemaVersion: 1,
+        envelopeId: input.envelope.envelopeId,
+        sourceKind: input.envelope.source.kind,
+        routing: input.routing,
+        deferred: input.deferred,
+      }),
+      fingerprint,
+    },
+    update: {},
+    select: { metadata: true },
+  });
+  return z.object({
+    schemaVersion: z.literal(1),
+    envelopeId: z.string().uuid(),
+    sourceKind: z.enum(["PORTAL_TEXT", "VOICE_TRANSCRIPT", "FILE_OBSERVATION", "EMAIL_MESSAGE"]),
+    routing: clientAssistantRoutingProjectionSchema,
+    deferred: z.object({
+      intent: z.enum(["CLARIFICATION_REQUIRED", "UNSUPPORTED"]),
+      status: z.enum(["CLARIFICATION_REQUIRED", "REFUSED"]),
+      reply: z.string().min(1),
+    }).strict().nullable(),
+  }).strict().parse(event.metadata);
 }
 
 async function loadContext(input: {
@@ -329,10 +427,27 @@ export async function processUnifiedIntent(input: {
     envelope,
     bodySha256,
   });
-  const interpretation = resolveUnifiedIntent(envelope, loaded.interpreter, {
-    projectId: loaded.projectId,
-    contactId: loaded.contactId,
+  const routingDecision = prepareAssistantRoutingDecision(createTrustedAssistantRoutingRequest({
+    userId: input.userId,
+    channel: unifiedIntentRoutingChannel(envelope.source.kind),
+    request: {
+      schemaVersion: 1,
+      requestId: envelope.envelopeId,
+      workspaceId: envelope.workspaceId,
+      message: unifiedIntentBody(envelope),
+      occurredAt: envelope.occurredAt,
+    },
+  }));
+  const routingSeed = projectClientAssistantRouting(routingDecision);
+  const retainedRouting = await retainRoutingDecision({
+    userId: input.userId,
+    envelope,
+    routing: routingSeed,
+    deferred: routingDecision.disposition === "INTERNAL_TOOL"
+      ? null
+      : replyForNonInternalRouting(routingDecision),
   });
+  const routing = retainedRouting.routing;
   const provenance = {
     sourceKind: envelope.source.kind,
     sourceId: envelope.source.sourceId,
@@ -350,6 +465,41 @@ export async function processUnifiedIntent(input: {
     canonicalEffectId: null,
     replayed: claim.envelopeReplayed,
   } as const;
+
+  if (routing.disposition !== "INTERNAL_TOOL") {
+    if (!retainedRouting.deferred) throw new Error("ASSISTANT_ROUTING_AUDIT_RESULT_MISSING");
+    const deferred = retainedRouting.deferred;
+    const clarification = routing.disposition === "CLARIFICATION_REQUIRED";
+    const refusalReason = routing.disposition === "CANDIDATE_PREPARED"
+      ? "PROVIDER_REQUIRED_NOT_AUTHORIZED"
+      : routing.disposition === "HUMAN_HANDOFF"
+        ? "HUMAN_SUPPORT_REQUIRED"
+        : clarification
+          ? "ROUTING_CLARIFICATION_REQUIRED"
+          : "ROUTING_POLICY_REFUSED";
+    return unifiedIntentResultSchema.parse({
+      schemaVersion: 1,
+      envelopeId: envelope.envelopeId,
+      workspaceId: envelope.workspaceId,
+      interpretation: routingInterpretation({
+        loaded,
+        clarification,
+        reply: deferred.reply,
+        approvalRequired: routing.approvalRequired,
+      }),
+      status: clarification ? "CLARIFICATION_REQUIRED" : "REFUSED",
+      reply: deferred.reply,
+      refusalReason,
+      transition: baseTransition,
+      provenance,
+      routing,
+      externalTransportPerformed: false,
+    });
+  }
+  const interpretation = resolveUnifiedIntent(envelope, loaded.interpreter, {
+    projectId: loaded.projectId,
+    contactId: loaded.contactId,
+  });
   const exactTransitionReplay =
     claim.envelopeReplayed &&
     envelope.mode === "APPLY_VALIDATED" &&
@@ -366,6 +516,7 @@ export async function processUnifiedIntent(input: {
       refusalReason: null,
       transition: baseTransition,
       provenance,
+      routing,
       externalTransportPerformed: false,
     });
   }
@@ -381,6 +532,7 @@ export async function processUnifiedIntent(input: {
       refusalReason: "UNSUPPORTED_INTENT",
       transition: baseTransition,
       provenance,
+      routing,
       externalTransportPerformed: false,
     });
   }
@@ -396,6 +548,7 @@ export async function processUnifiedIntent(input: {
       refusalReason: null,
       transition: baseTransition,
       provenance,
+      routing,
       externalTransportPerformed: false,
     });
   }
@@ -411,6 +564,7 @@ export async function processUnifiedIntent(input: {
       refusalReason: "UNVERIFIED_SOURCE",
       transition: baseTransition,
       provenance,
+      routing,
       externalTransportPerformed: false,
     });
   }
@@ -428,6 +582,7 @@ export async function processUnifiedIntent(input: {
       refusalReason: "CONTEXT_TRANSITION_MISMATCH",
       transition: baseTransition,
       provenance,
+      routing,
       externalTransportPerformed: false,
     });
   }
@@ -477,6 +632,7 @@ export async function processUnifiedIntent(input: {
       replayed: canonical.replayed,
     },
     provenance,
+    routing,
     externalTransportPerformed: false,
   });
 }

@@ -1350,7 +1350,7 @@
       "title": "Assistant channel routing parity",
       "objective": "Route authenticated local SMS and voice-transcript ingress through R36C while preserving admitted channel provenance, deterministic internal effects and truthful deferred work with zero provider dispatch.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R36C-UNIFIED-ASSISTANT-ROUTING"
       ],
@@ -1378,6 +1378,44 @@
       "completionCommand": "npx vitest run test/construction-operating-assistant-r36d-channel-routing-parity.test.ts",
       "evidencePaths": [
         "../120-assistant-channel-routing-parity/evidence/r36d-closeout.md"
+      ],
+      "outputHead": "3714efdc39bc129066bd86f7d9bf3a59baf45140",
+      "outputTree": "b8276d51c48005597678b71ad1e30d39bc536e97",
+      "result": "Authenticated local SMS and voice-transcript ingress now crosses R36C, retains admitted channel and opaque source provenance, preserves exact replay and records provider-required work without external dispatch.",
+      "completedAtUtc": "2026-09-02T19:30:56Z"
+    },
+    {
+      "id": "R36E-CONTEXT-RICH-INTENT-ROUTING-GATE",
+      "title": "Context-rich intent routing gate",
+      "objective": "Gate R18 portal, voice-call, selected-email and file-observation sources through R36A before context resolution or canonical transition, with one immutable provider-neutral audit decision and zero provider dispatch.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R36D-ASSISTANT-CHANNEL-ROUTING-PARITY"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R36D-ASSISTANT-CHANNEL-ROUTING-PARITY"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/121-context-rich-intent-routing-gate",
+        "src/lib/construction-operating-assistant-r18/contracts.ts",
+        "src/server/construction-operating-assistant-r18/unified-intent.ts",
+        "test/construction-operating-assistant-r36e*.test.ts",
+        "test/integration/construction-operating-assistant-r36e*.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../121-context-rich-intent-routing-gate/plan.md",
+      "planSha256": "6a92f034c731c357cf02f96aaa81e38a6b992dda15537e7bd1f1b39c0269603b",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r36e-context-routing-gate.test.ts",
+      "evidencePaths": [
+        "../121-context-rich-intent-routing-gate/evidence/r36e-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

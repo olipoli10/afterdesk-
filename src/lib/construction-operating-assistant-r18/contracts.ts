@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { operatingInterpretationSchema } from "@/lib/construction-operating-assistant-r2/contracts";
+import { clientAssistantRoutingProjectionSchema } from "@/lib/construction-operating-assistant-r36c/contracts";
 
 export const UNIFIED_INTENT_SCHEMA_VERSION = 1 as const;
 export const UNIFIED_INTENT_SOURCE_KINDS = [
@@ -81,6 +82,10 @@ export const unifiedIntentResultSchema = z.object({
     "UNVERIFIED_SOURCE",
     "UNSUPPORTED_INTENT",
     "CONTEXT_TRANSITION_MISMATCH",
+    "PROVIDER_REQUIRED_NOT_AUTHORIZED",
+    "HUMAN_SUPPORT_REQUIRED",
+    "ROUTING_CLARIFICATION_REQUIRED",
+    "ROUTING_POLICY_REFUSED",
   ]).nullable(),
   transition: z.object({
     requested: z.boolean(),
@@ -91,6 +96,7 @@ export const unifiedIntentResultSchema = z.object({
     replayed: z.boolean(),
   }).strict(),
   provenance: provenanceSchema,
+  routing: clientAssistantRoutingProjectionSchema.optional(),
   externalTransportPerformed: z.literal(false),
 }).strict();
 

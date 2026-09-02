@@ -9,4 +9,4 @@
 - [x] T007 Run R36D, R36C, R36A, R4 and mobile regressions.
 - [x] T008 Run typecheck, lint, diff and schema/lockfile checks.
 - [x] T009 Record closeout evidence and create local commits.
-- [ ] T010 Inspect and promote the next authorized local critical-path block.
+- [x] T010 Inspect and promote the next authorized local critical-path block.
