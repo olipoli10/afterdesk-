@@ -33,6 +33,6 @@
 - [x] T017 Run R30/R33/R34 and release-package unit gates
 - [x] T018 Run root/mobile lint, typecheck, tests, Expo Doctor/export and Webpack build
 - [x] T019 Run Spec Kit analysis, diff/lockfile/secret/effect audits and record R35 closeout
-- [ ] T020 Commit R35, mark it DONE and promote R36 in queue/backlog
+- [x] T020 Commit R35, mark it DONE and promote R36 in queue/backlog
 
 R35 is incomplete until R36 is promoted and autonomous work continues.
