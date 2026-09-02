@@ -37,6 +37,10 @@ import {
 import type { MobileProjectTimeline } from "@/lib/timeline";
 import type { MobileJobCommand, MobileJobSchedule } from "@/lib/jobs";
 import type {
+  MobileFollowUpCommand,
+  MobileFollowUpQueue,
+} from "@/lib/follow-ups";
+import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
 } from "@/lib/permissions";
@@ -71,6 +75,8 @@ type MobileSessionValue = {
   timelineLoadState: LoadState;
   jobSchedule: MobileJobSchedule | null;
   jobScheduleLoadState: LoadState;
+  followUpQueue: MobileFollowUpQueue | null;
+  followUpQueueLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -87,6 +93,8 @@ type MobileSessionValue = {
   loadTimeline: (projectId: string) => Promise<void>;
   loadJobSchedule: (projectId?: string) => Promise<void>;
   submitJobCommand: (command: MobileJobCommand) => Promise<void>;
+  loadFollowUpQueue: (projectId?: string) => Promise<void>;
+  submitFollowUpCommand: (command: MobileFollowUpCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -145,6 +153,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [timelineLoadState, setTimelineLoadState] = useState<LoadState>("IDLE");
   const [jobSchedule, setJobSchedule] = useState<MobileJobSchedule | null>(null);
   const [jobScheduleLoadState, setJobScheduleLoadState] = useState<LoadState>("IDLE");
+  const [followUpQueue, setFollowUpQueue] = useState<MobileFollowUpQueue | null>(null);
+  const [followUpQueueLoadState, setFollowUpQueueLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -155,6 +165,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingEvidenceRequest = useRef<string | null>(null);
   const dispatchingPermissionRequest = useRef<string | null>(null);
   const dispatchingJobRequest = useRef<string | null>(null);
+  const dispatchingFollowUpRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -207,6 +218,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setTimelineLoadState("IDLE");
       setJobSchedule(null);
       setJobScheduleLoadState("IDLE");
+      setFollowUpQueue(null);
+      setFollowUpQueueLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setOutboxEntries([]);
         setOutboxLoadState("LOADING");
@@ -628,6 +641,73 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadFollowUpQueue = useCallback(async (projectId?: string) => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    if (projectId && !cockpit?.projects.some((project) => project.id === projectId)) {
+      throw new Error("MOBILE_FOLLOW_UP_PROJECT_REFUSED");
+    }
+    setFollowUpQueueLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.followUpQueue(activeWorkspace.id, projectId);
+      if (result.role !== activeWorkspace.role) throw new MobileApiError("INVALID_RESPONSE");
+      setFollowUpQueue(result);
+      setFollowUpQueueLoadState("READY");
+    } catch (error) {
+      setFollowUpQueue(null);
+      setFollowUpQueueLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api, cockpit?.projects]);
+
+  const submitFollowUpCommand = useCallback(async (command: MobileFollowUpCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_FOLLOW_UP_COMMAND_PERMISSION_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_FOLLOW_UP_WORKSPACE_REFUSED");
+    }
+    if (dispatchingFollowUpRequest.current) {
+      throw new Error("MOBILE_FOLLOW_UP_COMMAND_ALREADY_DISPATCHED");
+    }
+    dispatchingFollowUpRequest.current = command.commandId;
+    setFollowUpQueueLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await prepareOutboxEntry("FOLLOW_UP_COMMAND", command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.followUpCommand(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
+      const refreshed = await api.followUpQueue(activeWorkspace.id);
+      setFollowUpQueue(refreshed);
+      setFollowUpQueueLoadState("READY");
+    } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      setFollowUpQueueLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(command.commandId, state, activeWorkspace.id, publicMessage(error));
+      if (error instanceof MobileApiError && error.code === "CONFLICT") {
+        const refreshed = await api.followUpQueue(activeWorkspace.id).catch(() => null);
+        if (refreshed) {
+          setFollowUpQueue(refreshed);
+          setFollowUpQueueLoadState("READY");
+        }
+      }
+    } finally {
+      dispatchingFollowUpRequest.current = null;
+    }
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -724,8 +804,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       });
     } else if (entry.kind === "PERMISSION_REVOCATION") {
       await revokePermission(entry.command);
-    } else {
+    } else if (entry.kind === "JOB_COMMAND") {
       await submitJobCommand(entry.command);
+    } else {
+      await submitFollowUpCommand(entry.command);
     }
     await refreshOutbox(activeWorkspace.id);
   }, [
@@ -737,6 +819,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitAttempt,
     submitPreparedActionAttempt,
     submitJobCommand,
+    submitFollowUpCommand,
   ]);
 
   const discardOutboxEntry = useCallback(async (entryId: string) => {
@@ -772,6 +855,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setTimelineLoadState("IDLE");
     setJobSchedule(null);
     setJobScheduleLoadState("IDLE");
+    setFollowUpQueue(null);
+    setFollowUpQueueLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -798,6 +883,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       timelineLoadState,
       jobSchedule,
       jobScheduleLoadState,
+      followUpQueue,
+      followUpQueueLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -812,6 +899,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadTimeline,
       loadJobSchedule,
       submitJobCommand,
+      loadFollowUpQueue,
+      submitFollowUpCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -832,6 +921,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       timelineLoadState,
       jobSchedule,
       jobScheduleLoadState,
+      followUpQueue,
+      followUpQueueLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -851,6 +942,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadTimeline,
       loadJobSchedule,
       submitJobCommand,
+      loadFollowUpQueue,
+      submitFollowUpCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

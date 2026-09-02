@@ -33,6 +33,8 @@ preparation and exact reconstruction after retry or restart.
 - `specs/100-follow-up-engine/**`;
 - `src/lib/construction-operating-assistant-r20/**`;
 - `src/server/construction-operating-assistant-r20/**`;
+- `src/server/construction-operating-assistant-r6/receivables.ts` only for the
+  exhaustive compatibility guard required by the extended channel enum;
 - `src/app/api/endvera/v1/mobile/follow-ups/**`;
 - `apps/mobile/src/app/(app)/follow-ups.tsx` and navigation wiring;
 - `apps/mobile/src/lib/follow-ups.ts`, API, session and outbox wiring;

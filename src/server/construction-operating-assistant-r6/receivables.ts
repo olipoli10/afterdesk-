@@ -400,7 +400,10 @@ export async function scheduleConstructionFollowUp(rawInput: unknown) {
   );
 }
 
-function messageChannel(channel: "SMS" | "EMAIL" | "HUMAN_CALL") {
+function messageChannel(channel: "SMS" | "EMAIL" | "HUMAN_CALL" | "INTERNAL") {
+  if (channel === "INTERNAL") {
+    throw new Error("CONSTRUCTION_R6_INTERNAL_CHANNEL_REFUSED");
+  }
   return channel === "SMS" ? "sms" : channel === "EMAIL" ? "email" : "voice";
 }
 

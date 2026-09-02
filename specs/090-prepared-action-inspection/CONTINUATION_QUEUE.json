@@ -453,6 +453,7 @@
         "specs/100-follow-up-engine",
         "src/lib/construction-operating-assistant-r20",
         "src/server/construction-operating-assistant-r20",
+        "src/server/construction-operating-assistant-r6/receivables.ts",
         "src/app/api/endvera/v1/mobile/follow-ups",
         "apps/mobile/src/app/(app)/follow-ups.tsx",
         "apps/mobile/src/app/(app)/_layout.tsx",
@@ -468,7 +469,7 @@
         "test/integration/per-file-setup.ts"
       ],
       "planPath": "../100-follow-up-engine/plan.md",
-      "planSha256": "dc6d417e93964620b8a816f10d245c73c9cf407fec7d8da90116ef42b0d5f714",
+      "planSha256": "d57ab6631cebba25125fcb02947fc17609f2dff67680d37263d97eb890c897ba",
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r20-follow-up-engine.test.ts",
       "evidencePaths": [
         "../100-follow-up-engine/evidence/r20-closeout.md"
