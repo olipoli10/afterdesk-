@@ -1103,7 +1103,7 @@
       "title": "Commercial account, operator and public site alignment",
       "objective": "Create one honest Construction commercial control plane with versioned local plans, informational canonical usage, operator/support surfaces and accurate bilingual public positioning while billing and providers remain disabled.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R33-WEB-MOBILE-PARITY"
       ],
@@ -1143,6 +1143,49 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r34-commercial-account.test.ts",
       "evidencePaths": [
         "../114-billing-admin-site/evidence/r34-closeout.md"
+      ],
+      "outputHead": "eca7a4ae06cbb67bbfed4a3b7ce781fcbce0410a",
+      "outputTree": "ee7e3727fb6b7afaeb0cf32ab4e969e61054c784",
+      "result": "One honest Construction commercial control plane now provides closed local plans, informational canonical usage, role-safe client/operator support and accurate bilingual public positioning with billing and providers disabled.",
+      "completedAtUtc": "2026-09-02T13:32:39Z"
+    },
+    {
+      "id": "R35-RELEASE-PACKAGING",
+      "title": "Deterministic local release packaging",
+      "objective": "Create one tamper-evident Web/iOS/Android local release-candidate package with closed environment contracts, exact identities and assets, bilingual store metadata, privacy disclosures and operator runbooks while signing, upload, providers, deployment and stores remain disabled.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R34-BILLING-ADMIN-SITE"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R34-BILLING-ADMIN-SITE"
+      },
+      "authority": "LOCAL CODE TEST FILE GENERATION AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE SIGNING EAS STORE VERCEL PUSH PREVIEW PRODUCTION OR DEPLOYMENT ACTION",
+      "allowedScope": [
+        "specs/115-release-packaging",
+        "src/lib/construction-operating-assistant-r35",
+        "src/app/construction/support",
+        "apps/mobile/app.json",
+        "apps/mobile/README.md",
+        "apps/mobile/src/lib/release.ts",
+        "apps/mobile/src/app/(app)/settings.tsx",
+        "apps/mobile/test/release-package.test.ts",
+        "scripts/generate-endvera-release-package.mjs",
+        "scripts/validate-endvera-release-package.mjs",
+        "release/endvera-construction-v1",
+        "docs/release/endvera-construction-v1",
+        "test/construction-operating-assistant-r35*.test.ts"
+      ],
+      "planPath": "../115-release-packaging/plan.md",
+      "planSha256": "494c35ad6a9eacb5d30601b658741a26f6287c2d847b0fd8e6807e2000399827",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r35-release-package.test.ts",
+      "evidencePaths": [
+        "../115-release-packaging/evidence/r35-closeout.md",
+        "../../release/endvera-construction-v1/release-manifest.json"
       ],
       "outputHead": "",
       "outputTree": "",

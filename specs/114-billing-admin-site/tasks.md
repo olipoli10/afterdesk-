@@ -41,6 +41,6 @@
 - [x] T022 Run R21/R22/R28/R30-R33 and disposable PostgreSQL regressions
 - [x] T023 Run migration, root/mobile lint, typecheck, tests and Next.js build
 - [x] T024 Run Spec Kit analysis, diff/lockfile/effect audits and record R34 closeout
-- [ ] T025 Commit R34, mark it DONE and promote R35 in queue/backlog
+- [x] T025 Commit R34, mark it DONE and promote R35 in queue/backlog
 
 R34 is incomplete until R35 is promoted and autonomous work continues.
