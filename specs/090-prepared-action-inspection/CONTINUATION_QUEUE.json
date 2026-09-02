@@ -1164,7 +1164,7 @@
         "kind": "ENTRY_OUTPUT",
         "entryId": "R34-BILLING-ADMIN-SITE"
       },
-      "authority": "LOCAL CODE TEST FILE GENERATION AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE SIGNING EAS STORE VERCEL PUSH PREVIEW PRODUCTION OR DEPLOYMENT ACTION",
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": [
         "specs/115-release-packaging",
         "src/lib/construction-operating-assistant-r35",
@@ -1197,7 +1197,7 @@
       "title": "Full synthetic internal end-to-end composition",
       "objective": "Run one deterministic synthetic contractor story across the real PostgreSQL-backed onboarding, intent, scheduling, evidence, invoice-readiness, prepared connector, human-escalation, recovery, role and Web/iOS/Android contracts and seal a strict zero-external-effect report.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R35-RELEASE-PACKAGING"
       ],
@@ -1207,7 +1207,7 @@
         "kind": "ENTRY_OUTPUT",
         "entryId": "R35-RELEASE-PACKAGING"
       },
-      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL FILE GENERATION AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE SIGNING STORE DEPLOYMENT PUSH PREVIEW OR PRODUCTION",
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": [
         "specs/116-internal-e2e",
         "src/lib/construction-operating-assistant-r36",
@@ -1224,10 +1224,10 @@
         "../116-internal-e2e/evidence/internal-e2e-report.json",
         "../116-internal-e2e/evidence/r36-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "dac3eff88219f94cc5fccc44f00bc586eb5fe6d9",
+      "outputTree": "c0ccf9defeee950ace236d8dcea6cd4d9761027d",
+      "result": "One deterministic PostgreSQL-backed contractor story passed all 16 ordered internal checkpoints with exact restart identity, replay refusal, role and workspace isolation, Web/iOS/Android parity, a valid local release package and zero provider or external effect.",
+      "completedAtUtc": "2026-09-02T15:02:33Z"
     }
   ]
 }
