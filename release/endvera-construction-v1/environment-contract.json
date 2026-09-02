@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "variables": [
+    {"name":"DATABASE_URL","runtime":"WEB_RUNTIME","classification":"DATABASE","local":"REQUIRED_SYNTHETIC","external":"REQUIRED_SECRET_REFERENCE"},
+    {"name":"DIRECT_URL","runtime":"WEB_BUILD","classification":"DATABASE","local":"REQUIRED_SYNTHETIC","external":"REQUIRED_SECRET_REFERENCE"},
+    {"name":"BETTER_AUTH_SECRET","runtime":"WEB_RUNTIME","classification":"SECRET","local":"REQUIRED_SYNTHETIC","external":"REQUIRED_SECRET_REFERENCE"},
+    {"name":"BETTER_AUTH_URL","runtime":"WEB_RUNTIME","classification":"PUBLIC_ORIGIN","local":"REQUIRED_LOCAL_ORIGIN","external":"REQUIRED_HTTPS_ORIGIN"},
+    {"name":"APP_URL","runtime":"WEB_RUNTIME","classification":"PUBLIC_ORIGIN","local":"OPTIONAL_LOCAL_ORIGIN","external":"REQUIRED_HTTPS_ORIGIN"},
+    {"name":"NEXT_PUBLIC_SITE_URL","runtime":"WEB_BUILD","classification":"PUBLIC_ORIGIN","local":"OPTIONAL_LOCAL_ORIGIN","external":"REQUIRED_HTTPS_ORIGIN"},
+    {"name":"EXPO_PUBLIC_ENDVERA_API_URL","runtime":"MOBILE_RUNTIME","classification":"PUBLIC_ORIGIN","local":"REQUIRED_LOCAL_ORIGIN","external":"REQUIRED_HTTPS_ORIGIN"},
+    {"name":"R2_ACCOUNT_ID","runtime":"WEB_RUNTIME","classification":"STORAGE","local":"OPTIONAL_DISABLED","external":"REQUIRED_SECRET_REFERENCE"},
+    {"name":"R2_ACCESS_KEY_ID","runtime":"WEB_RUNTIME","classification":"STORAGE","local":"OPTIONAL_DISABLED","external":"REQUIRED_SECRET_REFERENCE"},
+    {"name":"R2_SECRET_ACCESS_KEY","runtime":"WEB_RUNTIME","classification":"SECRET","local":"OPTIONAL_DISABLED","external":"REQUIRED_SECRET_REFERENCE"},
+    {"name":"R2_BUCKET","runtime":"WEB_RUNTIME","classification":"STORAGE","local":"OPTIONAL_DISABLED","external":"REQUIRED_OPERATOR_VALUE"},
+    {"name":"CLOUDMERSIVE_API_KEY","runtime":"WEB_RUNTIME","classification":"PROVIDER","local":"PROHIBITED","external":"REQUIRED_SECRET_REFERENCE"},
+    {"name":"ANTHROPIC_API_KEY","runtime":"WEB_RUNTIME","classification":"PROVIDER","local":"PROHIBITED","external":"REQUIRES_SEPARATE_AUTHORITY"},
+    {"name":"STRIPE_SECRET_KEY","runtime":"WEB_RUNTIME","classification":"PROVIDER","local":"PROHIBITED","external":"REQUIRES_SEPARATE_AUTHORITY"},
+    {"name":"RESEND_API_KEY","runtime":"WEB_RUNTIME","classification":"PROVIDER","local":"PROHIBITED","external":"REQUIRES_SEPARATE_AUTHORITY"}
+  ],
+  "artifactValuePolicy": "NAMES_AND_REQUIREMENT_STATES_ONLY",
+  "secretValuesSerializable": false,
+  "localProviderValuesAllowed": false,
+  "externalReleaseAuthorized": false
+}

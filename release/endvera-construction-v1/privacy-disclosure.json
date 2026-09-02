@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "tracking": false,
+  "advertising": false,
+  "dataSale": false,
+  "broadContactBookCollection": false,
+  "broadMailboxCollection": false,
+  "backgroundRecording": false,
+  "classes": [
+    {"code":"IDENTITY_AND_MEMBERSHIP","collected":true,"purposes":["AUTHENTICATION","ROLE_AUTHORIZATION"],"persistence":"CANONICAL_ACCOUNT_STATE","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_WORKSPACE_POLICY","userControls":["ACCOUNT_EXPORT","ACCOUNT_DELETION_REQUEST"]},
+    {"code":"PROJECT_AND_CONTACT_STATE","collected":true,"purposes":["PROJECT_MEMORY","ENTITY_RESOLUTION"],"persistence":"CANONICAL_WORKSPACE_STATE","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_WORKSPACE_POLICY","userControls":["WORKSPACE_EXPORT","SCOPED_DELETION"]},
+    {"code":"SCHEDULE_AND_FOLLOW_UP","collected":true,"purposes":["SCHEDULING","REMINDERS","NEXT_OWNER"],"persistence":"CANONICAL_WORKSPACE_STATE","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_WORKSPACE_POLICY","userControls":["WORKSPACE_EXPORT","SCOPED_DELETION"]},
+    {"code":"EVIDENCE_AND_DOCUMENTS","collected":true,"purposes":["EVIDENCE_INTAKE","INVOICE_READINESS"],"persistence":"SECURED_EVIDENCE_STATE","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_EVIDENCE_POLICY","userControls":["EVIDENCE_EXPORT","EVIDENCE_DELETION_REQUEST"]},
+    {"code":"COMMUNICATION_CONTENT","collected":true,"purposes":["PREPARED_COMMUNICATION","PROJECT_HISTORY"],"persistence":"CANONICAL_COMMUNICATION_STATE","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_WORKSPACE_POLICY","userControls":["WORKSPACE_EXPORT","SCOPED_DELETION"]},
+    {"code":"FINANCIAL_WORKFLOW","collected":true,"purposes":["INVOICE_READINESS","RECEIVABLE_FOLLOW_UP"],"persistence":"ROLE_RESTRICTED_CANONICAL_STATE","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_WORKSPACE_POLICY","userControls":["OWNER_EXPORT","SCOPED_DELETION"]},
+    {"code":"USER_CHOSEN_VOICE_NOTE","collected":true,"purposes":["LOCAL_TRANSCRIPT_INTAKE"],"persistence":"USER_INITIATED_EVIDENCE_STATE","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_EVIDENCE_POLICY","userControls":["RECORDING_PERMISSION","EVIDENCE_DELETION_REQUEST"]},
+    {"code":"RELIABILITY_DIAGNOSTICS","collected":true,"purposes":["FAILURE_RECOVERY","AUDIT"],"persistence":"BOUNDED_OPERATIONAL_LOG","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_DIAGNOSTIC_POLICY","userControls":["ACCOUNT_EXPORT"]},
+    {"code":"HUMAN_ESCALATION_CONTEXT","collected":true,"purposes":["BOUNDED_HUMAN_SUPPORT","EXACT_RESUME"],"persistence":"ROLE_RESTRICTED_ESCALATION_STATE","sharing":"NO_EXTERNAL_PROVIDER_IN_LOCAL_BUILD","retentionAuthority":"R30_WORKSPACE_POLICY","userControls":["OWNER_EXPORT","SCOPED_DELETION"]}
+  ]
+}

@@ -1,5 +1,6 @@
 import { Text } from "react-native";
 import { Button, Card, Empty, Heading, Label, Screen, sharedStyles } from "@/components/ui";
+import { MOBILE_RELEASE_INFO } from "@/lib/release";
 import { useMobileSession } from "@/state/mobile-session";
 
 export default function SettingsScreen() {
@@ -20,6 +21,15 @@ export default function SettingsScreen() {
         <Label>Espace actif</Label>
         <Text style={sharedStyles.name}>{activeWorkspace?.name ?? "Aucun"}</Text>
         <Text style={sharedStyles.muted}>{activeWorkspace?.role ?? "—"}</Text>
+      </Card>
+      <Card>
+        <Label>Version locale</Label>
+        <Text style={sharedStyles.name}>{MOBILE_RELEASE_INFO.semanticVersion}</Text>
+        <Text style={sharedStyles.muted}>iOS {MOBILE_RELEASE_INFO.ios.buildNumber} · Android {MOBILE_RELEASE_INFO.android.versionCode}</Text>
+        <Text style={sharedStyles.muted}>Confidentialité : {MOBILE_RELEASE_INFO.publicPaths.privacy}</Text>
+        <Text style={sharedStyles.muted}>Sécurité : {MOBILE_RELEASE_INFO.publicPaths.security}</Text>
+        <Text style={sharedStyles.muted}>Appui : {MOBILE_RELEASE_INFO.publicPaths.support}</Text>
+        <Text style={sharedStyles.muted}>Paquet local seulement · ni signé, ni publié, ni déployé.</Text>
       </Card>
       <Button tone="secondary" onPress={signOut}>Fermer la session</Button>
     </Screen>

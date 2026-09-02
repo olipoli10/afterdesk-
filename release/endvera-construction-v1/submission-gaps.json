@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "storeSubmissionReady": false,
+  "productionDeploymentReady": false,
+  "unresolved": [
+    {"code":"FINAL_BRAND_ASSETS","state":"REQUIRED_LATER","reason":"The current Expo image set is starter/placeholder artwork and the Web mark is explicitly temporary."},
+    {"code":"IOS_SCREENSHOTS","state":"REQUIRED_LATER","reason":"No real-device App Store screenshots have been captured or approved."},
+    {"code":"ANDROID_SCREENSHOTS","state":"REQUIRED_LATER","reason":"No real-device Play Store screenshots have been captured or approved."},
+    {"code":"PUBLIC_PRODUCTION_ORIGIN","state":"REQUIRES_EXACT_AUTHORITY","reason":"R35 does not select or deploy a public host."},
+    {"code":"SIGNING_CUSTODY","state":"REQUIRES_EXACT_AUTHORITY","reason":"No Apple or Google signing identity is authorized or stored."},
+    {"code":"STORE_ACCOUNT_OWNERSHIP","state":"REQUIRES_EXACT_AUTHORITY","reason":"No App Store Connect or Play Console account is accessed."},
+    {"code":"PRIVACY_LEGAL_REVIEW","state":"REQUIRES_INDEPENDENT_REVIEW","reason":"Structured disclosures are technical drafts, not legal approval."},
+    {"code":"EXTERNAL_SUPPORT_OWNER","state":"REQUIRES_OPERATING_DECISION","reason":"No staffed production support channel is announced."}
+  ]
+}

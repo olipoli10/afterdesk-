@@ -10,10 +10,12 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "ai.endvera.mobile",
+      "buildNumber": "1",
       "supportsTablet": true
     },
     "android": {
       "package": "ai.endvera.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#09090b",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

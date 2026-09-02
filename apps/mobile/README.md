@@ -8,4 +8,14 @@ One Expo codebase targets iOS and Android. The existing Next.js application rema
 2. Run `npm start` from this directory.
 3. Sign in with an existing local ENDVERA client account.
 
-The app stores only Better Auth session material in native SecureStore. Cockpit, financial, message, and command state stays in memory and is refreshed from PostgreSQL-backed APIs. External SMS, email, calls, calendar writes, payments, EAS builds, and store distribution are outside R8 authority.
+The app stores only Better Auth session material in native SecureStore. Cockpit, financial, message, and command state stays in memory and is refreshed from PostgreSQL-backed APIs.
+
+## Local release package
+
+The shared application identity is `ai.endvera.mobile` on iOS and Android.
+R35 records version/build metadata, assets, bilingual listing drafts, privacy
+disclosures and local build runbooks in the repository. The package is not
+signed, uploaded, published, deployed or observed through a store.
+
+External SMS, email, calls, calendar writes, payments, EAS actions, signing,
+store distribution, Preview and Production remain outside local authority.

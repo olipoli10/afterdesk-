@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "locale": "fr-CA",
+  "name": "ENDVERA",
+  "subtitle": "Assistant opérationnel construction",
+  "shortDescription": "Gardez les chantiers, rendez-vous, preuves et suivis dans un état opérationnel clair.",
+  "fullDescription": "ENDVERA aide les petits entrepreneurs à garder l’état de leurs chantiers, organiser les rendez-vous, suivre les preuves manquantes, préparer les communications et acheminer les exceptions vers un appui humain borné. Les actions sensibles restent visibles et contrôlées.",
+  "capabilityCodes": ["PERSISTENT_PROJECT_MEMORY","SCHEDULE_AND_FOLLOW_UP","EVIDENCE_AND_INVOICE_READINESS","PREPARED_COMMUNICATIONS","HUMAN_EXCEPTION_ROUTING","ROLE_SAFE_COCKPIT"],
+  "unavailableCapabilityCodes": ["LIVE_BILLING","LIVE_SMS","LIVE_CALLS","LIVE_CALENDAR","LIVE_ACCOUNTING"],
+  "privacyPath": "/privacy",
+  "supportPath": "/construction/support",
+  "securityPath": "/security",
+  "stage": "LOCAL_BUILD",
+  "priceState": "PRICE_NOT_SET",
+  "providerObserved": false,
+  "customerProofAvailable": false,
+  "productMarketFitProven": false,
+  "storeAvailable": false
+}
