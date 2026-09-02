@@ -25,6 +25,7 @@ export default function AppLayout() {
       <Tabs.Screen name="timeline" options={{ title: "Timeline", tabBarIcon: ({ color }) => <TabGlyph value="≡" color={color} /> }} />
       <Tabs.Screen name="calendar" options={{ title: "Agenda", tabBarIcon: ({ color }) => <TabGlyph value="◷" color={color} /> }} />
       <Tabs.Screen name="calendar-connections" options={{ title: "Calendriers", tabBarIcon: ({ color }) => <TabGlyph value="⇄" color={color} /> }} />
+      <Tabs.Screen name="messages" options={{ title: "Messages", tabBarIcon: ({ color }) => <TabGlyph value="✉" color={color} /> }} />
       <Tabs.Screen name="contacts" options={{ title: "Contacts", tabBarIcon: ({ color }) => <TabGlyph value="◎" color={color} /> }} />
       <Tabs.Screen name="evidence" options={{ title: "Preuves", tabBarIcon: ({ color }) => <TabGlyph value="＋" color={color} /> }} />
       <Tabs.Screen name="permissions" options={{ title: "Accès", tabBarIcon: ({ color }) => <TabGlyph value="⊙" color={color} /> }} />

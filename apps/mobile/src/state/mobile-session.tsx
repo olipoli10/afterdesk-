@@ -53,6 +53,10 @@ import type {
   MobileCalendarConnectorCommand,
 } from "@/lib/calendar-connectors";
 import type {
+  MobileMessagingCockpit,
+  MobileMessagingCommand,
+} from "@/lib/messages";
+import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
 } from "@/lib/permissions";
@@ -95,6 +99,8 @@ type MobileSessionValue = {
   humanEscalationLoadState: LoadState;
   calendarConnectorCockpit: MobileCalendarConnectorCockpit | null;
   calendarConnectorLoadState: LoadState;
+  messagingCockpit: MobileMessagingCockpit | null;
+  messagingLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -119,6 +125,8 @@ type MobileSessionValue = {
   submitHumanEscalationCommand: (command: MobileHumanEscalationCommand) => Promise<void>;
   loadCalendarConnectors: () => Promise<void>;
   submitCalendarConnectorCommand: (command: MobileCalendarConnectorCommand) => Promise<void>;
+  loadMessaging: () => Promise<void>;
+  submitMessagingCommand: (command: MobileMessagingCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -189,6 +197,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     useState<MobileCalendarConnectorCockpit | null>(null);
   const [calendarConnectorLoadState, setCalendarConnectorLoadState] =
     useState<LoadState>("IDLE");
+  const [messagingCockpit, setMessagingCockpit] = useState<MobileMessagingCockpit | null>(null);
+  const [messagingLoadState, setMessagingLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -203,6 +213,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingEconomicRequest = useRef<string | null>(null);
   const dispatchingHumanEscalationRequest = useRef<string | null>(null);
   const dispatchingCalendarConnectorRequest = useRef<string | null>(null);
+  const dispatchingMessagingRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -965,6 +976,79 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadMessaging = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setMessagingLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.messagingCockpit(activeWorkspace.id);
+      const fieldMismatch =
+        (activeWorkspace.role === "FIELD_WORKER") !== (result.role === "field_worker");
+      if (fieldMismatch) throw new MobileApiError("INVALID_RESPONSE");
+      setMessagingCockpit(result);
+      setMessagingLoadState("READY");
+    } catch (error) {
+      setMessagingCockpit(null);
+      setMessagingLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitMessagingCommand = useCallback(async (command: MobileMessagingCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_MESSAGING_PERMISSION_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_MESSAGING_WORKSPACE_REFUSED");
+    }
+    if (dispatchingMessagingRequest.current) {
+      throw new Error("MOBILE_MESSAGING_ALREADY_DISPATCHED");
+    }
+    dispatchingMessagingRequest.current = command.commandId;
+    setMessagingLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await prepareOutboxEntry("MESSAGING_COMMAND", command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.messagingCommand(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
+      const refreshed = await api.messagingCockpit(activeWorkspace.id);
+      setMessagingCockpit(refreshed);
+      setMessagingLoadState("READY");
+      const refreshedCockpit = await api.cockpit(activeWorkspace.id).catch(() => null);
+      if (refreshedCockpit) setCockpit(refreshedCockpit);
+    } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      setMessagingLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(
+        command.commandId,
+        state,
+        activeWorkspace.id,
+        publicMessage(error),
+      );
+      if (error instanceof MobileApiError && error.code === "CONFLICT") {
+        const refreshed = await api.messagingCockpit(activeWorkspace.id).catch(() => null);
+        if (refreshed) {
+          setMessagingCockpit(refreshed);
+          setMessagingLoadState("READY");
+        }
+      }
+    } finally {
+      dispatchingMessagingRequest.current = null;
+    }
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -1069,6 +1153,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitHumanEscalationCommand(entry.command);
     } else if (entry.kind === "CALENDAR_CONNECTOR_COMMAND") {
       await submitCalendarConnectorCommand(entry.command);
+    } else if (entry.kind === "MESSAGING_COMMAND") {
+      await submitMessagingCommand(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -1085,6 +1171,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitEconomicCommand,
     submitHumanEscalationCommand,
     submitCalendarConnectorCommand,
+    submitMessagingCommand,
     submitFollowUpCommand,
   ]);
 
@@ -1129,6 +1216,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setHumanEscalationLoadState("IDLE");
     setCalendarConnectorCockpit(null);
     setCalendarConnectorLoadState("IDLE");
+    setMessagingCockpit(null);
+    setMessagingLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -1163,6 +1252,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       humanEscalationLoadState,
       calendarConnectorCockpit,
       calendarConnectorLoadState,
+      messagingCockpit,
+      messagingLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1185,6 +1276,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitHumanEscalationCommand,
       loadCalendarConnectors,
       submitCalendarConnectorCommand,
+      loadMessaging,
+      submitMessagingCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1213,6 +1306,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       humanEscalationLoadState,
       calendarConnectorCockpit,
       calendarConnectorLoadState,
+      messagingCockpit,
+      messagingLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1240,6 +1335,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitHumanEscalationCommand,
       loadCalendarConnectors,
       submitCalendarConnectorCommand,
+      loadMessaging,
+      submitMessagingCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

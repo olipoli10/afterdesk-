@@ -53,6 +53,11 @@ import {
   mobileCalendarConnectorCommandSchema,
   parseMobileCalendarConnectorCockpit,
 } from "@/lib/calendar-connectors";
+import {
+  mobileMessagingCommandResultSchema,
+  mobileMessagingCommandSchema,
+  parseMobileMessagingCockpit,
+} from "@/lib/messages";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -472,6 +477,46 @@ export class MobileApi {
         result.provider !== parsedCommand.provider
       ) {
         throw new Error("MOBILE_CALENDAR_CONNECTOR_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async messagingCockpit(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/communications?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = parseMobileMessagingCockpit(value);
+      if (result.workspaceId !== workspaceId) {
+        throw new Error("MOBILE_MESSAGING_WORKSPACE_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async messagingCommand(command: unknown) {
+    const parsedCommand = mobileMessagingCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/communications", {
+      method: "POST",
+      body: JSON.stringify(parsedCommand),
+    });
+    try {
+      const result = mobileMessagingCommandResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.purpose !== parsedCommand.purpose ||
+        (parsedCommand.action === "PREPARE_POLICY_BOUND_SMS"
+          ? !("actionId" in result) || result.actionId !== parsedCommand.actionId
+          : !("contactId" in result) || result.contactId !== parsedCommand.contactId)
+      ) {
+        throw new Error("MOBILE_MESSAGING_RESULT_MISMATCH");
       }
       return result;
     } catch {
