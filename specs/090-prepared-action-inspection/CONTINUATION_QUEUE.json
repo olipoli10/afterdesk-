@@ -438,7 +438,7 @@
       "title": "Durable follow-up, escalation and next-owner engine",
       "objective": "Persist operational follow-ups with explicit targets, accountable owners, escalation policies, deterministic due preparation and exact role-safe reconstruction.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R19-JOB-SCHEDULING"
       ],
@@ -473,6 +473,51 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r20-follow-up-engine.test.ts",
       "evidencePaths": [
         "../100-follow-up-engine/evidence/r20-closeout.md"
+      ],
+      "outputHead": "93a0c7671b558b8880ac097ea82f49953c6f8a42",
+      "outputTree": "f2ff2b3c02c030760a015e2c99d3f2566fc21e13",
+      "result": "One durable R6-derived follow-up engine now retains target, accountable owner, next decision, attempts, escalation and immutable transitions; due work is prepared once, role-safe mobile state reconstructs after restart and external transport remains zero.",
+      "completedAtUtc": "2026-09-02T00:21:26Z"
+    },
+    {
+      "id": "R21-RECEIVABLES-INVOICE",
+      "title": "Invoice readiness, receivables and collection cockpit",
+      "objective": "Bind proven invoice readiness to one issued receivable, retain payment promises, project economic attention and delegate overdue collection to the canonical R20 follow-up engine.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R20-FOLLOW-UP-ENGINE"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R20-FOLLOW-UP-ENGINE"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/101-receivables-invoice",
+        "src/lib/construction-operating-assistant-r21",
+        "src/server/construction-operating-assistant-r21",
+        "src/app/api/endvera/v1/mobile/invoices",
+        "apps/mobile/src/app/(app)/receivables.tsx",
+        "apps/mobile/src/components/receivable-forms.tsx",
+        "apps/mobile/src/lib/invoices.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/invoices.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r21_receivables_invoice",
+        "test/construction-operating-assistant-r21*.test.ts",
+        "test/integration/construction-operating-assistant-r21*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../101-receivables-invoice/plan.md",
+      "planSha256": "d492c61a35a9883f751c7c7b31db76da41e78594b78d92fe7fbd29143708e2ab",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r21-receivables-invoice.test.ts",
+      "evidencePaths": [
+        "../101-receivables-invoice/evidence/r21-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
