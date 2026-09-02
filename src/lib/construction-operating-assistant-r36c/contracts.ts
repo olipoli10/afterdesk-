@@ -14,6 +14,14 @@ export const ASSISTANT_ROUTING_READINESS = [
   "REFUSED",
 ] as const;
 
+export const trustedAdmittedAssistantSourceSchema = z
+  .object({
+    senderAddress: z.string().min(3).max(320),
+    provider: z.string().min(1).max(80),
+    providerMessageId: z.string().min(1).max(160),
+  })
+  .strict();
+
 export const clientAssistantRoutingProjectionSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -52,3 +60,6 @@ export type ClientAssistantRoutingProjection = z.infer<
 >;
 export type UnifiedAssistantResult = z.infer<typeof unifiedAssistantResultSchema>;
 export type DeferredAssistantSnapshot = z.infer<typeof deferredAssistantSnapshotSchema>;
+export type TrustedAdmittedAssistantSource = z.infer<
+  typeof trustedAdmittedAssistantSourceSchema
+>;

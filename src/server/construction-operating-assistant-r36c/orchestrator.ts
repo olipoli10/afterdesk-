@@ -7,12 +7,16 @@ import {
 } from "@/lib/construction-operating-assistant-r9/mobile-assistant-contracts";
 import {
   clientAssistantRoutingProjectionSchema,
+  trustedAdmittedAssistantSourceSchema,
   unifiedAssistantResultSchema,
   type ClientAssistantRoutingProjection,
+  type TrustedAdmittedAssistantSource,
   type UnifiedAssistantResult,
 } from "@/lib/construction-operating-assistant-r36c/contracts";
 import { prisma } from "@/lib/db";
+import { operatingCommandEnvelopeSchema } from "@/lib/construction-operating-assistant-r2/contracts";
 import { requireActiveConstructionMember, ConstructionAccessDenied } from "@/server/construction-assistant-v1/workspace";
+import { processOperatingAssistantCommand } from "@/server/construction-operating-assistant-r2/core";
 import { processConstructionMobileAssistantRequest } from "@/server/construction-operating-assistant-r9/mobile-assistant";
 import { prepareAssistantRoutingDecision } from "@/server/model-gateway/assistant-routing";
 import {
@@ -48,6 +52,53 @@ export function createTrustedAssistantRoutingRequest(input: {
     policyKey: "assistant-routing-r36a-v1",
     acceptedAt: input.request.occurredAt,
   };
+}
+
+export function createInternalAssistantEnvelope(input: {
+  userId: string;
+  channel: UnifiedAssistantChannel;
+  request: ConstructionMobileAssistantRequest;
+  admittedSource?: TrustedAdmittedAssistantSource | unknown;
+}) {
+  if (input.channel === "MOBILE_APP" || input.channel === "PORTAL") {
+    if (input.admittedSource !== undefined) {
+      throw new Error("ASSISTANT_PORTAL_SOURCE_MUST_BE_SERVER_DERIVED");
+    }
+    return operatingCommandEnvelopeSchema.parse({
+      schemaVersion: 1,
+      commandId: input.request.requestId,
+      workspaceId: input.request.workspaceId,
+      channel: "PORTAL",
+      body: input.request.message,
+      occurredAt: input.request.occurredAt,
+      senderAddress: `user:${input.userId}`,
+    });
+  }
+  const source = trustedAdmittedAssistantSourceSchema.parse(input.admittedSource);
+  return operatingCommandEnvelopeSchema.parse({
+    schemaVersion: 1,
+    commandId: input.request.requestId,
+    workspaceId: input.request.workspaceId,
+    channel: input.channel,
+    body: input.request.message,
+    occurredAt: input.request.occurredAt,
+    senderAddress: source.senderAddress,
+    provider: source.provider,
+    providerMessageId: source.providerMessageId,
+  });
+}
+
+export function normalizeTrustedAdmittedAssistantSource(input: {
+  channel: UnifiedAssistantChannel;
+  admittedSource?: TrustedAdmittedAssistantSource | unknown;
+}): TrustedAdmittedAssistantSource | undefined {
+  if (input.channel === "MOBILE_APP" || input.channel === "PORTAL") {
+    if (input.admittedSource !== undefined) {
+      throw new Error("ASSISTANT_PORTAL_SOURCE_MUST_BE_SERVER_DERIVED");
+    }
+    return undefined;
+  }
+  return trustedAdmittedAssistantSourceSchema.parse(input.admittedSource);
 }
 
 export function projectClientAssistantRouting(
@@ -110,17 +161,21 @@ export async function processUnifiedAssistantRequest(input: {
   userId: string;
   channel: UnifiedAssistantChannel;
   request: ConstructionMobileAssistantRequest | unknown;
+  admittedSource?: TrustedAdmittedAssistantSource | unknown;
 }): Promise<UnifiedAssistantResult> {
   const request = constructionMobileAssistantRequestSchema.parse(input.request);
+  const admittedSource = normalizeTrustedAdmittedAssistantSource(input);
   await requireUnifiedAssistantRole(input.userId, request.workspaceId);
   const decision = prepareAssistantRoutingDecision(createTrustedAssistantRoutingRequest({ ...input, request }));
   const routing = projectClientAssistantRouting(decision);
 
   if (decision.disposition === "INTERNAL_TOOL") {
-    const result = await processConstructionMobileAssistantRequest({
-      userId: input.userId,
-      request,
-    });
+    const result = input.channel === "MOBILE_APP" || input.channel === "PORTAL"
+      ? await processConstructionMobileAssistantRequest({ userId: input.userId, request })
+      : await processOperatingAssistantCommand({
+          userId: input.userId,
+          envelope: createInternalAssistantEnvelope({ ...input, request, admittedSource }),
+        });
     return unifiedAssistantResultSchema.parse({ ...result, routing });
   }
 
@@ -130,5 +185,6 @@ export async function processUnifiedAssistantRequest(input: {
     channel: input.channel,
     deferred: replyForNonInternalRouting(decision),
     routing,
+    admittedSource,
   });
 }

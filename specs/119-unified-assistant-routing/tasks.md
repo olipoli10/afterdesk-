@@ -53,8 +53,8 @@
 
 - [x] T019 Run R36C, R36A, R36B, R9, Model Gateway and mobile focused test gates from `specs/119-unified-assistant-routing/quickstart.md`
 - [x] T020 Run typecheck, lint and `git diff --check`, verify no schema/lockfile/provider/network change, and record `specs/119-unified-assistant-routing/evidence/r36c-closeout.md`
-- [ ] T021 Mark every task complete, close the R36C queue entry, refresh the autonomous proof, validate the queue/router and create one coherent local commit
-- [ ] T022 Inspect and promote the next meaningful local critical-path release instead of requesting routine founder confirmation
+- [x] T021 Mark every task complete, close the R36C queue entry, refresh the autonomous proof, validate the queue/router and create one coherent local commit
+- [x] T022 Inspect and promote the next meaningful local critical-path release instead of requesting routine founder confirmation
 
 ## Dependencies & Execution Order
 

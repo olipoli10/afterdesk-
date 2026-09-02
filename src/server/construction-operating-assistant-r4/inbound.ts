@@ -11,7 +11,7 @@ import {
   communicationCapabilities,
   communicationProvider,
 } from "@/lib/construction-operating-assistant-r4/communications";
-import { processOperatingAssistantCommand } from "@/server/construction-operating-assistant-r2/core";
+import { processUnifiedAssistantRequest } from "@/server/construction-operating-assistant-r36c/orchestrator";
 
 const inboundInFlight = new Map<string, Promise<CommunicationInboundResult>>();
 
@@ -51,15 +51,17 @@ async function applyAdmittedCommunication(input: {
   ) {
     throw new Error("COMMUNICATION_INBOUND_REFUSED");
   }
-  const result = await processOperatingAssistantCommand({
+  const result = await processUnifiedAssistantRequest({
     userId: identity.userId,
-    envelope: {
+    channel: event.channel === "SMS" ? "SMS" : "VOICE_TRANSCRIPT",
+    request: {
       schemaVersion: 1,
-      commandId: event.eventId,
+      requestId: event.eventId,
       workspaceId: event.workspaceId,
-      channel: event.channel === "SMS" ? "SMS" : "VOICE_TRANSCRIPT",
-      body: event.body,
+      message: event.body,
       occurredAt: event.occurredAt,
+    },
+    admittedSource: {
       senderAddress: event.senderIdentityRef,
       provider,
       providerMessageId,

@@ -4,8 +4,10 @@ import { Prisma, type ConstructionChannel, type ConstructionMessageStatus } from
 import type { ConstructionMobileAssistantRequest } from "@/lib/construction-operating-assistant-r9/mobile-assistant-contracts";
 import {
   deferredAssistantSnapshotSchema,
+  trustedAdmittedAssistantSourceSchema,
   unifiedAssistantResultSchema,
   type ClientAssistantRoutingProjection,
+  type TrustedAdmittedAssistantSource,
   type UnifiedAssistantResult,
 } from "@/lib/construction-operating-assistant-r36c/contracts";
 import { sha256Canonical } from "@/lib/construction-assistant-v1/canonical";
@@ -45,14 +47,22 @@ function sameAcceptedRequest(input: {
     sender: string | null;
     channel: ConstructionChannel;
     receivedAt: Date | null;
+    provider: string | null;
+    providerMessageId: string | null;
   };
   userId: string;
   request: ConstructionMobileAssistantRequest;
   channel: "PORTAL" | "MOBILE_APP" | "SMS" | "VOICE_TRANSCRIPT" | "EMAIL";
+  admittedSource: TrustedAdmittedAssistantSource | null;
 }) {
+  const expectedProvider = input.admittedSource?.provider ?? "ENDVERA_ROUTING_R36C";
+  const expectedProviderMessageId = input.admittedSource?.providerMessageId
+    ?? `request:${input.request.workspaceId}:${input.request.requestId}`;
   return input.existing.originalBody === input.request.message
-    && input.existing.sender === `user:${input.userId}`
+    && input.existing.sender === (input.admittedSource?.senderAddress ?? `user:${input.userId}`)
     && input.existing.channel === databaseChannel(input.channel)
+    && input.existing.provider === expectedProvider
+    && input.existing.providerMessageId === expectedProviderMessageId
     && input.existing.receivedAt?.toISOString() === new Date(input.request.occurredAt).toISOString();
 }
 
@@ -62,7 +72,11 @@ export async function persistDeferredAssistantExchange(input: {
   channel: "PORTAL" | "MOBILE_APP" | "SMS" | "VOICE_TRANSCRIPT" | "EMAIL";
   deferred: DeferredAssistantReply;
   routing: ClientAssistantRoutingProjection;
+  admittedSource?: TrustedAdmittedAssistantSource | unknown;
 }): Promise<UnifiedAssistantResult> {
+  const admittedSource = input.channel === "MOBILE_APP" || input.channel === "PORTAL"
+    ? null
+    : trustedAdmittedAssistantSourceSchema.parse(input.admittedSource);
   return prisma.$transaction(async (tx) => {
     const lockKey = `${input.request.workspaceId}:${input.request.requestId}:r36c`;
     await tx.$queryRaw(Prisma.sql`
@@ -84,6 +98,8 @@ export async function persistDeferredAssistantExchange(input: {
         sender: true,
         channel: true,
         receivedAt: true,
+        provider: true,
+        providerMessageId: true,
         interpretation: { select: { structuredResult: true } },
       },
     });
@@ -94,6 +110,7 @@ export async function persistDeferredAssistantExchange(input: {
         userId: input.userId,
         request: input.request,
         channel: input.channel,
+        admittedSource,
       })) {
         throw new Error("ASSISTANT_ROUTING_REPLAY_MISMATCH");
       }
@@ -129,10 +146,11 @@ export async function persistDeferredAssistantExchange(input: {
         workspaceId: input.request.workspaceId,
         direction: "inbound",
         channel,
-        provider: "ENDVERA_ROUTING_R36C",
-        providerMessageId: `request:${input.request.workspaceId}:${input.request.requestId}`,
+        provider: admittedSource?.provider ?? "ENDVERA_ROUTING_R36C",
+        providerMessageId: admittedSource?.providerMessageId
+          ?? `request:${input.request.workspaceId}:${input.request.requestId}`,
         idempotencyKey: requestKey,
-        sender: `user:${input.userId}`,
+        sender: admittedSource?.senderAddress ?? `user:${input.userId}`,
         recipients: [],
         originalBody: input.request.message,
         normalizedBody: input.request.message.normalize("NFKC").trim().toLocaleLowerCase("fr-CA"),
@@ -167,7 +185,7 @@ export async function persistDeferredAssistantExchange(input: {
         providerMessageId: `reply:${input.request.workspaceId}:${input.request.requestId}`,
         idempotencyKey: responseKey,
         sender: "ENDVERA",
-        recipients: [`user:${input.userId}`],
+        recipients: [admittedSource?.senderAddress ?? `user:${input.userId}`],
         originalBody: input.deferred.reply,
         normalizedBody: input.deferred.reply.normalize("NFKC").trim().toLocaleLowerCase("fr-CA"),
         status,

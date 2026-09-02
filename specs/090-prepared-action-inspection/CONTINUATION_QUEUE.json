@@ -1307,7 +1307,7 @@
       "title": "Unified assistant routing integration",
       "objective": "Route the real mobile assistant through the provider-neutral R36A brain, preserve existing deterministic operations and durably expose provider-required work without provider dispatch or invented output.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R36B-PROVIDER-SANDBOX-PREFLIGHT"
       ],
@@ -1339,6 +1339,45 @@
       "completionCommand": "npx vitest run test/construction-operating-assistant-r36c-unified-routing.test.ts",
       "evidencePaths": [
         "../119-unified-assistant-routing/evidence/r36c-closeout.md"
+      ],
+      "outputHead": "164477b195acd54714669432ab0cecbf88dc7e8e",
+      "outputTree": "1b0b84d568b2c528777e6da7604a435922c52dad",
+      "result": "The production mobile assistant now crosses the provider-neutral routing brain, preserves deterministic internal execution, stores immutable deferred decisions and exposes truthful provider-required readiness with zero provider dispatch or invented output.",
+      "completedAtUtc": "2026-09-02T19:20:54Z"
+    },
+    {
+      "id": "R36D-ASSISTANT-CHANNEL-ROUTING-PARITY",
+      "title": "Assistant channel routing parity",
+      "objective": "Route authenticated local SMS and voice-transcript ingress through R36C while preserving admitted channel provenance, deterministic internal effects and truthful deferred work with zero provider dispatch.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R36C-UNIFIED-ASSISTANT-ROUTING"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R36C-UNIFIED-ASSISTANT-ROUTING"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/120-assistant-channel-routing-parity",
+        "src/server/construction-operating-assistant-r36c",
+        "src/server/construction-operating-assistant-r4/inbound.ts",
+        "test/construction-operating-assistant-r36d*.test.ts",
+        "test/integration/construction-operating-assistant-r36d*.itest.ts",
+        "test/integration/construction-operating-assistant-r4-sms-voice.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../120-assistant-channel-routing-parity/plan.md",
+      "planSha256": "69e818cd23782736923b2ee31d3ffa6e7059831e213097327a3aacb3b454da8e",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r36d-channel-routing-parity.test.ts",
+      "evidencePaths": [
+        "../120-assistant-channel-routing-parity/evidence/r36d-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
