@@ -1427,7 +1427,7 @@
       "title": "Legacy command routing closure",
       "objective": "Route the remaining authenticated legacy web command API and server action through R36C with strict portal provenance, immutable replay and zero provider dispatch.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R36E-CONTEXT-RICH-INTENT-ROUTING-GATE"
       ],
@@ -1456,10 +1456,10 @@
       "evidencePaths": [
         "../122-legacy-command-routing-closure/evidence/r36f-closeout.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "0c91dd133b25c48bc55a2c25670ba664e453c6aa",
+      "outputTree": "cd89b851b6f842f22b9e7ed5713e744625045c94",
+      "result": "The remaining authenticated legacy web command API and server action now cross R36C with strict portal provenance, immutable replay and zero provider dispatch.",
+      "completedAtUtc": "2026-09-02T19:50:41Z"
     }
   ]
 }
