@@ -58,7 +58,7 @@
       "id": "S5-PRODUCT-RELEASE",
       "title": "Onboarding, parity, commercial operations and release",
       "status": "DONE",
-      "releases": ["R32-ONBOARDING-IMPORT", "R33-WEB-MOBILE-PARITY", "R34-BILLING-ADMIN-SITE", "R35-RELEASE-PACKAGING", "R36-INTERNAL-E2E", "R36A-AI-ROUTING-BRAIN"]
+      "releases": ["R32-ONBOARDING-IMPORT", "R33-WEB-MOBILE-PARITY", "R34-BILLING-ADMIN-SITE", "R35-RELEASE-PACKAGING", "R36-INTERNAL-E2E", "R36A-AI-ROUTING-BRAIN", "R36B-PROVIDER-SANDBOX-PREFLIGHT"]
     },
     {
       "id": "S6-OBSERVED-LAUNCH",
@@ -93,7 +93,8 @@
     {"id":"R35-RELEASE-PACKAGING","status":"DONE","authority":"LOCAL","dependsOn":["R34-BILLING-ADMIN-SITE"],"outcome":"Signed-build preparation, environment configuration, store assets, privacy disclosures and deployment runbooks without publishing."},
     {"id":"R36-INTERNAL-E2E","status":"DONE","authority":"LOCAL","dependsOn":["R35-RELEASE-PACKAGING"],"outcome":"Full synthetic internal happy path, exception path and recovery path across web and both mobile platforms."},
     {"id":"R36A-AI-ROUTING-BRAIN","status":"DONE","authority":"LOCAL","dependsOn":["R36-INTERNAL-E2E"],"outcome":"One provider-neutral AI brain routes hiddenly among canonical state, internal tools, citation-required research, strongest eligible controller candidate and bounded human support with zero provider dispatch."},
-    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R36A-AI-ROUTING-BRAIN"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
+    {"id":"R36B-PROVIDER-SANDBOX-PREFLIGHT","status":"DONE","authority":"LOCAL","dependsOn":["R36A-AI-ROUTING-BRAIN"],"outcome":"Strict credential-free candidate packets, request plans, equal-input benchmark rules and exact R37 authority boundary with zero provider dispatch."},
+    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R36B-PROVIDER-SANDBOX-PREFLIGHT"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
     {"id":"R38-FOUNDER-FULL-LOOP","status":"PLANNED","authority":"FOUNDER_OBSERVATION_LATER","dependsOn":["R37-PROVIDER-SANDBOX"],"outcome":"One whole-product founder run only after the product is built, with no technical identifier copying."},
     {"id":"R39-DESIGN-PARTNER-PILOT","status":"PLANNED","authority":"CUSTOMER_AND_PROVIDER_EXACT_LATER","dependsOn":["R38-FOUNDER-FULL-LOOP"],"outcome":"Three supervised construction design partners proving usage, value, failure handling and unit economics."},
     {"id":"R40-PRODUCTION-V1","status":"PLANNED","authority":"PRODUCTION_EXACT_LATER","dependsOn":["R39-DESIGN-PARTNER-PILOT"],"outcome":"Controlled production launch with support, rollback, billing, monitoring and explicit V1 completion evidence."}

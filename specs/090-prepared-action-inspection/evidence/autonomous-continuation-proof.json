@@ -3,7 +3,7 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 25,
+  "consecutiveBlocksCompleted": 26,
   "goalStayedActiveUntilDrain": true,
   "completionValidatorVerdict": "DRAINED",
   "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
@@ -13,5 +13,5 @@
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
   "nextAction": "R37-PROVIDER-SANDBOX",
-  "urgentAssistanceReason": "R37 now requires an explicit provider shortlist, exact sandbox authority and securely supplied sandbox credentials to benchmark and certify the candidate research and controller routes. R36A intentionally performed zero provider calls and cannot fabricate external evidence."
+  "urgentAssistanceReason": "R36B completed every remaining credential-free preparation step. R37 now requires explicit authority for at most 12 sandbox calls and 5,000,000 microdollars, current exact model/provider bindings, and securely supplied sandbox credentials. No local artifact can substitute for observed provider evidence."
 }

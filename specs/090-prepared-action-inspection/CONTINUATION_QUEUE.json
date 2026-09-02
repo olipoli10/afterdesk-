@@ -1265,6 +1265,42 @@
       "outputTree": "4c08edb77d570328094e641139df0b1a454dba6a",
       "result": "One provider-neutral AI Routing Brain now selects canonical internal truth, deterministic tools, citation-required research candidates, version-pinned controller candidates or bounded human support across portal, mobile, SMS, voice transcript and email while every external candidate remains non-dispatchable.",
       "completedAtUtc": "2026-09-02T15:47:34Z"
+    },
+    {
+      "id": "R36B-PROVIDER-SANDBOX-PREFLIGHT",
+      "title": "Credential-free provider sandbox preflight",
+      "objective": "Freeze strict Perplexity, OpenRouter and direct-control candidate packets, non-dispatchable request plans, equal-input comparison rules and the exact R37 activation boundary without credentials or network access.",
+      "role": "IMPLEMENTATION",
+      "status": "DONE",
+      "dependencies": [
+        "R36A-AI-ROUTING-BRAIN"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R36A-AI-ROUTING-BRAIN"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/118-provider-sandbox-preflight",
+        "src/lib/construction-operating-assistant-r36b",
+        "test/construction-operating-assistant-r36b-provider-sandbox-preflight.test.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../118-provider-sandbox-preflight/plan.md",
+      "planSha256": "cb5c92bb5e7aa70f143c9eb15809d78657e286217ac13256b82b649dd570468c",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r36b-provider-sandbox-preflight.test.ts",
+      "evidencePaths": [
+        "../118-provider-sandbox-preflight/evidence/r36b-closeout.md"
+      ],
+      "outputHead": "cc5cb53aad6e5fba0605393ddd64a86a09f2cb86",
+      "outputTree": "9f0c2ed06d9c909a3fd9b4b1d549cdafddb69464",
+      "result": "Strict candidate packets, credential-free Perplexity/OpenRouter plans, source verification, equal-input benchmark rules and one PREPARED_NOT_AUTHORIZED R37 campaign now pass locally with zero provider call, secret read, dispatch or model certification.",
+      "completedAtUtc": "2026-09-02T16:23:18Z"
     }
   ]
 }
