@@ -723,7 +723,7 @@
       "title": "Permissioned project email inbox",
       "objective": "Add one provider-neutral project email inbox with narrow Google and Microsoft account preparation, exact inbound routing, selected evidence, version-bound prepared replies and role-safe mobile inspection while provider access and sending remain disabled.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R25-VOICE-CALLS"
       ],
@@ -763,6 +763,53 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r26-email-inbox.test.ts",
       "evidencePaths": [
         "../106-email-inbox/evidence/r26-closeout.md"
+      ],
+      "outputHead": "657aef6fd4fa6ed92714622779697e8e5a770c13",
+      "outputTree": "ca492bad28124a91ad43c069ac584d4e1dfde5e8",
+      "result": "Provider-neutral project email ingestion, selected evidence, cursor recovery, exact prepared replies and role-safe shared mobile inspection are durable, replay-safe and permanently transport-free.",
+      "completedAtUtc": "2026-09-02T04:36:17Z"
+    },
+    {
+      "id": "R27-ACCOUNTING",
+      "title": "Permissioned accounting read, reconcile and prepare",
+      "objective": "Add provider-neutral QuickBooks Online and Xero account preparation, exact normalized invoice/payment observations, fail-closed R21 reconciliation, exact prepared invoice/reconciliation operations and one role-safe mobile cockpit while provider access and accounting writes remain disabled.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R26-EMAIL-INBOX"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R26-EMAIL-INBOX"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/107-accounting-connectors",
+        "src/lib/construction-operating-assistant-r27",
+        "src/server/construction-operating-assistant-r27",
+        "src/lib/construction-operating-assistant-r21",
+        "src/server/construction-operating-assistant-r21",
+        "src/app/api/endvera/v1/mobile/accounting",
+        "apps/mobile/src/app/(app)/accounting.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/accounting.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/accounting.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r27_accounting",
+        "test/construction-operating-assistant-r27*.test.ts",
+        "test/integration/construction-operating-assistant-r27*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../107-accounting-connectors/plan.md",
+      "planSha256": "e1122adeb1b88655cdb6c97ed8cd7ee54a44ca078e9c551493a7f919543aa0ea",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r27-accounting.test.ts",
+      "evidencePaths": [
+        "../107-accounting-connectors/evidence/r27-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

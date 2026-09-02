@@ -33,4 +33,4 @@
 
 - [x] T018 [US1] Run R26 and relevant R14/R18/R24 unit/integration gates.
 - [x] T019 [US4] Run fresh migration, full mobile/export, lint, typecheck, build, diff, audit and lockfile review.
-- [ ] T020 [US4] Record R26 closeout, commit locally and advance automatically to R27.
+- [x] T020 [US4] Record R26 closeout, commit locally and advance automatically to R27.
