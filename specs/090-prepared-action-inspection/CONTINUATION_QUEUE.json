@@ -575,7 +575,7 @@
       "title": "Permissioned Google and Microsoft Calendar connectors",
       "objective": "Extend the existing connector authority foundation into one provider-neutral Google and Microsoft Calendar cockpit with least-privilege preparation, deterministic read/write envelopes, conflict handling, local revocation and zero provider transport.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R22-HUMAN-ESCALATION"
       ],
@@ -611,6 +611,53 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r23-calendar-connectors.test.ts",
       "evidencePaths": [
         "../103-calendar-connectors/evidence/r23-closeout.md"
+      ],
+      "outputHead": "aa41473f1e37ae838b579335da5c71fec5b4a528",
+      "outputTree": "ae9d4c6df326855cb943cc99b537a34da4d79785",
+      "result": "Provider-neutral Google and Microsoft Calendar preparation now enforces least-privilege grants, exact replay, canonical conflict checks, local revocation, role-safe shared mobile inspection and zero provider transport.",
+      "completedAtUtc": "2026-09-02T02:17:17Z"
+    },
+    {
+      "id": "R24-SMS-MMS",
+      "title": "Permissioned SMS/MMS operating channel",
+      "objective": "Extend the existing R4 communication engine with canonical project routing, durable consent and opt-out, selected MMS evidence references, exact outbound preparation and honest delivery proof levels while external transport remains disabled.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R23-CALENDAR-CONNECTORS"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R23-CALENDAR-CONNECTORS"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; SMS/MMS CONNECTOR REMAINS DISABLED; NO PROVIDER CREDENTIAL REAL NUMBER PUBLIC WEBHOOK CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/104-sms-mms",
+        "src/lib/construction-operating-assistant-r24",
+        "src/server/construction-operating-assistant-r24",
+        "src/lib/construction-operating-assistant-r4",
+        "src/server/construction-operating-assistant-r4",
+        "src/app/api/endvera/v1/mobile/communications",
+        "apps/mobile/src/app/(app)/messages.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/messages.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/messages.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r24_sms_mms",
+        "test/construction-operating-assistant-r24*.test.ts",
+        "test/integration/construction-operating-assistant-r24*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../104-sms-mms/plan.md",
+      "planSha256": "be52b6abbbbd32f8d4af93d58c983bad86ee79f2ee500cbb3c58257585398777",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r24-sms-mms.test.ts",
+      "evidencePaths": [
+        "../104-sms-mms/evidence/r24-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

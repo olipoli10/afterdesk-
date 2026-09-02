@@ -36,5 +36,5 @@
 - [x] T016 Run R23 and relevant R3/R13/R16/R17 unit/PostgreSQL gates.
 - [x] T017 Run full mobile, root/mobile lint and typecheck, Prisma validation,
   fresh migration replay, Webpack build, diff and lockfile checks.
-- [ ] T018 Record R23 closeout, commit locally and advance the rolling queue and
+- [x] T018 Record R23 closeout, commit locally and advance the rolling queue and
   backlog to R24 without founder confirmation.
