@@ -622,7 +622,7 @@
       "title": "Permissioned SMS/MMS operating channel",
       "objective": "Extend the existing R4 communication engine with canonical project routing, durable consent and opt-out, selected MMS evidence references, exact outbound preparation and honest delivery proof levels while external transport remains disabled.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R23-CALENDAR-CONNECTORS"
       ],
@@ -658,6 +658,58 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r24-sms-mms.test.ts",
       "evidencePaths": [
         "../104-sms-mms/evidence/r24-closeout.md"
+      ],
+      "outputHead": "4e6bcdee0b3dd5f0906024bc9eb65aeece660506",
+      "outputTree": "79ce5624bbb7060ec4bf297b81eba6289c15ead1",
+      "result": "Provider-neutral SMS/MMS routing, durable consent and opt-out, selected MMS evidence, exact prepared outbound content, synthetic delivery proof and role-safe shared mobile control are replay-safe and transport-free.",
+      "completedAtUtc": "2026-09-02T02:57:06Z"
+    },
+    {
+      "id": "R25-VOICE-CALLS",
+      "title": "Permissioned voice calls and voice notes",
+      "objective": "Extend the existing R4 voice and R18 intent engines with durable call memory, disclosure and consent controls, selected foreground voice notes, exact prepared outbound call work and one shared mobile cockpit while external calling remains disabled.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R24-SMS-MMS"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R24-SMS-MMS"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; VOICE CONNECTOR REMAINS DISABLED; NO PROVIDER CREDENTIAL REAL NUMBER PUBLIC WEBHOOK CUSTOMER DATA EXTERNAL CALL SYNTHETIC VOICE BACKGROUND RECORDING EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/105-voice-calls",
+        "src/lib/construction-operating-assistant-r25",
+        "src/server/construction-operating-assistant-r25",
+        "src/lib/construction-operating-assistant-r4",
+        "src/server/construction-operating-assistant-r4",
+        "src/lib/construction-operating-assistant-r18",
+        "src/server/construction-operating-assistant-r18",
+        "src/app/api/endvera/v1/mobile/voice-calls",
+        "apps/mobile/src/app/(app)/calls.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/voice-calls.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/app.json",
+        "apps/mobile/package.json",
+        "apps/mobile/package-lock.json",
+        "apps/mobile/test/voice-calls.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r25_voice_calls",
+        "test/construction-operating-assistant-r25*.test.ts",
+        "test/integration/construction-operating-assistant-r25*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../105-voice-calls/plan.md",
+      "planSha256": "b6360d6447dc50e402a1f31d2d896bd59457ff0d67a969f24926704ec99dea42",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r25-voice-calls.test.ts",
+      "evidencePaths": [
+        "../105-voice-calls/evidence/r25-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

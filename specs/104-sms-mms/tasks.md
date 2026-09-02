@@ -32,5 +32,5 @@
 - [x] T016 Run R24 and relevant R4/R10/R11/R12/R14/R17 gates.
 - [x] T017 Run Prisma/fresh migration, full mobile, lint, typecheck, build, diff
   and lockfile gates.
-- [ ] T018 Record R24 closeout, commit locally and advance the rolling queue and
+- [x] T018 Record R24 closeout, commit locally and advance the rolling queue and
   backlog to R25 without founder confirmation.
