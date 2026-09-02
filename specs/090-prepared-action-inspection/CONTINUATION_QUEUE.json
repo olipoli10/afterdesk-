@@ -1389,7 +1389,7 @@
       "title": "Context-rich intent routing gate",
       "objective": "Gate R18 portal, voice-call, selected-email and file-observation sources through R36A before context resolution or canonical transition, with one immutable provider-neutral audit decision and zero provider dispatch.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R36D-ASSISTANT-CHANNEL-ROUTING-PARITY"
       ],
@@ -1416,6 +1416,45 @@
       "completionCommand": "npx vitest run test/construction-operating-assistant-r36e-context-routing-gate.test.ts",
       "evidencePaths": [
         "../121-context-rich-intent-routing-gate/evidence/r36e-closeout.md"
+      ],
+      "outputHead": "7acc0125935c12f4e12dfcf8a507ce1b57fa8ed9",
+      "outputTree": "da348e396b703afc5c661eb8e15fca680098ee19",
+      "result": "Context-rich portal, voice-call, selected-email and file-observation sources now cross the provider-neutral routing brain before canonical resolution or transition, retain one immutable audit decision and never dispatch externally.",
+      "completedAtUtc": "2026-09-02T19:41:46Z"
+    },
+    {
+      "id": "R36F-LEGACY-COMMAND-ROUTING-CLOSURE",
+      "title": "Legacy command routing closure",
+      "objective": "Route the remaining authenticated legacy web command API and server action through R36C with strict portal provenance, immutable replay and zero provider dispatch.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R36E-CONTEXT-RICH-INTENT-ROUTING-GATE"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R36E-CONTEXT-RICH-INTENT-ROUTING-GATE"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/122-legacy-command-routing-closure",
+        "src/server/construction-operating-assistant-r36c/orchestrator.ts",
+        "src/app/api/endvera/v1/commands/route.ts",
+        "src/server/actions/construction-operating-assistant-r2.ts",
+        "test/construction-operating-assistant-r36f*.test.ts",
+        "test/integration/construction-operating-assistant-r36f*.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../122-legacy-command-routing-closure/plan.md",
+      "planSha256": "a892df6ebe8f8a9384427a32e2f275dd980fc04e2bf9869d743b3a3869924114",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r36f-legacy-routing-closure.test.ts",
+      "evidencePaths": [
+        "../122-legacy-command-routing-closure/evidence/r36f-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

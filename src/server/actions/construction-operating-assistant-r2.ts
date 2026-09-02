@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/authz";
 import { operatingCommandEnvelopeSchema } from "@/lib/construction-operating-assistant-r2/contracts";
-import { processOperatingAssistantCommand } from "@/server/construction-operating-assistant-r2/core";
+import { processAuthenticatedPortalCommand } from "@/server/construction-operating-assistant-r36c/orchestrator";
 import {
   constructionWorkspaceForUser,
   createConstructionContact,
@@ -49,7 +49,7 @@ export async function submitOperatingAssistantCommand(
   if (!parsed.success) return { ok: false, reply: "La demande est incomplète." };
   try {
     const now = new Date();
-    const result = await processOperatingAssistantCommand({
+    const result = await processAuthenticatedPortalCommand({
       userId: user.id,
       envelope: operatingCommandEnvelopeSchema.parse({
         schemaVersion: 1,

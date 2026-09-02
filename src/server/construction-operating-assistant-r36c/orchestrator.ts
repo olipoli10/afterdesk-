@@ -14,7 +14,10 @@ import {
   type UnifiedAssistantResult,
 } from "@/lib/construction-operating-assistant-r36c/contracts";
 import { prisma } from "@/lib/db";
-import { operatingCommandEnvelopeSchema } from "@/lib/construction-operating-assistant-r2/contracts";
+import {
+  operatingCommandEnvelopeSchema,
+  type OperatingCommandEnvelope,
+} from "@/lib/construction-operating-assistant-r2/contracts";
 import { requireActiveConstructionMember, ConstructionAccessDenied } from "@/server/construction-assistant-v1/workspace";
 import { processOperatingAssistantCommand } from "@/server/construction-operating-assistant-r2/core";
 import { processConstructionMobileAssistantRequest } from "@/server/construction-operating-assistant-r9/mobile-assistant";
@@ -85,6 +88,32 @@ export function createInternalAssistantEnvelope(input: {
     senderAddress: source.senderAddress,
     provider: source.provider,
     providerMessageId: source.providerMessageId,
+  });
+}
+
+export async function processAuthenticatedPortalCommand(input: {
+  userId: string;
+  envelope: OperatingCommandEnvelope | unknown;
+}): Promise<UnifiedAssistantResult> {
+  const envelope = operatingCommandEnvelopeSchema.parse(input.envelope);
+  if (
+    envelope.channel !== "PORTAL"
+    || envelope.senderAddress !== `user:${input.userId}`
+    || envelope.provider !== undefined
+    || envelope.providerMessageId !== undefined
+  ) {
+    throw new Error("ASSISTANT_PORTAL_COMMAND_SOURCE_REFUSED");
+  }
+  return processUnifiedAssistantRequest({
+    userId: input.userId,
+    channel: "PORTAL",
+    request: {
+      schemaVersion: 1,
+      requestId: envelope.commandId,
+      workspaceId: envelope.workspaceId,
+      message: envelope.body,
+      occurredAt: envelope.occurredAt,
+    },
   });
 }
 

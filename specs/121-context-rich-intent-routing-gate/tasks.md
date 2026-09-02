@@ -9,4 +9,4 @@
 - [x] T007 Run R18, R25, R26 and routing regressions.
 - [x] T008 Run typecheck, lint, diff and no-schema/lockfile gates.
 - [x] T009 Record evidence and create local commits.
-- [ ] T010 Inspect the next authorized local critical-path gap.
+- [x] T010 Inspect the next authorized local critical-path gap.

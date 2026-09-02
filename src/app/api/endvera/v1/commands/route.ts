@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser, consumeRateLimit } from "@/lib/authz";
 import { operatingCommandEnvelopeSchema } from "@/lib/construction-operating-assistant-r2/contracts";
-import { processOperatingAssistantCommand } from "@/server/construction-operating-assistant-r2/core";
+import { processAuthenticatedPortalCommand } from "@/server/construction-operating-assistant-r36c/orchestrator";
 
 export async function POST(request: Request) {
   const user = await getSessionUser();
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const parsed = operatingCommandEnvelopeSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid command envelope." }, { status: 400 });
   try {
-    const result = await processOperatingAssistantCommand({ userId: user.id, envelope: parsed.data });
+    const result = await processAuthenticatedPortalCommand({ userId: user.id, envelope: parsed.data });
     return NextResponse.json(result, { status: result.replayed ? 200 : 201 });
   } catch {
     return NextResponse.json({ error: "Command refused." }, { status: 404 });
