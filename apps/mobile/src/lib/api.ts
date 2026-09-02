@@ -67,6 +67,13 @@ import {
 } from "@/lib/voice-calls";
 import {mobileEmailAccountCommandSchema,mobileEmailDraftCommandSchema,parseMobileEmailCockpit} from "@/lib/email-inbox";
 import {mobileAccountingAccountCommandSchema,mobileAccountingDraftCommandSchema,parseMobileAccountingCockpit} from "@/lib/accounting";
+import {
+  mobileAuthorityDecisionCommandSchema,
+  mobileAuthorityEvaluateCommandSchema,
+  mobileAuthorityPolicyCommandSchema,
+  mobileAuthorityResultSchema,
+  parseMobileAuthorityCockpit,
+} from "@/lib/authority-policies";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -614,6 +621,41 @@ export class MobileApi {
   async accountingCockpit(workspaceId:string){const value=await this.request(`/api/endvera/v1/mobile/accounting?workspaceId=${encodeURIComponent(workspaceId)}`,{method:"GET"});try{const result=parseMobileAccountingCockpit(value);if(result.workspaceId!==workspaceId)throw new Error("MOBILE_ACCOUNTING_WORKSPACE_MISMATCH");return result;}catch{throw new MobileApiError("INVALID_RESPONSE");}}
 
   async accountingCommand(command:unknown){const account=mobileAccountingAccountCommandSchema.safeParse(command);const draft=mobileAccountingDraftCommandSchema.safeParse(command);const parsed=account.success?account.data:draft.success?draft.data:null;if(!parsed)throw new MobileApiError("REFUSED");return this.request("/api/endvera/v1/mobile/accounting",{method:"POST",body:JSON.stringify(parsed)});}
+
+  async authorityCockpit(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/authority-policies?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = parseMobileAuthorityCockpit(value);
+      if (result.workspaceId !== workspaceId) throw new Error("MOBILE_AUTHORITY_WORKSPACE_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async authorityCommand(command: unknown) {
+    const policy = mobileAuthorityPolicyCommandSchema.safeParse(command);
+    const evaluation = mobileAuthorityEvaluateCommandSchema.safeParse(command);
+    const decision = mobileAuthorityDecisionCommandSchema.safeParse(command);
+    const parsed = policy.success ? policy.data : evaluation.success ? evaluation.data : decision.success ? decision.data : null;
+    if (!parsed) throw new MobileApiError("REFUSED");
+    const value = await this.request("/api/endvera/v1/mobile/authority-policies", {
+      method: "POST",
+      body: JSON.stringify(parsed),
+    });
+    try {
+      const result = mobileAuthorityResultSchema.parse(value);
+      if (result.commandId !== parsed.commandId || result.workspaceId !== parsed.workspaceId) {
+        throw new Error("MOBILE_AUTHORITY_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
 
   async permissionCenter(workspaceId: string) {
     const value = await this.request(

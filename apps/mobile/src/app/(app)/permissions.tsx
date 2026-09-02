@@ -15,15 +15,24 @@ export default function PermissionsScreen() {
     activeWorkspace,
     permissionCenter,
     permissionLoadState,
+    authorityCockpit,
+    authorityLoadState,
     publicError,
     loadPermissions,
+    loadAuthority,
     revokePermission,
+    submitAuthorityCommand,
   } = useMobileSession();
 
   useEffect(() => {
     if (!activeWorkspace || permissionLoadState !== "IDLE") return;
     void loadPermissions();
   }, [activeWorkspace, loadPermissions, permissionLoadState]);
+
+  useEffect(() => {
+    if (!activeWorkspace || authorityLoadState !== "IDLE") return;
+    void loadAuthority();
+  }, [activeWorkspace, authorityLoadState, loadAuthority]);
 
   return (
     <Screen>
@@ -33,6 +42,7 @@ export default function PermissionsScreen() {
         body="Vois ce qu’ENDVERA peut réellement faire. Les fournisseurs externes restent désactivés."
       />
       {permissionLoadState === "LOADING" ? <Loading label="Permissions en lecture…" /> : null}
+      {authorityLoadState === "LOADING" ? <Loading label="Politique d’autorité en lecture…" /> : null}
       {publicError ? <Notice danger>{publicError}</Notice> : null}
       {permissionCenter ? (
         <>
@@ -102,6 +112,124 @@ export default function PermissionsScreen() {
           ) : null}
         </>
       ) : null}
+      {authorityCockpit ? (
+        <>
+          <Label>Politique d’autorité</Label>
+          <Card>
+            <Text style={sharedStyles.name}>Ce qu’ENDVERA peut décider</Text>
+            <Text style={sharedStyles.muted}>
+              {authorityCockpit.counts.policySets} version(s) · {authorityCockpit.counts.pendingApprovals} approbation(s) en attente · {authorityCockpit.counts.prohibited} refus
+            </Text>
+            {authorityCockpit.canManagePolicy && authorityCockpit.policySets.length === 0 ? (
+              <Button onPress={() => void submitAuthorityCommand({
+                schemaVersion: 1,
+                action: "CREATE_POLICY_DRAFT",
+                commandId: globalThis.crypto.randomUUID(),
+                workspaceId: authorityCockpit.workspaceId,
+                sourcePolicySetId: null,
+                expectedSourceStateVersion: null,
+              })}>
+                Créer la politique sécuritaire
+              </Button>
+            ) : null}
+          </Card>
+          {authorityCockpit.policySets.map((policy) => (
+            <Card key={policy.id}>
+              <Text style={sharedStyles.name}>Version {policy.version} · {policy.status}</Text>
+              <Text style={sharedStyles.muted}>{policy.rules.length} règles · empreinte {policy.policyHash.slice(0, 12)}</Text>
+              {policy.rules.map((rule) => (
+                <View key={rule.id} style={styles.rule}>
+                  <Text style={sharedStyles.value}>{rule.actionKey}</Text>
+                  <Text style={sharedStyles.muted}>{rule.outcome} · {rule.reasonCode}</Text>
+                  {authorityCockpit.canManagePolicy && policy.status === "DRAFT" &&
+                    (rule.actionKey === "INTERNAL_REMINDER_CREATE" || rule.actionKey === "PROJECT_FACT_CLASSIFY") &&
+                    rule.outcome !== "AUTOMATIC_INTERNAL" ? (
+                    <Button tone="secondary" onPress={() => void submitAuthorityCommand({
+                      schemaVersion: 1,
+                      action: "SET_POLICY_RULE",
+                      commandId: globalThis.crypto.randomUUID(),
+                      workspaceId: authorityCockpit.workspaceId,
+                      policySetId: policy.id,
+                      expectedStateVersion: policy.stateVersion,
+                      ruleKey: rule.ruleKey,
+                      actionKey: rule.actionKey,
+                      projectId: rule.projectId,
+                      roleScope: rule.roleScope,
+                      dataClassification: rule.dataClassification,
+                      outcome: "AUTOMATIC_INTERNAL",
+                      amountCeilingMinor: null,
+                      reasonCode: "OWNER_ENABLED_SAFE_INTERNAL",
+                    })}>
+                      Autoriser automatiquement en interne
+                    </Button>
+                  ) : null}
+                </View>
+              ))}
+              {authorityCockpit.canManagePolicy && policy.status === "DRAFT" ? (
+                <Button onPress={() => void submitAuthorityCommand({
+                  schemaVersion: 1,
+                  action: "ACTIVATE_POLICY_SET",
+                  commandId: globalThis.crypto.randomUUID(),
+                  workspaceId: authorityCockpit.workspaceId,
+                  policySetId: policy.id,
+                  expectedStateVersion: policy.stateVersion,
+                  expectedPolicyHash: policy.policyHash,
+                })}>
+                  Activer cette version exacte
+                </Button>
+              ) : null}
+              {authorityCockpit.canManagePolicy && policy.status === "ACTIVE" ? (
+                <Button tone="secondary" onPress={() => void submitAuthorityCommand({
+                  schemaVersion: 1,
+                  action: "REVOKE_POLICY_SET",
+                  commandId: globalThis.crypto.randomUUID(),
+                  workspaceId: authorityCockpit.workspaceId,
+                  policySetId: policy.id,
+                  expectedStateVersion: policy.stateVersion,
+                  expectedPolicyHash: policy.policyHash,
+                })}>
+                  Révoquer cette version exacte
+                </Button>
+              ) : null}
+            </Card>
+          ))}
+          <Label>Décisions d’autorité</Label>
+          {authorityCockpit.evaluations.length === 0 ? <Card><Empty>Aucune évaluation.</Empty></Card> : null}
+          {authorityCockpit.evaluations.map((evaluation) => (
+            <Card key={evaluation.id}>
+              <Text style={sharedStyles.name}>{evaluation.actionKey ?? "Action interne"}</Text>
+              <Text style={sharedStyles.muted}>{evaluation.outcome} · {evaluation.reasonCode}</Text>
+              {activeWorkspace?.role !== "FIELD_WORKER" && evaluation.status === "PENDING_APPROVAL" &&
+                evaluation.evaluationVersion && evaluation.policySetVersion && evaluation.payloadHash ? (
+                <View style={styles.decisionRow}>
+                  <Button onPress={() => void submitAuthorityCommand({
+                    schemaVersion: 1,
+                    action: "DECIDE_AUTHORITY_EVALUATION",
+                    commandId: globalThis.crypto.randomUUID(),
+                    workspaceId: authorityCockpit.workspaceId,
+                    evaluationId: evaluation.id,
+                    expectedEvaluationVersion: evaluation.evaluationVersion!,
+                    expectedPolicySetVersion: evaluation.policySetVersion!,
+                    expectedPayloadHash: evaluation.payloadHash!,
+                    decision: "APPROVE",
+                  })}>Approuver exactement</Button>
+                  <Button tone="secondary" onPress={() => void submitAuthorityCommand({
+                    schemaVersion: 1,
+                    action: "DECIDE_AUTHORITY_EVALUATION",
+                    commandId: globalThis.crypto.randomUUID(),
+                    workspaceId: authorityCockpit.workspaceId,
+                    evaluationId: evaluation.id,
+                    expectedEvaluationVersion: evaluation.evaluationVersion!,
+                    expectedPolicySetVersion: evaluation.policySetVersion!,
+                    expectedPayloadHash: evaluation.payloadHash!,
+                    decision: "REJECT",
+                  })}>Refuser</Button>
+                </View>
+              ) : null}
+            </Card>
+          ))}
+        </>
+      ) : null}
     </Screen>
   );
 }
@@ -110,4 +238,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
   role: { color: "#d68a42", fontFamily: "monospace", fontSize: 12 },
   grant: { gap: 7, borderTopWidth: 1, borderTopColor: "#353137", paddingTop: 12 },
+  decisionRow: { gap: 8 },
+  rule: { gap: 4, borderTopWidth: 1, borderTopColor: "#353137", paddingTop: 10 },
 });

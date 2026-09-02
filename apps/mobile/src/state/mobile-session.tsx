@@ -65,6 +65,7 @@ import {
 } from "@/lib/voice-calls";
 import type { MobileEmailCockpit, MobileEmailCommand } from "@/lib/email-inbox";
 import type { MobileAccountingCockpit, MobileAccountingCommand } from "@/lib/accounting";
+import type { MobileAuthorityCockpit, MobileAuthorityCommand } from "@/lib/authority-policies";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -117,6 +118,8 @@ type MobileSessionValue = {
   emailLoadState: LoadState;
   accountingCockpit: MobileAccountingCockpit | null;
   accountingLoadState: LoadState;
+  authorityCockpit: MobileAuthorityCockpit | null;
+  authorityLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -150,6 +153,8 @@ type MobileSessionValue = {
   submitEmailCommand: (command: MobileEmailCommand) => Promise<void>;
   loadAccounting: () => Promise<void>;
   submitAccountingCommand: (command: MobileAccountingCommand) => Promise<void>;
+  loadAuthority: () => Promise<void>;
+  submitAuthorityCommand: (command: MobileAuthorityCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -229,6 +234,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [emailLoadState, setEmailLoadState] = useState<LoadState>("IDLE");
   const [accountingCockpit, setAccountingCockpit] = useState<MobileAccountingCockpit | null>(null);
   const [accountingLoadState, setAccountingLoadState] = useState<LoadState>("IDLE");
+  const [authorityCockpit, setAuthorityCockpit] = useState<MobileAuthorityCockpit | null>(null);
+  const [authorityLoadState, setAuthorityLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -248,6 +255,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingVoiceNoteRequest = useRef<string | null>(null);
   const dispatchingEmailRequest = useRef<string | null>(null);
   const dispatchingAccountingRequest = useRef<string | null>(null);
+  const dispatchingAuthorityRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -1311,6 +1319,69 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, loadAccounting, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadAuthority = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setAuthorityLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.authorityCockpit(activeWorkspace.id);
+      const expectedRole = activeWorkspace.role === "OWNER"
+        ? "owner"
+        : activeWorkspace.role === "OFFICE_MANAGER"
+          ? "admin"
+          : "field_worker";
+      if (result.role !== expectedRole) throw new MobileApiError("INVALID_RESPONSE");
+      setAuthorityCockpit(result);
+      setAuthorityLoadState("READY");
+    } catch (error) {
+      setAuthorityCockpit(null);
+      setAuthorityLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitAuthorityCommand = useCallback(async (command: MobileAuthorityCommand) => {
+    if (!activeWorkspace || command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_AUTHORITY_WORKSPACE_REFUSED");
+    }
+    const isPolicy = ["CREATE_POLICY_DRAFT", "SET_POLICY_RULE", "ACTIVATE_POLICY_SET", "REVOKE_POLICY_SET"].includes(command.action);
+    const isDecision = command.action === "DECIDE_AUTHORITY_EVALUATION";
+    if ((isPolicy && activeWorkspace.role !== "OWNER") || (isDecision && activeWorkspace.role === "FIELD_WORKER")) {
+      throw new Error("MOBILE_AUTHORITY_MANAGEMENT_REFUSED");
+    }
+    if (dispatchingAuthorityRequest.current) throw new Error("MOBILE_AUTHORITY_ALREADY_DISPATCHED");
+    dispatchingAuthorityRequest.current = command.commandId;
+    setAuthorityLoadState("LOADING");
+    setPublicError(null);
+    const kind: MobileOutboxKind = isPolicy
+      ? "AUTHORITY_POLICY_COMMAND"
+      : isDecision
+        ? "AUTHORITY_DECIDE"
+        : "AUTHORITY_EVALUATE";
+    try {
+      await prepareOutboxEntry(kind, command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.authorityCommand(command);
+      await settleOutboxEntry(command.commandId, result.replayed ? "REPLAYED" : "CONFIRMED", activeWorkspace.id);
+      const refreshed = await api.authorityCockpit(activeWorkspace.id);
+      setAuthorityCockpit(refreshed);
+      setAuthorityLoadState("READY");
+    } catch (error) {
+      const state = error instanceof MobileApiError && error.code === "CONFLICT"
+        ? "CONFLICT"
+        : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+          ? "OUTCOME_UNKNOWN"
+          : "REFUSED";
+      setAuthorityLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(command.commandId, state, activeWorkspace.id, publicMessage(error));
+      if (state === "CONFLICT") await loadAuthority();
+    } finally {
+      dispatchingAuthorityRequest.current = null;
+    }
+  }, [activeWorkspace, api, loadAuthority, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -1423,6 +1494,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitEmailCommand(entry.command);
     } else if (entry.kind === "ACCOUNTING_ACCOUNT_COMMAND" || entry.kind === "ACCOUNTING_DRAFT_COMMAND") {
       await submitAccountingCommand(entry.command);
+    } else if (entry.kind === "AUTHORITY_POLICY_COMMAND" || entry.kind === "AUTHORITY_EVALUATE" || entry.kind === "AUTHORITY_DECIDE") {
+      await submitAuthorityCommand(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -1443,6 +1516,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitPrepareCallWork,
     submitEmailCommand,
     submitAccountingCommand,
+    submitAuthorityCommand,
     submitFollowUpCommand,
   ]);
 
@@ -1496,6 +1570,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setEmailLoadState("IDLE");
     setAccountingCockpit(null);
     setAccountingLoadState("IDLE");
+    setAuthorityCockpit(null);
+    setAuthorityLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -1539,6 +1615,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       emailLoadState,
       accountingCockpit,
       accountingLoadState,
+      authorityCockpit,
+      authorityLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1570,6 +1648,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitEmailCommand,
       loadAccounting,
       submitAccountingCommand,
+      loadAuthority,
+      submitAuthorityCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1607,6 +1687,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       emailLoadState,
       accountingCockpit,
       accountingLoadState,
+      authorityCockpit,
+      authorityLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1643,6 +1725,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitEmailCommand,
       loadAccounting,
       submitAccountingCommand,
+      loadAuthority,
+      submitAuthorityCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

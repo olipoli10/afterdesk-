@@ -12,6 +12,11 @@ import { mobileMessagingCommandSchema } from "@/lib/messages";
 import { mobilePrepareCallWorkCommandSchema } from "@/lib/voice-calls";
 import { mobileEmailAccountCommandSchema, mobileEmailDraftCommandSchema } from "@/lib/email-inbox";
 import { mobileAccountingAccountCommandSchema, mobileAccountingDraftCommandSchema } from "@/lib/accounting";
+import {
+  mobileAuthorityDecisionCommandSchema,
+  mobileAuthorityEvaluateCommandSchema,
+  mobileAuthorityPolicyCommandSchema,
+} from "@/lib/authority-policies";
 
 export const MOBILE_OUTBOX_VERSION = 1 as const;
 export const MOBILE_OUTBOX_LIMIT = 20;
@@ -54,6 +59,9 @@ export const mobileOutboxEntrySchema = z.discriminatedUnion("kind", [
   z.object({ ...base, kind: z.literal("EMAIL_DRAFT_COMMAND"), command: mobileEmailDraftCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("ACCOUNTING_ACCOUNT_COMMAND"), command: mobileAccountingAccountCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("ACCOUNTING_DRAFT_COMMAND"), command: mobileAccountingDraftCommandSchema }).strict(),
+  z.object({ ...base, kind: z.literal("AUTHORITY_POLICY_COMMAND"), command: mobileAuthorityPolicyCommandSchema }).strict(),
+  z.object({ ...base, kind: z.literal("AUTHORITY_EVALUATE"), command: mobileAuthorityEvaluateCommandSchema }).strict(),
+  z.object({ ...base, kind: z.literal("AUTHORITY_DECIDE"), command: mobileAuthorityDecisionCommandSchema }).strict(),
 ]);
 
 const indexSchema = z.object({
@@ -137,6 +145,18 @@ function commandIdentity(kind: MobileOutboxKind, command: unknown) {
   }
   if (kind === "ACCOUNTING_DRAFT_COMMAND") {
     const parsed = mobileAccountingDraftCommandSchema.parse(command);
+    return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
+  }
+  if (kind === "AUTHORITY_POLICY_COMMAND") {
+    const parsed = mobileAuthorityPolicyCommandSchema.parse(command);
+    return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
+  }
+  if (kind === "AUTHORITY_EVALUATE") {
+    const parsed = mobileAuthorityEvaluateCommandSchema.parse(command);
+    return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
+  }
+  if (kind === "AUTHORITY_DECIDE") {
+    const parsed = mobileAuthorityDecisionCommandSchema.parse(command);
     return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
   }
   const parsed = mobileRevokePermissionCommandSchema.parse(command);
@@ -309,6 +329,9 @@ export function mobileOutboxLabel(entry: MobileOutboxEntry) {
   if (entry.kind === "EMAIL_DRAFT_COMMAND") return "Brouillon courriel";
   if (entry.kind === "ACCOUNTING_ACCOUNT_COMMAND") return "Accès comptable local";
   if (entry.kind === "ACCOUNTING_DRAFT_COMMAND") return "Opération comptable préparée";
+  if (entry.kind === "AUTHORITY_POLICY_COMMAND") return "Politique d’autorité";
+  if (entry.kind === "AUTHORITY_EVALUATE") return "Évaluation d’autorité";
+  if (entry.kind === "AUTHORITY_DECIDE") return "Décision d’autorité";
   if (entry.command.type === "RECORD_RECEIVABLE") return "Compte à recevoir";
   if (entry.command.type === "RECORD_PAYMENT") return "Paiement reçu";
   return "Suivi planifié";

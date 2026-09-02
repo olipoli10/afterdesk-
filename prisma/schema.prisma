@@ -3453,6 +3453,11 @@ model ConstructionWorkspace {
   accountingObservations ConstructionAccountingObservation[]
   accountingDrafts       ConstructionAccountingDraft[]
   accountingRefusals     ConstructionAccountingRefusal[]
+  authorityPolicySets    ConstructionAuthorityPolicySet[]
+  authorityEvaluations   ConstructionAuthorityEvaluation[]
+  authorityDecisions     ConstructionAuthorityDecision[]
+  authorityRefusals      ConstructionAuthorityRefusal[]
+  authorityOperations    ConstructionAuthorityOperation[]
 
   @@index([ownerUserId, status])
 }
@@ -4161,6 +4166,142 @@ model ConstructionAccountingRefusal {
 
   @@index([workspaceId, operationKind, createdAt])
   @@index([workspaceId, operationId, createdAt])
+}
+
+model ConstructionAuthorityPolicySet {
+  id                String                            @id @default(cuid())
+  workspaceId       String
+  workspace         ConstructionWorkspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  version           Int
+  stateVersion      Int                               @default(1)
+  status            String                            @default("DRAFT")
+  policyHash        String
+  sourcePolicySetId String?
+  createdByUserId   String
+  activatedByUserId String?
+  activatedAt       DateTime?
+  supersededAt      DateTime?
+  revokedAt         DateTime?
+  createdAt         DateTime                          @default(now())
+  updatedAt         DateTime                          @updatedAt
+  rules             ConstructionAuthorityPolicyRule[]
+  evaluations       ConstructionAuthorityEvaluation[]
+
+  @@unique([workspaceId, version])
+  @@index([workspaceId, status, createdAt])
+}
+
+model ConstructionAuthorityPolicyRule {
+  id                 String                         @id @default(cuid())
+  policySetId        String
+  policySet          ConstructionAuthorityPolicySet @relation(fields: [policySetId], references: [id], onDelete: Cascade)
+  ruleKey            String
+  actionKey          String
+  projectId          String?
+  roleScope          String?
+  dataClassification String?
+  outcome            String
+  amountCeilingMinor Int?
+  reasonCode         String
+  ruleHash           String
+  createdAt          DateTime                       @default(now())
+  updatedAt          DateTime                       @updatedAt
+
+  @@unique([policySetId, ruleKey])
+  @@index([policySetId, actionKey, outcome])
+}
+
+model ConstructionAuthorityEvaluation {
+  id                         String                          @id @default(cuid())
+  workspaceId                String
+  workspace                  ConstructionWorkspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  policySetId                String
+  policySet                  ConstructionAuthorityPolicySet  @relation(fields: [policySetId], references: [id], onDelete: Restrict)
+  commandId                  String
+  commandHash                String
+  actorUserId                String
+  actorRole                  String
+  actionKey                  String
+  actionVersion              Int
+  projectId                  String?
+  targetRef                  String
+  risk                       String
+  dataClassification         String
+  amountMinor                Int?
+  sourceFingerprint          String
+  payloadHash                String
+  policySetVersion           Int
+  version                    Int                             @default(1)
+  outcome                    String
+  reasonCode                 String
+  status                     String
+  expiresAt                  DateTime
+  externalTransportPerformed Boolean                         @default(false)
+  externalWritePerformed     Boolean                         @default(false)
+  providerEffectCount        Int                             @default(0)
+  createdAt                  DateTime                        @default(now())
+  updatedAt                  DateTime                        @updatedAt
+  decisions                  ConstructionAuthorityDecision[]
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, status, createdAt])
+  @@index([policySetId, outcome, createdAt])
+}
+
+model ConstructionAuthorityDecision {
+  id                            String                          @id @default(cuid())
+  workspaceId                   String
+  workspace                     ConstructionWorkspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  evaluationId                  String
+  evaluation                    ConstructionAuthorityEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Restrict)
+  commandId                     String
+  commandHash                   String
+  expectedEvaluationVersion     Int
+  expectedPolicySetVersion      Int
+  expectedPayloadHash           String
+  decision                      String
+  statusAfter                   String
+  actorId                       String
+  result                        Json
+  localAuthorizationEffectCount Int                             @default(1)
+  externalTransportPerformed    Boolean                         @default(false)
+  externalWritePerformed        Boolean                         @default(false)
+  providerEffectCount           Int                             @default(0)
+  createdAt                     DateTime                        @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@unique([evaluationId])
+  @@index([workspaceId, statusAfter, createdAt])
+}
+
+model ConstructionAuthorityRefusal {
+  id            String                @id @default(cuid())
+  workspaceId   String
+  workspace     ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  operationId   String
+  operationKind String
+  inputHash     String
+  refusalCode   String
+  actorId       String
+  createdAt     DateTime              @default(now())
+
+  @@index([workspaceId, operationKind, createdAt])
+  @@index([workspaceId, operationId, createdAt])
+}
+
+model ConstructionAuthorityOperation {
+  id            String                @id @default(cuid())
+  workspaceId   String
+  workspace     ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  commandId     String
+  commandHash   String
+  operationKind String
+  result        Json
+  actorId       String
+  createdAt     DateTime              @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, operationKind, createdAt])
 }
 
 // Connector authority is workspace-scoped and fail-closed. OAuth access and

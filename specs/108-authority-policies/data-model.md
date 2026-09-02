@@ -30,6 +30,12 @@ Immutable safe audit record for rejected preparation, activation, evaluation or
 decision attempts. It stores operation kind, input hash, refusal code and actor,
 never credentials or raw rejected payloads.
 
+## ConstructionAuthorityOperation
+
+Idempotent command ledger for policy draft, rule, activation and revocation
+operations. It binds workspace/command identity to the exact command hash and
+stored result so replay cannot mutate policy state twice.
+
 ## Invariants
 
 - at most one active policy set per workspace;
