@@ -45,13 +45,13 @@
     {
       "id": "S3-CONNECTORS",
       "title": "Permissioned real-world connectors",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "releases": ["R23-CALENDAR-CONNECTORS", "R24-SMS-MMS", "R25-VOICE-CALLS", "R26-EMAIL-INBOX", "R27-ACCOUNTING"]
     },
     {
       "id": "S4-TRUST-RELIABILITY",
       "title": "Authority, trust, privacy and operational reliability",
-      "status": "PLANNED",
+      "status": "IN_PROGRESS",
       "releases": ["R28-AUTHORITY-POLICIES", "R29-PROVENANCE-UX", "R30-TENANT-PRIVACY", "R31-OBSERVABILITY-RECOVERY"]
     },
     {
@@ -82,8 +82,8 @@
     {"id":"R24-SMS-MMS","status":"DONE","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R23-CALENDAR-CONNECTORS"],"outcome":"Inbound and outbound SMS/MMS with project routing, consent, opt-out, approval and delivery state."},
     {"id":"R25-VOICE-CALLS","status":"DONE","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R24-SMS-MMS"],"outcome":"Inbound assistant calls, voice notes and bounded outbound call tasks with disclosure and consent controls."},
     {"id":"R26-EMAIL-INBOX","status":"DONE","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R25-VOICE-CALLS"],"outcome":"Project email ingestion and prepared outbound email without broad mailbox authority."},
-    {"id":"R27-ACCOUNTING","status":"IN_PROGRESS","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R26-EMAIL-INBOX"],"outcome":"QuickBooks and Xero read/reconcile/prepare pathways with explicit write boundaries."},
-    {"id":"R28-AUTHORITY-POLICIES","status":"PLANNED","authority":"LOCAL","dependsOn":["R27-ACCOUNTING"],"outcome":"Organization action policies for automatic, approval-required and prohibited actions."},
+    {"id":"R27-ACCOUNTING","status":"DONE","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R26-EMAIL-INBOX"],"outcome":"QuickBooks and Xero read/reconcile/prepare pathways with explicit write boundaries."},
+    {"id":"R28-AUTHORITY-POLICIES","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R27-ACCOUNTING"],"outcome":"Organization action policies for automatic, approval-required and prohibited actions."},
     {"id":"R29-PROVENANCE-UX","status":"PLANNED","authority":"LOCAL","dependsOn":["R28-AUTHORITY-POLICIES"],"outcome":"Fact, inference, decision, action, human result and verified-state provenance visible in plain language."},
     {"id":"R30-TENANT-PRIVACY","status":"PLANNED","authority":"LOCAL","dependsOn":["R29-PROVENANCE-UX"],"outcome":"Tenant isolation, least privilege, retention, export, deletion, secret and evidence lifecycle controls."},
     {"id":"R31-OBSERVABILITY-RECOVERY","status":"PLANNED","authority":"LOCAL","dependsOn":["R30-TENANT-PRIVACY"],"outcome":"Metrics, traces, alerts, queue recovery, backups, restore drills, concurrency and load gates."},
