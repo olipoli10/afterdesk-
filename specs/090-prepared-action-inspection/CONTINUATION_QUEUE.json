@@ -484,7 +484,7 @@
       "title": "Invoice readiness, receivables and collection cockpit",
       "objective": "Bind proven invoice readiness to one issued receivable, retain payment promises, project economic attention and delegate overdue collection to the canonical R20 follow-up engine.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R20-FOLLOW-UP-ENGINE"
       ],
@@ -519,6 +519,51 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r21-receivables-invoice.test.ts",
       "evidencePaths": [
         "../101-receivables-invoice/evidence/r21-closeout.md"
+      ],
+      "outputHead": "7317f5870a77f080acccd0eba17f0a87b1167c66",
+      "outputTree": "2d27f9eb14b9ae8119966e7280d3bf67f1ebc739",
+      "result": "Invoice readiness now binds exactly once to an issued receivable, retains payment promises, projects role-safe economic attention, and delegates overdue collection to the canonical follow-up engine with zero external transport.",
+      "completedAtUtc": "2026-09-02T01:11:00Z"
+    },
+    {
+      "id": "R22-HUMAN-ESCALATION",
+      "title": "Human escalation and exact automated resume",
+      "objective": "Expose the existing Construction-to-HumanWorkUnit bridge as one role-safe owner cockpit with bounded admission, independent quality review and exact automated resume.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R21-RECEIVABLES-INVOICE"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R21-RECEIVABLES-INVOICE"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/102-human-escalation-resume",
+        "src/lib/construction-operating-assistant-r22",
+        "src/server/construction-operating-assistant-r22",
+        "src/lib/construction-operating-assistant-r5",
+        "src/server/construction-operating-assistant-r5",
+        "src/lib/queries/construction-human-escalation.ts",
+        "src/app/api/endvera/v1/mobile/human-escalations",
+        "apps/mobile/src/app/(app)/human-support.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/human-escalations.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/human-escalations.test.ts",
+        "test/construction-operating-assistant-r22*.test.ts",
+        "test/integration/construction-operating-assistant-r22*.itest.ts"
+      ],
+      "planPath": "../102-human-escalation-resume/plan.md",
+      "planSha256": "dd878739a0aaf4a2d32a21b1fca940699190949e409370ebda01164063f461d9",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r22-human-escalation.test.ts",
+      "evidencePaths": [
+        "../102-human-escalation-resume/evidence/r22-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

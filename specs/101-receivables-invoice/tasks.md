@@ -11,4 +11,4 @@
 - [x] T009 Upgrade the native receivables cockpit without a parallel screen.
 - [x] T010 Prove concurrency, replay, balance isolation and restart parity.
 - [x] T011 Run focused regressions, lint, typecheck, migration and build gates.
-- [ ] T012 Close R21 evidence and advance the rolling queue to R22.
+- [x] T012 Close R21 evidence and advance the rolling queue to R22.

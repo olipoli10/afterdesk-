@@ -104,4 +104,3 @@ describe("Construction Operating Assistant R21 economic contracts", () => {
     })).toThrow();
   });
 });
-

@@ -192,4 +192,3 @@ CREATE TRIGGER "ConstructionEconomicCommand_guard_update_delete"
 CREATE TRIGGER "ConstructionEconomicCommand_guard_truncate"
   BEFORE TRUNCATE ON "ConstructionEconomicCommand"
   FOR EACH STATEMENT EXECUTE FUNCTION endvera_guard_construction_economic_command();
-
