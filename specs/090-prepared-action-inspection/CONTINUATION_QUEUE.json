@@ -912,7 +912,7 @@
       "title": "Tenant privacy control plane",
       "objective": "Add one workspace-scoped privacy control plane for versioned retention, deterministic inventory, minimized export manifests, exact deletion eligibility and tombstones, opaque secret lifecycle and role-safe evidence lifecycle while provider and external deletion remain disabled.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R29-PROVENANCE-UX"
       ],
@@ -948,6 +948,53 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r30-tenant-privacy.test.ts",
       "evidencePaths": [
         "../110-tenant-privacy/evidence/r30-closeout.md"
+      ],
+      "outputHead": "1536525b4f597f0c4e3248793f553328a5770112",
+      "outputTree": "f34eac90410c47901d15c3dbd90755ed75c4231e",
+      "result": "One tenant-scoped privacy control plane now versions retention, reconstructs minimized inventories and exports, adjudicates deletion with exact tombstones, exposes secret/evidence lifecycle safely and preserves zero external effect across web and shared mobile surfaces.",
+      "completedAtUtc": "2026-09-02T07:45:49Z"
+    },
+    {
+      "id": "R31-OBSERVABILITY-RECOVERY",
+      "title": "Observability and recovery control plane",
+      "objective": "Add workspace-scoped structured signals, traces, denominator-bearing metrics, durable alerts, closed-registry queue recovery, minimized checkpoints, real disposable restore drills and bounded concurrency/load gates without sensitive logs or external effects.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R30-TENANT-PRIVACY"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R30-TENANT-PRIVACY"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/111-observability-recovery",
+        "src/lib/construction-operating-assistant-r31",
+        "src/server/construction-operating-assistant-r31",
+        "src/server/construction-operating-assistant-r20/follow-up-engine.ts",
+        "src/app/api/endvera/v1/mobile/reliability",
+        "src/app/client/reliability",
+        "src/app/client/client-nav.tsx",
+        "apps/mobile/src/app/(app)/reliability.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/reliability.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/reliability.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r31_observability_recovery",
+        "test/construction-operating-assistant-r31*.test.ts",
+        "test/integration/construction-operating-assistant-r31*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../111-observability-recovery/plan.md",
+      "planSha256": "f61ac04ae35f306447562319e71b5bf2854044dff0a6ec88803465b9397301f0",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r31-observability-recovery.test.ts",
+      "evidencePaths": [
+        "../111-observability-recovery/evidence/r31-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
