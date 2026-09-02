@@ -66,6 +66,7 @@ import {
   parseMobileVoiceCallsCockpit,
 } from "@/lib/voice-calls";
 import {mobileEmailAccountCommandSchema,mobileEmailDraftCommandSchema,parseMobileEmailCockpit} from "@/lib/email-inbox";
+import {mobileAccountingAccountCommandSchema,mobileAccountingDraftCommandSchema,parseMobileAccountingCockpit} from "@/lib/accounting";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -609,6 +610,10 @@ export class MobileApi {
   async emailCockpit(workspaceId:string){const value=await this.request(`/api/endvera/v1/mobile/email-inbox?workspaceId=${encodeURIComponent(workspaceId)}`,{method:"GET"});try{const result=parseMobileEmailCockpit(value);if(result.workspaceId!==workspaceId)throw new Error("MOBILE_EMAIL_WORKSPACE_MISMATCH");return result;}catch{throw new MobileApiError("INVALID_RESPONSE");}}
 
   async emailCommand(command:unknown){const account=mobileEmailAccountCommandSchema.safeParse(command);const draft=mobileEmailDraftCommandSchema.safeParse(command);const parsed=account.success?account.data:draft.success?draft.data:null;if(!parsed)throw new MobileApiError("REFUSED");return this.request("/api/endvera/v1/mobile/email-inbox",{method:"POST",body:JSON.stringify(parsed)});}
+
+  async accountingCockpit(workspaceId:string){const value=await this.request(`/api/endvera/v1/mobile/accounting?workspaceId=${encodeURIComponent(workspaceId)}`,{method:"GET"});try{const result=parseMobileAccountingCockpit(value);if(result.workspaceId!==workspaceId)throw new Error("MOBILE_ACCOUNTING_WORKSPACE_MISMATCH");return result;}catch{throw new MobileApiError("INVALID_RESPONSE");}}
+
+  async accountingCommand(command:unknown){const account=mobileAccountingAccountCommandSchema.safeParse(command);const draft=mobileAccountingDraftCommandSchema.safeParse(command);const parsed=account.success?account.data:draft.success?draft.data:null;if(!parsed)throw new MobileApiError("REFUSED");return this.request("/api/endvera/v1/mobile/accounting",{method:"POST",body:JSON.stringify(parsed)});}
 
   async permissionCenter(workspaceId: string) {
     const value = await this.request(

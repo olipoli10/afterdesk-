@@ -64,6 +64,7 @@ import {
   type VoiceNoteAttempt,
 } from "@/lib/voice-calls";
 import type { MobileEmailCockpit, MobileEmailCommand } from "@/lib/email-inbox";
+import type { MobileAccountingCockpit, MobileAccountingCommand } from "@/lib/accounting";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -114,6 +115,8 @@ type MobileSessionValue = {
   latestVoiceNoteAttempt: VoiceNoteAttempt | null;
   emailCockpit: MobileEmailCockpit | null;
   emailLoadState: LoadState;
+  accountingCockpit: MobileAccountingCockpit | null;
+  accountingLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -145,6 +148,8 @@ type MobileSessionValue = {
   submitVoiceNoteAttempt: (attempt: VoiceNoteAttempt) => Promise<VoiceNoteAttempt>;
   loadEmail: () => Promise<void>;
   submitEmailCommand: (command: MobileEmailCommand) => Promise<void>;
+  loadAccounting: () => Promise<void>;
+  submitAccountingCommand: (command: MobileAccountingCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -222,6 +227,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [latestVoiceNoteAttempt, setLatestVoiceNoteAttempt] = useState<VoiceNoteAttempt | null>(null);
   const [emailCockpit, setEmailCockpit] = useState<MobileEmailCockpit | null>(null);
   const [emailLoadState, setEmailLoadState] = useState<LoadState>("IDLE");
+  const [accountingCockpit, setAccountingCockpit] = useState<MobileAccountingCockpit | null>(null);
+  const [accountingLoadState, setAccountingLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -240,6 +247,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingVoiceCallRequest = useRef<string | null>(null);
   const dispatchingVoiceNoteRequest = useRef<string | null>(null);
   const dispatchingEmailRequest = useRef<string | null>(null);
+  const dispatchingAccountingRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -306,6 +314,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setVoiceCallsLoadState("IDLE");
       setEmailCockpit(null);
       setEmailLoadState("IDLE");
+      setAccountingCockpit(null);
+      setAccountingLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setOutboxEntries([]);
         setOutboxLoadState("LOADING");
@@ -1247,6 +1257,60 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, loadEmail, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadAccounting = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setAccountingLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.accountingCockpit(activeWorkspace.id);
+      const fieldMismatch =
+        (activeWorkspace.role === "FIELD_WORKER") !== (result.role === "field_worker");
+      if (fieldMismatch) throw new MobileApiError("INVALID_RESPONSE");
+      setAccountingCockpit(result);
+      setAccountingLoadState("READY");
+    } catch (error) {
+      setAccountingCockpit(null);
+      setAccountingLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitAccountingCommand = useCallback(async (command: MobileAccountingCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_ACCOUNTING_MANAGEMENT_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) throw new Error("MOBILE_ACCOUNTING_WORKSPACE_REFUSED");
+    if (dispatchingAccountingRequest.current) throw new Error("MOBILE_ACCOUNTING_ALREADY_DISPATCHED");
+    dispatchingAccountingRequest.current = command.commandId;
+    setAccountingLoadState("LOADING");
+    setPublicError(null);
+    const kind = command.action === "PREPARE_ACCOUNTING_ACCOUNT" || command.action === "REVOKE_ACCOUNTING_ACCOUNT"
+      ? "ACCOUNTING_ACCOUNT_COMMAND"
+      : "ACCOUNTING_DRAFT_COMMAND";
+    try {
+      await prepareOutboxEntry(kind, command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.accountingCommand(command) as { replayed?: boolean };
+      await settleOutboxEntry(command.commandId, result.replayed ? "REPLAYED" : "CONFIRMED", activeWorkspace.id);
+      const refreshed = await api.accountingCockpit(activeWorkspace.id);
+      setAccountingCockpit(refreshed);
+      setAccountingLoadState("READY");
+    } catch (error) {
+      const state = error instanceof MobileApiError && error.code === "CONFLICT"
+        ? "CONFLICT"
+        : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+          ? "OUTCOME_UNKNOWN"
+          : "REFUSED";
+      setAccountingLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(command.commandId, state, activeWorkspace.id, publicMessage(error));
+      if (state === "CONFLICT") await loadAccounting();
+    } finally {
+      dispatchingAccountingRequest.current = null;
+    }
+  }, [activeWorkspace, api, loadAccounting, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -1357,6 +1421,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitPrepareCallWork(entry.command);
     } else if (entry.kind === "EMAIL_ACCOUNT_COMMAND" || entry.kind === "EMAIL_DRAFT_COMMAND") {
       await submitEmailCommand(entry.command);
+    } else if (entry.kind === "ACCOUNTING_ACCOUNT_COMMAND" || entry.kind === "ACCOUNTING_DRAFT_COMMAND") {
+      await submitAccountingCommand(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -1376,6 +1442,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitMessagingCommand,
     submitPrepareCallWork,
     submitEmailCommand,
+    submitAccountingCommand,
     submitFollowUpCommand,
   ]);
 
@@ -1427,6 +1494,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setLatestVoiceNoteAttempt(null);
     setEmailCockpit(null);
     setEmailLoadState("IDLE");
+    setAccountingCockpit(null);
+    setAccountingLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -1468,6 +1537,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestVoiceNoteAttempt,
       emailCockpit,
       emailLoadState,
+      accountingCockpit,
+      accountingLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1497,6 +1568,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitVoiceNoteAttempt,
       loadEmail,
       submitEmailCommand,
+      loadAccounting,
+      submitAccountingCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1532,6 +1605,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestVoiceNoteAttempt,
       emailCockpit,
       emailLoadState,
+      accountingCockpit,
+      accountingLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1566,6 +1641,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitVoiceNoteAttempt,
       loadEmail,
       submitEmailCommand,
+      loadAccounting,
+      submitAccountingCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

@@ -3449,6 +3449,10 @@ model ConstructionWorkspace {
   emailAccounts          ConstructionEmailAccount[]
   emailEvents            ConstructionEmailEvent[]
   emailDrafts            ConstructionEmailDraft[]
+  accountingAccounts     ConstructionAccountingAccount[]
+  accountingObservations ConstructionAccountingObservation[]
+  accountingDrafts       ConstructionAccountingDraft[]
+  accountingRefusals     ConstructionAccountingRefusal[]
 
   @@index([ownerUserId, status])
 }
@@ -4031,6 +4035,132 @@ model ConstructionEmailDecision {
 
   @@unique([workspaceId, commandId])
   @@index([workspaceId, entityType, entityId, createdAt])
+}
+
+model ConstructionAccountingAccount {
+  id                   String                              @id @default(cuid())
+  workspaceId          String
+  workspace            ConstructionWorkspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  provider             String
+  accountRef           String
+  tenantRef            String
+  capabilities         String[]
+  status               String                              @default("PREPARED_DISABLED")
+  version              Int                                 @default(1)
+  cursorRef            String?
+  cursorVersion        Int                                 @default(0)
+  credentialStored     Boolean                             @default(false)
+  externalWriteEnabled Boolean                             @default(false)
+  preparedByUserId     String
+  revokedAt            DateTime?
+  createdAt            DateTime                            @default(now())
+  updatedAt            DateTime                            @updatedAt
+  observations         ConstructionAccountingObservation[]
+  drafts               ConstructionAccountingDraft[]
+
+  @@unique([workspaceId, provider, accountRef])
+  @@index([workspaceId, status, createdAt])
+}
+
+model ConstructionAccountingObservation {
+  id                     String                        @id @default(cuid())
+  workspaceId            String
+  workspace              ConstructionWorkspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  accountId              String
+  account                ConstructionAccountingAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  observationId          String
+  provider               String
+  entityRef              String
+  cursorRef              String
+  kind                   String
+  projectId              String?
+  contactId              String?
+  receivableId           String?
+  documentNumberHash     String
+  amountMinor            Int
+  currency               String
+  observedStatus         String
+  suppliedAt             DateTime
+  contentHash            String
+  adapterFingerprint     String
+  matchStatus            String                        @default("UNMATCHED")
+  matchReason            String
+  canonicalEffectApplied Boolean                       @default(false)
+  externalWritePerformed Boolean                       @default(false)
+  createdAt              DateTime                      @default(now())
+  updatedAt              DateTime                      @updatedAt
+
+  @@unique([workspaceId, observationId])
+  @@unique([accountId, entityRef])
+  @@index([workspaceId, matchStatus, suppliedAt])
+  @@index([receivableId, suppliedAt])
+}
+
+model ConstructionAccountingDraft {
+  id                        String                        @id @default(cuid())
+  workspaceId               String
+  workspace                 ConstructionWorkspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  accountId                 String
+  account                   ConstructionAccountingAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  commandId                 String
+  commandHash               String
+  kind                      String
+  provider                  String
+  projectId                 String
+  contactId                 String?
+  receivableId              String
+  observationId             String?
+  expectedReceivableVersion Int
+  selectedEvidenceIds       String[]
+  payload                   Json
+  version                   Int                           @default(1)
+  payloadHash               String
+  status                    String                        @default("PREPARED_UNPOSTED")
+  approvedByUserId          String?
+  approvedAt                DateTime?
+  canonicalEffectApplied    Boolean                       @default(false)
+  canonicalEffectId         String?
+  externalEffectCount       Int                           @default(0)
+  externalWritePerformed    Boolean                       @default(false)
+  createdAt                 DateTime                      @default(now())
+  updatedAt                 DateTime                      @updatedAt
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, status, createdAt])
+  @@index([receivableId, kind, createdAt])
+}
+
+model ConstructionAccountingDecision {
+  id          String   @id @default(cuid())
+  workspaceId String
+  commandId   String
+  commandHash String
+  entityType  String
+  entityId    String
+  action      String
+  stateBefore String?
+  stateAfter  String
+  result      Json
+  actorId     String
+  createdAt   DateTime @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, entityType, entityId, createdAt])
+}
+
+model ConstructionAccountingRefusal {
+  id            String                @id @default(cuid())
+  workspaceId   String
+  workspace     ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  operationId   String
+  operationKind String
+  inputHash     String
+  refusalCode   String
+  actorId       String
+  createdAt     DateTime              @default(now())
+
+  @@index([workspaceId, operationKind, createdAt])
+  @@index([workspaceId, operationId, createdAt])
 }
 
 // Connector authority is workspace-scoped and fail-closed. OAuth access and

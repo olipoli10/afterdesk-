@@ -28,6 +28,7 @@ export default function AppLayout() {
       <Tabs.Screen name="messages" options={{ title: "Messages", tabBarIcon: ({ color }) => <TabGlyph value="✉" color={color} /> }} />
       <Tabs.Screen name="calls" options={{ title: "Appels", tabBarIcon: ({ color }) => <TabGlyph value="☎" color={color} /> }} />
       <Tabs.Screen name="email" options={{ title: "Courriel", tabBarIcon: ({ color }) => <TabGlyph value="@" color={color} /> }} />
+      <Tabs.Screen name="accounting" options={{ title: "Comptabilité", tabBarIcon: ({ color }) => <TabGlyph value="₵" color={color} /> }} />
       <Tabs.Screen name="contacts" options={{ title: "Contacts", tabBarIcon: ({ color }) => <TabGlyph value="◎" color={color} /> }} />
       <Tabs.Screen name="evidence" options={{ title: "Preuves", tabBarIcon: ({ color }) => <TabGlyph value="＋" color={color} /> }} />
       <Tabs.Screen name="permissions" options={{ title: "Accès", tabBarIcon: ({ color }) => <TabGlyph value="⊙" color={color} /> }} />

@@ -1,8 +1,8 @@
 # Feature Specification: R27 Accounting Connectors
 
-**Feature Branch**: `codex/endvera-construction-operating-assistant-r10-r12-autonomous`  
-**Created**: 2026-09-02  
-**Status**: In progress  
+**Feature Branch**: `codex/endvera-construction-operating-assistant-r10-r12-autonomous`
+**Created**: 2026-09-02
+**Status**: In progress
 **Input**: R27 of the canonical ENDVERA Construction Operating Assistant roadmap.
 
 ## Product outcome
