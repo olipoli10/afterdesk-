@@ -481,6 +481,8 @@ model User {
   constructionRecoveryDrillsRecorded      ConstructionRecoveryDrill[]      @relation("ConstructionRecoveryDrillRecorder")
   constructionReliabilityGateRunsRecorded ConstructionReliabilityGateRun[] @relation("ConstructionReliabilityGateRunRecorder")
   constructionReliabilityCommandsAuthored ConstructionReliabilityCommand[] @relation("ConstructionReliabilityCommandActor")
+  constructionCommercialAccountsCreated   ConstructionCommercialAccount[]  @relation("ConstructionCommercialAccountCreator")
+  constructionCommercialDecisionsAuthored ConstructionCommercialDecision[] @relation("ConstructionCommercialDecisionActor")
 }
 
 /**
@@ -3478,6 +3480,8 @@ model ConstructionWorkspace {
   onboardingSession       ConstructionOnboardingSession?
   onboardingCommands      ConstructionOnboardingCommand[]
   importBatches           ConstructionImportBatch[]
+  commercialAccount       ConstructionCommercialAccount?
+  commercialDecisions     ConstructionCommercialDecision[]
 
   @@index([ownerUserId, status])
 }
@@ -4764,6 +4768,60 @@ model ConstructionImportCommit {
 
   @@unique([workspaceId, commandId])
   @@index([workspaceId, createdAt])
+}
+
+/// Current local commercial projection for one Construction workspace. It is
+/// deliberately independent from legacy task pricing and cannot claim payment.
+model ConstructionCommercialAccount {
+  id                  String                @id @default(cuid())
+  workspaceId         String                @unique
+  workspace           ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  planKey             String
+  planVersion         Int
+  planHash            String
+  state               String                @default("PREPARED")
+  periodStartsAt      DateTime
+  periodEndsAt        DateTime
+  accountVersion      Int                   @default(1)
+  featureSnapshot     Json
+  usageMetricSnapshot Json
+  priceState          String                @default("PRICE_NOT_SET")
+  monthlyPriceMinor   Int?
+  currency            String                @default("CAD")
+  billingProvider     String                @default("DISABLED_LOCAL")
+  createdById         String
+  createdBy           User                  @relation("ConstructionCommercialAccountCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  decisions ConstructionCommercialDecision[]
+
+  @@index([state, updatedAt])
+  @@index([planKey, planVersion])
+}
+
+/// Immutable exact decision ledger. An identical command replays one result;
+/// an altered command with the same identifier is refused.
+model ConstructionCommercialDecision {
+  id                      String                        @id @default(cuid())
+  workspaceId             String
+  workspace               ConstructionWorkspace         @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  accountId               String
+  account                 ConstructionCommercialAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  commandId               String
+  kind                    String
+  expectedAccountVersion  Int
+  resultingAccountVersion Int
+  priorSnapshot           Json?
+  nextSnapshot            Json
+  actorId                 String
+  actor                   User                          @relation("ConstructionCommercialDecisionActor", fields: [actorId], references: [id], onDelete: Restrict)
+  decisionFingerprint     String
+  createdAt               DateTime                      @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, createdAt])
+  @@index([accountId, resultingAccountVersion])
 }
 
 // Connector authority is workspace-scoped and fail-closed. OAuth access and

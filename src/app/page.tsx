@@ -223,6 +223,7 @@ export default async function Home({
           <Link href="/services" className="transition-colors hover:text-[#c9a76a]">{nav.footer.services}</Link>
           <Link href="/how-it-works" className="transition-colors hover:text-[#c9a76a]">{nav.footer.how}</Link>
           <Link href="/inside" className="transition-colors hover:text-[#c9a76a]">{nav.footer.inside}</Link>
+          <Link href="/construction" className="transition-colors hover:text-[#c9a76a]">Construction</Link>
           <Link href="/about" className="transition-colors hover:text-[#c9a76a]">{nav.footer.about}</Link>
           <Link href="/workers" className="transition-colors hover:text-[#c9a76a]">{nav.footer.work}</Link>
         </nav>
