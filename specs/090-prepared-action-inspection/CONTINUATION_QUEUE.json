@@ -1006,7 +1006,7 @@
       "title": "Contractor onboarding and bounded import",
       "objective": "Create or resume one canonical contractor workspace, reach first operational value and safely preview, decide and atomically commit bounded contact or project CSV imports across web, iOS and Android without silent merge or external effect.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R31-OBSERVABILITY-RECOVERY"
       ],
@@ -1045,6 +1045,53 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r32-onboarding-import.test.ts",
       "evidencePaths": [
         "../112-onboarding-import/evidence/r32-closeout.md"
+      ],
+      "outputHead": "9a24cfb8bf7af214f0ff45ea76c89453efa34c29",
+      "outputTree": "f61efe88ae8e88a55bdcef05e037df081539ce48",
+      "result": "Canonical contractor onboarding, first-value readiness and bounded preview-decision-commit CSV imports pass across Web and shared iOS/Android with exact replay, atomicity, tenancy and zero external effect.",
+      "completedAtUtc": "2026-09-02T11:15:54Z"
+    },
+    {
+      "id": "R33-WEB-MOBILE-PARITY",
+      "title": "Web, iOS and Android Golden Workflow parity",
+      "objective": "Expose one accessible French/English Golden Workflow cockpit whose canonical state, blockers and next safe action are identical across Web, iOS and Android while preserving independent role-safe projections and zero external effect.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R32-ONBOARDING-IMPORT"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R32-ONBOARDING-IMPORT"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/113-web-mobile-parity",
+        "src/lib/construction-operating-assistant-r33",
+        "src/server/construction-operating-assistant-r33",
+        "src/lib/i18n/construction-operating-assistant-r33.ts",
+        "src/lib/browser/endvera-mobile-api.ts",
+        "src/app/api/endvera/v1/mobile/golden-workflow",
+        "src/app/client/cockpit",
+        "src/app/client/layout.tsx",
+        "src/components/construction-operating-assistant-r33",
+        "apps/mobile/src/app/(app)/index.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/golden-workflow.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/golden-workflow.test.ts",
+        "test/construction-operating-assistant-r33*.test.ts",
+        "test/integration/construction-operating-assistant-r33*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../113-web-mobile-parity/plan.md",
+      "planSha256": "e64ecbcf72ac8c5811e1a1d22876b7af2582c77d1ea6fedc4cd7b93b13eafc8e",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r33-web-mobile-parity.test.ts",
+      "evidencePaths": [
+        "../113-web-mobile-parity/evidence/r33-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

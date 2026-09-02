@@ -44,7 +44,7 @@
 - [x] T022 Run R32 plus R1/R13/R16/R17/R18/R29-R31 unit and disposable PostgreSQL gates
 - [x] T023 Run root/mobile lint, typecheck, tests, fresh migration, Expo Doctor/export and Next.js Webpack build
 - [x] T024 Run Spec Kit analysis, diff/lockfile/forbidden-effect audits and record `specs/112-onboarding-import/evidence/r32-closeout.md`
-- [ ] T025 Commit R32, mark R32 DONE and promote R33 in the rolling queue/backlog
+- [x] T025 Commit R32, mark R32 DONE and promote R33 in the rolling queue/backlog
 
 ## Dependencies and strategy
 
