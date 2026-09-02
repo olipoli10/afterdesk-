@@ -821,7 +821,7 @@
       "title": "Organization authority policies",
       "objective": "Add a versioned fail-closed organization policy engine that classifies registered actions as automatic-internal, approval-required or prohibited, binds exact decisions to immutable evaluations and exposes one role-safe shared mobile cockpit while every external effect remains disabled.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R27-ACCOUNTING"
       ],
@@ -858,6 +858,49 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r28-authority-policies.test.ts",
       "evidencePaths": [
         "../108-authority-policies/evidence/r28-closeout.md"
+      ],
+      "outputHead": "f3f8aee2cbc409059b2649d5335e5de12cf4412c",
+      "outputTree": "bd1451da43d13d40d62fba5249a9bf3e1ce94a8f",
+      "result": "Versioned organization authority policies now classify registered actions as automatic-internal, approval-required or prohibited with fail-closed ceilings, immutable exact decisions, role-safe inspection and zero external effect.",
+      "completedAtUtc": "2026-09-02T05:59:35Z"
+    },
+    {
+      "id": "R29-PROVENANCE-UX",
+      "title": "Plain-language provenance and trust cockpit",
+      "objective": "Expose fact, inference, decision, action, human result and verified-state provenance as one reconstructible, role-safe plain-language chain for each project while preserving exact canonical references and zero external effects.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R28-AUTHORITY-POLICIES"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R28-AUTHORITY-POLICIES"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/109-provenance-ux",
+        "src/lib/construction-operating-assistant-r29",
+        "src/server/construction-operating-assistant-r29",
+        "src/app/api/endvera/v1/mobile/provenance",
+        "src/app/client/projects/[projectId]/page.tsx",
+        "apps/mobile/src/app/(app)/provenance.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/provenance.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/provenance.test.ts",
+        "test/construction-operating-assistant-r29*.test.ts",
+        "test/integration/construction-operating-assistant-r29*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../109-provenance-ux/plan.md",
+      "planSha256": "cb3b8cd1c1e5202ad2575de3a118efa20c0c393b1b0bff558f9a8f3c61352ccd",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r29-provenance-ux.test.ts",
+      "evidencePaths": [
+        "../109-provenance-ux/evidence/r29-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
