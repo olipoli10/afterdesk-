@@ -1228,6 +1228,43 @@
       "outputTree": "c0ccf9defeee950ace236d8dcea6cd4d9761027d",
       "result": "One deterministic PostgreSQL-backed contractor story passed all 16 ordered internal checkpoints with exact restart identity, replay refusal, role and workspace isolation, Web/iOS/Android parity, a valid local release package and zero provider or external effect.",
       "completedAtUtc": "2026-09-02T15:02:33Z"
+    },
+    {
+      "id": "R36A-AI-ROUTING-BRAIN",
+      "title": "Provider-neutral AI Routing Brain",
+      "objective": "Route every authorized assistant request to canonical internal truth, a deterministic tool, a citation-required research candidate, the strongest eligible controller candidate or bounded human support without exposing providers or dispatching externally.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R36-INTERNAL-E2E"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R36-INTERNAL-E2E"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/117-ai-routing-brain",
+        "src/lib/construction-operating-assistant-r36a",
+        "src/server/model-gateway/assistant-routing.ts",
+        "test/construction-operating-assistant-r36a-ai-routing-brain.test.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../117-ai-routing-brain/plan.md",
+      "planSha256": "486ad85b042cacb84a45f5dae0a65e46ccbdc291346b81507dbcd66d31fb062a",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r36a-ai-routing-brain.test.ts",
+      "evidencePaths": [
+        "../117-ai-routing-brain/evidence/r36a-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }

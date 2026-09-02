@@ -5,13 +5,13 @@
   "intermediateFinalReportCount": 0,
   "consecutiveBlocksCompleted": 24,
   "goalStayedActiveUntilDrain": true,
-  "completionValidatorVerdict": "DRAINED",
-  "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
+  "completionValidatorVerdict": "CONTINUATION_REQUIRED",
+  "projectTerminalState": "INCOMPLETE",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 0,
-  "remainingRoadmapItemCount": 4,
+  "remainingAuthorizedWorkCount": 1,
+  "remainingRoadmapItemCount": 5,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "R37-PROVIDER-SANDBOX",
-  "urgentAssistanceReason": "R37 requires exact selected-provider sandbox authority plus securely supplied provider sandbox credentials; every local-only critical-path release through R36 is complete and no provider observation may be fabricated under the current authority."
+  "nextAction": "R36A-AI-ROUTING-BRAIN",
+  "urgentAssistanceReason": ""
 }
