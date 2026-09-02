@@ -599,8 +599,11 @@ function messageChannel(channel: "SMS" | "EMAIL" | "HUMAN_CALL") {
   return channel === "SMS" ? "sms" : channel === "EMAIL" ? "email" : "voice";
 }
 
-async function processDueOne(followUpId: string, now: Date) {
-  return prisma.$transaction(async (tx) => {
+export async function processDueManagedFollowUpInTransaction(
+  tx: Prisma.TransactionClient,
+  followUpId: string,
+  now: Date,
+) {
     await lock(tx, `due:${followUpId}`);
     const before = await tx.constructionFollowUp.findFirst({
       where: {
@@ -753,7 +756,12 @@ async function processDueOne(followUpId: string, now: Date) {
       result,
     });
     return result;
-  });
+}
+
+async function processDueOne(followUpId: string, now: Date) {
+  return prisma.$transaction((tx) =>
+    processDueManagedFollowUpInTransaction(tx, followUpId, now),
+  );
 }
 
 export async function prepareDueManagedFollowUps(input?: {

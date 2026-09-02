@@ -80,6 +80,11 @@ import {
   mobilePrivacyResultSchema,
   parseMobilePrivacyCockpit,
 } from "@/lib/privacy";
+import {
+  mobileReliabilityCommandSchema,
+  mobileReliabilityResultSchema,
+  parseMobileReliabilityCockpit,
+} from "@/lib/reliability";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -696,6 +701,29 @@ export class MobileApi {
     try {
       const result = mobilePrivacyResultSchema.parse(value);
       if (result.commandId !== parsed.commandId || result.workspaceId !== parsed.workspaceId) throw new Error("MOBILE_PRIVACY_RESULT_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async reliabilityCockpit(workspaceId: string) {
+    const value = await this.request(`/api/endvera/v1/mobile/reliability?workspaceId=${encodeURIComponent(workspaceId)}`, { method: "GET" });
+    try {
+      const result = parseMobileReliabilityCockpit(value);
+      if (result.workspace.id !== workspaceId) throw new Error("MOBILE_RELIABILITY_WORKSPACE_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async reliabilityCommand(command: unknown) {
+    const parsed = mobileReliabilityCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/reliability", { method: "POST", body: JSON.stringify(parsed) });
+    try {
+      const result = mobileReliabilityResultSchema.parse(value);
+      if (result.commandId !== parsed.commandId || result.workspaceId !== parsed.workspaceId) throw new Error("MOBILE_RELIABILITY_RESULT_MISMATCH");
       return result;
     } catch {
       throw new MobileApiError("INVALID_RESPONSE");

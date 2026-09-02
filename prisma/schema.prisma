@@ -476,6 +476,11 @@ model User {
   constructionEconomicCommandsAuthored    ConstructionEconomicCommand[]    @relation("ConstructionEconomicCommandActor")
   constructionJobsCreated                 ConstructionJob[]                @relation("ConstructionJobCreatedBy")
   constructionJobTransitionsAuthored      ConstructionJobTransition[]      @relation("ConstructionJobTransitionActor")
+  constructionRecoveryOperationsAuthored  ConstructionRecoveryOperation[]  @relation("ConstructionRecoveryOperationActor")
+  constructionRecoveryCheckpointsCreated  ConstructionRecoveryCheckpoint[] @relation("ConstructionRecoveryCheckpointCreator")
+  constructionRecoveryDrillsRecorded      ConstructionRecoveryDrill[]      @relation("ConstructionRecoveryDrillRecorder")
+  constructionReliabilityGateRunsRecorded ConstructionReliabilityGateRun[] @relation("ConstructionReliabilityGateRunRecorder")
+  constructionReliabilityCommandsAuthored ConstructionReliabilityCommand[] @relation("ConstructionReliabilityCommandActor")
 }
 
 /**
@@ -3463,6 +3468,13 @@ model ConstructionWorkspace {
   privacyRefusals         ConstructionPrivacyRefusal[]
   privacyDeletionRequests ConstructionPrivacyDeletionRequest[]
   privacyTombstones       ConstructionPrivacyTombstone[]
+  reliabilitySignals      ConstructionReliabilitySignal[]
+  reliabilityAlerts       ConstructionReliabilityAlert[]
+  recoveryOperations      ConstructionRecoveryOperation[]
+  recoveryCheckpoints     ConstructionRecoveryCheckpoint[]
+  recoveryDrills          ConstructionRecoveryDrill[]
+  reliabilityGateRuns     ConstructionReliabilityGateRun[]
+  reliabilityCommands     ConstructionReliabilityCommand[]
 
   @@index([ownerUserId, status])
 }
@@ -4421,6 +4433,202 @@ model ConstructionPrivacyTombstone {
 
   @@unique([workspaceId, targetType, targetId])
   @@index([workspaceId, tombstonedAt])
+}
+
+/// Append-only, tenant-scoped operational signal. R31 accepts only closed
+/// codes and safe dimensions; raw log text and sensitive payloads are refused.
+model ConstructionReliabilitySignal {
+  id              String                @id @default(cuid())
+  workspaceId     String
+  workspace       ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  signalKey       String
+  fingerprint     String
+  kind            String
+  severity        String
+  outcomeCode     String
+  traceId         String?
+  spanId          String?
+  parentSpanId    String?
+  sourceModule    String
+  resourceType    String
+  resourceId      String
+  resourceVersion Int?
+  durationMs      Int?
+  dimensions      Json
+  observedAt      DateTime
+  createdAt       DateTime              @default(now())
+
+  latestForAlerts ConstructionReliabilityAlert[] @relation("ConstructionReliabilityAlertLatestSignal")
+
+  @@unique([workspaceId, signalKey])
+  @@index([workspaceId, severity, observedAt])
+  @@index([workspaceId, traceId, observedAt])
+  @@index([workspaceId, resourceType, resourceId, observedAt])
+}
+
+/// Current versioned incident projection. Accepted signals stay append-only;
+/// acknowledgement and resolution use compare-and-swap stateVersion.
+model ConstructionReliabilityAlert {
+  id                  String                        @id @default(cuid())
+  workspaceId         String
+  workspace           ConstructionWorkspace         @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  alertKey            String
+  alertType           String
+  severity            String
+  status              String                        @default("OPEN")
+  resourceType        String
+  resourceId          String
+  occurrenceCount     Int                           @default(1)
+  stateVersion        Int                           @default(1)
+  firstObservedAt     DateTime
+  lastObservedAt      DateTime
+  latestSignalId      String
+  latestSignal        ConstructionReliabilitySignal @relation("ConstructionReliabilityAlertLatestSignal", fields: [latestSignalId], references: [id], onDelete: Restrict)
+  nextResponsibleRole String
+  reasonCode          String
+  acknowledgedAt      DateTime?
+  resolvedAt          DateTime?
+  createdAt           DateTime                      @default(now())
+  updatedAt           DateTime                      @updatedAt
+
+  recoveryOperations ConstructionRecoveryOperation[]
+
+  @@unique([workspaceId, alertKey])
+  @@index([workspaceId, status, severity, lastObservedAt])
+  @@index([workspaceId, resourceType, resourceId])
+}
+
+/// Exact idempotent recovery command. Only LOCAL_REPLAY_SAFE handlers may
+/// become APPLIED; uncertain connector work becomes QUARANTINED.
+model ConstructionRecoveryOperation {
+  id                      String                       @id @default(cuid())
+  workspaceId             String
+  workspace               ConstructionWorkspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  commandId               String
+  commandHash             String
+  registryVersion         Int
+  alertId                 String
+  alert                   ConstructionReliabilityAlert @relation(fields: [alertId], references: [id], onDelete: Restrict)
+  queueKind               String
+  itemId                  String
+  expectedItemVersion     Int
+  action                  String
+  replayClass             String
+  status                  String                       @default("PREPARED")
+  stateVersion            Int                          @default(1)
+  beforeFingerprint       String
+  afterFingerprint        String?
+  result                  Json
+  resultFingerprint       String
+  actorId                 String
+  actor                   User                         @relation("ConstructionRecoveryOperationActor", fields: [actorId], references: [id], onDelete: Restrict)
+  nextResponsibleRole     String
+  externalEffectPerformed Boolean                      @default(false)
+  appliedAt               DateTime?
+  quarantinedAt           DateTime?
+  revokedAt               DateTime?
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, status, createdAt])
+  @@index([alertId, createdAt])
+  @@index([workspaceId, queueKind, itemId])
+}
+
+/// Minimized logical manifest used to prove local restore equality without
+/// exposing row payloads in the reliability cockpit.
+model ConstructionRecoveryCheckpoint {
+  id                  String                @id @default(cuid())
+  workspaceId         String
+  workspace           ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  checkpointKey       String
+  registryVersion     Int
+  schemaIdentity      String
+  tableCounts         Json
+  highWaterMarks      Json
+  manifestFingerprint String
+  totalRows           Int
+  createdByUserId     String
+  createdBy           User                  @relation("ConstructionRecoveryCheckpointCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdAt           DateTime              @default(now())
+
+  drills ConstructionRecoveryDrill[]
+
+  @@unique([workspaceId, checkpointKey])
+  @@index([workspaceId, createdAt])
+}
+
+/// Immutable result of one guarded disposable PostgreSQL backup/restore drill.
+model ConstructionRecoveryDrill {
+  id                  String                         @id @default(cuid())
+  workspaceId         String
+  workspace           ConstructionWorkspace          @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  drillKey            String
+  checkpointId        String
+  checkpoint          ConstructionRecoveryCheckpoint @relation(fields: [checkpointId], references: [id], onDelete: Restrict)
+  status              String
+  sourceFingerprint   String
+  restoredFingerprint String
+  schemaMatch         Boolean
+  countsMatch         Boolean
+  reasonCodes         String[]
+  sourceDatabaseLabel String
+  targetDatabaseLabel String
+  startedAt           DateTime
+  completedAt         DateTime
+  recordedByUserId    String
+  recordedBy          User                           @relation("ConstructionRecoveryDrillRecorder", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+  createdAt           DateTime                       @default(now())
+
+  @@unique([workspaceId, drillKey])
+  @@index([workspaceId, status, completedAt])
+}
+
+/// Immutable bounded synthetic correctness/performance evidence. It is never
+/// promoted to observed production capacity.
+model ConstructionReliabilityGateRun {
+  id                   String                @id @default(cuid())
+  workspaceId          String
+  workspace            ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  gateKey              String
+  gateKind             String
+  evidenceLabel        String                @default("SYNTHETIC")
+  operationCount       Int
+  concurrency          Int
+  canonicalEffectCount Int
+  duplicateCount       Int
+  durationMs           Int
+  p50LatencyMs         Int
+  p95LatencyMs         Int
+  thresholdMs          Int
+  status               String
+  resultFingerprint    String
+  recordedByUserId     String
+  recordedBy           User                  @relation("ConstructionReliabilityGateRunRecorder", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+  createdAt            DateTime              @default(now())
+
+  @@unique([workspaceId, gateKey])
+  @@index([workspaceId, status, createdAt])
+}
+
+/// Exact idempotency ledger for every R31 mutation command. Stored results are
+/// replayed only when the canonical command hash is byte-identical.
+model ConstructionReliabilityCommand {
+  id                String                @id @default(cuid())
+  workspaceId       String
+  workspace         ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  commandId         String
+  commandHash       String
+  action            String
+  result            Json
+  resultFingerprint String
+  actorId           String
+  actor             User                  @relation("ConstructionReliabilityCommandActor", fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt         DateTime              @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, action, createdAt])
 }
 
 // Connector authority is workspace-scoped and fail-closed. OAuth access and

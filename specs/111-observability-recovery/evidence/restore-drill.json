@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "sourceLabel": "endvera-r31-source",
+  "targetLabel": "endvera-r31-restored",
+  "workspaceId": "cmtjvmx7q002oi5xc6rp3bbn7",
+  "sourceManifest": {
+    "schemaIdentity": "5967f61a307b5394b0dd4a040654de8d76bba9f0a096b18b3250650b81f2df1e",
+    "tableCounts": {
+      "ConstructionFollowUp": 1,
+      "ConstructionFollowUpAttempt": 0,
+      "ConstructionFollowUpTransition": 0,
+      "ConstructionConnectorOperation": 1,
+      "ConstructionReliabilitySignal": 2,
+      "ConstructionReliabilityAlert": 2,
+      "ConstructionRecoveryOperation": 0
+    },
+    "highWaterMarks": {
+      "ConstructionFollowUp": "2026-09-02T09:11:33.000Z:cmtjvmxe00039i5xcn6yb90zm",
+      "ConstructionFollowUpAttempt": null,
+      "ConstructionFollowUpTransition": null,
+      "ConstructionConnectorOperation": "2026-09-02T09:11:33.035Z:cmtjvmxez003di5xc8pyi7jte",
+      "ConstructionReliabilitySignal": "2026-09-02T09:11:33.151Z:cmtjvmxi6003ji5xc3ri6g9k3",
+      "ConstructionReliabilityAlert": "2026-09-02T09:11:33.169Z:cmtjvmxip003li5xce7you3vm",
+      "ConstructionRecoveryOperation": null
+    },
+    "totalRows": 6
+  },
+  "restoredManifest": {
+    "schemaIdentity": "5967f61a307b5394b0dd4a040654de8d76bba9f0a096b18b3250650b81f2df1e",
+    "tableCounts": {
+      "ConstructionFollowUp": 1,
+      "ConstructionFollowUpAttempt": 0,
+      "ConstructionFollowUpTransition": 0,
+      "ConstructionConnectorOperation": 1,
+      "ConstructionReliabilitySignal": 2,
+      "ConstructionReliabilityAlert": 2,
+      "ConstructionRecoveryOperation": 0
+    },
+    "highWaterMarks": {
+      "ConstructionFollowUp": "2026-09-02T09:11:33.000Z:cmtjvmxe00039i5xcn6yb90zm",
+      "ConstructionFollowUpAttempt": null,
+      "ConstructionFollowUpTransition": null,
+      "ConstructionConnectorOperation": "2026-09-02T09:11:33.035Z:cmtjvmxez003di5xc8pyi7jte",
+      "ConstructionReliabilitySignal": "2026-09-02T09:11:33.151Z:cmtjvmxi6003ji5xc3ri6g9k3",
+      "ConstructionReliabilityAlert": "2026-09-02T09:11:33.169Z:cmtjvmxip003li5xce7you3vm",
+      "ConstructionRecoveryOperation": null
+    },
+    "totalRows": 6
+  },
+  "sourceFingerprint": "13d25b8253f7155e0f0d8699e4da61e529cf9491a0d667a12b4e65c0eaef45d4",
+  "restoredFingerprint": "13d25b8253f7155e0f0d8699e4da61e529cf9491a0d667a12b4e65c0eaef45d4",
+  "archiveBytes": 36571,
+  "backupScope": "USER_AND_CONSTRUCTION_TABLES",
+  "targetVectorSurrogateUsed": true,
+  "externalTransportPerformed": false,
+  "customerDataUsed": false
+}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PrivacyCockpit, PrivacyCommand } from "@/lib/construction-operating-assistant-r30/contracts";
+import { getEndveraMobileResource, postEndveraMobileResource } from "@/lib/browser/endvera-mobile-api";
 
 const CLASS_LABEL: Record<string, string> = {
   IDENTITY: "Identités et contacts", COMMUNICATION: "Communications", PROJECT_STATE: "État des chantiers",
@@ -14,9 +15,7 @@ export function PrivacyCenterClient({ initial }: { initial: PrivacyCockpit }) {
   const [message, setMessage] = useState<string | null>(null);
 
   const refresh = async () => {
-    const response = await fetch(`/api/endvera/v1/mobile/privacy?workspaceId=${encodeURIComponent(snapshot.workspace.id)}`, { cache: "no-store", headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error("PRIVACY_REFRESH_REFUSED");
-    setSnapshot(await response.json() as PrivacyCockpit);
+    setSnapshot(await getEndveraMobileResource<PrivacyCockpit>("privacy", snapshot.workspace.id));
   };
 
   const submit = async (command: PrivacyCommand, confirmation: string) => {
@@ -24,8 +23,7 @@ export function PrivacyCenterClient({ initial }: { initial: PrivacyCockpit }) {
     setPending(true);
     setMessage(null);
     try {
-      const response = await fetch("/api/endvera/v1/mobile/privacy", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(command) });
-      if (!response.ok) throw new Error("PRIVACY_COMMAND_REFUSED");
+      await postEndveraMobileResource("privacy", command);
       await refresh();
       setMessage(confirmation);
     } catch {

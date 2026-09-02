@@ -34,6 +34,7 @@ export default function AppLayout() {
       <Tabs.Screen name="evidence" options={{ title: "Preuves", tabBarIcon: ({ color }) => <TabGlyph value="＋" color={color} /> }} />
       <Tabs.Screen name="permissions" options={{ title: "Accès", tabBarIcon: ({ color }) => <TabGlyph value="⊙" color={color} /> }} />
       <Tabs.Screen name="privacy" options={{ title: "Données", tabBarIcon: ({ color }) => <TabGlyph value="◈" color={color} /> }} />
+      <Tabs.Screen name="reliability" options={{ title: "Fiabilité", tabBarIcon: ({ color }) => <TabGlyph value="◉" color={color} /> }} />
       <Tabs.Screen name="outbox" options={{ title: "Reprise", tabBarIcon: ({ color }) => <TabGlyph value="↻" color={color} /> }} />
       <Tabs.Screen name="receivables" options={{ title: "À recevoir", tabBarIcon: ({ color }) => <TabGlyph value="$" color={color} /> }} />
       <Tabs.Screen name="human-support" options={{ title: "Appui humain", tabBarIcon: ({ color }) => <TabGlyph value="H" color={color} /> }} />

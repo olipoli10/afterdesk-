@@ -281,6 +281,9 @@ describe("direct outbound HTTP anywhere in src/ is an allowlist", () => {
     ),
     join("src", "components", "payment-actions.tsx"),
     join("src", "components", "quote-actions.tsx"),
+    // Closed, same-origin browser client for the privacy and reliability
+    // cockpits. Callers choose a typed resource, never a URL.
+    join("src", "lib", "browser", "endvera-mobile-api.ts"),
     join("src", "lib", "email.ts"),
     join("src", "lib", "embeddings.ts"),
     join("src", "lib", "file-security.ts"),

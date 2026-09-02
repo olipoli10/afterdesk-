@@ -68,6 +68,7 @@ import type { MobileEmailCockpit, MobileEmailCommand } from "@/lib/email-inbox";
 import type { MobileAccountingCockpit, MobileAccountingCommand } from "@/lib/accounting";
 import type { MobileAuthorityCockpit, MobileAuthorityCommand } from "@/lib/authority-policies";
 import type { MobilePrivacyCockpit, MobilePrivacyCommand } from "@/lib/privacy";
+import type { MobileReliabilityCockpit, MobileReliabilityCommand } from "@/lib/reliability";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -126,6 +127,8 @@ type MobileSessionValue = {
   authorityLoadState: LoadState;
   privacyCockpit: MobilePrivacyCockpit | null;
   privacyLoadState: LoadState;
+  reliabilityCockpit: MobileReliabilityCockpit | null;
+  reliabilityLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -164,6 +167,8 @@ type MobileSessionValue = {
   submitAuthorityCommand: (command: MobileAuthorityCommand) => Promise<void>;
   loadPrivacy: () => Promise<void>;
   submitPrivacyCommand: (command: MobilePrivacyCommand) => Promise<void>;
+  loadReliability: () => Promise<void>;
+  submitReliabilityCommand: (command: MobileReliabilityCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -249,6 +254,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [authorityLoadState, setAuthorityLoadState] = useState<LoadState>("IDLE");
   const [privacyCockpit, setPrivacyCockpit] = useState<MobilePrivacyCockpit | null>(null);
   const [privacyLoadState, setPrivacyLoadState] = useState<LoadState>("IDLE");
+  const [reliabilityCockpit, setReliabilityCockpit] = useState<MobileReliabilityCockpit | null>(null);
+  const [reliabilityLoadState, setReliabilityLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -270,6 +277,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingAccountingRequest = useRef<string | null>(null);
   const dispatchingAuthorityRequest = useRef<string | null>(null);
   const dispatchingPrivacyRequest = useRef<string | null>(null);
+  const dispatchingReliabilityRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -353,6 +361,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setAuthorityLoadState("IDLE");
         setPrivacyCockpit(null);
         setPrivacyLoadState("IDLE");
+        setReliabilityCockpit(null);
+        setReliabilityLoadState("IDLE");
         setPermissionCenter(null);
         setPermissionLoadState("IDLE");
       }
@@ -1468,6 +1478,44 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, loadPrivacy, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadReliability = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setReliabilityLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.reliabilityCockpit(activeWorkspace.id);
+      if (result.role !== activeWorkspace.role) throw new MobileApiError("INVALID_RESPONSE");
+      setReliabilityCockpit(result);
+      setReliabilityLoadState("READY");
+    } catch (error) {
+      setReliabilityCockpit(null);
+      setReliabilityLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitReliabilityCommand = useCallback(async (command: MobileReliabilityCommand) => {
+    if (!activeWorkspace || command.workspaceId !== activeWorkspace.id) throw new Error("MOBILE_RELIABILITY_WORKSPACE_REFUSED");
+    if (activeWorkspace.role === "FIELD_WORKER") throw new Error("MOBILE_RELIABILITY_MANAGEMENT_REFUSED");
+    if (dispatchingReliabilityRequest.current) throw new Error("MOBILE_RELIABILITY_ALREADY_DISPATCHED");
+    dispatchingReliabilityRequest.current = command.commandId;
+    setReliabilityLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      await api.reliabilityCommand(command);
+      setReliabilityCockpit(await api.reliabilityCockpit(activeWorkspace.id));
+      setReliabilityLoadState("READY");
+    } catch (error) {
+      setReliabilityLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      if (error instanceof MobileApiError && error.code === "CONFLICT") await loadReliability();
+    } finally {
+      dispatchingReliabilityRequest.current = null;
+    }
+  }, [activeWorkspace, api, loadReliability]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -1665,6 +1713,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setAuthorityLoadState("IDLE");
     setPrivacyCockpit(null);
     setPrivacyLoadState("IDLE");
+    setReliabilityCockpit(null);
+    setReliabilityLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -1714,6 +1764,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       authorityLoadState,
       privacyCockpit,
       privacyLoadState,
+      reliabilityCockpit,
+      reliabilityLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1750,6 +1802,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitAuthorityCommand,
       loadPrivacy,
       submitPrivacyCommand,
+      loadReliability,
+      submitReliabilityCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1793,6 +1847,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       authorityLoadState,
       privacyCockpit,
       privacyLoadState,
+      reliabilityCockpit,
+      reliabilityLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1834,6 +1890,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitAuthorityCommand,
       loadPrivacy,
       submitPrivacyCommand,
+      loadReliability,
+      submitReliabilityCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
