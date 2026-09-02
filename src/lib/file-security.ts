@@ -32,6 +32,7 @@ const MIME: Record<string, string> = {
   png: "image/png",
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
+  m4a: "audio/mp4",
 };
 
 function rejectKnownPayloads(buffer: Buffer) {
@@ -58,6 +59,10 @@ function assertSignature(buffer: Buffer, ext: string) {
       buffer.length >= 4 &&
       buffer[0] === 0x50 &&
       buffer[1] === 0x4b) ||
+    (ext === "m4a" &&
+      buffer.length >= 16 &&
+      buffer.subarray(4, 8).toString("ascii") === "ftyp" &&
+      ["M4A ", "isom", "mp41", "mp42"].includes(buffer.subarray(8, 12).toString("ascii"))) ||
     ext === "csv";
   if (!matches) throw new FileRejectedError(`The bytes do not match a valid .${ext} file.`);
 }
@@ -389,6 +394,10 @@ export async function inspectAndSanitizeFile(buffer: Buffer, ext: string): Promi
     buffer: sanitized,
     detectedMime: MIME[ext] ?? "application/octet-stream",
     sha256: createHash("sha256").update(sanitized).digest("hex"),
-    details: `${scanner}; signature verified; metadata policy applied`,
+    details: `${scanner}; signature verified; ${
+      ext === "m4a"
+        ? "foreground-recorder audio envelope retained without transcript inference"
+        : "metadata policy applied"
+    }`,
   };
 }

@@ -56,6 +56,13 @@ import type {
   MobileMessagingCockpit,
   MobileMessagingCommand,
 } from "@/lib/messages";
+import {
+  beginVoiceNoteAttempt,
+  finishVoiceNoteAttempt,
+  type MobilePrepareCallWorkCommand,
+  type MobileVoiceCallsCockpit,
+  type VoiceNoteAttempt,
+} from "@/lib/voice-calls";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -101,6 +108,9 @@ type MobileSessionValue = {
   calendarConnectorLoadState: LoadState;
   messagingCockpit: MobileMessagingCockpit | null;
   messagingLoadState: LoadState;
+  voiceCallsCockpit: MobileVoiceCallsCockpit | null;
+  voiceCallsLoadState: LoadState;
+  latestVoiceNoteAttempt: VoiceNoteAttempt | null;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -127,6 +137,9 @@ type MobileSessionValue = {
   submitCalendarConnectorCommand: (command: MobileCalendarConnectorCommand) => Promise<void>;
   loadMessaging: () => Promise<void>;
   submitMessagingCommand: (command: MobileMessagingCommand) => Promise<void>;
+  loadVoiceCalls: () => Promise<void>;
+  submitPrepareCallWork: (command: MobilePrepareCallWorkCommand) => Promise<void>;
+  submitVoiceNoteAttempt: (attempt: VoiceNoteAttempt) => Promise<VoiceNoteAttempt>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -199,6 +212,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     useState<LoadState>("IDLE");
   const [messagingCockpit, setMessagingCockpit] = useState<MobileMessagingCockpit | null>(null);
   const [messagingLoadState, setMessagingLoadState] = useState<LoadState>("IDLE");
+  const [voiceCallsCockpit, setVoiceCallsCockpit] = useState<MobileVoiceCallsCockpit | null>(null);
+  const [voiceCallsLoadState, setVoiceCallsLoadState] = useState<LoadState>("IDLE");
+  const [latestVoiceNoteAttempt, setLatestVoiceNoteAttempt] = useState<VoiceNoteAttempt | null>(null);
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -214,6 +230,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingHumanEscalationRequest = useRef<string | null>(null);
   const dispatchingCalendarConnectorRequest = useRef<string | null>(null);
   const dispatchingMessagingRequest = useRef<string | null>(null);
+  const dispatchingVoiceCallRequest = useRef<string | null>(null);
+  const dispatchingVoiceNoteRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -274,6 +292,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setHumanEscalationLoadState("IDLE");
       setCalendarConnectorCockpit(null);
       setCalendarConnectorLoadState("IDLE");
+      setMessagingCockpit(null);
+      setMessagingLoadState("IDLE");
+      setVoiceCallsCockpit(null);
+      setVoiceCallsLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setOutboxEntries([]);
         setOutboxLoadState("LOADING");
@@ -282,6 +304,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setLatestAssistantAttempt(null);
         setLatestPreparedActionAttempt(null);
         setLatestEvidenceAttempt(null);
+        setLatestVoiceNoteAttempt(null);
         setPermissionCenter(null);
         setPermissionLoadState("IDLE");
       }
@@ -1049,6 +1072,117 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadVoiceCalls = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setVoiceCallsLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.voiceCallsCockpit(activeWorkspace.id);
+      const fieldMismatch =
+        (activeWorkspace.role === "FIELD_WORKER") !== (result.role === "field_worker");
+      if (fieldMismatch) throw new MobileApiError("INVALID_RESPONSE");
+      setVoiceCallsCockpit(result);
+      setVoiceCallsLoadState("READY");
+    } catch (error) {
+      setVoiceCallsCockpit(null);
+      setVoiceCallsLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitPrepareCallWork = useCallback(async (command: MobilePrepareCallWorkCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_VOICE_MANAGEMENT_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_VOICE_WORKSPACE_REFUSED");
+    }
+    if (dispatchingVoiceCallRequest.current) {
+      throw new Error("MOBILE_VOICE_CALL_ALREADY_DISPATCHED");
+    }
+    dispatchingVoiceCallRequest.current = command.commandId;
+    setVoiceCallsLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await prepareOutboxEntry("VOICE_CALL_COMMAND", command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.prepareCallWork(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
+      const refreshed = await api.voiceCallsCockpit(activeWorkspace.id);
+      setVoiceCallsCockpit(refreshed);
+      setVoiceCallsLoadState("READY");
+    } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      setVoiceCallsLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(command.commandId, state, activeWorkspace.id, publicMessage(error));
+      if (state === "CONFLICT") {
+        const refreshed = await api.voiceCallsCockpit(activeWorkspace.id).catch(() => null);
+        if (refreshed) {
+          setVoiceCallsCockpit(refreshed);
+          setVoiceCallsLoadState("READY");
+        }
+      }
+    } finally {
+      dispatchingVoiceCallRequest.current = null;
+    }
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
+  const submitVoiceNoteAttempt = useCallback(async (value: VoiceNoteAttempt) => {
+    if (!activeWorkspace?.permissions.canAddEvidence) {
+      throw new Error("MOBILE_VOICE_NOTE_PERMISSION_REFUSED");
+    }
+    if (value.command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_VOICE_NOTE_WORKSPACE_REFUSED");
+    }
+    if (dispatchingVoiceNoteRequest.current) {
+      throw new Error("MOBILE_VOICE_NOTE_ALREADY_DISPATCHED");
+    }
+    const sending = beginVoiceNoteAttempt(value);
+    dispatchingVoiceNoteRequest.current = sending.command.commandId;
+    setLatestVoiceNoteAttempt(sending);
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.uploadVoiceNote(sending.command);
+      const completed = finishVoiceNoteAttempt(sending, {
+        state: result.replayed ? "REPLAYED" : "CONFIRMED",
+        result,
+      });
+      setLatestVoiceNoteAttempt(completed);
+      const refreshed = await api.voiceCallsCockpit(activeWorkspace.id);
+      setVoiceCallsCockpit(refreshed);
+      setVoiceCallsLoadState("READY");
+      return completed;
+    } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      const failed = finishVoiceNoteAttempt(sending, {
+        state,
+        publicError: publicMessage(error),
+      });
+      setLatestVoiceNoteAttempt(failed);
+      setPublicError(failed.publicError);
+      return failed;
+    } finally {
+      dispatchingVoiceNoteRequest.current = null;
+    }
+  }, [activeWorkspace, api]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -1155,6 +1289,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitCalendarConnectorCommand(entry.command);
     } else if (entry.kind === "MESSAGING_COMMAND") {
       await submitMessagingCommand(entry.command);
+    } else if (entry.kind === "VOICE_CALL_COMMAND") {
+      await submitPrepareCallWork(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -1172,6 +1308,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitHumanEscalationCommand,
     submitCalendarConnectorCommand,
     submitMessagingCommand,
+    submitPrepareCallWork,
     submitFollowUpCommand,
   ]);
 
@@ -1218,6 +1355,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setCalendarConnectorLoadState("IDLE");
     setMessagingCockpit(null);
     setMessagingLoadState("IDLE");
+    setVoiceCallsCockpit(null);
+    setVoiceCallsLoadState("IDLE");
+    setLatestVoiceNoteAttempt(null);
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -1254,6 +1394,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       calendarConnectorLoadState,
       messagingCockpit,
       messagingLoadState,
+      voiceCallsCockpit,
+      voiceCallsLoadState,
+      latestVoiceNoteAttempt,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1278,6 +1421,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitCalendarConnectorCommand,
       loadMessaging,
       submitMessagingCommand,
+      loadVoiceCalls,
+      submitPrepareCallWork,
+      submitVoiceNoteAttempt,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1308,6 +1454,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       calendarConnectorLoadState,
       messagingCockpit,
       messagingLoadState,
+      voiceCallsCockpit,
+      voiceCallsLoadState,
+      latestVoiceNoteAttempt,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1337,6 +1486,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitCalendarConnectorCommand,
       loadMessaging,
       submitMessagingCommand,
+      loadVoiceCalls,
+      submitPrepareCallWork,
+      submitVoiceNoteAttempt,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

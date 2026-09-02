@@ -270,6 +270,15 @@ describe("direct outbound HTTP anywhere in src/ is an allowlist", () => {
    *  file — from this scan forever. */
   const DIRECT_HTTP_ALLOWLIST = [
     join("src", "components", "file-upload.tsx"),
+    // Browser-only calls to the fixed first-party permission API. Both URLs
+    // are code-controlled same-origin paths; neither accepts a destination
+    // from user, model or connector input.
+    join(
+      "src",
+      "components",
+      "construction-operating-assistant-r16",
+      "permission-center-client.tsx",
+    ),
     join("src", "components", "payment-actions.tsx"),
     join("src", "components", "quote-actions.tsx"),
     join("src", "lib", "email.ts"),

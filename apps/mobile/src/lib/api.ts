@@ -58,6 +58,13 @@ import {
   mobileMessagingCommandSchema,
   parseMobileMessagingCockpit,
 } from "@/lib/messages";
+import {
+  mobilePrepareCallWorkCommandSchema,
+  mobilePrepareCallWorkResultSchema,
+  mobileVoiceNoteCommandSchema,
+  mobileVoiceNoteResultSchema,
+  parseMobileVoiceCallsCockpit,
+} from "@/lib/voice-calls";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -517,6 +524,80 @@ export class MobileApi {
           : !("contactId" in result) || result.contactId !== parsedCommand.contactId)
       ) {
         throw new Error("MOBILE_MESSAGING_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async voiceCallsCockpit(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/voice-calls?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = parseMobileVoiceCallsCockpit(value);
+      if (result.workspaceId !== workspaceId) {
+        throw new Error("MOBILE_VOICE_WORKSPACE_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async prepareCallWork(command: unknown) {
+    const parsedCommand = mobilePrepareCallWorkCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/voice-calls", {
+      method: "POST",
+      body: JSON.stringify(parsedCommand),
+    });
+    try {
+      const result = mobilePrepareCallWorkResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.projectId !== parsedCommand.projectId ||
+        result.contactId !== parsedCommand.contactId
+      ) {
+        throw new Error("MOBILE_VOICE_CALL_WORK_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async uploadVoiceNote(command: unknown) {
+    const parsedCommand = mobileVoiceNoteCommandSchema.parse(command);
+    const form = new FormData();
+    for (const [key, value] of Object.entries(parsedCommand)) {
+      if (key === "uri") continue;
+      form.append(key, String(value));
+    }
+    form.append(
+      "file",
+      {
+        uri: parsedCommand.uri,
+        name: parsedCommand.fileName,
+        type: parsedCommand.mimeType,
+      } as unknown as Blob,
+    );
+    const value = await this.request("/api/endvera/v1/mobile/voice-calls/notes", {
+      method: "POST",
+      body: form,
+    });
+    try {
+      const result = mobileVoiceNoteResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.projectId !== parsedCommand.projectId ||
+        result.durationMs !== parsedCommand.durationMs ||
+        result.sizeBytes !== parsedCommand.sizeBytes
+      ) {
+        throw new Error("MOBILE_VOICE_NOTE_RESULT_MISMATCH");
       }
       return result;
     } catch {

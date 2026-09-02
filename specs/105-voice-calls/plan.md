@@ -7,9 +7,12 @@
    and prepared-call-work tables.
 3. Add trusted transcript admission that resolves identity/project and routes
    exactly once through R18.
-4. Add selected local voice-note admission with no fabricated transcription.
+4. Extend the shared file-security boundary for selected M4A voice notes, then
+   admit only signature-verified, scanned local evidence with no fabricated
+   transcription.
 5. Add policy-bound outbound call-work preparation and optional R22 escalation.
-6. Add protected mobile API and one shared Calls & voice surface.
+6. Add protected mobile API, restart-safe native outbox commands and one shared
+   Calls & voice surface.
 7. Add foreground-only `expo-audio` capture with explicit permission, 120-second
    maximum and explicit submission.
 8. Prove replay, concurrency, restart, ambiguity, consent and role isolation on
