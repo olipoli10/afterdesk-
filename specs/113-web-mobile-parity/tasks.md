@@ -41,6 +41,6 @@
 - [x] T022 Run R13-R22/R28-R32 and disposable PostgreSQL regression gates
 - [x] T023 Run root/mobile lint, typecheck, tests, Expo Doctor/export and Next.js build
 - [x] T024 Run Spec Kit analysis, diff/lockfile/effect audits and record R33 closeout
-- [ ] T025 Commit R33, mark it DONE and promote R34 in queue/backlog
+- [x] T025 Commit R33, mark it DONE and promote R34 in queue/backlog
 
 R33 is incomplete until R34 is promoted and autonomous work continues.

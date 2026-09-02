@@ -1056,7 +1056,7 @@
       "title": "Web, iOS and Android Golden Workflow parity",
       "objective": "Expose one accessible French/English Golden Workflow cockpit whose canonical state, blockers and next safe action are identical across Web, iOS and Android while preserving independent role-safe projections and zero external effect.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R32-ONBOARDING-IMPORT"
       ],
@@ -1092,6 +1092,57 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r33-web-mobile-parity.test.ts",
       "evidencePaths": [
         "../113-web-mobile-parity/evidence/r33-closeout.md"
+      ],
+      "outputHead": "463d86784c0592c53790374e56a1c2345f32ce91",
+      "outputTree": "3163695f66b6edf73cdabb061b19d44406a8a340",
+      "result": "One accessible bilingual Golden Workflow now preserves exact role-safe canonical state, blockers and next action across Web and shared iOS/Android with zero external effect.",
+      "completedAtUtc": "2026-09-02T12:01:04Z"
+    },
+    {
+      "id": "R34-BILLING-ADMIN-SITE",
+      "title": "Commercial account, operator and public site alignment",
+      "objective": "Create one honest Construction commercial control plane with versioned local plans, informational canonical usage, operator/support surfaces and accurate bilingual public positioning while billing and providers remain disabled.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R33-WEB-MOBILE-PARITY"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R33-WEB-MOBILE-PARITY"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/114-billing-admin-site",
+        "src/lib/construction-operating-assistant-r34",
+        "src/server/construction-operating-assistant-r34",
+        "src/server/construction-operating-assistant-r22",
+        "src/app/api/endvera/v1/mobile/commercial-account",
+        "src/app/api/endvera/v1/admin/construction-commercial",
+        "src/app/client/account",
+        "src/app/client/support",
+        "src/app/client/layout.tsx",
+        "src/app/client/cockpit",
+        "src/app/admin/construction-commercial",
+        "src/app/admin/construction-support",
+        "src/app/admin/layout.tsx",
+        "src/app/construction",
+        "src/app/page.tsx",
+        "src/lib/i18n/construction-operating-assistant-r34.ts",
+        "src/components/construction-operating-assistant-r34",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r34_commercial_account",
+        "test/construction-operating-assistant-r34*.test.ts",
+        "test/integration/construction-operating-assistant-r34*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../114-billing-admin-site/plan.md",
+      "planSha256": "f2a4f4811393fa2d3df6ec959adbdfd7459bcd143ae7896762bb6fbef8104371",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r34-commercial-account.test.ts",
+      "evidencePaths": [
+        "../114-billing-admin-site/evidence/r34-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",
