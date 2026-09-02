@@ -19,6 +19,7 @@ import {
   mobileEvidenceUploadResultSchema,
 } from "@/lib/evidence";
 import { parseMobileProjectTimeline } from "@/lib/timeline";
+import { parseMobileProjectProvenance } from "@/lib/provenance";
 import {
   mobileRevokePermissionCommandSchema,
   mobileRevokePermissionResultSchema,
@@ -312,6 +313,22 @@ export class MobileApi {
       const result = parseMobileProjectTimeline(value);
       if (result.workspaceId !== workspaceId || result.project.id !== projectId) {
         throw new Error("MOBILE_TIMELINE_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async projectProvenance(workspaceId: string, projectId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/provenance?workspaceId=${encodeURIComponent(workspaceId)}&projectId=${encodeURIComponent(projectId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = parseMobileProjectProvenance(value);
+      if (result.workspaceId !== workspaceId || result.project.id !== projectId) {
+        throw new Error("MOBILE_PROVENANCE_RESULT_MISMATCH");
       }
       return result;
     } catch {

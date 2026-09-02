@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/authz";
 import { clientPortalLangOf } from "@/lib/i18n/client-portal";
 import { CONSTRUCTION_ASSISTANT_I18N } from "@/lib/i18n/construction-assistant-v1";
 import { projectOpenLoopsForUser } from "@/server/construction-operating-assistant-r0/open-loops";
+import { projectProvenanceForUser } from "@/server/construction-operating-assistant-r29/provenance";
 import { constructionProjectForUser } from "@/server/construction-assistant-v1/workspace";
 
 const STATUS_COPY = {
@@ -47,11 +48,18 @@ export default async function ConstructionProjectPage({
   const { projectId } = await params;
   const project = await constructionProjectForUser(user.id, projectId);
   if (!project) notFound();
-  const loops = await projectOpenLoopsForUser({
-    userId: user.id,
-    workspaceId: project.workspaceId,
-    projectId: project.id,
-  });
+  const [loops, provenance] = await Promise.all([
+    projectOpenLoopsForUser({
+      userId: user.id,
+      workspaceId: project.workspaceId,
+      projectId: project.id,
+    }),
+    projectProvenanceForUser({
+      userId: user.id,
+      workspaceId: project.workspaceId,
+      projectId: project.id,
+    }),
+  ]);
   const contactOptions = project.contacts.map((contact) => ({
     id: contact.id,
     displayName: contact.displayName,
@@ -186,6 +194,41 @@ export default async function ConstructionProjectPage({
             ))}
           </div>
         )}
+      </section>
+
+      <section>
+        <SectionLabel tone="night" className="mb-3">
+          Pourquoi ENDVERA croit ça
+        </SectionLabel>
+        <Card tone="night">
+          <CardBody className="space-y-4">
+            <div className="grid gap-3 text-sm sm:grid-cols-4">
+              <div><span className="text-[#8A9099]">Vérifié</span><p className="mt-1 text-lg font-semibold text-[#8FD3A7]">{provenance.summary.verified}</p></div>
+              <div><span className="text-[#8A9099]">Proposé</span><p className="mt-1 text-lg font-semibold text-[#E2C486]">{provenance.summary.proposed}</p></div>
+              <div><span className="text-[#8A9099]">Contradictoire</span><p className="mt-1 text-lg font-semibold text-[#FF9A8B]">{provenance.summary.contradicted}</p></div>
+              <div><span className="text-[#8A9099]">Appui humain</span><p className="mt-1 text-lg font-semibold">{provenance.summary.humanAssisted}</p></div>
+            </div>
+            {provenance.entries.length === 0 ? (
+              <p className="text-sm text-[#A1A8B3]">Aucune provenance enregistrée pour ce chantier.</p>
+            ) : (
+              <div className="space-y-3 border-t border-white/10 pt-4">
+                {provenance.entries.map((entry) => (
+                  <article key={entry.id} className="rounded-lg border border-white/10 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-mono text-xs uppercase tracking-wider text-[#C9A76A]">{entry.kind.replaceAll("_", " ")}</p>
+                      <time className="text-xs text-[#8A9099]">{new Intl.DateTimeFormat("fr-CA", { dateStyle: "medium", timeStyle: "short" }).format(new Date(entry.recordedAt))}</time>
+                    </div>
+                    <p className="mt-2 text-sm text-[#F7F6F3]">{entry.statement}</p>
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#8A9099]">
+                      <span>État: {entry.stateLabel}</span>
+                      <span>Source: {entry.source.label}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </CardBody>
+        </Card>
       </section>
 
       <div className="grid gap-5 lg:grid-cols-2">

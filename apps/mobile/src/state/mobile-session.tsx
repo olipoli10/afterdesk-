@@ -35,6 +35,7 @@ import {
   type EvidenceAttempt,
 } from "@/lib/evidence";
 import type { MobileProjectTimeline } from "@/lib/timeline";
+import type { MobileProjectProvenance } from "@/lib/provenance";
 import type { MobileJobCommand, MobileJobSchedule } from "@/lib/jobs";
 import type {
   MobileFollowUpCommand,
@@ -99,6 +100,8 @@ type MobileSessionValue = {
   latestEvidenceAttempt: EvidenceAttempt | null;
   timeline: MobileProjectTimeline | null;
   timelineLoadState: LoadState;
+  provenance: MobileProjectProvenance | null;
+  provenanceLoadState: LoadState;
   jobSchedule: MobileJobSchedule | null;
   jobScheduleLoadState: LoadState;
   followUpQueue: MobileFollowUpQueue | null;
@@ -134,6 +137,7 @@ type MobileSessionValue = {
   ) => Promise<PreparedActionAttempt>;
   submitEvidenceAttempt: (attempt: EvidenceAttempt) => Promise<EvidenceAttempt>;
   loadTimeline: (projectId: string) => Promise<void>;
+  loadProvenance: (projectId: string) => Promise<void>;
   loadJobSchedule: (projectId?: string) => Promise<void>;
   submitJobCommand: (command: MobileJobCommand) => Promise<void>;
   loadFollowUpQueue: (projectId?: string) => Promise<void>;
@@ -211,6 +215,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     useState<EvidenceAttempt | null>(null);
   const [timeline, setTimeline] = useState<MobileProjectTimeline | null>(null);
   const [timelineLoadState, setTimelineLoadState] = useState<LoadState>("IDLE");
+  const [provenance, setProvenance] = useState<MobileProjectProvenance | null>(null);
+  const [provenanceLoadState, setProvenanceLoadState] = useState<LoadState>("IDLE");
   const [jobSchedule, setJobSchedule] = useState<MobileJobSchedule | null>(null);
   const [jobScheduleLoadState, setJobScheduleLoadState] = useState<LoadState>("IDLE");
   const [followUpQueue, setFollowUpQueue] = useState<MobileFollowUpQueue | null>(null);
@@ -306,6 +312,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setActiveWorkspace(workspace);
       setTimeline(null);
       setTimelineLoadState("IDLE");
+      setProvenance(null);
+      setProvenanceLoadState("IDLE");
       setJobSchedule(null);
       setJobScheduleLoadState("IDLE");
       setFollowUpQueue(null);
@@ -677,6 +685,30 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       } catch (error) {
         setTimeline(null);
         setTimelineLoadState("UNAVAILABLE");
+        setPublicError(publicMessage(error));
+      }
+    },
+    [activeWorkspace, api, cockpit?.projects],
+  );
+
+  const loadProvenance = useCallback(
+    async (projectId: string) => {
+      if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+      if (!cockpit?.projects.some((project) => project.id === projectId)) {
+        throw new Error("MOBILE_PROVENANCE_PROJECT_REFUSED");
+      }
+      setProvenanceLoadState("LOADING");
+      setPublicError(null);
+      try {
+        await assertNetworkAvailable();
+        const result = await api.projectProvenance(activeWorkspace.id, projectId);
+        const fieldMismatch = (activeWorkspace.role === "FIELD_WORKER") !== (result.role === "FIELD_WORKER");
+        if (fieldMismatch) throw new MobileApiError("INVALID_RESPONSE");
+        setProvenance(result);
+        setProvenanceLoadState("READY");
+      } catch (error) {
+        setProvenance(null);
+        setProvenanceLoadState("UNAVAILABLE");
         setPublicError(publicMessage(error));
       }
     },
@@ -1551,6 +1583,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setLatestEvidenceAttempt(null);
     setTimeline(null);
     setTimelineLoadState("IDLE");
+    setProvenance(null);
+    setProvenanceLoadState("IDLE");
     setJobSchedule(null);
     setJobScheduleLoadState("IDLE");
     setFollowUpQueue(null);
@@ -1596,6 +1630,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestEvidenceAttempt,
       timeline,
       timelineLoadState,
+      provenance,
+      provenanceLoadState,
       jobSchedule,
       jobScheduleLoadState,
       followUpQueue,
@@ -1629,6 +1665,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitPreparedActionAttempt,
       submitEvidenceAttempt,
       loadTimeline,
+      loadProvenance,
       loadJobSchedule,
       submitJobCommand,
       loadFollowUpQueue,
@@ -1668,6 +1705,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       latestEvidenceAttempt,
       timeline,
       timelineLoadState,
+      provenance,
+      provenanceLoadState,
       jobSchedule,
       jobScheduleLoadState,
       followUpQueue,
@@ -1706,6 +1745,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitPreparedActionAttempt,
       submitEvidenceAttempt,
       loadTimeline,
+      loadProvenance,
       loadJobSchedule,
       submitJobCommand,
       loadFollowUpQueue,
