@@ -6,6 +6,7 @@ import {
   createPaymentAttempt,
   createReceivableAttempt,
 } from "@/lib/commands";
+import type { MobileEconomicCommand } from "@/lib/invoices";
 import { useMobileSession } from "@/state/mobile-session";
 
 function dateInputToIso(value: string) {
@@ -91,7 +92,7 @@ export function PaymentForm({
 }: {
   receivable: { id: string; version: number; outstandingAmountMinor: number; invoiceReference: string };
 }) {
-  const { activeWorkspace, latestAttempt, submitAttempt } = useMobileSession();
+  const { activeWorkspace, latestAttempt, submitAttempt, loadEconomicCockpit } = useMobileSession();
   const [amount, setAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -101,7 +102,7 @@ export function PaymentForm({
     try {
       const amountMinor = dollarsToMinor(amount);
       if (amountMinor > receivable.outstandingAmountMinor) throw new Error("AMOUNT_INVALID");
-      await submitAttempt(
+      const result = await submitAttempt(
         createPaymentAttempt({
           workspaceId: activeWorkspace.id,
           receivableId: receivable.id,
@@ -112,6 +113,9 @@ export function PaymentForm({
           note: "Paiement confirmé dans l’application mobile.",
         }),
       );
+      if (result.state === "CONFIRMED" || result.state === "REPLAYED") {
+        await loadEconomicCockpit();
+      }
       setAmount("");
     } catch {
       setError("Le montant doit être positif et ne pas dépasser le solde.");
@@ -123,6 +127,178 @@ export function PaymentForm({
       <TextInput value={amount} onChangeText={setAmount} placeholder="Paiement reçu ($)" placeholderTextColor={colors.muted} keyboardType="decimal-pad" style={styles.input} />
       {error ? <Notice danger>{error}</Notice> : null}
       <Button tone="secondary" onPress={submit} disabled={!amount.trim() || latestAttempt?.state === "SENDING"}>Confirmer le paiement</Button>
+    </View>
+  );
+}
+
+type Readiness = {
+  loopId: string;
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  stateVersion: number;
+  status: "WAITING_FOR_EVIDENCE" | "WAITING_FOR_VERIFICATION" | "READY_TO_INVOICE";
+  amountMinor: number | null;
+};
+
+export function IssueReadyInvoiceForm({ readiness }: { readiness: Readiness }) {
+  const {
+    activeWorkspace,
+    cockpit,
+    economicCockpitLoadState,
+    submitEconomicCommand,
+  } = useMobileSession();
+  const contact = cockpit?.contacts.find((candidate) => candidate.project?.id === readiness.projectId);
+  const [reference, setReference] = useState(`${readiness.projectCode}-${todayInput().replaceAll("-", "")}`);
+  const [issuedAt, setIssuedAt] = useState(todayInput());
+  const [dueAt, setDueAt] = useState(futureInput(30));
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (!activeWorkspace || !contact || readiness.status !== "READY_TO_INVOICE") return;
+    setError(null);
+    try {
+      const issued = dateInputToIso(issuedAt);
+      const due = dateInputToIso(dueAt);
+      if (due < issued) throw new Error("DATE_INVALID");
+      const command: MobileEconomicCommand = {
+        schemaVersion: 1,
+        commandId: globalThis.crypto.randomUUID(),
+        workspaceId: activeWorkspace.id,
+        action: "ISSUE_READY_INVOICE",
+        openLoopId: readiness.loopId,
+        expectedLoopVersion: readiness.stateVersion,
+        contactId: contact.id,
+        invoiceReference: reference,
+        issuedAt: issued,
+        dueAt: due,
+      };
+      await submitEconomicCommand(command);
+    } catch {
+      setError("La facture doit garder le bon chantier, le bon contact et des dates valides.");
+    }
+  }
+
+  if (readiness.status !== "READY_TO_INVOICE") return null;
+  return (
+    <View style={styles.formSection}>
+      <Text style={sharedStyles.success}>Dossier prêt: {readiness.projectName}</Text>
+      <Text style={sharedStyles.muted}>
+        Montant canonique: {readiness.amountMinor === null ? "inconnu" : `${(readiness.amountMinor / 100).toFixed(2)} $ CAD`}
+      </Text>
+      <Text style={sharedStyles.muted}>Destinataire: {contact?.displayName ?? "contact du chantier requis"}</Text>
+      <TextInput value={reference} onChangeText={setReference} placeholder="Référence" placeholderTextColor={colors.muted} style={styles.input} />
+      <View style={sharedStyles.row}>
+        <TextInput value={issuedAt} onChangeText={setIssuedAt} placeholder="Émission" placeholderTextColor={colors.muted} style={[styles.input, styles.half]} />
+        <TextInput value={dueAt} onChangeText={setDueAt} placeholder="Échéance" placeholderTextColor={colors.muted} style={[styles.input, styles.half]} />
+      </View>
+      {error ? <Notice danger>{error}</Notice> : null}
+      <Button
+        onPress={submit}
+        disabled={!contact || !reference.trim() || economicCockpitLoadState === "LOADING"}
+      >
+        Enregistrer la facture prête
+      </Button>
+    </View>
+  );
+}
+
+type EconomicReceivable = {
+  id: string;
+  version: number;
+  outstandingAmountMinor: number;
+  activePromise: {
+    id: string;
+    version: number;
+    promisedAmountMinor: number;
+    promisedFor: string;
+  } | null;
+};
+
+export function PaymentPromiseForm({ receivable }: { receivable: EconomicReceivable }) {
+  const { activeWorkspace, economicCockpitLoadState, submitEconomicCommand } = useMobileSession();
+  const [amount, setAmount] = useState("");
+  const [promisedFor, setPromisedFor] = useState(futureInput(7));
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (!activeWorkspace || receivable.activePromise) return;
+    setError(null);
+    try {
+      const amountMinor = dollarsToMinor(amount);
+      if (amountMinor > receivable.outstandingAmountMinor) throw new Error("AMOUNT_INVALID");
+      await submitEconomicCommand({
+        schemaVersion: 1,
+        commandId: globalThis.crypto.randomUUID(),
+        workspaceId: activeWorkspace.id,
+        action: "RECORD_PAYMENT_PROMISE",
+        receivableId: receivable.id,
+        expectedReceivableVersion: receivable.version,
+        promisedAmountMinor: amountMinor,
+        currency: "CAD",
+        promisedFor: dateInputToIso(promisedFor),
+        sourceRef: "mobile:user-recorded-payment-promise",
+      });
+      setAmount("");
+    } catch {
+      setError("La promesse doit avoir un montant inférieur ou égal au solde et une date valide.");
+    }
+  }
+
+  if (receivable.activePromise) return null;
+  return (
+    <View style={styles.formSection}>
+      <Label>Promesse de paiement</Label>
+      <TextInput value={amount} onChangeText={setAmount} placeholder="Montant promis ($)" placeholderTextColor={colors.muted} keyboardType="decimal-pad" style={styles.input} />
+      <TextInput value={promisedFor} onChangeText={setPromisedFor} placeholder="AAAA-MM-JJ" placeholderTextColor={colors.muted} style={styles.input} />
+      {error ? <Notice danger>{error}</Notice> : null}
+      <Button tone="secondary" onPress={submit} disabled={!amount.trim() || economicCockpitLoadState === "LOADING"}>Enregistrer la promesse</Button>
+    </View>
+  );
+}
+
+export function ResolvePaymentPromiseForm({ receivable }: { receivable: EconomicReceivable }) {
+  const { activeWorkspace, economicCockpitLoadState, submitEconomicCommand } = useMobileSession();
+  const [error, setError] = useState<string | null>(null);
+  const promise = receivable.activePromise;
+
+  async function resolve(outcome: "KEPT" | "BROKEN" | "REVOKED") {
+    if (!activeWorkspace || !promise) return;
+    setError(null);
+    try {
+      await submitEconomicCommand({
+        schemaVersion: 1,
+        commandId: globalThis.crypto.randomUUID(),
+        workspaceId: activeWorkspace.id,
+        action: "RESOLVE_PAYMENT_PROMISE",
+        receivableId: receivable.id,
+        promiseId: promise.id,
+        expectedReceivableVersion: receivable.version,
+        expectedPromiseVersion: promise.version,
+        outcome,
+        occurredAt: new Date().toISOString(),
+        reason: outcome === "KEPT"
+          ? "Paiement correspondant enregistré."
+          : outcome === "BROKEN"
+            ? "Date promise dépassée sans paiement correspondant."
+            : "Promesse révoquée par un utilisateur autorisé.",
+      });
+    } catch {
+      setError("ENDVERA refuse ce résultat tant que les faits de paiement et la date ne le prouvent pas.");
+    }
+  }
+
+  if (!promise) return null;
+  return (
+    <View style={styles.formSection}>
+      <Label>Promesse active</Label>
+      <Text style={sharedStyles.muted}>
+        {(promise.promisedAmountMinor / 100).toFixed(2)} $ prévu le {new Date(promise.promisedFor).toLocaleDateString("fr-CA")}
+      </Text>
+      {error ? <Notice danger>{error}</Notice> : null}
+      <Button disabled={economicCockpitLoadState === "LOADING"} onPress={() => void resolve("KEPT")}>Confirmer tenue</Button>
+      <Button tone="secondary" disabled={economicCockpitLoadState === "LOADING"} onPress={() => void resolve("BROKEN")}>Marquer non tenue</Button>
+      <Button tone="secondary" disabled={economicCockpitLoadState === "LOADING"} onPress={() => void resolve("REVOKED")}>Révoquer</Button>
     </View>
   );
 }

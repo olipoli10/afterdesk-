@@ -96,6 +96,10 @@ const TRUNCATE_GUARDED_TABLES = [
     table: "ConstructionFollowUpTransition",
     trigger: "ConstructionFollowUpTransition_guard_truncate",
   },
+  {
+    table: "ConstructionEconomicCommand",
+    trigger: "ConstructionEconomicCommand_guard_truncate",
+  },
 ];
 
 beforeAll(async () => {

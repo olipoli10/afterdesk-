@@ -31,6 +31,8 @@ what is owed, what was promised and who must act next.
 - `specs/101-receivables-invoice/**`;
 - `src/lib/construction-operating-assistant-r21/**`;
 - `src/server/construction-operating-assistant-r21/**`;
+- `src/server/construction-operating-assistant-r20/follow-up-engine.ts` only to
+  add the workspace filter required for bounded R21 due preparation;
 - `src/app/api/endvera/v1/mobile/invoices/**`;
 - `apps/mobile/src/app/(app)/receivables.tsx`;
 - `apps/mobile/src/components/receivable-forms.tsx` only for R21 commands;

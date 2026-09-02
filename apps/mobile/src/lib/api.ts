@@ -38,6 +38,11 @@ import {
   mobileFollowUpResultSchema,
   parseMobileFollowUpQueue,
 } from "@/lib/follow-ups";
+import {
+  mobileEconomicCommandSchema,
+  mobileEconomicResultSchema,
+  parseMobileEconomicCockpit,
+} from "@/lib/invoices";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -346,6 +351,43 @@ export class MobileApi {
         result.action !== parsedCommand.action
       ) {
         throw new Error("MOBILE_FOLLOW_UP_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async economicCockpit(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/invoices?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = parseMobileEconomicCockpit(value);
+      if (result.workspaceId !== workspaceId) {
+        throw new Error("MOBILE_INVOICE_WORKSPACE_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async economicCommand(command: unknown) {
+    const parsedCommand = mobileEconomicCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/invoices", {
+      method: "POST",
+      body: JSON.stringify(parsedCommand),
+    });
+    try {
+      const result = mobileEconomicResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.action !== parsedCommand.action
+      ) {
+        throw new Error("MOBILE_INVOICE_RESULT_MISMATCH");
       }
       return result;
     } catch {

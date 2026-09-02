@@ -756,11 +756,16 @@ async function processDueOne(followUpId: string, now: Date) {
   });
 }
 
-export async function prepareDueManagedFollowUps(input?: { now?: Date; limit?: number }) {
+export async function prepareDueManagedFollowUps(input?: {
+  now?: Date;
+  limit?: number;
+  workspaceId?: string;
+}) {
   const now = input?.now ?? new Date();
   const limit = Math.max(1, Math.min(input?.limit ?? 50, 100));
   const due = await prisma.constructionFollowUp.findMany({
     where: {
+      workspaceId: input?.workspaceId,
       policyHash: { not: null },
       status: { in: ["scheduled", "escalated"] },
       dueAt: { lte: now },

@@ -397,6 +397,13 @@ enum ConstructionFollowUpAttemptStatus {
   cancelled
 }
 
+enum ConstructionPaymentPromiseStatus {
+  active
+  kept
+  broken
+  revoked
+}
+
 enum ConstructionJobStatus {
   proposed
   scheduled
@@ -465,6 +472,8 @@ model User {
   constructionReceivableEventsAuthored    ConstructionReceivableEvent[]    @relation("ConstructionReceivableEventActor")
   constructionFollowUpsRequested          ConstructionFollowUp[]           @relation("ConstructionFollowUpRequestedBy")
   constructionFollowUpTransitionsAuthored ConstructionFollowUpTransition[] @relation("ConstructionFollowUpTransitionActor")
+  constructionPaymentPromisesCreated      ConstructionPaymentPromise[]     @relation("ConstructionPaymentPromiseCreatedBy")
+  constructionEconomicCommandsAuthored    ConstructionEconomicCommand[]    @relation("ConstructionEconomicCommandActor")
   constructionJobsCreated                 ConstructionJob[]                @relation("ConstructionJobCreatedBy")
   constructionJobTransitionsAuthored      ConstructionJobTransition[]      @relation("ConstructionJobTransitionActor")
 }
@@ -3422,6 +3431,8 @@ model ConstructionWorkspace {
   followUps           ConstructionFollowUp[]
   followUpAttempts    ConstructionFollowUpAttempt[]
   followUpTransitions ConstructionFollowUpTransition[]
+  paymentPromises     ConstructionPaymentPromise[]
+  economicCommands    ConstructionEconomicCommand[]
   jobs                ConstructionJob[]
   jobAssignments      ConstructionJobAssignment[]
   jobDependencies     ConstructionJobDependency[]
@@ -3521,6 +3532,7 @@ model ConstructionContact {
   followUps        ConstructionFollowUp[]
   followUpAttempts ConstructionFollowUpAttempt[]
   jobAssignments   ConstructionJobAssignment[]
+  paymentPromises  ConstructionPaymentPromise[]
 
   @@index([workspaceId, displayName])
   @@index([workspaceId, normalizedPhone])
@@ -3777,6 +3789,8 @@ model ConstructionOpenLoop {
   sourceMessages   ConstructionMessage[]               @relation("ConstructionOpenLoopSourceMessages")
   humanEscalations ConstructionHumanEscalation[]
   followUps        ConstructionFollowUp[]
+  receivable       ConstructionReceivable?
+  economicCommands ConstructionEconomicCommand[]
 
   @@unique([workspaceId, idempotencyKey])
   @@unique([workspaceId, semanticKey])
@@ -3928,6 +3942,8 @@ model ConstructionReceivable {
   project                ConstructionProject          @relation(fields: [projectId], references: [id], onDelete: Restrict)
   contactId              String?
   contact                ConstructionContact?         @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  openLoopId             String?                      @unique
+  openLoop               ConstructionOpenLoop?        @relation(fields: [openLoopId], references: [id], onDelete: Restrict)
   invoiceReference       String
   originalAmountMinor    Int
   outstandingAmountMinor Int
@@ -3943,13 +3959,77 @@ model ConstructionReceivable {
   createdAt              DateTime                     @default(now())
   updatedAt              DateTime                     @updatedAt
 
-  events    ConstructionReceivableEvent[]
-  followUps ConstructionFollowUp[]
+  events           ConstructionReceivableEvent[]
+  followUps        ConstructionFollowUp[]
+  promises         ConstructionPaymentPromise[]
+  economicCommands ConstructionEconomicCommand[]
 
   @@unique([workspaceId, invoiceReference])
   @@unique([workspaceId, idempotencyKey])
   @@index([workspaceId, status, dueAt])
   @@index([projectId, status])
+}
+
+/// A promise changes collection responsibility, never the receivable balance.
+/// activeKey enforces at most one active promise per receivable.
+model ConstructionPaymentPromise {
+  id                  String                           @id @default(cuid())
+  workspaceId         String
+  workspace           ConstructionWorkspace            @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  receivableId        String
+  receivable          ConstructionReceivable           @relation(fields: [receivableId], references: [id], onDelete: Restrict)
+  contactId           String
+  contact             ConstructionContact              @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  status              ConstructionPaymentPromiseStatus @default(active)
+  version             Int                              @default(1)
+  promisedAmountMinor Int
+  currency            String                           @default("CAD")
+  promisedFor         DateTime
+  sourceRef           String
+  sourceHash          String
+  idempotencyKey      String
+  activeKey           String?                          @unique
+  createdById         String
+  createdBy           User                             @relation("ConstructionPaymentPromiseCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  keptAt              DateTime?
+  brokenAt            DateTime?
+  revokedAt           DateTime?
+  resolutionReason    String?
+  createdAt           DateTime                         @default(now())
+  updatedAt           DateTime                         @updatedAt
+
+  economicCommands ConstructionEconomicCommand[]
+
+  @@unique([workspaceId, idempotencyKey])
+  @@index([workspaceId, status, promisedFor])
+  @@index([receivableId, createdAt])
+}
+
+/// Immutable exact-command ledger for R21 invoice and promise changes.
+model ConstructionEconomicCommand {
+  id           String                      @id @default(cuid())
+  workspaceId  String
+  workspace    ConstructionWorkspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  commandId    String
+  commandHash  String
+  action       String
+  openLoopId   String?
+  openLoop     ConstructionOpenLoop?       @relation(fields: [openLoopId], references: [id], onDelete: Restrict)
+  receivableId String?
+  receivable   ConstructionReceivable?     @relation(fields: [receivableId], references: [id], onDelete: Restrict)
+  promiseId    String?
+  promise      ConstructionPaymentPromise? @relation(fields: [promiseId], references: [id], onDelete: Restrict)
+  beforeState  Json?
+  afterState   Json?
+  result       Json
+  actorId      String
+  actor        User                        @relation("ConstructionEconomicCommandActor", fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt    DateTime                    @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([receivableId, createdAt])
+  @@index([promiseId, createdAt])
+  @@index([workspaceId, createdAt])
 }
 
 /// Immutable provenance for every receivable assertion and balance change.

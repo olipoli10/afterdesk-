@@ -41,6 +41,10 @@ import type {
   MobileFollowUpQueue,
 } from "@/lib/follow-ups";
 import type {
+  MobileEconomicCockpit,
+  MobileEconomicCommand,
+} from "@/lib/invoices";
+import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
 } from "@/lib/permissions";
@@ -77,6 +81,8 @@ type MobileSessionValue = {
   jobScheduleLoadState: LoadState;
   followUpQueue: MobileFollowUpQueue | null;
   followUpQueueLoadState: LoadState;
+  economicCockpit: MobileEconomicCockpit | null;
+  economicCockpitLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -95,6 +101,8 @@ type MobileSessionValue = {
   submitJobCommand: (command: MobileJobCommand) => Promise<void>;
   loadFollowUpQueue: (projectId?: string) => Promise<void>;
   submitFollowUpCommand: (command: MobileFollowUpCommand) => Promise<void>;
+  loadEconomicCockpit: () => Promise<void>;
+  submitEconomicCommand: (command: MobileEconomicCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -155,6 +163,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [jobScheduleLoadState, setJobScheduleLoadState] = useState<LoadState>("IDLE");
   const [followUpQueue, setFollowUpQueue] = useState<MobileFollowUpQueue | null>(null);
   const [followUpQueueLoadState, setFollowUpQueueLoadState] = useState<LoadState>("IDLE");
+  const [economicCockpit, setEconomicCockpit] = useState<MobileEconomicCockpit | null>(null);
+  const [economicCockpitLoadState, setEconomicCockpitLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -166,6 +176,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingPermissionRequest = useRef<string | null>(null);
   const dispatchingJobRequest = useRef<string | null>(null);
   const dispatchingFollowUpRequest = useRef<string | null>(null);
+  const dispatchingEconomicRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -220,6 +231,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setJobScheduleLoadState("IDLE");
       setFollowUpQueue(null);
       setFollowUpQueueLoadState("IDLE");
+      setEconomicCockpit(null);
+      setEconomicCockpitLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setOutboxEntries([]);
         setOutboxLoadState("LOADING");
@@ -708,6 +721,70 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadEconomicCockpit = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setEconomicCockpitLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.economicCockpit(activeWorkspace.id);
+      if (result.role !== activeWorkspace.role) throw new MobileApiError("INVALID_RESPONSE");
+      setEconomicCockpit(result);
+      setEconomicCockpitLoadState("READY");
+    } catch (error) {
+      setEconomicCockpit(null);
+      setEconomicCockpitLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitEconomicCommand = useCallback(async (command: MobileEconomicCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_INVOICE_COMMAND_PERMISSION_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_INVOICE_WORKSPACE_REFUSED");
+    }
+    if (dispatchingEconomicRequest.current) {
+      throw new Error("MOBILE_INVOICE_COMMAND_ALREADY_DISPATCHED");
+    }
+    dispatchingEconomicRequest.current = command.commandId;
+    setEconomicCockpitLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await prepareOutboxEntry("ECONOMIC_COMMAND", command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.economicCommand(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
+      const refreshed = await api.economicCockpit(activeWorkspace.id);
+      setEconomicCockpit(refreshed);
+      setEconomicCockpitLoadState("READY");
+    } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      setEconomicCockpitLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(command.commandId, state, activeWorkspace.id, publicMessage(error));
+      if (error instanceof MobileApiError && error.code === "CONFLICT") {
+        const refreshed = await api.economicCockpit(activeWorkspace.id).catch(() => null);
+        if (refreshed) {
+          setEconomicCockpit(refreshed);
+          setEconomicCockpitLoadState("READY");
+        }
+      }
+    } finally {
+      dispatchingEconomicRequest.current = null;
+    }
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -806,6 +883,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await revokePermission(entry.command);
     } else if (entry.kind === "JOB_COMMAND") {
       await submitJobCommand(entry.command);
+    } else if (entry.kind === "ECONOMIC_COMMAND") {
+      await submitEconomicCommand(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -819,6 +898,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitAttempt,
     submitPreparedActionAttempt,
     submitJobCommand,
+    submitEconomicCommand,
     submitFollowUpCommand,
   ]);
 
@@ -857,6 +937,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setJobScheduleLoadState("IDLE");
     setFollowUpQueue(null);
     setFollowUpQueueLoadState("IDLE");
+    setEconomicCockpit(null);
+    setEconomicCockpitLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -885,6 +967,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       jobScheduleLoadState,
       followUpQueue,
       followUpQueueLoadState,
+      economicCockpit,
+      economicCockpitLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -901,6 +985,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitJobCommand,
       loadFollowUpQueue,
       submitFollowUpCommand,
+      loadEconomicCockpit,
+      submitEconomicCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -923,6 +1009,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       jobScheduleLoadState,
       followUpQueue,
       followUpQueueLoadState,
+      economicCockpit,
+      economicCockpitLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -944,6 +1032,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitJobCommand,
       loadFollowUpQueue,
       submitFollowUpCommand,
+      loadEconomicCockpit,
+      submitEconomicCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

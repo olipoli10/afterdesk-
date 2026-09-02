@@ -499,6 +499,7 @@
         "specs/101-receivables-invoice",
         "src/lib/construction-operating-assistant-r21",
         "src/server/construction-operating-assistant-r21",
+        "src/server/construction-operating-assistant-r20/follow-up-engine.ts",
         "src/app/api/endvera/v1/mobile/invoices",
         "apps/mobile/src/app/(app)/receivables.tsx",
         "apps/mobile/src/components/receivable-forms.tsx",
@@ -514,7 +515,7 @@
         "test/integration/per-file-setup.ts"
       ],
       "planPath": "../101-receivables-invoice/plan.md",
-      "planSha256": "d492c61a35a9883f751c7c7b31db76da41e78594b78d92fe7fbd29143708e2ab",
+      "planSha256": "d1152726752529a1c72bd22091cc3393ea1f53aafad445f793f0fcf2975f1b8a",
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r21-receivables-invoice.test.ts",
       "evidencePaths": [
         "../101-receivables-invoice/evidence/r21-closeout.md"
