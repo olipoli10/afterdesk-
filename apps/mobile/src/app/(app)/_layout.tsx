@@ -29,6 +29,7 @@ export default function AppLayout() {
       <Tabs.Screen name="permissions" options={{ title: "Accès", tabBarIcon: ({ color }) => <TabGlyph value="⊙" color={color} /> }} />
       <Tabs.Screen name="outbox" options={{ title: "Reprise", tabBarIcon: ({ color }) => <TabGlyph value="↻" color={color} /> }} />
       <Tabs.Screen name="receivables" options={{ title: "À recevoir", tabBarIcon: ({ color }) => <TabGlyph value="$" color={color} /> }} />
+      <Tabs.Screen name="human-support" options={{ title: "Appui humain", tabBarIcon: ({ color }) => <TabGlyph value="H" color={color} /> }} />
       <Tabs.Screen name="actions" options={{ title: "Actions", tabBarIcon: ({ color }) => <TabGlyph value="✓" color={color} /> }} />
       <Tabs.Screen name="settings" options={{ title: "Compte", tabBarIcon: ({ color }) => <TabGlyph value="•" color={color} /> }} />
     </Tabs>

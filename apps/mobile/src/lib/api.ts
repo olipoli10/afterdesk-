@@ -43,6 +43,11 @@ import {
   mobileEconomicResultSchema,
   parseMobileEconomicCockpit,
 } from "@/lib/invoices";
+import {
+  mobileHumanEscalationCommandSchema,
+  mobileHumanEscalationResultSchema,
+  parseMobileHumanEscalationCockpit,
+} from "@/lib/human-escalations";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -388,6 +393,43 @@ export class MobileApi {
         result.action !== parsedCommand.action
       ) {
         throw new Error("MOBILE_INVOICE_RESULT_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async humanEscalationCockpit(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/human-escalations?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = parseMobileHumanEscalationCockpit(value);
+      if (result.workspaceId !== workspaceId) {
+        throw new Error("MOBILE_HUMAN_SUPPORT_WORKSPACE_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async humanEscalationCommand(command: unknown) {
+    const parsedCommand = mobileHumanEscalationCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/human-escalations", {
+      method: "POST",
+      body: JSON.stringify(parsedCommand),
+    });
+    try {
+      const result = mobileHumanEscalationResultSchema.parse(value);
+      if (
+        result.commandId !== parsedCommand.commandId ||
+        result.workspaceId !== parsedCommand.workspaceId ||
+        result.action !== parsedCommand.action
+      ) {
+        throw new Error("MOBILE_HUMAN_SUPPORT_RESULT_MISMATCH");
       }
       return result;
     } catch {

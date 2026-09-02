@@ -10,8 +10,8 @@
 
 **Purpose**: Freeze the incremental boundary and prove the current engine is the reusable foundation.
 
-- [ ] T001 Record the existing R5 and Human Work Unit reuse inventory in `specs/102-human-escalation-resume/evidence/r22-reuse-inventory.md`
-- [ ] T002 Verify root/mobile dependency and lockfile baselines in `specs/102-human-escalation-resume/evidence/r22-lockfile-baseline.md`
+- [X] T001 Record the existing R5 and Human Work Unit reuse inventory in `specs/102-human-escalation-resume/evidence/r22-reuse-inventory.md`
+- [X] T002 Verify root/mobile dependency and lockfile baselines in `specs/102-human-escalation-resume/evidence/r22-lockfile-baseline.md`
 
 ---
 
@@ -19,9 +19,9 @@
 
 **Purpose**: Define strict shared contracts before product behavior.
 
-- [ ] T003 [P] Create strict R22 owner projection and command schemas in `src/lib/construction-operating-assistant-r22/contracts.ts`
-- [ ] T004 [P] Add RED contract, state-mapping, redaction, and unknown-field tests in `test/construction-operating-assistant-r22-human-escalation.test.ts`
-- [ ] T005 [P] Add shared mobile human-escalation contract parsing in `apps/mobile/src/lib/human-escalations.ts`
+- [X] T003 [P] Create strict R22 owner projection and command schemas in `src/lib/construction-operating-assistant-r22/contracts.ts`
+- [X] T004 [P] Add RED contract, state-mapping, redaction, and unknown-field tests in `test/construction-operating-assistant-r22-human-escalation.test.ts`
+- [X] T005 [P] Add shared mobile human-escalation contract parsing in `apps/mobile/src/lib/human-escalations.ts`
 
 **Checkpoint**: R22 boundaries are closed-world and testable without a second engine.
 
@@ -33,9 +33,9 @@
 
 **Independent Test**: Concurrent and replayed prepare commands create one bound escalation; stale, cross-workspace, unauthorized, disabled, and mismatched commands create none.
 
-- [ ] T006 [US1] Add real-PostgreSQL RED coverage for prepare, replay, concurrency, stale version, tenancy, policy, and atomicity in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
-- [ ] T007 [US1] Implement role-safe owner projection and R5 preparation composition in `src/server/construction-operating-assistant-r22/human-escalation-cockpit.ts`
-- [ ] T008 [US1] Add protected GET and prepare/withdraw POST behavior in `src/app/api/endvera/v1/mobile/human-escalations/route.ts`
+- [X] T006 [US1] Add real-PostgreSQL RED coverage for prepare, replay, concurrency, stale version, tenancy, policy, and atomicity in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
+- [X] T007 [US1] Implement role-safe owner projection and R5 preparation composition in `src/server/construction-operating-assistant-r22/human-escalation-cockpit.ts`
+- [X] T008 [US1] Add protected GET and prepare/withdraw POST behavior in `src/app/api/endvera/v1/mobile/human-escalations/route.ts`
 
 **Checkpoint**: One blocked loop can enter one bounded, auditable, unfunded-prepared human escalation with zero transport.
 
@@ -47,9 +47,9 @@
 
 **Independent Test**: An eligible synthetic worker can claim and submit the exact contract, an independent reviewer can decide it, and forbidden financial/identity fields never enter worker state.
 
-- [ ] T009 [P] [US2] Extend worker-projection regression assertions for Construction escalation redaction in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
-- [ ] T010 [US2] Add full synthetic claim, submission, evidence, revision, acceptance, and exhaustion coverage through existing Human Work Unit APIs in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
-- [ ] T011 [US2] Map canonical Human Work Unit review states to owner-facing next owner and action in `src/server/construction-operating-assistant-r22/human-escalation-cockpit.ts`
+- [X] T009 [P] [US2] Extend worker-projection regression assertions for Construction escalation redaction in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
+- [X] T010 [US2] Add full synthetic claim, submission, evidence, revision, acceptance, and exhaustion coverage through existing Human Work Unit APIs in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
+- [X] T011 [US2] Map canonical Human Work Unit review states to owner-facing next owner and action in `src/server/construction-operating-assistant-r22/human-escalation-cockpit.ts`
 
 **Checkpoint**: Human support is bounded and independently reviewable without widening worker data reach.
 
@@ -61,9 +61,9 @@
 
 **Independent Test**: Concurrent apply plus recovery retries produce one acceptance binding, one resume record, one verified construction evidence effect, and one loop transition.
 
-- [ ] T012 [US3] Add RED concurrency, replay, closed-loop, fingerprint-mismatch, and restart-recovery coverage in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
-- [ ] T013 [US3] Add R22 recovery orchestration and explicit operator-owned failure projection in `src/server/construction-operating-assistant-r22/human-escalation-cockpit.ts`
-- [ ] T014 [US3] Verify exact R5 accepted-result application remains the only Construction resume path in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
+- [X] T012 [US3] Add RED concurrency, replay, closed-loop, fingerprint-mismatch, and restart-recovery coverage in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
+- [X] T013 [US3] Add R22 recovery orchestration and explicit operator-owned failure projection in `src/server/construction-operating-assistant-r22/human-escalation-cockpit.ts`
+- [X] T014 [US3] Verify exact R5 accepted-result application remains the only Construction resume path in `test/integration/construction-operating-assistant-r22-human-escalation.itest.ts`
 
 **Checkpoint**: Acceptance and Construction delivery remain separate, recoverable, and exactly once.
 
@@ -73,9 +73,9 @@
 
 **Purpose**: Make Human Support visible and controllable from the shared iOS/Android application.
 
-- [ ] T015 [P] Add stable API and outbox commands for human escalation read/prepare/withdraw in `apps/mobile/src/lib/api.ts`, `apps/mobile/src/lib/outbox.ts`, and `apps/mobile/src/state/mobile-session.tsx`
-- [ ] T016 [P] Add one owner/office Human Support screen and navigation entry in `apps/mobile/src/app/(app)/human-support.tsx` and `apps/mobile/src/app/(app)/_layout.tsx`
-- [ ] T017 Add mobile parsing, stable retry, restart, role, next-action, and zero-transport tests in `apps/mobile/test/human-escalations.test.ts`
+- [X] T015 [P] Add stable API and outbox commands for human escalation read/prepare/withdraw in `apps/mobile/src/lib/api.ts`, `apps/mobile/src/lib/outbox.ts`, and `apps/mobile/src/state/mobile-session.tsx`
+- [X] T016 [P] Add one owner/office Human Support screen and navigation entry in `apps/mobile/src/app/(app)/human-support.tsx` and `apps/mobile/src/app/(app)/_layout.tsx`
+- [X] T017 Add mobile parsing, stable retry, restart, role, next-action, and zero-transport tests in `apps/mobile/test/human-escalations.test.ts`
 
 ---
 
@@ -83,8 +83,8 @@
 
 **Purpose**: Prove the incremental bridge, preserve truthful evidence labels, and continue the roadmap.
 
-- [ ] T018 Run the targeted R22, R5, Human Work Unit, Construction R0, PostgreSQL, and mobile gates documented in `specs/102-human-escalation-resume/quickstart.md`
-- [ ] T019 Run root/mobile lint, typecheck, full mobile tests, Prisma history validation, Next.js Webpack build, and `git diff --check`, recording results in `specs/102-human-escalation-resume/evidence/r22-closeout.md`
+- [X] T018 Run the targeted R22, R5, Human Work Unit, Construction R0, PostgreSQL, and mobile gates documented in `specs/102-human-escalation-resume/quickstart.md`
+- [X] T019 Run root/mobile lint, typecheck, full mobile tests, Prisma history validation, Next.js Webpack build, and `git diff --check`, recording results in `specs/102-human-escalation-resume/evidence/r22-closeout.md`
 - [ ] T020 Close R22 and advance the rolling queue and project backlog to R23 in `specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json`, `specs/090-prepared-action-inspection/PROJECT_BACKLOG.json`, and `specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json`
 
 ## Dependencies and Execution Order

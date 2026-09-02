@@ -45,6 +45,10 @@ import type {
   MobileEconomicCommand,
 } from "@/lib/invoices";
 import type {
+  MobileHumanEscalationCockpit,
+  MobileHumanEscalationCommand,
+} from "@/lib/human-escalations";
+import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
 } from "@/lib/permissions";
@@ -83,6 +87,8 @@ type MobileSessionValue = {
   followUpQueueLoadState: LoadState;
   economicCockpit: MobileEconomicCockpit | null;
   economicCockpitLoadState: LoadState;
+  humanEscalationCockpit: MobileHumanEscalationCockpit | null;
+  humanEscalationLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -103,6 +109,8 @@ type MobileSessionValue = {
   submitFollowUpCommand: (command: MobileFollowUpCommand) => Promise<void>;
   loadEconomicCockpit: () => Promise<void>;
   submitEconomicCommand: (command: MobileEconomicCommand) => Promise<void>;
+  loadHumanEscalations: () => Promise<void>;
+  submitHumanEscalationCommand: (command: MobileHumanEscalationCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -165,6 +173,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [followUpQueueLoadState, setFollowUpQueueLoadState] = useState<LoadState>("IDLE");
   const [economicCockpit, setEconomicCockpit] = useState<MobileEconomicCockpit | null>(null);
   const [economicCockpitLoadState, setEconomicCockpitLoadState] = useState<LoadState>("IDLE");
+  const [humanEscalationCockpit, setHumanEscalationCockpit] =
+    useState<MobileHumanEscalationCockpit | null>(null);
+  const [humanEscalationLoadState, setHumanEscalationLoadState] =
+    useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -177,6 +189,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingJobRequest = useRef<string | null>(null);
   const dispatchingFollowUpRequest = useRef<string | null>(null);
   const dispatchingEconomicRequest = useRef<string | null>(null);
+  const dispatchingHumanEscalationRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -233,6 +246,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setFollowUpQueueLoadState("IDLE");
       setEconomicCockpit(null);
       setEconomicCockpitLoadState("IDLE");
+      setHumanEscalationCockpit(null);
+      setHumanEscalationLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setOutboxEntries([]);
         setOutboxLoadState("LOADING");
@@ -785,6 +800,83 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
 
+  const loadHumanEscalations = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setHumanEscalationLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.humanEscalationCockpit(activeWorkspace.id);
+      if (result.role !== activeWorkspace.role) {
+        throw new MobileApiError("INVALID_RESPONSE");
+      }
+      setHumanEscalationCockpit(result);
+      setHumanEscalationLoadState("READY");
+    } catch (error) {
+      setHumanEscalationCockpit(null);
+      setHumanEscalationLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitHumanEscalationCommand = useCallback(async (
+    command: MobileHumanEscalationCommand,
+  ) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_HUMAN_SUPPORT_PERMISSION_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) {
+      throw new Error("MOBILE_HUMAN_SUPPORT_WORKSPACE_REFUSED");
+    }
+    if (dispatchingHumanEscalationRequest.current) {
+      throw new Error("MOBILE_HUMAN_SUPPORT_ALREADY_DISPATCHED");
+    }
+    dispatchingHumanEscalationRequest.current = command.commandId;
+    setHumanEscalationLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await prepareOutboxEntry(
+        "HUMAN_ESCALATION_COMMAND",
+        command,
+        activeWorkspace.id,
+      );
+      await assertNetworkAvailable();
+      const result = await api.humanEscalationCommand(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
+      const refreshed = await api.humanEscalationCockpit(activeWorkspace.id);
+      setHumanEscalationCockpit(refreshed);
+      setHumanEscalationLoadState("READY");
+    } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      setHumanEscalationLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(
+        command.commandId,
+        state,
+        activeWorkspace.id,
+        publicMessage(error),
+      );
+      if (error instanceof MobileApiError && error.code === "CONFLICT") {
+        const refreshed = await api.humanEscalationCockpit(activeWorkspace.id).catch(() => null);
+        if (refreshed) {
+          setHumanEscalationCockpit(refreshed);
+          setHumanEscalationLoadState("READY");
+        }
+      }
+    } finally {
+      dispatchingHumanEscalationRequest.current = null;
+    }
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -885,6 +977,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitJobCommand(entry.command);
     } else if (entry.kind === "ECONOMIC_COMMAND") {
       await submitEconomicCommand(entry.command);
+    } else if (entry.kind === "HUMAN_ESCALATION_COMMAND") {
+      await submitHumanEscalationCommand(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -899,6 +993,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitPreparedActionAttempt,
     submitJobCommand,
     submitEconomicCommand,
+    submitHumanEscalationCommand,
     submitFollowUpCommand,
   ]);
 
@@ -939,6 +1034,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setFollowUpQueueLoadState("IDLE");
     setEconomicCockpit(null);
     setEconomicCockpitLoadState("IDLE");
+    setHumanEscalationCockpit(null);
+    setHumanEscalationLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -969,6 +1066,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       followUpQueueLoadState,
       economicCockpit,
       economicCockpitLoadState,
+      humanEscalationCockpit,
+      humanEscalationLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -987,6 +1086,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitFollowUpCommand,
       loadEconomicCockpit,
       submitEconomicCommand,
+      loadHumanEscalations,
+      submitHumanEscalationCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1011,6 +1112,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       followUpQueueLoadState,
       economicCockpit,
       economicCockpitLoadState,
+      humanEscalationCockpit,
+      humanEscalationLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1034,6 +1137,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitFollowUpCommand,
       loadEconomicCockpit,
       submitEconomicCommand,
+      loadHumanEscalations,
+      submitHumanEscalationCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
