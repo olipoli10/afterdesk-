@@ -1,0 +1,28 @@
+import {useEffect,useMemo,useState} from "react";
+import {Pressable,StyleSheet,Text,TextInput} from "react-native";
+import {Button,Card,Empty,Heading,Label,Loading,Notice,Screen,colors,sharedStyles} from "@/components/ui";
+import {createPrepareEmailAccountCommand,createPrepareEmailDraftCommand,mobileEmailDraftCommandSchema} from "@/lib/email-inbox";
+import {useMobileSession} from "@/state/mobile-session";
+
+function opaqueRef(){const bytes=globalThis.crypto.getRandomValues(new Uint8Array(32));return `email_${Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("")}`;}
+
+export default function EmailScreen(){
+  const {activeWorkspace,cockpit,emailCockpit,emailLoadState,publicError,loadEmail,submitEmailCommand}=useMobileSession();
+  const [projectId,setProjectId]=useState<string|null>(null);const [contactId,setContactId]=useState<string|null>(null);const [subject,setSubject]=useState("");const [body,setBody]=useState("");const [busy,setBusy]=useState(false);
+  useEffect(()=>{if(emailLoadState==="IDLE")void loadEmail();},[emailLoadState,loadEmail]);
+  const projects=cockpit?.projects??[];const activeProjectId=projectId??projects[0]?.id??null;
+  const contacts=useMemo(()=>emailCockpit?.contacts.filter(c=>!activeProjectId||c.projectId===activeProjectId)??[],[activeProjectId,emailCockpit?.contacts]);const contact=contacts.find(c=>c.id===(contactId??contacts[0]?.id));const account=emailCockpit?.accounts.find(a=>a.status==="PREPARED_DISABLED");const field=activeWorkspace?.role==="FIELD_WORKER";
+  const run=async(command:Parameters<typeof submitEmailCommand>[0])=>{setBusy(true);await submitEmailCommand(command).finally(()=>setBusy(false));};
+  const prepareAccount=async()=>{if(!activeWorkspace)return;await run(createPrepareEmailAccountCommand({workspace:activeWorkspace,commandId:globalThis.crypto.randomUUID(),provider:"GOOGLE_GMAIL",accountRef:opaqueRef(),mailboxScopeRef:opaqueRef()}));};
+  const prepareDraft=async()=>{if(!activeWorkspace||!account||!activeProjectId||!contact||!subject.trim()||!body.trim())return;await run(createPrepareEmailDraftCommand({workspace:activeWorkspace,commandId:globalThis.crypto.randomUUID(),accountId:account.id,projectId:activeProjectId,contactId:contact.id,toRef:contact.emailRef,subject,body}));setSubject("");setBody("");};
+  const approve=async(draft:NonNullable<typeof emailCockpit>["drafts"][number])=>{if(!activeWorkspace||!draft.payloadHash)return;await run(mobileEmailDraftCommandSchema.parse({schemaVersion:1,action:"APPROVE_EMAIL_DRAFT",commandId:globalThis.crypto.randomUUID(),workspaceId:activeWorkspace.id,draftId:draft.id,expectedVersion:draft.version,expectedPayloadHash:draft.payloadHash}));};
+  return <Screen><Heading eyebrow="COURRIEL DE CHANTIER" title="Une seule boîte, liée aux chantiers" body="ENDVERA classe les courriels et prépare des réponses exactes. Aucun compte réel n’est connecté et rien n’est envoyé."/>
+    {emailLoadState==="LOADING"?<Loading label="Mémoire courriel…"/>:null}{publicError?<Notice danger>{publicError}</Notice>:null}
+    {field?<Card><Empty>Les détails courriel sont réservés au propriétaire et au bureau.</Empty></Card>:<>
+      <Card><Label>Connexion</Label>{account?<Notice>{account.provider} · accès local préparé · aucun OAuth · aucun envoi</Notice>:<Button disabled={busy} onPress={prepareAccount}>Préparer l’accès local désactivé</Button>}</Card>
+      {account?<Card><Label>Préparer une réponse</Label>{projects.map(p=><Pressable key={p.id} onPress={()=>{setProjectId(p.id);setContactId(null);}} style={[styles.choice,p.id===activeProjectId&&styles.active]}><Text style={sharedStyles.name}>{p.name}</Text><Text style={sharedStyles.muted}>{p.code}</Text></Pressable>)}{contacts.map(c=><Pressable key={c.id} onPress={()=>setContactId(c.id)} style={[styles.choice,c.id===contact?.id&&styles.active]}><Text style={sharedStyles.name}>{c.displayName}</Text><Text style={sharedStyles.muted}>Destinataire vérifié</Text></Pressable>)}{contacts.length?<><TextInput style={styles.input} value={subject} onChangeText={setSubject} placeholder="Sujet" placeholderTextColor={colors.muted}/><TextInput style={[styles.input,styles.body]} value={body} onChangeText={setBody} placeholder="Message exact" placeholderTextColor={colors.muted} multiline/><Button disabled={busy||!subject.trim()||!body.trim()} onPress={prepareDraft}>Préparer sans envoyer</Button></>:<Empty>Aucun contact courriel vérifié pour ce chantier.</Empty>}</Card>:null}
+      <Card><Label>Brouillons à inspecter</Label>{emailCockpit?.drafts.length?emailCockpit.drafts.map(d=><Card key={d.id}><Text style={sharedStyles.name}>{d.subject}</Text><Text style={sharedStyles.muted}>{d.body}</Text><Text style={sharedStyles.muted}>À: {d.toRef} · version {d.version} · {d.status}</Text>{d.status==="PREPARED_UNSENT"?<Button disabled={busy} onPress={()=>approve(d)}>Approuver exactement, sans envoyer</Button>:<Notice>Approuvé localement; transport bloqué.</Notice>}</Card>):<Empty>Aucun brouillon.</Empty>}</Card>
+      <Card><Label>Courriels associés</Label>{emailCockpit?.events.length?emailCockpit.events.map(e=><Card key={e.id}><Text style={sharedStyles.name}>{e.subject}</Text><Text style={sharedStyles.muted}>{e.body}</Text><Text style={sharedStyles.muted}>{e.status} · {e.evidenceLinkCount} preuve(s)</Text></Card>):<Empty>Aucun courriel admis.</Empty>}</Card>
+    </>}</Screen>;
+}
+const styles=StyleSheet.create({choice:{borderWidth:1,borderColor:colors.border,borderRadius:12,padding:12,marginTop:8},active:{borderColor:colors.accent,backgroundColor:colors.panel},input:{borderWidth:1,borderColor:colors.border,borderRadius:12,color:colors.text,padding:12,marginTop:12},body:{minHeight:110,textAlignVertical:"top"}});

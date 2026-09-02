@@ -1,0 +1,21 @@
+import {describe,expect,it} from "vitest";
+import {
+  EMAIL_POLICY_VERSION,
+  approveEmailDraftCommandSchema,
+  normalizedEmailInboundEventSchema,
+  prepareEmailAccountCommandSchema,
+  prepareEmailDraftCommandSchema,
+  revokeEmailAccountCommandSchema,
+} from "@/lib/construction-operating-assistant-r26/contracts";
+import {emailDraftPayloadHash,emailEventHash,opaqueEmailRef} from "@/lib/construction-operating-assistant-r26/policy";
+
+const refs={account:opaqueEmailRef("account"),mailbox:opaqueEmailRef("mailbox"),message:opaqueEmailRef("message"),thread:opaqueEmailRef("thread"),cursor:opaqueEmailRef("cursor"),sender:opaqueEmailRef("sender"),recipient:opaqueEmailRef("recipient")};
+const event={schemaVersion:1 as const,eventId:"3cb408f9-a6c2-4f8d-a31d-9cc263d838d5",workspaceId:"workspace-1",accountId:"account-1",providerMessageRef:refs.message,threadRef:refs.thread,previousCursorRef:null,cursorRef:refs.cursor,cursorContinuity:"CURRENT" as const,senderIdentityRef:refs.sender,recipientRefs:[refs.recipient],occurredAt:"2026-09-02T04:00:00.000Z",subject:"Dosseret Laval",normalizedBody:"Le matériel est prêt mardi.",projectId:"project-1",contactId:"contact-1",selectedEvidenceIds:[],verificationState:"HUMAN_CONFIRMED" as const,externalTransportPerformed:false as const};
+
+describe("R26 project email contracts",()=>{
+  it("accepts only narrow disabled account capabilities",()=>{expect(prepareEmailAccountCommandSchema.safeParse({schemaVersion:1,action:"PREPARE_EMAIL_ACCOUNT",commandId:crypto.randomUUID(),workspaceId:"workspace-1",provider:"GOOGLE_GMAIL",accountRef:refs.account,mailboxScopeRef:refs.mailbox,capabilities:["READ_METADATA","READ_SELECTED_CONTENT","PREPARE_DRAFT"]}).success).toBe(true);expect(prepareEmailAccountCommandSchema.safeParse({schemaVersion:1,action:"PREPARE_EMAIL_ACCOUNT",commandId:crypto.randomUUID(),workspaceId:"workspace-1",provider:"GOOGLE_GMAIL",accountRef:refs.account,mailboxScopeRef:refs.mailbox,capabilities:["SEND"]}).success).toBe(false);expect(revokeEmailAccountCommandSchema.safeParse({schemaVersion:1,action:"REVOKE_EMAIL_ACCOUNT",commandId:crypto.randomUUID(),workspaceId:"workspace-1",accountId:"account-1",expectedVersion:1}).success).toBe(true);});
+  it("rejects provider secrets, raw URLs and remote attachments",()=>{expect(normalizedEmailInboundEventSchema.safeParse(event).success).toBe(true);expect(normalizedEmailInboundEventSchema.safeParse({...event,accessToken:"secret"}).success).toBe(false);expect(normalizedEmailInboundEventSchema.safeParse({...event,attachmentUrl:"https://provider.invalid/a"}).success).toBe(false);expect(normalizedEmailInboundEventSchema.safeParse({...event,externalTransportPerformed:true}).success).toBe(false);});
+  it("fingerprints exact replay and content drift",()=>{expect(emailEventHash(event)).toBe(emailEventHash({...event}));expect(emailEventHash(event)).not.toBe(emailEventHash({...event,normalizedBody:"Autre contenu"}));});
+  it("requires explicit opaque cursor continuity",()=>{expect(normalizedEmailInboundEventSchema.safeParse({...event,cursorContinuity:"SYNC_REQUIRED"}).success).toBe(true);expect(normalizedEmailInboundEventSchema.safeParse({...event,previousCursorRef:"raw-history-id"}).success).toBe(false);expect(normalizedEmailInboundEventSchema.safeParse({...event,cursorContinuity:"GUESSED"}).success).toBe(false);});
+  it("binds exact draft payload and approval",()=>{const draft={schemaVersion:1 as const,action:"PREPARE_EMAIL_DRAFT" as const,commandId:crypto.randomUUID(),workspaceId:"workspace-1",accountId:"account-1",projectId:"project-1",contactId:"contact-1",toRef:refs.recipient,ccRefs:[],subject:"Preuve requise",body:"Marc, peux-tu envoyer la photo?",threadRef:refs.thread,selectedEvidenceIds:[],expectedPolicyVersion:EMAIL_POLICY_VERSION};expect(prepareEmailDraftCommandSchema.safeParse(draft).success).toBe(true);const payloadHash=emailDraftPayloadHash({...draft,version:1});expect(approveEmailDraftCommandSchema.safeParse({schemaVersion:1,action:"APPROVE_EMAIL_DRAFT",commandId:crypto.randomUUID(),workspaceId:"workspace-1",draftId:"draft-1",expectedVersion:1,expectedPayloadHash:payloadHash}).success).toBe(true);expect(payloadHash).not.toBe(emailDraftPayloadHash({...draft,body:"Texte modifié",version:1}));});
+});

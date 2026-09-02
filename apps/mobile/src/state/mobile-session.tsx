@@ -63,6 +63,7 @@ import {
   type MobileVoiceCallsCockpit,
   type VoiceNoteAttempt,
 } from "@/lib/voice-calls";
+import type { MobileEmailCockpit, MobileEmailCommand } from "@/lib/email-inbox";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -111,6 +112,8 @@ type MobileSessionValue = {
   voiceCallsCockpit: MobileVoiceCallsCockpit | null;
   voiceCallsLoadState: LoadState;
   latestVoiceNoteAttempt: VoiceNoteAttempt | null;
+  emailCockpit: MobileEmailCockpit | null;
+  emailLoadState: LoadState;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -140,6 +143,8 @@ type MobileSessionValue = {
   loadVoiceCalls: () => Promise<void>;
   submitPrepareCallWork: (command: MobilePrepareCallWorkCommand) => Promise<void>;
   submitVoiceNoteAttempt: (attempt: VoiceNoteAttempt) => Promise<VoiceNoteAttempt>;
+  loadEmail: () => Promise<void>;
+  submitEmailCommand: (command: MobileEmailCommand) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -215,6 +220,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [voiceCallsCockpit, setVoiceCallsCockpit] = useState<MobileVoiceCallsCockpit | null>(null);
   const [voiceCallsLoadState, setVoiceCallsLoadState] = useState<LoadState>("IDLE");
   const [latestVoiceNoteAttempt, setLatestVoiceNoteAttempt] = useState<VoiceNoteAttempt | null>(null);
+  const [emailCockpit, setEmailCockpit] = useState<MobileEmailCockpit | null>(null);
+  const [emailLoadState, setEmailLoadState] = useState<LoadState>("IDLE");
   const [permissionCenter, setPermissionCenter] = useState<MobilePermissionCenter | null>(null);
   const [permissionLoadState, setPermissionLoadState] = useState<LoadState>("IDLE");
   const [outboxEntries, setOutboxEntries] = useState<MobileOutboxEntry[]>([]);
@@ -232,6 +239,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingMessagingRequest = useRef<string | null>(null);
   const dispatchingVoiceCallRequest = useRef<string | null>(null);
   const dispatchingVoiceNoteRequest = useRef<string | null>(null);
+  const dispatchingEmailRequest = useRef<string | null>(null);
   const activeWorkspaceId = useRef<string | null>(null);
 
   const refreshOutbox = useCallback(async (workspaceId: string) => {
@@ -296,6 +304,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setMessagingLoadState("IDLE");
       setVoiceCallsCockpit(null);
       setVoiceCallsLoadState("IDLE");
+      setEmailCockpit(null);
+      setEmailLoadState("IDLE");
       if (activeWorkspaceId.current !== workspace.id) {
         setOutboxEntries([]);
         setOutboxLoadState("LOADING");
@@ -1183,6 +1193,60 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api]);
 
+  const loadEmail = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setEmailLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.emailCockpit(activeWorkspace.id);
+      const fieldMismatch =
+        (activeWorkspace.role === "FIELD_WORKER") !== (result.role === "field_worker");
+      if (fieldMismatch) throw new MobileApiError("INVALID_RESPONSE");
+      setEmailCockpit(result);
+      setEmailLoadState("READY");
+    } catch (error) {
+      setEmailCockpit(null);
+      setEmailLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitEmailCommand = useCallback(async (command: MobileEmailCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") {
+      throw new Error("MOBILE_EMAIL_MANAGEMENT_REFUSED");
+    }
+    if (command.workspaceId !== activeWorkspace.id) throw new Error("MOBILE_EMAIL_WORKSPACE_REFUSED");
+    if (dispatchingEmailRequest.current) throw new Error("MOBILE_EMAIL_ALREADY_DISPATCHED");
+    dispatchingEmailRequest.current = command.commandId;
+    setEmailLoadState("LOADING");
+    setPublicError(null);
+    const kind = command.action === "PREPARE_EMAIL_ACCOUNT" || command.action === "REVOKE_EMAIL_ACCOUNT"
+      ? "EMAIL_ACCOUNT_COMMAND"
+      : "EMAIL_DRAFT_COMMAND";
+    try {
+      await prepareOutboxEntry(kind, command, activeWorkspace.id);
+      await assertNetworkAvailable();
+      const result = await api.emailCommand(command) as { replayed?: boolean };
+      await settleOutboxEntry(command.commandId, result.replayed ? "REPLAYED" : "CONFIRMED", activeWorkspace.id);
+      const refreshed = await api.emailCockpit(activeWorkspace.id);
+      setEmailCockpit(refreshed);
+      setEmailLoadState("READY");
+    } catch (error) {
+      const state = error instanceof MobileApiError && error.code === "CONFLICT"
+        ? "CONFLICT"
+        : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+          ? "OUTCOME_UNKNOWN"
+          : "REFUSED";
+      setEmailLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      await settleOutboxEntry(command.commandId, state, activeWorkspace.id, publicMessage(error));
+      if (state === "CONFLICT") await loadEmail();
+    } finally {
+      dispatchingEmailRequest.current = null;
+    }
+  }, [activeWorkspace, api, loadEmail, prepareOutboxEntry, settleOutboxEntry]);
+
   const loadPermissions = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setPermissionLoadState("LOADING");
@@ -1291,6 +1355,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitMessagingCommand(entry.command);
     } else if (entry.kind === "VOICE_CALL_COMMAND") {
       await submitPrepareCallWork(entry.command);
+    } else if (entry.kind === "EMAIL_ACCOUNT_COMMAND" || entry.kind === "EMAIL_DRAFT_COMMAND") {
+      await submitEmailCommand(entry.command);
     } else {
       await submitFollowUpCommand(entry.command);
     }
@@ -1309,6 +1375,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitCalendarConnectorCommand,
     submitMessagingCommand,
     submitPrepareCallWork,
+    submitEmailCommand,
     submitFollowUpCommand,
   ]);
 
@@ -1358,6 +1425,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setVoiceCallsCockpit(null);
     setVoiceCallsLoadState("IDLE");
     setLatestVoiceNoteAttempt(null);
+    setEmailCockpit(null);
+    setEmailLoadState("IDLE");
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
@@ -1397,6 +1466,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       voiceCallsCockpit,
       voiceCallsLoadState,
       latestVoiceNoteAttempt,
+      emailCockpit,
+      emailLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1424,6 +1495,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadVoiceCalls,
       submitPrepareCallWork,
       submitVoiceNoteAttempt,
+      loadEmail,
+      submitEmailCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1457,6 +1530,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       voiceCallsCockpit,
       voiceCallsLoadState,
       latestVoiceNoteAttempt,
+      emailCockpit,
+      emailLoadState,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1489,6 +1564,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadVoiceCalls,
       submitPrepareCallWork,
       submitVoiceNoteAttempt,
+      loadEmail,
+      submitEmailCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

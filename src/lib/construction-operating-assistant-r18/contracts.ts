@@ -6,6 +6,7 @@ export const UNIFIED_INTENT_SOURCE_KINDS = [
   "PORTAL_TEXT",
   "VOICE_TRANSCRIPT",
   "FILE_OBSERVATION",
+  "EMAIL_MESSAGE",
 ] as const;
 
 const commonSourceFields = {
@@ -29,6 +30,12 @@ export const unifiedIntentSourceSchema = z.discriminatedUnion("kind", [
     kind: z.literal("FILE_OBSERVATION"),
     evidenceId: z.string().min(1).max(160),
     observation: z.string().trim().min(1).max(10_000),
+    verificationState: z.enum(["UNVERIFIED", "HUMAN_CONFIRMED"]),
+  }).strict(),
+  z.object({
+    ...commonSourceFields,
+    kind: z.literal("EMAIL_MESSAGE"),
+    text: z.string().trim().min(1).max(10_000),
     verificationState: z.enum(["UNVERIFIED", "HUMAN_CONFIRMED"]),
   }).strict(),
 ]);
@@ -94,6 +101,7 @@ export type UnifiedIntentSource = z.infer<typeof unifiedIntentSourceSchema>;
 export function unifiedIntentBody(envelope: UnifiedIntentEnvelope): string {
   if (envelope.source.kind === "PORTAL_TEXT") return envelope.source.text;
   if (envelope.source.kind === "VOICE_TRANSCRIPT") return envelope.source.transcript;
+  if (envelope.source.kind === "EMAIL_MESSAGE") return envelope.source.text;
   return envelope.source.observation;
 }
 

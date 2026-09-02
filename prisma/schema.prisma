@@ -3446,6 +3446,9 @@ model ConstructionWorkspace {
   callTransitions        ConstructionCallTransition[]
   voiceNoteReferences    ConstructionVoiceNoteReference[]
   callWork               ConstructionCallWork[]
+  emailAccounts          ConstructionEmailAccount[]
+  emailEvents            ConstructionEmailEvent[]
+  emailDrafts            ConstructionEmailDraft[]
 
   @@index([ownerUserId, status])
 }
@@ -3514,6 +3517,8 @@ model ConstructionProject {
   callSessions           ConstructionCallSession[]
   voiceNoteReferences    ConstructionVoiceNoteReference[]
   callWork               ConstructionCallWork[]
+  emailEvents            ConstructionEmailEvent[]
+  emailDrafts            ConstructionEmailDraft[]
 
   @@unique([workspaceId, code])
   @@index([workspaceId, name])
@@ -3549,6 +3554,8 @@ model ConstructionContact {
   messagingTransitions ConstructionMessagingTransition[]
   callSessions         ConstructionCallSession[]
   callWork             ConstructionCallWork[]
+  emailEvents          ConstructionEmailEvent[]
+  emailDrafts          ConstructionEmailDraft[]
 
   @@index([workspaceId, displayName])
   @@index([workspaceId, normalizedPhone])
@@ -3899,6 +3906,131 @@ model ConstructionCallWork {
   @@index([workspaceId, status, createdAt])
   @@index([projectId, status])
   @@index([contactId, status])
+}
+
+model ConstructionEmailAccount {
+  id                       String                   @id @default(cuid())
+  workspaceId              String
+  workspace                ConstructionWorkspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  provider                 String
+  accountRef               String
+  mailboxScopeRef          String
+  capabilities             String[]
+  status                   String                   @default("PREPARED_DISABLED")
+  version                  Int                      @default(1)
+  cursorRef                String?
+  cursorVersion            Int                      @default(0)
+  credentialStored         Boolean                  @default(false)
+  externalTransportEnabled Boolean                  @default(false)
+  preparedByUserId         String
+  revokedAt                DateTime?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  events                   ConstructionEmailEvent[]
+  drafts                   ConstructionEmailDraft[]
+
+  @@unique([workspaceId, provider, accountRef])
+  @@index([workspaceId, status, createdAt])
+}
+
+model ConstructionEmailEvent {
+  id                         String                          @id @default(cuid())
+  workspaceId                String
+  workspace                  ConstructionWorkspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  accountId                  String
+  account                    ConstructionEmailAccount        @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  projectId                  String?
+  project                    ConstructionProject?            @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  contactId                  String?
+  contact                    ConstructionContact?            @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  messageId                  String                          @unique
+  eventId                    String
+  providerMessageRef         String
+  threadRef                  String?
+  cursorRef                  String
+  senderIdentityRef          String
+  recipientRefs              String[]
+  subject                    String
+  normalizedBody             String
+  eventHash                  String
+  status                     String                          @default("RECEIVED")
+  verificationState          String
+  result                     Json?
+  externalTransportPerformed Boolean                         @default(false)
+  occurredAt                 DateTime
+  createdAt                  DateTime                        @default(now())
+  updatedAt                  DateTime                        @updatedAt
+  evidenceLinks              ConstructionEmailEvidenceLink[]
+
+  @@unique([workspaceId, eventId])
+  @@unique([accountId, providerMessageRef])
+  @@index([workspaceId, status, occurredAt])
+  @@index([projectId, occurredAt])
+}
+
+model ConstructionEmailEvidenceLink {
+  id           String                 @id @default(cuid())
+  workspaceId  String
+  projectId    String
+  emailEventId String
+  emailEvent   ConstructionEmailEvent @relation(fields: [emailEventId], references: [id], onDelete: Cascade)
+  evidenceId   String
+  contentHash  String
+  createdAt    DateTime               @default(now())
+
+  @@unique([emailEventId, evidenceId])
+  @@index([workspaceId, projectId, createdAt])
+}
+
+model ConstructionEmailDraft {
+  id                         String                   @id @default(cuid())
+  workspaceId                String
+  workspace                  ConstructionWorkspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  accountId                  String
+  account                    ConstructionEmailAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  projectId                  String
+  project                    ConstructionProject      @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  contactId                  String
+  contact                    ConstructionContact      @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  commandId                  String
+  commandHash                String
+  toRef                      String
+  ccRefs                     String[]
+  subject                    String
+  body                       String
+  threadRef                  String?
+  selectedEvidenceIds        String[]
+  version                    Int                      @default(1)
+  payloadHash                String
+  status                     String                   @default("PREPARED_UNSENT")
+  approvedByUserId           String?
+  approvedAt                 DateTime?
+  deliveryCount              Int                      @default(0)
+  externalTransportPerformed Boolean                  @default(false)
+  createdAt                  DateTime                 @default(now())
+  updatedAt                  DateTime                 @updatedAt
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, status, createdAt])
+  @@index([projectId, status])
+}
+
+model ConstructionEmailDecision {
+  id          String   @id @default(cuid())
+  workspaceId String
+  commandId   String
+  commandHash String
+  entityType  String
+  entityId    String
+  action      String
+  stateBefore String?
+  stateAfter  String
+  result      Json
+  actorId     String
+  createdAt   DateTime @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, entityType, entityId, createdAt])
 }
 
 // Connector authority is workspace-scoped and fail-closed. OAuth access and
