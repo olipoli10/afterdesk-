@@ -104,6 +104,12 @@ export default function AssistantScreen() {
             {stateLabel ? <Notice danger={latestAssistantAttempt?.state === "REFUSED" || latestAssistantAttempt?.state === "OUTCOME_UNKNOWN"}>{stateLabel}</Notice> : null}
             {result?.status === "PREPARED_UNSENT" ? <Notice>Message préparé — rien n’a été envoyé.</Notice> : null}
             {result?.status === "CLARIFICATION_REQUIRED" ? <Notice>ENDVERA attend ta précision avant d’écrire quoi que ce soit.</Notice> : null}
+            {result?.routing?.readiness === "PROVIDER_REQUIRED_NOT_AUTHORIZED" ? (
+              <Notice>ENDVERA reconnaît cette demande, mais la recherche externe n’est pas encore activée. Aucun résultat n’a été inventé.</Notice>
+            ) : null}
+            {result?.routing?.readiness === "HUMAN_SUPPORT_AVAILABLE" ? (
+              <Notice>Un soutien humain borné est possible, mais aucune tâche n’a été créée automatiquement.</Notice>
+            ) : null}
             {latestAssistantAttempt?.state === "OUTCOME_UNKNOWN" ? <Button tone="secondary" onPress={retry}>Réessayer la même demande</Button> : null}
           </Card>
           <Button tone="secondary" onPress={refreshAssistant} disabled={assistantLoadState === "LOADING"}>

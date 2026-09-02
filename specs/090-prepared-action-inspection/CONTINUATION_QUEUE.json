@@ -1301,6 +1301,49 @@
       "outputTree": "9f0c2ed06d9c909a3fd9b4b1d549cdafddb69464",
       "result": "Strict candidate packets, credential-free Perplexity/OpenRouter plans, source verification, equal-input benchmark rules and one PREPARED_NOT_AUTHORIZED R37 campaign now pass locally with zero provider call, secret read, dispatch or model certification.",
       "completedAtUtc": "2026-09-02T16:23:18Z"
+    },
+    {
+      "id": "R36C-UNIFIED-ASSISTANT-ROUTING",
+      "title": "Unified assistant routing integration",
+      "objective": "Route the real mobile assistant through the provider-neutral R36A brain, preserve existing deterministic operations and durably expose provider-required work without provider dispatch or invented output.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R36B-PROVIDER-SANDBOX-PREFLIGHT"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R36B-PROVIDER-SANDBOX-PREFLIGHT"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/119-unified-assistant-routing",
+        "src/lib/construction-operating-assistant-r36c",
+        "src/lib/construction-operating-assistant-r36a/classifier.ts",
+        "src/server/construction-operating-assistant-r36c",
+        "src/app/api/endvera/v1/mobile/assistant/route.ts",
+        "apps/mobile/src/lib/assistant.ts",
+        "apps/mobile/src/app/(app)/assistant.tsx",
+        "apps/mobile/test/mobile-assistant-routing.test.ts",
+        "test/construction-operating-assistant-r36c*.test.ts",
+        "test/integration/construction-operating-assistant-r36c*.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../119-unified-assistant-routing/plan.md",
+      "planSha256": "d84bacaaa1c4020fd6e4a34baa233c3b5fc80313d9b7d8133f1940ff3132a5c8",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r36c-unified-routing.test.ts",
+      "evidencePaths": [
+        "../119-unified-assistant-routing/evidence/r36c-closeout.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }

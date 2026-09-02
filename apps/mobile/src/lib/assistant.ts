@@ -11,6 +11,50 @@ export const mobileAssistantRequestSchema = z
   })
   .strict();
 
+export const mobileAssistantRoutingProjectionSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    intentClass: z.enum([
+      "CANONICAL_STATE_QUERY",
+      "CALENDAR_OPERATION",
+      "COMMUNICATION_DRAFT",
+      "PUBLIC_WEB_RESEARCH",
+      "DOCUMENT_UNDERSTANDING",
+      "COMPLEX_REASONING",
+      "MIXED_CONSEQUENTIAL",
+      "RESTRICTED_PERSONAL_RESEARCH",
+      "UNSUPPORTED",
+    ]),
+    capabilityKey: z.enum([
+      "CANONICAL_STATE",
+      "CALENDAR",
+      "COMMUNICATION_PREPARATION",
+      "WEB_RESEARCH",
+      "DOCUMENT_UNDERSTANDING",
+      "CONTROLLER_REASONING",
+      "HUMAN_ESCALATION",
+    ]).nullable(),
+    disposition: z.enum([
+      "INTERNAL_TOOL",
+      "CANDIDATE_PREPARED",
+      "HUMAN_HANDOFF",
+      "CLARIFICATION_REQUIRED",
+      "REFUSED",
+    ]),
+    readiness: z.enum([
+      "INTERNAL_READY",
+      "PROVIDER_REQUIRED_NOT_AUTHORIZED",
+      "HUMAN_SUPPORT_AVAILABLE",
+      "CLARIFICATION_REQUIRED",
+      "REFUSED",
+    ]),
+    citationsRequired: z.boolean(),
+    approvalRequired: z.boolean(),
+    providerExecutionAuthorized: z.literal(false),
+    externalDispatchPerformed: z.literal(false),
+  })
+  .strict();
+
 export const mobileAssistantResultSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -39,6 +83,7 @@ export const mobileAssistantResultSchema = z
     canonicalEffectId: z.string().min(1).nullable(),
     replayed: z.boolean(),
     externalTransportPerformed: z.literal(false),
+    routing: mobileAssistantRoutingProjectionSchema.optional(),
   })
   .strict();
 

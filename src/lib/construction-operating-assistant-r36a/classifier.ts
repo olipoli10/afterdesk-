@@ -90,7 +90,8 @@ export function classifyAssistantIntent(
   }
 
   const calendar = has(text, /\b(rendez-vous|rdv|calendrier|calendar|meeting)\b/u);
-  if (calendar && consequential) {
+  const declarativeAppointment = has(text, /^(?:rendez-vous|rdv|meeting)\b/u);
+  if (calendar && (consequential || declarativeAppointment)) {
     return {
       intentClass: "CALENDAR_OPERATION",
       inferredDataClass: "personal_data",

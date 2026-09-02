@@ -3,8 +3,8 @@ import { consumeRateLimit, getSessionUser } from "@/lib/authz";
 import { constructionMobileAssistantRequestSchema } from "@/lib/construction-operating-assistant-r9/mobile-assistant-contracts";
 import {
   constructionMobileAssistantHistoryForUser,
-  processConstructionMobileAssistantRequest,
 } from "@/server/construction-operating-assistant-r9/mobile-assistant";
+import { processUnifiedAssistantRequest } from "@/server/construction-operating-assistant-r36c/orchestrator";
 
 const PRIVATE_NO_STORE = { "Cache-Control": "private, no-store" } as const;
 
@@ -58,8 +58,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400, headers: PRIVATE_NO_STORE });
   }
   try {
-    const result = await processConstructionMobileAssistantRequest({
+    const result = await processUnifiedAssistantRequest({
       userId: auth.user.id,
+      channel: "MOBILE_APP",
       request: parsed.data,
     });
     return NextResponse.json(result, {
