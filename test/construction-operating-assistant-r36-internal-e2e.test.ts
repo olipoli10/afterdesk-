@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { sha256Canonical } from "@/lib/construction-assistant-v1/canonical";
 import {
@@ -46,5 +48,10 @@ describe("R36 internal E2E fail-closed contract", () => {
       source: { head: "1".repeat(40), tree: "2".repeat(40) }, steps,
       restartFingerprints: () => ({ before: restartHash, after: sha256Canonical({ stable: false }) }),
     })).rejects.toThrow("INTERNAL_E2E_RESTART_FINGERPRINT_DRIFT");
+  });
+
+  it("keeps the committed R36 report internally valid and hash-bound", () => {
+    const report = JSON.parse(readFileSync(join(process.cwd(), "specs", "116-internal-e2e", "evidence", "internal-e2e-report.json"), "utf8"));
+    expect(parseInternalE2EReport(report)).toEqual(report);
   });
 });

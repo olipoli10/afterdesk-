@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "scenarioKey": "ENDVERA_CONSTRUCTION_INTERNAL_E2E",
+  "scenarioVersion": 1,
+  "scenarioHash": "d245e0ad35c125e468759d4cd2e84995db254b8c8e693ea4179ede4412ecc318",
+  "source": {
+    "head": "1f90fd90ccbd42d94928085d178e750f0ad0a6e9",
+    "tree": "ebc5cc48e5c7c5b31192c538019de9b1663d427d"
+  },
+  "databaseMode": "DISPOSABLE_POSTGRESQL",
+  "checkpoints": [
+    { "sequence": 1, "code": "ONBOARDING_READY", "state": "PASS", "observed": { "projectCount": 1, "contactCount": 1, "firstValueReady": true }, "canonicalFingerprint": "854ed370601ab0cbb3c4eef988293b959013429de1b0d3a921dad8fed7cc2872", "externalEffectCount": 0 },
+    { "sequence": 2, "code": "CLEAR_APPOINTMENT_STORED_ONCE", "state": "PASS", "observed": { "appointmentCount": 1, "result": "APPLIED" }, "canonicalFingerprint": "6584aa3e1ba88e716af004ad3ada32869a475108f82b61e1bd2cf9f30d132116", "externalEffectCount": 0 },
+    { "sequence": 3, "code": "AMBIGUITY_CLARIFIED_NO_WRITE", "state": "PASS", "observed": { "result": "CLARIFICATION_REQUIRED", "consequentialWrites": 0 }, "canonicalFingerprint": "95c3383bf2a3a6cfa6b5750147a941023060ff9f41ec05ffeb20edc59229eaea", "externalEffectCount": 0 },
+    { "sequence": 4, "code": "INVOICE_EVIDENCE_GAPS_BLOCKED", "state": "PASS", "observed": { "ready": false, "missingCount": 2 }, "canonicalFingerprint": "95fa0c472901335d345425b4dbc881c91aaf03c5deac7857249bff16ce9cbc6e", "externalEffectCount": 0 },
+    { "sequence": 5, "code": "CONTRADICTION_PRESERVED", "state": "PASS", "observed": { "openContradictionCount": 1, "retainedClaimCount": 2 }, "canonicalFingerprint": "f7017af68543fdc6078afabb0bc84b908e26751bc8673d7a69a05b02c29e83f3", "externalEffectCount": 0 },
+    { "sequence": 6, "code": "AUTHORIZED_RESOLUTION_RECORDED", "state": "PASS", "observed": { "status": "resolved", "openContradictionCount": 0 }, "canonicalFingerprint": "0717f135d4cc8f2fa3cd058eb09c0a13e1cae50883b2a409b39e7e4bfc642312", "externalEffectCount": 0 },
+    { "sequence": 7, "code": "READY_TO_INVOICE_EXACT", "state": "PASS", "observed": { "status": "READY_TO_INVOICE", "ready": true, "evidenceCount": 2 }, "canonicalFingerprint": "75420229f2c2961bbf460eed6fc151d112daccc35120f0ec41b7dbce03176920", "externalEffectCount": 0 },
+    { "sequence": 8, "code": "PREPARED_ACTIONS_ZERO_DELIVERY", "state": "PASS", "observed": { "disposition": "PREPARED_UNSENT", "deliveryCount": 0, "externalEffects": 0 }, "canonicalFingerprint": "a318645bf28dcac78d45908e484fe06675352c745f645ac491c74a01398438bc", "externalEffectCount": 0 },
+    { "sequence": 9, "code": "HUMAN_ESCALATION_RESUMED_ONCE", "state": "PASS", "observed": { "firstRecoveryCount": 1, "secondRecoveryCount": 0, "resumeRecordCount": 1 }, "canonicalFingerprint": "ebbf42f18fd41689f660d95876d09ee2f3e0f760dfc7ff545be97b09c63eaeb2", "externalEffectCount": 0 },
+    { "sequence": 10, "code": "DUPLICATE_REPLAY_REFUSED", "state": "PASS", "observed": { "replayRefusals": 3, "appointments": 1, "loops": 1, "preparedActions": 1 }, "canonicalFingerprint": "bbcb4ff36e329383806646508a516da8f118c30dc8610b7723222cbc42abec5b", "externalEffectCount": 0 },
+    { "sequence": 11, "code": "RESTART_FINGERPRINT_IDENTICAL", "state": "PASS", "observed": { "identical": true, "primaryAction": "PLAN_FOLLOW_UP" }, "canonicalFingerprint": "ea603b1b286d5ab344a2b3012829f6b2cf7c8ea61969cb9e213333a81f1a06bd", "externalEffectCount": 0 },
+    { "sequence": 12, "code": "FIELD_FINANCIAL_LEAK_ZERO", "state": "PASS", "observed": { "financialLeakCount": 0, "projectionRole": "FIELD_WORKER", "humanRole": "FIELD_WORKER" }, "canonicalFingerprint": "fbf2d7625a286d22218cc96be782017523a42c87220aaee0b19bd6ae9e8e8073", "externalEffectCount": 0 },
+    { "sequence": 13, "code": "CROSS_WORKSPACE_REFUSED", "state": "PASS", "observed": { "refused": true }, "canonicalFingerprint": "4a01a879baf8001aae86ee890248260c91e810f14d2de2dae279b9fc57142e29", "externalEffectCount": 0 },
+    { "sequence": 14, "code": "WEB_IOS_ANDROID_PARITY", "state": "PASS", "observed": { "webIosAndroidEqual": true, "targetCount": 3 }, "canonicalFingerprint": "bf58e4c165907c31c10e7b88ec4d6cc97aba29e34c96623f7637d9aff1baaf1a", "externalEffectCount": 0 },
+    { "sequence": 15, "code": "FINAL_NEXT_ACTION_DETERMINISTIC", "state": "PASS", "observed": { "nextAction": "PLAN_FOLLOW_UP", "deterministic": true }, "canonicalFingerprint": "43283fe5dc0ed1be2da9898c25dc6bea2af455dd40fe04e93df92e151b2c0ca4", "externalEffectCount": 0 },
+    { "sequence": 16, "code": "PACKAGE_STILL_VALID", "state": "PASS", "observed": { "packageValid": true, "targetCount": 3 }, "canonicalFingerprint": "2bc58543d5022acfb235ff5722ecad808771920175d2f3a95773eb5a5120a4cb", "externalEffectCount": 0 }
+  ],
+  "preRestartFingerprint": "782e7f62292b483b825c5f9d125897131bacece11eadc40bc249d17ad80f06bb",
+  "postRestartFingerprint": "782e7f62292b483b825c5f9d125897131bacece11eadc40bc249d17ad80f06bb",
+  "providerObserved": false,
+  "externalEffectCount": 0,
+  "verdict": "INTERNAL_SYNTHETIC_E2E_PASS",
+  "reportHash": "8f9f7179e49f383372c07bbab69787e74b8c6b47889fd08109727bc64c7fa0a5"
+}
