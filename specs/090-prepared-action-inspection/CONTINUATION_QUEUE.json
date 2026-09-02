@@ -530,7 +530,7 @@
       "title": "Human escalation and exact automated resume",
       "objective": "Expose the existing Construction-to-HumanWorkUnit bridge as one role-safe owner cockpit with bounded admission, independent quality review and exact automated resume.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [
         "R21-RECEIVABLES-INVOICE"
       ],
@@ -564,6 +564,53 @@
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r22-human-escalation.test.ts",
       "evidencePaths": [
         "../102-human-escalation-resume/evidence/r22-closeout.md"
+      ],
+      "outputHead": "bbdc033b63d712ffb8e7f5c0ca32bb81d4733920",
+      "outputTree": "018e9c4c5c82f9e25cac89c77627df96399c0aa1",
+      "result": "One role-safe owner cockpit prepares a bounded Human Work Unit from an eligible evidence gap, preserves canonical claim and independent review, resumes the Construction loop exactly once after acceptance, recovers workspace-scoped after restart and exposes an empty field projection with zero external transport.",
+      "completedAtUtc": "2026-09-02T01:44:07Z"
+    },
+    {
+      "id": "R23-CALENDAR-CONNECTORS",
+      "title": "Permissioned Google and Microsoft Calendar connectors",
+      "objective": "Extend the existing connector authority foundation into one provider-neutral Google and Microsoft Calendar cockpit with least-privilege preparation, deterministic read/write envelopes, conflict handling, local revocation and zero provider transport.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "R22-HUMAN-ESCALATION"
+      ],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {
+        "kind": "ENTRY_OUTPUT",
+        "entryId": "R22-HUMAN-ESCALATION"
+      },
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; CONNECTORS REMAIN DISABLED; NO PROVIDER CREDENTIAL OAUTH CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/103-calendar-connectors",
+        "src/lib/construction-operating-assistant-r23",
+        "src/server/construction-operating-assistant-r23",
+        "src/lib/construction-operating-assistant-r3",
+        "src/server/construction-operating-assistant-r3",
+        "src/app/api/endvera/v1/mobile/calendar-connectors",
+        "apps/mobile/src/app/(app)/calendar-connections.tsx",
+        "apps/mobile/src/app/(app)/_layout.tsx",
+        "apps/mobile/src/lib/calendar-connectors.ts",
+        "apps/mobile/src/lib/outbox.ts",
+        "apps/mobile/src/lib/api.ts",
+        "apps/mobile/src/state/mobile-session.tsx",
+        "apps/mobile/test/calendar-connectors.test.ts",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_operating_assistant_r23_calendar_connectors",
+        "test/construction-operating-assistant-r23*.test.ts",
+        "test/integration/construction-operating-assistant-r23*.itest.ts",
+        "test/integration/per-file-setup.ts"
+      ],
+      "planPath": "../103-calendar-connectors/plan.md",
+      "planSha256": "12a06bc93b11943da08f0afb4a41d46c3ab6b8f9652777aee5393de59adae6d6",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r23-calendar-connectors.test.ts",
+      "evidencePaths": [
+        "../103-calendar-connectors/evidence/r23-closeout.md"
       ],
       "outputHead": "",
       "outputTree": "",

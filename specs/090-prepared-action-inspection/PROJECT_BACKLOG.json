@@ -39,13 +39,13 @@
     {
       "id": "S2-OPERATING-CORE",
       "title": "Persistent work execution and economic operations",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "releases": ["R18-UNIFIED-INTENT", "R19-JOB-SCHEDULING", "R20-FOLLOW-UP-ENGINE", "R21-RECEIVABLES-INVOICE", "R22-HUMAN-ESCALATION"]
     },
     {
       "id": "S3-CONNECTORS",
       "title": "Permissioned real-world connectors",
-      "status": "PLANNED",
+      "status": "IN_PROGRESS",
       "releases": ["R23-CALENDAR-CONNECTORS", "R24-SMS-MMS", "R25-VOICE-CALLS", "R26-EMAIL-INBOX", "R27-ACCOUNTING"]
     },
     {
@@ -77,8 +77,8 @@
     {"id":"R19-JOB-SCHEDULING","status":"DONE","authority":"LOCAL","dependsOn":["R18-UNIFIED-INTENT"],"outcome":"Jobs, crews, subcontractors, dependencies, availability, conflicts and schedule-impact state."},
     {"id":"R20-FOLLOW-UP-ENGINE","status":"DONE","authority":"LOCAL","dependsOn":["R19-JOB-SCHEDULING"],"outcome":"Durable reminders, follow-ups, escalation policies and next-owner assignment."},
     {"id":"R21-RECEIVABLES-INVOICE","status":"DONE","authority":"LOCAL","dependsOn":["R20-FOLLOW-UP-ENGINE"],"outcome":"Invoice readiness, receivables, payment promises, evidence gaps and prepared collections."},
-    {"id":"R22-HUMAN-ESCALATION","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R21-RECEIVABLES-INVOICE"],"outcome":"Human Work Unit creation, bounded access, quality review and exact automated resume."},
-    {"id":"R23-CALENDAR-CONNECTORS","status":"PLANNED","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R22-HUMAN-ESCALATION"],"outcome":"Google and Microsoft Calendar read/prepare/write adapters with explicit grants, conflict handling and revocation."},
+    {"id":"R22-HUMAN-ESCALATION","status":"DONE","authority":"LOCAL","dependsOn":["R21-RECEIVABLES-INVOICE"],"outcome":"Human Work Unit creation, bounded access, quality review and exact automated resume."},
+    {"id":"R23-CALENDAR-CONNECTORS","status":"IN_PROGRESS","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R22-HUMAN-ESCALATION"],"outcome":"Google and Microsoft Calendar read/prepare/write adapters with explicit grants, conflict handling and revocation."},
     {"id":"R24-SMS-MMS","status":"PLANNED","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R23-CALENDAR-CONNECTORS"],"outcome":"Inbound and outbound SMS/MMS with project routing, consent, opt-out, approval and delivery state."},
     {"id":"R25-VOICE-CALLS","status":"PLANNED","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R24-SMS-MMS"],"outcome":"Inbound assistant calls, voice notes and bounded outbound call tasks with disclosure and consent controls."},
     {"id":"R26-EMAIL-INBOX","status":"PLANNED","authority":"LOCAL_DISABLED_THEN_EXTERNAL","dependsOn":["R25-VOICE-CALLS"],"outcome":"Project email ingestion and prepared outbound email without broad mailbox authority."},

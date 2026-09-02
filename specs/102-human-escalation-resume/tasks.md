@@ -85,7 +85,7 @@
 
 - [X] T018 Run the targeted R22, R5, Human Work Unit, Construction R0, PostgreSQL, and mobile gates documented in `specs/102-human-escalation-resume/quickstart.md`
 - [X] T019 Run root/mobile lint, typecheck, full mobile tests, Prisma history validation, Next.js Webpack build, and `git diff --check`, recording results in `specs/102-human-escalation-resume/evidence/r22-closeout.md`
-- [ ] T020 Close R22 and advance the rolling queue and project backlog to R23 in `specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json`, `specs/090-prepared-action-inspection/PROJECT_BACKLOG.json`, and `specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json`
+- [X] T020 Close R22 and advance the rolling queue and project backlog to R23 in `specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json`, `specs/090-prepared-action-inspection/PROJECT_BACKLOG.json`, and `specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json`
 
 ## Dependencies and Execution Order
 
