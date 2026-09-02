@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "releaseKey": "ENDVERA_CONSTRUCTION_V1",
+  "releaseVersion": 1,
+  "readiness": "LOCAL_PACKAGE_READY",
+  "source": {
+    "head": "9b197f1b802b1221362acbc8818190fe3669496f",
+    "tree": "7e265733a7674773c688447ea1ed1799532643b7"
+  },
+  "targets": [
+    "WEB",
+    "IOS",
+    "ANDROID"
+  ],
+  "definitionHash": "ecb05fba9ddd13fe37d38209bfed327c4e6928eb00532632d185c2939b086a64",
+  "environmentContractHash": "c6d4d6e0b352eab76cb7887dceb7820a0a45272a8e70349b614890adb62dc53b",
+  "inputs": [
+    {
+      "path": "apps/mobile/app.json",
+      "byteSize": 1439,
+      "sha256": "dcaff38780f2c3a637c5e4e5106fbdc798adec6d85239f9d4f41ebc263633cce"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/Assets/expo-symbol 2.svg",
+      "byteSize": 611,
+      "sha256": "0aab4b9a72b495d415a7088de655829e2db36a2021b17679af6bc47a1fe363d6"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/Assets/grid.png",
+      "byteSize": 53681,
+      "sha256": "8247d79a2b31328fe4e330a973e6fae16924ed9aebd72c64d464d6856ab18c72"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/icon.json",
+      "byteSize": 819,
+      "sha256": "1cf151ba777b142d203aa3bc595fa52ba1bd80e2f3e5b4c5a2d0192825925538"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-background.png",
+      "byteSize": 17549,
+      "sha256": "fb139c2dee362ebf2070e23b96da6fc0d43f8492de38b8af1fd7223e19b5861d"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-foreground.png",
+      "byteSize": 78796,
+      "sha256": "9e3d0315a33c6799de601dd34cd8bf8cc3a8d16f3bf75592baec2ceb7240b391"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-monochrome.png",
+      "byteSize": 4140,
+      "sha256": "6371fc2c12e33ad2215a86c281db3d682a81bebe7c957a842c13b8bf00cceb83"
+    },
+    {
+      "path": "apps/mobile/assets/images/favicon.png",
+      "byteSize": 1129,
+      "sha256": "a4e030697a7571b3e95d31860e4da55d2f98e5e861e2b55e414f45a8556828ba"
+    },
+    {
+      "path": "apps/mobile/assets/images/icon.png",
+      "byteSize": 799005,
+      "sha256": "7a667804bb80a6a424a5daf18a2599c4f32237cf06fe78fc0de45dbb09e0eccf"
+    },
+    {
+      "path": "apps/mobile/assets/images/splash-icon.png",
+      "byteSize": 3317,
+      "sha256": "27b060a757a29038c9618586baa0ba3894dbe60d084c6059df497ff429c2d92f"
+    },
+    {
+      "path": "apps/mobile/src/app/(app)/settings.tsx",
+      "byteSize": 1812,
+      "sha256": "bdc30ff941af51a3eaa51fd5295e072f951afa39305b36758f5b8d53047253b5"
+    },
+    {
+      "path": "apps/mobile/src/lib/release.ts",
+      "byteSize": 846,
+      "sha256": "65ec393f7187d97354ff23ea7f9c1e7a783e42d5b6d2f9d556ab8edc61343f78"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/01-environment-and-build.md",
+      "byteSize": 888,
+      "sha256": "77fbc48c853a8ad39f4c018c1e6cdecf0aaff03701c978fd7b05042d2b3a800f"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/02-smoke-and-evidence.md",
+      "byteSize": 817,
+      "sha256": "a01d202d0e90e823d5ecd13e03c1bd6c2ad9054fc830a229425eaea11e1b93ba"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/03-promotion-stop.md",
+      "byteSize": 767,
+      "sha256": "d54ea39a5a33748dc95533b7df58aa0d6afb3a743f98a2eb986dae05f5bf144f"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/04-incident-and-rollback.md",
+      "byteSize": 807,
+      "sha256": "1ba02213f65671fb6a41ae19f9d3142855ddbeaa9b6157518ffe727d69facea9"
+    },
+    {
+      "path": "release/endvera-construction-v1/environment-contract.json",
+      "byteSize": 2488,
+      "sha256": "c541d9516d5053bab79801e6b0e28ae105bfacbec8e52b22bbc3cb6eafb540e4"
+    },
+    {
+      "path": "release/endvera-construction-v1/privacy-disclosure.json",
+      "byteSize": 2875,
+      "sha256": "dfe68cb1ffcbb7903c99739862401c1435fd199b0a06d9032356e745c7a37633"
+    },
+    {
+      "path": "release/endvera-construction-v1/release-definition.json",
+      "byteSize": 2894,
+      "sha256": "350b04057f2458d2f0210620260e75b7cd0871b563b38e940e8d968ed7188ee8"
+    },
+    {
+      "path": "release/endvera-construction-v1/store/en-CA.json",
+      "byteSize": 1048,
+      "sha256": "e1063b174104ab6f4c394c85f3cb9e4771ce235cd225df0a6ad2998bbc09f2b9"
+    },
+    {
+      "path": "release/endvera-construction-v1/store/fr-CA.json",
+      "byteSize": 1113,
+      "sha256": "f32b6e82e953f047f1706006b6e62c50fe22e24eb8703c353d29065e3b450028"
+    },
+    {
+      "path": "release/endvera-construction-v1/submission-gaps.json",
+      "byteSize": 1274,
+      "sha256": "5045d7c27bfedb10fa25d6ebad27e71146d527613e314469843320791d43d455"
+    },
+    {
+      "path": "scripts/generate-endvera-release-package.mjs",
+      "byteSize": 10988,
+      "sha256": "16311437b40d7a6d5e0be987b7f40224c56a7e9d3e0ea59458881d4c69b211c8"
+    },
+    {
+      "path": "scripts/validate-endvera-release-package.mjs",
+      "byteSize": 1283,
+      "sha256": "0b78bd30c44c99e0a2b02fcf6b677a8ca435d694ab81b93fce5500688d8ba9c0"
+    },
+    {
+      "path": "src/app/construction/support/page.tsx",
+      "byteSize": 3558,
+      "sha256": "9dca49fb2e01e8ff2c148c3e51c8ef7122a18548135139c745f47a0bc36f2bb4"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r35/contracts.ts",
+      "byteSize": 3382,
+      "sha256": "497c28bc4de0995193ecaa17059e85b88f8e30868857c1dd7b9bf6c2038f1042"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r35/registry.ts",
+      "byteSize": 2213,
+      "sha256": "d49b626c91b7a6611c1ddeb1d6c30385bc8ef716bccab52e6abe618d638b812c"
+    }
+  ],
+  "validationCommands": [
+    "node scripts/validate-endvera-release-package.mjs",
+    "npm test -- --run test/construction-operating-assistant-r35-release-package.test.ts",
+    "npm --prefix apps/mobile test -- --run test/release-package.test.ts"
+  ],
+  "signed": false,
+  "uploaded": false,
+  "published": false,
+  "deployed": false,
+  "providerObserved": false,
+  "externalEffectCount": 0,
+  "manifestHash": "a7c50e73b1a851d8adf931a1586565f47ed4a7fd9c8b3ae30cb072ecc2aee63e"
+}
