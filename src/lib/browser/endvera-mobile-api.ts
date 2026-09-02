@@ -1,10 +1,11 @@
 "use client";
 
-type EndveraMobileResource = "privacy" | "reliability";
+type EndveraMobileResource = "privacy" | "reliability" | "onboarding";
 
 const ENDPOINTS: Record<EndveraMobileResource, string> = {
   privacy: "/api/endvera/v1/mobile/privacy",
   reliability: "/api/endvera/v1/mobile/reliability",
+  onboarding: "/api/endvera/v1/mobile/onboarding",
 };
 
 async function requestJson<T>(endpoint: string, init: RequestInit): Promise<T> {
@@ -21,8 +22,8 @@ async function requestJson<T>(endpoint: string, init: RequestInit): Promise<T> {
   return await response.json() as T;
 }
 
-export function getEndveraMobileResource<T>(resource: EndveraMobileResource, workspaceId: string): Promise<T> {
-  const endpoint = `${ENDPOINTS[resource]}?workspaceId=${encodeURIComponent(workspaceId)}`;
+export function getEndveraMobileResource<T>(resource: EndveraMobileResource, workspaceId?: string): Promise<T> {
+  const endpoint = workspaceId ? `${ENDPOINTS[resource]}?workspaceId=${encodeURIComponent(workspaceId)}` : ENDPOINTS[resource];
   return requestJson<T>(endpoint, { method: "GET", cache: "no-store" });
 }
 

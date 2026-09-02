@@ -3475,6 +3475,9 @@ model ConstructionWorkspace {
   recoveryDrills          ConstructionRecoveryDrill[]
   reliabilityGateRuns     ConstructionReliabilityGateRun[]
   reliabilityCommands     ConstructionReliabilityCommand[]
+  onboardingSession       ConstructionOnboardingSession?
+  onboardingCommands      ConstructionOnboardingCommand[]
+  importBatches           ConstructionImportBatch[]
 
   @@index([ownerUserId, status])
 }
@@ -4629,6 +4632,138 @@ model ConstructionReliabilityCommand {
 
   @@unique([workspaceId, commandId])
   @@index([workspaceId, action, createdAt])
+}
+
+/// Resumable onboarding projection. Canonical workspace, project and contact
+/// rows remain authoritative; this row only records progress and the next step.
+model ConstructionOnboardingSession {
+  id           String                 @id @default(cuid())
+  ownerUserId  String                 @unique
+  workspaceId  String?                @unique
+  workspace    ConstructionWorkspace? @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  stage        String                 @default("COMPANY")
+  status       String                 @default("ACTIVE")
+  stateVersion Int                    @default(1)
+  nextAction   String                 @default("INITIALIZE_WORKSPACE")
+  completedAt  DateTime?
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([status, updatedAt])
+}
+
+/// Exact immutable result ledger for R32 commands, including initialization
+/// before a workspace ID exists. Actor identity is always derived server-side.
+model ConstructionOnboardingCommand {
+  id                String                 @id @default(cuid())
+  ownerUserId       String
+  workspaceId       String?
+  workspace         ConstructionWorkspace? @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  commandId         String
+  commandHash       String
+  action            String
+  result            Json
+  resultFingerprint String
+  createdAt         DateTime               @default(now())
+
+  @@unique([ownerUserId, commandId])
+  @@index([workspaceId, action, createdAt])
+}
+
+/// Immutable bounded CSV interpretation. Raw CSV bytes are never retained.
+model ConstructionImportBatch {
+  id                 String                @id @default(cuid())
+  workspaceId        String
+  workspace          ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  kind               String
+  registryVersion    Int
+  parserVersion      String
+  sourceHash         String
+  sourceByteCount    Int
+  headerMapping      Json
+  previewFingerprint String
+  status             String                @default("PREVIEW")
+  stateVersion       Int                   @default(1)
+  rowCount           Int
+  readyCount         Int
+  duplicateCount     Int
+  conflictCount      Int
+  invalidCount       Int
+  createdByUserId    String
+  committedAt        DateTime?
+  discardedAt        DateTime?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  rows      ConstructionImportRow[]
+  decisions ConstructionImportDecision[]
+  commit    ConstructionImportCommit?
+
+  @@unique([workspaceId, sourceHash, kind, parserVersion])
+  @@index([workspaceId, status, createdAt])
+}
+
+/// One immutable normalized proposal and its closed interpretation evidence.
+model ConstructionImportRow {
+  id                    String                  @id @default(cuid())
+  workspaceId           String
+  batchId               String
+  batch                 ConstructionImportBatch @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  rowNumber             Int
+  rowFingerprint        String
+  normalizedProposal    Json
+  state                 String
+  reasonCodes           String[]
+  candidateCanonicalIds String[]
+  createdAt             DateTime                @default(now())
+
+  decisions ConstructionImportDecision[]
+
+  @@unique([batchId, rowNumber])
+  @@unique([batchId, rowFingerprint])
+  @@index([workspaceId, state, createdAt])
+}
+
+/// Explicit immutable owner decision bound to one preview version.
+model ConstructionImportDecision {
+  id                   String                  @id @default(cuid())
+  workspaceId          String
+  batchId              String
+  batch                ConstructionImportBatch @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  rowId                String
+  row                  ConstructionImportRow   @relation(fields: [rowId], references: [id], onDelete: Restrict)
+  action               String
+  matchedCanonicalId   String?
+  expectedBatchVersion Int
+  decisionHash         String
+  decidedByUserId      String
+  createdAt            DateTime                @default(now())
+
+  @@unique([batchId, rowId, expectedBatchVersion])
+  @@index([workspaceId, batchId, createdAt])
+}
+
+/// Immutable result of one atomic import commit. A batch can commit once.
+model ConstructionImportCommit {
+  id                 String                  @id @default(cuid())
+  workspaceId        String
+  batchId            String                  @unique
+  batch              ConstructionImportBatch @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  commandId          String
+  commandHash        String
+  sourceHash         String
+  previewFingerprint String
+  result             Json
+  resultFingerprint  String
+  createdProjectIds  String[]
+  createdContactIds  String[]
+  reusedCanonicalIds String[]
+  skippedCount       Int
+  committedByUserId  String
+  createdAt          DateTime                @default(now())
+
+  @@unique([workspaceId, commandId])
+  @@index([workspaceId, createdAt])
 }
 
 // Connector authority is workspace-scoped and fail-closed. OAuth access and

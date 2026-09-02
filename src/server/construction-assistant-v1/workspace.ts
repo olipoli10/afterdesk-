@@ -29,7 +29,13 @@ export async function initializeConstructionWorkspace(input: {
   timezone?: string;
   locale?: string;
 }) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction((tx) => initializeConstructionWorkspaceTx(tx, input), { isolationLevel: "Serializable" });
+}
+
+export async function initializeConstructionWorkspaceTx(
+  tx: Prisma.TransactionClient,
+  input: { userId: string; name: string; timezone?: string; locale?: string },
+) {
     const existing = await tx.constructionWorkspaceMember.findFirst({
       where: { userId: input.userId, status: "active" },
       select: { workspaceId: true },
@@ -87,7 +93,6 @@ export async function initializeConstructionWorkspace(input: {
       metadata: { locale: input.locale ?? "fr-CA", timezone: input.timezone ?? "America/Toronto" },
     });
     return { workspaceId: workspace.id, created: true };
-  }, { isolationLevel: "Serializable" });
 }
 
 export async function createConstructionProject(input: {
@@ -97,7 +102,13 @@ export async function createConstructionProject(input: {
   name: string;
   address?: string;
 }) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction((tx) => createConstructionProjectTx(tx, input), { isolationLevel: "Serializable" });
+}
+
+export async function createConstructionProjectTx(
+  tx: Prisma.TransactionClient,
+  input: { userId: string; workspaceId: string; code: string; name: string; address?: string },
+) {
     await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
     const workspace = await tx.constructionWorkspace.findUniqueOrThrow({
       where: { id: input.workspaceId },
@@ -122,7 +133,6 @@ export async function createConstructionProject(input: {
       metadata: { code: input.code.trim().toLocaleUpperCase("fr-CA") },
     });
     return project;
-  }, { isolationLevel: "Serializable" });
 }
 
 export async function createConstructionContact(input: {
@@ -134,7 +144,13 @@ export async function createConstructionContact(input: {
   normalizedPhone?: string;
   normalizedEmail?: string;
 }) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction((tx) => createConstructionContactTx(tx, input), { isolationLevel: "Serializable" });
+}
+
+export async function createConstructionContactTx(
+  tx: Prisma.TransactionClient,
+  input: { userId: string; workspaceId: string; projectId?: string; displayName: string; role?: string; normalizedPhone?: string; normalizedEmail?: string },
+) {
     await requireActiveConstructionMember(tx, input.userId, input.workspaceId);
     if (input.projectId) {
       const project = await tx.constructionProject.findFirst({
@@ -163,7 +179,6 @@ export async function createConstructionContact(input: {
       metadata: { projectScoped: Boolean(input.projectId) },
     });
     return contact;
-  }, { isolationLevel: "Serializable" });
 }
 
 export async function constructionWorkspaceForUser(userId: string) {

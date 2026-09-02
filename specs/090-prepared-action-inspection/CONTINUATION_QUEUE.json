@@ -977,7 +977,7 @@
         "src/server/construction-operating-assistant-r20/follow-up-engine.ts",
         "src/app/api/endvera/v1/mobile/reliability",
         "src/app/client/reliability",
-        "src/app/client/client-nav.tsx",
+        "src/app/client/layout.tsx",
         "apps/mobile/src/app/(app)/reliability.tsx",
         "apps/mobile/src/app/(app)/_layout.tsx",
         "apps/mobile/src/lib/reliability.ts",

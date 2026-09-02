@@ -85,6 +85,11 @@ import {
   mobileReliabilityResultSchema,
   parseMobileReliabilityCockpit,
 } from "@/lib/reliability";
+import {
+  mobileOnboardingCommandSchema,
+  mobileOnboardingResultSchema,
+  parseMobileOnboardingCockpit,
+} from "@/lib/onboarding";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -724,6 +729,30 @@ export class MobileApi {
     try {
       const result = mobileReliabilityResultSchema.parse(value);
       if (result.commandId !== parsed.commandId || result.workspaceId !== parsed.workspaceId) throw new Error("MOBILE_RELIABILITY_RESULT_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async onboardingCockpit(workspaceId?: string) {
+    const suffix = workspaceId ? `?workspaceId=${encodeURIComponent(workspaceId)}` : "";
+    const value = await this.request(`/api/endvera/v1/mobile/onboarding${suffix}`, { method: "GET" });
+    try {
+      const result = parseMobileOnboardingCockpit(value);
+      if (workspaceId && result.workspace?.id !== workspaceId) throw new Error("MOBILE_ONBOARDING_WORKSPACE_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async onboardingCommand(command: unknown) {
+    const parsed = mobileOnboardingCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/onboarding", { method: "POST", body: JSON.stringify(parsed) });
+    try {
+      const result = mobileOnboardingResultSchema.parse(value);
+      if (result.commandId !== parsed.commandId || ("workspaceId" in parsed && result.workspaceId !== parsed.workspaceId)) throw new Error("MOBILE_ONBOARDING_RESULT_MISMATCH");
       return result;
     } catch {
       throw new MobileApiError("INVALID_RESPONSE");

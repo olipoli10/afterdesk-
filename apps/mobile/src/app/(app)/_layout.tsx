@@ -18,6 +18,7 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Aujourd’hui", tabBarIcon: ({ color }) => <TabGlyph value="⌁" color={color} /> }} />
+      <Tabs.Screen name="onboarding" options={{ title: "Démarrage", tabBarIcon: ({ color }) => <TabGlyph value="1" color={color} /> }} />
       <Tabs.Screen name="assistant" options={{ title: "Assistant", tabBarIcon: ({ color }) => <TabGlyph value="A2" color={color} /> }} />
       <Tabs.Screen name="projects" options={{ title: "Chantiers", tabBarIcon: ({ color }) => <TabGlyph value="▦" color={color} /> }} />
       <Tabs.Screen name="jobs" options={{ title: "Jobs", tabBarIcon: ({ color }) => <TabGlyph value="◆" color={color} /> }} />
