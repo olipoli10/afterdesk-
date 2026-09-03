@@ -6,4 +6,4 @@
 - [x] T004 Clear canonical evidence under exact failure transitions.
 - [x] T005 Prove stale workers cannot clear replacement evidence.
 - [x] T006 Run focused and full local gates.
-- [ ] T007 Record closeout and advance the queue.
+- [x] T007 Record closeout and advance the queue.
