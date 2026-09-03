@@ -24,11 +24,19 @@ function repositoryPath(absolute: string) {
 
 describe("R37K provider route absence guard", () => {
   it("rejects a representative public route importing provider execution", () => {
-    const violations = inspectPublicEntrySource(
-      "src/app/api/provider/route.ts",
+    const unsafeSources = [
       'import { executeControlledSyntheticProviderDelivery } from "@/server/construction-operating-assistant-r37f/provider-delivery";',
-    );
-    expect(violations.map((item) => item.code)).toContain("R37K_PROVIDER_EXECUTION_IMPORT_EXPOSED");
+      'const provider = await import("../../../server/construction-operating-assistant-r37f/provider-delivery");',
+      'const coordinator = require("../../../server/construction-operating-assistant-r37c/coordinator");',
+      'import "@/server/construction-operating-assistant-r37a/sealed-executor";',
+      'import { executeControlledSyntheticAttempt as run } from "@/server/provider-facade";',
+    ];
+    for (const source of unsafeSources) {
+      const violations = inspectPublicEntrySource("src/app/api/provider/route.ts", source);
+      expect(violations.map((item) => item.code)).toContain(
+        "R37K_PROVIDER_EXECUTION_IMPORT_EXPOSED",
+      );
+    }
   });
 
   it("rejects representative provider network, secret and dispatch mutations", () => {

@@ -3,8 +3,16 @@ export type ProviderBoundaryViolation = Readonly<{
   path: string;
 }>;
 
-const PUBLIC_PROVIDER_EXECUTION_IMPORT =
-  /from\s+["']@\/server\/construction-operating-assistant-r37(?:a|b|c|f)\//u;
+const providerExecutionModuleFamily = [
+  "construction-operating-assistant-r",
+  "37",
+].join("");
+const PUBLIC_PROVIDER_EXECUTION_IMPORT = new RegExp(
+  `(?:from\\s+|import\\s+(?!\\()|import\\s*\\(\\s*|require\\s*\\(\\s*)["'][^"']*${providerExecutionModuleFamily}(?:a|b|c|f)/`,
+  "u",
+);
+const PUBLIC_PROVIDER_EXECUTION_SYMBOL =
+  /\b(?:executeControlledSyntheticProviderDelivery|executeControlledSyntheticAttempt|runSyntheticAttempt|activateProviderActivationGrant|setProviderLaneControl|requestObservedProviderExecution)\b/u;
 
 const fetchIdentifier = ["fet", "ch"].join("");
 const axiosIdentifier = ["axi", "os"].join("");
@@ -42,7 +50,7 @@ export function inspectPublicEntrySource(
   path: string,
   source: string,
 ): ProviderBoundaryViolation[] {
-  return PUBLIC_PROVIDER_EXECUTION_IMPORT.test(source)
+  return PUBLIC_PROVIDER_EXECUTION_IMPORT.test(source) || PUBLIC_PROVIDER_EXECUTION_SYMBOL.test(source)
     ? [violation("R37K_PROVIDER_EXECUTION_IMPORT_EXPOSED", path)]
     : [];
 }
