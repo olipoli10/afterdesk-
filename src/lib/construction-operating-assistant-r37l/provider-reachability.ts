@@ -34,9 +34,15 @@ function isPublicEntrypoint(path: string) {
   );
 }
 
-function unwrapParenthesizedExpression(expression: ts.Expression) {
+function unwrapTransparentExpression(expression: ts.Expression) {
   let current = expression;
-  while (ts.isParenthesizedExpression(current)) {
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isTypeAssertionExpression(current) ||
+    ts.isNonNullExpression(current) ||
+    ts.isSatisfiesExpression(current)
+  ) {
     current = current.expression;
   }
   return current;
@@ -125,7 +131,7 @@ function inspectModule(path: string, source: string) {
     ) {
       addLiteral(node.moduleReference.expression);
     } else if (ts.isCallExpression(node)) {
-      const callTarget = unwrapParenthesizedExpression(node.expression);
+      const callTarget = unwrapTransparentExpression(node.expression);
       if (
         callTarget.kind === ts.SyntaxKind.ImportKeyword ||
         (ts.isIdentifier(callTarget) &&
@@ -190,7 +196,7 @@ function inspectModule(path: string, source: string) {
       ) {
         moduleNamespaceIdentifiers.add(node.name.text);
       } else if (ts.isIdentifier(node.name) && ts.isCallExpression(node.initializer)) {
-        const factory = unwrapParenthesizedExpression(node.initializer.expression);
+        const factory = unwrapTransparentExpression(node.initializer.expression);
         const isCreateRequire =
           (ts.isIdentifier(factory) && createRequireIdentifiers.has(factory.text)) ||
           (ts.isPropertyAccessExpression(factory) &&
@@ -245,7 +251,7 @@ function inspectModule(path: string, source: string) {
       ts.isIdentifier(node.left) &&
       ts.isCallExpression(node.right) &&
       (() => {
-        const factory = unwrapParenthesizedExpression(node.right.expression);
+        const factory = unwrapTransparentExpression(node.right.expression);
         return (
           (ts.isIdentifier(factory) && createRequireIdentifiers.has(factory.text)) ||
           (ts.isPropertyAccessExpression(factory) &&
