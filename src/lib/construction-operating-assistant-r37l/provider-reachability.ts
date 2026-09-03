@@ -52,6 +52,9 @@ function inspectModule(path: string, source: string) {
   const specifiers: string[] = [];
   const unresolvedCallKinds: Array<"import" | "require"> = [];
   const dynamicCodeKinds: Array<"eval" | "Function" | "node:vm"> = [];
+  const createRequireIdentifiers = new Set(["createRequire"]);
+  const moduleNamespaceIdentifiers = new Set<string>();
+  const requireLoaderIdentifiers = new Set<string>();
   const addLiteral = (node: ts.Node | undefined) => {
     if (node && ts.isStringLiteralLike(node)) {
       specifiers.push(node.text);
@@ -92,6 +95,22 @@ function inspectModule(path: string, source: string) {
     }
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
       addLiteral(node.moduleSpecifier);
+      if (
+        ts.isImportDeclaration(node) &&
+        ts.isStringLiteralLike(node.moduleSpecifier) &&
+        ["node:module", "module"].includes(node.moduleSpecifier.text)
+      ) {
+        const bindings = node.importClause?.namedBindings;
+        if (bindings && ts.isNamedImports(bindings)) {
+          for (const element of bindings.elements) {
+            if ((element.propertyName ?? element.name).text === "createRequire") {
+              createRequireIdentifiers.add(element.name.text);
+            }
+          }
+        } else if (bindings && ts.isNamespaceImport(bindings)) {
+          moduleNamespaceIdentifiers.add(bindings.name.text);
+        }
+      }
     } else if (
       ts.isImportEqualsDeclaration(node) &&
       ts.isExternalModuleReference(node.moduleReference)
@@ -100,7 +119,9 @@ function inspectModule(path: string, source: string) {
     } else if (
       ts.isCallExpression(node) &&
       (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
-        (ts.isIdentifier(node.expression) && node.expression.text === "require"))
+        (ts.isIdentifier(node.expression) &&
+          (node.expression.text === "require" ||
+            requireLoaderIdentifiers.has(node.expression.text))))
     ) {
       const callKind = node.expression.kind === ts.SyntaxKind.ImportKeyword
         ? "import"
@@ -110,6 +131,24 @@ function inspectModule(path: string, source: string) {
         addLiteral(argument);
       } else {
         unresolvedCallKinds.push(callKind);
+      }
+    }
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer
+    ) {
+      if (ts.isIdentifier(node.initializer) && node.initializer.text === "require") {
+        requireLoaderIdentifiers.add(node.name.text);
+      } else if (ts.isCallExpression(node.initializer)) {
+        const factory = node.initializer.expression;
+        const isCreateRequire =
+          (ts.isIdentifier(factory) && createRequireIdentifiers.has(factory.text)) ||
+          (ts.isPropertyAccessExpression(factory) &&
+            factory.name.text === "createRequire" &&
+            ts.isIdentifier(factory.expression) &&
+            moduleNamespaceIdentifiers.has(factory.expression.text));
+        if (isCreateRequire) requireLoaderIdentifiers.add(node.name.text);
       }
     }
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
