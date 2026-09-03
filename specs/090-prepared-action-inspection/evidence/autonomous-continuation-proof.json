@@ -5,13 +5,13 @@
   "intermediateFinalReportCount": 0,
   "consecutiveBlocksCompleted": 82,
   "goalStayedActiveUntilDrain": true,
-  "completionValidatorVerdict": "CONTINUATION_REQUIRED",
-  "projectTerminalState": "INCOMPLETE",
+  "completionValidatorVerdict": "URGENT_ASSISTANCE_REQUIRED",
+  "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
   "canonicalRoadmapComplete": false,
   "remainingAuthorizedWorkCount": 0,
   "remainingRoadmapItemCount": 7,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
   "nextAction": "R37-PROVIDER-SANDBOX requires exact external provider authority; route for urgent assistance because no authorized critical-path work remains.",
-  "urgentAssistanceReason": ""
+  "urgentAssistanceReason": "All authorized local critical-path releases through R37BA are complete. R37-PROVIDER-SANDBOX now requires exact provider authority, credentials, and bounded external-call permission that the current mandate explicitly forbids."
 }
