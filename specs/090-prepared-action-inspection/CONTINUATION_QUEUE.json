@@ -2939,8 +2939,8 @@
       "id": "R36P-LOCAL-WHOLE-PRODUCT-READINESS-GATE",
       "title": "Local whole-product readiness gate",
       "objective": "Verify Web, iOS, Android and backend configuration parity with unsigned local artifacts, disabled connectors and exact remaining external blockers.",
-      "role": "VALIDATION",
-      "status": "IN_PROGRESS",
+      "role": "CLOSEOUT",
+      "status": "DONE",
       "dependencies": ["R36O-MOBILE-ASSISTANT-EXPERIENCE-POLISH"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -2948,13 +2948,13 @@
       "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": ["specs/181-local-whole-product-readiness-gate","release/endvera-construction-v1","scripts","test","apps/mobile/test",".specify/feature.json"],
       "planPath": "../181-local-whole-product-readiness-gate/plan.md",
-      "planSha256": "",
-      "completionCommand": "node scripts/validate-endvera-market-readiness.mjs",
+      "planSha256": "5e3acadf31fcbc96d3881e6412964a17d330276d5ef17020b5e26dddb8d5dd98",
+      "completionCommand": "node scripts/validate-endvera-whole-product-readiness.mjs && npm test -- --run test/local-whole-product-readiness-gate.test.ts test/product-experience-completion.test.ts test/textassist-public-offer-completion.test.ts && npm run validate:provider-boundary",
       "evidencePaths": ["../181-local-whole-product-readiness-gate/evidence/closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "64bccf5e7ad13e994c144318cf38976090a532a3",
+      "outputTree": "3b37e9a40a5004618258a64dbc982f884869e2b8",
+      "result": "LOCAL_WHOLE_PRODUCT_READINESS_VERIFIED; Web, iOS, Android and backend configuration are reconciled through seven protected hashes, disabled connectors, 18 exact external blockers and zero external effects; the project remains incomplete through R40.",
+      "completedAtUtc": "2026-09-03T14:12:30Z"
     }
   ]
 }

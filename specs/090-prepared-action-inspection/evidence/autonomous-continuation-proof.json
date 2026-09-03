@@ -3,15 +3,15 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 91,
+  "consecutiveBlocksCompleted": 92,
   "goalStayedActiveUntilDrain": true,
-  "completionValidatorVerdict": "ACTIVE_WAVE",
+  "completionValidatorVerdict": "DRAINED_NON_TERMINAL",
   "projectTerminalState": "INCOMPLETE",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 1,
-  "remainingRoadmapItemCount": 5,
+  "remainingAuthorizedWorkCount": 0,
+  "remainingRoadmapItemCount": 4,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Execute R36P local whole-product readiness gate across Web, iOS, Android and disabled backend connector configuration while keeping R37-R40 external boundaries unchanged.",
-  "urgentAssistanceReason": ""
+  "nextAction": "Audit for any additional material credential-free local release gap; otherwise preserve the exact R37 provider-sandbox authority boundary and continue only after that authority exists.",
+  "urgentAssistanceReason": "R36P closed all currently identified local whole-product gaps. R37-R40 require provider, founder, customer or production authority that this campaign does not possess."
 }
