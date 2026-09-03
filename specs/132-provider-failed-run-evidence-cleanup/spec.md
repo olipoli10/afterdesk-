@@ -17,6 +17,6 @@ Close confirmed Codex Security finding `csf_3bf4140f108a33c61429caab`: no run ad
 ## Acceptance
 
 - Deterministic PostgreSQL RED reproduces the two-write expiry race.
-- Deterministic PostgreSQL RED reproduces validation failure after canonical evidence storage.
+- Deterministic PostgreSQL RED reproduces a trusted terminal-clock failure after canonical evidence storage.
 - Both cases finish `FAILED`, retain null canonical evidence, release exact spend and use fresh trusted terminal timestamps.
 - R37A-R37I regressions, full local suite, typecheck, lint and diff checks pass.

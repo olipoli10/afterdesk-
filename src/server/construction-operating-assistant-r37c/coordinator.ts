@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Prisma } from "@prisma-client";
+import { Prisma } from "@prisma-client";
 import {
   assertSealedSyntheticAttempt,
   controlledProviderRunResultSchema,
@@ -387,6 +387,10 @@ async function executeParsedControlledSyntheticAttempt(
         data: {
           state: "RELEASE_PENDING",
           failureCode: "R37C_LEASE_EXPIRED_BEFORE_EVIDENCE",
+          evidenceSnapshot: Prisma.DbNull,
+          evidenceFingerprint: null,
+          canonicalEvidenceSnapshot: Prisma.DbNull,
+          canonicalEvidenceFingerprint: null,
           leaseToken: null,
           leaseExpiresAt: null,
           version: { increment: 1 },
@@ -407,6 +411,10 @@ async function executeParsedControlledSyntheticAttempt(
       data: {
         state: "RELEASE_PENDING",
         failureCode,
+        evidenceSnapshot: Prisma.DbNull,
+        evidenceFingerprint: null,
+        canonicalEvidenceSnapshot: Prisma.DbNull,
+        canonicalEvidenceFingerprint: null,
         leaseToken: null,
         leaseExpiresAt: null,
         version: { increment: 1 },

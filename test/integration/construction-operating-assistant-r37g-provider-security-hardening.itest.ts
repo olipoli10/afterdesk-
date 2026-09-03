@@ -173,6 +173,13 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
   });
 
   it("does not let a stale lease owner persist canonical evidence", async () => {
+    const replacementSource = await context("stale-lease-replacement-source");
+    const replacementResult = await executeControlledSyntheticProviderDelivery(
+      replacementSource.input,
+      async () => fixture(),
+      executionOptions,
+    );
+    const replacementEvidence = replacementResult.canonicalEvidence!;
     const ctx = await context("stale-lease");
     let releaseAdapter!: () => void;
     let adapterStarted!: () => void;
@@ -189,15 +196,20 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
     });
     await prisma.controlledProviderRun.update({
       where: { id: active.id },
-      data: { leaseToken: crypto.randomUUID(), leaseExpiresAt: new Date(trustedNow.getTime() + 60_000) },
+      data: {
+        leaseToken: crypto.randomUUID(),
+        leaseExpiresAt: new Date(trustedNow.getTime() + 60_000),
+        canonicalEvidenceSnapshot: json(replacementEvidence),
+        canonicalEvidenceFingerprint: replacementEvidence.evidenceFingerprint,
+      },
     });
     releaseAdapter();
     const result = await delivery;
     expect(result.controlledRun.disposition).toBe("IN_PROGRESS");
     expect(result.canonicalEvidence).toBeNull();
     const durable = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: active.id } });
-    expect(durable.canonicalEvidenceSnapshot).toBeNull();
-    expect(durable.canonicalEvidenceFingerprint).toBeNull();
+    expect(durable.canonicalEvidenceSnapshot).toEqual(replacementEvidence);
+    expect(durable.canonicalEvidenceFingerprint).toBe(replacementEvidence.evidenceFingerprint);
   });
 
   it("returns no canonical evidence for a failed durable disposition", async () => {
@@ -237,5 +249,66 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
     expect(durable.completedAt?.toISOString()).toBe(clockNow.toISOString());
     expect(attempt.state).toBe("RELEASED");
     expect(attempt.releasedAt?.toISOString()).toBe(clockNow.toISOString());
+  });
+
+  it("clears canonical evidence when the lease expires after the provider write", async () => {
+    const ctx = await context("expiry-after-provider-write");
+    let clockReadCount = 0;
+    const boundaryClock = {
+      now: () => {
+        clockReadCount += 1;
+        return new Date(trustedNow.getTime() + (clockReadCount >= 4 ? 1_001 : 0));
+      },
+    };
+    const result = await executeControlledSyntheticProviderDelivery({
+      ...ctx.input,
+      leaseDurationMs: 1_000,
+    }, async () => fixture(), { clock: boundaryClock });
+    expect(result.controlledRun.disposition).toBe("FAILED");
+    expect(result.canonicalEvidence).toBeNull();
+    const durable = await prisma.controlledProviderRun.findUniqueOrThrow({
+      where: { id: result.controlledRun.runId },
+    });
+    const attempt = await prisma.providerSpendAttempt.findUniqueOrThrow({
+      where: { id: result.controlledRun.spendAttemptId! },
+    });
+    expect(clockReadCount).toBeGreaterThanOrEqual(4);
+    expect(durable.canonicalEvidenceSnapshot).toBeNull();
+    expect(durable.canonicalEvidenceFingerprint).toBeNull();
+    expect(durable.evidenceSnapshot).toBeNull();
+    expect(attempt).toMatchObject({ state: "RELEASED", settledMicros: null });
+  });
+
+  it("clears canonical evidence when the terminal clock fails after the provider write", async () => {
+    const ctx = await context("post-write-terminal-failure");
+    let clockReadCount = 0;
+    const oneShotFailureClock = {
+      now: () => {
+        clockReadCount += 1;
+        if (clockReadCount === 4) throw new Error("synthetic terminal clock failure");
+        return new Date(trustedNow.getTime());
+      },
+    };
+    const result = await executeControlledSyntheticProviderDelivery(
+      ctx.input,
+      async () => fixture(),
+      { clock: oneShotFailureClock },
+    );
+    expect(result.controlledRun).toMatchObject({
+      disposition: "FAILED",
+      failureCode: "R37C_SYNTHETIC_ADAPTER_FAILED",
+    });
+    expect(result.canonicalEvidence).toBeNull();
+    const durable = await prisma.controlledProviderRun.findUniqueOrThrow({
+      where: { id: result.controlledRun.runId },
+    });
+    const attempt = await prisma.providerSpendAttempt.findUniqueOrThrow({
+      where: { id: result.controlledRun.spendAttemptId! },
+    });
+    expect(durable.canonicalEvidenceSnapshot).toBeNull();
+    expect(durable.canonicalEvidenceFingerprint).toBeNull();
+    expect(durable.evidenceSnapshot).toBeNull();
+    expect(attempt).toMatchObject({ state: "RELEASED", settledMicros: null });
+    expect(clockReadCount).toBeGreaterThanOrEqual(5);
   });
 });
