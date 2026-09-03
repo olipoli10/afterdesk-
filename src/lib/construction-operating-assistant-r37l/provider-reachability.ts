@@ -243,9 +243,7 @@ function inspectModule(path: string, source: string) {
         reflectNamespaceIdentifiers.add(node.name.text);
       } else if (
         ts.isIdentifier(node.name) &&
-        ts.isIdentifier(node.initializer) &&
-        (node.initializer.text === "require" ||
-          requireLoaderIdentifiers.has(node.initializer.text))
+        isTrackedLoader(unwrapTransparentExpression(node.initializer))
       ) {
         requireLoaderIdentifiers.add(node.name.text);
       } else if (
@@ -469,8 +467,7 @@ function inspectModule(path: string, source: string) {
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isIdentifier(node.left) &&
-      ts.isIdentifier(node.right) &&
-      (node.right.text === "require" || requireLoaderIdentifiers.has(node.right.text))
+      isTrackedLoader(unwrapTransparentExpression(node.right))
     ) {
       requireLoaderIdentifiers.add(node.left.text);
     } else if (
