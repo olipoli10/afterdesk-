@@ -5,6 +5,7 @@ import {
 import {
   canonicalProviderEvidenceSchema,
 } from "@/lib/construction-operating-assistant-r37d/contracts";
+import { r37aFingerprint } from "@/lib/construction-operating-assistant-r37a/contracts";
 import { normalizeSyntheticProviderFixture } from "@/lib/construction-operating-assistant-r37d/normalize";
 import {
   controlledProviderDeliveryResultSchema,
@@ -23,7 +24,8 @@ function recoverCanonicalEvidence(snapshot: Prisma.JsonValue | null, fingerprint
   if (!snapshot && !fingerprint) return null;
   if (!snapshot || !fingerprint) throw new Error("R37F_CANONICAL_EVIDENCE_PAIR_INVALID");
   const evidence = canonicalProviderEvidenceSchema.parse(snapshot);
-  if (evidence.evidenceFingerprint !== fingerprint) {
+  const { evidenceFingerprint, ...unsigned } = evidence;
+  if (r37aFingerprint(unsigned) !== evidenceFingerprint || evidenceFingerprint !== fingerprint) {
     throw new Error("R37F_CANONICAL_EVIDENCE_FINGERPRINT_DRIFT");
   }
   return evidence;
@@ -36,16 +38,19 @@ export async function executeControlledSyntheticProviderDelivery(
   const input = executeControlledSyntheticAttemptSchema.parse(rawInput);
   let fixtureAdapterInvoked = false;
 
-  const controlledRun = await executeControlledSyntheticAttempt(input, async (request) => {
-    const run = await prisma.controlledProviderRun.findUnique({
+  const controlledRun = await executeControlledSyntheticAttempt(input, async (request, context) => {
+    if (!context) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
+    const run = await prisma.controlledProviderRun.findFirst({
       where: {
-        grantId_idempotencyKey: {
-          grantId: input.grantId,
-          idempotencyKey: input.idempotencyKey,
-        },
+        id: context.runId,
+        state: "RUNNING",
+        leaseToken: context.leaseToken,
+        grantId: input.grantId,
+        idempotencyKey: input.idempotencyKey,
+        workspaceId: input.workspaceId,
       },
     });
-    if (!run || run.state !== "RUNNING") throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
+    if (!run) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
 
     const recovered = recoverCanonicalEvidence(
       run.canonicalEvidenceSnapshot,
@@ -53,7 +58,7 @@ export async function executeControlledSyntheticProviderDelivery(
     );
     if (recovered) {
       return {
-        body: recovered,
+        body: { canonicalEvidenceFingerprint: recovered.evidenceFingerprint },
         latencyMs: recovered.latencyMs,
         costMicros: recovered.costMicros,
         externalTransportPerformed: false,
@@ -73,6 +78,7 @@ export async function executeControlledSyntheticProviderDelivery(
       where: {
         id: run.id,
         state: "RUNNING",
+        leaseToken: context.leaseToken,
         canonicalEvidenceFingerprint: null,
       },
       data: {
@@ -81,21 +87,10 @@ export async function executeControlledSyntheticProviderDelivery(
       },
     });
     if (stored.count !== 1) {
-      const concurrent = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: run.id } });
-      const concurrentEvidence = recoverCanonicalEvidence(
-        concurrent.canonicalEvidenceSnapshot,
-        concurrent.canonicalEvidenceFingerprint,
-      );
-      if (!concurrentEvidence) throw new Error("R37F_CANONICAL_EVIDENCE_RECORD_FAILED");
-      return {
-        body: concurrentEvidence,
-        latencyMs: concurrentEvidence.latencyMs,
-        costMicros: concurrentEvidence.costMicros,
-        externalTransportPerformed: false,
-      };
+      throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
     }
     return {
-      body: canonicalEvidence,
+      body: { canonicalEvidenceFingerprint: canonicalEvidence.evidenceFingerprint },
       latencyMs: canonicalEvidence.latencyMs,
       costMicros: canonicalEvidence.costMicros,
       externalTransportPerformed: false,
@@ -105,10 +100,10 @@ export async function executeControlledSyntheticProviderDelivery(
   const durableRun = await prisma.controlledProviderRun.findUniqueOrThrow({
     where: { id: controlledRun.runId },
   });
-  const canonicalEvidence = recoverCanonicalEvidence(
-    durableRun.canonicalEvidenceSnapshot,
-    durableRun.canonicalEvidenceFingerprint,
-  );
+  const succeeded = controlledRun.disposition === "SUCCEEDED" || controlledRun.disposition === "SUCCEEDED_REPLAY";
+  const canonicalEvidence = succeeded
+    ? recoverCanonicalEvidence(durableRun.canonicalEvidenceSnapshot, durableRun.canonicalEvidenceFingerprint)
+    : null;
   if (controlledRun.disposition.startsWith("SUCCEEDED") && !canonicalEvidence) {
     throw new Error("R37F_SUCCESS_WITHOUT_CANONICAL_EVIDENCE");
   }

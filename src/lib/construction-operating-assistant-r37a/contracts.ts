@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { r36bFingerprint } from "@/lib/construction-operating-assistant-r36b/contracts";
+import { sandboxCaseSchema } from "@/lib/construction-operating-assistant-r36b/contracts";
 
 export const r37aAuthorizationSchema = z.object({
   schemaVersion: z.literal(1),
@@ -21,6 +22,15 @@ export const r37aPreparedRequestSchema = z.object({
   dispatchable: z.literal(false),
   credentialResolved: z.literal(false),
   payload: z.unknown(),
+}).strict();
+
+export const r37aSealedSyntheticAttemptSchema = z.object({
+  schemaVersion: z.literal(1),
+  sealedAttemptFingerprint: z.string().regex(/^sha256:[0-9a-f]{64}$/u),
+  campaignFingerprint: z.string().regex(/^sha256:[0-9a-f]{64}$/u),
+  authorization: r37aAuthorizationSchema,
+  sandboxCase: sandboxCaseSchema,
+  preparedRequest: r37aPreparedRequestSchema,
 }).strict();
 
 export const r37aSyntheticAdapterResultSchema = z.object({
@@ -48,4 +58,5 @@ export function r37aFingerprint(value: unknown): `sha256:${string}` {
 
 export type R37AAuthorization = z.infer<typeof r37aAuthorizationSchema>;
 export type R37APreparedRequest = z.infer<typeof r37aPreparedRequestSchema>;
+export type R37ASealedSyntheticAttempt = z.infer<typeof r37aSealedSyntheticAttemptSchema>;
 export type R37ASyntheticEvidence = z.infer<typeof r37aSyntheticEvidenceSchema>;

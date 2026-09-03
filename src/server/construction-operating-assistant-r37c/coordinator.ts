@@ -86,7 +86,13 @@ async function ensureRun(
 ) {
   return prisma.$transaction(async (tx) => {
     await lockRun(tx, input.grantId, input.idempotencyKey);
-    await requireActiveConstructionMember(tx, input.actorId, input.workspaceId);
+    const membership = await requireActiveConstructionMember(tx, input.actorId, input.workspaceId);
+    if (membership.role === "member") throw new ConstructionAccessDenied();
+    const grant = await tx.providerActivationGrant.findFirst({
+      where: { id: input.grantId, workspaceId: input.workspaceId },
+      select: { id: true },
+    });
+    if (!grant) throw new ConstructionAccessDenied();
     const existing = await tx.controlledProviderRun.findUnique({
       where: {
         grantId_idempotencyKey: {
@@ -96,6 +102,7 @@ async function ensureRun(
       },
     });
     if (existing) {
+      if (existing.workspaceId !== input.workspaceId) throw new ConstructionAccessDenied();
       if (existing.commandFingerprint !== commandFingerprint) {
         throw new Error("R37C_ALTERED_REPLAY_REFUSED");
       }
@@ -337,6 +344,7 @@ async function executeParsedControlledSyntheticAttempt(
     const evidence = await runSyntheticAttempt({
       sealed: input.sealed as SealedSyntheticAttempt,
       adapter,
+      adapterContext: { runId: run.id, leaseToken },
       now: now.toISOString(),
     });
     const stored = await prisma.controlledProviderRun.updateMany({

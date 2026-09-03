@@ -5,25 +5,51 @@ import {
   r37aAuthorizationSchema,
   r37aFingerprint,
   r37aPreparedRequestSchema,
+  r37aSealedSyntheticAttemptSchema,
   r37aSyntheticAdapterResultSchema,
   r37aSyntheticEvidenceSchema,
   type R37AAuthorization,
   type R37APreparedRequest,
+  type R37ASealedSyntheticAttempt,
   type R37ASyntheticEvidence,
 } from "@/lib/construction-operating-assistant-r37a/contracts";
 
 type R37CampaignManifest = ReturnType<typeof createR37CampaignManifest>;
 
-export type SealedSyntheticAttempt = Readonly<{
-  schemaVersion: 1;
-  sealedAttemptFingerprint: `sha256:${string}`;
-  campaignFingerprint: string;
-  authorization: R37AAuthorization;
-  sandboxCase: SandboxCase;
-  preparedRequest: R37APreparedRequest;
+export type SealedSyntheticAttempt = Readonly<R37ASealedSyntheticAttempt>;
+
+export type SyntheticProviderInvocationContext = Readonly<{
+  runId: string;
+  leaseToken: string;
 }>;
 
-export type SyntheticProviderTransport = (request: R37APreparedRequest) => Promise<unknown>;
+export type SyntheticProviderTransport = (
+  request: R37APreparedRequest,
+  context?: SyntheticProviderInvocationContext,
+) => Promise<unknown>;
+
+function assertR37ASealedSyntheticAttempt(value: unknown): SealedSyntheticAttempt {
+  const parsed = r37aSealedSyntheticAttemptSchema.safeParse(value);
+  if (!parsed.success) throw new Error("R37A_SEALED_ATTEMPT_SCHEMA_INVALID");
+  const sealed = parsed.data;
+  const { caseFingerprint, ceilingFingerprint, ...sandboxUnsigned } = sealed.sandboxCase;
+  if (r37aFingerprint(sandboxUnsigned) !== caseFingerprint) throw new Error("R37A_CASE_FINGERPRINT_DRIFT");
+  if (r37aFingerprint(sealed.sandboxCase.ceilings) !== ceilingFingerprint) throw new Error("R37A_CEILING_FINGERPRINT_DRIFT");
+  const { preparedRequestFingerprint, ...preparedUnsigned } = sealed.preparedRequest;
+  if (r37aFingerprint(preparedUnsigned) !== preparedRequestFingerprint) throw new Error("R37A_PREPARED_REQUEST_DRIFT");
+  const { sealedAttemptFingerprint, ...sealedUnsigned } = sealed;
+  if (r37aFingerprint(sealedUnsigned) !== sealedAttemptFingerprint) throw new Error("R37A_SEALED_ATTEMPT_DRIFT");
+  if (sealed.preparedRequest.candidateKey !== sealed.authorization.candidateKey) {
+    throw new Error("R37A_CANDIDATE_BINDING_MISMATCH");
+  }
+  if (
+    sealed.authorization.candidateKey === "OPENROUTER_CONTROLLER" &&
+    (sealed.preparedRequest.payload as { model?: unknown }).model !== sealed.authorization.exactModelId
+  ) {
+    throw new Error("R37A_EXACT_MODEL_BINDING_MISMATCH");
+  }
+  return sealed;
+}
 
 function mustBeCurrent(input: Readonly<{
   campaign: R37CampaignManifest;
@@ -121,17 +147,19 @@ function serialisedByteLength(value: unknown): number {
 export async function runSyntheticAttempt(input: Readonly<{
   sealed: SealedSyntheticAttempt;
   adapter: SyntheticProviderTransport;
+  adapterContext?: SyntheticProviderInvocationContext;
   now?: string;
 }>): Promise<R37ASyntheticEvidence> {
+  const sealed = assertR37ASealedSyntheticAttempt(input.sealed);
   const now = input.now ?? new Date().toISOString();
-  if (input.sealed.authorization.expiresAt <= now) throw new Error("R37A_AUTHORIZATION_EXPIRED");
-  if (input.sealed.preparedRequest.dispatchable || input.sealed.preparedRequest.credentialResolved) throw new Error("R37A_DISPATCHABLE_REQUEST_REFUSED");
-  const rawAdapterResult = await input.adapter(input.sealed.preparedRequest);
+  if (sealed.authorization.expiresAt <= now) throw new Error("R37A_AUTHORIZATION_EXPIRED");
+  if (sealed.preparedRequest.dispatchable || sealed.preparedRequest.credentialResolved) throw new Error("R37A_DISPATCHABLE_REQUEST_REFUSED");
+  const rawAdapterResult = await input.adapter(sealed.preparedRequest, input.adapterContext);
   if (!rawAdapterResult || typeof rawAdapterResult !== "object" || (rawAdapterResult as { externalTransportPerformed?: unknown }).externalTransportPerformed !== false) {
     throw new Error("R37A_EXTERNAL_TRANSPORT_REFUSED");
   }
   const adapterResult = r37aSyntheticAdapterResultSchema.parse(rawAdapterResult);
-  const ceilings = input.sealed.sandboxCase.ceilings;
+  const ceilings = sealed.sandboxCase.ceilings;
   if (adapterResult.latencyMs > ceilings.maxLatencyMs) throw new Error("R37A_LATENCY_CEILING_EXCEEDED");
   if (adapterResult.costMicros > ceilings.maxCostMicros) throw new Error("R37A_COST_CEILING_EXCEEDED");
   if (serialisedByteLength(adapterResult.body) > ceilings.maxOutputTokens * 4) throw new Error("R37A_RESPONSE_SIZE_EXCEEDED");
@@ -140,7 +168,7 @@ export async function runSyntheticAttempt(input: Readonly<{
     evidenceLabel: "SYNTHETIC" as const,
     externalDispatchPerformed: false as const,
     certified: false as const,
-    sealedAttemptFingerprint: input.sealed.sealedAttemptFingerprint,
+    sealedAttemptFingerprint: sealed.sealedAttemptFingerprint,
     responseFingerprint: r37aFingerprint(adapterResult.body),
     latencyMs: adapterResult.latencyMs,
     costMicros: adapterResult.costMicros,
