@@ -1460,6 +1460,36 @@
       "outputTree": "cd89b851b6f842f22b9e7ed5713e744625045c94",
       "result": "The remaining authenticated legacy web command API and server action now cross R36C with strict portal provenance, immutable replay and zero provider dispatch.",
       "completedAtUtc": "2026-09-02T19:50:41Z"
+    },
+    {
+      "id": "R37A-SEALED-PROVIDER-EXECUTOR",
+      "title": "Sealed provider executor",
+      "objective": "Add a credential-free server boundary that seals R36B synthetic candidate plans, preserves exact privacy/cost constraints and permits only injected zero-external-transport adapter evidence.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R36F-LEGACY-COMMAND-ROUTING-CLOSURE"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "fad720c4857ce9950b8edb0afce650c63c910f43"},
+      "authority": "LOCAL CODE TEST AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL NETWORK EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/123-sealed-provider-executor",
+        "src/lib/construction-operating-assistant-r37a",
+        "src/server/construction-operating-assistant-r37a",
+        "test/construction-operating-assistant-r37a-sealed-executor.test.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../123-sealed-provider-executor/plan.md",
+      "planSha256": "f9eb84a71a968ea7f005360b6feeb7fce36c4e4d4176582fe82f455cd7fee50c",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r37a-sealed-executor.test.ts",
+      "evidencePaths": ["../123-sealed-provider-executor/evidence/r37a-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }
