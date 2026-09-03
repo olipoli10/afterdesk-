@@ -173,6 +173,12 @@ function inspectModule(path: string, source: string) {
           (ts.isPropertyAccessExpression(factory) &&
             factory.name.text === "createRequire" &&
             ts.isIdentifier(factory.expression) &&
+            moduleNamespaceIdentifiers.has(factory.expression.text)) ||
+          (ts.isElementAccessExpression(factory) &&
+            factory.argumentExpression &&
+            ts.isStringLiteralLike(factory.argumentExpression) &&
+            factory.argumentExpression.text === "createRequire" &&
+            ts.isIdentifier(factory.expression) &&
             moduleNamespaceIdentifiers.has(factory.expression.text));
         if (isCreateRequire) requireLoaderIdentifiers.add(node.name.text);
       } else if (
