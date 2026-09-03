@@ -15,9 +15,9 @@
 
 ## R36I — Store compliance and listing pack
 
-- [ ] T008 Freeze Apple/Google questionnaires, screenshot plan and remaining external blockers.
-- [ ] T009 Implement cross-store privacy, permission, locale and capability parity checks.
-- [ ] T010 Validate store artifacts without account access or upload.
+- [x] T008 Freeze Apple/Google questionnaires, screenshot plan and remaining external blockers.
+- [x] T009 Implement cross-store privacy, permission, locale and capability parity checks.
+- [x] T010 Validate store artifacts without account access or upload.
 
 ## R36J — Release observability and support
 
