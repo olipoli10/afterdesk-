@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "readiness": "READY_FOR_MONITORING_PROVIDER_SELECTION",
+  "signals": [
+    {"code":"WEB_LIVENESS","contentPolicy":"METADATA_ONLY_REDACTED","dimensions":["releaseVersion","status","occurredAtBucket"]},
+    {"code":"AUTH_OUTCOME","contentPolicy":"METADATA_ONLY_REDACTED","dimensions":["releaseVersion","outcomeCode","occurredAtBucket"]},
+    {"code":"API_LATENCY_BUCKET","contentPolicy":"METADATA_ONLY_REDACTED","dimensions":["releaseVersion","routeClass","latencyBucket","outcomeCode"]},
+    {"code":"BACKGROUND_JOB_STATE","contentPolicy":"METADATA_ONLY_REDACTED","dimensions":["releaseVersion","jobClass","state","attemptBucket"]},
+    {"code":"OUTBOX_STATE","contentPolicy":"METADATA_ONLY_REDACTED","dimensions":["releaseVersion","state","channelClass","attemptBucket"]},
+    {"code":"MOBILE_SYNC_STATE","contentPolicy":"METADATA_ONLY_REDACTED","dimensions":["releaseVersion","state","operationClass","latencyBucket"]},
+    {"code":"DATABASE_OPERATION_STATE","contentPolicy":"METADATA_ONLY_REDACTED","dimensions":["releaseVersion","operationClass","outcomeCode","latencyBucket"]},
+    {"code":"SUPPORT_HANDOFF_STATE","contentPolicy":"METADATA_ONLY_REDACTED","dimensions":["releaseVersion","severity","state","occurredAtBucket"]}
+  ],
+  "forbiddenSignalFields": ["rawPhone","rawEmail","messageBody","transcript","documentBody","evidenceBytes","credentialMaterial","databaseConnection","customerName"],
+  "adapters": [
+    {"code":"LOCAL_STRUCTURED_LOG","status":"DISABLED_CONFIG_ONLY","endpoint":null,"credentialReference":null},
+    {"code":"ERROR_AGGREGATION","status":"DISABLED_CONFIG_ONLY","endpoint":null,"credentialReference":null},
+    {"code":"UPTIME_MONITOR","status":"DISABLED_CONFIG_ONLY","endpoint":null,"credentialReference":null},
+    {"code":"ON_CALL_NOTIFICATION","status":"DISABLED_CONFIG_ONLY","endpoint":null,"credentialReference":null},
+    {"code":"SUPPORT_TICKETING","status":"DISABLED_CONFIG_ONLY","endpoint":null,"credentialReference":null}
+  ],
+  "sloCandidates": [
+    {"code":"WEB_AVAILABILITY","target":"99.9%","window":"ROLLING_30_DAYS","evidenceState":"CANDIDATE_NOT_OBSERVED"},
+    {"code":"API_SUCCESS","target":"99.5%","window":"ROLLING_7_DAYS","evidenceState":"CANDIDATE_NOT_OBSERVED"},
+    {"code":"PREPARED_ACTION_DURABILITY","target":"100%","window":"PER_OPERATION","evidenceState":"CANDIDATE_NOT_OBSERVED"},
+    {"code":"CROSS_WORKSPACE_DISCLOSURE","target":"0","window":"ALWAYS","evidenceState":"CANDIDATE_NOT_OBSERVED"}
+  ],
+  "incidentLevels": [
+    {"level":"SEV0","definition":"Confirmed cross-workspace disclosure, unauthorized external effect or canonical state corruption","ownerClass":"FOUNDER_AND_SECURITY_OWNER","responseTargetMinutes":15},
+    {"level":"SEV1","definition":"Core assistant unavailable or persistent writes broadly failing","ownerClass":"TECHNICAL_RELEASE_OWNER","responseTargetMinutes":30},
+    {"level":"SEV2","definition":"One managed workflow degraded with a safe workaround","ownerClass":"PRODUCT_OPERATIONS_OWNER","responseTargetMinutes":240},
+    {"level":"SEV3","definition":"Cosmetic or low-impact defect without state or authority risk","ownerClass":"PRODUCT_OWNER","responseTargetMinutes":1440}
+  ],
+  "rollbackTriggers": ["EXTERNAL_EFFECT_WITHOUT_AUTHORITY", "CROSS_WORKSPACE_DISCLOSURE", "CANONICAL_STATE_CORRUPTION", "AUTHORIZATION_BYPASS", "MIGRATION_INTEGRITY_FAILURE", "SUSTAINED_CORE_UNAVAILABILITY"],
+  "supportHandoff": {
+    "publicPath": "/construction/support",
+    "automaticExternalSend": false,
+    "rawMessageBodyAllowed": false,
+    "rawEvidenceAllowed": false,
+    "allowedFields": ["incidentId", "workspaceOpaqueRef", "actorOpaqueRef", "releaseVersion", "signalCode", "severity", "occurredAtBucket", "reproductionCode"],
+    "ownerClass": "BOUNDED_HUMAN_SUPPORT"
+  },
+  "providerSelected": false,
+  "deployed": false,
+  "externallyObserved": false,
+  "externalEffectCount": 0
+}
