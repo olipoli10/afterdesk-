@@ -1591,7 +1591,7 @@
       "title": "Provider replay brand parity",
       "objective": "Restore exact synthetic classifier and planner stage routing after the AfterDesk-to-Endvera prompt rename while preserving historical fixtures and fail-closed unknown routing.",
       "role": "BOUNDED_REWORK",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37D-PROVIDER-DELIVERY-CONTRACTS"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -1610,10 +1610,10 @@
       "planSha256": "28934810dc6a15e8550a3b93834b83bef97de03debbbbd472d462593e7e8ccce",
       "completionCommand": "npx vitest run --config vitest.integration.config.ts test/integration/budget-demotion-integration.itest.ts",
       "evidencePaths": ["../127-provider-replay-brand-parity/evidence/r37e-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "4e8d4aa5a9a0a7f6c662b88503724d258ef65b06",
+      "outputTree": "da6761fa321b326377aa92cf2b43f442bb77c1f5",
+      "result": "The synthetic provider replay harness now recognizes current Endvera and historical AfterDesk classifier and planner prompts, preserves fail-closed unknown routing and passes the exact PostgreSQL workflow that exposed the drift.",
+      "completedAtUtc": "2026-09-03T02:40:17Z"
     }
   ]
 }
