@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_ADDITIVE_PUBLIC_BRAND_METADATA_ALIGNED",
+  "existingHomepagePreserved": true,
+  "textAssistInstallStartRoute": "/textassist",
+  "constructionRoute": "/construction",
+  "accountDeletionRoute": "/account-deletion",
+  "managedWorkOfferingRetained": true,
+  "providerObserved": false,
+  "customerObserved": false,
+  "deployed": false,
+  "published": false,
+  "externalEffectCount": 0
+}

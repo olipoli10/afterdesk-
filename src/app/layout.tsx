@@ -18,11 +18,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Managed back-office execution for data, research and CRM work",
+    default: "ENDVERA — AI operating assistant for construction and managed work",
     template: "%s · Endvera",
   },
   description:
-    "Endvera scopes, manages and reviews bounded CRM, research, data and document work. Approve the scope and price, then receive a checked, usable deliverable.",
+    "ENDVERA TextAssist helps small contractors manage job context, contacts, calendar, follow-ups and prepared communications, with human-backed managed work when judgment is needed.",
   openGraph: {
     siteName: "Endvera",
     type: "website",
