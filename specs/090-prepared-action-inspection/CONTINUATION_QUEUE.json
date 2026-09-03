@@ -1585,6 +1585,35 @@
       "outputTree": "ff41708a00763925c3a42eafd77ab1e5c48d90b4",
       "result": "Strict synthetic OpenRouter and Perplexity delivery contracts now enforce exact sealed bindings, model and route identity, citation provenance, deterministic evidence, usage and case ceilings with zero provider, credential, network or external-write path.",
       "completedAtUtc": "2026-09-03T02:12:22Z"
+    },
+    {
+      "id": "R37E-PROVIDER-REPLAY-BRAND-PARITY",
+      "title": "Provider replay brand parity",
+      "objective": "Restore exact synthetic classifier and planner stage routing after the AfterDesk-to-Endvera prompt rename while preserving historical fixtures and fail-closed unknown routing.",
+      "role": "VALIDATION_FIX",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37D-PROVIDER-DELIVERY-CONTRACTS"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "151152908ef7ad819a2313806e42042d8a662a30"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/127-provider-replay-brand-parity",
+        "test/support/provider-replay.ts",
+        "test/provider-budget.test.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../127-provider-replay-brand-parity/plan.md",
+      "planSha256": "28934810dc6a15e8550a3b93834b83bef97de03debbbbd472d462593e7e8ccce",
+      "completionCommand": "npx vitest run --config vitest.integration.config.ts test/integration/budget-demotion-integration.itest.ts",
+      "evidencePaths": ["../127-provider-replay-brand-parity/evidence/r37e-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }
