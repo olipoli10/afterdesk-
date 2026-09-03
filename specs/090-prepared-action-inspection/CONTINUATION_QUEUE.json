@@ -1562,7 +1562,7 @@
       "title": "Provider delivery contracts",
       "objective": "Normalize strict provider-specific synthetic OpenRouter controller and Perplexity research fixtures against exact R37A request bindings and ceilings without adding transport or credentials.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37C-CONTROLLED-PROVIDER-ORCHESTRATION"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -1581,10 +1581,10 @@
       "planSha256": "e3c1892f924c1884a9b090799ba258b46564a17f943fa288a4384665ea9e0dab",
       "completionCommand": "npx vitest run test/construction-operating-assistant-r37d-provider-delivery-contracts.test.ts",
       "evidencePaths": ["../126-provider-delivery-contracts/evidence/r37d-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "7ec4ff701972ec6088d8e188e862a27f6b2bbbdd",
+      "outputTree": "ff41708a00763925c3a42eafd77ab1e5c48d90b4",
+      "result": "Strict synthetic OpenRouter and Perplexity delivery contracts now enforce exact sealed bindings, model and route identity, citation provenance, deterministic evidence, usage and case ceilings with zero provider, credential, network or external-write path.",
+      "completedAtUtc": "2026-09-03T02:12:22Z"
     }
   ]
 }
