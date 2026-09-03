@@ -6,5 +6,5 @@
 - [x] T004 Add direct stage-routing regression pins.
 - [x] T005 Pass provider replay and synthetic responder unit regression.
 - [x] T006 Pass the exact budget-demotion PostgreSQL integration.
-- [ ] T007 Run typecheck, targeted lint, Spec Kit Analyze and `git diff --check`.
-- [ ] T008 Commit locally and advance the autonomous queue.
+- [x] T007 Run typecheck, targeted lint, Spec Kit Analyze and `git diff --check`.
+- [x] T008 Commit locally and advance the autonomous queue.
