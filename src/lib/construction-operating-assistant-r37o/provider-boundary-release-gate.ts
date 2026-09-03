@@ -18,6 +18,11 @@ export type ProviderBoundaryReleaseViolation = Readonly<{
 
 const PUBLIC_ROOTS = ["src/app/", "src/server/actions/", "src/jobs/", "src/workers/"] as const;
 const PROVIDER_RUNTIME = /^src\/(?:lib|server)\/construction-operating-assistant-r37[a-j]\//u;
+const EXECUTABLE_SOURCE_EXTENSION = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/u;
+
+export function isProviderBoundarySourcePath(path: string) {
+  return EXECUTABLE_SOURCE_EXTENSION.test(normalizeRepositoryPath(path));
+}
 
 function normalizeRepositoryPath(path: string) {
   return posix.normalize(path.replaceAll("\\", "/")).replace(/^\.\//u, "");

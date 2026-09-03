@@ -1,7 +1,10 @@
 import { readdir, readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
-import { validateProviderBoundaryModules } from "../src/lib/construction-operating-assistant-r37o/provider-boundary-release-gate";
+import {
+  isProviderBoundarySourcePath,
+  validateProviderBoundaryModules,
+} from "../src/lib/construction-operating-assistant-r37o/provider-boundary-release-gate";
 
 async function listSourceFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -9,7 +12,7 @@ async function listSourceFiles(directory: string): Promise<string[]> {
     entries.map(async (entry) => {
       const path = resolve(directory, entry.name);
       if (entry.isDirectory()) return listSourceFiles(path);
-      return /\.tsx?$/u.test(entry.name) ? [path] : [];
+      return isProviderBoundarySourcePath(entry.name) ? [path] : [];
     }),
   );
   return paths.flat().sort();

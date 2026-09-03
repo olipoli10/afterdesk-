@@ -1929,6 +1929,37 @@
       "outputTree": "e685a16b1380d76fec79e402ee6e249a814f942e",
       "result": "The versioned build pipeline now executes one deterministic provider-boundary source-tree command before build; direct, transitive, computed-module, dynamic-code, runtime-network, secret and dispatch capabilities fail closed, and exact security verification completed with zero findings.",
       "completedAtUtc": "2026-09-03T04:54:23Z"
+    },
+    {
+      "id": "R37P-PROVIDER-JAVASCRIPT-INVENTORY-GUARD",
+      "title": "Provider JavaScript inventory guard",
+      "objective": "Close executable JavaScript-family source inventory, AST parsing and extensionless module-resolution bypasses in the mandatory provider boundary release gate.",
+      "role": "BOUNDED_REWORK",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37O-PROVIDER-BOUNDARY-RELEASE-GATE"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "b6262860a8bec9cdfaa92c4d51fdb240068d4a36"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/138-provider-javascript-inventory-guard",
+        "src/lib/construction-operating-assistant-r37l/provider-reachability.ts",
+        "src/lib/construction-operating-assistant-r37o/provider-boundary-release-gate.ts",
+        "scripts/validate-provider-boundary.ts",
+        "test/construction-operating-assistant-r37p-provider-javascript-inventory.test.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../138-provider-javascript-inventory-guard/plan.md",
+      "planSha256": "a6b5334ac2dd3333bd9e3e01801268c94ce783057b032522a2a3b0d718c0187b",
+      "completionCommand": "npm run validate:provider-boundary && npx vitest run test/construction-operating-assistant-r37p-provider-javascript-inventory.test.ts",
+      "evidencePaths": ["../138-provider-javascript-inventory-guard/evidence/r37p-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }

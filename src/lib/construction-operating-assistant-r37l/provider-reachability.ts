@@ -22,6 +22,7 @@ export type DynamicCodeExecutionReachability = Readonly<{
 
 const PROVIDER_EXECUTION_MODULE =
   /^src\/server\/construction-operating-assistant-r37(?:a|b|c|f)\//u;
+const SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"] as const;
 
 function normalizeRepositoryPath(path: string) {
   return posix.normalize(path.replaceAll("\\", "/")).replace(/^\.\//u, "");
@@ -34,7 +35,13 @@ function isPublicEntrypoint(path: string) {
 }
 
 function inspectModule(path: string, source: string) {
-  const scriptKind = path.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const scriptKind = path.endsWith(".tsx")
+    ? ts.ScriptKind.TSX
+    : path.endsWith(".jsx")
+      ? ts.ScriptKind.JSX
+      : /\.(?:js|mjs|cjs)$/u.test(path)
+        ? ts.ScriptKind.JS
+        : ts.ScriptKind.TS;
   const sourceFile = ts.createSourceFile(
     path,
     source,
@@ -137,15 +144,13 @@ function resolveInternalModule(
   const withoutJavaScriptExtension = base.replace(/\.(?:mjs|cjs|js|jsx)$/u, "");
   const candidates = [
     base,
-    `${base}.ts`,
-    `${base}.tsx`,
     withoutJavaScriptExtension,
-    `${withoutJavaScriptExtension}.ts`,
-    `${withoutJavaScriptExtension}.tsx`,
-    `${base}/index.ts`,
-    `${base}/index.tsx`,
-    `${withoutJavaScriptExtension}/index.ts`,
-    `${withoutJavaScriptExtension}/index.tsx`,
+    ...SOURCE_EXTENSIONS.flatMap((extension) => [
+      `${base}${extension}`,
+      `${withoutJavaScriptExtension}${extension}`,
+      `${base}/index${extension}`,
+      `${withoutJavaScriptExtension}/index${extension}`,
+    ]),
   ];
   return candidates.find((candidate) => modulePaths.has(candidate)) ?? null;
 }
