@@ -1,0 +1,33 @@
+{
+  "cli": {
+    "appVersionSource": "local",
+    "requireCommit": true,
+    "promptToConfigurePushNotifications": false
+  },
+  "build": {
+    "local-simulator": {
+      "distribution": "internal",
+      "autoIncrement": false,
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "withoutCredentials": true,
+        "buildType": "apk"
+      }
+    },
+    "internal-preview": {
+      "extends": "local-simulator"
+    },
+    "store-candidate": {
+      "distribution": "store",
+      "autoIncrement": false,
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}

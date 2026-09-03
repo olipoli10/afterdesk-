@@ -1,0 +1,98 @@
+import { describe, expect, it } from "vitest";
+import appConfig from "../app.json";
+import easConfig from "../eas.json";
+import readiness from "../../../release/endvera-construction-v1/mobile-build-readiness.json";
+import {
+  expectedMobileBuildProfiles,
+  validateCredentialFreeMobileBuild,
+} from "../src/lib/store-build";
+
+describe("R36G credential-free mobile build preparation", () => {
+  it("binds exact local and store-candidate profiles to the canonical app identity", () => {
+    const result = validateCredentialFreeMobileBuild({
+      appConfig,
+      easConfig,
+      readiness,
+    });
+
+    expect(result).toMatchObject({
+      status: "READY_FOR_SIGNING_AUTHORITY",
+      appName: "ENDVERA",
+      ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1", artifact: "IPA" },
+      android: { package: "ai.endvera.mobile", versionCode: 1, artifact: "AAB" },
+      signed: false,
+      uploaded: false,
+      submitted: false,
+      externalEffectCount: 0,
+    });
+    expect(result.profiles).toEqual(expectedMobileBuildProfiles);
+  });
+
+  it("contains no submit section, credential value, account identity or remote update channel", () => {
+    const serialized = JSON.stringify(easConfig);
+    expect(easConfig).not.toHaveProperty("submit");
+    expect(serialized).not.toMatch(/"(?:credentials|credentialsSource|projectId|owner|channel|environment|token|secret|password)"\s*:/iu);
+    expect(serialized).not.toMatch(/eas\s+(?:build|submit|update)|https?:\/\//iu);
+  });
+
+  it("refuses build-profile, identity and readiness inflation", () => {
+    expect(() => validateCredentialFreeMobileBuild({
+      appConfig,
+      easConfig: { ...easConfig, submit: { production: {} } },
+      readiness,
+    })).toThrow("MOBILE_BUILD_SUBMIT_PATH_REFUSED");
+
+    expect(() => validateCredentialFreeMobileBuild({
+      appConfig: {
+        ...appConfig,
+        expo: { ...appConfig.expo, ios: { ...appConfig.expo.ios, bundleIdentifier: "invalid.example" } },
+      },
+      easConfig,
+      readiness,
+    })).toThrow("MOBILE_BUILD_IDENTITY_MISMATCH");
+
+    expect(() => validateCredentialFreeMobileBuild({
+      appConfig,
+      easConfig,
+      readiness: { ...readiness, signed: true },
+    })).toThrow("MOBILE_BUILD_CLAIM_INFLATION_REFUSED");
+  });
+
+  it("refuses hidden values and unsupported profile drift", () => {
+    expect(() => validateCredentialFreeMobileBuild({
+      appConfig,
+      easConfig: {
+        ...easConfig,
+        build: {
+          ...easConfig.build,
+          "store-candidate": { ...easConfig.build["store-candidate"], env: { API_KEY: "not-allowed" } },
+        },
+      },
+      readiness,
+    })).toThrow("MOBILE_BUILD_VALUE_MATERIAL_REFUSED");
+
+    expect(() => validateCredentialFreeMobileBuild({
+      appConfig,
+      easConfig: {
+        ...easConfig,
+        build: { ...easConfig.build, surprise: {} },
+      },
+      readiness,
+    })).toThrow("MOBILE_BUILD_PROFILE_SET_MISMATCH");
+  });
+
+  it("keeps every external prerequisite explicit and value-free", () => {
+    expect(readiness.requiredExternalInputs.map((item) => item.code)).toEqual([
+      "EXPO_PROJECT_OWNERSHIP",
+      "APPLE_DEVELOPER_MEMBERSHIP",
+      "APPLE_SIGNING_CUSTODY",
+      "GOOGLE_PLAY_DEVELOPER_ACCOUNT",
+      "ANDROID_SIGNING_CUSTODY",
+      "PUBLIC_API_ORIGIN",
+    ]);
+    for (const input of readiness.requiredExternalInputs) {
+      expect(input).toEqual(expect.objectContaining({ evidenceRequired: expect.any(String), ownerClass: expect.any(String) }));
+      expect(input).not.toHaveProperty("value");
+    }
+  });
+});

@@ -10,6 +10,11 @@ export const MOBILE_RELEASE_INFO = {
     support: "/construction/support",
     accountDeletion: "/client/privacy",
   },
+  buildPreparation: {
+    status: "READY_FOR_SIGNING_AUTHORITY",
+    configPath: "apps/mobile/eas.json",
+    readinessPath: "release/endvera-construction-v1/mobile-build-readiness.json",
+  },
   readiness: "LOCAL_PACKAGE_READY",
   signed: false,
   uploaded: false,

@@ -61,6 +61,12 @@
       "releases": ["R32-ONBOARDING-IMPORT", "R33-WEB-MOBILE-PARITY", "R34-BILLING-ADMIN-SITE", "R35-RELEASE-PACKAGING", "R36-INTERNAL-E2E", "R36A-AI-ROUTING-BRAIN", "R36B-PROVIDER-SANDBOX-PREFLIGHT", "R36C-UNIFIED-ASSISTANT-ROUTING", "R36D-ASSISTANT-CHANNEL-ROUTING-PARITY", "R36E-CONTEXT-RICH-INTENT-ROUTING-GATE", "R36F-LEGACY-COMMAND-ROUTING-CLOSURE"]
     },
     {
+      "id": "S5B-MARKET-READINESS",
+      "title": "Credential-free mobile, Web, store and operating release preparation",
+      "status": "IN_PROGRESS",
+      "releases": ["R36G-SIGNABLE-MOBILE-BUILD-PREPARATION", "R36H-PUBLIC-WEB-PRODUCTION-PREPARATION", "R36I-STORE-COMPLIANCE-AND-LISTING-PACK", "R36J-RELEASE-OBSERVABILITY-AND-SUPPORT", "R36K-MARKET-READINESS-GATE"]
+    },
+    {
       "id": "S6-OBSERVED-LAUNCH",
       "title": "Observed provider, founder, pilot and production closure",
       "status": "IN_PROGRESS",
@@ -151,7 +157,12 @@
     {"id":"R37AY-PROVIDER-TRANSPARENT-REQUIRE-NAMESPACE-ASSIGNMENT-GUARD","status":"DONE","authority":"LOCAL","dependsOn":["R37AX-PROVIDER-TRANSPARENT-REQUIRE-DESTRUCTURING-ASSIGNMENT-GUARD"],"outcome":"Transparent wrappers around CommonJS node:module identifier-assignment sources cannot hide module namespace capability."},
     {"id":"R37AZ-PROVIDER-ALIASED-REQUIRE-NAMESPACE-GUARD","status":"DONE","authority":"LOCAL","dependsOn":["R37AY-PROVIDER-TRANSPARENT-REQUIRE-NAMESPACE-ASSIGNMENT-GUARD"],"outcome":"Tracked aliases of require cannot hide CommonJS node:module namespace capability in declarations or assignments."},
     {"id":"R37BA-PROVIDER-TRANSPARENT-LOADER-ALIAS-GUARD","status":"DONE","authority":"LOCAL","dependsOn":["R37AZ-PROVIDER-ALIASED-REQUIRE-NAMESPACE-GUARD"],"outcome":"Runtime-transparent wrappers cannot break tracked require loader propagation in declarations or assignments."},
-    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R37BA-PROVIDER-TRANSPARENT-LOADER-ALIAS-GUARD"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
+    {"id":"R36G-SIGNABLE-MOBILE-BUILD-PREPARATION","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R37BA-PROVIDER-TRANSPARENT-LOADER-ALIAS-GUARD"],"outcome":"Credential-free production-shaped iOS and Android build profiles, identities and signing-input contracts with no build, signing, upload or submit action."},
+    {"id":"R36H-PUBLIC-WEB-PRODUCTION-PREPARATION","status":"PLANNED","authority":"LOCAL","dependsOn":["R36G-SIGNABLE-MOBILE-BUILD-PREPARATION"],"outcome":"Value-free public Web production contract, route inventory, health and rollback prerequisites without deployment or public-origin selection."},
+    {"id":"R36I-STORE-COMPLIANCE-AND-LISTING-PACK","status":"PLANNED","authority":"LOCAL","dependsOn":["R36H-PUBLIC-WEB-PRODUCTION-PREPARATION"],"outcome":"Bilingual Apple and Google compliance, privacy, permission, screenshot and listing artifacts with unresolved external review kept explicit."},
+    {"id":"R36J-RELEASE-OBSERVABILITY-AND-SUPPORT","status":"PLANNED","authority":"LOCAL","dependsOn":["R36I-STORE-COMPLIANCE-AND-LISTING-PACK"],"outcome":"Redacted monitoring, incident, support and rollback contracts with every external adapter disabled and value-free."},
+    {"id":"R36K-MARKET-READINESS-GATE","status":"PLANNED","authority":"LOCAL","dependsOn":["R36J-RELEASE-OBSERVABILITY-AND-SUPPORT"],"outcome":"One deterministic Web, iOS and Android market-readiness report that separates local completion from exact external blockers."},
+    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R36K-MARKET-READINESS-GATE"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
     {"id":"R38-FOUNDER-FULL-LOOP","status":"PLANNED","authority":"FOUNDER_OBSERVATION_LATER","dependsOn":["R37-PROVIDER-SANDBOX"],"outcome":"One whole-product founder run only after the product is built, with no technical identifier copying."},
     {"id":"R39-DESIGN-PARTNER-PILOT","status":"PLANNED","authority":"CUSTOMER_AND_PROVIDER_EXACT_LATER","dependsOn":["R38-FOUNDER-FULL-LOOP"],"outcome":"Three supervised construction design partners proving usage, value, failure handling and unit economics."},
     {"id":"R40-PRODUCTION-V1","status":"PLANNED","authority":"PRODUCTION_EXACT_LATER","dependsOn":["R39-DESIGN-PARTNER-PILOT"],"outcome":"Controlled production launch with support, rollback, billing, monitoring and explicit V1 completion evidence."}

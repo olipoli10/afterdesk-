@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "status": "READY_FOR_SIGNING_AUTHORITY",
+  "configPath": "apps/mobile/eas.json",
+  "profiles": [
+    "local-simulator",
+    "internal-preview",
+    "store-candidate"
+  ],
+  "ios": {
+    "bundleIdentifier": "ai.endvera.mobile",
+    "buildNumber": "1",
+    "artifact": "IPA"
+  },
+  "android": {
+    "package": "ai.endvera.mobile",
+    "versionCode": 1,
+    "artifact": "AAB"
+  },
+  "requiredExternalInputs": [
+    {
+      "code": "EXPO_PROJECT_OWNERSHIP",
+      "ownerClass": "FOUNDER_OR_RELEASE_OWNER",
+      "evidenceRequired": "Authorized Expo organization and immutable project identifier"
+    },
+    {
+      "code": "APPLE_DEVELOPER_MEMBERSHIP",
+      "ownerClass": "FOUNDER_OR_RELEASE_OWNER",
+      "evidenceRequired": "Active legal-entity Apple Developer membership"
+    },
+    {
+      "code": "APPLE_SIGNING_CUSTODY",
+      "ownerClass": "AUTHORIZED_RELEASE_OPERATOR",
+      "evidenceRequired": "Approved distribution certificate and provisioning custody"
+    },
+    {
+      "code": "GOOGLE_PLAY_DEVELOPER_ACCOUNT",
+      "ownerClass": "FOUNDER_OR_RELEASE_OWNER",
+      "evidenceRequired": "Verified legal-entity Play Console account"
+    },
+    {
+      "code": "ANDROID_SIGNING_CUSTODY",
+      "ownerClass": "AUTHORIZED_RELEASE_OPERATOR",
+      "evidenceRequired": "Approved upload key and Play App Signing ownership"
+    },
+    {
+      "code": "PUBLIC_API_ORIGIN",
+      "ownerClass": "AUTHORIZED_RELEASE_OPERATOR",
+      "evidenceRequired": "Approved HTTPS API origin with health and rollback evidence"
+    }
+  ],
+  "signed": false,
+  "uploaded": false,
+  "submitted": false,
+  "published": false,
+  "deployed": false,
+  "providerObserved": false,
+  "externalEffectCount": 0
+}
