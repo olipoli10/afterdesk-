@@ -21,7 +21,10 @@ function repositoryPath(absolute: string) {
 describe("R37L provider transitive reachability guard", () => {
   it("finds an exact route-to-facade-to-provider execution chain", () => {
     const modules = new Map([
-      ["src/app/api/assistant/route.ts", 'import { run } from "@/server/provider-facade";'],
+      [
+        "src/app/api/assistant/route.ts",
+        'import {\n  run,\n} from "@/server/provider-facade";',
+      ],
       [
         "src/server/provider-facade.ts",
         'export { executeControlledSyntheticProviderDelivery as run } from "@/server/construction-operating-assistant-r37f/provider-delivery";',
@@ -38,6 +41,20 @@ describe("R37L provider transitive reachability guard", () => {
           "src/server/construction-operating-assistant-r37f/provider-delivery.ts",
         ],
       },
+    ]);
+  });
+
+  it("finds TypeScript import-equals facade chains", () => {
+    const modules = new Map([
+      ["src/workers/provider.ts", 'import facade = require("../server/provider-facade");'],
+      ["src/server/provider-facade.ts", 'export * from "./construction-operating-assistant-r37c/coordinator";'],
+      ["src/server/construction-operating-assistant-r37c/coordinator.ts", "export const controlled = true;"],
+    ]);
+
+    expect(findProviderExecutionReachability(modules)[0]?.path).toEqual([
+      "src/workers/provider.ts",
+      "src/server/provider-facade.ts",
+      "src/server/construction-operating-assistant-r37c/coordinator.ts",
     ]);
   });
 

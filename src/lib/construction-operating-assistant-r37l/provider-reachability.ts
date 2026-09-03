@@ -1,4 +1,5 @@
 import { posix } from "node:path";
+import ts from "typescript";
 
 export type ProviderExecutionReachability = Readonly<{
   entrypoint: string;
@@ -7,11 +8,6 @@ export type ProviderExecutionReachability = Readonly<{
 
 const PROVIDER_EXECUTION_MODULE =
   /^src\/server\/construction-operating-assistant-r37(?:a|b|c|f)\//u;
-
-const STATIC_IMPORT_OR_EXPORT =
-  /\b(?:import|export)\s+(?:type\s+)?(?:[^"'();\r\n]*?\s+from\s+)?["']([^"']+)["']/gu;
-const DYNAMIC_IMPORT = /\bimport\s*\(\s*["']([^"']+)["']/gu;
-const REQUIRE_IMPORT = /\brequire\s*\(\s*["']([^"']+)["']/gu;
 
 function normalizeRepositoryPath(path: string) {
   return posix.normalize(path.replaceAll("\\", "/")).replace(/^\.\//u, "");
@@ -23,14 +19,38 @@ function isPublicEntrypoint(path: string) {
   );
 }
 
-function importedSpecifiers(source: string) {
-  const specifiers = [
-    ...source.matchAll(STATIC_IMPORT_OR_EXPORT),
-    ...source.matchAll(DYNAMIC_IMPORT),
-    ...source.matchAll(REQUIRE_IMPORT),
-  ]
-    .map((match) => match[1])
-    .filter((specifier): specifier is string => typeof specifier === "string");
+function importedSpecifiers(path: string, source: string) {
+  const scriptKind = path.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const sourceFile = ts.createSourceFile(
+    path,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind,
+  );
+  const specifiers: string[] = [];
+  const addLiteral = (node: ts.Node | undefined) => {
+    if (node && ts.isStringLiteralLike(node)) specifiers.push(node.text);
+  };
+
+  const visit = (node: ts.Node) => {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      addLiteral(node.moduleSpecifier);
+    } else if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference)
+    ) {
+      addLiteral(node.moduleReference.expression);
+    } else if (
+      ts.isCallExpression(node) &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) && node.expression.text === "require"))
+    ) {
+      addLiteral(node.arguments[0]);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
   return [...new Set(specifiers)].sort();
 }
 
@@ -96,7 +116,7 @@ export function findProviderExecutionReachability(
   for (const [path, source] of [...modules.entries()].sort(([left], [right]) =>
     left.localeCompare(right)
   )) {
-    const resolved = importedSpecifiers(source)
+    const resolved = importedSpecifiers(path, source)
       .map((specifier) => resolveInternalModule(path, specifier, modulePaths))
       .filter((target): target is string => target !== null);
     edges.set(path, [...new Set(resolved)].sort());
