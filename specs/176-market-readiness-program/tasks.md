@@ -27,6 +27,6 @@
 
 ## R36K — Unified market-readiness gate
 
-- [ ] T014 Build one deterministic Web/iOS/Android readiness report.
-- [ ] T015 Prove exact refusals for inflated claims and one-byte protected mutations.
-- [ ] T016 Run proportional final gates, close all five releases and checkpoint the Brain.
+- [x] T014 Build one deterministic Web/iOS/Android readiness report.
+- [x] T015 Prove exact refusals for inflated claims and one-byte protected mutations.
+- [x] T016 Run proportional final gates, close all five releases and checkpoint the Brain.

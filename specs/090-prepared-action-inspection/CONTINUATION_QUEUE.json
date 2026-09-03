@@ -2835,7 +2835,7 @@
       "title": "Unified market-readiness gate",
       "objective": "Generate one deterministic Web, iOS and Android readiness decision that separates local completion from external blockers.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R36J-RELEASE-OBSERVABILITY-AND-SUPPORT"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -2846,10 +2846,10 @@
       "planSha256": "12efb20e07b6eebda10463d61655ed6f690f8525adc64abc5b8599165c934d50",
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r36k-market-readiness.test.ts && node scripts/validate-endvera-market-readiness.mjs",
       "evidencePaths": ["../176-market-readiness-program/evidence/r36k-market-readiness-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "4cab80df90884dbe03ab30a64d0ca8635cb0aac5",
+      "outputTree": "19065545485133c84ee775ed2c41fb3db3630922",
+      "result": "LOCAL_MARKET_PREPARATION_COMPLETE; Web, iOS and Android validated independently with five protected source hashes, 18 external blockers, 2,237 root tests, 108 mobile tests, 111/111-page local Webpack build and zero external effects. External authority remains required.",
+      "completedAtUtc": "2026-09-03T11:20:41Z"
     }
   ]
 }

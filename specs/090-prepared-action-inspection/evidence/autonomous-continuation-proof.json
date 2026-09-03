@@ -3,15 +3,15 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 86,
+  "consecutiveBlocksCompleted": 87,
   "goalStayedActiveUntilDrain": true,
-  "completionValidatorVerdict": "CONTINUATION_REQUIRED",
-  "projectTerminalState": "INCOMPLETE",
+  "completionValidatorVerdict": "DRAINED",
+  "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 1,
-  "remainingRoadmapItemCount": 8,
+  "remainingAuthorizedWorkCount": 0,
+  "remainingRoadmapItemCount": 7,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Run R36K unified Web, iOS and Android market-readiness validation, close the local wave and reevaluate the exact R37 external-authority boundary.",
-  "urgentAssistanceReason": ""
+  "nextAction": "Obtain exact founder authority and owned sandbox accounts for R37 bounded provider observation; do not activate, sign, deploy, upload or submit under the current local-only authority.",
+  "urgentAssistanceReason": "Every remaining critical-path release requires new external authority: R37 needs owned provider sandbox accounts and credentials; R38 needs founder observation; R39 needs design partners and customer/provider authority; R40 needs production, deployment, support and store authority."
 }
