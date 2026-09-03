@@ -1845,7 +1845,7 @@
       "title": "Provider computed import guard",
       "objective": "Fail closed on public-reachable computed import and require calls whose module destinations cannot be proven by the R37L graph.",
       "role": "BOUNDED_REWORK",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37L-PROVIDER-TRANSITIVE-REACHABILITY-GUARD"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -1864,10 +1864,10 @@
       "planSha256": "553e899e884c2812ad18b6fd7412d06fb429114ef3ff29752d47438248621b21",
       "completionCommand": "npx vitest run test/construction-operating-assistant-r37m-provider-computed-import.test.ts",
       "evidencePaths": ["../135-provider-computed-import-guard/evidence/r37m-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "6477a12b7bd3750d91a394208fb7c8aeaea88b32",
+      "outputTree": "af0f7b00b5b509ccab792935b2f0f3bb21d2e901",
+      "result": "Computed import and require calls reachable from public runtime entrypoints now fail closed with exact deterministic chains when their destinations cannot be statically proven; exact security verification completed with zero findings.",
+      "completedAtUtc": "2026-09-03T04:31:20Z"
     }
   ]
 }
