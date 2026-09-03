@@ -79,6 +79,18 @@ function inspectModule(path: string, source: string) {
       }
     }
   };
+  const staticPropertyName = (name: ts.PropertyName) => {
+    if (ts.isIdentifier(name) || ts.isStringLiteralLike(name) || ts.isNumericLiteral(name)) {
+      return name.text;
+    }
+    if (ts.isComputedPropertyName(name)) {
+      const expression = unwrapTransparentExpression(name.expression);
+      return ts.isStringLiteralLike(expression) || ts.isNumericLiteral(expression)
+        ? expression.text
+        : null;
+    }
+    return null;
+  };
   const isTrackedLoader = (expression: ts.Expression | undefined) => {
     if (!expression) return false;
     const loader = unwrapTransparentExpression(expression);
@@ -294,7 +306,7 @@ function inspectModule(path: string, source: string) {
         for (const element of node.name.elements) {
           if (
             ts.isIdentifier(element.name) &&
-            (element.propertyName ?? element.name).getText(sourceFile) === "apply"
+            staticPropertyName(element.propertyName ?? element.name) === "apply"
           ) {
             reflectApplyIdentifiers.add(element.name.text);
           }
@@ -347,7 +359,7 @@ function inspectModule(path: string, source: string) {
       for (const property of node.left.properties) {
         if (
           ts.isPropertyAssignment(property) &&
-          property.name.getText(sourceFile) === "apply" &&
+          staticPropertyName(property.name) === "apply" &&
           ts.isIdentifier(property.initializer)
         ) {
           reflectApplyIdentifiers.add(property.initializer.text);
