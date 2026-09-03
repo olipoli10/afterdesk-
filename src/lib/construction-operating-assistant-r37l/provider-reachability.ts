@@ -6,6 +6,13 @@ export type ProviderExecutionReachability = Readonly<{
   path: readonly string[];
 }>;
 
+export type UnresolvedDynamicModuleReachability = Readonly<{
+  entrypoint: string;
+  path: readonly string[];
+  unresolvedModule: string;
+  callKind: "import" | "require";
+}>;
+
 const PROVIDER_EXECUTION_MODULE =
   /^src\/server\/construction-operating-assistant-r37(?:a|b|c|f)\//u;
 
@@ -19,7 +26,7 @@ function isPublicEntrypoint(path: string) {
   );
 }
 
-function importedSpecifiers(path: string, source: string) {
+function inspectModule(path: string, source: string) {
   const scriptKind = path.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const sourceFile = ts.createSourceFile(
     path,
@@ -29,6 +36,7 @@ function importedSpecifiers(path: string, source: string) {
     scriptKind,
   );
   const specifiers: string[] = [];
+  const unresolvedCallKinds: Array<"import" | "require"> = [];
   const addLiteral = (node: ts.Node | undefined) => {
     if (node && ts.isStringLiteralLike(node)) specifiers.push(node.text);
   };
@@ -46,12 +54,23 @@ function importedSpecifiers(path: string, source: string) {
       (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
         (ts.isIdentifier(node.expression) && node.expression.text === "require"))
     ) {
-      addLiteral(node.arguments[0]);
+      const callKind = node.expression.kind === ts.SyntaxKind.ImportKeyword
+        ? "import"
+        : "require";
+      const argument = node.arguments[0];
+      if (argument && ts.isStringLiteralLike(argument)) {
+        addLiteral(argument);
+      } else {
+        unresolvedCallKinds.push(callKind);
+      }
     }
     ts.forEachChild(node, visit);
   };
   visit(sourceFile);
-  return [...new Set(specifiers)].sort();
+  return {
+    specifiers: [...new Set(specifiers)].sort(),
+    unresolvedCallKinds: [...new Set(unresolvedCallKinds)].sort(),
+  } as const;
 }
 
 function resolveInternalModule(
@@ -85,25 +104,28 @@ function resolveInternalModule(
   return candidates.find((candidate) => modulePaths.has(candidate)) ?? null;
 }
 
-function firstProviderPath(
+function reachableModulePaths(
   entrypoint: string,
   edges: ReadonlyMap<string, readonly string[]>,
 ) {
-  const visit = (current: string, path: readonly string[]): readonly string[] | null => {
-    if (PROVIDER_EXECUTION_MODULE.test(current)) return path;
+  const paths = new Map<string, readonly string[]>([[entrypoint, [entrypoint]]]);
+  const pending = [entrypoint];
+  while (pending.length > 0) {
+    const current = pending.shift();
+    if (!current) continue;
+    const currentPath = paths.get(current) ?? [current];
     for (const next of edges.get(current) ?? []) {
-      if (path.includes(next)) continue;
-      const found = visit(next, [...path, next]);
-      if (found) return found;
+      if (paths.has(next)) continue;
+      paths.set(next, [...currentPath, next]);
+      pending.push(next);
     }
-    return null;
-  };
-  return visit(entrypoint, [entrypoint]);
+  }
+  return paths;
 }
 
-export function findProviderExecutionReachability(
+function buildModuleGraph(
   sourceModules: ReadonlyMap<string, string>,
-): ProviderExecutionReachability[] {
+) {
   const modules = new Map(
     [...sourceModules.entries()].map(([path, source]) => [
       normalizeRepositoryPath(path),
@@ -112,21 +134,55 @@ export function findProviderExecutionReachability(
   );
   const modulePaths = new Set(modules.keys());
   const edges = new Map<string, readonly string[]>();
+  const unresolvedByModule = new Map<string, readonly ("import" | "require")[]>();
 
   for (const [path, source] of [...modules.entries()].sort(([left], [right]) =>
     left.localeCompare(right)
   )) {
-    const resolved = importedSpecifiers(path, source)
+    const inspected = inspectModule(path, source);
+    const resolved = inspected.specifiers
       .map((specifier) => resolveInternalModule(path, specifier, modulePaths))
       .filter((target): target is string => target !== null);
     edges.set(path, [...new Set(resolved)].sort());
+    if (inspected.unresolvedCallKinds.length > 0) {
+      unresolvedByModule.set(path, inspected.unresolvedCallKinds);
+    }
   }
+
+  return { modulePaths, edges, unresolvedByModule } as const;
+}
+
+export function findProviderExecutionReachability(
+  sourceModules: ReadonlyMap<string, string>,
+): ProviderExecutionReachability[] {
+  const { modulePaths, edges } = buildModuleGraph(sourceModules);
 
   return [...modulePaths]
     .filter(isPublicEntrypoint)
     .sort()
     .flatMap((entrypoint) => {
-      const path = firstProviderPath(entrypoint, edges);
+      const path = [...reachableModulePaths(entrypoint, edges).entries()]
+        .find(([module]) => PROVIDER_EXECUTION_MODULE.test(module))?.[1];
       return path ? [{ entrypoint, path }] : [];
     });
+}
+
+export function findUnresolvedDynamicModuleReachability(
+  sourceModules: ReadonlyMap<string, string>,
+): UnresolvedDynamicModuleReachability[] {
+  const { modulePaths, edges, unresolvedByModule } = buildModuleGraph(sourceModules);
+  return [...modulePaths]
+    .filter(isPublicEntrypoint)
+    .sort()
+    .flatMap((entrypoint) =>
+      [...reachableModulePaths(entrypoint, edges).entries()].flatMap(
+        ([unresolvedModule, path]) =>
+          (unresolvedByModule.get(unresolvedModule) ?? []).map((callKind) => ({
+            entrypoint,
+            path,
+            unresolvedModule,
+            callKind,
+          })),
+      )
+    );
 }
