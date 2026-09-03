@@ -338,6 +338,29 @@ function inspectModule(path: string, source: string) {
     } else if (
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isObjectLiteralExpression(node.left) &&
+      (() => {
+        const right = unwrapTransparentExpression(node.right);
+        return ts.isIdentifier(right) && reflectNamespaceIdentifiers.has(right.text);
+      })()
+    ) {
+      for (const property of node.left.properties) {
+        if (
+          ts.isPropertyAssignment(property) &&
+          property.name.getText(sourceFile) === "apply" &&
+          ts.isIdentifier(property.initializer)
+        ) {
+          reflectApplyIdentifiers.add(property.initializer.text);
+        } else if (
+          ts.isShorthandPropertyAssignment(property) &&
+          property.name.text === "apply"
+        ) {
+          reflectApplyIdentifiers.add(property.name.text);
+        }
+      }
+    } else if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isIdentifier(node.left) &&
       ts.isIdentifier(node.right) &&
       reflectApplyIdentifiers.has(node.right.text)
