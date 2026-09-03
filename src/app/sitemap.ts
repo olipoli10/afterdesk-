@@ -24,6 +24,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privacy",
     "/terms",
     "/acceptable-use",
+    "/construction",
+    "/construction/support",
+    "/textassist",
+    "/account-deletion",
   ];
 
   return [

@@ -32,6 +32,7 @@ export default function TodayScreen() {
   return <Screen>
     <Heading eyebrow={mobileGoldenWorkflowCopy(locale, "cockpit.eyebrow")} title={mobileGoldenWorkflowCopy(locale, "cockpit.title")} body={`${goldenWorkflow.workspace.name}${goldenWorkflow.project ? ` · ${goldenWorkflow.project.code}` : ""}`} />
     {publicError ? <Notice danger>{publicError}</Notice> : null}
+    <Button accessibilityRole="button" accessibilityLabel="Parler à ENDVERA" onPress={() => router.push("/assistant")}>Parler à ENDVERA</Button>
     <Card>
       <Label>{mobileGoldenWorkflowCopy(locale, "cockpit.progress")}</Label>
       <Text accessibilityRole="summary" style={sharedStyles.name}>{goldenWorkflow.completedCount}/{goldenWorkflow.totalCount}</Text>

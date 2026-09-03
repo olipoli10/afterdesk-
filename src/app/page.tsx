@@ -15,6 +15,7 @@ import { Wordmark } from "@/components/logo";
 import { AssemblyExperience } from "./_home/assembly-experience";
 import { SimplicityActs } from "@/app/_v7/simplicity-acts";
 import { V7_ACTS_I18N } from "@/lib/i18n/v7-acts";
+import { TextAssistBanner } from "@/components/textassist-banner";
 
 function AccentLine({ text, accent }: { text: string; accent: string }) {
   const at = text.indexOf(accent);
@@ -169,6 +170,7 @@ export default async function Home({
       </header>
 
       <main>
+        <TextAssistBanner locale={lang === "fr" ? "fr" : "en"} />
         {/* The narrative stays in normal document flow and owns the single
             A2 being. A2 appears at three explanatory stops; the accepted
             machine then demonstrates one workflow without a second guide. */}

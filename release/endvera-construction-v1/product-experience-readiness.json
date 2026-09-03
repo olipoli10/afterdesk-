@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_PRODUCT_EXPERIENCE_COMPLETE",
+  "scope": "ADDITIVE_TEXTASSIST_AND_ASSISTANT_FIRST_MOBILE_SHELL",
+  "signed": false,
+  "deployed": false,
+  "published": false,
+  "providerObserved": false,
+  "customerObserved": false,
+  "externalEffectCount": 0
+}
