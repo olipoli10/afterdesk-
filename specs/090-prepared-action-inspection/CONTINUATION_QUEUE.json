@@ -1590,7 +1590,7 @@
       "id": "R37E-PROVIDER-REPLAY-BRAND-PARITY",
       "title": "Provider replay brand parity",
       "objective": "Restore exact synthetic classifier and planner stage routing after the AfterDesk-to-Endvera prompt rename while preserving historical fixtures and fail-closed unknown routing.",
-      "role": "VALIDATION_FIX",
+      "role": "BOUNDED_REWORK",
       "status": "IN_PROGRESS",
       "dependencies": ["R37D-PROVIDER-DELIVERY-CONTRACTS"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
