@@ -152,6 +152,20 @@ function inspectModule(path: string, source: string) {
         createRequireIdentifiers.add(node.name.text);
       } else if (
         ts.isIdentifier(node.name) &&
+        ((ts.isPropertyAccessExpression(node.initializer) &&
+          node.initializer.name.text === "createRequire" &&
+          ts.isIdentifier(node.initializer.expression) &&
+          moduleNamespaceIdentifiers.has(node.initializer.expression.text)) ||
+          (ts.isElementAccessExpression(node.initializer) &&
+            node.initializer.argumentExpression &&
+            ts.isStringLiteralLike(node.initializer.argumentExpression) &&
+            node.initializer.argumentExpression.text === "createRequire" &&
+            ts.isIdentifier(node.initializer.expression) &&
+            moduleNamespaceIdentifiers.has(node.initializer.expression.text)))
+      ) {
+        createRequireIdentifiers.add(node.name.text);
+      } else if (
+        ts.isIdentifier(node.name) &&
         ts.isIdentifier(node.initializer) &&
         moduleNamespaceIdentifiers.has(node.initializer.text)
       ) {
