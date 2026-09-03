@@ -69,6 +69,7 @@ function inspectModule(path: string, source: string) {
   const createRequireIdentifiers = new Set(["createRequire"]);
   const moduleNamespaceIdentifiers = new Set<string>();
   const requireLoaderIdentifiers = new Set<string>();
+  const reflectNamespaceIdentifiers = new Set(["Reflect"]);
   const reflectApplyIdentifiers = new Set<string>();
   const addLiteral = (node: ts.Node | undefined) => {
     if (node && ts.isStringLiteralLike(node)) {
@@ -100,7 +101,7 @@ function inspectModule(path: string, source: string) {
       return false;
     }
     const receiver = unwrapTransparentExpression(target.expression);
-    return ts.isIdentifier(receiver) && receiver.text === "Reflect";
+    return ts.isIdentifier(receiver) && reflectNamespaceIdentifiers.has(receiver.text);
   };
   const isTrackedReflectApply = (expression: ts.Expression) => {
     const target = unwrapTransparentExpression(expression);
@@ -213,6 +214,17 @@ function inspectModule(path: string, source: string) {
         reflectApplyIdentifiers.add(node.name.text);
       } else if (
         ts.isIdentifier(node.name) &&
+        (() => {
+          const initializer = unwrapTransparentExpression(node.initializer);
+          return (
+            ts.isIdentifier(initializer) &&
+            reflectNamespaceIdentifiers.has(initializer.text)
+          );
+        })()
+      ) {
+        reflectNamespaceIdentifiers.add(node.name.text);
+      } else if (
+        ts.isIdentifier(node.name) &&
         ts.isIdentifier(node.initializer) &&
         (node.initializer.text === "require" ||
           requireLoaderIdentifiers.has(node.initializer.text))
@@ -273,7 +285,10 @@ function inspectModule(path: string, source: string) {
         ts.isObjectBindingPattern(node.name) &&
         (() => {
           const initializer = unwrapTransparentExpression(node.initializer);
-          return ts.isIdentifier(initializer) && initializer.text === "Reflect";
+          return (
+            ts.isIdentifier(initializer) &&
+            reflectNamespaceIdentifiers.has(initializer.text)
+          );
         })()
       ) {
         for (const element of node.name.elements) {
