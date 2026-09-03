@@ -2,10 +2,10 @@
 
 ## R36G — Signable mobile build preparation
 
-- [ ] T001 Freeze the credential-free mobile build contract and RED cases.
-- [ ] T002 Add explicit iOS/Android build profiles without submit or credential material.
-- [ ] T003 Implement identity, version, permission and boundary validation.
-- [ ] T004 Run mobile and R35 regressions; record deterministic evidence.
+- [x] T001 Freeze the credential-free mobile build contract and RED cases.
+- [x] T002 Add explicit iOS/Android build profiles without submit or credential material.
+- [x] T003 Implement identity, version, permission and boundary validation.
+- [x] T004 Run mobile and R35 regressions; record deterministic evidence.
 
 ## R36H — Public Web production preparation
 
