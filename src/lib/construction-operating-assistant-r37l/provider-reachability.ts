@@ -124,21 +124,22 @@ function inspectModule(path: string, source: string) {
       ts.isExternalModuleReference(node.moduleReference)
     ) {
       addLiteral(node.moduleReference.expression);
-    } else if (
-      ts.isCallExpression(node) &&
-      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
-        (ts.isIdentifier(node.expression) &&
-          (node.expression.text === "require" ||
-            requireLoaderIdentifiers.has(node.expression.text))))
-    ) {
-      const callKind = node.expression.kind === ts.SyntaxKind.ImportKeyword
-        ? "import"
-        : "require";
-      const argument = node.arguments[0];
-      if (argument && ts.isStringLiteralLike(argument)) {
-        addLiteral(argument);
-      } else {
-        unresolvedCallKinds.push(callKind);
+    } else if (ts.isCallExpression(node)) {
+      const callTarget = unwrapParenthesizedExpression(node.expression);
+      if (
+        callTarget.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(callTarget) &&
+          (callTarget.text === "require" || requireLoaderIdentifiers.has(callTarget.text)))
+      ) {
+        const callKind = callTarget.kind === ts.SyntaxKind.ImportKeyword
+          ? "import"
+          : "require";
+        const argument = node.arguments[0];
+        if (argument && ts.isStringLiteralLike(argument)) {
+          addLiteral(argument);
+        } else {
+          unresolvedCallKinds.push(callKind);
+        }
       }
     }
     if (
