@@ -5,13 +5,13 @@
   "intermediateFinalReportCount": 0,
   "consecutiveBlocksCompleted": 92,
   "goalStayedActiveUntilDrain": true,
-  "completionValidatorVerdict": "EXTERNAL_AUTHORITY_REQUIRED",
-  "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
+  "completionValidatorVerdict": "ACTIVE_WAVE",
+  "projectTerminalState": "INCOMPLETE",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 0,
-  "remainingRoadmapItemCount": 4,
+  "remainingAuthorizedWorkCount": 5,
+  "remainingRoadmapItemCount": 9,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Audit for any additional material credential-free local release gap; otherwise preserve the exact R37 provider-sandbox authority boundary and continue only after that authority exists.",
-  "urgentAssistanceReason": "R36P closed all currently identified local whole-product gaps. R37-R40 require provider, founder, customer or production authority that this campaign does not possess."
+  "nextAction": "Execute R36Q additive public brand and metadata alignment, then continue R36R-R36U without routine founder confirmation.",
+  "urgentAssistanceReason": ""
 }
