@@ -1874,7 +1874,7 @@
       "title": "Provider dynamic code guard",
       "objective": "Reject eval, Function and Node VM execution anywhere reachable from public runtime entrypoints.",
       "role": "BOUNDED_REWORK",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37M-PROVIDER-COMPUTED-IMPORT-GUARD"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -1893,10 +1893,10 @@
       "planSha256": "3f4a91f0204fe9407743dde83bcb3d76eca86dd658d66ab0f92572a9119f4cc7",
       "completionCommand": "npx vitest run test/construction-operating-assistant-r37n-provider-dynamic-code.test.ts",
       "evidencePaths": ["../136-provider-dynamic-code-guard/evidence/r37n-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "f782d14fd69ff323d20c8d9910e0cd23ef5510c5",
+      "outputTree": "73cf585be60bb3a518a6caf8ea756db5360e5f8a",
+      "result": "Public-reachable eval, Function and Node VM capability now fail closed across direct, indirect, property, element and aliased forms with exact graph paths; the exact remediation security scan completed with zero findings.",
+      "completedAtUtc": "2026-09-03T04:40:23Z"
     }
   ]
 }
