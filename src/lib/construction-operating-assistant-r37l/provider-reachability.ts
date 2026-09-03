@@ -374,6 +374,29 @@ function inspectModule(path: string, source: string) {
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isObjectLiteralExpression(node.left) &&
+      (() => {
+        const right = unwrapTransparentExpression(node.right);
+        return ts.isIdentifier(right) && moduleNamespaceIdentifiers.has(right.text);
+      })()
+    ) {
+      for (const property of node.left.properties) {
+        if (
+          ts.isPropertyAssignment(property) &&
+          staticPropertyName(property.name) === "createRequire" &&
+          ts.isIdentifier(property.initializer)
+        ) {
+          createRequireIdentifiers.add(property.initializer.text);
+        } else if (
+          ts.isShorthandPropertyAssignment(property) &&
+          property.name.text === "createRequire"
+        ) {
+          createRequireIdentifiers.add(property.name.text);
+        }
+      }
+    } else if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isObjectLiteralExpression(node.left) &&
       ts.isCallExpression(node.right) &&
       ts.isIdentifier(node.right.expression) &&
       node.right.expression.text === "require" &&
