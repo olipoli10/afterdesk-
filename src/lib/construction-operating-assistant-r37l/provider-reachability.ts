@@ -34,6 +34,14 @@ function isPublicEntrypoint(path: string) {
   );
 }
 
+function unwrapParenthesizedExpression(expression: ts.Expression) {
+  let current = expression;
+  while (ts.isParenthesizedExpression(current)) {
+    current = current.expression;
+  }
+  return current;
+}
+
 function inspectModule(path: string, source: string) {
   const scriptKind = path.endsWith(".tsx")
     ? ts.ScriptKind.TSX
@@ -181,7 +189,7 @@ function inspectModule(path: string, source: string) {
       ) {
         moduleNamespaceIdentifiers.add(node.name.text);
       } else if (ts.isIdentifier(node.name) && ts.isCallExpression(node.initializer)) {
-        const factory = node.initializer.expression;
+        const factory = unwrapParenthesizedExpression(node.initializer.expression);
         const isCreateRequire =
           (ts.isIdentifier(factory) && createRequireIdentifiers.has(factory.text)) ||
           (ts.isPropertyAccessExpression(factory) &&
@@ -235,18 +243,22 @@ function inspectModule(path: string, source: string) {
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isIdentifier(node.left) &&
       ts.isCallExpression(node.right) &&
-      ((ts.isIdentifier(node.right.expression) &&
-        createRequireIdentifiers.has(node.right.expression.text)) ||
-        (ts.isPropertyAccessExpression(node.right.expression) &&
-          node.right.expression.name.text === "createRequire" &&
-          ts.isIdentifier(node.right.expression.expression) &&
-          moduleNamespaceIdentifiers.has(node.right.expression.expression.text)) ||
-        (ts.isElementAccessExpression(node.right.expression) &&
-          node.right.expression.argumentExpression &&
-          ts.isStringLiteralLike(node.right.expression.argumentExpression) &&
-          node.right.expression.argumentExpression.text === "createRequire" &&
-          ts.isIdentifier(node.right.expression.expression) &&
-          moduleNamespaceIdentifiers.has(node.right.expression.expression.text)))
+      (() => {
+        const factory = unwrapParenthesizedExpression(node.right.expression);
+        return (
+          (ts.isIdentifier(factory) && createRequireIdentifiers.has(factory.text)) ||
+          (ts.isPropertyAccessExpression(factory) &&
+            factory.name.text === "createRequire" &&
+            ts.isIdentifier(factory.expression) &&
+            moduleNamespaceIdentifiers.has(factory.expression.text)) ||
+          (ts.isElementAccessExpression(factory) &&
+            factory.argumentExpression &&
+            ts.isStringLiteralLike(factory.argumentExpression) &&
+            factory.argumentExpression.text === "createRequire" &&
+            ts.isIdentifier(factory.expression) &&
+            moduleNamespaceIdentifiers.has(factory.expression.text))
+        );
+      })()
     ) {
       requireLoaderIdentifiers.add(node.left.text);
     } else if (
