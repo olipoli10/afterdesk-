@@ -8,6 +8,6 @@
 - [x] T006 Fence canonical writes with the exact run ID and lease token.
 - [x] T007 Recompute canonical digests and hide canonical evidence on failed dispositions.
 - [x] T007A Record trusted server time as a mandatory gate before any future untrusted route.
-- [ ] T008 Run proportional R37A-R37G regression, typecheck, lint and Git checks.
-- [ ] T009 Run Spec Kit Analyze and record exact closeout evidence.
+- [x] T008 Run proportional R37A-R37G regression, typecheck, lint and Git checks.
+- [x] T009 Run Spec Kit Analyze and record exact closeout evidence.
 - [ ] T010 Commit locally and advance the autonomous queue and project backlog.
