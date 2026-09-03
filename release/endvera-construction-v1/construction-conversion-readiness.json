@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_CONSTRUCTION_CONVERSION_SURFACE_COMPLETE",
+  "publicRoute": "/construction",
+  "launchLanguages": ["fr-CA", "en-CA"],
+  "operatingLoopStepCount": 5,
+  "outcomeCount": 4,
+  "humanBackupExplained": true,
+  "approvalBoundaryExplained": true,
+  "trustRoutesComplete": true,
+  "existingHomepagePreserved": true,
+  "providerObserved": false,
+  "customerObserved": false,
+  "pricingValidated": false,
+  "deployed": false,
+  "published": false,
+  "externalEffectCount": 0
+}
