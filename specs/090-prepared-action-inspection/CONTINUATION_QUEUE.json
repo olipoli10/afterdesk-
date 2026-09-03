@@ -1686,7 +1686,7 @@
       "title": "Provider trusted clock boundary",
       "objective": "Remove caller-controlled timestamps from R37B and R37C public commands and move deterministic time control behind an explicit internal dependency.",
       "role": "BOUNDED_REWORK",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37G-PROVIDER-SECURITY-HARDENING"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -1717,10 +1717,10 @@
       "planSha256": "6ae7abb52921c2d4d68b8af88f6aaa2a6bc01231428252f15209ba1843d16a38",
       "completionCommand": "npx vitest run test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts",
       "evidencePaths": ["../130-provider-trusted-clock-boundary/evidence/r37h-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "b276512762d846af36e26742e1100ae110cbff78",
+      "outputTree": "a407aaaf2193a03739e353d57af1c5f622d7c7e1",
+      "result": "Public provider-control commands now reject caller time, one trusted server instant governs each controlled attempt and deterministic tests inject time only through a separate internal dependency; all local unit and PostgreSQL gates pass with zero provider or transport.",
+      "completedAtUtc": "2026-09-03T03:33:34Z"
     }
   ]
 }

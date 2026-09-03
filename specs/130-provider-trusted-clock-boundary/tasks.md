@@ -7,5 +7,5 @@
 - [x] T005 Thread trusted time through R37F without exposing it as command data.
 - [x] T006 Migrate deterministic R37 tests.
 - [x] T007 Run focused and regression gates.
-- [ ] T008 Record closeout evidence.
-- [ ] T009 Commit locally and advance queue/backlog.
+- [x] T008 Record closeout evidence.
+- [x] T009 Commit locally and advance queue/backlog.
