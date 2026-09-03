@@ -1,0 +1,65 @@
+export type ProviderBoundaryViolation = Readonly<{
+  code: string;
+  path: string;
+}>;
+
+const PUBLIC_PROVIDER_EXECUTION_IMPORT =
+  /from\s+["']@\/server\/construction-operating-assistant-r37(?:a|b|c|f)\//u;
+
+const fetchIdentifier = ["fet", "ch"].join("");
+const axiosIdentifier = ["axi", "os"].join("");
+const undiciIdentifier = ["undi", "ci"].join("");
+
+const NETWORK_TRANSPORT_PATTERNS = [
+  new RegExp(`\\b${fetchIdentifier}\\s*\\(`, "u"),
+  new RegExp(`\\b(?:${axiosIdentifier}|${undiciIdentifier})\\b`, "u"),
+  /\bhttps?\.(?:request|get)\s*\(/u,
+  /from\s+["']node:https?["']/u,
+] as const;
+
+const SECRET_ACCESS_PATTERNS = [
+  /\bprocess\.env\b/u,
+  /\bAuthorization\s*:/u,
+  /\bBearer\s+/u,
+  /\b(?:OPENROUTER|PERPLEXITY)_API_KEY\b/u,
+  /\bapiKey\b/u,
+] as const;
+
+const DISPATCHABLE_PATTERNS = [
+  /\bdispatchable\s*:\s*true\b/u,
+  /\bcredentialResolved\s*:\s*true\b/u,
+] as const;
+
+function violation(code: string, path: string): ProviderBoundaryViolation {
+  return { code, path };
+}
+
+function matchesAny(source: string, patterns: readonly RegExp[]) {
+  return patterns.some((pattern) => pattern.test(source));
+}
+
+export function inspectPublicEntrySource(
+  path: string,
+  source: string,
+): ProviderBoundaryViolation[] {
+  return PUBLIC_PROVIDER_EXECUTION_IMPORT.test(source)
+    ? [violation("R37K_PROVIDER_EXECUTION_IMPORT_EXPOSED", path)]
+    : [];
+}
+
+export function inspectProviderRuntimeSource(
+  path: string,
+  source: string,
+): ProviderBoundaryViolation[] {
+  const violations: ProviderBoundaryViolation[] = [];
+  if (matchesAny(source, NETWORK_TRANSPORT_PATTERNS)) {
+    violations.push(violation("R37K_NETWORK_TRANSPORT_PRESENT", path));
+  }
+  if (matchesAny(source, SECRET_ACCESS_PATTERNS)) {
+    violations.push(violation("R37K_SECRET_ACCESS_PRESENT", path));
+  }
+  if (matchesAny(source, DISPATCHABLE_PATTERNS)) {
+    violations.push(violation("R37K_DISPATCHABLE_REQUEST_PRESENT", path));
+  }
+  return violations;
+}

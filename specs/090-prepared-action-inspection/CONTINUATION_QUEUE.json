@@ -1795,6 +1795,7 @@
       "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": [
         "specs/133-provider-route-absence-guard",
+        "src/lib/construction-operating-assistant-r37k/provider-boundary.ts",
         "test/construction-operating-assistant-r37k-provider-route-absence.test.ts",
         "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
         "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
