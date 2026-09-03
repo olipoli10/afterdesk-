@@ -85,6 +85,22 @@ function inspectModule(path: string, source: string) {
       (loader.text === "require" || requireLoaderIdentifiers.has(loader.text))
     );
   };
+  const isReflectApply = (expression: ts.Expression) => {
+    const target = unwrapTransparentExpression(expression);
+    const memberName = ts.isPropertyAccessExpression(target)
+      ? target.name.text
+      : ts.isElementAccessExpression(target) &&
+          target.argumentExpression &&
+          ts.isStringLiteralLike(target.argumentExpression)
+        ? target.argumentExpression.text
+        : null;
+    if (memberName !== "apply") return false;
+    if (!ts.isPropertyAccessExpression(target) && !ts.isElementAccessExpression(target)) {
+      return false;
+    }
+    const receiver = unwrapTransparentExpression(target.expression);
+    return ts.isIdentifier(receiver) && receiver.text === "Reflect";
+  };
 
   const dynamicCodeKind = (expression: ts.Expression) => {
     const directName = ts.isIdentifier(expression)
@@ -146,13 +162,7 @@ function inspectModule(path: string, source: string) {
         ["call", "apply"].includes(callTarget.name.text) &&
         isTrackedLoader(callTarget.expression);
       const reflectApplyLoader =
-        ts.isPropertyAccessExpression(callTarget) &&
-        callTarget.name.text === "apply" &&
-        (() => {
-          const receiver = unwrapTransparentExpression(callTarget.expression);
-          return ts.isIdentifier(receiver) && receiver.text === "Reflect";
-        })() &&
-        isTrackedLoader(node.arguments[0]);
+        isReflectApply(callTarget) && isTrackedLoader(node.arguments[0]);
       if (
         callTarget.kind === ts.SyntaxKind.ImportKeyword ||
         directLoader ||
