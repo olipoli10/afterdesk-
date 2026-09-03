@@ -20,7 +20,6 @@ export const prepareProviderActivationGrantSchema = z.object({
   expiresAt: z.coerce.date(),
   maxCallCount: z.number().int().positive().max(10_000),
   maxTotalSpendMicros: moneySchema,
-  now: z.coerce.date().optional(),
 }).strict();
 
 export const activateProviderActivationGrantSchema = z.object({
@@ -30,7 +29,6 @@ export const activateProviderActivationGrantSchema = z.object({
   grantId: z.string().min(1),
   expectedVersion: z.number().int().positive(),
   sealedExecutorFingerprint: fingerprintSchema,
-  now: z.coerce.date().optional(),
 }).strict();
 
 export const reserveProviderSpendSchema = z.object({
@@ -42,7 +40,6 @@ export const reserveProviderSpendSchema = z.object({
   exactModelId: z.string().trim().min(1).max(160),
   sealedExecutorFingerprint: fingerprintSchema,
   requestedMicros: moneySchema,
-  now: z.coerce.date().optional(),
 }).strict();
 
 const terminalAttemptBase = z.object({
@@ -67,7 +64,6 @@ export const revokeProviderActivationGrantSchema = z.object({
   grantId: z.string().min(1),
   expectedVersion: z.number().int().positive(),
   reason: z.string().trim().min(1).max(500),
-  now: z.coerce.date().optional(),
 }).strict();
 
 export const setProviderLaneControlSchema = z.object({
@@ -76,7 +72,6 @@ export const setProviderLaneControlSchema = z.object({
   state: z.enum(["ENABLED", "DISABLED"]),
   reason: z.string().trim().min(1).max(500),
   expectedVersion: z.number().int().nonnegative(),
-  now: z.coerce.date().optional(),
 }).strict();
 
 export type PrepareProviderActivationGrantInput = z.infer<typeof prepareProviderActivationGrantSchema>;

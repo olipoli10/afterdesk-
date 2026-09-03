@@ -14,7 +14,10 @@ import {
   type ProviderFixtureAdapter,
 } from "@/lib/construction-operating-assistant-r37f/contracts";
 import { prisma } from "@/lib/db";
-import { executeControlledSyntheticAttempt } from "@/server/construction-operating-assistant-r37c/coordinator";
+import {
+  executeControlledSyntheticAttempt,
+  type ControlledProviderExecutionOptions,
+} from "@/server/construction-operating-assistant-r37c/coordinator";
 
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
@@ -34,6 +37,7 @@ function recoverCanonicalEvidence(snapshot: Prisma.JsonValue | null, fingerprint
 export async function executeControlledSyntheticProviderDelivery(
   rawInput: unknown,
   fixtureAdapter: ProviderFixtureAdapter,
+  options: ControlledProviderExecutionOptions = {},
 ): Promise<ControlledProviderDeliveryResult> {
   const input = executeControlledSyntheticAttemptSchema.parse(rawInput);
   let fixtureAdapterInvoked = false;
@@ -95,7 +99,7 @@ export async function executeControlledSyntheticProviderDelivery(
       costMicros: canonicalEvidence.costMicros,
       externalTransportPerformed: false,
     };
-  });
+  }, options);
 
   const durableRun = await prisma.controlledProviderRun.findUniqueOrThrow({
     where: { id: controlledRun.runId },

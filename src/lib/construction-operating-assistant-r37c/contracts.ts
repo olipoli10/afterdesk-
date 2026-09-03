@@ -26,7 +26,6 @@ export const executeControlledSyntheticAttemptSchema = z.object({
   sealedExecutorFingerprint: fingerprintSchema,
   reservedMicros: z.bigint().positive(),
   leaseDurationMs: z.number().int().min(1_000).max(300_000).default(30_000),
-  now: z.coerce.date().optional(),
   sealed: sealedSyntheticAttemptSchema,
 }).strict();
 

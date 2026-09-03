@@ -15,6 +15,8 @@ import { initializeConstructionWorkspace } from "@/server/construction-assistant
 
 const executorFingerprint = `sha256:${"f".repeat(64)}`;
 const now = new Date("2026-09-02T20:00:00.000Z");
+const clock = { now: () => new Date(now.getTime()) };
+const executionOptions = { clock };
 
 async function user(label: string, role: "CLIENT" | "ADMIN" = "CLIENT") {
   return prisma.user.create({
@@ -36,8 +38,7 @@ async function enableLane(adminId: string) {
     state: "ENABLED",
     reason: "R37F synthetic delivery integration",
     expectedVersion: current?.version ?? 0,
-    now,
-  });
+  }, clock);
 }
 
 async function context(candidateKey: "OPENROUTER_CONTROLLER" | "PERPLEXITY_SEARCH", label: string) {
@@ -89,8 +90,7 @@ async function context(candidateKey: "OPENROUTER_CONTROLLER" | "PERPLEXITY_SEARC
     expiresAt: new Date("2027-01-01T00:00:00.000Z"),
     maxCallCount: 2,
     maxTotalSpendMicros: 1_000n,
-    now,
-  });
+  }, clock);
   const activated = await activateProviderActivationGrant({
     commandId: crypto.randomUUID(),
     actorId: owner.id,
@@ -98,8 +98,7 @@ async function context(candidateKey: "OPENROUTER_CONTROLLER" | "PERPLEXITY_SEARC
     grantId: prepared.grant.id,
     expectedVersion: 1,
     sealedExecutorFingerprint: executorFingerprint,
-    now,
-  });
+  }, clock);
   return {
     input: {
       actorId: owner.id,
@@ -109,7 +108,6 @@ async function context(candidateKey: "OPENROUTER_CONTROLLER" | "PERPLEXITY_SEARC
       sealedExecutorFingerprint: executorFingerprint,
       reservedMicros: 500n,
       leaseDurationMs: 30_000,
-      now,
       sealed,
     },
     grantId: activated.grant.id,
@@ -156,7 +154,7 @@ describe("R37F provider delivery orchestration on disposable PostgreSQL", () => 
     const first = await executeControlledSyntheticProviderDelivery(ctx.input, async () => {
       calls += 1;
       return openRouterFixture(ctx.exactModelId);
-    });
+    }, executionOptions);
     expect(first.controlledRun).toMatchObject({ disposition: "SUCCEEDED", adapterInvoked: true });
     expect(first.canonicalEvidence).toMatchObject({ candidateKey: "OPENROUTER_CONTROLLER", answer: "Action synthétique exacte.", costMicros: 300 });
     expect(first.fixtureAdapterInvoked).toBe(true);
@@ -165,7 +163,7 @@ describe("R37F provider delivery orchestration on disposable PostgreSQL", () => 
     const replay = await executeControlledSyntheticProviderDelivery(ctx.input, async () => {
       calls += 1;
       throw new Error("fixture adapter must not be reinvoked");
-    });
+    }, executionOptions);
     expect(replay.controlledRun.disposition).toBe("SUCCEEDED_REPLAY");
     expect(replay.canonicalEvidence).toEqual(first.canonicalEvidence);
     expect(replay.fixtureAdapterInvoked).toBe(false);
@@ -176,7 +174,7 @@ describe("R37F provider delivery orchestration on disposable PostgreSQL", () => 
 
   it("records citation-bound Perplexity evidence", async () => {
     const ctx = await context("PERPLEXITY_SEARCH", "perplexity");
-    const result = await executeControlledSyntheticProviderDelivery(ctx.input, async () => perplexityFixture());
+    const result = await executeControlledSyntheticProviderDelivery(ctx.input, async () => perplexityFixture(), executionOptions);
     expect(result.controlledRun.disposition).toBe("SUCCEEDED");
     expect(result.canonicalEvidence).toMatchObject({
       candidateKey: "PERPLEXITY_SEARCH",
@@ -188,7 +186,7 @@ describe("R37F provider delivery orchestration on disposable PostgreSQL", () => 
 
   it("releases reserved spend when strict normalization refuses provider drift", async () => {
     const ctx = await context("OPENROUTER_CONTROLLER", "drift");
-    const result = await executeControlledSyntheticProviderDelivery(ctx.input, async () => openRouterFixture("fallback/model"));
+    const result = await executeControlledSyntheticProviderDelivery(ctx.input, async () => openRouterFixture("fallback/model"), executionOptions);
     expect(result.controlledRun).toMatchObject({
       disposition: "FAILED",
       failureCode: "R37C_SYNTHETIC_ADAPTER_FAILED",
@@ -208,7 +206,7 @@ describe("R37F provider delivery orchestration on disposable PostgreSQL", () => 
       return openRouterFixture(ctx.exactModelId);
     };
     const results = await Promise.all(Array.from({ length: 50 }, () =>
-      executeControlledSyntheticProviderDelivery(ctx.input, adapter)));
+      executeControlledSyntheticProviderDelivery(ctx.input, adapter, executionOptions)));
     expect(calls).toBe(1);
     expect(results.every((result) => result.canonicalEvidence?.evidenceFingerprint === results[0].canonicalEvidence?.evidenceFingerprint)).toBe(true);
     expect(await prisma.controlledProviderRun.count({ where: { grantId: ctx.grantId } })).toBe(1);

@@ -19,6 +19,8 @@ import { initializeConstructionWorkspace } from "@/server/construction-assistant
 const executorFingerprint = `sha256:${"e".repeat(64)}`;
 const exactModelId = "example/controller-v1";
 const now = new Date("2026-09-02T18:00:00.000Z");
+const clock = { now: () => new Date(now.getTime()) };
+const executionOptions = { clock };
 
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
@@ -43,8 +45,7 @@ async function setLane(adminId: string, state: "ENABLED" | "DISABLED") {
     state,
     reason: `R37C local ${state.toLowerCase()}`,
     expectedVersion: current?.version ?? 0,
-    now,
-  });
+  }, clock);
 }
 
 async function context(label: string, limits?: { calls?: number; spend?: bigint }) {
@@ -92,8 +93,7 @@ async function context(label: string, limits?: { calls?: number; spend?: bigint 
     expiresAt: new Date("2027-01-01T00:00:00.000Z"),
     maxCallCount: limits?.calls ?? 4,
     maxTotalSpendMicros: limits?.spend ?? 4_000n,
-    now,
-  });
+  }, clock);
   const activated = await activateProviderActivationGrant({
     commandId: crypto.randomUUID(),
     actorId: owner.id,
@@ -101,8 +101,7 @@ async function context(label: string, limits?: { calls?: number; spend?: bigint 
     grantId: prepared.grant.id,
     expectedVersion: 1,
     sealedExecutorFingerprint: executorFingerprint,
-    now,
-  });
+  }, clock);
   const input = {
     actorId: owner.id,
     workspaceId: workspace.workspaceId,
@@ -111,7 +110,6 @@ async function context(label: string, limits?: { calls?: number; spend?: bigint 
     sealedExecutorFingerprint: executorFingerprint,
     reservedMicros: 500n,
     leaseDurationMs: 30_000,
-    now,
     sealed,
   };
   return { owner, admin, workspaceId: workspace.workspaceId, grantId: activated.grant.id, sealed, input };
@@ -124,7 +122,7 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
     const first = await executeControlledSyntheticAttempt(ctx.input, async () => {
       calls += 1;
       return { body: { answer: "preuve synthétique" }, latencyMs: 20, costMicros: 300, externalTransportPerformed: false };
-    });
+    }, executionOptions);
     expect(first).toMatchObject({ disposition: "SUCCEEDED", adapterInvoked: true, externalTransportPerformed: false });
     expect(first.evidence).toMatchObject({ evidenceLabel: "SYNTHETIC", costMicros: 300, externalDispatchPerformed: false });
     await prisma.$disconnect();
@@ -132,7 +130,7 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
     const replay = await executeControlledSyntheticAttempt(ctx.input, async () => {
       calls += 1;
       throw new Error("adapter must not be reinvoked");
-    });
+    }, executionOptions);
     expect(replay).toMatchObject({ disposition: "SUCCEEDED_REPLAY", adapterInvoked: false, evidence: first.evidence });
     expect(calls).toBe(1);
     const attempt = await prisma.providerSpendAttempt.findUniqueOrThrow({ where: { id: first.spendAttemptId! } });
@@ -144,11 +142,11 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
     const ctx = await context("failure");
     const failed = await executeControlledSyntheticAttempt(ctx.input, async () => {
       throw new Error("untrusted adapter text with a credential-like detail");
-    });
+    }, executionOptions);
     expect(failed).toMatchObject({ disposition: "FAILED", failureCode: "R37C_SYNTHETIC_ADAPTER_FAILED", adapterInvoked: true });
     const replay = await executeControlledSyntheticAttempt(ctx.input, async () => {
       throw new Error("must not run");
-    });
+    }, executionOptions);
     expect(replay).toMatchObject({ disposition: "FAILED_REPLAY", adapterInvoked: false });
     const attempt = await prisma.providerSpendAttempt.findUniqueOrThrow({ where: { id: failed.spendAttemptId! } });
     const grant = await prisma.providerActivationGrant.findUniqueOrThrow({ where: { id: ctx.grantId } });
@@ -165,7 +163,7 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
       return { body: { ok: true }, latencyMs: 40, costMicros: 200, externalTransportPerformed: false as const };
     };
     const results = await Promise.all(
-      Array.from({ length: 100 }, () => executeControlledSyntheticAttempt(ctx.input, adapter)),
+      Array.from({ length: 100 }, () => executeControlledSyntheticAttempt(ctx.input, adapter, executionOptions)),
     );
     expect(calls).toBe(1);
     expect(results.some((item) => item.disposition === "SUCCEEDED")).toBe(true);
@@ -185,8 +183,7 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
       exactModelId,
       sealedExecutorFingerprint: executorFingerprint,
       requestedMicros: 500n,
-      now,
-    });
+    }, clock);
     await prisma.controlledProviderRun.create({
       data: {
         workspaceId: reclaim.workspaceId,
@@ -209,7 +206,7 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
         startedAt: new Date(now.getTime() - 60_000),
       },
     });
-    const recovered = await executeControlledSyntheticAttempt(reclaim.input, async () => ({ body: { recovered: true }, latencyMs: 10, costMicros: 100, externalTransportPerformed: false }));
+    const recovered = await executeControlledSyntheticAttempt(reclaim.input, async () => ({ body: { recovered: true }, latencyMs: 10, costMicros: 100, externalTransportPerformed: false }), executionOptions);
     expect(recovered).toMatchObject({ disposition: "SUCCEEDED", adapterInvoked: true });
 
     const revoked = await context("revoked", { calls: 1, spend: 500n });
@@ -221,13 +218,12 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
       grantId: revoked.grantId,
       expectedVersion: grantBeforeRevoke.version,
       reason: "R37C point-of-use revocation test",
-      now,
-    });
+    }, clock);
     let revokedAdapterCalls = 0;
     await expect(executeControlledSyntheticAttempt(revoked.input, async () => {
       revokedAdapterCalls += 1;
       return { body: {}, latencyMs: 1, costMicros: 1, externalTransportPerformed: false };
-    })).rejects.toThrow("R37B_GRANT_INACTIVE");
+    }, executionOptions)).rejects.toThrow("R37B_GRANT_INACTIVE");
     expect(revokedAdapterCalls).toBe(0);
     expect(await prisma.providerSpendAttempt.count({ where: { grantId: revoked.grantId } })).toBe(0);
 
@@ -241,14 +237,13 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
       exactModelId,
       sealedExecutorFingerprint: executorFingerprint,
       requestedMicros: 500n,
-      now,
-    });
+    }, clock);
     await setLane(killed.admin.id, "DISABLED");
     let adapterCalls = 0;
     const refused = await executeControlledSyntheticAttempt(killed.input, async () => {
       adapterCalls += 1;
       return { body: {}, latencyMs: 1, costMicros: 1, externalTransportPerformed: false };
-    });
+    }, executionOptions);
     expect(refused).toMatchObject({ disposition: "FAILED", failureCode: "R37C_PROVIDER_LANE_DISABLED_AT_USE", adapterInvoked: false });
     expect(adapterCalls).toBe(0);
     const killedAttempt = await prisma.providerSpendAttempt.findUniqueOrThrow({

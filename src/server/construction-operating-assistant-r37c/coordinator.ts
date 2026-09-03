@@ -16,8 +16,10 @@ import {
 } from "@/server/construction-operating-assistant-r37a/sealed-executor";
 import {
   releaseProviderSpend,
+  readProviderTrustedNow,
   reserveProviderSpend,
   settleProviderSpend,
+  type ProviderTrustedClock,
 } from "@/server/construction-operating-assistant-r37b/activation";
 import { prisma } from "@/lib/db";
 import { appendConstructionAudit } from "@/server/construction-assistant-v1/audit";
@@ -31,6 +33,14 @@ const inFlightRuns = new Map<string, Readonly<{
   commandFingerprint: string;
   promise: Promise<ControlledProviderRunResult>;
 }>>();
+
+export type ControlledProviderExecutionOptions = Readonly<{
+  clock?: ProviderTrustedClock;
+}>;
+
+function fixedClock(now: Date): ProviderTrustedClock {
+  return { now: () => new Date(now.getTime()) };
+}
 
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
@@ -147,6 +157,7 @@ async function settleRecordedEvidence(
   input: ExecuteControlledSyntheticAttemptInput,
   runId: string,
   adapterInvoked: boolean,
+  now: Date,
 ) {
   const run = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: runId } });
   if (run.state === "SUCCEEDED") {
@@ -165,14 +176,14 @@ async function settleRecordedEvidence(
     attemptId: attempt.id,
     expectedVersion: attempt.version,
     settledMicros: BigInt(evidence.costMicros),
-  });
+  }, fixedClock(now));
   const completed = await prisma.controlledProviderRun.update({
     where: { id: run.id },
     data: {
       state: "SUCCEEDED",
       leaseToken: null,
       leaseExpiresAt: null,
-      completedAt: new Date(),
+      completedAt: now,
       version: { increment: 1 },
     },
   });
@@ -184,6 +195,7 @@ async function releaseFailedAttempt(
   runId: string,
   adapterInvoked: boolean,
   dispositionOnComplete: "FAILED" | "FAILED_REPLAY",
+  now: Date,
 ) {
   const run = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: runId } });
   if (run.state === "FAILED") {
@@ -200,14 +212,14 @@ async function releaseFailedAttempt(
     grantId: input.grantId,
     attemptId: attempt.id,
     expectedVersion: attempt.version,
-  });
+  }, fixedClock(now));
   const completed = await prisma.controlledProviderRun.update({
     where: { id: run.id },
     data: {
       state: "FAILED",
       leaseToken: null,
       leaseExpiresAt: null,
-      completedAt: new Date(),
+      completedAt: now,
       version: { increment: 1 },
     },
   });
@@ -242,6 +254,7 @@ async function markReleasePending(
 async function executeParsedControlledSyntheticAttempt(
   input: ExecuteControlledSyntheticAttemptInput,
   adapter: SyntheticProviderTransport,
+  now: Date,
 ): Promise<ControlledProviderRunResult> {
   const commandFingerprint = controlledRunCommandFingerprint(input);
   let run = await ensureRun(input, commandFingerprint);
@@ -253,13 +266,12 @@ async function executeParsedControlledSyntheticAttempt(
     return result({ disposition: "FAILED_REPLAY", run, adapterInvoked: false });
   }
   if (run.state === "EVIDENCE_RECORDED") {
-    return settleRecordedEvidence(input, run.id, false);
+    return settleRecordedEvidence(input, run.id, false, now);
   }
   if (run.state === "RELEASE_PENDING") {
-    return releaseFailedAttempt(input, run.id, false, "FAILED_REPLAY");
+    return releaseFailedAttempt(input, run.id, false, "FAILED_REPLAY", now);
   }
 
-  const now = input.now ?? new Date();
   if (run.state === "RUNNING" && run.leaseExpiresAt && run.leaseExpiresAt > now) {
     return result({ disposition: "IN_PROGRESS", run, adapterInvoked: false });
   }
@@ -273,8 +285,7 @@ async function executeParsedControlledSyntheticAttempt(
     exactModelId: input.sealed.authorization.exactModelId,
     sealedExecutorFingerprint: input.sealedExecutorFingerprint,
     requestedMicros: input.reservedMicros,
-    now,
-  });
+  }, fixedClock(now));
 
   const leaseToken = randomUUID();
   try {
@@ -320,8 +331,8 @@ async function executeParsedControlledSyntheticAttempt(
       run = claim.run;
       if (run.state === "SUCCEEDED") return result({ disposition: "SUCCEEDED_REPLAY", run, adapterInvoked: false });
       if (run.state === "FAILED") return result({ disposition: "FAILED_REPLAY", run, adapterInvoked: false });
-      if (run.state === "EVIDENCE_RECORDED") return settleRecordedEvidence(input, run.id, false);
-      if (run.state === "RELEASE_PENDING") return releaseFailedAttempt(input, run.id, false, "FAILED_REPLAY");
+      if (run.state === "EVIDENCE_RECORDED") return settleRecordedEvidence(input, run.id, false, now);
+      if (run.state === "RELEASE_PENDING") return releaseFailedAttempt(input, run.id, false, "FAILED_REPLAY", now);
       return result({ disposition: "IN_PROGRESS", run, adapterInvoked: false });
     }
   } catch (error) {
@@ -331,12 +342,12 @@ async function executeParsedControlledSyntheticAttempt(
       boundedFailureCode(error),
       now,
     );
-    if (marked.count === 1) return releaseFailedAttempt(input, run.id, false, "FAILED");
+    if (marked.count === 1) return releaseFailedAttempt(input, run.id, false, "FAILED", now);
     const current = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: run.id } });
     if (current.state === "SUCCEEDED") return result({ disposition: "SUCCEEDED_REPLAY", run: current, adapterInvoked: false });
     if (current.state === "FAILED") return result({ disposition: "FAILED_REPLAY", run: current, adapterInvoked: false });
-    if (current.state === "EVIDENCE_RECORDED") return settleRecordedEvidence(input, current.id, false);
-    if (current.state === "RELEASE_PENDING") return releaseFailedAttempt(input, current.id, false, "FAILED_REPLAY");
+    if (current.state === "EVIDENCE_RECORDED") return settleRecordedEvidence(input, current.id, false, now);
+    if (current.state === "RELEASE_PENDING") return releaseFailedAttempt(input, current.id, false, "FAILED_REPLAY", now);
     return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked: false });
   }
 
@@ -362,7 +373,7 @@ async function executeParsedControlledSyntheticAttempt(
       const current = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: run.id } });
       return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked: true });
     }
-    return settleRecordedEvidence(input, run.id, true);
+    return settleRecordedEvidence(input, run.id, true, now);
   } catch (error) {
     const failureCode = boundedFailureCode(error);
     const marked = await prisma.controlledProviderRun.updateMany({
@@ -379,15 +390,17 @@ async function executeParsedControlledSyntheticAttempt(
       const current = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: run.id } });
       return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked: true });
     }
-    return releaseFailedAttempt(input, run.id, true, "FAILED");
+    return releaseFailedAttempt(input, run.id, true, "FAILED", now);
   }
 }
 
 export async function executeControlledSyntheticAttempt(
   rawInput: unknown,
   adapter: SyntheticProviderTransport,
+  options: ControlledProviderExecutionOptions = {},
 ): Promise<ControlledProviderRunResult> {
   const input = executeControlledSyntheticAttemptSchema.parse(rawInput);
+  const now = readProviderTrustedNow(options.clock);
   assertSealedSyntheticAttempt(input.sealed);
   if (!input.sealed.authorization.exactModelId) {
     throw new Error("R37C_EXACT_MODEL_REQUIRED");
@@ -414,7 +427,7 @@ export async function executeControlledSyntheticAttempt(
       adapterInvoked: false,
     });
   }
-  const promise = executeParsedControlledSyntheticAttempt(input, adapter);
+  const promise = executeParsedControlledSyntheticAttempt(input, adapter, now);
   inFlightRuns.set(inFlightKey, { commandFingerprint, promise });
   try {
     return await promise;

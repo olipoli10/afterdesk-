@@ -18,6 +18,23 @@ import {
 
 const LANE_CONTROL_ID = "provider-lane-global";
 
+export type ProviderTrustedClock = Readonly<{
+  now: () => Date;
+}>;
+
+export function readProviderTrustedNow(clock?: ProviderTrustedClock) {
+  let value: unknown;
+  try {
+    value = clock?.now() ?? new Date();
+  } catch {
+    throw new Error("R37_TRUSTED_CLOCK_INVALID");
+  }
+  if (!(value instanceof Date) || !Number.isFinite(value.getTime())) {
+    throw new Error("R37_TRUSTED_CLOCK_INVALID");
+  }
+  return new Date(value.getTime());
+}
+
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
 }
@@ -139,9 +156,9 @@ async function requireLaneEnabled(tx: Prisma.TransactionClient) {
   return lane;
 }
 
-export async function prepareProviderActivationGrant(rawInput: unknown) {
+export async function prepareProviderActivationGrant(rawInput: unknown, clock?: ProviderTrustedClock) {
   const input = prepareProviderActivationGrantSchema.parse(rawInput);
-  const now = input.now ?? new Date();
+  const now = readProviderTrustedNow(clock);
   if (input.expiresAt <= now) throw new Error("R37B_GRANT_EXPIRY_REQUIRED");
   const fingerprint = commandFingerprint("PREPARE_GRANT", input);
   return prisma.$transaction(async (tx) => {
@@ -173,9 +190,9 @@ export async function prepareProviderActivationGrant(rawInput: unknown) {
   }, { isolationLevel: "Serializable" });
 }
 
-export async function activateProviderActivationGrant(rawInput: unknown) {
+export async function activateProviderActivationGrant(rawInput: unknown, clock?: ProviderTrustedClock) {
   const input = activateProviderActivationGrantSchema.parse(rawInput);
-  const now = input.now ?? new Date();
+  const now = readProviderTrustedNow(clock);
   const fingerprint = commandFingerprint("ACTIVATE_GRANT", input);
   return prisma.$transaction(async (tx) => {
     await lockKey(tx, LANE_CONTROL_ID);
@@ -200,9 +217,9 @@ export async function activateProviderActivationGrant(rawInput: unknown) {
   });
 }
 
-export async function reserveProviderSpend(rawInput: unknown) {
+export async function reserveProviderSpend(rawInput: unknown, clock?: ProviderTrustedClock) {
   const input = reserveProviderSpendSchema.parse(rawInput);
-  const now = input.now ?? new Date();
+  const now = readProviderTrustedNow(clock);
   const fingerprint = commandFingerprint("RESERVE_SPEND", input);
   return prisma.$transaction(async (tx) => {
     await lockKey(tx, LANE_CONTROL_ID);
@@ -230,8 +247,13 @@ export async function reserveProviderSpend(rawInput: unknown) {
   });
 }
 
-async function terminalAttempt(rawInput: unknown, kind: "SETTLE_SPEND" | "RELEASE_SPEND") {
+async function terminalAttempt(
+  rawInput: unknown,
+  kind: "SETTLE_SPEND" | "RELEASE_SPEND",
+  clock?: ProviderTrustedClock,
+) {
   const input = kind === "SETTLE_SPEND" ? settleProviderSpendSchema.parse(rawInput) : releaseProviderSpendSchema.parse(rawInput);
+  const now = readProviderTrustedNow(clock);
   const fingerprint = commandFingerprint(kind, input);
   return prisma.$transaction(async (tx) => {
     await lockKey(tx, `grant:${input.grantId}`);
@@ -248,7 +270,6 @@ async function terminalAttempt(rawInput: unknown, kind: "SETTLE_SPEND" | "RELEAS
     const settledMicros = kind === "SETTLE_SPEND" ? (input as unknown as { settledMicros: bigint }).settledMicros : 0n;
     if (settledMicros > attempt.reservedMicros) throw new Error("R37B_SETTLEMENT_EXCEEDS_RESERVATION");
     const releasedMicros = attempt.reservedMicros - settledMicros;
-    const now = new Date();
     const updated = await tx.providerSpendAttempt.update({ where: { id: attempt.id }, data: kind === "SETTLE_SPEND" ? { state: "SETTLED", settledMicros, releasedMicros, settledAt: now, version: { increment: 1 } } : { state: "RELEASED", releasedMicros: attempt.reservedMicros, releasedAt: now, version: { increment: 1 } } });
     await tx.providerActivationGrant.update({ where: { id: grant.id }, data: kind === "SETTLE_SPEND" ? { reservedCallCount: { decrement: 1 }, reservedSpendMicros: { decrement: attempt.reservedMicros }, settledCallCount: { increment: 1 }, settledSpendMicros: { increment: settledMicros }, version: { increment: 1 } } : { reservedCallCount: { decrement: 1 }, reservedSpendMicros: { decrement: attempt.reservedMicros }, releasedCallCount: { increment: 1 }, version: { increment: 1 } } });
     const projection = attemptProjection(updated);
@@ -258,17 +279,17 @@ async function terminalAttempt(rawInput: unknown, kind: "SETTLE_SPEND" | "RELEAS
   }, { isolationLevel: "Serializable" });
 }
 
-export function settleProviderSpend(rawInput: unknown) {
-  return terminalAttempt(rawInput, "SETTLE_SPEND");
+export function settleProviderSpend(rawInput: unknown, clock?: ProviderTrustedClock) {
+  return terminalAttempt(rawInput, "SETTLE_SPEND", clock);
 }
 
-export function releaseProviderSpend(rawInput: unknown) {
-  return terminalAttempt(rawInput, "RELEASE_SPEND");
+export function releaseProviderSpend(rawInput: unknown, clock?: ProviderTrustedClock) {
+  return terminalAttempt(rawInput, "RELEASE_SPEND", clock);
 }
 
-export async function revokeProviderActivationGrant(rawInput: unknown) {
+export async function revokeProviderActivationGrant(rawInput: unknown, clock?: ProviderTrustedClock) {
   const input = revokeProviderActivationGrantSchema.parse(rawInput);
-  const now = input.now ?? new Date();
+  const now = readProviderTrustedNow(clock);
   const fingerprint = commandFingerprint("REVOKE_GRANT", input);
   return prisma.$transaction(async (tx) => {
     await lockKey(tx, `grant:${input.grantId}`);
@@ -289,9 +310,9 @@ export async function revokeProviderActivationGrant(rawInput: unknown) {
   }, { isolationLevel: "Serializable" });
 }
 
-export async function setProviderLaneControl(rawInput: unknown) {
+export async function setProviderLaneControl(rawInput: unknown, clock?: ProviderTrustedClock) {
   const input = setProviderLaneControlSchema.parse(rawInput);
-  const now = input.now ?? new Date();
+  const now = readProviderTrustedNow(clock);
   const fingerprint = commandFingerprint("SET_LANE_CONTROL", input);
   return prisma.$transaction(async (tx) => {
     await lockKey(tx, LANE_CONTROL_ID);

@@ -16,6 +16,8 @@ import { initializeConstructionWorkspace } from "@/server/construction-assistant
 const executorFingerprint = `sha256:${"7".repeat(64)}`;
 const exactModelId = "example/controller-v1";
 const trustedNow = new Date("2026-09-02T21:00:00.000Z");
+const clock = { now: () => new Date(trustedNow.getTime()) };
+const executionOptions = { clock };
 
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
@@ -41,8 +43,7 @@ async function enableLane(adminId: string) {
     state: "ENABLED",
     reason: "R37G security hardening",
     expectedVersion: current?.version ?? 0,
-    now: trustedNow,
-  });
+  }, clock);
 }
 
 async function context(label: string, maxOutputTokens = 1_000) {
@@ -90,8 +91,7 @@ async function context(label: string, maxOutputTokens = 1_000) {
     expiresAt: new Date("2027-01-01T00:00:00.000Z"),
     maxCallCount: 3,
     maxTotalSpendMicros: 1_500n,
-    now: trustedNow,
-  });
+  }, clock);
   const activated = await activateProviderActivationGrant({
     commandId: crypto.randomUUID(),
     actorId: owner.id,
@@ -99,8 +99,7 @@ async function context(label: string, maxOutputTokens = 1_000) {
     grantId: prepared.grant.id,
     expectedVersion: 1,
     sealedExecutorFingerprint: executorFingerprint,
-    now: trustedNow,
-  });
+  }, clock);
   return {
     owner,
     workspaceId: workspace.workspaceId,
@@ -113,7 +112,6 @@ async function context(label: string, maxOutputTokens = 1_000) {
       sealedExecutorFingerprint: executorFingerprint,
       reservedMicros: 500n,
       leaseDurationMs: 30_000,
-      now: trustedNow,
       sealed,
     },
   };
@@ -143,7 +141,7 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
       ...local.input,
       grantId: foreign.grantId,
       idempotencyKey: "r37g-cross-workspace",
-    }, async () => fixture())).rejects.toThrow("CONSTRUCTION_RESOURCE_NOT_FOUND");
+    }, async () => fixture(), executionOptions)).rejects.toThrow("CONSTRUCTION_RESOURCE_NOT_FOUND");
     expect(await prisma.controlledProviderRun.count({
       where: { grantId: foreign.grantId, workspaceId: local.workspaceId },
     })).toBe(0);
@@ -151,7 +149,7 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
 
   it("rejects canonical snapshot drift even when both stored fingerprint copies agree", async () => {
     const ctx = await context("digest");
-    const first = await executeControlledSyntheticProviderDelivery(ctx.input, async () => fixture());
+    const first = await executeControlledSyntheticProviderDelivery(ctx.input, async () => fixture(), executionOptions);
     const run = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: first.controlledRun.runId } });
     const driftFingerprint = `sha256:${"a".repeat(64)}`;
     await prisma.controlledProviderRun.update({
@@ -165,7 +163,7 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
         canonicalEvidenceFingerprint: driftFingerprint,
       },
     });
-    await expect(executeControlledSyntheticProviderDelivery(ctx.input, async () => fixture()))
+    await expect(executeControlledSyntheticProviderDelivery(ctx.input, async () => fixture(), executionOptions))
       .rejects.toThrow("R37F_CANONICAL_EVIDENCE_FINGERPRINT_DRIFT");
   });
 
@@ -179,7 +177,7 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
       adapterStarted();
       await released;
       return fixture();
-    });
+    }, executionOptions);
     await started;
     const active = await prisma.controlledProviderRun.findFirstOrThrow({
       where: { grantId: ctx.grantId, idempotencyKey: ctx.input.idempotencyKey, state: "RUNNING" },
@@ -199,14 +197,14 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
 
   it("returns no canonical evidence for a failed durable disposition", async () => {
     const ctx = await context("failed-evidence");
-    const succeeded = await executeControlledSyntheticProviderDelivery(ctx.input, async () => fixture());
+    const succeeded = await executeControlledSyntheticProviderDelivery(ctx.input, async () => fixture(), executionOptions);
     await prisma.controlledProviderRun.update({
       where: { id: succeeded.controlledRun.runId },
       data: { state: "FAILED", failureCode: "R37C_SYNTHETIC_ADAPTER_FAILED" },
     });
     const result = await executeControlledSyntheticProviderDelivery(ctx.input, async () => {
       throw new Error("adapter must not be invoked for failed replay");
-    });
+    }, executionOptions);
     expect(result.controlledRun.disposition).toBe("FAILED_REPLAY");
     expect(result.canonicalEvidence).toBeNull();
   });

@@ -1680,6 +1680,47 @@
       "outputTree": "e299c92b01ee18c06c38f4a5d27c9b27cb55f002",
       "result": "Five confirmed local provider-boundary findings are closed with runtime seal validation, pre-write tenant binding, exact lease fencing, content-derived digest verification and failure-safe evidence projection; zero provider or external transport.",
       "completedAtUtc": "2026-09-03T03:16:00Z"
+    },
+    {
+      "id": "R37H-PROVIDER-TRUSTED-CLOCK-BOUNDARY",
+      "title": "Provider trusted clock boundary",
+      "objective": "Remove caller-controlled timestamps from R37B and R37C public commands and move deterministic time control behind an explicit internal dependency.",
+      "role": "BOUNDED_REWORK",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37G-PROVIDER-SECURITY-HARDENING"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "5bc37628ea17941164f45603f84ed83cb9f42bf4"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/130-provider-trusted-clock-boundary",
+        "src/lib/construction-operating-assistant-r37b/contracts.ts",
+        "src/server/construction-operating-assistant-r37b/activation.ts",
+        "src/lib/construction-operating-assistant-r37c/contracts.ts",
+        "src/server/construction-operating-assistant-r37c/coordinator.ts",
+        "src/server/construction-operating-assistant-r37f/provider-delivery.ts",
+        "test/construction-operating-assistant-r37h*.test.ts",
+        "test/construction-operating-assistant-r37b*.test.ts",
+        "test/construction-operating-assistant-r37c*.test.ts",
+        "test/construction-operating-assistant-r37f*.test.ts",
+        "test/construction-operating-assistant-r37g*.test.ts",
+        "test/integration/construction-operating-assistant-r37b*.itest.ts",
+        "test/integration/construction-operating-assistant-r37c*.itest.ts",
+        "test/integration/construction-operating-assistant-r37f*.itest.ts",
+        "test/integration/construction-operating-assistant-r37g*.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../130-provider-trusted-clock-boundary/plan.md",
+      "planSha256": "6ae7abb52921c2d4d68b8af88f6aaa2a6bc01231428252f15209ba1843d16a38",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts",
+      "evidencePaths": ["../130-provider-trusted-clock-boundary/evidence/r37h-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }
