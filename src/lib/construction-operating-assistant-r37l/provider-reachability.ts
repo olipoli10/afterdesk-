@@ -535,12 +535,18 @@ function inspectModule(path: string, source: string) {
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isIdentifier(node.left) &&
-      ts.isCallExpression(node.right) &&
-      ts.isIdentifier(node.right.expression) &&
-      node.right.expression.text === "require" &&
-      node.right.arguments[0] &&
-      ts.isStringLiteralLike(node.right.arguments[0]) &&
-      ["node:module", "module"].includes(node.right.arguments[0].text)
+      (() => {
+        const right = unwrapTransparentExpression(node.right);
+        if (!ts.isCallExpression(right)) return false;
+        const loader = unwrapTransparentExpression(right.expression);
+        return (
+          ts.isIdentifier(loader) &&
+          loader.text === "require" &&
+          right.arguments[0] !== undefined &&
+          ts.isStringLiteralLike(right.arguments[0]) &&
+          ["node:module", "module"].includes(right.arguments[0].text)
+        );
+      })()
     ) {
       moduleNamespaceIdentifiers.add(node.left.text);
     }
