@@ -6,5 +6,5 @@
 - [x] T004 Fence R37C evidence transition by lease expiry.
 - [x] T005 Release exact spend and preserve null evidence on expiry.
 - [x] T006 Run proportional regression gates.
-- [ ] T007 Record closeout and scan evidence.
-- [ ] T008 Commit and advance queue/backlog.
+- [x] T007 Record closeout and scan evidence.
+- [x] T008 Commit and advance queue/backlog.
