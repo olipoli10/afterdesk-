@@ -152,6 +152,12 @@ function inspectModule(path: string, source: string) {
         createRequireIdentifiers.add(node.name.text);
       } else if (
         ts.isIdentifier(node.name) &&
+        ts.isIdentifier(node.initializer) &&
+        moduleNamespaceIdentifiers.has(node.initializer.text)
+      ) {
+        moduleNamespaceIdentifiers.add(node.name.text);
+      } else if (
+        ts.isIdentifier(node.name) &&
         ts.isCallExpression(node.initializer) &&
         ts.isIdentifier(node.initializer.expression) &&
         node.initializer.expression.text === "require" &&
@@ -204,6 +210,14 @@ function inspectModule(path: string, source: string) {
       createRequireIdentifiers.has(node.right.text)
     ) {
       createRequireIdentifiers.add(node.left.text);
+    } else if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(node.left) &&
+      ts.isIdentifier(node.right) &&
+      moduleNamespaceIdentifiers.has(node.right.text)
+    ) {
+      moduleNamespaceIdentifiers.add(node.left.text);
     } else if (
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
