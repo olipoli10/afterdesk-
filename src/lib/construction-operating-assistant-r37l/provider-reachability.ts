@@ -69,6 +69,7 @@ function inspectModule(path: string, source: string) {
   const createRequireIdentifiers = new Set(["createRequire"]);
   const moduleNamespaceIdentifiers = new Set<string>();
   const requireLoaderIdentifiers = new Set<string>();
+  const reflectApplyIdentifiers = new Set<string>();
   const addLiteral = (node: ts.Node | undefined) => {
     if (node && ts.isStringLiteralLike(node)) {
       specifiers.push(node.text);
@@ -100,6 +101,13 @@ function inspectModule(path: string, source: string) {
     }
     const receiver = unwrapTransparentExpression(target.expression);
     return ts.isIdentifier(receiver) && receiver.text === "Reflect";
+  };
+  const isTrackedReflectApply = (expression: ts.Expression) => {
+    const target = unwrapTransparentExpression(expression);
+    return (
+      isReflectApply(target) ||
+      (ts.isIdentifier(target) && reflectApplyIdentifiers.has(target.text))
+    );
   };
 
   const dynamicCodeKind = (expression: ts.Expression) => {
@@ -162,7 +170,7 @@ function inspectModule(path: string, source: string) {
         ["call", "apply"].includes(callTarget.name.text) &&
         isTrackedLoader(callTarget.expression);
       const reflectApplyLoader =
-        isReflectApply(callTarget) && isTrackedLoader(node.arguments[0]);
+        isTrackedReflectApply(callTarget) && isTrackedLoader(node.arguments[0]);
       if (
         callTarget.kind === ts.SyntaxKind.ImportKeyword ||
         directLoader ||
@@ -193,6 +201,11 @@ function inspectModule(path: string, source: string) {
       node.initializer
     ) {
       if (
+        ts.isIdentifier(node.name) &&
+        isReflectApply(node.initializer)
+      ) {
+        reflectApplyIdentifiers.add(node.name.text);
+      } else if (
         ts.isIdentifier(node.name) &&
         ts.isIdentifier(node.initializer) &&
         (node.initializer.text === "require" ||
