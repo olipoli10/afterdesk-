@@ -39,6 +39,25 @@ describe("R37N provider dynamic code guard", () => {
     ]);
   });
 
+  it("reports parenthesized indirect eval", () => {
+    const modules = new Map([
+      ["src/app/api/assistant/route.ts", 'import "@/server/provider-facade";'],
+      ["src/server/provider-facade.ts", 'const code = "safe fixture"; (0, eval)(code);'],
+    ]);
+    expect(findDynamicCodeExecutionReachability(modules)[0]?.executionKind).toBe("eval");
+  });
+
+  it("reports aliased Node VM capability", () => {
+    const modules = new Map([
+      ["src/jobs/assistant.ts", 'import "../server/provider-facade";'],
+      [
+        "src/server/provider-facade.ts",
+        'import { runInNewContext as run } from "node:vm"; const code = "safe fixture"; run(code);',
+      ],
+    ]);
+    expect(findDynamicCodeExecutionReachability(modules)[0]?.executionKind).toBe("node:vm");
+  });
+
   it("ignores unreachable internal dynamic code", () => {
     const modules = new Map([
       ["src/app/page.tsx", "export default function Page() { return null; }"],

@@ -46,7 +46,12 @@ function inspectModule(path: string, source: string) {
   const unresolvedCallKinds: Array<"import" | "require"> = [];
   const dynamicCodeKinds: Array<"eval" | "Function" | "node:vm"> = [];
   const addLiteral = (node: ts.Node | undefined) => {
-    if (node && ts.isStringLiteralLike(node)) specifiers.push(node.text);
+    if (node && ts.isStringLiteralLike(node)) {
+      specifiers.push(node.text);
+      if (node.text === "node:vm" || node.text === "vm") {
+        dynamicCodeKinds.push("node:vm");
+      }
+    }
   };
 
   const dynamicCodeKind = (expression: ts.Expression) => {
@@ -73,6 +78,11 @@ function inspectModule(path: string, source: string) {
   };
 
   const visit = (node: ts.Node) => {
+    if (ts.isIdentifier(node) && node.text === "eval") {
+      dynamicCodeKinds.push("eval");
+    } else if (ts.isIdentifier(node) && node.text === "Function") {
+      dynamicCodeKinds.push("Function");
+    }
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
       addLiteral(node.moduleSpecifier);
     } else if (
