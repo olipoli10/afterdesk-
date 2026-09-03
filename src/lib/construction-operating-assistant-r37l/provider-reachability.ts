@@ -281,8 +281,7 @@ function inspectModule(path: string, source: string) {
           if (!ts.isCallExpression(initializer)) return false;
           const loader = unwrapTransparentExpression(initializer.expression);
           return (
-            ts.isIdentifier(loader) &&
-            loader.text === "require" &&
+            isTrackedLoader(loader) &&
             initializer.arguments[0] !== undefined &&
             ts.isStringLiteralLike(initializer.arguments[0]) &&
             ["node:module", "module"].includes(initializer.arguments[0].text)
@@ -348,8 +347,7 @@ function inspectModule(path: string, source: string) {
           if (!ts.isCallExpression(initializer)) return false;
           const loader = unwrapTransparentExpression(initializer.expression);
           return (
-            ts.isIdentifier(loader) &&
-            loader.text === "require" &&
+            isTrackedLoader(loader) &&
             initializer.arguments[0] !== undefined &&
             ts.isStringLiteralLike(initializer.arguments[0]) &&
             ["node:module", "module"].includes(initializer.arguments[0].text)
@@ -438,8 +436,7 @@ function inspectModule(path: string, source: string) {
         if (!ts.isCallExpression(right)) return false;
         const loader = unwrapTransparentExpression(right.expression);
         return (
-          ts.isIdentifier(loader) &&
-          loader.text === "require" &&
+          isTrackedLoader(loader) &&
           right.arguments[0] !== undefined &&
           ts.isStringLiteralLike(right.arguments[0]) &&
           ["node:module", "module"].includes(right.arguments[0].text)
@@ -540,8 +537,7 @@ function inspectModule(path: string, source: string) {
         if (!ts.isCallExpression(right)) return false;
         const loader = unwrapTransparentExpression(right.expression);
         return (
-          ts.isIdentifier(loader) &&
-          loader.text === "require" &&
+          isTrackedLoader(loader) &&
           right.arguments[0] !== undefined &&
           ts.isStringLiteralLike(right.arguments[0]) &&
           ["node:module", "module"].includes(right.arguments[0].text)
