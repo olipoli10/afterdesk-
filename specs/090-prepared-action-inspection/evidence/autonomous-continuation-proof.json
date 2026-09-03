@@ -3,15 +3,15 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 96,
+  "consecutiveBlocksCompleted": 97,
   "goalStayedActiveUntilDrain": true,
-  "completionValidatorVerdict": "ACTIVE_WAVE",
-  "projectTerminalState": "INCOMPLETE",
+  "completionValidatorVerdict": "DRAINED",
+  "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 1,
-  "remainingRoadmapItemCount": 5,
+  "remainingAuthorizedWorkCount": 0,
+  "remainingRoadmapItemCount": 4,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Execute R36U whole-product closure audit and record the exact external authority handoff without routine founder confirmation.",
-  "urgentAssistanceReason": ""
+  "nextAction": "Obtain a separate exact R37 provider-sandbox authority, selected provider and secure credential custody before any observed external call.",
+  "urgentAssistanceReason": "All credential-free local critical-path work is complete. R37 requires separate provider-sandbox authority, a selected provider, secure credentials, bounded spend and explicit revocation policy; R38-R40 depend on later founder, customer and production evidence."
 }

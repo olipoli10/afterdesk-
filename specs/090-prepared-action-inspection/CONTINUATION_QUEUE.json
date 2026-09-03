@@ -3045,7 +3045,7 @@
       "title": "Whole-product closure audit",
       "objective": "Re-audit all credential-free Web, mobile, brand, store and backend gaps before the exact R37 handoff.",
       "role": "CLOSEOUT",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R36T-UNSIGNED-NATIVE-RELEASE-PREFLIGHT"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -3053,13 +3053,13 @@
       "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": ["specs/186-whole-product-closure-audit","release/endvera-construction-v1","scripts","test",".specify/feature.json"],
       "planPath": "../186-whole-product-closure-audit/plan.md",
-      "planSha256": "cad4d1da7f1fc47a70bc543b0ef7fbe612aa9bf548c078eb49f603a12cde322d",
-      "completionCommand": "node scripts/validate-endvera-whole-product-readiness.mjs",
+      "planSha256": "b4769e03fb46208bdf9d181320a4513fb31d8574f98f7cfc398470c771fa5ccf",
+      "completionCommand": "node scripts/validate-endvera-whole-product-closure.mjs",
       "evidencePaths": ["../186-whole-product-closure-audit/evidence/closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "71f143cd8530e1457d399ca6ff5dbaf7612bfddf",
+      "outputTree": "85a0d6e819c1264f61535a90e84a2052a4ea66b8",
+      "result": "LOCAL_CREDENTIAL_FREE_PRODUCT_SCOPE_CLOSED; the preserved site plus additive TextAssist/Construction surfaces, Web 113-route build, mobile 53-route export, release package and disabled backend all pass current gates; 18 external blockers and R37-R40 remain explicit.",
+      "completedAtUtc": "2026-09-03T14:48:09Z"
     }
   ]
 }
