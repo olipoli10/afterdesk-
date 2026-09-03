@@ -63,7 +63,7 @@
     {
       "id": "S5B-MARKET-READINESS",
       "title": "Credential-free mobile, Web, store and operating release preparation",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "releases": ["R36G-SIGNABLE-MOBILE-BUILD-PREPARATION", "R36H-PUBLIC-WEB-PRODUCTION-PREPARATION", "R36I-STORE-COMPLIANCE-AND-LISTING-PACK", "R36J-RELEASE-OBSERVABILITY-AND-SUPPORT", "R36K-MARKET-READINESS-GATE", "R36L-PRODUCT-EXPERIENCE-COMPLETION", "R36M-MOBILE-STORE-VISUAL-READINESS"]
     },
     {
@@ -163,7 +163,7 @@
     {"id":"R36J-RELEASE-OBSERVABILITY-AND-SUPPORT","status":"DONE","authority":"LOCAL","dependsOn":["R36I-STORE-COMPLIANCE-AND-LISTING-PACK"],"outcome":"Redacted monitoring, incident, support and rollback contracts with every external adapter disabled and value-free."},
     {"id":"R36K-MARKET-READINESS-GATE","status":"DONE","authority":"LOCAL","dependsOn":["R36J-RELEASE-OBSERVABILITY-AND-SUPPORT"],"outcome":"One deterministic Web, iOS and Android market-readiness report that separates local completion from exact external blockers."},
     {"id":"R36L-PRODUCT-EXPERIENCE-COMPLETION","status":"DONE","authority":"LOCAL","dependsOn":["R36K-MARKET-READINESS-GATE"],"outcome":"The existing site gains one bilingual TextAssist entry, the local mobile shell becomes assistant-first with five primary tabs, and trust routes remain explicit without external effects."},
-    {"id":"R36M-MOBILE-STORE-VISUAL-READINESS","status":"PLANNED","authority":"LOCAL","dependsOn":["R36L-PRODUCT-EXPERIENCE-COMPLETION"],"outcome":"ENDVERA-specific mobile artwork, deterministic asset checks and bilingual local screenshot candidates replace starter visuals without claiming real-device or store evidence."},
+    {"id":"R36M-MOBILE-STORE-VISUAL-READINESS","status":"DONE","authority":"LOCAL","dependsOn":["R36L-PRODUCT-EXPERIENCE-COMPLETION"],"outcome":"ENDVERA-specific mobile artwork, deterministic asset checks and bilingual local screenshot candidates replace starter visuals without claiming real-device or store evidence."},
     {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R36M-MOBILE-STORE-VISUAL-READINESS"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
     {"id":"R38-FOUNDER-FULL-LOOP","status":"PLANNED","authority":"FOUNDER_OBSERVATION_LATER","dependsOn":["R37-PROVIDER-SANDBOX"],"outcome":"One whole-product founder run only after the product is built, with no technical identifier copying."},
     {"id":"R39-DESIGN-PARTNER-PILOT","status":"PLANNED","authority":"CUSTOMER_AND_PROVIDER_EXACT_LATER","dependsOn":["R38-FOUNDER-FULL-LOOP"],"outcome":"Three supervised construction design partners proving usage, value, failure handling and unit economics."},

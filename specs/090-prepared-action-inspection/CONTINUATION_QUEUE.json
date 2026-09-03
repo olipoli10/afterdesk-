@@ -2877,7 +2877,7 @@
       "title": "Mobile store visual readiness",
       "objective": "Replace starter Expo artwork with coherent ENDVERA candidate assets and prepare deterministic bilingual local screenshot candidates without real-device or store claims.",
       "role": "IMPLEMENTATION",
-      "status": "OPEN",
+      "status": "DONE",
       "dependencies": ["R36L-PRODUCT-EXPERIENCE-COMPLETION"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -2888,10 +2888,10 @@
       "planSha256": "9ef3c6287e0d011d95e1f41d4efaadf5f8e77603d545291d4ee9335d47433829",
       "completionCommand": "npm --prefix apps/mobile test -- --run test/mobile-store-visual-readiness.test.ts && node scripts/validate-endvera-mobile-assets.mjs",
       "evidencePaths": ["../178-mobile-store-visual-readiness/evidence/closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "509423113a0a93d100080904abfb859bdb5d33ee",
+      "outputTree": "93581267fbb960b85ba12157cb73138aa73c7eaa",
+      "result": "LOCAL_CANDIDATE_VISUALS_READY; Expo starter imagery was replaced with deterministic ENDVERA candidate assets and ten bilingual local story frames, with 119 mobile tests, 21/21 Expo Doctor checks, 53-route all-platform export and zero external effects.",
+      "completedAtUtc": "2026-09-03T13:42:40Z"
     }
   ]
 }
