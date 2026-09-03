@@ -3618,6 +3618,8 @@ model ControlledProviderRun {
   sealedSnapshot            Json
   evidenceSnapshot          Json?
   evidenceFingerprint       String?
+  canonicalEvidenceSnapshot Json?
+  canonicalEvidenceFingerprint String?
   failureCode               String?
   leaseToken                String?
   leaseExpiresAt            DateTime?
