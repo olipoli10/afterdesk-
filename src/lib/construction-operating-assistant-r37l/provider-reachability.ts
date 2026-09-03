@@ -234,6 +234,25 @@ function inspectModule(path: string, source: string) {
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isIdentifier(node.left) &&
+      ts.isCallExpression(node.right) &&
+      ((ts.isIdentifier(node.right.expression) &&
+        createRequireIdentifiers.has(node.right.expression.text)) ||
+        (ts.isPropertyAccessExpression(node.right.expression) &&
+          node.right.expression.name.text === "createRequire" &&
+          ts.isIdentifier(node.right.expression.expression) &&
+          moduleNamespaceIdentifiers.has(node.right.expression.expression.text)) ||
+        (ts.isElementAccessExpression(node.right.expression) &&
+          node.right.expression.argumentExpression &&
+          ts.isStringLiteralLike(node.right.expression.argumentExpression) &&
+          node.right.expression.argumentExpression.text === "createRequire" &&
+          ts.isIdentifier(node.right.expression.expression) &&
+          moduleNamespaceIdentifiers.has(node.right.expression.expression.text)))
+    ) {
+      requireLoaderIdentifiers.add(node.left.text);
+    } else if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(node.left) &&
       ((ts.isPropertyAccessExpression(node.right) &&
         node.right.name.text === "createRequire" &&
         ts.isIdentifier(node.right.expression) &&
