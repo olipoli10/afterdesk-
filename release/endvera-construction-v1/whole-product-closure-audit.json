@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_CREDENTIAL_FREE_PRODUCT_SCOPE_CLOSED",
+  "auditScope": "WEB_IOS_ANDROID_RELEASE_STORE_AND_DISABLED_BACKEND",
+  "protectedInputs": [
+    {"path":"release/endvera-construction-v1/whole-product-readiness.json","sha256":"bac7a871d553e0d71f042bf79405b9501c51aa18fc17d185166d830056460ed4"},
+    {"path":"release/endvera-construction-v1/additive-public-brand-readiness.json","sha256":"e7ebe484274d9b8a2ddbcf3a648a6ca04a8ea489547c7a6997424f8bf62c5823"},
+    {"path":"release/endvera-construction-v1/construction-conversion-readiness.json","sha256":"dceda9f2b67e3f190c1569d519e9e4cbaf319b69f7dd5643e615000f0ea10fdf"},
+    {"path":"release/endvera-construction-v1/backend-activation-readiness.json","sha256":"ca09a86ab3957d4a3a58a3a0d4c79dbaadd5ba5d0f29301b7803a75936823652"},
+    {"path":"release/endvera-construction-v1/native-preflight-readiness.json","sha256":"359b9f33b8651190d7e98d5214d0a43a3db9c8f4ae6c98515ddb963645c118bf"},
+    {"path":"release/endvera-construction-v1/release-manifest.json","sha256":"da372c3bc2be4a8edf837a6df62318997bf02cbc1d6689f7268ac57cfce3d738"},
+    {"path":"release/endvera-construction-v1/market-readiness-report.json","sha256":"465d83f5f0cf355cf144f18a8fc5d0ec518c4391e9ee19d71960e1ed5fff1fd4"}
+  ],
+  "localScopeGaps": [],
+  "preservation": {
+    "existingHomepagePreserved": true,
+    "managedWorkOfferingRetained": true,
+    "textAssistRoute": "/textassist",
+    "constructionRoute": "/construction",
+    "accountDeletionRoute": "/account-deletion"
+  },
+  "platforms": [
+    {"target":"WEB","localStatus":"READY_FOR_DEPLOYMENT_AUTHORITY","bilingual":true,"deployed":false},
+    {"target":"IOS","localStatus":"READY_FOR_SIGNING_AUTHORITY","localExportRouteCount":53,"binaryBuilt":false,"binaryBlocker":"MACOS_XCODE_REQUIRED"},
+    {"target":"ANDROID","localStatus":"READY_FOR_SIGNING_AUTHORITY","localExportRouteCount":53,"binaryBuilt":false,"binaryBlocker":"ANDROID_SDK_AND_JDK_REQUIRED"}
+  ],
+  "backend": {
+    "localStatus": "CONFIGURATION_READY_CONNECTORS_DISABLED",
+    "credentialPresenceAloneActivates": false,
+    "explicitAuthorityAndOwnerRequired": true,
+    "providerBoundaryModuleCount": 559,
+    "providerBoundaryViolationCount": 0,
+    "allExternalTransportDisabled": true
+  },
+  "externalBlockers": [
+    "PUBLIC_PRODUCTION_ORIGIN",
+    "PRODUCTION_DATABASE",
+    "AUTH_SECRET_CUSTODY",
+    "OBJECT_STORAGE",
+    "PRODUCTION_FILE_SCANNER",
+    "DNS_AND_TLS",
+    "EXPO_PROJECT_OWNERSHIP",
+    "APPLE_DEVELOPER_MEMBERSHIP",
+    "APPLE_SIGNING_CUSTODY",
+    "GOOGLE_PLAY_DEVELOPER_ACCOUNT",
+    "ANDROID_SIGNING_CUSTODY",
+    "PUBLIC_API_ORIGIN",
+    "LEGAL_PRIVACY_REVIEW",
+    "FINAL_BRAND_ASSET_APPROVAL",
+    "REAL_DEVICE_SCREENSHOTS",
+    "STORE_REVIEW_CREDENTIALS",
+    "MONITORING_PROVIDER_SELECTION",
+    "EXTERNAL_SUPPORT_OWNER"
+  ],
+  "remainingRoadmapReleases": ["R37-PROVIDER-SANDBOX", "R38-FOUNDER-FULL-LOOP", "R39-DESIGN-PARTNER-PILOT", "R40-PRODUCTION-V1"],
+  "nextExternalRelease": "R37-PROVIDER-SANDBOX",
+  "projectTerminalState": "INCOMPLETE",
+  "externalAuthorityRequired": true,
+  "signed": false,
+  "uploaded": false,
+  "submitted": false,
+  "deployed": false,
+  "published": false,
+  "providerObserved": false,
+  "customerObserved": false,
+  "productionReady": false,
+  "externalEffectCount": 0
+}

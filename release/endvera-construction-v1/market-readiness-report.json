@@ -9,7 +9,7 @@
     {"target":"ANDROID","localStatus":"READY_FOR_SIGNING_AUTHORITY","firstExternalBlocker":"GOOGLE_PLAY_DEVELOPER_ACCOUNT","ownerClass":"FOUNDER_OR_RELEASE_OWNER"}
   ],
   "sourceHashes": [
-    {"path":"release/endvera-construction-v1/release-definition.json","sha256":"350b04057f2458d2f0210620260e75b7cd0871b563b38e940e8d968ed7188ee8"},
+    {"path":"release/endvera-construction-v1/release-definition.json","sha256":"10071500ed9532892e0787ed7ff007e56b00f162dd9400dfe8d42688e96888ec"},
     {"path":"release/endvera-construction-v1/mobile-build-readiness.json","sha256":"f50a7ae41ac208b131691e76244375f4f7145934365efe06920698b9edc7693b"},
     {"path":"release/endvera-construction-v1/web-production-readiness.json","sha256":"e8e1b5cd8e06b4bebf23c670e5415e499aa10802220cf9884687678c878d28a0"},
     {"path":"release/endvera-construction-v1/store-compliance-readiness.json","sha256":"5f0b8e42e8a8a140430026da319e536ef54c5c2313de09886e4ee9bf2a5df410"},
