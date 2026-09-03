@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_BACKEND_ACTIVATION_GATE_READY",
+  "environmentContractPath": "release/endvera-construction-v1/environment-contract-v3.json",
+  "capabilities": ["AI", "EMAIL", "GOOGLE_OAUTH"],
+  "credentialPresenceAloneActivates": false,
+  "globalTransportRequired": true,
+  "explicitCapabilityTokenRequired": true,
+  "authorityReferenceRequired": true,
+  "ownerReferenceRequired": true,
+  "secretValuesSerializable": false,
+  "externalReleaseAuthorized": false,
+  "providerObserved": false,
+  "externalEffectCount": 0
+}

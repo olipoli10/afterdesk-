@@ -2,6 +2,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { approxTokens, worstCaseMicros } from "@/lib/ai-work-engine/metered-call";
 import { costMicrosFor } from "@/lib/ai-work-engine/tool-cost";
+import { isExternalCapabilityEnabled } from "@/lib/release/external-capabilities";
 
 /**
  * The single place the AI provider lives. Swapping to another provider means
@@ -11,7 +12,10 @@ import { costMicrosFor } from "@/lib/ai-work-engine/tool-cost";
  * can write a clean brief, then emits a structured draft.
  */
 
-export const aiEnabled = Boolean(process.env.ANTHROPIC_API_KEY);
+export const aiEnabled =
+  process.env.NODE_ENV === "test"
+    ? Boolean(process.env.ANTHROPIC_API_KEY)
+    : isExternalCapabilityEnabled("AI");
 
 export const AI_MODEL = process.env.AI_MODEL || "claude-sonnet-5";
 

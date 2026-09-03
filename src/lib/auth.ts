@@ -4,6 +4,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { expo } from "@better-auth/expo";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { isExternalCapabilityEnabled } from "@/lib/release/external-capabilities";
 
 /**
  * Google sign-in is enabled only when credentials are configured, so the app
@@ -12,7 +13,9 @@ import { sendEmail } from "@/lib/email";
  * the dedicated form because that flow creates their profile for review.
  */
 export const googleEnabled = Boolean(
-  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+  process.env.GOOGLE_CLIENT_ID &&
+    process.env.GOOGLE_CLIENT_SECRET &&
+    isExternalCapabilityEnabled("GOOGLE_OAUTH")
 );
 
 /**
@@ -23,7 +26,11 @@ export const googleEnabled = Boolean(
  */
 export const emailSignupEnabled =
   process.env.NODE_ENV !== "production" ||
-  Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+  Boolean(
+    process.env.RESEND_API_KEY &&
+      process.env.EMAIL_FROM &&
+      isExternalCapabilityEnabled("EMAIL"),
+  );
 
 // Fail fast: without a secret, Better Auth falls back to a known development
 // default — every session cookie guarding admin, pricing and QC would be

@@ -3009,7 +3009,7 @@
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
       "baseRef": {"kind":"ENTRY_OUTPUT","entryId":"R36R-CONSTRUCTION-CONVERSION-SURFACE"},
       "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
-      "allowedScope": ["specs/184-backend-activation-gate","src/lib/release","src/app/api/health","test/backend-activation-gate.test.ts","release/endvera-construction-v1",".specify/feature.json"],
+      "allowedScope": ["specs/184-backend-activation-gate","src/lib/release","src/lib/ai.ts","src/lib/email.ts","src/lib/auth.ts","src/app/api/health","test/backend-activation-gate.test.ts","release/endvera-construction-v1",".specify/feature.json"],
       "planPath": "../184-backend-activation-gate/plan.md",
       "planSha256": "c0661a84454ef0f147f5739cc0fd5ba5c865b1440dc0eff97d8f351232154e59",
       "completionCommand": "npm test -- --run test/backend-activation-gate.test.ts",

@@ -1,4 +1,5 @@
 import "server-only";
+import { isExternalCapabilityEnabled } from "@/lib/release/external-capabilities";
 
 /**
  * Transactional email. Uses Resend when RESEND_API_KEY is set; otherwise falls
@@ -18,10 +19,11 @@ type SendArgs = {
 export async function sendEmail({ to, subject, text }: SendArgs): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM || "Endvera <onboarding@resend.dev>";
+  const emailProviderEnabled = isExternalCapabilityEnabled("EMAIL");
 
-  if (!apiKey) {
+  if (!emailProviderEnabled || !apiKey) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("RESEND_API_KEY must be configured before production email can be sent.");
+      throw new Error("ENDVERA email provider activation requirements are incomplete.");
     }
     console.info(
       `\n──────── EMAIL (dev — no RESEND_API_KEY set) ────────\n` +
