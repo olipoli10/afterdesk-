@@ -17,4 +17,4 @@
 - [x] T007 [US3] Implement idempotent revocation and kill switch in `src/server/construction-operating-assistant-r37b/activation.ts`.
 - [x] T008 Add source guards proving zero credential/network/provider path in `test/construction-operating-assistant-r37b-provider-activation.test.ts`.
 - [x] T009 Run Spec Kit analysis, targeted/full proportional gates and `git diff --check`.
-- [ ] T010 Commit locally and close R37B queue evidence without changing observed-readiness metrics.
+- [x] T010 Commit locally and close R37B queue evidence without changing observed-readiness metrics.

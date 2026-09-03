@@ -1,8 +1,8 @@
 # R37B Provider Activation Controls — Local Closeout Evidence
 
-Evidence label: `CODE + TEST + SYNTHETIC`  
-Observed provider execution: `NO`  
-External transport: `0`  
+Evidence label: `CODE + TEST + SYNTHETIC`
+Observed provider execution: `NO`
+External transport: `0`
 Real provider spend: `0`
 
 ## Delivered

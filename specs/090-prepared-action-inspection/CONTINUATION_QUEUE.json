@@ -1496,7 +1496,7 @@
       "title": "Provider activation controls",
       "objective": "Implement durable local grants, integer-microdollar reservations, revocation and a global kill switch before any later provider activation.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37A-SEALED-PROVIDER-EXECUTOR"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -1519,10 +1519,10 @@
       "planSha256": "1c8a0e6532c99f91b8ebbd3f01ec177db46f2a2e64ae7090f2938c8b7bdd6234",
       "completionCommand": "npx vitest run test/construction-operating-assistant-r37b-provider-activation.test.ts",
       "evidencePaths": ["../124-provider-activation-controls/evidence/r37b-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "cd762b584c085ee514d84a144fa83ece568f9deb",
+      "outputTree": "659579c0240a09cec9e53a7ebaf2c30967dd91d7",
+      "result": "Durable workspace grants, exact model and case binding, atomic integer-microdollar reservation/settlement/release, immutable replay, revocation and a global kill switch are proven on fresh disposable PostgreSQL with zero provider or network path.",
+      "completedAtUtc": "2026-09-03T01:26:22Z"
     }
   ]
 }
