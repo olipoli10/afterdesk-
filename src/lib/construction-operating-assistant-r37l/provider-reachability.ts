@@ -276,12 +276,18 @@ function inspectModule(path: string, source: string) {
         moduleNamespaceIdentifiers.add(node.name.text);
       } else if (
         ts.isIdentifier(node.name) &&
-        ts.isCallExpression(node.initializer) &&
-        ts.isIdentifier(node.initializer.expression) &&
-        node.initializer.expression.text === "require" &&
-        node.initializer.arguments[0] &&
-        ts.isStringLiteralLike(node.initializer.arguments[0]) &&
-        ["node:module", "module"].includes(node.initializer.arguments[0].text)
+        (() => {
+          const initializer = unwrapTransparentExpression(node.initializer);
+          if (!ts.isCallExpression(initializer)) return false;
+          const loader = unwrapTransparentExpression(initializer.expression);
+          return (
+            ts.isIdentifier(loader) &&
+            loader.text === "require" &&
+            initializer.arguments[0] !== undefined &&
+            ts.isStringLiteralLike(initializer.arguments[0]) &&
+            ["node:module", "module"].includes(initializer.arguments[0].text)
+          );
+        })()
       ) {
         moduleNamespaceIdentifiers.add(node.name.text);
       } else if (ts.isIdentifier(node.name) && ts.isCallExpression(node.initializer)) {
