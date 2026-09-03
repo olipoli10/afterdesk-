@@ -486,6 +486,7 @@ model User {
   providerActivationGrantsCreated         ProviderActivationGrant[]        @relation("ProviderActivationGrantCreator")
   providerActivationDecisionsAuthored     ProviderActivationDecision[]     @relation("ProviderActivationDecisionActor")
   providerLaneControlsChanged             ProviderLaneControl[]            @relation("ProviderLaneControlActor")
+  controlledProviderRunsCreated           ControlledProviderRun[]          @relation("ControlledProviderRunCreator")
 }
 
 /**
@@ -3487,6 +3488,7 @@ model ConstructionWorkspace {
   commercialDecisions         ConstructionCommercialDecision[]
   providerActivationGrants    ProviderActivationGrant[]
   providerActivationDecisions ProviderActivationDecision[]
+  controlledProviderRuns      ControlledProviderRun[]
 
   @@index([ownerUserId, status])
 }
@@ -3519,8 +3521,9 @@ model ProviderActivationGrant {
   createdAt                 DateTime              @default(now())
   updatedAt                 DateTime              @updatedAt
 
-  attempts  ProviderSpendAttempt[]
-  decisions ProviderActivationDecision[]
+  attempts       ProviderSpendAttempt[]
+  decisions      ProviderActivationDecision[]
+  controlledRuns ControlledProviderRun[]
 
   @@index([workspaceId, status, expiresAt])
   @@index([candidateKey, exactModelId, status])
@@ -3548,7 +3551,8 @@ model ProviderSpendAttempt {
   createdAt          DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
 
-  decisions ProviderActivationDecision[]
+  decisions     ProviderActivationDecision[]
+  controlledRun ControlledProviderRun?
 
   @@unique([grantId, idempotencyKey])
   @@index([workspaceId, state, createdAt])
@@ -3590,6 +3594,47 @@ model ProviderActivationDecision {
   @@index([workspaceId, createdAt])
   @@index([grantId, createdAt])
   @@index([attemptId, createdAt])
+}
+
+/// Durable state machine joining a sealed synthetic executor attempt to one
+/// provider-authority reservation. R37C remains transport-free: this record
+/// proves orchestration and recovery without contacting a provider.
+model ControlledProviderRun {
+  id                        String                  @id @default(cuid())
+  workspaceId               String
+  workspace                 ConstructionWorkspace   @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  grantId                   String
+  grant                     ProviderActivationGrant @relation(fields: [grantId], references: [id], onDelete: Restrict)
+  spendAttemptId            String?                 @unique
+  spendAttempt              ProviderSpendAttempt?   @relation(fields: [spendAttemptId], references: [id], onDelete: Restrict)
+  idempotencyKey            String
+  commandFingerprint        String
+  sealedAttemptFingerprint  String
+  caseFingerprint           String
+  exactModelId              String
+  sealedExecutorFingerprint String
+  reservedMicros            BigInt
+  state                     String                  @default("PREPARED")
+  sealedSnapshot            Json
+  evidenceSnapshot          Json?
+  evidenceFingerprint       String?
+  failureCode               String?
+  leaseToken                String?
+  leaseExpiresAt            DateTime?
+  settlementCommandId       String                  @unique
+  releaseCommandId          String                  @unique
+  version                   Int                     @default(1)
+  createdById               String
+  createdBy                 User                    @relation("ControlledProviderRunCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  startedAt                 DateTime?
+  completedAt               DateTime?
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
+
+  @@unique([grantId, idempotencyKey])
+  @@index([workspaceId, state, createdAt])
+  @@index([grantId, state])
+  @@index([state, leaseExpiresAt])
 }
 
 model ConstructionWorkspaceMember {

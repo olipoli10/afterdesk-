@@ -62,7 +62,7 @@ completed replay produces no new invocation or financial transition.
 ## Edge Cases
 
 - Same idempotency key with changed sealed attempt refuses.
-- Measured cost above reservation refuses and preserves evidence as uncompleted.
+- A settlement interruption preserves evidence in `EVIDENCE_RECORDED` for exact resume.
 - Lease owner mismatch cannot settle or release another worker's run.
 - Revocation after a terminal result does not rewrite historical evidence.
 - A failure while releasing remains visible and recoverable rather than reported complete.
@@ -75,7 +75,7 @@ completed replay produces no new invocation or financial transition.
 ## Success Criteria
 
 - **SC-001**: 100% of successful runs have a prior matching reservation and one settlement.
-- **SC-002**: 100 concurrent identical submissions invoke the synthetic adapter at most once.
+- **SC-002**: 100 concurrent identical submissions invoke the synthetic adapter exactly once.
 - **SC-003**: Completed replay creates zero new adapter calls or money transitions.
 - **SC-004**: Known failures release 100% of their reservation exactly once.
 - **SC-005**: Restart/reclaim tests preserve exact run binding and stored evidence.
