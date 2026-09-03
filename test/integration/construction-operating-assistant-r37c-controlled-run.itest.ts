@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { R36B_CANDIDATE_PACKETS, sealSandboxCase } from "@/lib/construction-operating-assistant-r36b/candidates";
@@ -19,8 +19,13 @@ import { initializeConstructionWorkspace } from "@/server/construction-assistant
 const executorFingerprint = `sha256:${"e".repeat(64)}`;
 const exactModelId = "example/controller-v1";
 const now = new Date("2026-09-02T18:00:00.000Z");
-const clock = { now: () => new Date(now.getTime()) };
+let clockNow = new Date(now.getTime());
+const clock = { now: () => new Date(clockNow.getTime()) };
 const executionOptions = { clock };
+
+beforeEach(() => {
+  clockNow = new Date(now.getTime());
+});
 
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
@@ -250,5 +255,33 @@ describe("R37C controlled provider orchestration on disposable PostgreSQL", () =
       where: { grantId_idempotencyKey: { grantId: killed.grantId, idempotencyKey: `r37c:${killed.input.idempotencyKey}` } },
     });
     expect(killedAttempt.state).toBe("RELEASED");
+  });
+
+  it("releases spend when direct adapter evidence returns after lease expiry", async () => {
+    const ctx = await context("direct-expiry", { calls: 1, spend: 500n });
+    const result = await executeControlledSyntheticAttempt({
+      ...ctx.input,
+      leaseDurationMs: 1_000,
+    }, async () => {
+      clockNow = new Date(now.getTime() + 1_001);
+      return {
+        body: { answer: "expired synthetic evidence" },
+        latencyMs: 10,
+        costMicros: 100,
+        externalTransportPerformed: false,
+      };
+    }, executionOptions);
+    expect(result).toMatchObject({
+      disposition: "FAILED",
+      failureCode: "R37C_LEASE_EXPIRED_BEFORE_EVIDENCE",
+      evidence: null,
+      adapterInvoked: true,
+    });
+    const run = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: result.runId } });
+    const attempt = await prisma.providerSpendAttempt.findUniqueOrThrow({ where: { id: result.spendAttemptId! } });
+    expect(run.evidenceSnapshot).toBeNull();
+    expect(run.completedAt?.toISOString()).toBe(clockNow.toISOString());
+    expect(attempt).toMatchObject({ state: "RELEASED", settledMicros: null });
+    expect(attempt.releasedAt?.toISOString()).toBe(clockNow.toISOString());
   });
 });

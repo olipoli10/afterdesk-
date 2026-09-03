@@ -1721,6 +1721,37 @@
       "outputTree": "a407aaaf2193a03739e353d57af1c5f622d7c7e1",
       "result": "Public provider-control commands now reject caller time, one trusted server instant governs each controlled attempt and deterministic tests inject time only through a separate internal dependency; all local unit and PostgreSQL gates pass with zero provider or transport.",
       "completedAtUtc": "2026-09-03T03:33:34Z"
+    },
+    {
+      "id": "R37I-PROVIDER-EXPIRED-LEASE-FENCING",
+      "title": "Provider expired-lease fencing",
+      "objective": "Prevent an unchanged but expired lease from persisting canonical provider evidence or settling spend after asynchronous completion.",
+      "role": "BOUNDED_REWORK",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37H-PROVIDER-TRUSTED-CLOCK-BOUNDARY"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "afe234389491e943e36a05b634e3c17696c17f1a"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/131-provider-expired-lease-fencing",
+        "src/server/construction-operating-assistant-r37c/coordinator.ts",
+        "src/server/construction-operating-assistant-r37f/provider-delivery.ts",
+        "test/integration/construction-operating-assistant-r37c-controlled-run.itest.ts",
+        "test/integration/construction-operating-assistant-r37g-provider-security-hardening.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../131-provider-expired-lease-fencing/plan.md",
+      "planSha256": "5257ab6a1b9d636455f0de893be5f4aa415aa98ead87492fe1421d8f0052b96d",
+      "completionCommand": "npx vitest run --config vitest.integration.config.ts test/integration/construction-operating-assistant-r37g-provider-security-hardening.itest.ts",
+      "evidencePaths": ["../131-provider-expired-lease-fencing/evidence/r37i-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }

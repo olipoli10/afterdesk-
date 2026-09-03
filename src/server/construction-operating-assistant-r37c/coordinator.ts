@@ -255,6 +255,7 @@ async function executeParsedControlledSyntheticAttempt(
   input: ExecuteControlledSyntheticAttemptInput,
   adapter: SyntheticProviderTransport,
   now: Date,
+  clock?: ProviderTrustedClock,
 ): Promise<ControlledProviderRunResult> {
   const commandFingerprint = controlledRunCommandFingerprint(input);
   let run = await ensureRun(input, commandFingerprint);
@@ -358,8 +359,14 @@ async function executeParsedControlledSyntheticAttempt(
       adapterContext: { runId: run.id, leaseToken },
       now: now.toISOString(),
     });
+    const terminalNow = readProviderTrustedNow(clock);
     const stored = await prisma.controlledProviderRun.updateMany({
-      where: { id: run.id, state: "RUNNING", leaseToken },
+      where: {
+        id: run.id,
+        state: "RUNNING",
+        leaseToken,
+        leaseExpiresAt: { gt: terminalNow },
+      },
       data: {
         state: "EVIDENCE_RECORDED",
         evidenceSnapshot: json(evidence),
@@ -370,11 +377,30 @@ async function executeParsedControlledSyntheticAttempt(
       },
     });
     if (stored.count !== 1) {
+      const expired = await prisma.controlledProviderRun.updateMany({
+        where: {
+          id: run.id,
+          state: "RUNNING",
+          leaseToken,
+          leaseExpiresAt: { lte: terminalNow },
+        },
+        data: {
+          state: "RELEASE_PENDING",
+          failureCode: "R37C_LEASE_EXPIRED_BEFORE_EVIDENCE",
+          leaseToken: null,
+          leaseExpiresAt: null,
+          version: { increment: 1 },
+        },
+      });
+      if (expired.count === 1) {
+        return releaseFailedAttempt(input, run.id, true, "FAILED", terminalNow);
+      }
       const current = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: run.id } });
       return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked: true });
     }
-    return settleRecordedEvidence(input, run.id, true, now);
+    return settleRecordedEvidence(input, run.id, true, terminalNow);
   } catch (error) {
+    const failureNow = readProviderTrustedNow(clock);
     const failureCode = boundedFailureCode(error);
     const marked = await prisma.controlledProviderRun.updateMany({
       where: { id: run.id, state: "RUNNING", leaseToken },
@@ -390,7 +416,7 @@ async function executeParsedControlledSyntheticAttempt(
       const current = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: run.id } });
       return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked: true });
     }
-    return releaseFailedAttempt(input, run.id, true, "FAILED", now);
+    return releaseFailedAttempt(input, run.id, true, "FAILED", failureNow);
   }
 }
 
@@ -427,7 +453,7 @@ export async function executeControlledSyntheticAttempt(
       adapterInvoked: false,
     });
   }
-  const promise = executeParsedControlledSyntheticAttempt(input, adapter, now);
+  const promise = executeParsedControlledSyntheticAttempt(input, adapter, now, options.clock);
   inFlightRuns.set(inFlightKey, { commandFingerprint, promise });
   try {
     return await promise;

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { R36B_CANDIDATE_PACKETS, sealSandboxCase } from "@/lib/construction-operating-assistant-r36b/candidates";
@@ -16,8 +16,13 @@ import { initializeConstructionWorkspace } from "@/server/construction-assistant
 const executorFingerprint = `sha256:${"7".repeat(64)}`;
 const exactModelId = "example/controller-v1";
 const trustedNow = new Date("2026-09-02T21:00:00.000Z");
-const clock = { now: () => new Date(trustedNow.getTime()) };
+let clockNow = new Date(trustedNow.getTime());
+const clock = { now: () => new Date(clockNow.getTime()) };
 const executionOptions = { clock };
+
+beforeEach(() => {
+  clockNow = new Date(trustedNow.getTime());
+});
 
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
@@ -207,5 +212,30 @@ describe("R37G provider security hardening on disposable PostgreSQL", () => {
     }, executionOptions);
     expect(result.controlledRun.disposition).toBe("FAILED_REPLAY");
     expect(result.canonicalEvidence).toBeNull();
+  });
+
+  it("refuses evidence and releases spend when an unchanged lease token has expired", async () => {
+    const ctx = await context("expired-lease");
+    const result = await executeControlledSyntheticProviderDelivery({
+      ...ctx.input,
+      leaseDurationMs: 1_000,
+    }, async () => {
+      clockNow = new Date(trustedNow.getTime() + 1_001);
+      return fixture();
+    }, executionOptions);
+    expect(result.controlledRun.disposition).toBe("FAILED");
+    expect(result.canonicalEvidence).toBeNull();
+    const durable = await prisma.controlledProviderRun.findUniqueOrThrow({
+      where: { id: result.controlledRun.runId },
+    });
+    const attempt = await prisma.providerSpendAttempt.findUniqueOrThrow({
+      where: { id: result.controlledRun.spendAttemptId! },
+    });
+    expect(durable.canonicalEvidenceSnapshot).toBeNull();
+    expect(durable.canonicalEvidenceFingerprint).toBeNull();
+    expect(durable.state).toBe("FAILED");
+    expect(durable.completedAt?.toISOString()).toBe(clockNow.toISOString());
+    expect(attempt.state).toBe("RELEASED");
+    expect(attempt.releasedAt?.toISOString()).toBe(clockNow.toISOString());
   });
 });

@@ -14,6 +14,7 @@ import {
   type ProviderFixtureAdapter,
 } from "@/lib/construction-operating-assistant-r37f/contracts";
 import { prisma } from "@/lib/db";
+import { readProviderTrustedNow } from "@/server/construction-operating-assistant-r37b/activation";
 import {
   executeControlledSyntheticAttempt,
   type ControlledProviderExecutionOptions,
@@ -44,6 +45,7 @@ export async function executeControlledSyntheticProviderDelivery(
 
   const controlledRun = await executeControlledSyntheticAttempt(input, async (request, context) => {
     if (!context) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
+    const leaseCheckNow = readProviderTrustedNow(options.clock);
     const run = await prisma.controlledProviderRun.findFirst({
       where: {
         id: context.runId,
@@ -52,6 +54,7 @@ export async function executeControlledSyntheticProviderDelivery(
         grantId: input.grantId,
         idempotencyKey: input.idempotencyKey,
         workspaceId: input.workspaceId,
+        leaseExpiresAt: { gt: leaseCheckNow },
       },
     });
     if (!run) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
@@ -71,6 +74,7 @@ export async function executeControlledSyntheticProviderDelivery(
 
     fixtureAdapterInvoked = true;
     const adapterResult = providerFixtureAdapterResultSchema.parse(await fixtureAdapter(request));
+    const callbackNow = readProviderTrustedNow(options.clock);
     const canonicalEvidence = normalizeSyntheticProviderFixture({
       candidateKey: input.sealed.authorization.candidateKey,
       sealed: input.sealed,
@@ -83,6 +87,7 @@ export async function executeControlledSyntheticProviderDelivery(
         id: run.id,
         state: "RUNNING",
         leaseToken: context.leaseToken,
+        leaseExpiresAt: { gt: callbackNow },
         canonicalEvidenceFingerprint: null,
       },
       data: {
