@@ -3,7 +3,7 @@
   "storeSubmissionReady": false,
   "productionDeploymentReady": false,
   "unresolved": [
-    {"code":"FINAL_BRAND_ASSETS","state":"REQUIRED_LATER","reason":"The current Expo image set is starter/placeholder artwork and the Web mark is explicitly temporary."},
+    {"code":"FINAL_BRAND_ASSETS","state":"REQUIRED_LATER","reason":"A validated ENDVERA-specific local candidate set exists; final founder brand approval and replacement of the explicitly temporary Web mark remain required."},
     {"code":"IOS_SCREENSHOTS","state":"REQUIRED_LATER","reason":"No real-device App Store screenshots have been captured or approved."},
     {"code":"ANDROID_SCREENSHOTS","state":"REQUIRED_LATER","reason":"No real-device Play Store screenshots have been captured or approved."},
     {"code":"PUBLIC_PRODUCTION_ORIGIN","state":"REQUIRES_EXACT_AUTHORITY","reason":"R35 does not select or deploy a public host."},

@@ -8,7 +8,7 @@
     "scheme": "endvera",
     "userInterfaceStyle": "dark",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "bundleIdentifier": "ai.endvera.mobile",
       "buildNumber": "1",
       "supportsTablet": true

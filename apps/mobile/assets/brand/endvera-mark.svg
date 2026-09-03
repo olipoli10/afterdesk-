@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">ENDVERA mobile mark</title>
+  <desc id="desc">Two amber paths meet around one dark seam on an onyx operating surface.</desc>
+  <defs>
+    <radialGradient id="surface" cx="78%" cy="18%" r="88%">
+      <stop offset="0" stop-color="#24201A"/>
+      <stop offset="0.45" stop-color="#111318"/>
+      <stop offset="1" stop-color="#09090B"/>
+    </radialGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E2C486"/>
+      <stop offset="1" stop-color="#D87526"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#surface)"/>
+  <g opacity="0.12" stroke="#9AA1AB" stroke-width="2">
+    <path d="M128 256H896M128 512H896M128 768H896"/>
+    <path d="M256 128V896M512 128V896M768 128V896"/>
+  </g>
+  <rect x="146" y="146" width="732" height="732" rx="176" fill="#0D0F13" stroke="#6F4C29" stroke-width="12"/>
+  <g transform="translate(96 96) scale(26)">
+    <path d="M6 8h8l6 6-4 4-4-4H9v10H6V8Z" fill="#D87526"/>
+    <path d="M26 24h-8l-6-6 4-4 4 4h3V8h3v16Z" fill="#C9A76A"/>
+    <path d="m14.8 15.2 2-2 2.4 2.4-2 2-2.4-2.4Z" fill="url(#amber)"/>
+  </g>
+</svg>
+

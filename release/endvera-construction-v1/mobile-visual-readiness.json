@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_CANDIDATE_VISUALS_READY",
+  "brandApproved": false,
+  "realDeviceIosScreenshots": false,
+  "realDeviceAndroidScreenshots": false,
+  "signed": false,
+  "uploaded": false,
+  "submitted": false,
+  "published": false,
+  "deployed": false,
+  "providerObserved": false,
+  "customerObserved": false,
+  "externalEffectCount": 0,
+  "shots": [
+    {"id":"today","route":"/","fr":"Une prochaine action claire.","en":"One clear next action."},
+    {"id":"assistant","route":"/assistant","fr":"Parle. Le contexte reste attaché.","en":"Talk. The job context stays attached."},
+    {"id":"projects","route":"/projects","fr":"Décisions, preuves et responsables.","en":"Decisions, evidence and owners."},
+    {"id":"calendar","route":"/calendar","fr":"Ce qui arrive, sans reconstruire le contexte.","en":"What is next, without rebuilding context."},
+    {"id":"approval","route":"/actions","fr":"Destinataire et texte visibles avant approbation.","en":"Recipient and message visible before approval."}
+  ],
+  "candidateNotice": "Generated local story frames are not real-device screenshots and cannot satisfy Apple or Google observed screenshot requirements."
+}
