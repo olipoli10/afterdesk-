@@ -1630,6 +1630,8 @@
         "specs/128-provider-delivery-orchestration",
         "src/lib/construction-operating-assistant-r37f",
         "src/server/construction-operating-assistant-r37f",
+        "prisma/schema.prisma",
+        "prisma/migrations/20260903024000_construction_assistant_r37f_provider_delivery",
         "test/construction-operating-assistant-r37f*.test.ts",
         "test/integration/construction-operating-assistant-r37f*.itest.ts",
         "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
@@ -1638,7 +1640,7 @@
         ".specify/feature.json"
       ],
       "planPath": "../128-provider-delivery-orchestration/plan.md",
-      "planSha256": "f66d89fed1f85dcdecbeb1b9ddb30cf818abd7dddb0d875858ad8ee189dc449e",
+      "planSha256": "2d0e5b9c578ff555b9109fdcb09c989465e70ea5713068be4228b0b4e36bf188",
       "completionCommand": "npx vitest run --config vitest.integration.config.ts test/integration/construction-operating-assistant-r37f-provider-delivery.itest.ts",
       "evidencePaths": ["../128-provider-delivery-orchestration/evidence/r37f-closeout.md"],
       "outputHead": "",

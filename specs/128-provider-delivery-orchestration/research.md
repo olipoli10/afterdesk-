@@ -1,7 +1,9 @@
 # Research: Provider Delivery Orchestration R37F
 
-The existing durable R37C snapshot already accepts a JSON body and preserves it
-before settlement. R37D canonical evidence is strict JSON and carries its own
-fingerprint, cost, latency, citations and provider-response binding. Therefore
-the smallest safe composition is an adapter wrapper that normalizes before the
-R37C evidence state transition, without changing Prisma or adding transport.
+R37A intentionally fingerprints but does not retain the adapter body, so the
+existing R37C evidence snapshot cannot reconstruct canonical provider evidence.
+The smallest safe composition adds nullable canonical snapshot and fingerprint
+fields to `ControlledProviderRun`. An R37F adapter wrapper normalizes and writes
+them while R37C owns the live lease, before R37C records its transport-free
+envelope and settles spend. A retry can reuse the durable canonical snapshot
+without reinvoking the fixture adapter. No transport is added.
