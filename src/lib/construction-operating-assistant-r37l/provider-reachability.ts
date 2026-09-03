@@ -175,6 +175,12 @@ function inspectModule(path: string, source: string) {
       ts.isExternalModuleReference(node.moduleReference)
     ) {
       addLiteral(node.moduleReference.expression);
+      if (
+        ts.isStringLiteralLike(node.moduleReference.expression) &&
+        ["node:module", "module"].includes(node.moduleReference.expression.text)
+      ) {
+        moduleNamespaceIdentifiers.add(node.name.text);
+      }
     } else if (ts.isCallExpression(node)) {
       const callTarget = unwrapTransparentExpression(node.expression);
       const directLoader = isTrackedLoader(callTarget);
