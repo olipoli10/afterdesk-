@@ -1868,6 +1868,35 @@
       "outputTree": "af0f7b00b5b509ccab792935b2f0f3bb21d2e901",
       "result": "Computed import and require calls reachable from public runtime entrypoints now fail closed with exact deterministic chains when their destinations cannot be statically proven; exact security verification completed with zero findings.",
       "completedAtUtc": "2026-09-03T04:31:20Z"
+    },
+    {
+      "id": "R37N-PROVIDER-DYNAMIC-CODE-GUARD",
+      "title": "Provider dynamic code guard",
+      "objective": "Reject eval, Function and Node VM execution anywhere reachable from public runtime entrypoints.",
+      "role": "BOUNDED_REWORK",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37M-PROVIDER-COMPUTED-IMPORT-GUARD"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "5baa52d60ff0fc345ab7bb61e3e93d49e9dfe0cd"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/136-provider-dynamic-code-guard",
+        "src/lib/construction-operating-assistant-r37l/provider-reachability.ts",
+        "test/construction-operating-assistant-r37n-provider-dynamic-code.test.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../136-provider-dynamic-code-guard/plan.md",
+      "planSha256": "3f4a91f0204fe9407743dde83bcb3d76eca86dd658d66ab0f92572a9119f4cc7",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r37n-provider-dynamic-code.test.ts",
+      "evidencePaths": ["../136-provider-dynamic-code-guard/evidence/r37n-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }

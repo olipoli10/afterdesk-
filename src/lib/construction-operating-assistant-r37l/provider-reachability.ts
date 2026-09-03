@@ -13,6 +13,13 @@ export type UnresolvedDynamicModuleReachability = Readonly<{
   callKind: "import" | "require";
 }>;
 
+export type DynamicCodeExecutionReachability = Readonly<{
+  entrypoint: string;
+  path: readonly string[];
+  executionModule: string;
+  executionKind: "eval" | "Function" | "node:vm";
+}>;
+
 const PROVIDER_EXECUTION_MODULE =
   /^src\/server\/construction-operating-assistant-r37(?:a|b|c|f)\//u;
 
@@ -37,8 +44,32 @@ function inspectModule(path: string, source: string) {
   );
   const specifiers: string[] = [];
   const unresolvedCallKinds: Array<"import" | "require"> = [];
+  const dynamicCodeKinds: Array<"eval" | "Function" | "node:vm"> = [];
   const addLiteral = (node: ts.Node | undefined) => {
     if (node && ts.isStringLiteralLike(node)) specifiers.push(node.text);
+  };
+
+  const dynamicCodeKind = (expression: ts.Expression) => {
+    const directName = ts.isIdentifier(expression)
+      ? expression.text
+      : ts.isPropertyAccessExpression(expression)
+        ? expression.name.text
+        : ts.isElementAccessExpression(expression) &&
+            expression.argumentExpression &&
+            ts.isStringLiteralLike(expression.argumentExpression)
+          ? expression.argumentExpression.text
+          : null;
+    if (directName === "eval") return "eval" as const;
+    if (directName === "Function") return "Function" as const;
+    if (
+      directName &&
+      ["runInThisContext", "runInNewContext", "runInContext", "compileFunction"].includes(
+        directName,
+      )
+    ) {
+      return "node:vm" as const;
+    }
+    return null;
   };
 
   const visit = (node: ts.Node) => {
@@ -64,12 +95,17 @@ function inspectModule(path: string, source: string) {
         unresolvedCallKinds.push(callKind);
       }
     }
+    if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+      const kind = dynamicCodeKind(node.expression);
+      if (kind) dynamicCodeKinds.push(kind);
+    }
     ts.forEachChild(node, visit);
   };
   visit(sourceFile);
   return {
     specifiers: [...new Set(specifiers)].sort(),
     unresolvedCallKinds: [...new Set(unresolvedCallKinds)].sort(),
+    dynamicCodeKinds: [...new Set(dynamicCodeKinds)].sort(),
   } as const;
 }
 
@@ -135,6 +171,10 @@ function buildModuleGraph(
   const modulePaths = new Set(modules.keys());
   const edges = new Map<string, readonly string[]>();
   const unresolvedByModule = new Map<string, readonly ("import" | "require")[]>();
+  const dynamicCodeByModule = new Map<
+    string,
+    readonly ("eval" | "Function" | "node:vm")[]
+  >();
 
   for (const [path, source] of [...modules.entries()].sort(([left], [right]) =>
     left.localeCompare(right)
@@ -147,9 +187,12 @@ function buildModuleGraph(
     if (inspected.unresolvedCallKinds.length > 0) {
       unresolvedByModule.set(path, inspected.unresolvedCallKinds);
     }
+    if (inspected.dynamicCodeKinds.length > 0) {
+      dynamicCodeByModule.set(path, inspected.dynamicCodeKinds);
+    }
   }
 
-  return { modulePaths, edges, unresolvedByModule } as const;
+  return { modulePaths, edges, unresolvedByModule, dynamicCodeByModule } as const;
 }
 
 export function findProviderExecutionReachability(
@@ -182,6 +225,26 @@ export function findUnresolvedDynamicModuleReachability(
             path,
             unresolvedModule,
             callKind,
+          })),
+      )
+    );
+}
+
+export function findDynamicCodeExecutionReachability(
+  sourceModules: ReadonlyMap<string, string>,
+): DynamicCodeExecutionReachability[] {
+  const { modulePaths, edges, dynamicCodeByModule } = buildModuleGraph(sourceModules);
+  return [...modulePaths]
+    .filter(isPublicEntrypoint)
+    .sort()
+    .flatMap((entrypoint) =>
+      [...reachableModulePaths(entrypoint, edges).entries()].flatMap(
+        ([executionModule, path]) =>
+          (dynamicCodeByModule.get(executionModule) ?? []).map((executionKind) => ({
+            entrypoint,
+            path,
+            executionModule,
+            executionKind,
           })),
       )
     );
