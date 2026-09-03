@@ -7,6 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "endvera",
     "userInterfaceStyle": "dark",
+    "locales": {
+      "fr": "./locales/fr.json",
+      "en": "./locales/en.json"
+    },
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "ai.endvera.mobile",

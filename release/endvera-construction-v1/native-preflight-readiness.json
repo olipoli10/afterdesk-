@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_UNSIGNED_NATIVE_PREFLIGHT_READY",
+  "hostPlatform": "win32",
+  "identities": {
+    "ios": {"bundleIdentifier":"ai.endvera.mobile","buildNumber":"1"},
+    "android": {"package":"ai.endvera.mobile","versionCode":1}
+  },
+  "launchLanguages": ["fr-CA", "en-CA"],
+  "primaryTabCount": 5,
+  "secondaryRouteCount": 20,
+  "localStaticExportRouteCount": 53,
+  "nativeBinaryBuilds": {
+    "ios": {"built":false,"blocker":"MACOS_XCODE_REQUIRED"},
+    "android": {"built":false,"blocker":"ANDROID_SDK_AND_JDK_REQUIRED"}
+  },
+  "externalBuildInvoked": false,
+  "signed": false,
+  "uploaded": false,
+  "submitted": false,
+  "published": false,
+  "providerObserved": false,
+  "externalEffectCount": 0
+}

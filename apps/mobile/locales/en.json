@@ -1,0 +1,7 @@
+{
+  "CFBundleDisplayName": "ENDVERA",
+  "NSMicrophoneUsageDescription": "Allow ENDVERA to record only the voice note you choose.",
+  "android": {
+    "app_name": "ENDVERA"
+  }
+}

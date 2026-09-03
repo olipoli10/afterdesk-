@@ -35,15 +35,15 @@
     "privacy": "/privacy",
     "security": "/security",
     "support": "/construction/support",
-    "accountDeletion": "/client/privacy"
+    "accountDeletion": "/account-deletion"
   },
   "assets": [
-    {"kind":"APP_ICON_PLACEHOLDER","path":"apps/mobile/assets/images/icon.png","mediaType":"image/png","width":1024,"height":1024},
-    {"kind":"ANDROID_FOREGROUND","path":"apps/mobile/assets/images/android-icon-foreground.png","mediaType":"image/png","width":512,"height":512},
+    {"kind":"APP_ICON","path":"apps/mobile/assets/images/icon.png","mediaType":"image/png","width":1024,"height":1024},
+    {"kind":"ANDROID_FOREGROUND","path":"apps/mobile/assets/images/android-icon-foreground.png","mediaType":"image/png","width":1024,"height":1024},
     {"kind":"ANDROID_BACKGROUND","path":"apps/mobile/assets/images/android-icon-background.png","mediaType":"image/png","width":512,"height":512},
     {"kind":"ANDROID_MONOCHROME","path":"apps/mobile/assets/images/android-icon-monochrome.png","mediaType":"image/png","width":432,"height":432},
-    {"kind":"SPLASH","path":"apps/mobile/assets/images/splash-icon.png","mediaType":"image/png","width":228,"height":213},
-    {"kind":"WEB_FAVICON","path":"apps/mobile/assets/images/favicon.png","mediaType":"image/png","width":48,"height":48}
+    {"kind":"SPLASH","path":"apps/mobile/assets/images/splash-icon.png","mediaType":"image/png","width":512,"height":512},
+    {"kind":"WEB_FAVICON","path":"apps/mobile/assets/images/favicon.png","mediaType":"image/png","width":64,"height":64}
   ],
   "supportingAssetPaths": [
     "apps/mobile/assets/expo.icon/icon.json",
