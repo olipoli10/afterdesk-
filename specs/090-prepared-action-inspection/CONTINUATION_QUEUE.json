@@ -1471,7 +1471,7 @@
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
       "baseRef": {"kind": "FIXED_HEAD", "head": "fad720c4857ce9950b8edb0afce650c63c910f43"},
-      "authority": "LOCAL CODE TEST AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL NETWORK EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": [
         "specs/123-sealed-provider-executor",
         "src/lib/construction-operating-assistant-r37a",
@@ -1501,7 +1501,7 @@
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
       "baseRef": {"kind": "FIXED_HEAD", "head": "e00c34a48b846a9308b781881162cdfe1d2c440e"},
-      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL CUSTOMER DATA NETWORK EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
       "allowedScope": [
         "specs/124-provider-activation-controls",
         "src/lib/construction-operating-assistant-r37b",
@@ -1523,6 +1523,39 @@
       "outputTree": "659579c0240a09cec9e53a7ebaf2c30967dd91d7",
       "result": "Durable workspace grants, exact model and case binding, atomic integer-microdollar reservation/settlement/release, immutable replay, revocation and a global kill switch are proven on fresh disposable PostgreSQL with zero provider or network path.",
       "completedAtUtc": "2026-09-03T01:26:22Z"
+    },
+    {
+      "id": "R37C-CONTROLLED-PROVIDER-ORCHESTRATION",
+      "title": "Controlled provider orchestration",
+      "objective": "Couple R37A sealed synthetic execution to R37B durable reservation, settlement, release, lease recovery and stored exact replay without adding provider or network access.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37B-PROVIDER-ACTIVATION-CONTROLS"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "ac65d72fdef27f380cbdaca5bc1ce07c43cc9103"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/125-controlled-provider-orchestration",
+        "src/lib/construction-operating-assistant-r37c",
+        "src/server/construction-operating-assistant-r37c",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_assistant_r37c_controlled_run",
+        "test/construction-operating-assistant-r37c*.test.ts",
+        "test/integration/construction-operating-assistant-r37c*.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../125-controlled-provider-orchestration/plan.md",
+      "planSha256": "7815ad29e007f33241092a6fbfeb761efd4232759cb9513c6b0ebbdce59e0280",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r37c-controlled-run.test.ts",
+      "evidencePaths": ["../125-controlled-provider-orchestration/evidence/r37c-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }

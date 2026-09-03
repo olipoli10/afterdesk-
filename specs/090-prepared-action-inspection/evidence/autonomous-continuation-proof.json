@@ -8,10 +8,10 @@
   "completionValidatorVerdict": "CONTINUATION_REQUIRED",
   "projectTerminalState": "INCOMPLETE",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 0,
+  "remainingAuthorizedWorkCount": 1,
   "remainingRoadmapItemCount": 5,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "R37-PROVIDER-SANDBOX",
+  "nextAction": "R37C-CONTROLLED-PROVIDER-ORCHESTRATION",
   "urgentAssistanceReason": ""
 }
