@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_WHOLE_PRODUCT_READINESS_VERIFIED",
+  "scope": "WEB_IOS_ANDROID_AND_DISABLED_BACKEND_CONFIGURATION",
+  "platforms": [
+    {
+      "target": "WEB",
+      "localStatus": "READY_FOR_DEPLOYMENT_AUTHORITY",
+      "evidence": {
+        "existingHomepagePreserved": true,
+        "textAssistRoute": "/textassist",
+        "accountDeletionRoute": "/account-deletion",
+        "webpackRouteCount": 113,
+        "launchLanguages": ["fr-CA", "en-CA"]
+      }
+    },
+    {
+      "target": "IOS",
+      "localStatus": "READY_FOR_SIGNING_AUTHORITY",
+      "evidence": {
+        "assistantFirst": true,
+        "primaryTabCount": 5,
+        "secondaryRouteCount": 20,
+        "expoExportRouteCount": 53,
+        "candidateVisuals": true,
+        "realDeviceObserved": false
+      }
+    },
+    {
+      "target": "ANDROID",
+      "localStatus": "READY_FOR_SIGNING_AUTHORITY",
+      "evidence": {
+        "assistantFirst": true,
+        "primaryTabCount": 5,
+        "secondaryRouteCount": 20,
+        "expoExportRouteCount": 53,
+        "candidateVisuals": true,
+        "realDeviceObserved": false
+      }
+    }
+  ],
+  "backend": {
+    "localStatus": "CONFIGURATION_READY_CONNECTORS_DISABLED",
+    "providerBoundaryModuleCount": 558,
+    "providerBoundaryViolationCount": 0,
+    "connectors": ["AI_ROUTING", "GOOGLE_CALENDAR", "SMS_MMS", "VOICE_CALLS", "EMAIL_INBOX", "ACCOUNTING"],
+    "allExternalTransportDisabled": true,
+    "secretValuesSerialized": false
+  },
+  "protectedInputs": [
+    {"path":"release/endvera-construction-v1/product-experience-readiness.json","sha256":"6cb914243756400eefb32c9d14092e8a096d21f00212fef10beec0d07edfa726"},
+    {"path":"release/endvera-construction-v1/textassist-public-offer-readiness.json","sha256":"c97d6c96a31d9411b9c0f01a4f81b03976a9771b55ea0656b41b24c82be51533"},
+    {"path":"release/endvera-construction-v1/mobile-visual-readiness.json","sha256":"cc16391d73c5afcd45d2b33e551248629c9feea9da9c5815f239260a32268b95"},
+    {"path":"release/endvera-construction-v1/mobile-assistant-experience-readiness.json","sha256":"8b5de1130bd1a5dec9bd996f0d030355273be1e10012b9855ff313c1f1f66402"},
+    {"path":"release/endvera-construction-v1/mobile-build-readiness.json","sha256":"f50a7ae41ac208b131691e76244375f4f7145934365efe06920698b9edc7693b"},
+    {"path":"release/endvera-construction-v1/environment-contract-v2.json","sha256":"5f128f7f7a9bdea2d6218348ccbe2a69f5176b54ecd798afe90f0f50fb8025a9"},
+    {"path":"release/endvera-construction-v1/web-production-readiness.json","sha256":"e8e1b5cd8e06b4bebf23c670e5415e499aa10802220cf9884687678c878d28a0"}
+  ],
+  "resolvedSinceR36K": ["PUBLIC_ACCOUNT_DELETION_RESOURCE"],
+  "localScopeGaps": [],
+  "externalBlockers": [
+    {"code":"PUBLIC_PRODUCTION_ORIGIN","targets":["WEB"],"ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Approved public domain and canonical HTTPS origin"},
+    {"code":"PRODUCTION_DATABASE","targets":["WEB","IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Provisioned database, forward-only migration and restore proof"},
+    {"code":"AUTH_SECRET_CUSTODY","targets":["WEB","IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Managed auth material and rotation owner"},
+    {"code":"OBJECT_STORAGE","targets":["WEB","IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Lifecycle, recovery and access-control proof"},
+    {"code":"PRODUCTION_FILE_SCANNER","targets":["WEB","IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Observed clean and malicious fixtures"},
+    {"code":"DNS_AND_TLS","targets":["WEB"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"DNS, TLS, headers and rollback proof"},
+    {"code":"EXPO_PROJECT_OWNERSHIP","targets":["IOS","ANDROID"],"ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Authorized organization and immutable project identifier"},
+    {"code":"APPLE_DEVELOPER_MEMBERSHIP","targets":["IOS"],"ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Active legal-entity membership"},
+    {"code":"APPLE_SIGNING_CUSTODY","targets":["IOS"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Distribution certificate and provisioning custody"},
+    {"code":"GOOGLE_PLAY_DEVELOPER_ACCOUNT","targets":["ANDROID"],"ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Verified legal-entity Play Console account"},
+    {"code":"ANDROID_SIGNING_CUSTODY","targets":["ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Upload key and Play App Signing ownership"},
+    {"code":"PUBLIC_API_ORIGIN","targets":["IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Approved HTTPS API origin with health and rollback proof"},
+    {"code":"LEGAL_PRIVACY_REVIEW","targets":["WEB","IOS","ANDROID"],"ownerClass":"LEGAL_OR_FOUNDER","evidenceRequired":"Approved privacy and terms disclosures"},
+    {"code":"FINAL_BRAND_ASSET_APPROVAL","targets":["WEB","IOS","ANDROID"],"ownerClass":"FOUNDER_OR_BRAND_OWNER","evidenceRequired":"Approved production mark, icons and store artwork"},
+    {"code":"REAL_DEVICE_SCREENSHOTS","targets":["IOS","ANDROID"],"ownerClass":"RELEASE_OWNER","evidenceRequired":"Reviewed iOS and Android captures"},
+    {"code":"STORE_REVIEW_CREDENTIALS","targets":["IOS","ANDROID"],"ownerClass":"RELEASE_OWNER","evidenceRequired":"Bounded demo account and review notes"},
+    {"code":"MONITORING_PROVIDER_SELECTION","targets":["WEB","IOS","ANDROID"],"ownerClass":"TECHNICAL_RELEASE_OWNER","evidenceRequired":"Approved redacted monitoring configuration"},
+    {"code":"EXTERNAL_SUPPORT_OWNER","targets":["WEB","IOS","ANDROID"],"ownerClass":"FOUNDER","evidenceRequired":"Staffed support and incident ownership decision"}
+  ],
+  "attestationsReused": {
+    "rootTargetedTests": true,
+    "mobileTestFiles": 30,
+    "mobileTests": 123,
+    "expoDoctorChecks": "21/21",
+    "webpackRouteCount": 113,
+    "expoExportRouteCount": 53,
+    "providerBoundaryModules": 558,
+    "providerBoundaryViolations": 0
+  },
+  "projectTerminalState": "INCOMPLETE",
+  "remainingRoadmapReleases": ["R37-PROVIDER-SANDBOX", "R38-FOUNDER-FULL-LOOP", "R39-DESIGN-PARTNER-PILOT", "R40-PRODUCTION-V1"],
+  "nextExternalRelease": "R37-PROVIDER-SANDBOX",
+  "externalAuthorityRequired": true,
+  "signed": false,
+  "uploaded": false,
+  "submitted": false,
+  "deployed": false,
+  "published": false,
+  "providerObserved": false,
+  "customerObserved": false,
+  "productionReady": false,
+  "externalEffectCount": 0
+}
