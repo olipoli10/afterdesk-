@@ -329,6 +329,16 @@ function inspectModule(path: string, source: string) {
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isIdentifier(node.left) &&
+      (() => {
+        const right = unwrapTransparentExpression(node.right);
+        return ts.isIdentifier(right) && reflectNamespaceIdentifiers.has(right.text);
+      })()
+    ) {
+      reflectNamespaceIdentifiers.add(node.left.text);
+    } else if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(node.left) &&
       ts.isIdentifier(node.right) &&
       reflectApplyIdentifiers.has(node.right.text)
     ) {
