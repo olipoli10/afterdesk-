@@ -9,9 +9,9 @@
 
 ## R36H — Public Web production preparation
 
-- [ ] T005 Freeze value-free Web environment and route inventory.
-- [ ] T006 Implement production-config and public-surface validation.
-- [ ] T007 Run targeted Web, auth, legal/support and rollback checks.
+- [x] T005 Freeze value-free Web environment and route inventory.
+- [x] T006 Implement production-config and public-surface validation.
+- [x] T007 Run targeted Web, auth, legal/support and rollback checks.
 
 ## R36I — Store compliance and listing pack
 
