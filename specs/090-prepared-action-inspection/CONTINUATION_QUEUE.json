@@ -1490,6 +1490,39 @@
       "outputTree": "170b82fc9560046432b6de9596da60a1dcd2fc55",
       "result": "Credential-free sealed executor accepts only injected synthetic adapter evidence and refuses any observed or external transport path.",
       "completedAtUtc": "2026-09-02T20:41:53Z"
+    },
+    {
+      "id": "R37B-PROVIDER-ACTIVATION-CONTROLS",
+      "title": "Provider activation controls",
+      "objective": "Implement durable local grants, integer-microdollar reservations, revocation and a global kill switch before any later provider activation.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37A-SEALED-PROVIDER-EXECUTOR"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "e00c34a48b846a9308b781881162cdfe1d2c440e"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL CUSTOMER DATA NETWORK EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/124-provider-activation-controls",
+        "src/lib/construction-operating-assistant-r37b",
+        "src/server/construction-operating-assistant-r37b",
+        "prisma/schema.prisma",
+        "prisma/migrations/*_construction_assistant_r37b_provider_activation",
+        "test/construction-operating-assistant-r37b*.test.ts",
+        "test/integration/construction-operating-assistant-r37b*.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../124-provider-activation-controls/plan.md",
+      "planSha256": "1c8a0e6532c99f91b8ebbd3f01ec177db46f2a2e64ae7090f2938c8b7bdd6234",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r37b-provider-activation.test.ts",
+      "evidencePaths": ["../124-provider-activation-controls/evidence/r37b-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }

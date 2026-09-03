@@ -63,8 +63,8 @@
     {
       "id": "S6-OBSERVED-LAUNCH",
       "title": "Observed provider, founder, pilot and production closure",
-      "status": "AUTHORITY_BOUND_LATER",
-      "releases": ["R37A-SEALED-PROVIDER-EXECUTOR", "R37-PROVIDER-SANDBOX", "R38-FOUNDER-FULL-LOOP", "R39-DESIGN-PARTNER-PILOT", "R40-PRODUCTION-V1"]
+      "status": "IN_PROGRESS",
+      "releases": ["R37A-SEALED-PROVIDER-EXECUTOR", "R37B-PROVIDER-ACTIVATION-CONTROLS", "R37-PROVIDER-SANDBOX", "R38-FOUNDER-FULL-LOOP", "R39-DESIGN-PARTNER-PILOT", "R40-PRODUCTION-V1"]
     }
   ],
   "releases": [
@@ -99,7 +99,8 @@
     {"id":"R36E-CONTEXT-RICH-INTENT-ROUTING-GATE","status":"DONE","authority":"LOCAL","dependsOn":["R36D-ASSISTANT-CHANNEL-ROUTING-PARITY"],"outcome":"Context-rich portal, voice-call, email and file sources cross R36A before resolution or transition and retain one provider-neutral audit decision."},
     {"id":"R36F-LEGACY-COMMAND-ROUTING-CLOSURE","status":"DONE","authority":"LOCAL","dependsOn":["R36E-CONTEXT-RICH-INTENT-ROUTING-GATE"],"outcome":"Remaining authenticated legacy web command entries cross the same provider-neutral assistant brain with strict portal provenance and zero provider dispatch."},
     {"id":"R37A-SEALED-PROVIDER-EXECUTOR","status":"DONE","authority":"LOCAL","dependsOn":["R36F-LEGACY-COMMAND-ROUTING-CLOSURE"],"outcome":"Credential-free sealed synthetic executor binds R36B privacy, model, cost and provenance constraints while observed provider execution remains impossible."},
-    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R37A-SEALED-PROVIDER-EXECUTOR"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
+    {"id":"R37B-PROVIDER-ACTIVATION-CONTROLS","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R37A-SEALED-PROVIDER-EXECUTOR"],"outcome":"Durable grants, microdollar reservations, revocation and kill-switch controls protect later provider activation while transport remains absent."},
+    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R37B-PROVIDER-ACTIVATION-CONTROLS"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
     {"id":"R38-FOUNDER-FULL-LOOP","status":"PLANNED","authority":"FOUNDER_OBSERVATION_LATER","dependsOn":["R37-PROVIDER-SANDBOX"],"outcome":"One whole-product founder run only after the product is built, with no technical identifier copying."},
     {"id":"R39-DESIGN-PARTNER-PILOT","status":"PLANNED","authority":"CUSTOMER_AND_PROVIDER_EXACT_LATER","dependsOn":["R38-FOUNDER-FULL-LOOP"],"outcome":"Three supervised construction design partners proving usage, value, failure handling and unit economics."},
     {"id":"R40-PRODUCTION-V1","status":"PLANNED","authority":"PRODUCTION_EXACT_LATER","dependsOn":["R39-DESIGN-PARTNER-PILOT"],"outcome":"Controlled production launch with support, rollback, billing, monitoring and explicit V1 completion evidence."}
