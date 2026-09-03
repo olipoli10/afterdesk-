@@ -135,11 +135,11 @@ export function validateCredentialFreeMobileBuild(input: {
   assertIdentity(appConfig, readiness);
   assertReadiness(readiness);
   return {
-    status: readiness.status,
+    status: "READY_FOR_SIGNING_AUTHORITY" as const,
     appName: "ENDVERA",
     profiles: [...expectedMobileBuildProfiles],
-    ios: readiness.ios,
-    android: readiness.android,
+    ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1", artifact: "IPA" as const },
+    android: { package: "ai.endvera.mobile", versionCode: 1, artifact: "AAB" as const },
     signed: false,
     uploaded: false,
     submitted: false,

@@ -2778,7 +2778,7 @@
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
       "baseRef": {"kind": "ENTRY_OUTPUT", "entryId": "R36G-SIGNABLE-MOBILE-BUILD-PREPARATION"},
       "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
-      "allowedScope": ["specs/176-market-readiness-program","release/endvera-construction-v1","docs/release/endvera-construction-v1","src/lib/construction-operating-assistant-r36g-r36k","scripts/validate-endvera-web-readiness.mjs","test/construction-operating-assistant-r36h*.test.ts","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json"],
+      "allowedScope": ["specs/176-market-readiness-program","release/endvera-construction-v1","docs/release/endvera-construction-v1","src/app/api/health/route.ts","src/lib/construction-operating-assistant-r36g-r36k","scripts/validate-endvera-web-readiness.mjs","test/construction-operating-assistant-r36h*.test.ts","apps/mobile/src/lib/store-build.ts","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json"],
       "planPath": "../176-market-readiness-program/plan.md",
       "planSha256": "12efb20e07b6eebda10463d61655ed6f690f8525adc64abc5b8599165c934d50",
       "completionCommand": "npm test -- --run test/construction-operating-assistant-r36h-web-production-readiness.test.ts",

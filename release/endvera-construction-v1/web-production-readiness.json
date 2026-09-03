@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "readiness": "READY_FOR_DEPLOYMENT_AUTHORITY",
+  "environmentContractPath": "release/endvera-construction-v1/environment-contract-v2.json",
+  "routes": [
+    {"path":"/","kind":"PUBLIC","sourcePath":"src/app/page.tsx"},
+    {"path":"/construction","kind":"PUBLIC","sourcePath":"src/app/construction/page.tsx"},
+    {"path":"/privacy","kind":"LEGAL","sourcePath":"src/app/privacy/page.tsx"},
+    {"path":"/security","kind":"LEGAL","sourcePath":"src/app/security/page.tsx"},
+    {"path":"/terms","kind":"LEGAL","sourcePath":"src/app/terms/page.tsx"},
+    {"path":"/acceptable-use","kind":"LEGAL","sourcePath":"src/app/acceptable-use/page.tsx"},
+    {"path":"/construction/support","kind":"SUPPORT","sourcePath":"src/app/construction/support/page.tsx"},
+    {"path":"/login","kind":"AUTH","sourcePath":"src/app/(public)/login/page.tsx"},
+    {"path":"/register","kind":"AUTH","sourcePath":"src/app/(public)/register/page.tsx"},
+    {"path":"/api/auth/[...all]","kind":"AUTH_API","sourcePath":"src/app/api/auth/[...all]/route.ts"},
+    {"path":"/api/health","kind":"LIVENESS","sourcePath":"src/app/api/health/route.ts"}
+  ],
+  "deploymentBlockers": [
+    {"code":"PUBLIC_PRODUCTION_ORIGIN","ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Approved public domain and canonical HTTPS origin"},
+    {"code":"PRODUCTION_DATABASE","ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Provisioned database, forward-only migration and restore evidence"},
+    {"code":"AUTH_SECRET_CUSTODY","ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Managed production auth secret reference and rotation owner"},
+    {"code":"OBJECT_STORAGE","ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Bounded object storage, lifecycle and recovery evidence"},
+    {"code":"PRODUCTION_FILE_SCANNER","ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Fail-closed scanning provider and observed clean/malicious fixtures"},
+    {"code":"DNS_AND_TLS","ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Verified DNS, TLS, security headers and rollback target"}
+  ],
+  "capabilityBlockers": [
+    {"code":"AI_PROVIDER_ACTIVATION","state":"SEPARATE_AUTHORITY_REQUIRED"},
+    {"code":"GOOGLE_OAUTH_ACTIVATION","state":"SEPARATE_AUTHORITY_REQUIRED"},
+    {"code":"EMAIL_PROVIDER_ACTIVATION","state":"SEPARATE_AUTHORITY_REQUIRED"},
+    {"code":"PAYMENT_PROVIDER_ACTIVATION","state":"SEPARATE_AUTHORITY_REQUIRED"},
+    {"code":"MESSAGING_AND_VOICE_ACTIVATION","state":"SEPARATE_AUTHORITY_REQUIRED"}
+  ],
+  "smokeContract": {
+    "beforePromotion": ["/api/health", "/", "/construction", "/privacy", "/security", "/construction/support", "/login"],
+    "rollbackTriggers": ["HEALTH_UNAVAILABLE", "AUTH_CALLBACK_FAILURE", "DATABASE_MIGRATION_FAILURE", "CROSS_TENANT_SIGNAL", "EXTERNAL_EFFECT_WITHOUT_AUTHORITY"],
+    "rollbackEvidenceRequired": ["previousImmutableBuildId", "databaseCompatibilityDecision", "incidentOwner", "postRollbackHealth"]
+  },
+  "publicOriginSelected": false,
+  "deployed": false,
+  "published": false,
+  "providerObserved": false,
+  "externalEffectCount": 0
+}
