@@ -5,5 +5,5 @@
 - [x] T003 Prove network/credential mutation RED.
 - [x] T004 Add the pristine source-boundary guard.
 - [x] T005 Run R37 and full local regression gates.
-- [ ] T006 Complete exact security verification.
-- [ ] T007 Close and advance the queue.
+- [x] T006 Complete exact security verification.
+- [x] T007 Close and advance the queue.
