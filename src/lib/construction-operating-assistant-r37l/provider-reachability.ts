@@ -208,6 +208,12 @@ function inspectModule(path: string, source: string) {
       } else if (
         ts.isIdentifier(node.name) &&
         ts.isIdentifier(node.initializer) &&
+        reflectApplyIdentifiers.has(node.initializer.text)
+      ) {
+        reflectApplyIdentifiers.add(node.name.text);
+      } else if (
+        ts.isIdentifier(node.name) &&
+        ts.isIdentifier(node.initializer) &&
         (node.initializer.text === "require" ||
           requireLoaderIdentifiers.has(node.initializer.text))
       ) {
