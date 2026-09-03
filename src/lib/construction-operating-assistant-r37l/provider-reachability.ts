@@ -202,7 +202,7 @@ function inspectModule(path: string, source: string) {
     ) {
       if (
         ts.isIdentifier(node.name) &&
-        isReflectApply(node.initializer)
+        isTrackedReflectApply(node.initializer)
       ) {
         reflectApplyIdentifiers.add(node.name.text);
       } else if (
