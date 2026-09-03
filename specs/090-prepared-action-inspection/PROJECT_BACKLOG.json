@@ -67,6 +67,12 @@
       "releases": ["R36G-SIGNABLE-MOBILE-BUILD-PREPARATION", "R36H-PUBLIC-WEB-PRODUCTION-PREPARATION", "R36I-STORE-COMPLIANCE-AND-LISTING-PACK", "R36J-RELEASE-OBSERVABILITY-AND-SUPPORT", "R36K-MARKET-READINESS-GATE", "R36L-PRODUCT-EXPERIENCE-COMPLETION", "R36M-MOBILE-STORE-VISUAL-READINESS", "R36N-TEXTASSIST-PUBLIC-OFFER-COMPLETION", "R36O-MOBILE-ASSISTANT-EXPERIENCE-POLISH", "R36P-LOCAL-WHOLE-PRODUCT-READINESS-GATE", "R36Q-ADDITIVE-PUBLIC-BRAND-METADATA", "R36R-CONSTRUCTION-CONVERSION-SURFACE", "R36S-BACKEND-ACTIVATION-GATE", "R36T-UNSIGNED-NATIVE-RELEASE-PREFLIGHT", "R36U-WHOLE-PRODUCT-CLOSURE-AUDIT"]
     },
     {
+      "id": "S5C-PROJECT-BRAIN",
+      "title": "Project intake, confirmed memory and assistant actionability",
+      "status": "IN_PROGRESS",
+      "releases": ["R36V-PROJECT-BRAIN-INTAKE-FOUNDATION", "R36W-PROJECT-BRAIN-FACT-CANDIDATES", "R36X-PROJECT-BRAIN-UNDERSTANDING-REVIEW", "R36Y-PROJECT-BRAIN-ASSISTANT-MEMORY", "R36Z-PROJECT-BRAIN-LOCAL-GATE"]
+    },
+    {
       "id": "S6-OBSERVED-LAUNCH",
       "title": "Observed provider, founder, pilot and production closure",
       "status": "IN_PROGRESS",
@@ -172,7 +178,12 @@
     {"id":"R36S-BACKEND-ACTIVATION-GATE","status":"DONE","authority":"LOCAL","dependsOn":["R36R-CONSTRUCTION-CONVERSION-SURFACE"],"outcome":"One production-shaped startup capability gate keeps every external connector disabled without explicit environment, policy and owner evidence."},
     {"id":"R36T-UNSIGNED-NATIVE-RELEASE-PREFLIGHT","status":"DONE","authority":"LOCAL","dependsOn":["R36S-BACKEND-ACTIVATION-GATE"],"outcome":"Deterministic iOS and Android native configuration, permission copy, route parity and unsigned build prerequisites are verified without signing or store access."},
     {"id":"R36U-WHOLE-PRODUCT-CLOSURE-AUDIT","status":"DONE","authority":"LOCAL","dependsOn":["R36T-UNSIGNED-NATIVE-RELEASE-PREFLIGHT"],"outcome":"A second whole-product audit proves no material credential-free gap remains and records the exact external authority handoff to R37-R40."},
-    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R36P-LOCAL-WHOLE-PRODUCT-READINESS-GATE"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
+    {"id":"R36V-PROJECT-BRAIN-INTAKE-FOUNDATION","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R36U-WHOLE-PRODUCT-CLOSURE-AUDIT"],"outcome":"One mobile intake accepts several synthetic project sources plus an owner-authored brief, preserves exact source provenance, and creates versioned owner-confirmed project memory without provider analysis."},
+    {"id":"R36W-PROJECT-BRAIN-FACT-CANDIDATES","status":"PLANNED","authority":"LOCAL","dependsOn":["R36V-PROJECT-BRAIN-INTAKE-FOUNDATION"],"outcome":"Deterministic local adapters create provenance-bound fact candidates only from explicitly supported text and metadata while binary understanding remains unavailable."},
+    {"id":"R36X-PROJECT-BRAIN-UNDERSTANDING-REVIEW","status":"PLANNED","authority":"LOCAL","dependsOn":["R36W-PROJECT-BRAIN-FACT-CANDIDATES"],"outcome":"The owner can inspect sources, contradictions and candidate facts, resolve conflicts, and seal an exact immutable understanding without invented claims."},
+    {"id":"R36Y-PROJECT-BRAIN-ASSISTANT-MEMORY","status":"PLANNED","authority":"LOCAL","dependsOn":["R36X-PROJECT-BRAIN-UNDERSTANDING-REVIEW"],"outcome":"The unified assistant recalls only confirmed project memory and prepares narrow project actions with provenance, authority and approval boundaries intact."},
+    {"id":"R36Z-PROJECT-BRAIN-LOCAL-GATE","status":"PLANNED","authority":"LOCAL","dependsOn":["R36Y-PROJECT-BRAIN-ASSISTANT-MEMORY"],"outcome":"A credential-free local gate proves intake, restart recovery, confirmation, assistant recall, mobile usability and zero external effects before provider work."},
+    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R36Z-PROJECT-BRAIN-LOCAL-GATE"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
     {"id":"R38-FOUNDER-FULL-LOOP","status":"PLANNED","authority":"FOUNDER_OBSERVATION_LATER","dependsOn":["R37-PROVIDER-SANDBOX"],"outcome":"One whole-product founder run only after the product is built, with no technical identifier copying."},
     {"id":"R39-DESIGN-PARTNER-PILOT","status":"PLANNED","authority":"CUSTOMER_AND_PROVIDER_EXACT_LATER","dependsOn":["R38-FOUNDER-FULL-LOOP"],"outcome":"Three supervised construction design partners proving usage, value, failure handling and unit economics."},
     {"id":"R40-PRODUCTION-V1","status":"PLANNED","authority":"PRODUCTION_EXACT_LATER","dependsOn":["R39-DESIGN-PARTNER-PILOT"],"outcome":"Controlled production launch with support, rollback, billing, monitoring and explicit V1 completion evidence."}
