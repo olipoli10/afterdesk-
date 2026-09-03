@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "program": "R36G_R36K_MARKET_READINESS",
+  "status": "LOCAL_MARKET_PREPARATION_COMPLETE",
+  "externalDecision": "EXTERNAL_AUTHORITY_REQUIRED",
+  "targets": [
+    {"target":"WEB","localStatus":"READY_FOR_DEPLOYMENT_AUTHORITY","firstExternalBlocker":"PUBLIC_PRODUCTION_ORIGIN","ownerClass":"FOUNDER_OR_RELEASE_OWNER"},
+    {"target":"IOS","localStatus":"READY_FOR_SIGNING_AUTHORITY","firstExternalBlocker":"APPLE_DEVELOPER_MEMBERSHIP","ownerClass":"FOUNDER_OR_RELEASE_OWNER"},
+    {"target":"ANDROID","localStatus":"READY_FOR_SIGNING_AUTHORITY","firstExternalBlocker":"GOOGLE_PLAY_DEVELOPER_ACCOUNT","ownerClass":"FOUNDER_OR_RELEASE_OWNER"}
+  ],
+  "sourceHashes": [
+    {"path":"release/endvera-construction-v1/release-definition.json","sha256":"350b04057f2458d2f0210620260e75b7cd0871b563b38e940e8d968ed7188ee8"},
+    {"path":"release/endvera-construction-v1/mobile-build-readiness.json","sha256":"f50a7ae41ac208b131691e76244375f4f7145934365efe06920698b9edc7693b"},
+    {"path":"release/endvera-construction-v1/web-production-readiness.json","sha256":"e8e1b5cd8e06b4bebf23c670e5415e499aa10802220cf9884687678c878d28a0"},
+    {"path":"release/endvera-construction-v1/store-compliance-readiness.json","sha256":"5f0b8e42e8a8a140430026da319e536ef54c5c2313de09886e4ee9bf2a5df410"},
+    {"path":"release/endvera-construction-v1/release-operations-readiness.json","sha256":"090bd9f1b445cb6d3f51f0667634d7b1bb5da89454d2754e45f6cd887be7293d"}
+  ],
+  "evidence": [
+    {"label":"CODE","available":true},
+    {"label":"TEST","available":true},
+    {"label":"SYNTHETIC","available":true},
+    {"label":"OBSERVED","available":false},
+    {"label":"INFERRED","available":false},
+    {"label":"UNKNOWN","available":true}
+  ],
+  "unknowns": ["SIGNED_BINARY_BEHAVIOR", "PUBLIC_PRODUCTION_BEHAVIOR", "STORE_REVIEW_OUTCOME", "PROVIDER_BEHAVIOR", "CUSTOMER_BEHAVIOR"],
+  "externalBlockers": [
+    {"code":"PUBLIC_PRODUCTION_ORIGIN","targets":["WEB"],"ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Approved public domain and canonical HTTPS origin"},
+    {"code":"PRODUCTION_DATABASE","targets":["WEB","IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Provisioned database, forward-only migration and restore proof"},
+    {"code":"AUTH_SECRET_CUSTODY","targets":["WEB","IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Managed auth material and rotation owner"},
+    {"code":"OBJECT_STORAGE","targets":["WEB","IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Lifecycle, recovery and access-control proof"},
+    {"code":"PRODUCTION_FILE_SCANNER","targets":["WEB","IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Observed clean and malicious fixtures"},
+    {"code":"DNS_AND_TLS","targets":["WEB"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"DNS, TLS, headers and rollback proof"},
+    {"code":"EXPO_PROJECT_OWNERSHIP","targets":["IOS","ANDROID"],"ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Authorized organization and immutable project identifier"},
+    {"code":"APPLE_DEVELOPER_MEMBERSHIP","targets":["IOS"],"ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Active legal-entity membership"},
+    {"code":"APPLE_SIGNING_CUSTODY","targets":["IOS"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Distribution certificate and provisioning custody"},
+    {"code":"GOOGLE_PLAY_DEVELOPER_ACCOUNT","targets":["ANDROID"],"ownerClass":"FOUNDER_OR_RELEASE_OWNER","evidenceRequired":"Verified legal-entity Play Console account"},
+    {"code":"ANDROID_SIGNING_CUSTODY","targets":["ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Upload key and Play App Signing ownership"},
+    {"code":"PUBLIC_API_ORIGIN","targets":["IOS","ANDROID"],"ownerClass":"AUTHORIZED_RELEASE_OPERATOR","evidenceRequired":"Approved HTTPS API origin with health and rollback proof"},
+    {"code":"LEGAL_PRIVACY_REVIEW","targets":["WEB","IOS","ANDROID"],"ownerClass":"LEGAL_OR_FOUNDER","evidenceRequired":"Approved privacy and terms disclosures"},
+    {"code":"PUBLIC_ACCOUNT_DELETION_RESOURCE","targets":["WEB","IOS","ANDROID"],"ownerClass":"PRODUCT_AND_LEGAL","evidenceRequired":"Functional public deletion request URL"},
+    {"code":"REAL_DEVICE_SCREENSHOTS","targets":["IOS","ANDROID"],"ownerClass":"RELEASE_OWNER","evidenceRequired":"Reviewed iOS and Android captures"},
+    {"code":"STORE_REVIEW_CREDENTIALS","targets":["IOS","ANDROID"],"ownerClass":"RELEASE_OWNER","evidenceRequired":"Bounded demo account and review notes"},
+    {"code":"MONITORING_PROVIDER_SELECTION","targets":["WEB","IOS","ANDROID"],"ownerClass":"TECHNICAL_RELEASE_OWNER","evidenceRequired":"Approved redacted monitoring configuration"},
+    {"code":"EXTERNAL_SUPPORT_OWNER","targets":["WEB","IOS","ANDROID"],"ownerClass":"FOUNDER","evidenceRequired":"Staffed support and incident ownership decision"}
+  ],
+  "boundary": {
+    "signed": false,
+    "uploaded": false,
+    "submitted": false,
+    "deployed": false,
+    "published": false,
+    "providerObserved": false,
+    "customerObserved": false,
+    "productionReady": false,
+    "externalEffectCount": 0
+  },
+  "storeReady": false,
+  "nextAuthorizedLocalWork": null,
+  "nextExternalRelease": "R37-EXTERNAL-PROVIDER-SANDBOX"
+}
