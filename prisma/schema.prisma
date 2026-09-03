@@ -483,6 +483,9 @@ model User {
   constructionReliabilityCommandsAuthored ConstructionReliabilityCommand[] @relation("ConstructionReliabilityCommandActor")
   constructionCommercialAccountsCreated   ConstructionCommercialAccount[]  @relation("ConstructionCommercialAccountCreator")
   constructionCommercialDecisionsAuthored ConstructionCommercialDecision[] @relation("ConstructionCommercialDecisionActor")
+  providerActivationGrantsCreated         ProviderActivationGrant[]        @relation("ProviderActivationGrantCreator")
+  providerActivationDecisionsAuthored     ProviderActivationDecision[]     @relation("ProviderActivationDecisionActor")
+  providerLaneControlsChanged             ProviderLaneControl[]            @relation("ProviderLaneControlActor")
 }
 
 /**
@@ -3421,69 +3424,172 @@ model ConstructionWorkspace {
   createdAt       DateTime                    @default(now())
   updatedAt       DateTime                    @updatedAt
 
-  members                 ConstructionWorkspaceMember[]
-  identities              ConstructionCommunicationIdentity[]
-  projects                ConstructionProject[]
-  contacts                ConstructionContact[]
-  messages                ConstructionMessage[]
-  interpretations         ConstructionInterpretation[]
-  calendarItems           ConstructionCalendarItem[]
-  actions                 ConstructionAction[]
-  auditEvents             ConstructionAuditEvent[]
-  openLoops               ConstructionOpenLoop[]
-  connectorAccounts       ConstructionConnectorAccount[]
-  humanEscalations        ConstructionHumanEscalation[]
-  receivables             ConstructionReceivable[]
-  receivableEvents        ConstructionReceivableEvent[]
-  followUps               ConstructionFollowUp[]
-  followUpAttempts        ConstructionFollowUpAttempt[]
-  followUpTransitions     ConstructionFollowUpTransition[]
-  paymentPromises         ConstructionPaymentPromise[]
-  economicCommands        ConstructionEconomicCommand[]
-  jobs                    ConstructionJob[]
-  jobAssignments          ConstructionJobAssignment[]
-  jobDependencies         ConstructionJobDependency[]
-  jobAvailability         ConstructionResourceAvailability[]
-  jobTransitions          ConstructionJobTransition[]
-  messagingPermissions    ConstructionMessagingPermission[]
-  messageMediaReferences  ConstructionMessageMediaReference[]
-  messageDeliveryEvents   ConstructionMessageDeliveryEvent[]
-  messagingTransitions    ConstructionMessagingTransition[]
-  callSessions            ConstructionCallSession[]
-  callTransitions         ConstructionCallTransition[]
-  voiceNoteReferences     ConstructionVoiceNoteReference[]
-  callWork                ConstructionCallWork[]
-  emailAccounts           ConstructionEmailAccount[]
-  emailEvents             ConstructionEmailEvent[]
-  emailDrafts             ConstructionEmailDraft[]
-  accountingAccounts      ConstructionAccountingAccount[]
-  accountingObservations  ConstructionAccountingObservation[]
-  accountingDrafts        ConstructionAccountingDraft[]
-  accountingRefusals      ConstructionAccountingRefusal[]
-  authorityPolicySets     ConstructionAuthorityPolicySet[]
-  authorityEvaluations    ConstructionAuthorityEvaluation[]
-  authorityDecisions      ConstructionAuthorityDecision[]
-  authorityRefusals       ConstructionAuthorityRefusal[]
-  authorityOperations     ConstructionAuthorityOperation[]
-  privacyPolicySets       ConstructionPrivacyPolicySet[]
-  privacyOperations       ConstructionPrivacyOperation[]
-  privacyRefusals         ConstructionPrivacyRefusal[]
-  privacyDeletionRequests ConstructionPrivacyDeletionRequest[]
-  privacyTombstones       ConstructionPrivacyTombstone[]
-  reliabilitySignals      ConstructionReliabilitySignal[]
-  reliabilityAlerts       ConstructionReliabilityAlert[]
-  recoveryOperations      ConstructionRecoveryOperation[]
-  recoveryCheckpoints     ConstructionRecoveryCheckpoint[]
-  recoveryDrills          ConstructionRecoveryDrill[]
-  reliabilityGateRuns     ConstructionReliabilityGateRun[]
-  reliabilityCommands     ConstructionReliabilityCommand[]
-  onboardingSession       ConstructionOnboardingSession?
-  onboardingCommands      ConstructionOnboardingCommand[]
-  importBatches           ConstructionImportBatch[]
-  commercialAccount       ConstructionCommercialAccount?
-  commercialDecisions     ConstructionCommercialDecision[]
+  members                     ConstructionWorkspaceMember[]
+  identities                  ConstructionCommunicationIdentity[]
+  projects                    ConstructionProject[]
+  contacts                    ConstructionContact[]
+  messages                    ConstructionMessage[]
+  interpretations             ConstructionInterpretation[]
+  calendarItems               ConstructionCalendarItem[]
+  actions                     ConstructionAction[]
+  auditEvents                 ConstructionAuditEvent[]
+  openLoops                   ConstructionOpenLoop[]
+  connectorAccounts           ConstructionConnectorAccount[]
+  humanEscalations            ConstructionHumanEscalation[]
+  receivables                 ConstructionReceivable[]
+  receivableEvents            ConstructionReceivableEvent[]
+  followUps                   ConstructionFollowUp[]
+  followUpAttempts            ConstructionFollowUpAttempt[]
+  followUpTransitions         ConstructionFollowUpTransition[]
+  paymentPromises             ConstructionPaymentPromise[]
+  economicCommands            ConstructionEconomicCommand[]
+  jobs                        ConstructionJob[]
+  jobAssignments              ConstructionJobAssignment[]
+  jobDependencies             ConstructionJobDependency[]
+  jobAvailability             ConstructionResourceAvailability[]
+  jobTransitions              ConstructionJobTransition[]
+  messagingPermissions        ConstructionMessagingPermission[]
+  messageMediaReferences      ConstructionMessageMediaReference[]
+  messageDeliveryEvents       ConstructionMessageDeliveryEvent[]
+  messagingTransitions        ConstructionMessagingTransition[]
+  callSessions                ConstructionCallSession[]
+  callTransitions             ConstructionCallTransition[]
+  voiceNoteReferences         ConstructionVoiceNoteReference[]
+  callWork                    ConstructionCallWork[]
+  emailAccounts               ConstructionEmailAccount[]
+  emailEvents                 ConstructionEmailEvent[]
+  emailDrafts                 ConstructionEmailDraft[]
+  accountingAccounts          ConstructionAccountingAccount[]
+  accountingObservations      ConstructionAccountingObservation[]
+  accountingDrafts            ConstructionAccountingDraft[]
+  accountingRefusals          ConstructionAccountingRefusal[]
+  authorityPolicySets         ConstructionAuthorityPolicySet[]
+  authorityEvaluations        ConstructionAuthorityEvaluation[]
+  authorityDecisions          ConstructionAuthorityDecision[]
+  authorityRefusals           ConstructionAuthorityRefusal[]
+  authorityOperations         ConstructionAuthorityOperation[]
+  privacyPolicySets           ConstructionPrivacyPolicySet[]
+  privacyOperations           ConstructionPrivacyOperation[]
+  privacyRefusals             ConstructionPrivacyRefusal[]
+  privacyDeletionRequests     ConstructionPrivacyDeletionRequest[]
+  privacyTombstones           ConstructionPrivacyTombstone[]
+  reliabilitySignals          ConstructionReliabilitySignal[]
+  reliabilityAlerts           ConstructionReliabilityAlert[]
+  recoveryOperations          ConstructionRecoveryOperation[]
+  recoveryCheckpoints         ConstructionRecoveryCheckpoint[]
+  recoveryDrills              ConstructionRecoveryDrill[]
+  reliabilityGateRuns         ConstructionReliabilityGateRun[]
+  reliabilityCommands         ConstructionReliabilityCommand[]
+  onboardingSession           ConstructionOnboardingSession?
+  onboardingCommands          ConstructionOnboardingCommand[]
+  importBatches               ConstructionImportBatch[]
+  commercialAccount           ConstructionCommercialAccount?
+  commercialDecisions         ConstructionCommercialDecision[]
+  providerActivationGrants    ProviderActivationGrant[]
+  providerActivationDecisions ProviderActivationDecision[]
 
   @@index([ownerUserId, status])
+}
+
+/// Durable, local-only authority for a future provider attempt. This row does
+/// not contain a credential and cannot dispatch anything by itself.
+model ProviderActivationGrant {
+  id                        String                @id @default(cuid())
+  workspaceId               String
+  workspace                 ConstructionWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  candidateKey              String
+  exactModelId              String
+  sealedExecutorFingerprint String
+  allowedCaseFingerprints   String[]              @default([])
+  status                    String                @default("PREPARED")
+  expiresAt                 DateTime
+  maxCallCount              Int
+  maxTotalSpendMicros       BigInt
+  attemptCount              Int                   @default(0)
+  reservedCallCount         Int                   @default(0)
+  reservedSpendMicros       BigInt                @default(0)
+  settledCallCount          Int                   @default(0)
+  settledSpendMicros        BigInt                @default(0)
+  releasedCallCount         Int                   @default(0)
+  version                   Int                   @default(1)
+  createdById               String
+  createdBy                 User                  @relation("ProviderActivationGrantCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  activatedAt               DateTime?
+  revokedAt                 DateTime?
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+
+  attempts  ProviderSpendAttempt[]
+  decisions ProviderActivationDecision[]
+
+  @@index([workspaceId, status, expiresAt])
+  @@index([candidateKey, exactModelId, status])
+}
+
+/// One idempotent reservation and its single terminal disposition. Monetary
+/// values are integer microdollars throughout.
+model ProviderSpendAttempt {
+  id                 String                  @id @default(cuid())
+  grantId            String
+  grant              ProviderActivationGrant @relation(fields: [grantId], references: [id], onDelete: Restrict)
+  workspaceId        String
+  idempotencyKey     String
+  caseFingerprint    String
+  exactModelId       String
+  requestFingerprint String
+  state              String                  @default("RESERVED")
+  reservedMicros     BigInt
+  settledMicros      BigInt?
+  releasedMicros     BigInt?
+  version            Int                     @default(1)
+  reservedAt         DateTime                @default(now())
+  settledAt          DateTime?
+  releasedAt         DateTime?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  decisions ProviderActivationDecision[]
+
+  @@unique([grantId, idempotencyKey])
+  @@index([workspaceId, state, createdAt])
+  @@index([grantId, state])
+}
+
+/// Singleton global kill switch. Absence of this row is treated as disabled.
+model ProviderLaneControl {
+  id              String   @id
+  state           String   @default("DISABLED")
+  reason          String
+  version         Int      @default(1)
+  lastChangedById String
+  lastChangedBy   User     @relation("ProviderLaneControlActor", fields: [lastChangedById], references: [id], onDelete: Restrict)
+  changedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([state, changedAt])
+}
+
+/// Immutable command/result ledger for grant, budget and kill-switch changes.
+model ProviderActivationDecision {
+  id                 String                   @id @default(cuid())
+  commandId          String                   @unique
+  workspaceId        String?
+  workspace          ConstructionWorkspace?   @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  grantId            String?
+  grant              ProviderActivationGrant? @relation(fields: [grantId], references: [id], onDelete: Restrict)
+  attemptId          String?
+  attempt            ProviderSpendAttempt?    @relation(fields: [attemptId], references: [id], onDelete: Restrict)
+  kind               String
+  commandFingerprint String
+  resultSnapshot     Json
+  actorId            String
+  actor              User                     @relation("ProviderActivationDecisionActor", fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt          DateTime                 @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([grantId, createdAt])
+  @@index([attemptId, createdAt])
 }
 
 model ConstructionWorkspaceMember {
