@@ -1810,6 +1810,35 @@
       "outputTree": "a2ab8f6a4e5428c29dde7825d4e05fbd51bf170b",
       "result": "Direct public imports of R37 provider-control internals are rejected across static, side-effect, dynamic, require, relative and aliased forms; known execution symbols, transport, secrets and dispatch mutations fail closed, and the exact remediation security scan completed with zero findings.",
       "completedAtUtc": "2026-09-03T04:14:21Z"
+    },
+    {
+      "id": "R37L-PROVIDER-TRANSITIVE-REACHABILITY-GUARD",
+      "title": "Provider transitive reachability guard",
+      "objective": "Reject indirect public reachability to sealed R37 provider-execution internals through neutral facades, barrels, re-exports or renamed symbols.",
+      "role": "BOUNDED_REWORK",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37K-PROVIDER-ROUTE-ABSENCE-GUARD"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "8d84e314ea7030c785141643c0623a71fedc23ba"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/134-provider-transitive-reachability-guard",
+        "src/lib/construction-operating-assistant-r37l/provider-reachability.ts",
+        "test/construction-operating-assistant-r37l-provider-transitive-reachability.test.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../134-provider-transitive-reachability-guard/plan.md",
+      "planSha256": "f79f01d3ec1f214a67d9cbf55c7d2b390701d885884bb04e4f44ec0b6966b25b",
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r37l-provider-transitive-reachability.test.ts",
+      "evidencePaths": ["../134-provider-transitive-reachability-guard/evidence/r37l-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }
