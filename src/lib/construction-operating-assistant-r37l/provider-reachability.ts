@@ -313,6 +313,24 @@ function inspectModule(path: string, source: string) {
         }
       } else if (
         ts.isObjectBindingPattern(node.name) &&
+        (() => {
+          const initializer = unwrapTransparentExpression(node.initializer);
+          return (
+            ts.isIdentifier(initializer) &&
+            moduleNamespaceIdentifiers.has(initializer.text)
+          );
+        })()
+      ) {
+        for (const element of node.name.elements) {
+          if (
+            ts.isIdentifier(element.name) &&
+            staticPropertyName(element.propertyName ?? element.name) === "createRequire"
+          ) {
+            createRequireIdentifiers.add(element.name.text);
+          }
+        }
+      } else if (
+        ts.isObjectBindingPattern(node.name) &&
         ts.isCallExpression(node.initializer) &&
         ts.isIdentifier(node.initializer.expression) &&
         node.initializer.expression.text === "require" &&
