@@ -12,5 +12,15 @@ describe("R37X provider module factory assignment", () => {
     ].join("\n");
     expect(validateProviderBoundaryModules(new Map([["src/jobs/loader.ts", source]])).map((item) => item.code)).toContain("R37O_UNRESOLVED_DYNAMIC_MODULE");
   });
-});
 
+  it("rejects a computed load through an assigned property-access factory", () => {
+    const source = [
+      'const moduleApi = require("module");',
+      "let factory;",
+      "factory = moduleApi.createRequire;",
+      "const loader = factory(import.meta.url);",
+      "loader(target);",
+    ].join("\n");
+    expect(validateProviderBoundaryModules(new Map([["src/jobs/loader.ts", source]])).map((item) => item.code)).toContain("R37O_UNRESOLVED_DYNAMIC_MODULE");
+  });
+});
