@@ -292,7 +292,7 @@ function inspectModule(path: string, source: string) {
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isIdentifier(node.left) &&
-      isReflectApply(node.right)
+      isTrackedReflectApply(node.right)
     ) {
       reflectApplyIdentifiers.add(node.left.text);
     } else if (
