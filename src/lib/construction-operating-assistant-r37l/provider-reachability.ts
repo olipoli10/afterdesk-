@@ -271,6 +271,21 @@ function inspectModule(path: string, source: string) {
         if (isCreateRequire) requireLoaderIdentifiers.add(node.name.text);
       } else if (
         ts.isObjectBindingPattern(node.name) &&
+        (() => {
+          const initializer = unwrapTransparentExpression(node.initializer);
+          return ts.isIdentifier(initializer) && initializer.text === "Reflect";
+        })()
+      ) {
+        for (const element of node.name.elements) {
+          if (
+            ts.isIdentifier(element.name) &&
+            (element.propertyName ?? element.name).getText(sourceFile) === "apply"
+          ) {
+            reflectApplyIdentifiers.add(element.name.text);
+          }
+        }
+      } else if (
+        ts.isObjectBindingPattern(node.name) &&
         ts.isCallExpression(node.initializer) &&
         ts.isIdentifier(node.initializer.expression) &&
         node.initializer.expression.text === "require" &&
