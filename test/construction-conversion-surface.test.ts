@@ -9,18 +9,26 @@ describe("ENDVERA Construction conversion surface", () => {
   it("renders the complete accepted operating loop and concrete outcomes", () => {
     const page = read("src/app/construction/page.tsx");
     const styles = read("src/app/construction/construction.module.css");
-    expect(page).toMatch(/TEXTASSIST_PUBLIC_COPY/);
-    expect(page).toMatch(/textAssist\.outcomes\.map/);
-    expect(page).toMatch(/textAssist\.steps\.map/);
-    expect(page).toMatch(/textAssist\.humanBackupTitle/);
-    expect(page).toMatch(/textAssist\.trustTitle/);
-    expect(page).toContain("Une mémoire opérationnelle qui travaille avec toi");
-    expect(page).toContain("Operational memory that works alongside you");
-    expect(page).toContain("ENDVERA tient le fil");
+    expect(page).not.toMatch(/TEXTASSIST_PUBLIC_COPY/);
+    expect(page).toMatch(/copy\.outcomes\.map/);
+    expect(page).toMatch(/copy\.steps\.map/);
+    expect(page).toMatch(/copy\.humanBackupTitle/);
+    expect(page).toMatch(/copy\.trustTitle/);
+    expect(page).toContain("Gère tes chantiers.");
+    expect(page).toContain("Par texto ou par appel.");
+    expect(page).toContain("Run your jobs.");
+    expect(page).toContain("By text or phone.");
     expect(page).toContain("productScene");
     expect(styles).toContain(".phone");
     expect(styles).toContain(".calendarCard");
     expect(styles).toContain(".memoryCard");
+  });
+
+  it("uses native contractor language instead of internal product jargon", () => {
+    const page = read("src/app/construction/page.tsx");
+    expect(page).toContain("Nothing goes out without your approval.");
+    expect(page).toContain("Rien ne part sans ton accord.");
+    expect(page).not.toMatch(/You do the trade|keeps the thread|operational state|reconstructible|Bounded human support|Role-safe cockpit/);
   });
 
   it("provides conversion and complete trust navigation", () => {
@@ -34,7 +42,7 @@ describe("ENDVERA Construction conversion surface", () => {
     const page = read("src/app/construction/page.tsx");
     const homepage = read("src/app/page.tsx");
     expect(page).toMatch(/TEXTASSIST_RELEASE_BOUNDARY/);
-    expect(page).toContain("No live text, call or external connector leaves this version yet.");
+    expect(page).toContain("Live texting, calling and connected calendars are not enabled yet.");
     expect(page).not.toMatch(/providerObserved=\{String|pricingValidated=\{String|published=\{String/);
     expect(homepage).toMatch(/<SimplicityActs\b/);
     expect(homepage).toMatch(/<TextAssistBanner\b/);

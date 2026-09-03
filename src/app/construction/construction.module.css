@@ -290,7 +290,7 @@
 .assistantMark { width: 36px; height: 36px; }
 .phoneHeader > span:nth-child(2) { display: flex; flex-direction: column; gap: 0.12rem; }
 .phoneHeader b { font-size: 0.78rem; letter-spacing: 0.08em; }
-.phoneHeader small { display: flex; align-items: center; gap: 0.3rem; color: #8e9398; font-size: 0.58rem; letter-spacing: 0.08em; }
+.phoneHeader small { display: flex; align-items: center; gap: 0.3rem; color: #a4a9ae; font-size: 0.62rem; letter-spacing: 0.07em; }
 .phoneHeader small i { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(66, 167, 123, 0.11); }
 .signal { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: #202326; color: #c2c6ca; }
 
@@ -303,11 +303,11 @@
   border-radius: 0.5rem;
   background: #191c1f;
   padding: 0.55rem 0.7rem;
-  font-size: 0.64rem;
+  font-size: 0.68rem;
 }
 
 .jobPill span { color: #d5d7d8; font-weight: 700; }
-.jobPill b { color: #8e949a; font-family: var(--font-mono), monospace; font-size: 0.56rem; }
+.jobPill b { color: #a1a6ab; font-family: var(--font-mono), monospace; font-size: 0.6rem; }
 .conversation { display: flex; flex-direction: column; gap: 0.9rem; padding: 1.35rem 1rem 0.8rem; }
 
 .userBubble {
@@ -336,7 +336,7 @@
   box-shadow: 0 15px 35px rgba(0,0,0,0.24);
 }
 
-.cardLabel { color: #ee9b67; font-family: var(--font-mono), monospace; font-size: 0.56rem; font-weight: 800; letter-spacing: 0.13em; }
+.cardLabel { color: #f2a16d; font-family: var(--font-mono), monospace; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.11em; }
 .approvalCard > b { display: block; margin-top: 0.55rem; font-size: 0.76rem; }
 .approvalCard > p { margin: 0.55rem 0 0; color: #bfc2c5; font-size: 0.72rem; line-height: 1.5; }
 .fakeButton {
@@ -378,13 +378,13 @@
 .previewHeading { display: grid; grid-template-columns: 42px 1fr 8px; align-items: center; gap: 0.7rem; }
 .calendarGlyph { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.55rem; background: #111315; color: var(--orange-bright); font-family: var(--font-mono), monospace; font-size: 0.85rem; font-weight: 800; }
 .previewHeading p { display: flex; flex-direction: column; gap: 0.2rem; margin: 0; }
-.previewHeading small { color: #969ba0; font-family: var(--font-mono), monospace; font-size: 0.56rem; letter-spacing: 0.09em; }
+.previewHeading small { color: #a9adb1; font-family: var(--font-mono), monospace; font-size: 0.6rem; letter-spacing: 0.07em; }
 .previewHeading b { font-size: 0.84rem; }
 .previewHeading i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-.previewMeta { margin: 0.8rem 0 0 3.25rem; color: #9fa4a9; font-size: 0.66rem; }
+.previewMeta { margin: 0.8rem 0 0 3.25rem; color: #b1b5b9; font-size: 0.7rem; }
 
 .memoryCard { bottom: 14%; padding: 1rem; transform: rotate(-1deg); }
-.memoryHeading { display: flex; align-items: center; justify-content: space-between; margin: 0; color: #a0a5aa; font-family: var(--font-mono), monospace; font-size: 0.56rem; letter-spacing: 0.1em; }
+.memoryHeading { display: flex; align-items: center; justify-content: space-between; margin: 0; color: #b0b5ba; font-family: var(--font-mono), monospace; font-size: 0.6rem; letter-spacing: 0.08em; }
 .memoryHeading b { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; background: #111315; color: #b9bdc1; font-size: 0.54rem; }
 .memoryCard ul { display: flex; flex-direction: column; gap: 0.65rem; margin: 0.8rem 0 0; padding: 0; list-style: none; }
 .memoryCard li { display: flex; align-items: center; gap: 0.55rem; border-top: 1px solid rgba(255,255,255,0.07); padding-top: 0.65rem; color: #cdd0d2; font-size: 0.69rem; }
@@ -399,9 +399,9 @@
   right: 0;
   bottom: 5%;
   margin: 0;
-  color: #747a80;
+  color: #a0a5aa;
   font-family: var(--font-mono), monospace;
-  font-size: 0.54rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.11em;
 }

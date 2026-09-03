@@ -90,7 +90,7 @@ describe("R34 commercial account and public offer", () => {
     expect(publicPage).toContain("skipLink");
     expect(publicStyles).toContain("@media (max-width: 640px)");
     expect(publicStyles).toContain(":focus-visible");
-    expect(publicPage).toContain("Honest status:");
+    expect(publicPage).toContain("Live texting, calling and connected calendars are not enabled yet.");
   });
 
   it("uses one additive forward-only migration", () => {
