@@ -5,5 +5,5 @@
 - [x] T003 Implement deterministic internal module-graph resolution.
 - [x] T004 Prove exact chains and pristine-tree absence.
 - [x] T005 Run focused and full local validation.
-- [ ] T006 Complete exact security verification.
-- [ ] T007 Close and advance the queue.
+- [x] T006 Complete exact security verification.
+- [x] T007 Close and advance the queue.
