@@ -1620,7 +1620,7 @@
       "title": "Provider delivery orchestration",
       "objective": "Compose R37C durable controlled runs with strict R37D provider-specific normalization so canonical synthetic evidence is recorded before settlement and replayed without reinvocation.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37E-PROVIDER-REPLAY-BRAND-PARITY"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -1643,10 +1643,10 @@
       "planSha256": "2d0e5b9c578ff555b9109fdcb09c989465e70ea5713068be4228b0b4e36bf188",
       "completionCommand": "npx vitest run --config vitest.integration.config.ts test/integration/construction-operating-assistant-r37f-provider-delivery.itest.ts",
       "evidencePaths": ["../128-provider-delivery-orchestration/evidence/r37f-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "b34ea45fcd052df9f0ecdd4aac51cb354e28baa6",
+      "outputTree": "74a8ccfeddba33a84f57bbee3dc4c8972487d521",
+      "result": "Strict provider-specific canonical evidence is now durably stored before settlement and replayed after reconnect without fixture-adapter reinvocation; drift releases exact spend and concurrency remains idempotent with zero external transport.",
+      "completedAtUtc": "2026-09-03T02:48:43Z"
     }
   ]
 }
