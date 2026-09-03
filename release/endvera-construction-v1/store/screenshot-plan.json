@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "locales": ["fr-CA", "en-CA"],
+  "targets": ["IOS_PHONE", "IOS_TABLET", "ANDROID_PHONE", "ANDROID_TABLET"],
+  "sourcePolicy": "CAPTURE_REAL_RUNNING_BUILD_WITH_SYNTHETIC_DATA_ONLY",
+  "capturedCount": 0,
+  "realDeviceObserved": false,
+  "scenes": [
+    {"code":"ASSISTANT_INTAKE","promise":"Ask or dictate what needs to happen","captured":false,"syntheticDataOnly":true},
+    {"code":"PROJECT_MEMORY","promise":"Keep project facts and provenance together","captured":false,"syntheticDataOnly":true},
+    {"code":"CALENDAR_AND_FOLLOW_UP","promise":"See appointments and the next responsible person","captured":false,"syntheticDataOnly":true},
+    {"code":"INVOICE_READINESS","promise":"See missing evidence before invoicing","captured":false,"syntheticDataOnly":true},
+    {"code":"PREPARED_COMMUNICATION","promise":"Inspect recipient, channel and exact text before approval","captured":false,"syntheticDataOnly":true},
+    {"code":"HUMAN_EXCEPTION_SUPPORT","promise":"Route bounded exceptions with exact context","captured":false,"syntheticDataOnly":true}
+  ],
+  "captureBlockers": ["SIGNED_OR_INTERNAL_INSTALLABLE_BUILD", "REAL_IOS_AND_ANDROID_DEVICE_OR_APPROVED_EMULATOR", "FINAL_LOCALIZED_COPY_REVIEW"],
+  "uploaded": false
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "store": "APPLE_APP_STORE",
+  "applicationId": "ai.endvera.mobile",
+  "locales": ["fr-CA", "en-CA"],
+  "canonicalDataClassCodes": [
+    "IDENTITY_AND_MEMBERSHIP",
+    "PROJECT_AND_CONTACT_STATE",
+    "SCHEDULE_AND_FOLLOW_UP",
+    "EVIDENCE_AND_DOCUMENTS",
+    "COMMUNICATION_CONTENT",
+    "FINANCIAL_WORKFLOW",
+    "USER_CHOSEN_VOICE_NOTE",
+    "RELIABILITY_DIAGNOSTICS",
+    "HUMAN_ESCALATION_CONTEXT"
+  ],
+  "permissions": [
+    {
+      "code": "MICROPHONE",
+      "purpose": "Permettre à ENDVERA d’enregistrer uniquement la note vocale que vous choisissez."
+    }
+  ],
+  "privacy": {
+    "tracking": false,
+    "advertising": false,
+    "dataSale": false,
+    "privacyPolicyPath": "/privacy",
+    "accountDeletionInAppPath": "/client/privacy",
+    "thirdPartySdkReviewStatus": "PENDING_SIGNED_BINARY"
+  },
+  "storeRequirements": {
+    "privacyPolicyUrlRequired": true,
+    "privacyNutritionLabelsRequired": true,
+    "screenshotMinimum": 1,
+    "screenshotMaximum": 10,
+    "appPreviewRequired": false
+  },
+  "reviewAccess": {
+    "demoAccountPrepared": false,
+    "reviewNotesPrepared": false,
+    "owner": "FOUNDER_OR_RELEASE_OWNER"
+  },
+  "legalReviewComplete": false,
+  "submitted": false
+}

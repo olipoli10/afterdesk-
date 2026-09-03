@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "readiness": "READY_FOR_EXTERNAL_COMPLIANCE_INPUTS",
+  "appleWorkbookPath": "release/endvera-construction-v1/store/apple-submission-workbook.json",
+  "googleWorkbookPath": "release/endvera-construction-v1/store/google-play-submission-workbook.json",
+  "screenshotPlanPath": "release/endvera-construction-v1/store/screenshot-plan.json",
+  "privacyDisclosurePath": "release/endvera-construction-v1/privacy-disclosure.json",
+  "remainingBlockers": [
+    {"code":"APPLE_DEVELOPER_ACCOUNT","ownerClass":"FOUNDER","evidenceRequired":"ACTIVE_ACCOUNT_AND_TEAM_ID"},
+    {"code":"GOOGLE_PLAY_DEVELOPER_ACCOUNT","ownerClass":"FOUNDER","evidenceRequired":"ACTIVE_ACCOUNT_AND_APPLICATION_RECORD"},
+    {"code":"LEGAL_PRIVACY_REVIEW","ownerClass":"LEGAL_OR_FOUNDER","evidenceRequired":"APPROVED_DISCLOSURE_AND_TERMS"},
+    {"code":"PUBLIC_ACCOUNT_DELETION_RESOURCE","ownerClass":"PRODUCT_AND_LEGAL","evidenceRequired":"PUBLIC_FUNCTIONAL_DELETION_REQUEST_URL"},
+    {"code":"REAL_DEVICE_SCREENSHOTS","ownerClass":"RELEASE_OWNER","evidenceRequired":"CAPTURED_AND_REVIEWED_IOS_ANDROID_ASSETS"},
+    {"code":"STORE_REVIEW_CREDENTIALS","ownerClass":"RELEASE_OWNER","evidenceRequired":"BOUNDED_DEMO_ACCOUNT_AND_REVIEW_NOTES"}
+  ],
+  "uploaded": false,
+  "submitted": false,
+  "storeAvailable": false,
+  "providerObserved": false,
+  "externalEffectCount": 0
+}

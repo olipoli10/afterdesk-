@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "store": "GOOGLE_PLAY",
+  "applicationId": "ai.endvera.mobile",
+  "locales": ["fr-CA", "en-CA"],
+  "canonicalDataClassCodes": [
+    "IDENTITY_AND_MEMBERSHIP",
+    "PROJECT_AND_CONTACT_STATE",
+    "SCHEDULE_AND_FOLLOW_UP",
+    "EVIDENCE_AND_DOCUMENTS",
+    "COMMUNICATION_CONTENT",
+    "FINANCIAL_WORKFLOW",
+    "USER_CHOSEN_VOICE_NOTE",
+    "RELIABILITY_DIAGNOSTICS",
+    "HUMAN_ESCALATION_CONTEXT"
+  ],
+  "permissions": [
+    {
+      "code": "MICROPHONE",
+      "purpose": "Permettre à ENDVERA d’enregistrer uniquement la note vocale que vous choisissez."
+    }
+  ],
+  "dataSafety": {
+    "formRequired": true,
+    "tracking": false,
+    "advertising": false,
+    "dataSale": false,
+    "thirdPartySdkReviewStatus": "PENDING_SIGNED_BINARY",
+    "globalPackageDeclarationStatus": "PREPARED_NOT_SUBMITTED"
+  },
+  "accountDeletion": {
+    "accountCreationSupported": true,
+    "inAppPath": "/client/privacy",
+    "inAppPathPresent": true,
+    "publicWebResourcePresent": false,
+    "publicWebResourceBlocker": "PUBLIC_ACCOUNT_DELETION_RESOURCE"
+  },
+  "storeRequirements": {
+    "privacyPolicyUrlRequired": true,
+    "dataSafetyFormRequired": true,
+    "screenshotMinimum": 2,
+    "screenshotMaximumPerDeviceType": 8,
+    "recommendedPhoneScreenshotMinimum": 4,
+    "shortDescriptionMaximumCharacters": 80
+  },
+  "reviewAccess": {
+    "demoAccountPrepared": false,
+    "appAccessInstructionsPrepared": false,
+    "owner": "FOUNDER_OR_RELEASE_OWNER"
+  },
+  "legalReviewComplete": false,
+  "submitted": false
+}
