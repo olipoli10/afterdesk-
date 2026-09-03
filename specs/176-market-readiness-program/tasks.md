@@ -21,9 +21,9 @@
 
 ## R36J — Release observability and support
 
-- [ ] T011 Freeze redacted signals, owners, incident levels and rollback triggers.
-- [ ] T012 Implement disabled-by-default monitoring/support adapter contracts.
-- [ ] T013 Validate zero endpoint, zero credential and zero external effect.
+- [x] T011 Freeze redacted signals, owners, incident levels and rollback triggers.
+- [x] T012 Implement disabled-by-default monitoring/support adapter contracts.
+- [x] T013 Validate zero endpoint, zero credential and zero external effect.
 
 ## R36K — Unified market-readiness gate
 
