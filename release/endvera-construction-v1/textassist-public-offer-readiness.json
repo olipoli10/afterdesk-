@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_TEXTASSIST_PUBLIC_OFFER_COMPLETE",
+  "existingHomepagePreserved": true,
+  "publicRoute": "/textassist",
+  "durableRootEntryPoints": 3,
+  "launchLanguages": ["fr-CA", "en-CA"],
+  "dailyOperatingLoopExplained": true,
+  "approvalBoundaryExplained": true,
+  "humanBackupExplained": true,
+  "pricingValidated": false,
+  "providerObserved": false,
+  "customerObserved": false,
+  "deployed": false,
+  "published": false,
+  "externalEffectCount": 0
+}

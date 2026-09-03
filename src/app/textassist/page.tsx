@@ -63,13 +63,55 @@ export default async function TextAssistPage({ searchParams }: { searchParams: P
         </div>
       </section>
 
+      <section className="border-y border-white/10 bg-white/[0.02] px-5 py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-3xl font-semibold tracking-[-0.03em]">{copy.stepsTitle}</h2>
+          <ol className="mt-8 grid gap-4 lg:grid-cols-5">
+            {copy.steps.map((step) => (
+              <li key={step.title} className="rounded-2xl border border-white/10 bg-[#111318] p-6">
+                <h3 className="text-lg font-semibold text-[#E2C486]">{step.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-[#A1A8B3]">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-6xl gap-5 px-5 py-16 sm:py-24 lg:grid-cols-2">
+        <article className="rounded-2xl border border-white/10 bg-[#0D0F13] p-7 sm:p-10">
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#D6B878]">{french ? "Exception gérée" : "Managed exception"}</p>
+          <h2 className="mt-3 text-3xl font-semibold">{copy.humanBackupTitle}</h2>
+          <p className="mt-4 leading-7 text-[#A1A8B3]">{copy.humanBackupBody}</p>
+        </article>
+        <article className="rounded-2xl border border-[#D6B878]/35 bg-[#D6B878]/[0.06] p-7 sm:p-10">
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#D6B878]">{french ? "Offre honnête" : "Honest offer"}</p>
+          <h2 className="mt-3 text-3xl font-semibold">{copy.pricingTitle}</h2>
+          <p className="mt-4 leading-7 text-[#A1A8B3]">{copy.pricingBody}</p>
+          <Link href="/register" className="mt-7 inline-flex rounded-full bg-[#D6B878] px-6 py-3 font-semibold text-[#14161A] no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#F7F6F3]">
+            {copy.pricingCta}
+          </Link>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-16 sm:pb-24">
+        <h2 className="text-3xl font-semibold tracking-[-0.03em]">{copy.faqTitle}</h2>
+        <div className="mt-8 divide-y divide-white/10 border-y border-white/10">
+          {copy.faq.map((item) => (
+            <details key={item.question} className="group py-5">
+              <summary className="cursor-pointer list-none text-lg font-semibold marker:hidden">{item.question}</summary>
+              <p className="mt-3 max-w-3xl leading-7 text-[#A1A8B3]">{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       <section className="mx-auto max-w-6xl px-5 pb-20">
         <div className="rounded-2xl border border-[#D6B878]/35 bg-[#D6B878]/[0.06] p-7 sm:p-10">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#D6B878]">{french ? "Autorité et confiance" : "Authority and trust"}</p>
           <h2 className="mt-3 text-3xl font-semibold">{copy.trustTitle}</h2>
           <p className="mt-4 max-w-3xl leading-7 text-[#A1A8B3]">{copy.trustBody}</p>
           <p className="mt-5 font-mono text-[10px] text-[#78808B]">
-            providerObserved={String(TEXTASSIST_RELEASE_BOUNDARY.providerObserved)} · published={String(TEXTASSIST_RELEASE_BOUNDARY.published)}
+            providerObserved={String(TEXTASSIST_RELEASE_BOUNDARY.providerObserved)} · pricingValidated={String(TEXTASSIST_RELEASE_BOUNDARY.pricingValidated)} · published={String(TEXTASSIST_RELEASE_BOUNDARY.published)}
           </p>
         </div>
         <nav aria-label={french ? "Liens de confiance" : "Trust links"} className="mt-8 flex flex-wrap gap-5 text-sm text-[#A1A8B3]">

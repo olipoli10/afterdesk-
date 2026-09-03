@@ -158,6 +158,9 @@ export default async function Home({
             <LangSwitch path="/" current={lang} options={CLIENT_LANGS} tone="onyx" />
           </span>
           <span className="ml-auto flex items-center gap-8">
+            <Link data-product-link="textassist" href="/textassist" className="hidden text-[0.875rem] font-medium text-[#E2C486] no-underline transition-colors hover:text-[#F7F6F3] md:inline">
+              TextAssist
+            </Link>
             <a href="#outcomes" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.outcomes}</a>
             <a href="#how" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.how}</a>
             <a href="#inside" className="hidden text-[0.875rem] text-[#9AA1AB] no-underline transition-colors hover:text-[#F7F6F3] md:inline">{t.nav.inside}</a>
@@ -226,6 +229,7 @@ export default async function Home({
           <Link href="/how-it-works" className="transition-colors hover:text-[#c9a76a]">{nav.footer.how}</Link>
           <Link href="/inside" className="transition-colors hover:text-[#c9a76a]">{nav.footer.inside}</Link>
           <Link href="/construction" className="transition-colors hover:text-[#c9a76a]">Construction</Link>
+          <Link data-footer-product-link="textassist" href="/textassist" className="transition-colors hover:text-[#c9a76a]">TextAssist</Link>
           <Link href="/about" className="transition-colors hover:text-[#c9a76a]">{nav.footer.about}</Link>
           <Link href="/workers" className="transition-colors hover:text-[#c9a76a]">{nav.footer.work}</Link>
         </nav>
