@@ -15,8 +15,11 @@ Evidence label: `CODE + TEST + SYNTHETIC`
 
 - R37D focused contract and mutation tests: 6/6 passed.
 - R36B through R37D targeted regression: 4 files, 32/32 passed.
+- Root suite after closure: 148 files passed, 2 skipped; 2,059 tests passed, 2 skipped.
 - TypeScript typecheck: passed.
 - Targeted ESLint: passed.
+- Full ESLint: zero errors and one pre-existing R34 unused-variable warning.
+- Next.js local-development Webpack build: 111/111 routes passed using synthetic local build variables.
 - Spec Kit Analyze: passed with no unresolved CRITICAL or HIGH finding.
 - `git diff --check`: passed.
 - `package.json` SHA-256: `E62CB005A7D7F9B1C5334AAF3D9B514DD3980652931FE972832786D2EF6FFB3B`.
