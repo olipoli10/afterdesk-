@@ -150,6 +150,16 @@ function inspectModule(path: string, source: string) {
         createRequireIdentifiers.has(node.initializer.text)
       ) {
         createRequireIdentifiers.add(node.name.text);
+      } else if (
+        ts.isIdentifier(node.name) &&
+        ts.isCallExpression(node.initializer) &&
+        ts.isIdentifier(node.initializer.expression) &&
+        node.initializer.expression.text === "require" &&
+        node.initializer.arguments[0] &&
+        ts.isStringLiteralLike(node.initializer.arguments[0]) &&
+        ["node:module", "module"].includes(node.initializer.arguments[0].text)
+      ) {
+        moduleNamespaceIdentifiers.add(node.name.text);
       } else if (ts.isIdentifier(node.name) && ts.isCallExpression(node.initializer)) {
         const factory = node.initializer.expression;
         const isCreateRequire =
@@ -194,6 +204,18 @@ function inspectModule(path: string, source: string) {
       createRequireIdentifiers.has(node.right.text)
     ) {
       createRequireIdentifiers.add(node.left.text);
+    } else if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(node.left) &&
+      ts.isCallExpression(node.right) &&
+      ts.isIdentifier(node.right.expression) &&
+      node.right.expression.text === "require" &&
+      node.right.arguments[0] &&
+      ts.isStringLiteralLike(node.right.arguments[0]) &&
+      ["node:module", "module"].includes(node.right.arguments[0].text)
+    ) {
+      moduleNamespaceIdentifiers.add(node.left.text);
     }
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
       const kind = dynamicCodeKind(node.expression);
