@@ -6,5 +6,5 @@
 - [x] T004 Add standalone CLI and pre-build gate.
 - [x] T005 Prove mutations, pristine source and lockfile identity.
 - [x] T006 Run focused and full local validation.
-- [ ] T007 Complete exact security verification.
-- [ ] T008 Close and advance the queue.
+- [x] T007 Complete exact security verification.
+- [x] T008 Close and advance the queue.
