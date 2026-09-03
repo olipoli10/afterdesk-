@@ -135,12 +135,15 @@ function inspectModule(path: string, source: string) {
     }
     if (
       ts.isVariableDeclaration(node) &&
-      ts.isIdentifier(node.name) &&
       node.initializer
     ) {
-      if (ts.isIdentifier(node.initializer) && node.initializer.text === "require") {
+      if (
+        ts.isIdentifier(node.name) &&
+        ts.isIdentifier(node.initializer) &&
+        node.initializer.text === "require"
+      ) {
         requireLoaderIdentifiers.add(node.name.text);
-      } else if (ts.isCallExpression(node.initializer)) {
+      } else if (ts.isIdentifier(node.name) && ts.isCallExpression(node.initializer)) {
         const factory = node.initializer.expression;
         const isCreateRequire =
           (ts.isIdentifier(factory) && createRequireIdentifiers.has(factory.text)) ||
@@ -149,7 +152,33 @@ function inspectModule(path: string, source: string) {
             ts.isIdentifier(factory.expression) &&
             moduleNamespaceIdentifiers.has(factory.expression.text));
         if (isCreateRequire) requireLoaderIdentifiers.add(node.name.text);
+      } else if (
+        ts.isObjectBindingPattern(node.name) &&
+        ts.isCallExpression(node.initializer) &&
+        ts.isIdentifier(node.initializer.expression) &&
+        node.initializer.expression.text === "require" &&
+        node.initializer.arguments[0] &&
+        ts.isStringLiteralLike(node.initializer.arguments[0]) &&
+        ["node:module", "module"].includes(node.initializer.arguments[0].text)
+      ) {
+        for (const element of node.name.elements) {
+          if (
+            ts.isIdentifier(element.name) &&
+            (element.propertyName ?? element.name).getText(sourceFile) === "createRequire"
+          ) {
+            createRequireIdentifiers.add(element.name.text);
+          }
+        }
       }
+    }
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(node.left) &&
+      ts.isIdentifier(node.right) &&
+      node.right.text === "require"
+    ) {
+      requireLoaderIdentifiers.add(node.left.text);
     }
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
       const kind = dynamicCodeKind(node.expression);
