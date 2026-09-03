@@ -286,6 +286,13 @@ function inspectModule(path: string, source: string) {
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isIdentifier(node.left) &&
+      isReflectApply(node.right)
+    ) {
+      reflectApplyIdentifiers.add(node.left.text);
+    } else if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(node.left) &&
       ts.isIdentifier(node.right) &&
       (node.right.text === "require" || requireLoaderIdentifiers.has(node.right.text))
     ) {
