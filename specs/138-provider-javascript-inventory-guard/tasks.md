@@ -6,5 +6,5 @@
 - [x] T004 Implement multi-extension module resolution.
 - [x] T005 Prove mutations and actual-source pristine success.
 - [x] T006 Run full proportional validation.
-- [ ] T007 Complete exact security verification.
-- [ ] T008 Close and continue the queue.
+- [x] T007 Complete exact security verification.
+- [x] T008 Close and continue the queue.
