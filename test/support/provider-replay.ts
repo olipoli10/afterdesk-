@@ -129,8 +129,18 @@ export type GoldenFixture = {
 /** Which stage a request belongs to, inferred from its own shape. */
 export function stageOf(params: Record<string, unknown>): string {
   const sys = systemTextOf(params);
-  if (sys.includes("task classifier for AfterDesk")) return "classification";
-  if (sys.includes("execution planner for AfterDesk")) return "planning";
+  if (
+    sys.includes("task classifier for Endvera") ||
+    sys.includes("task classifier for AfterDesk")
+  ) {
+    return "classification";
+  }
+  if (
+    sys.includes("execution planner for Endvera") ||
+    sys.includes("execution planner for AfterDesk")
+  ) {
+    return "planning";
+  }
   /**
    * BUG FOUND DURING PART C (2026-08-12): this used to match on "critique" or
    * "adversarial", and NEITHER word appears in critique.ts's actual SYSTEM

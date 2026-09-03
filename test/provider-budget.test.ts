@@ -257,7 +257,13 @@ describe("fixture addressing — a changed question cannot replay an old answer"
 
   it("stages are recognised from the request itself", () => {
     expect(stageOf(base)).toBe("planning");
+    expect(stageOf({ ...base, system: [{ type: "text", text: "You are the execution planner for Endvera." }] })).toBe(
+      "planning"
+    );
     expect(stageOf({ ...base, system: [{ type: "text", text: "You are the task classifier for AfterDesk." }] })).toBe(
+      "classification"
+    );
+    expect(stageOf({ ...base, system: [{ type: "text", text: "You are the task classifier for Endvera." }] })).toBe(
       "classification"
     );
     expect(stageOf({ ...base, system: "", tools: [{ type: "web_fetch_20260209", name: "web_fetch" }] })).toBe("fetch");
