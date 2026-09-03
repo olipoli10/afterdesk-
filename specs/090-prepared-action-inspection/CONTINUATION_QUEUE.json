@@ -2850,6 +2850,48 @@
       "outputTree": "19065545485133c84ee775ed2c41fb3db3630922",
       "result": "LOCAL_MARKET_PREPARATION_COMPLETE; Web, iOS and Android validated independently with five protected source hashes, 18 external blockers, 2,237 root tests, 108 mobile tests, 111/111-page local Webpack build and zero external effects. External authority remains required.",
       "completedAtUtc": "2026-09-03T11:20:41Z"
+    },
+    {
+      "id": "R36L-PRODUCT-EXPERIENCE-COMPLETION",
+      "title": "Additive TextAssist and assistant-first mobile experience",
+      "objective": "Preserve the accepted site, add one bilingual TextAssist product entry and reduce the local mobile shell to five primary destinations without removing capabilities.",
+      "role": "IMPLEMENTATION",
+      "status": "DONE",
+      "dependencies": ["R36K-MARKET-READINESS-GATE"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "ENTRY_OUTPUT", "entryId": "R36K-MARKET-READINESS-GATE"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": ["specs/177-product-experience-completion","src/app/page.tsx","src/app/textassist","src/app/account-deletion","src/app/sitemap.ts","src/components/textassist-banner.tsx","src/lib/textassist","apps/mobile/src/app/(app)","apps/mobile/test/product-experience-navigation.test.ts","release/endvera-construction-v1/product-experience-readiness.json","test/product-experience-completion.test.ts",".specify/feature.json"],
+      "planPath": "../177-product-experience-completion/plan.md",
+      "planSha256": "2e7dfc96794adda755ec0c53b2a683493168bf5ae5c8ab93c466e69394d5ded1",
+      "completionCommand": "npm test -- --run test/product-experience-completion.test.ts && npm --prefix apps/mobile test -- --run test/product-experience-navigation.test.ts",
+      "evidencePaths": ["../177-product-experience-completion/evidence/closeout.md"],
+      "outputHead": "53a50eef17a823adb2f95b11cd65da473b353328",
+      "outputTree": "b1b55b7a1961fa1ac96a5208343178facc98933c",
+      "result": "LOCAL_PRODUCT_EXPERIENCE_COMPLETE; existing site preserved, bilingual TextAssist added, mobile reduced to five primary destinations, 113 Web routes and 53 Expo routes built locally with zero external effects.",
+      "completedAtUtc": "2026-09-03T13:32:00Z"
+    },
+    {
+      "id": "R36M-MOBILE-STORE-VISUAL-READINESS",
+      "title": "Mobile store visual readiness",
+      "objective": "Replace starter Expo artwork with coherent ENDVERA candidate assets and prepare deterministic bilingual local screenshot candidates without real-device or store claims.",
+      "role": "IMPLEMENTATION",
+      "status": "OPEN",
+      "dependencies": ["R36L-PRODUCT-EXPERIENCE-COMPLETION"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "ENTRY_OUTPUT", "entryId": "R36L-PRODUCT-EXPERIENCE-COMPLETION"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": ["specs/178-mobile-store-visual-readiness","apps/mobile/assets","apps/mobile/app.json","apps/mobile/test/mobile-store-visual-readiness.test.ts","release/endvera-construction-v1","scripts/render-endvera-mobile-assets.mjs","scripts/validate-endvera-mobile-assets.mjs","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",".specify/feature.json"],
+      "planPath": "../178-mobile-store-visual-readiness/plan.md",
+      "planSha256": "9ef3c6287e0d011d95e1f41d4efaadf5f8e77603d545291d4ee9335d47433829",
+      "completionCommand": "npm --prefix apps/mobile test -- --run test/mobile-store-visual-readiness.test.ts && node scripts/validate-endvera-mobile-assets.mjs",
+      "evidencePaths": ["../178-mobile-store-visual-readiness/evidence/closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }
