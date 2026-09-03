@@ -1529,7 +1529,7 @@
       "title": "Controlled provider orchestration",
       "objective": "Couple R37A sealed synthetic execution to R37B durable reservation, settlement, release, lease recovery and stored exact replay without adding provider or network access.",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37B-PROVIDER-ACTIVATION-CONTROLS"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -1552,10 +1552,10 @@
       "planSha256": "7815ad29e007f33241092a6fbfeb761efd4232759cb9513c6b0ebbdce59e0280",
       "completionCommand": "npx vitest run test/construction-operating-assistant-r37c-controlled-run.test.ts",
       "evidencePaths": ["../125-controlled-provider-orchestration/evidence/r37c-closeout.md"],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "fea8dc6876785ab1a0df6ec04b4a514ff2aacc6a",
+      "outputTree": "e6f00dd75dfb47bc02ea51daba3e79af19d5e1bf",
+      "result": "Durable sealed synthetic orchestration now reserves before lease claim, stores evidence before settlement, releases known failures, resumes after restart, collapses 100 concurrent duplicates to one adapter invocation and rechecks revocation and the global kill switch with zero provider or network path.",
+      "completedAtUtc": "2026-09-03T01:58:45Z"
     }
   ]
 }
