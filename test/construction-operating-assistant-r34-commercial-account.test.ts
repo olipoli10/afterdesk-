@@ -81,11 +81,15 @@ describe("R34 commercial account and public offer", () => {
     const client = readFileSync("src/components/construction-operating-assistant-r34/commercial-account-panel.tsx", "utf8");
     const admin = readFileSync("src/app/admin/construction-commercial/page.tsx", "utf8");
     const publicPage = readFileSync("src/app/construction/page.tsx", "utf8");
+    const publicStyles = readFileSync("src/app/construction/construction.module.css", "utf8");
     expect(client).toContain("sm:grid-cols-2");
     expect(client).toContain("focus-visible:outline");
     expect(admin).toContain("flex flex-wrap");
     expect(admin).toContain("attentionReason");
-    expect(publicPage).toContain("md:grid-cols-2");
+    expect(publicPage).toContain("CONSTRUCTION_LANGS");
+    expect(publicPage).toContain("skipLink");
+    expect(publicStyles).toContain("@media (max-width: 640px)");
+    expect(publicStyles).toContain(":focus-visible");
     expect(publicPage).toContain("Honest status:");
   });
 
