@@ -127,6 +127,7 @@ export class MobileApi {
       baseUrl?: string;
       fetchImpl?: FetchLike;
       getCookie: () => string;
+      browserManagedCredentials?: boolean;
       timeoutMs?: number;
     },
   ) {}
@@ -134,13 +135,14 @@ export class MobileApi {
   private async request(path: string, init: RequestInit) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.options.timeoutMs ?? 15_000);
-    const cookie = this.options.getCookie();
+    const browserManagedCredentials = this.options.browserManagedCredentials === true;
+    const cookie = browserManagedCredentials ? "" : this.options.getCookie();
     try {
       const response = await (this.options.fetchImpl ?? fetch)(
         `${this.options.baseUrl ?? mobileApiBaseUrl()}${path}`,
         {
           ...init,
-          credentials: "omit",
+          credentials: browserManagedCredentials ? "include" : "omit",
           signal: controller.signal,
           headers: {
             Accept: "application/json",

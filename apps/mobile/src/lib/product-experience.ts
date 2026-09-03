@@ -1,7 +1,7 @@
 export type MobileProductLocale = "fr-CA" | "en-CA";
 
 export type MobileProductCopy = {
-  tabs: { today: string; assistant: string; projects: string; calendar: string; more: string };
+  tabs: { today: string; assistant: string; projects: string; calendar: string; review: string; more: string };
   talkToEndvera: string;
   moreTitle: string;
   moreBody: string;
@@ -26,12 +26,46 @@ export type MobileProductCopy = {
   refresh: string;
   refreshing: string;
   errorRecoveryHint: string;
+  assistantSuggestions: string[];
+  assistantTrustLine: string;
+  assistantAttach: string;
+  assistantVoice: string;
+  assistantNoWorkspace: string;
+  assistantPrepared: string;
+  assistantClarification: string;
+  assistantProviderUnavailable: string;
+  assistantHumanSupport: string;
   attempt: Record<"SENDING" | "REPLAYED" | "OUTCOME_UNKNOWN" | "REFUSED", string>;
+  home: {
+    eyebrow: string; title: string; body: string; quickAsk: string; write: string; speak: string;
+    priority: string; appointments: string; toReview: string; openLoops: string;
+    fullPlan: string; hidePlan: string; controlTitle: string; controlBody: string;
+  };
+  projectsScreen: {
+    eyebrow: string; title: string; body: string; active: string; needsAttention: string;
+    contacts: string; appointments: string; openLoops: string; empty: string; open: string; upToDate: string;
+  };
+  calendarScreen: {
+    eyebrow: string; title: string; body: string; add: string; empty: string;
+    verified: string; needsReview: string; rejected: string; unknown: string; connector: string;
+  };
+  reviewScreen: {
+    eyebrow: string; title: string; body: string; safety: string; safetyBody: string;
+    recipient: string; channel: string; exactMessage: string; approve: string; reject: string;
+    rejectWhy: string; revoke: string; revokeWhy: string; approved: string; empty: string;
+    generalAction: string; technicalDetails: string; version: string; prepared: string;
+    processing: string; replayed: string; confirmed: string; conflict: string; unknown: string;
+    refused: string; retry: string; protectedTitle: string; protectedBody: string; protectedEmpty: string;
+  };
+  auth: {
+    eyebrow: string; title: string; body: string; email: string; password: string;
+    submit: string; submitting: string; refused: string; unavailable: string; trust: string;
+  };
 };
 
 export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy> = {
   "fr-CA": {
-    tabs: { today: "Aujourd’hui", assistant: "Assistant", projects: "Chantiers", calendar: "Agenda", more: "Plus" },
+    tabs: { today: "Aujourd’hui", assistant: "Assistant", projects: "Chantiers", calendar: "Agenda", review: "À valider", more: "Plus" },
     talkToEndvera: "Parler à ENDVERA",
     moreTitle: "Plus",
     moreBody: "Tous tes outils, regroupés sans encombrer les actions principales.",
@@ -44,30 +78,75 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
       permissions: "Permissions", privacy: "Confidentialité", reliability: "Fiabilité", humanSupport: "Appui humain", settings: "Réglages",
     },
     assistantEyebrow: "PARLER À ENDVERA",
-    assistantTitle: "Ton assistant de chantier",
-    assistantBody: "Pose une question ou demande une action. ENDVERA garde l’état; aucun message externe n’est envoyé dans cette version.",
+    assistantTitle: "Comment je peux t’aider?",
+    assistantBody: "Écris ou parle. Je garde le contexte de tes chantiers et je te demande avant toute action sensible.",
     assistantProtectedTitle: "Assistant protégé",
     assistantProtectedBody: "Cette version est réservée au propriétaire et au gestionnaire de bureau.",
     assistantProtectedEmpty: "Aucune conversation ou donnée financière n’est exposée dans le rôle chantier.",
-    conversation: "Conversation persistante",
+    conversation: "Conversation",
     loadingConversation: "ENDVERA retrouve la conversation…",
     emptyConversation: "Aucun message. Essaie « Qu’est-ce que j’ai demain? »",
-    request: "Ta demande",
+    request: "Demande à ENDVERA",
     assistantInputLabel: "Demande à ENDVERA",
     assistantPlaceholder: "Ex. Rendez-vous avec Marc mardi à 14 h pour Laval.",
-    submit: "Envoyer à ENDVERA",
+    submit: "Envoyer",
     processing: "Traitement…",
     retry: "Réessayer la même demande",
     refresh: "Recharger la conversation",
     refreshing: "Synchronisation…",
     errorRecoveryHint: "La conversation demeure conservée. Recharge-la ou réessaie exactement la même demande.",
+    assistantSuggestions: ["Qu’est-ce que j’ai demain?", "Qu’est-ce qui bloque Laval?", "Prépare un suivi pour Marc"],
+    assistantTrustLine: "Je prépare les messages. Tu approuves avant tout envoi.",
+    assistantAttach: "Ajouter une preuve", assistantVoice: "Parler à ENDVERA", assistantNoWorkspace: "Aucun espace Construction actif.",
+    assistantPrepared: "Message préparé — rien n’a été envoyé.",
+    assistantClarification: "J’attends ta précision avant de modifier quoi que ce soit.",
+    assistantProviderUnavailable: "La recherche externe n’est pas encore activée. Aucun résultat n’a été inventé.",
+    assistantHumanSupport: "Un appui humain est disponible sur demande. Rien n’a été créé automatiquement.",
     attempt: {
       SENDING: "ENDVERA travaille…", REPLAYED: "Résultat récupéré sans doublon.",
       OUTCOME_UNKNOWN: "Résultat inconnu — réessaie exactement la même demande.", REFUSED: "Demande refusée sans effet inventé.",
     },
+    home: {
+      eyebrow: "TON CENTRE DE COMMANDE", title: "Bonjour.", body: "Voici ce qui demande ton attention aujourd’hui.",
+      quickAsk: "Qu’est-ce qui doit avancer?", write: "Écrire", speak: "Parler", priority: "Priorité maintenant",
+      appointments: "Rendez-vous", toReview: "À valider", openLoops: "Boucles ouvertes", fullPlan: "Voir le plan complet",
+      hidePlan: "Masquer le plan", controlTitle: "Tu gardes le contrôle",
+      controlBody: "ENDVERA prépare le travail. Tu approuves avant tout envoi ou changement externe.",
+    },
+    projectsScreen: {
+      eyebrow: "TES CHANTIERS", title: "Tout au même endroit.", body: "L’état, les rendez-vous et la prochaine étape — sans reconstruire le contexte.",
+      active: "Actifs", needsAttention: "À surveiller", contacts: "contacts", appointments: "rendez-vous",
+      openLoops: "suivis ouverts", empty: "Aucun chantier actif.", open: "Ouvrir le chantier", upToDate: "À jour",
+    },
+    calendarScreen: {
+      eyebrow: "AGENDA", title: "Ce qui s’en vient.", body: "Tes rendez-vous de chantier, dans le bon fuseau horaire.",
+      add: "Ajouter avec ENDVERA", empty: "Aucun rendez-vous prévu.", verified: "Confirmé", needsReview: "À vérifier",
+      rejected: "Refusé", unknown: "État inconnu",
+      connector: "Les calendriers externes seront affichés ici une fois connectés.",
+    },
+    reviewScreen: {
+      eyebrow: "CONTRÔLE HUMAIN", title: "À valider", body: "Vois exactement ce qu’ENDVERA fera avant de confirmer.",
+      safety: "Rien ne part sans toi", safetyBody: "Le destinataire, le canal et le message restent visibles avant chaque approbation.",
+      recipient: "Destinataire", channel: "Canal", exactMessage: "Message exact", approve: "Approuver ce message",
+      reject: "Refuser", rejectWhy: "Pourquoi le refuser?", revoke: "Révoquer l’approbation", revokeWhy: "Pourquoi révoquer?",
+      approved: "Approuvé, mais pas encore envoyé.", empty: "Rien à valider pour le moment.", generalAction: "Action générale",
+      technicalDetails: "Détails de vérification", version: "Version", prepared: "À approuver",
+      processing: "Décision en cours…", replayed: "Décision déjà appliquée; aucun doublon.",
+      confirmed: "Décision enregistrée; rien n’a été envoyé.", conflict: "Cette action avait changé. La version actuelle a été rechargée.",
+      unknown: "Résultat inconnu — réessaie exactement la même décision.", refused: "Décision refusée; rien n’a été envoyé.",
+      retry: "Réessayer la même décision", protectedTitle: "Actions protégées",
+      protectedBody: "Les communications et décisions sont réservées au propriétaire et au bureau.",
+      protectedEmpty: "Aucun destinataire, message ou montant sensible n’est affiché dans le rôle chantier.",
+    },
+    auth: {
+      eyebrow: "ASSISTANT D’OPÉRATIONS", title: "Tes chantiers. Une conversation.",
+      body: "Planifie, retrouve l’information et prépare tes suivis depuis ton téléphone.", email: "Courriel", password: "Mot de passe",
+      submit: "Ouvrir ENDVERA", submitting: "Connexion…", refused: "Connexion refusée. Vérifie tes informations.",
+      unavailable: "Connexion impossible pour le moment.", trust: "Tes actions sensibles demandent toujours ton approbation.",
+    },
   },
   "en-CA": {
-    tabs: { today: "Today", assistant: "Assistant", projects: "Projects", calendar: "Calendar", more: "More" },
+    tabs: { today: "Today", assistant: "Assistant", projects: "Projects", calendar: "Calendar", review: "Review", more: "More" },
     talkToEndvera: "Talk to ENDVERA",
     moreTitle: "More",
     moreBody: "All your tools, grouped without crowding the primary actions.",
@@ -80,26 +159,71 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
       permissions: "Permissions", privacy: "Privacy", reliability: "Reliability", humanSupport: "Human support", settings: "Settings",
     },
     assistantEyebrow: "TALK TO ENDVERA",
-    assistantTitle: "Your job assistant",
-    assistantBody: "Ask a question or request an action. ENDVERA keeps the state; no external message is sent in this version.",
+    assistantTitle: "How can I help?",
+    assistantBody: "Type or speak. I keep your project context and ask before any sensitive action.",
     assistantProtectedTitle: "Protected assistant",
     assistantProtectedBody: "This version is reserved for the owner and office manager.",
     assistantProtectedEmpty: "No conversation or financial data is exposed to the field role.",
-    conversation: "Persistent conversation",
+    conversation: "Conversation",
     loadingConversation: "ENDVERA is restoring the conversation…",
     emptyConversation: "No messages yet. Try “What do I have tomorrow?”",
-    request: "Your request",
+    request: "Ask ENDVERA",
     assistantInputLabel: "Request to ENDVERA",
     assistantPlaceholder: "Example: Appointment with Marc Tuesday at 2 p.m. for Laval.",
-    submit: "Send to ENDVERA",
+    submit: "Send",
     processing: "Processing…",
     retry: "Retry the same request",
     refresh: "Reload conversation",
     refreshing: "Syncing…",
     errorRecoveryHint: "The conversation remains saved. Reload it or retry the exact same request.",
+    assistantSuggestions: ["What do I have tomorrow?", "What is blocking Laval?", "Prepare a follow-up for Marc"],
+    assistantTrustLine: "I prepare messages. You approve before anything is sent.",
+    assistantAttach: "Add evidence", assistantVoice: "Talk to ENDVERA", assistantNoWorkspace: "No active Construction workspace.",
+    assistantPrepared: "Message prepared — nothing was sent.",
+    assistantClarification: "I need your clarification before changing anything.",
+    assistantProviderUnavailable: "External research is not enabled yet. No result was invented.",
+    assistantHumanSupport: "Human support is available on request. Nothing was created automatically.",
     attempt: {
       SENDING: "ENDVERA is working…", REPLAYED: "Result recovered without a duplicate.",
       OUTCOME_UNKNOWN: "Outcome unknown — retry the exact same request.", REFUSED: "Request refused without an invented effect.",
+    },
+    home: {
+      eyebrow: "YOUR COMMAND CENTRE", title: "Good morning.", body: "Here’s what needs your attention today.",
+      quickAsk: "What needs to move?", write: "Type", speak: "Speak", priority: "Top priority",
+      appointments: "Appointments", toReview: "To review", openLoops: "Open follow-ups", fullPlan: "View the full plan",
+      hidePlan: "Hide the plan", controlTitle: "You stay in control",
+      controlBody: "ENDVERA prepares the work. You approve before any external send or change.",
+    },
+    projectsScreen: {
+      eyebrow: "YOUR PROJECTS", title: "Everything in one place.", body: "Status, appointments, and the next step — without rebuilding context.",
+      active: "Active", needsAttention: "Needs attention", contacts: "contacts", appointments: "appointments",
+      openLoops: "open follow-ups", empty: "No active projects.", open: "Open project", upToDate: "Up to date",
+    },
+    calendarScreen: {
+      eyebrow: "CALENDAR", title: "What’s coming up.", body: "Your project appointments, in the right time zone.",
+      add: "Add with ENDVERA", empty: "No appointments scheduled.", verified: "Confirmed", needsReview: "Needs review",
+      rejected: "Rejected", unknown: "Unknown state",
+      connector: "External calendars will appear here once connected.",
+    },
+    reviewScreen: {
+      eyebrow: "HUMAN CONTROL", title: "Review", body: "See exactly what ENDVERA will do before you confirm.",
+      safety: "Nothing goes out without you", safetyBody: "Recipient, channel, and message remain visible before every approval.",
+      recipient: "Recipient", channel: "Channel", exactMessage: "Exact message", approve: "Approve this message",
+      reject: "Reject", rejectWhy: "Why reject it?", revoke: "Revoke approval", revokeWhy: "Why revoke it?",
+      approved: "Approved, but not sent yet.", empty: "Nothing to review right now.", generalAction: "General action",
+      technicalDetails: "Verification details", version: "Version", prepared: "Ready to review",
+      processing: "Saving your decision…", replayed: "Decision already applied; no duplicate.",
+      confirmed: "Decision saved; nothing was sent.", conflict: "This action changed. The current version was reloaded.",
+      unknown: "Outcome unknown — retry the exact same decision.", refused: "Decision refused; nothing was sent.",
+      retry: "Retry the same decision", protectedTitle: "Protected actions",
+      protectedBody: "Communications and decisions are reserved for the owner and office.",
+      protectedEmpty: "No recipient, message, or sensitive amount is shown to the field role.",
+    },
+    auth: {
+      eyebrow: "OPERATING ASSISTANT", title: "Your projects. One conversation.",
+      body: "Plan, retrieve information, and prepare follow-ups from your phone.", email: "Email", password: "Password",
+      submit: "Open ENDVERA", submitting: "Signing in…", refused: "Sign-in refused. Check your information.",
+      unavailable: "Sign-in is unavailable right now.", trust: "Sensitive actions always require your approval.",
     },
   },
 };
@@ -111,4 +235,3 @@ export function mobileProductLocale(value: string | null | undefined): MobilePro
 export function mobileProductCopy(value: string | null | undefined): MobileProductCopy {
   return MOBILE_PRODUCT_COPY[mobileProductLocale(value)];
 }
-

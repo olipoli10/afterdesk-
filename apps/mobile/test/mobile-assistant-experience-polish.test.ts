@@ -24,7 +24,7 @@ describe("mobile assistant experience polish", () => {
     const requiredRoutes = [
       "onboarding", "jobs", "follow-ups", "timeline", "provenance", "calendar-connections",
       "messages", "calls", "email", "accounting", "contacts", "evidence", "permissions",
-      "privacy", "reliability", "outbox", "receivables", "human-support", "actions", "settings",
+      "privacy", "reliability", "outbox", "receivables", "human-support", "settings",
     ];
     expect(more).toMatch(/mobileProductCopy/);
     expect(more).toMatch(/accessibilityHint/);
@@ -45,5 +45,13 @@ describe("mobile assistant experience polish", () => {
     expect(today).toMatch(/copy\.talkToEndvera/);
     expect(today).toMatch(/router\.push\("\/assistant"\)/);
   });
-});
 
+  it("uses native symbol mappings instead of placeholder text glyphs", () => {
+    const layout = read("src/app/(app)/_layout.tsx");
+    const icons = read("src/components/app-icon.tsx");
+    expect(layout).toMatch(/<AppIcon/);
+    expect(layout).not.toMatch(/value="[⌁▦◷]"/u);
+    expect(icons).toMatch(/SymbolView/);
+    expect(icons).toMatch(/android:\s*"calendar_month"/);
+  });
+});

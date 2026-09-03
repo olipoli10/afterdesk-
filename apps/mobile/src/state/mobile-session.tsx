@@ -1,4 +1,5 @@
 import * as Network from "expo-network";
+import { Platform } from "react-native";
 import {
   createContext,
   useCallback,
@@ -206,6 +207,12 @@ function publicMessage(error: unknown) {
 }
 
 async function assertNetworkAvailable() {
+  if (Platform.OS === "web") {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new MobileApiError("OUTCOME_UNKNOWN");
+    }
+    return;
+  }
   const state = await Network.getNetworkStateAsync();
   if (state.isConnected === false || state.isInternetReachable === false) {
     throw new MobileApiError("OUTCOME_UNKNOWN");
@@ -218,7 +225,20 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     isPending: boolean;
   };
   const signedInUserId = session.data?.user.id;
-  const api = useMemo(() => new MobileApi({ getCookie: () => authClient.getCookie() }), []);
+  const api = useMemo(
+    () =>
+      new MobileApi({
+        browserManagedCredentials: Platform.OS === "web",
+        getCookie: () => {
+          try {
+            return typeof authClient.getCookie === "function" ? authClient.getCookie() : "";
+          } catch {
+            return "";
+          }
+        },
+      }),
+    [],
+  );
   const [bootstrap, setBootstrap] = useState<MobileBootstrap | null>(null);
   const [activeWorkspace, setActiveWorkspace] = useState<MobileWorkspace | null>(null);
   const [cockpit, setCockpit] = useState<MobileCockpit | null>(null);

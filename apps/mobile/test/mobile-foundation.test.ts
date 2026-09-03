@@ -142,6 +142,32 @@ describe("mobile API boundary", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
+  it("uses browser-managed cookies on web without forging a Cookie header", async () => {
+    const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
+      expect(init?.credentials).toBe("include");
+      expect(new Headers(init?.headers).has("cookie")).toBe(false);
+      return new Response(
+        JSON.stringify({
+          schemaVersion: 1,
+          generatedAt: "2026-09-01T12:00:00.000Z",
+          user: { id: "user-1", name: "Olivier", email: "olivier@example.invalid" },
+          workspaces: [],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    });
+    const getCookie = vi.fn(() => "better-auth.session_token=must-not-be-read");
+    const api = new MobileApi({
+      baseUrl: "http://127.0.0.1:3000",
+      browserManagedCredentials: true,
+      fetchImpl,
+      getCookie,
+    });
+
+    await expect(api.bootstrap()).resolves.toMatchObject({ schemaVersion: 1 });
+    expect(getCookie).not.toHaveBeenCalled();
+  });
+
   it("refuses a successful response that does not match the submitted command", async () => {
     const attempt = createPaymentAttempt(
       {

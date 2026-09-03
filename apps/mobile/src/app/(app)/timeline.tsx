@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { router, useLocalSearchParams } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   Card,
@@ -45,17 +46,26 @@ export default function TimelineScreen() {
     publicError,
     loadTimeline,
   } = useMobileSession();
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const selectedId = selectedProjectId ?? timeline?.project.id ?? cockpit?.projects[0]?.id ?? null;
+  const params = useLocalSearchParams<{ projectId?: string | string[] }>();
+  const routeProjectId = typeof params.projectId === "string" ? params.projectId : null;
+  const routeProjectIsVisible = Boolean(
+    routeProjectId && cockpit?.projects.some((project) => project.id === routeProjectId),
+  );
+  const selectedId =
+    (routeProjectIsVisible ? routeProjectId : null) ??
+    (timeline && cockpit?.projects.some((project) => project.id === timeline.project.id)
+      ? timeline.project.id
+      : null) ??
+    cockpit?.projects[0]?.id ??
+    null;
 
   useEffect(() => {
-    if (!selectedId || timelineLoadState !== "IDLE") return;
+    if (!selectedId || timelineLoadState === "LOADING" || timeline?.project.id === selectedId) return;
     void loadTimeline(selectedId);
-  }, [loadTimeline, selectedId, timelineLoadState]);
+  }, [loadTimeline, selectedId, timeline?.project.id, timelineLoadState]);
 
   const selectProject = (projectId: string) => {
-    setSelectedProjectId(projectId);
-    void loadTimeline(projectId);
+    router.setParams({ projectId });
   };
 
   return (
