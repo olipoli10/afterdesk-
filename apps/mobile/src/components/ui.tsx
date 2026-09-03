@@ -84,6 +84,37 @@ export function Button({
   );
 }
 
+export function MobileRecoveryNotice({
+  message,
+  hint,
+  actionLabel,
+  busy = false,
+  onRetry,
+}: {
+  message: string;
+  hint: string;
+  actionLabel: string;
+  busy?: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <View accessibilityRole="alert" style={styles.recovery}>
+      <Notice danger>{message}</Notice>
+      <Text style={styles.body}>{hint}</Text>
+      <Button
+        tone="secondary"
+        accessibilityRole="button"
+        accessibilityLabel={actionLabel}
+        accessibilityState={{ busy, disabled: busy }}
+        disabled={busy}
+        onPress={onRetry}
+      >
+        {actionLabel}
+      </Button>
+    </View>
+  );
+}
+
 export function Loading({ label = "ENDVERA se synchronise…" }: { label?: string }) {
   return (
     <View style={styles.loading}>
@@ -121,4 +152,5 @@ const styles = StyleSheet.create({
   buttonText: { color: "#160e08", fontSize: 16, fontWeight: "800" },
   buttonTextSecondary: { color: colors.text },
   loading: { minHeight: 180, alignItems: "center", justifyContent: "center", gap: 12 },
+  recovery: { gap: 10, borderColor: colors.danger, borderWidth: 1, borderRadius: 14, padding: 14 },
 });

@@ -29,7 +29,10 @@ describe("assistant-first mobile navigation", () => {
 
   it("keeps Today connected to the assistant as a primary action", () => {
     const today = read("src/app/(app)/index.tsx");
+    const copy = read("src/lib/product-experience.ts");
     expect(today).toMatch(/router\.push\("\/assistant"\)/);
-    expect(today).toMatch(/Parler à ENDVERA/);
+    expect(today).toMatch(/copy\.talkToEndvera/);
+    expect(copy).toMatch(/talkToEndvera:\s*"Parler à ENDVERA"/);
+    expect(copy).toMatch(/talkToEndvera:\s*"Talk to ENDVERA"/);
   });
 });

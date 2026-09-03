@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_MOBILE_ASSISTANT_EXPERIENCE_POLISHED",
+  "primaryTabCount": 5,
+  "secondaryRouteCount": 20,
+  "launchLanguages": ["fr-CA", "en-CA"],
+  "assistantFirst": true,
+  "adjacentErrorRecovery": true,
+  "accessibleCriticalControls": true,
+  "androidLocalExport": true,
+  "iosLocalExport": true,
+  "webLocalExport": true,
+  "signed": false,
+  "uploaded": false,
+  "submitted": false,
+  "published": false,
+  "providerObserved": false,
+  "customerObserved": false,
+  "externalEffectCount": 0
+}

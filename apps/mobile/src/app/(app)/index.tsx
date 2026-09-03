@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { Text, View } from "react-native";
 import { Button, Card, Empty, Heading, Label, Loading, Notice, Screen, sharedStyles } from "@/components/ui";
 import { mobileGoldenWorkflowCopy, type MobileGoldenWorkflowRoute } from "@/lib/golden-workflow";
+import { mobileProductCopy } from "@/lib/product-experience";
 import { useMobileSession } from "@/state/mobile-session";
 
 function openRoute(route: MobileGoldenWorkflowRoute) {
@@ -24,6 +25,7 @@ function openRoute(route: MobileGoldenWorkflowRoute) {
 export default function TodayScreen() {
   const { activeWorkspace, goldenWorkflow, goldenWorkflowLoadState, publicError, loadGoldenWorkflow } = useMobileSession();
   const fallbackLocale = activeWorkspace?.defaultLocale === "en-CA" ? "en-CA" : "fr-CA";
+  const copy = mobileProductCopy(goldenWorkflow?.workspace.locale ?? fallbackLocale);
   useEffect(() => { if (activeWorkspace) void loadGoldenWorkflow(); }, [activeWorkspace, loadGoldenWorkflow]);
   if (!goldenWorkflow && goldenWorkflowLoadState === "LOADING") return <Screen><Loading label={mobileGoldenWorkflowCopy(fallbackLocale, "cockpit.syncing")} /></Screen>;
   if (!goldenWorkflow) return <Screen><Heading eyebrow={mobileGoldenWorkflowCopy(fallbackLocale, "cockpit.eyebrow")} title={mobileGoldenWorkflowCopy(fallbackLocale, "cockpit.title")} body={mobileGoldenWorkflowCopy(fallbackLocale, "cockpit.body")} />{publicError ? <Notice danger>{publicError}</Notice> : null}<Card><Empty>{mobileGoldenWorkflowCopy(fallbackLocale, "cockpit.empty")}</Empty></Card><Button accessibilityRole="button" accessibilityLabel={mobileGoldenWorkflowCopy(fallbackLocale, "action.SYNC")} accessibilityState={{ busy: goldenWorkflowLoadState === "LOADING" }} onPress={() => void loadGoldenWorkflow()}>{mobileGoldenWorkflowCopy(fallbackLocale, "action.SYNC")}</Button></Screen>;
@@ -32,7 +34,7 @@ export default function TodayScreen() {
   return <Screen>
     <Heading eyebrow={mobileGoldenWorkflowCopy(locale, "cockpit.eyebrow")} title={mobileGoldenWorkflowCopy(locale, "cockpit.title")} body={`${goldenWorkflow.workspace.name}${goldenWorkflow.project ? ` · ${goldenWorkflow.project.code}` : ""}`} />
     {publicError ? <Notice danger>{publicError}</Notice> : null}
-    <Button accessibilityRole="button" accessibilityLabel="Parler à ENDVERA" onPress={() => router.push("/assistant")}>Parler à ENDVERA</Button>
+    <Button accessibilityRole="button" accessibilityLabel={copy.talkToEndvera} onPress={() => router.push("/assistant")}>{copy.talkToEndvera}</Button>
     <Card>
       <Label>{mobileGoldenWorkflowCopy(locale, "cockpit.progress")}</Label>
       <Text accessibilityRole="summary" style={sharedStyles.name}>{goldenWorkflow.completedCount}/{goldenWorkflow.totalCount}</Text>

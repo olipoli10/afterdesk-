@@ -1,12 +1,16 @@
 import { Tabs } from "expo-router";
 import { Text, type ColorValue } from "react-native";
 import { colors } from "@/components/ui";
+import { mobileProductCopy } from "@/lib/product-experience";
+import { useMobileSession } from "@/state/mobile-session";
 
 function TabGlyph({ value, color }: { value: string; color: ColorValue }) {
   return <Text style={{ color, fontSize: 18 }}>{value}</Text>;
 }
 
 export default function AppLayout() {
+  const { activeWorkspace } = useMobileSession();
+  const copy = mobileProductCopy(activeWorkspace?.defaultLocale);
   return (
     <Tabs
       screenOptions={{
@@ -17,11 +21,11 @@ export default function AppLayout() {
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: "Aujourd’hui", tabBarIcon: ({ color }) => <TabGlyph value="⌁" color={color} /> }} />
-      <Tabs.Screen name="assistant" options={{ title: "Assistant", tabBarIcon: ({ color }) => <TabGlyph value="A2" color={color} /> }} />
-      <Tabs.Screen name="projects" options={{ title: "Chantiers", tabBarIcon: ({ color }) => <TabGlyph value="▦" color={color} /> }} />
-      <Tabs.Screen name="calendar" options={{ title: "Agenda", tabBarIcon: ({ color }) => <TabGlyph value="◷" color={color} /> }} />
-      <Tabs.Screen name="more" options={{ title: "Plus", tabBarIcon: ({ color }) => <TabGlyph value="•••" color={color} /> }} />
+      <Tabs.Screen name="index" options={{ title: copy.tabs.today, tabBarAccessibilityLabel: copy.tabs.today, tabBarIcon: ({ color }) => <TabGlyph value="⌁" color={color} /> }} />
+      <Tabs.Screen name="assistant" options={{ title: copy.tabs.assistant, tabBarAccessibilityLabel: copy.tabs.assistant, tabBarIcon: ({ color }) => <TabGlyph value="A2" color={color} /> }} />
+      <Tabs.Screen name="projects" options={{ title: copy.tabs.projects, tabBarAccessibilityLabel: copy.tabs.projects, tabBarIcon: ({ color }) => <TabGlyph value="▦" color={color} /> }} />
+      <Tabs.Screen name="calendar" options={{ title: copy.tabs.calendar, tabBarAccessibilityLabel: copy.tabs.calendar, tabBarIcon: ({ color }) => <TabGlyph value="◷" color={color} /> }} />
+      <Tabs.Screen name="more" options={{ title: copy.tabs.more, tabBarAccessibilityLabel: copy.tabs.more, tabBarIcon: ({ color }) => <TabGlyph value="•••" color={color} /> }} />
 
       <Tabs.Screen name="onboarding" options={{ href: null }} />
       <Tabs.Screen name="jobs" options={{ href: null }} />

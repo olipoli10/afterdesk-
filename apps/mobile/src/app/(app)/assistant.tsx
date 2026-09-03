@@ -7,19 +7,21 @@ import {
   Heading,
   Label,
   Loading,
+  MobileRecoveryNotice,
   Notice,
   Screen,
   colors,
   sharedStyles,
 } from "@/components/ui";
 import { createAssistantAttempt } from "@/lib/assistant";
+import { mobileProductCopy, type MobileProductCopy } from "@/lib/product-experience";
 import { useMobileSession } from "@/state/mobile-session";
 
-function attemptLabel(state: string) {
-  if (state === "SENDING") return "ENDVERA travaille…";
-  if (state === "REPLAYED") return "Résultat récupéré sans doublon.";
-  if (state === "OUTCOME_UNKNOWN") return "Résultat inconnu — réessaie exactement la même demande.";
-  if (state === "REFUSED") return "Demande refusée sans effet inventé.";
+function attemptLabel(state: string, copy: MobileProductCopy) {
+  if (state === "SENDING") return copy.attempt.SENDING;
+  if (state === "REPLAYED") return copy.attempt.REPLAYED;
+  if (state === "OUTCOME_UNKNOWN") return copy.attempt.OUTCOME_UNKNOWN;
+  if (state === "REFUSED") return copy.attempt.REFUSED;
   return null;
 }
 
@@ -34,6 +36,7 @@ export default function AssistantScreen() {
     submitAssistantAttempt,
   } = useMobileSession();
   const [message, setMessage] = useState("");
+  const copy = mobileProductCopy(activeWorkspace?.defaultLocale);
 
   useEffect(() => {
     void refreshAssistant();
@@ -42,8 +45,8 @@ export default function AssistantScreen() {
   if (activeWorkspace?.role === "FIELD_WORKER") {
     return (
       <Screen>
-        <Heading eyebrow="PARLER À ENDVERA" title="Assistant protégé" body="Cette version est réservée au propriétaire et au gestionnaire de bureau." />
-        <Card><Empty>Aucune conversation ou donnée financière n’est exposée dans le rôle chantier.</Empty></Card>
+        <Heading eyebrow={copy.assistantEyebrow} title={copy.assistantProtectedTitle} body={copy.assistantProtectedBody} />
+        <Card><Empty>{copy.assistantProtectedEmpty}</Empty></Card>
       </Screen>
     );
   }
@@ -60,46 +63,47 @@ export default function AssistantScreen() {
     await submitAssistantAttempt(latestAssistantAttempt);
   };
 
-  const stateLabel = latestAssistantAttempt ? attemptLabel(latestAssistantAttempt.state) : null;
+  const stateLabel = latestAssistantAttempt ? attemptLabel(latestAssistantAttempt.state, copy) : null;
   const result = latestAssistantAttempt?.result;
 
   return (
     <Screen>
       <Heading
-        eyebrow="PARLER À ENDVERA"
-        title="Ton assistant de chantier"
-        body="Pose une question ou demande une action. PostgreSQL garde l’état; aucun message externe n’est envoyé dans cette version."
+        eyebrow={copy.assistantEyebrow}
+        title={copy.assistantTitle}
+        body={copy.assistantBody}
       />
-      {publicError ? <Notice danger>{publicError}</Notice> : null}
+      {publicError ? <MobileRecoveryNotice message={publicError} hint={copy.errorRecoveryHint} actionLabel={copy.refresh} busy={assistantLoadState === "LOADING"} onRetry={() => void refreshAssistant()} /> : null}
       {!activeWorkspace ? (
         <Card><Empty>Aucun espace Construction actif.</Empty></Card>
       ) : (
         <>
           <Card>
-            <Label>Conversation persistante</Label>
-            {assistantLoadState === "LOADING" && !assistantHistory ? <Loading label="ENDVERA retrouve la conversation…" /> : null}
+            <Label>{copy.conversation}</Label>
+            {assistantLoadState === "LOADING" && !assistantHistory ? <Loading label={copy.loadingConversation} /> : null}
             {assistantHistory?.messages.length ? assistantHistory.messages.map((item) => (
               <View key={item.id} style={[styles.bubble, item.direction === "inbound" ? styles.mine : styles.endvera]}>
                 <Text style={styles.speaker}>{item.direction === "inbound" ? "Toi" : "ENDVERA"}</Text>
                 <Text style={sharedStyles.value}>{item.body}</Text>
               </View>
-            )) : assistantLoadState !== "LOADING" ? <Empty>Aucun message. Essaie « Qu’est-ce que j’ai demain? »</Empty> : null}
+            )) : assistantLoadState !== "LOADING" ? <Empty>{copy.emptyConversation}</Empty> : null}
           </Card>
 
           <Card>
-            <Label>Ta demande</Label>
+            <Label>{copy.request}</Label>
             <TextInput
+              accessibilityLabel={copy.assistantInputLabel}
               style={styles.input}
               multiline
               value={message}
               onChangeText={setMessage}
-              placeholder="Ex. Rendez-vous avec Marc mardi à 14 h pour Laval."
+              placeholder={copy.assistantPlaceholder}
               placeholderTextColor={colors.muted}
               maxLength={10_000}
               editable={latestAssistantAttempt?.state !== "SENDING"}
             />
-            <Button onPress={submit} disabled={!message.trim() || latestAssistantAttempt?.state === "SENDING"}>
-              {latestAssistantAttempt?.state === "SENDING" ? "Traitement…" : "Envoyer à ENDVERA"}
+            <Button accessibilityRole="button" accessibilityLabel={copy.submit} accessibilityState={{ busy: latestAssistantAttempt?.state === "SENDING", disabled: !message.trim() || latestAssistantAttempt?.state === "SENDING" }} onPress={submit} disabled={!message.trim() || latestAssistantAttempt?.state === "SENDING"}>
+              {latestAssistantAttempt?.state === "SENDING" ? copy.processing : copy.submit}
             </Button>
             {stateLabel ? <Notice danger={latestAssistantAttempt?.state === "REFUSED" || latestAssistantAttempt?.state === "OUTCOME_UNKNOWN"}>{stateLabel}</Notice> : null}
             {result?.status === "PREPARED_UNSENT" ? <Notice>Message préparé — rien n’a été envoyé.</Notice> : null}
@@ -110,10 +114,10 @@ export default function AssistantScreen() {
             {result?.routing?.readiness === "HUMAN_SUPPORT_AVAILABLE" ? (
               <Notice>Un soutien humain borné est possible, mais aucune tâche n’a été créée automatiquement.</Notice>
             ) : null}
-            {latestAssistantAttempt?.state === "OUTCOME_UNKNOWN" ? <Button tone="secondary" onPress={retry}>Réessayer la même demande</Button> : null}
+            {latestAssistantAttempt?.state === "OUTCOME_UNKNOWN" ? <Button accessibilityRole="button" accessibilityLabel={copy.retry} tone="secondary" onPress={retry}>{copy.retry}</Button> : null}
           </Card>
-          <Button tone="secondary" onPress={refreshAssistant} disabled={assistantLoadState === "LOADING"}>
-            {assistantLoadState === "LOADING" ? "Synchronisation…" : "Recharger la conversation"}
+          <Button accessibilityRole="button" accessibilityLabel={copy.refresh} accessibilityState={{ busy: assistantLoadState === "LOADING", disabled: assistantLoadState === "LOADING" }} tone="secondary" onPress={refreshAssistant} disabled={assistantLoadState === "LOADING"}>
+            {assistantLoadState === "LOADING" ? copy.refreshing : copy.refresh}
           </Button>
         </>
       )}

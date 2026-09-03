@@ -1,55 +1,60 @@
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Card, Heading, Label, Screen, colors, sharedStyles } from "@/components/ui";
+import { mobileProductCopy } from "@/lib/product-experience";
+import { useMobileSession } from "@/state/mobile-session";
 
 const groups = [
   {
-    title: "TRAVAIL",
+    titleKey: "work",
     routes: [
-      ["Démarrage", "/onboarding"], ["Jobs", "/jobs"], ["Suivis", "/follow-ups"],
-      ["Timeline", "/timeline"], ["Provenance", "/provenance"], ["Preuves", "/evidence"],
+      ["onboarding", "/onboarding"], ["jobs", "/jobs"], ["followUps", "/follow-ups"],
+      ["timeline", "/timeline"], ["provenance", "/provenance"], ["evidence", "/evidence"],
     ],
   },
   {
-    title: "COMMUNICATIONS",
+    titleKey: "communications",
     routes: [
-      ["Calendriers connectés", "/calendar-connections"], ["Messages", "/messages"],
-      ["Appels", "/calls"], ["Courriel", "/email"], ["Contacts", "/contacts"],
+      ["calendarConnections", "/calendar-connections"], ["messages", "/messages"],
+      ["calls", "/calls"], ["email", "/email"], ["contacts", "/contacts"],
     ],
   },
   {
-    title: "ARGENT ET ACTIONS",
+    titleKey: "money",
     routes: [
-      ["Comptabilité", "/accounting"], ["Comptes à recevoir", "/receivables"],
-      ["Actions à approuver", "/actions"], ["Reprise", "/outbox"],
+      ["accounting", "/accounting"], ["receivables", "/receivables"],
+      ["actions", "/actions"], ["outbox", "/outbox"],
     ],
   },
   {
-    title: "CONFIANCE ET COMPTE",
+    titleKey: "trust",
     routes: [
-      ["Permissions", "/permissions"], ["Confidentialité", "/privacy"],
-      ["Fiabilité", "/reliability"], ["Appui humain", "/human-support"], ["Réglages", "/settings"],
+      ["permissions", "/permissions"], ["privacy", "/privacy"],
+      ["reliability", "/reliability"], ["humanSupport", "/human-support"], ["settings", "/settings"],
     ],
   },
 ] as const;
 
 export default function MoreScreen() {
+  const { activeWorkspace } = useMobileSession();
+  const copy = mobileProductCopy(activeWorkspace?.defaultLocale);
   return (
     <Screen>
-      <Heading eyebrow="ENDVERA" title="Plus" body="Tous les outils restent disponibles, regroupés sans encombrer tes actions principales." />
+      <Heading eyebrow="ENDVERA" title={copy.moreTitle} body={copy.moreBody} />
       {groups.map((group) => (
-        <Card key={group.title}>
-          <Label>{group.title}</Label>
+        <Card key={group.titleKey}>
+          <Label>{copy.moreGroups[group.titleKey]}</Label>
           <View style={styles.list}>
-            {group.routes.map(([label, href]) => (
+            {group.routes.map(([labelKey, href]) => (
               <Pressable
                 key={href}
                 accessibilityRole="link"
-                accessibilityLabel={label}
+                accessibilityLabel={copy.moreRoutes[labelKey]}
+                accessibilityHint={copy.moreOpenHint}
                 onPress={() => router.push(href as never)}
                 style={({ pressed }) => [styles.route, pressed && styles.pressed]}
               >
-                <Text style={sharedStyles.value}>{label}</Text>
+                <Text style={sharedStyles.value}>{copy.moreRoutes[labelKey]}</Text>
                 <Text aria-hidden style={styles.arrow}>›</Text>
               </Pressable>
             ))}
