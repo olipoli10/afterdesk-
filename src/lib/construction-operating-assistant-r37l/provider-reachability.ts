@@ -323,7 +323,7 @@ function inspectModule(path: string, source: string) {
         for (const element of node.name.elements) {
           if (
             ts.isIdentifier(element.name) &&
-            (element.propertyName ?? element.name).getText(sourceFile) === "createRequire"
+            staticPropertyName(element.propertyName ?? element.name) === "createRequire"
           ) {
             createRequireIdentifiers.add(element.name.text);
           }
