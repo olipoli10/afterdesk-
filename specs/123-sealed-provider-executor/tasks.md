@@ -18,5 +18,5 @@
 - [x] T006 [US3] Add tests proving observed execution, secret-shaped input and automatic transport are refused.
 - [x] T007 [US3] Implement the explicit observed-authority refusal with no HTTP route or consumer.
 - [x] T008 Run Spec Kit analysis and resolve any contradiction.
-- [ ] T009 Run targeted R37A, R36B and R36C tests; then typecheck, lint and `git diff --check`.
-- [ ] T010 Update autonomous backlog/queue/proof to record R37A local completion and leave external R37 deferred.
+- [x] T009 Run targeted R37A, R36B and R36C tests; then typecheck, lint and `git diff --check`.
+- [x] T010 Update autonomous backlog/queue/proof to record R37A local completion and leave external R37 deferred.
