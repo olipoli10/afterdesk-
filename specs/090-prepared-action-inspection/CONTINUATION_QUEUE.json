@@ -1614,6 +1614,37 @@
       "outputTree": "da6761fa321b326377aa92cf2b43f442bb77c1f5",
       "result": "The synthetic provider replay harness now recognizes current Endvera and historical AfterDesk classifier and planner prompts, preserves fail-closed unknown routing and passes the exact PostgreSQL workflow that exposed the drift.",
       "completedAtUtc": "2026-09-03T02:40:17Z"
+    },
+    {
+      "id": "R37F-PROVIDER-DELIVERY-ORCHESTRATION",
+      "title": "Provider delivery orchestration",
+      "objective": "Compose R37C durable controlled runs with strict R37D provider-specific normalization so canonical synthetic evidence is recorded before settlement and replayed without reinvocation.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37E-PROVIDER-REPLAY-BRAND-PARITY"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "6e6550c8fd5ab3891490cd0196dc645febcb9e19"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/128-provider-delivery-orchestration",
+        "src/lib/construction-operating-assistant-r37f",
+        "src/server/construction-operating-assistant-r37f",
+        "test/construction-operating-assistant-r37f*.test.ts",
+        "test/integration/construction-operating-assistant-r37f*.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../128-provider-delivery-orchestration/plan.md",
+      "planSha256": "f66d89fed1f85dcdecbeb1b9ddb30cf818abd7dddb0d875858ad8ee189dc449e",
+      "completionCommand": "npx vitest run --config vitest.integration.config.ts test/integration/construction-operating-assistant-r37f-provider-delivery.itest.ts",
+      "evidencePaths": ["../128-provider-delivery-orchestration/evidence/r37f-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }

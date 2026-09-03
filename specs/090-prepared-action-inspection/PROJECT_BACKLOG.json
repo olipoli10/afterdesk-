@@ -64,7 +64,7 @@
       "id": "S6-OBSERVED-LAUNCH",
       "title": "Observed provider, founder, pilot and production closure",
       "status": "IN_PROGRESS",
-      "releases": ["R37A-SEALED-PROVIDER-EXECUTOR", "R37B-PROVIDER-ACTIVATION-CONTROLS", "R37C-CONTROLLED-PROVIDER-ORCHESTRATION", "R37D-PROVIDER-DELIVERY-CONTRACTS", "R37E-PROVIDER-REPLAY-BRAND-PARITY", "R37-PROVIDER-SANDBOX", "R38-FOUNDER-FULL-LOOP", "R39-DESIGN-PARTNER-PILOT", "R40-PRODUCTION-V1"]
+      "releases": ["R37A-SEALED-PROVIDER-EXECUTOR", "R37B-PROVIDER-ACTIVATION-CONTROLS", "R37C-CONTROLLED-PROVIDER-ORCHESTRATION", "R37D-PROVIDER-DELIVERY-CONTRACTS", "R37E-PROVIDER-REPLAY-BRAND-PARITY", "R37F-PROVIDER-DELIVERY-ORCHESTRATION", "R37-PROVIDER-SANDBOX", "R38-FOUNDER-FULL-LOOP", "R39-DESIGN-PARTNER-PILOT", "R40-PRODUCTION-V1"]
     }
   ],
   "releases": [
@@ -103,7 +103,8 @@
     {"id":"R37C-CONTROLLED-PROVIDER-ORCHESTRATION","status":"DONE","authority":"LOCAL","dependsOn":["R37B-PROVIDER-ACTIVATION-CONTROLS"],"outcome":"A durable synthetic coordinator couples sealed execution to reservation, exact settlement or release and replay-safe evidence without any provider path."},
     {"id":"R37D-PROVIDER-DELIVERY-CONTRACTS","status":"DONE","authority":"LOCAL","dependsOn":["R37C-CONTROLLED-PROVIDER-ORCHESTRATION"],"outcome":"Strict provider-specific synthetic response contracts normalize OpenRouter controller output and Perplexity public research evidence without transport."},
     {"id":"R37E-PROVIDER-REPLAY-BRAND-PARITY","status":"DONE","authority":"LOCAL","dependsOn":["R37D-PROVIDER-DELIVERY-CONTRACTS"],"outcome":"Synthetic provider replay recognizes current Endvera and historical AfterDesk classifier/planner prompts without weakening unknown-stage refusal."},
-    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R37E-PROVIDER-REPLAY-BRAND-PARITY"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
+    {"id":"R37F-PROVIDER-DELIVERY-ORCHESTRATION","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R37E-PROVIDER-REPLAY-BRAND-PARITY"],"outcome":"R37C durably records, settles and replays strict R37D canonical provider evidence through an injected synthetic fixture adapter."},
+    {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R37F-PROVIDER-DELIVERY-ORCHESTRATION"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
     {"id":"R38-FOUNDER-FULL-LOOP","status":"PLANNED","authority":"FOUNDER_OBSERVATION_LATER","dependsOn":["R37-PROVIDER-SANDBOX"],"outcome":"One whole-product founder run only after the product is built, with no technical identifier copying."},
     {"id":"R39-DESIGN-PARTNER-PILOT","status":"PLANNED","authority":"CUSTOMER_AND_PROVIDER_EXACT_LATER","dependsOn":["R38-FOUNDER-FULL-LOOP"],"outcome":"Three supervised construction design partners proving usage, value, failure handling and unit economics."},
     {"id":"R40-PRODUCTION-V1","status":"PLANNED","authority":"PRODUCTION_EXACT_LATER","dependsOn":["R39-DESIGN-PARTNER-PILOT"],"outcome":"Controlled production launch with support, rollback, billing, monitoring and explicit V1 completion evidence."}
