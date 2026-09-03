@@ -1647,6 +1647,39 @@
       "outputTree": "74a8ccfeddba33a84f57bbee3dc4c8972487d521",
       "result": "Strict provider-specific canonical evidence is now durably stored before settlement and replayed after reconnect without fixture-adapter reinvocation; drift releases exact spend and concurrency remains idempotent with zero external transport.",
       "completedAtUtc": "2026-09-03T02:48:43Z"
+    },
+    {
+      "id": "R37G-PROVIDER-SECURITY-HARDENING",
+      "title": "Provider security hardening",
+      "objective": "Close the confirmed R37A-R37F tenant, lease, runtime seal, canonical digest and failed-evidence defects before any provider authority is possible.",
+      "role": "BOUNDED_REWORK",
+      "status": "DONE",
+      "dependencies": ["R37F-PROVIDER-DELIVERY-ORCHESTRATION"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "a4a096b2d9800ccf9cbde4b64ca93eb2ca9ebf45"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/129-provider-security-hardening",
+        "src/lib/construction-operating-assistant-r37a/contracts.ts",
+        "src/server/construction-operating-assistant-r37a/sealed-executor.ts",
+        "src/server/construction-operating-assistant-r37c/coordinator.ts",
+        "src/server/construction-operating-assistant-r37f/provider-delivery.ts",
+        "test/construction-operating-assistant-r37g*.test.ts",
+        "test/integration/construction-operating-assistant-r37g*.itest.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../129-provider-security-hardening/plan.md",
+      "planSha256": "91d048faa07300dab389d1bf4d3a017d26091e6ba9018e174ff361964a9f523a",
+      "completionCommand": "npx vitest run --config vitest.integration.config.ts test/integration/construction-operating-assistant-r37g-provider-security-hardening.itest.ts",
+      "evidencePaths": ["../129-provider-security-hardening/evidence/r37g-closeout.md"],
+      "outputHead": "5c8819c5c260ceb1822f0e2e3eed61fb14dff7e8",
+      "outputTree": "e299c92b01ee18c06c38f4a5d27c9b27cb55f002",
+      "result": "Five confirmed local provider-boundary findings are closed with runtime seal validation, pre-write tenant binding, exact lease fencing, content-derived digest verification and failure-safe evidence projection; zero provider or external transport.",
+      "completedAtUtc": "2026-09-03T03:16:00Z"
     }
   ]
 }
