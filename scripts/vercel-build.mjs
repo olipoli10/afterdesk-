@@ -59,12 +59,18 @@ export function resolveCommands(plan, cliArguments = []) {
   return plan.commands.map((command) => (command === "next build" ? `${command}${suffix}` : command));
 }
 
+export const PROVIDER_BOUNDARY_COMMAND = "npm run validate:provider-boundary";
+
+export function resolveBuildPipelineCommands(plan, cliArguments = []) {
+  return [PROVIDER_BOUNDARY_COMMAND, ...resolveCommands(plan, cliArguments)];
+}
+
 const invokedDirectly =
   process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/").split("/").pop());
 
 if (invokedDirectly) {
   const plan = computePlan(process.env);
-  const commands = resolveCommands(plan, process.argv.slice(2));
+  const commands = resolveBuildPipelineCommands(plan, process.argv.slice(2));
   console.log(`[vercel-build] env=${plan.env} plan=${commands.join(" && ")}`);
   for (const cmd of commands) {
     execSync(cmd, { stdio: "inherit", env: process.env });

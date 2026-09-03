@@ -1897,6 +1897,38 @@
       "outputTree": "73cf585be60bb3a518a6caf8ea756db5360e5f8a",
       "result": "Public-reachable eval, Function and Node VM capability now fail closed across direct, indirect, property, element and aliased forms with exact graph paths; the exact remediation security scan completed with zero findings.",
       "completedAtUtc": "2026-09-03T04:40:23Z"
+    },
+    {
+      "id": "R37O-PROVIDER-BOUNDARY-RELEASE-GATE",
+      "title": "Provider boundary release gate",
+      "objective": "Compose all local provider-boundary protections into one mandatory source-tree validation command that runs before every release build.",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37N-PROVIDER-DYNAMIC-CODE-GUARD"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "abd6cac6c4593036d6df5e5e432007d2b236bf0e"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": [
+        "specs/137-provider-boundary-release-gate",
+        "src/lib/construction-operating-assistant-r37o/provider-boundary-release-gate.ts",
+        "scripts/validate-provider-boundary.ts",
+        "scripts/vercel-build.mjs",
+        "package.json",
+        "test/construction-operating-assistant-r37o-provider-boundary-release-gate.test.ts",
+        "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        ".specify/feature.json"
+      ],
+      "planPath": "../137-provider-boundary-release-gate/plan.md",
+      "planSha256": "5da8cf52ec9e0cce5a891b0041872633479965508c7c1cd10db9e46522856163",
+      "completionCommand": "npm run validate:provider-boundary && npx vitest run test/construction-operating-assistant-r37o-provider-boundary-release-gate.test.ts",
+      "evidencePaths": ["../137-provider-boundary-release-gate/evidence/r37o-closeout.md"],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
     }
   ]
 }
