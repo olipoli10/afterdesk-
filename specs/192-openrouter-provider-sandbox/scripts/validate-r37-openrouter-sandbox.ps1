@@ -107,15 +107,10 @@ try {
     Remove-Item Env:ALLOW_INTEGRATION_DB_RESET -ErrorAction SilentlyContinue
     $env:DATABASE_URL = $uri.Uri.AbsoluteUri
     $env:DIRECT_URL = $uri.Uri.AbsoluteUri
-    $previousErrorActionPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    try {
-      & npx prisma migrate deploy
-      $migrationExitCode = $LASTEXITCODE
-    } finally {
-      $ErrorActionPreference = $previousErrorActionPreference
-    }
-    if ($migrationExitCode -ne 0) { throw "R37_COMMAND_FAILED:migration-deploy:$migrationExitCode" }
+    # The integration global setup already rebuilt this exact disposable
+    # database from all migration.sql files. Running Prisma migrate deploy a
+    # second time is both redundant and invalid here because that safe rebuild
+    # intentionally does not create Prisma's _prisma_migrations ledger.
     & npx tsx --require ./scripts/register-server-only.cjs scripts/run-r37-openrouter-sandbox.ts
     Assert-ExitCode "observed-run"
     $report = Get-Content -Raw -LiteralPath $observedReportPath | ConvertFrom-Json

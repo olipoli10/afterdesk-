@@ -25,6 +25,17 @@ const validOutput = {
 };
 
 describe("R37 OpenRouter closed-world contracts", () => {
+  it("reuses the schema rebuilt by the PostgreSQL integration setup", () => {
+    const validator = readFileSync(
+      "specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1",
+      "utf8",
+    );
+    expect(validator).toContain(
+      "npm run test:integration -- test/integration/construction-operating-assistant-r37-openrouter-sandbox.itest.ts",
+    );
+    expect(validator).not.toMatch(/&\s+npx\s+prisma\s+migrate\s+deploy/);
+  });
+
   it("freezes the stricter authority below the founder ceiling", () => {
     expect(R37_AUTHORITY).toMatchObject({
       gateway: "OPENROUTER",
