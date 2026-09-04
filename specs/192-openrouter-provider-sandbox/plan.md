@@ -101,7 +101,9 @@ test/integration/construction-operating-assistant-r37-openrouter-sandbox.itest.t
 ### Phase 3 — Local gates and observed execution
 
 - Run credential-free unit, boundary, mutation and PostgreSQL tests.
-- Produce a machine preflight that must say either `READY_FOR_LOCAL_CREDENTIAL` or fail.
+- Produce a machine preflight that says `CREDENTIAL_REQUIRED` with zero network
+  calls when the local key is absent, or `READY_FOR_OBSERVED_OPENROUTER_RUN`
+  only when both key presence and fresh exchange evidence pass.
 - If `R37_OPENROUTER_CONTROLLER_API_KEY` is present, run the observed matrix once and seal the report; otherwise stop only after all possible work at `CREDENTIAL_REQUIRED`.
 
 ### Phase 4 — Closeout

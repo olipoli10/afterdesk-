@@ -6,7 +6,7 @@
 pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -PreflightOnly
 ```
 
-Expected terminal state: `READY_FOR_LOCAL_CREDENTIAL` and zero external requests.
+Expected terminal state: `CREDENTIAL_REQUIRED` and zero external requests.
 
 ## 2. Install the local credential safely
 
@@ -20,22 +20,19 @@ The value is intentionally absent from source, reports and command history.
 
 ## 3. Execute once
 
-In the same private PowerShell session:
+In the same private PowerShell session, run the completion validator exactly
+once:
 
 ```powershell
-pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1
+pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete
 ```
 
 The runner must use a fresh disposable PostgreSQL database, at most six calls, at most 5 USD, and always revoke/disable/clean up.
 
-## 4. Validate observed evidence
+Only a report produced from actual OpenRouter responses can return
+`OPENROUTER_SANDBOX_OBSERVED_PASS`. Never rerun after an ambiguous attempted
+dispatch; inspect the durable ledger and report first.
 
-```powershell
-pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -ValidateExistingReport
-```
-
-Only a report produced from actual OpenRouter responses can return `OPENROUTER_SANDBOX_OBSERVED_PASS`.
-
-## 5. Stop conditions
+## 4. Stop conditions
 
 Stop without retry on secret leakage, non-synthetic input, unexpected host/redirect/model, missing ZDR/data denial, provider fallback, ambiguous prior dispatch, budget breach, response schema drift, ledger mismatch or cleanup failure.
