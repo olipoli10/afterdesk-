@@ -84,6 +84,15 @@ export default function ProjectsScreen() {
                     <AppIcon name="assistant" color={colors.accentBright} size={18} />
                     <Text style={styles.brainText}>{copy.projectsScreen.brain}</Text>
                   </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${copy.projectsScreen.reviewBrain}: ${project.name}`}
+                    onPress={() => router.push({ pathname: "/project-brain-understanding-review" as never, params: { projectId: project.id } })}
+                    style={({ pressed }) => [styles.brainButton, pressed && styles.pressed]}
+                  >
+                    <AppIcon name="review" color={colors.accentBright} size={18} />
+                    <Text style={styles.brainText}>{copy.projectsScreen.reviewBrain}</Text>
+                  </Pressable>
                 </View>
               </Card>
             );

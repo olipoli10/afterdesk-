@@ -125,6 +125,13 @@ const TRUNCATE_GUARDED_TABLES = [
     table: "ConstructionProjectBrainFactCandidateDecision",
     trigger: "ConstructionProjectBrainFactCandidateDecision_no_truncate",
   },
+  { table: "ConstructionProjectBrainUnderstandingReview", trigger: "CPBUR_no_truncate" },
+  { table: "ConstructionProjectBrainCandidateDisposition", trigger: "CPBUDisp_no_truncate" },
+  { table: "ConstructionProjectBrainContradiction", trigger: "CPBUContr_no_truncate" },
+  { table: "ConstructionProjectBrainContradictionMember", trigger: "CPBUCM_no_truncate" },
+  { table: "ConstructionProjectBrainContradictionResolution", trigger: "CPBURes_no_truncate" },
+  { table: "ConstructionProjectBrainUnderstandingSnapshot", trigger: "CPBUSnap_no_truncate" },
+  { table: "ConstructionProjectBrainUnderstandingDecision", trigger: "CPBUDec_no_truncate" },
 ];
 
 beforeAll(async () => {

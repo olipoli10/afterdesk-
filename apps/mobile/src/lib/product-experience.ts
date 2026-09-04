@@ -43,7 +43,7 @@ export type MobileProductCopy = {
   };
   projectsScreen: {
     eyebrow: string; title: string; body: string; active: string; needsAttention: string;
-    contacts: string; appointments: string; openLoops: string; empty: string; open: string; upToDate: string; brain: string;
+    contacts: string; appointments: string; openLoops: string; empty: string; open: string; upToDate: string; brain: string; reviewBrain: string;
   };
   projectBrain: {
     eyebrow: string; title: string; body: string; sources: string; add: string; voice: string; stop: string;
@@ -57,6 +57,13 @@ export type MobileProductCopy = {
     sourceKind: Record<"PHOTO" | "DOCUMENT" | "VOICE_NOTE", string>;
     sourceState: Record<"READY" | "SENDING" | "CONFLICT" | "OUTCOME_UNKNOWN" | "REFUSED", string>;
     status: Record<"DRAFT" | "READY_FOR_REVIEW" | "CONFIRMED" | "REJECTED", string>;
+  };
+  projectBrainReview: {
+    eyebrow: string; title: string; body: string; back: string; loading: string; unavailable: string; create: string;
+    sources: string; candidates: string; noSources: string; accept: string; reject: string; contradiction: string;
+    selected: string; declare: string; contradictions: string; chooseSupported: string; rejectAll: string;
+    ownerResolution: string; saveResolution: string; prepare: string; confirm: string; confirmed: string;
+    version: string; localOnly: string; completeEach: string; protected: string;
   };
   calendarScreen: {
     eyebrow: string; title: string; body: string; add: string; empty: string;
@@ -129,7 +136,7 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     projectsScreen: {
       eyebrow: "TES CHANTIERS", title: "Tout au même endroit.", body: "L’état, les rendez-vous et la prochaine étape — sans reconstruire le contexte.",
       active: "Actifs", needsAttention: "À surveiller", contacts: "contacts", appointments: "rendez-vous",
-      openLoops: "suivis ouverts", empty: "Aucun chantier actif.", open: "Ouvrir le chantier", upToDate: "À jour", brain: "Construire la mémoire",
+      openLoops: "suivis ouverts", empty: "Aucun chantier actif.", open: "Ouvrir le chantier", upToDate: "À jour", brain: "Construire la mémoire", reviewBrain: "Vérifier la compréhension",
     },
     projectBrain: {
       eyebrow: "MÉMOIRE DU CHANTIER", title: "Vide le chantier de ta tête.",
@@ -156,6 +163,15 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
       sourceKind: { PHOTO: "Photo", DOCUMENT: "Document", VOICE_NOTE: "Note vocale" },
       sourceState: { READY: "En attente", SENDING: "Ajout en cours…", CONFLICT: "Version changée — recharge requise", OUTCOME_UNKNOWN: "Résultat inconnu", REFUSED: "Fichier refusé" },
       status: { DRAFT: "Brouillon", READY_FOR_REVIEW: "À vérifier", CONFIRMED: "Confirmé", REJECTED: "Rejeté" },
+    },
+    projectBrainReview: {
+      eyebrow: "COMPRÉHENSION DU CHANTIER", title: "Vérifie ce qu’ENDVERA retient.",
+      body: "Chaque élément vient de ton résumé ou des métadonnées admises. Tu décides; aucune contradiction n’est réglée automatiquement.",
+      back: "Retour aux chantiers", loading: "Chargement de la compréhension…", unavailable: "La vérification est indisponible.", create: "Commencer la vérification",
+      sources: "Sources admises", candidates: "Éléments à décider", noSources: "Aucune source jointe.", accept: "Accepter", reject: "Rejeter", contradiction: "Contradiction",
+      selected: "sélectionnés", declare: "Déclarer la contradiction", contradictions: "Contradictions conservées", chooseSupported: "Garder les éléments sélectionnés", rejectAll: "Tout rejeter",
+      ownerResolution: "Écris ta résolution exacte", saveResolution: "Enregistrer la résolution", prepare: "Préparer la compréhension exacte", confirm: "Confirmer cette compréhension exacte", confirmed: "Compréhension confirmée et immuable.",
+      version: "Version", localOnly: "Local seulement; aucun modèle, lecture binaire ou envoi externe.", completeEach: "Décide chaque élément et résous chaque contradiction avant de préparer.", protected: "Réservé au propriétaire et au bureau.",
     },
     calendarScreen: {
       eyebrow: "AGENDA", title: "Ce qui s’en vient.", body: "Tes rendez-vous de chantier, dans le bon fuseau horaire.",
@@ -236,7 +252,7 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     projectsScreen: {
       eyebrow: "YOUR PROJECTS", title: "Everything in one place.", body: "Status, appointments, and the next step — without rebuilding context.",
       active: "Active", needsAttention: "Needs attention", contacts: "contacts", appointments: "appointments",
-      openLoops: "open follow-ups", empty: "No active projects.", open: "Open project", upToDate: "Up to date", brain: "Build project memory",
+      openLoops: "open follow-ups", empty: "No active projects.", open: "Open project", upToDate: "Up to date", brain: "Build project memory", reviewBrain: "Review understanding",
     },
     projectBrain: {
       eyebrow: "PROJECT MEMORY", title: "Get the job out of your head.",
@@ -263,6 +279,15 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
       sourceKind: { PHOTO: "Photo", DOCUMENT: "Document", VOICE_NOTE: "Voice note" },
       sourceState: { READY: "Waiting", SENDING: "Adding…", CONFLICT: "Version changed — reload required", OUTCOME_UNKNOWN: "Outcome unknown", REFUSED: "File refused" },
       status: { DRAFT: "Draft", READY_FOR_REVIEW: "Ready to review", CONFIRMED: "Confirmed", REJECTED: "Rejected" },
+    },
+    projectBrainReview: {
+      eyebrow: "PROJECT UNDERSTANDING", title: "Review what ENDVERA retains.",
+      body: "Every item comes from your summary or admitted metadata. You decide; no contradiction is resolved automatically.",
+      back: "Back to projects", loading: "Loading project understanding…", unavailable: "The review is unavailable.", create: "Start the review",
+      sources: "Admitted sources", candidates: "Items to decide", noSources: "No attached source.", accept: "Accept", reject: "Reject", contradiction: "Contradiction",
+      selected: "selected", declare: "Declare contradiction", contradictions: "Preserved contradictions", chooseSupported: "Keep selected items", rejectAll: "Reject all",
+      ownerResolution: "Write your exact resolution", saveResolution: "Save resolution", prepare: "Prepare exact understanding", confirm: "Confirm this exact understanding", confirmed: "Understanding confirmed and immutable.",
+      version: "Version", localOnly: "Local only; no model, binary reading, or external send.", completeEach: "Decide every item and resolve every contradiction before preparing.", protected: "Reserved for the owner and office.",
     },
     calendarScreen: {
       eyebrow: "CALENDAR", title: "What’s coming up.", body: "Your project appointments, in the right time zone.",

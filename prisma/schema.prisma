@@ -464,36 +464,42 @@ model User {
   /// HUMAN WORK UNIT — les quatre roles distincts qu'une personne peut tenir
   /// autour d'une unite. Nommes separement pour qu'aucun ne puisse etre
   /// confondu avec un autre dans une requete.
-  humanUnitsClaimed                                      HumanWorkUnitRunState[]                         @relation("HumanUnitClaimedBy")
-  humanUnitCandidates                                    HumanWorkUnitCandidate[]                        @relation("HumanUnitSubmittedBy")
-  humanUnitDecisions                                     HumanWorkUnitReviewDecision[]                   @relation("HumanUnitDecidedBy")
-  humanUnitAcceptances                                   HumanWorkUnitAcceptance[]                       @relation("HumanUnitAcceptedBy")
-  constructionHumanEscalationsRequested                  ConstructionHumanEscalation[]                   @relation("ConstructionHumanEscalationRequestedBy")
-  constructionReceivablesCreated                         ConstructionReceivable[]                        @relation("ConstructionReceivableCreatedBy")
-  constructionReceivableEventsAuthored                   ConstructionReceivableEvent[]                   @relation("ConstructionReceivableEventActor")
-  constructionFollowUpsRequested                         ConstructionFollowUp[]                          @relation("ConstructionFollowUpRequestedBy")
-  constructionFollowUpTransitionsAuthored                ConstructionFollowUpTransition[]                @relation("ConstructionFollowUpTransitionActor")
-  constructionPaymentPromisesCreated                     ConstructionPaymentPromise[]                    @relation("ConstructionPaymentPromiseCreatedBy")
-  constructionEconomicCommandsAuthored                   ConstructionEconomicCommand[]                   @relation("ConstructionEconomicCommandActor")
-  constructionJobsCreated                                ConstructionJob[]                               @relation("ConstructionJobCreatedBy")
-  constructionJobTransitionsAuthored                     ConstructionJobTransition[]                     @relation("ConstructionJobTransitionActor")
-  constructionRecoveryOperationsAuthored                 ConstructionRecoveryOperation[]                 @relation("ConstructionRecoveryOperationActor")
-  constructionRecoveryCheckpointsCreated                 ConstructionRecoveryCheckpoint[]                @relation("ConstructionRecoveryCheckpointCreator")
-  constructionRecoveryDrillsRecorded                     ConstructionRecoveryDrill[]                     @relation("ConstructionRecoveryDrillRecorder")
-  constructionReliabilityGateRunsRecorded                ConstructionReliabilityGateRun[]                @relation("ConstructionReliabilityGateRunRecorder")
-  constructionReliabilityCommandsAuthored                ConstructionReliabilityCommand[]                @relation("ConstructionReliabilityCommandActor")
-  constructionCommercialAccountsCreated                  ConstructionCommercialAccount[]                 @relation("ConstructionCommercialAccountCreator")
-  constructionCommercialDecisionsAuthored                ConstructionCommercialDecision[]                @relation("ConstructionCommercialDecisionActor")
-  providerActivationGrantsCreated                        ProviderActivationGrant[]                       @relation("ProviderActivationGrantCreator")
-  providerActivationDecisionsAuthored                    ProviderActivationDecision[]                    @relation("ProviderActivationDecisionActor")
-  providerLaneControlsChanged                            ProviderLaneControl[]                           @relation("ProviderLaneControlActor")
-  controlledProviderRunsCreated                          ControlledProviderRun[]                         @relation("ControlledProviderRunCreator")
-  constructionProjectBrainIntakesCreated                 ConstructionProjectBrainIntake[]                @relation("ConstructionProjectBrainIntakeCreator")
-  constructionProjectBrainSourcesCreated                 ConstructionProjectBrainSource[]                @relation("ConstructionProjectBrainSourceCreator")
-  constructionProjectBrainSnapshotsCreated               ConstructionProjectBrainSnapshot[]              @relation("ConstructionProjectBrainSnapshotCreator")
-  constructionProjectBrainDecisionsAuthored              ConstructionProjectBrainDecision[]              @relation("ConstructionProjectBrainDecisionActor")
-  constructionProjectBrainFactCandidateBatchesCreated    ConstructionProjectBrainFactCandidateBatch[]    @relation("ConstructionProjectBrainFactCandidateBatchCreator")
-  constructionProjectBrainFactCandidateDecisionsAuthored ConstructionProjectBrainFactCandidateDecision[] @relation("ConstructionProjectBrainFactCandidateDecisionActor")
+  humanUnitsClaimed                                      HumanWorkUnitRunState[]                           @relation("HumanUnitClaimedBy")
+  humanUnitCandidates                                    HumanWorkUnitCandidate[]                          @relation("HumanUnitSubmittedBy")
+  humanUnitDecisions                                     HumanWorkUnitReviewDecision[]                     @relation("HumanUnitDecidedBy")
+  humanUnitAcceptances                                   HumanWorkUnitAcceptance[]                         @relation("HumanUnitAcceptedBy")
+  constructionHumanEscalationsRequested                  ConstructionHumanEscalation[]                     @relation("ConstructionHumanEscalationRequestedBy")
+  constructionReceivablesCreated                         ConstructionReceivable[]                          @relation("ConstructionReceivableCreatedBy")
+  constructionReceivableEventsAuthored                   ConstructionReceivableEvent[]                     @relation("ConstructionReceivableEventActor")
+  constructionFollowUpsRequested                         ConstructionFollowUp[]                            @relation("ConstructionFollowUpRequestedBy")
+  constructionFollowUpTransitionsAuthored                ConstructionFollowUpTransition[]                  @relation("ConstructionFollowUpTransitionActor")
+  constructionPaymentPromisesCreated                     ConstructionPaymentPromise[]                      @relation("ConstructionPaymentPromiseCreatedBy")
+  constructionEconomicCommandsAuthored                   ConstructionEconomicCommand[]                     @relation("ConstructionEconomicCommandActor")
+  constructionJobsCreated                                ConstructionJob[]                                 @relation("ConstructionJobCreatedBy")
+  constructionJobTransitionsAuthored                     ConstructionJobTransition[]                       @relation("ConstructionJobTransitionActor")
+  constructionRecoveryOperationsAuthored                 ConstructionRecoveryOperation[]                   @relation("ConstructionRecoveryOperationActor")
+  constructionRecoveryCheckpointsCreated                 ConstructionRecoveryCheckpoint[]                  @relation("ConstructionRecoveryCheckpointCreator")
+  constructionRecoveryDrillsRecorded                     ConstructionRecoveryDrill[]                       @relation("ConstructionRecoveryDrillRecorder")
+  constructionReliabilityGateRunsRecorded                ConstructionReliabilityGateRun[]                  @relation("ConstructionReliabilityGateRunRecorder")
+  constructionReliabilityCommandsAuthored                ConstructionReliabilityCommand[]                  @relation("ConstructionReliabilityCommandActor")
+  constructionCommercialAccountsCreated                  ConstructionCommercialAccount[]                   @relation("ConstructionCommercialAccountCreator")
+  constructionCommercialDecisionsAuthored                ConstructionCommercialDecision[]                  @relation("ConstructionCommercialDecisionActor")
+  providerActivationGrantsCreated                        ProviderActivationGrant[]                         @relation("ProviderActivationGrantCreator")
+  providerActivationDecisionsAuthored                    ProviderActivationDecision[]                      @relation("ProviderActivationDecisionActor")
+  providerLaneControlsChanged                            ProviderLaneControl[]                             @relation("ProviderLaneControlActor")
+  controlledProviderRunsCreated                          ControlledProviderRun[]                           @relation("ControlledProviderRunCreator")
+  constructionProjectBrainIntakesCreated                 ConstructionProjectBrainIntake[]                  @relation("ConstructionProjectBrainIntakeCreator")
+  constructionProjectBrainSourcesCreated                 ConstructionProjectBrainSource[]                  @relation("ConstructionProjectBrainSourceCreator")
+  constructionProjectBrainSnapshotsCreated               ConstructionProjectBrainSnapshot[]                @relation("ConstructionProjectBrainSnapshotCreator")
+  constructionProjectBrainDecisionsAuthored              ConstructionProjectBrainDecision[]                @relation("ConstructionProjectBrainDecisionActor")
+  constructionProjectBrainFactCandidateBatchesCreated    ConstructionProjectBrainFactCandidateBatch[]      @relation("ConstructionProjectBrainFactCandidateBatchCreator")
+  constructionProjectBrainFactCandidateDecisionsAuthored ConstructionProjectBrainFactCandidateDecision[]   @relation("ConstructionProjectBrainFactCandidateDecisionActor")
+  constructionProjectBrainUnderstandingReviewsCreated    ConstructionProjectBrainUnderstandingReview[]     @relation("ConstructionProjectBrainUnderstandingReviewCreator")
+  constructionProjectBrainCandidateDispositionsAuthored  ConstructionProjectBrainCandidateDisposition[]    @relation("ConstructionProjectBrainCandidateDispositionActor")
+  constructionProjectBrainContradictionsAuthored         ConstructionProjectBrainContradiction[]           @relation("ConstructionProjectBrainContradictionActor")
+  constructionProjectBrainResolutionsAuthored            ConstructionProjectBrainContradictionResolution[] @relation("ConstructionProjectBrainContradictionResolutionActor")
+  constructionProjectBrainUnderstandingSnapshotsCreated  ConstructionProjectBrainUnderstandingSnapshot[]   @relation("ConstructionProjectBrainUnderstandingSnapshotCreator")
+  constructionProjectBrainUnderstandingDecisionsAuthored ConstructionProjectBrainUnderstandingDecision[]   @relation("ConstructionProjectBrainUnderstandingDecisionActor")
 }
 
 /**
@@ -3501,8 +3507,9 @@ model ConstructionWorkspace {
   providerActivationGrants         ProviderActivationGrant[]
   providerActivationDecisions      ProviderActivationDecision[]
   controlledProviderRuns           ControlledProviderRun[]
-  projectBrainIntakes              ConstructionProjectBrainIntake[]             @relation("ConstructionProjectBrainIntakeWorkspace")
-  projectBrainFactCandidateBatches ConstructionProjectBrainFactCandidateBatch[] @relation("ConstructionProjectBrainFactCandidateBatchWorkspace")
+  projectBrainIntakes              ConstructionProjectBrainIntake[]              @relation("ConstructionProjectBrainIntakeWorkspace")
+  projectBrainFactCandidateBatches ConstructionProjectBrainFactCandidateBatch[]  @relation("ConstructionProjectBrainFactCandidateBatchWorkspace")
+  projectBrainUnderstandingReviews ConstructionProjectBrainUnderstandingReview[] @relation("ConstructionProjectBrainUnderstandingReviewWorkspace")
 
   @@index([ownerUserId, status])
 }
@@ -3719,8 +3726,9 @@ model ConstructionProject {
   callWork                         ConstructionCallWork[]
   emailEvents                      ConstructionEmailEvent[]
   emailDrafts                      ConstructionEmailDraft[]
-  projectBrainIntakes              ConstructionProjectBrainIntake[]             @relation("ConstructionProjectBrainIntakeProject")
-  projectBrainFactCandidateBatches ConstructionProjectBrainFactCandidateBatch[] @relation("ConstructionProjectBrainFactCandidateBatchProject")
+  projectBrainIntakes              ConstructionProjectBrainIntake[]              @relation("ConstructionProjectBrainIntakeProject")
+  projectBrainFactCandidateBatches ConstructionProjectBrainFactCandidateBatch[]  @relation("ConstructionProjectBrainFactCandidateBatchProject")
+  projectBrainUnderstandingReviews ConstructionProjectBrainUnderstandingReview[] @relation("ConstructionProjectBrainUnderstandingReviewProject")
 
   @@unique([workspaceId, code])
   @@unique([id, workspaceId])
@@ -3760,6 +3768,7 @@ model ConstructionProjectBrainIntake {
   snapshots            ConstructionProjectBrainSnapshot[]
   decisions            ConstructionProjectBrainDecision[]
   factCandidateBatches ConstructionProjectBrainFactCandidateBatch[]
+  understandingReviews ConstructionProjectBrainUnderstandingReview[]
 
   @@unique([workspaceId, createCommandId], map: "CPBI_workspace_command_key")
   @@unique([workspaceId, projectId, intakeSequence], map: "CPBI_project_sequence_key")
@@ -3818,6 +3827,7 @@ model ConstructionProjectBrainSnapshot {
   createdAt       DateTime                       @default(now())
 
   factCandidateBatches ConstructionProjectBrainFactCandidateBatch[]
+  understandingReviews ConstructionProjectBrainUnderstandingReview[]
 
   @@unique([intakeId, stateVersion, status], map: "CPBSnapshot_version_status_key")
   @@index([workspaceId, projectId, createdAt], map: "CPBSnapshot_project_created_idx")
@@ -3873,8 +3883,9 @@ model ConstructionProjectBrainFactCandidateBatch {
   createdBy             User                             @relation("ConstructionProjectBrainFactCandidateBatchCreator", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBFCB_creator_fkey")
   createdAt             DateTime                         @default(now())
 
-  candidates ConstructionProjectBrainFactCandidate[]
-  decisions  ConstructionProjectBrainFactCandidateDecision[]
+  candidates           ConstructionProjectBrainFactCandidate[]
+  decisions            ConstructionProjectBrainFactCandidateDecision[]
+  understandingReviews ConstructionProjectBrainUnderstandingReview[]
 
   @@unique([workspaceId, commandId], map: "CPBFCB_workspace_command_key")
   @@unique([intakeId, confirmedSnapshotId, adapterSetVersion], map: "CPBFCB_input_adapter_key")
@@ -3910,6 +3921,9 @@ model ConstructionProjectBrainFactCandidate {
   metadataField         String?
   createdAt             DateTime                                   @default(now())
 
+  understandingDispositions ConstructionProjectBrainCandidateDisposition[]
+  contradictionMembers      ConstructionProjectBrainContradictionMember[]
+
   @@unique([batchId, candidateFingerprint], map: "CPBFC_batch_fingerprint_key")
   @@index([workspaceId, projectId, intakeId], map: "CPBFC_tenant_intake_idx")
   @@index([sourceId], map: "CPBFC_source_idx")
@@ -3939,6 +3953,180 @@ model ConstructionProjectBrainFactCandidateDecision {
   @@unique([workspaceId, commandId], map: "CPBFCD_workspace_command_key")
   @@index([batchId, outcome], map: "CPBFCD_batch_outcome_idx")
   @@index([workspaceId, projectId, intakeId, createdAt], map: "CPBFCD_tenant_created_idx")
+}
+
+/// Versioned, project-scoped human review of one exact R36W candidate batch.
+model ConstructionProjectBrainUnderstandingReview {
+  id                             String                                     @id @default(cuid())
+  workspaceId                    String
+  workspace                      ConstructionWorkspace                      @relation("ConstructionProjectBrainUnderstandingReviewWorkspace", fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUR_workspace_fkey")
+  projectId                      String
+  project                        ConstructionProject                        @relation("ConstructionProjectBrainUnderstandingReviewProject", fields: [projectId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "CPBUR_project_tenant_fkey")
+  intakeId                       String
+  intake                         ConstructionProjectBrainIntake             @relation(fields: [intakeId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBUR_intake_tenant_fkey")
+  confirmedIntakeSnapshotId      String
+  confirmedIntakeSnapshot        ConstructionProjectBrainSnapshot           @relation(fields: [confirmedIntakeSnapshotId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUR_snapshot_fkey")
+  candidateBatchId               String                                     @unique(map: "CPBUR_candidate_batch_key")
+  candidateBatch                 ConstructionProjectBrainFactCandidateBatch @relation(fields: [candidateBatchId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUR_batch_fkey")
+  candidateSetHash               String
+  reviewSequence                 Int
+  status                         String                                     @default("DRAFT")
+  confirmedUnderstandingSequence Int?
+  stateVersion                   Int                                        @default(1)
+  reviewFingerprint              String?
+  createCommandId                String
+  createCommandHash              String
+  createdByUserId                String
+  createdBy                      User                                       @relation("ConstructionProjectBrainUnderstandingReviewCreator", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUR_creator_fkey")
+  confirmedAt                    DateTime?
+  createdAt                      DateTime                                   @default(now())
+  updatedAt                      DateTime                                   @updatedAt
+
+  dispositions   ConstructionProjectBrainCandidateDisposition[]
+  contradictions ConstructionProjectBrainContradiction[]
+  members        ConstructionProjectBrainContradictionMember[]
+  resolutions    ConstructionProjectBrainContradictionResolution[]
+  snapshots      ConstructionProjectBrainUnderstandingSnapshot[]
+  decisions      ConstructionProjectBrainUnderstandingDecision[]
+
+  @@unique([workspaceId, createCommandId], map: "CPBUR_workspace_command_key")
+  @@unique([workspaceId, projectId, reviewSequence], map: "CPBUR_project_sequence_key")
+  @@unique([id, workspaceId, projectId], map: "CPBUR_tenant_identity_key")
+  @@unique([projectId, confirmedUnderstandingSequence], map: "CPBUR_confirmed_sequence_key")
+  @@index([workspaceId, projectId, status], map: "CPBUR_project_status_idx")
+}
+
+/// Append-only explicit human disposition for one candidate.
+model ConstructionProjectBrainCandidateDisposition {
+  id                String                                      @id @default(cuid())
+  workspaceId       String
+  projectId         String
+  reviewId          String
+  review            ConstructionProjectBrainUnderstandingReview @relation(fields: [reviewId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBUDisp_review_tenant_fkey")
+  candidateId       String
+  candidate         ConstructionProjectBrainFactCandidate       @relation(fields: [candidateId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUDisp_candidate_fkey")
+  disposition       String
+  priorStateVersion Int
+  nextStateVersion  Int
+  commandId         String
+  commandHash       String
+  actorUserId       String
+  actor             User                                        @relation("ConstructionProjectBrainCandidateDispositionActor", fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUDisp_actor_fkey")
+  createdAt         DateTime                                    @default(now())
+
+  @@unique([reviewId, nextStateVersion], map: "CPBUDisp_review_version_key")
+  @@index([reviewId, candidateId, nextStateVersion], map: "CPBUDisp_current_idx")
+}
+
+/// Immutable human-declared contradiction group.
+model ConstructionProjectBrainContradiction {
+  id            String                                      @id @default(cuid())
+  workspaceId   String
+  projectId     String
+  reviewId      String
+  review        ConstructionProjectBrainUnderstandingReview @relation(fields: [reviewId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBUContr_review_tenant_fkey")
+  groupSequence Int
+  commandId     String
+  commandHash   String
+  actorUserId   String
+  actor         User                                        @relation("ConstructionProjectBrainContradictionActor", fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUContr_actor_fkey")
+  createdAt     DateTime                                    @default(now())
+
+  members     ConstructionProjectBrainContradictionMember[]
+  resolutions ConstructionProjectBrainContradictionResolution[]
+
+  @@unique([reviewId, groupSequence], map: "CPBUContr_review_sequence_key")
+  @@unique([id, reviewId], map: "CPBUContr_review_identity_key")
+}
+
+/// Immutable ordered member of a contradiction.
+model ConstructionProjectBrainContradictionMember {
+  id              String                                      @id @default(cuid())
+  workspaceId     String
+  projectId       String
+  reviewId        String
+  review          ConstructionProjectBrainUnderstandingReview @relation(fields: [reviewId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBUCM_review_tenant_fkey")
+  contradictionId String
+  contradiction   ConstructionProjectBrainContradiction       @relation(fields: [contradictionId, reviewId], references: [id, reviewId], onDelete: Restrict, onUpdate: Restrict, map: "CPBUCM_contradiction_review_fkey")
+  candidateId     String
+  candidate       ConstructionProjectBrainFactCandidate       @relation(fields: [candidateId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUCM_candidate_fkey")
+  ordinal         Int
+  createdAt       DateTime                                    @default(now())
+
+  @@unique([contradictionId, candidateId], map: "CPBUCM_contradiction_candidate_key")
+  @@unique([contradictionId, ordinal], map: "CPBUCM_contradiction_ordinal_key")
+  @@index([reviewId, candidateId], map: "CPBUCM_review_candidate_idx")
+}
+
+/// Append-only explicit resolution; contradiction and members remain immutable.
+model ConstructionProjectBrainContradictionResolution {
+  id                   String                                      @id @default(cuid())
+  workspaceId          String
+  projectId            String
+  reviewId             String
+  review               ConstructionProjectBrainUnderstandingReview @relation(fields: [reviewId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBURes_review_tenant_fkey")
+  contradictionId      String
+  contradiction        ConstructionProjectBrainContradiction       @relation(fields: [contradictionId, reviewId], references: [id, reviewId], onDelete: Restrict, onUpdate: Restrict, map: "CPBURes_contradiction_review_fkey")
+  mode                 String
+  selectedCandidateIds String[]                                    @default([])
+  ownerResolutionText  String?
+  provenance           String
+  priorStateVersion    Int
+  nextStateVersion     Int
+  commandId            String
+  commandHash          String
+  actorUserId          String
+  actor                User                                        @relation("ConstructionProjectBrainContradictionResolutionActor", fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBURes_actor_fkey")
+  createdAt            DateTime                                    @default(now())
+
+  @@unique([reviewId, nextStateVersion], map: "CPBURes_review_version_key")
+  @@index([contradictionId, nextStateVersion], map: "CPBURes_current_idx")
+}
+
+/// Immutable proposed or confirmed canonical understanding.
+model ConstructionProjectBrainUnderstandingSnapshot {
+  id                        String                                      @id @default(cuid())
+  workspaceId               String
+  projectId                 String
+  reviewId                  String
+  review                    ConstructionProjectBrainUnderstandingReview @relation(fields: [reviewId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBUSnap_review_tenant_fkey")
+  intakeId                  String
+  confirmedIntakeSnapshotId String
+  candidateBatchId          String
+  stateVersion              Int
+  status                    String
+  snapshot                  Json
+  canonicalHash             String
+  createdByUserId           String
+  createdBy                 User                                        @relation("ConstructionProjectBrainUnderstandingSnapshotCreator", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUSnap_creator_fkey")
+  createdAt                 DateTime                                    @default(now())
+
+  @@unique([reviewId, stateVersion, status], map: "CPBUSnap_version_status_key")
+  @@index([workspaceId, projectId, status], map: "CPBUSnap_project_status_idx")
+}
+
+/// Immutable body-bound receipt for every accepted review transition.
+model ConstructionProjectBrainUnderstandingDecision {
+  id                String                                      @id @default(cuid())
+  workspaceId       String
+  projectId         String
+  reviewId          String
+  review            ConstructionProjectBrainUnderstandingReview @relation(fields: [reviewId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBUDec_review_tenant_fkey")
+  commandId         String
+  commandHash       String
+  decision          String
+  priorStateVersion Int
+  nextStateVersion  Int
+  snapshotHash      String?
+  result            Json
+  resultHash        String
+  actorUserId       String
+  actor             User                                        @relation("ConstructionProjectBrainUnderstandingDecisionActor", fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBUDec_actor_fkey")
+  createdAt         DateTime                                    @default(now())
+
+  @@unique([workspaceId, commandId], map: "CPBUDec_workspace_command_key")
+  @@unique([reviewId, nextStateVersion], map: "CPBUDec_review_version_key")
+  @@index([workspaceId, projectId, createdAt], map: "CPBUDec_project_created_idx")
 }
 
 model ConstructionContact {

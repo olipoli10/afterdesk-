@@ -627,7 +627,18 @@ describe("R36V Project Brain Intake on disposable PostgreSQL", () => {
       SELECT constraint_name, update_rule, delete_rule
       FROM information_schema.referential_constraints
       WHERE constraint_schema = 'public'
-        AND constraint_name LIKE 'CPB%_fkey'
+        AND constraint_name IN (
+          'CPBI_workspace_fkey',
+          'CPBI_project_tenant_fkey',
+          'CPBI_creator_fkey',
+          'CPBS_intake_tenant_fkey',
+          'CPBS_creator_fkey',
+          'CPBS_file_fkey',
+          'CPBSnapshot_intake_tenant_fkey',
+          'CPBSnapshot_creator_fkey',
+          'CPBD_intake_tenant_fkey',
+          'CPBD_actor_fkey'
+        )
       ORDER BY constraint_name
     `;
     expect(tenantForeignKeys).toHaveLength(10);
@@ -1995,7 +2006,7 @@ describe("R36V Project Brain Intake on disposable PostgreSQL", () => {
       WHERE "id" = ${created.intakeId}
     `).rejects.toThrow(/identity and provenance are immutable/u);
     await expect(prisma.$executeRawUnsafe(
-      'TRUNCATE TABLE "ConstructionProjectBrainSource"',
+      'TRUNCATE TABLE "ConstructionProjectBrainSource" CASCADE',
     )).rejects.toThrow(/immutable and append-only/u);
 
     const projectionAfterMutationAttempts = await projectBrainIntakeProjectionForUser({

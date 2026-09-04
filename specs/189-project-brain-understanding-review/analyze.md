@@ -30,3 +30,13 @@
 `SPEC_KIT_DESIGN_CONSISTENT`
 
 This is a documentation consistency result only. It does not claim implementation, passing tests, migration, provider behavior, customer evidence or release completion.
+
+## Post-implementation analysis
+
+- `25/25` functional requirements and `11/11` success criteria remain covered by T001-T029.
+- The implementation preserves the exact R36V intake and R36W candidate meanings; the only historical-test adjustment scopes its schema query to the ten R36V foreign keys and lets the existing R36V no-truncate trigger run through later additive references.
+- The migration is additive and forward-only. No historical row, contract, migration or accepted meaning is rewritten.
+- Authorization, complete coverage, explicit resolution, append-only history, canonical hashes, atomicity, concurrency, replay, restart and provider-zero boundaries have direct tests.
+- No critical, high, ambiguity, duplication or constitution finding remains.
+
+**Implementation analysis verdict**: `SPEC_KIT_ANALYZE_PASS`

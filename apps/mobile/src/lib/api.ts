@@ -97,6 +97,10 @@ import {
   mobileProjectBrainSourceCommandSchema,
   parseMobileProjectBrainIntake,
 } from "@/lib/project-brain-intake";
+import {
+  mobileProjectBrainUnderstandingCommandSchema,
+  parseProjectBrainUnderstandingProjection,
+} from "@/lib/project-brain-understanding-review";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -829,6 +833,33 @@ export class MobileApi {
     } catch {
       throw new MobileApiError("INVALID_RESPONSE");
     }
+  }
+
+  async projectBrainUnderstanding(workspaceId: string, projectId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/project-brain-understanding-review?workspaceId=${encodeURIComponent(workspaceId)}&projectId=${encodeURIComponent(projectId)}`,
+      { method: "GET", cache: "no-store" },
+    );
+    try {
+      const result = parseProjectBrainUnderstandingProjection(value);
+      if (result.review && (result.review.workspaceId !== workspaceId || result.review.projectId !== projectId)) {
+        throw new Error("MOBILE_PROJECT_BRAIN_UNDERSTANDING_MISMATCH");
+      }
+      return result;
+    } catch { throw new MobileApiError("INVALID_RESPONSE"); }
+  }
+
+  async projectBrainUnderstandingCommand(command: unknown) {
+    const parsed = mobileProjectBrainUnderstandingCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/project-brain-understanding-review", {
+      method: "POST", body: JSON.stringify(parsed),
+    });
+    if (!value || typeof value !== "object") throw new MobileApiError("INVALID_RESPONSE");
+    const result = value as { commandId?: string; workspaceId?: string; projectId?: string; action?: string };
+    if (result.commandId !== parsed.commandId || result.workspaceId !== parsed.workspaceId || result.projectId !== parsed.projectId || result.action !== parsed.action) {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+    return value;
   }
 
   async uploadProjectBrainSource(command: unknown) {

@@ -88,6 +88,7 @@ export default function AppLayout() {
       <Tabs.Screen name="human-support" options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
       <Tabs.Screen name="project-brain-intake" options={{ href: null }} />
+      <Tabs.Screen name="project-brain-understanding-review" options={{ href: null }} />
     </Tabs>
   );
 }
