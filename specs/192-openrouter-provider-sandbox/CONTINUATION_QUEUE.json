@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "queueMode": "PINNED_SEQUENTIAL_CAMPAIGN",
+  "queueId": "endvera-r37-openrouter-provider-sandbox-v1",
+  "campaignObjective": "Execute and close exactly one bounded OpenRouter-only synthetic provider sandbox without automatic retry.",
+  "authority": "OPENROUTER ONLY; SYNTHETIC DATA ONLY; MAXIMUM 10 CAD FOUNDER SPEND AND 5 USD APPLICATION SPEND; LOCAL UNCOMMITTED KEY; NO CLIENT SMS CALL EMAIL EXTERNAL TOOL OR WRITE PUSH PREVIEW PRODUCTION OR DEPLOYMENT",
+  "forbiddenActions": [
+    "second provider attempt during this campaign",
+    "customer or prospect data",
+    "real communication, external tool write, push, Preview, Production or deployment"
+  ],
+  "stopConditions": [
+    "any attempted dispatch fails",
+    "any credential value is exposed",
+    "any budget, provider, privacy or cleanup invariant fails"
+  ],
+  "communication": {
+    "informationalLabel": "INFO — aucune réponse requise",
+    "blockingLabel": "BLOCAGE — réponse requise",
+    "authorityLabel": "AUTORITÉ — signature requise",
+    "completionLabel": "TERMINÉ — résultat",
+    "maxRoutineFounderPrompts": 0
+  },
+  "entries": [
+    {
+      "id": "R37-PROVIDER-SANDBOX",
+      "title": "OpenRouter provider sandbox",
+      "objective": "Observe one bounded OpenRouter-only controller matrix on six exact synthetic model-case pairs with durable spend, replay, privacy, revocation and zero-effect controls.",
+      "role": "IMPLEMENTATION",
+      "status": "DONE",
+      "dependencies": [],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind":"FIXED_HEAD","head":"55aafa6eabe46c0f0734db05150955574a916af2"},
+      "authority": "OPENROUTER ONLY; SYNTHETIC DATA ONLY; MAXIMUM 10 CAD FOUNDER SPEND AND 5 USD APPLICATION SPEND; LOCAL UNCOMMITTED KEY; NO CLIENT SMS CALL EMAIL EXTERNAL TOOL OR WRITE PUSH PREVIEW PRODUCTION OR DEPLOYMENT",
+      "allowedScope": ["specs/192-openrouter-provider-sandbox","src/lib/construction-operating-assistant-r37","src/server/construction-operating-assistant-r37","scripts/run-r37-openrouter-sandbox.ts","test/construction-operating-assistant-r37-openrouter-sandbox.test.ts","test/integration/construction-operating-assistant-r37-openrouter-sandbox.itest.ts","C:\\dev\\afterdesk-project-brain checkpoint files after clean closeout"],
+      "planPath": "plan.md",
+      "planSha256": "f43e2e95aecc2a29d2473fb3259e5dc1abf12cdf2fa7e4eda5d4ffc101f4769b",
+      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -ReportOnly",
+      "evidencePaths": ["evidence/observed-provider-report.json","evidence/closeout.md"],
+      "outputHead": "8073003cb119da3ad1c861ed30c8a7f7c54ad623",
+      "outputTree": "a31b830396443d86985d0003e10753c0794d9b48",
+      "result": "REWORK: one exact synthetic OpenRouter attempt returned R37_PROVIDER_HTTP_404; 0 canonical observations, 0 micro-USD settled spend, no selection, grants revoked, lane disabled and zero external effects. No retry was attempted.",
+      "completedAtUtc": "2026-09-04T23:30:00Z"
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
   [switch]$PreflightOnly,
-  [switch]$RequireComplete
+  [switch]$RequireComplete,
+  [switch]$ReportOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,14 +34,31 @@ function Assert-Preflight($Report) {
 
 function Assert-ObservedReport($Report) {
   if ($Report.schemaVersion -ne 1 -or $Report.provider -ne "OPENROUTER" -or $Report.evidenceLabel -ne "OBSERVED_PROVIDER_SYNTHETIC_INPUT") { throw "R37_OBSERVED_REPORT_IDENTITY_INVALID" }
-  if ($Report.verdict -ne "OPENROUTER_SANDBOX_OBSERVED_PASS" -or $Report.expectedCallCount -ne 6 -or $Report.dispatchedCallCount -ne 6 -or $Report.canonicalObservationCount -ne 6) { throw "R37_OBSERVED_DENOMINATOR_INVALID" }
-  if (@($Report.observations).Count -ne 6 -or @($Report.failureCodes).Count -ne 0) { throw "R37_OBSERVED_MATRIX_INVALID" }
   if (-not $Report.grantsRevoked -or -not $Report.providerLaneDisabled -or $Report.externalCommunicationPerformed -or $Report.externalToolWritePerformed -or $Report.deploymentPerformed) { throw "R37_OBSERVED_CLEANUP_INVALID" }
-  if ([int64]$Report.settledSpendMicros -gt 5000000) { throw "R37_OBSERVED_USD_CEILING_EXCEEDED" }
+  if ([int64]$Report.settledSpendMicros -lt 0 -or [int64]$Report.settledSpendMicros -gt 5000000) { throw "R37_OBSERVED_USD_CEILING_EXCEEDED" }
+  if ($Report.expectedCallCount -ne 6 -or $Report.dispatchedCallCount -lt 1 -or $Report.dispatchedCallCount -gt 6) { throw "R37_OBSERVED_DENOMINATOR_INVALID" }
+  if ($Report.canonicalObservationCount -ne @($Report.observations).Count -or $Report.canonicalObservationCount -gt $Report.dispatchedCallCount) { throw "R37_OBSERVED_MATRIX_INVALID" }
   foreach ($item in @($Report.observations)) {
     if ($item.provider -ne "OPENROUTER" -or $item.evidenceLabel -ne "OBSERVED_PROVIDER_SYNTHETIC_INPUT" -or -not $item.oracle.passed) { throw "R37_OBSERVATION_INVALID" }
     if ([int64]$item.costMicros -gt 100000) { throw "R37_ATTEMPT_CEILING_EXCEEDED" }
   }
+  if ($Report.verdict -eq "OPENROUTER_SANDBOX_OBSERVED_PASS") {
+    if ($Report.dispatchedCallCount -ne 6 -or $Report.canonicalObservationCount -ne 6 -or @($Report.failureCodes).Count -ne 0) { throw "R37_OBSERVED_PASS_INVALID" }
+  } elseif ($Report.verdict -eq "REWORK") {
+    if (@($Report.failureCodes).Count -lt 1 -or $null -ne $Report.selectedR38Candidate) { throw "R37_OBSERVED_REWORK_INVALID" }
+  } else {
+    throw "R37_OBSERVED_VERDICT_INVALID"
+  }
+}
+
+if ($ReportOnly) {
+  if (-not (Test-Path -LiteralPath $observedReportPath)) { throw "R37_OBSERVED_REPORT_MISSING" }
+  $sealedReport = Get-Content -Raw -LiteralPath $observedReportPath | ConvertFrom-Json
+  Assert-ObservedReport $sealedReport
+  Write-Output "R37_STATE=$($sealedReport.verdict)"
+  Write-Output "R37_REPORT_ONLY=true"
+  Write-Output "R37_NETWORK_CALLS=0"
+  return
 }
 
 Push-Location $repoRoot

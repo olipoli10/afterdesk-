@@ -64,12 +64,12 @@
 
 ## Phase 7: Observed execution and project closure
 
-- [ ] T025 [US2] If the local key exists, execute exactly the six-call OpenRouter matrix once and write `specs/192-openrouter-provider-sandbox/evidence/observed-provider-report.json`; otherwise leave `CREDENTIAL_REQUIRED`
-- [ ] T026 [US4] Reconcile provider-reported cost, local ledger, call count, replay count, grants and lane state
-- [ ] T027 [US4] Run targeted tests, PostgreSQL integration, provider boundary, lint, typecheck, serialized full suite and `git diff --check`
-- [ ] T028 [US4] Complete `specs/192-openrouter-provider-sandbox/LONG_RUN_PROGRAM.json` only from observed evidence and validate with `-RequireComplete`
-- [ ] T029 [US4] Create useful local commits, drain the R37 queue and checkpoint the canonical Brain without changing unsupported dashboard metrics
-- [ ] T030 [US4] Revoke campaign grants, disable the lane, stop only the disposable database/processes and prove both repositories tracked-clean
+- [x] T025 [US2] If the local key exists, execute exactly the six-call OpenRouter matrix once and write `specs/192-openrouter-provider-sandbox/evidence/observed-provider-report.json`; otherwise leave `CREDENTIAL_REQUIRED`
+- [x] T026 [US4] Reconcile provider-reported cost, local ledger, call count, replay count, grants and lane state
+- [x] T027 [US4] Run targeted tests, PostgreSQL integration, provider boundary, lint, typecheck, serialized full suite and `git diff --check`
+- [x] T028 [US4] Complete `specs/192-openrouter-provider-sandbox/LONG_RUN_PROGRAM.json` only from observed evidence and validate with `-RequireComplete`
+- [x] T029 [US4] Create useful local commits, drain the R37 queue and checkpoint the canonical Brain without changing unsupported dashboard metrics
+- [x] T030 [US4] Revoke campaign grants, disable the lane, stop only the disposable database/processes and prove both repositories tracked-clean
 
 ## Dependencies and execution order
 

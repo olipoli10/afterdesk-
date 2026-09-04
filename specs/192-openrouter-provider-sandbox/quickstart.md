@@ -31,6 +31,13 @@ Only a report produced from actual OpenRouter responses can return
 `OPENROUTER_SANDBOX_OBSERVED_PASS`. Never rerun after an ambiguous attempted
 dispatch; inspect the durable ledger and report first.
 
+After any attempted dispatch, validate the sealed result without another
+provider request:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -ReportOnly
+```
+
 ## 4. Stop conditions
 
 Stop without retry on secret leakage, non-synthetic input, unexpected host/redirect/model, missing ZDR/data denial, provider fallback, ambiguous prior dispatch, budget breach, response schema drift, ledger mismatch or cleanup failure.

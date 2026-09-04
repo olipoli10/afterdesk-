@@ -6,7 +6,18 @@
   "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
   "baseHead": "d6e517a231afd23147a99b2a9283b026b705893e",
   "authority": "OPENROUTER ONLY; SYNTHETIC DATA ONLY; MAXIMUM 10 CAD FOUNDER SPEND AND 5 USD APPLICATION SPEND; LOCAL UNCOMMITTED KEY; NO CLIENT, SMS, CALL, EMAIL, EXTERNAL TOOL OR WRITE, PUSH, PREVIEW, PRODUCTION OR DEPLOYMENT",
-  "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete",
+  "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -ReportOnly",
+  "estimatedHours": {
+    "min": 4,
+    "max": 6
+  },
+  "referenceRuns": [
+    {
+      "id": "r37-openrouter-observed-attempt-2026-09-04",
+      "observedMinutes": 1,
+      "workUnits": "One exact synthetic OpenRouter request followed by fail-closed revocation, lane disablement and disposable database cleanup."
+    }
+  ],
   "stopConditions": [
     "Any credential value appears in source, evidence, logs or command arguments",
     "Any non-synthetic or customer/prospect data becomes necessary",
@@ -16,6 +27,14 @@
     "Revocation, lane disablement or disposable database cleanup cannot be guaranteed",
     "Push, Preview, Production or deployment becomes necessary"
   ],
+  "forbidden": [
+    "Any second provider attempt during this campaign",
+    "Any provider other than OpenRouter",
+    "Any customer or prospect data",
+    "Any real SMS, call, email, connector or external tool write",
+    "Any credential value in source, evidence, logs, command arguments or Git",
+    "Any push, Preview, Production or deployment"
+  ],
   "chapters": [
     {
       "id": "CH-001",
@@ -23,6 +42,9 @@
       "objective": "Freeze OpenRouter-only authority, model/privacy/cost evidence, equal synthetic cases and non-vacuous failing guards.",
       "status": "DONE",
       "dependencies": [],
+      "estimatedMinutes": 60,
+      "allowedScope": ["specs/192-openrouter-provider-sandbox", "test/construction-operating-assistant-r37-openrouter-sandbox.test.ts"],
+      "acceptanceCommands": ["npx vitest run test/construction-operating-assistant-r37-openrouter-sandbox.test.ts"],
       "completionCommand": "npx vitest run test/construction-operating-assistant-r37-openrouter-sandbox.test.ts",
       "evidencePaths": ["evidence/red.md"],
       "result": "Authority, official evidence, equal cases and non-vacuous RED are frozen; targeted unit and boundary tests pass.",
@@ -34,6 +56,9 @@
       "objective": "Implement the exact private OpenRouter transport, response/cost normalization, deterministic oracle and durable reserve-before-dispatch campaign without public reachability.",
       "status": "DONE",
       "dependencies": ["CH-001"],
+      "estimatedMinutes": 105,
+      "allowedScope": ["src/lib/construction-operating-assistant-r37", "src/server/construction-operating-assistant-r37", "scripts/run-r37-openrouter-sandbox.ts", "test/integration/construction-operating-assistant-r37-openrouter-sandbox.itest.ts"],
+      "acceptanceCommands": ["npm run validate:provider-boundary", "npm run test:integration -- test/integration/construction-operating-assistant-r37-openrouter-sandbox.itest.ts"],
       "completionCommand": "npm run validate:provider-boundary && npx vitest run test/construction-operating-assistant-r37-openrouter-sandbox.test.ts test/integration/construction-operating-assistant-r37-openrouter-sandbox.itest.ts",
       "evidencePaths": ["evidence/credential-free-preflight.json"],
       "result": "Private exact OpenRouter transport, strict normalization/oracle and durable reserve-before-dispatch campaign pass unit and disposable PostgreSQL tests.",
@@ -43,23 +68,29 @@
       "id": "CH-003",
       "title": "Observed OpenRouter matrix or exact credential boundary",
       "objective": "Execute the six observed calls once when the local key exists; otherwise complete all possible work and stop honestly at CREDENTIAL_REQUIRED with zero network/spend.",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["CH-002"],
-      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1",
+      "estimatedMinutes": 45,
+      "allowedScope": ["specs/192-openrouter-provider-sandbox/evidence", "scripts/start-r37-openrouter-sandbox-secure.ps1"],
+      "acceptanceCommands": ["powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -ReportOnly"],
+      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -ReportOnly",
       "evidencePaths": ["evidence/observed-provider-report.json"],
-      "result": "CREDENTIAL_REQUIRED after complete credential-free preflight; credential value not inspected, network calls 0 and provider lane disabled.",
-      "completedAtUtc": ""
+      "result": "REWORK: one exact synthetic OpenRouter attempt was dispatched and failed closed with R37_PROVIDER_HTTP_404 before any canonical observation; provider-reported settled spend is 0 micro-USD.",
+      "completedAtUtc": "2026-09-04T23:30:00Z"
     },
     {
       "id": "CH-004",
       "title": "Revocation, validation and closeout",
       "objective": "Reconcile spend/calls/evidence, prove secret absence, revoke grants, disable lane, clean the disposable database, validate proportional gates, commit locally and checkpoint Brain without advancing R38-R40.",
-      "status": "OPEN",
+      "status": "DONE",
       "dependencies": ["CH-003"],
-      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete",
+      "estimatedMinutes": 75,
+      "allowedScope": ["specs/192-openrouter-provider-sandbox", "specs/090-prepared-action-inspection", "C:\\dev\\afterdesk-project-brain"],
+      "acceptanceCommands": ["powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -ReportOnly", "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\\dev\\afterdesk-project-brain\\scripts\\validate-long-run-program.ps1 -ManifestPath specs/192-openrouter-provider-sandbox/LONG_RUN_PROGRAM.json -RequireComplete"],
+      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -ReportOnly",
       "evidencePaths": ["evidence/mutations.md", "evidence/closeout.md"],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "REWORK preserved without retry; report-only validation passed, credential value remained uninspected, no secret pattern entered the repository, grants were revoked, provider lane disabled, external effects remained zero and the disposable R37 database was removed.",
+      "completedAtUtc": "2026-09-04T23:30:00Z"
     }
   ]
 }

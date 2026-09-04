@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "r37-openrouter-0f386ce5-7fcd-4f2a-afcd-902bbf03009a",
+  "provider": "OPENROUTER",
+  "evidenceLabel": "OBSERVED_PROVIDER_SYNTHETIC_INPUT",
+  "expectedCallCount": 6,
+  "dispatchedCallCount": 1,
+  "canonicalObservationCount": 0,
+  "replayedDispatchCount": 0,
+  "settledSpendMicros": "0",
+  "founderCeilingCadMicros": "10000000",
+  "applicationCeilingUsdMicros": "5000000",
+  "observations": [],
+  "selectedR38Candidate": null,
+  "failureCodes": [
+    "R37_PROVIDER_HTTP_404"
+  ],
+  "grantsRevoked": true,
+  "providerLaneDisabled": true,
+  "externalCommunicationPerformed": false,
+  "externalToolWritePerformed": false,
+  "deploymentPerformed": false,
+  "verdict": "REWORK"
+}

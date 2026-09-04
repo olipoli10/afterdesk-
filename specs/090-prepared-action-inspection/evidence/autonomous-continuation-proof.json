@@ -3,15 +3,15 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 102,
+  "consecutiveBlocksCompleted": 103,
   "goalStayedActiveUntilDrain": true,
   "completionValidatorVerdict": "DRAINED",
   "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
   "canonicalRoadmapComplete": false,
   "remainingAuthorizedWorkCount": 0,
-  "remainingRoadmapItemCount": 4,
+  "remainingRoadmapItemCount": 3,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Obtain an explicit bounded authority packet for R37-PROVIDER-SANDBOX before any provider, credential, external transport or spending is used.",
-  "urgentAssistanceReason": "R36Z closed the final authorized local critical-path release. R37-PROVIDER-SANDBOX is next and is canonically marked EXTERNAL_EXACT_LATER, so provider selection, credentials, spending and observed sandbox calls require separate explicit authority."
+  "nextAction": "Prepare a new exact OpenRouter model-eligibility packet and bounded R37 retest plan only under fresh founder authority; do not retry the failed dispatch automatically.",
+  "urgentAssistanceReason": "R37 completed with preserved verdict REWORK after the first exact synthetic OpenRouter request returned HTTP 404. R38-R40 require separate founder, customer/provider and production authorities, and no authorized critical-path work remains."
 }

@@ -36,6 +36,21 @@ describe("R37 OpenRouter closed-world contracts", () => {
     expect(validator).not.toMatch(/&\s+npx\s+prisma\s+migrate\s+deploy/);
   });
 
+  it("validates a sealed observed report without reopening provider execution", () => {
+    const validator = readFileSync(
+      "specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1",
+      "utf8",
+    );
+    const reportOnlyGate = validator.indexOf("if ($ReportOnly)");
+    const repositoryExecution = validator.indexOf("Push-Location $repoRoot");
+
+    expect(reportOnlyGate).toBeGreaterThan(0);
+    expect(repositoryExecution).toBeGreaterThan(reportOnlyGate);
+    expect(validator).toContain('Write-Output "R37_NETWORK_CALLS=0"');
+    expect(validator).toContain('if ($Report.verdict -eq "OPENROUTER_SANDBOX_OBSERVED_PASS")');
+    expect(validator).toContain('elseif ($Report.verdict -eq "REWORK")');
+  });
+
   it("freezes the stricter authority below the founder ceiling", () => {
     expect(R37_AUTHORITY).toMatchObject({
       gateway: "OPENROUTER",
