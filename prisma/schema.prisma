@@ -4129,6 +4129,118 @@ model ConstructionProjectBrainUnderstandingDecision {
   @@index([workspaceId, projectId, createdAt], map: "CPBUDec_project_created_idx")
 }
 
+/// Immutable body-bound deterministic answer from one exact confirmed R36X understanding.
+model ConstructionProjectBrainRecallReceipt {
+  id                              String   @id @default(cuid())
+  workspaceId                     String
+  projectId                       String
+  understandingReviewId           String
+  confirmedUnderstandingSnapshotId String
+  confirmedUnderstandingSequence  Int
+  memoryCanonicalHash             String
+  questionKind                    String
+  commandId                       String
+  commandHash                     String
+  schemaVersion                   Int      @default(1)
+  result                          Json
+  resultHash                      String
+  actorUserId                     String
+  createdAt                       DateTime @default(now())
+
+  citations ConstructionProjectBrainMemoryCitation[]
+
+  @@unique([workspaceId, commandId], map: "CPBRR_workspace_command_key")
+  @@unique([id, workspaceId, projectId], map: "CPBRR_tenant_identity_key")
+  @@index([workspaceId, projectId, createdAt], map: "CPBRR_project_created_idx")
+}
+
+/// Immutable ordered relational provenance for a recall or prepared action.
+model ConstructionProjectBrainMemoryCitation {
+  id                              String   @id @default(cuid())
+  workspaceId                     String
+  projectId                       String
+  recallReceiptId                 String?
+  recallReceipt                   ConstructionProjectBrainRecallReceipt? @relation(fields: [recallReceiptId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBMC_recall_tenant_fkey")
+  preparedActionBindingId         String?
+  preparedActionBinding           ConstructionProjectBrainPreparedActionBinding? @relation(fields: [preparedActionBindingId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBMC_binding_tenant_fkey")
+  ordinal                         Int
+  citationKind                    String
+  understandingReviewId           String
+  confirmedUnderstandingSnapshotId String
+  confirmationDecisionId          String
+  dispositionId                   String?
+  resolutionId                    String?
+  candidateId                     String?
+  candidateBatchId                String
+  intakeId                        String
+  confirmedIntakeSnapshotId       String?
+  sourceId                        String?
+  provenanceFingerprint           String
+  createdAt                       DateTime @default(now())
+
+  @@unique([recallReceiptId, ordinal], map: "CPBMC_recall_ordinal_key")
+  @@unique([preparedActionBindingId, ordinal], map: "CPBMC_binding_ordinal_key")
+  @@index([workspaceId, projectId, confirmedUnderstandingSnapshotId], map: "CPBMC_memory_idx")
+}
+
+/// Immutable binding from confirmed memory to one existing family-owned prepared action.
+model ConstructionProjectBrainPreparedActionBinding {
+  id                              String   @id @default(cuid())
+  workspaceId                     String
+  projectId                       String
+  understandingReviewId           String
+  confirmedUnderstandingSnapshotId String
+  confirmedUnderstandingSequence  Int
+  memoryCanonicalHash             String
+  family                          String
+  familyEntityId                  String
+  familyEntityVersion             Int
+  payloadFingerprint              String
+  recipientContactId              String
+  recipientDisplayName            String
+  recipientRef                    String
+  channel                         String
+  subject                         String?
+  body                            String
+  frozenContentHash               String
+  status                          String   @default("PREPARED_UNSENT")
+  approvalRequired                Boolean  @default(true)
+  requiredApprovingRole           String
+  commandId                       String
+  commandHash                     String
+  actorUserId                     String
+  createdAt                       DateTime @default(now())
+
+  citations ConstructionProjectBrainMemoryCitation[]
+
+  @@unique([workspaceId, commandId], map: "CPBPAB_workspace_command_key")
+  @@unique([id, workspaceId, projectId], map: "CPBPAB_tenant_identity_key")
+  @@unique([family, familyEntityId], map: "CPBPAB_family_entity_key")
+  @@index([workspaceId, projectId, createdAt], map: "CPBPAB_project_created_idx")
+}
+
+/// Immutable redacted outcome for one R36Y assistant-memory command.
+model ConstructionProjectBrainAssistantDecision {
+  id                              String   @id @default(cuid())
+  workspaceId                     String
+  projectId                       String
+  commandId                       String
+  commandHash                     String
+  action                          String
+  questionKind                    String?
+  family                          String?
+  confirmedUnderstandingSequence  Int
+  memoryCanonicalHash             String
+  entityId                        String
+  resultHash                      String
+  outcome                         String
+  actorUserId                     String
+  createdAt                       DateTime @default(now())
+
+  @@unique([workspaceId, commandId], map: "CPBAD_workspace_command_key")
+  @@index([workspaceId, projectId, createdAt], map: "CPBAD_project_created_idx")
+}
+
 model ConstructionContact {
   id                String                    @id @default(cuid())
   workspaceId       String

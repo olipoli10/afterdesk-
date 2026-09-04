@@ -101,6 +101,11 @@ import {
   mobileProjectBrainUnderstandingCommandSchema,
   parseProjectBrainUnderstandingProjection,
 } from "@/lib/project-brain-understanding-review";
+import {
+  mobileProjectBrainAssistantCommandSchema,
+  mobileProjectBrainAssistantMemoryProjectionSchema,
+  mobileProjectBrainAssistantResultSchema,
+} from "@/lib/project-brain-assistant-memory";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -860,6 +865,42 @@ export class MobileApi {
       throw new MobileApiError("INVALID_RESPONSE");
     }
     return value;
+  }
+
+  async projectBrainAssistantMemory(workspaceId: string, projectId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/assistant/project-memory?workspaceId=${encodeURIComponent(workspaceId)}&projectId=${encodeURIComponent(projectId)}`,
+      { method: "GET", cache: "no-store" },
+    );
+    try {
+      const result = mobileProjectBrainAssistantMemoryProjectionSchema.parse(value);
+      if (result.workspaceId !== workspaceId || result.projectId !== projectId) {
+        throw new Error("MOBILE_PROJECT_BRAIN_ASSISTANT_MEMORY_MISMATCH");
+      }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async projectBrainAssistantMemoryCommand(command: unknown) {
+    const parsed = mobileProjectBrainAssistantCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/assistant", {
+      method: "POST",
+      body: JSON.stringify(parsed),
+    });
+    try {
+      const result = mobileProjectBrainAssistantResultSchema.parse(value);
+      if (
+        result.commandId !== parsed.commandId ||
+        result.workspaceId !== parsed.workspaceId ||
+        result.projectId !== parsed.projectId ||
+        result.action !== parsed.action
+      ) throw new Error("MOBILE_PROJECT_BRAIN_ASSISTANT_RESULT_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
   }
 
   async uploadProjectBrainSource(command: unknown) {

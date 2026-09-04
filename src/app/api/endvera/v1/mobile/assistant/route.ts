@@ -5,6 +5,8 @@ import {
   constructionMobileAssistantHistoryForUser,
 } from "@/server/construction-operating-assistant-r9/mobile-assistant";
 import { processUnifiedAssistantRequest } from "@/server/construction-operating-assistant-r36c/orchestrator";
+import { projectBrainAssistantCommandSchema } from "@/lib/construction-operating-assistant-r36y/project-brain-assistant-memory";
+import { applyProjectBrainAssistantCommandForUser } from "@/server/construction-operating-assistant-r36y/project-brain-assistant-memory";
 
 const PRIVATE_NO_STORE = { "Cache-Control": "private, no-store" } as const;
 
@@ -52,6 +54,18 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON." }, { status: 400, headers: PRIVATE_NO_STORE });
+  }
+  const memoryCommand = projectBrainAssistantCommandSchema.safeParse(body);
+  if (memoryCommand.success) {
+    try {
+      const result = await applyProjectBrainAssistantCommandForUser({ userId: auth.user.id, command: memoryCommand.data });
+      return NextResponse.json(result, { status: result.replayed ? 200 : 201, headers: PRIVATE_NO_STORE });
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      if (/STALE|CONFLICT|AMBIGUOUS/u.test(code)) return NextResponse.json({ error: "Command conflict." }, { status: 409, headers: PRIVATE_NO_STORE });
+      if (/UNAVAILABLE|LIMITATION|CITATION|CORRUPT/u.test(code)) return NextResponse.json({ error: "Command unavailable." }, { status: 422, headers: PRIVATE_NO_STORE });
+      return NextResponse.json({ error: "Not found." }, { status: 404, headers: PRIVATE_NO_STORE });
+    }
   }
   const parsed = constructionMobileAssistantRequestSchema.safeParse(body);
   if (!parsed.success) {

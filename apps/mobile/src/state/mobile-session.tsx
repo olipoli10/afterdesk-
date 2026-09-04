@@ -76,6 +76,11 @@ import type {
   MobileProjectBrainUnderstandingCommand,
   MobileProjectBrainUnderstandingProjection,
 } from "@/lib/project-brain-understanding-review";
+import type {
+  MobileProjectBrainAssistantCommand,
+  MobileProjectBrainAssistantMemoryProjection,
+  MobileProjectBrainAssistantResult,
+} from "@/lib/project-brain-assistant-memory";
 import {
   beginProjectBrainSourceAttempt,
   finishProjectBrainSourceAttempt,
@@ -182,6 +187,9 @@ type MobileSessionValue = {
   projectBrainSourceQueue: ProjectBrainSourceAttempt[];
   projectBrainUnderstanding: MobileProjectBrainUnderstandingProjection | null;
   projectBrainUnderstandingLoadState: LoadState;
+  projectBrainAssistantMemory: MobileProjectBrainAssistantMemoryProjection | null;
+  projectBrainAssistantMemoryLoadState: LoadState;
+  latestProjectBrainAssistantResult: MobileProjectBrainAssistantResult | null;
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -234,6 +242,8 @@ type MobileSessionValue = {
   dismissProjectBrainIntent: (commandId: string) => Promise<void>;
   loadProjectBrainUnderstanding: (projectId: string) => Promise<void>;
   submitProjectBrainUnderstandingCommand: (command: MobileProjectBrainUnderstandingCommand) => Promise<void>;
+  loadProjectBrainAssistantMemory: (projectId: string) => Promise<void>;
+  submitProjectBrainAssistantMemoryCommand: (command: MobileProjectBrainAssistantCommand) => Promise<MobileProjectBrainAssistantResult>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -342,6 +352,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [projectBrainSourceQueue, setProjectBrainSourceQueue] = useState<ProjectBrainSourceAttempt[]>([]);
   const [projectBrainUnderstanding, setProjectBrainUnderstanding] = useState<MobileProjectBrainUnderstandingProjection | null>(null);
   const [projectBrainUnderstandingLoadState, setProjectBrainUnderstandingLoadState] = useState<LoadState>("IDLE");
+  const [projectBrainAssistantMemory, setProjectBrainAssistantMemory] = useState<MobileProjectBrainAssistantMemoryProjection | null>(null);
+  const [projectBrainAssistantMemoryLoadState, setProjectBrainAssistantMemoryLoadState] = useState<LoadState>("IDLE");
+  const [latestProjectBrainAssistantResult, setLatestProjectBrainAssistantResult] = useState<MobileProjectBrainAssistantResult | null>(null);
   const [emailCockpit, setEmailCockpit] = useState<MobileEmailCockpit | null>(null);
   const [emailLoadState, setEmailLoadState] = useState<LoadState>("IDLE");
   const [accountingCockpit, setAccountingCockpit] = useState<MobileAccountingCockpit | null>(null);
@@ -1394,6 +1407,11 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setProjectBrainIntake(null);
     setProjectBrainCommandQueue([]);
     setProjectBrainSourceQueue([]);
+    setProjectBrainUnderstanding(null);
+    setProjectBrainUnderstandingLoadState("IDLE");
+    setProjectBrainAssistantMemory(null);
+    setProjectBrainAssistantMemoryLoadState("IDLE");
+    setLatestProjectBrainAssistantResult(null);
     setProjectBrainLoadState("LOADING");
     setPublicError(null);
     try {
@@ -1742,6 +1760,50 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       if (error instanceof MobileApiError && error.code === "CONFLICT") {
         const current = await api.projectBrainUnderstanding(command.workspaceId, command.projectId).catch(() => null);
         if (current) { setProjectBrainUnderstanding(current); setProjectBrainUnderstandingLoadState("READY"); }
+      }
+      throw error;
+    }
+  }, [activeWorkspace, api]);
+
+  const loadProjectBrainAssistantMemory = useCallback(async (projectId: string) => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setProjectBrainAssistantMemoryLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const next = await api.projectBrainAssistantMemory(activeWorkspace.id, projectId);
+      setProjectBrainAssistantMemory(next);
+      setProjectBrainAssistantMemoryLoadState("READY");
+    } catch (error) {
+      setProjectBrainAssistantMemory(null);
+      setProjectBrainAssistantMemoryLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const submitProjectBrainAssistantMemoryCommand = useCallback(async (command: MobileProjectBrainAssistantCommand) => {
+    if (!activeWorkspace || activeWorkspace.id !== command.workspaceId) {
+      throw new Error("MOBILE_PROJECT_BRAIN_ASSISTANT_WORKSPACE_REFUSED");
+    }
+    setProjectBrainAssistantMemoryLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.projectBrainAssistantMemoryCommand(command);
+      const next = await api.projectBrainAssistantMemory(command.workspaceId, command.projectId);
+      setLatestProjectBrainAssistantResult(result);
+      setProjectBrainAssistantMemory(next);
+      setProjectBrainAssistantMemoryLoadState("READY");
+      return result;
+    } catch (error) {
+      setProjectBrainAssistantMemoryLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+      if (error instanceof MobileApiError && error.code === "CONFLICT") {
+        const current = await api.projectBrainAssistantMemory(command.workspaceId, command.projectId).catch(() => null);
+        if (current) {
+          setProjectBrainAssistantMemory(current);
+          setProjectBrainAssistantMemoryLoadState("READY");
+        }
       }
       throw error;
     }
@@ -2329,6 +2391,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       projectBrainSourceQueue,
       projectBrainUnderstanding,
       projectBrainUnderstandingLoadState,
+      projectBrainAssistantMemory,
+      projectBrainAssistantMemoryLoadState,
+      latestProjectBrainAssistantResult,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -2379,6 +2444,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       dismissProjectBrainIntent,
       loadProjectBrainUnderstanding,
       submitProjectBrainUnderstandingCommand,
+      loadProjectBrainAssistantMemory,
+      submitProjectBrainAssistantMemoryCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -2434,6 +2501,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       projectBrainSourceQueue,
       projectBrainUnderstanding,
       projectBrainUnderstandingLoadState,
+      projectBrainAssistantMemory,
+      projectBrainAssistantMemoryLoadState,
+      latestProjectBrainAssistantResult,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -2489,6 +2559,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       dismissProjectBrainIntent,
       loadProjectBrainUnderstanding,
       submitProjectBrainUnderstandingCommand,
+      loadProjectBrainAssistantMemory,
+      submitProjectBrainAssistantMemoryCommand,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

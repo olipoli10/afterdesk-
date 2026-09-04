@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -25,6 +25,7 @@ import {
   colors,
 } from "@/components/ui";
 import { createAssistantAttempt } from "@/lib/assistant";
+import { createProjectBrainRecallCommand } from "@/lib/project-brain-assistant-memory";
 import { mobileProductCopy, type MobileProductCopy } from "@/lib/product-experience";
 import { useMobileSession } from "@/state/mobile-session";
 
@@ -37,15 +38,22 @@ function attemptLabel(state: string, copy: MobileProductCopy) {
 }
 
 export default function AssistantScreen() {
+  const params = useLocalSearchParams<{ projectId?: string | string[] }>();
+  const projectId = Array.isArray(params.projectId) ? params.projectId[0] : params.projectId;
   const scrollRef = useRef<ScrollView>(null);
   const {
     activeWorkspace,
     assistantHistory,
     assistantLoadState,
     latestAssistantAttempt,
+    projectBrainAssistantMemory,
+    projectBrainAssistantMemoryLoadState,
+    latestProjectBrainAssistantResult,
     publicError,
     refreshAssistant,
     submitAssistantAttempt,
+    loadProjectBrainAssistantMemory,
+    submitProjectBrainAssistantMemoryCommand,
   } = useMobileSession();
   const [message, setMessage] = useState("");
   const copy = mobileProductCopy(activeWorkspace?.defaultLocale);
@@ -53,6 +61,10 @@ export default function AssistantScreen() {
   useEffect(() => {
     void refreshAssistant();
   }, [refreshAssistant]);
+
+  useEffect(() => {
+    if (projectId) void loadProjectBrainAssistantMemory(projectId);
+  }, [loadProjectBrainAssistantMemory, projectId]);
 
   if (activeWorkspace?.role === "FIELD_WORKER") {
     return (
@@ -78,6 +90,18 @@ export default function AssistantScreen() {
     await submitAssistantAttempt(latestAssistantAttempt);
   };
 
+  const recall = async (questionKind: "PROJECT_SUMMARY" | "PROJECT_SCOPE" | "IMPORTANT_PEOPLE" | "IMPORTANT_DATES" | "BLOCKERS" | "NEXT_DECISION" | "REVIEWED_SOURCE_INVENTORY" | "RESOLVED_CONTRADICTION_HISTORY") => {
+    const memory = projectBrainAssistantMemory?.currentMemory;
+    if (!activeWorkspace || !projectId || !memory) return;
+    await submitProjectBrainAssistantMemoryCommand(createProjectBrainRecallCommand({
+      workspaceId: activeWorkspace.id,
+      projectId,
+      confirmedUnderstandingSequence: memory.confirmedUnderstandingSequence,
+      memoryCanonicalHash: memory.memoryCanonicalHash,
+      questionKind,
+    }));
+  };
+
   const stateLabel = latestAssistantAttempt ? attemptLabel(latestAssistantAttempt.state, copy) : null;
   const result = latestAssistantAttempt?.result;
   const sending = latestAssistantAttempt?.state === "SENDING";
@@ -95,6 +119,49 @@ export default function AssistantScreen() {
         >
           <BrandHeader workspace={activeWorkspace?.name} onMore={() => router.push("/more")} moreLabel={copy.tabs.more} />
           <Heading eyebrow={copy.assistantEyebrow} title={copy.assistantTitle} body={copy.assistantBody} />
+
+          {projectId ? (
+            <Card style={styles.memoryCard}>
+              <Text style={styles.memoryTitle}>{copy.assistantMemory.title}</Text>
+              <Text style={styles.memoryBody}>{copy.assistantMemory.body}</Text>
+              {projectBrainAssistantMemoryLoadState === "LOADING" ? <Loading label={copy.loadingConversation} /> : null}
+              {projectBrainAssistantMemoryLoadState !== "LOADING" && !projectBrainAssistantMemory?.currentMemory ? <Empty>{copy.assistantMemory.unavailable}</Empty> : null}
+              {projectBrainAssistantMemory?.currentMemory ? (
+                <>
+                  <Text style={styles.memoryVersion}>{copy.assistantMemory.confirmed} #{projectBrainAssistantMemory.currentMemory.confirmedUnderstandingSequence}</Text>
+                  <View style={styles.memoryQuestions}>
+                    {([
+                      ["PROJECT_SUMMARY", copy.assistantMemory.summary], ["PROJECT_SCOPE", copy.assistantMemory.scope],
+                      ["IMPORTANT_PEOPLE", copy.assistantMemory.people], ["IMPORTANT_DATES", copy.assistantMemory.dates],
+                      ["BLOCKERS", copy.assistantMemory.blockers], ["NEXT_DECISION", copy.assistantMemory.next],
+                      ["REVIEWED_SOURCE_INVENTORY", copy.assistantMemory.sources], ["RESOLVED_CONTRADICTION_HISTORY", copy.assistantMemory.contradictions],
+                    ] as const).map(([kind, label]) => (
+                      <Pressable key={kind} accessibilityRole="button" accessibilityLabel={`${copy.assistantMemory.ask}: ${label}`} onPress={() => void recall(kind)} style={({ pressed }) => [styles.memoryQuestion, pressed && styles.pressed]}>
+                        <Text style={styles.memoryQuestionText}>{label}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </>
+              ) : null}
+              {latestProjectBrainAssistantResult?.action === "RECALL_CONFIRMED_PROJECT_MEMORY" ? (
+                <View style={styles.memoryResult}>
+                  <Text style={styles.memoryTitle}>{latestProjectBrainAssistantResult.answer.label}</Text>
+                  {latestProjectBrainAssistantResult.answer.values.length ? latestProjectBrainAssistantResult.answer.values.map((value, index) => <Text key={`${index}-${value}`} style={styles.messageText}>• {value}</Text>) : <Text style={styles.memoryBody}>—</Text>}
+                  <Text style={styles.memoryProof}>{copy.assistantMemory.citations}: {latestProjectBrainAssistantResult.answer.citations.length}</Text>
+                </View>
+              ) : null}
+              {projectBrainAssistantMemory?.preparedActions.map((preparedAction) => (
+                <View key={preparedAction.bindingId} style={styles.preparedAction}>
+                  <Text style={styles.memoryTitle}>{copy.assistantMemory.prepared}</Text>
+                  <Text style={styles.messageText}>{copy.assistantMemory.recipient}: {preparedAction.recipientDisplayName} ({preparedAction.recipientRef})</Text>
+                  <Text style={styles.messageText}>{copy.assistantMemory.channel}: {preparedAction.channel}</Text>
+                  {preparedAction.subject ? <Text style={styles.messageText}>{preparedAction.subject}</Text> : null}
+                  <Text style={styles.messageText}>{copy.assistantMemory.exactMessage}: {preparedAction.body}</Text>
+                  <Text style={styles.memoryProof}>{copy.assistantMemory.approval} · {copy.assistantMemory.citations}: {preparedAction.citations.length}</Text>
+                </View>
+              ))}
+            </Card>
+          ) : null}
 
           {publicError ? (
             <MobileRecoveryNotice message={publicError} hint={copy.errorRecoveryHint} actionLabel={copy.refresh} busy={assistantLoadState === "LOADING"} onRetry={() => void refreshAssistant()} />
@@ -197,4 +264,14 @@ const styles = StyleSheet.create({
   composer: { minHeight: 62, flexDirection: "row", alignItems: "flex-end", gap: 8, padding: 8, borderRadius: 22, backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.border },
   input: { flex: 1, minHeight: 44, maxHeight: 112, color: colors.text, paddingHorizontal: 8, paddingVertical: 10, fontSize: 16, lineHeight: 22, textAlignVertical: "top" },
   pressed: { opacity: 0.72 },
+  memoryCard: { gap: 12 },
+  memoryTitle: { color: colors.text, fontSize: 16, lineHeight: 21, fontWeight: "800" },
+  memoryBody: { color: colors.muted, fontSize: 13, lineHeight: 19 },
+  memoryVersion: { color: colors.accentBright, fontSize: 12, fontWeight: "800" },
+  memoryQuestions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  memoryQuestion: { minHeight: 38, justifyContent: "center", paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, borderColor: colors.borderWarm, backgroundColor: colors.panelWarm },
+  memoryQuestionText: { color: colors.accentBright, fontSize: 12, fontWeight: "700" },
+  memoryResult: { gap: 7, padding: 12, borderRadius: 14, backgroundColor: colors.panelStrong, borderWidth: 1, borderColor: colors.border },
+  memoryProof: { color: colors.muted, fontSize: 11, lineHeight: 16, fontWeight: "700" },
+  preparedAction: { gap: 7, padding: 12, borderRadius: 14, backgroundColor: colors.panelWarm, borderWidth: 1, borderColor: colors.borderWarm },
 });

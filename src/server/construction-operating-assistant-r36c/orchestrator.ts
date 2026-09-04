@@ -30,6 +30,7 @@ import {
   persistDeferredAssistantExchange,
   type DeferredAssistantReply,
 } from "./deferred-exchange";
+export { applyProjectBrainAssistantCommandForUser as processUnifiedProjectMemoryCommand } from "@/server/construction-operating-assistant-r36y/project-brain-assistant-memory";
 
 export type UnifiedAssistantChannel = AssistantRoutingRequest["channel"];
 

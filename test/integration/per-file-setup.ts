@@ -132,6 +132,10 @@ const TRUNCATE_GUARDED_TABLES = [
   { table: "ConstructionProjectBrainContradictionResolution", trigger: "CPBURes_no_truncate" },
   { table: "ConstructionProjectBrainUnderstandingSnapshot", trigger: "CPBUSnap_no_truncate" },
   { table: "ConstructionProjectBrainUnderstandingDecision", trigger: "CPBUDec_no_truncate" },
+  { table: "ConstructionProjectBrainRecallReceipt", trigger: "CPBRR_no_truncate" },
+  { table: "ConstructionProjectBrainPreparedActionBinding", trigger: "CPBPAB_no_truncate" },
+  { table: "ConstructionProjectBrainMemoryCitation", trigger: "CPBMC_no_truncate" },
+  { table: "ConstructionProjectBrainAssistantDecision", trigger: "CPBAD_no_truncate" },
 ];
 
 beforeAll(async () => {

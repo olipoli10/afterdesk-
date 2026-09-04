@@ -35,6 +35,11 @@ export type MobileProductCopy = {
   assistantClarification: string;
   assistantProviderUnavailable: string;
   assistantHumanSupport: string;
+  assistantMemory: {
+    title: string; body: string; unavailable: string; confirmed: string; ask: string;
+    summary: string; scope: string; people: string; dates: string; blockers: string; next: string; sources: string; contradictions: string;
+    citations: string; prepared: string; recipient: string; channel: string; exactMessage: string; approval: string;
+  };
   attempt: Record<"SENDING" | "REPLAYED" | "OUTCOME_UNKNOWN" | "REFUSED", string>;
   home: {
     eyebrow: string; title: string; body: string; quickAsk: string; write: string; speak: string;
@@ -43,7 +48,7 @@ export type MobileProductCopy = {
   };
   projectsScreen: {
     eyebrow: string; title: string; body: string; active: string; needsAttention: string;
-    contacts: string; appointments: string; openLoops: string; empty: string; open: string; upToDate: string; brain: string; reviewBrain: string;
+    contacts: string; appointments: string; openLoops: string; empty: string; open: string; upToDate: string; brain: string; reviewBrain: string; askBrain: string;
   };
   projectBrain: {
     eyebrow: string; title: string; body: string; sources: string; add: string; voice: string; stop: string;
@@ -122,6 +127,13 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     assistantClarification: "J’attends ta précision avant de modifier quoi que ce soit.",
     assistantProviderUnavailable: "La recherche externe n’est pas encore activée. Aucun résultat n’a été inventé.",
     assistantHumanSupport: "Un appui humain est disponible sur demande. Rien n’a été créé automatiquement.",
+    assistantMemory: {
+      title: "Mémoire confirmée du chantier", body: "Je réponds seulement avec la dernière compréhension que tu as confirmée.",
+      unavailable: "Aucune compréhension confirmée n’est disponible.", confirmed: "Compréhension confirmée", ask: "Demander",
+      summary: "Résumé", scope: "Portée", people: "Personnes", dates: "Dates", blockers: "Blocages", next: "Prochaine décision",
+      sources: "Sources examinées", contradictions: "Contradictions résolues", citations: "Provenance", prepared: "Action préparée — rien n’a été envoyé",
+      recipient: "Destinataire", channel: "Canal", exactMessage: "Message exact", approval: "Approbation requise",
+    },
     attempt: {
       SENDING: "ENDVERA travaille…", REPLAYED: "Résultat récupéré sans doublon.",
       OUTCOME_UNKNOWN: "Résultat inconnu — réessaie exactement la même demande.", REFUSED: "Demande refusée sans effet inventé.",
@@ -136,7 +148,7 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     projectsScreen: {
       eyebrow: "TES CHANTIERS", title: "Tout au même endroit.", body: "L’état, les rendez-vous et la prochaine étape — sans reconstruire le contexte.",
       active: "Actifs", needsAttention: "À surveiller", contacts: "contacts", appointments: "rendez-vous",
-      openLoops: "suivis ouverts", empty: "Aucun chantier actif.", open: "Ouvrir le chantier", upToDate: "À jour", brain: "Construire la mémoire", reviewBrain: "Vérifier la compréhension",
+      openLoops: "suivis ouverts", empty: "Aucun chantier actif.", open: "Ouvrir le chantier", upToDate: "À jour", brain: "Construire la mémoire", reviewBrain: "Vérifier la compréhension", askBrain: "Questionner la mémoire",
     },
     projectBrain: {
       eyebrow: "MÉMOIRE DU CHANTIER", title: "Vide le chantier de ta tête.",
@@ -238,6 +250,13 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     assistantClarification: "I need your clarification before changing anything.",
     assistantProviderUnavailable: "External research is not enabled yet. No result was invented.",
     assistantHumanSupport: "Human support is available on request. Nothing was created automatically.",
+    assistantMemory: {
+      title: "Confirmed project memory", body: "I answer only from the latest understanding you confirmed.",
+      unavailable: "No confirmed understanding is available.", confirmed: "Confirmed understanding", ask: "Ask",
+      summary: "Summary", scope: "Scope", people: "People", dates: "Dates", blockers: "Blockers", next: "Next decision",
+      sources: "Reviewed sources", contradictions: "Resolved contradictions", citations: "Provenance", prepared: "Prepared action — nothing was sent",
+      recipient: "Recipient", channel: "Channel", exactMessage: "Exact message", approval: "Approval required",
+    },
     attempt: {
       SENDING: "ENDVERA is working…", REPLAYED: "Result recovered without a duplicate.",
       OUTCOME_UNKNOWN: "Outcome unknown — retry the exact same request.", REFUSED: "Request refused without an invented effect.",
@@ -252,7 +271,7 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     projectsScreen: {
       eyebrow: "YOUR PROJECTS", title: "Everything in one place.", body: "Status, appointments, and the next step — without rebuilding context.",
       active: "Active", needsAttention: "Needs attention", contacts: "contacts", appointments: "appointments",
-      openLoops: "open follow-ups", empty: "No active projects.", open: "Open project", upToDate: "Up to date", brain: "Build project memory", reviewBrain: "Review understanding",
+      openLoops: "open follow-ups", empty: "No active projects.", open: "Open project", upToDate: "Up to date", brain: "Build project memory", reviewBrain: "Review understanding", askBrain: "Ask project memory",
     },
     projectBrain: {
       eyebrow: "PROJECT MEMORY", title: "Get the job out of your head.",

@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { MobileWorkspace } from "@/lib/contracts";
 
+export * from "@/lib/project-brain-assistant-memory";
+
 export const mobileAssistantRequestSchema = z
   .object({
     schemaVersion: z.literal(1),
