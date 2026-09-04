@@ -3,15 +3,15 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 101,
+  "consecutiveBlocksCompleted": 102,
   "goalStayedActiveUntilDrain": true,
-  "completionValidatorVerdict": "CONTINUATION_REQUIRED",
-  "projectTerminalState": "INCOMPLETE",
+  "completionValidatorVerdict": "DRAINED",
+  "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 1,
-  "remainingRoadmapItemCount": 5,
+  "remainingAuthorizedWorkCount": 0,
+  "remainingRoadmapItemCount": 4,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Continue R36Z Project Brain Local Gate without routine founder confirmation.",
-  "urgentAssistanceReason": ""
+  "nextAction": "Obtain an explicit bounded authority packet for R37-PROVIDER-SANDBOX before any provider, credential, external transport or spending is used.",
+  "urgentAssistanceReason": "R36Z closed the final authorized local critical-path release. R37-PROVIDER-SANDBOX is next and is canonically marked EXTERNAL_EXACT_LATER, so provider selection, credentials, spending and observed sandbox calls require separate explicit authority."
 }

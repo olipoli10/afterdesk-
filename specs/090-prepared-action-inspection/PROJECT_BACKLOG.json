@@ -69,7 +69,7 @@
     {
       "id": "S5C-PROJECT-BRAIN",
       "title": "Project intake, confirmed memory and assistant actionability",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "releases": ["R36V-PROJECT-BRAIN-INTAKE-FOUNDATION", "R36W-PROJECT-BRAIN-FACT-CANDIDATES", "R36X-PROJECT-BRAIN-UNDERSTANDING-REVIEW", "R36Y-PROJECT-BRAIN-ASSISTANT-MEMORY", "R36Z-PROJECT-BRAIN-LOCAL-GATE"]
     },
     {
@@ -182,7 +182,7 @@
     {"id":"R36W-PROJECT-BRAIN-FACT-CANDIDATES","status":"DONE","authority":"LOCAL","dependsOn":["R36V-PROJECT-BRAIN-INTAKE-FOUNDATION"],"outcome":"Deterministic local adapters create provenance-bound fact candidates only from explicitly supported text and metadata while binary understanding remains unavailable."},
     {"id":"R36X-PROJECT-BRAIN-UNDERSTANDING-REVIEW","status":"DONE","authority":"LOCAL","dependsOn":["R36W-PROJECT-BRAIN-FACT-CANDIDATES"],"outcome":"The owner can inspect sources, contradictions and candidate facts, resolve conflicts, and seal an exact immutable understanding without invented claims."},
     {"id":"R36Y-PROJECT-BRAIN-ASSISTANT-MEMORY","status":"DONE","authority":"LOCAL","dependsOn":["R36X-PROJECT-BRAIN-UNDERSTANDING-REVIEW"],"outcome":"The unified assistant recalls only confirmed project memory and prepares narrow project actions with provenance, authority and approval boundaries intact."},
-    {"id":"R36Z-PROJECT-BRAIN-LOCAL-GATE","status":"IN_PROGRESS","authority":"LOCAL","dependsOn":["R36Y-PROJECT-BRAIN-ASSISTANT-MEMORY"],"outcome":"A credential-free local gate proves intake, restart recovery, confirmation, assistant recall, mobile usability and zero external effects before provider work."},
+    {"id":"R36Z-PROJECT-BRAIN-LOCAL-GATE","status":"DONE","authority":"LOCAL","dependsOn":["R36Y-PROJECT-BRAIN-ASSISTANT-MEMORY"],"outcome":"A credential-free local gate proves intake, restart recovery, confirmation, assistant recall, mobile usability and zero external effects before provider work."},
     {"id":"R37-PROVIDER-SANDBOX","status":"PLANNED","authority":"EXTERNAL_EXACT_LATER","dependsOn":["R36Z-PROJECT-BRAIN-LOCAL-GATE"],"outcome":"Observed bounded sandbox calls for each selected provider with revocation and zero customer data."},
     {"id":"R38-FOUNDER-FULL-LOOP","status":"PLANNED","authority":"FOUNDER_OBSERVATION_LATER","dependsOn":["R37-PROVIDER-SANDBOX"],"outcome":"One whole-product founder run only after the product is built, with no technical identifier copying."},
     {"id":"R39-DESIGN-PARTNER-PILOT","status":"PLANNED","authority":"CUSTOMER_AND_PROVIDER_EXACT_LATER","dependsOn":["R38-FOUNDER-FULL-LOOP"],"outcome":"Three supervised construction design partners proving usage, value, failure handling and unit economics."},

@@ -3150,7 +3150,7 @@
       "title": "Project Brain local gate",
       "objective": "Prove the complete credential-free intake-to-action Project Brain chain with restart, replay, contradiction, role and zero-effect evidence.",
       "role": "CLOSEOUT",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R36Y-PROJECT-BRAIN-ASSISTANT-MEMORY"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -3161,8 +3161,10 @@
       "planSha256": "66c1f2dbca93dadc44a551c17c95479232f0ace660e39eb7aff71fdc8e9f05d4",
       "completionCommand": "pwsh -NoProfile -File specs/191-project-brain-local-gate/scripts/validate-r36z-project-brain-local-gate.ps1",
       "evidencePaths": ["../191-project-brain-local-gate/evidence/local-gate-report.json","../191-project-brain-local-gate/evidence/closeout.md"],
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "55aafa6eabe46c0f0734db05150955574a916af2",
+      "outputTree": "348ba3a82e69e76f64f8843a4487bd6a0a9b031c",
+      "result": "LOCAL_PROJECT_BRAIN_GATE_PASS; the complete credential-free R36V-R36Y intake-to-action chain passed 50 assertions, 18 mutation guards, restart, replay, contradiction, role and zero-effect validation with no provider or external transport.",
+      "completedAtUtc": "2026-09-04T07:13:00Z"
     }
   ]
 }
