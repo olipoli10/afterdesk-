@@ -49,7 +49,7 @@
 - [x] T026 Run provider boundary, root/mobile lint/typecheck/full serialized suites and Next.js Webpack build
 - [x] T027 Verify owned cleanup, write a same-directory temporary aggregate and atomically rename/finalize/validate `evidence/local-gate-report.json`, then generate/check `evidence/closeout.md`
 - [x] T028 Run `git diff --check`, record exact evidence labels and create coherent local commits without push only after the gate passes
-- [ ] T029 Update release/queue/Brain state only under separate authority after a validated gate; never from an incomplete report
+- [x] T029 Update release/queue/Brain state only under separate authority after a validated gate; never from an incomplete report
 
 ## Dependencies & Execution Order
 
