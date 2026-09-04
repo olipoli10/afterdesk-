@@ -113,6 +113,18 @@ const TRUNCATE_GUARDED_TABLES = [
     table: "ConstructionProjectBrainDecision",
     trigger: "ConstructionProjectBrainDecision_no_truncate",
   },
+  {
+    table: "ConstructionProjectBrainFactCandidateBatch",
+    trigger: "ConstructionProjectBrainFactCandidateBatch_no_truncate",
+  },
+  {
+    table: "ConstructionProjectBrainFactCandidate",
+    trigger: "ConstructionProjectBrainFactCandidate_no_truncate",
+  },
+  {
+    table: "ConstructionProjectBrainFactCandidateDecision",
+    trigger: "ConstructionProjectBrainFactCandidateDecision_no_truncate",
+  },
 ];
 
 beforeAll(async () => {
