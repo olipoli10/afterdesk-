@@ -59,7 +59,7 @@
 - [x] T026 Execute/restore all required mutations and record hashes/guards in `specs/189-project-brain-understanding-review/evidence/mutations.md`
 - [x] T027 Run Prisma validation, provider boundary, root/mobile lint/typecheck/tests and Next.js Webpack build
 - [x] T028 Record exact local evidence and remaining R36Y/R36Z/external gates in `specs/189-project-brain-understanding-review/evidence/closeout.md`
-- [ ] T029 Update only separately authorized release/queue/task state after all gates pass and create coherent local commits without push
+- [x] T029 Update only separately authorized release/queue/task state after all gates pass and create coherent local commits without push
 
 ## Dependencies & Execution Order
 
