@@ -20,8 +20,10 @@ try {
 
   Push-Location $repoRoot
   try {
-    & pwsh -NoProfile -File $validator -RequireComplete
-    if ($LASTEXITCODE -ne 0) { throw "R37_COMPLETION_VALIDATOR_FAILED:$LASTEXITCODE" }
+    # Run inside the current PowerShell host. This keeps the launcher compatible
+    # with both Windows PowerShell 5.1 and PowerShell 7 without depending on a
+    # separate `pwsh` executable being installed or present on PATH.
+    & $validator -RequireComplete
   } finally {
     Pop-Location
   }

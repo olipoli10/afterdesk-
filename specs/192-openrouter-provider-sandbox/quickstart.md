@@ -3,7 +3,7 @@
 ## 1. Credential-free validation
 
 ```powershell
-pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -PreflightOnly
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -PreflightOnly
 ```
 
 Expected terminal state: `CREDENTIAL_REQUIRED` and zero external requests.
@@ -14,7 +14,7 @@ Create a dedicated OpenRouter key with a 5 USD limit. Do not paste it into chat
 or pass it on the command line. Start the secure local launcher:
 
 ```powershell
-pwsh -NoProfile -File scripts/start-r37-openrouter-sandbox-secure.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/start-r37-openrouter-sandbox-secure.ps1
 ```
 
 Paste the key only at the masked prompt. The launcher injects it into the

@@ -49,14 +49,14 @@ try {
   foreach ($required in @("spec.md","plan.md","tasks.md","research.md","data-model.md","goal.md","LONG_RUN_PROGRAM.json","contracts\openrouter-provider-sandbox.md")) {
     if (-not (Test-Path -LiteralPath (Join-Path $featureRoot $required))) { throw "R37_ARTIFACT_MISSING:$required" }
   }
-  Get-Content -Raw -LiteralPath (Join-Path $featureRoot "LONG_RUN_PROGRAM.json") | ConvertFrom-Json -Depth 30 | Out-Null
-  Get-Content -Raw -LiteralPath "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json" | ConvertFrom-Json -Depth 30 | Out-Null
-  Get-Content -Raw -LiteralPath "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json" | ConvertFrom-Json -Depth 30 | Out-Null
+  Get-Content -Raw -LiteralPath (Join-Path $featureRoot "LONG_RUN_PROGRAM.json") | ConvertFrom-Json | Out-Null
+  Get-Content -Raw -LiteralPath "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json" | ConvertFrom-Json | Out-Null
+  Get-Content -Raw -LiteralPath "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json" | ConvertFrom-Json | Out-Null
   if (@(git diff -- package-lock.json).Count -ne 0) { throw "R37_LOCKFILE_CHANGED" }
 
   $preflightJson = & npx tsx --require ./scripts/register-server-only.cjs scripts/run-r37-openrouter-sandbox.ts --preflight
   Assert-ExitCode "preflight"
-  $preflight = $preflightJson | ConvertFrom-Json -Depth 20
+  $preflight = $preflightJson | ConvertFrom-Json
   Assert-Preflight $preflight
   [IO.File]::WriteAllText($preflightPath, (($preflight | ConvertTo-Json -Depth 20) + "`n"), [Text.UTF8Encoding]::new($false))
 
@@ -67,13 +67,31 @@ try {
 
   if ($preflight.credentialPresent -and -not $preflight.exchangeValid) { throw "R37_EXCHANGE_EVIDENCE_REQUIRED" }
 
-  $devOutput = @(& npx prisma dev -n $serverName -d 2>&1)
-  Assert-ExitCode "database-start"
+  # Windows PowerShell 5.1 promotes any native stderr line to an ErrorRecord
+  # when ErrorActionPreference is Stop. Prisma writes harmless config notices
+  # to stderr, so capture its real process exit code without treating those
+  # notices as terminating PowerShell errors.
+  $previousErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $devOutput = @(& npx prisma dev -n $serverName -d 2>&1)
+    $devExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+  if ($devExitCode -ne 0) { throw "R37_COMMAND_FAILED:database-start:$devExitCode" }
   $serverCreated = $true
   $templateUrl = $devOutput | ForEach-Object { $_.ToString().Trim() } | Where-Object { $_ -match '^postgres://' } | Select-Object -Last 1
   if (-not $templateUrl) { throw "R37_DATABASE_URL_MISSING" }
-  "CREATE DATABASE `"$databaseName`" TEMPLATE template0;" | & npx prisma db execute --stdin --url $templateUrl
-  Assert-ExitCode "database-create"
+  $previousErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    "CREATE DATABASE `"$databaseName`" TEMPLATE template0;" | & npx prisma db execute --stdin --url $templateUrl
+    $databaseCreateExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+  if ($databaseCreateExitCode -ne 0) { throw "R37_COMMAND_FAILED:database-create:$databaseCreateExitCode" }
   $uri = [UriBuilder]$templateUrl
   $uri.Path = "/$databaseName"
   $uri.Query = "$($uri.Query.TrimStart('?'))&pgbouncer=true&connection_limit=10"
@@ -89,11 +107,18 @@ try {
     Remove-Item Env:ALLOW_INTEGRATION_DB_RESET -ErrorAction SilentlyContinue
     $env:DATABASE_URL = $uri.Uri.AbsoluteUri
     $env:DIRECT_URL = $uri.Uri.AbsoluteUri
-    & npx prisma migrate deploy
-    Assert-ExitCode "migration-deploy"
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+      & npx prisma migrate deploy
+      $migrationExitCode = $LASTEXITCODE
+    } finally {
+      $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($migrationExitCode -ne 0) { throw "R37_COMMAND_FAILED:migration-deploy:$migrationExitCode" }
     & npx tsx --require ./scripts/register-server-only.cjs scripts/run-r37-openrouter-sandbox.ts
     Assert-ExitCode "observed-run"
-    $report = Get-Content -Raw -LiteralPath $observedReportPath | ConvertFrom-Json -Depth 40
+    $report = Get-Content -Raw -LiteralPath $observedReportPath | ConvertFrom-Json
     Assert-ObservedReport $report
     $resultState = "OPENROUTER_SANDBOX_OBSERVED_PASS"
   }
@@ -103,8 +128,15 @@ try {
   Remove-Item Env:AFTERDESK_TEST_DATABASE_URL -ErrorAction SilentlyContinue
   Remove-Item Env:ALLOW_INTEGRATION_DB_RESET -ErrorAction SilentlyContinue
   if ($serverCreated) {
-    "i will lose local data" | & npx prisma dev rm --force $serverName | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "R37_DATABASE_CLEANUP_FAILED:$serverName" }
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+      "i will lose local data" | & npx prisma dev rm --force $serverName 2>&1 | Out-Null
+      $cleanupExitCode = $LASTEXITCODE
+    } finally {
+      $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($cleanupExitCode -ne 0) { throw "R37_DATABASE_CLEANUP_FAILED:$serverName" }
     $databaseCleanupVerified = $true
   }
   Pop-Location

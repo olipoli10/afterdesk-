@@ -6,7 +6,7 @@
   "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
   "baseHead": "d6e517a231afd23147a99b2a9283b026b705893e",
   "authority": "OPENROUTER ONLY; SYNTHETIC DATA ONLY; MAXIMUM 10 CAD FOUNDER SPEND AND 5 USD APPLICATION SPEND; LOCAL UNCOMMITTED KEY; NO CLIENT, SMS, CALL, EMAIL, EXTERNAL TOOL OR WRITE, PUSH, PREVIEW, PRODUCTION OR DEPLOYMENT",
-  "completionCommand": "pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete",
+  "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete",
   "stopConditions": [
     "Any credential value appears in source, evidence, logs or command arguments",
     "Any non-synthetic or customer/prospect data becomes necessary",
@@ -45,7 +45,7 @@
       "objective": "Execute the six observed calls once when the local key exists; otherwise complete all possible work and stop honestly at CREDENTIAL_REQUIRED with zero network/spend.",
       "status": "IN_PROGRESS",
       "dependencies": ["CH-002"],
-      "completionCommand": "pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1",
+      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1",
       "evidencePaths": ["evidence/observed-provider-report.json"],
       "result": "CREDENTIAL_REQUIRED after complete credential-free preflight; credential value not inspected, network calls 0 and provider lane disabled.",
       "completedAtUtc": ""
@@ -56,7 +56,7 @@
       "objective": "Reconcile spend/calls/evidence, prove secret absence, revoke grants, disable lane, clean the disposable database, validate proportional gates, commit locally and checkpoint Brain without advancing R38-R40.",
       "status": "OPEN",
       "dependencies": ["CH-003"],
-      "completionCommand": "pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete",
+      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete",
       "evidencePaths": ["evidence/mutations.md", "evidence/closeout.md"],
       "result": "",
       "completedAtUtc": ""
