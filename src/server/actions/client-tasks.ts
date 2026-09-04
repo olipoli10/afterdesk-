@@ -94,6 +94,9 @@ export async function submitTask(input: unknown): Promise<SubmitTaskResult> {
             taskId: null,
             kind: "input",
             scanStatus: "clean",
+            // Project Brain source files deliberately remain taskless. They
+            // are durable evidence, not reusable uploads for a generic task.
+            projectBrainSources: { none: {} },
           },
           data: { taskId: created.id },
         });

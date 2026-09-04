@@ -139,7 +139,14 @@ export async function reapOrphanFiles(): Promise<number> {
     // they are never orphans. The explicit exclusion is belt and braces: a
     // sweep that reaped a run's own candidate file mid-flight would delete
     // the very thing a worker is about to be handed.
-    where: { taskId: null, kind: { not: "artifact" }, createdAt: { lt: cutoff } },
+    where: {
+      taskId: null,
+      kind: { not: "artifact" },
+      createdAt: { lt: cutoff },
+      // R36V Project Brain sources intentionally have no Task. Their explicit
+      // restrictive relation is the durable owner and excludes them here.
+      projectBrainSources: { none: {} },
+    },
     select: { id: true, storageKey: true },
     take: 200,
   });
@@ -179,7 +186,12 @@ export async function purgeExpiredTaskFiles(): Promise<number> {
     select: {
       id: true,
       files: {
-        where: { purgedAt: null },
+        where: {
+          purgedAt: null,
+          // A Project Brain source is retained evidence even if a malformed
+          // or legacy row also points at a terminal generic task.
+          projectBrainSources: { none: {} },
+        },
         select: { id: true, storageKey: true },
       },
     },
@@ -208,7 +220,13 @@ export async function purgeExpiredTaskFiles(): Promise<number> {
     const now = new Date();
     await prisma.$transaction(async (tx) => {
       const result = await tx.file.updateMany({
-        where: { id: { in: task.files.map((file) => file.id) }, purgedAt: null },
+        where: {
+          id: { in: task.files.map((file) => file.id) },
+          purgedAt: null,
+          // Repeat the ownership guard at the write boundary in case the
+          // relation changed after the candidate read.
+          projectBrainSources: { none: {} },
+        },
         data: { purgedAt: now },
       });
       await tx.task.update({

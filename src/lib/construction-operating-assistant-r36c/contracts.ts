@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { operatingCommandResultSchema } from "@/lib/construction-operating-assistant-r2/contracts";
+import {
+  OPERATING_INTENTS,
+  operatingCommandResultSchema,
+} from "@/lib/construction-operating-assistant-r2/contracts";
 import {
   ASSISTANT_CAPABILITY_KEYS,
   ASSISTANT_INTENT_CLASSES,
@@ -37,7 +40,10 @@ export const clientAssistantRoutingProjectionSchema = z
   .strict();
 
 export const unifiedAssistantResultSchema = operatingCommandResultSchema
-  .extend({ routing: clientAssistantRoutingProjectionSchema })
+  .extend({
+    intent: z.enum([...OPERATING_INTENTS, "PROJECT_BRAIN_QUERY"]),
+    routing: clientAssistantRoutingProjectionSchema,
+  })
   .strict();
 
 export const deferredAssistantSnapshotSchema = z

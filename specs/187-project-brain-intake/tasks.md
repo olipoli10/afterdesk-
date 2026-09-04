@@ -21,10 +21,10 @@
 
 **Purpose**: Establish additive, versioned and tenant-bound state before exposing any user flow.
 
-- [ ] T005 Add packet, source, snapshot and decision entities plus relations in `prisma/schema.prisma`
-- [ ] T006 Create one additive forward-only migration in `prisma/migrations/20260903180000_construction_assistant_r36v_project_brain_intake/migration.sql`
-- [ ] T007 Implement strict schemas, canonical snapshot building and result projections in `src/lib/construction-operating-assistant-r36v/project-brain-intake.ts`
-- [ ] T008 Add disposable PostgreSQL integration tests for migration, tenancy, replay, concurrency and restart in `test/integration/construction-operating-assistant-r36v-project-brain.itest.ts`
+- [x] T005 Add packet, source, snapshot and decision entities plus restrictive source-to-`File` retention and canonical-byte reuse relations in `prisma/schema.prisma`
+- [x] T006 Create one additive forward-only migration in `prisma/migrations/20260903180000_construction_assistant_r36v_project_brain_intake/migration.sql`
+- [x] T007 Implement strict schemas, canonical snapshot building and result projections in `src/lib/construction-operating-assistant-r36v/project-brain-intake.ts`
+- [x] T008 Add disposable PostgreSQL integration tests for migration, tenancy, reciprocal atomic sidecar guards, source-to-`File` ownership, replay, concurrency, restart, identical-byte canonical reuse, source read/access logging, sweep retention, 24-hour crash recovery and measured M4A duration in `test/integration/construction-operating-assistant-r36v-project-brain.itest.ts` and `test/integration/construction-operating-assistant-r36v-project-brain-file-ownership.itest.ts`
 
 **Checkpoint**: The data model and public contracts are independently valid, with no provider behavior.
 
@@ -36,12 +36,12 @@
 
 **Independent Test**: Submit at least four synthetic sources through separate commands and recover the same ordered inventory and hashes after a new database client.
 
-- [ ] T009 [US1] Implement authorized, serialized create/brief/source admission and replay logic in `src/server/construction-operating-assistant-r36v/project-brain-intake.ts`
-- [ ] T010 [US1] Reuse secure scanner/storage admission with orphan compensation in `src/server/construction-operating-assistant-r36v/project-brain-intake.ts`
-- [ ] T011 [US1] Add authenticated no-store command/projection route in `src/app/api/endvera/v1/mobile/project-brain-intake/route.ts`
-- [ ] T012 [US1] Add authenticated multipart source route in `src/app/api/endvera/v1/mobile/project-brain-intake/sources/route.ts`
-- [ ] T013 [P] [US1] Add mirrored mobile contracts and retry state in `apps/mobile/src/lib/project-brain-intake.ts`
-- [ ] T014 [US1] Add API client and session operations in `apps/mobile/src/lib/api.ts` and `apps/mobile/src/state/mobile-session.tsx`
+- [x] T009 [US1] Implement authorized, serialized create/brief/source admission, workspace-wide body-bound replay/refusal and distinct-provenance/canonical-byte reuse logic in `src/server/construction-operating-assistant-r36v/project-brain-intake.ts`
+- [x] T010 [US1] Reuse the pure local signature/sanitization boundary through `src/lib/file-security.ts` and `src/lib/file-security-local.ts` plus the explicit-root filesystem-only store in `src/lib/storage-local.ts`; verify actual M4A track duration, keep providers structurally unreachable, compensate known failures, reconcile stale crash objects after 24 hours with bounded scanning/bulk checks, protect referenced `File` rows in `src/server/sweeps.ts` and `src/server/construction-operating-assistant-r36v/project-brain-intake.ts`, and cover those boundaries in `test/construction-operating-assistant-r36v-project-brain-server-hardening.test.ts` and `test/construction-operating-assistant-r36v-local-storage-scan.test.ts`
+- [x] T011 [US1] Add authenticated no-store command/projection route with a streamed 64 KiB JSON cap in `src/app/api/endvera/v1/mobile/project-brain-intake/route.ts`
+- [x] T012 [US1] Add authenticated bounded multipart source admission in `src/app/api/endvera/v1/mobile/project-brain-intake/sources/route.ts` plus hash/size/MIME-verified local retrieval and access logging in `src/app/api/endvera/v1/mobile/project-brain-intake/sources/[sourceId]/route.ts`
+- [x] T013 [P] [US1] Add mirrored mobile contracts and retry state in `apps/mobile/src/lib/project-brain-intake.ts`
+- [x] T014 [US1] Add API client, encrypted durable global intent queue and crash-safe source-file retention/reconciliation in `apps/mobile/src/lib/api.ts`, `apps/mobile/src/lib/project-brain-intent-queue.ts`, `apps/mobile/src/lib/project-brain-source-files.ts` and `apps/mobile/src/state/mobile-session.tsx`
 
 **Checkpoint**: Multi-source admission is durable, project-bound, idempotent and visibly local-only.
 
@@ -53,11 +53,11 @@
 
 **Independent Test**: Submit a complete packet, confirm its current fingerprint once, replay it, and verify exactly one immutable confirmed snapshot/decision.
 
-- [ ] T015 [US2] Implement submit, confirm, reject, fingerprint and append-only decision transitions in `src/server/construction-operating-assistant-r36v/project-brain-intake.ts`
-- [ ] T016 [US2] Build the one-surface intake/review/confirmation experience in `apps/mobile/src/app/(app)/project-brain-intake.tsx`
-- [ ] T017 [US2] Link the hidden route from Projects without adding a primary tab in `apps/mobile/src/app/(app)/projects.tsx` and `apps/mobile/src/app/(app)/_layout.tsx`
-- [ ] T018 [US2] Add equivalent French/English truth labels and actions in `apps/mobile/src/lib/product-experience.ts`
-- [ ] T019 [US2] Complete mobile interaction tests for multi-select queue, partial retry, limitations, exact confirmation, accessibility and remount recovery in `apps/mobile/test/project-brain-intake.test.ts`
+- [x] T015 [US2] Implement submit, confirm, reject, fingerprint and append-only decision transitions in `src/server/construction-operating-assistant-r36v/project-brain-intake.ts`
+- [x] T016 [US2] Build the one-surface intake/review/confirmation experience in `apps/mobile/src/app/(app)/project-brain-intake.tsx`
+- [x] T017 [US2] Link the hidden route from Projects without adding a primary tab in `apps/mobile/src/app/(app)/projects.tsx` and `apps/mobile/src/app/(app)/_layout.tsx`
+- [x] T018 [US2] Add equivalent French/English truth labels and actions in `apps/mobile/src/lib/product-experience.ts`
+- [x] T019 [US2] Complete mobile interaction tests for multi-select queue, partial retry, limitations, exact confirmation, accessibility, remount recovery and preservation of project B's pending source while project A is opened in `apps/mobile/test/project-brain-intake.test.ts`
 
 **Checkpoint**: The owner can confirm exact memory from one surface without any fake analysis claim.
 
@@ -69,9 +69,9 @@
 
 **Independent Test**: After restart, retrieve summary, blockers, next decision and source inventory while draft and binary-content claims remain unavailable.
 
-- [ ] T020 [P] [US3] Add failing deterministic query tests in `test/construction-operating-assistant-r36v-project-brain-query.test.ts`
-- [ ] T021 [US3] Implement confirmed-snapshot-only queries in `src/server/construction-operating-assistant-r36v/project-brain-query.ts`
-- [ ] T022 [US3] Integrate the narrow query path without changing other intent behavior in `src/server/construction-operating-assistant-r36c/orchestrator.ts`
+- [x] T020 [P] [US3] Add failing deterministic query tests in `test/construction-operating-assistant-r36v-project-brain-query.test.ts`
+- [x] T021 [US3] Implement confirmed-snapshot-only queries in `src/server/construction-operating-assistant-r36v/project-brain-query.ts`
+- [x] T022 [US3] Extend the strict result union in `src/lib/construction-operating-assistant-r36c/contracts.ts` and integrate the narrow query path without changing other intent behavior in `src/server/construction-operating-assistant-r36c/orchestrator.ts`
 
 **Checkpoint**: ENDVERA recalls owner-confirmed context and refuses to invent binary-source understanding.
 
@@ -81,10 +81,10 @@
 
 **Purpose**: Prove the new persistence/security boundary and preserve honest readiness labels.
 
-- [ ] T023 Run targeted unit, API, mobile and disposable PostgreSQL integration tests from `specs/187-project-brain-intake/quickstart.md`
-- [ ] T024 Run Prisma validation, migration checks, provider-boundary validation, lint, typecheck, full serialized suites and Next.js Webpack build
-- [ ] T025 Execute and restore the proportional replay, tenancy, stale-version, invented-fact and provider-call mutations documented in `specs/187-project-brain-intake/evidence/mutations.md`
-- [ ] T026 Record exact evidence, dashboard labels and remaining provider-enabled releases in `specs/187-project-brain-intake/evidence/closeout.md`
+- [x] T023 Run targeted unit, API, file-ownership, server-hardening, bounded-storage-scan, mobile and both disposable PostgreSQL integration tests from `specs/187-project-brain-intake/quickstart.md`, including 64 KiB body enforcement, authorized source download/access logging, restrictive sweep retention, 24-hour crash cleanup, identical-byte canonical reuse, M4A duration validation, reciprocal atomic sidecar refusal and global cross-project mobile recovery
+- [x] T024 Run Prisma validation and migration checks for `prisma/schema.prisma`, then provider-boundary validation, lint, typecheck, full serialized suites and Next.js Webpack build through `package.json` and `apps/mobile/package.json`
+- [x] T025 Execute and restore the proportional replay, tenancy, stale-version, invented-fact and provider-call mutations documented in `specs/187-project-brain-intake/evidence/mutations.md`
+- [x] T026 Record exact evidence, dashboard labels and remaining provider-enabled releases in `specs/187-project-brain-intake/evidence/closeout.md`
 - [ ] T027 Mark completed tasks and release state, validate `git diff --check`, and create coherent local commits without push
 
 ---

@@ -28,6 +28,8 @@ As a construction owner, I choose one job, add several documents or photos, atta
 2. **Given** the local-only authority boundary, **When** a voice note or document is admitted, **Then** the surface explicitly says that the voice was not transcribed and the document content was not interpreted.
 3. **Given** an interrupted or retried source admission, **When** the exact command is replayed, **Then** ENDVERA returns the original canonical effect without adding a duplicate.
 4. **Given** a mismatched workspace, project, role, content type, size, command body or stale version, **When** admission is attempted, **Then** ENDVERA refuses it without changing the intake.
+5. **Given** two distinct selections whose bytes are identical, **When** each is admitted with its own command identity, **Then** ENDVERA retains two ordered source/provenance records and two body-bound decisions while reusing one canonical file/blob; replaying either command creates nothing new.
+6. **Given** an M4A voice note, **When** it is admitted, **Then** the server verifies a structurally coherent AAC track, codec configuration, sample-to-chunk map and sample-timeline duration, rejects malformed, over-120-second or materially mismatched declarations, and persists that derived duration rather than trusting the caller. This release does not claim perceptual AAC decoding.
 
 ---
 
@@ -65,13 +67,14 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 
 ### Edge Cases
 
-- Two sources with identical bytes but distinct owner-selected files are represented without duplicating a canonical upload effect or implying they contain different facts.
+- Two independent selections with identical bytes remain two ordered source/provenance records and two body-bound admission decisions, but share one canonical `File` row and one local blob; an exact retry of either command remains one effect.
 - A source upload and review submission racing each other cannot produce a snapshot with a partially observed source set.
-- A storage write followed by a failed database transaction is compensated so no orphaned object becomes an admitted source.
+- A storage write followed by a failed database transaction is compensated when the outcome is known; stale temporary or unreferenced local objects left by a crash are reconciled only after a 24-hour grace period.
 - A process restart during a ready, review or confirmed state preserves the exact latest committed version and decision history.
 - A filename, file extension or audio duration is never interpreted as evidence about the job.
-- Removing or replacing accepted input creates a new version; it never mutates a confirmed historical snapshot.
-- Unknown command fields, unsupported media and oversized content fail closed.
+- An admitted source is immutable. Correcting accepted input requires rejecting or closing that packet and creating a new intake version; no command in this release removes, replaces or mutates a confirmed historical source.
+- Unknown command fields, unsupported media, malformed M4A containers and oversized content fail closed; a JSON command is capped at 64 KiB even when `Content-Length` is absent.
+- Opening project A after a crash cannot delete or refuse the durable pending source queued for project B; cleanup reasons about the complete durable mobile queue before projecting the active project.
 
 ## Requirements
 
@@ -79,7 +82,7 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 
 - **FR-001**: ENDVERA MUST let an authorized OWNER or OFFICE_MANAGER create one versioned project-intake packet for a project in the same workspace.
 - **FR-002**: ENDVERA MUST support several JPEG, PNG, PDF or DOCX sources and one M4A-compatible voice-note source in the same intake through individually retryable admissions.
-- **FR-003**: Every accepted source MUST retain immutable bytes through the existing secure file boundary, a content hash, source kind, display metadata, ordinal, actor and project/workspace association.
+- **FR-003**: Every accepted source MUST retain immutable bytes through the existing secure file boundary, a content hash, source kind, display metadata, ordinal, actor and project/workspace association. The source-to-`File` relation MUST be restrictive so a relational delete or generic orphan sweep cannot detach retained provenance from its bytes.
 - **FR-004**: Source admission MUST recheck identity, active membership, role, workspace, project ownership, current intake state and current version at the point of use.
 - **FR-005**: Commands MUST be strict, typed, versioned, idempotent and body-bound; unknown fields or reuse of an identifier with different content MUST be refused.
 - **FR-006**: The owner brief MUST separately capture a summary, scope, important people, important dates, blockers and next decision as explicit owner-provided assertions.
@@ -88,7 +91,7 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 - **FR-009**: Submitting for review MUST require at least one admitted source and a non-empty owner brief, use the complete current source set, and produce a deterministic fingerprint.
 - **FR-010**: Exact confirmation MUST require the current version, exact fingerprint and an authorized OWNER or OFFICE_MANAGER.
 - **FR-011**: A confirmed understanding snapshot and its decision record MUST be immutable, append-only and created atomically with the intake transition.
-- **FR-012**: Confirmed snapshots MUST distinguish `OWNER_CONFIRMED` assertions from mere source-presence observations and list all unperformed interpretation capabilities.
+- **FR-012**: Confirmed snapshots MUST distinguish `OWNER_CONFIRMED` assertions from mere source-presence observations and list all unperformed interpretation capabilities. `OWNER_CONFIRMED` labels the owner-authored assertion; only a snapshot whose independent status is `CONFIRMED` may become canonical memory.
 - **FR-013**: ENDVERA MUST recover the same intake, source inventory, latest state, snapshots and decisions after process restart.
 - **FR-014**: Narrow project-memory questions MUST use only the latest confirmed snapshot and MUST expose provenance and limitations.
 - **FR-015**: Draft or review-only content MUST NOT be presented as canonical memory or used to support consequential actions.
@@ -96,7 +99,14 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 - **FR-017**: No command in this release may call an AI provider, transcription provider, OCR service, messaging provider or external transport, and all results MUST report those effects as false.
 - **FR-018**: The mobile experience MUST present project selection, multiple-source queue, voice note, owner brief, review, limitations and confirmation as one coherent surface reachable from the project.
 - **FR-019**: Partial upload failures MUST remain individually retryable with the same command identity and MUST NOT discard successfully admitted sources.
-- **FR-020**: Audit evidence MUST make creation, admissions, review, confirmation, replay/refusal and actor/version history reconstructible without logging source bytes or secrets.
+- **FR-020**: Audit evidence MUST make creation, admissions, review, confirmation, stable replay and eligible refusal history reconstructible without logging source bytes, owner text or secrets. A refusal audit is eligible only after the command envelope is valid and the actor is re-authorized for the referenced workspace/project; malformed, unauthenticated, unauthorized, cross-workspace or nonexistent-target requests MUST NOT create a target audit or change their original non-enumerating outcome.
+- **FR-021**: An authorized OWNER or OFFICE_MANAGER MUST be able to retrieve an admitted source only through a project-scoped local read boundary that rechecks authorization, validates actual bytes against both source and `File` size/hash/MIME metadata, returns private no-store content with its SHA-256, and appends a download access-log row.
+- **FR-022**: Generic file cleanup MUST exclude every `File` referenced by a project-brain source. Local crash reconciliation MAY delete only stale temporary, unreferenced object or unreferenced `File` material older than 24 hours and MUST never delete a referenced source blob.
+- **FR-023**: The JSON command route MUST stream-enforce a 64 KiB body limit regardless of whether `Content-Length` is present; invalid length declarations, malformed JSON and unknown fields MUST fail before a domain command is invoked.
+- **FR-024**: M4A admission MUST verify a supported, structurally coherent AAC track and duration from bounded server-side codec/container/sample-table metadata, reject duration above 120 seconds or a material declared/derived mismatch, and persist the derived duration. It MUST NOT label this structural validation as perceptual decoding of the AAC access units.
+- **FR-025**: The mobile intent queue MUST durably retain pending commands and their copied source files across process interruption. Reconciliation MUST inspect the global queue across all workspace/project contexts, preserve every globally retained source, and treat a missing source as actionable only when its project context is opened.
+- **FR-026**: Two independently selected sources with identical bytes MUST remain two source identities and two body-bound admission decisions in ordinal order while sharing one canonical `File` row and one local object. Exact replay of either command MUST return its original effect and MUST NOT create another source, decision, `File`, object or audit effect.
+- **FR-027**: Multipart source admission MUST cap concurrent in-memory admissions per authenticated user before consuming an excess request body and MUST release capacity on every success or failure path.
 
 ### Authorization and Tenancy
 
@@ -106,7 +116,7 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 
 ### Data Classification and Retention
 
-- Source bytes are classified as project evidence and use the existing secure file admission, scan, access-log and retention boundary.
+- Source bytes are classified as project evidence and use the local signature/sanitization, access-log and retention boundary. A restrictive `File` relationship and explicit generic-sweep exclusion retain referenced bytes; local crash reconciliation removes only stale unreferenced material after the 24-hour grace period.
 - Owner brief and snapshots are project operational data. They never enter provider prompts in this release.
 - Synthetic fixtures are the only permitted validation material for this release.
 
@@ -117,6 +127,7 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 - `OUTCOME_UNKNOWN`: caller lost the local response and may retry only the exact same command.
 - `PARTIAL`: one or more independently submitted sources failed while prior admitted sources remain durable.
 - Provider or interpretation unavailability is a declared limitation, not an error and not a fabricated result.
+- Malformed or unauthorized requests fail before refusal-audit creation; authenticated, authorized and in-scope state/media refusals may create one redacted, idempotent audit event without changing the refusal.
 
 ### Economics
 
@@ -126,7 +137,7 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 
 ### Verification, Delivery, Observability, Rollout and Rollback
 
-- Verification uses strict contract tests, synthetic source fixtures, real disposable PostgreSQL integration tests, concurrency/replay/restart tests, mobile interaction tests and provider-boundary assertions.
+- Verification uses strict contract tests, synthetic source fixtures, real disposable PostgreSQL integration tests, concurrency/replay/restart tests, canonical-blob reuse, authorized source retrieval/access logging, retention/sweep recovery, global cross-project mobile queue tests and provider-boundary assertions.
 - Delivery is a local committed implementation only. It is not a client release, preview, production deployment, store build or provider-enabled capability.
 - Observability records command hashes, state versions, source hashes, decisions and audit events; it excludes raw bytes, secrets and cross-tenant content.
 - Rollout remains disabled externally. A later provider release must introduce separately authorized capability contracts rather than silently changing local-only meanings.
@@ -151,6 +162,11 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 - **SC-006**: Every binary source visibly retains an unambiguous not-transcribed or not-interpreted limitation until a future separately authorized capability produces evidence.
 - **SC-007**: Source admission, decision, snapshot and state transitions remain reconstructible from retained local audit evidence.
 - **SC-008**: Provider calls, external transports, external writes, customer data, credential reads and external spend remain exactly zero.
+- **SC-009**: Two distinct identical-byte selections yield exactly two ordered sources and two decisions but exactly one `File` row and one canonical local object; each exact replay adds zero effects.
+- **SC-010**: 100% of accepted source downloads in the acceptance run match retained size, MIME and SHA-256, append one authorized access record, and expose zero bytes to a different workspace.
+- **SC-011**: A crash-recovery run preserves every referenced server blob and every globally queued mobile source across projects while deleting eligible stale unreferenced or temporary material only after 24 hours.
+- **SC-012**: Every admitted M4A fixture has a server-verified structurally coherent AAC track and derived sample-timeline duration at or below 120 seconds; malformed, oversized and materially drifted declarations produce zero canonical source effects, without a claim that the raw AAC signal was perceptually decoded.
+- **SC-013**: A third concurrent source admission for one authenticated user is refused before its multipart body is consumed while the two bounded active admissions complete and release their slots.
 
 ## Assumptions
 
@@ -159,4 +175,3 @@ As the owner, I later ask a narrow question about the job and receive an answer 
 - Multi-select on mobile is implemented as a local queue of individually idempotent source uploads.
 - The current voice recording duration may remain bounded by the existing safe local limit in the first vertical; a ten-minute/background recording increase requires its own measured storage and lifecycle gate.
 - Real transcription, OCR, vision, plan reading and model routing are later releases with separate provider, cost, privacy, retention and verification authority.
-

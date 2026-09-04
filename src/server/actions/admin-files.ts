@@ -17,8 +17,14 @@ export async function recheckFile(fileId: string): Promise<RecheckFileResult> {
   const admin = await requireRole("ADMIN");
   if (!fileId || fileId.length > 100) return { ok: false, error: "Invalid file." };
 
-  const file = await prisma.file.findUnique({
-    where: { id: fileId },
+  const file = await prisma.file.findFirst({
+    where: {
+      id: fileId,
+      // Project Brain owns a separate, local-only inspection contract. A
+      // generic admin recheck must never rewrite its immutable source bytes
+      // or replace the scan provenance bound to those bytes.
+      projectBrainSources: { none: {} },
+    },
     select: {
       id: true,
       taskId: true,

@@ -14,19 +14,21 @@ Add a local-only, project-bound intake packet that accepts several securely admi
 
 **Primary Dependencies**: Next.js 16.2.12 App Router, React Native/Expo 57, Expo Router 57, Zod 4.4.3, Prisma Client 6.19.3; no new dependency
 
-**Storage**: Existing object-storage abstraction for accepted bytes; PostgreSQL through Prisma for packet, source, snapshot and decision state
+**Storage**: Explicit-root filesystem-only local object store for accepted bytes; PostgreSQL through Prisma for packet, source, snapshot and decision state. Identical bytes reuse one canonical `File`/object while each owner selection retains a separate source/provenance row and body-bound decision. The restrictive source-to-`File` relation, generic-sweep exclusion and 24-hour local crash reconciler protect referenced material. Provider-selected storage and scanning remain structurally unreachable in R36V.
 
 **Testing**: Vitest unit/contract tests, real disposable PostgreSQL integration tests, mobile source/interaction tests, repository lint/typecheck/build gates
+
+The integration config aliases only `@/lib/db` to `test/integration/db.ts`, where bounded `maxWait` and transaction timeout values accommodate the serialized Prisma Dev/PGlite proxy. Production keeps the unchanged Prisma client defaults in `src/lib/db.ts`; the concurrency assertions and application locking behavior are not weakened.
 
 **Target Platform**: Existing Next.js server/API plus the shared Expo iOS/Android/Web client
 
 **Project Type**: Mobile client + web API + PostgreSQL service
 
-**Performance Goals**: A packet with 20 metadata records loads as one coherent screen; individual source uploads remain independently retryable; confirmation performs one bounded serialized transaction
+**Performance Goals**: A packet is bounded to 20 ordered metadata records and renders without pagination or truncation on one coherent screen; individual source uploads remain independently retryable; confirmation performs one bounded serialized transaction
 
-**Constraints**: Local only; no provider, credential, customer data, external transport/write, push, Preview, Production or store action; no dependency or lockfile change; maximum 10 MiB per source in this release; current safe voice duration remains unchanged; all consequential claims fail closed
+**Constraints**: Local only; no provider, credential, customer data, external transport/write, push, Preview, Production or store action; no dependency or lockfile change; maximum 10 MiB per source; maximum 20 sources and one voice note per intake; streamed JSON commands capped at 64 KiB; M4A must contain a server-verified audio track no longer than 120 seconds and agree materially with the declared duration; all consequential claims fail closed
 
-**Scale/Scope**: One additive vertical, four additive data entities, two mobile API routes, one hidden mobile route, one narrow deterministic assistant query path and targeted tests
+**Scale/Scope**: One additive vertical, four additive data entities, three authenticated API surfaces (command/projection, source admission and local source retrieval), one hidden mobile screen, one narrow deterministic assistant query path and targeted tests
 
 ## Constitution Check
 
@@ -67,27 +69,52 @@ prisma/
 src/lib/construction-operating-assistant-r36v/
 └── project-brain-intake.ts
 
+src/lib/
+├── construction-operating-assistant-r36c/contracts.ts
+├── file-security.ts
+├── file-security-local.ts
+└── storage-local.ts
+
 src/server/construction-operating-assistant-r36v/
 ├── project-brain-intake.ts
 └── project-brain-query.ts
 
+src/server/construction-operating-assistant-r36c/
+└── orchestrator.ts
+
+src/server/
+└── sweeps.ts
+
 src/app/api/endvera/v1/mobile/project-brain-intake/
 ├── route.ts
-└── sources/route.ts
+└── sources/
+    ├── route.ts
+    └── [sourceId]/route.ts
 
 apps/mobile/src/
 ├── app/(app)/project-brain-intake.tsx
 ├── app/(app)/projects.tsx
 ├── app/(app)/_layout.tsx
 ├── lib/project-brain-intake.ts
+├── lib/project-brain-intent-queue.ts
+├── lib/project-brain-source-files.ts
 ├── lib/api.ts
+├── lib/assistant.ts
 ├── lib/product-experience.ts
 └── state/mobile-session.tsx
 
 test/
 ├── construction-operating-assistant-r36v-project-brain-contracts.test.ts
 ├── construction-operating-assistant-r36v-project-brain-query.test.ts
-└── integration/construction-operating-assistant-r36v-project-brain.itest.ts
+├── construction-operating-assistant-r36v-project-brain-api.test.ts
+├── construction-operating-assistant-r36v-project-brain-file-ownership.test.ts
+├── construction-operating-assistant-r36v-project-brain-server-hardening.test.ts
+├── construction-operating-assistant-r36v-local-storage-scan.test.ts
+├── integration/construction-operating-assistant-r36v-project-brain-file-ownership.itest.ts
+├── integration/construction-operating-assistant-r36v-project-brain.itest.ts
+├── integration/r36v-project-brain-restart-probe.ts
+├── integration/global-setup.ts
+└── integration/per-file-setup.ts
 
 apps/mobile/test/
 └── project-brain-intake.test.ts
@@ -105,22 +132,22 @@ apps/mobile/test/
 ### Phase 1 — Persistence and transactional core
 
 - Add four append-only/additive entities and one forward-only migration.
-- Implement serialized, advisory-locked create, brief, admission, submit, confirm, reject and projection services.
-- Reuse the scanner/storage boundary and compensate object writes when the transaction fails.
+- Implement serialized, advisory-locked create, brief, admission, submit, confirm, reject and projection services, including workspace-wide command locks and stable replay/refusal audits.
+- Bind every source to `File` with restrictive retention, exclude those files from the generic orphan sweep, reuse one canonical file/object for identical bytes while retaining separate selections/decisions, and reconcile stale crash material after a 24-hour grace period.
+- Reuse the fixed local scanner/storage boundary, validate real M4A audio-track duration server-side and compensate object writes when transaction outcome is known.
 
 ### Phase 2 — API and one-surface mobile experience
 
-- Add authenticated no-store command/projection and multipart source routes.
-- Add a client queue that turns multi-select into independently idempotent uploads.
+- Add authenticated no-store command/projection and multipart source routes, stream-cap command JSON at 64 KiB, and add an authorized local source download route that verifies hash/size/MIME and records access.
+- Add a bounded, encrypted, chunked client queue that turns multi-select and every mutation into independently idempotent, restart-safe intents. Copy selected files to durable application storage before enqueue and reconcile them against the complete global queue so opening one project never deletes another project's pending source.
 - Add one hidden project-brain route reached from Projects without adding a sixth primary tab.
 
 ### Phase 3 — Deterministic memory use and validation
 
 - Add narrow assistant queries against only the latest confirmed snapshot.
-- Prove restart equality, concurrency, replay, authorization and zero-provider behavior in disposable PostgreSQL.
+- Prove restart equality, concurrency, replay, authorization, identical-byte canonical reuse, source retrieval/access logging, retention/sweep safety, crash recovery, real M4A validation, cross-project mobile recovery and zero-provider behavior in disposable PostgreSQL and mobile tests.
 - Run targeted/full proportional gates and commit locally.
 
 ## Complexity Tracking
 
 No constitution violation. Four new entities are justified because packet lifecycle, immutable sources, immutable snapshots and idempotent decisions have different retention and mutation rules; combining them would make historical meaning mutable or replay ambiguous.
-

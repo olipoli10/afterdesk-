@@ -72,6 +72,42 @@ import type { MobilePrivacyCockpit, MobilePrivacyCommand } from "@/lib/privacy";
 import type { MobileReliabilityCockpit, MobileReliabilityCommand } from "@/lib/reliability";
 import type { MobileOnboardingCockpit, MobileOnboardingCommand } from "@/lib/onboarding";
 import type { MobileGoldenWorkflow } from "@/lib/golden-workflow";
+import {
+  beginProjectBrainSourceAttempt,
+  finishProjectBrainSourceAttempt,
+  projectBrainFailureStateForApiCode,
+  projectBrainIntakeForContext,
+  rebaseReadyProjectBrainSourceAttempt,
+  removeProjectBrainSourceAttempt,
+  stageProjectBrainSourceAttempts,
+  type MobileProjectBrainCommand,
+  type MobileProjectBrainIntakeProjection,
+  type ProjectBrainSourceAttempt,
+} from "@/lib/project-brain-intake";
+import {
+  beginProjectBrainCommandAttempt,
+  clearProjectBrainIntents,
+  commandIntent,
+  createProjectBrainCommandAttempt,
+  enqueueProjectBrainIntent,
+  finishProjectBrainCommandAttempt,
+  hasProjectBrainIntents,
+  loadProjectBrainIntentSnapshot,
+  projectBrainCommandQueueForContext,
+  removeProjectBrainIntent,
+  replaceReadyProjectBrainSourceIntent,
+  sourceIntent,
+  transitionProjectBrainIntent,
+  type ProjectBrainCommandAttempt,
+  type ProjectBrainIntentState,
+} from "@/lib/project-brain-intent-queue";
+import {
+  reconcileProjectBrainSourceFiles,
+  releaseProjectBrainSourceAttempt,
+  retainProjectBrainSourceAttempt,
+  withProjectBrainSourceLifecycleLock,
+} from "@/lib/project-brain-source-files";
+import { mobileProductCopy } from "@/lib/product-experience";
 import type {
   MobilePermissionCenter,
   MobileRevokePermissionCommand,
@@ -136,6 +172,10 @@ type MobileSessionValue = {
   onboardingLoadState: LoadState;
   goldenWorkflow: MobileGoldenWorkflow | null;
   goldenWorkflowLoadState: LoadState;
+  projectBrainIntake: MobileProjectBrainIntakeProjection | null;
+  projectBrainLoadState: LoadState;
+  projectBrainCommandQueue: ProjectBrainCommandAttempt[];
+  projectBrainSourceQueue: ProjectBrainSourceAttempt[];
   permissionCenter: MobilePermissionCenter | null;
   permissionLoadState: LoadState;
   outboxEntries: MobileOutboxEntry[];
@@ -179,6 +219,13 @@ type MobileSessionValue = {
   loadOnboarding: (workspaceId?: string) => Promise<void>;
   submitOnboardingCommand: (command: MobileOnboardingCommand) => Promise<void>;
   loadGoldenWorkflow: () => Promise<void>;
+  loadProjectBrainIntake: (projectId: string) => Promise<void>;
+  submitProjectBrainCommand: (command: MobileProjectBrainCommand) => Promise<ProjectBrainCommandAttempt>;
+  retryProjectBrainCommand: (commandId: string) => Promise<ProjectBrainCommandAttempt>;
+  stageProjectBrainSources: (attempts: readonly ProjectBrainSourceAttempt[]) => Promise<readonly ProjectBrainSourceAttempt[]>;
+  uploadProjectBrainSource: (attempt: ProjectBrainSourceAttempt) => Promise<ProjectBrainSourceAttempt>;
+  retryProjectBrainSource: (commandId: string) => Promise<ProjectBrainSourceAttempt>;
+  dismissProjectBrainIntent: (commandId: string) => Promise<void>;
   loadPermissions: () => Promise<void>;
   revokePermission: (command: MobileRevokePermissionCommand) => Promise<void>;
   retryOutboxEntry: (entryId: string) => Promise<void>;
@@ -204,6 +251,12 @@ function publicMessage(error: unknown) {
     default:
       return "Cette action a été refusée.";
   }
+}
+
+export function projectBrainFailureState(error: unknown): Exclude<ProjectBrainIntentState, "READY" | "SENDING" | "CONFIRMED" | "REPLAYED"> {
+  return projectBrainFailureStateForApiCode(
+    error instanceof MobileApiError ? error.code : undefined,
+  );
 }
 
 async function assertNetworkAvailable() {
@@ -275,6 +328,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [voiceCallsCockpit, setVoiceCallsCockpit] = useState<MobileVoiceCallsCockpit | null>(null);
   const [voiceCallsLoadState, setVoiceCallsLoadState] = useState<LoadState>("IDLE");
   const [latestVoiceNoteAttempt, setLatestVoiceNoteAttempt] = useState<VoiceNoteAttempt | null>(null);
+  const [projectBrainIntake, setProjectBrainIntake] = useState<MobileProjectBrainIntakeProjection | null>(null);
+  const [projectBrainLoadState, setProjectBrainLoadState] = useState<LoadState>("IDLE");
+  const [projectBrainCommandQueue, setProjectBrainCommandQueue] = useState<ProjectBrainCommandAttempt[]>([]);
+  const [projectBrainSourceQueue, setProjectBrainSourceQueue] = useState<ProjectBrainSourceAttempt[]>([]);
   const [emailCockpit, setEmailCockpit] = useState<MobileEmailCockpit | null>(null);
   const [emailLoadState, setEmailLoadState] = useState<LoadState>("IDLE");
   const [accountingCockpit, setAccountingCockpit] = useState<MobileAccountingCockpit | null>(null);
@@ -306,6 +363,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingMessagingRequest = useRef<string | null>(null);
   const dispatchingVoiceCallRequest = useRef<string | null>(null);
   const dispatchingVoiceNoteRequest = useRef<string | null>(null);
+  const dispatchingProjectBrainCommand = useRef<string | null>(null);
+  const dispatchingProjectBrainSources = useRef(new Set<string>());
+  const projectBrainContext = useRef<{ workspaceId: string; projectId: string } | null>(null);
   const dispatchingEmailRequest = useRef<string | null>(null);
   const dispatchingAccountingRequest = useRef<string | null>(null);
   const dispatchingAuthorityRequest = useRef<string | null>(null);
@@ -401,6 +461,13 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setOnboardingLoadState("IDLE");
         setPermissionCenter(null);
         setPermissionLoadState("IDLE");
+        setProjectBrainIntake(null);
+        setProjectBrainLoadState("IDLE");
+        setProjectBrainCommandQueue([]);
+        setProjectBrainSourceQueue([]);
+        projectBrainContext.current = null;
+        dispatchingProjectBrainCommand.current = null;
+        dispatchingProjectBrainSources.current.clear();
       }
       activeWorkspaceId.current = workspace.id;
       await refreshOutbox(workspace.id);
@@ -425,6 +492,13 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
         setActiveWorkspace(null);
         activeWorkspaceId.current = null;
         setCockpit(null);
+        setProjectBrainIntake(null);
+        setProjectBrainLoadState("IDLE");
+        setProjectBrainCommandQueue([]);
+        setProjectBrainSourceQueue([]);
+        projectBrainContext.current = null;
+        dispatchingProjectBrainCommand.current = null;
+        dispatchingProjectBrainSources.current.clear();
         setOutboxEntries([]);
         setOutboxLoadState("IDLE");
       }
@@ -1301,6 +1375,331 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     }
   }, [activeWorkspace, api]);
 
+  const loadProjectBrainIntake = useCallback(async (projectId: string) => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    const context = { workspaceId: activeWorkspace.id, projectId };
+    projectBrainContext.current = context;
+    dispatchingProjectBrainCommand.current = null;
+    dispatchingProjectBrainSources.current.clear();
+    setProjectBrainIntake(null);
+    setProjectBrainCommandQueue([]);
+    setProjectBrainSourceQueue([]);
+    setProjectBrainLoadState("LOADING");
+    setPublicError(null);
+    try {
+      const localSnapshot = await withProjectBrainSourceLifecycleLock(async () => {
+        const snapshot = await loadProjectBrainIntentSnapshot({
+          ...context,
+          interruptedPublicError: mobileProductCopy(activeWorkspace.defaultLocale).projectBrain.interrupted,
+        });
+        if (projectBrainContext.current !== context) return null;
+        const visibleIntents = [] as typeof snapshot.contextIntents;
+        const cleanedSourceIds = new Set<string>();
+        let sourceCleanupFailed = false;
+        for (const intent of snapshot.contextIntents) {
+          if (
+            intent.kind === "SOURCE"
+            && (intent.attempt.state === "CONFIRMED" || intent.attempt.state === "REPLAYED")
+            && intent.attempt.result
+          ) {
+            try {
+              await releaseProjectBrainSourceAttempt(intent.attempt, { reason: "CANONICAL_RECEIPT" });
+              await removeProjectBrainIntent({ commandId: intent.attempt.command.commandId });
+              cleanedSourceIds.add(intent.attempt.command.commandId);
+              continue;
+            } catch {
+              sourceCleanupFailed = true;
+            }
+          }
+          visibleIntents.push(intent);
+        }
+        const visibleSources = visibleIntents.flatMap((intent) => intent.kind === "SOURCE" ? [intent.attempt] : []);
+        const globallyRetainedSources = snapshot.allIntents.flatMap((intent) =>
+          intent.kind === "SOURCE" && !cleanedSourceIds.has(intent.attempt.command.commandId)
+            ? [intent.attempt]
+            : []);
+        await reconcileProjectBrainSourceFiles({
+          retainedAttempts: globallyRetainedSources,
+          requiredAttempts: visibleSources,
+        });
+        return { sourceCleanupFailed, visibleIntents, visibleSources };
+      });
+      if (!localSnapshot || projectBrainContext.current !== context) return;
+      setProjectBrainCommandQueue(localSnapshot.visibleIntents.flatMap((intent) => intent.kind === "COMMAND" ? [intent.attempt] : []));
+      setProjectBrainSourceQueue(localSnapshot.visibleSources);
+      const projection = await api.projectBrainIntake(context.workspaceId, context.projectId);
+      if (projectBrainContext.current !== context) return;
+      setProjectBrainIntake(projection);
+      setProjectBrainLoadState("READY");
+      if (localSnapshot.sourceCleanupFailed) {
+        setPublicError(mobileProductCopy(activeWorkspace.defaultLocale).projectBrain.localQueueUnavailable);
+      }
+    } catch (error) {
+      if (projectBrainContext.current !== context) return;
+      setProjectBrainIntake(null);
+      setProjectBrainLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const dispatchProjectBrainCommandAttempt = useCallback(async (value: ProjectBrainCommandAttempt) => {
+    const context = projectBrainContext.current;
+    if (!activeWorkspace || value.command.workspaceId !== activeWorkspace.id || context?.workspaceId !== value.command.workspaceId || context.projectId !== value.command.projectId) {
+      throw new Error("MOBILE_PROJECT_BRAIN_WORKSPACE_REFUSED");
+    }
+    if (dispatchingProjectBrainCommand.current) {
+      throw new Error("MOBILE_PROJECT_BRAIN_COMMAND_ALREADY_DISPATCHED");
+    }
+    const sending = beginProjectBrainCommandAttempt(value);
+    dispatchingProjectBrainCommand.current = sending.command.commandId;
+    try {
+      await transitionProjectBrainIntent({ commandId: sending.command.commandId, state: "SENDING" });
+    } catch (error) {
+      dispatchingProjectBrainCommand.current = null;
+      throw error;
+    }
+    setProjectBrainCommandQueue((queue) => [
+      ...queue.filter((attempt) => attempt.command.commandId !== sending.command.commandId),
+      sending,
+    ]);
+    setProjectBrainLoadState("LOADING");
+    setPublicError(null);
+
+    let result;
+    try {
+      await assertNetworkAvailable();
+      result = await api.projectBrainCommand(sending.command);
+    } catch (error) {
+      const state = projectBrainFailureState(error);
+      const failed = finishProjectBrainCommandAttempt(sending, {
+        state,
+        publicError: publicMessage(error),
+      });
+      await transitionProjectBrainIntent({
+        commandId: failed.command.commandId,
+        state,
+        publicError: failed.publicError,
+      }).catch(() => undefined);
+      if (projectBrainContext.current?.workspaceId === failed.command.workspaceId && projectBrainContext.current.projectId === failed.command.projectId) {
+        setProjectBrainCommandQueue((queue) => [
+          ...queue.filter((attempt) => attempt.command.commandId !== failed.command.commandId),
+          failed,
+        ]);
+        setProjectBrainLoadState("UNAVAILABLE");
+        setPublicError(failed.publicError);
+        if (state === "CONFLICT") {
+          const projection = await api.projectBrainIntake(failed.command.workspaceId, failed.command.projectId).catch(() => null);
+          if (projection && projectBrainContext.current?.workspaceId === failed.command.workspaceId && projectBrainContext.current.projectId === failed.command.projectId) {
+            setProjectBrainIntake(projection);
+            setProjectBrainLoadState("READY");
+          }
+        }
+      }
+      dispatchingProjectBrainCommand.current = null;
+      return failed;
+    }
+
+    const completed = finishProjectBrainCommandAttempt(sending, {
+      state: result.replayed ? "REPLAYED" : "CONFIRMED",
+      result,
+    });
+    await transitionProjectBrainIntent({
+      commandId: completed.command.commandId,
+      state: completed.state,
+      result,
+    }).then(() => removeProjectBrainIntent({ commandId: completed.command.commandId })).catch(() => undefined);
+    if (projectBrainContext.current?.workspaceId === completed.command.workspaceId && projectBrainContext.current.projectId === completed.command.projectId) {
+      setProjectBrainCommandQueue((queue) => queue.filter((attempt) => attempt.command.commandId !== completed.command.commandId));
+      try {
+        const projection = await api.projectBrainIntake(completed.command.workspaceId, completed.command.projectId);
+        if (projectBrainContext.current?.workspaceId === completed.command.workspaceId && projectBrainContext.current.projectId === completed.command.projectId) {
+          setProjectBrainIntake(projection);
+          setProjectBrainLoadState("READY");
+        }
+      } catch (refreshError) {
+        setProjectBrainLoadState("UNAVAILABLE");
+        setPublicError(publicMessage(refreshError));
+      }
+    }
+    dispatchingProjectBrainCommand.current = null;
+    return completed;
+  }, [activeWorkspace, api]);
+
+  const submitProjectBrainCommand = useCallback(async (command: MobileProjectBrainCommand) => {
+    const context = projectBrainContext.current;
+    if (!activeWorkspace || command.workspaceId !== activeWorkspace.id || context?.workspaceId !== command.workspaceId || context.projectId !== command.projectId) {
+      throw new Error("MOBILE_PROJECT_BRAIN_WORKSPACE_REFUSED");
+    }
+    const ready = createProjectBrainCommandAttempt(command);
+    const stored = await enqueueProjectBrainIntent({ intent: commandIntent(ready) });
+    if (stored.kind !== "COMMAND") throw new Error("MOBILE_PROJECT_BRAIN_INTENT_KIND_MISMATCH");
+    setProjectBrainCommandQueue((queue) => [
+      ...queue.filter((attempt) => attempt.command.commandId !== stored.attempt.command.commandId),
+      stored.attempt,
+    ]);
+    return dispatchProjectBrainCommandAttempt(stored.attempt);
+  }, [activeWorkspace, dispatchProjectBrainCommandAttempt]);
+
+  const retryProjectBrainCommand = useCallback(async (commandId: string) => {
+    const context = projectBrainContext.current;
+    const attempt = projectBrainCommandQueueForContext(projectBrainCommandQueue, context?.workspaceId, context?.projectId)
+      .find((item) => item.command.commandId === commandId);
+    if (!attempt || (attempt.state !== "READY" && attempt.state !== "OUTCOME_UNKNOWN")) {
+      throw new Error("MOBILE_PROJECT_BRAIN_COMMAND_RETRY_REFUSED");
+    }
+    return dispatchProjectBrainCommandAttempt(attempt);
+  }, [dispatchProjectBrainCommandAttempt, projectBrainCommandQueue]);
+
+  const stageProjectBrainSources = useCallback(async (attempts: readonly ProjectBrainSourceAttempt[]) => {
+    const context = projectBrainContext.current;
+    if (!context || attempts.some((attempt) =>
+      attempt.state !== "READY"
+      || attempt.command.workspaceId !== context.workspaceId
+      || attempt.command.projectId !== context.projectId
+    )) {
+      throw new Error("MOBILE_PROJECT_BRAIN_SOURCE_CONTEXT_REFUSED");
+    }
+    const durableAttempts: ProjectBrainSourceAttempt[] = [];
+    for (const attempt of attempts) {
+      const storedAttempt = await withProjectBrainSourceLifecycleLock(async () => {
+        const retained = await retainProjectBrainSourceAttempt(attempt);
+        try {
+          const stored = await enqueueProjectBrainIntent({ intent: sourceIntent(retained.attempt) });
+          if (stored.kind !== "SOURCE") throw new Error("MOBILE_PROJECT_BRAIN_INTENT_KIND_MISMATCH");
+          return stored.attempt;
+        } catch (error) {
+          if (retained.created) {
+            await releaseProjectBrainSourceAttempt(retained.attempt, { reason: "UNQUEUED_ROLLBACK" }).catch(() => undefined);
+          }
+          throw error;
+        }
+      });
+      durableAttempts.push(storedAttempt);
+      setProjectBrainSourceQueue((queue) => stageProjectBrainSourceAttempts(queue, [storedAttempt]));
+    }
+    return durableAttempts;
+  }, []);
+
+  const uploadProjectBrainSource = useCallback(async (value: ProjectBrainSourceAttempt) => {
+    const context = projectBrainContext.current;
+    if (!activeWorkspace || value.command.workspaceId !== activeWorkspace.id || context?.workspaceId !== value.command.workspaceId || context.projectId !== value.command.projectId) {
+      throw new Error("MOBILE_PROJECT_BRAIN_WORKSPACE_REFUSED");
+    }
+    if (dispatchingProjectBrainSources.current.has(value.command.commandId)) {
+      throw new Error("MOBILE_PROJECT_BRAIN_SOURCE_ALREADY_DISPATCHED");
+    }
+    const sending = beginProjectBrainSourceAttempt(value);
+    dispatchingProjectBrainSources.current.add(sending.command.commandId);
+    try {
+      await transitionProjectBrainIntent({ commandId: sending.command.commandId, state: "SENDING" });
+    } catch (error) {
+      dispatchingProjectBrainSources.current.delete(sending.command.commandId);
+      throw error;
+    }
+    setProjectBrainSourceQueue((queue) => stageProjectBrainSourceAttempts(queue, [sending]));
+
+    let result;
+    try {
+      await assertNetworkAvailable();
+      result = await api.uploadProjectBrainSource(sending.command);
+    } catch (error) {
+      const state = projectBrainFailureState(error);
+      const failed = finishProjectBrainSourceAttempt(sending, { state, publicError: publicMessage(error) });
+      await transitionProjectBrainIntent({
+        commandId: failed.command.commandId,
+        state,
+        publicError: failed.publicError,
+      }).catch(() => undefined);
+      if (projectBrainContext.current?.workspaceId === sending.command.workspaceId && projectBrainContext.current.projectId === sending.command.projectId) {
+        setProjectBrainSourceQueue((queue) => stageProjectBrainSourceAttempts(queue, [failed]));
+        setPublicError(failed.publicError);
+        if (state === "CONFLICT") {
+          const projection = await api.projectBrainIntake(sending.command.workspaceId, sending.command.projectId).catch(() => null);
+          if (projection && projectBrainContext.current?.workspaceId === sending.command.workspaceId && projectBrainContext.current.projectId === sending.command.projectId) {
+            setProjectBrainIntake(projection);
+            setProjectBrainLoadState("READY");
+          }
+        }
+      }
+      dispatchingProjectBrainSources.current.delete(sending.command.commandId);
+      return failed;
+    }
+
+    const completed = finishProjectBrainSourceAttempt(sending, {
+      state: result.replayed ? "REPLAYED" : "CONFIRMED",
+      result,
+    });
+    let localCleanupComplete = false;
+    try {
+      await withProjectBrainSourceLifecycleLock(async () => {
+        await transitionProjectBrainIntent({
+          commandId: completed.command.commandId,
+          state: completed.state,
+          result,
+        });
+        await releaseProjectBrainSourceAttempt(completed, { reason: "CANONICAL_RECEIPT" });
+        await removeProjectBrainIntent({ commandId: completed.command.commandId });
+      });
+      localCleanupComplete = true;
+    } catch {
+      setPublicError(mobileProductCopy(activeWorkspace.defaultLocale).projectBrain.localQueueUnavailable);
+    }
+    setProjectBrainSourceQueue((queue) => localCleanupComplete
+      ? removeProjectBrainSourceAttempt(queue, completed.command.commandId)
+      : stageProjectBrainSourceAttempts(queue, [completed]));
+    try {
+      const projection = await api.projectBrainIntake(activeWorkspace.id, sending.command.projectId);
+      if (projectBrainContext.current?.workspaceId === sending.command.workspaceId && projectBrainContext.current.projectId === sending.command.projectId) {
+        setProjectBrainIntake(projection);
+        setProjectBrainLoadState("READY");
+      }
+    } catch (refreshError) {
+      if (projectBrainContext.current?.workspaceId === sending.command.workspaceId && projectBrainContext.current.projectId === sending.command.projectId) {
+        setProjectBrainLoadState("UNAVAILABLE");
+        setPublicError(publicMessage(refreshError));
+      }
+    }
+    dispatchingProjectBrainSources.current.delete(sending.command.commandId);
+    return completed;
+  }, [activeWorkspace, api]);
+
+  const retryProjectBrainSource = useCallback(async (commandId: string) => {
+    const attempt = projectBrainSourceQueue.find((item) => item.command.commandId === commandId);
+    const context = projectBrainContext.current;
+    if (!attempt || (attempt.state !== "READY" && attempt.state !== "OUTCOME_UNKNOWN")
+      || context?.workspaceId !== attempt.command.workspaceId || context.projectId !== attempt.command.projectId) {
+      throw new Error("MOBILE_PROJECT_BRAIN_SOURCE_RETRY_REFUSED");
+    }
+    const dispatchAttempt = attempt.state === "READY"
+      ? rebaseReadyProjectBrainSourceAttempt(
+        attempt,
+        projectBrainIntakeForContext(projectBrainIntake, context.workspaceId, context.projectId)?.stateVersion
+          ?? attempt.command.expectedStateVersion,
+      )
+      : attempt;
+    if (dispatchAttempt !== attempt) {
+      const replaced = await replaceReadyProjectBrainSourceIntent({ expected: attempt, replacement: dispatchAttempt });
+      setProjectBrainSourceQueue((queue) => stageProjectBrainSourceAttempts(queue, [replaced]));
+      return uploadProjectBrainSource(replaced);
+    }
+    return uploadProjectBrainSource(dispatchAttempt);
+  }, [projectBrainIntake, projectBrainSourceQueue, uploadProjectBrainSource]);
+
+  const dismissProjectBrainIntent = useCallback(async (commandId: string) => {
+    const command = projectBrainCommandQueue.find((attempt) => attempt.command.commandId === commandId);
+    const source = projectBrainSourceQueue.find((attempt) => attempt.command.commandId === commandId);
+    const state = command?.state ?? source?.state;
+    if (state !== "CONFLICT" && state !== "REFUSED") {
+      throw new Error("MOBILE_PROJECT_BRAIN_INTENT_DISMISS_REFUSED");
+    }
+    await withProjectBrainSourceLifecycleLock(async () => {
+      if (source) await releaseProjectBrainSourceAttempt(source, { reason: "TERMINAL_DISMISS" });
+      await removeProjectBrainIntent({ commandId });
+    });
+    setProjectBrainCommandQueue((queue) => queue.filter((attempt) => attempt.command.commandId !== commandId));
+    setProjectBrainSourceQueue((queue) => queue.filter((attempt) => attempt.command.commandId !== commandId));
+  }, [projectBrainCommandQueue, projectBrainSourceQueue]);
+
   const loadEmail = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
     setEmailLoadState("LOADING");
@@ -1762,10 +2161,15 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
 
   const signOut = useCallback(async () => {
     try {
+      if (await hasProjectBrainIntents()) {
+        setPublicError(mobileProductCopy(activeWorkspace?.defaultLocale).projectBrain.pendingSignOut);
+        return;
+      }
       await clearMobileOutbox();
+      await clearProjectBrainIntents();
     } catch {
       setOutboxLoadState("UNAVAILABLE");
-      setPublicError("La déconnexion est bloquée tant que la boîte locale chiffrée ne peut pas être effacée.");
+      setPublicError("La déconnexion est bloquée tant que les commandes locales chiffrées ne peuvent pas être effacées.");
       return;
     }
     await authClient.signOut();
@@ -1810,12 +2214,19 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setReliabilityLoadState("IDLE");
     setOnboardingCockpit(null);
     setOnboardingLoadState("IDLE");
+    setProjectBrainIntake(null);
+    setProjectBrainLoadState("IDLE");
+    setProjectBrainCommandQueue([]);
+    setProjectBrainSourceQueue([]);
+    projectBrainContext.current = null;
+    dispatchingProjectBrainCommand.current = null;
+    dispatchingProjectBrainSources.current.clear();
     setPermissionCenter(null);
     setPermissionLoadState("IDLE");
     setOutboxEntries([]);
     setOutboxLoadState("IDLE");
     setLoadState("IDLE");
-  }, []);
+  }, [activeWorkspace]);
 
   const value = useMemo<MobileSessionValue>(
     () => ({
@@ -1865,6 +2276,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       onboardingLoadState,
       goldenWorkflow,
       goldenWorkflowLoadState,
+      projectBrainIntake,
+      projectBrainLoadState,
+      projectBrainCommandQueue,
+      projectBrainSourceQueue,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -1906,6 +2321,13 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadOnboarding,
       submitOnboardingCommand,
       loadGoldenWorkflow,
+      loadProjectBrainIntake,
+      submitProjectBrainCommand,
+      retryProjectBrainCommand,
+      stageProjectBrainSources,
+      uploadProjectBrainSource,
+      retryProjectBrainSource,
+      dismissProjectBrainIntent,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,
@@ -1955,6 +2377,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       onboardingLoadState,
       goldenWorkflow,
       goldenWorkflowLoadState,
+      projectBrainIntake,
+      projectBrainLoadState,
+      projectBrainCommandQueue,
+      projectBrainSourceQueue,
       permissionCenter,
       permissionLoadState,
       outboxEntries,
@@ -2001,6 +2427,13 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       loadOnboarding,
       submitOnboardingCommand,
       loadGoldenWorkflow,
+      loadProjectBrainIntake,
+      submitProjectBrainCommand,
+      retryProjectBrainCommand,
+      stageProjectBrainSources,
+      uploadProjectBrainSource,
+      retryProjectBrainSource,
+      dismissProjectBrainIntent,
       loadPermissions,
       revokePermission,
       retryOutboxEntry,

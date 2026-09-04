@@ -23,6 +23,10 @@ import { processOperatingAssistantCommand } from "@/server/construction-operatin
 import { processConstructionMobileAssistantRequest } from "@/server/construction-operating-assistant-r9/mobile-assistant";
 import { prepareAssistantRoutingDecision } from "@/server/model-gateway/assistant-routing";
 import {
+  classifyProjectBrainQuery,
+  processProjectBrainQuery,
+} from "@/server/construction-operating-assistant-r36v/project-brain-query";
+import {
   persistDeferredAssistantExchange,
   type DeferredAssistantReply,
 } from "./deferred-exchange";
@@ -195,6 +199,16 @@ export async function processUnifiedAssistantRequest(input: {
   const request = constructionMobileAssistantRequestSchema.parse(input.request);
   const admittedSource = normalizeTrustedAdmittedAssistantSource(input);
   await requireUnifiedAssistantRole(input.userId, request.workspaceId);
+  const projectBrainQueryKind = classifyProjectBrainQuery(request.message);
+  if (projectBrainQueryKind) {
+    return processProjectBrainQuery({
+      userId: input.userId,
+      channel: input.channel,
+      request,
+      queryKind: projectBrainQueryKind,
+      admittedSource,
+    });
+  }
   const decision = prepareAssistantRoutingDecision(createTrustedAssistantRoutingRequest({ ...input, request }));
   const routing = projectClientAssistantRouting(decision);
 

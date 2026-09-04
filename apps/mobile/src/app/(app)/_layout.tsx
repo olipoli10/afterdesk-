@@ -35,6 +35,12 @@ function TabIcon({
   );
 }
 
+const TodayTabIcon = ({ color, focused }: { color: ColorValue; focused: boolean }) => <TabIcon name="today" color={color} focused={focused} />;
+const ProjectsTabIcon = ({ color, focused }: { color: ColorValue; focused: boolean }) => <TabIcon name="projects" color={color} focused={focused} />;
+const AssistantTabIcon = ({ color, focused }: { color: ColorValue; focused: boolean }) => <TabIcon name="assistant" color={color} focused={focused} emphasized />;
+const CalendarTabIcon = ({ color, focused }: { color: ColorValue; focused: boolean }) => <TabIcon name="calendar" color={color} focused={focused} />;
+const ReviewTabIcon = ({ color, focused }: { color: ColorValue; focused: boolean }) => <TabIcon name="review" color={color} focused={focused} />;
+
 export default function AppLayout() {
   const { activeWorkspace, cockpit } = useMobileSession();
   const copy = mobileProductCopy(activeWorkspace?.defaultLocale);
@@ -55,11 +61,11 @@ export default function AppLayout() {
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: copy.tabs.today, tabBarAccessibilityLabel: copy.tabs.today, tabBarIcon: ({ color, focused }) => <TabIcon name="today" color={color} focused={focused} /> }} />
-      <Tabs.Screen name="projects" options={{ title: copy.tabs.projects, tabBarAccessibilityLabel: copy.tabs.projects, tabBarIcon: ({ color, focused }) => <TabIcon name="projects" color={color} focused={focused} /> }} />
-      <Tabs.Screen name="assistant" options={{ title: copy.tabs.assistant, tabBarAccessibilityLabel: copy.tabs.assistant, tabBarIcon: ({ color, focused }) => <TabIcon name="assistant" color={color} focused={focused} emphasized /> }} />
-      <Tabs.Screen name="calendar" options={{ title: copy.tabs.calendar, tabBarAccessibilityLabel: copy.tabs.calendar, tabBarIcon: ({ color, focused }) => <TabIcon name="calendar" color={color} focused={focused} /> }} />
-      <Tabs.Screen name="actions" options={{ title: copy.tabs.review, tabBarAccessibilityLabel: copy.tabs.review, tabBarBadge: pendingCount || undefined, tabBarBadgeStyle: styles.badge, tabBarIcon: ({ color, focused }) => <TabIcon name="review" color={color} focused={focused} /> }} />
+      <Tabs.Screen name="index" options={{ title: copy.tabs.today, tabBarAccessibilityLabel: copy.tabs.today, tabBarIcon: TodayTabIcon }} />
+      <Tabs.Screen name="projects" options={{ title: copy.tabs.projects, tabBarAccessibilityLabel: copy.tabs.projects, tabBarIcon: ProjectsTabIcon }} />
+      <Tabs.Screen name="assistant" options={{ title: copy.tabs.assistant, tabBarAccessibilityLabel: copy.tabs.assistant, tabBarIcon: AssistantTabIcon }} />
+      <Tabs.Screen name="calendar" options={{ title: copy.tabs.calendar, tabBarAccessibilityLabel: copy.tabs.calendar, tabBarIcon: CalendarTabIcon }} />
+      <Tabs.Screen name="actions" options={{ title: copy.tabs.review, tabBarAccessibilityLabel: copy.tabs.review, tabBarBadge: pendingCount || undefined, tabBarBadgeStyle: styles.badge, tabBarIcon: ReviewTabIcon }} />
 
       <Tabs.Screen name="more" options={{ href: null }} />
       <Tabs.Screen name="onboarding" options={{ href: null }} />
@@ -81,6 +87,7 @@ export default function AppLayout() {
       <Tabs.Screen name="receivables" options={{ href: null }} />
       <Tabs.Screen name="human-support" options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
+      <Tabs.Screen name="project-brain-intake" options={{ href: null }} />
     </Tabs>
   );
 }

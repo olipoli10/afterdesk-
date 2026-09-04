@@ -17,11 +17,16 @@ export class ScannerUnavailableError extends Error {
   }
 }
 
-type ScanResult = {
+export type ScanResult = {
   buffer: Buffer;
   detectedMime: string;
   sha256: string;
   details: string;
+  providerExecutionPerformed: boolean;
+};
+
+export type FileInspectionOptions = {
+  providerPolicy?: "CONFIGURED" | "FORBIDDEN";
 };
 
 const MIME: Record<string, string> = {
@@ -34,6 +39,11 @@ const MIME: Record<string, string> = {
   jpeg: "image/jpeg",
   m4a: "audio/mp4",
 };
+
+// ZIP headers otherwise inherit Date.now() inside fflate. A fixed, valid
+// DOS-era timestamp keeps sanitized Office bytes (and therefore their SHA)
+// stable across retries and restarts.
+const SANITIZED_OFFICE_ZIP_MTIME = Date.UTC(2000, 0, 1, 12, 0, 0);
 
 function rejectKnownPayloads(buffer: Buffer) {
   const latin = buffer.toString("latin1");
@@ -248,7 +258,10 @@ function sanitizeOffice(buffer: Buffer, ext: "docx" | "xlsx"): Buffer {
       "AppVersion",
     ]);
   }
-  return Buffer.from(zipSync(entries, { level: 6 }));
+  return Buffer.from(zipSync(entries, {
+    level: 6,
+    mtime: SANITIZED_OFFICE_ZIP_MTIME,
+  }));
 }
 
 function stripJpegMetadata(buffer: Buffer): Buffer {
@@ -370,7 +383,11 @@ async function scanWithCloudmersive(buffer: Buffer): Promise<string> {
   return "cloudmersive";
 }
 
-export async function inspectAndSanitizeFile(buffer: Buffer, ext: string): Promise<ScanResult> {
+export async function inspectAndSanitizeFile(
+  buffer: Buffer,
+  ext: string,
+  options: FileInspectionOptions = {},
+): Promise<ScanResult> {
   assertSignature(buffer, ext);
   rejectKnownPayloads(buffer);
   let sanitized = buffer;
@@ -389,7 +406,9 @@ export async function inspectAndSanitizeFile(buffer: Buffer, ext: string): Promi
   if (ext === "jpg" || ext === "jpeg") sanitized = stripJpegMetadata(buffer);
   if (ext === "png") sanitized = stripPngMetadata(buffer);
   if (ext === "csv") validateCsv(buffer);
-  const scanner = await scanWithCloudmersive(sanitized);
+  const scanner = options.providerPolicy === "FORBIDDEN"
+    ? "local-only"
+    : await scanWithCloudmersive(sanitized);
   return {
     buffer: sanitized,
     detectedMime: MIME[ext] ?? "application/octet-stream",
@@ -399,5 +418,6 @@ export async function inspectAndSanitizeFile(buffer: Buffer, ext: string): Promi
         ? "foreground-recorder audio envelope retained without transcript inference"
         : "metadata policy applied"
     }`,
+    providerExecutionPerformed: scanner === "cloudmersive",
   };
 }

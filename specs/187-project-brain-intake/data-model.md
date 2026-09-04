@@ -37,7 +37,7 @@ Fields:
 - tenant/project/intake identity;
 - `commandId`, `commandHash` for exact replay;
 - `kind`: `PHOTO`, `DOCUMENT` or `VOICE_NOTE`;
-- existing secure `fileId` plus immutable `contentHash`;
+- restrictive `fileId` relation to the canonical secure `File` plus immutable `contentHash`;
 - bounded display metadata: `displayName`, `mimeType`, `sizeBytes`, optional `durationMs`;
 - `ordinal` allocated under the intake lock;
 - `transcriptionState`: `NOT_REQUESTED_LOCAL_ONLY`;
@@ -46,10 +46,27 @@ Fields:
 
 Rules:
 
-- unique `(workspaceId, commandId)`, `(intakeId, ordinal)` and `(intakeId, fileId)`;
+- unique `(workspaceId, commandId)` and `(intakeId, ordinal)`; `fileId` is indexed but intentionally may be shared by multiple source/provenance rows in the same intake;
 - append-only in R36V;
-- bytes live only behind the existing `File`/object-storage boundary;
+- the `File` relationship uses `ON DELETE RESTRICT`/`ON UPDATE RESTRICT`, and generic orphan cleanup excludes every `File` with a project-brain source;
+- two distinct owner selections with identical bytes create two sources at different ordinals and two body-bound `ADMIT_SOURCE` decisions, but reuse one canonical `File` row and one local object;
+- exact replay of either selection returns its original source decision and creates no additional source, `File`, object or audit effect;
+- bytes live only behind the local `File`/object-storage boundary and are retrieved only after workspace/project authorization plus actual size/hash/MIME verification;
+- each successful retrieval appends a `FileAccessLog` action of `download` for the authorized actor;
+- stale `.tmp`, object and unreferenced `File` remnants may be reconciled only after 24 hours; a referenced object is never eligible;
 - no extracted content field exists.
+
+## Canonical `File` and local object
+
+The existing `File` row remains the durable binary identity. R36V stores one content-addressed canonical object for one admitted byte sequence and permits multiple `ConstructionProjectBrainSource` provenance rows to reference it.
+
+Rules:
+
+- canonical reuse is scoped to the authorized workspace/project intake boundary; it never exposes or links a different tenant's bytes;
+- `sha256`, `sizeBytes`, detected MIME and local-signature scan details must agree before reuse or retrieval;
+- `projectBrainSources` is a restrictive reverse relation, so deletion cannot orphan confirmed provenance;
+- the generic file sweep includes `projectBrainSources: { none: {} }` and therefore cannot reap a referenced canonical file;
+- the 24-hour crash reconciler deletes only stale local objects with no project-brain source and stale staging files; it does not shorten project-evidence retention.
 
 ## `ConstructionProjectBrainSnapshot`
 
@@ -89,6 +106,7 @@ Rules:
 - unique `(workspaceId, commandId)` and `(intakeId, nextStateVersion)`;
 - written in the same serialized transaction as its state transition and snapshot when applicable;
 - exact command replay returns the retained result; same ID with different body refuses.
+- independently selected identical bytes still have distinct command bodies/identities and therefore distinct `ADMIT_SOURCE` decisions even when their `File` reference is shared.
 
 ## State Transitions
 
@@ -102,6 +120,16 @@ READY_FOR_REVIEW + REJECT -> REJECTED vN
 ```
 
 Source additions after `READY_FOR_REVIEW` are refused. Changes require a new intake version rather than mutating a reviewed or confirmed packet.
+
+## Audit and refusal records
+
+Accepted transitions record redacted command/state provenance. Exact retries converge on one durable replay-audit effect. A domain refusal may create one redacted audit only after the command has parsed and the actor is re-authorized for the referenced workspace/project.
+
+Malformed envelopes, unauthenticated actors, unauthorized roles, cross-workspace references and nonexistent resources create no target audit. Audit failure never replaces or weakens the original fail-closed result.
+
+## Client-only durable intent state
+
+The mobile encrypted queue is global across project contexts even though the visible projection is scoped to the open project. A selected source is copied into durable application storage before its intent is committed. Startup/remount reconciliation compares the complete global queue with the durable file inventory, preserves every globally retained source and reports a missing source only when that source's project is opened.
 
 ## Canonical Snapshot Shape
 

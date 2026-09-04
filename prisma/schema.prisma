@@ -269,6 +269,7 @@ enum ConstructionIntent {
   daily_briefing
   outbound_message_draft
   report_work_finished
+  project_brain_query
   clarification_required
   unsupported
 }
@@ -487,6 +488,10 @@ model User {
   providerActivationDecisionsAuthored     ProviderActivationDecision[]     @relation("ProviderActivationDecisionActor")
   providerLaneControlsChanged             ProviderLaneControl[]            @relation("ProviderLaneControlActor")
   controlledProviderRunsCreated           ControlledProviderRun[]          @relation("ControlledProviderRunCreator")
+  constructionProjectBrainIntakesCreated  ConstructionProjectBrainIntake[] @relation("ConstructionProjectBrainIntakeCreator")
+  constructionProjectBrainSourcesCreated  ConstructionProjectBrainSource[] @relation("ConstructionProjectBrainSourceCreator")
+  constructionProjectBrainSnapshotsCreated ConstructionProjectBrainSnapshot[] @relation("ConstructionProjectBrainSnapshotCreator")
+  constructionProjectBrainDecisionsAuthored ConstructionProjectBrainDecision[] @relation("ConstructionProjectBrainDecisionActor")
 }
 
 /**
@@ -916,6 +921,11 @@ model File {
   artifactVisibility WorkflowArtifactVisibility?
 
   accessLogs FileAccessLog[]
+
+  /// R36V — source bytes retained by a durable Project Brain intake. The
+  /// R36V migration freezes the referenced File row's ownership, storage,
+  /// content and scan lifecycle fields after this relation exists.
+  projectBrainSources ConstructionProjectBrainSource[] @relation("ConstructionProjectBrainSourceFile")
 
   /// 1E-alpha : les contrats acceptes qui epinglent ce fichier.
   acceptanceSnapshotFiles TaskAcceptanceSnapshotFile[]
@@ -3489,6 +3499,7 @@ model ConstructionWorkspace {
   providerActivationGrants    ProviderActivationGrant[]
   providerActivationDecisions ProviderActivationDecision[]
   controlledProviderRuns      ControlledProviderRun[]
+  projectBrainIntakes         ConstructionProjectBrainIntake[] @relation("ConstructionProjectBrainIntakeWorkspace")
 
   @@index([ownerUserId, status])
 }
@@ -3705,10 +3716,128 @@ model ConstructionProject {
   callWork               ConstructionCallWork[]
   emailEvents            ConstructionEmailEvent[]
   emailDrafts            ConstructionEmailDraft[]
+  projectBrainIntakes    ConstructionProjectBrainIntake[] @relation("ConstructionProjectBrainIntakeProject")
 
   @@unique([workspaceId, code])
+  @@unique([id, workspaceId])
   @@index([workspaceId, name])
   @@index([workspaceId, status])
+}
+
+/// One local-only, project-bound owner intake. Binary sources remain
+/// un-interpreted until a separately authorized capability records evidence.
+model ConstructionProjectBrainIntake {
+  id                String                @id @default(cuid())
+  workspaceId       String
+  workspace         ConstructionWorkspace @relation("ConstructionProjectBrainIntakeWorkspace", fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBI_workspace_fkey")
+  projectId         String
+  project           ConstructionProject   @relation("ConstructionProjectBrainIntakeProject", fields: [projectId, workspaceId], references: [id, workspaceId], onDelete: Restrict, onUpdate: Restrict, map: "CPBI_project_tenant_fkey")
+  intakeSequence    Int
+  createCommandId   String
+  createCommandHash String
+  status            String                @default("DRAFT")
+  stateVersion      Int                   @default(1)
+  summary           String?
+  scope             String?
+  importantPeople   String?
+  importantDates    String?
+  blockers          String?
+  nextDecision      String?
+  reviewFingerprint String?
+  createdByUserId   String
+  createdBy         User                  @relation("ConstructionProjectBrainIntakeCreator", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBI_creator_fkey")
+  submittedAt       DateTime?
+  confirmedAt       DateTime?
+  rejectedAt        DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  sources   ConstructionProjectBrainSource[]
+  snapshots ConstructionProjectBrainSnapshot[]
+  decisions ConstructionProjectBrainDecision[]
+
+  @@unique([workspaceId, createCommandId], map: "CPBI_workspace_command_key")
+  @@unique([workspaceId, projectId, intakeSequence], map: "CPBI_project_sequence_key")
+  @@unique([id, workspaceId, projectId], map: "CPBI_tenant_identity_key")
+  @@index([workspaceId, projectId, createdAt], map: "CPBI_project_created_idx")
+  @@index([workspaceId, status, updatedAt], map: "CPBI_status_updated_idx")
+}
+
+/// Immutable admission metadata for one securely stored source. The File
+/// relation is restrictive so neither a generic orphan sweep nor a relational
+/// delete can detach the provenance record from its confirmed source bytes.
+model ConstructionProjectBrainSource {
+  id                         String                         @id @default(cuid())
+  workspaceId                String
+  projectId                  String
+  intakeId                   String
+  intake                     ConstructionProjectBrainIntake @relation(fields: [intakeId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBS_intake_tenant_fkey")
+  commandId                  String
+  commandHash                String
+  kind                       String
+  fileId                     String
+  file                       File                           @relation("ConstructionProjectBrainSourceFile", fields: [fileId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBS_file_fkey")
+  contentHash                String
+  displayName                String
+  mimeType                   String
+  sizeBytes                  Int
+  durationMs                 Int?
+  ordinal                    Int
+  transcriptionState         String                         @default("NOT_REQUESTED_LOCAL_ONLY")
+  documentUnderstandingState String                         @default("NOT_REQUESTED_LOCAL_ONLY")
+  createdByUserId            String
+  createdBy                  User                           @relation("ConstructionProjectBrainSourceCreator", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBS_creator_fkey")
+  createdAt                  DateTime                       @default(now())
+
+  @@unique([workspaceId, commandId], map: "CPBS_workspace_command_key")
+  @@unique([intakeId, ordinal], map: "CPBS_intake_ordinal_key")
+  @@index([workspaceId, projectId, createdAt], map: "CPBS_project_created_idx")
+  @@index([fileId], map: "CPBS_file_idx")
+}
+
+/// Immutable proposed or confirmed representation of one exact intake state.
+model ConstructionProjectBrainSnapshot {
+  id              String                         @id @default(cuid())
+  workspaceId     String
+  projectId       String
+  intakeId        String
+  intake          ConstructionProjectBrainIntake @relation(fields: [intakeId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBSnapshot_intake_tenant_fkey")
+  stateVersion    Int
+  status          String
+  snapshot        Json
+  canonicalHash   String
+  createdByUserId String
+  createdBy       User                           @relation("ConstructionProjectBrainSnapshotCreator", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBSnapshot_creator_fkey")
+  createdAt       DateTime                       @default(now())
+
+  @@unique([intakeId, stateVersion, status], map: "CPBSnapshot_version_status_key")
+  @@index([workspaceId, projectId, createdAt], map: "CPBSnapshot_project_created_idx")
+  @@index([intakeId, status, createdAt], map: "CPBSnapshot_status_created_idx")
+}
+
+/// Immutable, body-bound receipt for every accepted intake state transition.
+model ConstructionProjectBrainDecision {
+  id                String                         @id @default(cuid())
+  workspaceId       String
+  projectId         String
+  intakeId          String
+  intake            ConstructionProjectBrainIntake @relation(fields: [intakeId, workspaceId, projectId], references: [id, workspaceId, projectId], onDelete: Restrict, onUpdate: Restrict, map: "CPBD_intake_tenant_fkey")
+  commandId         String
+  commandHash       String
+  decision          String
+  priorStateVersion Int
+  nextStateVersion  Int
+  snapshotHash      String?
+  result            Json
+  resultHash        String
+  actorUserId       String
+  actor             User                           @relation("ConstructionProjectBrainDecisionActor", fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "CPBD_actor_fkey")
+  createdAt         DateTime                       @default(now())
+
+  @@unique([workspaceId, commandId], map: "CPBD_workspace_command_key")
+  @@unique([intakeId, nextStateVersion], map: "CPBD_intake_next_version_key")
+  @@index([workspaceId, projectId, createdAt], map: "CPBD_project_created_idx")
+  @@index([intakeId, createdAt], map: "CPBD_intake_created_idx")
 }
 
 model ConstructionContact {

@@ -24,6 +24,7 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
     alias: {
+      "@/lib/db": fileURLToPath(new URL("./test/integration/db.ts", import.meta.url)),
       "server-only": fileURLToPath(new URL("./test/server-only.ts", import.meta.url)),
     },
   },

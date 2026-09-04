@@ -763,6 +763,9 @@ export async function submitStandingTask(input: unknown): Promise<SubmitStanding
             taskId: null,
             kind: "input",
             scanStatus: "clean",
+            // Project Brain source files deliberately remain taskless. They
+            // cannot be claimed by an unrelated standing-capacity task.
+            projectBrainSources: { none: {} },
           },
           data: { taskId: created.id },
         });

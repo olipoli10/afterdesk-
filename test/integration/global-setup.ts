@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PrismaClient } from "@prisma-client";
@@ -214,11 +215,17 @@ export default async function globalSetup() {
     const dirs = readdirSync(migrationsDir)
       .filter((d) => /^\d{14}_/.test(d))
       .sort();
-    const chain = dirs.join(",");
+    const migrations = dirs.map((dir) => ({
+      dir,
+      sql: readFileSync(join(migrationsDir, dir, "migration.sql"), "utf8"),
+    }));
+    const chain = `sha256:${createHash("sha256")
+      .update(JSON.stringify(migrations))
+      .digest("hex")}`;
 
-    // Rebuild ONLY when the migration chain changed: a full DROP SCHEMA
+    // Rebuild ONLY when the ordered migration names or SQL bytes changed: a full DROP SCHEMA
     // CASCADE on every run is what kept crashing the fragile local
-    // prisma-dev proxy. The applied chain is recorded in a marker table;
+    // prisma-dev proxy. The deterministic fingerprint is recorded in a marker table;
     // the per-file TRUNCATEs keep the data clean between files either way.
     let needsRebuild = true;
     try {
@@ -233,8 +240,7 @@ export default async function globalSetup() {
     if (needsRebuild) {
       await client.$executeRawUnsafe(`DROP SCHEMA IF EXISTS public CASCADE`);
       await client.$executeRawUnsafe(`CREATE SCHEMA public`);
-      for (const dir of dirs) {
-        const sql = readFileSync(join(migrationsDir, dir, "migration.sql"), "utf8");
+      for (const { dir, sql } of migrations) {
         for (const statement of splitSqlStatements(sql)) {
           try {
             await client.$executeRawUnsafe(statement);

@@ -38,16 +38,15 @@ export default function ProjectsScreen() {
           {projects.map((project) => {
             const needsAttention = project._count.openLoops > 0;
             return (
-              <Pressable
-                key={project.id}
-                accessibilityRole="button"
-                accessibilityLabel={`${copy.projectsScreen.open}: ${project.name}`}
-                onPress={() => router.push({ pathname: "/timeline", params: { projectId: project.id } })}
-                style={({ pressed }) => [pressed && styles.pressed]}
-              >
-                <Card style={styles.projectCard}>
-                  <View style={[styles.statusRail, needsAttention ? styles.statusRailWarning : styles.statusRailGood]} />
-                  <View style={styles.projectContent}>
+              <Card key={project.id} style={styles.projectCard}>
+                <View style={[styles.statusRail, needsAttention ? styles.statusRailWarning : styles.statusRailGood]} />
+                <View style={styles.projectContent}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${copy.projectsScreen.open}: ${project.name}`}
+                    onPress={() => router.push({ pathname: "/timeline", params: { projectId: project.id } })}
+                    style={({ pressed }) => [styles.projectMain, pressed && styles.pressed]}
+                  >
                     <View style={styles.projectTop}>
                       <View style={styles.projectIdentity}>
                         <Text style={styles.code}>{project.code}</Text>
@@ -75,9 +74,18 @@ export default function ProjectsScreen() {
                       <Text style={styles.openText}>{copy.projectsScreen.open}</Text>
                       <AppIcon name="arrow" color={colors.accentBright} size={18} />
                     </View>
-                  </View>
-                </Card>
-              </Pressable>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${copy.projectsScreen.brain}: ${project.name}`}
+                    onPress={() => router.push({ pathname: "/project-brain-intake" as never, params: { projectId: project.id } })}
+                    style={({ pressed }) => [styles.brainButton, pressed && styles.pressed]}
+                  >
+                    <AppIcon name="assistant" color={colors.accentBright} size={18} />
+                    <Text style={styles.brainText}>{copy.projectsScreen.brain}</Text>
+                  </Pressable>
+                </View>
+              </Card>
             );
           })}
         </View>
@@ -96,6 +104,7 @@ const styles = StyleSheet.create({
   statusRailWarning: { backgroundColor: colors.warning },
   statusRailGood: { backgroundColor: colors.success },
   projectContent: { flex: 1, padding: 17, gap: 15 },
+  projectMain: { gap: 15 },
   projectTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 10 },
   projectIdentity: { flex: 1, minWidth: 0, gap: 4 },
   code: { color: colors.accentBright, fontSize: 11, fontWeight: "800", letterSpacing: 1.2 },
@@ -105,5 +114,7 @@ const styles = StyleSheet.create({
   warningText: { color: colors.warning },
   openRow: { minHeight: 40, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, paddingTop: 12 },
   openText: { color: colors.text, fontSize: 14, fontWeight: "700" },
+  brainButton: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 9, borderWidth: 1, borderColor: colors.accent, borderRadius: 12, paddingHorizontal: 13 },
+  brainText: { color: colors.accentBright, fontSize: 14, fontWeight: "800" },
   pressed: { opacity: 0.72, transform: [{ scale: 0.995 }] },
 });

@@ -43,7 +43,20 @@ export type MobileProductCopy = {
   };
   projectsScreen: {
     eyebrow: string; title: string; body: string; active: string; needsAttention: string;
-    contacts: string; appointments: string; openLoops: string; empty: string; open: string; upToDate: string;
+    contacts: string; appointments: string; openLoops: string; empty: string; open: string; upToDate: string; brain: string;
+  };
+  projectBrain: {
+    eyebrow: string; title: string; body: string; sources: string; add: string; voice: string; stop: string;
+    brief: string; summary: string; scope: string; people: string; dates: string; blockers: string; next: string;
+    save: string; review: string; submit: string; confirm: string; reject: string; none: string; retry: string;
+    limitation: string; limits: string; created: string; back: string; protected: string; loading: string; unavailable: string;
+    invalidFile: string; microphoneDenied: string; voiceInvalid: string; voiceTooLarge: string; voiceTooLong: string; voiceReadFailed: string;
+    voiceMobileOnly: string; continueUpload: string; locked: string; version: string; localOnly: string; kilobytes: string;
+    newVersion: string; pendingCommands: string; retryCommand: string; dismiss: string; interrupted: string; localQueueUnavailable: string; pendingSignOut: string;
+    commandAction: Record<"CREATE_PROJECT_BRAIN_INTAKE" | "ADD_OWNER_BRIEF" | "SUBMIT_PROJECT_BRAIN_INTAKE" | "CONFIRM_PROJECT_BRAIN_INTAKE" | "REJECT_PROJECT_BRAIN_INTAKE", string>;
+    sourceKind: Record<"PHOTO" | "DOCUMENT" | "VOICE_NOTE", string>;
+    sourceState: Record<"READY" | "SENDING" | "CONFLICT" | "OUTCOME_UNKNOWN" | "REFUSED", string>;
+    status: Record<"DRAFT" | "READY_FOR_REVIEW" | "CONFIRMED" | "REJECTED", string>;
   };
   calendarScreen: {
     eyebrow: string; title: string; body: string; add: string; empty: string;
@@ -116,7 +129,33 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     projectsScreen: {
       eyebrow: "TES CHANTIERS", title: "Tout au même endroit.", body: "L’état, les rendez-vous et la prochaine étape — sans reconstruire le contexte.",
       active: "Actifs", needsAttention: "À surveiller", contacts: "contacts", appointments: "rendez-vous",
-      openLoops: "suivis ouverts", empty: "Aucun chantier actif.", open: "Ouvrir le chantier", upToDate: "À jour",
+      openLoops: "suivis ouverts", empty: "Aucun chantier actif.", open: "Ouvrir le chantier", upToDate: "À jour", brain: "Construire la mémoire",
+    },
+    projectBrain: {
+      eyebrow: "MÉMOIRE DU CHANTIER", title: "Vide le chantier de ta tête.",
+      body: "Ajoute les plans, photos, documents, une note vocale et ton résumé. ENDVERA garde le tout ensemble.",
+      sources: "1. Matériel du chantier", add: "Ajouter plusieurs fichiers", voice: "Enregistrer une note vocale", stop: "Arrêter l’enregistrement",
+      brief: "2. Ce qu’ENDVERA doit retenir", summary: "Résumé du chantier *", scope: "Portée des travaux", people: "Personnes importantes",
+      dates: "Dates importantes", blockers: "Blocages", next: "Prochaine décision", save: "Enregistrer mon résumé",
+      review: "3. Vérifier avant de confirmer", submit: "Préparer la compréhension", confirm: "Confirmer cette version exacte",
+      reject: "Rejeter cette version", none: "Aucun fichier ajouté.", retry: "Réessayer ce fichier", limitation: "Limites honnêtes",
+      limits: "Les notes vocales ne sont pas transcrites. Le contenu des documents et photos n’est pas interprété dans cette version locale.",
+      created: "Créer la mémoire du chantier", back: "Retour aux chantiers",
+      protected: "Cette mémoire est réservée au propriétaire ou au bureau.", loading: "Mémoire du chantier…",
+      unavailable: "La mémoire du chantier est indisponible pour le moment.", invalidFile: "Un fichier a été refusé : type ou taille non permis.",
+      microphoneDenied: "Permission microphone refusée.", voiceInvalid: "Aucune note vocale utilisable.",
+      voiceTooLarge: "Note vocale vide ou trop volumineuse.", voiceReadFailed: "La note vocale n’a pas pu être lue. Réessaie l’enregistrement.",
+      voiceTooLong: "La note vocale dépasse la limite de 2 minutes. Enregistre une note plus courte.",
+      voiceMobileOnly: "L’enregistrement vocal est offert dans l’application iOS ou Android.", continueUpload: "Continuer ce fichier",
+      locked: "Ce résumé est verrouillé pendant la vérification de cette version exacte.", version: "Version", localOnly: "Conservé localement; aucun envoi externe.", kilobytes: "Ko",
+      newVersion: "Créer une nouvelle version", pendingCommands: "Reprise sécurisée", retryCommand: "Réessayer exactement cette action",
+      dismiss: "Fermer ce résultat", interrupted: "L’application a redémarré pendant cette action. Réessaie exactement la même commande.",
+      localQueueUnavailable: "La reprise locale chiffrée est indisponible. Aucune action n’a été envoyée.",
+      pendingSignOut: "Terminez ou refusez les actions Projet en attente avant de vous déconnecter.",
+      commandAction: { CREATE_PROJECT_BRAIN_INTAKE: "Création de la mémoire", ADD_OWNER_BRIEF: "Enregistrement du résumé", SUBMIT_PROJECT_BRAIN_INTAKE: "Préparation de la compréhension", CONFIRM_PROJECT_BRAIN_INTAKE: "Confirmation exacte", REJECT_PROJECT_BRAIN_INTAKE: "Rejet de la version" },
+      sourceKind: { PHOTO: "Photo", DOCUMENT: "Document", VOICE_NOTE: "Note vocale" },
+      sourceState: { READY: "En attente", SENDING: "Ajout en cours…", CONFLICT: "Version changée — recharge requise", OUTCOME_UNKNOWN: "Résultat inconnu", REFUSED: "Fichier refusé" },
+      status: { DRAFT: "Brouillon", READY_FOR_REVIEW: "À vérifier", CONFIRMED: "Confirmé", REJECTED: "Rejeté" },
     },
     calendarScreen: {
       eyebrow: "AGENDA", title: "Ce qui s’en vient.", body: "Tes rendez-vous de chantier, dans le bon fuseau horaire.",
@@ -197,7 +236,33 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     projectsScreen: {
       eyebrow: "YOUR PROJECTS", title: "Everything in one place.", body: "Status, appointments, and the next step — without rebuilding context.",
       active: "Active", needsAttention: "Needs attention", contacts: "contacts", appointments: "appointments",
-      openLoops: "open follow-ups", empty: "No active projects.", open: "Open project", upToDate: "Up to date",
+      openLoops: "open follow-ups", empty: "No active projects.", open: "Open project", upToDate: "Up to date", brain: "Build project memory",
+    },
+    projectBrain: {
+      eyebrow: "PROJECT MEMORY", title: "Get the job out of your head.",
+      body: "Add plans, photos, documents, a voice note, and your summary. ENDVERA keeps them together.",
+      sources: "1. Project material", add: "Add multiple files", voice: "Record a voice note", stop: "Stop recording",
+      brief: "2. What ENDVERA should remember", summary: "Project summary *", scope: "Scope of work", people: "Important people",
+      dates: "Important dates", blockers: "Blockers", next: "Next decision", save: "Save my summary",
+      review: "3. Review before confirming", submit: "Prepare the understanding", confirm: "Confirm this exact version",
+      reject: "Reject this version", none: "No files added.", retry: "Retry this file", limitation: "Honest limitations",
+      limits: "Voice notes are not transcribed. Document and photo contents are not interpreted in this local version.",
+      created: "Create project memory", back: "Back to projects",
+      protected: "Project memory is reserved for the owner or office.", loading: "Project memory…",
+      unavailable: "Project memory is unavailable right now.", invalidFile: "A file was refused: its type or size is not allowed.",
+      microphoneDenied: "Microphone permission was denied.", voiceInvalid: "No usable voice note was recorded.",
+      voiceTooLarge: "The voice note is empty or too large.", voiceReadFailed: "The voice note could not be read. Record it again.",
+      voiceTooLong: "The voice note exceeds the 2-minute limit. Record a shorter note.",
+      voiceMobileOnly: "Voice recording is available in the iOS or Android app.", continueUpload: "Continue this file",
+      locked: "This summary is locked while you review this exact version.", version: "Version", localOnly: "Stored locally; nothing was sent externally.", kilobytes: "KB",
+      newVersion: "Create a new version", pendingCommands: "Safe recovery", retryCommand: "Retry this exact action",
+      dismiss: "Dismiss this result", interrupted: "The app restarted during this action. Retry the exact same command.",
+      localQueueUnavailable: "Encrypted local recovery is unavailable. No action was sent.",
+      pendingSignOut: "Finish or dismiss pending Project actions before signing out.",
+      commandAction: { CREATE_PROJECT_BRAIN_INTAKE: "Create project memory", ADD_OWNER_BRIEF: "Save owner summary", SUBMIT_PROJECT_BRAIN_INTAKE: "Prepare understanding", CONFIRM_PROJECT_BRAIN_INTAKE: "Exact confirmation", REJECT_PROJECT_BRAIN_INTAKE: "Reject version" },
+      sourceKind: { PHOTO: "Photo", DOCUMENT: "Document", VOICE_NOTE: "Voice note" },
+      sourceState: { READY: "Waiting", SENDING: "Adding…", CONFLICT: "Version changed — reload required", OUTCOME_UNKNOWN: "Outcome unknown", REFUSED: "File refused" },
+      status: { DRAFT: "Draft", READY_FOR_REVIEW: "Ready to review", CONFIRMED: "Confirmed", REJECTED: "Rejected" },
     },
     calendarScreen: {
       eyebrow: "CALENDAR", title: "What’s coming up.", body: "Your project appointments, in the right time zone.",

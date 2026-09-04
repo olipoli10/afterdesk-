@@ -33,10 +33,7 @@ if (process.env.DATABASE_URL !== process.env.AFTERDESK_TEST_DATABASE_URL) {
 }
 
 /**
- * THE THREE APPEND-ONLY GUARD TRIGGERS, BY NAME — found to be the exact and
- * complete set via `grep -rn "BEFORE TRUNCATE" prisma/migrations` (2026-08-12,
- * while running this suite against Neon for the first time): LedgerEntry,
- * TaskAcceptanceSnapshot, TaskOperationalBaseline. Each blocks TRUNCATE by
+ * APPEND-ONLY GUARD TRIGGERS, BY NAME — each blocks TRUNCATE by
  * design, same reasoning as before — session-disabled here is acceptable
  * ONLY because the guard proved this database is disposable.
  *
@@ -47,9 +44,9 @@ if (process.env.DATABASE_URL !== process.env.AFTERDESK_TEST_DATABASE_URL) {
  * session, and it failed here with `permission denied to set parameter
  * "session_replication_role"` the first time it was. `ALTER TABLE ... DISABLE
  * TRIGGER <name>` needs only TABLE OWNERSHIP for an ordinary user-defined
- * trigger like these three, which the connecting role has on both local
+ * trigger like the explicitly registered guards below, which the connecting role has on both local
  * Postgres and Neon — so this works everywhere the old approach only worked
- * locally, and it disables exactly three named triggers rather than every
+ * locally, and it disables only named guards rather than every
  * trigger in the database for the transaction's duration.
  */
 const TRUNCATE_GUARDED_TABLES = [
@@ -99,6 +96,22 @@ const TRUNCATE_GUARDED_TABLES = [
   {
     table: "ConstructionEconomicCommand",
     trigger: "ConstructionEconomicCommand_guard_truncate",
+  },
+  {
+    table: "ConstructionProjectBrainIntake",
+    trigger: "ConstructionProjectBrainIntake_no_truncate",
+  },
+  {
+    table: "ConstructionProjectBrainSource",
+    trigger: "ConstructionProjectBrainSource_no_truncate",
+  },
+  {
+    table: "ConstructionProjectBrainSnapshot",
+    trigger: "ConstructionProjectBrainSnapshot_no_truncate",
+  },
+  {
+    table: "ConstructionProjectBrainDecision",
+    trigger: "ConstructionProjectBrainDecision_no_truncate",
   },
 ];
 

@@ -69,6 +69,7 @@ export const mobileAssistantResultSchema = z
       "CALENDAR_ITEM_CREATE",
       "OUTBOUND_MESSAGE_DRAFT",
       "REPORT_WORK_FINISHED",
+      "PROJECT_BRAIN_QUERY",
       "CLARIFICATION_REQUIRED",
       "UNSUPPORTED",
     ]),
