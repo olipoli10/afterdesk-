@@ -1,6 +1,6 @@
 # R36V Project Brain Intake — Closeout Evidence
 
-**State**: `LOCAL RELEASE READY — COMMIT PENDING`
+**State**: `LOCAL RELEASE CLOSED`
 
 ## Implemented local vertical
 
@@ -30,11 +30,11 @@
 - `package-lock.json`: unchanged.
 - Disposable PostgreSQL servers created by final validation were stopped and removed.
 
-## Remaining closeout mechanics
+## Local commit
 
-- Create the coherent local R36V implementation commit.
-- Record its exact HEAD/TREE in backlog and continuation queue, then mark R36V `DONE`.
-- Promote R36W through R36Z and continue automatically.
+- Implementation HEAD: `cf531aab4fce765376b6d4955387acdbd666f7b7`.
+- Implementation TREE: `c753da0838713685f4fe96c3ea84bca2567dac80`.
+- R36V is recorded `DONE`; R36W through R36Z are queued for automatic continuation.
 
 ## Safety and evidence classification
 
@@ -71,4 +71,4 @@ Provider sandbox, founder-observed, customer/provider and production releases re
 
 `LOCAL_PROJECT_BRAIN_INTAKE_FOUNDATION_READY`
 
-This local verdict becomes the queue/backlog `DONE` result only after the coherent local commit and exact HEAD/TREE recording. It does not change provider, customer, observed or production readiness.
+The queue/backlog records this local verdict as `DONE`. It does not change provider, customer, observed or production readiness.

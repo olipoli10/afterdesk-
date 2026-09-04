@@ -85,7 +85,7 @@
 - [x] T024 Run Prisma validation and migration checks for `prisma/schema.prisma`, then provider-boundary validation, lint, typecheck, full serialized suites and Next.js Webpack build through `package.json` and `apps/mobile/package.json`
 - [x] T025 Execute and restore the proportional replay, tenancy, stale-version, invented-fact and provider-call mutations documented in `specs/187-project-brain-intake/evidence/mutations.md`
 - [x] T026 Record exact evidence, dashboard labels and remaining provider-enabled releases in `specs/187-project-brain-intake/evidence/closeout.md`
-- [ ] T027 Mark completed tasks and release state, validate `git diff --check`, and create coherent local commits without push
+- [x] T027 Mark completed tasks and release state, validate `git diff --check`, and create coherent local commits without push
 
 ---
 
