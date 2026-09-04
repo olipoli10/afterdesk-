@@ -28,4 +28,16 @@
 
 `SPEC_KIT_DESIGN_CONSISTENT`
 
-This is documentation consistency only. It does not claim gate execution, tests, a SHA, founder/customer/provider evidence or release completion.
+## Implementation consistency
+
+- The unique validator produced `PASS` from one coherent run with 50/50 allowlisted assertions and 18/18 killed mutations.
+- R36V→R36Y passed through authenticated product boundaries on a disposable PostgreSQL database, including a genuine second-process restart and canonical hash/count equality.
+- Root full suite passed 2,374 tests with two historical non-mandatory skips; mobile passed 170 tests; provider boundary, root/mobile lint and typecheck, and Next.js Webpack build passed.
+- The validator removed its database server and fragment directory before atomically finalizing the strict report.
+- No product implementation, schema, dependency or lockfile changed in R36Z.
+
+## Implementation verdict
+
+`SPEC_KIT_IMPLEMENTATION_CONSISTENT`
+
+This verdict applies only to the local automated `TEST`/`SYNTHETIC` gate. It does not claim founder/customer/provider observation, external execution authority or project-terminal completion.

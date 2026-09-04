@@ -1,0 +1,12 @@
+
+> afterdesk@0.1.0 test
+> vitest --run --maxWorkers=1 --no-file-parallelism
+
+
+ RUN  v4.1.10 C:/dev/nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous
+
+
+ Test Files  225 passed | 2 skipped (227)
+      Tests  2374 passed | 2 skipped (2376)
+   Start at  02:54:40
+   Duration  78.82s (transform 4.77s, setup 0ms, import 33.77s, tests 12.23s, environment 13ms)

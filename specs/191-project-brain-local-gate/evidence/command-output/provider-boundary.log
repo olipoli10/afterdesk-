@@ -1,0 +1,5 @@
+
+> afterdesk@0.1.0 validate:provider-boundary
+> tsx scripts/validate-provider-boundary.ts
+
+R37O_PROVIDER_BOUNDARY_PASS modules=576 violations=0

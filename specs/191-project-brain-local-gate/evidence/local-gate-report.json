@@ -1,0 +1,1005 @@
+{
+  "schemaVersion": 1,
+  "release": "R36Z-PROJECT-BRAIN-LOCAL-GATE",
+  "runId": "r36z-d1bb0125f8704c65b272f8bbf6defa77",
+  "status": "PASS",
+  "evidenceLabels": {
+    "code": true,
+    "test": true,
+    "synthetic": true,
+    "founderObserved": false,
+    "customerObserved": false,
+    "providerObserved": false
+  },
+  "database": {
+    "disposable": true,
+    "ownershipVerified": true,
+    "cleanupVerified": true
+  },
+  "assertions": [
+    {
+      "id": "R36V-INTAKE-CONFIRMED",
+      "chapter": "R36V",
+      "expected": "CONFIRMED",
+      "actual": "CONFIRMED",
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "SYNTHETIC"
+    },
+    {
+      "id": "R36V-MULTI-SOURCE-PROVENANCE",
+      "chapter": "R36V",
+      "expected": 2,
+      "actual": 2,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "SYNTHETIC"
+    },
+    {
+      "id": "R36V-BINARY-LIMITATIONS",
+      "chapter": "R36V",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "R36W-CANDIDATES-UNCONFIRMED",
+      "chapter": "R36W",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "R36W-EXACT-OWNER-TEXT-PROVENANCE",
+      "chapter": "R36W",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "R36X-CONTRADICTION-EXPLICIT",
+      "chapter": "R36X",
+      "expected": 1,
+      "actual": 1,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "SYNTHETIC"
+    },
+    {
+      "id": "R36X-CONTRADICTION-HISTORY-PRESERVED",
+      "chapter": "R36X",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "R36X-UNDERSTANDING-CONFIRMED",
+      "chapter": "R36X",
+      "expected": "CONFIRMED",
+      "actual": "CONFIRMED",
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "R36Y-RECALL-CITED",
+      "chapter": "R36Y",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "R36Y-PREPARED-ACTION-VISIBLE",
+      "chapter": "R36Y",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "SYNTHETIC"
+    },
+    {
+      "id": "REPLAY-CANONICAL-EFFECT-STABLE",
+      "chapter": "REPLAY",
+      "expected": "6e134a384170bd6083879d05511582aaf6a3408bcfb2341b7f615f9d01059ed4",
+      "actual": "6e134a384170bd6083879d05511582aaf6a3408bcfb2341b7f615f9d01059ed4",
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "REPLAY-BODY-DRIFT-REFUSED",
+      "chapter": "REPLAY",
+      "expected": "6e134a384170bd6083879d05511582aaf6a3408bcfb2341b7f615f9d01059ed4",
+      "actual": "6e134a384170bd6083879d05511582aaf6a3408bcfb2341b7f615f9d01059ed4",
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "REPLAY-STALE-MEMORY-REFUSED",
+      "chapter": "REPLAY",
+      "expected": "6e134a384170bd6083879d05511582aaf6a3408bcfb2341b7f615f9d01059ed4",
+      "actual": "6e134a384170bd6083879d05511582aaf6a3408bcfb2341b7f615f9d01059ed4",
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "RESTART-FRESH-PROCESS-EQUIVALENT",
+      "chapter": "RESTART",
+      "expected": "6e134a384170bd6083879d05511582aaf6a3408bcfb2341b7f615f9d01059ed4",
+      "actual": "6e134a384170bd6083879d05511582aaf6a3408bcfb2341b7f615f9d01059ed4",
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "SYNTHETIC"
+    },
+    {
+      "id": "TENANCY-FIELD-WORKER-NONDISCLOSURE",
+      "chapter": "TENANCY",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "TENANCY-INACTIVE-NONDISCLOSURE",
+      "chapter": "TENANCY",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "TENANCY-CROSS-WORKSPACE-NONDISCLOSURE",
+      "chapter": "TENANCY",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-PROVIDER-MODULE",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-PROVIDER",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-CREDENTIAL",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-SEMANTIC-BINARY",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-OCR",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-TRANSCRIPTION",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-VISION",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-DOCUMENT-PARSING",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-NETWORK",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-EXTERNAL-TRANSPORT",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-EXTERNAL-WRITE",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-APPROVAL",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-DELIVERY",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "ZERO-SPEND",
+      "chapter": "ZERO_EFFECT",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "MOBILE-ONE-SURFACE-NAVIGATION",
+      "chapter": "MOBILE",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "apps/mobile/test/project-brain-local-gate.test.ts",
+      "label": "SYNTHETIC"
+    },
+    {
+      "id": "MOBILE-NO-TECHNICAL-ID",
+      "chapter": "MOBILE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "apps/mobile/test/project-brain-local-gate.test.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "MOBILE-LIMITATIONS-VISIBLE",
+      "chapter": "MOBILE",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "apps/mobile/test/project-brain-local-gate.test.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "MOBILE-CONTRADICTION-CONTROLS",
+      "chapter": "MOBILE",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "apps/mobile/test/project-brain-local-gate.test.ts",
+      "label": "TEST"
+    },
+    {
+      "id": "MOBILE-PREPARED-ACTION-BOUNDARY",
+      "chapter": "MOBILE",
+      "expected": true,
+      "actual": true,
+      "status": "PASS",
+      "evidence": "apps/mobile/test/project-brain-local-gate.test.ts",
+      "label": "SYNTHETIC"
+    },
+    {
+      "id": "MOBILE-SYNTHETIC-LABEL",
+      "chapter": "MOBILE",
+      "expected": false,
+      "actual": false,
+      "status": "PASS",
+      "evidence": "apps/mobile/test/project-brain-local-gate.test.ts",
+      "label": "SYNTHETIC"
+    },
+    {
+      "id": "GATE-TARGETED-CONTRACTS",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/targeted-contracts.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-RAW-POSTGRESQL",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/raw-postgresql.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-MUTATIONS",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/mutations.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-PROVIDER-BOUNDARY",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/provider-boundary.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-ROOT-LINT",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/root-lint.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-ROOT-TYPECHECK",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/root-typecheck.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-MOBILE-LINT",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/mobile-lint.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-MOBILE-TYPECHECK",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/mobile-typecheck.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-ROOT-FULL-SUITE",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/root-full-suite.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-MOBILE-FULL-SUITE",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/mobile-full-suite.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-WEBPACK-BUILD",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "evidence/command-output/webpack-build.log",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-REPORT-SCHEMA",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "specs/191-project-brain-local-gate/contracts/project-brain-local-gate-report.md",
+      "label": "TEST"
+    },
+    {
+      "id": "GATE-CLEANUP",
+      "chapter": "GATE",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "evidence": "validator-owned post-cleanup probes",
+      "label": "TEST"
+    }
+  ],
+  "mutations": [
+    {
+      "id": "intake-source-or-brief-is-omitted",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:intakeSourceAndBriefRequired",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "c7de158cf657986490f82370f3fe79c5cc66a9e7b15976e7dfccf248b7df41c9",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "r36w-unconfirmed-candidate-becomes-truth",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:unconfirmedCandidateNeverTruth",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "5ebf8f55c76f59c21a790937072930fdac5190874d65a08ddf55e9b0391924c2",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "contradiction-member-or-history-is-erased",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:contradictionHistoryAppendOnly",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "52d8cbc0d02628397356613a316c597a006718d33860a6e91c57f54073aa5d74",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "contradiction-fixture-is-vacuous-auto-detected-or-loses-exact-provenance",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:contradictionFixtureExplicitExactProvenance",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "c55d1d81c2915d3df98ebad125d58a559439973125f2ff24555b65c3b1fd4006",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "unresolved-contradiction-can-seal",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:unresolvedContradictionCannotSeal",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "4b9d3da1bfba250ffb9b753860636ed320dadab80e3249a8e9c20e97f97e6588",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "assistant-reads-draft-or-stale-memory",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:assistantCurrentConfirmedOnly",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "fe80bb242d9a27983f406056566a89aed7a2428a27363e1a5ed7a0626ba86860",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "citation-chain-is-missing-or-mismatched",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:citationChainRequired",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "f3dbf14a882ebbe33498c918b6a4a1f663dedd066fa64884c15b34ace1a39e19",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "prepared-action-hides-recipient-channel-or-body",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:preparedPayloadVisible",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "f99e3e2c717ca36fff7ec633d9e16df52e4e2502ecaea4bb19af3424b5c6d7d6",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "prepared-action-approves-or-delivers",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:preparedActionNoApprovalDelivery",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "1817585d2f2f59abda6eca8c1728d7e6d36358f140b6d2538c49aa335c17e343",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "restart-reuses-same-process-state",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:freshProcessRestartRequired",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "634c2d81b8c0c87fb501794942413b621796e7564e0f68283c0d1ddfe15bc063",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "replay-or-concurrency-duplicates-effect",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:replayConcurrencyIdempotent",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "c281fe059edfb8921f52fb70be424e179b34463181752eec44bad2dfbfab542e",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "cross-tenant-project-or-role-discloses-content",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:tenantProjectRoleNonDisclosure",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "68e5c3024944d9b04772d7228911eee57cbc5fa9b5d267498d010f952e6da7f2",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "mobile-flow-requires-technical-id",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:mobileNoTechnicalIds",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "38251880f4645705774e0dd1ab8fc141b2491c0a6a13cfac3711db533cd0baef",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "provider-credential-network-or-semantic-binary-path-is-reachable",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:zeroProviderCredentialNetworkSemanticBinary",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "ef55242dbea53383d197f0a8c18cde177d3ce62ef48d930e41d9ad90afb83383",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "external-transport-write-or-spend-is-nonzero",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:zeroExternalTransportWriteSpend",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "c45cf9c691b75e4a7e8afff3e224d434ada34d8297d1ec4fd5e6b463cb802932",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "missing-skipped-or-unknown-assertion-can-pass",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:missingSkippedUnknownFails",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "b6b8ed9f3419daa292607719fb2496f27c5886027f463d9bb90dd61cd371ecc5",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "test-writes-final-report-or-fragment-allowlist-is-bypassed",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:validatorOwnsFinalReport",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "1b73980e8aee612721eca030556880bcb5ac52bc3f60d89c0eb16f95502e9bd8",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    },
+    {
+      "id": "cleanup-target-is-not-owned",
+      "status": "KILLED",
+      "setupAssertion": "exactly one true invariant was present",
+      "expectedGuard": "R36Z_CONTRACT_GUARD:cleanupOwnershipRequired",
+      "observedExitCode": 1,
+      "beforeSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "mutationSha256": "45d3111ed78fc847666e021a265ec8835649873aabd007df601a8bc944a52de2",
+      "afterSha256": "0e94852f3c9dd25ef3001c2e4d129550d32b86f6484471ae8200af3f87d615ce",
+      "byteExactRestore": true,
+      "targetedGreenRerun": true
+    }
+  ],
+  "commands": [
+    {
+      "name": "targeted-contracts",
+      "argv": [
+        "npx",
+        "vitest",
+        "run",
+        "test/construction-operating-assistant-r36v-project-brain-contracts.test.ts",
+        "test/construction-operating-assistant-r36v-project-brain-api.test.ts",
+        "test/construction-operating-assistant-r36v-project-brain-query.test.ts",
+        "test/construction-operating-assistant-r36v-project-brain-server-hardening.test.ts",
+        "test/construction-operating-assistant-r36v-project-brain-file-ownership.test.ts",
+        "test/construction-operating-assistant-r36v-local-storage-scan.test.ts",
+        "test/construction-operating-assistant-r36w-fact-candidates-contracts.test.ts",
+        "test/construction-operating-assistant-r36w-fact-candidates-api.test.ts",
+        "test/construction-operating-assistant-r36w-fact-candidates-server.test.ts",
+        "test/construction-operating-assistant-r36w-fact-candidates-mutation-guards.test.ts",
+        "test/construction-operating-assistant-r36x-understanding-contracts.test.ts",
+        "test/construction-operating-assistant-r36x-understanding-api.test.ts",
+        "test/construction-operating-assistant-r36x-understanding-server.test.ts",
+        "test/construction-operating-assistant-r36x-understanding-mutation-guards.test.ts",
+        "test/construction-operating-assistant-r36y-assistant-memory-contracts.test.ts",
+        "test/construction-operating-assistant-r36y-assistant-memory-api.test.ts",
+        "test/construction-operating-assistant-r36y-assistant-memory-server.test.ts",
+        "test/construction-operating-assistant-r36y-assistant-memory-mutation-guards.test.ts"
+      ],
+      "startedAtUtc": "2026-09-04T06:49:47.4119974Z",
+      "endedAtUtc": "2026-09-04T06:49:50.8351068Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 105,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/targeted-contracts.log",
+      "outputSha256": "f6467de7d949b9e40d150d6b8e71568ce45d18ab05c5aa847519dbcc291526ec"
+    },
+    {
+      "name": "mobile-project-brain",
+      "argv": [
+        "npm",
+        "--prefix",
+        "apps/mobile",
+        "test",
+        "--",
+        "--run",
+        "project-brain-intake.test.ts",
+        "project-brain-understanding-review.test.ts",
+        "project-brain-assistant-memory.test.ts",
+        "project-brain-local-gate.test.ts"
+      ],
+      "startedAtUtc": "2026-09-04T06:49:50.9061452Z",
+      "endedAtUtc": "2026-09-04T06:49:52.2485143Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 43,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/mobile-project-brain.log",
+      "outputSha256": "91ea28c773b1a942436e9c9c8321af0abfb68088e323442a95f1709ff546c374"
+    },
+    {
+      "name": "mutations",
+      "argv": [
+        "pwsh",
+        "-NoProfile",
+        "-File",
+        "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\\specs\\191-project-brain-local-gate\\scripts\\validate-r36z-mutations.ps1"
+      ],
+      "startedAtUtc": "2026-09-04T06:49:52.2759443Z",
+      "endedAtUtc": "2026-09-04T06:50:06.9963452Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 0,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/mutations.log",
+      "outputSha256": "b69a5f8e7cfbbbb1317df33972e983c41cb7232ab16ca9189cba9c354f6495da"
+    },
+    {
+      "name": "integrated-project-brain",
+      "argv": [
+        "npm",
+        "run",
+        "test:integration",
+        "--",
+        "test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts"
+      ],
+      "startedAtUtc": "2026-09-04T06:50:14.9532324Z",
+      "endedAtUtc": "2026-09-04T06:51:42.4051358Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 1,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/integrated-project-brain.log",
+      "outputSha256": "3145d6383cd0691f1ebc5c54d9f63b0d4bf979970efbd268dd769c39af98a310"
+    },
+    {
+      "name": "raw-postgresql",
+      "argv": [
+        "npm",
+        "run",
+        "test:integration",
+        "--",
+        "test/integration/construction-operating-assistant-r36v-project-brain.itest.ts",
+        "test/integration/construction-operating-assistant-r36v-project-brain-file-ownership.itest.ts",
+        "test/integration/construction-operating-assistant-r36w-fact-candidates.itest.ts",
+        "test/integration/construction-operating-assistant-r36x-understanding.itest.ts",
+        "test/integration/construction-operating-assistant-r36y-assistant-memory.itest.ts"
+      ],
+      "startedAtUtc": "2026-09-04T06:51:42.418473Z",
+      "endedAtUtc": "2026-09-04T06:53:56.716709Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 40,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/raw-postgresql.log",
+      "outputSha256": "091d0581ac2b18fbdfc95c5eadefd327eee22a733dfa8688b90ccbae4de86fc1"
+    },
+    {
+      "name": "provider-boundary",
+      "argv": [
+        "npm",
+        "run",
+        "validate:provider-boundary"
+      ],
+      "startedAtUtc": "2026-09-04T06:54:00.9685123Z",
+      "endedAtUtc": "2026-09-04T06:54:03.5333039Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 0,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/provider-boundary.log",
+      "outputSha256": "ea03675ff7d8d39c60dbe51d17ea5b09ade6042f5667ed4cf2da88560b34616a"
+    },
+    {
+      "name": "root-lint",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "startedAtUtc": "2026-09-04T06:54:03.5359526Z",
+      "endedAtUtc": "2026-09-04T06:54:23.4347289Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 0,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/root-lint.log",
+      "outputSha256": "c7ed01f054f797ed70603d414a621b7c86816bf6e243fa0a081e23df0a959b9f"
+    },
+    {
+      "name": "root-typecheck",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "startedAtUtc": "2026-09-04T06:54:23.4445323Z",
+      "endedAtUtc": "2026-09-04T06:54:31.4677586Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 0,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/root-typecheck.log",
+      "outputSha256": "681bc9eca9b7e1e24be274727689c0da642dc1717a6b1199c6dcc55d7f6af319"
+    },
+    {
+      "name": "mobile-lint",
+      "argv": [
+        "npm",
+        "--prefix",
+        "apps/mobile",
+        "run",
+        "lint"
+      ],
+      "startedAtUtc": "2026-09-04T06:54:31.4780514Z",
+      "endedAtUtc": "2026-09-04T06:54:35.0986805Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 0,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/mobile-lint.log",
+      "outputSha256": "6a3140e93e81778275aa4f31479c23f5a7a58f6e88b3ad3caa6ba3492a6ba143"
+    },
+    {
+      "name": "mobile-typecheck",
+      "argv": [
+        "npm",
+        "--prefix",
+        "apps/mobile",
+        "run",
+        "typecheck"
+      ],
+      "startedAtUtc": "2026-09-04T06:54:35.1179431Z",
+      "endedAtUtc": "2026-09-04T06:54:39.5887053Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 0,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/mobile-typecheck.log",
+      "outputSha256": "1cc63ad9520014199e9a8e2ec487117caa6acbced32bda8dc564ab0d0c07b06d"
+    },
+    {
+      "name": "root-full-suite",
+      "argv": [
+        "npm",
+        "test",
+        "--",
+        "--run",
+        "--maxWorkers=1",
+        "--no-file-parallelism"
+      ],
+      "startedAtUtc": "2026-09-04T06:54:39.5972256Z",
+      "endedAtUtc": "2026-09-04T06:55:59.2268822Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 2374,
+        "skipped": 2,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/root-full-suite.log",
+      "outputSha256": "649d5df3acd5fe1d5ff2a206700df5c39b74dad8c4d67b2d9acccfc90e1a0f3b"
+    },
+    {
+      "name": "mobile-full-suite",
+      "argv": [
+        "npm",
+        "--prefix",
+        "apps/mobile",
+        "test"
+      ],
+      "startedAtUtc": "2026-09-04T06:55:59.2370564Z",
+      "endedAtUtc": "2026-09-04T06:56:02.2146756Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 170,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/mobile-full-suite.log",
+      "outputSha256": "44a2aac5d3558cf9e5a2a4a1817bb7a784014d31dedcab27d89b4a2f7f89d363"
+    },
+    {
+      "name": "webpack-build",
+      "argv": [
+        "npm",
+        "run",
+        "build",
+        "--",
+        "--webpack"
+      ],
+      "startedAtUtc": "2026-09-04T06:56:02.2284143Z",
+      "endedAtUtc": "2026-09-04T06:57:17.418163Z",
+      "exitCode": 0,
+      "testTotals": {
+        "passed": 0,
+        "skipped": 0,
+        "mandatorySkipped": 0,
+        "pending": 0
+      },
+      "outputEvidencePath": "evidence/command-output/webpack-build.log",
+      "outputSha256": "08430c76f1c49e67f8053b231a4ff4280b07959a0d61775eaf782c1f63a6b615"
+    }
+  ],
+  "effectCounters": {
+    "providerModuleImportCount": 0,
+    "providerCallCount": 0,
+    "credentialReadCount": 0,
+    "semanticBinaryUnderstandingCount": 0,
+    "ocrCount": 0,
+    "transcriptionCount": 0,
+    "visionCount": 0,
+    "documentParsingCount": 0,
+    "networkCallCount": 0,
+    "externalTransportCount": 0,
+    "externalWriteCount": 0,
+    "approvalPerformedCount": 0,
+    "deliveryCount": 0,
+    "externalSpendMinorUnits": 0
+  },
+  "cleanup": {
+    "serverName": "endvera-r36z-gate-12004",
+    "serverRemoved": true,
+    "fragmentDirectory": "C:\\Users\\oliro\\AppData\\Local\\Temp\\r36z-d1bb0125f8704c65b272f8bbf6defa77",
+    "fragmentDirectoryRemoved": true,
+    "reportAtomicRename": true
+  }
+}

@@ -1,0 +1,8 @@
+
+ RUN  v4.1.10 C:/dev/nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous
+
+
+ Test Files  18 passed (18)
+      Tests  105 passed (105)
+   Start at  02:49:48
+   Duration  2.15s (transform 2.50s, setup 0ms, import 7.51s, tests 549ms, environment 2ms)

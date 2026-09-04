@@ -1,0 +1,12 @@
+
+> @endvera/mobile@0.1.0 test
+> vitest run --run project-brain-intake.test.ts project-brain-understanding-review.test.ts project-brain-assistant-memory.test.ts project-brain-local-gate.test.ts
+
+
+ RUN  v4.1.10 C:/dev/nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous/apps/mobile
+
+
+ Test Files  4 passed (4)
+      Tests  43 passed (43)
+   Start at  02:49:51
+   Duration  421ms (transform 222ms, setup 0ms, import 554ms, tests 67ms, environment 0ms)

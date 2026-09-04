@@ -36,5 +36,5 @@
 
 ## Notes
 
-- PASS for design readiness only.
-- No gate execution, test result, SHA, founder/customer/provider observation or release verdict is claimed.
+- Design and implementation consistency passed.
+- Gate execution evidence is `TEST`/`SYNTHETIC` only; no founder/customer/provider observation or external release authority is claimed.

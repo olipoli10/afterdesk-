@@ -1,0 +1,18 @@
+
+> afterdesk@0.1.0 test:integration
+> vitest run --config vitest.integration.config.ts test/integration/construction-operating-assistant-r36v-project-brain.itest.ts test/integration/construction-operating-assistant-r36v-project-brain-file-ownership.itest.ts test/integration/construction-operating-assistant-r36w-fact-candidates.itest.ts test/integration/construction-operating-assistant-r36x-understanding.itest.ts test/integration/construction-operating-assistant-r36y-assistant-memory.itest.ts
+
+
+ RUN  v4.1.10 C:/dev/nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous
+
+
+[integration] target database: host=localhost db=afterdesk_r36z_12004_integration
+[integration] its schema is rebuilt from the migration chain when it drifts; data is truncated between files.
+
+[integration] no app DATABASE_URL found to probe against — proceeding.
+[integration] schema up to date (66 migrations); no rebuild.
+
+ Test Files  5 passed (5)
+      Tests  40 passed (40)
+   Start at  02:51:43
+   Duration  133.45s (transform 1.34s, setup 113ms, import 3.28s, tests 126.89s, environment 0ms)

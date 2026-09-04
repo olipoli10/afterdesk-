@@ -1,0 +1,20 @@
+
+> afterdesk@0.1.0 test:integration
+> vitest run --config vitest.integration.config.ts test/integration/construction-operating-assistant-r36z-project-brain-local-gate.itest.ts
+
+
+ RUN  v4.1.10 C:/dev/nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous
+
+
+[integration] target database: host=localhost db=afterdesk_r36z_12004_integration
+[integration] its schema is rebuilt from the migration chain when it drifts; data is truncated between files.
+
+[integration] no app DATABASE_URL found to probe against — proceeding.
+[integration] 66 migrations applied (full rebuild).
+(node:15112) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  02:50:15
+   Duration  86.68s (transform 475ms, setup 43ms, import 706ms, tests 37.18s, environment 0ms)

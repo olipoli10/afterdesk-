@@ -1,0 +1,12 @@
+
+> @endvera/mobile@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.10 C:/dev/nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous/apps/mobile
+
+
+ Test Files  35 passed (35)
+      Tests  170 passed (170)
+   Start at  02:56:00
+   Duration  2.07s (transform 10.45s, setup 0ms, import 22.07s, tests 923ms, environment 5ms)

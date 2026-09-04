@@ -1,0 +1,9 @@
+
+> afterdesk@0.1.0 lint
+> eslint
+
+
+C:\dev\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\src\lib\construction-operating-assistant-r34\registry.ts
+  63:28  warning  '_canonicalHash' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
