@@ -84,7 +84,7 @@
 - [x] T023 Execute and restore every proportional mutation listed in `specs/188-project-brain-fact-candidates/quickstart.md`, recording hashes and exact guards in `specs/188-project-brain-fact-candidates/evidence/mutations.md`
 - [x] T024 Run Prisma validation, provider-boundary validation, lint, typecheck, full root suite, Next.js Webpack build and `git diff --check`
 - [x] T025 Record exact local evidence and honest remaining R36X/R36Y/R36Z/external gates in `specs/188-project-brain-fact-candidates/evidence/closeout.md`
-- [ ] T026 Update only authorized release/queue/task state after all gates pass and create coherent local commits without push
+- [x] T026 Update only authorized release/queue/task state after all gates pass and create coherent local commits without push
 
 ## Dependencies & Execution Order
 
