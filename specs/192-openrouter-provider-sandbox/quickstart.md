@@ -10,24 +10,22 @@ Expected terminal state: `CREDENTIAL_REQUIRED` and zero external requests.
 
 ## 2. Install the local credential safely
 
-Create a dedicated OpenRouter key with a 5 USD limit. Do not paste it into chat or pass it on the command line. In a fresh private PowerShell session, set it only for that process:
+Create a dedicated OpenRouter key with a 5 USD limit. Do not paste it into chat
+or pass it on the command line. Start the secure local launcher:
 
 ```powershell
-$env:R37_OPENROUTER_CONTROLLER_API_KEY = Read-Host 'OpenRouter R37 key' -MaskInput
+pwsh -NoProfile -File scripts/start-r37-openrouter-sandbox-secure.ps1
 ```
 
-The value is intentionally absent from source, reports and command history.
+Paste the key only at the masked prompt. The launcher injects it into the
+validator process, removes it afterward and zeroes its temporary unmanaged
+buffer. The value is absent from source, reports and command history.
 
 ## 3. Execute once
 
-In the same private PowerShell session, run the completion validator exactly
-once:
-
-```powershell
-pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete
-```
-
-The runner must use a fresh disposable PostgreSQL database, at most six calls, at most 5 USD, and always revoke/disable/clean up.
+The launcher runs the completion validator exactly once. The runner must use a
+fresh disposable PostgreSQL database, at most six calls, at most 5 USD, and
+always revoke/disable/clean up.
 
 Only a report produced from actual OpenRouter responses can return
 `OPENROUTER_SANDBOX_OBSERVED_PASS`. Never rerun after an ambiguous attempted
