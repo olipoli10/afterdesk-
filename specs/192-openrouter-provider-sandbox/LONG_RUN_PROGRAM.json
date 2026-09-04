@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "programId": "endvera-r37-openrouter-provider-sandbox-v1",
+  "objective": "Observe one bounded OpenRouter-only controller sandbox on six exact synthetic model-case pairs while enforcing local credential custody, a founder ceiling of 10 CAD, a stricter 5 USD application ceiling, durable spend controls, replay refusal, revocation and zero customer or communication effects.",
+  "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+  "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+  "baseHead": "d6e517a231afd23147a99b2a9283b026b705893e",
+  "authority": "OPENROUTER ONLY; SYNTHETIC DATA ONLY; MAXIMUM 10 CAD FOUNDER SPEND AND 5 USD APPLICATION SPEND; LOCAL UNCOMMITTED KEY; NO CLIENT, SMS, CALL, EMAIL, EXTERNAL TOOL OR WRITE, PUSH, PREVIEW, PRODUCTION OR DEPLOYMENT",
+  "completionCommand": "pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete",
+  "stopConditions": [
+    "Any credential value appears in source, evidence, logs or command arguments",
+    "Any non-synthetic or customer/prospect data becomes necessary",
+    "Any provider other than OpenRouter or any external communication/write becomes necessary",
+    "The 10 CAD founder ceiling or stricter 5 USD application ceiling cannot be guaranteed",
+    "An existing reservation makes prior external dispatch ambiguous",
+    "Revocation, lane disablement or disposable database cleanup cannot be guaranteed",
+    "Push, Preview, Production or deployment becomes necessary"
+  ],
+  "chapters": [
+    {
+      "id": "CH-001",
+      "title": "Authority, exact model evidence and RED",
+      "objective": "Freeze OpenRouter-only authority, model/privacy/cost evidence, equal synthetic cases and non-vacuous failing guards.",
+      "status": "DONE",
+      "dependencies": [],
+      "completionCommand": "npx vitest run test/construction-operating-assistant-r37-openrouter-sandbox.test.ts",
+      "evidencePaths": ["evidence/red.md"],
+      "result": "Authority, official evidence, equal cases and non-vacuous RED are frozen; targeted unit and boundary tests pass.",
+      "completedAtUtc": "2026-09-04T21:08:16Z"
+    },
+    {
+      "id": "CH-002",
+      "title": "Private transport, strict oracle and durable campaign",
+      "objective": "Implement the exact private OpenRouter transport, response/cost normalization, deterministic oracle and durable reserve-before-dispatch campaign without public reachability.",
+      "status": "DONE",
+      "dependencies": ["CH-001"],
+      "completionCommand": "npm run validate:provider-boundary && npx vitest run test/construction-operating-assistant-r37-openrouter-sandbox.test.ts test/integration/construction-operating-assistant-r37-openrouter-sandbox.itest.ts",
+      "evidencePaths": ["evidence/credential-free-preflight.json"],
+      "result": "Private exact OpenRouter transport, strict normalization/oracle and durable reserve-before-dispatch campaign pass unit and disposable PostgreSQL tests.",
+      "completedAtUtc": "2026-09-04T21:08:16Z"
+    },
+    {
+      "id": "CH-003",
+      "title": "Observed OpenRouter matrix or exact credential boundary",
+      "objective": "Execute the six observed calls once when the local key exists; otherwise complete all possible work and stop honestly at CREDENTIAL_REQUIRED with zero network/spend.",
+      "status": "IN_PROGRESS",
+      "dependencies": ["CH-002"],
+      "completionCommand": "pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1",
+      "evidencePaths": ["evidence/observed-provider-report.json"],
+      "result": "CREDENTIAL_REQUIRED after complete credential-free preflight; credential value not inspected, network calls 0 and provider lane disabled.",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CH-004",
+      "title": "Revocation, validation and closeout",
+      "objective": "Reconcile spend/calls/evidence, prove secret absence, revoke grants, disable lane, clean the disposable database, validate proportional gates, commit locally and checkpoint Brain without advancing R38-R40.",
+      "status": "OPEN",
+      "dependencies": ["CH-003"],
+      "completionCommand": "pwsh specs/192-openrouter-provider-sandbox/scripts/validate-r37-openrouter-sandbox.ps1 -RequireComplete",
+      "evidencePaths": ["evidence/mutations.md", "evidence/closeout.md"],
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}

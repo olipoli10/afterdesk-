@@ -8,11 +8,11 @@ const providerExecutionModuleFamily = [
   "37",
 ].join("");
 const PUBLIC_PROVIDER_EXECUTION_IMPORT = new RegExp(
-  `(?:from\\s+|import\\s+(?!\\()|import\\s*\\(\\s*|require\\s*\\(\\s*)["'][^"']*${providerExecutionModuleFamily}(?:a|b|c|f)/`,
+  `(?:from\\s+|import\\s+(?!\\()|import\\s*\\(\\s*|require\\s*\\(\\s*)["'][^"']*${providerExecutionModuleFamily}(?:(?:a|b|c|f)/|/)`,
   "u",
 );
 const PUBLIC_PROVIDER_EXECUTION_SYMBOL =
-  /\b(?:executeControlledSyntheticProviderDelivery|executeControlledSyntheticAttempt|runSyntheticAttempt|activateProviderActivationGrant|setProviderLaneControl|requestObservedProviderExecution)\b/u;
+  /\b(?:dispatchOpenRouterRequest|runR37OpenRouterCampaign|executeControlledSyntheticProviderDelivery|executeControlledSyntheticAttempt|runSyntheticAttempt|activateProviderActivationGrant|setProviderLaneControl|requestObservedProviderExecution)\b/u;
 
 const fetchIdentifier = ["fet", "ch"].join("");
 const axiosIdentifier = ["axi", "os"].join("");
@@ -20,6 +20,7 @@ const undiciIdentifier = ["undi", "ci"].join("");
 
 const NETWORK_TRANSPORT_PATTERNS = [
   new RegExp(`\\b${fetchIdentifier}\\s*\\(`, "u"),
+  new RegExp(`\\b${fetchIdentifier}\\b`, "u"),
   new RegExp(`\\b(?:${axiosIdentifier}|${undiciIdentifier})\\b`, "u"),
   /\bhttps?\.(?:request|get)\s*\(/u,
   /from\s+["']node:https?["']/u,
@@ -68,6 +69,33 @@ export function inspectProviderRuntimeSource(
   }
   if (matchesAny(source, DISPATCHABLE_PATTERNS)) {
     violations.push(violation("R37K_DISPATCHABLE_REQUEST_PRESENT", path));
+  }
+  return violations;
+}
+
+export function inspectAuthorizedObservedTransportSource(
+  path: string,
+  source: string,
+): ProviderBoundaryViolation[] {
+  const exactPath = "src/lib/construction-operating-assistant-r37/transport.ts";
+  if (path.replaceAll("\\", "/") !== exactPath) {
+    return inspectProviderRuntimeSource(path, source);
+  }
+  const violations: ProviderBoundaryViolation[] = [];
+  if (!source.includes("process.env[R37_CREDENTIAL_ENV]")) {
+    violations.push(violation("R37K_EXACT_SECRET_REFERENCE_REQUIRED", path));
+  }
+  if (!source.includes("(OPENROUTER_ENDPOINT,")) {
+    violations.push(violation("R37K_EXACT_OPENROUTER_ENDPOINT_REQUIRED", path));
+  }
+  if (!source.includes("Authorization: `Bearer ${credential}`")) {
+    violations.push(violation("R37K_EPHEMERAL_AUTHORIZATION_HEADER_REQUIRED", path));
+  }
+  if (matchesAny(source, DISPATCHABLE_PATTERNS)) {
+    violations.push(violation("R37K_DISPATCHABLE_REQUEST_PRESENT", path));
+  }
+  if (/https?:\/\/(?!openrouter\.ai(?:\/|["']))/u.test(source)) {
+    violations.push(violation("R37K_ALTERNATE_NETWORK_DESTINATION", path));
   }
   return violations;
 }

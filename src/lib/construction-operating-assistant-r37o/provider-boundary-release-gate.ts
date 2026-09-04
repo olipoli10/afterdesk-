@@ -1,6 +1,7 @@
 import { posix } from "node:path";
 
 import {
+  inspectAuthorizedObservedTransportSource,
   inspectProviderRuntimeSource,
   inspectPublicEntrySource,
 } from "@/lib/construction-operating-assistant-r37k/provider-boundary";
@@ -17,7 +18,8 @@ export type ProviderBoundaryReleaseViolation = Readonly<{
 }>;
 
 const PUBLIC_ROOTS = ["src/app/", "src/server/actions/", "src/jobs/", "src/workers/"] as const;
-const PROVIDER_RUNTIME = /^src\/(?:lib|server)\/construction-operating-assistant-r37[a-j]\//u;
+const LEGACY_PROVIDER_RUNTIME = /^src\/(?:lib|server)\/construction-operating-assistant-r37[a-j]\//u;
+const OBSERVED_PROVIDER_RUNTIME = /^src\/(?:lib|server)\/construction-operating-assistant-r37\//u;
 const EXECUTABLE_SOURCE_EXTENSION = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/u;
 
 export function isProviderBoundarySourcePath(path: string) {
@@ -65,9 +67,12 @@ export function validateProviderBoundaryModules(
 
   const runtime = stable(
     [...modules.entries()]
-      .filter(([path]) => PROVIDER_RUNTIME.test(path))
+      .filter(([path]) => LEGACY_PROVIDER_RUNTIME.test(path) || OBSERVED_PROVIDER_RUNTIME.test(path))
       .flatMap(([path, source]) =>
-        inspectProviderRuntimeSource(path, source).map((item) => ({
+        (OBSERVED_PROVIDER_RUNTIME.test(path)
+          ? inspectAuthorizedObservedTransportSource(path, source)
+          : inspectProviderRuntimeSource(path, source)
+        ).map((item) => ({
           code: item.code.replace(/^R37K_/u, "R37O_"),
           path,
         })),

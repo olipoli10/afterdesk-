@@ -21,7 +21,7 @@ export type DynamicCodeExecutionReachability = Readonly<{
 }>;
 
 const PROVIDER_EXECUTION_MODULE =
-  /^src\/server\/construction-operating-assistant-r37(?:a|b|c|f)\//u;
+  /^src\/(?:server\/construction-operating-assistant-r37(?:a|b|c|f)\/|(?:server|lib)\/construction-operating-assistant-r37\/)/u;
 const SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"] as const;
 
 function normalizeRepositoryPath(path: string) {
