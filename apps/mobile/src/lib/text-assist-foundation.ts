@@ -21,6 +21,6 @@ export const TEXT_ASSIST_FOUNDATION = {
     { key: "NOTIFICATIONS", title: "Notifications", detail: "Te prévenir des suivis et décisions importantes.", route: "/settings" },
   ],
   forbiddenDevicePermissions: ["READ_SMS", "WRITE_SMS", "READ_CALL_LOG", "WRITE_CALL_LOG"],
-  loop: ["Tu textes ou parles", "ENDVERA vérifie ton identité et ton contexte", "Le meilleur lane AI ou outil est choisi", "Les actions sensibles sont préparées", "Tu vois et approuves l’action exacte"],
+  loop: ["Tu textes ou tu parles", "ENDVERA vérifie ton identité et ton contexte", "ENDVERA choisit le bon modèle AI ou le bon outil", "Les actions sensibles sont préparées", "Tu vois et approuves l’action exacte"],
   externalTransportPerformed: false,
 } as const;
