@@ -54,6 +54,7 @@ describe("R37 corrected retest transport", () => {
     expect(localWeb).toContain('type="password"');
     expect(localWeb).toContain('"cache-control": "no-store, max-age=0"');
     expect(localWeb).toContain("R37_OPENROUTER_CONTROLLER_API_KEY: key");
+    expect(localWeb).toContain('replace(/sk-or-v1-[A-Za-z0-9_-]+/gu, "[REDACTED]")');
     expect(localWeb).not.toMatch(/console\.log\([^)]*key/u);
   });
 });

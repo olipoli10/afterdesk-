@@ -12,6 +12,13 @@ const validator = resolve(repoRoot, "specs/194-corrected-openrouter-retest/scrip
 const reportPath = resolve(repoRoot, "specs/194-corrected-openrouter-retest/evidence/observed-provider-report.json");
 let state = "WAITING_FOR_KEY";
 let verdict = "";
+let failureDetail = "";
+
+function redact(value) {
+  return String(value)
+    .replace(/sk-or-v1-[A-Za-z0-9_-]+/gu, "[REDACTED]")
+    .slice(-4000);
+}
 
 function headers(type = "text/html; charset=utf-8") {
   return {
@@ -35,7 +42,7 @@ function render() {
   }
   if (state === "RUNNING") return page('<h1>Campagne en cours</h1><p class="ok">La clé a été admise en mémoire. Ne ferme pas cette page.</p><p class="muted">Préflight, PostgreSQL, appels synthétiques, verdict et nettoyage s’exécutent automatiquement.</p>', true);
   if (state === "COMPLETE") return page(`<h1>Campagne terminée</h1><p class="ok">Verdict : ${verdict}</p><p class="muted">La clé a été retirée du processus. Tu peux fermer cette page.</p>`);
-  return page('<h1>Campagne arrêtée</h1><p class="warn">Le validateur a refusé ou interrompu la campagne. Aucun nouvel essai ne sera lancé automatiquement.</p>');
+  return page(`<h1>Campagne arrêtée</h1><p class="warn">Le validateur a refusé ou interrompu la campagne. Aucun appel ne sera relancé automatiquement.</p><pre class="muted">${failureDetail.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</pre>`);
 }
 
 async function readBody(request) {
@@ -51,13 +58,16 @@ async function readBody(request) {
 
 function runCampaign(key) {
   state = "RUNNING";
+  failureDetail = "";
   const childEnv = { ...process.env, R37_OPENROUTER_CONTROLLER_API_KEY: key };
   const child = spawn("powershell.exe", [
     "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", validator, "-RequireComplete",
-  ], { cwd: repoRoot, env: childEnv, stdio: "ignore", windowsHide: true });
+  ], { cwd: repoRoot, env: childEnv, stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
   key = "";
   delete childEnv.R37_OPENROUTER_CONTROLLER_API_KEY;
   process.stdout.write("R37_LOCAL_WEB_CAMPAIGN_STARTED=true\n");
+  child.stdout.on("data", (chunk) => { failureDetail = redact(`${failureDetail}${chunk}`); });
+  child.stderr.on("data", (chunk) => { failureDetail = redact(`${failureDetail}${chunk}`); });
   child.once("exit", async (code) => {
     try {
       const report = JSON.parse(await readFile(reportPath, "utf8"));
@@ -66,6 +76,7 @@ function runCampaign(key) {
     } catch {
       state = "FAILED";
     }
+    if (state === "FAILED" && !failureDetail) failureDetail = `VALIDATOR_EXIT_${code ?? -1}`;
     process.stdout.write(`R37_LOCAL_WEB_CAMPAIGN_EXIT=${code ?? -1}\n`);
     process.stdout.write(`R37_LOCAL_WEB_STATE=${state}\n`);
     if (verdict) process.stdout.write(`R37_LOCAL_WEB_VERDICT=${verdict}\n`);
