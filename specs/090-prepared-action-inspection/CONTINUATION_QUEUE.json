@@ -3200,6 +3200,8 @@
       "completionCommand": "npm run test:run -- test/construction-operating-assistant-r37bc-controller-contract-alignment.test.ts",
       "evidencePaths": ["../195-r37-controller-contract-alignment/evidence/red.md","../195-r37-controller-contract-alignment/evidence/closeout.md"],
       "result": "LOCAL_CONTRACT_ALIGNMENT_READY; versioned semantic correction passed full local tests and provider-boundary validation; sealed R37 verdict remains REWORK and no provider call or spend occurred.",
+      "outputHead": "49bba8bf3c89df381e17d567dccf85b34c6b77b0",
+      "outputTree": "7468cdf4809dd0921b8c6f1380f30d5349856947",
       "completedAtUtc": "2026-09-05T16:05:00Z"
     }
   ]

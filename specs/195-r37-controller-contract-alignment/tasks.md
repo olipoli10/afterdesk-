@@ -17,7 +17,7 @@
 - [x] T007 [US1] Pass focused and existing R37 contract/oracle tests
 - [x] T008 [US3] Prove sealed report hash and REWORK verdict unchanged
 - [x] T009 [US3] Pass typecheck, provider-boundary validation and diff checks
-- [ ] T010 [US3] Commit locally and checkpoint the canonical Brain without changing readiness rubrics
+- [x] T010 [US3] Commit locally and checkpoint the canonical Brain without changing readiness rubrics
 
 ## Stop criteria
 

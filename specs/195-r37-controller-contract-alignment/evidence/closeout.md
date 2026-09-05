@@ -44,3 +44,7 @@
 
 This is local `CODE + TEST` evidence only. It does not convert R37 to PASS, select a provider model, authorize another retest, authorize R38, or increase Verified-E2E coverage.
 
+## Local checkpoint
+
+- Implementation commit: `49bba8bf3c89df381e17d567dccf85b34c6b77b0`.
+- Implementation tree: `7468cdf4809dd0921b8c6f1380f30d5349856947`.
