@@ -64,7 +64,6 @@ async function guardedSession() {
   const cookie = (await cookies()).get(FOUNDER_TEST_COOKIE)?.value;
   return requireFounderTestSession(cookie);
 }
-
 function refresh() {
   revalidatePath(FOUNDER_TEST_ROUTE);
 }
@@ -159,4 +158,3 @@ export async function submitFounderObservation(
     };
   }
 }
-

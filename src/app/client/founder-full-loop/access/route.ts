@@ -40,4 +40,3 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Accès local refusé.", { status: 404 });
   }
 }
-

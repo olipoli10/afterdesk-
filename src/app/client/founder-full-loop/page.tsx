@@ -16,4 +16,3 @@ export default async function FounderInvoiceReadinessPage({
   const initialState = await loadFounderTestState({ completeReload: query.reload === "1" });
   return <FounderInvoiceReadinessConsole initialState={initialState} />;
 }
-

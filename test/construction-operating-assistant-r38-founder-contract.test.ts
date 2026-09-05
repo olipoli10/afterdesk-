@@ -69,4 +69,3 @@ describe("Construction Operating Assistant R38 observation contract", () => {
     expect(service).toContain("flag: \"wx\"");
   });
 });
-
