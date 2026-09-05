@@ -8,7 +8,9 @@ $keyPointer = [IntPtr]::Zero
 $plainKey = $null
 
 try {
-  $secureKey = Read-Host "Colle la NOUVELLE cle OpenRouter (entree masquee)" -AsSecureString
+  $credential = Get-Credential -UserName "openrouter" -Message "Revoque d'abord la cle affichee. Cree une nouvelle cle, puis colle-la dans le champ Mot de passe. Elle restera masquee."
+  if ($null -eq $credential) { throw "R37_CREDENTIAL_INPUT_CANCELLED" }
+  $secureKey = $credential.Password
   if ($secureKey.Length -lt 20) { throw "R37_CREDENTIAL_INPUT_INVALID" }
   $keyPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKey)
   $plainKey = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($keyPointer)
@@ -21,5 +23,5 @@ try {
   Remove-Item Env:R37_OPENROUTER_CONTROLLER_API_KEY -ErrorAction SilentlyContinue
   $plainKey = $null
   if ($keyPointer -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($keyPointer) }
-  Remove-Variable secureKey,keyPointer,plainKey -ErrorAction SilentlyContinue
+  Remove-Variable credential,secureKey,keyPointer,plainKey -ErrorAction SilentlyContinue
 }
