@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 
 const HOST = "127.0.0.1";
 const PORT = 47837;
+const START_PATH = "/r37-corrected-retest";
 const repoRoot = process.cwd();
 const nonce = randomUUID();
 const validator = resolve(repoRoot, "specs/194-corrected-openrouter-retest/scripts/validate-r37-corrected-retest.ps1");
@@ -38,7 +39,7 @@ function page(content, refresh = false) {
 
 function render() {
   if (state === "WAITING_FOR_KEY") {
-    return page(`<h1>Retest R37 sécurisé</h1><p class="warn">Utilise seulement une clé qui n’a jamais été affichée. Révoque d’abord toute clé visible dans une capture.</p><p class="muted">La clé reste en mémoire locale, n’est ni affichée, ni journalisée, ni écrite sur disque.</p><form method="post" action="/start"><input type="hidden" name="nonce" value="${nonce}"><label for="key">Clé OpenRouter temporaire</label><input id="key" name="key" type="password" autocomplete="off" spellcheck="false" required minlength="20" autofocus><button type="submit">Démarrer le retest unique</button></form>`);
+    return page(`<h1>Retest R37 sécurisé</h1><p class="warn">Utilise seulement une clé qui n’a jamais été affichée. Révoque d’abord toute clé visible dans une capture.</p><p class="muted">La clé reste en mémoire locale, n’est ni affichée, ni journalisée, ni écrite sur disque.</p><form method="post" action="${START_PATH}/start"><input type="hidden" name="nonce" value="${nonce}"><label for="key">Clé OpenRouter temporaire</label><input id="key" name="key" type="password" autocomplete="off" spellcheck="false" required minlength="20" autofocus><button type="submit">Démarrer le retest unique</button></form>`);
   }
   if (state === "RUNNING") return page('<h1>Campagne en cours</h1><p class="ok">La clé a été admise en mémoire. Ne ferme pas cette page.</p><p class="muted">Préflight, PostgreSQL, appels synthétiques, verdict et nettoyage s’exécutent automatiquement.</p>', true);
   if (state === "COMPLETE") return page(`<h1>Campagne terminée</h1><p class="ok">Verdict : ${verdict}</p><p class="muted">La clé a été retirée du processus. Tu peux fermer cette page.</p>`);
@@ -85,10 +86,11 @@ function runCampaign(key) {
 
 const server = createServer(async (request, response) => {
   try {
-    if (request.method === "GET" && request.url === "/") {
+    const path = new URL(request.url ?? "/", `http://${HOST}:${PORT}`).pathname;
+    if (request.method === "GET" && path === START_PATH) {
       response.writeHead(200, headers()); response.end(render()); return;
     }
-    if (request.method === "POST" && request.url === "/start" && state === "WAITING_FOR_KEY") {
+    if (request.method === "POST" && path === `${START_PATH}/start` && state === "WAITING_FOR_KEY") {
       const data = new URLSearchParams(await readBody(request));
       const suppliedNonce = data.get("nonce") ?? "";
       let key = data.get("key") ?? "";
@@ -98,7 +100,7 @@ const server = createServer(async (request, response) => {
       }
       runCampaign(key);
       key = "";
-      response.writeHead(303, { ...headers(), location: "/" }); response.end(); return;
+      response.writeHead(303, { ...headers(), location: START_PATH }); response.end(); return;
     }
     response.writeHead(404, headers()); response.end(page("<h1>Introuvable</h1>"));
   } catch {
@@ -107,7 +109,7 @@ const server = createServer(async (request, response) => {
 });
 
 server.listen(PORT, HOST, () => {
-  process.stdout.write(`R37_LOCAL_WEB_READY=http://${HOST}:${PORT}/\n`);
+  process.stdout.write(`R37_LOCAL_WEB_READY=http://${HOST}:${PORT}${START_PATH}\n`);
 });
 
 process.on("SIGINT", () => server.close(() => process.exit(0)));
