@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AppIcon } from "@/components/app-icon";
-import { BrandHeader, Card, Heading, Notice, Screen, colors, sharedStyles } from "@/components/ui";
+import { BrandHeader, Button, Card, Heading, Notice, Screen, colors, sharedStyles } from "@/components/ui";
 import { TEXT_ASSIST_FOUNDATION } from "@/lib/text-assist-foundation";
 import { useMobileSession } from "@/state/mobile-session";
 
@@ -16,6 +16,16 @@ export default function TextAssistSetupScreen() {
         title="Texte. Parle. ENDVERA s’occupe du reste."
         body="Connecte seulement ce qui t’est utile. ENDVERA garde le contexte, choisit le bon outil et te montre toute action sensible avant de l’exécuter."
       />
+
+      <Button onPress={() => router.push(TEXT_ASSIST_FOUNDATION.actions.assistant.route as never)}>
+        {TEXT_ASSIST_FOUNDATION.actions.assistant.label}
+      </Button>
+      <Button
+        tone="secondary"
+        onPress={() => router.push(TEXT_ASSIST_FOUNDATION.actions.permissions.route as never)}
+      >
+        {TEXT_ASSIST_FOUNDATION.actions.permissions.label}
+      </Button>
 
       <Card style={styles.heroCard}>
         <View style={styles.titleRow}>

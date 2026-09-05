@@ -6,6 +6,10 @@ describe("mobile TextAssist foundation", () => {
     expect(TEXT_ASSIST_FOUNDATION.productMode).toBe("ASSISTANT_FIRST");
     expect(TEXT_ASSIST_FOUNDATION.sms.readiness).toBe("À connecter");
     expect(TEXT_ASSIST_FOUNDATION.sms.devicePermissions).toEqual([]);
+    expect(TEXT_ASSIST_FOUNDATION.actions).toEqual({
+      assistant: { label: "Parler à ENDVERA maintenant", route: "/assistant" },
+      permissions: { label: "Choisir mes permissions", route: "/permissions" },
+    });
     expect(TEXT_ASSIST_FOUNDATION.externalTransportPerformed).toBe(false);
   });
 

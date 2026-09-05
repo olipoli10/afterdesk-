@@ -13,6 +13,10 @@ export const TEXT_ASSIST_FOUNDATION = {
     readiness: "Désactivé dans cette version locale",
     secretLocation: "SERVER_ONLY",
   },
+  actions: {
+    assistant: { label: "Parler à ENDVERA maintenant", route: "/assistant" },
+    permissions: { label: "Choisir mes permissions", route: "/permissions" },
+  },
   permissions: [
     { key: "CALENDAR", title: "Calendrier", detail: "Voir tes disponibilités et préparer des rendez-vous.", route: "/calendar-connections" },
     { key: "CONTACTS", title: "Contacts choisis", detail: "Reconnaître Marc et les personnes que tu partages.", route: "/contacts" },
