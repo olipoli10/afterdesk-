@@ -13,6 +13,10 @@ describe("R38 founder full-loop preparation", () => {
       path.join(root, "src/server/construction-operating-assistant-r38/founder-test-actions.ts"),
       "utf8",
     );
+    const consoleSurface = await readFile(
+      path.join(root, "src/components/construction-operating-assistant-r38/founder-full-loop-console.tsx"),
+      "utf8",
+    );
     const launcher = await readFile(path.join(feature, "scripts/start-founder-test.ps1"), "utf8");
     expect(page).toContain("ENDVERA_R38_FOUNDER_TEST_MODE");
     expect(access).toContain("assertLoopbackHost");
@@ -21,9 +25,12 @@ describe("R38 founder full-loop preparation", () => {
     expect(access).toContain("`http://${host}`");
     expect(actions).not.toContain("requireRole");
     expect(actions).not.toContain("Object.fromEntries(formData)");
+    expect(consoleSurface).toContain("min-h-screen");
+    expect(consoleSurface).toContain("bg-[#0A0B0D]");
     expect(launcher).toContain("/founder-full-loop/access?token=");
     expect(launcher).toContain("Stop-Process");
     expect(launcher).toContain("R38_FOREIGN_SERVER_ON_RESERVED_PORT");
+    expect(launcher).toContain("R38_DATABASE_LISTENER_MISSING");
     expect(launcher).not.toMatch(/OPENROUTER|TWILIO|GOOGLE_CLIENT|QUICKBOOKS/i);
   });
 

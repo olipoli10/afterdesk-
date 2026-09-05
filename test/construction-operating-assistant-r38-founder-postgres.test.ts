@@ -43,8 +43,9 @@ describe.skipIf(!process.env.DATABASE_URL)("Construction Operating Assistant R38
   });
 
   afterAll(async () => {
-    await prisma.$disconnect();
     await rm(sessionPath, { force: true });
+    await prisma.constructionWorkspace.deleteMany({ where: { id: "coa-r1-workspace" } });
+    await prisma.$disconnect();
   });
 
   it("runs the entire safe loop without creating a founder observation", async () => {

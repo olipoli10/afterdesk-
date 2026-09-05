@@ -148,7 +148,7 @@ export function FounderInvoiceReadinessConsole({ initialState }: { initialState:
   const copy = labels[stage];
 
   return (
-    <main className="space-y-6 py-8">
+    <main className="min-h-screen space-y-6 bg-[#0A0B0D] px-4 py-8 text-white sm:px-6 lg:px-10">
       <section className="rounded-2xl border border-amber-400/30 bg-amber-400/5 p-6">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-200">Test local — zéro envoi réel</p>
         <h1 className="mt-2 text-3xl font-semibold text-white">Du travail terminé au dossier prêt à facturer</h1>

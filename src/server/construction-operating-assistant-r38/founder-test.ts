@@ -413,7 +413,6 @@ async function seedSyntheticDossier() {
 
 export async function prepareFounderTestAccess() {
   assertLocalDatabase();
-  await seedSyntheticDossier();
   const tokenHash = process.env.ENDVERA_R38_FOUNDER_TOKEN_SHA256;
   const expiresAt = process.env.ENDVERA_R38_FOUNDER_TOKEN_EXPIRES_AT;
   if (!tokenHash || !/^[0-9a-f]{64}$/.test(tokenHash) || !expiresAt || !Number.isFinite(Date.parse(expiresAt))) {
@@ -424,6 +423,8 @@ export async function prepareFounderTestAccess() {
     if (existing.stage !== "NOT_STARTED" || existing.startedAtUtc || existing.transcript.length > 0) {
       throw new Error("COA_R1_SECOND_FOUNDER_SESSION_REFUSED");
     }
+    await prisma.constructionWorkspace.deleteMany({ where: { id: WORKSPACE_ID } });
+    await seedSyntheticDossier();
     // A consumed admission token is not a founder test session until START is
     // recorded. Rotate both the token and cookie-bound id so a broken local
     // admission can be repaired without creating a second human observation
@@ -438,6 +439,8 @@ export async function prepareFounderTestAccess() {
     await writeSession(refreshed);
     return refreshed;
   }
+  await prisma.constructionWorkspace.deleteMany({ where: { id: WORKSPACE_ID } });
+  await seedSyntheticDossier();
   const session = storedSessionSchema.parse({
     schemaVersion: 1,
     sessionId: randomUUID(),

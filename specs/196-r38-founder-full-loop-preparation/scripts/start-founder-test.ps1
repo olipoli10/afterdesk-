@@ -54,6 +54,15 @@ try {
   if (-not (Test-Path -LiteralPath $serverStatePath)) { throw 'R38_PRISMA_SERVER_STATE_MISSING' }
   $serverState = Get-Content -Raw -LiteralPath $serverStatePath | ConvertFrom-Json
   $databasePort = [int]$serverState.databasePort
+  $databaseListener = Get-NetTCPConnection -LocalPort $databasePort -State Listen -ErrorAction SilentlyContinue
+  if (-not $databaseListener) {
+    Invoke-R38Native -Label 'prisma-dev-stop-stale' -Command { .\node_modules\.bin\prisma.cmd dev stop $databaseName }
+    Invoke-R38Native -Label 'prisma-dev-restart-stale' -Command { .\node_modules\.bin\prisma.cmd dev start $databaseName }
+    $serverState = Get-Content -Raw -LiteralPath $serverStatePath | ConvertFrom-Json
+    $databasePort = [int]$serverState.databasePort
+    $databaseListener = Get-NetTCPConnection -LocalPort $databasePort -State Listen -ErrorAction SilentlyContinue
+    if (-not $databaseListener) { throw 'R38_DATABASE_LISTENER_MISSING' }
+  }
   $directUrl = "postgres://postgres:postgres@127.0.0.1:$databasePort/template1?sslmode=disable"
 
   $env:DATABASE_URL = "$directUrl&pgbouncer=true&connection_limit=5"
