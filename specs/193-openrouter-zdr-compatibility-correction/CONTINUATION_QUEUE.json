@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 2,
+  "queueMode": "PINNED_SEQUENTIAL_CAMPAIGN",
+  "queueId": "endvera-r37bb-openrouter-zdr-compatibility-correction-v1",
+  "campaignObjective": "Correct the locally reproducible OpenRouter ZDR request incompatibility while preserving the sealed R37 REWORK observation.",
+  "authority": "PUBLIC OPENROUTER METADATA READ AND LOCAL CODE TEST GIT ONLY; NO CREDENTIAL PROVIDER GENERATION CALL SPEND CUSTOMER DATA COMMUNICATION EXTERNAL WRITE PUSH PREVIEW PRODUCTION OR DEPLOYMENT",
+  "forbiddenActions": [
+    "credential access or provider generation execution",
+    "mutation or replay of the sealed R37 campaign",
+    "customer or prospect data",
+    "real SMS call email calendar payment or external write",
+    "push Preview Production deployment or store action"
+  ],
+  "stopConditions": [
+    "the sealed R37 report hash changes",
+    "no compliant ZDR endpoint remains for either exact model",
+    "a credential or provider generation call becomes necessary"
+  ],
+  "communication": {
+    "informationalLabel": "INFO — aucune réponse requise",
+    "blockingLabel": "BLOCAGE — réponse requise",
+    "authorityLabel": "AUTORITÉ — signature requise",
+    "completionLabel": "TERMINÉ — résultat",
+    "maxRoutineFounderPrompts": 0
+  },
+  "entries": [
+    {
+      "id": "R37BB-ZDR-COMPATIBILITY-CORRECTION",
+      "title": "OpenRouter strict ZDR compatibility correction",
+      "objective": "Prove the exact parameter incompatibility from public metadata and build a strict corrected request contract without provider execution.",
+      "role": "LOCAL_IMPLEMENTATION",
+      "status": "DONE",
+      "dependencies": ["R37-PROVIDER-SANDBOX"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind": "FIXED_HEAD", "head": "10149bdc67fc5305a5b9b2e4b68058660502eec4"},
+      "authority": "PUBLIC OPENROUTER METADATA READ AND LOCAL CODE TEST GIT ONLY; ZERO PROVIDER GENERATION CALLS AND ZERO SPEND",
+      "allowedScope": [
+        "specs/193-openrouter-zdr-compatibility-correction",
+        "src/lib/construction-operating-assistant-r37bb",
+        "test/construction-operating-assistant-r37bb-zdr-compatibility.test.ts",
+        "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+        "specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",
+        "C:\\dev\\afterdesk-project-brain checkpoint files after clean closeout"
+      ],
+      "planPath": "plan.md",
+      "planSha256": "8234bebee53add63f62af644189fffea3ed64e3eb824b4562b514009b452b234",
+      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/193-openrouter-zdr-compatibility-correction/scripts/validate-r37bb-openrouter-zdr-compatibility.ps1",
+      "evidencePaths": [
+        "evidence/openrouter-endpoint-eligibility-2026-09-05.json",
+        "evidence/red.md",
+        "evidence/closeout.md"
+      ],
+      "outputHead": "288922759e37b7fb3ce2d4422b3e4ea47ba57306",
+      "outputTree": "1eee177733e2d84117c8d1fba6980d87d3fe63c2",
+      "result": "LOCAL_COMPATIBILITY_CORRECTION_PASS: both exact models exist; five current healthy ZDR endpoints advertise the corrected strict fields; max_tokens and temperature are absent; R37 remains immutable REWORK; zero provider generation calls and zero spend.",
+      "completedAtUtc": "2026-09-05T04:14:00Z"
+    }
+  ]
+}

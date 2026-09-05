@@ -31,9 +31,16 @@ try {
   }
 
   $snapshot = Get-Content -Raw -LiteralPath $snapshotPath | ConvertFrom-Json
+  $queue = Get-Content -Raw -LiteralPath (Join-Path $featureRoot "CONTINUATION_QUEUE.json") | ConvertFrom-Json
+  $backlog = Get-Content -Raw -LiteralPath "specs\090-prepared-action-inspection\PROJECT_BACKLOG.json" | ConvertFrom-Json
   if ($snapshot.evidenceLabel -ne "OBSERVED_PUBLIC_METADATA") { throw "R37BB_EVIDENCE_LABEL_INVALID" }
   if (@($snapshot.models).Count -ne 2) { throw "R37BB_MODEL_SET_INVALID" }
   if (@($snapshot.incompatibleR37Parameters).Count -ne 2) { throw "R37BB_DIAGNOSIS_INCOMPLETE" }
+  if (@($queue.entries).Count -ne 1 -or $queue.entries[0].id -ne "R37BB-ZDR-COMPATIBILITY-CORRECTION" -or $queue.entries[0].status -ne "DONE") {
+    throw "R37BB_QUEUE_NOT_DRAINED"
+  }
+  $backlogRelease = @($backlog.releases | Where-Object { $_.id -eq "R37BB-ZDR-COMPATIBILITY-CORRECTION" })
+  if ($backlogRelease.Count -ne 1 -or $backlogRelease[0].status -ne "DONE") { throw "R37BB_BACKLOG_INVALID" }
 
   $actualR37Hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $r37ReportPath).Hash.ToLowerInvariant()
   if ($actualR37Hash -ne $expectedR37Hash) { throw "R37BB_R37_SEAL_DRIFT" }
