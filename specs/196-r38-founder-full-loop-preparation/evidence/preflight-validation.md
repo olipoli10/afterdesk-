@@ -13,6 +13,7 @@ Date: 2026-09-05
 - Static secret scan: clear.
 - Spec preflight: `R38_FOUNDER_FULL_LOOP_PREFLIGHT_READY`.
 - Local Next development server: ready on loopback with webpack; the Turbopack symlink path is deliberately avoided.
+- Disposable R38 PostgreSQL and the loopback server are running; one short-lived, single-use direct-access URL is prepared for Olivier.
 - Historical R37 report SHA-256 values remain unchanged:
   - original: `bc79e1416f82ff08665690b0140471111ce00abb0a026419bb503688b6797eb3`
   - corrected: `0f94e15c69c32fc1ac7c2162ce0460ea93c6cc581864826d46879dd160ac5649`

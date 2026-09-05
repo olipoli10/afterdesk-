@@ -11,6 +11,6 @@
 - [x] T009 Prove duplicate/replay, no early readiness, contradiction preservation and final readiness in PostgreSQL.
 - [x] T010 Prove reload digest equality, prepared-unsent state and financial redaction.
 - [ ] T011 Run proportional unit, integration, build, provider-boundary and secret-hygiene validation.
-- [ ] T012 Commit the local preparation without changing R37 evidence.
-- [ ] T013 Start the disposable campaign and open the one-time URL for Olivier.
+- [x] T012 Commit the local preparation without changing R37 evidence.
+- [x] T013 Start the disposable campaign and present the one-time direct URL to Olivier.
 - [ ] T014 After the real seal only: adjudicate, close, checkpoint Brain and stop the campaign.

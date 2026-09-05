@@ -68,7 +68,9 @@ try {
   $env:ENDVERA_R38_HUMAN_OBSERVATION = 'OLIVIER_PRESENT'
   $env:NODE_ENV = 'development'
 
-  Invoke-R38Native -Label 'prisma-generate' -Command { .\node_modules\.bin\prisma.cmd generate }
+  if (-not (Test-Path -LiteralPath (Join-Path $root '.prisma-client\index.js'))) {
+    throw 'R38_PRISMA_CLIENT_MISSING_RUN_NPM_INSTALL'
+  }
   Invoke-R38Native -Label 'prisma-migrate-deploy' -Command { .\node_modules\.bin\prisma.cmd migrate deploy }
   Invoke-R38Native -Label 'prepare-founder-test' -Command { .\node_modules\.bin\tsx.cmd --require ./scripts/register-server-only.cjs specs/196-r38-founder-full-loop-preparation/scripts/prepare-founder-test.ts }
 
