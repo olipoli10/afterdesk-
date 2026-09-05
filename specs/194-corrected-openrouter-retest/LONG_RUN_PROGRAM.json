@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "programId": "endvera-r37-corrected-openrouter-retest-v1",
   "objective": "Execute exactly one corrected OpenRouter R37 campaign and seal its verdict without expanding authority.",
-  "terminalState": "IN_PROGRESS",
-  "currentPhase": "ONE_OBSERVED_CAMPAIGN",
+  "terminalState": "DONE_REWORK",
+  "currentPhase": "SEALED_CLOSEOUT",
   "authority": {
     "provider": "OPENROUTER",
     "syntheticOnly": true,
@@ -25,8 +25,8 @@
     {"id":"SPEC_AND_RED","status":"DONE"},
     {"id":"CORRECTED_TRANSPORT","status":"DONE"},
     {"id":"LOCAL_PREFLIGHT","status":"DONE"},
-    {"id":"ONE_OBSERVED_CAMPAIGN","status":"IN_PROGRESS"},
-    {"id":"SEALED_CLOSEOUT","status":"PENDING"}
+    {"id":"ONE_OBSERVED_CAMPAIGN","status":"DONE","verdict":"REWORK","dispatchedCallCount":1,"canonicalObservationCount":1,"settledSpendMicros":"2485"},
+    {"id":"SEALED_CLOSEOUT","status":"DONE"}
   ],
   "stopConditions": [
     "original R37 report hash drift",

@@ -62,11 +62,12 @@ function Assert-ObservedReport($Report) {
   if ($Report.expectedCallCount -ne 6 -or $Report.dispatchedCallCount -lt 1 -or $Report.dispatchedCallCount -gt 6 -or $Report.replayedDispatchCount -ne 0) { throw "R37_CORRECTED_DENOMINATOR_INVALID" }
   if ($Report.canonicalObservationCount -ne @($Report.observations).Count -or $Report.canonicalObservationCount -gt $Report.dispatchedCallCount) { throw "R37_CORRECTED_MATRIX_INVALID" }
   foreach ($item in @($Report.observations)) {
-    if ($item.provider -ne "OPENROUTER" -or $item.evidenceLabel -ne "OBSERVED_PROVIDER_SYNTHETIC_INPUT" -or -not $item.oracle.passed) { throw "R37_CORRECTED_OBSERVATION_INVALID" }
+    if ($item.provider -ne "OPENROUTER" -or $item.evidenceLabel -ne "OBSERVED_PROVIDER_SYNTHETIC_INPUT") { throw "R37_CORRECTED_OBSERVATION_INVALID" }
+    if (-not $item.oracle.passed -and @($item.oracle.reasonCodes).Count -lt 1) { throw "R37_CORRECTED_FAILED_OBSERVATION_REASON_MISSING" }
     if ([int64]$item.costMicros -gt 100000) { throw "R37_CORRECTED_ATTEMPT_CEILING_EXCEEDED" }
   }
   if ($Report.verdict -eq "OPENROUTER_SANDBOX_OBSERVED_PASS") {
-    if ($Report.dispatchedCallCount -ne 6 -or $Report.canonicalObservationCount -ne 6 -or @($Report.failureCodes).Count -ne 0) { throw "R37_CORRECTED_PASS_INVALID" }
+    if ($Report.dispatchedCallCount -ne 6 -or $Report.canonicalObservationCount -ne 6 -or @($Report.failureCodes).Count -ne 0 -or @($Report.observations | Where-Object { -not $_.oracle.passed }).Count -ne 0) { throw "R37_CORRECTED_PASS_INVALID" }
   } elseif ($Report.verdict -eq "REWORK") {
     if (@($Report.failureCodes).Count -lt 1 -or $null -ne $Report.selectedR38Candidate) { throw "R37_CORRECTED_REWORK_INVALID" }
   } else { throw "R37_CORRECTED_VERDICT_INVALID" }
@@ -92,7 +93,7 @@ try {
   Get-Content -Raw -LiteralPath (Join-Path $featureRoot "LONG_RUN_PROGRAM.json") | ConvertFrom-Json | Out-Null
   Get-Content -Raw -LiteralPath (Join-Path $featureRoot "CONTINUATION_QUEUE.json") | ConvertFrom-Json | Out-Null
   if (@(git diff -- package-lock.json).Count -ne 0) { throw "R37_CORRECTED_LOCKFILE_CHANGED" }
-  & git grep -q -E 'sk-or-v1-[A-Za-z0-9_-]{20,}' -- specs/194-corrected-openrouter-retest scripts/run-r37-corrected-openrouter-retest.ts scripts/start-r37-corrected-openrouter-retest-secure.ps1
+  & git grep -q -E 'sk-or-v1-[A-Za-z0-9_-]{20,}' -- specs/194-corrected-openrouter-retest scripts/run-r37-corrected-openrouter-retest.ts scripts/start-r37-corrected-openrouter-retest-secure.ps1 scripts/start-r37-corrected-openrouter-retest-local-web.mjs
   if ($LASTEXITCODE -eq 0) { throw "R37_CORRECTED_SECRET_MATERIAL_DETECTED" }
   if ($LASTEXITCODE -ne 1) { throw "R37_CORRECTED_SECRET_SCAN_FAILED:$LASTEXITCODE" }
 

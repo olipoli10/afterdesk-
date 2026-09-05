@@ -47,6 +47,7 @@ describe("R37 corrected retest transport", () => {
     const validator = readFileSync("specs/194-corrected-openrouter-retest/scripts/validate-r37-corrected-retest.ps1", "utf8");
     expect(validator).toContain("[Security.Cryptography.SHA256]::Create()");
     expect(validator).not.toContain("Get-FileHash");
+    expect(validator).toContain("R37_CORRECTED_FAILED_OBSERVATION_REASON_MISSING");
     const launcher = readFileSync("scripts/start-r37-corrected-openrouter-retest-secure.ps1", "utf8");
     expect(launcher).toContain("System.Windows.Forms.Form");
     expect(launcher).toContain("UseSystemPasswordChar = $true");

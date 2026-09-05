@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "r37-corrected-openrouter-9d0ef2a8-00ac-4e17-bbdf-ae42efd54d8a",
+  "provider": "OPENROUTER",
+  "evidenceLabel": "OBSERVED_PROVIDER_SYNTHETIC_INPUT",
+  "expectedCallCount": 6,
+  "dispatchedCallCount": 1,
+  "canonicalObservationCount": 1,
+  "replayedDispatchCount": 0,
+  "settledSpendMicros": "2485",
+  "founderCeilingCadMicros": "10000000",
+  "applicationCeilingUsdMicros": "5000000",
+  "observations": [
+    {
+      "schemaVersion": 1,
+      "campaignId": "r37-corrected-openrouter-9d0ef2a8-00ac-4e17-bbdf-ae42efd54d8a",
+      "provider": "OPENROUTER",
+      "modelId": "openai/gpt-5.4",
+      "caseId": "INVOICE_READINESS",
+      "caseFingerprint": "sha256:5bba5a59ffa7c623947c567bf7f99e1b15bb7c0575ad0b40cfa31c3b24c4f5f9",
+      "responseId": "gen-1788622717-JJLp3fjGujyZgs0zHXPD",
+      "responseFingerprint": "sha256:25fae9e74136815b2e634670c5b9bd5fed48910cec4b955752cb744f1d837517",
+      "usage": {
+        "promptTokens": 268,
+        "completionTokens": 121,
+        "totalTokens": 389
+      },
+      "costMicros": "2485",
+      "latencyMs": 1120,
+      "output": {
+        "answer": "The extra is not ready to invoice. It is marked complete for CAD 1,200, but there is no written approval attached and no work photo or completion document attached. Missing items: written approval, and either a work photo or a completion document.",
+        "citedFactIds": [
+          "F-101",
+          "F-102",
+          "F-103"
+        ],
+        "proposedCapability": "ANSWER_FROM_STATE",
+        "limitations": [
+          "Assessment is based only on the provided synthetic facts.",
+          "No invoice policy or approval workflow rules were provided beyond the attached-document status."
+        ]
+      },
+      "oracle": {
+        "passed": false,
+        "inventedFactCount": 0,
+        "reasonCodes": [
+          "R37_CAPABILITY_NOT_ALLOWED_FOR_CASE",
+          "R37_REQUIRED_LIMITATION_MISSING"
+        ]
+      },
+      "evidenceLabel": "OBSERVED_PROVIDER_SYNTHETIC_INPUT"
+    }
+  ],
+  "selectedR38Candidate": null,
+  "failureCodes": [
+    "R37_CAPABILITY_NOT_ALLOWED_FOR_CASE",
+    "R37_REQUIRED_LIMITATION_MISSING"
+  ],
+  "grantsRevoked": true,
+  "providerLaneDisabled": true,
+  "externalCommunicationPerformed": false,
+  "externalToolWritePerformed": false,
+  "deploymentPerformed": false,
+  "verdict": "REWORK"
+}

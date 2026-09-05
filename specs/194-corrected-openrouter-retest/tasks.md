@@ -20,9 +20,9 @@
 
 ## Phase 4 — Observed campaign and closeout
 
-- [ ] T010 [US1] Execute the corrected provider campaign exactly once
-- [ ] T011 [US3] Validate the sealed verdict, exact matrix/spend and cleanup
-- [ ] T012 [US3] Drain the release queue, commit locally and checkpoint the canonical Brain
+- [x] T010 [US1] Execute the corrected provider campaign exactly once
+- [x] T011 [US3] Validate the sealed verdict, exact matrix/spend and cleanup
+- [x] T012 [US3] Drain the release queue, commit locally and checkpoint the canonical Brain
 
 ## Stop criteria
 

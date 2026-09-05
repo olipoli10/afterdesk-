@@ -8,10 +8,10 @@
   "completionValidatorVerdict": "DRAINED",
   "projectTerminalState": "INCOMPLETE",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 1,
+  "remainingAuthorizedWorkCount": 0,
   "remainingRoadmapItemCount": 3,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Complete the single founder-authorized corrected OpenRouter retest, seal PASS or REWORK, and close every temporary authority without retry.",
-  "urgentAssistanceReason": null
+  "nextAction": "No further provider or founder-observation work is authorized after the sealed R37 corrected REWORK. Preserve the result and await a fresh bounded decision.",
+  "urgentAssistanceReason": "R37 corrected retest authority is consumed with sealed REWORK; R38 founder observation and any second provider retest require fresh explicit authority."
 }

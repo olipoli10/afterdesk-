@@ -3171,16 +3171,18 @@
       "title": "Corrected OpenRouter retest",
       "objective": "Execute exactly one corrected strict-ZDR OpenRouter campaign against the frozen synthetic matrix and seal PASS or REWORK.",
       "role": "OBSERVED_PROVIDER_CAMPAIGN",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": ["R37BB-ZDR-COMPATIBILITY-CORRECTION"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
       "baseRef": {"kind":"FIXED_HEAD","head":"c3582db37b14a71cd18db7cb21397464092053df"},
       "authority": "ONE OPENROUTER RETEST; SYNTHETIC ONLY; NEW LOCAL EPHEMERAL KEY; MAX 10 CAD; NO CUSTOMER COMMUNICATION WRITE DEPLOYMENT PREVIEW OR PRODUCTION",
-      "allowedScope": ["specs/194-corrected-openrouter-retest","scripts/run-r37-corrected-openrouter-retest.ts","scripts/start-r37-corrected-openrouter-retest-secure.ps1","src/lib/construction-operating-assistant-r37/transport.ts","test/construction-operating-assistant-r37-corrected-retest.test.ts","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","C:\\dev\\afterdesk-project-brain checkpoint files after clean closeout"],
+      "allowedScope": ["specs/194-corrected-openrouter-retest","scripts/run-r37-corrected-openrouter-retest.ts","scripts/start-r37-corrected-openrouter-retest-secure.ps1","scripts/start-r37-corrected-openrouter-retest-local-web.mjs","src/lib/construction-operating-assistant-r37/transport.ts","test/construction-operating-assistant-r37-corrected-retest.test.ts","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","C:\\dev\\afterdesk-project-brain checkpoint files after clean closeout"],
       "planPath": "../194-corrected-openrouter-retest/plan.md",
       "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/194-corrected-openrouter-retest/scripts/validate-r37-corrected-retest.ps1 -ReportOnly",
-      "evidencePaths": ["../194-corrected-openrouter-retest/evidence/credential-free-preflight.json","../194-corrected-openrouter-retest/evidence/campaign-lock.json","../194-corrected-openrouter-retest/evidence/observed-provider-report.json","../194-corrected-openrouter-retest/evidence/closeout.md"]
+      "evidencePaths": ["../194-corrected-openrouter-retest/evidence/credential-free-preflight.json","../194-corrected-openrouter-retest/evidence/campaign-lock.json","../194-corrected-openrouter-retest/evidence/observed-provider-report.json","../194-corrected-openrouter-retest/evidence/closeout.md"],
+      "result": "REWORK; 1/6 dispatches, 1 canonical synthetic observation, 2485 micro-USD settled, stopped without retry on R37_CAPABILITY_NOT_ALLOWED_FOR_CASE and R37_REQUIRED_LIMITATION_MISSING; grants revoked and provider lane disabled.",
+      "completedAtUtc": "2026-09-05T15:39:24Z"
     }
   ]
 }
