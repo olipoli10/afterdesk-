@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "release": "R38A-TEXT-ASSIST-FOUNDATION",
+  "recordedAt": "2026-09-05",
+  "verdict": "LOCAL_FOUNDATION_PASS",
+  "scope": "LOCAL_SYNTHETIC_ONLY",
+  "validation": {
+    "focusedRootTests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "fullRootTests": {
+      "filesPassed": 232,
+      "filesSkipped": 3,
+      "testsPassed": 2408,
+      "testsSkipped": 3,
+      "failed": 0,
+      "mode": "SERIALIZED_30_SECOND_TEST_TIMEOUT"
+    },
+    "mobileTests": {
+      "filesPassed": 36,
+      "testsPassed": 173,
+      "failed": 0
+    },
+    "rootTypecheck": "PASS",
+    "mobileTypecheck": "PASS",
+    "rootLint": "PASS_WITH_ONE_HISTORICAL_R34_WARNING",
+    "mobileLint": "PASS",
+    "providerBoundary": {
+      "verdict": "PASS",
+      "modules": 590,
+      "violations": 0
+    },
+    "mobileLocalExport": {
+      "verdict": "PASS",
+      "routeCount": 59,
+      "targets": ["ios", "android", "web"],
+      "apiUrl": "https://local-build.invalid"
+    },
+    "rootProductionBuild": {
+      "verdict": "NOT_PROVEN_ENVIRONMENT_STORAGE_BLOCKED",
+      "firstRefusal": "VERCEL_ENV_REQUIRED",
+      "secondRefusal": "TURBOPACK_EXTERNAL_SYMLINKED_NODE_MODULES",
+      "webpackRetry": "ENOSPC_C_DRIVE"
+    }
+  },
+  "effects": {
+    "providerCalls": 0,
+    "externalTransport": 0,
+    "customerData": 0,
+    "oauth": 0,
+    "deployment": 0,
+    "preview": 0,
+    "production": 0
+  },
+  "metricChanges": {
+    "strictCanonicalRoadmapPercent": 22,
+    "localAiEngineBuildReadinessPercent": 46.75,
+    "controlledC2Preparation": "18/18",
+    "realProviderCustomerTestReadiness": "NO_GO",
+    "verifiedE2EObservedCoveragePercent": 0
+  },
+  "notes": [
+    "R38 founder full-loop campaign was stopped before a valid observation and has no verdict.",
+    "The downloadable, signed and store-submitted applications remain outside this local foundation.",
+    "The dedicated SMS number, live model gateway and real OAuth connectors remain disabled and unproven."
+  ]
+}

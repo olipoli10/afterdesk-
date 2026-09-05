@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "campaign": "R38-FOUNDER-FULL-LOOP",
+  "status": "ABANDONED_BY_FOUNDER_NO_VERDICT",
+  "recordedAt": "2026-09-05T22:15:00.000Z",
+  "reason": "The founder rejected this workflow as the wrong product priority before sealing the human observation.",
+  "founderObservationExists": false,
+  "humanVerdict": null,
+  "humanRatings": null,
+  "externalTransportPerformed": false,
+  "providerCallPerformed": false,
+  "disposableServerStopped": true,
+  "disposableDatabaseStopped": true,
+  "nextProductPriority": "R39-TEXT-ASSIST-FOUNDATION"
+}

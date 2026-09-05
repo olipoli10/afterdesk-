@@ -97,7 +97,7 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     moreOpenHint: "Ouvre cet outil sans quitter ton espace ENDVERA.",
     moreGroups: { work: "TRAVAIL", communications: "COMMUNICATIONS", money: "ARGENT ET ACTIONS", trust: "CONFIANCE ET COMPTE" },
     moreRoutes: {
-      onboarding: "Démarrage", jobs: "Travaux", followUps: "Suivis", timeline: "Historique", provenance: "Provenance", evidence: "Preuves",
+      textAssist: "Configurer TextAssist", onboarding: "Démarrage", jobs: "Travaux", followUps: "Suivis", timeline: "Historique", provenance: "Provenance", evidence: "Preuves",
       calendarConnections: "Calendriers connectés", messages: "Messages", calls: "Appels", email: "Courriel", contacts: "Contacts",
       accounting: "Comptabilité", receivables: "Comptes à recevoir", actions: "Actions à approuver", outbox: "Reprise",
       permissions: "Permissions", privacy: "Confidentialité", reliability: "Fiabilité", humanSupport: "Appui humain", settings: "Réglages",
@@ -220,7 +220,7 @@ export const MOBILE_PRODUCT_COPY: Record<MobileProductLocale, MobileProductCopy>
     moreOpenHint: "Open this tool without leaving your ENDVERA workspace.",
     moreGroups: { work: "WORK", communications: "COMMUNICATIONS", money: "MONEY AND ACTIONS", trust: "TRUST AND ACCOUNT" },
     moreRoutes: {
-      onboarding: "Getting started", jobs: "Jobs", followUps: "Follow-ups", timeline: "Timeline", provenance: "Provenance", evidence: "Evidence",
+      textAssist: "Set up TextAssist", onboarding: "Getting started", jobs: "Jobs", followUps: "Follow-ups", timeline: "Timeline", provenance: "Provenance", evidence: "Evidence",
       calendarConnections: "Connected calendars", messages: "Messages", calls: "Calls", email: "Email", contacts: "Contacts",
       accounting: "Accounting", receivables: "Receivables", actions: "Actions to approve", outbox: "Recovery",
       permissions: "Permissions", privacy: "Privacy", reliability: "Reliability", humanSupport: "Human support", settings: "Settings",

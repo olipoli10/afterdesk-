@@ -9,9 +9,9 @@
   "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
   "canonicalRoadmapComplete": false,
   "remainingAuthorizedWorkCount": 0,
-  "remainingRoadmapItemCount": 3,
+  "remainingRoadmapItemCount": 2,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "The locally correctable R37 contract defect is fixed and proven without provider use. Preserve the sealed REWORK and await a fresh bounded decision for any observed retest or R38 founder session.",
-  "urgentAssistanceReason": "R37 corrected retest authority is consumed with sealed REWORK and the local contract correction is complete; R38 founder observation and any second provider retest require fresh explicit authority."
+  "nextAction": "R38A TextAssist foundation is locally complete. The next roadmap item is R39 design-partner pilot, which requires separate customer and provider authority; continue no live path until that authority exists.",
+  "urgentAssistanceReason": "All currently authorized local critical-path work is complete. R39 requires real design partners and exact provider/customer authority; R40 requires production authority."
 }

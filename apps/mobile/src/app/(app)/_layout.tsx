@@ -68,6 +68,7 @@ export default function AppLayout() {
       <Tabs.Screen name="actions" options={{ title: copy.tabs.review, tabBarAccessibilityLabel: copy.tabs.review, tabBarBadge: pendingCount || undefined, tabBarBadgeStyle: styles.badge, tabBarIcon: ReviewTabIcon }} />
 
       <Tabs.Screen name="more" options={{ href: null }} />
+      <Tabs.Screen name="text-assist" options={{ href: null }} />
       <Tabs.Screen name="onboarding" options={{ href: null }} />
       <Tabs.Screen name="jobs" options={{ href: null }} />
       <Tabs.Screen name="follow-ups" options={{ href: null }} />

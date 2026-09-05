@@ -18,7 +18,7 @@ const groups = [
     titleKey: "communications",
     icon: "assistant",
     routes: [
-      ["calendarConnections", "/calendar-connections"], ["messages", "/messages"],
+      ["textAssist", "/text-assist"], ["calendarConnections", "/calendar-connections"], ["messages", "/messages"],
       ["calls", "/calls"], ["email", "/email"], ["contacts", "/contacts"],
     ],
   },

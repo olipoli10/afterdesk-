@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { router } from "expo-router";
 import { Text, TextInput } from "react-native";
 import { Button, Card, Empty, Heading, Label, Loading, Notice, Screen, colors, sharedStyles } from "@/components/ui";
 import { useMobileSession } from "@/state/mobile-session";
@@ -26,7 +27,8 @@ export default function OnboardingScreen() {
   const contacts = onboardingCockpit?.contacts ?? [];
   const batch = onboardingCockpit?.activeBatch;
   return <Screen>
-    <Heading eyebrow="DÉMARRAGE ENDVERA" title="Une seule prochaine étape" body="Crée le contexte utile; les connecteurs restent optionnels." />
+    <Heading eyebrow="DÉMARRAGE ENDVERA" title="Ton assistant, connecté à ta façon" body="Commence par comprendre le produit, puis ajoute seulement le contexte et les accès qui te servent." />
+    <Card><Text style={sharedStyles.name}>Texte ou parle à ENDVERA</Text><Text style={sharedStyles.muted}>Vois le numéro dédié, le cerveau AI et chaque permission avant de connecter quoi que ce soit.</Text><Button onPress={() => router.push("/text-assist" as never)}>Configurer TextAssist</Button></Card>
     {onboardingLoadState === "LOADING" ? <Loading label="État canonique en lecture…" /> : null}
     {publicError ? <Notice danger>{publicError}</Notice> : null}
     {!workspaceId ? <Card><Label>Ton entreprise</Label><TextInput style={inputStyle} value={workspaceName} maxLength={160} onChangeText={setWorkspaceName} placeholder="Nom de l’entreprise" placeholderTextColor={colors.muted}/><Button onPress={() => void submitOnboardingCommand({ schemaVersion: 1, action: "INITIALIZE_WORKSPACE", commandId: globalThis.crypto.randomUUID(), name: workspaceName, timezone: "America/Toronto", locale: "fr-CA" })}>Créer mon espace</Button></Card> : null}

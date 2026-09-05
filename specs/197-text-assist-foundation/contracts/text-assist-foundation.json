@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ENDVERA TextAssist foundation manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "productMode", "entryChannels", "protectedResources", "modelGateway", "routeLanes", "actionBoundary", "externalTransportPerformed"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "productMode": { "const": "ASSISTANT_FIRST" },
+    "entryChannels": { "type": "array", "minItems": 2 },
+    "protectedResources": { "type": "array", "minItems": 5 },
+    "modelGateway": { "type": "object" },
+    "routeLanes": { "type": "array", "minItems": 5 },
+    "actionBoundary": { "type": "object" },
+    "externalTransportPerformed": { "const": false }
+  }
+}
