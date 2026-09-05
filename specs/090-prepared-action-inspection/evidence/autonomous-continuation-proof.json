@@ -6,12 +6,12 @@
   "consecutiveBlocksCompleted": 104,
   "goalStayedActiveUntilDrain": true,
   "completionValidatorVerdict": "DRAINED",
-  "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
+  "projectTerminalState": "INCOMPLETE",
   "canonicalRoadmapComplete": false,
-  "remainingAuthorizedWorkCount": 0,
+  "remainingAuthorizedWorkCount": 1,
   "remainingRoadmapItemCount": 3,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Decide whether to authorize a new separately sealed bounded provider retest using the locally validated strict-ZDR request contract; do not retry the failed R37 dispatch automatically.",
-  "urgentAssistanceReason": "R37B completed the authorized public-metadata and local correction with zero provider calls and zero spend while preserving R37 as REWORK. A new observed provider retest and R38-R40 require separate exact authorities, so no authorized critical-path work remains."
+  "nextAction": "Complete the single founder-authorized corrected OpenRouter retest, seal PASS or REWORK, and close every temporary authority without retry.",
+  "urgentAssistanceReason": null
 }

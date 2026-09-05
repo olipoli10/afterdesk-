@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "programId": "endvera-r37-corrected-openrouter-retest-v1",
+  "objective": "Execute exactly one corrected OpenRouter R37 campaign and seal its verdict without expanding authority.",
+  "terminalState": "IN_PROGRESS",
+  "currentPhase": "ONE_OBSERVED_CAMPAIGN",
+  "authority": {
+    "provider": "OPENROUTER",
+    "syntheticOnly": true,
+    "maxAdditionalCadMicros": "10000000",
+    "maxApplicationUsdMicros": "5000000",
+    "maxCampaigns": 1,
+    "maxCalls": 6,
+    "maxRetries": 0,
+    "credentialLocalEphemeral": true
+  },
+  "forbidden": [
+    "client or prospect data",
+    "SMS call email calendar or payment write",
+    "push Preview Production deployment or store action",
+    "credential display persistence logging or commit",
+    "second retest or report overwrite"
+  ],
+  "phases": [
+    {"id":"SPEC_AND_RED","status":"DONE"},
+    {"id":"CORRECTED_TRANSPORT","status":"DONE"},
+    {"id":"LOCAL_PREFLIGHT","status":"DONE"},
+    {"id":"ONE_OBSERVED_CAMPAIGN","status":"IN_PROGRESS"},
+    {"id":"SEALED_CLOSEOUT","status":"PENDING"}
+  ],
+  "stopConditions": [
+    "original R37 report hash drift",
+    "credential cannot be entered privately",
+    "exchange or budget proof invalid",
+    "ambiguous prior attempt",
+    "campaign report already exists",
+    "provider attempt failure, which seals REWORK and forbids retry"
+  ]
+}

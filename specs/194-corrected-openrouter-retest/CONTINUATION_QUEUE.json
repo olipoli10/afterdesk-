@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "queueMode": "PINNED_SINGLE_CAMPAIGN",
+  "queueId": "endvera-r37-corrected-openrouter-retest-v1",
+  "campaignObjective": "Run one corrected strict-ZDR OpenRouter campaign and seal PASS or REWORK.",
+  "authority": "ONE OPENROUTER RETEST; SYNTHETIC ONLY; NEW LOCAL EPHEMERAL KEY; MAX 10 CAD ADDITIONAL; NO CUSTOMER COMMUNICATION WRITE DEPLOYMENT PREVIEW OR PRODUCTION",
+  "communication": {
+    "maxRoutineFounderPrompts": 0,
+    "onlyAllowedHumanIntervention": "masked entry of the new local credential"
+  },
+  "entries": [
+    {
+      "id": "R37-CORRECTED-OPENROUTER-RETEST",
+      "status": "IN_PROGRESS",
+      "dependencies": ["R37BB-ZDR-COMPATIBILITY-CORRECTION"],
+      "completionCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File specs/194-corrected-openrouter-retest/scripts/validate-r37-corrected-retest.ps1 -ReportOnly",
+      "evidencePaths": [
+        "evidence/credential-free-preflight.json",
+        "evidence/campaign-lock.json",
+        "evidence/observed-provider-report.json",
+        "evidence/closeout.md"
+      ]
+    }
+  ]
+}

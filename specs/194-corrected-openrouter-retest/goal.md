@@ -1,0 +1,3 @@
+# Goal: R37 corrected OpenRouter retest
+
+Execute one founder-authorized corrected R37 campaign using only synthetic data, one ephemeral local OpenRouter key and the frozen two-by-three matrix. Seal the exact PASS or REWORK verdict, preserve the original R37 REWORK report, enforce the stricter dual budget ceiling, revoke every grant, disable the lane, remove the disposable database, validate proportionately, commit useful local work and checkpoint the canonical Brain. Continue without routine founder confirmation. Stop only for an unavoidable secret-entry prompt, exhausted authority, safety failure or final closeout. Never use client/prospect data, communication, external writes, push, Preview, Production or deployment.

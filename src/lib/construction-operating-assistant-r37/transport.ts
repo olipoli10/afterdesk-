@@ -13,6 +13,7 @@ import {
   type R37ObservedCase,
   R37_MODELS,
 } from "@/lib/construction-operating-assistant-r37/contracts";
+import { buildCorrectedOpenRouterRequest } from "@/lib/construction-operating-assistant-r37bb/contracts";
 
 const rawResponseSchema = z.object({
   id: z.string().trim().min(1).max(200),
@@ -41,6 +42,7 @@ export type DispatchOpenRouterInput = Readonly<{
   fetchImpl?: OpenRouterFetch;
   credentialResolver?: () => string | undefined;
   now?: () => Date;
+  requestVersion?: "R37" | "R37BB_CORRECTED";
 }>;
 
 function resolveLocalCredential() {
@@ -91,7 +93,9 @@ async function readBoundedBody(response: Response) {
 export async function dispatchOpenRouterRequest(input: DispatchOpenRouterInput) {
   const trustedNow = input.now?.() ?? new Date();
   assertExchangeCeiling(trustedNow);
-  const request = createOpenRouterRequest(input.modelId, input.observedCase);
+  const request = input.requestVersion === "R37BB_CORRECTED"
+    ? buildCorrectedOpenRouterRequest(input.modelId, input.observedCase)
+    : createOpenRouterRequest(input.modelId, input.observedCase);
   const credential = requireCredential(input.credentialResolver ?? resolveLocalCredential);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30_000);
