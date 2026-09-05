@@ -44,6 +44,9 @@ describe("R37 corrected retest transport", () => {
     expect(runner).toContain("specs/194-corrected-openrouter-retest");
     expect(runner).toContain("bc79e1416f82ff08665690b0140471111ce00abb0a026419bb503688b6797eb3");
     expect(runner).not.toContain('resolve(evidenceRoot, "../192-openrouter-provider-sandbox/evidence/observed-provider-report.json")');
+    const validator = readFileSync("specs/194-corrected-openrouter-retest/scripts/validate-r37-corrected-retest.ps1", "utf8");
+    expect(validator).toContain("[Security.Cryptography.SHA256]::Create()");
+    expect(validator).not.toContain("Get-FileHash");
     const launcher = readFileSync("scripts/start-r37-corrected-openrouter-retest-secure.ps1", "utf8");
     expect(launcher).toContain("System.Windows.Forms.Form");
     expect(launcher).toContain("UseSystemPasswordChar = $true");

@@ -24,9 +24,23 @@ function Assert-ExitCode([string]$Label) {
   if ($LASTEXITCODE -ne 0) { throw "R37_CORRECTED_COMMAND_FAILED:${Label}:$LASTEXITCODE" }
 }
 
+function Get-Sha256([string]$Path) {
+  $stream = [IO.File]::OpenRead($Path)
+  try {
+    $algorithm = [Security.Cryptography.SHA256]::Create()
+    try {
+      return ([BitConverter]::ToString($algorithm.ComputeHash($stream))).Replace("-", "").ToLowerInvariant()
+    } finally {
+      $algorithm.Dispose()
+    }
+  } finally {
+    $stream.Dispose()
+  }
+}
+
 function Assert-OriginalReport {
   if (-not (Test-Path -LiteralPath $originalReportPath)) { throw "R37_ORIGINAL_REPORT_MISSING" }
-  if ((Get-FileHash -Algorithm SHA256 -LiteralPath $originalReportPath).Hash.ToLowerInvariant() -ne $expectedOriginalHash) {
+  if ((Get-Sha256 $originalReportPath) -ne $expectedOriginalHash) {
     throw "R37_ORIGINAL_REPORT_HASH_DRIFT"
   }
 }
