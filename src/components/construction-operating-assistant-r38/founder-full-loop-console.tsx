@@ -12,6 +12,40 @@ const EXACT_REPORT =
 const EXACT_RESOLUTION =
   "Approbation non vérifiée tant que la preuve écrite n’est pas fournie.";
 
+const humanRatingFields = [
+  ["missingEvidenceClarityRating", "Clarté des preuves manquantes"],
+  ["contradictionClarityRating", "Clarté de la contradiction"],
+  ["nextActorClarityRating", "Clarté du prochain responsable"],
+  ["actionabilityRating", "Dossier actionnable"],
+  ["confidenceBeforeInvoicingRating", "Confiance avant de facturer"],
+] as const;
+
+type HumanObservationDraft = {
+  founderCorrectionCount: string;
+  manualContextRestatementCount: string;
+  missingEvidenceClarityRating: string;
+  contradictionClarityRating: string;
+  nextActorClarityRating: string;
+  actionabilityRating: string;
+  confidenceBeforeInvoicingRating: string;
+  wouldUseBeforeInvoicing: "" | "yes" | "no";
+  economicValueExplanation: string;
+  humanConfirmation: boolean;
+};
+
+const initialHumanObservationDraft: HumanObservationDraft = {
+  founderCorrectionCount: "0",
+  manualContextRestatementCount: "0",
+  missingEvidenceClarityRating: "",
+  contradictionClarityRating: "",
+  nextActorClarityRating: "",
+  actionabilityRating: "",
+  confidenceBeforeInvoicingRating: "",
+  wouldUseBeforeInvoicing: "",
+  economicValueExplanation: "",
+  humanConfirmation: false,
+};
+
 function Pill({ children, good = false }: { children: React.ReactNode; good?: boolean }) {
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${good ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100" : "border-white/15 bg-white/5 text-white/65"}`}>
@@ -142,10 +176,18 @@ const labels: Record<string, { title: string; explanation: string; action?: stri
 export function FounderInvoiceReadinessConsole({ initialState }: { initialState: FounderTestActionState }) {
   const [state, stepAction, pending] = useActionState(runFounderTestStep, initialState);
   const [finalState, finalAction, finalPending] = useActionState(submitFounderObservation, state);
+  const [humanDraft, setHumanDraft] = useState<HumanObservationDraft>(initialHumanObservationDraft);
   const shown = finalState.projection?.sealedVerdict ? finalState : state;
   const projection = shown.projection;
   const stage = projection?.stage ?? "NOT_STARTED";
   const copy = labels[stage];
+  const humanObservationComplete =
+    humanRatingFields.every(([name]) => humanDraft[name] !== "") &&
+    humanDraft.founderCorrectionCount !== "" &&
+    humanDraft.manualContextRestatementCount !== "" &&
+    humanDraft.wouldUseBeforeInvoicing !== "" &&
+    humanDraft.economicValueExplanation.trim() !== "" &&
+    humanDraft.humanConfirmation;
 
   return (
     <main className="min-h-screen space-y-6 bg-[#0A0B0D] px-4 py-8 text-white sm:px-6 lg:px-10">
@@ -174,22 +216,17 @@ export function FounderInvoiceReadinessConsole({ initialState }: { initialState:
           <form action={finalAction} className="mt-6 grid gap-5">
             <HumanTimer startedAtUtc={projection?.startedAtUtc ?? null} />
             <div className="grid gap-4 md:grid-cols-2">
-              {[
-                ["missingEvidenceClarityRating", "Clarté des preuves manquantes"],
-                ["contradictionClarityRating", "Clarté de la contradiction"],
-                ["nextActorClarityRating", "Clarté du prochain responsable"],
-                ["actionabilityRating", "Dossier actionnable"],
-                ["confidenceBeforeInvoicingRating", "Confiance avant de facturer"],
-              ].map(([name, label]) => (
-                <label key={name} className="grid gap-2 text-white"><span>{label} (1–5)</span><select required name={name} defaultValue="" className="rounded-lg border border-white/15 bg-[#111318] p-3"><option value="" disabled>Choisir</option>{[1,2,3,4,5].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+              {humanRatingFields.map(([name, label]) => (
+                <label key={name} className="grid gap-2 text-white"><span>{label} (1–5)</span><select required name={name} value={humanDraft[name]} onChange={(event) => setHumanDraft((current) => ({ ...current, [name]: event.target.value }))} className="rounded-lg border border-white/15 bg-[#111318] p-3"><option value="" disabled>Choisir</option>{[1,2,3,4,5].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
               ))}
             </div>
-            <label className="grid gap-2 text-white"><span>Combien de corrections as-tu demandées?</span><input required min="0" max="100" type="number" name="founderCorrectionCount" defaultValue="0" className="rounded-lg border border-white/15 bg-[#111318] p-3" /></label>
-            <label className="grid gap-2 text-white"><span>Combien de fois as-tu dû répéter manuellement le contexte?</span><input required min="0" max="100" type="number" name="manualContextRestatementCount" defaultValue="0" className="rounded-lg border border-white/15 bg-[#111318] p-3" /></label>
-            <label className="grid gap-2 text-white"><span>Utiliserais-tu ce dossier avant d’envoyer une facture?</span><select required name="wouldUseBeforeInvoicing" defaultValue="" className="rounded-lg border border-white/15 bg-[#111318] p-3"><option value="" disabled>Choisir</option><option value="yes">Oui</option><option value="no">Non</option></select></label>
-            <label className="grid gap-2 text-white"><span>Quelle partie te ferait réellement économiser du temps ou éviter une perte d’argent?</span><textarea required name="economicValueExplanation" maxLength={2000} className="min-h-28 rounded-lg border border-white/15 bg-[#111318] p-3" /></label>
-            <label className="flex items-start gap-3 rounded-xl border border-white/10 p-4 text-white"><input required type="checkbox" name="humanConfirmation" value="confirmed" className="mt-1" /><span>Je confirme avoir effectué cette session moi-même et que ces réponses sont les miennes.</span></label>
-            <button disabled={finalPending} className="rounded-lg bg-[#D87526] px-5 py-3 font-semibold text-white disabled:opacity-50">{finalPending ? "Scellement…" : "Terminer et sceller mon test"}</button>
+            <label className="grid gap-2 text-white"><span>Combien de corrections as-tu demandées?</span><input required min="0" max="100" type="number" name="founderCorrectionCount" value={humanDraft.founderCorrectionCount} onChange={(event) => setHumanDraft((current) => ({ ...current, founderCorrectionCount: event.target.value }))} className="rounded-lg border border-white/15 bg-[#111318] p-3" /></label>
+            <label className="grid gap-2 text-white"><span>Combien de fois as-tu dû répéter manuellement le contexte?</span><input required min="0" max="100" type="number" name="manualContextRestatementCount" value={humanDraft.manualContextRestatementCount} onChange={(event) => setHumanDraft((current) => ({ ...current, manualContextRestatementCount: event.target.value }))} className="rounded-lg border border-white/15 bg-[#111318] p-3" /></label>
+            <label className="grid gap-2 text-white"><span>Utiliserais-tu ce dossier avant d’envoyer une facture?</span><select required name="wouldUseBeforeInvoicing" value={humanDraft.wouldUseBeforeInvoicing} onChange={(event) => setHumanDraft((current) => ({ ...current, wouldUseBeforeInvoicing: event.target.value as HumanObservationDraft["wouldUseBeforeInvoicing"] }))} className="rounded-lg border border-white/15 bg-[#111318] p-3"><option value="" disabled>Choisir Oui ou Non</option><option value="yes">Oui</option><option value="no">Non</option></select></label>
+            <label className="grid gap-2 text-white"><span>Quelle partie te ferait réellement économiser du temps ou éviter une perte d’argent?</span><textarea required name="economicValueExplanation" maxLength={2000} value={humanDraft.economicValueExplanation} onChange={(event) => setHumanDraft((current) => ({ ...current, economicValueExplanation: event.target.value }))} className="min-h-28 rounded-lg border border-white/15 bg-[#111318] p-3" /></label>
+            <label className="flex items-start gap-3 rounded-xl border border-white/10 p-4 text-white"><input required type="checkbox" name="humanConfirmation" value="confirmed" checked={humanDraft.humanConfirmation} onChange={(event) => setHumanDraft((current) => ({ ...current, humanConfirmation: event.target.checked }))} className="mt-1" /><span>Je confirme avoir effectué cette session moi-même et que ces réponses sont les miennes.</span></label>
+            {!humanObservationComplete ? <p className="text-sm text-amber-100">Réponds aux cinq notes, choisis Oui ou Non, écris ta réponse libre et coche la confirmation. Le bouton s’activera ensuite.</p> : null}
+            <button disabled={finalPending || !humanObservationComplete} className="rounded-lg bg-[#D87526] px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">{finalPending ? "Scellement…" : "Terminer et sceller mon test"}</button>
           </form>
           {!finalState.ok ? <p className="mt-4 text-red-300">{finalState.message}</p> : null}
         </section>

@@ -27,6 +27,11 @@ describe("R38 founder full-loop preparation", () => {
     expect(actions).not.toContain("Object.fromEntries(formData)");
     expect(consoleSurface).toContain("min-h-screen");
     expect(consoleSurface).toContain("bg-[#0A0B0D]");
+    expect(consoleSurface).toContain("humanObservationComplete");
+    expect(consoleSurface).toContain("finalPending || !humanObservationComplete");
+    expect(consoleSurface).toContain('value={humanDraft.wouldUseBeforeInvoicing}');
+    expect(consoleSurface).toContain('checked={humanDraft.humanConfirmation}');
+    expect(consoleSurface).not.toContain('name="wouldUseBeforeInvoicing" defaultValue=""');
     expect(launcher).toContain("/founder-full-loop/access?token=");
     expect(launcher).toContain("Stop-Process");
     expect(launcher).toContain("R38_FOREIGN_SERVER_ON_RESERVED_PORT");
