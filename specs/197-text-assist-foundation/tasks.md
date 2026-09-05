@@ -23,7 +23,7 @@
 
 - [x] T011 Run focused root and mobile tests, typechecks, lint and provider-boundary validation.
 - [x] T012 Update roadmap status without changing provider, customer or Verified-E2E metrics.
-- [ ] T013 Create useful local product and Brain commits with exact HEAD/TREE evidence.
+- [x] T013 Create the useful local product commit and prepare the exact HEAD/TREE evidence for the canonical Brain checkpoint.
 
 ## Dependencies
 

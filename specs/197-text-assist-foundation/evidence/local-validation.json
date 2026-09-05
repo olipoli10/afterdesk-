@@ -4,6 +4,10 @@
   "recordedAt": "2026-09-05",
   "verdict": "LOCAL_FOUNDATION_PASS",
   "scope": "LOCAL_SYNTHETIC_ONLY",
+  "implementationCommit": {
+    "head": "b50ae00ad0954f81fd16b56d37ea8a739f82c013",
+    "tree": "fa2320ed7f23568beb7f87d06d966da91fb56d54"
+  },
   "validation": {
     "focusedRootTests": {
       "passed": 5,
