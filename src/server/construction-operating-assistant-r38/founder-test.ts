@@ -18,7 +18,7 @@ import {
 } from "@/server/construction-operating-assistant-r0/open-loops";
 import { appendConstructionAudit } from "@/server/construction-assistant-v1/audit";
 
-export const FOUNDER_TEST_ROUTE = "/client/founder-full-loop";
+export const FOUNDER_TEST_ROUTE = "/founder-full-loop";
 export const FOUNDER_TEST_COOKIE = "endvera-r38-founder-session";
 export const FOUNDER_EMAIL = "olivier.r38@example.invalid";
 export const FOUNDER_PASSWORD = "Endvera-R38-Full-Loop-Local-Only-2026!";
@@ -378,13 +378,19 @@ export async function prepareFounderTestAccess() {
   }
   const existing = await readSession();
   if (existing) {
-    if (existing.stage !== "NOT_STARTED" || existing.accessConsumedAtUtc) {
+    if (existing.stage !== "NOT_STARTED" || existing.startedAtUtc || existing.transcript.length > 0) {
       throw new Error("COA_R1_SECOND_FOUNDER_SESSION_REFUSED");
     }
+    // A consumed admission token is not a founder test session until START is
+    // recorded. Rotate both the token and cookie-bound id so a broken local
+    // admission can be repaired without creating a second human observation
+    // or leaving the previous browser cookie usable.
     const refreshed = storedSessionSchema.parse({
       ...existing,
+      sessionId: randomUUID(),
       accessTokenHash: tokenHash,
       accessExpiresAtUtc: expiresAt,
+      accessConsumedAtUtc: null,
     });
     await writeSession(refreshed);
     return refreshed;

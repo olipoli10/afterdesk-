@@ -7,12 +7,22 @@ const feature = path.join(root, "specs", "196-r38-founder-full-loop-preparation"
 
 describe("R38 founder full-loop preparation", () => {
   it("exposes one local direct-access surface with no provider dependency", async () => {
-    const page = await readFile(path.join(root, "src/app/client/founder-full-loop/page.tsx"), "utf8");
-    const access = await readFile(path.join(root, "src/app/client/founder-full-loop/access/route.ts"), "utf8");
+    const page = await readFile(path.join(root, "src/app/founder-full-loop/page.tsx"), "utf8");
+    const access = await readFile(path.join(root, "src/app/founder-full-loop/access/route.ts"), "utf8");
+    const actions = await readFile(
+      path.join(root, "src/server/construction-operating-assistant-r38/founder-test-actions.ts"),
+      "utf8",
+    );
     const launcher = await readFile(path.join(feature, "scripts/start-founder-test.ps1"), "utf8");
     expect(page).toContain("ENDVERA_R38_FOUNDER_TEST_MODE");
     expect(access).toContain("assertLoopbackHost");
-    expect(launcher).toContain("/client/founder-full-loop/access?token=");
+    expect(access).not.toContain("signInEmail");
+    expect(access).not.toContain("new URL(FOUNDER_TEST_ROUTE, request.url)");
+    expect(access).toContain("`http://${host}`");
+    expect(actions).not.toContain("requireRole");
+    expect(launcher).toContain("/founder-full-loop/access?token=");
+    expect(launcher).toContain("Stop-Process");
+    expect(launcher).toContain("R38_FOREIGN_SERVER_ON_RESERVED_PORT");
     expect(launcher).not.toMatch(/OPENROUTER|TWILIO|GOOGLE_CLIENT|QUICKBOOKS/i);
   });
 

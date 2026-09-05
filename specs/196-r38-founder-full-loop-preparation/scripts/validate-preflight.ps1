@@ -14,8 +14,8 @@ $required = @(
   'contracts\founder-full-loop.md',
   'scripts\start-founder-test.ps1',
   'scripts\prepare-founder-test.ts',
-  '..\..\src\app\client\founder-full-loop\page.tsx',
-  '..\..\src\app\client\founder-full-loop\access\route.ts',
+  '..\..\src\app\founder-full-loop\page.tsx',
+  '..\..\src\app\founder-full-loop\access\route.ts',
   '..\..\src\components\construction-operating-assistant-r38\founder-full-loop-console.tsx',
   '..\..\src\server\construction-operating-assistant-r38\founder-test.ts'
 )
@@ -24,8 +24,8 @@ foreach ($relative in $required) {
   if (-not (Test-Path -LiteralPath $candidate)) { throw "R38_REQUIRED_FILE_MISSING:$relative" }
 }
 
-$page = Get-Content -Raw -LiteralPath (Join-Path $root 'src\app\client\founder-full-loop\page.tsx')
-$access = Get-Content -Raw -LiteralPath (Join-Path $root 'src\app\client\founder-full-loop\access\route.ts')
+$page = Get-Content -Raw -LiteralPath (Join-Path $root 'src\app\founder-full-loop\page.tsx')
+$access = Get-Content -Raw -LiteralPath (Join-Path $root 'src\app\founder-full-loop\access\route.ts')
 $harness = Get-Content -Raw -LiteralPath (Join-Path $root 'src\server\construction-operating-assistant-r38\founder-test.ts')
 $launcher = Get-Content -Raw -LiteralPath (Join-Path $feature 'scripts\start-founder-test.ps1')
 foreach ($guard in @('NODE_ENV === "production"', 'ENDVERA_R38_FOUNDER_TEST_MODE')) {
@@ -36,6 +36,6 @@ foreach ($guard in @('endvera-construction-operating-assistant-r38', 'PREPARED_U
   if ($harness -notlike "*$guard*") { throw "R38_HARNESS_GUARD_MISSING:$guard" }
 }
 if ($launcher -match 'OPENROUTER|TWILIO|GOOGLE_CLIENT|QUICKBOOKS') { throw 'R38_EXTERNAL_PROVIDER_REFERENCE_REFUSED' }
-if ($launcher -notlike '*/client/founder-full-loop/access?token=*') { throw 'R38_DIRECT_ACCESS_URL_MISSING' }
+if ($launcher -notlike '*/founder-full-loop/access?token=*') { throw 'R38_DIRECT_ACCESS_URL_MISSING' }
 
 Write-Output 'R38_FOUNDER_FULL_LOOP_PREFLIGHT_READY'

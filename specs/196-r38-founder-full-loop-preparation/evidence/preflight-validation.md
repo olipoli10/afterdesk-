@@ -14,6 +14,9 @@ Date: 2026-09-05
 - Spec preflight: `R38_FOUNDER_FULL_LOOP_PREFLIGHT_READY`.
 - Local Next development server: ready on loopback with webpack; the Turbopack symlink path is deliberately avoided.
 - Disposable R38 PostgreSQL and the loopback server are running; one short-lived, single-use direct-access URL is prepared for Olivier.
+- Founder admission regression: the first real click exposed two local defects before `START` (the `/client` layout required normal portal authentication, and Next's configured canonical host changed `127.0.0.1` to `localhost`, dropping the host-only test cookie). Both were reproduced with failing tests and HTTP traces.
+- Corrected admission: the isolated route now lives outside the authenticated client layout, trusts only the loopback host plus its one-time HTTP-only test cookie, preserves the request host on redirect, and rotates a pre-start admission token without creating a second founder session.
+- Final HTTP proof: one throwaway token resolved with status 200 at `http://127.0.0.1:3038/founder-full-loop`, rendered the Laval founder surface and contained no login page. That proof token was consumed; the launcher then issued Olivier a distinct unconsumed token.
 - Historical R37 report SHA-256 values remain unchanged:
   - original: `bc79e1416f82ff08665690b0140471111ce00abb0a026419bb503688b6797eb3`
   - corrected: `0f94e15c69c32fc1ac7c2162ce0460ea93c6cc581864826d46879dd160ac5649`

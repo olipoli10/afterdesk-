@@ -23,6 +23,7 @@ import {
 } from "@/server/construction-operating-assistant-r38/founder-test";
 
 const token = "coa-r38-integration-token";
+const replacementToken = "coa-r38-replacement-token";
 const feature = "specs/196-r38-founder-full-loop-preparation";
 const sessionPath = path.join(process.cwd(), "storage/founder-tests/coa-r38/session.json");
 const observationPath = path.join(process.cwd(), feature, "evidence/founder-observation.json");
@@ -50,6 +51,15 @@ describe.skipIf(!process.env.DATABASE_URL)("Construction Operating Assistant R38
     let session = await prepareFounderTestAccess();
     session = await consumeFounderAccessToken(token);
     await expect(consumeFounderAccessToken(token)).rejects.toThrow("COA_R1_ACCESS_TOKEN_EXPIRED_OR_REPLAYED");
+    const consumedSessionId = session.sessionId;
+    process.env.ENDVERA_R38_FOUNDER_TOKEN_SHA256 = await crypto.subtle
+      .digest("SHA-256", new TextEncoder().encode(replacementToken))
+      .then((value) => Buffer.from(value).toString("hex"));
+    session = await prepareFounderTestAccess();
+    expect(session.stage).toBe("NOT_STARTED");
+    expect(session.accessConsumedAtUtc).toBeNull();
+    expect(session.sessionId).not.toBe(consumedSessionId);
+    session = await consumeFounderAccessToken(replacementToken);
     session = await startFounderSession(session);
     session = await reportWorkFinishedStep(session, EXACT_REPORT);
     expect(session.missingAfterReport).toEqual(expect.arrayContaining(["WRITTEN_APPROVAL", "SUPPORTING_EVIDENCE"]));

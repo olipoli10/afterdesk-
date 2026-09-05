@@ -208,7 +208,7 @@ export function FounderInvoiceReadinessConsole({ initialState }: { initialState:
           ) : stage === "AWAITING_RELOAD" ? (
             <button
               type="button"
-              onClick={() => window.location.assign("/client/founder-full-loop?reload=1")}
+              onClick={() => window.location.assign("/founder-full-loop?reload=1")}
               className="mt-5 inline-block rounded-lg bg-[#D87526] px-5 py-3 font-semibold text-white"
             >
               Recharger et vérifier

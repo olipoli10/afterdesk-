@@ -74,10 +74,17 @@ try {
   Invoke-R38Native -Label 'prisma-migrate-deploy' -Command { .\node_modules\.bin\prisma.cmd migrate deploy }
   Invoke-R38Native -Label 'prepare-founder-test' -Command { .\node_modules\.bin\tsx.cmd --require ./scripts/register-server-only.cjs specs/196-r38-founder-full-loop-preparation/scripts/prepare-founder-test.ts }
 
-  $existing = Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like "*next*dev*--port*$appPort*" }
-  if (-not $existing) {
-    Start-Process -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--webpack', '--hostname', '127.0.0.1', '--port', "$appPort") -WorkingDirectory $root -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog -WindowStyle Hidden | Out-Null
+  $existing = @(Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like "*next*dev*--port*$appPort*" })
+  foreach ($process in $existing) {
+    if ($process.CommandLine -notlike "*$root*") { throw 'R38_FOREIGN_SERVER_ON_RESERVED_PORT' }
+    Stop-Process -Id ([int]$process.ProcessId) -Force
   }
+  for ($attempt = 0; $attempt -lt 20 -and $existing.Count -gt 0 -and (Get-Process -Id $existing.ProcessId -ErrorAction SilentlyContinue); $attempt++) {
+    Start-Sleep -Milliseconds 250
+  }
+  $foreignListener = Get-NetTCPConnection -LocalPort $appPort -State Listen -ErrorAction SilentlyContinue
+  if ($foreignListener) { throw 'R38_FOREIGN_SERVER_ON_RESERVED_PORT' }
+  Start-Process -FilePath 'npm.cmd' -ArgumentList @('run', 'dev', '--', '--webpack', '--hostname', '127.0.0.1', '--port', "$appPort") -WorkingDirectory $root -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog -WindowStyle Hidden | Out-Null
 
   $ready = $false
   for ($attempt = 0; $attempt -lt 60; $attempt++) {
@@ -91,7 +98,7 @@ try {
   if (-not $ready) { throw "R38_LOCAL_SERVER_NOT_READY: see $stderrLog" }
 
   Write-Output 'R38_FOUNDER_FULL_LOOP_PREFLIGHT_READY'
-  Write-Output "ACCESS_URL=http://127.0.0.1:$appPort/client/founder-full-loop/access?token=$accessToken"
+  Write-Output "ACCESS_URL=http://127.0.0.1:$appPort/founder-full-loop/access?token=$accessToken"
   Write-Output "SERVER_STDOUT=$stdoutLog"
   Write-Output "SERVER_STDERR=$stderrLog"
 } finally {

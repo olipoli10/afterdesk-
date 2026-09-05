@@ -3,7 +3,6 @@
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireRole } from "@/lib/authz";
 import {
   FOUNDER_TEST_COOKIE,
   FOUNDER_TEST_ROUTE,
@@ -59,8 +58,6 @@ const stepInputSchema = z
 async function guardedSession() {
   const h = await headers();
   assertLoopbackHost(h.get("host"));
-  const user = await requireRole("CLIENT");
-  if (user.email !== "olivier.r38@example.invalid") throw new Error("COA_R1_SYNTHETIC_USER_REQUIRED");
   const cookie = (await cookies()).get(FOUNDER_TEST_COOKIE)?.value;
   return requireFounderTestSession(cookie);
 }
