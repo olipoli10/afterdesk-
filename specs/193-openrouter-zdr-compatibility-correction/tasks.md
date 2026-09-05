@@ -24,7 +24,7 @@
 - [x] T011 [US2] Kill incompatible parameter, privacy weakening, fallback and stale/malformed metadata mutations
 - [x] T012 [US3] Prove zero provider generation calls, zero spend and byte-exact R37 report preservation
 - [x] T013 [US3] Run targeted tests, provider boundary, lint, typecheck and `git diff --check`
-- [ ] T014 [US3] Drain the local R37B queue, commit locally and checkpoint the canonical Brain
+- [x] T014 [US3] Drain the local R37B queue, commit locally and checkpoint the canonical Brain
 
 ## Stop criteria
 

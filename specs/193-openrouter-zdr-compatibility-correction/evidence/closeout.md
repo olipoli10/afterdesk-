@@ -25,3 +25,10 @@ Model and endpoint properties are `OBSERVED_PUBLIC_METADATA`. The explanation of
 ## Next exact decision
 
 Whether to authorize a new, separately sealed, bounded provider retest. No such execution was started or authorized by this correction.
+
+## Canonical checkpoint
+
+The canonical Brain was validated and committed LOCAL ONLY at
+`a72fb648aeaa7ce253d7410bfddf2a32c449bd7d`, tree
+`1dbf58c23daae7ef559cc38764ce4e262f0c3181`. Its Windows PowerShell 5.1 route
+and completion guards now execute on Olivier's actual host.
