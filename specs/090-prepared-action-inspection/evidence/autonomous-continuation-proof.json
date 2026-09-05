@@ -6,7 +6,7 @@
   "consecutiveBlocksCompleted": 104,
   "goalStayedActiveUntilDrain": true,
   "completionValidatorVerdict": "DRAINED",
-  "projectTerminalState": "INCOMPLETE",
+  "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
   "canonicalRoadmapComplete": false,
   "remainingAuthorizedWorkCount": 0,
   "remainingRoadmapItemCount": 3,
