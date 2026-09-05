@@ -5,6 +5,8 @@ import {
   HUMAN_STATEMENT,
   humanObservationInputSchema,
   assertLoopbackHost,
+  parseFounderObservationFormData,
+  parseFounderStepFormData,
 } from "@/server/construction-operating-assistant-r38/founder-test";
 
 const root = process.cwd();
@@ -50,6 +52,35 @@ describe("Construction Operating Assistant R38 observation contract", () => {
     expect(humanObservationInputSchema.safeParse(valid).success).toBe(true);
     expect(humanObservationInputSchema.safeParse({ ...valid, canonicalOpenLoopCount: "1" }).success).toBe(false);
     expect(humanObservationInputSchema.safeParse({ ...valid, unknown: "x" }).success).toBe(false);
+  });
+
+  it("ignores React server-action metadata while keeping only R38 fields", () => {
+    const step = new FormData();
+    step.set("action", "START");
+    step.set("$ACTION_REF_1", "framework-only");
+    expect(parseFounderStepFormData(step)).toEqual({ action: "START" });
+
+    const observation = new FormData();
+    for (const [key, value] of Object.entries({
+      founderCorrectionCount: "0",
+      manualContextRestatementCount: "0",
+      missingEvidenceClarityRating: "4",
+      contradictionClarityRating: "4",
+      nextActorClarityRating: "4",
+      actionabilityRating: "4",
+      confidenceBeforeInvoicingRating: "4",
+      wouldUseBeforeInvoicing: "yes",
+      economicValueExplanation: "Évite une facture sans preuve.",
+      activeVisibleMilliseconds: "1000",
+      hiddenOrInactiveMilliseconds: "0",
+      humanConfirmation: "confirmed",
+      "$ACTION_KEY": "framework-only",
+    })) observation.set(key, value);
+    expect(parseFounderObservationFormData(observation)).toMatchObject({
+      founderCorrectionCount: 0,
+      wouldUseBeforeInvoicing: true,
+      humanConfirmation: "confirmed",
+    });
   });
 
   it("accepts only loopback hosts", () => {

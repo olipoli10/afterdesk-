@@ -109,6 +109,24 @@ const storedSessionSchema = z
 
 type StoredSession = z.infer<typeof storedSessionSchema>;
 
+const founderStepInputSchema = z
+  .object({
+    action: z.enum([
+      "START",
+      "REPORT_WORK",
+      "ADD_CONTRADICTION",
+      "RESOLVE_CONTRADICTION",
+      "ADD_WRITTEN_APPROVAL",
+      "ADD_PHOTO",
+      "TEST_REPLAY",
+      "MARK_RELOAD",
+      "PREPARE_FOLLOW_UP",
+      "VERIFY_FIELD_VIEW",
+    ]),
+    message: z.string().max(500).optional(),
+  })
+  .strict();
+
 export const humanObservationInputSchema = z
   .object({
     founderCorrectionCount: z.coerce.number().int().min(0).max(100),
@@ -127,6 +145,31 @@ export const humanObservationInputSchema = z
   .strict();
 
 export type HumanObservationInput = z.infer<typeof humanObservationInputSchema>;
+
+export function parseFounderStepFormData(formData: FormData) {
+  const message = formData.get("message");
+  return founderStepInputSchema.parse({
+    action: formData.get("action"),
+    ...(typeof message === "string" ? { message } : {}),
+  });
+}
+
+export function parseFounderObservationFormData(formData: FormData) {
+  return humanObservationInputSchema.parse({
+    founderCorrectionCount: formData.get("founderCorrectionCount"),
+    manualContextRestatementCount: formData.get("manualContextRestatementCount"),
+    missingEvidenceClarityRating: formData.get("missingEvidenceClarityRating"),
+    contradictionClarityRating: formData.get("contradictionClarityRating"),
+    nextActorClarityRating: formData.get("nextActorClarityRating"),
+    actionabilityRating: formData.get("actionabilityRating"),
+    confidenceBeforeInvoicingRating: formData.get("confidenceBeforeInvoicingRating"),
+    wouldUseBeforeInvoicing: formData.get("wouldUseBeforeInvoicing"),
+    economicValueExplanation: formData.get("economicValueExplanation"),
+    activeVisibleMilliseconds: formData.get("activeVisibleMilliseconds"),
+    hiddenOrInactiveMilliseconds: formData.get("hiddenOrInactiveMilliseconds"),
+    humanConfirmation: formData.get("humanConfirmation"),
+  });
+}
 
 const sealedFounderObservationSchema = z
   .object({

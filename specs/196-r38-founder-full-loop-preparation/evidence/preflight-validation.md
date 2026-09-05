@@ -17,6 +17,8 @@ Date: 2026-09-05
 - Founder admission regression: the first real click exposed two local defects before `START` (the `/client` layout required normal portal authentication, and Next's configured canonical host changed `127.0.0.1` to `localhost`, dropping the host-only test cookie). Both were reproduced with failing tests and HTTP traces.
 - Corrected admission: the isolated route now lives outside the authenticated client layout, trusts only the loopback host plus its one-time HTTP-only test cookie, preserves the request host on redirect, and rotates a pre-start admission token without creating a second founder session.
 - Final HTTP proof: one throwaway token resolved with status 200 at `http://127.0.0.1:3038/founder-full-loop`, rendered the Laval founder surface and contained no login page. That proof token was consumed; the launcher then issued Olivier a distinct unconsumed token.
+- First-action regression: Olivier's real `Commencer` submission was refused before mutation because React server actions add internal `$ACTION_*` entries and the strict R38 parser consumed the entire `FormData`. The visible refusal preserved `NOT_STARTED` and no human result was recorded.
+- Corrected form contract: step and final-observation parsers now project only the explicit R38 allowlisted fields before strict validation. RED reproduced both failures; GREEN accepts React metadata without allowing any unknown client field into the business payload.
 - Historical R37 report SHA-256 values remain unchanged:
   - original: `bc79e1416f82ff08665690b0140471111ce00abb0a026419bb503688b6797eb3`
   - corrected: `0f94e15c69c32fc1ac7c2162ce0460ea93c6cc581864826d46879dd160ac5649`

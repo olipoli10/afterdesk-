@@ -2,7 +2,6 @@
 
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import {
   FOUNDER_TEST_COOKIE,
   FOUNDER_TEST_ROUTE,
@@ -11,9 +10,10 @@ import {
   addWrittenApprovalStep,
   assertLoopbackHost,
   completeReloadCheckpoint,
-  humanObservationInputSchema,
   loadFounderTestProjection,
   markReloadStep,
+  parseFounderObservationFormData,
+  parseFounderStepFormData,
   prepareFollowUpStep,
   reportWorkFinishedStep,
   requireFounderTestSession,
@@ -36,24 +36,6 @@ const EMPTY_FOUNDER_TEST_STATE: FounderTestActionState = {
   message: "Le dossier synthétique est prêt. Aucun vrai message ni aucune facture ne sera envoyé.",
   projection: null,
 };
-
-const stepInputSchema = z
-  .object({
-    action: z.enum([
-      "START",
-      "REPORT_WORK",
-      "ADD_CONTRADICTION",
-      "RESOLVE_CONTRADICTION",
-      "ADD_WRITTEN_APPROVAL",
-      "ADD_PHOTO",
-      "TEST_REPLAY",
-      "MARK_RELOAD",
-      "PREPARE_FOLLOW_UP",
-      "VERIFY_FIELD_VIEW",
-    ]),
-    message: z.string().max(500).optional(),
-  })
-  .strict();
 
 async function guardedSession() {
   const h = await headers();
@@ -79,8 +61,7 @@ export async function runFounderTestStep(
   formData: FormData,
 ): Promise<FounderTestActionState> {
   try {
-    const raw = Object.fromEntries(formData);
-    const parsed = stepInputSchema.parse(raw);
+    const parsed = parseFounderStepFormData(formData);
     let session = await guardedSession();
     switch (parsed.action) {
       case "START":
@@ -134,7 +115,7 @@ export async function submitFounderObservation(
   formData: FormData,
 ): Promise<FounderTestActionState> {
   try {
-    const parsed = humanObservationInputSchema.parse(Object.fromEntries(formData));
+    const parsed = parseFounderObservationFormData(formData);
     const session = await guardedSession();
     const result = await sealFounderObservation(session, parsed);
     refresh();

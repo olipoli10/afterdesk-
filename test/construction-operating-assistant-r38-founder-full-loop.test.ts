@@ -20,6 +20,7 @@ describe("R38 founder full-loop preparation", () => {
     expect(access).not.toContain("new URL(FOUNDER_TEST_ROUTE, request.url)");
     expect(access).toContain("`http://${host}`");
     expect(actions).not.toContain("requireRole");
+    expect(actions).not.toContain("Object.fromEntries(formData)");
     expect(launcher).toContain("/founder-full-loop/access?token=");
     expect(launcher).toContain("Stop-Process");
     expect(launcher).toContain("R38_FOREIGN_SERVER_ON_RESERVED_PORT");
