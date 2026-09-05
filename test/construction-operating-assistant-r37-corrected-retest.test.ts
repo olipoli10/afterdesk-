@@ -49,5 +49,11 @@ describe("R37 corrected retest transport", () => {
     expect(launcher).toContain("UseSystemPasswordChar = $true");
     expect(launcher).not.toContain("Read-Host");
     expect(launcher).not.toContain("Get-Credential");
+    const localWeb = readFileSync("scripts/start-r37-corrected-openrouter-retest-local-web.mjs", "utf8");
+    expect(localWeb).toContain('listen(PORT, HOST');
+    expect(localWeb).toContain('type="password"');
+    expect(localWeb).toContain('"cache-control": "no-store, max-age=0"');
+    expect(localWeb).toContain("R37_OPENROUTER_CONTROLLER_API_KEY: key");
+    expect(localWeb).not.toMatch(/console\.log\([^)]*key/u);
   });
 });
