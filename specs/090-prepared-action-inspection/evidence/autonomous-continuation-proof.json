@@ -3,7 +3,7 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 104,
+  "consecutiveBlocksCompleted": 105,
   "goalStayedActiveUntilDrain": true,
   "completionValidatorVerdict": "DRAINED",
   "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
@@ -12,6 +12,6 @@
   "remainingRoadmapItemCount": 3,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "No further provider or founder-observation work is authorized after the sealed R37 corrected REWORK. Preserve the result and await a fresh bounded decision.",
-  "urgentAssistanceReason": "R37 corrected retest authority is consumed with sealed REWORK; R38 founder observation and any second provider retest require fresh explicit authority."
+  "nextAction": "The locally correctable R37 contract defect is fixed and proven without provider use. Preserve the sealed REWORK and await a fresh bounded decision for any observed retest or R38 founder session.",
+  "urgentAssistanceReason": "R37 corrected retest authority is consumed with sealed REWORK and the local contract correction is complete; R38 founder observation and any second provider retest require fresh explicit authority."
 }

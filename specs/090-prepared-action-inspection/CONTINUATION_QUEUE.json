@@ -3183,6 +3183,24 @@
       "evidencePaths": ["../194-corrected-openrouter-retest/evidence/credential-free-preflight.json","../194-corrected-openrouter-retest/evidence/campaign-lock.json","../194-corrected-openrouter-retest/evidence/observed-provider-report.json","../194-corrected-openrouter-retest/evidence/closeout.md"],
       "result": "REWORK; 1/6 dispatches, 1 canonical synthetic observation, 2485 micro-USD settled, stopped without retry on R37_CAPABILITY_NOT_ALLOWED_FOR_CASE and R37_REQUIRED_LIMITATION_MISSING; grants revoked and provider lane disabled.",
       "completedAtUtc": "2026-09-05T15:39:24Z"
+    },
+    {
+      "id": "R37BC-CONTROLLER-CONTRACT-ALIGNMENT",
+      "title": "Local controller contract alignment",
+      "objective": "Correct the model-visible case contract defect exposed by the sealed R37 REWORK without another provider call.",
+      "role": "LOCAL_CORRECTION",
+      "status": "DONE",
+      "dependencies": ["R37-CORRECTED-OPENROUTER-RETEST"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind":"FIXED_HEAD","head":"937003d4947e8aed04dd33c3885b227c92742955"},
+      "authority": "LOCAL CODE TEST AND LOCAL GIT COMMIT ONLY; NO PROVIDER CREDENTIAL SPEND CUSTOMER DATA EXTERNAL TRANSPORT WRITE PUSH PREVIEW PRODUCTION OR DEPLOYMENT",
+      "allowedScope": ["specs/195-r37-controller-contract-alignment","src/lib/construction-operating-assistant-r37/contracts.ts","src/lib/construction-operating-assistant-r37bb/contracts.ts","src/lib/construction-operating-assistant-r37bc","test/construction-operating-assistant-r37bc-controller-contract-alignment.test.ts","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json",".specify/feature.json"],
+      "planPath": "../195-r37-controller-contract-alignment/plan.md",
+      "completionCommand": "npm run test:run -- test/construction-operating-assistant-r37bc-controller-contract-alignment.test.ts",
+      "evidencePaths": ["../195-r37-controller-contract-alignment/evidence/red.md","../195-r37-controller-contract-alignment/evidence/closeout.md"],
+      "result": "LOCAL_CONTRACT_ALIGNMENT_READY; versioned semantic correction passed full local tests and provider-boundary validation; sealed R37 verdict remains REWORK and no provider call or spend occurred.",
+      "completedAtUtc": "2026-09-05T16:05:00Z"
     }
   ]
 }

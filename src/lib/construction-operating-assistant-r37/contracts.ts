@@ -48,7 +48,7 @@ export const controllerOutputSchema = z.object({
 export const r37ObservedCaseSchema = z.object({
   schemaVersion: z.literal(1),
   caseId: z.enum(["INVOICE_READINESS", "MAINTAINED_STATE", "PREPARED_COMMUNICATION"]),
-  caseVersion: z.literal(1),
+  caseVersion: z.union([z.literal(1), z.literal(2)]),
   locale: z.literal("en-CA"),
   facts: z.array(z.object({
     id: factIdSchema,
