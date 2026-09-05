@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "capturedAtUtc": "2026-09-05T00:00:00.000Z",
+  "evidenceLabel": "OBSERVED_PUBLIC_METADATA",
+  "sourceUrls": [
+    "https://openrouter.ai/api/v1/models/openai/gpt-5.4/endpoints",
+    "https://openrouter.ai/api/v1/models/openai/gpt-5.4-mini/endpoints",
+    "https://openrouter.ai/api/v1/endpoints/zdr"
+  ],
+  "requiredParameters": [
+    "max_completion_tokens",
+    "response_format",
+    "structured_outputs"
+  ],
+  "incompatibleR37Parameters": ["max_tokens", "temperature"],
+  "correctedParameter": "max_completion_tokens",
+  "models": [
+    {
+      "modelId": "openai/gpt-5.4",
+      "totalEndpointCount": 7,
+      "zdrEndpoints": [
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "status": 0,
+          "supportedParameters": ["max_completion_tokens", "reasoning", "include_reasoning", "seed", "response_format", "structured_outputs", "tools", "tool_choice", "reasoning_effort"]
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure/eu",
+          "status": 0,
+          "supportedParameters": ["max_completion_tokens", "reasoning", "include_reasoning", "seed", "response_format", "structured_outputs", "tools", "tool_choice", "reasoning_effort"]
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "status": 0,
+          "supportedParameters": ["max_completion_tokens", "reasoning", "include_reasoning", "seed", "response_format", "structured_outputs", "tools", "tool_choice", "reasoning_effort"]
+        }
+      ]
+    },
+    {
+      "modelId": "openai/gpt-5.4-mini",
+      "totalEndpointCount": 5,
+      "zdrEndpoints": [
+        {
+          "providerName": "Azure",
+          "tag": "azure/us",
+          "status": 0,
+          "supportedParameters": ["max_completion_tokens", "reasoning", "include_reasoning", "seed", "response_format", "structured_outputs", "tools", "tool_choice", "reasoning_effort"]
+        },
+        {
+          "providerName": "Azure",
+          "tag": "azure",
+          "status": 0,
+          "supportedParameters": ["max_completion_tokens", "reasoning", "include_reasoning", "seed", "response_format", "structured_outputs", "tools", "tool_choice", "reasoning_effort"]
+        }
+      ]
+    }
+  ]
+}
