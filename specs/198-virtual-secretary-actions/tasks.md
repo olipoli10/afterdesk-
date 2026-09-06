@@ -25,7 +25,7 @@
 
 - [x] T013 Run focused/full proportional validation and record exact evidence in `specs/198-virtual-secretary-actions/evidence/local-validation.json`
 - [x] T014 Update `specs/090-prepared-action-inspection/PROJECT_BACKLOG.json` without inflating readiness metrics
-- [ ] T015 Create useful local product and canonical Brain checkpoints
+- [x] T015 Create the useful local product commit and prepare exact evidence for the canonical Brain checkpoint
 
 ## Dependencies
 

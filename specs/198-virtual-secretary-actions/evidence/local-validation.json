@@ -5,6 +5,10 @@
   "evidenceLabel": "TEST",
   "capabilities": 7,
   "broadcastMaximumRecipients": 10,
+  "implementationCommit": {
+    "head": "7a20c6fe3ccf16cb59c43d3acef2868b642b2ccf",
+    "tree": "7135ac91117ad8a2282e2d8a7c9b5b2a4226576e"
+  },
   "validation": {
     "focusedRootTests": { "passed": 6, "failed": 0 },
     "fullRootTests": { "filesPassed": 233, "filesSkipped": 3, "testsPassed": 2414, "testsSkipped": 3, "failed": 0 },
