@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "commandExample": "Texte Marc, Julie et Karim que le chantier ouvre à 7 h.",
+  "minimumRecipients": 2,
+  "maximumRecipients": 10,
+  "state": "PREPARED_UNSENT",
+  "approvalIncluded": false,
+  "externalTransportPerformed": false
+}

@@ -42,11 +42,11 @@ export const VIRTUAL_SECRETARY_ACTIONS = [
   {
     key: "SMS_BROADCAST_PREPARE",
     title: "Texter jusqu’à 10 personnes",
-    example: "Dis aux 10 gars que le chantier ouvre à 7 h.",
-    readiness: "Planificateur local prêt · groupe à approuver · compréhension AI à intégrer",
+    example: "Texte Marc et Julie que le chantier ouvre à 7 h.",
+    readiness: "Groupe exact préparé sans envoi",
     effectClass: "EXTERNAL_WRITE",
     maxRecipients: 10,
-    entry: { kind: "APP_ROUTE", value: "/assistant", label: "Décrire le groupe à ENDVERA" },
+    entry: { kind: "ASSISTANT_PROMPT", value: "Texte Marc et Julie que le chantier ouvre à 7 h.", label: "Préparer dans l’assistant" },
   },
   {
     key: "OUTBOUND_CALL_PREPARE",

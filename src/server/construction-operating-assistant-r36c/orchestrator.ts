@@ -30,6 +30,11 @@ import {
   persistDeferredAssistantExchange,
   type DeferredAssistantReply,
 } from "./deferred-exchange";
+import { parseSecretaryBroadcastCommand } from "@/lib/construction-operating-assistant-r38e/contracts";
+import {
+  prepareSecretaryBroadcast,
+  SecretaryBroadcastRefused,
+} from "@/server/construction-operating-assistant-r38e/broadcast-preparation";
 export { applyProjectBrainAssistantCommandForUser as processUnifiedProjectMemoryCommand } from "@/server/construction-operating-assistant-r36y/project-brain-assistant-memory";
 
 export type UnifiedAssistantChannel = AssistantRoutingRequest["channel"];
@@ -212,6 +217,49 @@ export async function processUnifiedAssistantRequest(input: {
   }
   const decision = prepareAssistantRoutingDecision(createTrustedAssistantRoutingRequest({ ...input, request }));
   const routing = projectClientAssistantRouting(decision);
+  const broadcast = parseSecretaryBroadcastCommand(request.message);
+
+  if (broadcast.kind === "REFUSED") {
+    return persistDeferredAssistantExchange({
+      userId: input.userId,
+      request,
+      channel: input.channel,
+      deferred: {
+        intent: "UNSUPPORTED",
+        status: "REFUSED",
+        reply: broadcast.reasonCode === "R38E_TOO_MANY_RECIPIENTS"
+          ? "Un groupe peut contenir de 2 à 10 destinataires. Aucun texto n’a été préparé."
+          : broadcast.reasonCode === "R38E_DUPLICATE_RECIPIENT"
+            ? "Le même contact apparaît plus d’une fois. Aucun texto n’a été préparé."
+            : "Ajoute le texte exact à préparer après « que ». Aucun texto n’a été préparé.",
+      },
+      routing,
+      admittedSource,
+    });
+  }
+
+  if (broadcast.kind === "CANDIDATE") {
+    try {
+      return await prepareSecretaryBroadcast({
+        userId: input.userId,
+        request,
+        channel: input.channel,
+        candidate: broadcast,
+        routing,
+        admittedSource,
+      });
+    } catch (error) {
+      if (!(error instanceof SecretaryBroadcastRefused)) throw error;
+      return persistDeferredAssistantExchange({
+        userId: input.userId,
+        request,
+        channel: input.channel,
+        deferred: { intent: "UNSUPPORTED", status: "REFUSED", reply: error.reply },
+        routing,
+        admittedSource,
+      });
+    }
+  }
 
   if (decision.disposition === "INTERNAL_TOOL") {
     const result = input.channel === "MOBILE_APP" || input.channel === "PORTAL"

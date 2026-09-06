@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "release": "R38E-SECRETARY-BROADCAST-PREPARATION",
+  "verdict": "LOCAL_SECRETARY_BROADCAST_PREPARATION_READY",
+  "recordedAtUtc": "2026-09-06T00:55:00Z",
+  "results": {
+    "contractTests": { "files": 2, "tests": 7, "passed": true },
+    "mobileCatalogTests": { "files": 1, "tests": 3, "passed": true },
+    "postgresqlIntegration": { "files": 1, "tests": 3, "passed": true, "migrationCount": 67 },
+    "rootTypecheck": "PASS",
+    "mobileTypecheck": "PASS",
+    "focusedLint": "PASS",
+    "mobileLint": "PASS",
+    "prismaValidate": "PASS",
+    "providerBoundary": { "modules": 595, "violations": 0, "passed": true },
+    "gitDiffCheck": "PASS"
+  },
+  "observedInvariants": {
+    "minimumRecipients": 2,
+    "maximumRecipients": 10,
+    "canonicalDraftCountOnReplay": 1,
+    "alteredReplayRefused": true,
+    "missingContactRefused": true,
+    "ownerDetailsVisible": true,
+    "fieldWorkerDetailsRedacted": true,
+    "crossWorkspaceReadRefused": true,
+    "status": "PREPARED_UNSENT",
+    "externalTransportPerformed": false
+  },
+  "notDemonstrated": [
+    "provider delivery",
+    "SMS delivery",
+    "approval transition",
+    "customer value",
+    "production readiness",
+    "Verified-E2E"
+  ]
+}

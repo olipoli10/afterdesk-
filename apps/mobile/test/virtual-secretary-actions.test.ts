@@ -18,8 +18,16 @@ describe("mobile virtual secretary action catalog", () => {
   });
 
   it("keeps the broadcast boundary visible and every write preview-bound", () => {
-    expect(VIRTUAL_SECRETARY_ACTIONS.find((action) => action.key === "SMS_BROADCAST_PREPARE")).toMatchObject({ maxRecipients: 10 });
-    expect(VIRTUAL_SECRETARY_ACTIONS.filter((action) => action.effectClass !== "READ").every((action) => action.readiness.includes("approuver") || action.readiness.includes("Préparé"))).toBe(true);
+    expect(VIRTUAL_SECRETARY_ACTIONS.find((action) => action.key === "SMS_BROADCAST_PREPARE")).toMatchObject({
+      maxRecipients: 10,
+      readiness: "Groupe exact préparé sans envoi",
+      entry: { kind: "ASSISTANT_PROMPT" },
+    });
+    expect(VIRTUAL_SECRETARY_ACTIONS.filter((action) => action.effectClass !== "READ").every((action) =>
+      action.readiness.includes("approuver")
+      || action.readiness.includes("Préparé")
+      || action.readiness.includes("sans envoi"),
+    )).toBe(true);
   });
 
   it("records no external effect in the local product slice", () => {
