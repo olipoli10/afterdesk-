@@ -3203,6 +3203,42 @@
       "outputHead": "49bba8bf3c89df381e17d567dccf85b34c6b77b0",
       "outputTree": "7468cdf4809dd0921b8c6f1380f30d5349856947",
       "completedAtUtc": "2026-09-05T16:05:00Z"
+    },
+    {
+      "id": "R38E-SECRETARY-BROADCAST-PREPARATION",
+      "title": "Secretary broadcast preparation",
+      "objective": "Make an exact two-to-ten-contact text command produce one durable role-safe PREPARED_UNSENT draft through the unified assistant.",
+      "role": "IMPLEMENTATION",
+      "status": "DONE",
+      "dependencies": ["R38D-SECRETARY-COMMAND-PARITY"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind":"FIXED_HEAD","head":"9780584ffa3e1ddae21ca14617f82379216a11d3"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL SPEND CUSTOMER DATA EXTERNAL TRANSPORT WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": ["specs/201-secretary-broadcast-preparation","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","prisma/schema.prisma","prisma/migrations/20260906010000_construction_assistant_r38e_secretary_broadcast","src/lib/construction-operating-assistant-r38e","src/server/construction-operating-assistant-r38e","src/server/construction-operating-assistant-r36c/orchestrator.ts","src/app/api/endvera/v1/mobile/secretary-broadcasts","apps/mobile/src/lib/virtual-secretary-actions.ts","apps/mobile/test/virtual-secretary-actions.test.ts","test/construction-operating-assistant-r38e-broadcast-contracts.test.ts","test/construction-operating-assistant-r38d-command-parity.test.ts","test/integration/construction-operating-assistant-r38e-broadcast.itest.ts",".specify/feature.json"],
+      "planPath": "../201-secretary-broadcast-preparation/plan.md",
+      "completionCommand": "npm test -- --run test/construction-operating-assistant-r38e-broadcast-contracts.test.ts && focused disposable PostgreSQL integration and provider-boundary validation",
+      "evidencePaths": ["../201-secretary-broadcast-preparation/evidence/local-validation.json","../201-secretary-broadcast-preparation/evidence/closeout.md"],
+      "result": "LOCAL_SECRETARY_BROADCAST_PREPARATION_READY; exact two-to-ten-contact conversational SMS drafts are durable, ordered, replay-safe, role-safe and PREPARED_UNSENT with zero provider or external transport.",
+      "outputHead": "22f3e25244aa42fbbe85815c6bd78db9c12834e9",
+      "outputTree": "875c0899df6c3f3648eecaac17adaf3fd2d7ac81",
+      "completedAtUtc": "2026-09-06T00:55:00Z"
+    },
+    {
+      "id": "R38F-SECRETARY-BROADCAST-APPROVAL",
+      "title": "Secretary broadcast exact approval",
+      "objective": "Add a local owner/admin exact-version approval transition for one frozen broadcast while preserving zero dispatch.",
+      "role": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "dependencies": ["R38E-SECRETARY-BROADCAST-PREPARATION"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind":"ENTRY_OUTPUT","entryId":"R38E-SECRETARY-BROADCAST-PREPARATION"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL SPEND CUSTOMER DATA EXTERNAL TRANSPORT WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": ["specs/202-secretary-broadcast-approval","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","prisma/schema.prisma","prisma/migrations","src/lib/construction-operating-assistant-r38f","src/server/construction-operating-assistant-r38f","src/app/api/endvera/v1/mobile/secretary-broadcasts","apps/mobile","test",".specify/feature.json"],
+      "planPath": "../202-secretary-broadcast-approval/plan.md",
+      "completionCommand": "focused unit, disposable PostgreSQL integration, typecheck, lint and provider-boundary validation",
+      "evidencePaths": ["../202-secretary-broadcast-approval/evidence/local-validation.json","../202-secretary-broadcast-approval/evidence/closeout.md"]
     }
   ]
 }
