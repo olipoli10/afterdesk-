@@ -27,6 +27,7 @@ import {
 import { createAssistantAttempt } from "@/lib/assistant";
 import { createProjectBrainRecallCommand } from "@/lib/project-brain-assistant-memory";
 import { mobileProductCopy, type MobileProductCopy } from "@/lib/product-experience";
+import { assistantPrefillFromRoute } from "@/lib/virtual-secretary-actions";
 import { useMobileSession } from "@/state/mobile-session";
 
 function attemptLabel(state: string, copy: MobileProductCopy) {
@@ -38,9 +39,10 @@ function attemptLabel(state: string, copy: MobileProductCopy) {
 }
 
 export default function AssistantScreen() {
-  const params = useLocalSearchParams<{ projectId?: string | string[] }>();
+  const params = useLocalSearchParams<{ projectId?: string | string[]; prompt?: string | string[] }>();
   const projectId = Array.isArray(params.projectId) ? params.projectId[0] : params.projectId;
   const scrollRef = useRef<ScrollView>(null);
+  const consumedPrefill = useRef<string | null>(null);
   const {
     activeWorkspace,
     assistantHistory,
@@ -65,6 +67,13 @@ export default function AssistantScreen() {
   useEffect(() => {
     if (projectId) void loadProjectBrainAssistantMemory(projectId);
   }, [loadProjectBrainAssistantMemory, projectId]);
+
+  useEffect(() => {
+    const prefill = assistantPrefillFromRoute(params.prompt);
+    if (!prefill || consumedPrefill.current === prefill) return;
+    consumedPrefill.current = prefill;
+    setMessage((current) => current.trim() ? current : prefill);
+  }, [params.prompt]);
 
   if (activeWorkspace?.role === "FIELD_WORKER") {
     return (

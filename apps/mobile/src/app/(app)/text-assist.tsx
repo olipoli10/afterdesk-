@@ -9,6 +9,14 @@ import { useMobileSession } from "@/state/mobile-session";
 export default function TextAssistSetupScreen() {
   const { activeWorkspace } = useMobileSession();
 
+  const openCapability = (action: (typeof VIRTUAL_SECRETARY_ACTIONS)[number]) => {
+    if (action.entry.kind === "ASSISTANT_PROMPT") {
+      router.push({ pathname: "/assistant", params: { prompt: action.entry.value } });
+      return;
+    }
+    router.push(action.entry.value as never);
+  };
+
   return (
     <Screen>
       <BrandHeader workspace={activeWorkspace?.name} />
@@ -48,13 +56,23 @@ export default function TextAssistSetupScreen() {
 
       <Text style={styles.sectionTitle}>TA SECRÉTAIRE PEUT</Text>
       {VIRTUAL_SECRETARY_ACTIONS.map((action) => (
-        <Card key={action.key} style={styles.capabilityCard}>
+        <Pressable
+          key={action.key}
+          accessibilityRole="button"
+          accessibilityLabel={`${action.entry.label}: ${action.title}`}
+          onPress={() => openCapability(action)}
+          style={({ pressed }) => [styles.capabilityCard, pressed && styles.pressed]}
+        >
           <View style={styles.flex}>
             <Text style={sharedStyles.name}>{action.title}</Text>
             <Text style={sharedStyles.value}>« {action.example} »</Text>
             <Text style={styles.status}>{action.readiness}</Text>
+            <View style={styles.actionRow}>
+              <Text style={styles.actionLabel}>{action.entry.label}</Text>
+              <AppIcon name="arrow" color={colors.accentBright} size={17} />
+            </View>
           </View>
-        </Card>
+        </Pressable>
       ))}
 
       <Text style={styles.sectionTitle}>COMMENT ÇA MARCHE</Text>
@@ -91,11 +109,13 @@ export default function TextAssistSetupScreen() {
 
 const styles = StyleSheet.create({
   heroCard: { borderColor: colors.borderWarm, backgroundColor: colors.panelWarm },
-  capabilityCard: { paddingVertical: 14 },
+  capabilityCard: { padding: 16, borderRadius: 18, backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.border },
   titleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   icon: { width: 48, height: 48, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: colors.accentSoft },
   flex: { flex: 1, gap: 4 },
   status: { color: colors.accentBright, fontSize: 12, lineHeight: 17, fontWeight: "800" },
+  actionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingTop: 6 },
+  actionLabel: { color: colors.text, fontSize: 14, lineHeight: 19, fontWeight: "800" },
   sectionTitle: { color: colors.muted, fontSize: 12, lineHeight: 17, fontWeight: "800", letterSpacing: 1.6 },
   step: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 7 },
   stepNumber: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center", backgroundColor: colors.accentSoft },

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "release": "R38C-SECRETARY-COMMAND-ENTRY",
+  "verdict": "LOCAL_COMMAND_ENTRY_PASS",
+  "evidenceLabel": "TEST",
+  "capabilityEntries": 7,
+  "navigationAutoSubmits": false,
+  "validation": {
+    "redProof": { "testsFailed": 2, "reason": "entry metadata and bounded-prefill helper absent" },
+    "focusedMobile": { "filesPassed": 3, "testsPassed": 9, "failed": 0 },
+    "fullMobile": { "filesPassed": 38, "testsPassed": 179, "failed": 0 },
+    "mobileTypecheck": "PASS",
+    "mobileLint": "PASS",
+    "providerBoundary": { "modules": 592, "violations": 0, "verdict": "PASS" },
+    "rootTests": "NOT_RERUN_NO_ROOT_RUNTIME_CHANGE",
+    "rootProductionBuild": "NOT_RERUN_C_DRIVE_STORAGE_BLOCKED"
+  },
+  "effects": {
+    "assistantAutoSubmissions": 0,
+    "providerCalls": 0,
+    "smsSent": 0,
+    "callsPlaced": 0,
+    "calendarWrites": 0,
+    "projectWrites": 0,
+    "oauth": 0,
+    "customerData": 0,
+    "deployment": 0
+  },
+  "dashboard": {
+    "strictCanonicalRoadmapPercent": 22,
+    "localAiEngineBuildReadinessPercent": 46.75,
+    "controlledC2Preparation": "18/18",
+    "realProviderCustomerTestReadiness": "NO_GO",
+    "verifiedE2EObservedCoveragePercent": 0
+  }
+}
