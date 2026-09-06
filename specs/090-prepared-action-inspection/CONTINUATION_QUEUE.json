@@ -3249,7 +3249,7 @@
       "title": "Secretary broadcast mobile recovery",
       "objective": "Retain one exact mobile approval command across offline and outcome-unknown recovery without duplicate approval or transport.",
       "role": "IMPLEMENTATION",
-      "status": "PLANNED",
+      "status": "DONE",
       "dependencies": ["R38F-SECRETARY-BROADCAST-APPROVAL"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -3258,7 +3258,11 @@
       "allowedScope": ["specs/203-secretary-broadcast-recovery","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","apps/mobile",".specify/feature.json"],
       "planPath": "../203-secretary-broadcast-recovery/plan.md",
       "completionCommand": "mobile typecheck, lint and focused recovery tests",
-      "evidencePaths": ["../203-secretary-broadcast-recovery/evidence/local-validation.json","../203-secretary-broadcast-recovery/evidence/closeout.md"]
+      "evidencePaths": ["../203-secretary-broadcast-recovery/evidence/local-validation.json","../203-secretary-broadcast-recovery/evidence/closeout.md"],
+      "outputHead": "f517bed5b4dadf7e0dbaeebe109a3fa33a5d3a52",
+      "outputTree": "3f1474feeb0ef8dab86029e1c28a940348dfd80e",
+      "result": "LOCAL_SECRETARY_BROADCAST_RECOVERY_READY; exact approval commands survive offline and restart, reconcile outcome unknown and never dispatch automatically.",
+      "completedAtUtc": "2026-09-06T01:26:16Z"
     }
   ]
 }
