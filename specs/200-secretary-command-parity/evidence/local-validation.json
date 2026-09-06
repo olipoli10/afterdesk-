@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "release": "R38D-SECRETARY-COMMAND-PARITY",
+  "verdict": "LOCAL_COMMAND_PARITY_PASS",
+  "evidenceLabel": "TEST",
+  "advertisedAssistantPrompts": 4,
+  "unsupportedAdvertisedPrompts": 0,
+  "broadcastConversationalIntegration": "NOT_YET_INTEGRATED_DISCLOSED",
+  "validation": {
+    "redProof": { "testsFailed": 2 },
+    "focusedRoot": { "testsPassed": 2, "failed": 0 },
+    "focusedMobile": { "testsPassed": 6, "failed": 0 },
+    "mobileTypecheck": "PASS",
+    "mobileLint": "PASS",
+    "providerBoundary": { "modules": 592, "violations": 0, "verdict": "PASS" }
+  },
+  "effects": {
+    "providerCalls": 0,
+    "smsSent": 0,
+    "callsPlaced": 0,
+    "calendarWrites": 0,
+    "projectWrites": 0,
+    "oauth": 0,
+    "customerData": 0,
+    "deployment": 0
+  },
+  "dashboard": {
+    "strictCanonicalRoadmapPercent": 22,
+    "localAiEngineBuildReadinessPercent": 46.75,
+    "controlledC2Preparation": "18/18",
+    "realProviderCustomerTestReadiness": "NO_GO",
+    "verifiedE2EObservedCoveragePercent": 0
+  }
+}

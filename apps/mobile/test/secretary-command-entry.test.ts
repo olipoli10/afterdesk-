@@ -11,10 +11,10 @@ describe("R38C secretary command entry", () => {
     expect(VIRTUAL_SECRETARY_ACTIONS.map((action) => [action.key, action.entry])).toEqual([
       ["SCHEDULE_QUERY", { kind: "ASSISTANT_PROMPT", value: "Qu’est-ce que j’ai demain?", label: "Demander à ENDVERA" }],
       ["GOOGLE_CALENDAR_QUERY", { kind: "APP_ROUTE", value: "/calendar-connections", label: "Connecter mon calendrier" }],
-      ["CALENDAR_EVENT_CREATE", { kind: "ASSISTANT_PROMPT", value: "Ajoute Marc mardi à 14 h pour Laval.", label: "Préparer dans l’assistant" }],
-      ["PROJECT_RECORD_UPDATE", { kind: "ASSISTANT_PROMPT", value: "Le dosseret de Laval est terminé.", label: "Préparer dans l’assistant" }],
-      ["SMS_SINGLE_PREPARE", { kind: "ASSISTANT_PROMPT", value: "Texte Marc pour confirmer 14 h.", label: "Préparer dans l’assistant" }],
-      ["SMS_BROADCAST_PREPARE", { kind: "ASSISTANT_PROMPT", value: "Dis aux 10 gars que le chantier ouvre à 7 h.", label: "Préparer dans l’assistant" }],
+      ["CALENDAR_EVENT_CREATE", { kind: "ASSISTANT_PROMPT", value: "Rendez-vous avec Marc mardi à 14 h pour Laval.", label: "Préparer dans l’assistant" }],
+      ["PROJECT_RECORD_UPDATE", { kind: "ASSISTANT_PROMPT", value: "Le travail du dosseret de Laval est terminé.", label: "Préparer dans l’assistant" }],
+      ["SMS_SINGLE_PREPARE", { kind: "ASSISTANT_PROMPT", value: "Texte Marc que le rendez-vous est confirmé à 14 h.", label: "Préparer dans l’assistant" }],
+      ["SMS_BROADCAST_PREPARE", { kind: "APP_ROUTE", value: "/assistant", label: "Décrire le groupe à ENDVERA" }],
       ["OUTBOUND_CALL_PREPARE", { kind: "APP_ROUTE", value: "/calls", label: "Préparer un appel" }],
     ]);
   });
