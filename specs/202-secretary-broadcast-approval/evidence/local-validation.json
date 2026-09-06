@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "release": "R38F-SECRETARY-BROADCAST-APPROVAL",
+  "recordedAtUtc": "2026-09-06T01:19:08Z",
+  "baseHead": "ddfaf08d661dbba5893c02d773da7d940de3ea06",
+  "baseTree": "50e82399c78897d6e70b7668227016270c364098",
+  "verdict": "LOCAL_SECRETARY_BROADCAST_APPROVAL_READY",
+  "proof": {
+    "exactApprovalBinding": true,
+    "identicalReplayReconstructed": true,
+    "secondApprovalRefused": true,
+    "staleVersionRefused": true,
+    "stalePayloadHashRefused": true,
+    "fieldWorkerDetailsRedacted": true,
+    "crossWorkspaceRefused": true,
+    "restartProjectionApprovedUnsent": true,
+    "externalTransportPerformed": false,
+    "providerCalls": 0,
+    "customerDataUsed": false
+  },
+  "validation": {
+    "rootFocusedUnit": { "files": 2, "tests": 7, "status": "PASS" },
+    "mobileUnit": { "files": 39, "tests": 181, "status": "PASS" },
+    "postgresqlIntegration": { "files": 1, "tests": 5, "status": "PASS", "migrations": 68 },
+    "rootTypecheck": "PASS",
+    "mobileTypecheck": "PASS",
+    "mobileLint": "PASS",
+    "focusedServerLint": "PASS",
+    "prismaValidate": "PASS",
+    "providerBoundary": { "status": "PASS", "modules": 597, "violations": 0 },
+    "gitDiffCheck": "PASS"
+  }
+}

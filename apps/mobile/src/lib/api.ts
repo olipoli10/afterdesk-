@@ -106,6 +106,11 @@ import {
   mobileProjectBrainAssistantMemoryProjectionSchema,
   mobileProjectBrainAssistantResultSchema,
 } from "@/lib/project-brain-assistant-memory";
+import {
+  mobileApproveSecretaryBroadcastCommandSchema,
+  mobileSecretaryBroadcastApprovalResultSchema,
+  mobileSecretaryBroadcastCockpitSchema,
+} from "@/lib/secretary-broadcasts";
 
 export type MobileApiErrorCode =
   | "UNAUTHENTICATED"
@@ -584,6 +589,41 @@ export class MobileApi {
       ) {
         throw new Error("MOBILE_MESSAGING_RESULT_MISMATCH");
       }
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async secretaryBroadcastCockpit(workspaceId: string) {
+    const value = await this.request(
+      `/api/endvera/v1/mobile/secretary-broadcasts?workspaceId=${encodeURIComponent(workspaceId)}`,
+      { method: "GET" },
+    );
+    try {
+      const result = mobileSecretaryBroadcastCockpitSchema.parse(value);
+      if (result.workspaceId !== workspaceId) throw new Error("MOBILE_BROADCAST_WORKSPACE_MISMATCH");
+      return result;
+    } catch {
+      throw new MobileApiError("INVALID_RESPONSE");
+    }
+  }
+
+  async approveSecretaryBroadcast(command: unknown) {
+    const parsed = mobileApproveSecretaryBroadcastCommandSchema.parse(command);
+    const value = await this.request("/api/endvera/v1/mobile/secretary-broadcasts", {
+      method: "POST",
+      body: JSON.stringify(parsed),
+    });
+    try {
+      const result = mobileSecretaryBroadcastApprovalResultSchema.parse(value);
+      if (
+        result.commandId !== parsed.commandId ||
+        result.workspaceId !== parsed.workspaceId ||
+        result.draftId !== parsed.draftId ||
+        result.version !== parsed.expectedVersion ||
+        result.payloadHash !== parsed.expectedPayloadHash
+      ) throw new Error("MOBILE_BROADCAST_APPROVAL_MISMATCH");
       return result;
     } catch {
       throw new MobileApiError("INVALID_RESPONSE");

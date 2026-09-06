@@ -6,6 +6,7 @@ import {
 } from "@/server/construction-assistant-v1/workspace";
 import { processUnifiedAssistantRequest } from "@/server/construction-operating-assistant-r36c/orchestrator";
 import { secretaryBroadcastCockpitForUser } from "@/server/construction-operating-assistant-r38e/broadcast-preparation";
+import { approveSecretaryBroadcast } from "@/server/construction-operating-assistant-r38f/broadcast-approval";
 
 async function fixture() {
   const owner = await prisma.user.create({
@@ -146,5 +147,97 @@ describe("R38E durable secretary broadcast preparation", () => {
     expect(JSON.stringify(fieldView)).not.toContain("Marc");
     await expect(secretaryBroadcastCockpitForUser({ userId: f.other.id, workspaceId: f.workspaceId }))
       .rejects.toThrow("CONSTRUCTION_RESOURCE_NOT_FOUND");
+  });
+
+  it("approves one exact frozen draft, reconstructs replay and refuses every second approval", async () => {
+    const f = await fixture();
+    const prepared = await processUnifiedAssistantRequest({
+      userId: f.owner.id,
+      channel: "MOBILE_APP",
+      request: request(f.workspaceId, "Texte Marc et Julie que le chantier ouvre à 7 h."),
+    });
+    const draft = await prisma.constructionSecretaryBroadcastDraft.findUniqueOrThrow({
+      where: { id: prepared.canonicalEffectId! },
+    });
+    const commandId = crypto.randomUUID();
+    const command = {
+      schemaVersion: 1,
+      action: "APPROVE_SECRETARY_BROADCAST",
+      commandId,
+      workspaceId: f.workspaceId,
+      draftId: draft.id,
+      expectedVersion: draft.version,
+      expectedPayloadHash: draft.payloadHash,
+      approvalStatementAccepted: true,
+    } as const;
+    const approved = await approveSecretaryBroadcast({ userId: f.owner.id, command });
+    const replay = await approveSecretaryBroadcast({ userId: f.owner.id, command });
+    expect(approved).toMatchObject({
+      status: "APPROVED_UNSENT",
+      replayed: false,
+      externalTransportPerformed: false,
+      recipientCount: 2,
+    });
+    expect(replay).toMatchObject({
+      status: "APPROVED_UNSENT",
+      replayed: true,
+      approvedAt: approved.approvedAt,
+    });
+    const stored = await prisma.constructionSecretaryBroadcastDraft.findUniqueOrThrow({ where: { id: draft.id } });
+    expect(stored).toMatchObject({
+      status: "APPROVED_UNSENT",
+      approvedVersion: draft.version,
+      approvedPayloadHash: draft.payloadHash,
+      externalTransportPerformed: false,
+    });
+    expect(await prisma.constructionAuditEvent.count({
+      where: { entityId: draft.id, action: "secretary_broadcast_approved_unsent" },
+    })).toBe(1);
+    await expect(approveSecretaryBroadcast({
+      userId: f.owner.id,
+      command: { ...command, commandId: crypto.randomUUID() },
+    })).rejects.toThrow("R38F_SECOND_APPROVAL_REFUSED");
+    await expect(approveSecretaryBroadcast({
+      userId: f.field.id,
+      command: { ...command, commandId: crypto.randomUUID() },
+    })).rejects.toThrow("CONSTRUCTION_RESOURCE_NOT_FOUND");
+    await expect(approveSecretaryBroadcast({
+      userId: f.other.id,
+      command: { ...command, commandId: crypto.randomUUID() },
+    })).rejects.toThrow("CONSTRUCTION_RESOURCE_NOT_FOUND");
+    const ownerView = await secretaryBroadcastCockpitForUser({ userId: f.owner.id, workspaceId: f.workspaceId });
+    expect(ownerView.drafts[0]).toMatchObject({ status: "APPROVED_UNSENT", visibility: "FULL" });
+  });
+
+  it("refuses stale version or fingerprint before approval", async () => {
+    const f = await fixture();
+    const prepared = await processUnifiedAssistantRequest({
+      userId: f.owner.id,
+      channel: "PORTAL",
+      request: request(f.workspaceId, "Texte Marc et Julie que réunion à 9 h."),
+    });
+    const draft = await prisma.constructionSecretaryBroadcastDraft.findUniqueOrThrow({
+      where: { id: prepared.canonicalEffectId! },
+    });
+    const base = {
+      schemaVersion: 1,
+      action: "APPROVE_SECRETARY_BROADCAST",
+      commandId: crypto.randomUUID(),
+      workspaceId: f.workspaceId,
+      draftId: draft.id,
+      expectedVersion: draft.version,
+      expectedPayloadHash: draft.payloadHash,
+      approvalStatementAccepted: true,
+    } as const;
+    await expect(approveSecretaryBroadcast({
+      userId: f.owner.id,
+      command: { ...base, expectedVersion: draft.version + 1 },
+    })).rejects.toThrow("R38F_EXACT_APPROVAL_MISMATCH");
+    await expect(approveSecretaryBroadcast({
+      userId: f.owner.id,
+      command: { ...base, commandId: crypto.randomUUID(), expectedPayloadHash: "b".repeat(64) },
+    })).rejects.toThrow("R38F_EXACT_APPROVAL_MISMATCH");
+    expect(await prisma.constructionSecretaryBroadcastDraft.findUniqueOrThrow({ where: { id: draft.id } }))
+      .toMatchObject({ status: "PREPARED_UNSENT", approvedAt: null });
   });
 });

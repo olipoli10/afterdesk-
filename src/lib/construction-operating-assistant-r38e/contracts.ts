@@ -20,7 +20,7 @@ export const secretaryBroadcastPayloadSchema = z.object({
 
 const broadcastDraftBaseProjectionSchema = z.object({
   id: z.string().min(1),
-  status: z.literal("PREPARED_UNSENT"),
+  status: z.enum(["PREPARED_UNSENT", "APPROVED_UNSENT"]),
   version: z.literal(1),
   recipientCount: z.number().int().min(2).max(10),
   preparedAt: z.string().datetime(),

@@ -58,6 +58,10 @@ import type {
   MobileMessagingCockpit,
   MobileMessagingCommand,
 } from "@/lib/messages";
+import type {
+  MobileApproveSecretaryBroadcastCommand,
+  MobileSecretaryBroadcastCockpit,
+} from "@/lib/secretary-broadcasts";
 import {
   beginVoiceNoteAttempt,
   finishVoiceNoteAttempt,
@@ -164,6 +168,8 @@ type MobileSessionValue = {
   calendarConnectorLoadState: LoadState;
   messagingCockpit: MobileMessagingCockpit | null;
   messagingLoadState: LoadState;
+  secretaryBroadcastCockpit: MobileSecretaryBroadcastCockpit | null;
+  secretaryBroadcastLoadState: LoadState;
   voiceCallsCockpit: MobileVoiceCallsCockpit | null;
   voiceCallsLoadState: LoadState;
   latestVoiceNoteAttempt: VoiceNoteAttempt | null;
@@ -217,6 +223,8 @@ type MobileSessionValue = {
   submitCalendarConnectorCommand: (command: MobileCalendarConnectorCommand) => Promise<void>;
   loadMessaging: () => Promise<void>;
   submitMessagingCommand: (command: MobileMessagingCommand) => Promise<void>;
+  loadSecretaryBroadcasts: () => Promise<void>;
+  approveSecretaryBroadcast: (command: MobileApproveSecretaryBroadcastCommand) => Promise<void>;
   loadVoiceCalls: () => Promise<void>;
   submitPrepareCallWork: (command: MobilePrepareCallWorkCommand) => Promise<void>;
   submitVoiceNoteAttempt: (attempt: VoiceNoteAttempt) => Promise<VoiceNoteAttempt>;
@@ -343,6 +351,9 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     useState<LoadState>("IDLE");
   const [messagingCockpit, setMessagingCockpit] = useState<MobileMessagingCockpit | null>(null);
   const [messagingLoadState, setMessagingLoadState] = useState<LoadState>("IDLE");
+  const [secretaryBroadcastCockpit, setSecretaryBroadcastCockpit] =
+    useState<MobileSecretaryBroadcastCockpit | null>(null);
+  const [secretaryBroadcastLoadState, setSecretaryBroadcastLoadState] = useState<LoadState>("IDLE");
   const [voiceCallsCockpit, setVoiceCallsCockpit] = useState<MobileVoiceCallsCockpit | null>(null);
   const [voiceCallsLoadState, setVoiceCallsLoadState] = useState<LoadState>("IDLE");
   const [latestVoiceNoteAttempt, setLatestVoiceNoteAttempt] = useState<VoiceNoteAttempt | null>(null);
@@ -384,6 +395,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
   const dispatchingHumanEscalationRequest = useRef<string | null>(null);
   const dispatchingCalendarConnectorRequest = useRef<string | null>(null);
   const dispatchingMessagingRequest = useRef<string | null>(null);
+  const dispatchingSecretaryBroadcastRequest = useRef<string | null>(null);
   const dispatchingVoiceCallRequest = useRef<string | null>(null);
   const dispatchingVoiceNoteRequest = useRef<string | null>(null);
   const dispatchingProjectBrainCommand = useRef<string | null>(null);
@@ -459,6 +471,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       setCalendarConnectorLoadState("IDLE");
       setMessagingCockpit(null);
       setMessagingLoadState("IDLE");
+      setSecretaryBroadcastCockpit(null);
+      setSecretaryBroadcastLoadState("IDLE");
       setVoiceCallsCockpit(null);
       setVoiceCallsLoadState("IDLE");
       setEmailCockpit(null);
@@ -1286,6 +1300,51 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       dispatchingMessagingRequest.current = null;
     }
   }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
+
+  const loadSecretaryBroadcasts = useCallback(async () => {
+    if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
+    setSecretaryBroadcastLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      const result = await api.secretaryBroadcastCockpit(activeWorkspace.id);
+      const fieldMismatch = (activeWorkspace.role === "FIELD_WORKER") !== (result.role === "field_worker");
+      if (fieldMismatch) throw new MobileApiError("INVALID_RESPONSE");
+      setSecretaryBroadcastCockpit(result);
+      setSecretaryBroadcastLoadState("READY");
+    } catch (error) {
+      setSecretaryBroadcastCockpit(null);
+      setSecretaryBroadcastLoadState("UNAVAILABLE");
+      setPublicError(publicMessage(error));
+    }
+  }, [activeWorkspace, api]);
+
+  const approveSecretaryBroadcast = useCallback(async (command: MobileApproveSecretaryBroadcastCommand) => {
+    if (!activeWorkspace || activeWorkspace.role === "FIELD_WORKER") throw new Error("MOBILE_BROADCAST_PERMISSION_REFUSED");
+    if (command.workspaceId !== activeWorkspace.id) throw new Error("MOBILE_BROADCAST_WORKSPACE_REFUSED");
+    if (dispatchingSecretaryBroadcastRequest.current) throw new Error("MOBILE_BROADCAST_ALREADY_DISPATCHED");
+    dispatchingSecretaryBroadcastRequest.current = command.commandId;
+    setSecretaryBroadcastLoadState("LOADING");
+    setPublicError(null);
+    try {
+      await assertNetworkAvailable();
+      await api.approveSecretaryBroadcast(command);
+      const refreshed = await api.secretaryBroadcastCockpit(activeWorkspace.id);
+      setSecretaryBroadcastCockpit(refreshed);
+      setSecretaryBroadcastLoadState("READY");
+    } catch (error) {
+      const refreshed = await api.secretaryBroadcastCockpit(activeWorkspace.id).catch(() => null);
+      if (refreshed) {
+        setSecretaryBroadcastCockpit(refreshed);
+        setSecretaryBroadcastLoadState("READY");
+      } else {
+        setSecretaryBroadcastLoadState("UNAVAILABLE");
+      }
+      setPublicError(publicMessage(error));
+    } finally {
+      dispatchingSecretaryBroadcastRequest.current = null;
+    }
+  }, [activeWorkspace, api]);
 
   const loadVoiceCalls = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
@@ -2308,6 +2367,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setCalendarConnectorLoadState("IDLE");
     setMessagingCockpit(null);
     setMessagingLoadState("IDLE");
+    setSecretaryBroadcastCockpit(null);
+    setSecretaryBroadcastLoadState("IDLE");
     setVoiceCallsCockpit(null);
     setVoiceCallsLoadState("IDLE");
     setLatestVoiceNoteAttempt(null);
@@ -2368,6 +2429,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       calendarConnectorLoadState,
       messagingCockpit,
       messagingLoadState,
+      secretaryBroadcastCockpit,
+      secretaryBroadcastLoadState,
       voiceCallsCockpit,
       voiceCallsLoadState,
       latestVoiceNoteAttempt,
@@ -2419,6 +2482,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitCalendarConnectorCommand,
       loadMessaging,
       submitMessagingCommand,
+      loadSecretaryBroadcasts,
+      approveSecretaryBroadcast,
       loadVoiceCalls,
       submitPrepareCallWork,
       submitVoiceNoteAttempt,
@@ -2478,6 +2543,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       calendarConnectorLoadState,
       messagingCockpit,
       messagingLoadState,
+      secretaryBroadcastCockpit,
+      secretaryBroadcastLoadState,
       voiceCallsCockpit,
       voiceCallsLoadState,
       latestVoiceNoteAttempt,
@@ -2534,6 +2601,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       submitCalendarConnectorCommand,
       loadMessaging,
       submitMessagingCommand,
+      loadSecretaryBroadcasts,
+      approveSecretaryBroadcast,
       loadVoiceCalls,
       submitPrepareCallWork,
       submitVoiceNoteAttempt,

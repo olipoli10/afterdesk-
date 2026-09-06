@@ -14,7 +14,7 @@ describe("R38C secretary command entry", () => {
       ["CALENDAR_EVENT_CREATE", { kind: "ASSISTANT_PROMPT", value: "Rendez-vous avec Marc mardi à 14 h pour Laval.", label: "Préparer dans l’assistant" }],
       ["PROJECT_RECORD_UPDATE", { kind: "ASSISTANT_PROMPT", value: "Le travail du dosseret de Laval est terminé.", label: "Préparer dans l’assistant" }],
       ["SMS_SINGLE_PREPARE", { kind: "ASSISTANT_PROMPT", value: "Texte Marc que le rendez-vous est confirmé à 14 h.", label: "Préparer dans l’assistant" }],
-      ["SMS_BROADCAST_PREPARE", { kind: "APP_ROUTE", value: "/assistant", label: "Décrire le groupe à ENDVERA" }],
+      ["SMS_BROADCAST_PREPARE", { kind: "ASSISTANT_PROMPT", value: "Texte Marc et Julie que le chantier ouvre à 7 h.", label: "Préparer dans l’assistant" }],
       ["OUTBOUND_CALL_PREPARE", { kind: "APP_ROUTE", value: "/calls", label: "Préparer un appel" }],
     ]);
   });

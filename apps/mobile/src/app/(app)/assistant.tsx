@@ -208,7 +208,12 @@ export default function AssistantScreen() {
           )}
 
           {stateLabel ? <Notice danger={["REFUSED", "OUTCOME_UNKNOWN"].includes(latestAssistantAttempt?.state ?? "")}>{stateLabel}</Notice> : null}
-          {result?.status === "PREPARED_UNSENT" ? <Notice>{copy.assistantPrepared}</Notice> : null}
+          {result?.status === "PREPARED_UNSENT" ? (
+            <>
+              <Notice>{copy.assistantPrepared}</Notice>
+              <Button tone="secondary" onPress={() => router.push("/messages")}>Voir les destinataires et approuver</Button>
+            </>
+          ) : null}
           {result?.status === "CLARIFICATION_REQUIRED" ? <Notice>{copy.assistantClarification}</Notice> : null}
           {result?.routing?.readiness === "PROVIDER_REQUIRED_NOT_AUTHORIZED" ? <Notice>{copy.assistantProviderUnavailable}</Notice> : null}
           {result?.routing?.readiness === "HUMAN_SUPPORT_AVAILABLE" ? <Notice>{copy.assistantHumanSupport}</Notice> : null}

@@ -19,6 +19,7 @@ import {
   type MobileMessagingPolicy,
 } from "@/lib/messages";
 import { preparedActionInspections } from "@/lib/prepared-actions";
+import { createApproveSecretaryBroadcastCommand } from "@/lib/secretary-broadcasts";
 import { useMobileSession } from "@/state/mobile-session";
 
 type Purpose = "service" | "commercial";
@@ -123,12 +124,21 @@ export default function MessagesScreen() {
     publicError,
     loadMessaging,
     submitMessagingCommand,
+    secretaryBroadcastCockpit,
+    secretaryBroadcastLoadState,
+    loadSecretaryBroadcasts,
+    approveSecretaryBroadcast,
   } = useMobileSession();
   const [preparingActionId, setPreparingActionId] = useState<string | null>(null);
+  const [approvingBroadcastId, setApprovingBroadcastId] = useState<string | null>(null);
 
   useEffect(() => {
     if (messagingLoadState === "IDLE") void loadMessaging();
   }, [loadMessaging, messagingLoadState]);
+
+  useEffect(() => {
+    if (secretaryBroadcastLoadState === "IDLE") void loadSecretaryBroadcasts();
+  }, [loadSecretaryBroadcasts, secretaryBroadcastLoadState]);
 
   const actions = useMemo(
     () => preparedActionInspections(cockpit?.actions ?? []).filter((action) => action.channel === "SMS"),
@@ -164,6 +174,17 @@ export default function MessagesScreen() {
     void submitMessagingCommand(command).finally(() => setPreparingActionId(null));
   };
 
+  const approveBroadcast = (
+    draft: Extract<NonNullable<typeof secretaryBroadcastCockpit>["drafts"][number], { visibility: "FULL" }>,
+  ) => {
+    if (!activeWorkspace || draft.status !== "PREPARED_UNSENT") return;
+    setApprovingBroadcastId(draft.id);
+    void approveSecretaryBroadcast(createApproveSecretaryBroadcastCommand({
+      workspaceId: activeWorkspace.id,
+      draft,
+    })).finally(() => setApprovingBroadcastId(null));
+  };
+
   return (
     <Screen>
       <Heading
@@ -180,6 +201,42 @@ export default function MessagesScreen() {
           Une attestation de consentement vient du propriétaire; elle n’est pas présentée comme une preuve indépendante.
         </Text>
       </Card>
+
+      <Heading
+        eyebrow="TEXTOS DE GROUPE"
+        title="Vérifier chaque détail avant d’approuver"
+        body="ENDVERA affiche tous les destinataires, le canal et le texte exact. L’approbation reste locale : aucun SMS n’est envoyé."
+      />
+      {secretaryBroadcastLoadState === "LOADING" && !secretaryBroadcastCockpit ? (
+        <Loading label="Textos de groupe en reconstruction…" />
+      ) : null}
+      {secretaryBroadcastCockpit?.drafts.length ? secretaryBroadcastCockpit.drafts.map((draft) => (
+        <Card key={draft.id}>
+          <View style={sharedStyles.row}>
+            <Label>{draft.status}</Label>
+            <Text style={sharedStyles.muted}>{draft.recipientCount} destinataires</Text>
+          </View>
+          {draft.visibility === "FULL" ? (
+            <>
+              <Text style={styles.caption}>Destinataires</Text>
+              {draft.recipients.map((recipient) => (
+                <Text key={`${recipient.displayName}-${recipient.maskedDestination}`} selectable style={sharedStyles.value}>
+                  {recipient.displayName} · {recipient.maskedDestination}
+                </Text>
+              ))}
+              <Text style={styles.caption}>Canal</Text>
+              <Text style={sharedStyles.value}>SMS</Text>
+              <Text style={styles.caption}>Texte exact</Text>
+              <Text selectable style={styles.messageBody}>{draft.body}</Text>
+              {draft.status === "PREPARED_UNSENT" ? (
+                <Button disabled={approvingBroadcastId !== null} onPress={() => approveBroadcast(draft)}>
+                  {approvingBroadcastId === draft.id ? "Approbation…" : "J’approuve exactement ce groupe et ce texte"}
+                </Button>
+              ) : <Notice>Approuvé localement. Toujours aucun envoi réel.</Notice>}
+            </>
+          ) : <Notice>Les détails du groupe sont protégés pour la vue chantier.</Notice>}
+        </Card>
+      )) : <Card><Empty>Aucun texto de groupe préparé.</Empty></Card>}
 
       <Heading
         eyebrow="PERMISSIONS"
