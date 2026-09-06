@@ -6,6 +6,10 @@
   "advertisedAssistantPrompts": 4,
   "unsupportedAdvertisedPrompts": 0,
   "broadcastConversationalIntegration": "NOT_YET_INTEGRATED_DISCLOSED",
+  "implementationCommit": {
+    "head": "7692fd9bdb759c6dfb7b0c17019c4309474057e1",
+    "tree": "a548743b839cab298b0b9dfc4e387f971ab937dc"
+  },
   "validation": {
     "redProof": { "testsFailed": 2 },
     "focusedRoot": { "testsPassed": 2, "failed": 0 },

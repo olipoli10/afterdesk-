@@ -5,4 +5,4 @@
 - [x] T003 Correct advertised command entries in `apps/mobile/src/lib/virtual-secretary-actions.ts`
 - [x] T004 Prove mobile navigation and interpreter parity
 - [x] T005 Run proportional validation and record evidence
-- [ ] T006 Create clean product and Brain checkpoints
+- [x] T006 Create the useful local product commit and prepare the Brain checkpoint
