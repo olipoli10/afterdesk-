@@ -9,4 +9,4 @@
 - [x] T007 Integrate the multi-recipient path into the unified assistant and authenticated API
 - [x] T008 Run focused integration, typecheck, lint and provider-boundary validation
 - [x] T009 Record local evidence without changing readiness metrics
-- [x] T010 Create a clean product checkpoint; Brain checkpoint follows this governance record
+- [x] T010 Create clean product and canonical Brain checkpoints
