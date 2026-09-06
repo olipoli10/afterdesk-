@@ -3263,6 +3263,26 @@
       "outputTree": "3f1474feeb0ef8dab86029e1c28a940348dfd80e",
       "result": "LOCAL_SECRETARY_BROADCAST_RECOVERY_READY; exact approval commands survive offline and restart, reconcile outcome unknown and never dispatch automatically.",
       "completedAtUtc": "2026-09-06T01:26:16Z"
+    },
+    {
+      "id": "R39A-DESIGN-PARTNER-PILOT-PREFLIGHT",
+      "title": "Design-partner pilot local preflight",
+      "objective": "Freeze every customer-free prerequisite for a bounded three-partner pilot without fabricating readiness or results.",
+      "role": "PREFLIGHT",
+      "status": "DONE",
+      "dependencies": ["R38G-SECRETARY-BROADCAST-RECOVERY"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind":"FIXED_HEAD","head":"8d97d907fc850a37337f6694863c15ba95e50497"},
+      "authority": "LOCAL CODE TEST AND LOCAL GIT COMMITS ONLY; NO DESIGN PARTNER CUSTOMER DATA PROVIDER EXTERNAL TRANSPORT WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": ["specs/204-design-partner-pilot-preflight","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","src/lib/construction-operating-assistant-r39a","test/construction-operating-assistant-r39a-preflight.test.ts",".specify/feature.json"],
+      "planPath": "../204-design-partner-pilot-preflight/plan.md",
+      "completionCommand": "focused unit, root typecheck, lint and provider-boundary validation",
+      "evidencePaths": ["../204-design-partner-pilot-preflight/evidence/local-validation.json","../204-design-partner-pilot-preflight/evidence/closeout.md"],
+      "outputHead": "1e5f49c90e707addc9d297641c9c70304f4b4d63",
+      "outputTree": "4b2e32c8d8a9cc6481f6dccdaa240b60958baf8f",
+      "result": "LOCAL_DESIGN_PARTNER_PILOT_PREFLIGHT_READY; three empty slots, exact metrics and safety stops are frozen while observed pilot readiness remains blocked on external authority.",
+      "completedAtUtc": "2026-09-06T01:33:36Z"
     }
   ]
 }
