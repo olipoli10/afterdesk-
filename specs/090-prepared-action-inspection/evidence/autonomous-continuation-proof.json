@@ -3,15 +3,15 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 111,
+  "consecutiveBlocksCompleted": 112,
   "goalStayedActiveUntilDrain": true,
   "completionValidatorVerdict": "URGENT_ASSISTANCE_REQUIRED",
   "projectTerminalState": "URGENT_ASSISTANCE_REQUIRED",
   "canonicalRoadmapComplete": false,
   "remainingAuthorizedWorkCount": 0,
-  "remainingRoadmapItemCount": 2,
+  "remainingRoadmapItemCount": 3,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Authorize a bounded three-partner, 30-day R39 observed pilot with explicit consent, customer-data, provider, transport, budget and stop limits.",
-  "urgentAssistanceReason": "R39A local preflight is complete and no authorized critical-path work remains. Observed R39 requires real participants and external authority that a bare GO cannot grant."
+  "nextAction": "Activate the founder-only R39C self pilot with Expo and platform signing ownership, one physical-device install, an approved HTTPS backend, a compliant dedicated Twilio number, locally installed server secrets and an exact bounded SMS/voice test authority.",
+  "urgentAssistanceReason": "R39B local activation preflight is complete and no authorized critical-path work remains. R39C requires Olivier's device, signing accounts, provider account and billing, regulatory review, number purchase, secret custody and live transport authority."
 }

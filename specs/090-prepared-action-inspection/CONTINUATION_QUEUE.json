@@ -3268,7 +3268,7 @@
       "id": "R39A-DESIGN-PARTNER-PILOT-PREFLIGHT",
       "title": "Design-partner pilot local preflight",
       "objective": "Freeze every customer-free prerequisite for a bounded three-partner pilot without fabricating readiness or results.",
-      "role": "PREFLIGHT",
+      "role": "IMPLEMENTATION",
       "status": "DONE",
       "dependencies": ["R38G-SECRETARY-BROADCAST-RECOVERY"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -3283,6 +3283,27 @@
       "outputTree": "4b2e32c8d8a9cc6481f6dccdaa240b60958baf8f",
       "result": "LOCAL_DESIGN_PARTNER_PILOT_PREFLIGHT_READY; three empty slots, exact metrics and safety stops are frozen while observed pilot readiness remains blocked on external authority.",
       "completedAtUtc": "2026-09-06T01:33:36Z"
+    },
+    {
+      "id": "R39B-FOUNDER-SELF-ACTIVATION-PREFLIGHT",
+      "title": "Founder self live activation preflight",
+      "objective": "Prepare the real physical-device, contacts, calendar, dedicated-number SMS and voice activation contract without claiming or performing external activation.",
+      "role": "IMPLEMENTATION",
+      "status": "DONE",
+      "dependencies": ["R39A-DESIGN-PARTNER-PILOT-PREFLIGHT"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind":"FIXED_HEAD","head":"39cee801b4844521d656cb65eb0bb1a20d73967d"},
+      "authority": "LOCAL CODE TEST DISPOSABLE POSTGRESQL AND LOCAL GIT COMMITS ONLY; NO PROVIDER CUSTOMER DATA EXTERNAL TRANSPORT EXTERNAL WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": ["specs/205-founder-self-live-activation","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","apps/mobile","release/endvera-construction-v1","src/lib/release/external-capabilities.ts","test/backend-activation-gate.test.ts",".specify/feature.json"],
+      "planPath": "../205-founder-self-live-activation/plan.md",
+      "planSha256": "9e1e7e610305d96b365c7cdef0e1a1bb8d1873041df619ff6f7c512115968c91",
+      "completionCommand": "focused gates, complete mobile suite, mobile and root typecheck, mobile lint, Expo all-platform export, secret scan and provider-boundary validation",
+      "evidencePaths": ["../205-founder-self-live-activation/evidence/local-validation.json","../205-founder-self-live-activation/evidence/closeout.md"],
+      "outputHead": "c5d0392ef1e34ea62ffcc41d3896efd4d8fff871",
+      "outputTree": "e0487b2a1e6ee214b7c153aa44c98f0ae4a12bf2",
+      "result": "LOCAL_ACTIVATION_PREFLIGHT_READY; physical-device build profile, progressive native contacts/calendar access and exact server-only SMS/voice gates passed local validation with no signed build, number, provider or external transport claim.",
+      "completedAtUtc": "2026-09-06T02:53:59Z"
     }
   ]
 }
