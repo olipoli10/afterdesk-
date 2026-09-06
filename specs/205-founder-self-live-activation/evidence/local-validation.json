@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "release": "R39B-FOUNDER-SELF-ACTIVATION-PREFLIGHT",
+  "observedAtUtc": "2026-09-06T02:53:59.9490763Z",
+  "verdict": "LOCAL_ACTIVATION_PREFLIGHT_READY",
+  "checks": {
+    "backendActivationGate": { "passed": true, "tests": 7 },
+    "focusedMobile": { "passed": true, "files": 4, "tests": 13 },
+    "completeMobile": { "passed": true, "files": 41, "tests": 187 },
+    "mobileTypecheck": { "passed": true },
+    "mobileLint": { "passed": true },
+    "rootTypecheck": { "passed": true },
+    "providerBoundary": { "passed": true, "modules": 598, "violations": 0 },
+    "expoConfigResolution": { "passed": true, "platforms": ["ios", "android", "web"] },
+    "expoExport": { "passed": true, "platforms": ["ios", "android", "web"], "staticRoutes": 61 },
+    "secretPatternScan": { "passed": true }
+  },
+  "claims": {
+    "physicalBuildProfileReady": true,
+    "nativeContactsCalendarCodeReady": true,
+    "smsVoiceCapabilityGatesReady": true,
+    "signedBuildObserved": false,
+    "installedOnFounderDevice": false,
+    "dedicatedNumberProvisioned": false,
+    "liveSmsObserved": false,
+    "liveVoiceObserved": false,
+    "storePublished": false,
+    "externalTransportPerformed": false
+  }
+}

@@ -4,11 +4,11 @@ import { TEXT_ASSIST_FOUNDATION } from "../src/lib/text-assist-foundation";
 describe("mobile TextAssist foundation", () => {
   it("makes the assistant the product entry and keeps the dedicated number honest", () => {
     expect(TEXT_ASSIST_FOUNDATION.productMode).toBe("ASSISTANT_FIRST");
-    expect(TEXT_ASSIST_FOUNDATION.sms.readiness).toBe("À connecter");
+    expect(TEXT_ASSIST_FOUNDATION.sms).toMatchObject({ readiness: "Numéro réel à provisionner", number: null, providerCandidate: "TWILIO", smsVerified: false, voiceVerified: false });
     expect(TEXT_ASSIST_FOUNDATION.sms.devicePermissions).toEqual([]);
     expect(TEXT_ASSIST_FOUNDATION.actions).toEqual({
       assistant: { label: "Parler à ENDVERA maintenant", route: "/assistant" },
-      permissions: { label: "Choisir mes permissions", route: "/permissions" },
+      permissions: { label: "Connecter mon téléphone", route: "/device-access" },
     });
     expect(TEXT_ASSIST_FOUNDATION.externalTransportPerformed).toBe(false);
   });

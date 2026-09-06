@@ -1,4 +1,4 @@
-export type ExternalCapability = "AI" | "EMAIL" | "GOOGLE_OAUTH";
+export type ExternalCapability = "AI" | "EMAIL" | "GOOGLE_OAUTH" | "SMS" | "VOICE";
 
 export type ExternalCapabilityDecision = {
   capability: ExternalCapability;
@@ -12,6 +12,28 @@ const CAPABILITY_REQUIREMENTS: Record<ExternalCapability, { enableName: string; 
   AI: { enableName: "ENDVERA_AI_PROVIDER_ENABLED", configurationNames: ["ANTHROPIC_API_KEY", "AI_MODEL"] },
   EMAIL: { enableName: "ENDVERA_EMAIL_PROVIDER_ENABLED", configurationNames: ["RESEND_API_KEY", "EMAIL_FROM"] },
   GOOGLE_OAUTH: { enableName: "ENDVERA_GOOGLE_OAUTH_ENABLED", configurationNames: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"] },
+  SMS: {
+    enableName: "ENDVERA_SMS_PROVIDER_ENABLED",
+    configurationNames: [
+      "TWILIO_ACCOUNT_SID",
+      "TWILIO_API_KEY_SID",
+      "TWILIO_API_KEY_SECRET",
+      "TWILIO_AUTH_TOKEN",
+      "TWILIO_PHONE_NUMBER",
+      "ENDVERA_PROVIDER_WEBHOOK_ORIGIN",
+    ],
+  },
+  VOICE: {
+    enableName: "ENDVERA_VOICE_PROVIDER_ENABLED",
+    configurationNames: [
+      "TWILIO_ACCOUNT_SID",
+      "TWILIO_API_KEY_SID",
+      "TWILIO_API_KEY_SECRET",
+      "TWILIO_AUTH_TOKEN",
+      "TWILIO_PHONE_NUMBER",
+      "ENDVERA_PROVIDER_WEBHOOK_ORIGIN",
+    ],
+  },
 };
 
 function hasValue(environment: Environment, name: string): boolean {
@@ -42,4 +64,3 @@ export function isExternalCapabilityEnabled(
 ): boolean {
   return externalCapabilityDecision(capability, environment).enabled;
 }
-

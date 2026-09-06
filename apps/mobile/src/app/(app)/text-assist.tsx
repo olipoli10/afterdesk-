@@ -45,6 +45,7 @@ export default function TextAssistSetupScreen() {
           </View>
         </View>
         <Text style={sharedStyles.muted}>{TEXT_ASSIST_FOUNDATION.sms.detail}</Text>
+        <Text style={styles.status}>{TEXT_ASSIST_FOUNDATION.sms.number ?? "Aucun numéro attribué pour l’instant"}</Text>
         <Notice>Aucun accès à l’historique de tes textos ou appels.</Notice>
       </Card>
 

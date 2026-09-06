@@ -3,7 +3,11 @@ export const TEXT_ASSIST_FOUNDATION = {
   sms: {
     title: "Numéro ENDVERA dédié",
     detail: "Tu textes ENDVERA comme un contact. L’app n’a pas besoin de lire tes autres textos.",
-    readiness: "À connecter",
+    readiness: "Numéro réel à provisionner",
+    number: null as string | null,
+    providerCandidate: "TWILIO",
+    smsVerified: false,
+    voiceVerified: false,
     devicePermissions: [] as string[],
   },
   gateway: {
@@ -15,11 +19,11 @@ export const TEXT_ASSIST_FOUNDATION = {
   },
   actions: {
     assistant: { label: "Parler à ENDVERA maintenant", route: "/assistant" },
-    permissions: { label: "Choisir mes permissions", route: "/permissions" },
+    permissions: { label: "Connecter mon téléphone", route: "/device-access" },
   },
   permissions: [
-    { key: "CALENDAR", title: "Calendrier", detail: "Voir tes disponibilités et préparer des rendez-vous.", route: "/calendar-connections" },
-    { key: "CONTACTS", title: "Contacts choisis", detail: "Reconnaître Marc et les personnes que tu partages.", route: "/contacts" },
+    { key: "CALENDAR", title: "Calendrier", detail: "Autoriser les calendriers du téléphone, puis connecter Google directement si nécessaire.", route: "/device-access" },
+    { key: "CONTACTS", title: "Contacts choisis", detail: "Autoriser les contacts du téléphone sans les téléverser automatiquement.", route: "/device-access" },
     { key: "MICROPHONE", title: "Microphone", detail: "Écouter seulement quand tu appuies pour parler.", route: "/calls" },
     { key: "FILES", title: "Photos et documents choisis", detail: "Comprendre seulement ce que tu ajoutes au chantier.", route: "/evidence" },
     { key: "NOTIFICATIONS", title: "Notifications", detail: "Te prévenir des suivis et décisions importantes.", route: "/settings" },

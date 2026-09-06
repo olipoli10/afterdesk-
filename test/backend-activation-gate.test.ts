@@ -39,6 +39,36 @@ describe("ENDVERA backend external capability activation gate", () => {
     })).toEqual({ capability: "GOOGLE_OAUTH", enabled: true, missingRequirements: [] });
   });
 
+  it.each(["SMS", "VOICE"] as const)("keeps %s disabled until every Twilio and webhook requirement exists", (capability) => {
+    const enableName = capability === "SMS" ? "ENDVERA_SMS_PROVIDER_ENABLED" : "ENDVERA_VOICE_PROVIDER_ENABLED";
+    const incomplete = externalCapabilityDecision(capability, {
+      ...shared,
+      [enableName]: "ENABLED",
+      TWILIO_ACCOUNT_SID: "synthetic-account",
+      TWILIO_PHONE_NUMBER: "+15555550100",
+    });
+    expect(incomplete.enabled).toBe(false);
+    expect(incomplete.missingRequirements).toEqual([
+      "CONFIGURATION:TWILIO_API_KEY_SID",
+      "CONFIGURATION:TWILIO_API_KEY_SECRET",
+      "CONFIGURATION:TWILIO_AUTH_TOKEN",
+      "CONFIGURATION:ENDVERA_PROVIDER_WEBHOOK_ORIGIN",
+    ]);
+
+    const complete = externalCapabilityDecision(capability, {
+      ...shared,
+      [enableName]: "ENABLED",
+      TWILIO_ACCOUNT_SID: "synthetic-account",
+      TWILIO_API_KEY_SID: "synthetic-key",
+      TWILIO_API_KEY_SECRET: "must-not-leak",
+      TWILIO_AUTH_TOKEN: "must-not-leak-either",
+      TWILIO_PHONE_NUMBER: "+15555550100",
+      ENDVERA_PROVIDER_WEBHOOK_ORIGIN: "https://synthetic.example.invalid",
+    });
+    expect(complete).toEqual({ capability, enabled: true, missingRequirements: [] });
+    expect(JSON.stringify(complete)).not.toContain("must-not-leak");
+  });
+
   it("routes historical AI, email and Google entry points through the shared gate", () => {
     expect(read("src/lib/ai.ts")).toContain('isExternalCapabilityEnabled("AI")');
     expect(read("src/lib/email.ts")).toContain('isExternalCapabilityEnabled("EMAIL")');
@@ -50,7 +80,7 @@ describe("ENDVERA backend external capability activation gate", () => {
   it("records value-free activation names in the production contract", () => {
     const contract = JSON.parse(read("release/endvera-construction-v1/environment-contract-v3.json"));
     const names = contract.variables.map((variable: { name: string }) => variable.name);
-    expect(names).toEqual(expect.arrayContaining(["ENDVERA_EXTERNAL_TRANSPORT_ENABLED", "ENDVERA_EXTERNAL_AUTHORITY_REF", "ENDVERA_EXTERNAL_OWNER_REF", "ENDVERA_AI_PROVIDER_ENABLED", "ENDVERA_EMAIL_PROVIDER_ENABLED", "ENDVERA_GOOGLE_OAUTH_ENABLED"]));
+    expect(names).toEqual(expect.arrayContaining(["ENDVERA_EXTERNAL_TRANSPORT_ENABLED", "ENDVERA_EXTERNAL_AUTHORITY_REF", "ENDVERA_EXTERNAL_OWNER_REF", "ENDVERA_AI_PROVIDER_ENABLED", "ENDVERA_EMAIL_PROVIDER_ENABLED", "ENDVERA_GOOGLE_OAUTH_ENABLED", "ENDVERA_SMS_PROVIDER_ENABLED", "ENDVERA_VOICE_PROVIDER_ENABLED", "ENDVERA_PROVIDER_WEBHOOK_ORIGIN", "TWILIO_PHONE_NUMBER"]));
     expect(contract.secretValuesSerializable).toBe(false);
     expect(contract.externalReleaseAuthorized).toBe(false);
   });

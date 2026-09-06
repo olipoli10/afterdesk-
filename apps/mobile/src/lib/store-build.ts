@@ -3,6 +3,7 @@ type JsonRecord = Record<string, unknown>;
 export const expectedMobileBuildProfiles = [
   "local-simulator",
   "internal-preview",
+  "founder-device",
   "store-candidate",
 ] as const;
 
@@ -64,6 +65,11 @@ function assertBuildProfiles(easConfig: JsonRecord) {
   exactKeys(preview, ["extends"], "MOBILE_BUILD_PREVIEW_PROFILE_MISMATCH");
   if (preview.extends !== "local-simulator") throw new Error("MOBILE_BUILD_PREVIEW_PROFILE_MISMATCH");
 
+  const founder = record(build["founder-device"], "MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
+  const founderIos = record(founder.ios, "MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
+  const founderAndroid = record(founder.android, "MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
+  if (founder.distribution !== "internal" || founder.autoIncrement !== false || founderIos.simulator !== false || founderAndroid.withoutCredentials !== true || founderAndroid.buildType !== "apk") throw new Error("MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
+
   const candidate = record(build["store-candidate"], "MOBILE_BUILD_STORE_PROFILE_MISMATCH");
   const candidateIos = record(candidate.ios, "MOBILE_BUILD_STORE_PROFILE_MISMATCH");
   const candidateAndroid = record(candidate.android, "MOBILE_BUILD_STORE_PROFILE_MISMATCH");
@@ -96,6 +102,15 @@ function assertIdentity(appConfig: JsonRecord, readiness: JsonRecord) {
   const audio = plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === "expo-audio");
   const permission = Array.isArray(audio) ? record(audio[1], "MOBILE_BUILD_PERMISSION_MISMATCH").microphonePermission : undefined;
   if (typeof permission !== "string" || !permission.includes("ENDVERA") || !permission.includes("note vocale")) throw new Error("MOBILE_BUILD_PERMISSION_MISMATCH");
+  const contacts = plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === "expo-contacts");
+  const contactsPermission = Array.isArray(contacts) ? record(contacts[1], "MOBILE_BUILD_PERMISSION_MISMATCH").contactsPermission : undefined;
+  const calendar = plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === "expo-calendar");
+  const calendarPlugin = Array.isArray(calendar) ? record(calendar[1], "MOBILE_BUILD_PERMISSION_MISMATCH") : {};
+  if (typeof contactsPermission !== "string" || !contactsPermission.includes("ENDVERA") || typeof calendarPlugin.calendarPermission !== "string" || !calendarPlugin.calendarPermission.includes("ENDVERA")) throw new Error("MOBILE_BUILD_PERMISSION_MISMATCH");
+  const blocked = Array.isArray(android.blockedPermissions) ? android.blockedPermissions : [];
+  for (const forbidden of ["android.permission.READ_SMS", "android.permission.WRITE_SMS", "android.permission.READ_CALL_LOG", "android.permission.WRITE_CALL_LOG", "android.permission.WRITE_CONTACTS"]) {
+    if (!blocked.includes(forbidden)) throw new Error("MOBILE_BUILD_FORBIDDEN_PERMISSION_MISSING");
+  }
 }
 
 function assertReadiness(readiness: JsonRecord) {

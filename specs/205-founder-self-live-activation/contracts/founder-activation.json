@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ENDVERA founder self live activation readiness",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "status", "mobile", "devicePermissions", "dedicatedNumber", "calendar", "claims"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "status": { "enum": ["CODE_READY_EXTERNAL_SETUP_REQUIRED", "LIVE_SELF_PILOT_READY"] },
+    "mobile": { "type": "object" },
+    "devicePermissions": { "type": "array", "minItems": 2 },
+    "dedicatedNumber": { "type": "object" },
+    "calendar": { "type": "object" },
+    "claims": { "type": "object" }
+  }
+}

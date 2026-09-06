@@ -20,6 +20,13 @@
     "android": {
       "package": "ai.endvera.mobile",
       "versionCode": 1,
+      "blockedPermissions": [
+        "android.permission.READ_SMS",
+        "android.permission.WRITE_SMS",
+        "android.permission.READ_CALL_LOG",
+        "android.permission.WRITE_CALL_LOG",
+        "android.permission.WRITE_CONTACTS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#09090b",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -47,6 +54,21 @@
         "expo-audio",
         {
           "microphonePermission": "Permettre à ENDVERA d’enregistrer uniquement la note vocale que vous choisissez."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Permettre à ENDVERA de voir les contacts que vous choisissez d’utiliser avec votre assistant."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Permettre à ENDVERA de lire votre horaire et de préparer les changements de calendrier que vous demandez.",
+          "writeOnlyCalendarPermission": "Permettre à ENDVERA d’ajouter les rendez-vous que vous approuvez à votre calendrier.",
+          "remindersPermission": false,
+          "writeOnlyAccess": false
         }
       ],
       "expo-asset"

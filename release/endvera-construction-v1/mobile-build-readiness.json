@@ -5,6 +5,7 @@
   "profiles": [
     "local-simulator",
     "internal-preview",
+    "founder-device",
     "store-candidate"
   ],
   "ios": {

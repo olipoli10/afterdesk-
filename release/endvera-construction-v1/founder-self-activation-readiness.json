@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "CODE_READY_EXTERNAL_SETUP_REQUIRED",
+  "mobile": {
+    "appName": "ENDVERA",
+    "iosBundleIdentifier": "ai.endvera.mobile",
+    "androidPackage": "ai.endvera.mobile",
+    "founderBuildProfile": "founder-device",
+    "signed": false,
+    "installedOnFounderDevice": false
+  },
+  "devicePermissions": [
+    {
+      "resource": "CONTACTS",
+      "requestMode": "PROGRESSIVE_NATIVE",
+      "declared": true,
+      "observedGranted": false
+    },
+    {
+      "resource": "CALENDAR",
+      "requestMode": "PROGRESSIVE_NATIVE_READ_WRITE",
+      "declared": true,
+      "observedGranted": false
+    }
+  ],
+  "dedicatedNumber": {
+    "providerCandidate": "TWILIO",
+    "numberProvisioned": false,
+    "smsVerified": false,
+    "voiceVerified": false,
+    "regulatoryApprovalObserved": false,
+    "requiredConfigurationNames": [
+      "TWILIO_ACCOUNT_SID",
+      "TWILIO_API_KEY_SID",
+      "TWILIO_API_KEY_SECRET",
+      "TWILIO_AUTH_TOKEN",
+      "TWILIO_PHONE_NUMBER",
+      "ENDVERA_PROVIDER_WEBHOOK_ORIGIN"
+    ]
+  },
+  "calendar": {
+    "nativeDevicePathDeclared": true,
+    "directGoogleOAuthConfigured": false,
+    "directGoogleOAuthObserved": false
+  },
+  "requiredOwnerActions": [
+    "EXPO_PROJECT_OWNERSHIP",
+    "APPLE_OR_ANDROID_SIGNING_AUTHORITY",
+    "PHYSICAL_DEVICE_INSTALL",
+    "APPROVED_HTTPS_BACKEND",
+    "TWILIO_ACCOUNT_AND_BILLING",
+    "TWILIO_REGULATORY_APPROVAL",
+    "TWILIO_NUMBER_PURCHASE",
+    "SERVER_SECRET_INSTALLATION",
+    "BOUNDED_FOUNDER_LIVE_TEST"
+  ],
+  "claims": {
+    "codeReady": true,
+    "signedBuildReady": false,
+    "liveNumberReady": false,
+    "liveSelfPilotReady": false,
+    "storePublished": false,
+    "externalTransportPerformed": false,
+    "providerObserved": false
+  }
+}

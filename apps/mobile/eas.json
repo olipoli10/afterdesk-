@@ -19,6 +19,17 @@
     "internal-preview": {
       "extends": "local-simulator"
     },
+    "founder-device": {
+      "distribution": "internal",
+      "autoIncrement": false,
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "withoutCredentials": true,
+        "buildType": "apk"
+      }
+    },
     "store-candidate": {
       "distribution": "store",
       "autoIncrement": false,

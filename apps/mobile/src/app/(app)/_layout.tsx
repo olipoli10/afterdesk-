@@ -82,6 +82,7 @@ export default function AppLayout() {
       <Tabs.Screen name="contacts" options={{ href: null }} />
       <Tabs.Screen name="evidence" options={{ href: null }} />
       <Tabs.Screen name="permissions" options={{ href: null }} />
+      <Tabs.Screen name="device-access" options={{ href: null }} />
       <Tabs.Screen name="privacy" options={{ href: null }} />
       <Tabs.Screen name="reliability" options={{ href: null }} />
       <Tabs.Screen name="outbox" options={{ href: null }} />
