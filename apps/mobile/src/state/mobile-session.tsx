@@ -1327,12 +1327,14 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     setSecretaryBroadcastLoadState("LOADING");
     setPublicError(null);
     try {
+      await prepareOutboxEntry("SECRETARY_BROADCAST_APPROVAL", command, activeWorkspace.id);
       await assertNetworkAvailable();
-      await api.approveSecretaryBroadcast(command);
-      const refreshed = await api.secretaryBroadcastCockpit(activeWorkspace.id);
-      setSecretaryBroadcastCockpit(refreshed);
-      setSecretaryBroadcastLoadState("READY");
-    } catch (error) {
+      const result = await api.approveSecretaryBroadcast(command);
+      await settleOutboxEntry(
+        command.commandId,
+        result.replayed ? "REPLAYED" : "CONFIRMED",
+        activeWorkspace.id,
+      );
       const refreshed = await api.secretaryBroadcastCockpit(activeWorkspace.id).catch(() => null);
       if (refreshed) {
         setSecretaryBroadcastCockpit(refreshed);
@@ -1340,11 +1342,36 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       } else {
         setSecretaryBroadcastLoadState("UNAVAILABLE");
       }
-      setPublicError(publicMessage(error));
+    } catch (error) {
+      const state =
+        error instanceof MobileApiError && error.code === "CONFLICT"
+          ? "CONFLICT"
+          : error instanceof MobileApiError && error.code === "OUTCOME_UNKNOWN"
+            ? "OUTCOME_UNKNOWN"
+            : "REFUSED";
+      const refreshed = await api.secretaryBroadcastCockpit(activeWorkspace.id).catch(() => null);
+      const reconciled = refreshed?.drafts.some((draft) =>
+        draft.id === command.draftId &&
+        draft.status === "APPROVED_UNSENT" &&
+        (draft.visibility !== "FULL" || draft.payloadHash === command.expectedPayloadHash),
+      ) === true;
+      await settleOutboxEntry(
+        command.commandId,
+        reconciled ? "CONFIRMED" : state,
+        activeWorkspace.id,
+        reconciled ? null : publicMessage(error),
+      );
+      if (refreshed) {
+        setSecretaryBroadcastCockpit(refreshed);
+        setSecretaryBroadcastLoadState("READY");
+      } else {
+        setSecretaryBroadcastLoadState("UNAVAILABLE");
+      }
+      setPublicError(reconciled ? null : publicMessage(error));
     } finally {
       dispatchingSecretaryBroadcastRequest.current = null;
     }
-  }, [activeWorkspace, api]);
+  }, [activeWorkspace, api, prepareOutboxEntry, settleOutboxEntry]);
 
   const loadVoiceCalls = useCallback(async () => {
     if (!activeWorkspace) throw new Error("MOBILE_WORKSPACE_REQUIRED");
@@ -2282,6 +2309,8 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       await submitCalendarConnectorCommand(entry.command);
     } else if (entry.kind === "MESSAGING_COMMAND") {
       await submitMessagingCommand(entry.command);
+    } else if (entry.kind === "SECRETARY_BROADCAST_APPROVAL") {
+      await approveSecretaryBroadcast(entry.command);
     } else if (entry.kind === "VOICE_CALL_COMMAND") {
       await submitPrepareCallWork(entry.command);
     } else if (entry.kind === "EMAIL_ACCOUNT_COMMAND" || entry.kind === "EMAIL_DRAFT_COMMAND") {
@@ -2309,6 +2338,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     submitHumanEscalationCommand,
     submitCalendarConnectorCommand,
     submitMessagingCommand,
+    approveSecretaryBroadcast,
     submitPrepareCallWork,
     submitEmailCommand,
     submitAccountingCommand,

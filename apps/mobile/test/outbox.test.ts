@@ -36,6 +36,19 @@ function assistantCommand(input: {
   };
 }
 
+function broadcastApprovalCommand(input: { commandId?: string; payloadHash?: string } = {}) {
+  return {
+    schemaVersion: 1 as const,
+    action: "APPROVE_SECRETARY_BROADCAST" as const,
+    commandId: input.commandId ?? "00000000-0000-4000-8000-000000000120",
+    workspaceId: "workspace-1",
+    draftId: "draft-1",
+    expectedVersion: 1,
+    expectedPayloadHash: input.payloadHash ?? "a".repeat(64),
+    approvalStatementAccepted: true as const,
+  };
+}
+
 describe("R17 protected mobile outbox", () => {
   it("restores an interrupted send after restart with the exact stable command", async () => {
     const { store } = memoryStore();
@@ -156,5 +169,36 @@ describe("R17 protected mobile outbox", () => {
     expect((await loadMobileOutbox({ workspaceId: "workspace-1", store })).map((entry) => entry.entryId)).toEqual([
       second.entryId,
     ]);
+  });
+
+  it("retains one exact group-text approval command through restart and retry", async () => {
+    const { store } = memoryStore();
+    const command = broadcastApprovalCommand();
+    const queued = await enqueueMobileOutbox({
+      kind: "SECRETARY_BROADCAST_APPROVAL",
+      command,
+      store,
+    });
+    await transitionMobileOutbox({ entryId: queued.entryId, state: "SENDING", store });
+
+    const [restored] = await loadMobileOutbox({ workspaceId: command.workspaceId, store });
+    expect(restored).toMatchObject({
+      kind: "SECRETARY_BROADCAST_APPROVAL",
+      state: "OUTCOME_UNKNOWN",
+      command,
+      automaticDispatchAllowed: false,
+    });
+
+    const exactRetry = await enqueueMobileOutbox({
+      kind: "SECRETARY_BROADCAST_APPROVAL",
+      command,
+      store,
+    });
+    expect(exactRetry.command).toEqual(command);
+    await expect(enqueueMobileOutbox({
+      kind: "SECRETARY_BROADCAST_APPROVAL",
+      command: broadcastApprovalCommand({ payloadHash: "b".repeat(64) }),
+      store,
+    })).rejects.toThrow("MOBILE_OUTBOX_IDEMPOTENCY_CONFLICT");
   });
 });

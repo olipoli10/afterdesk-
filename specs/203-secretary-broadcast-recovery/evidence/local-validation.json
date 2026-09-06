@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "release": "R38G-SECRETARY-BROADCAST-RECOVERY",
+  "recordedAtUtc": "2026-09-06T01:26:16Z",
+  "baseHead": "df576b903359511498818e53dbad4b10348e5e36",
+  "baseTree": "b420a0e7c07e7acaea9296a0679357dbaac6463e",
+  "verdict": "LOCAL_SECRETARY_BROADCAST_RECOVERY_READY",
+  "proof": {
+    "commandStoredBeforeNetwork": true,
+    "sameCommandRetainedAfterRestart": true,
+    "exactRetrySupported": true,
+    "changedPayloadSameCommandIdRefused": true,
+    "outcomeUnknownReconcilesCanonicalApproval": true,
+    "automaticDispatchAllowed": false,
+    "externalTransportPerformed": false,
+    "providerCalls": 0
+  },
+  "validation": {
+    "focusedMobile": { "files": 2, "tests": 8, "status": "PASS" },
+    "fullMobile": { "files": 39, "tests": 182, "status": "PASS" },
+    "mobileTypecheck": "PASS",
+    "mobileLint": "PASS",
+    "providerBoundary": { "status": "PASS", "modules": 597, "violations": 0 },
+    "gitDiffCheck": "PASS"
+  }
+}

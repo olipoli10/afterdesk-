@@ -18,6 +18,7 @@ import {
   mobileAuthorityPolicyCommandSchema,
 } from "@/lib/authority-policies";
 import { mobilePrivacyCommandSchema } from "@/lib/privacy";
+import { mobileApproveSecretaryBroadcastCommandSchema } from "@/lib/secretary-broadcasts";
 
 export const MOBILE_OUTBOX_VERSION = 1 as const;
 export const MOBILE_OUTBOX_LIMIT = 20;
@@ -55,6 +56,7 @@ export const mobileOutboxEntrySchema = z.discriminatedUnion("kind", [
   z.object({ ...base, kind: z.literal("HUMAN_ESCALATION_COMMAND"), command: mobileHumanEscalationCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("CALENDAR_CONNECTOR_COMMAND"), command: mobileCalendarConnectorCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("MESSAGING_COMMAND"), command: mobileMessagingCommandSchema }).strict(),
+  z.object({ ...base, kind: z.literal("SECRETARY_BROADCAST_APPROVAL"), command: mobileApproveSecretaryBroadcastCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("VOICE_CALL_COMMAND"), command: mobilePrepareCallWorkCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("EMAIL_ACCOUNT_COMMAND"), command: mobileEmailAccountCommandSchema }).strict(),
   z.object({ ...base, kind: z.literal("EMAIL_DRAFT_COMMAND"), command: mobileEmailDraftCommandSchema }).strict(),
@@ -127,6 +129,10 @@ function commandIdentity(kind: MobileOutboxKind, command: unknown) {
   }
   if (kind === "MESSAGING_COMMAND") {
     const parsed = mobileMessagingCommandSchema.parse(command);
+    return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
+  }
+  if (kind === "SECRETARY_BROADCAST_APPROVAL") {
+    const parsed = mobileApproveSecretaryBroadcastCommandSchema.parse(command);
     return { entryId: parsed.commandId, workspaceId: parsed.workspaceId, command: parsed };
   }
   if (kind === "VOICE_CALL_COMMAND") {
@@ -330,6 +336,7 @@ export function mobileOutboxLabel(entry: MobileOutboxEntry) {
   if (entry.kind === "HUMAN_ESCALATION_COMMAND") return "Décision d’appui humain";
   if (entry.kind === "CALENDAR_CONNECTOR_COMMAND") return "Décision de calendrier";
   if (entry.kind === "MESSAGING_COMMAND") return "Décision de messagerie";
+  if (entry.kind === "SECRETARY_BROADCAST_APPROVAL") return "Approbation d’un texto de groupe";
   if (entry.kind === "VOICE_CALL_COMMAND") return "Préparation d’un appel";
   if (entry.kind === "EMAIL_ACCOUNT_COMMAND") return "Accès courriel local";
   if (entry.kind === "EMAIL_DRAFT_COMMAND") return "Brouillon courriel";
