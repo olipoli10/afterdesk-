@@ -3229,7 +3229,7 @@
       "title": "Secretary broadcast exact approval",
       "objective": "Add a local owner/admin exact-version approval transition for one frozen broadcast while preserving zero dispatch.",
       "role": "IMPLEMENTATION",
-      "status": "PLANNED",
+      "status": "DONE",
       "dependencies": ["R38E-SECRETARY-BROADCAST-PREPARATION"],
       "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
       "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
@@ -3238,7 +3238,27 @@
       "allowedScope": ["specs/202-secretary-broadcast-approval","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","prisma/schema.prisma","prisma/migrations","src/lib/construction-operating-assistant-r38f","src/server/construction-operating-assistant-r38f","src/app/api/endvera/v1/mobile/secretary-broadcasts","apps/mobile","test",".specify/feature.json"],
       "planPath": "../202-secretary-broadcast-approval/plan.md",
       "completionCommand": "focused unit, disposable PostgreSQL integration, typecheck, lint and provider-boundary validation",
-      "evidencePaths": ["../202-secretary-broadcast-approval/evidence/local-validation.json","../202-secretary-broadcast-approval/evidence/closeout.md"]
+      "evidencePaths": ["../202-secretary-broadcast-approval/evidence/local-validation.json","../202-secretary-broadcast-approval/evidence/closeout.md"],
+      "outputHead": "104d4d5192dcb7b208f15b32d2f0dfb31feca1cc",
+      "outputTree": "276e2ffecb10e0f622d0650a7a9992d22de85360",
+      "result": "LOCAL_SECRETARY_BROADCAST_APPROVAL_READY; exact owner/admin mobile approval is version-and-hash bound, replay safe, second-approval safe, role safe and APPROVED_UNSENT with zero external transport.",
+      "completedAtUtc": "2026-09-06T01:19:08Z"
+    },
+    {
+      "id": "R38G-SECRETARY-BROADCAST-RECOVERY",
+      "title": "Secretary broadcast mobile recovery",
+      "objective": "Retain one exact mobile approval command across offline and outcome-unknown recovery without duplicate approval or transport.",
+      "role": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "dependencies": ["R38F-SECRETARY-BROADCAST-APPROVAL"],
+      "worktree": "C:\\dev\\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "branch": "codex/endvera-construction-operating-assistant-r10-r12-autonomous",
+      "baseRef": {"kind":"ENTRY_OUTPUT","entryId":"R38F-SECRETARY-BROADCAST-APPROVAL"},
+      "authority": "LOCAL CODE TEST AND LOCAL GIT COMMITS ONLY; NO PROVIDER CREDENTIAL SPEND CUSTOMER DATA EXTERNAL TRANSPORT WRITE PUSH PREVIEW PRODUCTION DEPLOYMENT OR STORE ACTION",
+      "allowedScope": ["specs/203-secretary-broadcast-recovery","specs/090-prepared-action-inspection/PROJECT_BACKLOG.json","specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json","specs/090-prepared-action-inspection/evidence/autonomous-continuation-proof.json","apps/mobile",".specify/feature.json"],
+      "planPath": "../203-secretary-broadcast-recovery/plan.md",
+      "completionCommand": "mobile typecheck, lint and focused recovery tests",
+      "evidencePaths": ["../203-secretary-broadcast-recovery/evidence/local-validation.json","../203-secretary-broadcast-recovery/evidence/closeout.md"]
     }
   ]
 }

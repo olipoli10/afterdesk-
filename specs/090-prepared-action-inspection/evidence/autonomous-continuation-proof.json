@@ -3,7 +3,7 @@
   "queueId": "endvera-construction-operating-assistant-r10-r12-autonomous-v1",
   "routineFounderPromptCount": 0,
   "intermediateFinalReportCount": 0,
-  "consecutiveBlocksCompleted": 108,
+  "consecutiveBlocksCompleted": 109,
   "goalStayedActiveUntilDrain": true,
   "completionValidatorVerdict": "CONTINUE",
   "projectTerminalState": "INCOMPLETE",
@@ -12,6 +12,6 @@
   "remainingRoadmapItemCount": 3,
   "terminalRelease": "R40-PRODUCTION-V1",
   "projectBacklogPath": "PROJECT_BACKLOG.json",
-  "nextAction": "Implement R38F exact owner/admin approval for frozen broadcast drafts while keeping every provider and transport path absent.",
+  "nextAction": "Implement R38G durable mobile recovery for one frozen broadcast approval command while keeping every provider and transport path absent.",
   "urgentAssistanceReason": null
 }
