@@ -8,6 +8,7 @@ describe("founder self live activation boundary", () => {
   it("declares physical builds and protected native resources without claiming a live pilot", () => {
     const parsed = parseFounderActivationReadiness(readiness);
     expect(appConfig.expo.owner).toBe("endveras-team");
+    expect(appConfig.expo.slug).toBe("endvera");
     expect(appConfig.expo.extra.eas.projectId).toBe("a7b2c087-f8e1-48e4-8798-f6fabefb69fe");
     expect(easConfig.build["founder-device"]).toMatchObject({
       distribution: "internal",
