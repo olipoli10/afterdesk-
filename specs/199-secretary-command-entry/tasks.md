@@ -16,7 +16,7 @@
 
 - [x] T007 Run focused mobile tests, typecheck, lint and the provider-boundary check
 - [x] T008 Record exact evidence and backlog state without moving readiness metrics
-- [ ] T009 Create clean product and Brain checkpoints
+- [x] T009 Create the useful local product commit and prepare the Brain checkpoint
 
 ## Dependencies
 

@@ -1,8 +1,8 @@
 # Feature Specification: Secretary command entry
 
-**Feature Branch**: `codex/endvera-construction-operating-assistant-r10-r12-autonomous`  
-**Created**: 2026-09-05  
-**Status**: Draft  
+**Feature Branch**: `codex/endvera-construction-operating-assistant-r10-r12-autonomous`
+**Created**: 2026-09-05
+**Status**: Draft
 **Input**: Make every advertised virtual-secretary capability actionable from the existing TextAssist surface and prefill the existing assistant rather than introducing another form or test console.
 
 ## User Scenarios & Testing

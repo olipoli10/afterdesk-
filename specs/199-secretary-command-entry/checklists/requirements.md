@@ -1,7 +1,7 @@
 # Specification Quality Checklist: Secretary command entry
 
-**Purpose**: Validate specification completeness and quality before planning  
-**Created**: 2026-09-05  
+**Purpose**: Validate specification completeness and quality before planning
+**Created**: 2026-09-05
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality

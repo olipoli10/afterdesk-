@@ -5,6 +5,10 @@
   "evidenceLabel": "TEST",
   "capabilityEntries": 7,
   "navigationAutoSubmits": false,
+  "implementationCommit": {
+    "head": "f8a284c52721de80ad43d3924fc5149cbe050fa3",
+    "tree": "337401fb23ec837a61f46b124c235f6b27aca8a8"
+  },
   "validation": {
     "redProof": { "testsFailed": 2, "reason": "entry metadata and bounded-prefill helper absent" },
     "focusedMobile": { "filesPassed": 3, "testsPassed": 9, "failed": 0 },
