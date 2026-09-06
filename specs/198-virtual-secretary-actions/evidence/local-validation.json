@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "release": "R38B-VIRTUAL-SECRETARY-ACTIONS",
+  "verdict": "LOCAL_ACTION_KERNEL_PASS",
+  "evidenceLabel": "TEST",
+  "capabilities": 7,
+  "broadcastMaximumRecipients": 10,
+  "validation": {
+    "focusedRootTests": { "passed": 6, "failed": 0 },
+    "fullRootTests": { "filesPassed": 233, "filesSkipped": 3, "testsPassed": 2414, "testsSkipped": 3, "failed": 0 },
+    "focusedMobileTests": { "passed": 6, "failed": 0 },
+    "fullMobileTests": { "filesPassed": 37, "testsPassed": 176, "failed": 0 },
+    "rootTypecheck": "PASS",
+    "mobileTypecheck": "PASS",
+    "rootLint": "PASS",
+    "mobileLint": "PASS",
+    "providerBoundary": { "modules": 592, "violations": 0, "verdict": "PASS" },
+    "rootProductionBuild": "NOT_RERUN_C_DRIVE_STORAGE_BLOCKED"
+  },
+  "effects": {
+    "providerCalls": 0,
+    "smsSent": 0,
+    "callsPlaced": 0,
+    "calendarWrites": 0,
+    "projectWrites": 0,
+    "oauth": 0,
+    "customerData": 0,
+    "deployment": 0
+  },
+  "dashboard": {
+    "strictCanonicalRoadmapPercent": 22,
+    "localAiEngineBuildReadinessPercent": 46.75,
+    "controlledC2Preparation": "18/18",
+    "realProviderCustomerTestReadiness": "NO_GO",
+    "verifiedE2EObservedCoveragePercent": 0
+  }
+}

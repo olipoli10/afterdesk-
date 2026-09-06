@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AppIcon } from "@/components/app-icon";
 import { BrandHeader, Button, Card, Heading, Notice, Screen, colors, sharedStyles } from "@/components/ui";
 import { TEXT_ASSIST_FOUNDATION } from "@/lib/text-assist-foundation";
+import { VIRTUAL_SECRETARY_ACTIONS } from "@/lib/virtual-secretary-actions";
 import { useMobileSession } from "@/state/mobile-session";
 
 export default function TextAssistSetupScreen() {
@@ -45,6 +46,17 @@ export default function TextAssistSetupScreen() {
         <Text style={styles.status}>{TEXT_ASSIST_FOUNDATION.gateway.candidate} · {TEXT_ASSIST_FOUNDATION.gateway.readiness}</Text>
       </Card>
 
+      <Text style={styles.sectionTitle}>TA SECRÉTAIRE PEUT</Text>
+      {VIRTUAL_SECRETARY_ACTIONS.map((action) => (
+        <Card key={action.key} style={styles.capabilityCard}>
+          <View style={styles.flex}>
+            <Text style={sharedStyles.name}>{action.title}</Text>
+            <Text style={sharedStyles.value}>« {action.example} »</Text>
+            <Text style={styles.status}>{action.readiness}</Text>
+          </View>
+        </Card>
+      ))}
+
       <Text style={styles.sectionTitle}>COMMENT ÇA MARCHE</Text>
       <Card>
         {TEXT_ASSIST_FOUNDATION.loop.map((step, index) => (
@@ -79,6 +91,7 @@ export default function TextAssistSetupScreen() {
 
 const styles = StyleSheet.create({
   heroCard: { borderColor: colors.borderWarm, backgroundColor: colors.panelWarm },
+  capabilityCard: { paddingVertical: 14 },
   titleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   icon: { width: 48, height: 48, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: colors.accentSoft },
   flex: { flex: 1, gap: 4 },
