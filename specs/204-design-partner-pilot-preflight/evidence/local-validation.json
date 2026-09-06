@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "release": "R39A-DESIGN-PARTNER-PILOT-PREFLIGHT",
+  "recordedAtUtc": "2026-09-06T01:33:36Z",
+  "baseHead": "8d97d907fc850a37337f6694863c15ba95e50497",
+  "baseTree": "cdc0b33eae8e5a68d13d0a2a583a2a6b61018e0a",
+  "verdict": "LOCAL_DESIGN_PARTNER_PILOT_PREFLIGHT_READY",
+  "pilotVerdict": "BLOCKED_EXTERNAL_AUTHORITY",
+  "targetDesignPartners": 3,
+  "durationDays": 30,
+  "admittedDesignPartners": 0,
+  "recordedCustomerData": false,
+  "providerCalls": 0,
+  "externalTransports": 0,
+  "fabricatedResults": 0,
+  "validation": {
+    "focusedUnit": { "files": 1, "tests": 3, "status": "PASS" },
+    "rootTypecheck": "PASS",
+    "focusedLint": "PASS",
+    "providerBoundary": { "status": "PASS", "modules": 598, "violations": 0 },
+    "gitDiffCheck": "PASS"
+  }
+}

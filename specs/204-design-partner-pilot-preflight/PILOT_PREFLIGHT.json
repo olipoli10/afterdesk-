@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "R39-DESIGN-PARTNER-PILOT-V1",
+  "status": "LOCAL_PREFLIGHT_ONLY",
+  "targetDesignPartners": 3,
+  "durationDays": 30,
+  "workflow": "SECRETARY_COMMAND_TO_VERIFIED_OUTCOME",
+  "participantSlots": [
+    { "slot": 1, "status": "NOT_ADMITTED", "participantRef": null },
+    { "slot": 2, "status": "NOT_ADMITTED", "participantRef": null },
+    { "slot": 3, "status": "NOT_ADMITTED", "participantRef": null }
+  ],
+  "requiredMetrics": [
+    "ACTIVE_MINUTES",
+    "CORRECTIONS_REQUESTED",
+    "MANUAL_CONTEXT_REPETITIONS",
+    "TASK_COMPLETION_RATE",
+    "APPROVAL_CLARITY",
+    "FAILURE_RECOVERY_CLARITY",
+    "HUMAN_SUPPORT_MINUTES",
+    "ESTIMATED_TIME_SAVED",
+    "ESTIMATED_LOSS_AVOIDED_CAD",
+    "WOULD_CONTINUE",
+    "WOULD_PAY_CONCRETE"
+  ],
+  "authority": {
+    "designPartnerContactAuthorized": false,
+    "customerDataAuthorized": false,
+    "providerDispatchAuthorized": false,
+    "externalTransportAuthorized": false,
+    "productionAuthorized": false
+  },
+  "stopConditions": [
+    "CONSENT_MISSING",
+    "WORKSPACE_ISOLATION_FAILURE",
+    "UNAPPROVED_EXTERNAL_WRITE",
+    "CROSS_PARTNER_DATA_EXPOSURE",
+    "BUDGET_OR_DURATION_EXCEEDED",
+    "OUTCOME_CANNOT_BE_VERIFIED"
+  ],
+  "fabricatedResultsAllowed": false
+}
