@@ -3,6 +3,7 @@ param()
 
 $ErrorActionPreference = "Stop"
 $easCliVersion = "23.2.0"
+$easProjectId = "a7b2c087-f8e1-48e4-8798-f6fabefb69fe"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $mobileRoot = Join-Path $repoRoot "apps\mobile"
 $tokenPointer = [IntPtr]::Zero
@@ -49,7 +50,7 @@ try {
     }
     Write-Host "Compte Expo authentifie: $account"
 
-    Invoke-Eas project:init --account $account --non-interactive
+    Invoke-Eas project:init --id $easProjectId --force --non-interactive
   } finally {
     Pop-Location
   }

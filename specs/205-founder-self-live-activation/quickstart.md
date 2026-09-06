@@ -16,7 +16,7 @@ Expected local result: code and configuration are ready for external setup; no a
 
 1. Create an Expo account and a personal access token.
 2. From the repository root, run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-founder-android-build-secure.ps1`. The token is requested through a masked prompt and removed from the process after the build.
-3. The launcher binds the EAS project, checkpoints only its public project id when required, and produces a signed internal Android APK without submitting it to a store.
+3. The launcher verifies the existing `endveras-team/endvera` EAS project binding and produces a signed internal Android APK without submitting it to a store.
 4. Install on Olivier's phone and verify contacts/calendar permission states.
 5. Provision a compliant dedicated number with SMS and voice.
 6. Publish an approved HTTPS webhook origin and install server-only provider credentials.

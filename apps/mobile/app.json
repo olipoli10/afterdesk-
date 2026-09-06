@@ -2,6 +2,7 @@
   "expo": {
     "name": "ENDVERA",
     "slug": "endvera-mobile",
+    "owner": "endveras-team",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -73,6 +74,11 @@
       ],
       "expo-asset"
     ],
+    "extra": {
+      "eas": {
+        "projectId": "a7b2c087-f8e1-48e4-8798-f6fabefb69fe"
+      }
+    },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
