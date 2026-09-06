@@ -26,7 +26,6 @@
         "simulator": false
       },
       "android": {
-        "withoutCredentials": true,
         "buildType": "apk"
       }
     },

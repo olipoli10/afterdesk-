@@ -31,6 +31,8 @@
 
 - [x] T013 Run focused tests, mobile typecheck/lint and provider-boundary validation
 - [x] T014 Record local evidence and create a useful local Git commit
+- [x] T015 Correct the founder Android profile so the physical APK uses managed signing credentials
+- [x] T016 Add a masked-token EAS launcher that links the project, checkpoints the public project id and starts one internal Android build
 
 ## Dependencies
 
