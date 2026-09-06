@@ -68,7 +68,7 @@ function assertBuildProfiles(easConfig: JsonRecord) {
   const founder = record(build["founder-device"], "MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
   const founderIos = record(founder.ios, "MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
   const founderAndroid = record(founder.android, "MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
-  if (founder.distribution !== "internal" || founder.autoIncrement !== false || founderIos.simulator !== false || founderAndroid.withoutCredentials !== true || founderAndroid.buildType !== "apk") throw new Error("MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
+  if (founder.distribution !== "internal" || founder.autoIncrement !== false || founderIos.simulator !== false || "withoutCredentials" in founderAndroid || founderAndroid.buildType !== "apk") throw new Error("MOBILE_BUILD_FOUNDER_PROFILE_MISMATCH");
 
   const candidate = record(build["store-candidate"], "MOBILE_BUILD_STORE_PROFILE_MISMATCH");
   const candidateIos = record(candidate.ios, "MOBILE_BUILD_STORE_PROFILE_MISMATCH");
@@ -84,7 +84,7 @@ function assertIdentity(appConfig: JsonRecord, readiness: JsonRecord) {
   const readyAndroid = record(readiness.android, "MOBILE_BUILD_IDENTITY_MISMATCH");
   if (
     expo.name !== "ENDVERA" ||
-    expo.slug !== "endvera-mobile" ||
+    expo.slug !== "endvera" ||
     expo.version !== "0.1.0" ||
     ios.bundleIdentifier !== "ai.endvera.mobile" ||
     ios.buildNumber !== "1" ||

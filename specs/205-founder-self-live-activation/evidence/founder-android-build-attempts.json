@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "easProject": "@endveras-team/endvera",
+  "platform": "ANDROID",
+  "profile": "founder-device",
+  "attempts": [
+    {
+      "buildId": "e9cdc483-47dc-4dcd-a229-43e70b9f389d",
+      "gitCommitHash": "72cbe2600823e00350fbab84cd03a2d64da806a1",
+      "status": "ERRORED",
+      "failedPhase": "INSTALL_DEPENDENCIES",
+      "cause": "npm 10 refused the mobile lockfile because react-native-worklets 0.10.4 was absent",
+      "correction": "Align Expo SDK 57 patch versions and regenerate the mobile lockfile with npm 10 semantics",
+      "artifactProduced": false
+    }
+  ],
+  "claims": {
+    "expoAuthenticationObserved": true,
+    "easProjectBindingObserved": true,
+    "androidKeystoreCreated": true,
+    "signedApkProduced": false,
+    "installedOnFounderDevice": false,
+    "submittedToStore": false
+  }
+}
