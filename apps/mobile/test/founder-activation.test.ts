@@ -24,13 +24,12 @@ describe("founder self live activation boundary", () => {
     expect(parsed.claims).toMatchObject({ signedBuildReady: true, liveNumberReady: false, liveSelfPilotReady: false, externalTransportPerformed: false });
   });
 
-  it("forbids personal SMS, call-log and contact-write permissions", () => {
+  it("forbids personal SMS and call-log surveillance", () => {
     expect(appConfig.expo.android.blockedPermissions).toEqual(expect.arrayContaining([
       "android.permission.READ_SMS",
       "android.permission.WRITE_SMS",
       "android.permission.READ_CALL_LOG",
       "android.permission.WRITE_CALL_LOG",
-      "android.permission.WRITE_CONTACTS",
     ]));
   });
 

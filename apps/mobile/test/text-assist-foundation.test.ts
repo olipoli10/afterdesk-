@@ -14,7 +14,7 @@ describe("mobile TextAssist foundation", () => {
   });
 
   it("requests protected resources progressively without SMS or call-log surveillance", () => {
-    expect(TEXT_ASSIST_FOUNDATION.permissions.map((item) => item.key)).toEqual(["CALENDAR", "CONTACTS", "MICROPHONE", "FILES", "NOTIFICATIONS"]);
+    expect(TEXT_ASSIST_FOUNDATION.permissions.map((item) => item.key)).toEqual(["CALENDAR", "CONTACTS", "MICROPHONE", "CAMERA", "FILES", "NOTIFICATIONS", "LOCATION"]);
     expect(TEXT_ASSIST_FOUNDATION.forbiddenDevicePermissions).toEqual(["READ_SMS", "WRITE_SMS", "READ_CALL_LOG", "WRITE_CALL_LOG"]);
   });
 

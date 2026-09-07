@@ -3,7 +3,7 @@
     "name": "ENDVERA",
     "slug": "endvera",
     "owner": "endveras-team",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "endvera",
@@ -20,13 +20,12 @@
     },
     "android": {
       "package": "ai.endvera.mobile",
-      "versionCode": 2,
+      "versionCode": 3,
       "blockedPermissions": [
         "android.permission.READ_SMS",
         "android.permission.WRITE_SMS",
         "android.permission.READ_CALL_LOG",
-        "android.permission.WRITE_CALL_LOG",
-        "android.permission.WRITE_CONTACTS"
+        "android.permission.WRITE_CALL_LOG"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#09090b",
@@ -70,6 +69,41 @@
           "writeOnlyCalendarPermission": "Permettre à ENDVERA d’ajouter les rendez-vous que vous approuvez à votre calendrier.",
           "remindersPermission": false,
           "writeOnlyAccess": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permettre à ENDVERA de photographier les preuves et documents que vous choisissez.",
+          "microphonePermission": "Permettre à ENDVERA d’enregistrer uniquement la note vocale que vous choisissez.",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permettre à ENDVERA d’utiliser seulement les photos que vous choisissez.",
+          "cameraPermission": "Permettre à ENDVERA de photographier les preuves que vous choisissez."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permettre à ENDVERA d’associer votre action au bon chantier pendant que vous utilisez l’application.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#C97B39"
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Permettre à ENDVERA de confirmer une action sensible avec la sécurité de votre téléphone."
         }
       ],
       "expo-asset"

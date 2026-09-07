@@ -85,11 +85,11 @@ function assertIdentity(appConfig: JsonRecord, readiness: JsonRecord) {
   if (
     expo.name !== "ENDVERA" ||
     expo.slug !== "endvera" ||
-    expo.version !== "0.1.0" ||
+    expo.version !== "0.1.1" ||
     ios.bundleIdentifier !== "ai.endvera.mobile" ||
     ios.buildNumber !== "1" ||
     android.package !== "ai.endvera.mobile" ||
-    android.versionCode !== 2 ||
+    android.versionCode !== 3 ||
     readyIos.bundleIdentifier !== ios.bundleIdentifier ||
     readyIos.buildNumber !== ios.buildNumber ||
     readyIos.artifact !== "IPA" ||
@@ -108,7 +108,7 @@ function assertIdentity(appConfig: JsonRecord, readiness: JsonRecord) {
   const calendarPlugin = Array.isArray(calendar) ? record(calendar[1], "MOBILE_BUILD_PERMISSION_MISMATCH") : {};
   if (typeof contactsPermission !== "string" || !contactsPermission.includes("ENDVERA") || typeof calendarPlugin.calendarPermission !== "string" || !calendarPlugin.calendarPermission.includes("ENDVERA")) throw new Error("MOBILE_BUILD_PERMISSION_MISMATCH");
   const blocked = Array.isArray(android.blockedPermissions) ? android.blockedPermissions : [];
-  for (const forbidden of ["android.permission.READ_SMS", "android.permission.WRITE_SMS", "android.permission.READ_CALL_LOG", "android.permission.WRITE_CALL_LOG", "android.permission.WRITE_CONTACTS"]) {
+  for (const forbidden of ["android.permission.READ_SMS", "android.permission.WRITE_SMS", "android.permission.READ_CALL_LOG", "android.permission.WRITE_CALL_LOG"]) {
     if (!blocked.includes(forbidden)) throw new Error("MOBILE_BUILD_FORBIDDEN_PERMISSION_MISSING");
   }
 }
@@ -154,7 +154,7 @@ export function validateCredentialFreeMobileBuild(input: {
     appName: "ENDVERA",
     profiles: [...expectedMobileBuildProfiles],
     ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1", artifact: "IPA" as const },
-    android: { package: "ai.endvera.mobile", versionCode: 2, artifact: "AAB" as const },
+    android: { package: "ai.endvera.mobile", versionCode: 3, artifact: "AAB" as const },
     signed: false,
     uploaded: false,
     submitted: false,

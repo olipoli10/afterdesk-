@@ -2,7 +2,7 @@ export const TEXT_ASSIST_FOUNDATION = {
   productMode: "ASSISTANT_FIRST",
   sms: {
     title: "Numéro ENDVERA dédié",
-    detail: "Tu textes ENDVERA comme un contact. L’app n’a pas besoin de lire tes autres textos.",
+    detail: "Tu ouvres l’application Messages normale de ton téléphone et tu textes le numéro ENDVERA comme un contact. L’app ENDVERA ne lit aucun autre texto.",
     readiness: "Numéro réel à provisionner",
     number: null as string | null,
     providerCandidate: "TWILIO",
@@ -25,10 +25,12 @@ export const TEXT_ASSIST_FOUNDATION = {
     { key: "CALENDAR", title: "Calendrier", detail: "Autoriser les calendriers du téléphone, puis connecter Google directement si nécessaire.", route: "/device-access" },
     { key: "CONTACTS", title: "Contacts choisis", detail: "Autoriser les contacts du téléphone sans les téléverser automatiquement.", route: "/device-access" },
     { key: "MICROPHONE", title: "Microphone", detail: "Écouter seulement quand tu appuies pour parler.", route: "/calls" },
+    { key: "CAMERA", title: "Caméra", detail: "Prendre une photo seulement quand tu demandes une preuve ou un document.", route: "/device-access" },
     { key: "FILES", title: "Photos et documents choisis", detail: "Comprendre seulement ce que tu ajoutes au chantier.", route: "/evidence" },
     { key: "NOTIFICATIONS", title: "Notifications", detail: "Te prévenir des suivis et décisions importantes.", route: "/settings" },
+    { key: "LOCATION", title: "Localisation pendant l’utilisation", detail: "Relier l’action au bon chantier sans suivi permanent.", route: "/device-access" },
   ],
   forbiddenDevicePermissions: ["READ_SMS", "WRITE_SMS", "READ_CALL_LOG", "WRITE_CALL_LOG"],
-  loop: ["Tu textes ou tu parles", "ENDVERA vérifie ton identité et ton contexte", "ENDVERA choisit le bon modèle AI ou le bon outil", "Les actions sensibles sont préparées", "Tu vois et approuves l’action exacte"],
+  loop: ["Tu textes le numéro ENDVERA depuis Messages, ou tu parles dans l’app", "ENDVERA vérifie ton identité et ton contexte", "ENDVERA choisit le bon modèle AI ou le bon outil", "Les actions sensibles sont préparées", "Tu vois et approuves l’action exacte"],
   externalTransportPerformed: false,
 } as const;

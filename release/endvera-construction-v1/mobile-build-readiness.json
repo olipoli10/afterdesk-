@@ -15,7 +15,7 @@
   },
   "android": {
     "package": "ai.endvera.mobile",
-    "versionCode": 2,
+    "versionCode": 3,
     "artifact": "AAB"
   },
   "requiredExternalInputs": [
