@@ -42,7 +42,13 @@
       "completedAt": "2026-09-07T15:47:18.343Z",
       "artifactFile": ".scratch/founder-android/endvera-founder-0.1.0-build1.apk",
       "artifactSizeBytes": 102096795,
-      "artifactSha256": "46986325F793311EE5880C61B7B2E5E224395E0039E0068484468D9F67FF3B32"
+      "artifactSha256": "46986325F793311EE5880C61B7B2E5E224395E0039E0068484468D9F67FF3B32",
+      "archiveEntryCount": 1621,
+      "requiredArchiveEntriesObserved": [
+        "AndroidManifest.xml",
+        "classes.dex",
+        "resources.arsc"
+      ]
     }
   ],
   "claims": {
