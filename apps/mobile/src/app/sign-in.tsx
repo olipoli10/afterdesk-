@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from "react-native";
 import { AppIcon } from "@/components/app-icon";
-import { authClient } from "@/lib/auth-client";
+import { authClient, mobileAuthConfigured } from "@/lib/auth-client";
 import { mobileProductCopy } from "@/lib/product-experience";
 import { Button, Card, Heading, Notice, Screen, colors, sharedStyles } from "@/components/ui";
 
@@ -12,6 +12,9 @@ export default function SignInScreen() {
   const [error, setError] = useState<string | null>(null);
   const locale = Intl.DateTimeFormat().resolvedOptions().locale.toLowerCase().startsWith("en") ? "en-CA" : "fr-CA";
   const copy = mobileProductCopy(locale);
+  const configurationRequired = locale === "en-CA"
+    ? "This signed founder build is installed correctly, but its secure server address has not been activated yet."
+    : "Cette version fondateur signée est bien installée, mais son adresse serveur sécurisée n’est pas encore activée.";
 
   async function signIn() {
     if (!email.trim() || password.length < 10 || busy) return;
@@ -73,8 +76,9 @@ export default function SignInScreen() {
               onSubmitEditing={signIn}
             />
           </View>
+          {!mobileAuthConfigured ? <Notice>{configurationRequired}</Notice> : null}
           {error ? <Notice danger>{error}</Notice> : null}
-          <Button icon="arrow" accessibilityRole="button" accessibilityLabel={copy.auth.submit} accessibilityState={{ busy, disabled: busy || !email.trim() || password.length < 10 }} onPress={signIn} disabled={busy || !email.trim() || password.length < 10}>
+          <Button icon="arrow" accessibilityRole="button" accessibilityLabel={copy.auth.submit} accessibilityState={{ busy, disabled: !mobileAuthConfigured || busy || !email.trim() || password.length < 10 }} onPress={signIn} disabled={!mobileAuthConfigured || busy || !email.trim() || password.length < 10}>
             {busy ? copy.auth.submitting : copy.auth.submit}
           </Button>
         </Card>

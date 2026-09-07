@@ -6,7 +6,7 @@ import {
   createPaymentAttempt,
   finishAttempt,
 } from "../src/lib/commands";
-import { resolveMobileApiBaseUrl } from "../src/lib/config";
+import { resolveMobileApiBaseUrl, resolveMobileAuthRuntime } from "../src/lib/config";
 import { mobileBootstrapSchema, parseMobileCockpit } from "../src/lib/contracts";
 
 function project() {
@@ -55,6 +55,18 @@ describe("mobile configuration", () => {
     expect(resolveMobileApiBaseUrl("https://api.endvera.ai", { development: false })).toBe("https://api.endvera.ai");
     expect(() => resolveMobileApiBaseUrl("http://api.endvera.ai", { development: false })).toThrow("MOBILE_API_URL_HTTPS_REQUIRED");
     expect(() => resolveMobileApiBaseUrl("https://user:secret@api.endvera.ai", { development: false })).toThrow("MOBILE_API_URL_INVALID");
+  });
+
+  it("keeps an unconfigured signed build launchable without pretending the backend exists", () => {
+    expect(resolveMobileAuthRuntime(undefined, { development: false })).toEqual({
+      baseUrl: "https://configuration-required.invalid",
+      configured: false,
+    });
+    expect(resolveMobileAuthRuntime("https://api.endvera.ai", { development: false })).toEqual({
+      baseUrl: "https://api.endvera.ai",
+      configured: true,
+    });
+    expect(() => resolveMobileAuthRuntime("http://api.endvera.ai", { development: false })).toThrow("MOBILE_API_URL_HTTPS_REQUIRED");
   });
 });
 
