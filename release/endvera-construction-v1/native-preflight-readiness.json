@@ -4,7 +4,7 @@
   "hostPlatform": "win32",
   "identities": {
     "ios": {"bundleIdentifier":"ai.endvera.mobile","buildNumber":"1"},
-    "android": {"package":"ai.endvera.mobile","versionCode":1}
+    "android": {"package":"ai.endvera.mobile","versionCode":2}
   },
   "launchLanguages": ["fr-CA", "en-CA"],
   "primaryTabCount": 5,
