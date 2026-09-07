@@ -49,6 +49,30 @@
         "classes.dex",
         "resources.arsc"
       ]
+    },
+    {
+      "buildId": "5d5848dd-c638-4c82-affa-494a6ac10f77",
+      "gitCommitHash": "1f2cc63f820fcea1389b20b1b055871af3a606f0",
+      "status": "ERRORED",
+      "failedPhase": "INSTALL_DEPENDENCIES",
+      "cause": "Expo's npm 10.9.8 clean install required the optional Expo-scoped react-native-worklets 0.10.4 peer entry that npm 11 had omitted from the lockfile",
+      "correction": "Regenerate the mobile lockfile with npm 10.9.8 and prove npm ci with the same version before relaunching EAS",
+      "artifactProduced": false
+    },
+    {
+      "buildId": "314d4f25-b907-4225-a3a2-56984b183330",
+      "gitCommitHash": "31db534a55cef76c11ea7b27debef302c6992eff",
+      "status": "FINISHED",
+      "failedPhase": null,
+      "cause": null,
+      "correction": null,
+      "artifactProduced": true,
+      "completedAt": "2026-09-07T20:20:30.921Z",
+      "artifactFile": "C:/Users/oliro/Downloads/ENDVERA-founder-android-v3.apk",
+      "artifactSizeBytes": 127385508,
+      "artifactSha256": "0DC0D0918EE454AAE3D60E53ED94319B3FB5F2911FC1DF4E66948B2DA781641E",
+      "appVersion": "0.1.1",
+      "versionCode": 3
     }
   ],
   "claims": {
