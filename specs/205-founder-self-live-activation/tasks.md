@@ -35,6 +35,7 @@
 - [x] T016 Add a masked-token EAS launcher that links the project, checkpoints the public project id and starts one internal Android build
 - [x] T017 Bind the existing founder-owned `endveras-team/endvera` EAS project without cloning a starter application
 - [x] T018 Preserve the first EAS build failure and repair the npm 10 mobile lockfile deterministically
+- [x] T019 Preserve the second EAS build failure and isolate iOS metadata from Android localized resources
 
 ## Dependencies
 

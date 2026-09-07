@@ -1,6 +1,8 @@
 {
-  "CFBundleDisplayName": "ENDVERA",
-  "NSMicrophoneUsageDescription": "Permettre à ENDVERA d’enregistrer uniquement la note vocale que vous choisissez.",
+  "ios": {
+    "CFBundleDisplayName": "ENDVERA",
+    "NSMicrophoneUsageDescription": "Permettre à ENDVERA d’enregistrer uniquement la note vocale que vous choisissez."
+  },
   "android": {
     "app_name": "ENDVERA"
   }

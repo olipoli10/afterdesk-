@@ -12,6 +12,15 @@
       "cause": "npm 10 refused the mobile lockfile because react-native-worklets 0.10.4 was absent",
       "correction": "Align Expo SDK 57 patch versions and regenerate the mobile lockfile with npm 10 semantics",
       "artifactProduced": false
+    },
+    {
+      "buildId": "49069e07-fa2b-426a-a3ee-f252cf2b09dd",
+      "gitCommitHash": "6c9be2f01c0e4f4e3939ad7a44d291b61268cfd4",
+      "status": "ERRORED",
+      "failedPhase": "RUN_GRADLEW_LINT_VITAL_RELEASE",
+      "cause": "iOS-only CFBundleDisplayName and NSMicrophoneUsageDescription keys leaked into Android localized string resources",
+      "correction": "Nest platform-specific locale metadata under explicit ios and android keys",
+      "artifactProduced": false
     }
   ],
   "claims": {

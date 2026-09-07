@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import appConfig from "../app.json";
 import easConfig from "../eas.json";
+import enLocale from "../locales/en.json";
+import frLocale from "../locales/fr.json";
 import readiness from "../../../release/endvera-construction-v1/founder-self-activation-readiness.json";
 import { parseFounderActivationReadiness } from "../src/lib/founder-activation";
 
@@ -29,6 +31,15 @@ describe("founder self live activation boundary", () => {
       "android.permission.WRITE_CALL_LOG",
       "android.permission.WRITE_CONTACTS",
     ]));
+  });
+
+  it("keeps iOS-only metadata out of Android locale resources", () => {
+    for (const locale of [frLocale, enLocale]) {
+      expect(Object.keys(locale).sort()).toEqual(["android", "ios"]);
+      expect(locale.ios).toHaveProperty("CFBundleDisplayName", "ENDVERA");
+      expect(locale.ios).toHaveProperty("NSMicrophoneUsageDescription");
+      expect(locale.android).toEqual({ app_name: "ENDVERA" });
+    }
   });
 
   it("refuses unsupported live-readiness inflation", () => {
