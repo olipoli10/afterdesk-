@@ -6,7 +6,7 @@
     "iosBundleIdentifier": "ai.endvera.mobile",
     "androidPackage": "ai.endvera.mobile",
     "founderBuildProfile": "founder-device",
-    "signed": false,
+    "signed": true,
     "installedOnFounderDevice": false
   },
   "devicePermissions": [
@@ -44,8 +44,6 @@
     "directGoogleOAuthObserved": false
   },
   "requiredOwnerActions": [
-    "EXPO_PROJECT_OWNERSHIP",
-    "APPLE_OR_ANDROID_SIGNING_AUTHORITY",
     "PHYSICAL_DEVICE_INSTALL",
     "APPROVED_HTTPS_BACKEND",
     "TWILIO_ACCOUNT_AND_BILLING",
@@ -56,7 +54,7 @@
   ],
   "claims": {
     "codeReady": true,
-    "signedBuildReady": false,
+    "signedBuildReady": true,
     "liveNumberReady": false,
     "liveSelfPilotReady": false,
     "storePublished": false,

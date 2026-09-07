@@ -53,6 +53,9 @@ export const founderActivationReadinessSchema = z.object({
 
 export function parseFounderActivationReadiness(value: unknown) {
   const parsed = founderActivationReadinessSchema.parse(value);
+  if (parsed.claims.signedBuildReady !== parsed.mobile.signed || (parsed.mobile.installedOnFounderDevice && !parsed.mobile.signed)) {
+    throw new Error("FOUNDER_ACTIVATION_SIGNED_BUILD_CLAIM_MISMATCH");
+  }
   const live = parsed.mobile.signed && parsed.mobile.installedOnFounderDevice &&
     parsed.devicePermissions.every((item) => item.observedGranted) &&
     parsed.dedicatedNumber.numberProvisioned && parsed.dedicatedNumber.smsVerified &&

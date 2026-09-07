@@ -20,7 +20,7 @@ describe("founder self live activation boundary", () => {
     expect("withoutCredentials" in easConfig.build["founder-device"].android).toBe(false);
     expect(parsed.status).toBe("CODE_READY_EXTERNAL_SETUP_REQUIRED");
     expect(parsed.devicePermissions.map((item) => item.resource)).toEqual(["CONTACTS", "CALENDAR"]);
-    expect(parsed.claims).toMatchObject({ signedBuildReady: false, liveNumberReady: false, liveSelfPilotReady: false, externalTransportPerformed: false });
+    expect(parsed.claims).toMatchObject({ signedBuildReady: true, liveNumberReady: false, liveSelfPilotReady: false, externalTransportPerformed: false });
   });
 
   it("forbids personal SMS, call-log and contact-write permissions", () => {
@@ -43,6 +43,7 @@ describe("founder self live activation boundary", () => {
   });
 
   it("refuses unsupported live-readiness inflation", () => {
+    expect(() => parseFounderActivationReadiness({ ...readiness, mobile: { ...readiness.mobile, signed: false } })).toThrow("FOUNDER_ACTIVATION_SIGNED_BUILD_CLAIM_MISMATCH");
     expect(() => parseFounderActivationReadiness({ ...readiness, status: "LIVE_SELF_PILOT_READY", claims: { ...readiness.claims, liveSelfPilotReady: true } })).toThrow("FOUNDER_ACTIVATION_CLAIM_INFLATION_REFUSED");
     expect(() => parseFounderActivationReadiness({ ...readiness, claims: { ...readiness.claims, providerObserved: true } })).toThrow("FOUNDER_ACTIVATION_UNOBSERVED_CLAIM_REFUSED");
   });

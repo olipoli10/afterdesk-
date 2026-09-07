@@ -34,18 +34,22 @@
     {
       "buildId": "c391f8b1-c883-4fe1-a081-03239b1cfd55",
       "gitCommitHash": "541bf13de1270fa9b83434f70351e365de6ea5ea",
-      "status": "IN_QUEUE",
+      "status": "FINISHED",
       "failedPhase": null,
       "cause": null,
       "correction": null,
-      "artifactProduced": false
+      "artifactProduced": true,
+      "completedAt": "2026-09-07T15:47:18.343Z",
+      "artifactFile": ".scratch/founder-android/endvera-founder-0.1.0-build1.apk",
+      "artifactSizeBytes": 102096795,
+      "artifactSha256": "46986325F793311EE5880C61B7B2E5E224395E0039E0068484468D9F67FF3B32"
     }
   ],
   "claims": {
     "expoAuthenticationObserved": true,
     "easProjectBindingObserved": true,
     "androidKeystoreCreated": true,
-    "signedApkProduced": false,
+    "signedApkProduced": true,
     "installedOnFounderDevice": false,
     "submittedToStore": false
   }
