@@ -21,6 +21,24 @@
       "cause": "iOS-only CFBundleDisplayName and NSMicrophoneUsageDescription keys leaked into Android localized string resources",
       "correction": "Nest platform-specific locale metadata under explicit ios and android keys",
       "artifactProduced": false
+    },
+    {
+      "buildId": "ad743e5e-6b2a-4def-98e3-bfdd38b60f66",
+      "gitCommitHash": "c8b66a6f64a656e869293808e34837b11ec66f84",
+      "status": "CANCELED",
+      "failedPhase": null,
+      "cause": "The queued package predated the fail-closed unconfigured-backend launch correction",
+      "correction": "Cancel before compilation and replace it with the tested launch-safe package",
+      "artifactProduced": false
+    },
+    {
+      "buildId": "c391f8b1-c883-4fe1-a081-03239b1cfd55",
+      "gitCommitHash": "541bf13de1270fa9b83434f70351e365de6ea5ea",
+      "status": "IN_QUEUE",
+      "failedPhase": null,
+      "cause": null,
+      "correction": null,
+      "artifactProduced": false
     }
   ],
   "claims": {
