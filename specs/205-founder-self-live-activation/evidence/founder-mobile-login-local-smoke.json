@@ -1,0 +1,37 @@
+{
+    "schemaVersion":  1,
+    "release":  "R39C-FOUNDER-DEVICE-LOGIN-LOCAL-SMOKE",
+    "observedAtUtc":  "2026-09-07T18:25:03.9516262Z",
+    "verdict":  "LOCAL_MOBILE_AUTH_BOOTSTRAP_PASS",
+    "dataClass":  "SYNTHETIC_LOCAL_ONLY",
+    "checks":  {
+                   "migrationsApplied":  true,
+                   "syntheticVerifiedClientSeeded":  true,
+                   "syntheticWorkspaceCreated":  true,
+                   "localServerReady":  true,
+                   "anonymousBootstrapRefused":  true,
+                   "mobileEmailPasswordLogin":  true,
+                   "mobileSessionCookieIssued":  true,
+                   "verifiedClientSessionResolved":  true,
+                   "mobileBootstrapResolved":  true,
+                   "workspaceIsolationObserved":  true,
+                   "externalTransportDisabled":  true
+               },
+    "cleanup":  {
+                    "localServerStopped":  true,
+                    "disposableDatabaseRemoved":  true
+                },
+    "boundaries":  {
+                       "newDisposableDatabase":  true,
+                       "r38Touched":  false,
+                       "credentialValuePersisted":  false,
+                       "credentialValueReported":  false,
+                       "providerCalls":  0,
+                       "externalNetworkCalls":  0,
+                       "externalTransportPerformed":  false,
+                       "tunnelCreated":  false,
+                       "deploymentPerformed":  false,
+                       "easBuildPerformed":  false
+                   },
+    "failureCode":  null
+}

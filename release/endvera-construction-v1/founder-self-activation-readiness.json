@@ -7,7 +7,7 @@
     "androidPackage": "ai.endvera.mobile",
     "founderBuildProfile": "founder-device",
     "signed": true,
-    "installedOnFounderDevice": false
+    "installedOnFounderDevice": true
   },
   "devicePermissions": [
     {
@@ -44,7 +44,6 @@
     "directGoogleOAuthObserved": false
   },
   "requiredOwnerActions": [
-    "PHYSICAL_DEVICE_INSTALL",
     "APPROVED_HTTPS_BACKEND",
     "TWILIO_ACCOUNT_AND_BILLING",
     "TWILIO_REGULATORY_APPROVAL",

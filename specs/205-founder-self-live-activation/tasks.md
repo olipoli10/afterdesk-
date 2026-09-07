@@ -37,6 +37,10 @@
 - [x] T018 Preserve the first EAS build failure and repair the npm 10 mobile lockfile deterministically
 - [x] T019 Preserve the second EAS build failure and isolate iOS metadata from Android localized resources
 - [x] T020 Produce and checksum one EAS-managed signed internal Android APK without claiming device installation
+- [x] T021 Record Olivier's physical Samsung installation evidence without claiming authentication, permissions, provider transport or store publication
+- [x] T022 Route a newly authenticated mobile client with no workspace directly into onboarding instead of an empty cockpit
+- [x] T023 Add a disposable local founder-login harness that never persists or reports its generated credential
+- [x] T024 Observe the real Better Auth email/password route issuing a mobile session and resolving exactly one owner workspace through the mobile bootstrap route
 
 ## Dependencies
 

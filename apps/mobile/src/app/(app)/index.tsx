@@ -17,6 +17,7 @@ import {
   colors,
   sharedStyles,
 } from "@/components/ui";
+import { shouldRouteToOnboarding } from "@/lib/first-login";
 import { mobileGoldenWorkflowCopy, type MobileGoldenWorkflowRoute } from "@/lib/golden-workflow";
 import { mobileProductCopy } from "@/lib/product-experience";
 import { useMobileSession } from "@/state/mobile-session";
@@ -39,13 +40,26 @@ function openRoute(route: MobileGoldenWorkflowRoute) {
 
 export default function TodayScreen() {
   const [showPlan, setShowPlan] = useState(false);
-  const { activeWorkspace, cockpit, goldenWorkflow, goldenWorkflowLoadState, publicError, loadGoldenWorkflow } = useMobileSession();
+  const { activeWorkspace, bootstrap, cockpit, goldenWorkflow, goldenWorkflowLoadState, loadState, publicError, loadGoldenWorkflow } = useMobileSession();
   const fallbackLocale = activeWorkspace?.defaultLocale === "en-CA" ? "en-CA" : "fr-CA";
   const copy = mobileProductCopy(goldenWorkflow?.workspace.locale ?? fallbackLocale);
+  const onboardingRequired = shouldRouteToOnboarding({
+    bootstrap,
+    activeWorkspaceId: activeWorkspace?.id ?? null,
+    loadState,
+  });
+
+  useEffect(() => {
+    if (onboardingRequired) router.replace("/onboarding");
+  }, [onboardingRequired]);
 
   useEffect(() => {
     if (activeWorkspace) void loadGoldenWorkflow();
   }, [activeWorkspace, loadGoldenWorkflow]);
+
+  if (onboardingRequired) {
+    return <Screen><Loading label="Préparation de ton espace…" /></Screen>;
+  }
 
   if (!goldenWorkflow && goldenWorkflowLoadState === "LOADING") {
     return <Screen><BrandHeader workspace={activeWorkspace?.name} /><Loading label={mobileGoldenWorkflowCopy(fallbackLocale, "cockpit.syncing")} /></Screen>;

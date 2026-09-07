@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "observationClass": "FOUNDER_SUPPLIED_PHYSICAL_DEVICE_PHOTO",
+  "founder": "Olivier",
+  "platform": "ANDROID",
+  "deviceFamily": "SAMSUNG",
+  "artifact": {
+    "easBuildId": "c391f8b1-c883-4fe1-a081-03239b1cfd55",
+    "androidPackage": "ai.endvera.mobile",
+    "version": "0.1.0",
+    "versionCode": 1
+  },
+  "sourceEvidence": {
+    "fileName": "1-Photo-1.jpg",
+    "byteLength": 36025,
+    "sha256": "CA7B21B3459A018603E25CF0D9541740AC067FB47361143D734C2D1D45235F01",
+    "sourceFileLastWriteUtc": "2026-09-07T17:35:30.5913689Z"
+  },
+  "observed": {
+    "signedAppInstalledOnFounderDevice": true,
+    "appLaunches": true,
+    "endveraSignInSurfaceRendered": true,
+    "backendConfigured": false,
+    "loginSucceeded": false,
+    "contactsPermissionGranted": false,
+    "calendarPermissionGranted": false,
+    "externalTransportPerformed": false
+  },
+  "visibleDiagnostic": "The installed founder build reports that its secure server address has not been activated yet.",
+  "claimBoundary": "This image proves physical installation and launch only. It does not prove authentication, backend reachability, native permission grants, provider delivery, store publication, or Verified-E2E coverage."
+}
