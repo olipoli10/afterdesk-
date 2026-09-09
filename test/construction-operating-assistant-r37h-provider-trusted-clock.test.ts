@@ -67,6 +67,7 @@ describe("R37H provider trusted clock boundary", () => {
     }],
     ["reserve", reserveProviderSpendSchema, {
       actorId: "owner", workspaceId: "workspace", grantId: "grant", idempotencyKey: "attempt",
+      candidateKey: "OPENROUTER_CONTROLLER",
       caseFingerprint: fingerprint, exactModelId: "example/model",
       sealedExecutorFingerprint: fingerprint, requestedMicros: 1n, now: callerNow,
     }],

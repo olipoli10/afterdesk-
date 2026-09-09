@@ -118,6 +118,7 @@ export async function runR37OpenRouterCampaign(input: R37CampaignInput) {
           actorId: input.ownerId,
           workspaceId: input.workspaceId,
           grantId: grant.id,
+          candidateKey: "OPENROUTER_CONTROLLER",
           idempotencyKey: `${input.campaignId}:${grant.modelId}:${observedCase.caseId}`,
           caseFingerprint: observedCase.caseFingerprint,
           exactModelId: grant.modelId,

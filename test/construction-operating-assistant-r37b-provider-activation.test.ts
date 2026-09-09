@@ -34,6 +34,7 @@ describe("R37B provider activation contracts", () => {
       actorId: "actor",
       workspaceId: "workspace",
       grantId: "grant",
+      candidateKey: "PERPLEXITY_SEARCH",
       idempotencyKey: "attempt-1",
       caseFingerprint: fingerprint,
       exactModelId: "sonar-pro",

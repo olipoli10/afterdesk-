@@ -35,6 +35,7 @@ export const reserveProviderSpendSchema = z.object({
   actorId: z.string().min(1),
   workspaceId: z.string().min(1),
   grantId: z.string().min(1),
+  candidateKey: providerCandidateSchema,
   idempotencyKey: z.string().trim().min(1).max(200),
   caseFingerprint: fingerprintSchema,
   exactModelId: z.string().trim().min(1).max(160),

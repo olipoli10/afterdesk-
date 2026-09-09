@@ -42,6 +42,86 @@ function fixedClock(now: Date): ProviderTrustedClock {
   return { now: () => new Date(now.getTime()) };
 }
 
+function assertGrantAuthority(
+  input: ExecuteControlledSyntheticAttemptInput,
+  grant: { status: string; expiresAt: Date; candidateKey: string; sealedExecutorFingerprint: string; exactModelId: string; allowedCaseFingerprints: string[] } | null,
+  lane: { state: string } | null,
+  now: Date,
+) {
+  if (!grant) throw new ConstructionAccessDenied();
+  if (lane?.state !== "ENABLED") throw new Error("R37C_PROVIDER_LANE_DISABLED_AT_USE");
+  if (grant.status !== "ACTIVE" || grant.expiresAt <= now) throw new Error("R37C_GRANT_INACTIVE_AT_USE");
+  if (Date.parse(input.sealed.authorization.expiresAt) <= now.getTime()) throw new Error("R37A_AUTHORIZATION_EXPIRED");
+  if (Date.parse(input.sealed.authorization.authorizedAt) > now.getTime()) throw new Error("R37A_AUTHORIZATION_TIME_INVALID");
+  if (
+    grant.candidateKey !== input.sealed.authorization.candidateKey ||
+    grant.sealedExecutorFingerprint !== input.sealedExecutorFingerprint ||
+    grant.exactModelId !== input.sealed.authorization.exactModelId ||
+    !grant.allowedCaseFingerprints.includes(input.sealed.sandboxCase.caseFingerprint)
+  ) throw new Error("R37C_GRANT_BINDING_DRIFT_AT_USE");
+  return Math.min(grant.expiresAt.getTime(), Date.parse(input.sealed.authorization.expiresAt));
+}
+
+// Shared by the direct synthetic adapter and the delivery-wrapped fixture.
+// These are current application checks, not an OS sandbox or atomic guarantee
+// against revocation after the final read. Clock reads happen after all DB awaits.
+export async function assertCurrentControlledRunAuthority(
+  input: ExecuteControlledSyntheticAttemptInput,
+  context: Readonly<{ runId: string; leaseToken: string }>,
+  clock?: ProviderTrustedClock,
+  db: Pick<Prisma.TransactionClient, "controlledProviderRun" | "providerActivationGrant" | "providerLaneControl"> = prisma,
+) {
+  const [run, grant, lane] = await Promise.all([
+    db.controlledProviderRun.findUniqueOrThrow({ where: { id: context.runId } }),
+    db.providerActivationGrant.findFirst({ where: { id: input.grantId, workspaceId: input.workspaceId } }),
+    db.providerLaneControl.findUnique({ where: { id: LANE_CONTROL_ID } }),
+  ]);
+  const now = readProviderTrustedNow(clock);
+  const authorityDeadline = assertGrantAuthority(input, grant, lane, now);
+  if (run.state !== "RUNNING" || run.leaseToken !== context.leaseToken || !run.leaseExpiresAt || run.leaseExpiresAt <= now) throw new Error("R37C_ACTIVE_LEASE_REQUIRED");
+  if (
+    run.workspaceId !== input.workspaceId || run.grantId !== input.grantId ||
+    run.idempotencyKey !== input.idempotencyKey ||
+    run.sealedAttemptFingerprint !== input.sealed.sealedAttemptFingerprint ||
+    run.sealedExecutorFingerprint !== input.sealedExecutorFingerprint ||
+    run.exactModelId !== input.sealed.authorization.exactModelId ||
+    run.caseFingerprint !== input.sealed.sandboxCase.caseFingerprint
+  ) throw new Error("R37C_RUN_BINDING_DRIFT_AT_USE");
+  return { run, now, deadline: Math.min(authorityDeadline, run.leaseExpiresAt.getTime()) };
+}
+
+// The row write may wait for a lock. Revalidate after it, inside the same
+// transaction, so a stale-time write rolls back instead of becoming evidence.
+// This cannot guarantee that time/revocation is frozen during the DB commit.
+export async function recordControlledRunEvidence(
+  input: ExecuteControlledSyntheticAttemptInput,
+  context: Readonly<{ runId: string; leaseToken: string }>,
+  write: (tx: Prisma.TransactionClient) => Promise<{ count: number }>,
+  options: Readonly<{ clock?: ProviderTrustedClock; abortSignal?: AbortSignal }>,
+) {
+  return prisma.$transaction(async (tx) => {
+    const admitted = await assertCurrentControlledRunAuthority(input, context, options.clock, tx);
+    const stored = await write(tx);
+    const [grant, lane] = await Promise.all([
+      tx.providerActivationGrant.findFirst({ where: { id: input.grantId, workspaceId: input.workspaceId } }),
+      tx.providerLaneControl.findUnique({ where: { id: LANE_CONTROL_ID } }),
+    ]);
+    const now = readProviderTrustedNow(options.clock);
+    assertGrantAuthority(input, grant, lane, now);
+    if (options.abortSignal?.aborted || admitted.deadline <= now.getTime()) throw new Error("R37C_ACTIVE_LEASE_REQUIRED");
+    return stored;
+  });
+}
+
+function terminalCommandVersion(attempt: { state: string; version: number }, terminalState: "SETTLED" | "RELEASED") {
+  // ProviderSpendAttempt starts at version 1 (schema default). Its sole writer,
+  // R37B terminalAttempt, increments once and refuses any second transition.
+  // A terminal row at version 2 therefore retains original command version 1.
+  // Fail closed on any state/version outside that proven lifecycle.
+  if ((attempt.state === "RESERVED" && attempt.version === 1) || (attempt.state === terminalState && attempt.version === 2)) return 1;
+  throw new Error("R37C_SPEND_TERMINAL_VERSION_INVALID");
+}
+
 function json(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
 }
@@ -174,7 +254,7 @@ async function settleRecordedEvidence(
     workspaceId: input.workspaceId,
     grantId: input.grantId,
     attemptId: attempt.id,
-    expectedVersion: attempt.version,
+    expectedVersion: terminalCommandVersion(attempt, "SETTLED"),
     settledMicros: BigInt(evidence.costMicros),
   }, fixedClock(now));
   const completed = await prisma.controlledProviderRun.update({
@@ -211,7 +291,7 @@ async function releaseFailedAttempt(
     workspaceId: input.workspaceId,
     grantId: input.grantId,
     attemptId: attempt.id,
-    expectedVersion: attempt.version,
+    expectedVersion: terminalCommandVersion(attempt, "RELEASED"),
   }, fixedClock(now));
   const completed = await prisma.controlledProviderRun.update({
     where: { id: run.id },
@@ -282,6 +362,7 @@ async function executeParsedControlledSyntheticAttempt(
     workspaceId: input.workspaceId,
     grantId: input.grantId,
     idempotencyKey: reserveIdempotencyKey(input),
+    candidateKey: input.sealed.authorization.candidateKey,
     caseFingerprint: input.sealed.sandboxCase.caseFingerprint,
     exactModelId: input.sealed.authorization.exactModelId,
     sealedExecutorFingerprint: input.sealedExecutorFingerprint,
@@ -304,24 +385,17 @@ async function executeParsedControlledSyntheticAttempt(
       const grant = await tx.providerActivationGrant.findFirst({
         where: { id: input.grantId, workspaceId: input.workspaceId },
       });
-      if (!grant) throw new ConstructionAccessDenied();
-      if (lane?.state !== "ENABLED") throw new Error("R37C_PROVIDER_LANE_DISABLED_AT_USE");
-      if (grant.status !== "ACTIVE" || grant.expiresAt <= now) throw new Error("R37C_GRANT_INACTIVE_AT_USE");
-      if (
-        grant.sealedExecutorFingerprint !== input.sealedExecutorFingerprint ||
-        grant.exactModelId !== input.sealed.authorization.exactModelId ||
-        !grant.allowedCaseFingerprints.includes(input.sealed.sandboxCase.caseFingerprint)
-      ) {
-        throw new Error("R37C_GRANT_BINDING_DRIFT_AT_USE");
-      }
+      // Refresh after the awaited DB reads; entry-time `now` is not admission time.
+      const admissionNow = readProviderTrustedNow(clock);
+      const authorityDeadline = assertGrantAuthority(input, grant, lane, admissionNow);
       const claimed = await tx.controlledProviderRun.update({
         where: { id: current.id },
         data: {
           state: "RUNNING",
           spendAttemptId: reservation.attempt.id,
           leaseToken,
-          leaseExpiresAt: new Date(now.getTime() + input.leaseDurationMs),
-          startedAt: current.startedAt ?? now,
+          leaseExpiresAt: new Date(Math.min(admissionNow.getTime() + input.leaseDurationMs, authorityDeadline)),
+          startedAt: current.startedAt ?? admissionNow,
           version: { increment: 1 },
         },
       });
@@ -352,15 +426,31 @@ async function executeParsedControlledSyntheticAttempt(
     return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked: false });
   }
 
+  let adapterInvoked = false;
+  let authorityTimer: ReturnType<typeof setTimeout> | undefined;
+  const authorityAbort = new AbortController();
   try {
+    const context = { runId: run.id, leaseToken };
+    const admitted = await assertCurrentControlledRunAuthority(input, context, clock);
+    const remaining = admitted.deadline - readProviderTrustedNow(clock).getTime();
+    if (remaining <= 0) throw new Error("R37C_ACTIVE_LEASE_REQUIRED");
+    // Cooperative deadline only; a timeout never proves arbitrary JS stopped.
+    authorityTimer = setTimeout(() => authorityAbort.abort(), remaining);
     const evidence = await runSyntheticAttempt({
       sealed: input.sealed as SealedSyntheticAttempt,
-      adapter,
-      adapterContext: { runId: run.id, leaseToken },
-      now: now.toISOString(),
-    });
+      adapter: async (request, adapterContext, control) => {
+        const current = await assertCurrentControlledRunAuthority(input, context, clock);
+        if (authorityAbort.signal.aborted || control?.abortSignal.aborted || current.deadline <= readProviderTrustedNow(clock).getTime()) throw new Error("R37C_ACTIVE_LEASE_REQUIRED");
+        adapterInvoked = true;
+        return adapter(request, adapterContext, control);
+      },
+      adapterContext: context,
+      abortSignal: authorityAbort.signal,
+    }, { clock });
+    const terminal = await assertCurrentControlledRunAuthority(input, context, clock);
     const terminalNow = readProviderTrustedNow(clock);
-    const stored = await prisma.controlledProviderRun.updateMany({
+    if (authorityAbort.signal.aborted || terminal.deadline <= terminalNow.getTime()) throw new Error("R37C_ACTIVE_LEASE_REQUIRED");
+    const stored = await recordControlledRunEvidence(input, context, (tx) => tx.controlledProviderRun.updateMany({
       where: {
         id: run.id,
         state: "RUNNING",
@@ -375,7 +465,7 @@ async function executeParsedControlledSyntheticAttempt(
         leaseExpiresAt: null,
         version: { increment: 1 },
       },
-    });
+    }), { clock, abortSignal: authorityAbort.signal });
     if (stored.count !== 1) {
       const expired = await prisma.controlledProviderRun.updateMany({
         where: {
@@ -400,7 +490,7 @@ async function executeParsedControlledSyntheticAttempt(
         return releaseFailedAttempt(input, run.id, true, "FAILED", terminalNow);
       }
       const current = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: run.id } });
-      return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked: true });
+      return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked });
     }
     return settleRecordedEvidence(input, run.id, true, terminalNow);
   } catch (error) {
@@ -422,9 +512,12 @@ async function executeParsedControlledSyntheticAttempt(
     });
     if (marked.count !== 1) {
       const current = await prisma.controlledProviderRun.findUniqueOrThrow({ where: { id: run.id } });
-      return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked: true });
+      return result({ disposition: "IN_PROGRESS", run: current, adapterInvoked });
     }
-    return releaseFailedAttempt(input, run.id, true, "FAILED", failureNow);
+    return releaseFailedAttempt(input, run.id, adapterInvoked, "FAILED", failureNow);
+  } finally {
+    if (authorityTimer !== undefined) clearTimeout(authorityTimer);
+    authorityAbort.abort();
   }
 }
 

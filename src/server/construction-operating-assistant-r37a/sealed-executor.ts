@@ -23,10 +23,32 @@ export type SyntheticProviderInvocationContext = Readonly<{
   leaseToken: string;
 }>;
 
+/** Trusted local fixture seam, NOT a sandbox for untrusted executable code.
+ * The result's synthetic/no-transport fields are contractual declarations, not
+ * an observation of I/O. Callers must separately enforce network/credential
+ * isolation before using this seam as evidence of no external transport.
+ */
 export type SyntheticProviderTransport = (
   request: R37APreparedRequest,
   context?: SyntheticProviderInvocationContext,
+  control?: Readonly<{ abortSignal: AbortSignal }>,
 ) => Promise<unknown>;
+
+export type SyntheticExecutionOptions = Readonly<{
+  // Internal service/test capability, never deserialized from runtime input.
+  clock?: Readonly<{ now: () => Date }>;
+}>;
+
+function assertRuntimeAuthorizationTime(sealed: SealedSyntheticAttempt, options: SyntheticExecutionOptions): number {
+  let current: unknown;
+  try { current = options.clock?.now() ?? new Date(); }
+  catch { throw new Error("R37A_AUTHORIZATION_TIME_INVALID"); }
+  if (!(current instanceof Date) || !Number.isFinite(current.getTime())) throw new Error("R37A_AUTHORIZATION_TIME_INVALID");
+  const now = current.getTime();
+  if (Date.parse(sealed.authorization.authorizedAt) > now) throw new Error("R37A_AUTHORIZATION_TIME_INVALID");
+  if (Date.parse(sealed.authorization.expiresAt) <= now) throw new Error("R37A_AUTHORIZATION_EXPIRED");
+  return now;
+}
 
 function assertR37ASealedSyntheticAttempt(value: unknown): SealedSyntheticAttempt {
   const parsed = r37aSealedSyntheticAttemptSchema.safeParse(value);
@@ -117,6 +139,8 @@ function prepareRequest(requestPlan: ProviderRequestPlan, authorization: R37AAut
   return r37aPreparedRequestSchema.parse({ ...unsigned, preparedRequestFingerprint: r37aFingerprint(unsigned) });
 }
 
+// `now` below is a historical preparation timestamp, NOT runtime authorization.
+// A valid sealed artifact still requires fresh checks on every execution.
 export function sealSyntheticAttempt(input: Readonly<{
   campaign: R37CampaignManifest;
   sandboxCase: SandboxCase;
@@ -148,21 +172,56 @@ export async function runSyntheticAttempt(input: Readonly<{
   sealed: SealedSyntheticAttempt;
   adapter: SyntheticProviderTransport;
   adapterContext?: SyntheticProviderInvocationContext;
-  now?: string;
-}>): Promise<R37ASyntheticEvidence> {
+  abortSignal?: AbortSignal;
+}>, options: SyntheticExecutionOptions = {}): Promise<R37ASyntheticEvidence> {
+  if ("now" in input) throw new Error("R37A_CALLER_TIME_REFUSED");
   const sealed = assertR37ASealedSyntheticAttempt(input.sealed);
-  const now = input.now ?? new Date().toISOString();
-  if (sealed.authorization.expiresAt <= now) throw new Error("R37A_AUTHORIZATION_EXPIRED");
+  const admittedAt = assertRuntimeAuthorizationTime(sealed, options);
+  const expiresAt = Date.parse(sealed.authorization.expiresAt);
+  if (input.abortSignal?.aborted) throw new Error("R37A_SYNTHETIC_ATTEMPT_ABORTED");
   if (sealed.preparedRequest.dispatchable || sealed.preparedRequest.credentialResolved) throw new Error("R37A_DISPATCHABLE_REQUEST_REFUSED");
-  const rawAdapterResult = await input.adapter(sealed.preparedRequest, input.adapterContext);
+  const ceilings = sealed.sandboxCase.ceilings;
+  const timeoutMs = Math.min(ceilings.maxLatencyMs, expiresAt - admittedAt);
+  const controller = new AbortController();
+  const startedAt = performance.now();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let abortListener: (() => void) | undefined;
+  let rawAdapterResult: unknown;
+  try {
+    const deadline = new Promise<never>((_, reject) => {
+      const terminate = (code: string) => {
+        // Cooperative cancellation request only. This does NOT prove a hung
+        // callback stopped, and is never evidence that external work was cancelled.
+        controller.abort();
+        reject(new Error(code));
+      };
+      timer = setTimeout(() => terminate("R37A_SYNTHETIC_ATTEMPT_TIMEOUT"), timeoutMs);
+      abortListener = () => terminate("R37A_SYNTHETIC_ATTEMPT_ABORTED");
+      input.abortSignal?.addEventListener("abort", abortListener, { once: true });
+    });
+    const attempted = Promise.resolve().then(() => {
+      if (controller.signal.aborted || input.abortSignal?.aborted) throw new Error("R37A_SYNTHETIC_ATTEMPT_ABORTED");
+      assertRuntimeAuthorizationTime(sealed, options);
+      return input.adapter(sealed.preparedRequest, input.adapterContext, { abortSignal: controller.signal });
+    });
+    // A rejected/late adapter remains handled by race, but cannot emit success
+    // evidence after timeout. In-process JavaScript cannot preempt synchronous CPU.
+    rawAdapterResult = await Promise.race([attempted, deadline]);
+    if (performance.now() - startedAt >= timeoutMs) throw new Error("R37A_SYNTHETIC_ATTEMPT_TIMEOUT");
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+    if (abortListener) input.abortSignal?.removeEventListener("abort", abortListener);
+    controller.abort();
+  }
   if (!rawAdapterResult || typeof rawAdapterResult !== "object" || (rawAdapterResult as { externalTransportPerformed?: unknown }).externalTransportPerformed !== false) {
     throw new Error("R37A_EXTERNAL_TRANSPORT_REFUSED");
   }
   const adapterResult = r37aSyntheticAdapterResultSchema.parse(rawAdapterResult);
-  const ceilings = sealed.sandboxCase.ceilings;
   if (adapterResult.latencyMs > ceilings.maxLatencyMs) throw new Error("R37A_LATENCY_CEILING_EXCEEDED");
   if (adapterResult.costMicros > ceilings.maxCostMicros) throw new Error("R37A_COST_CEILING_EXCEEDED");
   if (serialisedByteLength(adapterResult.body) > ceilings.maxOutputTokens * 4) throw new Error("R37A_RESPONSE_SIZE_EXCEEDED");
+  assertRuntimeAuthorizationTime(sealed, options);
+  // These flags classify fixture evidence; they do not attest callback I/O.
   const unsigned = {
     schemaVersion: 1 as const,
     evidenceLabel: "SYNTHETIC" as const,

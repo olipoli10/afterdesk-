@@ -52,7 +52,6 @@ describe("R37G provider security hardening", () => {
         calls += 1;
         return { body: { ok: true }, latencyMs: 1, costMicros: 1, externalTransportPerformed: false };
       },
-      now: "2026-09-02T18:00:00.000Z",
     })).rejects.toThrow("R37A_SEALED_ATTEMPT_DRIFT");
     expect(calls).toBe(0);
   });

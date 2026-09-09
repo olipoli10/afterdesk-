@@ -16,6 +16,8 @@ import {
 import { prisma } from "@/lib/db";
 import { readProviderTrustedNow } from "@/server/construction-operating-assistant-r37b/activation";
 import {
+  assertCurrentControlledRunAuthority,
+  recordControlledRunEvidence,
   executeControlledSyntheticAttempt,
   type ControlledProviderExecutionOptions,
 } from "@/server/construction-operating-assistant-r37c/coordinator";
@@ -43,7 +45,7 @@ export async function executeControlledSyntheticProviderDelivery(
   const input = executeControlledSyntheticAttemptSchema.parse(rawInput);
   let fixtureAdapterInvoked = false;
 
-  const controlledRun = await executeControlledSyntheticAttempt(input, async (request, context) => {
+  const controlledRun = await executeControlledSyntheticAttempt(input, async (request, context, control) => {
     if (!context) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
     const leaseCheckNow = readProviderTrustedNow(options.clock);
     const run = await prisma.controlledProviderRun.findFirst({
@@ -57,11 +59,15 @@ export async function executeControlledSyntheticProviderDelivery(
         leaseExpiresAt: { gt: leaseCheckNow },
       },
     });
-    if (!run) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
+    const afterLookupNow = readProviderTrustedNow(options.clock);
+    if (!run?.leaseExpiresAt || run.leaseExpiresAt <= afterLookupNow) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
+
+    const current = await assertCurrentControlledRunAuthority(input, context, options.clock);
+    if (control?.abortSignal.aborted || current.deadline <= readProviderTrustedNow(options.clock).getTime()) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
 
     const recovered = recoverCanonicalEvidence(
-      run.canonicalEvidenceSnapshot,
-      run.canonicalEvidenceFingerprint,
+      current.run.canonicalEvidenceSnapshot,
+      current.run.canonicalEvidenceFingerprint,
     );
     if (recovered) {
       return {
@@ -74,7 +80,9 @@ export async function executeControlledSyntheticProviderDelivery(
 
     fixtureAdapterInvoked = true;
     const adapterResult = providerFixtureAdapterResultSchema.parse(await fixtureAdapter(request));
+    const terminal = await assertCurrentControlledRunAuthority(input, context, options.clock);
     const callbackNow = readProviderTrustedNow(options.clock);
+    if (control?.abortSignal.aborted || terminal.deadline <= callbackNow.getTime()) throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
     const canonicalEvidence = normalizeSyntheticProviderFixture({
       candidateKey: input.sealed.authorization.candidateKey,
       sealed: input.sealed,
@@ -82,7 +90,7 @@ export async function executeControlledSyntheticProviderDelivery(
       latencyMs: adapterResult.latencyMs,
       costMicros: adapterResult.costMicros,
     });
-    const stored = await prisma.controlledProviderRun.updateMany({
+    const stored = await recordControlledRunEvidence(input, context, (tx) => tx.controlledProviderRun.updateMany({
       where: {
         id: run.id,
         state: "RUNNING",
@@ -94,7 +102,7 @@ export async function executeControlledSyntheticProviderDelivery(
         canonicalEvidenceSnapshot: json(canonicalEvidence),
         canonicalEvidenceFingerprint: canonicalEvidence.evidenceFingerprint,
       },
-    });
+    }), { clock: options.clock, abortSignal: control?.abortSignal });
     if (stored.count !== 1) {
       throw new Error("R37F_ACTIVE_LEASE_REQUIRED");
     }

@@ -50,7 +50,7 @@ async function activeGrant(label: string, limits?: { calls?: number; spend?: big
 }
 
 function reservationInput(ctx: Awaited<ReturnType<typeof activeGrant>>, idempotencyKey: string, requestedMicros: bigint) {
-  return { actorId: ctx.owner.id, workspaceId: ctx.workspaceId, grantId: ctx.grant.id, idempotencyKey, caseFingerprint, exactModelId: model, sealedExecutorFingerprint: sealedFingerprint, requestedMicros };
+  return { actorId: ctx.owner.id, workspaceId: ctx.workspaceId, grantId: ctx.grant.id, candidateKey: "OPENROUTER_CONTROLLER" as const, idempotencyKey, caseFingerprint, exactModelId: model, sealedExecutorFingerprint: sealedFingerprint, requestedMicros };
 }
 
 describe("R37B provider activation controls on disposable PostgreSQL", () => {

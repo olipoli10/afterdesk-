@@ -227,6 +227,9 @@ export async function reserveProviderSpend(rawInput: unknown, clock?: ProviderTr
     await requireOwnerOrAdmin(tx, input.actorId, input.workspaceId);
     const grant = await tx.providerActivationGrant.findFirst({ where: { id: input.grantId, workspaceId: input.workspaceId } });
     if (!grant) throw new ConstructionAccessDenied();
+    // Candidate identity participates in the reservation fingerprint and must
+    // match even when the idempotency key already has a durable reservation.
+    if (grant.candidateKey !== input.candidateKey) throw new Error("R37B_CANDIDATE_MISMATCH");
     const existing = await tx.providerSpendAttempt.findUnique({ where: { grantId_idempotencyKey: { grantId: input.grantId, idempotencyKey: input.idempotencyKey } } });
     if (existing) {
       if (existing.requestFingerprint !== fingerprint) throw new Error("R37B_RESERVATION_IDEMPOTENCY_CONFLICT");
