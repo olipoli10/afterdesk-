@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "queueId": "ASTRA-R03-LOCAL-BUILD",
+  "authority": "LOCAL ONLY; no provider, credentials, customer data, transport, spending, push, deployment, timer or founder test",
+  "entries": [
+    {"id":"REPRODUCE","status":"DONE","dependencies":[],"evidence":"evidence/before-focused/result.json"},
+    {"id":"FIX_REVIEW","status":"IN_PROGRESS","dependencies":["REPRODUCE"]},
+    {"id":"VALIDATE_BUILD","status":"OPEN","dependencies":["FIX_REVIEW"],"completionCommand":"node specs/209-local-web-build-storage/verify.mjs"},
+    {"id":"CHECKPOINT","status":"OPEN","dependencies":["VALIDATE_BUILD"]}
+  ],
+  "projectComplete": false
+}

@@ -4,7 +4,7 @@
    the S3Client constructor and every filesystem primitive the module can
    reach are spied, so "no client, no disk, no network" is a counted fact.
    The partial-R2 matrix covers exactly 1, exactly 2 and exactly 3 values
-   in isolated cases. Test-only file: src/lib/storage.ts is untouched. */
+   in isolated cases. R0.3 adds build-disabled and runtime regression cases. */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Readable } from "node:stream";
 
@@ -53,7 +53,7 @@ function expectZeroSideEffects(context: string) {
 }
 
 /* ---- clean environment per case -------------------------------------- */
-const ENV_KEYS = ["VERCEL_ENV", "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"] as const;
+const ENV_KEYS = ["VERCEL_ENV", "NEXT_PHASE", "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"] as const;
 /* NODE_ENV is readonly in the Next types; the production case uses vi.stubEnv. */
 const saved: Record<string, string | undefined> = {};
 
@@ -163,4 +163,53 @@ describe("production and local-dev contracts are unchanged", () => {
     expect(s3Constructed).toHaveBeenCalledTimes(1);
     expect(s3Sent).not.toHaveBeenCalled();
   });
+});
+
+describe("Next build collection has no storage authority", () => {
+  function buildPhase() {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.NEXT_PHASE = "phase-production-build";
+  }
+  it("imports during build without R2 and without constructing storage", async () => {
+    buildPhase();
+    const mod = await load();
+    expect(mod.STORAGE_MODE).toBe("build-disabled");
+    expectZeroSideEffects("build import");
+  });
+  it("refuses all operations and refuses streams synchronously during build", async () => {
+    buildPhase();
+    const mod = await load();
+    for (const op of [
+      () => mod.putObject("synthetic", Buffer.from("synthetic")),
+      () => mod.readObject("synthetic"),
+      () => mod.objectExists("synthetic"),
+      () => mod.deleteObject("synthetic"),
+    ]) await expect(op()).rejects.toThrow(/StorageBuildDisabledError/);
+    expect(() => mod.objectStream("synthetic")).toThrow(/StorageBuildDisabledError/);
+    expectZeroSideEffects("build operations");
+  });
+  it("accidental complete R2 values cannot activate a build-time client", async () => {
+    buildPhase();
+    process.env.R2_ACCOUNT_ID = "synthetic-account";
+    process.env.R2_ACCESS_KEY_ID = "synthetic-access";
+    process.env.R2_SECRET_ACCESS_KEY = "synthetic-secret";
+    process.env.R2_BUCKET = "synthetic-bucket";
+    const mod = await load();
+    expect(mod.STORAGE_MODE).toBe("build-disabled");
+    await expect(mod.putObject("k", Buffer.from("x"))).rejects.toThrow(/StorageBuildDisabledError/);
+    expectZeroSideEffects("accidental build credentials");
+  });
+  it("partial configuration remains refused even during build", async () => {
+    buildPhase();process.env.R2_ACCOUNT_ID = "synthetic-account";
+    await expect(load()).rejects.toThrow(/partial R2 configuration/);
+    expectZeroSideEffects("partial build configuration");
+  });
+  for (const phase of [undefined, "phase-production-server", "phase-export", "true"]) {
+    it(`production runtime without R2 refuses phase ${String(phase)}`, async () => {
+      vi.stubEnv("NODE_ENV", "production");
+      if (phase !== undefined) process.env.NEXT_PHASE = phase;
+      await expect(load()).rejects.toThrow(/must all be set in\s+.?production/);
+      expectZeroSideEffects("runtime remains unconfigured");
+    });
+  }
 });

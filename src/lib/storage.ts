@@ -46,6 +46,8 @@ import {
  *                     StoragePreviewDisabledError - synchronously for
  *                     objectStream, before any stream exists. Even four
  *                     accidentally-present R2 values cannot re-enable it.
+ *   build-disabled    Next compilation/page collection only; every operation
+ *                     refuses, even with a complete R2 configuration.
  *   r2                the existing Cloudflare backend when all four
  *                     credentials are present outside preview.
  *   local-dev         the existing disk backend, outside preview AND
@@ -54,8 +56,19 @@ import {
  * A PARTIAL R2 configuration (1-3 of the four values) is a configuration
  * mistake in every environment: it throws at import instead of silently
  * degrading to disabled-or-disk. Production without full R2 keeps its
- * original import-time failure verbatim. */
-export type StorageMode = "preview-disabled" | "r2" | "local-dev";
+ * original runtime import-time failure verbatim. Next page collection sets
+ * NEXT_PHASE to phase-production-build: imports are then inert and EVERY
+ * operation is refused. This is compilation, not runtime storage readiness.
+ * Never inline NEXT_PHASE into next.config env or promote build-disabled to
+ * a disk fallback. A leaked build phase at runtime still denies all operations. */
+export type StorageMode = "preview-disabled" | "build-disabled" | "r2" | "local-dev";
+
+export class StorageBuildDisabledError extends Error {
+  constructor(op: string) {
+    super(`StorageBuildDisabledError: ${op} is unavailable during Next build collection. Configure runtime storage separately.`);
+    this.name = "StorageBuildDisabledError";
+  }
+}
 
 export class StoragePreviewDisabledError extends Error {
   constructor(op: string) {
@@ -83,9 +96,11 @@ if (r2Present.length > 0 && !r2Configured) {
 export const STORAGE_MODE: StorageMode =
   process.env.VERCEL_ENV === "preview"
     ? "preview-disabled"
-    : r2Configured
-      ? "r2"
-      : "local-dev";
+    : process.env.NEXT_PHASE === "phase-production-build"
+      ? "build-disabled"
+      : r2Configured
+        ? "r2"
+        : "local-dev";
 
 if (process.env.NODE_ENV === "production" && STORAGE_MODE === "local-dev") {
   throw new Error(
@@ -110,6 +125,10 @@ const s3 =
 
 /** local-disk backend — unchanged from before, dev-only. */
 const ROOT = path.join(process.cwd(), "storage");
+function requireStorageOperation(op: string): void {
+  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError(op);
+  if (STORAGE_MODE === "build-disabled") throw new StorageBuildDisabledError(op);
+}
 function resolveKey(key: string): string {
   const p = path.resolve(ROOT, key);
   if (!p.startsWith(ROOT + path.sep) && p !== ROOT) {
@@ -119,7 +138,7 @@ function resolveKey(key: string): string {
 }
 
 export async function putObject(key: string, data: Buffer): Promise<void> {
-  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("putObject");
+  requireStorageOperation("putObject");
   if (s3) {
     await s3.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: data }));
     return;
@@ -130,7 +149,7 @@ export async function putObject(key: string, data: Buffer): Promise<void> {
 }
 
 export async function readObject(key: string): Promise<Buffer> {
-  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("readObject");
+  requireStorageOperation("readObject");
   if (s3) {
     const res = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
     const bytes = await res.Body!.transformToByteArray();
@@ -140,7 +159,7 @@ export async function readObject(key: string): Promise<Buffer> {
 }
 
 export async function objectExists(key: string): Promise<boolean> {
-  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("objectExists");
+  requireStorageOperation("objectExists");
   if (s3) {
     try {
       await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
@@ -165,7 +184,7 @@ export async function objectExists(key: string): Promise<boolean> {
 }
 
 export async function deleteObject(key: string): Promise<void> {
-  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("deleteObject");
+  requireStorageOperation("deleteObject");
   if (s3) {
     // S3-compatible DeleteObject is already idempotent — deleting an
     // absent key succeeds rather than 404ing, matching the local-disk
@@ -185,7 +204,7 @@ export async function deleteObject(key: string): Promise<void> {
 /** Returns a web ReadableStream for a stored object (route handlers stream it out). */
 export function objectStream(key: string): ReadableStream {
   /* synchronous refusal BEFORE any stream object is created */
-  if (STORAGE_MODE === "preview-disabled") throw new StoragePreviewDisabledError("objectStream");
+  requireStorageOperation("objectStream");
   if (s3) {
     // objectStream() has to be synchronous (its return value goes straight
     // into `new NextResponse(...)`, which needs a real ReadableStream, not
