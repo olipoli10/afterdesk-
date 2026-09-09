@@ -1,1 +1,1 @@
-{"objective":"R0.2 local preparation and fresh validation","status":"IN_PROGRESS","steps":[{"id":"PREPARE","status":"IN_PROGRESS"},{"id":"OBSERVE","status":"OPEN"},{"id":"CHECKPOINT","status":"OPEN"}],"scopeCompleteIsNotProjectComplete":true}
+{"objective":"R0.2 local preparation and fresh validation","status":"IN_PROGRESS","steps":[{"id":"PREPARE","status":"DONE"},{"id":"OBSERVE","status":"DONE"},{"id":"CHECKPOINT","status":"IN_PROGRESS"}],"contractVerdict":"LOCAL_CHECKS_PASS","productVerdict":"LOCAL_REVALIDATION_REWORK","scopeCompleteIsNotProjectComplete":true}
