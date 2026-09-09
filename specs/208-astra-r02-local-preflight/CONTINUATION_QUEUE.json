@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "queueMode": "PINNED_SEQUENTIAL_CAMPAIGN",
+  "queueId": "ASTRA-R02-LOCAL",
+  "campaignObjective": "Prepare generated Prisma and exact current projection, freeze and verify fresh local checks",
+  "authority": "LOCAL ONLY; no provider, personal data, spending, transport, push, deployment, timer or founder test",
+  "forbiddenActions": ["provider request", "customer data", "spending", "external write", "push", "preview", "production", "timer"],
+  "stopConditions": ["Unreconciled user edits", "No useful authorized local work remains", "Bounded validation and checkpoint completed"],
+  "communication": {"informationalLabel":"INFO — aucune réponse requise","blockingLabel":"BLOCAGE — réponse requise","authorityLabel":"AUTORITÉ — signature requise","completionLabel":"TERMINÉ — résultat","maxRoutineFounderPrompts":0},
+  "entries": [{
+    "id":"R02-LOCAL","title":"Local preparation and fresh bounded validation",
+    "objective":"Generate and bind missing runtime prerequisites before a fresh validation",
+    "role":"IMPLEMENTATION","status":"IN_PROGRESS","dependencies":[],
+    "worktree":"C:/dev/endvera-astra-r02","branch":"codex/endvera-astra-r02",
+    "baseRef":{"kind":"FIXED_HEAD","head":"67dc6e76b84fb196a1cbb9cd216884d400f03c00"},
+    "authority":"LOCAL ONLY; no provider, personal data, spending, transport, push, deployment, timer or founder test",
+    "allowedScope":["specs/208-astra-r02-local-preflight","release/current-projection-v3.json",".prisma-client"],
+    "planPath":"plan.md","planSha256":"9020a3618f1572fcc5e3231b0afa9e3940f3dee675fdf8c4349f42a107447e1a",
+    "completionCommand":"node specs/208-astra-r02-local-preflight/campaign.mjs verify-report",
+    "evidencePaths":["reports/FINAL_REPORT.md"]
+  }]
+}

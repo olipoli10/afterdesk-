@@ -1,0 +1,1 @@
+{"objective":"R0.2 local preparation and fresh validation","status":"IN_PROGRESS","steps":[{"id":"PREPARE","status":"IN_PROGRESS"},{"id":"OBSERVE","status":"OPEN"},{"id":"CHECKPOINT","status":"OPEN"}],"scopeCompleteIsNotProjectComplete":true}
