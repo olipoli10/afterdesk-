@@ -7,6 +7,43 @@ import { reserveAccountProviderSpend } from "@/server/account-spend";
 import { createVoiceGatewayFixture } from "../support/model-gateway-voice-db";
 
 describe("voice gateway reservation and outcome accounting", () => {
+  it.each([
+    { label: "provider failure with known cost", cost: 25n, errorClass: "unknown_failure" as const, expected: "failed", hold: "settled", dispatchState: "settled" },
+    { label: "provider failure with unknown cost", cost: null, errorClass: "unknown_failure" as const, expected: "uncertain", hold: "held", dispatchState: "unaccounted" },
+    { label: "transcript with unknown cost", cost: null, errorClass: null, expected: "uncertain", hold: "held", dispatchState: "unaccounted" },
+  ])("accounts conservatively for $label", async ({ cost, errorClass, expected, hold, dispatchState }) => {
+    const fixture = await createVoiceGatewayFixture();
+    const admission = await admitGatewayVoiceSegment({
+      actor: fixture.actor, sessionId: fixture.sessionId, segmentId: fixture.segment.segmentId,
+      audioBytes: fixture.audioBytes, policyId: fixture.policyId,
+      dataClass: "personal_data", privacyRequirement: "zero_retention", maxSegmentCostMicros: 100_000n,
+    });
+    expect(admission.status).toBe("authorized");
+    if (admission.status !== "authorized") throw new Error("SYNTHETIC_ADMISSION_REQUIRED");
+    let calls = 0;
+    // Closed local result fixture. No transport/provider/audio service is used.
+    const result = await dispatchVoiceGatewayAttempt({
+      admission, actor: fixture.actor, rollout: { environment: "local", voiceEnabled: true },
+      abortSignal: new AbortController().signal,
+      adapter: { key: "voice-synthetic-direct", dispatch: async () => {
+        calls += 1;
+        return { dispatchKnowledge: "response_received", providerRequestRef: null,
+          errorClass, transcriptText: errorClass ? null : "Synthetic transcript",
+          httpStatus: errorClass ? 500 : 200, responseEvidenceRef: null,
+          usage: { audioSeconds: 1, inputTokens: null, outputTokens: null, measuredCostMicros: cost } };
+      } },
+    });
+    expect(result.status).toBe(expected); expect(calls).toBe(1);
+    await expect(prisma.$queryRawUnsafe<Array<{ status: string; settledMicros: bigint | null }>>(
+      `SELECT status,"settledMicros" FROM "AccountProviderSpendHold" WHERE id=$1`, admission.attempt.accountSpendHoldId
+    )).resolves.toEqual([{ status: hold, settledMicros: cost }]);
+    await expect(prisma.$queryRawUnsafe<Array<{ dispatchState: string }>>(
+      `SELECT "dispatchState" FROM "ModelGatewayAttempt" WHERE id=$1`, admission.attempt.id
+    )).resolves.toEqual([{ dispatchState }]);
+    await expect(prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+      `SELECT count(*)::bigint count FROM "VoiceTranscriptSegment" WHERE "gatewayAttemptId"=$1`, admission.attempt.id
+    )).resolves.toEqual([{ count: 0n }]);
+  });
   it("refuses when existing exposure plus the new hold exceeds the session ceiling", async () => {
     const fixture = await createVoiceGatewayFixture({
       segmentCount: 2,

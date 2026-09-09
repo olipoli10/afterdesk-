@@ -1,7 +1,8 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { claimAiOperation, type AiOperationClaim } from "@/server/ai-operations";
+import { claimAiOperation, SupersededOperationError, type AiOperationClaim } from "@/server/ai-operations";
 import {
   releaseAccountSpendHold,
   reserveAccountProviderSpend,
@@ -25,7 +26,7 @@ import type { GatewayDataClass, GatewayPrivacyRequirement, VoiceGatewayOperation
 import { buildVoiceSegmentProjection, type VoiceSegmentProjection } from "./projection";
 import { reserveVoiceAiOperation } from "./operations";
 import type { VoiceActor } from "./sessions";
-import type { VoiceModelGatewayAdapter } from "./adapters/contract";
+import { isBoundedVoiceUsage, type VoiceModelGatewayAdapter } from "./adapters/contract";
 
 export type VoiceRolloutGateInput = Readonly<{
   environment?: string;
@@ -116,47 +117,60 @@ async function loadVoiceAdmissionSubject(sessionId: string, segmentId: string): 
 async function closeVoiceBeforeDispatch(
   admission: AuthorizedVoiceGatewayAdmission,
   reasonClass: string
-) {
-  await releaseAccountSpendHold(admission.attempt.accountSpendHoldId);
-  await prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(
-      `UPDATE "ModelGatewayAttempt" SET status='cancelled_before_dispatch',"dispatchState"='not_dispatched',"errorClass"=$2,"finishedAt"=now() WHERE id=$1 AND status='prepared'`,
-      admission.attempt.id,
-      reasonClass
-    );
-    await tx.$executeRawUnsafe(
-      `UPDATE "ModelGatewayOperation" SET status='refused',"finishedAt"=now() WHERE id=$1 AND status='admitted'`,
-      admission.operation.id
-    );
-    await tx.$executeRawUnsafe(
-      `UPDATE "AiOperation" SET status='failed',"lockedBy"=NULL,"leaseExpiresAt"=NULL,"nextAttemptAt"=now(),"lastError"=$3,"updatedAt"=now() WHERE id=$1 AND "lockedBy"=$2`,
-      admission.claim.operationId,
-      admission.claim.lockedBy,
-      reasonClass
-    );
-    await appendGatewayAuditEvent(tx, {
-      eventType: "model_gateway.admission.refused",
-      correlationId: `gateway:${admission.operation.id}`,
-      gatewayOperationId: admission.operation.id,
-      tenantId: admission.actorId,
-      attemptId: admission.attempt.id,
-      decisionId: admission.decision.id,
-      spendHoldId: admission.attempt.accountSpendHoldId,
-      billingProvider: admission.route.billingProvider,
-      errorClass: reasonClass,
-      dispatchState: "not_dispatched",
+): Promise<boolean> {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // Claim refusal before any release, AI/gateway terminal write or audit.
+      const changed = await tx.$executeRawUnsafe(
+        `UPDATE "ModelGatewayAttempt" SET status='cancelled_before_dispatch',"dispatchState"='not_dispatched',"errorClass"=$2,"finishedAt"=now() WHERE id=$1 AND status='prepared' AND "dispatchState"='not_dispatched'`,
+        admission.attempt.id,
+        reasonClass
+      );
+      if (changed !== 1) return false;
+      const aiFence = await tx.$executeRawUnsafe(
+        `UPDATE "AiOperation" SET status='failed',"lockedBy"=NULL,"leaseExpiresAt"=NULL,"nextAttemptAt"=now(),"lastError"=$3,"updatedAt"=now() WHERE id=$1 AND "lockedBy"=$2 AND status='running'`,
+        admission.claim.operationId,
+        admission.claim.lockedBy,
+        reasonClass
+      );
+      if (aiFence !== 1) throw new SupersededOperationError(admission.claim.operationKey);
+      await tx.accountProviderSpendHold.updateMany({
+        where: { id: admission.attempt.accountSpendHoldId, status: "held" },
+        data: { status: "released", settledMicros: 0n },
+      });
+      await tx.$executeRawUnsafe(
+        `UPDATE "ModelGatewayOperation" SET status='refused',"finishedAt"=now() WHERE id=$1 AND status='admitted'`,
+        admission.operation.id
+      );
+      await appendGatewayAuditEvent(tx, {
+        eventType: "model_gateway.admission.refused",
+        correlationId: `gateway:${admission.operation.id}`,
+        gatewayOperationId: admission.operation.id,
+        tenantId: admission.actorId,
+        attemptId: admission.attempt.id,
+        decisionId: admission.decision.id,
+        spendHoldId: admission.attempt.accountSpendHoldId,
+        billingProvider: admission.route.billingProvider,
+        errorClass: reasonClass,
+        dispatchState: "not_dispatched",
+      });
+      await appendGatewayAuditEvent(tx, {
+        eventType: "model_gateway.spend.released",
+        correlationId: `gateway:${admission.operation.id}`,
+        gatewayOperationId: admission.operation.id,
+        tenantId: admission.actorId,
+        attemptId: admission.attempt.id,
+        spendHoldId: admission.attempt.accountSpendHoldId,
+        billingProvider: admission.route.billingProvider,
+        amountMicros: 0n,
+      });
+      return true;
     });
-    await appendGatewayAuditEvent(tx, {
-      eventType: "model_gateway.spend.released",
-      correlationId: `gateway:${admission.operation.id}`,
-      gatewayOperationId: admission.operation.id,
-      tenantId: admission.actorId,
-      attemptId: admission.attempt.id,
-      spendHoldId: admission.attempt.accountSpendHoldId,
-      billingProvider: admission.route.billingProvider,
-      amountMicros: 0n,
-    });
-  });
+  } catch (error) {
+    // A failed owner fence rolls back the refusal CAS and every other effect.
+    if (error instanceof SupersededOperationError) return false;
+    throw error;
+  }
 }
 
 export async function admitGatewayVoiceSegment(input: {
@@ -368,6 +382,9 @@ export async function admitGatewayVoiceSegment(input: {
   }
 }
 
+// Non-terminal result: future callers must not turn a lost claim into cleanup.
+const voiceClaimLostResult = Object.freeze({ status: "superseded" as const, reasonClass: "attempt_claim_lost" as const });
+
 export async function dispatchVoiceGatewayAttempt(input: {
   admission: AuthorizedVoiceGatewayAdmission;
   actor: VoiceActor;
@@ -378,11 +395,11 @@ export async function dispatchVoiceGatewayAttempt(input: {
   const { admission } = input;
   const rollout = resolveVoiceRolloutGate(input.rollout ?? {});
   if (!rollout.allowed) {
-    await closeVoiceBeforeDispatch(admission, rollout.reasonClass);
+    if (!await closeVoiceBeforeDispatch(admission, rollout.reasonClass)) return voiceClaimLostResult;
     return Object.freeze({ status: "refused" as const, reasonClass: rollout.reasonClass });
   }
   if (input.actor.role !== "CLIENT" || input.actor.id !== admission.actorId) {
-    await closeVoiceBeforeDispatch(admission, "voice_session_not_owned");
+    if (!await closeVoiceBeforeDispatch(admission, "voice_session_not_owned")) return voiceClaimLostResult;
     return Object.freeze({ status: "refused" as const, reasonClass: "voice_session_not_owned" as const });
   }
   const subject = await loadVoiceAdmissionSubject(
@@ -392,7 +409,7 @@ export async function dispatchVoiceGatewayAttempt(input: {
   if (!subject || subject.clientId !== admission.actorId || subject.sessionStatus !== "transcribing" ||
       subject.expiresAt.getTime() <= Date.now() || !subject.consentVersion ||
       subject.audioFingerprint !== admission.projection.audioFingerprint) {
-    await closeVoiceBeforeDispatch(admission, "voice_session_closed");
+    if (!await closeVoiceBeforeDispatch(admission, "voice_session_closed")) return voiceClaimLostResult;
     return Object.freeze({ status: "refused" as const, reasonClass: "voice_session_closed" as const });
   }
   const [policy, routes] = await Promise.all([
@@ -404,12 +421,12 @@ export async function dispatchVoiceGatewayAttempt(input: {
       resolution.route.id !== admission.route.id ||
       resolution.route.canonicalHash !== admission.route.canonicalHash ||
       input.adapter.key !== admission.route.adapterKey) {
-    await closeVoiceBeforeDispatch(admission, "ineligible_route");
+    if (!await closeVoiceBeforeDispatch(admission, "ineligible_route")) return voiceClaimLostResult;
     return Object.freeze({ status: "refused" as const, reasonClass: "ineligible_route" as const });
   }
   const breaker = await loadGatewayBreakerResolution({ policy: resolution.policy, route: resolution.route });
   if (breaker.status === "open" || breaker.generation !== admission.decision.breakerGeneration) {
-    await closeVoiceBeforeDispatch(admission, "open_breaker");
+    if (!await closeVoiceBeforeDispatch(admission, "open_breaker")) return voiceClaimLostResult;
     return Object.freeze({ status: "refused" as const, reasonClass: "open_breaker" as const });
   }
   const envelope = Object.freeze({
@@ -428,20 +445,36 @@ export async function dispatchVoiceGatewayAttempt(input: {
     requestEvidenceRef: admission.attempt.requestEvidenceRef as `sha256:${string}`,
     abortSignal: input.abortSignal,
   });
-  await prisma.$transaction(async (tx) => {
+  const claimed = await prisma.$transaction(async (tx) => {
     const changed = await tx.$executeRawUnsafe(
-      `UPDATE "ModelGatewayAttempt" SET status='dispatched',"dispatchState"='unaccounted',"dispatchedAt"=now() WHERE id=$1 AND status='prepared'`,
+      `UPDATE "ModelGatewayAttempt" SET status='dispatched',"dispatchState"='unaccounted',"dispatchedAt"=now() WHERE id=$1 AND status='prepared' AND "dispatchState"='not_dispatched'`,
       admission.attempt.id
     );
-    if (changed !== 1) throw new Error("VOICE_GATEWAY_ATTEMPT_NOT_PREPARED");
+    if (changed !== 1) return false;
+    const owners = await tx.$queryRawUnsafe<Array<{ id: string }>>(
+      `SELECT id FROM "AiOperation" WHERE id=$1 AND "lockedBy"=$2 AND status='running' FOR UPDATE`,
+      admission.claim.operationId, admission.claim.lockedBy
+    );
+    if (owners.length !== 1) throw new SupersededOperationError(admission.claim.operationKey);
+    const [currentSubject] = await tx.$queryRawUnsafe<VoiceAdmissionSubject[]>(
+      `SELECT segment.status::text "segmentStatus",segment."audioFingerprint",session."clientId",session.status::text "sessionStatus",session."consentVersion",session."expiresAt" FROM "VoiceIntakeSegment" segment JOIN "VoiceIntakeSession" session ON session.id=segment."sessionId" WHERE segment.id=$1 AND segment."sessionId"=$2 FOR UPDATE OF session,segment`,
+      admission.request.subject.segmentId, admission.request.subject.sessionId
+    );
+    if (!currentSubject || currentSubject.clientId !== admission.actorId ||
+        currentSubject.sessionStatus !== "transcribing" || currentSubject.expiresAt.getTime() <= Date.now() ||
+        !currentSubject.consentVersion || currentSubject.audioFingerprint !== admission.projection.audioFingerprint ||
+        !["registered", "failed"].includes(currentSubject.segmentStatus)) {
+      throw new SupersededOperationError(admission.claim.operationKey);
+    }
     await tx.$executeRawUnsafe(
       `UPDATE "ModelGatewayOperation" SET status='running' WHERE id=$1 AND status='admitted'`,
       admission.operation.id
     );
-    await tx.$executeRawUnsafe(
+    const segmentChanged = await tx.$executeRawUnsafe(
       `UPDATE "VoiceIntakeSegment" SET status='running',"updatedAt"=now() WHERE id=$1 AND status IN ('registered','failed')`,
       admission.request.subject.segmentId
     );
+    if (segmentChanged !== 1) throw new SupersededOperationError(admission.claim.operationKey);
     await appendGatewayAuditEvent(tx, {
       eventType: "model_gateway.attempt.dispatched",
       correlationId: `gateway:${admission.operation.id}`,
@@ -453,36 +486,53 @@ export async function dispatchVoiceGatewayAttempt(input: {
       dispatchState: "unaccounted",
       evidenceRef: admission.attempt.requestEvidenceRef as `sha256:${string}`,
     });
+    return true;
+  }).catch((error: unknown) => {
+    if (error instanceof SupersededOperationError) return false;
+    throw error;
   });
+  if (!claimed) return voiceClaimLostResult;
 
   const result = await input.adapter.dispatch(envelope);
-  if (result.dispatchKnowledge === "not_dispatched") {
-    await releaseAccountSpendHold(admission.attempt.accountSpendHoldId);
-    await prisma.$transaction(async (tx) => {
-      await tx.$executeRawUnsafe(
-        `UPDATE "ModelGatewayAttempt" SET status='cancelled_before_dispatch',"dispatchState"='not_dispatched',"errorClass"=$2,"finishedAt"=now() WHERE id=$1`,
-        admission.attempt.id,
-        result.errorClass ?? "malformed_request"
-      );
-      await tx.$executeRawUnsafe(
-        `UPDATE "ModelGatewayOperation" SET status='failed',"finishedAt"=now() WHERE id=$1`,
-        admission.operation.id
-      );
-      await tx.$executeRawUnsafe(
-        `UPDATE "VoiceIntakeSegment" SET status='failed',"updatedAt"=now() WHERE id=$1`,
-        admission.request.subject.segmentId
-      );
-      await tx.$executeRawUnsafe(
-        `UPDATE "AiOperation" SET status='failed',"lockedBy"=NULL,"leaseExpiresAt"=NULL,"nextAttemptAt"=now(),"lastError"=$3,"updatedAt"=now() WHERE id=$1 AND "lockedBy"=$2`,
-        admission.claim.operationId,
-        admission.claim.lockedBy,
-        result.errorClass ?? "malformed_request"
-      );
-    });
-    return Object.freeze({ status: "failed" as const, errorClass: result.errorClass ?? "malformed_request" });
-  }
-  if (result.dispatchKnowledge === "dispatched_unknown") {
-    await prisma.$transaction(async (tx) => {
+  // Terminal logical writes belong to the current AI owner. On ownership loss,
+  // retain only this old attempt's exposure; never finalize a successor's rows.
+  const finishOwned = async (write: (tx: Prisma.TransactionClient) => Promise<void>): Promise<boolean> => {
+    try {
+      await prisma.$transaction(async (tx) => {
+        const owners = await tx.$queryRawUnsafe<Array<{ id: string }>>(
+          `SELECT id FROM "AiOperation" WHERE id=$1 AND "lockedBy"=$2 AND status='running' FOR UPDATE`,
+          admission.claim.operationId, admission.claim.lockedBy
+        );
+        if (owners.length !== 1) throw new SupersededOperationError(admission.claim.operationKey);
+        await write(tx);
+      });
+      return true;
+    } catch (error) {
+      if (!(error instanceof SupersededOperationError)) throw error;
+      await prisma.$transaction(async (tx) => {
+        const changed = await tx.$executeRawUnsafe(
+          `UPDATE "ModelGatewayAttempt" SET status='uncertain',"dispatchState"='unaccounted',"errorClass"='unknown_dispatched_outcome',"providerRequestRef"=$2,"finishedAt"=now() WHERE id=$1 AND status='dispatched' AND "dispatchState"='unaccounted'`,
+          admission.attempt.id, result.providerRequestRef
+        );
+        if (changed !== 1) return;
+        await appendGatewayAuditEvent(tx, {
+          eventType: "model_gateway.attempt.uncertain", correlationId: `gateway:${admission.operation.id}`,
+          gatewayOperationId: admission.operation.id, tenantId: admission.actorId,
+          attemptId: admission.attempt.id, decisionId: admission.decision.id,
+          spendHoldId: admission.attempt.accountSpendHoldId, billingProvider: admission.route.billingProvider,
+          errorClass: "unknown_dispatched_outcome", dispatchState: "unaccounted",
+        });
+      });
+      return false;
+    }
+  };
+  const usage = result.usage;
+  const knownCost = usage != null && typeof usage.measuredCostMicros === "bigint" && isBoundedVoiceUsage(usage)
+    ? usage.measuredCostMicros : null;
+  // The claim is committed and adapter code has already been invoked. A
+  // no-dispatch/invalid declaration cannot release that exposure as pre-dispatch.
+  if (result.dispatchKnowledge !== "response_received" || knownCost === null) {
+    const completed = await finishOwned(async (tx) => {
       await tx.$executeRawUnsafe(
         `UPDATE "ModelGatewayAttempt" SET status='uncertain',"dispatchState"='unaccounted',"errorClass"='unknown_dispatched_outcome',"providerRequestRef"=$2,"finishedAt"=now() WHERE id=$1`,
         admission.attempt.id,
@@ -515,10 +565,12 @@ export async function dispatchVoiceGatewayAttempt(input: {
         dispatchState: "unaccounted",
       });
     });
+    if (!completed) return voiceClaimLostResult;
     return Object.freeze({ status: "uncertain" as const, errorClass: "unknown_dispatched_outcome" as const });
   }
   if (result.errorClass !== null || result.transcriptText === null || result.usage === null) {
-    await prisma.$transaction(async (tx) => {
+    const completed = await finishOwned(async (tx) => {
+      await settleAccountSpendHold(tx, admission.attempt.accountSpendHoldId, knownCost);
       await tx.$executeRawUnsafe(
         `UPDATE "ModelGatewayAttempt" SET status='failed',"dispatchState"='settled',"errorClass"=$2,"httpStatus"=$3,"providerRequestRef"=$4,"responseEvidenceRef"=$5,"finishedAt"=now() WHERE id=$1`,
         admission.attempt.id,
@@ -535,24 +587,32 @@ export async function dispatchVoiceGatewayAttempt(input: {
         admission.claim.lockedBy,
         result.errorClass ?? "malformed_request"
       );
+      for (const eventType of ["model_gateway.attempt.failed", "model_gateway.spend.settled"] as const) {
+        await appendGatewayAuditEvent(tx, {
+          eventType, correlationId: `gateway:${admission.operation.id}`,
+          gatewayOperationId: admission.operation.id, tenantId: admission.actorId,
+          attemptId: admission.attempt.id, decisionId: admission.decision.id,
+          spendHoldId: admission.attempt.accountSpendHoldId, billingProvider: admission.route.billingProvider,
+          amountMicros: knownCost, dispatchState: "settled", errorClass: result.errorClass ?? "malformed_request",
+        });
+      }
     });
+    if (!completed) return voiceClaimLostResult;
     return Object.freeze({ status: "failed" as const, errorClass: result.errorClass ?? "malformed_request" });
   }
   const transcriptText = result.transcriptText;
-  const usage = result.usage;
+  const validUsage = result.usage;
   const textFingerprint = canonicalFingerprint(transcriptText);
   const transcriptId = `vts_${randomUUID().replaceAll("-", "")}`;
-  await prisma.$transaction(async (tx) => {
+  const completed = await finishOwned(async (tx) => {
     const fenced = await tx.$executeRawUnsafe(
       `UPDATE "AiOperation" SET status='succeeded',"lockedBy"=NULL,"leaseExpiresAt"=NULL,"resultKind"='VoiceTranscriptSegment',"resultId"=$3,"finishedAt"=now(),"updatedAt"=now() WHERE id=$1 AND "lockedBy"=$2`,
       admission.claim.operationId,
       admission.claim.lockedBy,
       transcriptId
     );
-    if (fenced !== 1) throw new Error("VOICE_AI_OPERATION_FENCE_LOST");
-    if (usage.measuredCostMicros !== null) {
-      await settleAccountSpendHold(tx, admission.attempt.accountSpendHoldId, usage.measuredCostMicros);
-    }
+    if (fenced !== 1) throw new SupersededOperationError(admission.claim.operationKey);
+    await settleAccountSpendHold(tx, admission.attempt.accountSpendHoldId, knownCost);
     await tx.$executeRawUnsafe(
       `UPDATE "ModelGatewayAttempt" SET status='settled',"dispatchState"='settled',"errorClass"=NULL,"httpStatus"=$2,"providerRequestRef"=$3,"resultContractStatus"='valid',"responseEvidenceRef"=$4,"finishedAt"=now() WHERE id=$1`,
       admission.attempt.id,
@@ -578,8 +638,8 @@ export async function dispatchVoiceGatewayAttempt(input: {
       transcriptText,
       textFingerprint,
       transcriptText.length,
-      usage.audioSeconds,
-      usage.measuredCostMicros,
+      validUsage.audioSeconds,
+      knownCost,
       subject.expiresAt
     );
     await appendGatewayAuditEvent(tx, {
@@ -591,12 +651,13 @@ export async function dispatchVoiceGatewayAttempt(input: {
       decisionId: admission.decision.id,
       spendHoldId: admission.attempt.accountSpendHoldId,
       billingProvider: admission.route.billingProvider,
-      amountMicros: usage.measuredCostMicros,
+      amountMicros: knownCost,
       dispatchState: "settled",
       resultContractStatus: "valid",
       evidenceRef: result.responseEvidenceRef,
     });
   });
+  if (!completed) return voiceClaimLostResult;
   return Object.freeze({
     status: "succeeded" as const,
     segmentId: admission.request.subject.segmentId,

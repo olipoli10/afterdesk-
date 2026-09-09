@@ -159,7 +159,7 @@ async function closeGatewayOperation(
 async function refuseBeforeDispatch(
   admission: AuthorizedGatewayAdmission,
   reasonClass: string
-): Promise<void> {
+): Promise<boolean> {
   const evidence = canonicalFingerprint({
     attemptId: admission.attempt.id,
     policyHash: admission.decision.policyHash,
@@ -168,22 +168,33 @@ async function refuseBeforeDispatch(
     disposition: "refused_before_dispatch",
     reasonClass,
   });
-  await succeedAiOperation({
-    claim: admission.claim,
-    taskId: admission.request.taskId,
-    purpose: "classification",
-    usage: null,
-    writeResult: async (tx) => {
-      await tx.accountProviderSpendHold.updateMany({
-        where: { id: admission.attempt.accountSpendHoldId, status: "held" },
-        data: { status: "released", settledMicros: 0n },
-      });
-      await tx.$executeRawUnsafe(
-        `UPDATE "ModelGatewayAttempt" SET status='cancelled_before_dispatch',"dispatchState"='not_dispatched',"errorClass"=$2,"resultContractStatus"='not_evaluated',"responseEvidenceRef"=$3,"finishedAt"=now() WHERE id=$1`,
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // Claim the right to refuse BEFORE any AI completion, release or audit.
+      // A later lineage reader must never cancel the already-dispatched winner.
+      const changed = await tx.$executeRawUnsafe(
+        `UPDATE "ModelGatewayAttempt" SET status='cancelled_before_dispatch',"dispatchState"='not_dispatched',"errorClass"=$2,"resultContractStatus"='not_evaluated',"responseEvidenceRef"=$3,"finishedAt"=now() WHERE id=$1 AND status='prepared' AND "dispatchState"='not_dispatched'`,
         admission.attempt.id,
         reasonClass,
         evidence
       );
+      if (changed !== 1) return false;
+      // The existing succeedAiOperation helper owns its own transaction and
+      // changes the AI row first. This no-usage refusal instead fences and
+      // closes that same row inline so every effect rolls back with this CAS.
+      const aiFence = await tx.aiOperation.updateMany({
+        where: { id: admission.claim.operationId, lockedBy: admission.claim.lockedBy, status: "running" },
+        data: {
+          status: "succeeded", finishedAt: new Date(), lockedAt: null, lockedBy: null,
+          leaseExpiresAt: null, nextAttemptAt: null,
+          resultKind: "modelGatewayOperation", resultId: admission.operation.id,
+        },
+      });
+      if (aiFence.count !== 1) throw new SupersededOperationError(admission.claim.operationKey);
+      await tx.accountProviderSpendHold.updateMany({
+        where: { id: admission.attempt.accountSpendHoldId, status: "held" },
+        data: { status: "released", settledMicros: 0n },
+      });
       await appendGatewayAuditEvent(tx, {
         eventType: "model_gateway.attempt.failed",
         correlationId: `gateway:${admission.operation.id}`,
@@ -218,13 +229,14 @@ async function refuseBeforeDispatch(
         admission.attempt.id,
         evidence
       );
-      return {
-        resultKind: "modelGatewayOperation",
-        resultId: admission.operation.id,
-        value: undefined,
-      };
-    },
-  });
+      return true;
+    });
+  } catch (error) {
+    // The transaction has rolled back the attempt CAS as well. Return a typed
+    // non-terminal outcome, not a generic exception a caller could cancel on.
+    if (error instanceof SupersededOperationError) return false;
+    throw error;
+  }
 }
 
 /** A dispatched request with no trustworthy cost/result never releases its hold. */
@@ -293,6 +305,12 @@ async function retainUnsettledProviderFailure(
   });
 }
 
+export type GatewayDispatchResult = GatewayOperationResult<ClassificationOutput>
+  | Readonly<{ status: "superseded"; reasonClass: "attempt_claim_lost" }>;
+
+const claimLostResult = Object.freeze({ status: "superseded" as const, reasonClass: "attempt_claim_lost" as const });
+
+/** A superseded result is non-terminal: do not cancel, release or finalize it. */
 export async function dispatchGatewayAttempt(input: {
   admission: AuthorizedGatewayAdmission;
   adapter: ModelGatewayAdapter;
@@ -300,11 +318,11 @@ export async function dispatchGatewayAttempt(input: {
   rollout?: GatewayRolloutGateInput;
   credentialEnvironment?: GatewayCredentialEnvironment;
   credentialResolver?: CertifiedRouteCredentialResolver;
-}): Promise<GatewayOperationResult<ClassificationOutput>> {
+}): Promise<GatewayDispatchResult> {
   const { admission } = input;
   const rollout = resolveGatewayRolloutGate(input.rollout ?? {});
   if (!rollout.allowed) {
-    await refuseBeforeDispatch(admission, rollout.reasonClass);
+    if (!await refuseBeforeDispatch(admission, rollout.reasonClass)) return claimLostResult;
     return Object.freeze({ status: "refused" as const, reasonClass: rollout.reasonClass });
   }
   const [policy, routes, lineage] = await Promise.all([
@@ -330,7 +348,7 @@ export async function dispatchGatewayAttempt(input: {
     : null;
   const row = lineage[0];
   if (!row || row.aiStatus !== "running" || row.lockedBy !== admission.claim.lockedBy) {
-    throw new SupersededOperationError(admission.claim.operationKey);
+    return claimLostResult;
   }
   if (
     current.disposition !== "route_authorized" ||
@@ -349,15 +367,23 @@ export async function dispatchGatewayAttempt(input: {
       (breaker !== null && breaker.generation !== admission.decision.breakerGeneration)
       ? "open_breaker"
       : "ineligible_route";
-    await refuseBeforeDispatch(admission, reasonClass);
+    if (!await refuseBeforeDispatch(admission, reasonClass)) return claimLostResult;
     return Object.freeze({ status: "refused" as const, reasonClass });
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(
+  const claimed = await prisma.$transaction(async (tx) => {
+    const changed = await tx.$executeRawUnsafe(
       `UPDATE "ModelGatewayAttempt" SET status='dispatched',"dispatchedAt"=now() WHERE id=$1 AND status='prepared' AND "dispatchState"='not_dispatched'`,
       admission.attempt.id
     );
+    // The earlier lineage read is not an atomic claim: concurrent callers can
+    // both see prepared. Only the UPDATE winner may audit or obtain a dispatcher.
+    if (changed !== 1) return false;
+    const owners = await tx.$queryRawUnsafe<Array<{ id: string }>>(
+      `SELECT id FROM "AiOperation" WHERE id=$1 AND "lockedBy"=$2 AND status='running' FOR UPDATE`,
+      admission.claim.operationId, admission.claim.lockedBy
+    );
+    if (owners.length !== 1) throw new SupersededOperationError(admission.claim.operationKey);
     await appendGatewayAuditEvent(tx, {
       eventType: "model_gateway.attempt.dispatched",
       correlationId: `gateway:${admission.operation.id}`,
@@ -372,7 +398,12 @@ export async function dispatchGatewayAttempt(input: {
       dispatchState: "settled",
       evidenceRef: admission.attempt.requestEvidenceRef,
     });
+    return true;
+  }).catch((error: unknown) => {
+    if (error instanceof SupersededOperationError) return false;
+    throw error;
   });
+  if (!claimed) return claimLostResult;
   const dispatcher = input.credentialResolver
     ? await input.credentialResolver(credentialScopeFor(admission, input.credentialEnvironment ?? "local"))
     : input.adapter;
@@ -399,13 +430,16 @@ export async function dispatchGatewayAttempt(input: {
     });
     return Object.freeze({ status: "uncertain", reasonClass: "unknown_dispatched_outcome" });
   }
-  if (result.dispatchKnowledge === "not_dispatched") {
-    await refuseBeforeDispatch(admission, result.errorClass ?? "invalid_request");
-    return Object.freeze({ status: "refused", reasonClass: "invalid_request" });
-  }
   if (result.dispatchKnowledge !== "response_received") {
-    await refuseBeforeDispatch(admission, "invalid_request");
-    return Object.freeze({ status: "refused", reasonClass: "invalid_request" });
+    // We already committed the dispatch claim and invoked trusted adapter code.
+    // A callback's no-dispatch/invalid declaration cannot re-enter the prepared
+    // refusal path or release this hold. Retain exposure for reconciliation.
+    await retainAmbiguousDispatch(admission, {
+      providerRequestRef: result.providerRequestRef,
+      errorClass: "unknown_dispatched_outcome",
+      httpStatus: result.httpStatus,
+    });
+    return Object.freeze({ status: "uncertain", reasonClass: "unknown_dispatched_outcome" });
   }
   if (result.usage === null) {
     const failureClass = result.errorClass === "unknown_dispatched_outcome"
