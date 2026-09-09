@@ -1,0 +1,376 @@
+TAP version 13
+# Subtest: real Git anchor accepts fresh evidence plus lifecycle metadata, preserves old verdict
+ok 1 - real Git anchor accepts fresh evidence plus lifecycle metadata, preserves old verdict
+  ---
+  duration_ms: 2850.1414
+  type: 'test'
+  ...
+# Subtest: deleting an anchored attempt remains detectable even if journal is rewritten
+ok 2 - deleting an anchored attempt remains detectable even if journal is rewritten
+  ---
+  duration_ms: 2317.2275
+  type: 'test'
+  ...
+# Subtest: one raw byte changed after anchor is refused
+ok 3 - one raw byte changed after anchor is refused
+  ---
+  duration_ms: 2324.1472
+  type: 'test'
+  ...
+# Subtest: frozen source changed before run is refused without enrolling an attempt
+ok 4 - frozen source changed before run is refused without enrolling an attempt
+  ---
+  duration_ms: 1500.6569
+  type: 'test'
+  ...
+# Subtest: blocked journal replacement preserves old bytes and exposes orphan intent
+ok 5 - blocked journal replacement preserves old bytes and exposes orphan intent
+  ---
+  duration_ms: 3118.3777
+  type: 'test'
+  ...
+# Subtest: junction path is refused before creating an outside attempt directory
+ok 6 - junction path is refused before creating an outside attempt directory
+  ---
+  duration_ms: 1634.2959
+  type: 'test'
+  ...
+# Subtest: unfrozen extra artifact cannot be omitted from evidence anchor inventory
+ok 7 - unfrozen extra artifact cannot be omitted from evidence anchor inventory
+  ---
+  duration_ms: 2358.6767
+  type: 'test'
+  ...
+# Subtest: changed dependency bytes are refused before launch
+ok 8 - changed dependency bytes are refused before launch
+  ---
+  duration_ms: 1649.1366
+  type: 'test'
+  ...
+# Subtest: source mutation remains an incident even after original bytes are restored
+ok 9 - source mutation remains an incident even after original bytes are restored
+  ---
+  duration_ms: 2846.4782
+  type: 'test'
+  ...
+# Subtest: missing generated client refuses freeze before creating evidence
+ok 10 - missing generated client refuses freeze before creating evidence
+  ---
+  duration_ms: 1084.2629
+  type: 'test'
+  ...
+# Subtest: generated schema from another revision refuses freeze
+ok 11 - generated schema from another revision refuses freeze
+  ---
+  duration_ms: 1195.2261
+  type: 'test'
+  ...
+# Subtest: unloadable generated client refuses freeze
+ok 12 - unloadable generated client refuses freeze
+  ---
+  duration_ms: 1335.444
+  type: 'test'
+  ...
+# Subtest: projection refusal blocks freeze before evidence exists
+ok 13 - projection refusal blocks freeze before evidence exists
+  ---
+  duration_ms: 1410.2706
+  type: 'test'
+  ...
+# Subtest: changed generated file refuses run without enrolling an attempt
+ok 14 - changed generated file refuses run without enrolling an attempt
+  ---
+  duration_ms: 1631.5284
+  type: 'test'
+  ...
+# Subtest: generated file mutation during a check is retained as an incident
+ok 15 - generated file mutation during a check is retained as an incident
+  ---
+  duration_ms: 2953.2057
+  type: 'test'
+  ...
+# Subtest: importable generated client changed after admission refuses freeze
+ok 16 - importable generated client changed after admission refuses freeze
+  ---
+  duration_ms: 1083.9346
+  type: 'test'
+  ...
+# Subtest: raw unsafe generation streams never reach a persisted report
+ok 17 - raw unsafe generation streams never reach a persisted report
+  ---
+  duration_ms: 492.2625
+  type: 'test'
+  ...
+# Subtest: valid raw generation stream is encoded only after validation and never overwritten
+ok 18 - valid raw generation stream is encoded only after validation and never overwritten
+  ---
+  duration_ms: 475.1648
+  type: 'test'
+  ...
+# Subtest: committed contract has closed authority and meaningful checks
+ok 19 - committed contract has closed authority and meaningful checks
+  ---
+  duration_ms: 1.1252
+  type: 'test'
+  ...
+# Subtest: eight audit-like attempts preserve four incomplete reports and select four fresh reports
+ok 20 - eight audit-like attempts preserve four incomplete reports and select four fresh reports
+  ---
+  duration_ms: 2.8489
+  type: 'test'
+  ...
+# Subtest: later failure wins over earlier green
+ok 21 - later failure wins over earlier green
+  ---
+  duration_ms: 0.4912
+  type: 'test'
+  ...
+# Subtest: later incomplete wins over earlier green
+ok 22 - later incomplete wins over earlier green
+  ---
+  duration_ms: 0.3873
+  type: 'test'
+  ...
+# Subtest: missing checks cannot silently pass
+ok 23 - missing checks cannot silently pass
+  ---
+  duration_ms: 0.3182
+  type: 'test'
+  ...
+# Subtest: missing attempt cannot be hidden by editing journal count
+ok 24 - missing attempt cannot be hidden by editing journal count
+  ---
+  duration_ms: 0.5599
+  type: 'test'
+  ...
+# Subtest: unexpected stream cannot be hidden outside manifest
+ok 25 - unexpected stream cannot be hidden outside manifest
+  ---
+  duration_ms: 0.2982
+  type: 'test'
+  ...
+# Subtest: duplicate attempt id refused
+ok 26 - duplicate attempt id refused
+  ---
+  duration_ms: 0.2813
+  type: 'test'
+  ...
+# Subtest: changed previous hash refused
+ok 27 - changed previous hash refused
+  ---
+  duration_ms: 0.3584
+  type: 'test'
+  ...
+# Subtest: wrong tested head refused
+ok 28 - wrong tested head refused
+  ---
+  duration_ms: 0.3317
+  type: 'test'
+  ...
+# Subtest: wrong tested tree refused
+ok 29 - wrong tested tree refused
+  ---
+  duration_ms: 0.2627
+  type: 'test'
+  ...
+# Subtest: wrong lane refused
+ok 30 - wrong lane refused
+  ---
+  duration_ms: 0.2157
+  type: 'test'
+  ...
+# Subtest: command substitution refused
+ok 31 - command substitution refused
+  ---
+  duration_ms: 0.2227
+  type: 'test'
+  ...
+# Subtest: pre-freeze timestamp refused
+ok 32 - pre-freeze timestamp refused
+  ---
+  duration_ms: 0.2105
+  type: 'test'
+  ...
+# Subtest: raw whitespace tampering refused
+ok 33 - raw whitespace tampering refused
+  ---
+  duration_ms: 0.1864
+  type: 'test'
+  ...
+# Subtest: exit zero plus incomplete JSON remains failure
+ok 34 - exit zero plus incomplete JSON remains failure
+  ---
+  duration_ms: 0.1726
+  type: 'test'
+  ...
+# Subtest: exit zero plus semantic FAIL remains failure
+ok 35 - exit zero plus semantic FAIL remains failure
+  ---
+  duration_ms: 0.7351
+  type: 'test'
+  ...
+# Subtest: nonzero exit with success-shaped text remains failure
+ok 36 - nonzero exit with success-shaped text remains failure
+  ---
+  duration_ms: 0.198
+  type: 'test'
+  ...
+# Subtest: incident remains incomplete with no invented streams or exit
+ok 37 - incident remains incomplete with no invented streams or exit
+  ---
+  duration_ms: 0.1687
+  type: 'test'
+  ...
+# Subtest: invented incident exit refused
+ok 38 - invented incident exit refused
+  ---
+  duration_ms: 0.2208
+  type: 'test'
+  ...
+# Subtest: invented incident stream refused
+ok 39 - invented incident stream refused
+  ---
+  duration_ms: 0.1609
+  type: 'test'
+  ...
+# Subtest: unknown field cannot inject claimed PASS
+ok 40 - unknown field cannot inject claimed PASS
+  ---
+  duration_ms: 0.1448
+  type: 'test'
+  ...
+# Subtest: mutated parser refuses the frozen hash
+ok 41 - mutated parser refuses the frozen hash
+  ---
+  duration_ms: 0.1104
+  type: 'test'
+  ...
+# Subtest: empty check list cannot be green
+ok 42 - empty check list cannot be green
+  ---
+  duration_ms: 0.0972
+  type: 'test'
+  ...
+# Subtest: duplicate check ids refused
+ok 43 - duplicate check ids refused
+  ---
+  duration_ms: 0.0805
+  type: 'test'
+  ...
+# Subtest: provider authority cannot be asserted
+ok 44 - provider authority cannot be asserted
+  ---
+  duration_ms: 0.0672
+  type: 'test'
+  ...
+# Subtest: product PASS cannot be asserted
+ok 45 - product PASS cannot be asserted
+  ---
+  duration_ms: 0.0657
+  type: 'test'
+  ...
+# Subtest: digest embedded token substring is not a token exemption
+ok 46 - digest embedded token substring is not a token exemption
+  ---
+  duration_ms: 0.5245
+  type: 'test'
+  ...
+# Subtest: provider-shaped synthetic token is rejected without echo
+ok 47 - provider-shaped synthetic token is rejected without echo
+  ---
+  duration_ms: 0.3027
+  type: 'test'
+  ...
+# Subtest: header marker is not a private key but body is denied
+ok 48 - header marker is not a private key but body is denied
+  ---
+  duration_ms: 0.06
+  type: 'test'
+  ...
+# Subtest: absolute, traversal, Windows aliases and empty components refused
+ok 49 - absolute, traversal, Windows aliases and empty components refused
+  ---
+  duration_ms: 0.1241
+  type: 'test'
+  ...
+# Subtest: vitest summary requires actual passing assertions
+ok 50 - vitest summary requires actual passing assertions
+  ---
+  duration_ms: 0.0816
+  type: 'test'
+  ...
+# Subtest: empty TAP cannot pass on exit zero
+ok 51 - empty TAP cannot pass on exit zero
+  ---
+  duration_ms: 0.2106
+  type: 'test'
+  ...
+# Subtest: valid TAP derives counts not a caller supplied verdict
+ok 52 - valid TAP derives counts not a caller supplied verdict
+  ---
+  duration_ms: 0.2519
+  type: 'test'
+  ...
+# Subtest: contradictory TAP summaries refused
+ok 53 - contradictory TAP summaries refused
+  ---
+  duration_ms: 0.0628
+  type: 'test'
+  ...
+# Subtest: failed Vitest assertion cannot hide behind green summary
+ok 54 - failed Vitest assertion cannot hide behind green summary
+  ---
+  duration_ms: 0.1186
+  type: 'test'
+  ...
+# Subtest: failed Vitest suite cannot hide behind green summary
+ok 55 - failed Vitest suite cannot hide behind green summary
+  ---
+  duration_ms: 0.0534
+  type: 'test'
+  ...
+# Subtest: UTF16 and invalid UTF8 outputs are withheld
+ok 56 - UTF16 and invalid UTF8 outputs are withheld
+  ---
+  duration_ms: 0.0899
+  type: 'test'
+  ...
+# Subtest: labeled access key is withheld
+ok 57 - labeled access key is withheld
+  ---
+  duration_ms: 0.051
+  type: 'test'
+  ...
+# Subtest: unverified runtime cannot be a completed passing attempt
+ok 58 - unverified runtime cannot be a completed passing attempt
+  ---
+  duration_ms: 0.2057
+  type: 'test'
+  ...
+# Subtest: Windows device and trailing-dot aliases refused
+ok 59 - Windows device and trailing-dot aliases refused
+  ---
+  duration_ms: 0.1097
+  type: 'test'
+  ...
+# Subtest: actual Next dynamic routes and space-containing filenames remain readable
+ok 60 - actual Next dynamic routes and space-containing filenames remain readable
+  ---
+  duration_ms: 0.0328
+  type: 'test'
+  ...
+# Subtest: Git LF source permits only exact CRLF materialization
+ok 61 - Git LF source permits only exact CRLF materialization
+  ---
+  duration_ms: 0.1067
+  type: 'test'
+  ...
+1..61
+# tests 61
+# suites 0
+# pass 61
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 32357.3167

@@ -1,0 +1,1 @@
+{"roadmap":22,"localBuildReadiness":46.75,"c2":"18/18","realProviderCustomerReadiness":"NO-GO","verifiedE2E":0}
