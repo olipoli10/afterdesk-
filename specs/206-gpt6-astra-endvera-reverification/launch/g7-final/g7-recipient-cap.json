@@ -1,0 +1,1 @@
+{"id":"g7-recipient-cap","phase":"G7","classification":"DETERMINISTIC_TEST","command":"node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 RECIPIENT_CAP","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs","G7","RECIPIENT_CAP"],"cwd":".","timeoutMs":3600000}

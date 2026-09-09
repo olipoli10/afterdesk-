@@ -1,0 +1,19 @@
+{
+  "id": "g3-release-tracked-flags-final-tests",
+  "phase": "G3",
+  "classification": "VALIDATION",
+  "executable": "node",
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "test/unit/release-tracked-flags.test.ts",
+    "test/unit/release-source-binding-review.test.ts",
+    "test/unit/release-source-security-review.test.ts",
+    "test/unit/release-source-r2-review.test.ts",
+    "test/construction-operating-assistant-r35-release-package.test.ts"
+  ],
+  "timeoutMs": 120000,
+  "environment": {
+    "NODE_OPTIONS": "--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"
+  }
+}

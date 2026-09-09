@@ -1,0 +1,16 @@
+{
+  "focus": "Review GW-CLAIM-001 correction: prior review found a late loser reading dispatched lineage could call refuseBeforeDispatch and cancel the winner, release held spend and finalize its AI operation. Refusal now has its own transaction: CAS prepared AND not_dispatched first, affected count exactly 1 required before AI fence, release, audits and gateway terminal write. A count-zero loser returns typed superseded/attempt_claim_lost without generic exception or cleanup. The AI owner fence is inline in this same transaction, not a nested succeedAiOperation: the existing helper (included) would update AI first. An AI-fence loss throws only internally to roll back CAS then is converted to non-terminal superseded. Dispatch CAS losers also return superseded. After adapter invocation, any not_dispatched/invalid dispatchKnowledge declaration becomes uncertain with hold retained, never entering prepared-refusal. Inspect actual lifecycle dependencies and rollback/order carefully. Static search of src/scripts found no dispatchGatewayAttempt consumer beyond its definition; its only observed caller is the supplied unit test. Do not claim this is active runtime integration or that future callers automatically handle new status. Test fixture serializes in-memory transactions and rolls back its ledger; it runs actual succeedAiOperation for the original reproducer, but this is NOT real PostgreSQL race/durability proof. Author-recorded before-r1 4fail/4pass explicitly showed dispatched/running/held winner changed to cancelled/succeeded/released; after-r1 12/12 tests pass with network guard. Reviewer did not execute these tests; no invented execution or provider evidence. Candidate UNPROBED, zero provider authority. Scope is this specific race and its immediate refusal/terminal lifecycle, not general authority or new functionality.",
+  "files": [
+    "src/server/model-gateway/dispatch.ts",
+    "src/server/ai-operations.ts",
+    "src/server/account-spend.ts",
+    "src/server/model-gateway/adapters/contract.ts",
+    "src/server/model-gateway/types.ts",
+    "src/server/model-gateway/operations.ts",
+    "src/server/model-gateway/policy.ts",
+    "src/server/model-gateway/breakers.ts",
+    "src/server/model-gateway/evidence.ts",
+    "src/server/model-gateway/voice/dispatch.ts",
+    "test/unit/gateway-dispatch-claim-revalidation.test.ts"
+  ]
+}

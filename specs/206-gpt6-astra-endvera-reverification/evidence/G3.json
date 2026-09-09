@@ -1,0 +1,88 @@
+{
+  "kind": "PHASE_EVIDENCE",
+  "phase": "G3",
+  "status": "REWORK",
+  "reason": "Bounded corrections and distinct reviews completed. One input-format compatibility limitation PRR2-008 remains open without affecting current package inputs. Original failures and immutable canonical proof-contract blockers retain REWORK; final G7 observations are separate.",
+  "checks": [
+    {
+      "checkId": "g5-gi-after",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-after/stdout.txt",
+      "evidenceSha256": "d5bd0994ff327e4e09ccc94617fe10a5480bdc1f7b3be9d445def4060e2e7cf9"
+    },
+    {
+      "checkId": "g3-dst-after",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-dst-after/stdout.txt",
+      "evidenceSha256": "ce91ee6286a05bc7b6f05ebe65e42bb36c2d7020a79a6fbc7c058487bbd6e548"
+    },
+    {
+      "checkId": "g3-arch-after",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-after/stdout.txt",
+      "evidenceSha256": "3106c08f95febda22f76a0886af0d0bf529257b6e72f208d6dafd0d774845bdb"
+    },
+    {
+      "checkId": "g3-runtime-clock-after-r2",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-after-r2/stdout.txt",
+      "evidenceSha256": "4e702fbf11d7bf177603830811d9d8e477f0bbc71c0f347b6ee6949c5559b4f1"
+    },
+    {
+      "checkId": "g3-r37cf-authority-postreview-tests",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-postreview-tests/stdout.txt",
+      "evidenceSha256": "5a508569554de2af275feb874cb9650bf9209681e207922ecd2e61a32a9de858"
+    },
+    {
+      "checkId": "g3-r37cf-postreview-final-review",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-postreview-final-review/stdout.txt",
+      "evidenceSha256": "2702f8f6b455130bc1c76941df7c108250360ad90eacd51bbad9a38940e7e341"
+    },
+    {
+      "checkId": "g3-readiness-correction-review-r4",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-review-r4/stdout.txt",
+      "evidenceSha256": "0da14c88af7a080855a9cdac495cb658421264d6c6a51f20149c9883787ae59e"
+    },
+    {
+      "checkId": "g3-next-entrypoints-cli-r2",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli-r2/stdout.txt",
+      "evidenceSha256": "7c52bba22042cee8754c6c2709368a867e1a6c18536948b227a8cbd9e27b6b48"
+    },
+    {
+      "checkId": "g3-canonical-actual-digest-reproduction",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-canonical-actual-digest-reproduction/stdout.txt",
+      "evidenceSha256": "195ae71ae854f9d8084f53afc4c028d13d7a539bca4534de0a6ff6bcfd80dad5"
+    },
+    {
+      "checkId": "g3-voice-spend-integration",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-voice-spend-integration/stdout.txt",
+      "evidenceSha256": "92aa2a6f2bbdf038bb4d8579c4a4d92ac6db59be4758b7a0f639dd4ec5a5ef28"
+    },
+    {
+      "checkId": "g3-release-tracked-text-final-tests",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-tracked-text-final-tests/stdout.txt",
+      "evidenceSha256": "e3a4ff6c06528615f1b2a5758e621113feb89b51ea152a72a06f4b474bb0b246"
+    },
+    {
+      "checkId": "g3-release-binding-correction-review-r4",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-binding-correction-review-r4/stdout.txt",
+      "evidenceSha256": "296867b72b0a83d1085c62ae2360816783b4f73be89707e69e051c9dbdddec5b"
+    },
+    {
+      "checkId": "g3-release-pr008-boundary",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-pr008-boundary/stdout.txt",
+      "evidenceSha256": "61320210667b27a105a4dc5fae0e877d208a3656115b6f11d4a9f5346b6abd31"
+    },
+    {
+      "checkId": "g3-gateway-lifecycle-r3-after",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-lifecycle-r3-after/stdout.txt",
+      "evidenceSha256": "e9e47d77f3f61c3a455b66233d25e5aaa7e366d764a2521da54c0a2e3cd34c5c"
+    },
+    {
+      "checkId": "g3-gateway-claim-critical-review-r4",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-claim-critical-review-r4/stdout.txt",
+      "evidenceSha256": "037b3a0d07904034d0a1b478ec286e467664e68e3a56eb2d8a58f58ad32ea6a6"
+    },
+    {
+      "checkId": "g3-voice-spend-integration-r2",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-voice-spend-integration-r2/stdout.txt",
+      "evidenceSha256": "b7d0a52d68bbba274cf6dd554e71f30c1b6f987bfec1d2fd182fd03af17982f8"
+    }
+  ]
+}

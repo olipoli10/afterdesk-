@@ -1,0 +1,4 @@
+{
+ "id":"g3-release-r2-native-validator","phase":"G3","classification":"VALIDATION","executable":"node",
+ "args":["--require","./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs","scripts/validate-endvera-native-preflight.mjs"],"timeoutMs":120000
+}

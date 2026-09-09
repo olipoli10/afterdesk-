@@ -45,7 +45,9 @@
         "specs/206-gpt6-astra-endvera-reverification",
         "src",
         "test",
-        "apps/mobile"
+        "apps/mobile",
+        "scripts",
+        "release"
       ],
       "planPath": "plan.md",
       "planSha256": "f733367103d04a06e27b990f6f0445cf793614b6c88ef91b3e3053967d6bfeb8",

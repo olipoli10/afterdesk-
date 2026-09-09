@@ -1,0 +1,20 @@
+{
+  "focus": "Third source-only review after PRODUCT003-001 (mutable exported canonical input paths), PRODUCT001-001 (additional top-level historical readiness/provider claims) and COPY-001 (unqualified present-tense text/call/action walkthrough). Inspect complete supplied source. Internal canonical current and historical arrays are private frozen arrays; public exports are frozen copies. Market v1 report and boundary require exact field sets; accepted fixtures return HISTORICAL_STATIC_ATTESTATION_ONLY, not observed readiness. Archived report bytes, source metadata, source hashes and archive anchor must remain historical; no rewriting is authorized. Public FR/EN page must distinguish local illustration from target workflow throughout hero, flow, use cards, capabilities, walkthrough and control. Walkthrough explicitly states no live texts/calls received, no messages sent, no calendar changed and no completed action saved. The exact simple calendar example is locally interpreted; the multi-action example is NOT executed. Author recorded before 17 failed/15 passed and after 61/61 with network guard; reviewer did not execute those commands and must not claim otherwise. Check tests are meaningful and preserve prior fail-closed invariants. Findings must be concrete; do not infer provider, public exploit, semantic model correctness or device evidence. Review remains source-only; candidate UNPROBED, zero provider authority.",
+  "files": [
+    "release/current-projection-v3.mjs",
+    "release/current-projection-v3.md",
+    "release/current-projection-v3.history.json",
+    "release/current-projection-v3.json",
+    "release/endvera-construction-v1/market-readiness-report.json",
+    "scripts/validate-endvera-market-readiness.mjs",
+    "scripts/validate-endvera-whole-product-readiness.mjs",
+    "scripts/validate-endvera-whole-product-closure.mjs",
+    "src/app/construction/page.tsx",
+    "test/unit/readiness-review-r2.test.ts",
+    "test/unit/readiness-review-hardening.test.ts",
+    "test/construction-public-copy-boundaries.test.ts",
+    "test/construction-operating-assistant-r36k-market-readiness.test.ts",
+    "test/local-whole-product-readiness-gate.test.ts",
+    "test/whole-product-closure-audit.test.ts"
+  ]
+}

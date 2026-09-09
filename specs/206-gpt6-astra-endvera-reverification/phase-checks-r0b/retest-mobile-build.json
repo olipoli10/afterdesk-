@@ -1,0 +1,14 @@
+{
+  "id": "g3-r0b-mobile-build-1",
+  "phase": "G3",
+  "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MOBILE_BUILD",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+    "G1",
+    "MOBILE_BUILD"
+  ],
+  "cwd": ".",
+  "timeoutMs": 3600000
+}

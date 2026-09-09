@@ -1,0 +1,1 @@
+{"id":"g7-r0b-prompt-injection","phase":"G7","classification":"DETERMINISTIC_TEST","command":"node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 PROMPT_INJECTION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs","G7","PROMPT_INJECTION"],"cwd":".","timeoutMs":3600000}

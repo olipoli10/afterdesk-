@@ -1,0 +1,5 @@
+{
+  "id": "g3-parent-patch-review-r3", "phase": "G3", "classification": "DETERMINISTIC_TEST", "executable": "node",
+  "args": ["--require", "./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs", "specs/206-gpt6-astra-endvera-reverification/scripts/review-parent-patches.mjs"],
+  "timeoutMs": 120000
+}

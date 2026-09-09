@@ -1,0 +1,1 @@
+{"id":"g7-postgres-restart-readback","phase":"G7","classification":"DETERMINISTIC_TEST","command":"node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 POSTGRES_RESTART_READBACK","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs","G7","POSTGRES_RESTART_READBACK"],"cwd":".","timeoutMs":3600000}

@@ -1,0 +1,1 @@
+{"id":"g7-contract-static-validation","phase":"G7","classification":"VALIDATION","command":"node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 CONTRACT_STATIC_VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs","G7","CONTRACT_STATIC_VALIDATION"],"cwd":".","timeoutMs":3600000}

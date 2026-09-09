@@ -1,0 +1,5 @@
+{
+  "id": "g3-r0b-migration-clean-3", "phase": "G3", "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MIGRATION_CLEAN",
+  "executable": "node", "args": ["specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs","G1","MIGRATION_CLEAN"], "cwd": ".", "timeoutMs": 900000
+}

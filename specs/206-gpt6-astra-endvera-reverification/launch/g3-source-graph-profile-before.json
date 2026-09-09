@@ -1,0 +1,12 @@
+{
+  "id": "g3-source-graph-profile-before",
+  "phase": "G3",
+  "classification": "OTHER",
+  "executable": "node",
+  "args": [
+    "--require",
+    "./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs",
+    "specs/206-gpt6-astra-endvera-reverification/scripts/profile-provider-reachability.mjs"
+  ],
+  "timeoutMs": 60000
+}

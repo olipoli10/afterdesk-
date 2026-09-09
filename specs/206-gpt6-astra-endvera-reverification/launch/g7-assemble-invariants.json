@@ -1,0 +1,1 @@
+{"id":"g7-assemble-invariants","phase":"G7","classification":"VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/assemble-local-seal.mjs","invariant-manifest","specs/206-gpt6-astra-endvera-reverification/closeout-invariants.config.json"],"timeoutMs":120000}

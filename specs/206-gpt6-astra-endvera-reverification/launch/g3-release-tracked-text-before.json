@@ -1,0 +1,6 @@
+{
+  "id": "g3-release-tracked-text-before", "phase": "G3", "classification": "DETERMINISTIC_TEST", "executable": "node",
+  "args": ["node_modules/vitest/vitest.mjs", "run", "test/unit/release-tracked-flags.test.ts"],
+  "environment": {"NODE_OPTIONS":"--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"},
+  "timeoutMs": 120000
+}

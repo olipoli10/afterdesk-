@@ -68,8 +68,8 @@ const secretPatterns = [
  /(?:api[_-]?key|auth[_-]?token|access[_-]?token|client[_-]?secret|password|secret)\s*["']?\s*[:=]\s*["']?(?!REDACTED|\[REDACTED\]|<REDACTED>|null\b|false\b)[A-Za-z0-9_./+=:@-]{16,}/iu,
  /Bearer\s+[A-Za-z0-9_./+=-]{20,}/iu,
  /postgres(?:ql)?:\/\/[^:\s/@]+:[^@\s/]+@/iu,
- /AC[0-9a-f]{32}/iu,
- /SK[0-9a-f]{32}/iu,
+ /\bAC[0-9a-f]{32}\b/iu,
+ /\bSK[0-9a-f]{32}\b/iu,
  /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
 ];
 if (secretPatterns.some(pattern => pattern.test(out.toString('utf8')) || pattern.test(err.toString('utf8')))) {

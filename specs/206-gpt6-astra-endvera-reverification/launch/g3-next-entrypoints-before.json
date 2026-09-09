@@ -1,0 +1,1 @@
+{"id":"g3-next-entrypoints-before","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node","args":["node_modules/vitest/vitest.mjs","run","test/construction-operating-assistant-r37l-next-entrypoints.test.ts","--maxWorkers=1"],"cwd":".","timeoutMs":120000}

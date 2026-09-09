@@ -1,0 +1,14 @@
+{
+  "id": "g3-r37cf-authority-typecheck-r2",
+  "phase": "G3",
+  "classification": "VALIDATION",
+  "executable": "node",
+  "args": [
+    "node_modules/typescript/bin/tsc",
+    "--noEmit"
+  ],
+  "timeoutMs": 180000,
+  "environment": {
+    "NODE_OPTIONS": "--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"
+  }
+}

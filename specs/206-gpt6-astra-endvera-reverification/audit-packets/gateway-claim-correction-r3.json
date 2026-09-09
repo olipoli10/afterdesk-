@@ -1,0 +1,20 @@
+{
+  "focus": "Bounded correction review of GW-CLAIM-001-VOICE from prior Sol R2, plus immediate acquisition/cleanup equivalents demonstrated by author tests. Voice pre-dispatch refusal now starts one transaction with attempt CAS requiring prepared AND not_dispatched; count 1 is required before AI owner/running fence, in-transaction hold release, gateway finalization or refusal/release audits. Owner-fence loss rolls back CAS and returns typed non-terminal superseded, and CAS-zero does no cleanup. All five pre-refusal branches use this protocol. Acquisition now also requires not_dispatched and returns superseded instead of generic exception on zero rows, before segment/gateway/audit/adapter work. Callback already invoked reporting not_dispatched is treated conservatively as uncertain with held exposure, not an out-of-transaction release. Author before captured 11fail/1pass across five late-refusal branches, rollback exposure leak, owner loss, generic acquisition loss, prepared/unaccounted acquisition and postcallback cleanup; after-r1 15 voice +12 unchanged classification =27 pass. Tests use serialized rollback-capable in-memory ledger, NOT PostgreSQL. Parent separately schedules existing voice-spend PostgreSQL integration at final HEAD; do not invent its result. No provider, real audio, credentials or runtime candidate. All prior classification corrections preserved. Scope only these races, transactional cleanup and new non-terminal outcomes; no broad refactor or grant/rollout changes. Include actual ai-operations/account-spend lifecycle in reasoning; do not infer a public route: source search observed only tests consuming dispatchVoiceGatewayAttempt, portal voice integration remains disabled. No tools/tests executed by reviewer. Candidate remains UNPROBED; report concrete residual defects and limitations.",
+  "files": [
+    "src/server/model-gateway/dispatch.ts",
+    "src/server/ai-operations.ts",
+    "src/server/account-spend.ts",
+    "src/server/model-gateway/adapters/contract.ts",
+    "src/server/model-gateway/types.ts",
+    "src/server/model-gateway/operations.ts",
+    "src/server/model-gateway/policy.ts",
+    "src/server/model-gateway/breakers.ts",
+    "src/server/model-gateway/evidence.ts",
+    "src/server/model-gateway/voice/dispatch.ts",
+    "test/unit/gateway-dispatch-claim-revalidation.test.ts",
+    "src/server/model-gateway/voice/adapters/contract.ts",
+    "test/unit/gateway-voice-claim-revalidation.test.ts",
+    "test/integration/model-gateway-voice-spend.itest.ts",
+    "test/support/model-gateway-voice-db.ts"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "focus": "FINAL bounded source-only correction review: adjudicate exactly prior R3 findings GW-CLAIM-001-VOICE-R3-01 (AI owner acquisition), R3-02 (session/segment read-to-claim), GW-SPEND-001-VOICE-R3-03 (known/unknown response cost), GW-FENCE-001-VOICE-R3-04 (callback owner loss), GW-CLAIM-001-CLASSIFICATION-R3-05 (AI owner TOCTOU), and direct regressions introduced by their fixes. Both acquisition transactions now lock matching running AiOperation owner alongside prepared/not_dispatched CAS; rollback yields typed superseded. Voice transaction locks/rechecks session+segment and enforces segment update count. Failed eligibility returns non-terminal superseded with no dispatch, no automatic hold release/retry; authority is not broadened. Voice terminal helper locks owner before logical state writes; on loss it deliberately updates only the old dispatched/unaccounted attempt to uncertain and audit, retains held exposure even with a declared known-cost callback, does not mutate successor AI/gateway/segment. Valid known cost response failure settles hold plus spend/attempt audit; unknown/invalid cost produces uncertain/held, even if transcript exists. Success uses same owner helper and known cost. Author reproduced all 5 findings: g3-gateway-lifecycle-r3-before 10 FAIL/27 PASS; g3-gateway-lifecycle-r3-after 37/37 (24 voice+13 classification) PASS and lint PASS. Fixture tests are serialized rollback-capable in-memory transactions NOT PostgreSQL. Integration voice file now has 7 tests (previous4 plus known-cost failure, unknown-cost failure/transcript); new7 actual database run is pending parent, do not infer pass. No real provider/audio/credentials/runtime candidate calls. Candidate UNPROBED, execution not authorized. Review source only, do not claim reviewer ran tools/tests. Prior fixes must remain intact. Limit scope to these five and concrete introduced consequences, not speculative infinite audit expansion. Served reviewer model unknown. Report APPROVE or concrete remaining CHANGES_REQUIRED with precise reproduction.",
+  "files": [
+    "src/server/model-gateway/dispatch.ts",
+    "src/server/ai-operations.ts",
+    "src/server/account-spend.ts",
+    "src/server/model-gateway/adapters/contract.ts",
+    "src/server/model-gateway/types.ts",
+    "src/server/model-gateway/operations.ts",
+    "src/server/model-gateway/policy.ts",
+    "src/server/model-gateway/breakers.ts",
+    "src/server/model-gateway/evidence.ts",
+    "src/server/model-gateway/voice/dispatch.ts",
+    "test/unit/gateway-dispatch-claim-revalidation.test.ts",
+    "src/server/model-gateway/voice/adapters/contract.ts",
+    "test/unit/gateway-voice-claim-revalidation.test.ts",
+    "test/integration/model-gateway-voice-spend.itest.ts",
+    "test/support/model-gateway-voice-db.ts"
+  ]
+}

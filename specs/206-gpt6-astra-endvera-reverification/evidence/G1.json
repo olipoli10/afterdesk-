@@ -1,0 +1,97 @@
+{
+  "kind": "PHASE_EVIDENCE",
+  "phase": "G1",
+  "status": "REWORK",
+  "subRun": "R0a",
+  "checks": [
+    {
+      "checkId": "BACKLOG_VALIDATION",
+      "result": "FAIL",
+      "commandId": "g1-backlog-validation",
+      "wrapperCommandId": "g1-backlog-validation-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation-wrapper/stdout.txt",
+      "evidenceSha256": "ca7803ddc83ede6b0956225f1a7435bd76bf634edbb353579852a766abd93407"
+    },
+    {
+      "checkId": "CRITICAL_ROUTE_SMOKE",
+      "result": "FAIL",
+      "commandId": "g1-critical-route-smoke",
+      "wrapperCommandId": "g1-critical-route-smoke-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke-wrapper/stdout.txt",
+      "evidenceSha256": "431d052a33cb76bda22c720ff64f3cd6ae9cd844bf4d3929887be62107bc42f7"
+    },
+    {
+      "checkId": "MIGRATION_CLEAN",
+      "result": "FAIL",
+      "commandId": "g1-migration-clean",
+      "wrapperCommandId": "g1-migration-clean-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-clean-wrapper/stdout.txt",
+      "evidenceSha256": "fff9acff7be1feb9c525b198ae8de419e66578d56f5b189660fef1ebab91ca92"
+    },
+    {
+      "checkId": "MIGRATION_UPGRADE",
+      "result": "FAIL",
+      "commandId": "g1-migration-upgrade",
+      "wrapperCommandId": "g1-migration-upgrade-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-upgrade-wrapper/stdout.txt",
+      "evidenceSha256": "310fc3d880759af46789ce86916ebd884c3afb0732d1909060c887f9cbed6517"
+    },
+    {
+      "checkId": "MOBILE_BUILD",
+      "result": "FAIL",
+      "commandId": "g1-mobile-build",
+      "wrapperCommandId": "g1-mobile-build-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-build-wrapper/stdout.txt",
+      "evidenceSha256": "3c78c9541f0e11cb3f39a2e8408ac3068d3e5c78e8cde6253c3ee3636d355c15"
+    },
+    {
+      "checkId": "MOBILE_TESTS",
+      "result": "FAIL",
+      "commandId": "g1-mobile-tests",
+      "wrapperCommandId": "g1-mobile-tests-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-tests-wrapper/stdout.txt",
+      "evidenceSha256": "1712a411adb6936af2b3070dd59bd14900ab99e50bcf707f412cbcceec9933a5"
+    },
+    {
+      "checkId": "POSTGRES_RESTART_READBACK",
+      "result": "FAIL",
+      "commandId": "g1-postgres-restart-readback",
+      "wrapperCommandId": "g1-postgres-restart-readback-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback-wrapper/stdout.txt",
+      "evidenceSha256": "936afb8d8a43bfc61de749e98a7d691f7cb2fc9fc4e3008d3905258a405cfe24"
+    },
+    {
+      "checkId": "QUEUE_VALIDATION",
+      "result": "FAIL",
+      "commandId": "g1-queue-validation",
+      "wrapperCommandId": "g1-queue-validation-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation-wrapper/stdout.txt",
+      "evidenceSha256": "5dc5f9f51b813cf4c4f921712679fe7786907e86125ffc54580405806986394d"
+    },
+    {
+      "checkId": "ROOT_BUILD",
+      "result": "FAIL",
+      "commandId": "g1-root-build",
+      "wrapperCommandId": "g1-root-build-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-build-wrapper/stdout.txt",
+      "evidenceSha256": "8b4e0bd401b09e8284091b2160d049fd28fde61ce42170d46b04e57d1b0af4ab"
+    },
+    {
+      "checkId": "ROOT_TESTS",
+      "result": "FAIL",
+      "commandId": "g1-root-tests",
+      "wrapperCommandId": "g1-root-tests-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-tests-wrapper/stdout.txt",
+      "evidenceSha256": "5c80637ce6b943a2b83244377c9b598433652fe3917edd965088b0e52b6b83ec"
+    },
+    {
+      "checkId": "SYNTHETIC_SEED",
+      "result": "FAIL",
+      "commandId": "g1-synthetic-seed",
+      "wrapperCommandId": "g1-synthetic-seed-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-synthetic-seed-wrapper/stdout.txt",
+      "evidenceSha256": "4f3fc57e2ba48856da0fe3c7f20daae8a8ef00269ecb52872caeb392fde48144"
+    }
+  ],
+  "reason": "Native observations failed; child preload path prevents product suites; local database guard denied setup; source backlog/queue validator incompatibilities. Product results unobserved, not zero failures. Original frozen kit retained. Corrected runner R0b will be separate, never overwrite R0a."
+}

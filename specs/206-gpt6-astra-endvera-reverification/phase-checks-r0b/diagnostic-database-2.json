@@ -1,0 +1,11 @@
+{
+  "id": "g3-r0b-db-diagnostic-2",
+  "phase": "G3",
+  "classification": "SETUP",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnose-database.mjs",
+  "executable": "node",
+  "args": ["specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnose-database.mjs"],
+  "environment": {"CAMPAIGN_NETWORK_DIAGNOSTICS":"1"},
+  "cwd": ".",
+  "timeoutMs": 120000
+}

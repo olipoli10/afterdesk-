@@ -1,0 +1,36 @@
+{
+  "kind": "PHASE_EVIDENCE",
+  "phase": "G2",
+  "status": "REWORK",
+  "checks": [
+    {
+      "checkId": "CANON_PROVENANCE",
+      "result": "FAIL",
+      "commandId": "g2-packet-canon-provenance-r0b",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance-r0b/stdout.txt",
+      "evidenceSha256": "6dd1fad512edb6b0e85972beaefb12dd03dc3ad3da760a0541476ff73050240b"
+    },
+    {
+      "checkId": "ARCHITECTURE_SECURITY",
+      "result": "FAIL",
+      "commandId": "g2-packet-architecture-security",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-architecture-security/stdout.txt",
+      "evidenceSha256": "fb42c6a53b71f9368995aff28c13974000bc85639fef8e175ebae8fa497c2ca7"
+    },
+    {
+      "checkId": "MOBILE_UX",
+      "result": "PASS",
+      "commandId": "g2-packet-mobile-ux",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-mobile-ux/stdout.txt",
+      "evidenceSha256": "5e6a27289f1a8eddbc57001da6cb04cb8f1aebf55944b948216d2de3fcfb3dde"
+    },
+    {
+      "checkId": "PRODUCT_COVERAGE",
+      "result": "FAIL",
+      "commandId": "g2-packet-product-coverage",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-product-coverage/stdout.txt",
+      "evidenceSha256": "34f45c3d6140edea40fbdfe5abe5fd70d49fb871e50299ddf0f356501c2111d9"
+    }
+  ],
+  "reason": "Four schema-valid source-packet audit reports. Three explicitly INCOMPLETE; source-only analysis is not executed or exhaustive coverage. Original shell-blocked reports and one recorder incident are preserved separately."
+}

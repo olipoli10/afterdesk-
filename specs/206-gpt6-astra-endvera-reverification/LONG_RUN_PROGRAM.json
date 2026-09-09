@@ -59,7 +59,7 @@
       "id": "G1",
       "title": "Observe deterministic baseline",
       "objective": "Observe deterministic baseline",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "estimatedMinutes": 90,
       "dependencies": [
         "G0"
@@ -73,14 +73,14 @@
       "evidencePaths": [
         "evidence/G1.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "R0a captured unchanged: REWORK. All eleven frozen checks failed; no product success inferred from harness failure.",
+      "completedAtUtc": "2026-09-09T14:07:29Z"
     },
     {
       "id": "G2",
       "title": "Four evidence-linked audits",
       "objective": "Four evidence-linked audits",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 100,
       "dependencies": [
         "G1"
@@ -94,14 +94,14 @@
       "evidencePaths": [
         "evidence/G2.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Four schema-valid supplied-source audit reports; three INCOMPLETE. G2 remains REWORK, not exhaustive validation.",
+      "completedAtUtc": "2026-09-09T14:07:29Z"
     },
     {
       "id": "G3",
       "title": "Reproduce and correct bounded defects",
       "objective": "Reproduce and correct bounded defects",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 180,
       "dependencies": [
         "G2"
@@ -110,7 +110,9 @@
         "specs/206-gpt6-astra-endvera-reverification",
         "src",
         "test",
-        "apps/mobile"
+        "apps/mobile",
+        "scripts",
+        "release"
       ],
       "acceptanceCommands": [
         "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G3"
@@ -118,14 +120,14 @@
       "evidencePaths": [
         "evidence/G3.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Local corrections and reviews handled with recorded REWORK; current-package compatible release verified, PRR2-008 compatibility limitation retained. Not a green canonical gate.",
+      "completedAtUtc": "2026-09-09T15:15:58Z"
     },
     {
       "id": "G5",
       "title": "G4-G6 mobile packet, guarded gateway, corpus and provider non-activation",
       "objective": "G4-G6 mobile packet, guarded gateway, corpus and provider non-activation",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 185,
       "dependencies": [
         "G3"
@@ -144,14 +146,14 @@
         "evidence/G4.json",
         "evidence/G6.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "G4 device not observed, G5 disabled guarded intent/corpus prepared and bounded local checks recorded REWORK, G6 NOT_APPLICABLE without provider authority.",
+      "completedAtUtc": "2026-09-09T15:15:58Z"
     },
     {
       "id": "G7",
       "title": "Final validation seal and Brain checkpoint",
       "objective": "Final validation seal and Brain checkpoint",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "estimatedMinutes": 120,
       "dependencies": [
         "G5"

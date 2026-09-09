@@ -1,0 +1,4 @@
+{
+ "id":"g3-release-r2-lint","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node",
+ "args":["--require","./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs","node_modules/eslint/bin/eslint.js","scripts/endvera-release-source-binding.mjs","scripts/endvera-release-source-contracts.mjs","scripts/endvera-mobile-build-contract.mjs","scripts/generate-endvera-release-package.mjs","scripts/validate-endvera-release-package.mjs","scripts/validate-endvera-mobile-build-readiness.mjs","scripts/validate-endvera-native-preflight.mjs","src/lib/construction-operating-assistant-r35/registry.ts","test/unit/release-source-binding-review.test.ts","test/unit/release-source-security-review.test.ts","test/unit/release-source-r2-review.test.ts"],"timeoutMs":120000
+}

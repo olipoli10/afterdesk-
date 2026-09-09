@@ -1,0 +1,1 @@
+{"id":"g5-guarded-intent-critical-review","phase":"G5","classification":"VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/run-critical-review.mjs"],"timeoutMs":1800000}

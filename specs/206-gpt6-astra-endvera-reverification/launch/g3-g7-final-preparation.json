@@ -1,0 +1,1 @@
+{"id":"g3-g7-final-preparation","phase":"G3","classification":"VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/run-g7-final.mjs","--validate-only"],"cwd":".","timeoutMs":60000}

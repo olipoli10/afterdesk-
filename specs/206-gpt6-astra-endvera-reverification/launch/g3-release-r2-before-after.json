@@ -1,0 +1,4 @@
+{
+ "id":"g3-release-r2-before-after","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node",
+ "args":["--require","./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs","specs/206-gpt6-astra-endvera-reverification/scripts/reproduce-release-r2.mjs"],"timeoutMs":120000
+}

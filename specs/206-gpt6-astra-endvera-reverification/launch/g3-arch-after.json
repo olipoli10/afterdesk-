@@ -1,0 +1,16 @@
+{
+  "id": "g3-arch-after",
+  "phase": "G3",
+  "classification": "DETERMINISTIC_TEST",
+  "executable": "node",
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "test/unit/broadcast-preparation-replay.test.ts",
+    "test/construction-operating-assistant-r37a-sealed-executor.test.ts"
+  ],
+  "environment": {
+    "NODE_OPTIONS": "--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"
+  },
+  "timeoutMs": 60000
+}

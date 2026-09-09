@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "path": "src/server/model-gateway/assistant-routing.ts"
+    },
+    {
+      "path": "src/server/model-gateway/types.ts"
+    },
+    {
+      "path": "src/server/model-gateway/privacy.ts"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r36a/contracts.ts"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r36a/router.ts"
+    },
+    {
+      "path": "src/server/construction-operating-assistant-r38f/broadcast-approval.ts"
+    },
+    {
+      "path": "src/server/construction-operating-assistant-r38e/broadcast-preparation.ts"
+    },
+    {
+      "path": "src/server/construction-assistant-v1/outbound.ts"
+    },
+    {
+      "path": "src/server/construction-assistant-v1/workspace.ts"
+    },
+    {
+      "path": "src/server/construction-assistant-v1/simulator.ts"
+    },
+    {
+      "path": "src/server/construction-operating-assistant-r36w/project-brain-fact-candidates.ts"
+    },
+    {
+      "path": "src/server/construction-operating-assistant-r37a/sealed-executor.ts"
+    }
+  ]
+}

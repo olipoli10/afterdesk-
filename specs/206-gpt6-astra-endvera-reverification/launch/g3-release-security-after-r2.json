@@ -1,0 +1,4 @@
+{
+ "id":"g3-release-security-after-r2","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node",
+ "args":["--require","./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs","node_modules/vitest/vitest.mjs","run","test/unit/release-source-security-review.test.ts","test/unit/release-source-binding-review.test.ts","test/construction-operating-assistant-r35-release-package.test.ts","--reporter=json","--maxWorkers=1"],"timeoutMs":120000
+}

@@ -1,0 +1,1 @@
+{"id":"g2-packet-canon-provenance-r0b","phase":"G2","classification":"MODEL_AUDIT","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/run-packet-audit.mjs","canon-provenance","r0b"],"timeoutMs":1800000}

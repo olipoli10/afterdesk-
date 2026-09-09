@@ -1,0 +1,28 @@
+{
+  "id": "g1-postgres-restart-readback-wrapper",
+  "phase": "G1",
+  "classification": "PHASE_CHECK",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "--revalidation-replay",
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+    "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-postgres-restart-readback.json"
+  ],
+  "timeoutMs": 60000,
+  "replay": {
+    "entrypoint": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "args": [
+      "--revalidation-replay",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-postgres-restart-readback.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-postgres-restart-readback.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback/stdout.txt",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback/stderr.txt"
+    ]
+  }
+}

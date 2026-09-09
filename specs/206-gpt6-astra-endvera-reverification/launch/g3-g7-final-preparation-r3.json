@@ -1,0 +1,1 @@
+{"id":"g3-g7-final-preparation-r3","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/run-g7-final.mjs","--validate-only"],"timeoutMs":60000}

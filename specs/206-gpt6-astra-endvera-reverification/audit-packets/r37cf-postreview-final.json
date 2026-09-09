@@ -1,0 +1,13 @@
+{
+  "files": [
+    "src/server/construction-operating-assistant-r37c/coordinator.ts",
+    "src/server/construction-operating-assistant-r37f/provider-delivery.ts",
+    "src/server/construction-operating-assistant-r37b/activation.ts",
+    "src/lib/construction-operating-assistant-r37b/contracts.ts",
+    "src/lib/construction-operating-assistant-r37c/contracts.ts",
+    "src/lib/construction-operating-assistant-r37f/contracts.ts",
+    "test/unit/r37cf-current-authority.test.ts",
+    "test/unit/r37b-reservation-candidate.test.ts"
+  ],
+  "focus": "FINAL BOUNDED review ONLY of fixes for R37-REV-001 and R37-REV-002. REV001 original: awaited evidence update could complete after lease/grant deadline then settle using stale time. Inspect recordControlledRunEvidence transaction post-write clock/grant/lane/deadline rollback and its C/F callers, no distributed atomic external guarantee. REV002 original: terminal spend commits, coordinating run update crashes, retry incorrectly uses postterminal version changing immutable command fingerprint. Inspect terminalCommandVersion and reservation/terminal service lifecycle; Prisma ProviderSpendAttempt schema defaults state RESERVED and version 1; repository writer inspection found only reservation create and terminalAttempt update, which refuses non-RESERVED then increments version once. Author executed 61 local synthetic tests, lint/global typecheck green; treat this as author context NOT independently verified execution. No audit expansion outside these two concrete findings/required regression paths; no provider execution, no isolation claim, no new hypothetical findings. Return APPROVE if both concrete fixes are source-correct, otherwise concrete reproduction only."
+}

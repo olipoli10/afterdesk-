@@ -1,0 +1,1 @@
+{"id":"g7-assemble-metrics","phase":"G7","classification":"VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/assemble-local-seal.mjs","metric-report","specs/206-gpt6-astra-endvera-reverification/closeout-metrics.config.json"],"timeoutMs":120000}

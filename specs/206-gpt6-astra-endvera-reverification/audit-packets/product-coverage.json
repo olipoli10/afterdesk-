@@ -1,0 +1,45 @@
+{
+  "files": [
+    {
+      "path": "src/server/model-gateway/assistant-routing.ts"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r36a/router.ts"
+    },
+    {
+      "path": "src/lib/construction-assistant-v1/interpreter.ts"
+    },
+    {
+      "path": "src/app/construction/page.tsx"
+    },
+    {
+      "path": "src/app/textassist/page.tsx"
+    },
+    {
+      "path": "src/app/construction/support/page.tsx"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r35/registry.ts"
+    },
+    {
+      "path": "release/endvera-construction-v1/whole-product-readiness.json"
+    },
+    {
+      "path": "release/endvera-construction-v1/whole-product-closure-audit.json"
+    },
+    {
+      "path": "scripts/validate-endvera-whole-product-readiness.mjs"
+    },
+    {
+      "path": "scripts/validate-endvera-whole-product-closure.mjs"
+    },
+    {
+      "path": "apps/mobile/app.json"
+    }
+  ],
+  "brain": [
+    {
+      "path": "ENDVERA_CONSTRUCTION_OPERATING_ASSISTANT_A_TO_Z_PLAN.md"
+    }
+  ]
+}

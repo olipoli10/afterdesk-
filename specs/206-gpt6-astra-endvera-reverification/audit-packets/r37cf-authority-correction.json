@@ -1,0 +1,23 @@
+{
+  "files": [
+    "src/server/construction-operating-assistant-r37c/coordinator.ts",
+    "src/server/construction-operating-assistant-r37f/provider-delivery.ts",
+    "src/server/construction-operating-assistant-r37b/activation.ts",
+    "src/lib/construction-operating-assistant-r37b/contracts.ts",
+    "test/unit/r37cf-current-authority.test.ts",
+    "test/unit/r37b-reservation-candidate.test.ts",
+    "test/unit/r37c-admission-clock.test.ts",
+    "test/construction-operating-assistant-r37b-provider-activation.test.ts",
+    "test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts",
+    "test/integration/construction-operating-assistant-r37b-provider-activation.itest.ts",
+    "test/integration/construction-operating-assistant-r37c-controlled-run.itest.ts",
+    "src/server/construction-operating-assistant-r37/campaign.ts",
+    "src/lib/construction-operating-assistant-r37c/contracts.ts",
+    "src/lib/construction-operating-assistant-r37f/contracts.ts",
+    "src/server/construction-operating-assistant-r37a/sealed-executor.ts",
+    "src/lib/construction-operating-assistant-r37a/contracts.ts",
+    "src/lib/construction-operating-assistant-r37d/contracts.ts",
+    "src/lib/construction-operating-assistant-r37d/normalize.ts"
+  ],
+  "focus": "Bounded correction review of R37C-CURRENT-GRANT-001, R37F-LEASE-CLOCK-002, R37C-CANDIDATE-BINDING-003: reconstruct current grant/lane/lease authorization after awaited DB reads at direct and delivery callbacks and evidence acceptance; grant expiry and sealed expiry cap lease/deadline; candidateKey explicit in spend reservation and fingerprint plus claim/current authorization; replay/settlement/release preservation and caller compatibility. Scope limited to these findings and concrete regressions. Fixtures/callbacks are trusted in-process code, NOT OS/network isolation. Historical seal/proof semantics must stay unchanged. Do not infer tests passed from test source or claim provider execution. Review all files supplied, only source-backed concrete bypasses or regression findings."
+}

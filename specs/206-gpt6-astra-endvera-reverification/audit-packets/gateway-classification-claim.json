@@ -1,0 +1,4 @@
+{
+  "focus": "Review the narrow classification dispatch atomic-claim correction. Two concurrent callers can both read prepared lineage; only UPDATE affectedRows===1 may reach audit, credential resolver and adapter dispatch. Verify the code and regression fixture do not cancel/release the winning attempt on the losing CAS. Synthetic local callbacks only, no observed provider or DB concurrency claim. Rollout still local-explicit only; no product caller was found. Report source-backed regressions in this change, not unrelated feature expansion. Tests are evidence to inspect, not proof you executed them.",
+  "files": ["src/server/model-gateway/dispatch.ts", "src/server/model-gateway/operations.ts", "src/server/ai-operations.ts", "src/server/model-gateway/voice/dispatch.ts", "src/server/model-gateway/adapters/contract.ts", "test/unit/gateway-dispatch-claim-revalidation.test.ts"]
+}

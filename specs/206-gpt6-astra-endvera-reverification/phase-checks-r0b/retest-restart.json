@@ -1,0 +1,14 @@
+{
+  "id": "g3-r0b-db-restart-1",
+  "phase": "G3",
+  "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 POSTGRES_RESTART_READBACK",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+    "G1",
+    "POSTGRES_RESTART_READBACK"
+  ],
+  "cwd": ".",
+  "timeoutMs": 900000
+}

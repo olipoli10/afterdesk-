@@ -1,0 +1,28 @@
+{
+  "id": "g1-critical-route-smoke-wrapper",
+  "phase": "G1",
+  "classification": "PHASE_CHECK",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "--revalidation-replay",
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+    "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-critical-route-smoke.json"
+  ],
+  "timeoutMs": 60000,
+  "replay": {
+    "entrypoint": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "args": [
+      "--revalidation-replay",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-critical-route-smoke.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-critical-route-smoke.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke/stdout.txt",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke/stderr.txt"
+    ]
+  }
+}

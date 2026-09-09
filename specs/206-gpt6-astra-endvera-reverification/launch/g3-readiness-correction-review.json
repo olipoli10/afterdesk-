@@ -1,0 +1,1 @@
+{"id":"g3-readiness-correction-review","phase":"G3","classification":"MODEL_CORRECTION_REVIEW","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/run-critical-review.mjs","specs/206-gpt6-astra-endvera-reverification/audit-packets/readiness-corrections.json"],"timeoutMs":900000}

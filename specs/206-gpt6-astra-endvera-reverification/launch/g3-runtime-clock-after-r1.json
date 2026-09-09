@@ -1,0 +1,9 @@
+{
+  "id": "g3-runtime-clock-after-r1",
+  "phase": "G3",
+  "classification": "DETERMINISTIC_TEST",
+  "executable": "node",
+  "args": ["node_modules/vitest/vitest.mjs", "run", "test/unit/r37a-runtime-clock.test.ts", "test/unit/r37c-admission-clock.test.ts", "test/construction-operating-assistant-r37a-sealed-executor.test.ts", "test/construction-operating-assistant-r37c-controlled-run.test.ts", "test/construction-operating-assistant-r37g-provider-security-hardening.test.ts", "test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts"],
+  "environment": {"NODE_OPTIONS":"--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"},
+  "timeoutMs": 60000
+}

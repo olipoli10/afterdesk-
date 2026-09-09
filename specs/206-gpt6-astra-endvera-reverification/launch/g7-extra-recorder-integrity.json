@@ -1,0 +1,1 @@
+{"id":"g7-extra-recorder-integrity","phase":"G7","classification":"DETERMINISTIC_TEST","executable":"node","args":["--test","specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-recorder.test.mjs","specs/206-gpt6-astra-endvera-reverification/scripts/test-secret-scan-boundaries.mjs"],"timeoutMs":120000}

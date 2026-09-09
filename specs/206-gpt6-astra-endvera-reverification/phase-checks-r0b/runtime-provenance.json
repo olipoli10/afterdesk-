@@ -1,0 +1,7 @@
+{
+  "engine": "PrismaDev-PGlite",
+  "version": "0.25.2",
+  "entrypoint": "C:/Users/oliro/AppData/Local/Temp/@prisma/cli-dev@latest-1788753600000/node_modules/@prisma/dev/dist/index.js",
+  "sha256": "648cc96d2cb722582ed4d39e3d4886ce7978cd6df3cfe2a9507bd26fbab5a330",
+  "source": "pre-existing local Sep7 npm cache, direct import only"
+}

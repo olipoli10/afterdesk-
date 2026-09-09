@@ -1,0 +1,575 @@
+{
+  "schemaVersion": "1.0",
+  "commands": [
+    {
+      "phase": "G1",
+      "checkId": "ROOT_TESTS",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 ROOT_TESTS",
+      "commandSha256": "7e6925b06833bd2dadd26f9009567d9e4f10cc8e04b816a2839df5bd8ba66f80",
+      "parserSha256": "45fe5198cca3410354f3c16a9b9fbd26b6d7c5b2eec203d59b10a8c2a96881d7",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "ROOT_TESTS"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "MOBILE_TESTS",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MOBILE_TESTS",
+      "commandSha256": "103f4ffcf15115553032013d971e666b886b2149c36a340a69c626657b070a54",
+      "parserSha256": "ea3389966ac76c447991cae5c4cf5fc883735d280107c6bd67485a54590b2c11",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "MOBILE_TESTS"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "ROOT_BUILD",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 ROOT_BUILD",
+      "commandSha256": "a93bed4e2f9e0f2d533029eb88c55e4af1210ca08f9a95fd98e13442394cff86",
+      "parserSha256": "423c9f19faed932157f87fadd7c05c607d8b7ec59acbd9b62e55402c74ef50a6",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "ROOT_BUILD"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "MOBILE_BUILD",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MOBILE_BUILD",
+      "commandSha256": "5ae99b7226fc40c56535e510e99f79162c83cacac213cabebb43fdc3a50c3389",
+      "parserSha256": "16ef9150532950a66f446367ac7c03819d89ffd34b9b92c3e9582ff9661caca5",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "MOBILE_BUILD"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "MIGRATION_CLEAN",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MIGRATION_CLEAN",
+      "commandSha256": "2823ec8bc5d69bb59bbdfb681e39450be32330095ca3300ae00e01fded2b8536",
+      "parserSha256": "75d9c487fcec6ac9e1bd2c5e89115c41376574c384230bd99b8ebfb74cadf92a",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "MIGRATION_CLEAN"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "MIGRATION_UPGRADE",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MIGRATION_UPGRADE",
+      "commandSha256": "e16b89d90ea4154380616520a0e40e1ead69766cdd8bad9631e181b7314986f3",
+      "parserSha256": "12a764eeffd0e7068ed7c480653f73846cda2bd7ec8a9d55e7c89bd63674d91d",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "MIGRATION_UPGRADE"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "SYNTHETIC_SEED",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 SYNTHETIC_SEED",
+      "commandSha256": "ee2dc875129338707dac77d48ad86d892eb245782733e4fbf605fd157a210dc7",
+      "parserSha256": "ef85622d65f4adf284bb8251f8ae5c0ff7aabf4a76eb8f1bbf1c37fd1af18e2e",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "SYNTHETIC_SEED"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "CRITICAL_ROUTE_SMOKE",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 CRITICAL_ROUTE_SMOKE",
+      "commandSha256": "0d7e31cec137d208e14d7cd01887ae98a95f14c9ef0399c02653879dd3916385",
+      "parserSha256": "e8031612cf895c8fb6186235a251f685af16afb579d0506d8135410e12f644c7",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "CRITICAL_ROUTE_SMOKE"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "POSTGRES_RESTART_READBACK",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 POSTGRES_RESTART_READBACK",
+      "commandSha256": "8ebb78a054104970ec255e1fc7e6a7bb69898c1855a2854123f1730ac2eb12ed",
+      "parserSha256": "85bbb866940859b50ecafcc49b5a4cadbfef4acbf18fb22c3aef544659471809",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "POSTGRES_RESTART_READBACK"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "BACKLOG_VALIDATION",
+      "classification": "VALIDATION",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 BACKLOG_VALIDATION",
+      "commandSha256": "3234b8d01cdddc823b0f6acacd7f0fc247a039c32e4fad3ebe892b07ef70a0a8",
+      "parserSha256": "583c7a62f7da7d9c144da34e7071bd7b6d6a0a022e843fa33a6c2a12b3a4b26d",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "BACKLOG_VALIDATION"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G1",
+      "checkId": "QUEUE_VALIDATION",
+      "classification": "VALIDATION",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 QUEUE_VALIDATION",
+      "commandSha256": "ef8e023f98da38d5b41e6f46f437c0cbc6817a3019bbe3e9818af9660f0cc8b7",
+      "parserSha256": "53db285c314a0767a0eb4f50f27dcee2a5a4f7a2beefd7ef1b46b6989a3e8204",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G1",
+        "QUEUE_VALIDATION"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "WEBHOOK_FORGERY",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 WEBHOOK_FORGERY",
+      "commandSha256": "f86855c4f68611d9e03058ce6c689608f929f5ee72cf16b5bca8e8d311a85479",
+      "parserSha256": "f31c8879bc9f7b92a61c7846e03992a709a8e44d4e262f42eaa81e07806e939a",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "WEBHOOK_FORGERY"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "DUPLICATE_PROVIDER_MESSAGE",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 DUPLICATE_PROVIDER_MESSAGE",
+      "commandSha256": "1d0e18f3d4080b173ed6654039e58a0ef2b904ef66ca25280d05024e186da0f8",
+      "parserSha256": "c3d5b6f884d137e273653187b723cd97413e1b9b46e63811aef4970e83e884b3",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "DUPLICATE_PROVIDER_MESSAGE"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "DOUBLE_APPROVAL",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 DOUBLE_APPROVAL",
+      "commandSha256": "a84c68794ed39047a881a039b5fa34f7a4ed1221a1b85710d9fc3c2748f3e014",
+      "parserSha256": "7c6a8a08fc28a343a442ca247439b33516c0f78c226942efcb80f75bb503bebe",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "DOUBLE_APPROVAL"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "STALE_APPROVAL",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 STALE_APPROVAL",
+      "commandSha256": "d7fb378049e5c17c1c04cd89413449bb8b7cff3d6d69ec49ae5501651d2c9676",
+      "parserSha256": "ef4ccde77056dbb41f3404fff27304061c28c2abca7df0df35c07b1c160d150a",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "STALE_APPROVAL"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "PREVIEW_MUTATION",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 PREVIEW_MUTATION",
+      "commandSha256": "4441dedeccd809f6ebe02cd5e20809d6d5ab329dd720f83f5ce456b53547138a",
+      "parserSha256": "c516eb47670216a9d4588935474823113b60e370db54b6da623352fbaaddb4b7",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "PREVIEW_MUTATION"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "RECIPIENT_CAP",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 RECIPIENT_CAP",
+      "commandSha256": "54d67419adb60194c79a0729c43f8b2ff01810861251a4852407c682b533f5b5",
+      "parserSha256": "c3244f9fbe7e76acdbc61dc1f3a2dc7031a43298d4821ad49b27287789924af8",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "RECIPIENT_CAP"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "CONTACT_HOMONYM",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 CONTACT_HOMONYM",
+      "commandSha256": "f8c5eefc30c6c05a41761d696120959ae6c0cfcf785c1591fa7940d8af971d43",
+      "parserSha256": "55d40a8abe0ccd2c51450a7feb5789f5aed9c7aba221997faf0763e20e568100",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "CONTACT_HOMONYM"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "DST_BOUNDARY",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 DST_BOUNDARY",
+      "commandSha256": "668d1f5ac561c38d71289821196467b1aabc7143bed4f6296addd8fbca2e16f0",
+      "parserSha256": "4c02e9ad1a50c4da234b3464bd2d0e0c5eb3e7f2d7cb99f3a875c95a401a323a",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "DST_BOUNDARY"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "OUTCOME_UNKNOWN",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 OUTCOME_UNKNOWN",
+      "commandSha256": "4a0d109fa243285db10e978d85672f20daaeb4e0cab3a21c45a62320a89e4357",
+      "parserSha256": "4dea277672eccfd94c63763c0451495c58b46cd98e57381c9a2a7d088d2f8a03",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "OUTCOME_UNKNOWN"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "PERMISSION_REVOKED",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 PERMISSION_REVOKED",
+      "commandSha256": "8193a647da975a2cbd4d313d2162bd09005e703f5d114bcae420e2c3a1f4b541",
+      "parserSha256": "28199ea560eb226f06c15d89105b1c9cc9e48c4e325d303f079eccdc9656d0fc",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "PERMISSION_REVOKED"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "NATIVE_CRASH_REPRODUCTION",
+      "classification": "VALIDATION",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 NATIVE_CRASH_REPRODUCTION",
+      "commandSha256": "8f32c436d9da52a7d50b7fb7f3c670fae5ceacc070493e9a33b6d014b8941b88",
+      "parserSha256": "7d25094bdfee8a30dac3e0c425c99cf81103e2f9a0b0107590c02d5bd70f50a4",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "NATIVE_CRASH_REPRODUCTION"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "FIELD_WORKER_FINANCIAL_ISOLATION",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 FIELD_WORKER_FINANCIAL_ISOLATION",
+      "commandSha256": "2d94f6f297ae64a51e723e70adfce19dbf24159b2889950f9a99d4b02a48ac6c",
+      "parserSha256": "b88afc6b4715fb9443c71fc6bc4734aa91f20147fbedb4db41feb843e9d5dcc1",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "FIELD_WORKER_FINANCIAL_ISOLATION"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "CROSS_WORKSPACE_ISOLATION",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 CROSS_WORKSPACE_ISOLATION",
+      "commandSha256": "2187247f2c1575df01a4457c7c5ce150074f29dea388d58c74bec4fbe1d78af9",
+      "parserSha256": "c32d277bb5b5afbc782af8c5786d456bfe4f0a38da6b0ddf9f047c3775468156",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "CROSS_WORKSPACE_ISOLATION"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "SECRET_SCAN",
+      "classification": "VALIDATION",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 SECRET_SCAN",
+      "commandSha256": "35bf24c96543e9b3f5410283e30f147f20820b19aa494bbaee6a5fdc6fc2595d",
+      "parserSha256": "20a2af23b6aa99a503ed1c59a398f6f48a13bd93351c2541ed6067dad86a2a73",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "SECRET_SCAN"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "MALFORMED_JSON",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 MALFORMED_JSON",
+      "commandSha256": "a05604f89ccf90a6e82b929220f136671cc5528f238667576968f5ae05b81a20",
+      "parserSha256": "085057f47833ddd2be07146a5f9a716874e893d3acc18f4ffd40d0ac057e6ccb",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "MALFORMED_JSON"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "PROMPT_INJECTION",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 PROMPT_INJECTION",
+      "commandSha256": "b6dfa0c93bf9f01daada5990915d7027a2f0e44d964dbabe93d935d29265d4e4",
+      "parserSha256": "51c575a20cc02e3d9842856a439ed7b481e7bc84c5dcdc41952620e702f57d5a",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "PROMPT_INJECTION"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "POSTGRES_RESTART_READBACK",
+      "classification": "DETERMINISTIC_TEST",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 POSTGRES_RESTART_READBACK",
+      "commandSha256": "5043d7e5cc8451bce07b4cf373c3c1b36421ebcb16c7d303151d13914dde7b2b",
+      "parserSha256": "0ee0a9173abc1ac1fe70fcab2ce1d4663653db12000a0f9bf204458d429a9f2e",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "POSTGRES_RESTART_READBACK"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    },
+    {
+      "phase": "G7",
+      "checkId": "CONTRACT_STATIC_VALIDATION",
+      "classification": "VALIDATION",
+      "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 CONTRACT_STATIC_VALIDATION",
+      "commandSha256": "e87ee2f051750c3b671c9c2580791c7db553bd26bce0de090c54a820622c61d5",
+      "parserSha256": "d21fbd0c4de8c2043a5c0cad9382d22eec439cd385540453a5671bb66d2b9362",
+      "executable": "node",
+      "args": [
+        "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+        "G7",
+        "CONTRACT_STATIC_VALIDATION"
+      ],
+      "cwd": ".",
+      "timeoutMs": 3600000
+    }
+  ],
+  "frozenDependencies": [
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/check-map.mjs",
+      "sha256": "b56333a85276fa3ff6d707ef0104bf1ab9c1daa830566db3dba189950ad035b7"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/database.mjs",
+      "sha256": "ceefcd839ac9eed6319702a0860c5099a98c86cc84c4ef091d182564c1597370"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/db-worker.ts",
+      "sha256": "e67a8c477c9aa885e31e98b6a625882a38123735e3c45a7a4a88029803a73220"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnose-database.mjs",
+      "sha256": "a8148e83fa703b4827bb0f6220c6a6ea0f69b14f8f8538aaf1fa115241cec881"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnostic-database-2.json",
+      "sha256": "b5599692832f6689c954c92dbc47d8bbb1de72765fd885b47b4b8decaba89227"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnostic-database-3.json",
+      "sha256": "bd20ca3e1f2dec2f7445309d38d9b777ae38f7d49d92956395450dbe90ec5ce2"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnostic-database.json",
+      "sha256": "6f85ea4b71c678978e5ee9d3c79a936ac0e1ca8913b5a715181e2a30ee7eefe8"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/focused.config.mts",
+      "sha256": "79542d3f529e10047d55fa9384b38ec778c895e22ac5ec027fb30576bde32b40"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/focused.test.ts",
+      "sha256": "dade7729658b59d9dddebdbdf3a2370e4fd4b67ba6578ec7e7721ee7ddbaabb3"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs",
+      "sha256": "f282110de2e6b4b1b876baad2014263477d6f08e2f7a3666cf3c7d2b07d86a9f"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/output-safe.mjs",
+      "sha256": "133bb0a44ed12dfc59d9a02369721a4d38169489566db8062d2cf3726bc3abb0"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/README.md",
+      "sha256": "e139537cfa5b1d31009cbecf0ad17150558c5fc75509023e951aabf2bc4ef947"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-migration-clean-2.json",
+      "sha256": "656f41b42f5d56720ac3a54078d52d71102cf0ebe49dba72de72355362ae01ae"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-migration-clean-3.json",
+      "sha256": "b9a2de641a7c8a6b859b262f6defc9031885578736950691d22c067520f995eb"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-migration-clean.json",
+      "sha256": "2f3292fe107b04bfc2bcf33a9ff2b08ff618af7dfeb74d10313f5c416b1da5aa"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-mobile-build.json",
+      "sha256": "bff0b38c6fcb569180efaaee57134f04f3f7210b684604ee3af4f829a21f0bbc"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-restart.json",
+      "sha256": "52f1bb295984a167631e4b3db934360c2c605a7a31be2bcd2155ec76fe7e5761"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-root-build.json",
+      "sha256": "00849f1bbc285f2ff8743bc7e55400253945555bf02b1b7c9cf5fd29cb0d7fc6"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-seed.json",
+      "sha256": "c2e1b7a891773a95a65dad76f6ab7b51452c7744a80540614b7f6cfc570804f3"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-self-test.json",
+      "sha256": "199e25a492dab37c5a2b288d42415b6c837c0749e94d3735bb573f68d5768a46"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-upgrade.json",
+      "sha256": "dc5d16e925978af9c45f42df8b515267c903604843e46d09ab51d15686943e50"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/route-smoke.mjs",
+      "sha256": "e1c55b3d497a7f38953f14378e1265e8de6a538b070a6c1e063b959ddc0d1e9b"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+      "sha256": "f05f6e827cbb9539428c8c3c22f6dd4b59e801e560f1fe8c9a1ca56088fe8f1b"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/runtime-provenance.json",
+      "sha256": "f0e9321364ea3ebf118304cbd5866949a7c2376339bb1029829be8b022f77671"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/self-test.mjs",
+      "sha256": "c7756bdc124ac422bee76c8a29ca83e765ec259474946412176bf5a329c956b2"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/validate-kit.mjs",
+      "sha256": "6662cfef011dd38ab70513a4dc2516c390dd1e9f96357e27e2ed4fdf40e32048"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"id":"g3-architecture-correction-review","phase":"G3","classification":"MODEL_CORRECTION_REVIEW","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/run-critical-review.mjs","specs/206-gpt6-astra-endvera-reverification/audit-packets/arch-corrections.json"],"timeoutMs":900000}

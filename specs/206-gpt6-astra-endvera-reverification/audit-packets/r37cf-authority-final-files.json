@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "kind": "LOCAL_CORRECTION_SOURCE_INVENTORY",
+  "sourceOnly": true,
+  "providerExecution": false,
+  "files": [
+    {
+      "path": "src/server/construction-operating-assistant-r37c/coordinator.ts",
+      "sha256": "00f59e8fe904146a731a9028cbf6892703416e6859379d38efbd360c4c51e479"
+    },
+    {
+      "path": "src/server/construction-operating-assistant-r37f/provider-delivery.ts",
+      "sha256": "6d83a440000c8c6f97bafcbe3a0989e4e1a72e608e2ea2818041c4fed1456035"
+    },
+    {
+      "path": "src/server/construction-operating-assistant-r37b/activation.ts",
+      "sha256": "37f66f8afa6cbdc95b58f31603bcaecc83c798e43ea89e4805b42c6518bdaed4"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r37b/contracts.ts",
+      "sha256": "e92b680e65903d11ffc8badfdc0eac542eda4958c0c723c36776641d13db0c66"
+    },
+    {
+      "path": "test/unit/r37cf-current-authority.test.ts",
+      "sha256": "021e07478a72e54eb6daaaf66fa0eeb8983b6fb4a3f801c8bc7acf196f123fc5"
+    },
+    {
+      "path": "test/unit/r37b-reservation-candidate.test.ts",
+      "sha256": "1f9b3391e26d9762e628d93b29df0667352536763692c5d007368d32570b7da5"
+    },
+    {
+      "path": "test/unit/r37c-admission-clock.test.ts",
+      "sha256": "3df9e972b2d20d0b90483b556d81e149084bd4804b560cbce3824a06cd8ab456"
+    },
+    {
+      "path": "test/construction-operating-assistant-r37b-provider-activation.test.ts",
+      "sha256": "427e4f48f6d0b6e881279d6dc3d75fd6b1239b1d5383441693a5247016f52929"
+    },
+    {
+      "path": "test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts",
+      "sha256": "b5e3d9af85e42c42987fa7782b893d4f47c435e6cdb1cbc9751e37e2d9322f55"
+    },
+    {
+      "path": "test/integration/construction-operating-assistant-r37b-provider-activation.itest.ts",
+      "sha256": "a5726ee5f640b7f80bf69dc75848ede9888a7745698707593ea910cfc1cf1961"
+    },
+    {
+      "path": "test/integration/construction-operating-assistant-r37c-controlled-run.itest.ts",
+      "sha256": "1a8250756b2fb4154e1309021677dae7fc41f8f35497032c86062d109cb28a92"
+    },
+    {
+      "path": "src/server/construction-operating-assistant-r37/campaign.ts",
+      "sha256": "638d5395b87c0c0824c096f5f93972614e5e986b88aecadb84142bdac1f43dcc"
+    },
+    {
+      "path": "test/unit/r37f-before-after-lease.test.ts",
+      "sha256": "d9e2f3ed2a48917ddf6c7d24a222313010078420612e498fb5ea40b4d40245e8"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"id":"g7-final-unsealed-inventory","phase":"G7","classification":"VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/collect-unsealed-evidence.mjs","specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-inventory.config.json"],"timeoutMs":120000}

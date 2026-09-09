@@ -1,0 +1,10 @@
+{
+  "id": "g5-corpus-frozen-verification",
+  "phase": "G5",
+  "classification": "VALIDATION",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/corpus-check.mjs"
+  ],
+  "timeoutMs": 60000
+}

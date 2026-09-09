@@ -1,0 +1,11 @@
+{
+  "id": "g3-r0b-kit",
+  "phase": "G3",
+  "classification": "DETERMINISTIC_TEST",
+  "executable": "node",
+  "args": [
+    "--test",
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/self-test.mjs"
+  ],
+  "timeoutMs": 3600000
+}

@@ -1,0 +1,11 @@
+{
+  "id": "g3-r37cf-authority-critical-review",
+  "phase": "G3",
+  "classification": "MODEL_CORRECTION_REVIEW",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/scripts/run-critical-review.mjs",
+    "specs/206-gpt6-astra-endvera-reverification/audit-packets/r37cf-authority-correction.json"
+  ],
+  "timeoutMs": 900000
+}

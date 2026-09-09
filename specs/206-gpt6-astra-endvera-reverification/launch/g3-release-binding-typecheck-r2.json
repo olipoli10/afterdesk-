@@ -1,0 +1,5 @@
+{
+  "id": "g3-release-binding-typecheck-r2", "phase": "G3", "classification": "DETERMINISTIC_TEST", "executable": "node",
+  "args": ["--require", "./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs", "node_modules/typescript/bin/tsc", "--noEmit", "--incremental", "false"],
+  "timeoutMs": 120000
+}

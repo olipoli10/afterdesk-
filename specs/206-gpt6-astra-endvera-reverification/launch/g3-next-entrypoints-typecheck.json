@@ -1,0 +1,1 @@
+{"id":"g3-next-entrypoints-typecheck","phase":"G3","classification":"VALIDATION","executable":"node","args":["node_modules/typescript/bin/tsc","--noEmit"],"cwd":".","timeoutMs":180000}

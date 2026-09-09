@@ -1,0 +1,1 @@
+{"id":"g3-audit-packet-schema","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/validate-audit-packets.mjs"],"timeoutMs":60000}

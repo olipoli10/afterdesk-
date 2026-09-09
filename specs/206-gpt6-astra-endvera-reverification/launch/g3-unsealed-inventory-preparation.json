@@ -1,0 +1,5 @@
+{
+  "id": "g3-unsealed-inventory-preparation", "phase": "G3", "classification": "VALIDATION", "executable": "node",
+  "args": ["--require", "./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs", "specs/206-gpt6-astra-endvera-reverification/scripts/collect-unsealed-evidence.mjs", "specs/206-gpt6-astra-endvera-reverification/closeout-inventory.config.json"],
+  "timeoutMs": 120000
+}

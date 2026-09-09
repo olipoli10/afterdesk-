@@ -1,0 +1,10 @@
+{
+  "commandLogPath":"specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-command-log.json",
+  "invariants":[
+    {"id":"HIDDEN_ORACLE_ACCESS_DENIED","critical":true,"resultPath":"specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-local-oracle-denial/stdout.txt"},
+    {"id":"SYNTHETIC_CORPUS_NO_PII","critical":true,"resultPath":"specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-local-synthetic-no-pii/stdout.txt"},
+    {"id":"RUNTIME_CANDIDATE_AUTHORITY_ISOLATION","critical":true,"resultPath":null},
+    {"id":"RUNTIME_CANDIDATE_HIDDEN_ORACLE_DENIAL","critical":true,"resultPath":null},
+    {"id":"DEVICE_INSTALL_LOGIN_PERMISSION_OBSERVATION","critical":true,"resultPath":null}
+  ]
+}

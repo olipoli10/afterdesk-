@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "path": "apps/mobile/app.json"
+    },
+    {
+      "path": "apps/mobile/package.json"
+    },
+    {
+      "path": "apps/mobile/eas.json"
+    },
+    {
+      "path": "scripts/validate-endvera-native-preflight.mjs"
+    },
+    {
+      "path": "scripts/validate-endvera-mobile-build-readiness.mjs"
+    },
+    {
+      "path": "release/endvera-construction-v1/mobile-build-readiness.json"
+    },
+    {
+      "path": "release/endvera-construction-v1/native-preflight-readiness.json"
+    },
+    {
+      "path": "release/endvera-construction-v1/store/google-play-submission-workbook.json"
+    },
+    {
+      "path": "src/app/account-deletion/page.tsx"
+    },
+    {
+      "path": "src/app/client/privacy/page.tsx"
+    }
+  ]
+}

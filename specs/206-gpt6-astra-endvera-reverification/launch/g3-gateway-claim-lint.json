@@ -1,0 +1,4 @@
+{
+ "id":"g3-gateway-claim-lint","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node",
+ "args":["--require","./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs","node_modules/eslint/bin/eslint.js","src/server/model-gateway/dispatch.ts","test/unit/gateway-dispatch-claim-revalidation.test.ts"],"timeoutMs":120000
+}

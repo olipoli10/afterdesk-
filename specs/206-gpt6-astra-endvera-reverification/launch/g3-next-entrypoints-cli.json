@@ -1,0 +1,1 @@
+{"id":"g3-next-entrypoints-cli","phase":"G3","classification":"VALIDATION","executable":"node","args":["node_modules/tsx/dist/cli.mjs","scripts/validate-provider-boundary.ts"],"cwd":".","timeoutMs":180000}

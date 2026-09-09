@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "kind": "G7_FINAL_EXECUTION_PLAN",
+  "requiredCleanTracked": true,
+  "workerCount": 1,
+  "entries": [
+    {
+      "id": "g7-webhook-forgery",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "WEBHOOK_FORGERY",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-webhook-forgery.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-webhook-forgery-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-webhook-forgery.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-duplicate-provider-message",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "DUPLICATE_PROVIDER_MESSAGE",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-duplicate-provider-message.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-duplicate-provider-message-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-duplicate-provider-message.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-double-approval",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "DOUBLE_APPROVAL",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-double-approval.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-double-approval-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-double-approval.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-stale-approval",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "STALE_APPROVAL",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-stale-approval.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-stale-approval-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-stale-approval.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-preview-mutation",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "PREVIEW_MUTATION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-preview-mutation.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-preview-mutation-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-preview-mutation.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-recipient-cap",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "RECIPIENT_CAP",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-recipient-cap.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-recipient-cap-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-recipient-cap.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-contact-homonym",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "CONTACT_HOMONYM",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-contact-homonym.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-contact-homonym-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-contact-homonym.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-dst-boundary",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "DST_BOUNDARY",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-dst-boundary.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-dst-boundary-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-dst-boundary.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-outcome-unknown",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "OUTCOME_UNKNOWN",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-outcome-unknown.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-outcome-unknown-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-outcome-unknown.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-permission-revoked",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "PERMISSION_REVOKED",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-permission-revoked.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-permission-revoked-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-permission-revoked.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-native-crash-reproduction",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "NATIVE_CRASH_REPRODUCTION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-native-crash-reproduction.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-native-crash-reproduction-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-native-crash-reproduction.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-field-worker-financial-isolation",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "FIELD_WORKER_FINANCIAL_ISOLATION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-field-worker-financial-isolation.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-field-worker-financial-isolation-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-field-worker-financial-isolation.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-cross-workspace-isolation",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "CROSS_WORKSPACE_ISOLATION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-cross-workspace-isolation.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-cross-workspace-isolation-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-cross-workspace-isolation.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-secret-scan",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "SECRET_SCAN",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-secret-scan.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-secret-scan-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-secret-scan.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-malformed-json",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "MALFORMED_JSON",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-malformed-json.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-malformed-json-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-malformed-json.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-prompt-injection",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "PROMPT_INJECTION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-prompt-injection.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-prompt-injection-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-prompt-injection.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-postgres-restart-readback",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "POSTGRES_RESTART_READBACK",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-postgres-restart-readback.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-postgres-restart-readback-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-postgres-restart-readback.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-contract-static-validation",
+      "variant": "CANONICAL_FROZEN",
+      "checkId": "CONTRACT_STATIC_VALIDATION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-contract-static-validation.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-contract-static-validation-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-contract-static-validation.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-webhook-forgery",
+      "variant": "CORRECTED_R0B",
+      "checkId": "WEBHOOK_FORGERY",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-webhook-forgery.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-webhook-forgery-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-webhook-forgery.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-duplicate-provider-message",
+      "variant": "CORRECTED_R0B",
+      "checkId": "DUPLICATE_PROVIDER_MESSAGE",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-duplicate-provider-message.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-duplicate-provider-message-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-duplicate-provider-message.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-double-approval",
+      "variant": "CORRECTED_R0B",
+      "checkId": "DOUBLE_APPROVAL",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-double-approval.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-double-approval-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-double-approval.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-stale-approval",
+      "variant": "CORRECTED_R0B",
+      "checkId": "STALE_APPROVAL",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-stale-approval.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-stale-approval-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-stale-approval.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-preview-mutation",
+      "variant": "CORRECTED_R0B",
+      "checkId": "PREVIEW_MUTATION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-preview-mutation.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-preview-mutation-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-preview-mutation.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-recipient-cap",
+      "variant": "CORRECTED_R0B",
+      "checkId": "RECIPIENT_CAP",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-recipient-cap.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-recipient-cap-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-recipient-cap.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-contact-homonym",
+      "variant": "CORRECTED_R0B",
+      "checkId": "CONTACT_HOMONYM",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-contact-homonym.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-contact-homonym-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-contact-homonym.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-dst-boundary",
+      "variant": "CORRECTED_R0B",
+      "checkId": "DST_BOUNDARY",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-dst-boundary.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-dst-boundary-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-dst-boundary.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-outcome-unknown",
+      "variant": "CORRECTED_R0B",
+      "checkId": "OUTCOME_UNKNOWN",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-outcome-unknown.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-outcome-unknown-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-outcome-unknown.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-permission-revoked",
+      "variant": "CORRECTED_R0B",
+      "checkId": "PERMISSION_REVOKED",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-permission-revoked.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-permission-revoked-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-permission-revoked.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-native-crash-reproduction",
+      "variant": "CORRECTED_R0B",
+      "checkId": "NATIVE_CRASH_REPRODUCTION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-native-crash-reproduction.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-native-crash-reproduction-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-native-crash-reproduction.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-field-worker-financial-isolation",
+      "variant": "CORRECTED_R0B",
+      "checkId": "FIELD_WORKER_FINANCIAL_ISOLATION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-field-worker-financial-isolation.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-field-worker-financial-isolation-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-field-worker-financial-isolation.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-cross-workspace-isolation",
+      "variant": "CORRECTED_R0B",
+      "checkId": "CROSS_WORKSPACE_ISOLATION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-cross-workspace-isolation.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-cross-workspace-isolation-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-cross-workspace-isolation.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-secret-scan",
+      "variant": "CORRECTED_R0B",
+      "checkId": "SECRET_SCAN",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-secret-scan.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-secret-scan-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-secret-scan.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-malformed-json",
+      "variant": "CORRECTED_R0B",
+      "checkId": "MALFORMED_JSON",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-malformed-json.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-malformed-json-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-malformed-json.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-prompt-injection",
+      "variant": "CORRECTED_R0B",
+      "checkId": "PROMPT_INJECTION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-prompt-injection.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-prompt-injection-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-prompt-injection.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-postgres-restart-readback",
+      "variant": "CORRECTED_R0B",
+      "checkId": "POSTGRES_RESTART_READBACK",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-postgres-restart-readback.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-postgres-restart-readback-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-postgres-restart-readback.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    },
+    {
+      "id": "g7-r0b-contract-static-validation",
+      "variant": "CORRECTED_R0B",
+      "checkId": "CONTRACT_STATIC_VALIDATION",
+      "descriptorPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-contract-static-validation.json",
+      "wrapperPath": "specs/206-gpt6-astra-endvera-reverification/launch/g7-final/g7-r0b-contract-static-validation-wrapper.json",
+      "observationPath": "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-contract-static-validation.json",
+      "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json"
+    }
+  ]
+}

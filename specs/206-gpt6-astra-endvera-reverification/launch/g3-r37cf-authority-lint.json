@@ -1,0 +1,24 @@
+{
+  "id": "g3-r37cf-authority-lint",
+  "classification": "VALIDATION",
+  "args": [
+    "node_modules/eslint/bin/eslint.js",
+    "src/server/construction-operating-assistant-r37c/coordinator.ts",
+    "src/server/construction-operating-assistant-r37f/provider-delivery.ts",
+    "src/server/construction-operating-assistant-r37b/activation.ts",
+    "src/lib/construction-operating-assistant-r37b/contracts.ts",
+    "test/unit/r37cf-current-authority.test.ts",
+    "test/unit/r37b-reservation-candidate.test.ts",
+    "test/unit/r37c-admission-clock.test.ts",
+    "test/construction-operating-assistant-r37b-provider-activation.test.ts",
+    "test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts",
+    "test/integration/construction-operating-assistant-r37b-provider-activation.itest.ts",
+    "test/integration/construction-operating-assistant-r37c-controlled-run.itest.ts"
+  ],
+  "timeoutMs": 60000,
+  "phase": "G3",
+  "executable": "node",
+  "environment": {
+    "NODE_OPTIONS": "--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"
+  }
+}

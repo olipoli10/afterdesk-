@@ -1,0 +1,25 @@
+{
+  "id": "g3-r37cf-authority-postreview-tests",
+  "phase": "G3",
+  "classification": "VALIDATION",
+  "executable": "node",
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "test/unit/r37f-before-after-lease.test.ts",
+    "test/unit/r37b-reservation-candidate.test.ts",
+    "test/unit/r37cf-current-authority.test.ts",
+    "test/unit/r37c-admission-clock.test.ts",
+    "test/unit/r37a-runtime-clock.test.ts",
+    "test/construction-operating-assistant-r37a-sealed-executor.test.ts",
+    "test/construction-operating-assistant-r37b-provider-activation.test.ts",
+    "test/construction-operating-assistant-r37c-controlled-run.test.ts",
+    "test/construction-operating-assistant-r37f-provider-delivery.test.ts",
+    "test/construction-operating-assistant-r37g-provider-security-hardening.test.ts",
+    "test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts"
+  ],
+  "timeoutMs": 60000,
+  "environment": {
+    "NODE_OPTIONS": "--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"
+  }
+}

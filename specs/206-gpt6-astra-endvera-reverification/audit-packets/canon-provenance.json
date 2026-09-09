@@ -1,0 +1,43 @@
+{
+  "files": [
+    {
+      "path": "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json"
+    },
+    {
+      "path": "specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json"
+    },
+    {
+      "path": "apps/mobile/app.json"
+    },
+    {
+      "path": "release/endvera-construction-v1/release-definition.json"
+    },
+    {
+      "path": "release/endvera-construction-v1/market-readiness-report.json"
+    },
+    {
+      "path": "scripts/validate-endvera-market-readiness.mjs"
+    },
+    {
+      "path": "scripts/validate-endvera-native-preflight.mjs"
+    }
+  ],
+  "brain": [
+    {
+      "path": "CURRENT_STATE.md",
+      "start": 1,
+      "end": 160
+    },
+    {
+      "path": "HANDOFF.md",
+      "start": 1,
+      "end": 150
+    },
+    {
+      "path": "ROADMAP_PROGRESS_MODEL.md"
+    },
+    {
+      "path": "ENDVERA_CONSTRUCTION_OPERATING_ASSISTANT_A_TO_Z_PLAN.md"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+ "id":"g3-gateway-claim-before","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node",
+ "args":["--require","./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs","node_modules/vitest/vitest.mjs","run","test/unit/gateway-dispatch-claim-revalidation.test.ts","--reporter=json","--maxWorkers=1"],"timeoutMs":120000
+}

@@ -1,0 +1,1 @@
+{"id":"g3-voice-spend-integration","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs","LOCAL_EXTRA","VOICE_SPEND_REGRESSION"],"timeoutMs":900000}

@@ -1,0 +1,20 @@
+{
+  "id": "g3-portability-reachability-tests",
+  "phase": "G3",
+  "classification": "DETERMINISTIC_TEST",
+  "executable": "node",
+  "args": [
+    "--require", "./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs",
+    "node_modules/vitest/vitest.mjs", "run",
+    "test/construction-operating-assistant-r36w-fact-candidates-mutation-guards.test.ts",
+    "test/construction-operating-assistant-r36x-understanding-mutation-guards.test.ts",
+    "test/construction-operating-assistant-r37bb-zdr-compatibility.test.ts",
+    "test/construction-operating-assistant-r37bc-controller-contract-alignment.test.ts",
+    "test/construction-operating-assistant-r37l-provider-transitive-reachability.test.ts",
+    "test/construction-operating-assistant-r37m-provider-computed-import.test.ts",
+    "test/construction-operating-assistant-r37n-provider-dynamic-code.test.ts",
+    "test/construction-operating-assistant-r37l-provider-reachability-traversal.test.ts",
+    "--reporter=json", "--maxWorkers=4"
+  ],
+  "timeoutMs": 120000
+}

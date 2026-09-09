@@ -1,0 +1,1 @@
+{"id":"g7-canonical-seal-validation","phase":"G7","classification":"VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs","specs/206-gpt6-astra-endvera-reverification/evidence/seal.json","C:/dev/afterdesk-project-brain"],"timeoutMs":120000}

@@ -1,0 +1,1 @@
+{"id":"g7-assemble-command-log","phase":"G7","classification":"VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/scripts/assemble-local-seal.mjs","command-log","specs/206-gpt6-astra-endvera-reverification/closeout-command-log.config.json"],"timeoutMs":120000}

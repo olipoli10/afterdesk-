@@ -1,0 +1,15 @@
+{
+  "id": "g3-release-tracked-text-final-lint",
+  "phase": "G3",
+  "classification": "VALIDATION",
+  "executable": "node",
+  "args": [
+    "node_modules/eslint/bin/eslint.js",
+    "scripts/endvera-release-source-binding.mjs",
+    "test/unit/release-tracked-flags.test.ts"
+  ],
+  "timeoutMs": 60000,
+  "environment": {
+    "NODE_OPTIONS": "--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "id": "g3-r0b-harness-selftest-1", "phase": "G3", "classification": "DETERMINISTIC_TEST",
+  "command": "node --test specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/self-test.mjs",
+  "executable": "node", "args": ["--test","specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/self-test.mjs"], "cwd": ".", "timeoutMs": 60000
+}

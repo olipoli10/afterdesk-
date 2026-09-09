@@ -1,0 +1,7 @@
+{
+  "campaignHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "expectedFinalHead": null,
+  "brainRoot": "C:/dev/afterdesk-project-brain",
+  "collectorCommandId": "g3-unsealed-inventory-preparation",
+  "selectedPacketAuditCommandIds": ["g2-packet-canon-provenance-r0b", "g2-packet-architecture-security", "g2-packet-mobile-ux", "g2-packet-product-coverage"]
+}

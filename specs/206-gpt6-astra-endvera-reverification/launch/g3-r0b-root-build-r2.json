@@ -1,0 +1,1 @@
+{"id":"g3-r0b-root-build-r2","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs","G1","ROOT_BUILD"],"timeoutMs":1200000}

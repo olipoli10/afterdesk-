@@ -1,0 +1,1 @@
+{"id":"g3-gateway-lifecycle-r3-typecheck","phase":"G3","classification":"VALIDATION","executable":"node","args":["node_modules/typescript/bin/tsc","--noEmit","--pretty","false","--incremental","false"],"environment":{"NODE_OPTIONS":"--require=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs"},"timeoutMs":120000}
