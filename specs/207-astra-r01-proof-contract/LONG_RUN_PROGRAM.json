@@ -35,7 +35,7 @@
       "id": "CONTRACT",
       "title": "Repair and review proof contract",
       "objective": "Adversarial tests and distinct review before freeze",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "estimatedMinutes": 60,
       "dependencies": [],
       "allowedScope": [
@@ -45,16 +45,17 @@
         "node --test --test-reporter=tap specs/207-astra-r01-proof-contract/protocol.test.mjs"
       ],
       "evidencePaths": [
-        "reports/development.md"
+        "reports/REVIEW_DISPOSITIONS.md",
+        "evidence/attempts/a0002/stdout.txt"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Reviewed contract; 52 fresh tests passed. Historical spec206 unmodified.",
+      "completedAtUtc": "2026-09-09T16:56:52.000Z"
     },
     {
       "id": "OBSERVE",
       "title": "Freeze and collect fresh observations",
       "objective": "Run exact local checks retaining every attempt",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 45,
       "dependencies": [
         "CONTRACT"
@@ -66,16 +67,17 @@
         "node specs/207-astra-r01-proof-contract/campaign.mjs verify-report"
       ],
       "evidencePaths": [
-        "evidence/journal.json"
+        "evidence/journal.json",
+        "reports/seal.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Five attempts captured at frozen HEAD; root FAIL retained, four checks PASS.",
+      "completedAtUtc": "2026-09-09T16:56:52.000Z"
     },
     {
       "id": "CLOSEOUT",
       "title": "Seal, validate and checkpoint",
       "objective": "Keep product verdict separate from contract validity",
-      "status": "OPEN",
+      "status": "DONE",
       "estimatedMinutes": 45,
       "dependencies": [
         "OBSERVE"
@@ -87,10 +89,11 @@
         "node specs/207-astra-r01-proof-contract/campaign.mjs verify-report"
       ],
       "evidencePaths": [
-        "reports/FINAL_REPORT.md"
+        "reports/FINAL_REPORT.md",
+        "reports/seal.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Local REWORK seal validates against immutable evidence anchor; not product completion.",
+      "completedAtUtc": "2026-09-09T16:56:52.000Z"
     }
   ]
 }

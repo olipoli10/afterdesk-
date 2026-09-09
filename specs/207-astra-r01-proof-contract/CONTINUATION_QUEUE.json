@@ -32,7 +32,7 @@
       "title": "Proof contract and bounded fresh local validation",
       "objective": "Repair local proof lifecycle and seal fresh bounded observations without regrading spec206",
       "role": "IMPLEMENTATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "dependencies": [],
       "worktree": "C:/dev/endvera-astra-r01",
       "branch": "codex/endvera-astra-r01",
@@ -50,10 +50,10 @@
       "evidencePaths": [
         "reports/FINAL_REPORT.md"
       ],
-      "outputHead": "",
-      "outputTree": "",
-      "result": "",
-      "completedAtUtc": ""
+      "outputHead": "d4c036f5b879359c943b5674211de930cc2042c5",
+      "outputTree": "8915c4fdb86d5b3b4fe6d2adaae320a299838f6a",
+      "result": "Bounded proof repair completed; validated LOCAL_REVALIDATION_REWORK seal, no global completion.",
+      "completedAtUtc": "2026-09-09T16:56:52.000Z"
     }
   ]
 }
