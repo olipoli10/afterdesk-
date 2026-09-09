@@ -123,6 +123,10 @@ G7.json, G7-execution-summary.json and G7-r2-execution-summary.json index exact
 checks. Command stdout/stderr and command.json files retain raw byte hashes.
 The post-observation local Git archive preserves these RUN_GENERATED artifacts
 without making them blobs of the tested FINAL_HEAD. No push is authorized.
+Native stream whitespace is intentionally preserved; Git treats those raw streams
+as binary diffs rather than normalizing them to satisfy source whitespace checks.
+The initial archive diff check flagged raw CRLF/trailing whitespace. No evidence
+bytes were edited to remove those diagnostics.
 
 `g7-closeout-working-state` verifies 24 database ownership records and one web
 record have closure markers; all 25 recorded ports were non-listening. Synthetic

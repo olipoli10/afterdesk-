@@ -1,2 +1,6 @@
 # Evidence contracts use exact bytes; disable checkout/index line-ending conversion.
 * -text
+# Native captured streams are byte evidence, not whitespace-formatted source.
+evidence/commands/**/stdout.txt -diff
+evidence/commands/**/stderr.txt -diff
+evidence/observations/final-brain-roadmap.md -diff
