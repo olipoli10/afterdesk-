@@ -5,6 +5,13 @@ export const encode = value => Buffer.from(JSON.stringify(value) + '\n');
 export const fail = (ok, code) => { if (!ok) throw new Error(code); };
 export const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 export const hex40 = value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(value);
+// Git may materialize LF source as CRLF on Windows. Accept only that exact
+// lossless pairing, never mixed/lone CR, binary changes or altered raw evidence.
+export function gitSourceBytesEqual(blob, working) {
+  if(blob.equals(working))return true;
+  if(blob.includes(0)||blob.includes(13)||!Buffer.from(blob.toString('utf8'),'utf8').equals(blob))return false;
+  return Buffer.from(blob.toString('utf8').replaceAll('\n','\r\n'),'utf8').equals(working);
+}
 export function keys(value, expected) {
   fail(value && typeof value === 'object' && !Array.isArray(value) &&
     same(Object.keys(value).sort(), [...expected].sort()), 'SHAPE_REFUSED');

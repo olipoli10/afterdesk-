@@ -50,6 +50,10 @@ lockfiles, old specs and the two source checkouts remain unchanged.
   pass. Historical failure counts are reported separately, never reset.
 - Command arguments, cwd, parser and timeout come only from the committed kit.
   Native exit zero alone is insufficient. Parsers require meaningful output.
+- Git-materialized Windows product source may equal its committed LF bytes or
+  their exact UTF8 CRLF expansion (no mixed/lone CR or binary transformation).
+  Spec206, spec207 and every captured stream remain byte-exact. Git history is
+  read as immutable blobs, never normalized working-copy evidence.
 - Token-bounded secret detection still scans all raw text, including digest
   fields. No blanket hash-field, test-folder or historical-report exception.
   A private-key header alone is reported as a marker; header plus body is denied.

@@ -44,7 +44,14 @@ routes. Safe paths now allow brackets/parentheses/spaces while denying traversal
 control characters, ADS, Windows device aliases and trailing-dot/space aliases.
 All 4546 existing tracked source paths were checked successfully.
 
-Combined pre-freeze tests: 51 passed, zero failed. The first failed development
-test remains described in development.md. Final source review is pending; freeze
-must wait for its disposition. Historical provider, device and build gates remain
-unresolved regardless of this contract's test result.
+Combined pre-freeze tests: 51 passed, zero failed. Sol returned APPROVE TO FREEZE,
+with 42 pure tests and five syntax checks independently rerun; it did not run the
+nine filesystem cases. The first failed development test remains described in
+development.md. A subsequent parent preflight found actual Git CRLF materialization
+in product source: add only the strict Git LF/exact-CRLF pairing, with spec206 and
+spec207 still byte-exact; a 52nd regression test covers this Windows compatibility.
+Sol re-reviewed the narrow delta and returned APPROVE TO FREEZE, with 43 pure
+tests rerun and syntax checked. Parent's combined run passes 52 tests; the frozen
+floor is 52 (the review's closing mention of 51 was the preceding floor, not the
+current contract). Historical provider, device and build gates remain unresolved
+regardless of this contract's result.

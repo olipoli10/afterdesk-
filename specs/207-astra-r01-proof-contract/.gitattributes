@@ -1,0 +1,3 @@
+* -text
+evidence/attempts/**/stdout.txt -diff
+evidence/attempts/**/stderr.txt -diff

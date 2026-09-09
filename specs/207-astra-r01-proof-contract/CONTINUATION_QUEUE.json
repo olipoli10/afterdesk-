@@ -45,7 +45,7 @@
         "specs/207-astra-r01-proof-contract"
       ],
       "planPath": "plan.md",
-      "planSha256": "1ffd515c7a361f90f112e33f8fe59cd5d5acc3fc2b0435471688dab352f1fc09",
+      "planSha256": "73e07f67cf92f06bad5a3ab39feafd49b35e6cb14e605908f84066f46fc8a1d3",
       "completionCommand": "node specs/207-astra-r01-proof-contract/campaign.mjs verify-report",
       "evidencePaths": [
         "reports/FINAL_REPORT.md"

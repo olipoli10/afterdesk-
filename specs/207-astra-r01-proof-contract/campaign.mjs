@@ -2,7 +2,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, lstatSync, existsSync, realpathSync, openSync, fsyncSync, closeSync, renameSync } from 'node:fs';
 import { resolve, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sha, encode, fail, same, safePath, secretFlags, validateLedger, validateContract, hex40 } from './protocol.mjs';
+import { sha, encode, fail, same, safePath, secretFlags, validateLedger, validateContract, hex40, gitSourceBytesEqual } from './protocol.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const spec = 'specs/207-astra-r01-proof-contract', ep = `${spec}/evidence`;
@@ -64,10 +64,15 @@ function listDisk(directory) {
 }
 function assertSource(frozenHead) {
   const entries=filesAt(frozenHead), content=blobs(entries);
-  for (const entry of entries) fail(read(entry.path).equals(content.get(entry.path)),'FROZEN_SOURCE_CHANGED');
+  for (const entry of entries) fail(sourceEqual(entry.path,content.get(entry.path)),'FROZEN_SOURCE_CHANGED');
   // No added source can silently affect tooling; only recorded evidence and local reports.
   const extras=gitText('ls-files','--others','--exclude-standard').split(/\r?\n/).filter(Boolean);
   fail(extras.every(p=>p.startsWith(`${ep}/`) || p.startsWith(`${spec}/reports/`)), 'UNFROZEN_SOURCE_ADDED');
+}
+function sourceEqual(path, blob) {
+  const working=read(path);
+  return path.startsWith('specs/206-gpt6-astra-endvera-reverification/')||path.startsWith(spec+'/')
+    ? working.equals(blob):gitSourceBytesEqual(blob,working);
 }
 const contract=JSON.parse(read(`${spec}/contract.json`));
 validateContract(contract);
@@ -171,7 +176,7 @@ function validate(evidenceHead) {
   fail(same(JSON.parse(frozen.get(`${spec}/contract.json`)),contract),'CONTRACT_SUBSTITUTION');
   fail(!gitText('diff','--name-only',f.testedHead,evidenceHead,'--','.',`:(exclude)${ep}`,`:(exclude)${spec}/reports`,`:(exclude)${spec}/LONG_RUN_PROGRAM.json`,`:(exclude)${spec}/CONTINUATION_QUEUE.json`),'ANCHOR_SOURCE_CHANGED');
   const mutableMetadata=new Set([`${spec}/LONG_RUN_PROGRAM.json`,`${spec}/CONTINUATION_QUEUE.json`]);
-  for(const [path,bytes] of frozen)if(!mutableMetadata.has(path))fail(read(path).equals(bytes),'FROZEN_SOURCE_CHANGED');
+  for(const [path,bytes] of frozen)if(!mutableMetadata.has(path))fail(sourceEqual(path,bytes),'FROZEN_SOURCE_CHANGED');
   const projection=validateLedger(contract,f,JSON.parse(get('journal.json')),entries.map(e=>e.path.slice(ep.length+1)),get);
   const historical=history();
   const seal={schemaVersion:1,kind:'R01_LOCAL_EVIDENCE_SEAL',evidenceHead,testedHead:f.testedHead,testedTree:f.testedTree,

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { sha, encode, secretFlags, safePath, parseCheck, validateLedger, validateContract } from './protocol.mjs';
+import { sha, encode, secretFlags, safePath, parseCheck, validateLedger, validateContract, gitSourceBytesEqual } from './protocol.mjs';
 
 const base = JSON.parse(readFileSync(new URL('./contract.json',import.meta.url)));
 function fixture(checkCount=1) {
@@ -99,4 +99,11 @@ test('Windows device and trailing-dot aliases refused',()=>{
 test('actual Next dynamic routes and space-containing filenames remain readable',()=>{
   assert.equal(safePath('src/app/(client)/projects/[id]/page.tsx'),'src/app/(client)/projects/[id]/page.tsx');
   assert.equal(safePath('reports/local report.md'),'reports/local report.md');
+});
+test('Git LF source permits only exact CRLF materialization',()=>{
+  const b=Buffer.from('first\nsecond\n');assert(gitSourceBytesEqual(b,Buffer.from('first\r\nsecond\r\n')));
+  assert(!gitSourceBytesEqual(b,Buffer.from('first\r\nsecond\n')));
+  assert(!gitSourceBytesEqual(b,Buffer.from('first\rsecond\r')));
+  assert(!gitSourceBytesEqual(b,Buffer.from('changed\r\nsecond\r\n')));
+  assert(!gitSourceBytesEqual(Buffer.from([0,10]),Buffer.from([0,13,10])));
 });
