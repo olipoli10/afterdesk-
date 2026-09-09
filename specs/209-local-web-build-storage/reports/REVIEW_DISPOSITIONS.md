@@ -28,3 +28,10 @@ inference, not a proven root cause. One concurrent boundary attempt recorded
 SOURCE_CHECK_FAILED and is not counted as a pass. The compiled runtime child
 returned both expected refusals but the original recorder expected a smaller
 exact JSON object, yielding JSON_RESULT_MISMATCH. That failure is not rewritten.
+
+Final review at e54f60cf: APPROVED, no remaining P1. Source admission now
+reconstructs each recorded fingerprint from its Git HEAD, including the later
+recorder-only HEAD. Raw fingerprints still bind the two explicitly normalized
+CRLF text files. Reviewer reran the anchored verifier successfully; parent also
+confirmed an in-memory changed intent source hash is refused without modifying
+any retained evidence. Exact runtime JSON expectation corrected, no product edit.

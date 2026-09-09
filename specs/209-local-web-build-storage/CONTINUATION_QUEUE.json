@@ -6,7 +6,8 @@
     {"id":"REPRODUCE","status":"DONE","dependencies":[],"evidence":"evidence/before-focused/result.json"},
     {"id":"FIX_REVIEW","status":"DONE","dependencies":["REPRODUCE"]},
     {"id":"VALIDATE_BUILD","status":"DONE","dependencies":["FIX_REVIEW"],"completionCommand":"node specs/209-local-web-build-storage/verify.mjs 616a577527a69169da21814e81bfc186b634c776"},
-    {"id":"CHECKPOINT","status":"IN_PROGRESS","dependencies":["VALIDATE_BUILD"]}
+    {"id":"CHECKPOINT","status":"DONE","dependencies":["VALIDATE_BUILD"],"brainHead":"eed3f3b4a1d6ce5fcfa978215cb26a5ebd1c8878"}
   ],
+  "status": "DRAINED",
   "projectComplete": false
 }
