@@ -7,6 +7,7 @@ import {safeEnvironment,generatedClientFingerprint} from '../208-astra-r02-local
 import {sha,encode,secretFlags,parseCheck} from '../208-astra-r02-local-preflight/protocol.mjs';
 import {buildArtifacts} from './artifacts.mjs';
 import {runtimeFingerprint} from './runtime-fingerprint.mjs';
+import {observeChild} from './observe-child.mjs';
 const root=resolve(fileURLToPath(new URL('../..',import.meta.url))),spec='specs/209-local-web-build-storage';
 const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:32000000}).trim();
 const checks={
@@ -38,13 +39,8 @@ mkdirSync(dir,{recursive:true});
 const intent={id,kind,head:git('rev-parse','HEAD'),tree:git('rev-parse','HEAD^{tree}'),sourceSha256:before,command:c.args,timeoutMs:c.timeout,client,runtime,node:process.version,nodeSha256:sha(readFileSync(process.execPath)),startedAt:new Date().toISOString()};
 writeFileSync(resolve(dir,'intent.json'),encode(intent),{flag:'wx'});
 const child=spawn(process.execPath,c.args,{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
-let incident=null,size=0;const out=[],err=[];
-const stop=()=>{incident='EXECUTION_OR_CAPTURE_INCOMPLETE';try{if(child.pid)execFileSync('taskkill.exe',['/PID',String(child.pid),'/T','/F'],{stdio:'pipe',windowsHide:true,timeout:10000});}catch{}};
-const collect=target=>b=>{size+=b.length;if(size>25000000)stop();else target.push(b);};
-child.stdout.on('data',collect(out));child.stderr.on('data',collect(err));child.on('error',()=>{incident='CHILD_LAUNCH_FAILED';});
-const timer=setTimeout(stop,c.timeout);
-const exitCode=await new Promise(done=>child.on('close',(code,signal)=>{if(signal)incident='CHILD_SIGNAL';done(code);}));clearTimeout(timer);
-const stdout=Buffer.concat(out),stderr=Buffer.concat(err);
+const captured=await observeChild(child,{timeoutMs:c.timeout,terminate(){if(child.pid)execFileSync('taskkill.exe',['/PID',String(child.pid),'/T','/F'],{stdio:'pipe',windowsHide:true,timeout:10000});}});
+let {incident}=captured;const {exitCode,stdout,stderr}=captured;
 try{if(sourceFingerprint()!==before)incident='SOURCE_CHANGED';}catch{incident='SOURCE_CHECK_FAILED';}
 try{if(JSON.stringify(generatedClientFingerprint(root))!==JSON.stringify(client))incident='GENERATED_CLIENT_CHANGED';}catch{incident='GENERATED_CLIENT_CHECK_FAILED';}
 try{if(JSON.stringify(runtimeFingerprint(root))!==JSON.stringify(runtime))incident='RUNTIME_CHANGED';}catch{incident='RUNTIME_CHECK_FAILED';}
