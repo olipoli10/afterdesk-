@@ -8,6 +8,7 @@ import {sha,encode,secretFlags,parseCheck} from '../208-astra-r02-local-prefligh
 import {buildArtifacts} from './artifacts.mjs';
 import {runtimeFingerprint} from './runtime-fingerprint.mjs';
 import {observeChild} from './observe-child.mjs';
+import {expectedRuntimeResult} from './runtime-result.mjs';
 const root=resolve(fileURLToPath(new URL('../..',import.meta.url))),spec='specs/209-local-web-build-storage';
 const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:32000000}).trim();
 const checks={
@@ -15,7 +16,7 @@ const checks={
   root:{args:['node_modules/vitest/vitest.mjs','run','--reporter=json'],parser:{kind:'vitest',minimumPassed:2720},timeout:300000},
   boundary:{args:['node_modules/tsx/dist/cli.mjs','scripts/validate-provider-boundary.ts'],parser:{kind:'marker',exactLine:'unused'},timeout:60000},
   build:{args:['node_modules/next/dist/bin/next','build','--webpack'],timeout:900000},
-  runtime:{args:[`${spec}/runtime-check.mjs`],parser:{kind:'json',expected:{kind:'COMPILED_RUNTIME_STORAGE_REFUSED',passed:true}},timeout:60000},
+  runtime:{args:[`${spec}/runtime-check.mjs`],parser:{kind:'json',expected:expectedRuntimeResult},timeout:60000},
 };
 function sourceFingerprint(){
   const paths=git('ls-files','-z').split('\0').filter(Boolean).filter(p=>!p.startsWith(spec+'/evidence/')&&!p.startsWith(spec+'/reports/')&&!p.endsWith('/WORK_STATUS.json')&&!p.endsWith('/CONTINUATION_QUEUE.json'));
