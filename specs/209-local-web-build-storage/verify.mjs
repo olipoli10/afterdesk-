@@ -2,7 +2,7 @@ import {readFileSync,readdirSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {sha,parseCheck} from '../208-astra-r02-local-preflight/protocol.mjs';
+import {sha,encode,gitSourceBytesEqual,parseCheck} from '../208-astra-r02-local-preflight/protocol.mjs';
 import {expectedRuntimeResult} from './runtime-result.mjs';
 const root=resolve(fileURLToPath(new URL('../..',import.meta.url))),spec='specs/209-local-web-build-storage';
 const read=p=>readFileSync(resolve(root,spec,p)),json=p=>JSON.parse(read(p));
@@ -47,7 +47,30 @@ fail(Date.parse(runtimeEntry.i.startedAt)>=Date.parse(buildEntry.r.finishedAt),'
 // A recorder-only correction has its own HEAD, never a pretend product rebuild.
 const allowed=new Set(['run.mjs','verify.mjs','runtime-result.mjs']);
 const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',windowsHide:true,maxBuffer:32000000}).trim();
+const admitted=new Map();
+function expectedSourceAt(head){
+ if(admitted.has(head))return admitted.get(head);
+ const entries=git('ls-tree','-r','-z',head).split('\0').filter(Boolean).map(line=>{const [meta,path]=line.split('\t');const [mode,type,oid]=meta.split(' ');fail(type==='blob'&&['100644','100755'].includes(mode),'SOURCE_ENTRY_REFUSED');return {path,oid};}).filter(({path:p})=>!p.startsWith(spec+'/evidence/')&&!p.startsWith(spec+'/reports/')&&!p.endsWith('/WORK_STATUS.json')&&!p.endsWith('/CONTINUATION_QUEUE.json')).sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
+ const batch=execFileSync('git',['cat-file','--batch'],{cwd:root,windowsHide:true,maxBuffer:128000000,input:entries.map(e=>e.oid).join('\n')+'\n'});
+ let offset=0;const files=[];
+ for(const {path,oid} of entries){
+  const end=batch.indexOf(10,offset),header=batch.subarray(offset,end).toString().split(' ');
+  fail(header[0]===oid&&header[1]==='blob'&&/^\d+$/.test(header[2]),'SOURCE_BATCH_REFUSED');
+  const size=Number(header[2]);offset=end+1;const blob=batch.subarray(offset,offset+size);offset+=size+1;
+  let bytes=blob;
+  if(!path.startsWith(spec+'/')){
+   bytes=readFileSync(resolve(root,path));
+   // apply_patch preserved CRLF on untouched lines in these two changed text
+   // files. Git normalizes the index; recorded sourceSha binds their raw bytes.
+   const patchedText=['src/lib/storage.ts','test/public-site-preview-storage.test.ts'].includes(path)&&!bytes.includes(0)&&Buffer.from(bytes.toString('utf8').replaceAll('\r\n','\n')).equals(blob);
+   fail(gitSourceBytesEqual(blob,bytes)||patchedText,'PRODUCT_CHECKOUT_DRIFT:'+path);
+  }
+  files.push({path,sha256:sha(bytes)});
+ }
+ fail(offset===batch.length,'SOURCE_BATCH_TRAILING_BYTES');const hash=sha(encode(files));admitted.set(head,hash);return hash;
+}
 for(const {i} of selected){
+ fail(i.sourceSha256===expectedSourceAt(i.head),'TESTED_SOURCE_ADMISSION_FAILED');
  fail(JSON.stringify(i.runtime)===JSON.stringify(buildEntry.i.runtime)&&JSON.stringify(i.client)===JSON.stringify(buildEntry.i.client),'DEPENDENCY_MISMATCH');
  fail(git('rev-parse',`${i.head}^{tree}`)===i.tree,'TESTED_TREE_MISMATCH');
  if(i.head===buildEntry.i.head)fail(i.sourceSha256===buildEntry.i.sourceSha256,'SOURCE_BYTES_MISMATCH');
