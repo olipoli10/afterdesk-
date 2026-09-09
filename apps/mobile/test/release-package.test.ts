@@ -16,6 +16,6 @@ describe("R35 mobile release information", () => {
 
   it("shows only local package readiness and no external effect", () => {
     expect(MOBILE_RELEASE_INFO).toMatchObject({ readiness: "LOCAL_PACKAGE_READY", signed: false, uploaded: false, published: false, deployed: false, providerObserved: false, externalEffectCount: 0 });
-    expect(Object.values(MOBILE_RELEASE_INFO.publicPaths)).toEqual(["/privacy", "/security", "/construction/support", "/client/privacy"]);
+    expect(Object.values(MOBILE_RELEASE_INFO.publicPaths)).toEqual(["/privacy", "/security", "/construction/support", "/account-deletion"]);
   });
 });

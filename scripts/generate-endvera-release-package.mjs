@@ -2,10 +2,13 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { assertReleaseSourceBinding } from "./endvera-release-source-binding.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 export const defaultRepositoryRoot = path.resolve(scriptDirectory, "..");
-export const manifestRelativePath = "release/endvera-construction-v1/release-manifest.json";
+// Current projection; the previous release manifest remains an immutable historical record.
+export const manifestRelativePath = "release/endvera-construction-v1/release-manifest-v3.json";
+export const definitionRelativePath = "release/endvera-construction-v1/release-definition-v3.json";
 const gitObjectPattern = /^[a-f0-9]{40}$/u;
 const secretPatterns = [
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/u,
@@ -78,14 +81,15 @@ export function validateEnvironmentPresence(contract, mode, presence) {
   return { mode, valid: true, names: Object.keys(presence).sort() };
 }
 
-function validateDefinition(definition, appConfig, environmentContract, listings, disclosure, submissionGaps) {
+function validateDefinition(definition, appConfig, environmentContract, listings, disclosure, submissionGaps, webPackage) {
   const boundary = definition.boundary;
   if (definition.readinessCeiling !== "LOCAL_PACKAGE_READY" || boundary.signed || boundary.uploaded || boundary.published || boundary.deployed || boundary.providerObserved || boundary.externalEffectCount !== 0) throw new Error("RELEASE_ACTION_INFLATION_REFUSED");
   if (JSON.stringify(definition.targets) !== JSON.stringify(["WEB", "IOS", "ANDROID"])) throw new Error("RELEASE_TARGETS_MISMATCH");
   const expo = appConfig.expo;
   const ios = definition.identities.find((item) => item.target === "IOS");
   const android = definition.identities.find((item) => item.target === "ANDROID");
-  if (!expo || expo.name !== "ENDVERA" || expo.slug !== "endvera-mobile" || expo.version !== ios.semanticVersion || expo.scheme !== ios.scheme || expo.icon !== "./assets/images/icon.png" || expo.ios?.icon !== expo.icon || expo.ios?.bundleIdentifier !== ios.bundleIdentifier || expo.ios?.buildNumber !== ios.buildNumber || expo.android?.package !== android.package || expo.android?.versionCode !== android.versionCode) throw new Error("RELEASE_IDENTITY_MISMATCH");
+  if (definition.identities.find((item) => item.target === "WEB")?.semanticVersion !== webPackage.version) throw new Error("RELEASE_WEB_IDENTITY_MISMATCH");
+  if (!expo || expo.name !== "ENDVERA" || expo.slug !== "endvera" || ios.slug !== expo.slug || android.slug !== expo.slug || expo.version !== ios.semanticVersion || expo.version !== android.semanticVersion || expo.scheme !== ios.scheme || expo.scheme !== android.scheme || expo.icon !== "./assets/images/icon.png" || expo.ios?.icon !== expo.icon || expo.ios?.bundleIdentifier !== ios.bundleIdentifier || expo.ios?.buildNumber !== ios.buildNumber || expo.android?.package !== android.package || expo.android?.versionCode !== android.versionCode) throw new Error("RELEASE_IDENTITY_MISMATCH");
   if (environmentContract.secretValuesSerializable !== false || environmentContract.localProviderValuesAllowed !== false || environmentContract.externalReleaseAuthorized !== false || "values" in environmentContract) throw new Error("RELEASE_ENVIRONMENT_BOUNDARY_INVALID");
   const [french, english] = listings;
   if (french.locale !== "fr-CA" || english.locale !== "en-CA" || JSON.stringify(french.capabilityCodes) !== JSON.stringify(english.capabilityCodes) || JSON.stringify(french.unavailableCapabilityCodes) !== JSON.stringify(english.unavailableCapabilityCodes)) throw new Error("RELEASE_LOCALE_PARITY_MISMATCH");
@@ -98,13 +102,14 @@ function validateDefinition(definition, appConfig, environmentContract, listings
 
 export function packageInputPaths(definition) {
   return [
-    "release/endvera-construction-v1/release-definition.json",
+    definitionRelativePath,
     definition.environmentContractPath,
     ...definition.listingPaths,
     definition.disclosurePath,
     definition.submissionGapsPath,
     ...definition.runbookPaths,
     "apps/mobile/app.json",
+    "package.json",
     "apps/mobile/src/lib/release.ts",
     "apps/mobile/src/app/(app)/settings.tsx",
     "src/lib/construction-operating-assistant-r35/contracts.ts",
@@ -112,20 +117,24 @@ export function packageInputPaths(definition) {
     "src/app/construction/support/page.tsx",
     "scripts/generate-endvera-release-package.mjs",
     "scripts/validate-endvera-release-package.mjs",
+    "scripts/endvera-release-source-binding.mjs",
     ...definition.assets.map((asset) => asset.path),
     ...definition.supportingAssetPaths,
   ].map((item) => item.replace(/\\/gu, "/")).sort();
 }
 
+// Pure deterministic projection for tests and preparation; source fields here
+// are supplied labels, not observed Git provenance. Writing requires binding.
 export function buildReleaseManifest({ repositoryRoot = defaultRepositoryRoot, sourceHead, sourceTree, readFile = readFileSync }) {
   if (!gitObjectPattern.test(sourceHead) || !gitObjectPattern.test(sourceTree)) throw new Error("RELEASE_SOURCE_FINGERPRINT_INVALID");
-  const definition = parseJson(repositoryRoot, "release/endvera-construction-v1/release-definition.json", readFile);
+  const definition = parseJson(repositoryRoot, definitionRelativePath, readFile);
   const environmentContract = parseJson(repositoryRoot, definition.environmentContractPath, readFile);
   const listings = definition.listingPaths.map((item) => parseJson(repositoryRoot, item, readFile));
   const disclosure = parseJson(repositoryRoot, definition.disclosurePath, readFile);
   const submissionGaps = parseJson(repositoryRoot, definition.submissionGapsPath, readFile);
   const appConfig = parseJson(repositoryRoot, "apps/mobile/app.json", readFile);
-  validateDefinition(definition, appConfig, environmentContract, listings, disclosure, submissionGaps);
+  const webPackage = parseJson(repositoryRoot, "package.json", readFile);
+  validateDefinition(definition, appConfig, environmentContract, listings, disclosure, submissionGaps, webPackage);
 
   for (const asset of definition.assets) {
     const { resolved } = assertRepositoryPath(repositoryRoot, asset.path);
@@ -164,6 +173,7 @@ export function buildReleaseManifest({ repositoryRoot = defaultRepositoryRoot, s
 
 export function writeReleaseManifest(options) {
   const manifest = buildReleaseManifest(options);
+  assertReleaseSourceBinding({ repositoryRoot: options.repositoryRoot ?? defaultRepositoryRoot, manifest });
   const { resolved } = assertRepositoryPath(options.repositoryRoot ?? defaultRepositoryRoot, manifestRelativePath);
   mkdirSync(path.dirname(resolved), { recursive: true });
   const rendered = `${JSON.stringify(manifest, null, 2)}\n`;

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "releaseKey": "ENDVERA_CONSTRUCTION_V1",
+  "releaseVersion": 1,
+  "productName": "ENDVERA",
+  "readinessCeiling": "LOCAL_PACKAGE_READY",
+  "targets": [
+    "WEB",
+    "IOS",
+    "ANDROID"
+  ],
+  "environmentModes": [
+    "LOCAL_INTERNAL",
+    "EXTERNAL_RELEASE"
+  ],
+  "identities": [
+    {
+      "target": "WEB",
+      "applicationKey": "endvera-web",
+      "semanticVersion": "0.1.0"
+    },
+    {
+      "target": "IOS",
+      "appName": "ENDVERA",
+      "slug": "endvera",
+      "semanticVersion": "0.1.1",
+      "scheme": "endvera",
+      "bundleIdentifier": "ai.endvera.mobile",
+      "buildNumber": "1"
+    },
+    {
+      "target": "ANDROID",
+      "appName": "ENDVERA",
+      "slug": "endvera",
+      "semanticVersion": "0.1.1",
+      "scheme": "endvera",
+      "package": "ai.endvera.mobile",
+      "versionCode": 3
+    }
+  ],
+  "publicPaths": {
+    "privacy": "/privacy",
+    "security": "/security",
+    "support": "/construction/support",
+    "accountDeletion": "/account-deletion"
+  },
+  "assets": [
+    {
+      "kind": "APP_ICON",
+      "path": "apps/mobile/assets/images/icon.png",
+      "mediaType": "image/png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "kind": "ANDROID_FOREGROUND",
+      "path": "apps/mobile/assets/images/android-icon-foreground.png",
+      "mediaType": "image/png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "kind": "ANDROID_BACKGROUND",
+      "path": "apps/mobile/assets/images/android-icon-background.png",
+      "mediaType": "image/png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "kind": "ANDROID_MONOCHROME",
+      "path": "apps/mobile/assets/images/android-icon-monochrome.png",
+      "mediaType": "image/png",
+      "width": 432,
+      "height": 432
+    },
+    {
+      "kind": "SPLASH",
+      "path": "apps/mobile/assets/images/splash-icon.png",
+      "mediaType": "image/png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "kind": "WEB_FAVICON",
+      "path": "apps/mobile/assets/images/favicon.png",
+      "mediaType": "image/png",
+      "width": 64,
+      "height": 64
+    }
+  ],
+  "supportingAssetPaths": [
+    "apps/mobile/assets/expo.icon/icon.json",
+    "apps/mobile/assets/expo.icon/Assets/grid.png",
+    "apps/mobile/assets/expo.icon/Assets/expo-symbol 2.svg"
+  ],
+  "listingPaths": [
+    "release/endvera-construction-v1/store/fr-CA.json",
+    "release/endvera-construction-v1/store/en-CA.json"
+  ],
+  "disclosurePath": "release/endvera-construction-v1/privacy-disclosure.json",
+  "submissionGapsPath": "release/endvera-construction-v1/submission-gaps.json",
+  "environmentContractPath": "release/endvera-construction-v1/environment-contract.json",
+  "runbookPaths": [
+    "docs/release/endvera-construction-v1/01-environment-and-build.md",
+    "docs/release/endvera-construction-v1/02-smoke-and-evidence.md",
+    "docs/release/endvera-construction-v1/03-promotion-stop.md",
+    "docs/release/endvera-construction-v1/04-incident-and-rollback.md"
+  ],
+  "boundary": {
+    "signed": false,
+    "uploaded": false,
+    "published": false,
+    "deployed": false,
+    "providerObserved": false,
+    "externalEffectCount": 0
+  }
+}

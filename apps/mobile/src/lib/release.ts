@@ -8,7 +8,7 @@ export const MOBILE_RELEASE_INFO = {
     privacy: "/privacy",
     security: "/security",
     support: "/construction/support",
-    accountDeletion: "/client/privacy",
+    accountDeletion: "/account-deletion",
   },
   buildPreparation: {
     status: "READY_FOR_SIGNING_AUTHORITY",

@@ -34,7 +34,7 @@ describe("R35 deterministic local release packaging", () => {
     expect(releaseDefinition).toMatchObject({ releaseKey: "ENDVERA_CONSTRUCTION_V1", targets: ["WEB", "IOS", "ANDROID"], readinessCeiling: "LOCAL_PACKAGE_READY" });
     expect(RELEASE_BOUNDARY).toEqual({ signed: false, uploaded: false, published: false, deployed: false, providerObserved: false, externalEffectCount: 0 });
     const app = JSON.parse(readFileSync("apps/mobile/app.json", "utf8")).expo;
-    expect(app).toMatchObject({ name: "ENDVERA", slug: "endvera-mobile", version: "0.1.0", scheme: "endvera", ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1" }, android: { package: "ai.endvera.mobile", versionCode: 1 } });
+    expect(app).toMatchObject({ name: "ENDVERA", slug: "endvera", version: "0.1.1", scheme: "endvera", ios: { bundleIdentifier: "ai.endvera.mobile", buildNumber: "1" }, android: { package: "ai.endvera.mobile", versionCode: 3 } });
   });
 
   it("validates local environment presence without accepting or returning values", () => {
@@ -93,7 +93,7 @@ describe("R35 deterministic local release packaging", () => {
   });
 
   it("publishes safe routes and honest local support copy", () => {
-    expect(RELEASE_PUBLIC_PATHS).toEqual({ privacy: "/privacy", security: "/security", support: "/construction/support", accountDeletion: "/client/privacy" });
+    expect(RELEASE_PUBLIC_PATHS).toEqual({ privacy: "/privacy", security: "/security", support: "/construction/support", accountDeletion: "/account-deletion" });
     const support = readFileSync("src/app/construction/support/page.tsx", "utf8");
     expect(support).toContain("Le produit est encore local.");
     expect(support).toContain("No external customer-support channel");

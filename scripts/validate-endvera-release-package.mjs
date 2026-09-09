@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { assertReleaseSourceBinding } from "./endvera-release-source-binding.mjs";
 import {
   buildReleaseManifest,
   canonicalJson,
@@ -9,6 +10,8 @@ import {
   sha256,
 } from "./generate-endvera-release-package.mjs";
 
+// Pure byte/shape validation; this does not attest Git provenance by itself.
+// The executable CLI below additionally requires actual source binding.
 export function validateReleaseManifest({ repositoryRoot = defaultRepositoryRoot, manifest, readFile = readFileSync }) {
   if (!manifest || typeof manifest !== "object") throw new Error("RELEASE_MANIFEST_INVALID");
   const { manifestHash, ...base } = manifest;
@@ -22,5 +25,7 @@ if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === imp
   const manifestPath = path.resolve(defaultRepositoryRoot, manifestRelativePath);
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   const validated = validateReleaseManifest({ manifest });
+  const sourceBinding = assertReleaseSourceBinding({ repositoryRoot: defaultRepositoryRoot, manifest: validated });
   process.stdout.write(`LOCAL_PACKAGE_VALID ${validated.manifestHash}\n`);
+  process.stdout.write(`${JSON.stringify(sourceBinding)}\n`);
 }

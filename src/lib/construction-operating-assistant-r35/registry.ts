@@ -1,5 +1,5 @@
 import environmentContractJson from "../../../release/endvera-construction-v1/environment-contract.json";
-import releaseDefinitionJson from "../../../release/endvera-construction-v1/release-definition.json";
+import releaseDefinitionJson from "../../../release/endvera-construction-v1/release-definition-v3.json";
 import englishListingJson from "../../../release/endvera-construction-v1/store/en-CA.json";
 import frenchListingJson from "../../../release/endvera-construction-v1/store/fr-CA.json";
 import { releaseBoundarySchema, storeListingSchema } from "./contracts";
@@ -12,7 +12,7 @@ export const RELEASE_PUBLIC_PATHS = {
   privacy: "/privacy",
   security: "/security",
   support: "/construction/support",
-  accountDeletion: "/client/privacy",
+  accountDeletion: "/account-deletion",
 } as const;
 export const RELEASE_BOUNDARY = releaseBoundarySchema.parse(releaseDefinitionJson.boundary);
 export const RELEASE_LISTINGS = {
