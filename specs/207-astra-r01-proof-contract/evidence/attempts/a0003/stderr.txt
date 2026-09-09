@@ -1,0 +1,14 @@
+file:///C:/dev/endvera-astra-r01/release/current-projection-v3.mjs:26
+const fail=(condition,code)=>{if(!condition)throw new Error(code);};
+                                                  ^
+
+Error: CURRENT_PROJECTION_INPUT_HASH_MISMATCH:release/endvera-construction-v1/release-definition-v3.json
+    at fail (file:///C:/dev/endvera-astra-r01/release/current-projection-v3.mjs:26:51)
+    at validateCurrentProjection (file:///C:/dev/endvera-astra-r01/release/current-projection-v3.mjs:64:3)
+    at readCurrentProjection (file:///C:/dev/endvera-astra-r01/release/current-projection-v3.mjs:71:9)
+    at file:///C:/dev/endvera-astra-r01/scripts/validate-endvera-whole-product-readiness.mjs:92:86
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:666:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.2.0

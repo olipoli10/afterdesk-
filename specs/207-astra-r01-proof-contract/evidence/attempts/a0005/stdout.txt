@@ -1,0 +1,1 @@
+{"kind":"STATIC_PROVIDER_BOUNDARY","passed":true,"realProviderCalls":0,"scope":"source-graph-not-OS-isolation"}
