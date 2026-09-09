@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 2,
+  "queueMode": "PINNED_SEQUENTIAL_CAMPAIGN",
+  "queueId": "ASTRA-R01-LOCAL",
+  "campaignObjective": "Repair local proof lifecycle and seal fresh bounded observations without regrading spec206",
+  "authority": "LOCAL ONLY; proof contract, synthetic tests, Codex review, local commits and Brain checkpoint. No provider, personal data, spending, transport, push, deployment, timer or founder test.",
+  "forbiddenActions": [
+    "provider request",
+    "customer data",
+    "spending",
+    "external write",
+    "push",
+    "preview",
+    "production",
+    "timer"
+  ],
+  "stopConditions": [
+    "Unreconciled user edits",
+    "Required authority unavailable and no useful local work remains",
+    "Bounded evidence validation completed"
+  ],
+  "communication": {
+    "informationalLabel": "INFO — aucune réponse requise",
+    "blockingLabel": "BLOCAGE — réponse requise",
+    "authorityLabel": "AUTORITÉ — signature requise",
+    "completionLabel": "TERMINÉ — résultat",
+    "maxRoutineFounderPrompts": 0
+  },
+  "entries": [
+    {
+      "id": "R01-LOCAL",
+      "title": "Proof contract and bounded fresh local validation",
+      "objective": "Repair local proof lifecycle and seal fresh bounded observations without regrading spec206",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [],
+      "worktree": "C:/dev/endvera-astra-r01",
+      "branch": "codex/endvera-astra-r01",
+      "baseRef": {
+        "kind": "FIXED_HEAD",
+        "head": "7e767929390de48167865c01d1a848e6fccbf7b4"
+      },
+      "authority": "LOCAL ONLY; proof contract, synthetic tests, Codex review, local commits and Brain checkpoint. No provider, personal data, spending, transport, push, deployment, timer or founder test.",
+      "allowedScope": [
+        "specs/207-astra-r01-proof-contract"
+      ],
+      "planPath": "plan.md",
+      "planSha256": "1ffd515c7a361f90f112e33f8fe59cd5d5acc3fc2b0435471688dab352f1fc09",
+      "completionCommand": "node specs/207-astra-r01-proof-contract/campaign.mjs verify-report",
+      "evidencePaths": [
+        "reports/FINAL_REPORT.md"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}

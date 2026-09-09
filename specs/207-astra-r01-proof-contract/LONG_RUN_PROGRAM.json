@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "programId": "ASTRA-R01-PROOF-CONTRACT",
+  "objective": "Repair local proof lifecycle and seal fresh bounded observations without regrading spec206",
+  "worktree": "C:/dev/endvera-astra-r01",
+  "branch": "codex/endvera-astra-r01",
+  "baseHead": "7e767929390de48167865c01d1a848e6fccbf7b4",
+  "authority": "LOCAL ONLY; proof contract, synthetic tests, Codex review, local commits and Brain checkpoint. No provider, personal data, spending, transport, push, deployment, timer or founder test.",
+  "estimatedHours": {
+    "min": 1,
+    "max": 3
+  },
+  "referenceRuns": [
+    {
+      "id": "spec206",
+      "observedMinutes": 155,
+      "workUnits": "full local audit ended unsealed due to contradictory immutable proof contract"
+    }
+  ],
+  "completionCommand": "node specs/207-astra-r01-proof-contract/campaign.mjs verify-report",
+  "stopConditions": [
+    "Unreconciled user edits",
+    "Required authority unavailable and no useful local work remains",
+    "Bounded evidence validation completed"
+  ],
+  "forbidden": [
+    "Provider calls",
+    "Personal data",
+    "External writes",
+    "Timer",
+    "Regrading historical spec206"
+  ],
+  "chapters": [
+    {
+      "id": "CONTRACT",
+      "title": "Repair and review proof contract",
+      "objective": "Adversarial tests and distinct review before freeze",
+      "status": "IN_PROGRESS",
+      "estimatedMinutes": 60,
+      "dependencies": [],
+      "allowedScope": [
+        "specs/207-astra-r01-proof-contract"
+      ],
+      "acceptanceCommands": [
+        "node --test --test-reporter=tap specs/207-astra-r01-proof-contract/protocol.test.mjs"
+      ],
+      "evidencePaths": [
+        "reports/development.md"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "OBSERVE",
+      "title": "Freeze and collect fresh observations",
+      "objective": "Run exact local checks retaining every attempt",
+      "status": "OPEN",
+      "estimatedMinutes": 45,
+      "dependencies": [
+        "CONTRACT"
+      ],
+      "allowedScope": [
+        "specs/207-astra-r01-proof-contract"
+      ],
+      "acceptanceCommands": [
+        "node specs/207-astra-r01-proof-contract/campaign.mjs verify-report"
+      ],
+      "evidencePaths": [
+        "evidence/journal.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "CLOSEOUT",
+      "title": "Seal, validate and checkpoint",
+      "objective": "Keep product verdict separate from contract validity",
+      "status": "OPEN",
+      "estimatedMinutes": 45,
+      "dependencies": [
+        "OBSERVE"
+      ],
+      "allowedScope": [
+        "specs/207-astra-r01-proof-contract"
+      ],
+      "acceptanceCommands": [
+        "node specs/207-astra-r01-proof-contract/campaign.mjs verify-report"
+      ],
+      "evidencePaths": [
+        "reports/FINAL_REPORT.md"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}
