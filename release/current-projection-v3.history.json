@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "HISTORICAL_ATTESTATION_ARCHIVE_INDEX",
+  "scope": "ARCHIVED_BYTES_NOT_CURRENT_READINESS_PROOF",
+  "entries": [
+    {
+      "path": "release/endvera-construction-v1/whole-product-readiness.json",
+      "archivedInCommit": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+      "gitBlobSha256": "bac7a871d553e0d71f042bf79405b9501c51aa18fc17d185166d830056460ed4",
+      "checkoutSha256": "78b11fe1515a01f3b1c7388964ea0d29bd6dae6239f2ee764890e3e2eba77024",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    },
+    {
+      "path": "release/endvera-construction-v1/whole-product-closure-audit.json",
+      "archivedInCommit": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+      "gitBlobSha256": "632288783ece8fb9e02517140e0690cd61ff85dcaaa93e03f9bc4fa5cf88b159",
+      "checkoutSha256": "5fc52bdc14199936579077d49953e6d5f86f0938b4c82fd940be4f5f69e56971",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    },
+    {
+      "path": "release/endvera-construction-v1/market-readiness-report.json",
+      "archivedInCommit": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+      "gitBlobSha256": "465d83f5f0cf355cf144f18a8fc5d0ec518c4391e9ee19d71960e1ed5fff1fd4",
+      "checkoutSha256": "365b963da971ca69758a6083054f43c702a61055e3053cf75cdf1f98372ee47c",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    }
+  ]
+}

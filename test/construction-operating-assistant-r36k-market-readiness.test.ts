@@ -1,13 +1,17 @@
 import { readFileSync } from "node:fs";
+import {createHash} from "node:crypto";
 import { describe, expect, it } from "vitest";
 import report from "../release/endvera-construction-v1/market-readiness-report.json";
 import { validateMarketReadiness } from "../scripts/validate-endvera-market-readiness.mjs";
+import {buildCurrentProjection,validateCurrentProjection} from "../release/current-projection-v3.mjs";
+// Test-only static snapshot; preserves every historical artifact on disk.
+const staticFixture=()=>({...report,sourceHashes:report.sourceHashes.map(item=>({...item,sha256:createHash("sha256").update(readFileSync(item.path)).digest("hex")}))});
 
 describe("R36K unified market-readiness gate", () => {
-  it("returns one honest decision for Web, iOS and Android", () => {
-    const result = validateMarketReadiness(report);
-    expect(result.status).toBe("LOCAL_MARKET_PREPARATION_COMPLETE");
-    expect(result.externalDecision).toBe("EXTERNAL_AUTHORITY_REQUIRED");
+  it("classifies the old three-platform declaration as historical only", () => {
+    const result = validateMarketReadiness(staticFixture());
+    expect(result.status).toBe("HISTORICAL_STATIC_ATTESTATION_ONLY");
+    expect(result.externalDecision).toBe("NOT_EVALUATED");
     expect(report.targets).toEqual([
       { target: "WEB", localStatus: "READY_FOR_DEPLOYMENT_AUTHORITY", firstExternalBlocker: "PUBLIC_PRODUCTION_ORIGIN", ownerClass: "FOUNDER_OR_RELEASE_OWNER" },
       { target: "IOS", localStatus: "READY_FOR_SIGNING_AUTHORITY", firstExternalBlocker: "APPLE_DEVELOPER_MEMBERSHIP", ownerClass: "FOUNDER_OR_RELEASE_OWNER" },
@@ -16,7 +20,7 @@ describe("R36K unified market-readiness gate", () => {
   });
 
   it("verifies every protected source hash", () => {
-    const result = validateMarketReadiness(report);
+    const result = validateMarketReadiness(staticFixture());
     expect(result.sourceHashesVerified).toBe(5);
     expect(report.sourceHashes.every((item) => /^[a-f0-9]{64}$/u.test(item.sha256))).toBe(true);
   });
@@ -47,6 +51,16 @@ describe("R36K unified market-readiness gate", () => {
     expect(() => validateMarketReadiness({ ...report, storeReady: true })).toThrow("MARKET_READINESS_CLAIM_INFLATION_REFUSED");
     expect(() => validateMarketReadiness({ ...report, sourceHashes: report.sourceHashes.map((item, index) => index === 0 ? { ...item, sha256: "0".repeat(64) } : item) })).toThrow("MARKET_READINESS_SOURCE_HASH_MISMATCH");
     expect(() => validateMarketReadiness({ ...report, evidence: report.evidence.map((item) => item.label === "OBSERVED" ? { ...item, available: true } : item) })).toThrow("MARKET_READINESS_EVIDENCE_INFLATION_REFUSED");
+    expect(()=>validateMarketReadiness(report)).toThrow("MARKET_READINESS_SOURCE_HASH_MISMATCH");
+  });
+  it("rejects five correctly hashed substituted inputs, even retaining release-definition",()=>{
+    const paths=["release/endvera-construction-v1/release-definition.json","package.json","tsconfig.json","apps/mobile/package.json","apps/mobile/app.json"];
+    expect(()=>validateMarketReadiness({...report,sourceHashes:paths.map(path=>({path,sha256:createHash("sha256").update(readFileSync(path)).digest("hex")}))})).toThrow("MARKET_READINESS_SOURCE_SET_MISMATCH");
+  });
+  it("keeps current configuration and external readiness separate",()=>{
+    const value=buildCurrentProjection();
+    expect(validateCurrentProjection(value)).toMatchObject({status:"CURRENT_CONFIGURATION_COHERENCE_ONLY",externalReadiness:"NOT_EVALUATED",providerCustomerTestDecision:"NO-GO"});
+    expect(()=>validateCurrentProjection({...value,externalReadiness:"READY"})).toThrow("CURRENT_PROJECTION_CLAIM_OR_BINDING_MISMATCH");
   });
 
   it("uses no network, child process, deploy, build or store command", () => {

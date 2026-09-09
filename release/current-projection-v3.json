@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 3,
+  "kind": "CURRENT_CONFIGURATION_PROJECTION",
+  "status": "CURRENT_CONFIGURATION_COHERENCE_ONLY",
+  "scope": "EXACT_SOURCE_BYTES_AND_MOBILE_RELEASE_CONFIGURATION",
+  "currentInputs": [
+    {
+      "path": "release/endvera-construction-v1/release-definition-v3.json",
+      "sha256": "3ef53060e71a7868a9db3602e230032044b92f9531555cd6090138a9b0dc6b48"
+    },
+    {
+      "path": "apps/mobile/app.json",
+      "sha256": "1173694bf287080de6b5816616dc8e873ce68af01b8d7ec8c3296360f4627b7a"
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "sha256": "b7f5d63696d228952e537a8b9be389c53e77a8a43a65a763055c833a8560b690"
+    },
+    {
+      "path": "src/app/account-deletion/page.tsx",
+      "sha256": "3d0d1750547b0ce9c06a48345eeeac59d3b5c8e29c50c45448a2c5a3c063cd81"
+    },
+    {
+      "path": "release/endvera-construction-v1/environment-contract-v2.json",
+      "sha256": "fba8f1a0ea67a3400f6ec817581491ad525b2bf4162569bc4dd7a531918be522"
+    }
+  ],
+  "historyManifest": {
+    "path": "release/current-projection-v3.history.json",
+    "sha256": "78b11a833e931cb55edcb1066721de2f158d08093121f6a60c0091061d50f0e0"
+  },
+  "supersedes": [
+    {
+      "path": "release/endvera-construction-v1/whole-product-readiness.json",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    },
+    {
+      "path": "release/endvera-construction-v1/whole-product-closure-audit.json",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    },
+    {
+      "path": "release/endvera-construction-v1/market-readiness-report.json",
+      "applicationToCurrentBuild": "NOT_APPLICABLE_HISTORICAL_ONLY"
+    }
+  ],
+  "mobileConfiguration": {
+    "semanticVersion": "0.1.1",
+    "iosBuildNumber": "1",
+    "androidVersionCode": 3,
+    "accountDeletionPath": "/account-deletion"
+  },
+  "evidenceClass": "STATIC_SOURCE_CONFIGURATION_ONLY",
+  "observedProof": null,
+  "wholeProductReadiness": "NOT_EVALUATED",
+  "wholeProductClosure": "NOT_EVALUATED",
+  "externalReadiness": "NOT_EVALUATED",
+  "providerCustomerTestDecision": "NO-GO",
+  "productionReady": false,
+  "deviceObserved": false
+}

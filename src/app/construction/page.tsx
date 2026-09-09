@@ -20,96 +20,96 @@ type ConstructionPageProps = {
 const COPY = {
   fr: {
     navProduct: "Comment ça marche", navUses: "Ce que ça règle", access: "Demander mon accès",
-    eyebrow: "L’ASSISTANT IA DES PETITS ENTREPRENEURS", headlineA: "Gère tes chantiers.", headlineB: "Par texto ou par appel.",
-    promise: "Ajoute un rendez-vous, prépare un texto, organise un suivi ou demande ce qui manque avant de facturer. ENDVERA garde le bon chantier à jour et te demande ton accord avant d’agir.",
-    primaryCta: "Voir un exemple concret", secondaryCta: "Voir ce qu’il peut gérer",
-    trust: ["Contacts, calendrier et suivis au même endroit", "Tu approuves avant chaque envoi", "Un humain intervient si ça bloque"],
-    liveLabel: "CHANTIER LAVAL", job: "Rénovation Laval", demoBoundary: "DÉMONSTRATION DU PRODUIT · AUCUN MESSAGE RÉEL N’EST ENVOYÉ",
-    userMessage: "Ajoute Marc au calendrier demain à 8 h pour Laval et prépare-lui un texto.", assistantMessage: "Le rendez-vous est ajouté au chantier Laval. Le texto pour Marc est prêt à vérifier.",
-    prepared: "À VÉRIFIER AVANT ENVOI", recipient: "Destinataire · Marc · Fournisseur · SMS", body: "Bonjour Marc, l’équipe sera au chantier de Laval demain à 8 h.", approve: "Approuver l’envoi",
-    tomorrow: "RENDEZ-VOUS AJOUTÉ · DEMAIN À 8 H", calendarItem: "Arrivée de l’équipe", project: "Chantier · Rénovation Laval · Contact · Marc", memoryLabel: "CE QU’ENDVERA RETIENT",
-    memoryRows: ["Rendez-vous · demain à 8 h", "Texto à Marc · en attente d’approbation", "Photo de fin · toujours manquante"],
-    flowLabel: "TU DEMANDES. ENDVERA ORGANISE. TU DÉCIDES.", flow: ["Tu textes ou tu appelles", "Il retrouve le bon chantier", "Il prépare la suite", "Tu vérifies et approuves"],
-    dayEyebrow: "CONÇU POUR TA VRAIE JOURNÉE", dayTitle: "Tes rendez-vous, tes suivis et tes dossiers prêts à facturer — dans une seule conversation.",
-    dayBody: "Au lieu de fouiller dans tes textos, ton calendrier et tes notes, demande simplement à ENDVERA. Il retrouve le bon chantier et organise la prochaine étape.",
+    eyebrow: "L’ASSISTANT IA DES PETITS ENTREPRENEURS", headlineA: "Notre cible : gérer tes chantiers.", headlineB: "À terme, par texto ou appel.",
+    promise: "Notre vision : ajouter un rendez-vous, préparer un texto, organiser un suivi ou vérifier ce qui manque avant de facturer, avec le bon chantier et ton accord avant d’agir. Voici le parcours visé.",
+    primaryCta: "Voir une illustration", secondaryCta: "Voir le parcours visé",
+    trust: ["Objectif : contacts, calendrier et suivis au même endroit", "Ton accord avant tout envoi dans le parcours visé", "Dans le parcours visé, un dossier serait préparé pour une revue humaine"],
+    liveLabel: "CHANTIER FICTIF · LAVAL", job: "Rénovation Laval", demoBoundary: "ILLUSTRATION DU PARCOURS VISÉ · NON EXÉCUTÉ · AUCUN ENVOI RÉEL",
+    userMessage: "Ajoute Marc au calendrier demain à 8 h pour Laval et prépare-lui un texto.", assistantMessage: "Résultat visé, non exécuté : un rendez-vous pour Laval et un brouillon pour Marc, à vérifier avant toute action.",
+    prepared: "BROUILLON ILLUSTRATIF", recipient: "Destinataire fictif · Marc · Fournisseur · SMS", body: "Bonjour Marc, l’équipe sera au chantier de Laval demain à 8 h.", approve: "Illustration — aucun envoi",
+    tomorrow: "RENDEZ-VOUS ILLUSTRÉ · NON AJOUTÉ", calendarItem: "Arrivée de l’équipe", project: "Chantier fictif · Rénovation Laval · Contact fictif · Marc", memoryLabel: "MÉMOIRE ILLUSTRÉE · NON ENREGISTRÉE",
+    memoryRows: ["Rendez-vous illustré · demain à 8 h", "Texto illustré · non envoyé", "Photo manquante · exemple fictif"],
+    flowLabel: "PARCOURS VISÉ · AUCUNE ACTION EXÉCUTÉE", flow: ["À terme : texto ou appel", "Le chantier serait retrouvé", "La suite serait préparée", "Tu vérifierais avant d’approuver"],
+    dayEyebrow: "OBJECTIF POUR TA JOURNÉE", dayTitle: "La cible : tes rendez-vous, tes suivis et tes dossiers dans une seule conversation.",
+    dayBody: "Le parcours visé réunirait tes demandes et la prochaine étape du bon chantier. La démonstration actuelle illustre ce fonctionnement; elle n’exécute pas ces actions.",
     situations: [
-      { number: "01", title: "Planifier un rendez-vous", body: "Dis : « Ajoute Marc mardi à 14 h. » ENDVERA confirme le chantier et l’heure avant de l’ajouter." },
-      { number: "02", title: "Aviser la bonne personne", body: "Demande un texto pour un client, un employé ou un fournisseur. Vérifie le destinataire et le message, puis approuve." },
-      { number: "03", title: "Préparer la facturation", body: "Vois les photos, les approbations et les documents manquants avant d’envoyer une facture." },
+      { number: "01", title: "Consulter le calendrier de demain", body: "Exemple simple reconnu localement : « Qu’est-ce que j’ai demain? » Cette phrase demande une consultation du calendrier local; elle ne crée aucun rendez-vous et ne prouve aucune connexion externe." },
+      { number: "02", title: "Objectif : aviser la bonne personne", body: "Dans le parcours visé, tu demanderais un texto pour un client, un employé ou un fournisseur, puis tu vérifierais le destinataire et le message avant approbation. Cette illustration n’envoie rien." },
+      { number: "03", title: "Objectif : préparer la facturation", body: "Le parcours visé montrerait les photos, les approbations et les documents manquants avant facturation. Cette démonstration ne crée ni n’envoie de facture." },
     ],
-    capabilityEyebrow: "PLUS QU’UN CHATBOT", capabilityTitle: "Il ne fait pas que répondre. Il garde chaque chantier à jour.",
-    capabilityBody: "Contacts, rendez-vous, messages, photos, approbations et prochaines étapes restent ensemble. Tu reprends toujours là où tu étais rendu.",
+    capabilityEyebrow: "LE PRODUIT VISÉ", capabilityTitle: "Notre objectif : garder chaque chantier à jour.",
+    capabilityBody: "À terme, contacts, rendez-vous, messages, photos, approbations et prochaines étapes seraient réunis. Les actions illustrées sur cette page ne sont pas enregistrées.",
     outcomes: [
-      { title: "Tout reste dans le bon chantier", body: "Les contacts, rendez-vous, messages, preuves et décisions ne se mélangent pas entre tes jobs." },
-      { title: "Tu sais ce qui bloque", body: "ENDVERA montre ce qui manque, qui doit s’en occuper et quelle est la prochaine étape." },
-      { title: "Chaque message est prêt à vérifier", body: "Tu vois le destinataire, le canal et le texte complet avant d’autoriser l’envoi." },
-      { title: "Un humain reprend au besoin", body: "Si une demande est ambiguë ou risquée, une personne reçoit le dossier complet sans te faire tout recommencer." },
+      { title: "Objectif : le bon dossier pour chaque chantier", body: "Dans le produit visé, contacts, rendez-vous, messages, preuves et décisions resteraient liés au bon chantier." },
+      { title: "Objectif : savoir ce qui bloque", body: "ENDVERA montrerait ce qui manque et la prochaine étape proposée. La démonstration n’attribue aucun travail réel." },
+      { title: "Objectif : vérifier chaque message", body: "Dans le parcours visé, tu verrais le destinataire, le canal et le texte avant toute autorisation. Le brouillon illustré ne peut pas être envoyé." },
+      { title: "Objectif : un dossier pour la revue humaine", body: "Dans le parcours visé, un dossier serait préparé pour une revue humaine si une demande est ambiguë ou risquée. Cette illustration ne prépare aucun dossier réel et ne confirme ni attribution ni réception par une personne." },
     ],
-    walkthroughEyebrow: "DE LA DEMANDE À L’ACTION", walkthroughTitle: "Demande une fois. ENDVERA garde la suite.",
-    availableLabel: "Tu n’as plus à tout répéter chaque fois.",
-    capabilities: ["Mémoire par chantier", "Calendrier et suivis", "Dossiers prêts à facturer", "Messages à approuver", "Appui humain", "Accès selon le rôle"],
+    walkthroughEyebrow: "PARCOURS VISÉ · NON EXÉCUTÉ", walkthroughTitle: "Ce que nous voulons rendre possible.",
+    availableLabel: "La démonstration actuelle ne reçoit aucun texto ni appel réel; elle n’envoie aucun message, ne modifie aucun calendrier et n’enregistre aucune action accomplie.",
+    capabilities: ["Mémoire visée par chantier", "Calendrier illustré", "Vérifications visées avant facturation", "Brouillons illustratifs", "Dossier de revue humaine", "Accès selon le rôle"],
     steps: [
-      { title: "Tu demandes avec tes mots", body: "Par texto, appel ou dans l’application, tu dis simplement ce que tu veux faire." },
-      { title: "ENDVERA trouve le bon chantier", body: "Il relie ta demande au bon projet, au bon contact et à ce qui est déjà prévu." },
-      { title: "Il prépare la bonne action", body: "Un rendez-vous, un rappel, une demande de photo ou un message est préparé." },
-      { title: "Tu vérifies avant que ça parte", body: "Tu vois le destinataire, l’heure, le canal et le texte complet avant d’approuver." },
-      { title: "Le chantier reste à jour", body: "L’action, la preuve et la prochaine étape sont conservées pour la prochaine fois." },
+      { title: "Tu demanderais avec tes mots", body: "À terme, tu pourrais décrire ta demande par texto, appel ou dans l’application. Ici, la conversation est fictive et aucune demande réelle n’est reçue." },
+      { title: "ENDVERA retrouverait le bon chantier", body: "Dans le parcours visé, il relierait ta demande au projet, au contact et au calendrier pertinents, ou demanderait une clarification." },
+      { title: "Il proposerait les actions", body: "Dans le parcours visé, rendez-vous, rappel, demande de photo ou message seraient préparés pour vérification. Ils ne sont pas exécutés ici." },
+      { title: "Tu vérifierais avant toute action", body: "Le parcours visé montrerait le destinataire, l’heure, le canal et le texte avant approbation. Le bouton de cette illustration reste désactivé." },
+      { title: "Le dossier pourrait être mis à jour", body: "Après une action réelle vérifiée, le produit visé en conserverait la preuve et la prochaine étape. Cette illustration n’enregistre aucune action accomplie." },
     ],
-    backupEyebrow: "QUAND ENDVERA N’EST PAS CERTAIN", humanLabel: "HUMAIN", humanBackupTitle: "S’il n’est pas certain, il n’invente pas.",
-    humanBackupBody: "ENDVERA met l’action en attente et transmet le chantier, la demande et les preuves à une personne. Elle peut reprendre sans que tu aies à tout réexpliquer.",
-    authorityEyebrow: "TU RESTES EN CONTRÔLE", trustTitle: "Rien ne part sans ton accord.",
-    trustBody: "ENDVERA peut consulter ce que tu lui permets et préparer la prochaine action. Avant d’envoyer un texto, de déplacer un rendez-vous ou de toucher à une facture, il te montre exactement ce qu’il va faire.",
-    permissions: ["Peut consulter ton calendrier", "Peut préparer un texto", "Ne peut pas envoyer sans ton approbation"],
-    readyTitle: "Arrête de gérer tes chantiers de mémoire.",
-    readyBody: "Découvre comment une simple demande devient un rendez-vous, un suivi ou un dossier prêt à facturer.",
+    backupEyebrow: "QUAND ENDVERA N’EST PAS CERTAIN", humanLabel: "DOSSIER", humanBackupTitle: "S’il n’est pas certain, il n’invente pas.",
+    humanBackupBody: "Dans le parcours visé, un dossier serait préparé avec le chantier, la demande et les preuves pour une revue humaine. Aucun dossier réel n’est préparé par cette page. Aucune réception ni prise en charge humaine n’est confirmée. Le soutien de production n’est pas activé; une personne devrait être désignée pour reprendre un dossier réel.",
+    authorityEyebrow: "TU RESTES EN CONTRÔLE", trustTitle: "Ici, rien ne part. À terme, ton accord serait requis.",
+    trustBody: "Dans le parcours visé, ENDVERA montrerait toute proposition de texto, de modification de rendez-vous ou de facture avant ton accord. Les permissions et les contrôles déterministes resteraient nécessaires; cette démonstration ne fait aucun de ces changements.",
+    permissions: ["Calendrier de démonstration", "Brouillon à vérifier", "Aucun envoi réel, même après approbation"],
+    readyTitle: "Découvre le parcours que nous préparons.",
+    readyBody: "Une illustration de ce qu’une demande pourrait devenir : un rendez-vous, un suivi ou un dossier à vérifier, sans action exécutée dans cette démonstration.",
     footerProduct: "Produit", footerCompany: "Confiance", honestLabel: "Disponibilité actuelle",
     honestStatus: "Version locale de démonstration. Les vrais textos, appels et calendriers connectés ne sont pas encore activés.",
     copyright: "ENDVERA · L’assistant IA conçu au Québec pour les entrepreneurs en construction.",
   },
   en: {
     navProduct: "How it works", navUses: "What it handles", access: "Request private access",
-    eyebrow: "THE AI ASSISTANT FOR SMALL CONTRACTORS", headlineA: "Run your jobs.", headlineB: "By text or phone.",
-    promise: "Add an appointment, prepare a message, organize a follow-up or ask what is missing before you invoice. ENDVERA keeps the right job up to date and asks for your approval before it acts.",
-    primaryCta: "See a real example", secondaryCta: "See what it handles",
-    trust: ["Contacts, schedule and follow-ups in one place", "You approve every message", "Human backup when needed"],
-    liveLabel: "LAVAL JOB", job: "Laval Renovation", demoBoundary: "PRODUCT DEMO · NO LIVE MESSAGE IS SENT",
-    userMessage: "Add Marc to the calendar tomorrow at 8 for the Laval job and draft a text for him.", assistantMessage: "The appointment has been added to the Laval job. The message to Marc is ready to review.",
-    prepared: "READY FOR YOUR REVIEW", recipient: "Recipient · Marc · Supplier · SMS", body: "Hi Marc, the crew will be at the Laval job tomorrow at 8:00 a.m.", approve: "Approve message",
-    tomorrow: "APPOINTMENT ADDED · TOMORROW AT 8:00 A.M.", calendarItem: "Crew arrival", project: "Job · Laval Renovation · Contact · Marc", memoryLabel: "WHAT ENDVERA REMEMBERS",
-    memoryRows: ["Appointment · tomorrow at 8:00 a.m.", "Text to Marc · awaiting approval", "Completion photo · still missing"],
-    flowLabel: "YOU ASK. ENDVERA ORGANIZES. YOU DECIDE.", flow: ["Text or call", "It finds the right job", "It prepares the next step", "You review and approve"],
-    dayEyebrow: "BUILT FOR A CONTRACTOR’S REAL DAY", dayTitle: "Appointments, follow-ups and invoice-ready job files — in one conversation.",
-    dayBody: "Instead of searching through texts, calendars and notes, just ask ENDVERA. It finds the right job and organizes the next step.",
+    eyebrow: "THE AI ASSISTANT FOR SMALL CONTRACTORS", headlineA: "Our goal: manage your jobs.", headlineB: "Eventually, by text or phone.",
+    promise: "Our vision: add an appointment, prepare a message, organize a follow-up or check what is missing before invoicing, with the right job and your approval before acting. This is the target workflow.",
+    primaryCta: "See an illustration", secondaryCta: "See the target workflow",
+    trust: ["Goal: contacts, schedule and follow-ups in one place", "Your approval before sending in the target workflow", "In the target workflow, a file would be prepared for human review"],
+    liveLabel: "FICTIONAL LAVAL JOB", job: "Laval Renovation", demoBoundary: "TARGET WORKFLOW ILLUSTRATION · NOT EXECUTED · NO LIVE SENDING",
+    userMessage: "Add Marc to the calendar tomorrow at 8 for the Laval job and draft a text for him.", assistantMessage: "Target result, not executed: an appointment for Laval and a draft for Marc, to review before any action.",
+    prepared: "ILLUSTRATIVE DRAFT", recipient: "Fictional recipient · Marc · Supplier · SMS", body: "Hi Marc, the crew will be at the Laval job tomorrow at 8:00 a.m.", approve: "Illustration — no sending",
+    tomorrow: "ILLUSTRATIVE APPOINTMENT · NOT ADDED", calendarItem: "Crew arrival", project: "Fictional job · Laval Renovation · Fictional contact · Marc", memoryLabel: "ILLUSTRATIVE MEMORY · NOT SAVED",
+    memoryRows: ["Illustrative appointment · tomorrow at 8:00 a.m.", "Illustrative text · not sent", "Missing photo · fictional example"],
+    flowLabel: "TARGET WORKFLOW · NO ACTION EXECUTED", flow: ["Eventually: text or phone", "The job would be identified", "Next steps would be prepared", "You would review before approval"],
+    dayEyebrow: "THE GOAL FOR YOUR WORKDAY", dayTitle: "The goal: appointments, follow-ups and job files in one conversation.",
+    dayBody: "The target workflow would connect your requests with the next step for the right job. The current demo illustrates this workflow; it does not execute those actions.",
     situations: [
-      { number: "01", title: "Schedule an appointment", body: "Say, “Add Marc Tuesday at 2 p.m.” ENDVERA confirms the job and time before adding it." },
-      { number: "02", title: "Notify the right person", body: "Ask for a text to a customer, worker or supplier. Review the recipient and message, then approve it." },
-      { number: "03", title: "Get ready to invoice", body: "See which photos, approvals and documents are still missing before you send an invoice." },
+      { number: "01", title: "Check tomorrow’s calendar", body: "A simple phrase recognized locally: “What do I have tomorrow?” This requests a local calendar lookup; it does not create an appointment or prove an external connection." },
+      { number: "02", title: "Goal: notify the right person", body: "In the target workflow, you would request a text for a customer, worker or supplier, then review the recipient and message before approval. This illustration sends nothing." },
+      { number: "03", title: "Goal: prepare for invoicing", body: "The target workflow would show missing photos, approvals and documents before invoicing. This demo does not create or send invoices." },
     ],
-    capabilityEyebrow: "MORE THAN A CHATBOT", capabilityTitle: "It does more than answer. It keeps every job up to date.",
-    capabilityBody: "Contacts, appointments, messages, photos, approvals and next steps stay together. You always pick up where you left off.",
+    capabilityEyebrow: "THE TARGET PRODUCT", capabilityTitle: "Our goal: keep each job up to date.",
+    capabilityBody: "Eventually, contacts, appointments, messages, photos, approvals and next steps would stay together. Actions illustrated on this page are not saved.",
     outcomes: [
-      { title: "Everything stays with the right job", body: "Contacts, appointments, messages, proof and decisions never get mixed up between jobs." },
-      { title: "You know what is holding things up", body: "ENDVERA shows what is missing, who needs to handle it and what happens next." },
-      { title: "Every message is ready to review", body: "See the recipient, channel and full message before you approve it." },
-      { title: "A human steps in when needed", body: "If a request is unclear or risky, a person gets the full job record so you do not have to start over." },
+      { title: "Goal: the right file for each job", body: "In the target product, contacts, appointments, messages, proof and decisions would remain linked to the right job." },
+      { title: "Goal: know what is holding things up", body: "ENDVERA would show what is missing and the proposed next step. The demo assigns no real work." },
+      { title: "Goal: review each message", body: "In the target workflow, you would see the recipient, channel and full text before authorization. The illustrated draft cannot be sent." },
+      { title: "Goal: a file for human review", body: "In the target workflow, a file would be prepared for human review if a request is unclear or risky. This illustration prepares no real file and confirms neither assignment nor receipt by a person." },
     ],
-    walkthroughEyebrow: "FROM REQUEST TO FOLLOW-THROUGH", walkthroughTitle: "Ask once. ENDVERA carries it forward.",
-    availableLabel: "You do not have to explain the same job again.",
-    capabilities: ["Job memory", "Scheduling and follow-ups", "Invoice-ready checks", "Messages ready for approval", "Human backup", "Role-based access"],
+    walkthroughEyebrow: "TARGET WORKFLOW · NOT EXECUTED", walkthroughTitle: "What we aim to make possible.",
+    availableLabel: "The current demo does not receive live texts or calls; it does not send messages, change calendars or save completed actions.",
+    capabilities: ["Intended job memory", "Illustrated calendar", "Intended pre-invoice checks", "Illustrative drafts", "Human-review file", "Role-based access"],
     steps: [
-      { title: "Ask in your own words", body: "By text, phone or in the app, simply say what you need done." },
-      { title: "ENDVERA finds the right job", body: "It connects your request to the right job, contact and existing schedule." },
-      { title: "It prepares the right action", body: "An appointment, reminder, photo request or message is prepared." },
-      { title: "Review before anything goes out", body: "See the recipient, time, channel and full message before you approve it." },
-      { title: "The job stays up to date", body: "The action, proof and next step are saved for your next conversation." },
+      { title: "You would ask in your own words", body: "Eventually, you could describe your request by text, phone or in the app. This conversation is fictional and receives no real request." },
+      { title: "ENDVERA would identify the right job", body: "In the target workflow, it would link the request to the relevant job, contact and calendar, or ask for clarification." },
+      { title: "It would propose actions", body: "In the target workflow, appointments, reminders, photo requests or messages would be prepared for review. They are not executed here." },
+      { title: "You would review before any action", body: "The target workflow would show the recipient, time, channel and text before approval. This illustration’s button remains disabled." },
+      { title: "The job file could be updated", body: "After a verified real action, the target product would save its proof and next step. This illustration saves no completed action." },
     ],
-    backupEyebrow: "WHEN ENDVERA IS NOT SURE", humanLabel: "HUMAN", humanBackupTitle: "If it is not sure, it does not guess.",
-    humanBackupBody: "ENDVERA pauses the action and gives the job, request and proof to a person. They can step in without making you explain everything again.",
-    authorityEyebrow: "YOU STAY IN CONTROL", trustTitle: "Nothing goes out without your approval.",
-    trustBody: "ENDVERA can view what you allow and prepare the next action. Before it sends a text, moves an appointment or touches an invoice, it shows you exactly what it will do.",
-    permissions: ["Can view your calendar", "Can prepare a text", "Cannot send without your approval"],
-    readyTitle: "Stop running your jobs from memory.",
-    readyBody: "See how one request becomes an appointment, a follow-up or an invoice-ready job file.",
+    backupEyebrow: "WHEN ENDVERA IS NOT SURE", humanLabel: "FILE", humanBackupTitle: "If it is not sure, it does not guess.",
+    humanBackupBody: "In the target workflow, a file would be prepared with the job, request and proof for human review. This page prepares no real file. No human receipt or handling is confirmed. Production support is not enabled; a person would need to be assigned to take over a real file.",
+    authorityEyebrow: "YOU STAY IN CONTROL", trustTitle: "Nothing is sent here. Future actions would require approval.",
+    trustBody: "In the target workflow, ENDVERA would show any proposed text, appointment change or invoice before your approval. Permissions and deterministic controls would still be required; this demo makes none of those changes.",
+    permissions: ["Demo calendar", "Draft for review", "No live sending, even after approval"],
+    readyTitle: "Explore the workflow we are preparing.",
+    readyBody: "An illustration of what a request could become: an appointment, follow-up or file to review, with no action executed in this demo.",
     footerProduct: "Product", footerCompany: "Trust and safety", honestLabel: "Available today",
     honestStatus: "Local product demo. Live texting, calling and connected calendars are not enabled yet.",
     copyright: "ENDVERA · The AI assistant built in Quebec for small construction contractors.",
@@ -141,11 +141,11 @@ export async function generateMetadata({ searchParams }: ConstructionPageProps):
   return lang === "fr"
     ? {
         title: "ENDVERA Construction — l’assistant IA des entrepreneurs",
-        description: "Gère tes rendez-vous, textos, suivis et dossiers à facturer par texto, appel ou application.",
+        description: "Démonstration locale d’ENDVERA : découvre le parcours visé pour gérer tes chantiers. Textos et appels réels non activés.",
       }
     : {
         title: "ENDVERA Construction — the AI assistant for contractors",
-        description: "Manage appointments, messages, follow-ups and invoice-ready job files by text, phone or app.",
+        description: "Local demonstration of ENDVERA’s intended job-management workflow. Live texting and calling are not enabled.",
       };
 }
 
@@ -183,6 +183,7 @@ export default async function ConstructionPublicPage({ searchParams }: Construct
               <p className={styles.eyebrow}><span />{copy.eyebrow}</p>
               <h1 id="construction-title" className={styles.heroTitle}><span>{copy.headlineA}</span><strong>{copy.headlineB}</strong></h1>
               <p className={styles.heroPromise}>{copy.promise}</p>
+              <p className={styles.heroPromise}><strong>{copy.honestLabel} : </strong>{copy.honestStatus}</p>
               <div className={styles.heroActions}>
                 <a href="#demo" className={styles.primaryCta}>{copy.primaryCta}<ArrowIcon /></a>
                 <a href="#uses" className={styles.secondaryCta}>{copy.secondaryCta}</a>
@@ -207,7 +208,7 @@ export default async function ConstructionPublicPage({ searchParams }: Construct
                   <div className={styles.assistantBubble}><span className={styles.miniMark}>N</span><p>{copy.assistantMessage}</p></div>
                   <div className={styles.approvalCard}>
                     <span className={styles.cardLabel}>{copy.prepared}</span><b>{copy.recipient}</b><p>“{copy.body}”</p>
-                    <span className={styles.fakeButton} aria-hidden>{copy.approve}<ArrowIcon /></span>
+                    <button className={styles.fakeButton} type="button" disabled>{copy.approve}<ArrowIcon /></button>
                   </div>
                 </div>
                 <div className={styles.composer} aria-hidden><span>＋</span><p>{french ? "Demande quelque chose…" : "Ask for something…"}</p><b>↑</b></div>
@@ -244,7 +245,7 @@ export default async function ConstructionPublicPage({ searchParams }: Construct
           </div>
         </section>
 
-        <section className={styles.walkthroughSection}>
+        <section id="walkthrough" className={styles.walkthroughSection}>
           <div className={styles.walkthroughInner}>
             <div className={styles.walkthroughIntro}>
               <p className={styles.darkEyebrow}>{copy.walkthroughEyebrow}</p><h2>{copy.walkthroughTitle}</h2><p>{copy.availableLabel}</p>
@@ -259,7 +260,7 @@ export default async function ConstructionPublicPage({ searchParams }: Construct
         <section id="control" className={styles.controlSection}>
           <article className={styles.controlCard}>
             <p className={styles.eyebrow}><span />{copy.backupEyebrow}</p><h2>{copy.humanBackupTitle}</h2><p>{copy.humanBackupBody}</p>
-            <div className={styles.handoffDiagram} aria-hidden><span>AI</span><i /><strong>{copy.humanLabel}</strong><i /><span>✓</span></div>
+            <div className={styles.handoffDiagram} aria-hidden><span>AI</span><i /><strong>{copy.humanLabel}</strong><i /><span>…</span></div>
           </article>
           <article className={`${styles.controlCard} ${styles.authorityCard}`}>
             <p className={styles.eyebrow}><span />{copy.authorityEyebrow}</p><h2>{copy.trustTitle}</h2><p>{copy.trustBody}</p>

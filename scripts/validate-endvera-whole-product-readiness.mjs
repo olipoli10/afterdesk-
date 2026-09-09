@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { readCurrentProjection, requireExactInputs } from "../release/current-projection-v3.mjs";
 
 const root = process.cwd();
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -10,11 +11,20 @@ const assert = (condition, message) => {
 };
 const hash = (path) => createHash("sha256").update(readFileSync(resolve(root, path))).digest("hex");
 
-const report = json("release/endvera-construction-v1/whole-product-readiness.json");
+export function validateWholeProductReadiness(report = json("release/endvera-construction-v1/whole-product-readiness.json")) {
 assert(report.schemaVersion === 1, "WHOLE_PRODUCT_SCHEMA_INVALID");
 assert(report.status === "LOCAL_WHOLE_PRODUCT_READINESS_VERIFIED", "WHOLE_PRODUCT_STATUS_INVALID");
 assert(report.scope === "WEB_IOS_ANDROID_AND_DISABLED_BACKEND_CONFIGURATION", "WHOLE_PRODUCT_SCOPE_INVALID");
 assert(report.localScopeGaps.length === 0, "LOCAL_SCOPE_GAPS_REMAIN");
+requireExactInputs(report.protectedInputs, [
+  "release/endvera-construction-v1/product-experience-readiness.json",
+  "release/endvera-construction-v1/textassist-public-offer-readiness.json",
+  "release/endvera-construction-v1/mobile-visual-readiness.json",
+  "release/endvera-construction-v1/mobile-assistant-experience-readiness.json",
+  "release/endvera-construction-v1/mobile-build-readiness.json",
+  "release/endvera-construction-v1/environment-contract-v2.json",
+  "release/endvera-construction-v1/web-production-readiness.json",
+], "PROTECTED_INPUT_SET_INVALID");
 
 for (const input of report.protectedInputs) {
   assert(existsSync(resolve(root, input.path)), `PROTECTED_INPUT_MISSING:${input.path}`);
@@ -74,8 +84,11 @@ for (const flag of ["signed", "uploaded", "submitted", "deployed", "published", 
 }
 assert(report.externalEffectCount === 0, "EXTERNAL_EFFECT_DETECTED");
 
-console.log("LOCAL_WHOLE_PRODUCT_READINESS_VERIFIED");
-console.log(`PROTECTED_INPUTS=${report.protectedInputs.length}`);
-console.log(`EXTERNAL_BLOCKERS=${report.externalBlockers.length}`);
-console.log("PROJECT_TERMINAL_STATE=INCOMPLETE");
-console.log("EXTERNAL_EFFECTS=0");
+return { status: "HISTORICAL_STATIC_ATTESTATION_ONLY", historicalStatus: report.status,
+  currentReadiness: "NOT_EVALUATED", protectedInputCount: report.protectedInputs.length,
+  externalBlockerCount: report.externalBlockers.length };
+}
+if (process.argv[1]?.endsWith("validate-endvera-whole-product-readiness.mjs")) {
+  const result=process.argv.includes("--historical")?validateWholeProductReadiness():readCurrentProjection(root);
+  console.log(JSON.stringify(result));
+}

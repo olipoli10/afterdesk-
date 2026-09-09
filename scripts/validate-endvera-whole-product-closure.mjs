@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
+import { readCurrentProjection, requireExactInputs } from "../release/current-projection-v3.mjs";
 
 const root = process.cwd();
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -14,7 +15,22 @@ export function validateWholeProductClosure(report = json("release/endvera-const
   assert(report?.schemaVersion === 1, "CLOSURE_SCHEMA_INVALID");
   assert(report.status === "LOCAL_CREDENTIAL_FREE_PRODUCT_SCOPE_CLOSED", "CLOSURE_STATUS_INVALID");
   assert(report.auditScope === "WEB_IOS_ANDROID_RELEASE_STORE_AND_DISABLED_BACKEND", "CLOSURE_SCOPE_INVALID");
+  const expectedPlatforms = [
+    {target:"WEB",localStatus:"READY_FOR_DEPLOYMENT_AUTHORITY",bilingual:true,deployed:false},
+    {target:"IOS",localStatus:"READY_FOR_SIGNING_AUTHORITY",localExportRouteCount:53,binaryBuilt:false,binaryBlocker:"MACOS_XCODE_REQUIRED"},
+    {target:"ANDROID",localStatus:"READY_FOR_SIGNING_AUTHORITY",localExportRouteCount:53,binaryBuilt:false,binaryBlocker:"ANDROID_SDK_AND_JDK_REQUIRED"},
+  ];
+  assert(JSON.stringify(report.platforms) === JSON.stringify(expectedPlatforms), "CLOSURE_PLATFORM_CLAIM_INVALID");
   assert(Array.isArray(report.localScopeGaps) && report.localScopeGaps.length === 0, "LOCAL_SCOPE_GAPS_REMAIN");
+  requireExactInputs(report.protectedInputs, [
+    "release/endvera-construction-v1/whole-product-readiness.json",
+    "release/endvera-construction-v1/additive-public-brand-readiness.json",
+    "release/endvera-construction-v1/construction-conversion-readiness.json",
+    "release/endvera-construction-v1/backend-activation-readiness.json",
+    "release/endvera-construction-v1/native-preflight-readiness.json",
+    "release/endvera-construction-v1/release-manifest.json",
+    "release/endvera-construction-v1/market-readiness-report.json",
+  ], "PROTECTED_INPUT_SET_INVALID");
 
   const paths = new Set();
   for (const input of report.protectedInputs ?? []) {
@@ -63,14 +79,11 @@ export function validateWholeProductClosure(report = json("release/endvera-const
   }
   assert(report.externalEffectCount === 0, "EXTERNAL_EFFECT_DETECTED");
 
-  return { status: report.status, protectedInputCount: paths.size, externalBlockerCount: blockerCodes.length };
+  return { status: "HISTORICAL_STATIC_ATTESTATION_ONLY", historicalStatus: report.status,
+    currentReadiness: "NOT_EVALUATED", protectedInputCount: paths.size, externalBlockerCount: blockerCodes.length };
 }
 
 if (process.argv[1]?.endsWith("validate-endvera-whole-product-closure.mjs")) {
-  const result = validateWholeProductClosure();
-  console.log(result.status);
-  console.log(`PROTECTED_INPUTS=${result.protectedInputCount}`);
-  console.log(`EXTERNAL_BLOCKERS=${result.externalBlockerCount}`);
-  console.log("PROJECT_TERMINAL_STATE=INCOMPLETE");
-  console.log("EXTERNAL_EFFECTS=0");
+  const result = process.argv.includes("--historical") ? validateWholeProductClosure() : readCurrentProjection(root);
+  console.log(JSON.stringify(result));
 }

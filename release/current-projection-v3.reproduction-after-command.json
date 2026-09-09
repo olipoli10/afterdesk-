@@ -1,0 +1,1 @@
+{"id":"g3-readiness-reproduction-after","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node","args":["release/current-projection-v3.reproduction.mjs"],"command":"node release/current-projection-v3.reproduction.mjs","cwd":".","timeoutMs":60000}
