@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { assertReleaseSourceBinding } from "./endvera-release-source-binding.mjs";
+import { assertReleaseSourceBinding, assertReleaseRegularFile } from "./endvera-release-source-binding.mjs";
 import {
   buildReleaseManifest,
   canonicalJson,
@@ -22,7 +22,7 @@ export function validateReleaseManifest({ repositoryRoot = defaultRepositoryRoot
 }
 
 if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
-  const manifestPath = path.resolve(defaultRepositoryRoot, manifestRelativePath);
+  const manifestPath = assertReleaseRegularFile(defaultRepositoryRoot, manifestRelativePath);
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   const validated = validateReleaseManifest({ manifest });
   const sourceBinding = assertReleaseSourceBinding({ repositoryRoot: defaultRepositoryRoot, manifest: validated });

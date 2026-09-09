@@ -1,8 +1,10 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { lstatSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { assertReleaseSourceBinding } from "./endvera-release-source-binding.mjs";
+import { assertReleaseSourceBinding, assertReleaseRegularFile } from "./endvera-release-source-binding.mjs";
+import { collectPublicRouteInputs, validateMobileReleaseMetadata } from "./endvera-release-source-contracts.mjs";
+import { validateMobileBuildPreparation } from "./endvera-mobile-build-contract.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 export const defaultRepositoryRoot = path.resolve(scriptDirectory, "..");
@@ -45,11 +47,11 @@ export function assertRepositoryPath(repositoryRoot, relativePath) {
 }
 
 function parseJson(repositoryRoot, relativePath, readFile = readFileSync) {
-  const { resolved } = assertRepositoryPath(repositoryRoot, relativePath);
+  assertRepositoryPath(repositoryRoot, relativePath);
   try {
-    return JSON.parse(readFile(resolved, "utf8"));
+    return JSON.parse(readFile(assertReleaseRegularFile(repositoryRoot,relativePath), "utf8"));
   } catch (error) {
-    if (!existsSync(resolved)) throw new Error("RELEASE_INPUT_MISSING");
+    if (error.code === "ENOENT") throw new Error("RELEASE_INPUT_MISSING");
     throw error;
   }
 }
@@ -89,7 +91,7 @@ function validateDefinition(definition, appConfig, environmentContract, listings
   const ios = definition.identities.find((item) => item.target === "IOS");
   const android = definition.identities.find((item) => item.target === "ANDROID");
   if (definition.identities.find((item) => item.target === "WEB")?.semanticVersion !== webPackage.version) throw new Error("RELEASE_WEB_IDENTITY_MISMATCH");
-  if (!expo || expo.name !== "ENDVERA" || expo.slug !== "endvera" || ios.slug !== expo.slug || android.slug !== expo.slug || expo.version !== ios.semanticVersion || expo.version !== android.semanticVersion || expo.scheme !== ios.scheme || expo.scheme !== android.scheme || expo.icon !== "./assets/images/icon.png" || expo.ios?.icon !== expo.icon || expo.ios?.bundleIdentifier !== ios.bundleIdentifier || expo.ios?.buildNumber !== ios.buildNumber || expo.android?.package !== android.package || expo.android?.versionCode !== android.versionCode) throw new Error("RELEASE_IDENTITY_MISMATCH");
+  if (!expo || expo.name !== "ENDVERA" || definition.productName !== expo.name || expo.slug !== "endvera" || ios.slug !== expo.slug || android.slug !== expo.slug || expo.version !== ios.semanticVersion || expo.version !== android.semanticVersion || expo.scheme !== ios.scheme || expo.scheme !== android.scheme || expo.icon !== "./assets/images/icon.png" || expo.ios?.icon !== expo.icon || expo.ios?.bundleIdentifier !== ios.bundleIdentifier || expo.ios?.buildNumber !== ios.buildNumber || expo.android?.package !== android.package || expo.android?.versionCode !== android.versionCode) throw new Error("RELEASE_IDENTITY_MISMATCH");
   if (environmentContract.secretValuesSerializable !== false || environmentContract.localProviderValuesAllowed !== false || environmentContract.externalReleaseAuthorized !== false || "values" in environmentContract) throw new Error("RELEASE_ENVIRONMENT_BOUNDARY_INVALID");
   const [french, english] = listings;
   if (french.locale !== "fr-CA" || english.locale !== "en-CA" || JSON.stringify(french.capabilityCodes) !== JSON.stringify(english.capabilityCodes) || JSON.stringify(french.unavailableCapabilityCodes) !== JSON.stringify(english.unavailableCapabilityCodes)) throw new Error("RELEASE_LOCALE_PARITY_MISMATCH");
@@ -100,7 +102,7 @@ function validateDefinition(definition, appConfig, environmentContract, listings
   if (submissionGaps.storeSubmissionReady !== false || submissionGaps.productionDeploymentReady !== false || !submissionGaps.unresolved?.some((item) => item.code === "FINAL_BRAND_ASSETS") || !submissionGaps.unresolved?.some((item) => item.code === "SIGNING_CUSTODY")) throw new Error("RELEASE_SUBMISSION_GAPS_INCOMPLETE");
 }
 
-export function packageInputPaths(definition) {
+export function packageInputPaths(definition, publicRouteInputs = []) {
   return [
     definitionRelativePath,
     definition.environmentContractPath,
@@ -118,9 +120,15 @@ export function packageInputPaths(definition) {
     "scripts/generate-endvera-release-package.mjs",
     "scripts/validate-endvera-release-package.mjs",
     "scripts/endvera-release-source-binding.mjs",
+    "scripts/endvera-release-source-contracts.mjs",
+    "scripts/endvera-mobile-build-contract.mjs",
+    "scripts/validate-endvera-mobile-build-readiness.mjs",
+    "apps/mobile/eas.json",
+    "release/endvera-construction-v1/mobile-build-readiness.json",
+    ...publicRouteInputs,
     ...definition.assets.map((asset) => asset.path),
     ...definition.supportingAssetPaths,
-  ].map((item) => item.replace(/\\/gu, "/")).sort();
+  ].map((item) => item.replace(/\\/gu, "/")).filter((item,index,all)=>all.indexOf(item)===index).sort();
 }
 
 // Pure deterministic projection for tests and preparation; source fields here
@@ -135,18 +143,22 @@ export function buildReleaseManifest({ repositoryRoot = defaultRepositoryRoot, s
   const appConfig = parseJson(repositoryRoot, "apps/mobile/app.json", readFile);
   const webPackage = parseJson(repositoryRoot, "package.json", readFile);
   validateDefinition(definition, appConfig, environmentContract, listings, disclosure, submissionGaps, webPackage);
+  const mobileSourcePath = "apps/mobile/src/lib/release.ts";
+  validateMobileReleaseMetadata(String(readFile(assertReleaseRegularFile(repositoryRoot,mobileSourcePath),"utf8")),definition);
+  validateMobileBuildPreparation(appConfig.expo,parseJson(repositoryRoot,"apps/mobile/eas.json",readFile),parseJson(repositoryRoot,"release/endvera-construction-v1/mobile-build-readiness.json",readFile));
+  const publicRouteInputs = collectPublicRouteInputs(repositoryRoot,definition,readFile);
 
   for (const asset of definition.assets) {
-    const { resolved } = assertRepositoryPath(repositoryRoot, asset.path);
-    const bytes = readFile(resolved);
+    assertRepositoryPath(repositoryRoot, asset.path);
+    const bytes = readFile(assertReleaseRegularFile(repositoryRoot,asset.path));
     const dimensions = pngDimensions(bytes);
     if (dimensions.width !== asset.width || dimensions.height !== asset.height) throw new Error("RELEASE_ASSET_DIMENSION_MISMATCH");
   }
 
-  const inputs = packageInputPaths(definition).map((relativePath) => {
-    const { resolved } = assertRepositoryPath(repositoryRoot, relativePath);
+  const inputs = packageInputPaths(definition,publicRouteInputs).map((relativePath) => {
+    assertRepositoryPath(repositoryRoot, relativePath);
     let bytes;
-    try { bytes = readFile(resolved); } catch { throw new Error("RELEASE_INPUT_MISSING"); }
+    try { bytes = readFile(assertReleaseRegularFile(repositoryRoot,relativePath)); } catch(error) { if(error.code==='ENOENT')throw new Error("RELEASE_INPUT_MISSING");throw error; }
     if (!Buffer.isBuffer(bytes)) bytes = Buffer.from(bytes);
     assertNoSecretMaterial(bytes);
     return { path: relativePath, byteSize: bytes.length, sha256: sha256(bytes) };
@@ -175,6 +187,8 @@ export function writeReleaseManifest(options) {
   const manifest = buildReleaseManifest(options);
   assertReleaseSourceBinding({ repositoryRoot: options.repositoryRoot ?? defaultRepositoryRoot, manifest });
   const { resolved } = assertRepositoryPath(options.repositoryRoot ?? defaultRepositoryRoot, manifestRelativePath);
+  // A pre-existing output must not redirect this verified write via a link.
+  if(lstatSync(resolved,{throwIfNoEntry:false}))assertReleaseRegularFile(options.repositoryRoot ?? defaultRepositoryRoot,manifestRelativePath);
   mkdirSync(path.dirname(resolved), { recursive: true });
   const rendered = `${JSON.stringify(manifest, null, 2)}\n`;
   writeFileSync(resolved, rendered, "utf8");

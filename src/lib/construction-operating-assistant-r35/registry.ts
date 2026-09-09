@@ -8,12 +8,7 @@ export const RELEASE_PACKAGE_VERSION = 1 as const;
 export const RELEASE_TARGETS = ["WEB", "IOS", "ANDROID"] as const;
 export const RELEASE_MODES = ["LOCAL_INTERNAL", "EXTERNAL_RELEASE"] as const;
 export const RELEASE_READINESS_CEILING = "LOCAL_PACKAGE_READY" as const;
-export const RELEASE_PUBLIC_PATHS = {
-  privacy: "/privacy",
-  security: "/security",
-  support: "/construction/support",
-  accountDeletion: "/account-deletion",
-} as const;
+export const RELEASE_PUBLIC_PATHS = releaseDefinitionJson.publicPaths;
 export const RELEASE_BOUNDARY = releaseBoundarySchema.parse(releaseDefinitionJson.boundary);
 export const RELEASE_LISTINGS = {
   "fr-CA": storeListingSchema.parse(frenchListingJson),

@@ -1,8 +1,9 @@
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { posix } from "node:path";
+import { assertReleaseRegularFile } from "./endvera-release-source-binding.mjs";
 
 const root = process.cwd();
-const read = (path) => readFileSync(resolve(root, path), "utf8");
+const read = (path) => readFileSync(assertReleaseRegularFile(root,path), "utf8");
 const json = (path) => JSON.parse(read(path));
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 
@@ -15,9 +16,10 @@ const mobile = json("release/endvera-construction-v1/mobile-assistant-experience
 assert(app.name === "ENDVERA" && app.slug === "endvera" && app.scheme === "endvera", "NATIVE_APP_IDENTITY_INVALID");
 assert(app.version === '0.1.1' && app.android.versionCode === 3, "NATIVE_V3_IDENTITY_INVALID");
 assert(app.ios.bundleIdentifier === "ai.endvera.mobile" && app.android.package === "ai.endvera.mobile", "NATIVE_PLATFORM_IDENTITY_INVALID");
-assert(app.ios.icon === app.icon && existsSync(resolve(root, "apps/mobile", app.icon)), "NATIVE_IOS_ICON_INVALID");
+assert(app.ios.icon === app.icon, "NATIVE_IOS_ICON_INVALID");
+assertReleaseRegularFile(root,posix.join("apps/mobile",app.icon));
 for (const path of [app.android.adaptiveIcon.foregroundImage, app.android.adaptiveIcon.backgroundImage, app.android.adaptiveIcon.monochromeImage, app.web.favicon]) {
-  assert(existsSync(resolve(root, "apps/mobile", path)), `NATIVE_ASSET_MISSING:${path}`);
+  assertReleaseRegularFile(root,posix.join("apps/mobile",path));
 }
 
 assert(app.locales.fr === "./locales/fr.json" && app.locales.en === "./locales/en.json", "NATIVE_LOCALE_MAP_INVALID");
