@@ -1,0 +1,14 @@
+{
+  "id": "g7-double-approval",
+  "phase": "G7",
+  "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 DOUBLE_APPROVAL",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs",
+    "G7",
+    "DOUBLE_APPROVAL"
+  ],
+  "cwd": ".",
+  "timeoutMs": 3600000
+}

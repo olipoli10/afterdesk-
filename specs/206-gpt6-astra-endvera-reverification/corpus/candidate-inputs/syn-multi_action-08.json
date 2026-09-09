@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-multi_action-08",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Lis demain, puis prépare une tâche vérifier le calendrier.",
+  "context": {
+    "events": []
+  }
+}

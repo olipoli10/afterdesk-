@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-research-09",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Est-ce que A cause la hausse des ventes?",
+  "context": {
+    "sources": [
+      {
+        "id": "syn-s1",
+        "text": "Observation non randomisée : utilisateurs de A, ventes plus élevées de 9 %."
+      }
+    ]
+  }
+}

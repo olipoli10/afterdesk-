@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-recovery-05",
+  "riskLevel": "STANDARD",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "ANSWER",
+    "actions": [],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [
+      "settled_cost"
+    ],
+    "executionAuthorized": false
+  }
+}

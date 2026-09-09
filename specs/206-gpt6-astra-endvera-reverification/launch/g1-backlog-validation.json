@@ -1,0 +1,14 @@
+{
+  "id": "g1-backlog-validation",
+  "phase": "G1",
+  "classification": "VALIDATION",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G1 BACKLOG_VALIDATION",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs",
+    "G1",
+    "BACKLOG_VALIDATION"
+  ],
+  "cwd": ".",
+  "timeoutMs": 3600000
+}

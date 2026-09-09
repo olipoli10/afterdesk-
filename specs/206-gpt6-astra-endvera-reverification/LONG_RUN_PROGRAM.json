@@ -40,7 +40,7 @@
       "id": "G0",
       "title": "Freeze campaign inputs",
       "objective": "Freeze campaign inputs",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "estimatedMinutes": 120,
       "dependencies": [],
       "allowedScope": [
@@ -50,16 +50,16 @@
         "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G0"
       ],
       "evidencePaths": [
-        "specs/206-gpt6-astra-endvera-reverification/evidence/G0.json"
+        "evidence/G0.json"
       ],
-      "result": "",
-      "completedAtUtc": ""
+      "result": "Kit preparation validated; no product baseline or runtime provider quality claimed.",
+      "completedAtUtc": "2026-09-09T13:43:00Z"
     },
     {
       "id": "G1",
       "title": "Observe deterministic baseline",
       "objective": "Observe deterministic baseline",
-      "status": "OPEN",
+      "status": "IN_PROGRESS",
       "estimatedMinutes": 90,
       "dependencies": [
         "G0"
@@ -71,7 +71,7 @@
         "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G1"
       ],
       "evidencePaths": [
-        "specs/206-gpt6-astra-endvera-reverification/evidence/G1.json"
+        "evidence/G1.json"
       ],
       "result": "",
       "completedAtUtc": ""
@@ -92,7 +92,7 @@
         "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G2"
       ],
       "evidencePaths": [
-        "specs/206-gpt6-astra-endvera-reverification/evidence/G2.json"
+        "evidence/G2.json"
       ],
       "result": "",
       "completedAtUtc": ""
@@ -109,14 +109,14 @@
       "allowedScope": [
         "specs/206-gpt6-astra-endvera-reverification",
         "src",
-        "tests",
+        "test",
         "apps/mobile"
       ],
       "acceptanceCommands": [
         "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G3"
       ],
       "evidencePaths": [
-        "specs/206-gpt6-astra-endvera-reverification/evidence/G3.json"
+        "evidence/G3.json"
       ],
       "result": "",
       "completedAtUtc": ""
@@ -133,16 +133,16 @@
       "allowedScope": [
         "specs/206-gpt6-astra-endvera-reverification",
         "src",
-        "tests",
+        "test",
         "apps/mobile"
       ],
       "acceptanceCommands": [
         "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G5"
       ],
       "evidencePaths": [
-        "specs/206-gpt6-astra-endvera-reverification/evidence/G5.json",
-        "specs/206-gpt6-astra-endvera-reverification/evidence/G4.json",
-        "specs/206-gpt6-astra-endvera-reverification/evidence/G6.json"
+        "evidence/G5.json",
+        "evidence/G4.json",
+        "evidence/G6.json"
       ],
       "result": "",
       "completedAtUtc": ""
@@ -163,7 +163,7 @@
         "node specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs specs/206-gpt6-astra-endvera-reverification/evidence/seal.json C:\\dev\\afterdesk-project-brain"
       ],
       "evidencePaths": [
-        "specs/206-gpt6-astra-endvera-reverification/evidence/G7.json"
+        "evidence/G7.json"
       ],
       "result": "",
       "completedAtUtc": ""

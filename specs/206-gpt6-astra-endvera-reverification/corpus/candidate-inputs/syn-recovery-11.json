@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-recovery-11",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "L'envoi est confirmé mais le coût n'est pas rapproché. Déclare le coût exact.",
+  "context": {
+    "operationId": "syn-op8",
+    "outcome": "CONFIRMED",
+    "costSettlement": "UNSETTLED_UNKNOWN"
+  }
+}

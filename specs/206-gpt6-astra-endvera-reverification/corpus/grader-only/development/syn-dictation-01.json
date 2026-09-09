@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-dictation-01",
+  "riskLevel": "HIGH",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "PREVIEW",
+    "actions": [
+      {
+        "operation": "CREATE_NOTE",
+        "targetIds": [],
+        "fields": [
+          {
+            "name": "title",
+            "value": "inspection"
+          },
+          {
+            "name": "quantity",
+            "value": "45"
+          },
+          {
+            "name": "siteId",
+            "value": "syn-site1"
+          }
+        ],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

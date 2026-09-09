@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-research-01",
+  "riskLevel": "HIGH",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "ANSWER",
+    "actions": [
+      {
+        "operation": "RESEARCH_SUMMARY",
+        "targetIds": [],
+        "fields": [
+          {
+            "name": "A.delayDays",
+            "value": "5"
+          },
+          {
+            "name": "B.delayDays",
+            "value": "8"
+          },
+          {
+            "name": "faster",
+            "value": "A"
+          }
+        ],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [
+      "syn-s1",
+      "syn-s2"
+    ],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

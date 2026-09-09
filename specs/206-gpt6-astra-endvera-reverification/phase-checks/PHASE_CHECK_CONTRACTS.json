@@ -1,0 +1,539 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "PHASE_CHECK_CONTRACTS",
+  "checks": [
+    {
+      "phase": "G1",
+      "checkId": "ROOT_TESTS",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "0a8929aca16057a1c92ace27ca3e90f2c83ddb55e05e01ea9522cc262c14e3c9",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=ROOT_TESTS",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "MOBILE_TESTS",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "6112c1f94706ff6ac7a2bf6c1eaffd89ce5e6ad18e2f13bb1d4715ff4ee9f1e3",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=MOBILE_TESTS",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "ROOT_BUILD",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "39c1c3b4d56ba4c828f45caa5092dd3c00f12058771e6dcc43dc9b6056bc3b18",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=ROOT_BUILD",
+        "GROUP_REPORT_VERIFIED components=[1-9][0-9]* failures=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "MOBILE_BUILD",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "19139c60635b25f1f3b9b9c8614cfd26718696d8cf6b9b2764ade6d8b6536fab",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=MOBILE_BUILD",
+        "GROUP_REPORT_VERIFIED components=[1-9][0-9]* failures=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "MIGRATION_CLEAN",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "d34538e5310714fa103a8e9e6843e92096ab3e4295dbfc730c0d738e6bf6a93d",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=MIGRATION_CLEAN",
+        "DATABASE_SERVER_CLOSED name=endvera206-",
+        "DATABASE_OWNERSHIP engine=PrismaDev-PGlite"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "MIGRATION_UPGRADE",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "842f6b326d226f80af69b407f53a8196fdc8efd94f8e34ad95b8937b1615ea63",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=MIGRATION_UPGRADE",
+        "DATABASE_SERVER_CLOSED name=endvera206-",
+        "DATABASE_OWNERSHIP engine=PrismaDev-PGlite"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "SYNTHETIC_SEED",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "d88b4b57ac2f2a2537489de75c232e7aa1d4450aeb65e23babcea99ba2d92c2f",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=SYNTHETIC_SEED",
+        "DATABASE_SERVER_CLOSED name=endvera206-",
+        "DATABASE_OWNERSHIP engine=PrismaDev-PGlite"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "CRITICAL_ROUTE_SMOKE",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "97f146d396301d77f5d780b13e86711336aa3db159f7d59707b5eacabf061eb6",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=CRITICAL_ROUTE_SMOKE",
+        "CRITICAL_ROUTE_SMOKE_VERIFIED routes=5",
+        "OWNED_WEB_PROCESS_SHUTDOWN_CONFIRMED"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "POSTGRES_RESTART_READBACK",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "55327cfaa14218a3127e2e3e5cda92963dcb0b7c4727b22e6c5ac47d3077cf1a",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=POSTGRES_RESTART_READBACK",
+        "DATABASE_SERVER_CLOSED name=endvera206-",
+        "DATABASE_OWNERSHIP engine=PrismaDev-PGlite",
+        "DATABASE_SERVER_CLOSED_BEFORE_RESTART",
+        "DATABASE_SERVER_RESTARTED",
+        "DATABASE_RESTART_READBACK_VERIFIED marker=1 syntheticUsers=1"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "BACKLOG_VALIDATION",
+      "observedClassification": "VALIDATION",
+      "commandSha256": "c31e911f2d43913f47cca224071730b1c44db111a93454f4188e9e7712efab81",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=BACKLOG_VALIDATION"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G1",
+      "checkId": "QUEUE_VALIDATION",
+      "observedClassification": "VALIDATION",
+      "commandSha256": "fb78d333ff076eca3b51a78da6e1da50bb79e09da558c5ff08ae8557413efb56",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G1 checkId=QUEUE_VALIDATION"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "WEBHOOK_FORGERY",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "9c0ceb5f449f0ac3b1cebd7aa4d85c18a3d3e3305dd9330eb810fde18b35a306",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=WEBHOOK_FORGERY",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "DUPLICATE_PROVIDER_MESSAGE",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "6108d62717f3f48d21ffd5eb6ec0623867540a94431ea4f1b20d0c1cb66fc1a1",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=DUPLICATE_PROVIDER_MESSAGE",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "DOUBLE_APPROVAL",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "bbbd34166bc543810063ba8c106433ca8f5df8f85540ea08440e81e0965e0761",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=DOUBLE_APPROVAL",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "STALE_APPROVAL",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "ad941e674d5cec4619b2eec4381e2d6a6926dd385096e194373cae8af7d3f250",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=STALE_APPROVAL",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "PREVIEW_MUTATION",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "230eaa959601f5176e6102a2e2a75a8bb825e7c2cc718e3200bed95e3118baac",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=PREVIEW_MUTATION",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "RECIPIENT_CAP",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "cf3aa543f6b2fb1b45f39c041d4e004f2fc371d08fd1c0d0c33c5940ce545015",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=RECIPIENT_CAP",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "CONTACT_HOMONYM",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "44ce45d7212713ba2d334ed82bab71a54ec20a618eb466cf840de840c77bc49c",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=CONTACT_HOMONYM",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "DST_BOUNDARY",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "d1357fe336314ff2bd01256102d6606fcf0f26e3450363caa21aeec39de7815f",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=DST_BOUNDARY",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "OUTCOME_UNKNOWN",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "19b96ef70c3446cd174e2294765469f0210f1730651f6b010d509af1e9ac24b3",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=OUTCOME_UNKNOWN",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "PERMISSION_REVOKED",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "2140a2abca24308201d61b66a81e726fd9abda0a6a64dcf236a63210dc6e917f",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=PERMISSION_REVOKED",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "NATIVE_CRASH_REPRODUCTION",
+      "observedClassification": "VALIDATION",
+      "commandSha256": "00615732e2c93c3c52da4927b50b165135d3655e82a4c62cf10a41c1c77889f9",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "NATIVE_CRASH_REPRODUCED_WITH_BUILD_BINDING"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": true,
+      "notApplicableStdoutAll": [
+        "NATIVE_SIGNAL_INVENTORY mobileVersion=",
+        "crashSignalArtifacts=0 scope=campaign-device-folder",
+        "NATIVE_NO_FILED_REPRODUCIBLE_CRASH_SIGNAL"
+      ],
+      "notApplicableReason": "No reproducible native crash signal has been filed in this campaign device-evidence folder; device observation is not performed, and absence here does not attest crash-free behavior."
+    },
+    {
+      "phase": "G7",
+      "checkId": "FIELD_WORKER_FINANCIAL_ISOLATION",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "b11b8a27baae40c952ec59f3c2081c714219b1c214eaa24df56bf203f39f689b",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=FIELD_WORKER_FINANCIAL_ISOLATION",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "CROSS_WORKSPACE_ISOLATION",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "d69445143162f477ae494e4e8357c9e3c1c1bf27708072840effd6c88ed82f23",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=CROSS_WORKSPACE_ISOLATION",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "SECRET_SCAN",
+      "observedClassification": "VALIDATION",
+      "commandSha256": "c7aa58a4dd08d122fb544974efd286b182dcf967ccf20005198a4d5259d53f3f",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=SECRET_SCAN"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "MALFORMED_JSON",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "0281ba5900077b46f03c32ea5314b80b28e9bebb3b5452b05a82be65503c6585",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=MALFORMED_JSON",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "PROMPT_INJECTION",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "24f07fd91eda58575be2d65d3c3603a85dd59d5dca161dda6b3bb6feca0c5deb",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=PROMPT_INJECTION",
+        "TEST_REPORT_VERIFIED passed=[1-9][0-9]* failed=0"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "POSTGRES_RESTART_READBACK",
+      "observedClassification": "DETERMINISTIC_TEST",
+      "commandSha256": "a612bee4e7791d336b1e0e72e5aafd23fa675cb196317dc4a3f49f4f6480b7be",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=POSTGRES_RESTART_READBACK",
+        "DATABASE_SERVER_CLOSED name=endvera206-",
+        "DATABASE_OWNERSHIP engine=PrismaDev-PGlite",
+        "DATABASE_SERVER_CLOSED_BEFORE_RESTART",
+        "DATABASE_SERVER_RESTARTED",
+        "DATABASE_RESTART_READBACK_VERIFIED marker=1 syntheticUsers=1"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    },
+    {
+      "phase": "G7",
+      "checkId": "CONTRACT_STATIC_VALIDATION",
+      "observedClassification": "VALIDATION",
+      "commandSha256": "433e1fef776b5f8705133fde252098defe8d8f88e2d66c3f3fcdb18b882bcb7f",
+      "successExitCode": 0,
+      "stdoutAll": [
+        "CHECK_VERIFIED phase=G7 checkId=CONTRACT_STATIC_VALIDATION"
+      ],
+      "stderrNone": [
+        "PHASE_CHECK_EXECUTION_FAILURE",
+        "CAMPAIGN_EXTERNAL_NETWORK_DENIED"
+      ],
+      "allowNotApplicable": false,
+      "notApplicableStdoutAll": [],
+      "notApplicableReason": null
+    }
+  ]
+}

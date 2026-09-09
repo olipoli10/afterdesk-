@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-calendar-03",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Déplace ma rencontre de demain à 10 h.",
+  "context": {
+    "events": [
+      {
+        "id": "syn-e1",
+        "day": "2026-09-10",
+        "title": "rencontre"
+      },
+      {
+        "id": "syn-e2",
+        "day": "2026-09-10",
+        "title": "rencontre"
+      }
+    ]
+  }
+}

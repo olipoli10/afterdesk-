@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-recovery-02",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Le fournisseur a accusé réception de syn-op1. Renvoie le même événement reçu.",
+  "context": {
+    "operationId": "syn-op1",
+    "outcome": "CONFIRMED",
+    "duplicate": true
+  }
+}

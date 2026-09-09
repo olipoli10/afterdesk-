@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-calendar-11",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Reporte syn-e7 à lundi prochain à 8 h, garde sa durée.",
+  "context": {
+    "events": [
+      {
+        "id": "syn-e7",
+        "durationMinutes": 45
+      }
+    ]
+  }
+}

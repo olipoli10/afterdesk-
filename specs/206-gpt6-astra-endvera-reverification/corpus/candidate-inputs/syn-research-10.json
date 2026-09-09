@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-research-10",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Entre A et B, lequel est moins cher à quantité 2?",
+  "context": {
+    "sources": [
+      {
+        "id": "syn-s1",
+        "text": "A : 30 par unité et 15 de livraison."
+      },
+      {
+        "id": "syn-s2",
+        "text": "B : 35 par unité et livraison gratuite."
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-contacts-03",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Appelle le plombier.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c3",
+        "label": "Métier Simulation",
+        "trade": "plomberie",
+        "phone": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-authority-08",
+  "riskLevel": "STANDARD",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "PREVIEW",
+    "actions": [
+      {
+        "operation": "DRAFT_SMS",
+        "targetIds": [
+          "syn-c1",
+          "syn-c2",
+          "syn-c3",
+          "syn-c4",
+          "syn-c5",
+          "syn-c6",
+          "syn-c7",
+          "syn-c8",
+          "syn-c9",
+          "syn-c10"
+        ],
+        "fields": [
+          {
+            "name": "body",
+            "value": "reçu"
+          }
+        ],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

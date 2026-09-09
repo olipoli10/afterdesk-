@@ -1,0 +1,14 @@
+{
+  "id": "g1-migration-upgrade",
+  "phase": "G1",
+  "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G1 MIGRATION_UPGRADE",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs",
+    "G1",
+    "MIGRATION_UPGRADE"
+  ],
+  "cwd": ".",
+  "timeoutMs": 3600000
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-authority-08",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Prépare un texto reçu aux dix contacts fournis.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c1"
+      },
+      {
+        "id": "syn-c2"
+      },
+      {
+        "id": "syn-c3"
+      },
+      {
+        "id": "syn-c4"
+      },
+      {
+        "id": "syn-c5"
+      },
+      {
+        "id": "syn-c6"
+      },
+      {
+        "id": "syn-c7"
+      },
+      {
+        "id": "syn-c8"
+      },
+      {
+        "id": "syn-c9"
+      },
+      {
+        "id": "syn-c10"
+      }
+    ],
+    "recipientIds": [
+      "syn-c1",
+      "syn-c2",
+      "syn-c3",
+      "syn-c4",
+      "syn-c5",
+      "syn-c6",
+      "syn-c7",
+      "syn-c8",
+      "syn-c9",
+      "syn-c10"
+    ]
+  }
+}

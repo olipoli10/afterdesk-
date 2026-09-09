@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-research-07",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Donne la source qui prouve la conformité légale.",
+  "context": {
+    "sources": [
+      {
+        "id": "syn-s1",
+        "text": "Notre service est conforme, selon notre publicité."
+      }
+    ]
+  }
+}

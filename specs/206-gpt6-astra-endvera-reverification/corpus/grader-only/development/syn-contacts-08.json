@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-contacts-08",
+  "riskLevel": "STANDARD",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "ANSWER",
+    "actions": [
+      {
+        "operation": "READ_CONTACT",
+        "targetIds": [
+          "syn-c1"
+        ],
+        "fields": [],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

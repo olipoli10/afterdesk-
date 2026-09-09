@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-calendar-12",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Booke la visite demain à 9 h, heure de Vancouver, pendant 30 minutes.",
+  "context": {
+    "events": []
+  }
+}

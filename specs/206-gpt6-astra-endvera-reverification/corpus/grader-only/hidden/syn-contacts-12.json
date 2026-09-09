@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-contacts-12",
+  "riskLevel": "HIGH",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "CLARIFY",
+    "actions": [],
+    "clarificationFields": [
+      "recipient",
+      "body"
+    ],
+    "evidenceRefs": [],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

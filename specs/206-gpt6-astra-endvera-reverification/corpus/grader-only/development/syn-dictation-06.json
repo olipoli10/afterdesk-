@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-dictation-06",
+  "riskLevel": "STANDARD",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "PREVIEW",
+    "actions": [
+      {
+        "operation": "CREATE_NOTE",
+        "targetIds": [],
+        "fields": [
+          {
+            "name": "title",
+            "value": "croquis"
+          },
+          {
+            "name": "quantity",
+            "value": "3"
+          },
+          {
+            "name": "siteId",
+            "value": "syn-site6"
+          }
+        ],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

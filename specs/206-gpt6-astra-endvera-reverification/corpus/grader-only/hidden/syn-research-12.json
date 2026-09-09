@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-research-12",
+  "riskLevel": "HIGH",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "ANSWER",
+    "actions": [
+      {
+        "operation": "RESEARCH_SUMMARY",
+        "targetIds": [],
+        "fields": [
+          {
+            "name": "claim_supported",
+            "value": "false"
+          }
+        ],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [
+      "syn-s9"
+    ],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

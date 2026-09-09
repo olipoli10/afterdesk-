@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-research-01",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Compare les délais de A et B selon les documents joints.",
+  "context": {
+    "sources": [
+      {
+        "id": "syn-s1",
+        "text": "A : délai annoncé 5 jours."
+      },
+      {
+        "id": "syn-s2",
+        "text": "B : délai annoncé 8 jours."
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-multi_action-01",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Prépare un courriel à syn-c1 : confirmé. Puis une tâche intitulée appeler le fournisseur.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c1",
+        "email": "syn-c1@example.invalid"
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-recovery-04",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Le processus a redémarré; reprends l'état de syn-op1.",
+  "context": {
+    "operationId": "syn-op1",
+    "postgresState": "PENDING"
+  }
+}

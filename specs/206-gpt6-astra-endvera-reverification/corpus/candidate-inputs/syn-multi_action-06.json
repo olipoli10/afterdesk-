@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-multi_action-06",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Prépare le même texto « reçu » pour syn-c1 et syn-c2, une seule fois chacun.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c1"
+      },
+      {
+        "id": "syn-c2"
+      }
+    ]
+  }
+}

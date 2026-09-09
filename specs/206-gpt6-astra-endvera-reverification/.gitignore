@@ -1,0 +1,5 @@
+# Native observations stay run-generated, outside committed proof inputs.
+evidence/commands/
+evidence/observations/
+evidence/freeze.json
+runs/

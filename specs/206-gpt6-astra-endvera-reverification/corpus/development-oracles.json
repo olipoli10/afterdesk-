@@ -1,0 +1,408 @@
+{
+  "kind": "DEVELOPMENT_ORACLE_INDEX",
+  "schemaVersion": "1.0",
+  "pilotCaseIds": [
+    "syn-contacts-01",
+    "syn-contacts-02",
+    "syn-calendar-01",
+    "syn-calendar-02",
+    "syn-research-01",
+    "syn-research-02",
+    "syn-multi_action-01",
+    "syn-multi_action-02",
+    "syn-authority-01",
+    "syn-authority-02",
+    "syn-recovery-01",
+    "syn-recovery-02",
+    "syn-privacy-01",
+    "syn-privacy-02",
+    "syn-dictation-01",
+    "syn-dictation-02"
+  ],
+  "entries": [
+    {
+      "caseId": "syn-contacts-01",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-contacts-01.json",
+      "oracleEntrySha256": "124a26199f3e817ffda5a79ffa9dcaa1127439dc7a687a43c1a05e8f6be51f2a"
+    },
+    {
+      "caseId": "syn-contacts-02",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-contacts-02.json",
+      "oracleEntrySha256": "3d0c23b3cd57ecbd649df8b57d60d786492d6f59ea0253b990bf2beeb9eace74"
+    },
+    {
+      "caseId": "syn-contacts-03",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-contacts-03.json",
+      "oracleEntrySha256": "85d81d231a5ba9fc986c7e0e142111e4fb1b655a639f8cb75b4233002fdcedc8"
+    },
+    {
+      "caseId": "syn-contacts-04",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-contacts-04.json",
+      "oracleEntrySha256": "d57f2ed571c497ba5c2a4e9f28c7332ca54913fbf1d39f360affc63f03d98134"
+    },
+    {
+      "caseId": "syn-contacts-05",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-contacts-05.json",
+      "oracleEntrySha256": "923e94a4383d6a22a4897ae3a30e942fa1834417f9f24fcc00d70bfc42033dff"
+    },
+    {
+      "caseId": "syn-contacts-06",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-contacts-06.json",
+      "oracleEntrySha256": "ca515167337324eaffd50a823f1d41a3267f109bf15b6ea139bfe7589852cf96"
+    },
+    {
+      "caseId": "syn-contacts-07",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-contacts-07.json",
+      "oracleEntrySha256": "ba3db1cd717fe883671ece833df6199c6147c75a846d763f0c42768b837c8d78"
+    },
+    {
+      "caseId": "syn-contacts-08",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-contacts-08.json",
+      "oracleEntrySha256": "3612b7d8a62f19d4e8e49e67edbd0ee879b14d704c39747f7d11aa3117e8330f"
+    },
+    {
+      "caseId": "syn-calendar-01",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-calendar-01.json",
+      "oracleEntrySha256": "5cdb385c5af77885d42c5e82624c8e3aa4e622a8ef41d6f3a86d1a1ded17e67d"
+    },
+    {
+      "caseId": "syn-calendar-02",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-calendar-02.json",
+      "oracleEntrySha256": "13343f4d8027d76c525bd245e61ccdcc271edfbd7959cc69151ffd3364347c70"
+    },
+    {
+      "caseId": "syn-calendar-03",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-calendar-03.json",
+      "oracleEntrySha256": "e9a7d2c6874d06e0555339f727c62e69f5b0340cadadfd6fbb0429f4f6fb5bdd"
+    },
+    {
+      "caseId": "syn-calendar-04",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-calendar-04.json",
+      "oracleEntrySha256": "470cb075b710a90a4dd34a9f7c5b3669769ea52f95d9130884ac3ccb609ae677"
+    },
+    {
+      "caseId": "syn-calendar-05",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-calendar-05.json",
+      "oracleEntrySha256": "fc6f7f52c8873c2740f0be4b48f0d3eecace31d47e86cd27973dcd4265c0b366"
+    },
+    {
+      "caseId": "syn-calendar-06",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-calendar-06.json",
+      "oracleEntrySha256": "6ec33a29d0ecf88ac134db35b5e7e078c60e8eb9c4f91548f84dd6152419da9b"
+    },
+    {
+      "caseId": "syn-calendar-07",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-calendar-07.json",
+      "oracleEntrySha256": "2d3fc103bf97d669d90a67686e4cd4eea4f79ca72bca8c6efce8dc10b17aa6ba"
+    },
+    {
+      "caseId": "syn-calendar-08",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-calendar-08.json",
+      "oracleEntrySha256": "6e29c33b58e9b565d107f22a56b6d05852a2fefd5acbec4f1abf73760e7920b6"
+    },
+    {
+      "caseId": "syn-research-01",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-research-01.json",
+      "oracleEntrySha256": "41b2b674b1957e59a99ec4f27e2ebb56bc1d3cf361042c0a2259fb8e926435df"
+    },
+    {
+      "caseId": "syn-research-02",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-research-02.json",
+      "oracleEntrySha256": "c08b460c1699637ff1d8ffd0ca3be56ffb72e74cdc9a5dbd70cf146ad7dee677"
+    },
+    {
+      "caseId": "syn-research-03",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-research-03.json",
+      "oracleEntrySha256": "b1e889d2cc44a5511b6b8eba614ef04b60d670d350cdf3110d3eb540482dc7ab"
+    },
+    {
+      "caseId": "syn-research-04",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-research-04.json",
+      "oracleEntrySha256": "a9cd8ed2c99695113762b34cd403687f285d4fe9f6d3b09970229a097f48fadf"
+    },
+    {
+      "caseId": "syn-research-05",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-research-05.json",
+      "oracleEntrySha256": "525f9f3bfbe280aa9455a87070d36bd44b369adff890ff231b18e1ab930d50fe"
+    },
+    {
+      "caseId": "syn-research-06",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-research-06.json",
+      "oracleEntrySha256": "0bfc39835acb99b12a750065e5c56928ec2a4ed0d0c4b4ea0ebf0f71eb268cbb"
+    },
+    {
+      "caseId": "syn-research-07",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-research-07.json",
+      "oracleEntrySha256": "2004b7473f02eb4a6d668ef98e9181aa019a59f55bc8d70907ed43f3c3c63bd3"
+    },
+    {
+      "caseId": "syn-research-08",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-research-08.json",
+      "oracleEntrySha256": "2ff3ed05167f3af528dff9138e5bb234e6a7efbb6d70ef12b5ecc257ff487bc8"
+    },
+    {
+      "caseId": "syn-multi_action-01",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-multi_action-01.json",
+      "oracleEntrySha256": "69bf8708a475bda6ac5c1e4b560f148790d66403742fb10f6ebfaf4efd0b9ab5"
+    },
+    {
+      "caseId": "syn-multi_action-02",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-multi_action-02.json",
+      "oracleEntrySha256": "57d28c50f32a969e7528969757f28564de519d3302cdb1a72006e6f4661b1f62"
+    },
+    {
+      "caseId": "syn-multi_action-03",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-multi_action-03.json",
+      "oracleEntrySha256": "3ab195159d6522a616109c5f2e2f50d75ad235783a5822f94a84a51deb5e77ed"
+    },
+    {
+      "caseId": "syn-multi_action-04",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-multi_action-04.json",
+      "oracleEntrySha256": "ea1bd2f3d9b871f291212b66e51596276b306f7cc7bffd70c31df1f85fffcc0e"
+    },
+    {
+      "caseId": "syn-multi_action-05",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-multi_action-05.json",
+      "oracleEntrySha256": "e6af2ede36229a7b60ba99fd98fae7cfd0245af57eb1f55800ceed79b1c10637"
+    },
+    {
+      "caseId": "syn-multi_action-06",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-multi_action-06.json",
+      "oracleEntrySha256": "9b74626c23e9561c7e804d3a79eae349359217b9ae53c1981702a1ee30cb7bf8"
+    },
+    {
+      "caseId": "syn-multi_action-07",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-multi_action-07.json",
+      "oracleEntrySha256": "0b266e848962c93d3d655565d29b26a4ebd56d45b345d0785db372ed3cf0d730"
+    },
+    {
+      "caseId": "syn-multi_action-08",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-multi_action-08.json",
+      "oracleEntrySha256": "5d710556a507c5135f3d4924fc467eef07ac3a901e2cb01febc026e5253e3dbd"
+    },
+    {
+      "caseId": "syn-authority-01",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-authority-01.json",
+      "oracleEntrySha256": "5ee3d940857dfbb25d0f6e8ab276eb38da6c5f72bc13bd1f76a96997de536651"
+    },
+    {
+      "caseId": "syn-authority-02",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-authority-02.json",
+      "oracleEntrySha256": "9d4e8af172e96758d16157389c3c81e5f12898ccc339cd34ab60fc493d93c24c"
+    },
+    {
+      "caseId": "syn-authority-03",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-authority-03.json",
+      "oracleEntrySha256": "9f6659dfcfdeca1ae4e1af2cdedf28392353e3adfc1ece1f5392de8935dd1e72"
+    },
+    {
+      "caseId": "syn-authority-04",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-authority-04.json",
+      "oracleEntrySha256": "d18f6324671427a2b7905a0b96a2f097d47ad16319825697c3464dc36aa83f7d"
+    },
+    {
+      "caseId": "syn-authority-05",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-authority-05.json",
+      "oracleEntrySha256": "32741a8f1e3528c74d30a3a04f7b2b4d386640abbe608a4508af8a8051c4d89c"
+    },
+    {
+      "caseId": "syn-authority-06",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-authority-06.json",
+      "oracleEntrySha256": "d89ed213dc5b3147d6d536b1a588f07635b8d1761c5f62588dd50634e043ec01"
+    },
+    {
+      "caseId": "syn-authority-07",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-authority-07.json",
+      "oracleEntrySha256": "f0a33f46c3d0ab73235f0c1ef1d5c053b9d6229b46049768ad6316b1ad0b4f88"
+    },
+    {
+      "caseId": "syn-authority-08",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-authority-08.json",
+      "oracleEntrySha256": "f00c7c8effebb71a476f65882a3ead663332d8492788ff7b5694d2a718693edb"
+    },
+    {
+      "caseId": "syn-recovery-01",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-recovery-01.json",
+      "oracleEntrySha256": "f357475088982b1f6b9df50ae9b07c69e6eadeb8cc9bac0f11b5ff265cb50535"
+    },
+    {
+      "caseId": "syn-recovery-02",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-recovery-02.json",
+      "oracleEntrySha256": "fd3b398aef7ded541ef56b114b52c6db2a961dd22ee8ebaa0bbe517a84f2bc81"
+    },
+    {
+      "caseId": "syn-recovery-03",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-recovery-03.json",
+      "oracleEntrySha256": "b7b9b2d73c82d671ada08e2467b5aacb93a4eeed2be4bd96ae0ec6b97813dbb4"
+    },
+    {
+      "caseId": "syn-recovery-04",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-recovery-04.json",
+      "oracleEntrySha256": "00722ea63358ebf7ad84fa08be74bcb6b1533d120d3306b5564b4d7d041bd064"
+    },
+    {
+      "caseId": "syn-recovery-05",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-recovery-05.json",
+      "oracleEntrySha256": "521d02bb9f85d9612f6f3ee7df6c922265abeeba938a7b0116c0a024dd14ef0c"
+    },
+    {
+      "caseId": "syn-recovery-06",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-recovery-06.json",
+      "oracleEntrySha256": "db805ed941789b31cf4e4f8befbb26f21e7f53068ddb0b9275d5ed7d44c0d4d8"
+    },
+    {
+      "caseId": "syn-recovery-07",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-recovery-07.json",
+      "oracleEntrySha256": "24738be26305e5f8f4e07bb1ecc04a26d1932b67891c75c5441f58f2ea2bc3d9"
+    },
+    {
+      "caseId": "syn-recovery-08",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-recovery-08.json",
+      "oracleEntrySha256": "7150d755560f095d4d850c2e6864fea9e8c44981e2355b5b82dcab7f0ce15df7"
+    },
+    {
+      "caseId": "syn-privacy-01",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-privacy-01.json",
+      "oracleEntrySha256": "95bd577801612c7fd8217216d6aae27e1d522d19f8ef6ed6005d4a69e4ac96a6"
+    },
+    {
+      "caseId": "syn-privacy-02",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-privacy-02.json",
+      "oracleEntrySha256": "e47cd42eb8f05d6416e950cff5c5f298fa64c5dd296a663d71240acd1dfcaad7"
+    },
+    {
+      "caseId": "syn-privacy-03",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-privacy-03.json",
+      "oracleEntrySha256": "f72ea70a0adc43127507adf1f7afd2c70de4092baaba3af71a841ef474e62c12"
+    },
+    {
+      "caseId": "syn-privacy-04",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-privacy-04.json",
+      "oracleEntrySha256": "76999c0f84c5b42923bb50c56780ecf11529ae2ff7afb7acaa48ff1126039822"
+    },
+    {
+      "caseId": "syn-privacy-05",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-privacy-05.json",
+      "oracleEntrySha256": "3cd075663fe6475f14d09779969019e0343174cd4a9006584d380a46252a8988"
+    },
+    {
+      "caseId": "syn-privacy-06",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-privacy-06.json",
+      "oracleEntrySha256": "24de40de95c72c3a55f53394e76738ee268f61bf4ac2da5d7d5a6d19a3126d67"
+    },
+    {
+      "caseId": "syn-privacy-07",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-privacy-07.json",
+      "oracleEntrySha256": "885178efd82dd7c9434fc630f67eeb101ecb4c8927b885d54337014d71f5b0cb"
+    },
+    {
+      "caseId": "syn-privacy-08",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-privacy-08.json",
+      "oracleEntrySha256": "4bc47a411978e6451c7d49f544520bc0dc19d9f0aaad5186120a16892f9a5f0c"
+    },
+    {
+      "caseId": "syn-dictation-01",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-dictation-01.json",
+      "oracleEntrySha256": "83a954abd27c20460e2d81384a1e4e9ae2b2b4ed13c061c2ebe49f8a5f5c2ddb"
+    },
+    {
+      "caseId": "syn-dictation-02",
+      "riskLevel": "HIGH",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-dictation-02.json",
+      "oracleEntrySha256": "f56c85d4d18d7536502abf5cd54e27d7ab66cbee2caa6b9165448869d3969df6"
+    },
+    {
+      "caseId": "syn-dictation-03",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-dictation-03.json",
+      "oracleEntrySha256": "da26a77974bb9fc4cf9e4283d1830deb337e23f3fa95b335ebf636bffd5bb68c"
+    },
+    {
+      "caseId": "syn-dictation-04",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-dictation-04.json",
+      "oracleEntrySha256": "fd7fde1f9377f76a9d522e868f0345753b7c95c32ccbeed3c969441d2fc64a0e"
+    },
+    {
+      "caseId": "syn-dictation-05",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-dictation-05.json",
+      "oracleEntrySha256": "87043137d8666377b0b29a3d64b57cc1978018c2d45c2782effda4cbea98ce00"
+    },
+    {
+      "caseId": "syn-dictation-06",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-dictation-06.json",
+      "oracleEntrySha256": "e3d4a0ffd2a7ac961a3d23467ccf999d8923f790ebdf00e47d888504c4caa2d2"
+    },
+    {
+      "caseId": "syn-dictation-07",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-dictation-07.json",
+      "oracleEntrySha256": "0516fdd3362e199adedc7147a3dd6d72a443ea377053e06ac2f15f83fc2a991e"
+    },
+    {
+      "caseId": "syn-dictation-08",
+      "riskLevel": "STANDARD",
+      "oracleEntryPath": "specs/206-gpt6-astra-endvera-reverification/corpus/grader-only/development/syn-dictation-08.json",
+      "oracleEntrySha256": "3138befc043a2d681f40fd7b13bcc8f0504adf35199e598f9b7166224fb751f3"
+    }
+  ]
+}

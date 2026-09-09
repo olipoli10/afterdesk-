@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-dictation-08",
+  "riskLevel": "STANDARD",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "PREVIEW",
+    "actions": [
+      {
+        "operation": "CREATE_NOTE",
+        "targetIds": [],
+        "fields": [
+          {
+            "name": "title",
+            "value": "comptage"
+          },
+          {
+            "name": "quantity",
+            "value": "18"
+          },
+          {
+            "name": "siteId",
+            "value": "syn-site8"
+          }
+        ],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

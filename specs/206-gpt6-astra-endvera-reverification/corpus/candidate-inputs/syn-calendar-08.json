@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-calendar-08",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Qu'est-ce que j'ai demain?",
+  "context": {
+    "events": [
+      {
+        "id": "syn-e1",
+        "start": "2026-09-10T09:00:00-04:00",
+        "title": "visite"
+      }
+    ]
+  }
+}

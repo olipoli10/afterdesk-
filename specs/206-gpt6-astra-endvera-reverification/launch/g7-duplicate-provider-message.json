@@ -1,0 +1,14 @@
+{
+  "id": "g7-duplicate-provider-message",
+  "phase": "G7",
+  "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 DUPLICATE_PROVIDER_MESSAGE",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs",
+    "G7",
+    "DUPLICATE_PROVIDER_MESSAGE"
+  ],
+  "cwd": ".",
+  "timeoutMs": 3600000
+}

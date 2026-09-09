@@ -1,0 +1,55 @@
+{
+  "kind": "PHASE_EVIDENCE",
+  "phase": "G0",
+  "status": "PASS",
+  "checks": [
+    {
+      "checkId": "g0-astra-probe",
+      "result": "PASS",
+      "commandId": "g0-astra-probe",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-astra-probe/stdout.txt",
+      "evidenceSha256": "c9222023eeeac26f3d12080c3fd66ba5dde4c33b7074f715b7003c9aa599f906"
+    },
+    {
+      "checkId": "g0-final-corpus",
+      "result": "PASS",
+      "commandId": "g0-final-corpus",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-corpus/stdout.txt",
+      "evidenceSha256": "0b2fdac8ef6306f78deecce6461f3b60c485c86e3930f2a3e5b5421ad1c47f26"
+    },
+    {
+      "checkId": "g0-final-contracts",
+      "result": "PASS",
+      "commandId": "g0-final-contracts",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-contracts/stdout.txt",
+      "evidenceSha256": "f869a437d26a0d74c25d4be194e56530c12d24de8c43263544a85b91577a4f1e"
+    },
+    {
+      "checkId": "g0-final-phase-kit",
+      "result": "PASS",
+      "commandId": "g0-final-phase-kit",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-phase-kit/stdout.txt",
+      "evidenceSha256": "ce651ff80de3a67c226e0215f8992232c1ff3467359b10c47e89555fdb36a8fd"
+    },
+    {
+      "checkId": "g0-phase-wrapper",
+      "result": "PASS",
+      "commandId": "g0-phase-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-phase-wrapper/stdout.txt",
+      "evidenceSha256": "9db3456f11b1df586933467f43e5739554bb8547f10b6ecf215ab41af6a704a3"
+    },
+    {
+      "checkId": "g0-recorder-final",
+      "result": "PASS",
+      "commandId": "g0-recorder-final",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-recorder-final/stdout.txt",
+      "evidenceSha256": "0a77dfc64aaee1ded5c51922ccea40b6ea484a098c4d67b5c91bdec75f6fb534"
+    }
+  ],
+  "scope": "KIT_PREPARATION_ONLY; Astra selection requested, servedModel not attested; runtime UNPROBED; no provider quality observation",
+  "limitations": [
+    "PrismaDev discovery may have consulted npm metadata; no claim of zero G0 network.",
+    "Hidden Node permission denial is a local runner invariant, not Codex/provider sandbox attestation.",
+    "Long dictations measured in words; no audio duration observation."
+  ]
+}

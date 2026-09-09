@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-multi_action-04",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Rédige à syn-c1 : annulé. Finalement, ne rédige rien; crée seulement une tâche rappeler.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c1"
+      }
+    ]
+  }
+}

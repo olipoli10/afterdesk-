@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-calendar-09",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "La visite du 1er novembre 2026 à 1 h 30 : prends explicitement l'heure normale, durée 45 minutes.",
+  "context": {
+    "events": []
+  }
+}

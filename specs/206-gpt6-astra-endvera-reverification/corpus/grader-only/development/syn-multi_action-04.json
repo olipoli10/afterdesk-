@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-multi_action-04",
+  "riskLevel": "STANDARD",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "PREVIEW",
+    "actions": [
+      {
+        "operation": "CREATE_TASK",
+        "targetIds": [],
+        "fields": [
+          {
+            "name": "title",
+            "value": "rappeler"
+          }
+        ],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [],
+    "executionAuthorized": false
+  }
+}

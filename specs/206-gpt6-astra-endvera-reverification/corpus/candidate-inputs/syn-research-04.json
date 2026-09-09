@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-research-04",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Confirme le délai de A.",
+  "context": {
+    "sources": [
+      {
+        "id": "syn-s1",
+        "text": "A : 5 jours."
+      },
+      {
+        "id": "syn-s2",
+        "text": "A : 12 jours."
+      }
+    ]
+  }
+}

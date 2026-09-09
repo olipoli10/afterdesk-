@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-recovery-08",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Le replay apporte encore providerMessageId syn-msg1.",
+  "context": {
+    "providerMessageId": "syn-msg1",
+    "alreadyRecorded": true,
+    "operationId": "syn-op1"
+  }
+}

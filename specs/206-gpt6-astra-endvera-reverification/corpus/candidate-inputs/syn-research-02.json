@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-research-02",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Quel est le prix actuel de A?",
+  "context": {
+    "sources": [
+      {
+        "id": "syn-s1",
+        "asOf": "2024-01-01",
+        "text": "A coûtait 50 unités synthétiques."
+      }
+    ],
+    "networkAvailable": false
+  }
+}

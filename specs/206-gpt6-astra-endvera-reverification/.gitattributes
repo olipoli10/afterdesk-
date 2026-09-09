@@ -1,0 +1,2 @@
+# Evidence contracts use exact bytes; disable checkout/index line-ending conversion.
+* -text

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-multi_action-02",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Crée une tâche appeler et envoie le détail à Alex.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c1",
+        "label": "Alex Simulation A"
+      },
+      {
+        "id": "syn-c2",
+        "label": "Alex Simulation B"
+      }
+    ]
+  }
+}

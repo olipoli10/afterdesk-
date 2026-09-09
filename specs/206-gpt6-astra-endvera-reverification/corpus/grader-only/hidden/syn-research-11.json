@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-research-11",
+  "riskLevel": "HIGH",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "ANSWER",
+    "actions": [],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [
+      "current_news"
+    ],
+    "executionAuthorized": false
+  }
+}

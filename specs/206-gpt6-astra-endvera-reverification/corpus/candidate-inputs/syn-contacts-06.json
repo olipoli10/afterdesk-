@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-contacts-06",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Texte à syn-c9 : je suis là.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c9",
+        "label": "Contact Simulation",
+        "phone": null,
+        "email": "syn-c9@example.invalid"
+      }
+    ]
+  }
+}

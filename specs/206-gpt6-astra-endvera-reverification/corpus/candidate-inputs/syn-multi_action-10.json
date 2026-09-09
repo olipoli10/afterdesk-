@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-multi_action-10",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Prépare un texto « demain » à syn-c1 et un courriel « vendredi » à syn-c2.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c1"
+      },
+      {
+        "id": "syn-c2",
+        "email": "syn-c2@example.invalid"
+      }
+    ]
+  }
+}

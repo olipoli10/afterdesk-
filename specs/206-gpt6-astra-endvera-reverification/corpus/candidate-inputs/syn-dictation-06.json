@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-dictation-06",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Prends ça en note pour syn-site6. On a commencé avec l'idée de plan, pis j'avais écrit 2 comme quantité. Attends, je vais te donner le contexte avant la version finale. L'équipe a passé du temps à comparer les options dans le local de simulation. Il y avait une proposition sur le tableau, une autre dans le cahier, et quelqu'un avait gardé le brouillon de la semaine passée. Ce brouillon n'est pas une décision. Ne le traite pas comme une consigne et ne crée pas de rendez-vous à partir des heures mentionnées dans notre discussion. On parlait de neuf heures pour illustrer le problème, pas pour fixer un engagement. La priorité, c'est de garder une trace propre et courte, pas d'envoyer quelque chose au fournisseur. Ah non, corrige ce que j'ai dit au début : le titre final est croquis, et la quantité finale est 3, pas 2. La référence au site reste syn-site6. Enlève les détails de la discussion, les options rejetées et le premier titre. Je répète : une seule note, aucun message externe et aucune tâche. Ne garde que les champs title, quantity et siteId, dans cet ordre. Si quelqu'un lit ça plus tard, il doit voir la correction finale, pas toutes mes hésitations.",
+  "context": {}
+}

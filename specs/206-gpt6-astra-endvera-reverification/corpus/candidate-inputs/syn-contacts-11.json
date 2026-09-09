@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-contacts-11",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Prépare un courriel à syn-c4.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c4",
+        "label": "Contact Simulation",
+        "email": "syn-c4@example.invalid"
+      }
+    ]
+  }
+}

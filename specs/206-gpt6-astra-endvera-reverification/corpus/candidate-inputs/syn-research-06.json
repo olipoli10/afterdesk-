@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-research-06",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Calcule le total de 3 lots à 40 unités synthétiques chacun, selon la pièce.",
+  "context": {
+    "sources": [
+      {
+        "id": "syn-s1",
+        "text": "Prix par lot : 40 unités synthétiques."
+      }
+    ]
+  }
+}

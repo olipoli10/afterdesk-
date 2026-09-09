@@ -1,0 +1,11 @@
+{
+  "id": "g0-final-contracts",
+  "phase": "G0",
+  "classification": "VALIDATION",
+  "executable": "node",
+  "args": [
+    "--test",
+    "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-contracts.test.mjs"
+  ],
+  "timeoutMs": 120000
+}

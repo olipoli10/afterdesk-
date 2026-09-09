@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-recovery-05",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Le timeout a coupé la réponse, facture zéro pour cet appel.",
+  "context": {
+    "costSettlement": "UNSETTLED_UNKNOWN"
+  }
+}

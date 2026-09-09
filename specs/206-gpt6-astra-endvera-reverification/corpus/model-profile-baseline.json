@@ -1,0 +1,16 @@
+{
+  "kind": "MODEL_PROFILE",
+  "schemaVersion": "1.0",
+  "profile": "BASELINE",
+  "provider": "OPENROUTER",
+  "endpoint": "https://openrouter.ai/api/v1/responses",
+  "model": "UNRESOLVED_RUNTIME_BASELINE_NOT_CALLABLE",
+  "reasoning": null,
+  "temperature": null,
+  "maxOutputTokens": 2048,
+  "timeoutMs": 60000,
+  "promptPath": "specs/206-gpt6-astra-endvera-reverification/corpus/candidate-prompt.txt",
+  "promptSha256": "a36cbcee644e1b6a0e039f289e6a1e98f0535ed7d9d48555bac5e7e6e7930fc0",
+  "toolSchemaPath": "specs/206-gpt6-astra-endvera-reverification/corpus/candidate-tool-schema.json",
+  "toolSchemaSha256": "53a4672b70075c48b9b1d239c5911042a6b7d917f045f51f7747378ec4970b81"
+}

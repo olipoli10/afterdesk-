@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "SYNTHETIC_CASE_ORACLE",
+  "caseId": "syn-recovery-10",
+  "riskLevel": "HIGH",
+  "comparison": "CANONICAL_JSON_EXACT",
+  "expected": {
+    "decision": "ANSWER",
+    "actions": [
+      {
+        "operation": "READ_OPERATION",
+        "targetIds": [
+          "syn-op5"
+        ],
+        "fields": [],
+        "dependsOn": []
+      }
+    ],
+    "clarificationFields": [],
+    "evidenceRefs": [],
+    "unresolved": [
+      "delivery_confirmation"
+    ],
+    "executionAuthorized": false
+  }
+}

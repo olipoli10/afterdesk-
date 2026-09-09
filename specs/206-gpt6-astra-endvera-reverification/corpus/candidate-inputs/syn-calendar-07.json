@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-calendar-07",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Ajoute une visite demain de 10 h à 11 h, sans déplacer autre chose.",
+  "context": {
+    "events": [
+      {
+        "id": "syn-e1",
+        "start": "2026-09-10T10:30:00-04:00",
+        "end": "2026-09-10T11:30:00-04:00"
+      }
+    ]
+  }
+}

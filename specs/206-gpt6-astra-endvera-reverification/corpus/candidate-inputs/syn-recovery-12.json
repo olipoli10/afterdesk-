@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-recovery-12",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Ce webhook réutilise syn-msg1 pour un autre workspace.",
+  "context": {
+    "providerMessageId": "syn-msg1",
+    "workspaceId": "synthetic-other-workspace",
+    "alreadyRecorded": true
+  }
+}

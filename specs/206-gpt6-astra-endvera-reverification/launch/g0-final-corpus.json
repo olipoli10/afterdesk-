@@ -1,0 +1,10 @@
+{
+  "id": "g0-final-corpus",
+  "phase": "G0",
+  "classification": "VALIDATION",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/corpus-check.mjs"
+  ],
+  "timeoutMs": 120000
+}

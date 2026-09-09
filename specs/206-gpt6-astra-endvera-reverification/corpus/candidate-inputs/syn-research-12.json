@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-research-12",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "La source liée syn-s9 prouve-t-elle le chiffre 200?",
+  "context": {
+    "sources": [
+      {
+        "id": "syn-s9",
+        "text": "Échantillon de 20 simulations. Aucun chiffre 200."
+      }
+    ]
+  }
+}

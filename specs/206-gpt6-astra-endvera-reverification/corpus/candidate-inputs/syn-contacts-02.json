@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-contacts-02",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Texte à Sam du chantier nord : reçu.",
+  "context": {
+    "contacts": [
+      {
+        "id": "syn-c1",
+        "label": "Sam Simulation",
+        "site": "nord"
+      },
+      {
+        "id": "syn-c2",
+        "label": "Sam Simulation",
+        "site": "sud"
+      }
+    ]
+  }
+}

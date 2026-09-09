@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "syn-calendar-06",
+  "synthetic": true,
+  "locale": "fr-CA",
+  "timezone": "America/Toronto",
+  "now": "2026-09-09T09:00:00-04:00",
+  "workspaceId": "synthetic-workspace",
+  "user": "Annule syn-e1, mais montre-moi avant.",
+  "context": {
+    "events": [
+      {
+        "id": "syn-e1",
+        "title": "visite"
+      }
+    ]
+  }
+}
