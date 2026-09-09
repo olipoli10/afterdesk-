@@ -1,0 +1,128 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37a-runtime-clock.test.ts[2m > [22mR37A runtime time is not request data[2m > [22mrejects a historical now supplied in runtime input before invoking the fixture
+[31m[1mZodError[22m: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^R36B-[A-Z0-9-]+$/u",
+    "path": [
+      "caseId"
+    ],
+    "message": "Invalid string: must match pattern /^R36B-[A-Z0-9-]+$/u"
+  }
+][39m
+[36m [2m❯[22m sealSandboxCase src/lib/construction-operating-assistant-r36b/candidates.ts:[2m17:46[22m[39m
+    [90m 15|[39m
+    [90m 16|[39m [35mexport[39m [35mfunction[39m [34msealSandboxCase[39m(raw[33m:[39m unknown)[33m:[39m [33mSandboxCase[39m {
+    [90m 17|[39m   [35mconst[39m unsigned [33m=[39m sandboxCaseUnsignedSchema[33m.[39m[34mparse[39m(raw)[33m;[39m
+    [90m   |[39m                                              [31m^[39m
+    [90m 18|[39m   [35mreturn[39m sandboxCaseSchema[33m.[39m[34mparse[39m({
+    [90m 19|[39m     [33m...[39munsigned[33m,[39m
+[90m [2m❯[22m sealedAttempt test/unit/r37a-runtime-clock.test.ts:[2m10:23[22m[39m
+[90m [2m❯[22m test/unit/r37a-runtime-clock.test.ts:[2m20:25[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37a-runtime-clock.test.ts[2m > [22mR37A runtime time is not request data[2m > [22mrechecks wall-clock expiry after the fixture, even if monotonic latency is low
+[31m[1mZodError[22m: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^R36B-[A-Z0-9-]+$/u",
+    "path": [
+      "caseId"
+    ],
+    "message": "Invalid string: must match pattern /^R36B-[A-Z0-9-]+$/u"
+  }
+][39m
+[36m [2m❯[22m sealSandboxCase src/lib/construction-operating-assistant-r36b/candidates.ts:[2m17:46[22m[39m
+    [90m 15|[39m
+    [90m 16|[39m [35mexport[39m [35mfunction[39m [34msealSandboxCase[39m(raw[33m:[39m unknown)[33m:[39m [33mSandboxCase[39m {
+    [90m 17|[39m   [35mconst[39m unsigned [33m=[39m sandboxCaseUnsignedSchema[33m.[39m[34mparse[39m(raw)[33m;[39m
+    [90m   |[39m                                              [31m^[39m
+    [90m 18|[39m   [35mreturn[39m sandboxCaseSchema[33m.[39m[34mparse[39m({
+    [90m 19|[39m     [33m...[39munsigned[33m,[39m
+[90m [2m❯[22m sealedAttempt test/unit/r37a-runtime-clock.test.ts:[2m10:23[22m[39m
+[90m [2m❯[22m test/unit/r37a-runtime-clock.test.ts:[2m27:46[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37a-runtime-clock.test.ts[2m > [22mR37A runtime time is not request data[2m > [22mrechecks immediately before fixture admission after a queued clock change
+[31m[1mZodError[22m: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^R36B-[A-Z0-9-]+$/u",
+    "path": [
+      "caseId"
+    ],
+    "message": "Invalid string: must match pattern /^R36B-[A-Z0-9-]+$/u"
+  }
+][39m
+[36m [2m❯[22m sealSandboxCase src/lib/construction-operating-assistant-r36b/candidates.ts:[2m17:46[22m[39m
+    [90m 15|[39m
+    [90m 16|[39m [35mexport[39m [35mfunction[39m [34msealSandboxCase[39m(raw[33m:[39m unknown)[33m:[39m [33mSandboxCase[39m {
+    [90m 17|[39m   [35mconst[39m unsigned [33m=[39m sandboxCaseUnsignedSchema[33m.[39m[34mparse[39m(raw)[33m;[39m
+    [90m   |[39m                                              [31m^[39m
+    [90m 18|[39m   [35mreturn[39m sandboxCaseSchema[33m.[39m[34mparse[39m({
+    [90m 19|[39m     [33m...[39munsigned[33m,[39m
+[90m [2m❯[22m sealedAttempt test/unit/r37a-runtime-clock.test.ts:[2m10:23[22m[39m
+[90m [2m❯[22m test/unit/r37a-runtime-clock.test.ts:[2m33:46[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37a-runtime-clock.test.ts[2m > [22mR37A runtime time is not request data[2m > [22mretains historical seal preparation without granting current execution
+[31m[1mZodError[22m: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^R36B-[A-Z0-9-]+$/u",
+    "path": [
+      "caseId"
+    ],
+    "message": "Invalid string: must match pattern /^R36B-[A-Z0-9-]+$/u"
+  }
+][39m
+[36m [2m❯[22m sealSandboxCase src/lib/construction-operating-assistant-r36b/candidates.ts:[2m17:46[22m[39m
+    [90m 15|[39m
+    [90m 16|[39m [35mexport[39m [35mfunction[39m [34msealSandboxCase[39m(raw[33m:[39m unknown)[33m:[39m [33mSandboxCase[39m {
+    [90m 17|[39m   [35mconst[39m unsigned [33m=[39m sandboxCaseUnsignedSchema[33m.[39m[34mparse[39m(raw)[33m;[39m
+    [90m   |[39m                                              [31m^[39m
+    [90m 18|[39m   [35mreturn[39m sandboxCaseSchema[33m.[39m[34mparse[39m({
+    [90m 19|[39m     [33m...[39munsigned[33m,[39m
+[90m [2m❯[22m sealedAttempt test/unit/r37a-runtime-clock.test.ts:[2m10:23[22m[39m
+[90m [2m❯[22m test/unit/r37a-runtime-clock.test.ts:[2m40:18[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37a-runtime-clock.test.ts[2m > [22mR37A runtime time is not request data[2m > [22mdocuments that a fixture callback may perform arbitrary local side effects; flags are declarations
+[31m[1mZodError[22m: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "regex",
+    "pattern": "/^R36B-[A-Z0-9-]+$/u",
+    "path": [
+      "caseId"
+    ],
+    "message": "Invalid string: must match pattern /^R36B-[A-Z0-9-]+$/u"
+  }
+][39m
+[36m [2m❯[22m sealSandboxCase src/lib/construction-operating-assistant-r36b/candidates.ts:[2m17:46[22m[39m
+    [90m 15|[39m
+    [90m 16|[39m [35mexport[39m [35mfunction[39m [34msealSandboxCase[39m(raw[33m:[39m unknown)[33m:[39m [33mSandboxCase[39m {
+    [90m 17|[39m   [35mconst[39m unsigned [33m=[39m sandboxCaseUnsignedSchema[33m.[39m[34mparse[39m(raw)[33m;[39m
+    [90m   |[39m                                              [31m^[39m
+    [90m 18|[39m   [35mreturn[39m sandboxCaseSchema[33m.[39m[34mparse[39m({
+    [90m 19|[39m     [33m...[39munsigned[33m,[39m
+[90m [2m❯[22m sealedAttempt test/unit/r37a-runtime-clock.test.ts:[2m10:23[22m[39m
+[90m [2m❯[22m test/unit/r37a-runtime-clock.test.ts:[2m48:54[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+

@@ -1,0 +1,20 @@
+{
+  "id": "g2-packet-canon-provenance-r0b",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G2",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "MODEL_AUDIT",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-packet-audit.mjs canon-provenance r0b",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:55:35.113Z",
+  "finishedAt": "2026-09-09T13:57:41.112Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance-r0b/stdout.txt",
+  "stdoutSha256": "6dd1fad512edb6b0e85972beaefb12dd03dc3ad3da760a0541476ff73050240b",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance-r0b/stderr.txt",
+  "stderrSha256": "7024c2ad11e6a50937e0d78a873e4d2a89ef225babcc41602ccf5d16cb981dda",
+  "replay": null
+}

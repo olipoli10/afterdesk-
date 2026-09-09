@@ -1,0 +1,12 @@
+file:///C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/scripts/reproduce-release-r2.mjs:16
+function oldSource(path){const item=packet.find(item=>item.path===path);if(!item)throw new Error('BASELINE_SOURCE_ABSENT');const lf=item.source.split('\n').map(line=>line.replace(/^\d+: /,'')).join('\n');const exact=[lf,lf.replaceAll('\n','\r\n')].find(source=>hash(source)===item.sha256);if(exact===undefined)throw new Error('BASELINE_SOURCE_HASH_MISMATCH');return exact;}
+                                                                                                                                                                                                                                                                                                                            ^
+
+Error: BASELINE_SOURCE_HASH_MISMATCH
+    at oldSource (file:///C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/scripts/reproduce-release-r2.mjs:16:317)
+    at file:///C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/scripts/reproduce-release-r2.mjs:21:24
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:666:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.2.0

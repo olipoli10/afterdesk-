@@ -1,0 +1,20 @@
+{
+  "id": "g3-final-test-alignment-lint",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/eslint/bin/eslint.js test/construction-conversion-surface.test.ts test/unit/release-source-r2-review.test.ts specs/206-gpt6-astra-endvera-reverification/scripts/run-g7-final-r2.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:34:56.786Z",
+  "finishedAt": "2026-09-09T15:34:59.519Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-final-test-alignment-lint/stdout.txt",
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-final-test-alignment-lint/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

@@ -1,0 +1,9 @@
+warning: in the working copy of 'scripts/endvera-release-source-binding.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/generate-endvera-release-package.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/validate-endvera-mobile-build-readiness.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/validate-endvera-native-preflight.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/validate-endvera-release-package.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/construction-operating-assistant-r35/registry.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/server/model-gateway/dispatch.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/server/model-gateway/voice/dispatch.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/unit/release-source-binding-review.test.ts', LF will be replaced by CRLF the next time Git touches it

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "PATCH_REVIEW",
+  "requestedModel": "gpt-5.6-sol",
+  "servedModel": null,
+  "status": "CHANGES_REQUIRED",
+  "scope": [
+    "release/current-projection-v3.mjs",
+    "release/current-projection-v3.md",
+    "release/current-projection-v3.history.json",
+    "release/current-projection-v3.json",
+    "release/endvera-construction-v1/market-readiness-report.json",
+    "scripts/validate-endvera-market-readiness.mjs",
+    "scripts/validate-endvera-whole-product-readiness.mjs",
+    "scripts/validate-endvera-whole-product-closure.mjs",
+    "src/app/construction/page.tsx",
+    "test/unit/readiness-review-r2.test.ts",
+    "test/unit/readiness-review-hardening.test.ts",
+    "test/construction-public-copy-boundaries.test.ts",
+    "test/construction-operating-assistant-r36k-market-readiness.test.ts",
+    "test/local-whole-product-readiness-gate.test.ts",
+    "test/whole-product-closure-audit.test.ts"
+  ],
+  "findings": [
+    {
+      "id": "COPY-002",
+      "severity": "medium",
+      "file": "src/app/construction/page.tsx",
+      "line": 26,
+      "title": "Hero, capability and control copy still presents human-review preparation as a current action",
+      "reproduction": "Inspect both COPY branches. The hero says “Dossier préparé pour une revue humaine” / “A file prepared for human review”; the capability card says a file “est préparé localement” / “is prepared locally”; and the control card says “ENDVERA prépare localement” / “ENDVERA prepares ... locally” (lines 46, 59, 94 and 107). These declarative statements are not identified as illustrations or target-workflow behavior. This conflicts with the surrounding availability boundary and the source-level test showing that the page has no form, submission handler or interpreter execution.",
+      "proposedFix": "Rewrite these statements consistently as target behavior, for example “Dans le parcours visé, un dossier serait préparé...” / “In the target workflow, a file would be prepared...”, or explicitly label them as illustrative and not actually prepared. Add rendered-copy assertions scoped separately to the hero, capability and control sections so future present-tense action claims fail."
+    }
+  ],
+  "limitations": [
+    "Source-only review; no commands, tests, builds, network access or hash computations were executed.",
+    "The reported before/after test counts and network guard were not independently verified.",
+    "Candidate remains UNPROBED with zero provider authority.",
+    "No provider behavior, device evidence, public exploitability or semantic-model correctness was inferred.",
+    "No canonical model answer was produced, and the served reviewer model is unknown."
+  ]
+}

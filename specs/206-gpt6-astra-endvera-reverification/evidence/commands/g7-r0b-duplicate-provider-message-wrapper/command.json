@@ -1,0 +1,34 @@
+{
+  "id": "g7-r0b-duplicate-provider-message-wrapper",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "PHASE_CHECK",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs --revalidation-replay specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-duplicate-provider-message.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:21:20.520Z",
+  "finishedAt": "2026-09-09T15:21:20.715Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-duplicate-provider-message-wrapper/stdout.txt",
+  "stdoutSha256": "1b69b59c2d2cc399406f1c98ac50e7eac818a4b07f2bab85209d32bcc7ebc75f",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-duplicate-provider-message-wrapper/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": {
+    "entrypoint": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "args": [
+      "--revalidation-replay",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-duplicate-provider-message.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-duplicate-provider-message.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-duplicate-provider-message/stdout.txt",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-duplicate-provider-message/stderr.txt"
+    ]
+  }
+}

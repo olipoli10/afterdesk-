@@ -1,0 +1,16 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/r37a-runtime-clock.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 11[2mms[22m[39m
+[31m     [31m×[31m rejects a historical now supplied in runtime input before invoking the fixture[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m rechecks wall-clock expiry after the fixture, even if monotonic latency is low[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m rechecks immediately before fixture admission after a queued clock change[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m retains historical seal preparation without granting current execution[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m documents that a fixture callback may perform arbitrary local side effects; flags are declarations[39m[32m 0[2mms[22m[39m
+ [32m✓[39m test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 10:22:09
+[2m   Duration [22m 661ms[2m (transform 364ms, setup 0ms, import 660ms, tests 20ms, environment 0ms)[22m
+

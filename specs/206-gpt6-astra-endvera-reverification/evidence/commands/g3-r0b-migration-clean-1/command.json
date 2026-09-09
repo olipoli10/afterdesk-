@@ -1,0 +1,20 @@
+{
+  "id": "g3-r0b-migration-clean-1",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MIGRATION_CLEAN",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:49:56.011Z",
+  "finishedAt": "2026-09-09T13:50:01.053Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-1/stdout.txt",
+  "stdoutSha256": "a2b9098d16d18771e29bb37c9980ee89a7f11190158c661e88ebc40a29d5ad8d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-1/stderr.txt",
+  "stderrSha256": "c2e8c74da17fe0f2275f6e4cb0d1f38b9078d7a6fe2d8cb231fd604fb47c635b",
+  "replay": null
+}

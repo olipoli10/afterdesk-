@@ -1,0 +1,42 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/guarded-intent.test.ts [2m([22m[2m32 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 61[2mms[22m[39m
+[31m     [31m×[31m GI001 does not promote a canonical read request into task creation[39m[32m 20[2mms[22m[39m
+[31m     [31m×[31m GI002 never emits an authorized preview from an unchanged caller-supplied cache[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m GI003 rejects financial evidence access even when its fact claim is omitted[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m GI004 rejects multiplicative work across repeated action-target pairs[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m GI005 hashes set-like context independently from member ordering[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m GI006 does not accept a caller policy downgrade or budget increase[39m[32m 1[2mms[22m[39m
+     [32m✓[39m prepares a deeply frozen non-executable preview without a candidate runtime or provider call[32m 1[2mms[22m[39m
+     [32m✓[39m normalizes property order without treating the fingerprint as an approval[32m 2[2mms[22m[39m
+     [32m✓[39m rejects model authority/config field executionAuthorized[32m 1[2mms[22m[39m
+     [32m✓[39m rejects model authority/config field approvalGranted[32m 0[2mms[22m[39m
+     [32m✓[39m rejects model authority/config field provider[32m 0[2mms[22m[39m
+     [32m✓[39m rejects model authority/config field endpoint[32m 0[2mms[22m[39m
+     [32m✓[39m rejects model authority/config field modelKey[32m 0[2mms[22m[39m
+     [32m✓[39m rejects model authority/config field fallback[32m 0[2mms[22m[39m
+     [32m✓[39m rejects model authority/config field canonicalAnswer[32m 0[2mms[22m[39m
+     [32m✓[39m rejects malformed and oversized JSON without echoing its content[32m 0[2mms[22m[39m
+     [32m✓[39m rejects stale trusted permissionRevision[32m 0[2mms[22m[39m
+     [32m✓[39m rejects stale trusted contextRevision[32m 0[2mms[22m[39m
+     [32m✓[39m rejects stale trusted role[32m 0[2mms[22m[39m
+     [32m✓[39m rejects request/source mutation and identity substitution[32m 1[2mms[22m[39m
+     [32m✓[39m refuses cross-workspace and duplicate trusted entities[32m 0[2mms[22m[39m
+     [32m✓[39m clarifies homonyms and unknown entities without returning a partial preview[32m 1[2mms[22m[39m
+     [32m✓[39m keeps known-but-inaccessible entities indistinguishable from missing entities[32m 0[2mms[22m[39m
+     [32m✓[39m caps unique recipients across actions, not just per action[32m 2[2mms[22m[39m
+     [32m✓[39m caps ten actions and rejects duplicate action identifiers[32m 1[2mms[22m[39m
+     [32m✓[39m allows only a prior-action DAG and rejects self/forward/cyclic dependencies[32m 1[2mms[22m[39m
+     [32m✓[39m rejects unregistered operations, missing fields, forbidden permission and viewer mutation[32m 1[2mms[22m[39m
+     [32m✓[39m binds quotes to exact original offsets without asserting truth[32m 1[2mms[22m[39m
+     [32m✓[39m rejects invented facts, wrong values, wrong citations and field-worker finance[32m 2[2mms[22m[39m
+     [32m✓[39m does not override a refusal or mixed-intent clarification from baseline R36a[32m 1[2mms[22m[39m
+     [32m✓[39m checks temporal shape and duration without claiming calendar availability or DST truth[32m 1[2mms[22m[39m
+     [32m✓[39m preserves every source code unit and surrogate pair without claiming combined understanding[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m26 passed[39m[22m[90m (32)[39m
+[2m   Start at [22m 10:06:41
+[2m   Duration [22m 375ms[2m (transform 77ms, setup 0ms, import 152ms, tests 61ms, environment 0ms)[22m
+

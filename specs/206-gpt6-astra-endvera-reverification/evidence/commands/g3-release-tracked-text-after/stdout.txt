@@ -1,0 +1,42 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [32m✓[39m test/construction-operating-assistant-r35-release-package.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 904[2mms[22m[39m
+     [33m[2m✓[22m[39m builds the same strict manifest twice with exact assets and no release effect [33m 455[2mms[22m[39m
+ [32m✓[39m test/unit/release-source-security-review.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 369[2mms[22m[39m
+ [32m✓[39m test/unit/release-source-binding-review.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 2550[2mms[22m[39m
+     [33m[2m✓[22m[39m binds an actual unchanged committed input without normalizing its manifest hash [33m 347[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a fictional commit and a mismatching tree [33m 368[2mms[22m[39m
+     [33m[2m✓[22m[39m allows only explicit text checkout CRLF equivalence while keeping raw bytes hashed [33m 350[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a real content edit even when its raw manifest hash is recomputed [33m 795[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects binary input changes with a recomputed raw hash [33m 386[2mms[22m[39m
+ [32m✓[39m test/unit/release-source-r2-review.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 2943[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps input-only evidence distinct from the whole tracked checkout authority gate [33m 2485[2mms[22m[39m
+ [32m✓[39m test/unit/release-tracked-flags.test.ts [2m([22m[2m21 tests[22m[2m)[22m[33m 28170[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects hidden non-input edit under --assume-unchanged [33m 1936[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects hidden non-input edit under --skip-worktree [33m 1809[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts unchanged bytes with --assume-unchanged [33m 991[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts unchanged bytes with --skip-worktree [33m 1026[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects tracked/index addition drift [33m 852[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects tracked/index deletion drift [33m 776[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects tracked/index index bytes drift [33m 823[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects tracked/index index mode drift [33m 873[2mms[22m[39m
+     [33m[2m✓[22m[39m excludes only the exact derived manifest [33m 1343[2mms[22m[39m
+     [33m[2m✓[22m[39m permits the exact projection in source only [33m 896[2mms[22m[39m
+     [33m[2m✓[22m[39m permits the exact projection in index only [33m 1085[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a missing skipped tracked file [33m 917[2mms[22m[39m
+     [33m[2m✓[22m[39m compares raw binary blobs correctly across batch boundaries [33m 2589[2mms[22m[39m
+     [33m[2m✓[22m[39m permits exact LF-to-CRLF checkout but not mixed or CRCRLF [33m 1310[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves normal Git-text CRLF checkout for check.ps1 [33m 1598[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves normal Git-text CRLF checkout for migration.sql [33m 1720[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves normal Git-text CRLF checkout for schema.prisma [33m 1610[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves normal Git-text CRLF checkout for config.toml [33m 1645[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves normal Git-text CRLF checkout for .gitignore [33m 1595[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves normal Git-text CRLF checkout for LICENSE [33m 1630[2mms[22m[39m
+     [33m[2m✓[22m[39m does not normalize a path declared binary by Git attributes [33m 1139[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m67 passed[39m[22m[90m (67)[39m
+[2m   Start at [22m 11:07:02
+[2m   Duration [22m 28.46s[2m (transform 372ms, setup 0ms, import 1.66s, tests 34.94s, environment 0ms)[22m
+

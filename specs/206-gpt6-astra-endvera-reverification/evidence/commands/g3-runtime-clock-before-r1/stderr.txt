@@ -1,0 +1,93 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37a-runtime-clock.test.ts[2m > [22mR37A runtime time is not request data[2m > [22mrejects a historical now supplied in runtime input before invoking the fixture
+[31m[1mAssertionError[22m: promise resolved "{ schemaVersion: 1, …(8) }" instead of rejecting[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Error {[39m
+[32m-   "message": "rejected promise",[39m
+[31m+ {[39m
+[31m+   "certified": false,[39m
+[31m+   "costMicros": 1,[39m
+[31m+   "evidenceFingerprint": "sha256:5d85dd817982ca0a4b45f83d0a7f8c6fd87bc27202bda0a6358d51c64eeb36c4",[39m
+[31m+   "evidenceLabel": "SYNTHETIC",[39m
+[31m+   "externalDispatchPerformed": false,[39m
+[31m+   "latencyMs": 1,[39m
+[31m+   "responseFingerprint": "sha256:ffbc2dfc402782325da71132100e74ff511d1585dd80e4ea196ed4bcace3fef2",[39m
+[31m+   "schemaVersion": 1,[39m
+[31m+   "sealedAttemptFingerprint": "sha256:84cdc7b01af04e3ebd2a557e369fe967d268e60e0e24fa416b7d342c71c32792",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/r37a-runtime-clock.test.ts:[2m21:45[22m[39m
+    [90m 19|[39m     [35mconst[39m adapter[33m=[39mvi[33m.[39m[34mfn[39m([35masync[39m()[33m=>[39m[34mlocalResult[39m())[33m;[39m
+    [90m 20|[39m     [35mconst[39m input[33m=[39m{sealed[33m:[39m[34msealedAttempt[39m()[33m,[39madapter[33m,[39mnow[33m:[39mstart}[33m;[39m
+    [90m 21|[39m     await expect(runSyntheticAttempt(input)).rejects.toThrow("R37A_CAL…
+    [90m   |[39m                                             [31m^[39m
+    [90m 22|[39m     [34mexpect[39m(adapter)[33m.[39mnot[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37a-runtime-clock.test.ts[2m > [22mR37A runtime time is not request data[2m > [22mrechecks wall-clock expiry after the fixture, even if monotonic latency is low
+[31m[1mAssertionError[22m: promise resolved "{ schemaVersion: 1, …(8) }" instead of rejecting[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Error {[39m
+[32m-   "message": "rejected promise",[39m
+[31m+ {[39m
+[31m+   "certified": false,[39m
+[31m+   "costMicros": 1,[39m
+[31m+   "evidenceFingerprint": "sha256:623af48bcb40514acaa64d4985babe97621342b76af0cc8e6eb02d9ba002222c",[39m
+[31m+   "evidenceLabel": "SYNTHETIC",[39m
+[31m+   "externalDispatchPerformed": false,[39m
+[31m+   "latencyMs": 1,[39m
+[31m+   "responseFingerprint": "sha256:ffbc2dfc402782325da71132100e74ff511d1585dd80e4ea196ed4bcace3fef2",[39m
+[31m+   "schemaVersion": 1,[39m
+[31m+   "sealedAttemptFingerprint": "sha256:a8e880a111c48acdce5203ab32d00f0a2649e58367efad03b01dcb3c7b5c5f82",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/r37a-runtime-clock.test.ts:[2m27:72[22m[39m
+    [90m 25|[39m     vi[33m.[39m[34museFakeTimers[39m()[33m;[39mvi[33m.[39m[34msetSystemTime[39m([35mnew[39m [33mDate[39m(start))[33m;[39m
+    [90m 26|[39m     const adapter=vi.fn(async()=>{vi.setSystemTime(new Date(expiry));r…
+    [90m 27|[39m     await expect(runSyntheticAttempt({sealed:sealedAttempt(),adapter})…
+    [90m   |[39m                                                                        [31m^[39m
+    [90m 28|[39m     [34mexpect[39m(adapter)[33m.[39m[34mtoHaveBeenCalledOnce[39m()[33m;[39m
+    [90m 29|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37a-runtime-clock.test.ts[2m > [22mR37A runtime time is not request data[2m > [22mrechecks immediately before fixture admission after a queued clock change
+[31m[1mAssertionError[22m: promise resolved "{ schemaVersion: 1, …(8) }" instead of rejecting[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Error {[39m
+[32m-   "message": "rejected promise",[39m
+[31m+ {[39m
+[31m+   "certified": false,[39m
+[31m+   "costMicros": 1,[39m
+[31m+   "evidenceFingerprint": "sha256:b3bb8955c19d6eb9937470b1e6360d35d4bddc283f625a7f78d55c2288fee0ec",[39m
+[31m+   "evidenceLabel": "SYNTHETIC",[39m
+[31m+   "externalDispatchPerformed": false,[39m
+[31m+   "latencyMs": 1,[39m
+[31m+   "responseFingerprint": "sha256:ffbc2dfc402782325da71132100e74ff511d1585dd80e4ea196ed4bcace3fef2",[39m
+[31m+   "schemaVersion": 1,[39m
+[31m+   "sealedAttemptFingerprint": "sha256:0b17062b02f4a82d4df951840b581b2f83c36abfa676baf63f77fcb947a36e20",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/r37a-runtime-clock.test.ts:[2m35:25[22m[39m
+    [90m 33|[39m     [35mconst[39m result[33m=[39m[34mrunSyntheticAttempt[39m({sealed[33m:[39m[34msealedAttempt[39m()[33m,[39madapter})[33m;[39m
+    [90m 34|[39m     vi[33m.[39m[34msetSystemTime[39m([35mnew[39m [33mDate[39m(expiry))[33m;[39m
+    [90m 35|[39m     [35mawait[39m [34mexpect[39m(result)[33m.[39mrejects[33m.[39m[34mtoThrow[39m([32m"R37A_AUTHORIZATION_EXPIRED"[39m)[33m;[39m
+    [90m   |[39m                         [31m^[39m
+    [90m 36|[39m     [34mexpect[39m(adapter)[33m.[39mnot[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
+    [90m 37|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+

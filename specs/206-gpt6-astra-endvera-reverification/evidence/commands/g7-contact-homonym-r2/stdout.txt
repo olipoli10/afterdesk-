@@ -1,0 +1,1 @@
+CHECK_IDENTITY phase=G7 checkId=CONTACT_HOMONYM runtimeProviderAuthorized=false claimedDeviceObservation=false

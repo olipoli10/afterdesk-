@@ -1,0 +1,1 @@
+CHECK_IDENTITY phase=G7 checkId=STALE_APPROVAL runtimeProviderAuthorized=false claimedDeviceObservation=false

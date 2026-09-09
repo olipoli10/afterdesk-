@@ -1,0 +1,28 @@
+{
+  "status": "INCOMPLETE",
+  "sourceProductHead": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+  "auditor": {
+    "reportedModel": null,
+    "requestedModel": "gpt-6-astra",
+    "clientVersion": "codex-cli 0.153.4",
+    "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+    "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+    "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+    "runAt": "2026-09-09T13:45:16.471Z",
+    "commandId": "g2-canon-provenance",
+    "promptPath": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/canon-provenance.md",
+    "promptSha256": "b9be67ba084c4a99e81d90fd3534292d8fa2c39e3cc5d03cbb08043241ba2c9d"
+  },
+  "findings": [],
+  "unknowns": [
+    "La politique d’exécution a rejeté les inspections en lecture seule avec le motif « blocked by policy », y compris une lecture isolée du schéma. Aucun contenu local n’a été obtenu.",
+    "Le schéma specs/206-gpt6-astra-endvera-reverification/audit-contracts/finding-report.schema.json est inaccessible; la conformité de ce JSON ne peut pas être garantie.",
+    "AGENTS.md sur disque n’a pas pu être lu.",
+    "Les identités Git, l’existence du sourceProductHead et le hash du prompt restent non vérifiés. Les valeurs de l’auditor sont recopiées exclusivement de RUN_ENVELOPE.",
+    "Le Brain canonique C:/dev/afterdesk-project-brain et les artefacts du dépôt n’ont pas été inspectés. Les dix invariants restent non évalués; l’absence de findings ne signifie pas qu’ils sont respectés."
+  ],
+  "reproduction": {
+    "status": "NOT_RUN",
+    "reason": "Les commandes d’inspection ont été rejetées avant exécution. Aucun test, build, recalcul de métrique, accès réseau ou changement de fichier n’a été effectué."
+  }
+}

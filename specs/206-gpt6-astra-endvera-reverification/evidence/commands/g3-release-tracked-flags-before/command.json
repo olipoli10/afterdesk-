@@ -1,0 +1,20 @@
+{
+  "id": "g3-release-tracked-flags-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/release-tracked-flags.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:59:56.099Z",
+  "finishedAt": "2026-09-09T15:00:05.552Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-tracked-flags-before/stdout.txt",
+  "stdoutSha256": "609bb805b506fcc3983eceb8720f6d0fdc60b80c01f1e1154da7af3484445b52",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-tracked-flags-before/stderr.txt",
+  "stderrSha256": "bddde38b07075d373fe24172f5b5105b3fe46310a8386f47cdd9d8df9660d965",
+  "replay": null
+}

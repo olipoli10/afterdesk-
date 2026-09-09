@@ -1,0 +1,22 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/gateway-voice-claim-revalidation.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m11 failed[39m[2m)[22m[32m 23[2mms[22m[39m
+[31m     [31m×[31m late rollout refusal cannot mutate a dispatched winner[39m[32m 9[2mms[22m[39m
+[31m     [31m×[31m late actor refusal cannot mutate a dispatched winner[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m late session refusal cannot mutate a dispatched winner[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m late policy refusal cannot mutate a dispatched winner[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m late breaker refusal cannot mutate a dispatched winner[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m legitimate refusal fences before release and AI completion[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m rolls back refusal and hold release together when audit fails[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m rolls back the refusal CAS if AI ownership is already superseded[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m returns non-terminal superseded to the losing acquisition caller[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m does not acquire a prepared row whose dispatch knowledge is already unaccounted[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m retains exposure if the already-invoked adapter declares not_dispatched[39m[32m 1[2mms[22m[39m
+     [32m✓[39m rolls back acquisition if its audit fails and invokes no adapter[32m 1[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m11 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 10:58:32
+[2m   Duration [22m 429ms[2m (transform 109ms, setup 0ms, import 211ms, tests 23ms, environment 0ms)[22m
+

@@ -1,0 +1,20 @@
+✔ recorder retains native stdout/stderr bytes and matches their hashes (362.6182ms)
+✔ recorder keeps launch diagnostics separate from native stderr (218.5391ms)
+✔ recorder reports the actual descriptor cwd (314.9497ms)
+✔ recorder refuses canonical synthetic key shape before writing raw streams (268.9384ms)
+✔ recorder timeout stops its owned child tree and preserves stderr (1656.8204ms)
+✔ canonical original still reproduces the SHA256 substring false positive (3.7287ms)
+✔ validate-revalidation-seal-r0b.mjs: digest substrings are not standalone Twilio tokens (1.8863ms)
+✔ validate-revalidation-seal-r0b.mjs: isolated SID and other credential-shape detection remains enabled (1.4558ms)
+✔ record-command.mjs: digest substrings are not standalone Twilio tokens (1.7411ms)
+✔ record-command.mjs: isolated SID and other credential-shape detection remains enabled (1.0726ms)
+✔ assemble-local-seal.mjs: digest substrings are not standalone Twilio tokens (1.0645ms)
+✔ assemble-local-seal.mjs: isolated SID and other credential-shape detection remains enabled (0.9062ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2899.6665

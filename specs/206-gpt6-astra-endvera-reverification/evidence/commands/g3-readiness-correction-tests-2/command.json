@@ -1,0 +1,20 @@
+{
+  "id": "g3-readiness-correction-tests-2",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/local-whole-product-readiness-gate.test.ts test/whole-product-closure-audit.test.ts test/construction-operating-assistant-r36k-market-readiness.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:10:57.717Z",
+  "finishedAt": "2026-09-09T14:10:58.693Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-tests-2/stdout.txt",
+  "stdoutSha256": "ab17d272834392418c5ace8a655185cefd987d9749c81c711f7fc7ec50bd7933",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-tests-2/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

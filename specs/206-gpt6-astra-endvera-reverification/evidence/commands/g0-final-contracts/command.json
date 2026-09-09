@@ -1,0 +1,20 @@
+{
+  "id": "g0-final-contracts",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G0",
+  "observedHead": "1f64d86165a5eb2b41287fc1336635897058990d",
+  "observedTree": "62ed3f4f72585e8dacb0921ebd2d14f2e1839a40",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node --test specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-contracts.test.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:41:51.387Z",
+  "finishedAt": "2026-09-09T13:41:51.771Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-contracts/stdout.txt",
+  "stdoutSha256": "f869a437d26a0d74c25d4be194e56530c12d24de8c43263544a85b91577a4f1e",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-contracts/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

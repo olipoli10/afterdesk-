@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "1.0",
+  "auditLane": "ARCHITECTURE_SECURITY",
+  "sourceProductHead": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+  "auditor": {
+    "requestedModel": "gpt-6-astra",
+    "reportedModel": null,
+    "clientVersion": "codex-cli 0.153.4",
+    "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+    "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+    "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+    "runAt": "2026-09-09T13:51:23.245Z",
+    "commandId": "g2-packet-architecture-security",
+    "promptPath": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/architecture-security.md",
+    "promptSha256": "976151ba3cb8b39ef9787ea2bec4a83e2f375ea6e506c935d26cc5c020f11bfc"
+  },
+  "status": "INCOMPLETE",
+  "summary": "Audit statique limité aux 12 extraits fournis, attribués au commit afaedf8e719892503a38016a8c6add55791ddc81, dans le paquet identifié par sha256 85ff5b3a2899ace0b722b02ddae7e927d4774f36f9255eb5e661b2c12e5b4952. Périmètre exact : src/server/model-gateway/assistant-routing.ts:1-63; src/server/model-gateway/types.ts:1-176; src/server/model-gateway/privacy.ts:1-185; src/lib/construction-operating-assistant-r36a/contracts.ts:1-138; src/lib/construction-operating-assistant-r36a/router.ts:1-305; src/server/construction-operating-assistant-r38f/broadcast-approval.ts:1-107; src/server/construction-operating-assistant-r38e/broadcast-preparation.ts:1-324; src/server/construction-assistant-v1/outbound.ts:1-151; src/server/construction-assistant-v1/workspace.ts:1-233; src/server/construction-assistant-v1/simulator.ts:1-44; src/server/construction-operating-assistant-r36w/project-brain-fact-candidates.ts:1-570; src/server/construction-operating-assistant-r37a/sealed-executor.ts:1-182. Deux écarts statiques relevés. Les extraits montrent notamment des contrôles d'appartenance au workspace, une approbation R38F réservée aux propriétaires et administrateurs et liée à une version et un hash, l'invalidation d'approbation lors de l'édition V1, ainsi que des contrôles d'intégrité des faits R36W persistés par Prisma. Ces observations ne démontrent pas la sécurité du chemin complet. Aucun outil, test, accès à un secret, appel externe ou changement de fichier effectué.",
+  "findings": [
+    {
+      "id": "ASTRA-R0-ARCH-001",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "Le rejeu d'une préparation dépend de l'état actuel des contacts",
+      "invariant": "6. Duplicate et replay idempotents.",
+      "expected": "Après vérification des droits actuels, une demande identique déjà persistée retrouve son résultat durable sans devoir résoudre de nouveau ses destinataires dans un annuaire mutable.",
+      "actual": "prepareSecretaryBroadcast charge les contacts actifs et résout tous les noms avant de rechercher le brouillon existant par workspaceId et requestId. Si un contact utilisé lors de la préparation initiale devient inactif, perd son téléphone ou devient ambigu, la même demande peut être refusée avant d'atteindre la branche de rejeu, même si son brouillon et sa réponse sont déjà persistés.",
+      "evidence": [
+        {
+          "path": "src/server/construction-operating-assistant-r38e/broadcast-preparation.ts",
+          "lineStart": 125,
+          "lineEnd": 159,
+          "observation": "Après le contrôle owner/admin, la fonction charge les contacts actifs et peut lever CONTACT_NOT_FOUND, AMBIGUOUS_CONTACT ou CONTACT_PHONE_REQUIRED pendant la résolution des destinataires."
+        },
+        {
+          "path": "src/server/construction-operating-assistant-r38e/broadcast-preparation.ts",
+          "lineStart": 171,
+          "lineEnd": 208,
+          "observation": "La transaction, la recherche workspaceId_requestId et le retour replayed:true surviennent seulement après la résolution des contacts."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Constat par lecture du flux fourni. Aucune reproduction exécutée : les outils sont interdits pour cette passe et aucun environnement de test avec données synthétiques n'est fourni."
+      },
+      "impact": "Une relance peut annoncer un refus alors qu'un brouillon existe déjà. Cela peut provoquer une nouvelle préparation sous un autre identifiant et compliquer la récupération après une réponse perdue. Aucun double envoi externe n'est démontré.",
+      "confidence": "HIGH",
+      "proposedTest": "Dans un environnement isolé, préparer une diffusion avec un contact synthétique, rendre ce contact inactif, puis rejouer exactement la demande avec le même utilisateur toujours autorisé. Attendre le même canonicalEffectId, replayed:true et aucun brouillon supplémentaire. Couvrir aussi la suppression du téléphone et l'apparition d'un homonyme.",
+      "mutationAuthorized": false
+    },
+    {
+      "id": "ASTRA-R0-ARCH-002",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "Le plafond de latence synthétique ne borne pas l'attente de l'adaptateur",
+      "invariant": "8. Coût, timeout, provenance et modèle réellement servi traçables.",
+      "expected": "L'exécuteur applique une échéance mesurée à l'invocation synthétique et distingue cette durée de la latence déclarée par l'adaptateur.",
+      "actual": "runSyntheticAttempt attend directement la promesse de l'adaptateur. Le contrôle maxLatencyMs intervient après sa résolution et utilise adapterResult.latencyMs. Aucun mécanisme d'échéance, signal d'annulation ou mesure du temps écoulé n'apparaît dans cette fonction. Une promesse qui ne se résout pas empêche donc ce contrôle d'être atteint.",
+      "evidence": [
+        {
+          "path": "src/server/construction-operating-assistant-r37a/sealed-executor.ts",
+          "lineStart": 21,
+          "lineEnd": 29,
+          "observation": "Le contrat d'invocation transmet la requête et un contexte optionnel contenant runId et leaseToken; il ne transmet pas de signal d'annulation."
+        },
+        {
+          "path": "src/server/construction-operating-assistant-r37a/sealed-executor.ts",
+          "lineStart": 147,
+          "lineEnd": 175,
+          "observation": "L'adaptateur est attendu à la ligne 157. La comparaison de sa latence déclarée au plafond arrive à la ligne 163; cette même valeur alimente ensuite la preuve synthétique."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Constat statique uniquement. Aucun adaptateur exécuté et aucun test de promesse suspendue lancé, conformément à l'interdiction d'utiliser les outils."
+      },
+      "impact": "À l'échelle de cette fonction, une tentative synthétique peut rester suspendue au-delà du plafond, et la preuve de latence dépend de la valeur retournée par l'adaptateur. L'existence d'un timeout supérieur chez les appelants demeure inconnue; aucun impact sur un provider réel n'est démontré.",
+      "confidence": "HIGH",
+      "proposedTest": "Tester isolément avec une horloge contrôlée et un adaptateur purement en mémoire dont la promesse reste pendante. Vérifier la terminaison au plafond. Tester ensuite un adaptateur dont la durée mesurée dépasse le plafond malgré une latencyMs déclarée inférieure.",
+      "mutationAuthorized": false
+    }
+  ],
+  "unknowns": [
+    "Le sourceProductHead requis diffère du observedHead fourni. Sans inspection Git, l'ascendance, le diff et l'équivalence des fichiers produit entre ces commits ne sont pas établis. Les constats portent exclusivement sur les extraits attribués à observedHead.",
+    "Les empreintes du paquet, des fichiers, du prompt et de l'arbre sont des métadonnées fournies; elles n'ont pas été recalculées. Le fichier de schéma du dépôt n'a pas été ouvert; la structure du rapport suit le schéma reproduit dans la demande.",
+    "Admission et identité : les routes HTTP, sessions, protections de requêtes, implémentation de admitLocalEnvelope et appelants de simulateInboundMessage sont absents. La validation cryptographique des messages et la liaison entre utilisateur authentifié, workspace et identité de communication ne sont pas établies de bout en bout.",
+    "Isolation par rôle : les services V1 editOutboundDraft et approveAndSimulateOutbound vérifient seulement une appartenance active dans les extraits. La politique applicable aux rôles V1 et les contrôles de leurs appelants manquent; un contournement de privilège exposé n'est pas démontré.",
+    "Classification et injection : classifyAssistantIntent, le registre des routes, les prompts, les parseurs de documents et les traitements des résultats web ne sont pas fournis. Les schémas stricts et projections minimales observés ne suffisent pas à établir le confinement des instructions présentes dans les contenus.",
+    "Chargement des faits : R36W vérifie un snapshot confirmé, ses hashes et des correspondances relationnelles. L'implémentation de buildProjectBrainFactCandidates, la confirmation initiale et les autres chargeurs de faits manquent; l'absence universelle de faits inventés n'est pas établie.",
+    "Gateway et providers : le moteur d'exécution, les adaptateurs réels, leurs appelants et les mécanismes de fallback ne sont pas fournis. Impossible de vérifier les invariants 3, 7, 8 et 12 pour tous les chemins externes.",
+    "Le contrat AdapterAttemptResult fourni ne comporte pas de champ explicite pour le modèle réellement servi, mais sa propriété response est de type unknown. Sans adaptateurs ni persistance des tentatives, impossible de déterminer si cette identité est extraite, vérifiée et enregistrée ailleurs.",
+    "Preview et approbation : les contrôles de version et de hash sont visibles, mais les interfaces, les routes d'approbation et l'ensemble des mutations des brouillons manquent. La présentation exacte du payload à l'approbateur et l'invalidation après toutes les mutations ne sont pas établies.",
+    "Outbox et readback : aucun chemin complet d'outbox, worker, dispatch réel, accusé provider ou réconciliation n'est fourni. Les drapeaux false et le simulateur local observés ne démontrent pas le comportement des chemins absents.",
+    "Persistance : plusieurs transactions Prisma et verrous PostgreSQL sont visibles. Le schéma de base, les contraintes, les migrations et les appelants du cache de rejeu R36A en mémoire ne sont pas fournis; la durabilité du rejeu entre processus et le rôle exclusif de PostgreSQL comme source de vérité restent partiellement inconnus.",
+    "Secrets et logs : aucun secret n'a été recherché ni consulté. Les extraits ne permettent pas d'attester l'absence de secrets dans le reste des sources, les logs ou les preuves d'exécution."
+  ]
+}

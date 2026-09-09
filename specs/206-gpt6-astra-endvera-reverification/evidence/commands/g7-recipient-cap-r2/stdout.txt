@@ -1,0 +1,1 @@
+CHECK_IDENTITY phase=G7 checkId=RECIPIENT_CAP runtimeProviderAuthorized=false claimedDeviceObservation=false

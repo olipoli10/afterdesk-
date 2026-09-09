@@ -1,0 +1,20 @@
+{
+  "id": "g7-extra-mobile-tests",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MOBILE_TESTS",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:28:08.091Z",
+  "finishedAt": "2026-09-09T15:28:13.480Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-mobile-tests/stdout.txt",
+  "stdoutSha256": "4a9121599a52a63aceded2a670d1f8dfb78c91fd503da5a69d5099a249c5c97e",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-mobile-tests/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

@@ -1,0 +1,4 @@
+canon-provenance-r0b: JSON_SCHEMA_VALID
+architecture-security: JSON_SCHEMA_VALID
+mobile-ux: JSON_SCHEMA_VALID
+product-coverage: JSON_SCHEMA_VALID

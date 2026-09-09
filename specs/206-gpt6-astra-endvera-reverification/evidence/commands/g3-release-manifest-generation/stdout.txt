@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "releaseKey": "ENDVERA_CONSTRUCTION_V1",
+  "releaseVersion": 1,
+  "readiness": "LOCAL_PACKAGE_READY",
+  "source": {
+    "head": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+    "tree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366"
+  },
+  "targets": [
+    "WEB",
+    "IOS",
+    "ANDROID"
+  ],
+  "definitionHash": "dea47bd2e2214c6104a4163186ccc066ec6a224f7240899a03ab4f1c7904e207",
+  "environmentContractHash": "c6d4d6e0b352eab76cb7887dceb7820a0a45272a8e70349b614890adb62dc53b",
+  "inputs": [
+    {
+      "path": "apps/mobile/app.json",
+      "byteSize": 3822,
+      "sha256": "1173694bf287080de6b5816616dc8e873ce68af01b8d7ec8c3296360f4627b7a"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/Assets/expo-symbol 2.svg",
+      "byteSize": 611,
+      "sha256": "0aab4b9a72b495d415a7088de655829e2db36a2021b17679af6bc47a1fe363d6"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/Assets/grid.png",
+      "byteSize": 53681,
+      "sha256": "8247d79a2b31328fe4e330a973e6fae16924ed9aebd72c64d464d6856ab18c72"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/icon.json",
+      "byteSize": 819,
+      "sha256": "1cf151ba777b142d203aa3bc595fa52ba1bd80e2f3e5b4c5a2d0192825925538"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-background.png",
+      "byteSize": 11359,
+      "sha256": "a63fe15aa0055db0b50a5cd06f6f8a1ca2439376afb9e8c401f0c082713f1c2f"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-foreground.png",
+      "byteSize": 9473,
+      "sha256": "cac6dfecfe5e91fb42d40f24b3ae579fa02576ee1ef10d9701d1fdb985323f62"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-monochrome.png",
+      "byteSize": 2147,
+      "sha256": "ee8d5121773450a30ec743ec765e278295bacd5703c69a428da68885cfb44bda"
+    },
+    {
+      "path": "apps/mobile/assets/images/favicon.png",
+      "byteSize": 2086,
+      "sha256": "26b999640fc51fc7cb60b7391acfbe2161e980c91d33d0af01db1f2f244f5863"
+    },
+    {
+      "path": "apps/mobile/assets/images/icon.png",
+      "byteSize": 57776,
+      "sha256": "5c9b4884ffb9065fbc62d8e5ba52d6b44086ea7036e49e19d975d0d7334b13f0"
+    },
+    {
+      "path": "apps/mobile/assets/images/splash-icon.png",
+      "byteSize": 11547,
+      "sha256": "b7998b7df1b4eb8628573a260f1f63b21567d4c8fdb0a45e13a67e915ed1ed15"
+    },
+    {
+      "path": "apps/mobile/src/app/(app)/settings.tsx",
+      "byteSize": 1830,
+      "sha256": "47f647797765148f017da43f545aa43462c8afc089d00315f591751fd94210ce"
+    },
+    {
+      "path": "apps/mobile/src/lib/release.ts",
+      "byteSize": 1070,
+      "sha256": "25a46442ec0ed3ce9b77d4fe39a574d641621bae3a259ea7cc4ea1dd15fee0af"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/01-environment-and-build.md",
+      "byteSize": 904,
+      "sha256": "0d092ba46b2216da796895ce82b56ac165599abe3e23ace200a7da69e4db6cd1"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/02-smoke-and-evidence.md",
+      "byteSize": 832,
+      "sha256": "2a173f125e6d64b0c07af5f2526e208f62ae3aa443975f5d3f666b373ba679a9"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/03-promotion-stop.md",
+      "byteSize": 781,
+      "sha256": "ea4099062b735401ae78d37ea681414d64db906156cf2f0dbbe2d81773d74333"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/04-incident-and-rollback.md",
+      "byteSize": 821,
+      "sha256": "a1cbd5ba76a9f59e31afd753429b103db8735d3703f3c08fd5973948b7f88d8e"
+    },
+    {
+      "path": "package.json",
+      "byteSize": 1753,
+      "sha256": "344d6765c217f027d7cbc379adb32acc386668458134e182070882bb10ba6548"
+    },
+    {
+      "path": "release/endvera-construction-v1/environment-contract.json",
+      "byteSize": 2512,
+      "sha256": "36535d826219aec29cad818d8a20fcafcd06113ac8a3f49c36bafcea94d42e54"
+    },
+    {
+      "path": "release/endvera-construction-v1/privacy-disclosure.json",
+      "byteSize": 2895,
+      "sha256": "3f714c05110a4b91420eec3ea38d8a20d89a8a704410ec2d51a5a8178dd9fe32"
+    },
+    {
+      "path": "release/endvera-construction-v1/release-definition-v3.json",
+      "byteSize": 3170,
+      "sha256": "3ef53060e71a7868a9db3602e230032044b92f9531555cd6090138a9b0dc6b48"
+    },
+    {
+      "path": "release/endvera-construction-v1/store/en-CA.json",
+      "byteSize": 1055,
+      "sha256": "ea9ec9ec6089debd21b711f6a1dd33a5c82f17c726be82a2b8acea8889fa926c"
+    },
+    {
+      "path": "release/endvera-construction-v1/store/fr-CA.json",
+      "byteSize": 1114,
+      "sha256": "f8a8b416d084d21fa441ced2e1adf9040b4f365bf384930ccd8d5fd7f3744e05"
+    },
+    {
+      "path": "release/endvera-construction-v1/submission-gaps.json",
+      "byteSize": 1345,
+      "sha256": "9b44a2188e2800ca75167ee19b823d12fb41b4f2202780093a3de960d954da3f"
+    },
+    {
+      "path": "scripts/endvera-release-source-binding.mjs",
+      "byteSize": 2935,
+      "sha256": "744a21db4262ac831080830732fda34588d49b307622fea3c38f0ea484783f1a"
+    },
+    {
+      "path": "scripts/generate-endvera-release-package.mjs",
+      "byteSize": 12081,
+      "sha256": "371045573a7554d0f467a7150eba973e36fdff961760977514c9f409b0f49a91"
+    },
+    {
+      "path": "scripts/validate-endvera-release-package.mjs",
+      "byteSize": 1717,
+      "sha256": "1beff73222f7f8b7987aa11da3ae0f2c80dabff4e292a71e7abeb68170be633e"
+    },
+    {
+      "path": "src/app/construction/support/page.tsx",
+      "byteSize": 3580,
+      "sha256": "4c9990db393082fa3ae867cac0439337aad70c762fd2a723d396c3b70c18693e"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r35/contracts.ts",
+      "byteSize": 3473,
+      "sha256": "c03e9a92da3508d75b02bfdedd62a2cc24ef57d3fc81558d61e69e08a6db9d56"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r35/registry.ts",
+      "byteSize": 2253,
+      "sha256": "92a8eade9b077340ae4bdb5aabbbba6e88ec371a046bf87bea9b60c78827d86c"
+    }
+  ],
+  "validationCommands": [
+    "node scripts/validate-endvera-release-package.mjs",
+    "npm test -- --run test/construction-operating-assistant-r35-release-package.test.ts",
+    "npm --prefix apps/mobile test -- --run test/release-package.test.ts"
+  ],
+  "signed": false,
+  "uploaded": false,
+  "published": false,
+  "deployed": false,
+  "providerObserved": false,
+  "externalEffectCount": 0,
+  "manifestHash": "d79e791971bb4b8084a71bc6aee136e3a92069df1fe857ad9a89c686a03ec66b"
+}

@@ -1,0 +1,1 @@
+{"kind":"G0_CORPUS_CONTRACT_VALIDATION","cases":96,"development":64,"hidden":32,"families":8,"syntheticGraderSelfChecks":768,"providerCalls":0,"candidateAccess":"UNPROBED","runtimeBaseline":"UNRESOLVED","oracleAccessDenialObserved":false,"productBaselineEvidence":false,"status":"PASS"}

@@ -1,0 +1,20 @@
+{
+  "id": "g5-corpus-frozen-verification",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G5",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/corpus-check.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:14:50.454Z",
+  "finishedAt": "2026-09-09T14:14:50.747Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-corpus-frozen-verification/stdout.txt",
+  "stdoutSha256": "0b2fdac8ef6306f78deecce6461f3b60c485c86e3930f2a3e5b5421ad1c47f26",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-corpus-frozen-verification/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

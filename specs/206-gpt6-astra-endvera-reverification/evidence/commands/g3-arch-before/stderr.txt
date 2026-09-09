@@ -1,0 +1,68 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37a-sealed-executor.test.ts[2m > [22mR37A sealed provider executor[2m > [22mARCH002 bounds a never-resolving adapter by elapsed time, not reported latency
+[31m[1mAssertionError[22m: expected 'PENDING' to be 'R37A_SYNTHETIC_ATTEMPT_TIMEOUT' // Object.is equality[39m
+
+Expected: [32m"R37A_SYNTHETIC_ATTEMPT_TIMEOUT"[39m
+Received: [31m"PENDING"[39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37a-sealed-executor.test.ts:[2m59:21[22m[39m
+    [90m 57|[39m     void result.then(() => { outcome = "RESOLVED"; }, (error: Error) =…
+    [90m 58|[39m     [35mawait[39m vi[33m.[39m[34madvanceTimersByTimeAsync[39m([34m10_001[39m)[33m;[39m
+    [90m 59|[39m     [34mexpect[39m(outcome)[33m.[39m[34mtoBe[39m([32m"R37A_SYNTHETIC_ATTEMPT_TIMEOUT"[39m)[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m 60|[39m   })[33m;[39m
+    [90m 61|[39m   it("seals current synthetic R36B controller input while retaining st…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/broadcast-preparation-replay.test.ts[2m > [22mARCH001 persisted broadcast preparation replay[2m > [22mreplays the persisted result when previously selected contacts are no longer active
+[31m[1mAssertionError[22m: promise rejected "SecretaryBroadcastRefused: R38E_CONTACT_N… { …(2) }" instead of resolving[39m
+[36m [2m❯[22m test/unit/broadcast-preparation-replay.test.ts:[2m35:51[22m[39m
+    [90m 33|[39m   })[33m;[39m
+    [90m 34|[39m   it("replays the persisted result when previously selected contacts a…
+    [90m 35|[39m     await expect(prepareSecretaryBroadcast(input)).resolves.toMatchObj…
+    [90m   |[39m                                                   [31m^[39m
+    [90m 36|[39m     expect(state.contacts).not.toHaveBeenCalled();expect(state.create)…
+    [90m 37|[39m   })[33m;[39m
+
+[31m[1mCaused by: SecretaryBroadcastRefused[22m: R38E_CONTACT_NOT_FOUND[39m
+[36m [2m❯[22m src/server/construction-operating-assistant-r38e/broadcast-preparation.ts:[2m136:13[22m[39m
+[90m [2m❯[22m Module.prepareSecretaryBroadcast src/server/construction-operating-assistant-r38e/broadcast-preparation.ts:[2m133:53[22m[39m
+[90m [2m❯[22m test/unit/broadcast-preparation-replay.test.ts:[2m35:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ reasonCode: 'R38E_CONTACT_NOT_FOUND', reply: 'Je ne trouve pas le contact « Contact Simulation A ». Aucun texto de groupe n’a été préparé.' }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/broadcast-preparation-replay.test.ts[2m > [22mARCH001 persisted broadcast preparation replay[2m > [22mreplays the exact prior result even if a new homonym now exists
+[31m[1mAssertionError[22m: promise rejected "SecretaryBroadcastRefused: R38E_AMBIGUOUS… { …(2) }" instead of resolving[39m
+[36m [2m❯[22m test/unit/broadcast-preparation-replay.test.ts:[2m40:51[22m[39m
+
+
+[31m[1mCaused by: SecretaryBroadcastRefused[22m: R38E_AMBIGUOUS_CONTACT[39m
+[36m [2m❯[22m src/server/construction-operating-assistant-r38e/broadcast-preparation.ts:[2m142:13[22m[39m
+[90m [2m❯[22m Module.prepareSecretaryBroadcast src/server/construction-operating-assistant-r38e/broadcast-preparation.ts:[2m133:53[22m[39m
+[90m [2m❯[22m test/unit/broadcast-preparation-replay.test.ts:[2m40:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ reasonCode: 'R38E_AMBIGUOUS_CONTACT', reply: 'Il y a plusieurs contacts nommés « Contact Simulation A ». Précise lequel; rien n’a été préparé.' }[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/broadcast-preparation-replay.test.ts[2m > [22mARCH001 persisted broadcast preparation replay[2m > [22mrefuses changed input hash before resolving current contacts
+[31m[1mAssertionError[22m: expected [Function] to throw error including 'R38E_BROADCAST_REPLAY_MISMATCH' but got 'R38E_CONTACT_NOT_FOUND'[39m
+
+Expected: [32m"R38E_[7mBROADCAST_REPLAY_MISMATCH[27m"[39m
+Received: [31m"R38E_[7mCONTACT_NOT_FOUND[27m"[39m
+
+[36m [2m❯[22m test/unit/broadcast-preparation-replay.test.ts:[2m48:102[22m[39m
+    [90m 46|[39m   })[33m;[39m
+    [90m 47|[39m   it("refuses changed input hash before resolving current contacts", a…
+    [90m 48|[39m     await expect(prepareSecretaryBroadcast({...input,candidate:{...can…
+    [90m   |[39m                                                                                                      [31m^[39m
+    [90m 49|[39m     expect(state.contacts).not.toHaveBeenCalled();expect(state.create)…
+    [90m 50|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+

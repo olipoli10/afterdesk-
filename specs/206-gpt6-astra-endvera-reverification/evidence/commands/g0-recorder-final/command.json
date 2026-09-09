@@ -1,0 +1,20 @@
+{
+  "id": "g0-recorder-final",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G0",
+  "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+  "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node --test specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-recorder.test.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:36:00.073Z",
+  "finishedAt": "2026-09-09T13:36:02.929Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-recorder-final/stdout.txt",
+  "stdoutSha256": "0a77dfc64aaee1ded5c51922ccea40b6ea484a098c4d67b5c91bdec75f6fb534",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-recorder-final/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

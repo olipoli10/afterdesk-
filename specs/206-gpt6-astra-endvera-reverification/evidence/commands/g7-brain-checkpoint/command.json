@@ -1,0 +1,20 @@
+{
+  "id": "g7-brain-checkpoint",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "C:/Users/oliro/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe -NoProfile -File C:/dev/afterdesk-project-brain/scripts/checkpoint.ps1 -Message checkpoint(spec206): retain blocked local revalidation and guarded intent evidence -NoPush",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:45:27.288Z",
+  "finishedAt": "2026-09-09T15:45:30.442Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-brain-checkpoint/stdout.txt",
+  "stdoutSha256": "9592b56a08b7efb29e6bc863055c615ac1f41cc629f4fe88d9b031528fed9305",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-brain-checkpoint/stderr.txt",
+  "stderrSha256": "c2efe6616c14ddc56ca8cc3ab54611bf931dda6dbd9f0a46844cc2a5d7dcbabf",
+  "replay": null
+}

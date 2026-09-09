@@ -1,0 +1,7 @@
+warning: in the working copy of 'CURRENT_STATE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'HANDOFF.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MASTER_STATE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'CURRENT_STATE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'HANDOFF.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'MASTER_STATE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'session-log/2026-09-09.md', LF will be replaced by CRLF the next time Git touches it

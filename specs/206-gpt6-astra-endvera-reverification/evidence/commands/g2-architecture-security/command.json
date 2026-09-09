@@ -1,0 +1,20 @@
+{
+  "id": "g2-architecture-security",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G2",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "MODEL_AUDIT",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-audit.mjs architecture-security",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:45:26.327Z",
+  "finishedAt": "2026-09-09T13:46:09.752Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-architecture-security/stdout.txt",
+  "stdoutSha256": "5f7b51b700f2f95c1bfe52df610712e6d19389f493a4e04149957020d43b420e",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-architecture-security/stderr.txt",
+  "stderrSha256": "74381d418e8f46acecf2fe252083d2b27da210f1e9b6cd52f13876f901f37114",
+  "replay": null
+}

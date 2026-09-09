@@ -1,0 +1,20 @@
+{
+  "id": "g0-program-admission",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G0",
+  "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+  "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "pwsh -NoProfile -File C:/dev/afterdesk-project-brain/scripts/validate-long-run-program.ps1 -ManifestPath C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/LONG_RUN_PROGRAM.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:30:11.245Z",
+  "finishedAt": "2026-09-09T13:30:11.962Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-program-admission/stdout.txt",
+  "stdoutSha256": "dcb7987a9c96132fe3dbf72a2b58e071715f46310d8fec57748d81fe43719b6d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-program-admission/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

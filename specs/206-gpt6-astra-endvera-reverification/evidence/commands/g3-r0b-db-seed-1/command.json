@@ -1,0 +1,20 @@
+{
+  "id": "g3-r0b-db-seed-1",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 SYNTHETIC_SEED",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:54:02.331Z",
+  "finishedAt": "2026-09-09T13:54:52.759Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-seed-1/stdout.txt",
+  "stdoutSha256": "018bb0bb61bfce3834336fd7e8fd23671672a1ccbb4acbc24d12e88ff44acd35",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-seed-1/stderr.txt",
+  "stderrSha256": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+  "replay": null
+}

@@ -1,0 +1,18 @@
+OpenAI Codex v0.153.4
+--------
+workdir: C:\dev\endvera-astra-reverification
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: low
+reasoning summaries: none
+session id: 01a08657-6f79-7912-86de-f3f6a66dc75f
+--------
+user
+Return exactly ASTRA_CODEX_REQUEST_ACCEPTED. Do not call tools, read files, access providers or perform any task. Do not claim your served model identity.
+
+codex
+ASTRA_CODEX_REQUEST_ACCEPTED
+tokens used
+5,143

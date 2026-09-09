@@ -1,0 +1,34 @@
+{
+  "id": "g7-prompt-injection-wrapper",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "PHASE_CHECK",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs --revalidation-replay specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-prompt-injection.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:20:37.200Z",
+  "finishedAt": "2026-09-09T15:20:37.392Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-prompt-injection-wrapper/stdout.txt",
+  "stdoutSha256": "34983aab1b91eeea933512baf87c76f177d9dca6c3a99be0bbdcadb251054d9e",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-prompt-injection-wrapper/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": {
+    "entrypoint": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "args": [
+      "--revalidation-replay",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-prompt-injection.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-prompt-injection.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-prompt-injection/stdout.txt",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-prompt-injection/stderr.txt"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "g7-assemble-command-log",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/assemble-local-seal.mjs command-log specs/206-gpt6-astra-endvera-reverification/closeout-command-log.config.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:46:17.170Z",
+  "finishedAt": "2026-09-09T15:46:17.923Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-assemble-command-log/stdout.txt",
+  "stdoutSha256": "376a674b29af1c3c04eccde43ba1ce8f5eee1a208e2068cce16465f300d3822e",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-assemble-command-log/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

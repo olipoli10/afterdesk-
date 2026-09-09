@@ -1,0 +1,20 @@
+{
+  "id": "g3-readiness-r2-after",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/readiness-review-r2.test.ts test/unit/readiness-review-hardening.test.ts test/construction-public-copy-boundaries.test.ts test/local-whole-product-readiness-gate.test.ts test/whole-product-closure-audit.test.ts test/construction-operating-assistant-r36k-market-readiness.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:34:38.215Z",
+  "finishedAt": "2026-09-09T14:34:40.039Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-r2-after/stdout.txt",
+  "stdoutSha256": "a2b8a1605e0d88a7bbad28605849c18966c20237c2b4c9a7f3c55cdf91c4df66",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-r2-after/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

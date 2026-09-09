@@ -1,0 +1,133 @@
+{
+  "kind": "DISTINCT_LANE_PATCH_REVIEW",
+  "reviewer": {
+    "model": "gpt-6-astra",
+    "sameModelAsImplementation": true,
+    "independentModelReview": false,
+    "lane": "g0_invariants"
+  },
+  "reviewStatus": "FINDINGS",
+  "sourceHashes": [
+    {
+      "path": "src/lib/construction-assistant-v1/interpreter.ts",
+      "sha256": "6944a8bee936624b9731405ef623d81be496302775f3d7eac00c8d5fc051d251"
+    },
+    {
+      "path": "test/unit/calendar-dst-revalidation.test.ts",
+      "sha256": "cd113029780e11db6d20e5e112ab76e4b16a7a01d76b7265e8a4582a97b6ad35"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "sha256": "b3f50c0ca7ab7ba03e6a5610fd9a6d4a9dc9b8d8a1c6aec1a82a39838217cbb8"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r35/registry.ts",
+      "sha256": "92a8eade9b077340ae4bdb5aabbbba6e88ec371a046bf87bea9b60c78827d86c"
+    },
+    {
+      "path": "release/endvera-construction-v1/release-definition-v3.json",
+      "sha256": "559162362ea42acc409fe045ca3a6b4e6f8ac8ce5c1032b7897c44f8ffb49de4"
+    },
+    {
+      "path": "scripts/generate-endvera-release-package.mjs",
+      "sha256": "26f48f4c7241be21e7dbdcf6ff2aa44057b4d133ce1679a5392d58d5240a3014"
+    },
+    {
+      "path": "scripts/validate-endvera-release-package.mjs",
+      "sha256": "0e57954ec8881433afa5a80353ee209fcb6b9732f276ffb3192ce36e1af6ec50"
+    },
+    {
+      "path": "scripts/validate-endvera-mobile-build-readiness.mjs",
+      "sha256": "73ca5099dd720dc0856b57c436665dcd82caa2520d9db54a3af1c7e16ad13a3a"
+    },
+    {
+      "path": "scripts/validate-endvera-native-preflight.mjs",
+      "sha256": "7b9a6d23f0a006b448117b8d78f6988722c91df3408b0afefcc30fd1bcd683fb"
+    },
+    {
+      "path": "apps/mobile/src/lib/release.ts",
+      "sha256": "25a46442ec0ed3ce9b77d4fe39a574d641621bae3a259ea7cc4ea1dd15fee0af"
+    },
+    {
+      "path": "apps/mobile/app.json",
+      "sha256": "1173694bf287080de6b5816616dc8e873ce68af01b8d7ec8c3296360f4627b7a"
+    },
+    {
+      "path": "apps/mobile/eas.json",
+      "sha256": "8d145346c129fb75fb8ffe3d88d94f736713c974797f4efb1df1df2508f899ec"
+    },
+    {
+      "path": "package.json",
+      "sha256": "344d6765c217f027d7cbc379adb32acc386668458134e182070882bb10ba6548"
+    },
+    {
+      "path": "test/unit/parent-patch-dst-review.test.ts",
+      "sha256": "00414b34141d11a37dec448aa866d86bd2f90c3796065f9b212d276f34f87c89"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/review-parent-patches.mjs",
+      "sha256": "bab2624912ea849b89ae4f1b44997230582967734bde16bc3b632035b1becd1d"
+    }
+  ],
+  "findings": [
+    {
+      "id": "PARENT-PATCH-WEB-IDENTITY",
+      "severity": "P2",
+      "classification": "FACT",
+      "introducedByPatch": true,
+      "summary": "V3 WEB semanticVersion differs from the Web package version.",
+      "expected": "0.1.0",
+      "actual": "0.1.1"
+    },
+    {
+      "id": "RELEASE-SOURCE-PROVENANCE",
+      "severity": "P2",
+      "classification": "FACT",
+      "introducedByPatch": false,
+      "summary": "Builder and validator accept synthetic 40-hex source identities without verifying a Git commit/tree or source blobs. Existing behavior, not introduced by v3. In-memory reproduction only; no manifest written."
+    }
+  ],
+  "fontAssets": [
+    {
+      "path": "../../node_modules/next/dist/next-devtools/server/font/geist-latin.woff2",
+      "byteSize": 28356,
+      "woff2MagicValid": true,
+      "sha256": "1b5ebfb3a01a97343ac96873e6d59a8cb285c66012b6a1ac509cb2765e995ba8"
+    },
+    {
+      "path": "../../node_modules/next/dist/next-devtools/server/font/geist-mono-latin.woff2",
+      "byteSize": 31288,
+      "woff2MagicValid": true,
+      "sha256": "b7ac144b394cbd81052d6397ec0c33397977b1d7e9bc095e744e652a378c6fb3"
+    }
+  ],
+  "nextPackageVersion": "16.2.12",
+  "syntheticSourceAccepted": true,
+  "testExecution": {
+    "executable": "C:\\Program Files\\nodejs\\node.exe",
+    "args": [
+      "--require",
+      "./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "test/unit/calendar-dst-revalidation.test.ts",
+      "test/unit/parent-patch-dst-review.test.ts",
+      "test/construction-operating-assistant-r35-release-package.test.ts",
+      "--reporter=json",
+      "--maxWorkers=1"
+    ],
+    "exitCode": 0,
+    "stdout": "{\"numTotalTestSuites\":6,\"numPassedTestSuites\":6,\"numFailedTestSuites\":0,\"numPendingTestSuites\":0,\"numTotalTests\":18,\"numPassedTests\":18,\"numFailedTests\":0,\"numPendingTests\":0,\"numTodoTests\":0,\"snapshot\":{\"added\":0,\"failure\":false,\"filesAdded\":0,\"filesRemoved\":0,\"filesRemovedList\":[],\"filesUnmatched\":0,\"filesUpdated\":0,\"matched\":0,\"total\":0,\"unchecked\":0,\"uncheckedKeysByFile\":[],\"unmatched\":0,\"updated\":0,\"didUpdate\":false},\"startTime\":1788963189974,\"success\":true,\"testResults\":[{\"assertionResults\":[{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging keeps one closed local-only registry and exact cross-platform identity\",\"status\":\"passed\",\"title\":\"keeps one closed local-only registry and exact cross-platform identity\",\"duration\":2.6884999999999764,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging validates local environment presence without accepting or returning values\",\"status\":\"passed\",\"title\":\"validates local environment presence without accepting or returning values\",\"duration\":0.5984000000000265,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging builds the same strict manifest twice with exact assets and no release effect\",\"status\":\"passed\",\"title\":\"builds the same strict manifest twice with exact assets and no release effect\",\"duration\":36.084900000000005,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging refuses path escape, invalid source and a one-byte input mutation\",\"status\":\"passed\",\"title\":\"refuses path escape, invalid source and a one-byte input mutation\",\"duration\":22.6438,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging refuses secret-shaped package material and inflated boundary claims\",\"status\":\"passed\",\"title\":\"refuses secret-shaped package material and inflated boundary claims\",\"duration\":16.10329999999999,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging keeps bilingual listing codes and unsupported claims exactly aligned\",\"status\":\"passed\",\"title\":\"keeps bilingual listing codes and unsupported claims exactly aligned\",\"duration\":0.48759999999998627,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging keeps store submission blocked on real brand, screenshots, signing and review\",\"status\":\"passed\",\"title\":\"keeps store submission blocked on real brand, screenshots, signing and review\",\"duration\":1.0062000000000353,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging publishes safe routes and honest local support copy\",\"status\":\"passed\",\"title\":\"publishes safe routes and honest local support copy\",\"duration\":0.38740000000001373,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"R35 deterministic local release packaging\"],\"fullName\":\"R35 deterministic local release packaging uses local scripts with no network, signing, publish or deployment command\",\"status\":\"passed\",\"title\":\"uses local scripts with no network, signing, publish or deployment command\",\"duration\":0.593400000000031,\"failureMessages\":[],\"meta\":{},\"tags\":[]}],\"startTime\":1788963190341,\"endTime\":1788963190421.5935,\"status\":\"passed\",\"message\":\"\",\"name\":\"C:/dev/endvera-astra-reverification/test/construction-operating-assistant-r35-release-package.test.ts\"},{\"assertionResults\":[{\"ancestorTitles\":[\"Quebec appointment DST disambiguation\"],\"fullName\":\"Quebec appointment DST disambiguation refuses the duplicate fall wall time without choosing one of the two offsets\",\"status\":\"passed\",\"title\":\"refuses the duplicate fall wall time without choosing one of the two offsets\",\"duration\":6.441300000000069,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Quebec appointment DST disambiguation\"],\"fullName\":\"Quebec appointment DST disambiguation retains a unique post-transition appointment\",\"status\":\"passed\",\"title\":\"retains a unique post-transition appointment\",\"duration\":1.2175999999999476,\"failureMessages\":[],\"meta\":{},\"tags\":[]}],\"startTime\":1788963192370,\"endTime\":1788963192378.2175,\"status\":\"passed\",\"message\":\"\",\"name\":\"C:/dev/endvera-astra-reverification/test/unit/calendar-dst-revalidation.test.ts\"},{\"assertionResults\":[{\"ancestorTitles\":[\"Distinct-lane review of the Toronto DST correction\"],\"fullName\":\"Distinct-lane review of the Toronto DST correction rejects the nonexistent spring time 2 h\",\"status\":\"passed\",\"title\":\"rejects the nonexistent spring time 2 h\",\"duration\":6.277299999999968,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Distinct-lane review of the Toronto DST correction\"],\"fullName\":\"Distinct-lane review of the Toronto DST correction rejects the nonexistent spring time 2 h 30\",\"status\":\"passed\",\"title\":\"rejects the nonexistent spring time 2 h 30\",\"duration\":0.601099999999974,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Distinct-lane review of the Toronto DST correction\"],\"fullName\":\"Distinct-lane review of the Toronto DST correction rejects the nonexistent spring time 2 h 59\",\"status\":\"passed\",\"title\":\"rejects the nonexistent spring time 2 h 59\",\"duration\":0.2865000000000464,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Distinct-lane review of the Toronto DST correction\"],\"fullName\":\"Distinct-lane review of the Toronto DST correction retains the unique spring boundary 1 h 59\",\"status\":\"passed\",\"title\":\"retains the unique spring boundary 1 h 59\",\"duration\":1.3570999999999458,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Distinct-lane review of the Toronto DST correction\"],\"fullName\":\"Distinct-lane review of the Toronto DST correction retains the unique spring boundary 3 h\",\"status\":\"passed\",\"title\":\"retains the unique spring boundary 3 h\",\"duration\":0.3910999999999376,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Distinct-lane review of the Toronto DST correction\"],\"fullName\":\"Distinct-lane review of the Toronto DST correction rejects the duplicated fall boundary 1 h\",\"status\":\"passed\",\"title\":\"rejects the duplicated fall boundary 1 h\",\"duration\":0.3672000000000253,\"failureMessages\":[],\"meta\":{},\"tags\":[]},{\"ancestorTitles\":[\"Distinct-lane review of the Toronto DST correction\"],\"fullName\":\"Distinct-lane review of the Toronto DST correction rejects the duplicated fall boundary 1 h 59\",\"status\":\"passed\",\"title\":\"rejects the duplicated fall boundary 1 h 59\",\"duration\":0.2638999999999214,\"failureMessages\":[],\"meta\":{},\"tags\":[]}],\"startTime\":1788963191417,\"endTime\":1788963191427.264,\"status\":\"passed\",\"message\":\"\",\"name\":\"C:/dev/endvera-astra-reverification/test/unit/parent-patch-dst-review.test.ts\"}]}\n",
+    "parsed": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0
+    }
+  },
+  "limitations": [
+    "No browser or fresh installation run; bundled fonts verified only against pinned installed Next package.",
+    "No provider, signing, upload or device execution.",
+    "No manifest written; actual v3 source provenance must be checked after committing inputs.",
+    "Toronto spring/fall boundaries covered; no universal historical timezone claim."
+  ]
+}

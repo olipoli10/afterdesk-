@@ -1,0 +1,20 @@
+{
+  "id": "g0-astra-probe",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G0",
+  "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+  "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+  "classification": "SETUP",
+  "providerAttemptRequestId": null,
+  "command": "C:/Users/oliro/AppData/Local/OpenAI/Codex/bin/8e5b6932251c2c1c/codex.exe exec --ignore-user-config --ephemeral -m gpt-6-astra -c model_reasoning_effort=\"low\" -c approval_policy=\"never\" --sandbox read-only --color never -",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:24:31.775Z",
+  "finishedAt": "2026-09-09T13:24:37.102Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-astra-probe/stdout.txt",
+  "stdoutSha256": "c9222023eeeac26f3d12080c3fd66ba5dde4c33b7074f715b7003c9aa599f906",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-astra-probe/stderr.txt",
+  "stderrSha256": "97df7b993cb1e9171d494892bbc7a4af94815c8d202ec66aa5e94ca4dd21dfd2",
+  "replay": null
+}

@@ -1,0 +1,20 @@
+{
+  "id": "g3-architecture-correction-review",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "MODEL_CORRECTION_REVIEW",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-critical-review.mjs specs/206-gpt6-astra-endvera-reverification/audit-packets/arch-corrections.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:09:10.531Z",
+  "finishedAt": "2026-09-09T14:13:33.956Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-architecture-correction-review/stdout.txt",
+  "stdoutSha256": "a9457761f900f2b3d1e8a54e5d3f3fba7a322631f1f35614b4d833311942ae42",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-architecture-correction-review/stderr.txt",
+  "stderrSha256": "5e06eaaf0657e2b03aa7fb0b4d5b8c9e25f63b344e3e51ca7216b50c2dc67751",
+  "replay": null
+}

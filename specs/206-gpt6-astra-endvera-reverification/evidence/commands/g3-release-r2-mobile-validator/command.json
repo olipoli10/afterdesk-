@@ -1,0 +1,20 @@
+{
+  "id": "g3-release-r2-mobile-validator",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node --require ./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs scripts/validate-endvera-mobile-build-readiness.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:49:50.607Z",
+  "finishedAt": "2026-09-09T14:49:50.862Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-r2-mobile-validator/stdout.txt",
+  "stdoutSha256": "dd61ed8e65dcbd89e66a4be44d3c878d659fd3b3d6536954f418f2cce63d0e50",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-r2-mobile-validator/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

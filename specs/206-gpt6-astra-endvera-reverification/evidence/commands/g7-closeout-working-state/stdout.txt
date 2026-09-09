@@ -1,0 +1,291 @@
+{
+  "kind": "LOCAL_CLOSEOUT_STATE",
+  "observedAt": "2026-09-09T15:45:56.908Z",
+  "states": [
+    {
+      "name": "campaign",
+      "path": "C:\\dev\\endvera-astra-reverification",
+      "head": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+      "tree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+      "trackedDiff": "",
+      "status": "?? specs/206-gpt6-astra-endvera-reverification/evidence/G7-r2-execution-summary.json"
+    },
+    {
+      "name": "protectedOriginal",
+      "path": "C:/dev/nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+      "head": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "tree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "trackedDiff": "",
+      "status": ""
+    },
+    {
+      "name": "brain",
+      "path": "C:/dev/afterdesk-project-brain",
+      "head": "d96866623558ede5ac5f25274e636db12bd8e79b",
+      "tree": "47fdc13b664f053256ac5a2c5f1ac1b1f55e7ba6",
+      "trackedDiff": "",
+      "status": ""
+    }
+  ],
+  "databaseOwnershipRecords": [
+    {
+      "commandId": "g3-r0b-db-diagnostic-3",
+      "name": "endvera206-8511bc8f49b94997b960b3a27c7af932",
+      "port": 62020,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g3-r0b-db-restart-1",
+      "name": "endvera206-b9bbb9c816eb45339faaf0d8499c7738",
+      "port": 60204,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g3-r0b-db-seed-1",
+      "name": "endvera206-2478ab6b98b44c8bb2592aaa25800f1d",
+      "port": 50540,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g3-r0b-db-upgrade-1",
+      "name": "endvera206-68788926255343babd9e7b574edd2a59",
+      "port": 53045,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g3-r0b-migration-clean-1",
+      "name": "endvera206-caffac7ebc3f4fcfba7a25f6a9d1220f",
+      "port": 62040,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g3-r0b-migration-clean-2",
+      "name": "endvera206-fcfaaf45b706471e854f977e3ea2138a",
+      "port": 62063,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g3-r0b-migration-clean-3",
+      "name": "endvera206-79b9fed6057843bdb675207c3a7cb450",
+      "port": 54242,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g3-voice-spend-integration",
+      "name": "endvera206-4ba0a5346ceb4925bc2e7aeca1a2281c",
+      "port": 50103,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g3-voice-spend-integration-r2",
+      "name": "endvera206-b1db04fd999e44e79e34ecc50359888d",
+      "port": 53342,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-extra-voice-spend",
+      "name": "endvera206-19954edf4a734bb2bc1f2ae5f768d446",
+      "port": 57929,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-cross-workspace-isolation",
+      "name": "endvera206-84b4800c59694587a95b5c4b34ddcdb6",
+      "port": 62730,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-cross-workspace-isolation-r2",
+      "name": "endvera206-1b48928a2cf2461b895755e3ba6e8e23",
+      "port": 52188,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-double-approval",
+      "name": "endvera206-6f19f025e9d942638291c428f4800e55",
+      "port": 64435,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-double-approval-r2",
+      "name": "endvera206-427b01975ed6413ab742647f0acda3ee",
+      "port": 55525,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-duplicate-provider-message",
+      "name": "endvera206-ea966836e4874c6389f0976848059296",
+      "port": 60043,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-duplicate-provider-message-r2",
+      "name": "endvera206-85cafc0bbf5d40aa8c2c7dc11e7643b0",
+      "port": 55330,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-field-worker-financial-isolation",
+      "name": "endvera206-20365687723f400e824c998ed6a5fe7a",
+      "port": 58128,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-field-worker-financial-isolation-r2",
+      "name": "endvera206-d45acdda41cd4e05b7dae620c295ab8b",
+      "port": 50605,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-permission-revoked",
+      "name": "endvera206-a823a6643be74dfdb2b2d6211f884cfb",
+      "port": 51489,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-permission-revoked-r2",
+      "name": "endvera206-1fdfa288821047b39246e9782fe239cb",
+      "port": 65068,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-postgres-restart-readback",
+      "name": "endvera206-6c448304dcf64b27adc3fd42e97732db",
+      "port": 53390,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-postgres-restart-readback-r2",
+      "name": "endvera206-776e587f0602452993037f9dec42a969",
+      "port": 61427,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-stale-approval",
+      "name": "endvera206-2f584eda191c4c7996678bb940e08cae",
+      "port": 49152,
+      "closeMarker": true
+    },
+    {
+      "commandId": "g7-r0b-stale-approval-r2",
+      "name": "endvera206-68c21e5670664b85a2dddcee5ae9c484",
+      "port": 58180,
+      "closeMarker": true
+    }
+  ],
+  "webOwnershipRecords": [
+    {
+      "commandId": "g7-extra-http-smoke",
+      "port": 60058,
+      "closeMarker": true
+    }
+  ],
+  "listenerChecks": [
+    {
+      "port": 62020,
+      "listening": false
+    },
+    {
+      "port": 60204,
+      "listening": false
+    },
+    {
+      "port": 50540,
+      "listening": false
+    },
+    {
+      "port": 53045,
+      "listening": false
+    },
+    {
+      "port": 62040,
+      "listening": false
+    },
+    {
+      "port": 62063,
+      "listening": false
+    },
+    {
+      "port": 54242,
+      "listening": false
+    },
+    {
+      "port": 50103,
+      "listening": false
+    },
+    {
+      "port": 53342,
+      "listening": false
+    },
+    {
+      "port": 57929,
+      "listening": false
+    },
+    {
+      "port": 62730,
+      "listening": false
+    },
+    {
+      "port": 52188,
+      "listening": false
+    },
+    {
+      "port": 64435,
+      "listening": false
+    },
+    {
+      "port": 55525,
+      "listening": false
+    },
+    {
+      "port": 60043,
+      "listening": false
+    },
+    {
+      "port": 55330,
+      "listening": false
+    },
+    {
+      "port": 58128,
+      "listening": false
+    },
+    {
+      "port": 50605,
+      "listening": false
+    },
+    {
+      "port": 51489,
+      "listening": false
+    },
+    {
+      "port": 65068,
+      "listening": false
+    },
+    {
+      "port": 53390,
+      "listening": false
+    },
+    {
+      "port": 61427,
+      "listening": false
+    },
+    {
+      "port": 49152,
+      "listening": false
+    },
+    {
+      "port": 58180,
+      "listening": false
+    },
+    {
+      "port": 60058,
+      "listening": false
+    }
+  ],
+  "allReportedDatabaseClosuresConfirmed": true,
+  "allReportedWebClosuresConfirmed": true,
+  "processesKilledByThisCheck": 0,
+  "retainedSyntheticStoresDeleted": false,
+  "verified": true,
+  "payloadSha256": "aed9c5ae11bd7361f1c49fe18327b65777909ac04c149dc2f12d7c1615e40f26"
+}

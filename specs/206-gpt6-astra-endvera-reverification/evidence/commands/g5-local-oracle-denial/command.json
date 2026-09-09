@@ -1,0 +1,35 @@
+{
+  "id": "g5-local-oracle-denial",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G5",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "INVARIANT_CHECK",
+  "providerAttemptRequestId": null,
+  "command": "node --permission --allow-fs-read=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-oracle-denial.mjs --allow-fs-read=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/corpus/manifest.json --allow-fs-read=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/corpus/oracle-manifest.json specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-oracle-denial.mjs --revalidation-replay g5-local-oracle-denial specs/206-gpt6-astra-endvera-reverification/corpus/manifest.json specs/206-gpt6-astra-endvera-reverification/corpus/oracle-manifest.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:14:51.061Z",
+  "finishedAt": "2026-09-09T14:14:51.246Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-local-oracle-denial/stdout.txt",
+  "stdoutSha256": "aca7f0c199edfa45010877a71c02be9ac7a2f0e15e758de6bcd769c28741ce28",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-local-oracle-denial/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": {
+    "runtime": "NODE",
+    "environment": "SANITIZED_NO_SECRETS",
+    "entrypointPath": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-oracle-denial.mjs",
+    "entrypointSha256": "2c1839e64f8d5bd72e9c1b74d0049a464b212b467f271ace4b6c47be655662b0",
+    "arguments": [
+      "--revalidation-replay",
+      "g5-local-oracle-denial",
+      "specs/206-gpt6-astra-endvera-reverification/corpus/manifest.json",
+      "specs/206-gpt6-astra-endvera-reverification/corpus/oracle-manifest.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/corpus/manifest.json",
+      "specs/206-gpt6-astra-endvera-reverification/corpus/oracle-manifest.json"
+    ]
+  }
+}

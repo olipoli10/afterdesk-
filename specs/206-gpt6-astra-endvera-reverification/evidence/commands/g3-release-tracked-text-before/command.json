@@ -1,0 +1,20 @@
+{
+  "id": "g3-release-tracked-text-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "3cd12bcbbb8df78f76255e9b4a48b5b47336d97a",
+  "observedTree": "66d4abfdaafb0fe5ec177de75554baf5b14b7d52",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/release-tracked-flags.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:05:41.568Z",
+  "finishedAt": "2026-09-09T15:06:04.336Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-tracked-text-before/stdout.txt",
+  "stdoutSha256": "405e3b2e705a6bc7487a8dcb7b42be1e6531db92a794baad548a088ad84700f7",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-tracked-text-before/stderr.txt",
+  "stderrSha256": "933f80f2b5c5ee88e38cc504fce76211a359aa836697dd6fc6be688f1a576734",
+  "replay": null
+}

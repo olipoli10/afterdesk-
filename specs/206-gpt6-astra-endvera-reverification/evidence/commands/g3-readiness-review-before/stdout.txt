@@ -1,0 +1,15 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/readiness-review-hardening.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 23[2mms[22m[39m
+[31m     [31m×[31m rejects redefining historical bytes by rewriting the adjacent archive index[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m rejects a caller-supplied validation reader even with coherent fixture bytes[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m rejects non-schema top-level market flags instead of accepting truthy strings[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m rejects inflated platform claims in the historical closure report itself[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m qualifies standalone metadata and current approval capability in both languages[39m[32m 2[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[90m (5)[39m
+[2m   Start at [22m 10:21:11
+[2m   Duration [22m 243ms[2m (transform 36ms, setup 0ms, import 55ms, tests 23ms, environment 0ms)[22m
+

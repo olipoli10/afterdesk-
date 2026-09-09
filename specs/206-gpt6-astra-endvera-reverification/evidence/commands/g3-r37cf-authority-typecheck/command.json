@@ -1,0 +1,20 @@
+{
+  "id": "g3-r37cf-authority-typecheck",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/typescript/bin/tsc --noEmit",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:42:46.035Z",
+  "finishedAt": "2026-09-09T14:42:58.399Z",
+  "expectedExitCode": 0,
+  "exitCode": 2,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-typecheck/stdout.txt",
+  "stdoutSha256": "a50ce472f383000e9b2c5922644f1f4c8781883efdf02c73740ba248044f2df9",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-typecheck/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

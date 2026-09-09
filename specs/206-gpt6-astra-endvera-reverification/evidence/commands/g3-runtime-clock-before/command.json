@@ -1,0 +1,20 @@
+{
+  "id": "g3-runtime-clock-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/r37a-runtime-clock.test.ts test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:22:08.661Z",
+  "finishedAt": "2026-09-09T14:22:09.816Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-before/stdout.txt",
+  "stdoutSha256": "c435697a07ca1dcf86b8d40aba3b06d8d333af039107e7bb93fc32234ada0414",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-before/stderr.txt",
+  "stderrSha256": "2c94adcbf0bbcc8dddc2f6a8b0f0258783ad9ad59826398b49a28cabee844874",
+  "replay": null
+}

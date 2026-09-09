@@ -1,0 +1,20 @@
+{
+  "id": "g0-phase-wrapper",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G0",
+  "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+  "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/test-phase-check-contract.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:30:10.285Z",
+  "finishedAt": "2026-09-09T13:30:10.636Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-phase-wrapper/stdout.txt",
+  "stdoutSha256": "9db3456f11b1df586933467f43e5739554bb8547f10b6ecf215ab41af6a704a3",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-phase-wrapper/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

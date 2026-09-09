@@ -1,0 +1,20 @@
+{
+  "id": "g3-r37cf-authority-after",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/r37cf-current-authority.test.ts test/unit/r37c-admission-clock.test.ts test/unit/r37a-runtime-clock.test.ts test/construction-operating-assistant-r37a-sealed-executor.test.ts test/construction-operating-assistant-r37b-provider-activation.test.ts test/construction-operating-assistant-r37c-controlled-run.test.ts test/construction-operating-assistant-r37f-provider-delivery.test.ts test/construction-operating-assistant-r37g-provider-security-hardening.test.ts test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:40:25.536Z",
+  "finishedAt": "2026-09-09T14:40:27.275Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-after/stdout.txt",
+  "stdoutSha256": "8e592fb68647d5a9b8210503a06e2fa41d9d9f62a3a4432e94849f3774be2b49",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-after/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

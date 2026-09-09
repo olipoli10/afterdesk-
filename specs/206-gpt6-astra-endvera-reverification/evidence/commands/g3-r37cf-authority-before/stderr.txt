@@ -1,0 +1,246 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 9 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrefuses expiry changed while claim completes, before adapter
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrefuses revocation changed while claim completes, before adapter
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrefuses lane changed while claim completes, before adapter
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrefuses lease changed while claim completes, before adapter
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called +0 times, but got 1 times[39m
+[36m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m63:23[22m[39m
+    [90m 61|[39m     })[33m;[39m
+    [90m 62|[39m     const outcome = await executeControlledSyntheticAttempt(f.input, f…
+    [90m 63|[39m     [34mexpect[39m(f[33m.[39madapter)[33m.[39m[34mtoHaveBeenCalledTimes[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                       [31m^[39m
+    [90m 64|[39m     expect(outcome).toMatchObject({ disposition: "FAILED", adapterInvo…
+    [90m 65|[39m     [34mexpect[39m(mocks[33m.[39mrelease)[33m.[39m[34mtoHaveBeenCalledTimes[39m([34m1[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrejects evidence after callback revocation
+[31m[1mAssertionError[22m: expected { disposition: 'SUCCEEDED', …(7) } to match object { disposition: 'FAILED', …(2) }
+(5 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "adapterInvoked": true,[22m
+[32m-   "disposition": "FAILED",[39m
+[32m-   "evidence": null,[39m
+[31m+   "disposition": "SUCCEEDED",[39m
+[31m+   "evidence": {[39m
+[31m+     "certified": false,[39m
+[31m+     "costMicros": 1,[39m
+[31m+     "evidenceFingerprint": "sha256:6fa5449487a7882e418bba459843d5159896163663432162298176749c9e3d7e",[39m
+[31m+     "evidenceLabel": "SYNTHETIC",[39m
+[31m+     "externalDispatchPerformed": false,[39m
+[31m+     "latencyMs": 1,[39m
+[31m+     "responseFingerprint": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",[39m
+[31m+     "schemaVersion": 1,[39m
+[31m+     "sealedAttemptFingerprint": "sha256:d1ff05093dca5ac4d5df013754c1511755cb32df534869766e6a8202a12628f7",[39m
+[31m+   },[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m82:21[22m[39m
+    [90m 80|[39m     })[33m;[39m
+    [90m 81|[39m     const outcome = await executeControlledSyntheticAttempt(f.input, f…
+    [90m 82|[39m     expect(outcome).toMatchObject({ disposition: "FAILED", adapterInvo…
+    [90m   |[39m                     [31m^[39m
+    [90m 83|[39m     [34mexpect[39m(mocks[33m.[39msettle)[33m.[39mnot[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
+    [90m 84|[39m     [34mexpect[39m(mocks[33m.[39mrelease)[33m.[39m[34mtoHaveBeenCalledTimes[39m([34m1[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrejects evidence after callback lane
+[31m[1mAssertionError[22m: expected { disposition: 'SUCCEEDED', …(7) } to match object { disposition: 'FAILED', …(2) }
+(5 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "adapterInvoked": true,[22m
+[32m-   "disposition": "FAILED",[39m
+[32m-   "evidence": null,[39m
+[31m+   "disposition": "SUCCEEDED",[39m
+[31m+   "evidence": {[39m
+[31m+     "certified": false,[39m
+[31m+     "costMicros": 1,[39m
+[31m+     "evidenceFingerprint": "sha256:9d328587570eebb9f27541490621164c53c752f93e55264d0911315638746c06",[39m
+[31m+     "evidenceLabel": "SYNTHETIC",[39m
+[31m+     "externalDispatchPerformed": false,[39m
+[31m+     "latencyMs": 1,[39m
+[31m+     "responseFingerprint": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",[39m
+[31m+     "schemaVersion": 1,[39m
+[31m+     "sealedAttemptFingerprint": "sha256:c0680135bbef9c79006684917bee139065abc436bd946a6f9c24d15829b85b30",[39m
+[31m+   },[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m82:21[22m[39m
+    [90m 80|[39m     })[33m;[39m
+    [90m 81|[39m     const outcome = await executeControlledSyntheticAttempt(f.input, f…
+    [90m 82|[39m     expect(outcome).toMatchObject({ disposition: "FAILED", adapterInvo…
+    [90m   |[39m                     [31m^[39m
+    [90m 83|[39m     [34mexpect[39m(mocks[33m.[39msettle)[33m.[39mnot[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
+    [90m 84|[39m     [34mexpect[39m(mocks[33m.[39mrelease)[33m.[39m[34mtoHaveBeenCalledTimes[39m([34m1[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrejects evidence after callback expiry
+[31m[1mAssertionError[22m: expected { disposition: 'SUCCEEDED', …(7) } to match object { disposition: 'FAILED', …(2) }
+(5 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "adapterInvoked": true,[22m
+[32m-   "disposition": "FAILED",[39m
+[32m-   "evidence": null,[39m
+[31m+   "disposition": "SUCCEEDED",[39m
+[31m+   "evidence": {[39m
+[31m+     "certified": false,[39m
+[31m+     "costMicros": 1,[39m
+[31m+     "evidenceFingerprint": "sha256:167f38128be7888a33371b3f4966478364c61821ff854c99342081003ea4e0af",[39m
+[31m+     "evidenceLabel": "SYNTHETIC",[39m
+[31m+     "externalDispatchPerformed": false,[39m
+[31m+     "latencyMs": 1,[39m
+[31m+     "responseFingerprint": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",[39m
+[31m+     "schemaVersion": 1,[39m
+[31m+     "sealedAttemptFingerprint": "sha256:aa32bf35912d3dc82f32863cec8937ef68b3c118bdcd76bf82412d91c55ef998",[39m
+[31m+   },[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m82:21[22m[39m
+    [90m 80|[39m     })[33m;[39m
+    [90m 81|[39m     const outcome = await executeControlledSyntheticAttempt(f.input, f…
+    [90m 82|[39m     expect(outcome).toMatchObject({ disposition: "FAILED", adapterInvo…
+    [90m   |[39m                     [31m^[39m
+    [90m 83|[39m     [34mexpect[39m(mocks[33m.[39msettle)[33m.[39mnot[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
+    [90m 84|[39m     [34mexpect[39m(mocks[33m.[39mrelease)[33m.[39m[34mtoHaveBeenCalledTimes[39m([34m1[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrefuses a different provider candidate with equal model, executor and case
+[31m[1mAssertionError[22m: expected { disposition: 'SUCCEEDED', …(7) } to match object { disposition: 'FAILED', …(2) }
+(14 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "adapterInvoked": false,[39m
+[32m-   "disposition": "FAILED",[39m
+[32m-   "failureCode": "R37C_GRANT_BINDING_DRIFT_AT_USE",[39m
+[31m+   "adapterInvoked": true,[39m
+[31m+   "disposition": "SUCCEEDED",[39m
+[31m+   "failureCode": null,[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m91:21[22m[39m
+    [90m 89|[39m     [35mconst[39m f [33m=[39m [34msetup[39m()[33m;[39m f[33m.[39mgrant[33m.[39mcandidateKey [33m=[39m [32m"PERPLEXITY_SEARCH"[39m[33m;[39m
+    [90m 90|[39m     const outcome = await executeControlledSyntheticAttempt(f.input, f…
+    [90m 91|[39m     expect(outcome).toMatchObject({ disposition: "FAILED", adapterInvo…
+    [90m   |[39m                     [31m^[39m
+    [90m 92|[39m     [34mexpect[39m(f[33m.[39madapter)[33m.[39mnot[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
+    [90m 93|[39m     expect(mocks.reserve.mock.calls[0][0].candidateKey).toBe("OPENROUT…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrefuses delivery lease expiry during awaited lookup before fixture callback
+[31m[1mZodError[22m: [
+  {
+    "code": "invalid_value",
+    "values": [
+      1
+    ],
+    "path": [
+      "schemaVersion"
+    ],
+    "message": "Invalid input: expected 1"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "SYNTHETIC"
+    ],
+    "path": [
+      "evidenceLabel"
+    ],
+    "message": "Invalid input: expected \"SYNTHETIC\""
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      false
+    ],
+    "path": [
+      "externalDispatchPerformed"
+    ],
+    "message": "Invalid input: expected false"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      false
+    ],
+    "path": [
+      "certified"
+    ],
+    "message": "Invalid input: expected false"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "sealedAttemptFingerprint"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "responseFingerprint"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "latencyMs"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "costMicros"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "evidenceFingerprint"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  }
+][39m
+[36m [2m❯[22m result src/server/construction-operating-assistant-r37c/coordinator.ts:[2m78:37[22m[39m
+    [90m 76|[39m     spendAttemptId[33m:[39m input[33m.[39mrun[33m.[39mspendAttemptId[33m,[39m
+    [90m 77|[39m     evidence[33m:[39m input[33m.[39mrun[33m.[39mevidenceSnapshot
+    [90m 78|[39m       [33m?[39m r37aSyntheticEvidenceSchema[33m.[39m[34mparse[39m(input[33m.[39mrun[33m.[39mevidenceSnapshot)
+    [90m   |[39m                                     [31m^[39m
+    [90m 79|[39m       [33m:[39m [35mnull[39m[33m,[39m
+    [90m 80|[39m     failureCode[33m:[39m input[33m.[39mrun[33m.[39mfailureCode[33m,[39m
+[90m [2m❯[22m releaseFailedAttempt src/server/construction-operating-assistant-r37c/coordinator.ts:[2m226:10[22m[39m
+[90m [2m❯[22m executeControlledSyntheticAttempt src/server/construction-operating-assistant-r37c/coordinator.ts:[2m472:12[22m[39m
+[90m [2m❯[22m Module.executeControlledSyntheticProviderDelivery src/server/construction-operating-assistant-r37f/provider-delivery.ts:[2m46:25[22m[39m
+[90m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m107:21[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯[22m[39m
+

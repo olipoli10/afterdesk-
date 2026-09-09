@@ -1,0 +1,3 @@
+CHECK_IDENTITY phase=G7 checkId=NATIVE_CRASH_REPRODUCTION runtimeProviderAuthorized=false claimedDeviceObservation=false
+NATIVE_SIGNAL_INVENTORY mobileVersion=0.1.1 filedArtifacts=0 crashSignalArtifacts=0 scope=campaign-device-folder
+NATIVE_NO_FILED_REPRODUCIBLE_CRASH_SIGNAL

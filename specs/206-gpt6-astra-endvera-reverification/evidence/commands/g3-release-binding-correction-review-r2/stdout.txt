@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "PATCH_REVIEW",
+  "requestedModel": "gpt-5.6-sol",
+  "servedModel": null,
+  "status": "CHANGES_REQUIRED",
+  "scope": [
+    "scripts/endvera-release-source-binding.mjs",
+    "scripts/generate-endvera-release-package.mjs",
+    "scripts/validate-endvera-release-package.mjs",
+    "test/unit/release-source-binding-review.test.ts",
+    "release/endvera-construction-v1/release-definition-v3.json",
+    "src/lib/construction-operating-assistant-r35/registry.ts",
+    "apps/mobile/src/lib/release.ts",
+    "scripts/validate-endvera-native-preflight.mjs",
+    "scripts/validate-endvera-mobile-build-readiness.mjs",
+    "src/app/layout.tsx",
+    "src/lib/construction-assistant-v1/interpreter.ts",
+    "test/unit/calendar-dst-revalidation.test.ts",
+    "scripts/endvera-release-source-contracts.mjs",
+    "test/unit/release-source-security-review.test.ts",
+    "src/app/account-deletion/page.tsx"
+  ],
+  "findings": [
+    {
+      "id": "PRR2-001",
+      "severity": "HIGH",
+      "file": "scripts/endvera-release-source-binding.mjs",
+      "line": 8,
+      "title": "The repository root itself can be a symbolic link or junction",
+      "reproduction": "Source-level reproduction, not executed: create a real repository directory and expose it through a directory symlink or Windows junction; then call assertReleaseRegularFile using the linked path as repositoryRoot. realpathSync(root) follows the link, while the component loop starts below root and never lstat-checks root itself. A caller can consequently read a file through that unchecked junction.",
+      "proposedFix": "lstat the resolved repositoryRoot before realpathSync and reject a symbolic-link/junction root. Define the trusted anchor explicitly and validate every path component from that anchor through the target before reading. Add a zero-reader-invocations regression test for a junction used as repositoryRoot."
+    },
+    {
+      "id": "PRR2-002",
+      "severity": "HIGH",
+      "file": "scripts/endvera-release-source-contracts.mjs",
+      "line": 34,
+      "title": "Public-route closure omits Next.js convention files that participate implicitly",
+      "reproduction": "Source-level reproduction, not executed: modify src/app/layout.tsx or src/app/globals.css without changing a public page or one of its explicit imports. collectPublicRouteInputs starts only from the four page files, so the root layout and its dependency closure are absent unless imported explicitly. packageInputPaths does not add layout.tsx separately. The rendered public routes can therefore change through unbound working-tree files.",
+      "proposedFix": "For every declared public route, seed traversal with all applicable Next.js convention modules in its segment ancestry, including the root and nested layouts and their local dependencies. At minimum this packet requires src/app/layout.tsx and its globals.css, SITE_URL, language, and local-font dependency closure. Add a test asserting that an uncommitted layout or global-style change prevents source binding."
+    },
+    {
+      "id": "PRR2-003",
+      "severity": "HIGH",
+      "file": "scripts/generate-endvera-release-package.mjs",
+      "line": 142,
+      "title": "Claimed mobile build-preparation files are neither validated nor included as manifest inputs",
+      "reproduction": "Source-level reproduction, not executed: alter apps/mobile/eas.json or release/endvera-construction-v1/mobile-build-readiness.json while leaving release.ts and the currently enumerated inputs unchanged. buildReleaseManifest does not read either referenced file, packageInputPaths does not include them, and the manifest validationCommands do not run the supplied mobile-build-readiness validator. The hard-coded READY_FOR_SIGNING_AUTHORITY metadata can still validate despite incompatible or uncommitted referenced configuration.",
+      "proposedFix": "Read both referenced files only through assertReleaseRegularFile, validate their identities, status, profiles, and false boundary claims against app.json and the definition, and include both paths plus the responsible validator source in packageInputPaths. Keep this static JSON/source validation; do not import or evaluate the mobile runtime."
+    },
+    {
+      "id": "PRR2-004",
+      "severity": "MEDIUM",
+      "file": "scripts/endvera-release-source-contracts.mjs",
+      "line": 24,
+      "title": "AST validation accepts mutable or syntactically invalid mobile metadata modules",
+      "reproduction": "Source-level reproduction, not executed: change `export const MOBILE_RELEASE_INFO` to `export let MOBILE_RELEASE_INFO`; alternatively append `MOBILE_RELEASE_INFO.signed = true`. The initializer remains the expected literal, so validateMobileReleaseMetadata accepts it. The parser's parseDiagnostics are also ignored, allowing an expected declaration followed by a syntax error to reach the same comparison.",
+      "proposedFix": "Reject parse diagnostics, require a single exported const declaration, and reject writes, updates, deletes, or alias-based mutation of MOBILE_RELEASE_INFO. Add tests for `export let`, direct property assignment, reassignment, and trailing syntax errors. A generated immutable source module from canonical static metadata would reduce the analysis surface further."
+    },
+    {
+      "id": "PRR2-005",
+      "severity": "MEDIUM",
+      "file": "scripts/validate-endvera-native-preflight.mjs",
+      "line": 5,
+      "title": "Native preflight reads release inputs without link-ancestor validation",
+      "reproduction": "Source-level reproduction, not executed: replace apps/mobile or release/endvera-construction-v1 with a junction targeting external JSON files, then invoke the preflight script. Its read helper calls readFileSync(resolve(...)) directly, so external content is read before any lstat-based rejection.",
+      "proposedFix": "Resolve every repository-relative input through the shared regular-file guard before readFileSync, including assets currently checked only with existsSync. Add a reader-spy junction regression matching the generator test."
+    },
+    {
+      "id": "PRR2-006",
+      "severity": "MEDIUM",
+      "file": "scripts/validate-endvera-mobile-build-readiness.mjs",
+      "line": 6,
+      "title": "Mobile build-readiness validation also follows unchecked link ancestors",
+      "reproduction": "Source-level reproduction, not executed: place a junction at apps/mobile or release/endvera-construction-v1 and invoke this validator. readJson uses path.join followed immediately by readFileSync, so the validator consumes the junction target before applying any source-file boundary.",
+      "proposedFix": "Use assertReleaseRegularFile for app.json, eas.json, and mobile-build-readiness.json before each read. Add tests for a final-file symlink, an intermediate junction, and a junction repository root."
+    }
+  ],
+  "limitations": [
+    "Source-only review: no shell, tools, tests, builds, imports, evaluation, or runtime probing were performed.",
+    "All reproductions are derived from control flow in the supplied source and were not claimed as executed before/after results.",
+    "The supplied SHA-256 values and packet hash were not independently recomputed.",
+    "The current stale release-manifest-v3 was not treated as a defect because the request identifies that refusal state as intentional until committed inputs are regenerated.",
+    "Committed final-file symlink modes and non-blob modes are correctly rejected by assertRegularGitEntry for the represented SHA-1 Git format.",
+    "The CRLF equivalence implementation appears exact for its stated scope: it rejects committed CR bytes, mixed newlines, lone CR/LF, doubled CR, binary/NUL inputs, and non-allowlisted extensions.",
+    "The complete source of the public pages' asserted dependency closure was not supplied, so the test's claimed resolved file set could not be independently inspected.",
+    "Filesystem component checks remain subject to a bounded time-of-check/time-of-use race unless reads are performed through descriptor-based no-follow semantics.",
+    "The candidate remained UNPROBED; no provider, signature, build, device, deployment, or external-effect observation is claimed."
+  ]
+}

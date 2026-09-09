@@ -1,0 +1,20 @@
+{
+  "id": "g2-packet-product-coverage",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G2",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "MODEL_AUDIT",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-packet-audit.mjs product-coverage",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:51:43.292Z",
+  "finishedAt": "2026-09-09T13:54:29.742Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-product-coverage/stdout.txt",
+  "stdoutSha256": "34f45c3d6140edea40fbdfe5abe5fd70d49fb871e50299ddf0f356501c2111d9",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-product-coverage/stderr.txt",
+  "stderrSha256": "0139ebf3d58539341d7b6938164a83a99350b03981fb51ec7659247df81e6357",
+  "replay": null
+}

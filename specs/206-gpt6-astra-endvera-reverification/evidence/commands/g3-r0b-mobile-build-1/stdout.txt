@@ -1,0 +1,128 @@
+CHECK_IDENTITY phase=G1 checkId=MOBILE_BUILD runtimeProviderAuthorized=false claimedDeviceObservation=false
+GROUP_COMPONENT typecheck exit=0 timeout=false
+GROUP_COMPONENT lint exit=0 timeout=false
+Checking dependencies for compatibility with the installed Expo SDK version is disabled. Unset the EXPO_DOCTOR_SKIP_DEPENDENCY_VERSION_CHECK environment variable to re-enable this check.
+Running 20 checks on your project...
+18/20 checks passed. 2 checks failed. Possible issues detected:
+Use the --verbose flag to see more details about passed checks.
+
+✖ Check Expo config (app.json/ app.config.js) schema
+✖ Validate packages against React Native Directory package metadata
+Directory check failed with unexpected server response
+
+GROUP_COMPONENT expo-doctor exit=1 timeout=false
+Using src/app as the root directory for Expo Router.
+React Compiler enabled
+Starting Metro Bundler
+
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:56888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+iOS Bundled 45091ms ..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\entry.js (1552 modules)
+Android Bundled 62291ms ..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\entry.js (1686 modules)
+Static rendering is enabled. Learn more: https://docs.expo.dev/router/web/static-rendering/
+Web Bundled 22029ms ..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo-router\entry.js (1269 modules)
+λ Bundled 22237ms ..\..\..\nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous\apps\mobile\node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1300 modules)
+
+› ios bundles (1):
+_expo/static/js/ios/entry-cbcfd8fe1e05a9bda7e93458dc00b49f.hbc (4.5MB)
+
+› android bundles (1):
+_expo/static/js/android/entry-d3cda767ef06f6d76bb669614084bbd2.hbc (4.8MB)
+
+› web bundles (4):
+_expo/static/js/web/entry-98fcf0d21d47d2378b84144ad76e98ce.js (2.6MB)
+_expo/static/js/web/index-3ead5419825bdf53a60e6a1769725981.js (45KB)
+_expo/static/js/web/index-54ebcce19ea5a0a0cf8f35610c3bea6c.js (24KB)
+_expo/static/js/web/WebBrowser-1e7fd9b3ab37911d3077826d604a3f5b.js (8.3KB)
+
+› Static routes (61):
+/jobs (24KB)
+/more (24KB)
+/calls (24KB)
+/email (24KB)
+/ (index) (24KB)
+/outbox (24KB)
+/sign-in (24KB)
+/actions (24KB)
+/privacy (24KB)
+/_sitemap (23KB)
+/calendar (24KB)
+/contacts (24KB)
+/evidence (24KB)
+/messages (24KB)
+/projects (24KB)
+/settings (24KB)
+/timeline (24KB)
+/assistant (24KB)
+/+not-found (23KB)
+/accounting (24KB)
+/follow-ups (24KB)
+/(app)/jobs (24KB)
+/(app)/more (24KB)
+/onboarding (24KB)
+/provenance (24KB)
+/(app)/calls (24KB)
+/(app)/email (24KB)
+/(app) (24KB)
+/permissions (24KB)
+/receivables (24KB)
+/reliability (24KB)
+/text-assist (24KB)
+/(app)/outbox (24KB)
+/(app)/actions (24KB)
+/device-access (24KB)
+/human-support (24KB)
+/(app)/privacy (24KB)
+/(app)/calendar (24KB)
+/(app)/contacts (24KB)
+/(app)/evidence (24KB)
+/(app)/messages (24KB)
+/(app)/projects (24KB)
+/(app)/settings (24KB)
+/(app)/timeline (24KB)
+/(app)/assistant (24KB)
+/(app)/accounting (24KB)
+/(app)/follow-ups (24KB)
+/(app)/onboarding (24KB)
+/(app)/provenance (24KB)
+/(app)/permissions (24KB)
+/(app)/receivables (24KB)
+/(app)/reliability (24KB)
+/(app)/text-assist (24KB)
+/(app)/device-access (24KB)
+/(app)/human-support (24KB)
+/calendar-connections (24KB)
+/project-brain-intake (24KB)
+/(app)/calendar-connections (24KB)
+/(app)/project-brain-intake (24KB)
+/project-brain-understanding-review (24KB)
+/(app)/project-brain-understanding-review (24KB)
+
+Exported: dist-local
+GROUP_COMPONENT expo-export exit=0 timeout=false

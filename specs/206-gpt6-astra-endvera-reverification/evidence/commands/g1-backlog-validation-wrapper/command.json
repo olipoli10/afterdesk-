@@ -1,0 +1,34 @@
+{
+  "id": "g1-backlog-validation-wrapper",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G1",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "PHASE_CHECK",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs --revalidation-replay specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-backlog-validation.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:46:26.672Z",
+  "finishedAt": "2026-09-09T13:46:26.852Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation-wrapper/stdout.txt",
+  "stdoutSha256": "ca7803ddc83ede6b0956225f1a7435bd76bf634edbb353579852a766abd93407",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation-wrapper/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": {
+    "entrypoint": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "args": [
+      "--revalidation-replay",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-backlog-validation.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g1-backlog-validation.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation/stdout.txt",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation/stderr.txt"
+    ]
+  }
+}

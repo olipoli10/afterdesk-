@@ -1,0 +1,20 @@
+{
+  "id": "g3-voice-acquisition-r3-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "3cd12bcbbb8df78f76255e9b4a48b5b47336d97a",
+  "observedTree": "66d4abfdaafb0fe5ec177de75554baf5b14b7d52",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/gateway-voice-claim-revalidation.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:07:31.817Z",
+  "finishedAt": "2026-09-09T15:07:32.716Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-voice-acquisition-r3-before/stdout.txt",
+  "stdoutSha256": "6bb21aca60432884a9090a1642cce5aba424157c088df40447768b37d71c0f1d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-voice-acquisition-r3-before/stderr.txt",
+  "stderrSha256": "a51d61537cac68229a60cfedb66d4b517e484769c2494c518219d39a0de1f572",
+  "replay": null
+}

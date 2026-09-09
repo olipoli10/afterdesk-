@@ -1,0 +1,5 @@
+CHECK_IDENTITY phase=G7 checkId=CONTRACT_STATIC_VALIDATION runtimeProviderAuthorized=false claimedDeviceObservation=false
+GROUP_COMPONENT phase-contract-adversarial exit=1 timeout=false
+GROUP_COMPONENT frozen-phase-manifest exit=1 timeout=false
+GROUP_COMPONENT provider-boundary exit=1 timeout=false
+GROUP_COMPONENT release-package exit=1 timeout=false

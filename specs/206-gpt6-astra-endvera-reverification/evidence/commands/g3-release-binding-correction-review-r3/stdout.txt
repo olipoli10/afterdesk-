@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "PATCH_REVIEW",
+  "requestedModel": "gpt-5.6-sol",
+  "servedModel": null,
+  "status": "CHANGES_REQUIRED",
+  "scope": [
+    "scripts/endvera-release-source-binding.mjs",
+    "scripts/generate-endvera-release-package.mjs",
+    "scripts/validate-endvera-release-package.mjs",
+    "test/unit/release-source-binding-review.test.ts",
+    "release/endvera-construction-v1/release-definition-v3.json",
+    "src/lib/construction-operating-assistant-r35/registry.ts",
+    "apps/mobile/src/lib/release.ts",
+    "scripts/validate-endvera-native-preflight.mjs",
+    "scripts/validate-endvera-mobile-build-readiness.mjs",
+    "src/app/layout.tsx",
+    "src/lib/construction-assistant-v1/interpreter.ts",
+    "test/unit/calendar-dst-revalidation.test.ts",
+    "scripts/endvera-release-source-contracts.mjs",
+    "test/unit/release-source-security-review.test.ts",
+    "src/app/account-deletion/page.tsx",
+    "scripts/endvera-mobile-build-contract.mjs",
+    "apps/mobile/eas.json",
+    "release/endvera-construction-v1/mobile-build-readiness.json",
+    "test/unit/release-source-r2-review.test.ts"
+  ],
+  "findings": [
+    {
+      "id": "PRR2-007",
+      "severity": "HIGH",
+      "file": "scripts/endvera-release-source-binding.mjs",
+      "line": 79,
+      "title": "Whole-checkout authority can be bypassed by Git index worktree-suppression flags",
+      "reproduction": "Source-level reproduction: begin with a valid manifest bound to HEAD, run `git update-index --assume-unchanged src/app/layout.tsx`, and then alter that tracked file without changing any manifest input. Git's worktree comparison may trust the index entry and omit the modified path from the `git diff --name-only HEAD` result used here. A sparse-checkout/skip-worktree entry creates the same class of gap. Because layout.tsx is not necessarily fixture-bound through manifest.inputs, assertReleaseInputBinding can succeed and assertReleaseSourceBinding can report trackedCheckoutMatchesSource=true despite tracked checkout bytes differing from the source commit.",
+      "proposedFix": "Do not use a worktree-versus-index-aware `git diff` as the authoritative byte gate. Enumerate the source commit tree and index independently, reject additions, deletions and mode changes except the exact generated manifest, and directly lstat/read every remaining tracked worktree path and compare its bytes with the corresponding commit blob, applying only the explicitly permitted CRLF equivalence. Add regressions using assume-unchanged and skip-worktree on a non-input tracked file such as src/app/layout.tsx."
+    }
+  ],
+  "limitations": [
+    "Source-only review; candidate remained UNPROBED and no commands or tests were executed.",
+    "The intentionally stale release-manifest-v3.json was not treated as a defect.",
+    "Untracked files, node_modules, filesystem TOCTOU, native isolation, malicious in-process JavaScript and production availability remain outside the reviewed guarantee."
+  ]
+}

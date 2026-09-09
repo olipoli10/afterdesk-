@@ -1,0 +1,16 @@
+✔ canonical row arithmetic independently derives the retained five rubrics (1.971ms)
+✔ headline inflation does not award row credit (0.1886ms)
+✔ tampered build credit fails; unknown maturity fails; missing phase fails (0.3146ms)
+✔ new E2E headline cannot replace missing denominator or reuse baseline as final (0.2557ms)
+✔ all prepared synthetic cases obey bounded identifier/data policy (6.4634ms)
+✔ synthetic policy rejects marker removal and prohibited contact fields (0.2653ms)
+✔ manifest scanner checks all 96 byte hashes (6.994ms)
+✔ oracle denial is real permission enforcement and fails without it (130.711ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 216.5569

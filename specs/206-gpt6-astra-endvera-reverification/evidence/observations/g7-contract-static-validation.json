@@ -1,0 +1,17 @@
+{
+  "kind": "PHASE_CHECK_OBSERVATION",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "checkId": "CONTRACT_STATIC_VALIDATION",
+  "observedCommandId": "g7-contract-static-validation",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "VALIDATION",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 CONTRACT_STATIC_VALIDATION",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-contract-static-validation/stdout.txt",
+  "stdoutSha256": "ae1814eef65a8bcaff643331850097bc72ca7fdfa6f5c24e4f5391d860559ebb",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-contract-static-validation/stderr.txt",
+  "stderrSha256": "59fae5582874b18ea9f7010e0d66726361716b1df83fbf8f966aca64e82d5bb9"
+}

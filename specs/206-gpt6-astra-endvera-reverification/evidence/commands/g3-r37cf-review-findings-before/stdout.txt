@@ -1,0 +1,28 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/r37cf-current-authority.test.ts [2m([22m[2m18 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 45[2mms[22m[39m
+     [32m✓[39m refuses expiry changed while claim completes, before adapter[32m 10[2mms[22m[39m
+     [32m✓[39m refuses revocation changed while claim completes, before adapter[32m 1[2mms[22m[39m
+     [32m✓[39m refuses lane changed while claim completes, before adapter[32m 1[2mms[22m[39m
+     [32m✓[39m refuses lease changed while claim completes, before adapter[32m 2[2mms[22m[39m
+     [32m✓[39m rejects evidence after callback revocation[32m 2[2mms[22m[39m
+     [32m✓[39m rejects evidence after callback lane[32m 1[2mms[22m[39m
+     [32m✓[39m rejects evidence after callback expiry[32m 1[2mms[22m[39m
+     [32m✓[39m refuses a different provider candidate with equal model, executor and case[32m 1[2mms[22m[39m
+     [32m✓[39m keeps legitimate success and replay single-invocation/single-settlement[32m 1[2mms[22m[39m
+     [32m✓[39m refuses delivery lease expiry during awaited lookup before fixture callback[32m 2[2mms[22m[39m
+     [32m✓[39m reads time after the awaited current-authority lookup[32m 1[2mms[22m[39m
+     [32m✓[39m delivery revalidates revocation after its additional lookup[32m 1[2mms[22m[39m
+     [32m✓[39m delivery revalidates lane after its additional lookup[32m 1[2mms[22m[39m
+     [32m✓[39m keeps legitimate delivery and durable canonical-evidence replay[32m 3[2mms[22m[39m
+     [32m✓[39m caps lease and cooperative timeout at grant expiry and discards late callback completion[32m 6[2mms[22m[39m
+[31m     [31m×[31m rolls back evidence when its awaited write crosses the grant deadline[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m replays immutable terminal command after SETTLED commits but run update crashes[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m replays immutable terminal command after RELEASED commits but run update crashes[39m[32m 1[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[90m (18)[39m
+[2m   Start at [22m 10:52:29
+[2m   Duration [22m 700ms[2m (transform 307ms, setup 0ms, import 492ms, tests 45ms, environment 0ms)[22m
+

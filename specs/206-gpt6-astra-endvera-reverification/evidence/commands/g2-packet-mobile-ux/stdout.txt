@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "1.0",
+  "auditLane": "MOBILE_UX",
+  "sourceProductHead": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+  "auditor": {
+    "requestedModel": "gpt-6-astra",
+    "reportedModel": null,
+    "clientVersion": "codex-cli 0.153.4",
+    "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+    "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+    "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+    "runAt": "2026-09-09T13:51:33.627Z",
+    "commandId": "g2-packet-mobile-ux",
+    "promptPath": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/mobile-ux.md",
+    "promptSha256": "244beb3419faf935c03a0fddc4cd8339ba59f2307eab827799c734abcb01ef0c"
+  },
+  "status": "FINDINGS",
+  "summary": "Deux incohérences statiques démontrées entre la configuration mobile et ses validateurs. Audit limité aux 10 extraits fournis : apps/mobile/app.json:1-122; apps/mobile/package.json:1-63; apps/mobile/eas.json:1-44; scripts/validate-endvera-native-preflight.mjs:1-45; scripts/validate-endvera-mobile-build-readiness.mjs:1-19; release/endvera-construction-v1/mobile-build-readiness.json:1-61; release/endvera-construction-v1/native-preflight-readiness.json:1-25; release/endvera-construction-v1/store/google-play-submission-workbook.json:1-54; src/app/account-deletion/page.tsx:1-36; src/app/client/privacy/page.tsx:1-18. Paquet identifié par le SHA-256 fourni f7d8bd453d27fc2ebe6b713e7bf7170fcae3ce5d003c09ca7148e35c6f88450d, sans recalcul indépendant. Aucun outil, test, accès réseau ou changement effectué. Aucune observation appareil et aucune prétention de couverture du dépôt entier.",
+  "findings": [
+    {
+      "id": "ASTRA-R0-MOBILE-001",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "Le validateur natif exige un slug différent de la configuration Expo",
+      "invariant": "1 — L'identité application doit être cohérente partout.",
+      "expected": "La configuration Expo et le contrôle d'identité natif utilisent le même slug canonique.",
+      "actual": "app.json définit le slug endvera, tandis que le validateur exige endvera-mobile. La condition d'identité est donc fausse pour la configuration fournie. Si l'exécution atteint cette assertion, elle lève NATIVE_APP_IDENTITY_INVALID; aucune exécution n'a été observée.",
+      "evidence": [
+        {
+          "path": "apps/mobile/app.json",
+          "lineStart": 3,
+          "lineEnd": 9,
+          "observation": "L'application porte le nom ENDVERA, le slug endvera et le scheme endvera."
+        },
+        {
+          "path": "scripts/validate-endvera-native-preflight.mjs",
+          "lineStart": 7,
+          "lineEnd": 15,
+          "observation": "assert lève une erreur lorsque la condition est fausse; le contrôle exige explicitement app.slug === \"endvera-mobile\"."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Contradiction constatée uniquement dans les extraits. L'instruction finale interdit les outils après le blocage de l'inspection directe; le validateur n'a pas été exécuté."
+      },
+      "impact": "Le contrôle natif rejette l'identité configurée s'il atteint cette assertion et ne poursuit pas les vérifications suivantes. Cela empêche d'utiliser ce validateur comme preuve de préparation du build courant.",
+      "confidence": "HIGH",
+      "proposedTest": "Dans une session autorisant les tests locaux, exécuter node scripts/validate-endvera-native-preflight.mjs depuis la racine. Vérifier l'accord du slug avec l'identité canonique retenue et l'exécution des contrôles suivants.",
+      "mutationAuthorized": false
+    },
+    {
+      "id": "ASTRA-R0-MOBILE-002",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "Le validateur de build refuse le profil founder-device présent dans les deux configurations",
+      "invariant": "2 — La preuve de préparation d'un build présenté comme installable doit être cohérente et traçable.",
+      "expected": "Le validateur accepte l'ensemble des profils officiellement déclarés, dont founder-device, puis vérifie les autres critères de préparation.",
+      "actual": "eas.json et mobile-build-readiness.json déclarent quatre profils incluant founder-device. Le validateur compare les clés à une liste exacte de trois profils qui l'omet. Cette comparaison est nécessairement différente pour les extraits fournis.",
+      "evidence": [
+        {
+          "path": "apps/mobile/eas.json",
+          "lineStart": 7,
+          "lineEnd": 41,
+          "observation": "Quatre profils sont définis : local-simulator, internal-preview, founder-device et store-candidate. founder-device prévoit une distribution interne avec un APK Android."
+        },
+        {
+          "path": "release/endvera-construction-v1/mobile-build-readiness.json",
+          "lineStart": 3,
+          "lineEnd": 10,
+          "observation": "Le document READY_FOR_SIGNING_AUTHORITY énumère également les quatre profils, incluant founder-device."
+        },
+        {
+          "path": "scripts/validate-endvera-mobile-build-readiness.mjs",
+          "lineStart": 7,
+          "lineEnd": 16,
+          "observation": "profileNames contient seulement internal-preview, local-simulator et store-candidate. La comparaison exacte à la ligne 12 lève MOBILE_BUILD_PROFILE_SET_MISMATCH avant les contrôles d'identité et de statut."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Comparaison statique des listes fournies uniquement. L'instruction finale interdit les outils; aucun résultat réel du validateur n'est disponible."
+      },
+      "impact": "Le contrôle de préparation ne peut pas valider la configuration du parcours fondateur fournie. Ce constat porte sur le validateur; il ne démontre ni l'échec d'installation ni l'absence d'un artefact ailleurs.",
+      "confidence": "HIGH",
+      "proposedTest": "Dans une session autorisant les tests locaux, exécuter node scripts/validate-endvera-mobile-build-readiness.mjs. Vérifier que les profils autorisés concordent entre EAS, le document de préparation et le validateur, puis contrôler séparément l'artefact signé et son hash.",
+      "mutationAuthorized": false
+    }
+  ],
+  "unknowns": [
+    "Provenance : les extraits sont attribués au commit afaedf8e719892503a38016a8c6add55791ddc81, différent du sourceProductHead imposé. Leur correspondance avec f7bef0ae593fd9ac70a065f76655e692cad61766, l'état réel du dépôt, l'arbre et les hashes n'ont pas été vérifiés indépendamment.",
+    "Invariant 1 : app.json et package.json concordent sur 0.1.1; le package ai.endvera.mobile et le versionCode Android 3 concordent dans les configurations échantillonnées. Les manifestes compilés, associations de liens profonds et callbacks de connexion ne sont pas fournis.",
+    "Invariant 2 : les documents fournis déclarent explicitement des binaires non construits et une absence de signature. Aucun APK ou IPA, certificat, hash d'artefact ou relevé d'installation lié au build exact n'est fourni. Cela ne constitue pas une observation d'échec appareil.",
+    "Invariant 3 : les écrans mobiles et leurs réponses backend ne sont pas fournis. Impossible de vérifier les affirmations sur les numéros, providers et connecteurs actifs. La page account-deletion précise honnêtement qu'aucun service de suppression en production n'est actif.",
+    "Invariants 4 et 5 : app.json contient des explications de permissions, mais aucun code de demande ou de récupération n'est fourni. Le moment de demande, le refus, l'accès partiel, la révocation et le retour aux réglages restent inconnus. Le workbook Google Play ne liste que le microphone; le manifeste final et l'exhaustivité de cette liste restent à vérifier.",
+    "Messages natif, calendrier et contacts : aucune observation physique ni implémentation des parcours n'est fournie. L'ouverture, l'annulation, le retour dans ENDVERA, les permissions et les effets réellement produits sont inconnus.",
+    "Invariant 6 : le login, les erreurs serveur, les états loading, empty et retry ne sont pas présents dans l'échantillon. Aucun comportement réseau n'a été testé.",
+    "Invariants 7, 11 et 12 : les écrans d'approbation, la saisie texte ou vocale et les transitions PREPARED_UNSENT, approuvé, envoyé, refusé et échoué ne sont pas fournis. Leur exactitude ne peut pas être établie.",
+    "Invariant 8 : aucun mécanisme d'idempotence, de persistance ou de récupération n'est fourni. Double tap, duplicate, replay, offline/reconnect et reprise après crash restent non vérifiés.",
+    "Invariant 9 : la route client/privacy appelle requireRole(\"CLIENT\") et filtre une adhésion active par utilisateur. Les implémentations d'autorisation, le cockpit, les vues financières et les réponses API ne sont pas fournis; aucune conclusion générale sur les fuites de données n'est possible.",
+    "Invariant 10 : les fichiers des routes account-deletion et client/privacy sont fournis. La page account-deletion contient un lien vers /construction/support, mais la cible, la route mobile de confidentialité et le mécanisme de demande de suppression ne sont pas inspectables dans cet échantillon. La présence d'un fichier source ne prouve pas une ressource publique déployée.",
+    "Aucun test local, build, lancement, crash ou scénario de récupération n'a été exécuté. Les assertions statiques ci-dessus ne valent pas validation fonctionnelle ou observation sur appareil."
+  ]
+}

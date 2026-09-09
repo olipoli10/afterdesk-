@@ -1,0 +1,39 @@
+CHECK_IDENTITY phase=G1 checkId=ROOT_BUILD runtimeProviderAuthorized=false claimedDeviceObservation=false
+test/unit/r37c-admission-clock.test.ts(42,75): error TS2345: Argument of type '(args: { data: (import("C:/dev/endvera-astra-reverification/.prisma-client/index").Prisma.Without<import("C:/dev/endvera-astra-reverification/.prisma-client/index").Prisma.ControlledProviderRunUpdateManyMutationInput, import("C:/dev/endvera-astra-reverification/.prisma-client/index").Prisma.ControlledProviderRunUnch...' is not assignable to parameter of type '(args: { data: (import("C:/dev/endvera-astra-reverification/.prisma-client/index").Prisma.Without<import("C:/dev/endvera-astra-reverification/.prisma-client/index").Prisma.ControlledProviderRunUpdateManyMutationInput, import("C:/dev/endvera-astra-reverification/.prisma-client/index").Prisma.ControlledProviderRunUnch...'.
+  Call signature return types 'Promise<{ count: number; }>' and 'PrismaPromise<BatchPayload>' are incompatible.
+    The types of '[Symbol.toStringTag]' are incompatible between these types.
+      Type 'string' is not assignable to type '"PrismaPromise"'.
+test/unit/r37c-admission-clock.test.ts(45,91): error TS2739: Type 'Promise<never>' is missing the following properties from type 'Prisma__ControlledProviderRunClient<{ state: string; caseFingerprint: string; sealedAttemptFingerprint: string; exactModelId: string; evidenceFingerprint: string | null; spendAttemptId: string | null; failureCode: string | null; ... 20 more ...; releaseCommandId: string; }, never, DefaultArgs, PrismaClientOptions>': workspace, grant, spendAttempt, createdBy
+test/unit/r37c-admission-clock.test.ts(47,71): error TS2345: Argument of type '() => Promise<never>' is not assignable to parameter of type '(args: { select?: ControlledProviderRunSelect<DefaultArgs> | null | undefined; omit?: ControlledProviderRunOmit<DefaultArgs> | null | undefined; include?: ControlledProviderRunInclude<...> | ... 1 more ... | undefined; data: (Without<...> & ControlledProviderRunUncheckedUpdateInput) | (Without<...> & ControlledProvi...'.
+  Type 'Promise<never>' is missing the following properties from type 'Prisma__ControlledProviderRunClient<{ state: string; caseFingerprint: string; sealedAttemptFingerprint: string; exactModelId: string; evidenceFingerprint: string | null; spendAttemptId: string | null; failureCode: string | null; ... 20 more ...; releaseCommandId: string; }, never, DefaultArgs, PrismaClientOptions>': workspace, grant, spendAttempt, createdBy
+test/unit/release-source-binding-review.test.ts(18,42): error TS2352: Conversion of type '() => Buffer<ArrayBufferLike>' to type '{ (path: PathOrFileDescriptor, options?: { encoding?: null | undefined; flag?: string | undefined; } | null | undefined): NonSharedBuffer; (path: PathOrFileDescriptor, options: BufferEncoding | { ...; }): string; (path: PathOrFileDescriptor, options?: BufferEncoding | ... 2 more ... | undefined): string | NonSharedB...' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Buffer<ArrayBufferLike>' is not comparable to type 'string'.
+GROUP_COMPONENT typecheck exit=2 timeout=false
+
+C:\dev\endvera-astra-reverification\specs\206-gpt6-astra-endvera-reverification\scripts\assemble-local-seal.mjs
+  167:14  warning  'metricKind' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  167:25  warning  'rubrics' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\dev\endvera-astra-reverification\src\lib\construction-operating-assistant-r34\registry.ts
+  63:28  warning  '_canonicalHash' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 3 problems (0 errors, 3 warnings)
+
+GROUP_COMPONENT lint exit=0 timeout=false
+R37O_PROVIDER_BOUNDARY_PASS modules=1216 violations=0
+GROUP_COMPONENT provider-boundary exit=0 timeout=false
+LOCAL_PACKAGE_VALID d79e791971bb4b8084a71bc6aee136e3a92069df1fe857ad9a89c686a03ec66b
+{"mode":"GIT_COMMIT_INPUT_BINDING","head":"a9c4c01fdb2fcdff3838a6966f1560832bc32553","tree":"1126c0bb2b8587d68652b67e8739f0d2d08a1366","exactInputCount":9,"crlfCheckoutEquivalence":"WORKTREE_CRLF_TO_COMMITTED_LF_ONLY_RAW_MANIFEST_HASHES_UNCHANGED","crlfCheckoutEquivalentInputPaths":["apps/mobile/app.json","apps/mobile/assets/expo.icon/Assets/expo-symbol 2.svg","apps/mobile/assets/expo.icon/icon.json","apps/mobile/src/app/(app)/settings.tsx","apps/mobile/src/lib/release.ts","docs/release/endvera-construction-v1/01-environment-and-build.md","docs/release/endvera-construction-v1/02-smoke-and-evidence.md","docs/release/endvera-construction-v1/03-promotion-stop.md","docs/release/endvera-construction-v1/04-incident-and-rollback.md","package.json","release/endvera-construction-v1/environment-contract.json","release/endvera-construction-v1/privacy-disclosure.json","release/endvera-construction-v1/store/en-CA.json","release/endvera-construction-v1/store/fr-CA.json","release/endvera-construction-v1/submission-gaps.json","scripts/generate-endvera-release-package.mjs","scripts/validate-endvera-release-package.mjs","src/app/construction/support/page.tsx","src/lib/construction-operating-assistant-r35/contracts.ts","src/lib/construction-operating-assistant-r35/registry.ts"]}
+GROUP_COMPONENT release-package exit=0 timeout=false
+READY_FOR_EXTERNAL_COMPLIANCE_INPUTS dataClasses=9 locales=2 scenes=6 externalEffectCount=0
+GROUP_COMPONENT store-compliance exit=0 timeout=false
+▲ Next.js 16.2.12 (webpack)
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 16.0s
+  Running TypeScript ...
+  Finished TypeScript in 43s ...
+  Collecting page data using 23 workers ...
+GROUP_COMPONENT build exit=1 timeout=false

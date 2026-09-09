@@ -1,0 +1,1 @@
+CHECK_IDENTITY phase=G7 checkId=FIELD_WORKER_FINANCIAL_ISOLATION runtimeProviderAuthorized=false claimedDeviceObservation=false

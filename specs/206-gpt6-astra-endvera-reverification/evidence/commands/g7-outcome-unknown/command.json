@@ -1,0 +1,20 @@
+{
+  "id": "g7-outcome-unknown",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 OUTCOME_UNKNOWN",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:20:28.530Z",
+  "finishedAt": "2026-09-09T15:20:28.818Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-outcome-unknown/stdout.txt",
+  "stdoutSha256": "ab3cdfb895778472e91eab2a3d0d0893486dc234a848be790e098d9b14adb9d4",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-outcome-unknown/stderr.txt",
+  "stderrSha256": "a3920dbc8480c4ea9c50223fe9796b26aa667eb4e80ba59b9a954df0b294a317",
+  "replay": null
+}

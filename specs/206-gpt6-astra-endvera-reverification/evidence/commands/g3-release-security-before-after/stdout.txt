@@ -1,0 +1,62 @@
+{
+  "kind": "RELEASE_SECURITY_BEFORE_AFTER",
+  "baselineHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "baselineSourceHashes": [
+    {
+      "path": "scripts/endvera-release-source-binding.mjs",
+      "sha256": "744a21db4262ac831080830732fda34588d49b307622fea3c38f0ea484783f1a"
+    },
+    {
+      "path": "scripts/generate-endvera-release-package.mjs",
+      "sha256": "270330492eed93354a6bb9e3f2f952a4952fc12209da99fb1ea5578ce2a69c1e"
+    }
+  ],
+  "workingSourceHashes": [
+    {
+      "path": "scripts/endvera-release-source-binding.mjs",
+      "sha256": "f2228c275a3bb5375040719101bd3ea2f19d28c01bf120e941229a73b5190d7c"
+    },
+    {
+      "path": "scripts/generate-endvera-release-package.mjs",
+      "sha256": "58a5b2c732b30751e61ba5699ff6d65af09aa060204715265c5935e6c57bcec4"
+    },
+    {
+      "path": "scripts/endvera-release-source-contracts.mjs",
+      "sha256": "0c6452e9673b12c12cea9493b38248a445d29ef372158d15e107a7b381c2d770"
+    }
+  ],
+  "expectedBoundaryBehaviorObserved": true,
+  "results": [
+    {
+      "id": "PR-003",
+      "mutation": "In-memory exported mobile version drift",
+      "before": "ACCEPTED",
+      "after": "RELEASE_MOBILE_METADATA_MISMATCH"
+    },
+    {
+      "id": "PR-004",
+      "mutation": "In-memory read failure for declared account-deletion page",
+      "before": "ACCEPTED",
+      "after": "SYNTHETIC_MISSING_PUBLIC_ROUTE"
+    },
+    {
+      "id": "PR-002",
+      "mutation": "Exact old branch: committed CRLF versus working CRCRLF",
+      "before": true,
+      "after": false,
+      "scope": "Original conditional branch executed, not a fabricated Git commit."
+    },
+    {
+      "id": "PR-001",
+      "mutation": "Real synthetic definition junction outside fixture repository",
+      "before": "RELEASE_PATH_ESCAPE_REFUSED",
+      "beforeExternalReads": 1,
+      "after": "RELEASE_SOURCE_SYMLINK_REFUSED",
+      "afterExternalReads": 0
+    }
+  ],
+  "productionExecution": false,
+  "providerCalls": 0,
+  "manifestWritten": false,
+  "temporarySyntheticFixtureRemoved": true
+}

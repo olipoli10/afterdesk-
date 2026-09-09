@@ -1,0 +1,20 @@
+{
+  "id": "g3-gateway-refusal-after",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/gateway-dispatch-claim-revalidation.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:48:11.098Z",
+  "finishedAt": "2026-09-09T14:48:11.819Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-refusal-after/stdout.txt",
+  "stdoutSha256": "6cfa6167e41514a6a516495a1e249040130a4d0dbe03fb91ca37a5573fef1e59",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-refusal-after/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

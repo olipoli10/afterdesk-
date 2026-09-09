@@ -1,0 +1,20 @@
+{
+  "id": "g7-duplicate-provider-message",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 DUPLICATE_PROVIDER_MESSAGE",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:20:21.107Z",
+  "finishedAt": "2026-09-09T15:20:21.489Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-duplicate-provider-message/stdout.txt",
+  "stdoutSha256": "63cd2601dac3e21f126b28ea07db8d416dc8f4d4d5f52f136d3654df95affc99",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-duplicate-provider-message/stderr.txt",
+  "stderrSha256": "ba6edfaa60c5d90894a64f5a88691ba7c6dea447f264c8b4c2b357627543344c",
+  "replay": null
+}

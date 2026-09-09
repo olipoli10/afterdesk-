@@ -1,0 +1,48 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/gateway-dispatch-claim-revalidation.test.ts [2m([22m[2m13 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 17[2mms[22m[39m
+[31m     [31m×[31m rechecks AI ownership atomically after its earlier lineage snapshot[39m[32m 6[2mms[22m[39m
+     [32m✓[39m allows only the winner of two concurrent prepared-state readers to resolve credentials and dispatch[32m 2[2mms[22m[39m
+     [32m✓[39m retains one legitimate dispatch and the uncertain-result path[32m 1[2mms[22m[39m
+     [32m✓[39m refuses an already-lost atomic claim before credential resolution[32m 0[2mms[22m[39m
+     [32m✓[39m late lineage reader cannot cancel the winner while its local adapter is pending[32m 1[2mms[22m[39m
+     [32m✓[39m disabled rollout cannot cancel an already dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m legitimate refusal fences the prepared attempt before AI finalization, hold release and audits[32m 2[2mms[22m[39m
+     [32m✓[39m rolls back every refusal mutation when the audit fails[32m 1[2mms[22m[39m
+     [32m✓[39m a superseded AI owner rolls back the successful attempt refusal fence[32m 0[2mms[22m[39m
+     [32m✓[39m does not release exposure when the already-invoked adapter declares no dispatch[32m 1[2mms[22m[39m
+     [32m✓[39m only one of two concurrent refusals may finalize and release[32m 0[2mms[22m[39m
+     [32m✓[39m a refusal winning the race prevents a stale prepared reader from dispatching[32m 0[2mms[22m[39m
+     [32m✓[39m a failed dispatch audit rolls back the claim and never resolves credentials[32m 0[2mms[22m[39m
+ [31m❯[39m test/unit/gateway-voice-claim-revalidation.test.ts [2m([22m[2m24 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[32m 22[2mms[22m[39m
+[31m     [31m×[31m settles measured spend on a response-received provider failure[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m keeps unknown cost uncertain even with response unknown_failure[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m keeps unknown cost uncertain even with response null[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m callback uncertain cannot overwrite a successor's logical state[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m callback failure cannot overwrite a successor's logical state[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m callback success cannot overwrite a successor's logical state[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m cannot acquire after its AI owner is reclaimed[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m cannot acquire when the segment has already left its eligible state[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m rechecks session closure after the initial subject read[39m[32m 2[2mms[22m[39m
+     [32m✓[39m late rollout refusal cannot mutate a dispatched winner[32m 1[2mms[22m[39m
+     [32m✓[39m late actor refusal cannot mutate a dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m late session refusal cannot mutate a dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m late policy refusal cannot mutate a dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m late breaker refusal cannot mutate a dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m legitimate refusal fences before release and AI completion[32m 1[2mms[22m[39m
+     [32m✓[39m rolls back refusal and hold release together when audit fails[32m 1[2mms[22m[39m
+     [32m✓[39m rolls back the refusal CAS if AI ownership is already superseded[32m 0[2mms[22m[39m
+     [32m✓[39m returns non-terminal superseded to the losing acquisition caller[32m 0[2mms[22m[39m
+     [32m✓[39m does not acquire a prepared row whose dispatch knowledge is already unaccounted[32m 0[2mms[22m[39m
+     [32m✓[39m retains exposure if the already-invoked adapter declares not_dispatched[32m 0[2mms[22m[39m
+     [32m✓[39m rolls back acquisition if its audit fails and invokes no adapter[32m 0[2mms[22m[39m
+     [32m✓[39m only one concurrent acquisition can invoke an adapter[32m 0[2mms[22m[39m
+     [32m✓[39m only one concurrent refusal can release and finalize[32m 0[2mms[22m[39m
+     [32m✓[39m a winning refusal prevents a stale acquisition from dispatching[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m27 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 11:09:13
+[2m   Duration [22m 428ms[2m (transform 213ms, setup 0ms, import 342ms, tests 39ms, environment 0ms)[22m
+

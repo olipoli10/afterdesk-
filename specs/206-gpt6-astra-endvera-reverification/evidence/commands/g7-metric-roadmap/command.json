@@ -1,0 +1,35 @@
+{
+  "id": "g7-metric-roadmap",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "METRIC_CALCULATION",
+  "providerAttemptRequestId": null,
+  "command": "node --permission --allow-fs-read=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs --allow-fs-read=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-roadmap-baseline.md --allow-fs-read=C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs --revalidation-replay roadmap g7-metric-roadmap specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:45:53.946Z",
+  "finishedAt": "2026-09-09T15:45:54.154Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-metric-roadmap/stdout.txt",
+  "stdoutSha256": "bcf70c7efd21d556c51a4dd5dd4f8d16cb82b0bf54c82150b4821e89287c2694",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-metric-roadmap/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": {
+    "runtime": "NODE",
+    "environment": "SANITIZED_NO_SECRETS",
+    "entrypointPath": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs",
+    "entrypointSha256": "fb28bcbe78f65c393b026391724c9cfe879ba165275652871f7f5cd7a7a456bc",
+    "arguments": [
+      "--revalidation-replay",
+      "roadmap",
+      "g7-metric-roadmap",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-roadmap-baseline.md",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md"
+    ]
+  }
+}

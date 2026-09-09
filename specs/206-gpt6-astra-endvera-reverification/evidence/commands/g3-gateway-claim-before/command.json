@@ -1,0 +1,20 @@
+{
+  "id": "g3-gateway-claim-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node --require ./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs node_modules/vitest/vitest.mjs run test/unit/gateway-dispatch-claim-revalidation.test.ts --reporter=json --maxWorkers=1",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:36:01.672Z",
+  "finishedAt": "2026-09-09T14:36:02.430Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-claim-before/stdout.txt",
+  "stdoutSha256": "29cb49802628bc2af5dd292afb5ee75828a77c44bcfa9085ca86bb69a4748253",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-claim-before/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

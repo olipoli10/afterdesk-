@@ -1,0 +1,44 @@
+{
+  "kind": "POST_OBSERVATION_VALIDATION",
+  "testedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "trackedDocumentationPendingCommit": true,
+  "canonicalSealValidated": false,
+  "records": [
+    {
+      "id": "program-admission",
+      "command": "& 'C:/Users/oliro/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe' -NoProfile -File C:/dev/afterdesk-project-brain/scripts/validate-long-run-program.ps1 -ManifestPath specs/206-gpt6-astra-endvera-reverification/LONG_RUN_PROGRAM.json",
+      "expectedExit": 0,
+      "observedExit": 0,
+      "outputText": "PROGRAM=ASTRA-REVERIFICATION-12c560ba TOTAL=6 COMPLETE=5 OPEN=0 IN_PROGRESS=0 BLOCKED=1 INVALID=0 ESTIMATED_MINUTES=795\r\nVERDICT=ADMISSION_READY\r\n",
+      "source": "exec_command decoded tool output, not a canonical RAW_UTF8 stream artifact",
+      "matchesExpectation": true
+    },
+    {
+      "id": "queue-admission",
+      "command": "& 'C:/Users/oliro/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe' -NoProfile -File C:/dev/afterdesk-project-brain/scripts/validate-continuation-queue.ps1 -QueuePath specs/206-gpt6-astra-endvera-reverification/CONTINUATION_QUEUE.json",
+      "expectedExit": 0,
+      "observedExit": 0,
+      "outputText": "QUEUE=ASTRA-LOCAL-12c560ba TOTAL=1 DONE=0 OPEN=0 IN_PROGRESS=0 BLOCKED=1 INVALID=0\r\nVERDICT=NO_SUCCESSOR\r\n",
+      "source": "exec_command decoded tool output, not a canonical RAW_UTF8 stream artifact",
+      "matchesExpectation": true
+    },
+    {
+      "id": "program-completion",
+      "command": "& 'C:/Users/oliro/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe' -NoProfile -File C:/dev/afterdesk-project-brain/scripts/validate-long-run-program.ps1 -ManifestPath specs/206-gpt6-astra-endvera-reverification/LONG_RUN_PROGRAM.json -RequireComplete",
+      "expectedExit": 1,
+      "observedExit": 1,
+      "outputText": "PROGRAM=ASTRA-REVERIFICATION-12c560ba TOTAL=6 COMPLETE=5 OPEN=0 IN_PROGRESS=0 BLOCKED=1 INVALID=1 ESTIMATED_MINUTES=795\r\nERROR=completion requested while chapters remain OPEN, IN_PROGRESS or BLOCKED\r\n",
+      "source": "exec_command decoded tool output, not a canonical RAW_UTF8 stream artifact",
+      "matchesExpectation": true
+    },
+    {
+      "id": "queue-drained",
+      "command": "& 'C:/Users/oliro/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe' -NoProfile -File C:/dev/afterdesk-project-brain/scripts/validate-continuation-queue.ps1 -QueuePath specs/206-gpt6-astra-endvera-reverification/CONTINUATION_QUEUE.json -RequireDrained",
+      "expectedExit": 1,
+      "observedExit": 1,
+      "outputText": "QUEUE=ASTRA-LOCAL-12c560ba TOTAL=1 DONE=0 OPEN=0 IN_PROGRESS=0 BLOCKED=1 INVALID=1\r\nERROR=closeout requested while successors remain OPEN, IN_PROGRESS or BLOCKED\r\n",
+      "source": "exec_command decoded tool output, not a canonical RAW_UTF8 stream artifact",
+      "matchesExpectation": true
+    }
+  ]
+}

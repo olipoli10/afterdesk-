@@ -1,0 +1,20 @@
+{
+  "id": "g7-prompt-injection",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 PROMPT_INJECTION",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:20:36.860Z",
+  "finishedAt": "2026-09-09T15:20:37.124Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-prompt-injection/stdout.txt",
+  "stdoutSha256": "4fc3e20f554a95683054dee1cfa4bada7a1618318e08a43e3f89492c781f1dfc",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-prompt-injection/stderr.txt",
+  "stderrSha256": "a3920dbc8480c4ea9c50223fe9796b26aa667eb4e80ba59b9a954df0b294a317",
+  "replay": null
+}

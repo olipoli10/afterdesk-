@@ -1,0 +1,20 @@
+{
+  "id": "g3-portability-reachability-tests",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node --require ./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs node_modules/vitest/vitest.mjs run test/construction-operating-assistant-r36w-fact-candidates-mutation-guards.test.ts test/construction-operating-assistant-r36x-understanding-mutation-guards.test.ts test/construction-operating-assistant-r37bb-zdr-compatibility.test.ts test/construction-operating-assistant-r37bc-controller-contract-alignment.test.ts test/construction-operating-assistant-r37l-provider-transitive-reachability.test.ts test/construction-operating-assistant-r37m-provider-computed-import.test.ts test/construction-operating-assistant-r37n-provider-dynamic-code.test.ts test/construction-operating-assistant-r37l-provider-reachability-traversal.test.ts --reporter=json --maxWorkers=4",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:00:51.152Z",
+  "finishedAt": "2026-09-09T14:00:56.376Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-portability-reachability-tests/stdout.txt",
+  "stdoutSha256": "e6b8fba1d5c582c236e14c0208cff145f3c48ba83a693638f9267cdcf648eb7d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-portability-reachability-tests/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

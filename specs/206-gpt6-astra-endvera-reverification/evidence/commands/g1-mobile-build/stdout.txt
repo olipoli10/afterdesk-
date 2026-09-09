@@ -1,0 +1,5 @@
+CHECK_IDENTITY phase=G1 checkId=MOBILE_BUILD runtimeProviderAuthorized=false claimedDeviceObservation=false
+GROUP_COMPONENT typecheck exit=1 timeout=false
+GROUP_COMPONENT lint exit=1 timeout=false
+GROUP_COMPONENT expo-doctor exit=1 timeout=false
+GROUP_COMPONENT expo-export exit=1 timeout=false

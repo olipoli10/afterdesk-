@@ -1,0 +1,20 @@
+{
+  "id": "g3-voice-refusal-after",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/gateway-voice-claim-revalidation.test.ts test/unit/gateway-dispatch-claim-revalidation.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:59:58.744Z",
+  "finishedAt": "2026-09-09T14:59:59.790Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-voice-refusal-after/stdout.txt",
+  "stdoutSha256": "c5e2b21b5e21abeb41381ef8301a31f55fa2c07c816716d61e17759e03a1432a",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-voice-refusal-after/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "PATCH_REVIEW",
+  "requestedModel": "gpt-5.6-sol",
+  "servedModel": null,
+  "status": "CHANGES_REQUIRED",
+  "scope": [
+    "scripts/validate-endvera-whole-product-readiness.mjs",
+    "scripts/validate-endvera-whole-product-closure.mjs",
+    "scripts/validate-endvera-market-readiness.mjs",
+    "release/current-projection-v3.mjs",
+    "release/current-projection-v3.md",
+    "release/current-projection-v3.history.json",
+    "release/current-projection-v3.json",
+    "test/local-whole-product-readiness-gate.test.ts",
+    "test/whole-product-closure-audit.test.ts",
+    "test/construction-operating-assistant-r36k-market-readiness.test.ts",
+    "src/app/construction/page.tsx",
+    "test/construction-public-copy-boundaries.test.ts"
+  ],
+  "findings": [
+    {
+      "id": "PRODUCT001-ARCHIVE-001",
+      "severity": "HIGH",
+      "file": "release/current-projection-v3.mjs",
+      "line": 38,
+      "title": "Historical byte preservation is anchored only to an editable manifest",
+      "reproduction": "Change an archived historical report, replace its checkoutSha256 in current-projection-v3.history.json, then regenerate current-projection-v3.json. requireExactInputs verifies only the three paths, the byte check trusts the modified checkoutSha256, and historyManifest is recomputed from the same modified manifest. Validation therefore accepts changed historical bytes. archivedInCommit and gitBlobSha256 are never validated here.",
+      "proposedFix": "Anchor the expected historical report digests independently in trusted validator code or another immutable reviewed source. Validate the archive schema, kind, scope, commit/blob identifiers and checkout digests against that anchor; do not permit regeneration of the projection to redefine which historical bytes are authentic."
+    },
+    {
+      "id": "PRODUCT003-INJECTED-READER-001",
+      "severity": "MEDIUM",
+      "file": "release/current-projection-v3.mjs",
+      "line": 51,
+      "title": "The exported validator can authenticate caller-injected bytes and source hashes",
+      "reproduction": "Create a coherent in-memory readFile implementation for the fixed paths, call buildCurrentProjection with that reader, then pass the result and the same reader through validateCurrentProjection options. The function returns successful current-configuration validation without reading the checkout. The path set remains exact, but the authenticated hashes are caller-manufactured.",
+      "proposedFix": "Make the production/exported validation entry point read actual filesystem bytes using an internal reader and a trusted repository root. Isolate dependency injection in a clearly test-only helper that cannot produce gate-success output, or require an explicit non-attesting fixture mode whose result cannot be confused with current-checkout validation."
+    },
+    {
+      "id": "PRODUCT001-MARKET-FLAGS-001",
+      "severity": "MEDIUM",
+      "file": "scripts/validate-endvera-market-readiness.mjs",
+      "line": 33,
+      "title": "Historical market validation accepts non-boolean or omitted top-level readiness claims",
+      "reproduction": "With otherwise valid historical fixture data, set deployed, published or productionReady to a truthy non-boolean value such as \"yes\". The validator rejects only values strictly equal to true, so the inflated property passes while the function returns a successful historical attestation.",
+      "proposedFix": "Require each defined boundary field to be exactly false, as the other validators do. If these top-level fields are not part of the schema, reject their presence instead of accepting arbitrary values."
+    },
+    {
+      "id": "PRODUCT001-CLOSURE-PLATFORMS-001",
+      "severity": "MEDIUM",
+      "file": "scripts/validate-endvera-whole-product-closure.mjs",
+      "line": 48,
+      "title": "Historical closure validation does not reject inflated platform claims in the report being validated",
+      "reproduction": "Starting with the supplied test's correctly rehashed static fixture, change the IOS or ANDROID entry in report.platforms to binaryBuilt:true. The validator checks the separate native-preflight file but never validates report.platforms, so the contradictory closure report is accepted as HISTORICAL_STATIC_ATTESTATION_ONLY.",
+      "proposedFix": "Validate the exact WEB/IOS/ANDROID platform set and require every non-Web binaryBuilt, signed, uploaded, submitted, providerObserved and device-observed field represented by the historical schema to remain false. Cross-check those claims against the protected native-preflight artifact."
+    },
+    {
+      "id": "PRODUCT001-PUBLIC-COPY-001",
+      "severity": "MEDIUM",
+      "file": "src/app/construction/page.tsx",
+      "line": 144,
+      "title": "Standalone metadata and approval copy still imply currently available texting and calling",
+      "reproduction": "The FR and EN metadata descriptions state that users manage jobs by text, phone or app without a demo or target-workflow qualifier. Metadata can appear in search and social previews without the on-page availability disclosure. The permission copy at lines 62 and 110 also says sending is prohibited only without approval, implying that approval currently enables live SMS despite the explicit statement that live texting is disabled.",
+      "proposedFix": "Rewrite metadata as a vision or local-demo description. Qualify the permission section as the target workflow and state explicitly that approval in the current demo does not transmit a message."
+    }
+  ],
+  "limitations": [
+    "Source-only review: no commands, tests, network access, provider operation, deployment or device validation were performed.",
+    "The candidate remained UNPROBED; no execution result is asserted and no canonical model answer was consulted.",
+    "The supplied packet SHA-256 was not independently recalculated because tools were prohibited."
+  ]
+}

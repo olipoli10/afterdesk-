@@ -1,0 +1,13 @@
+{
+  "kind": "BRAIN_CHECKPOINT",
+  "checkpointAt": "2026-09-09T15:45:30.442Z",
+  "startHead": "3a4e31d837ed4f53f8326d865fca43cc54eb4c3e",
+  "startTree": "cc3c8f00afa0bcb75127bb085689a6d8bfc4ab22",
+  "finalHead": "d96866623558ede5ac5f25274e636db12bd8e79b",
+  "finalTree": "47fdc13b664f053256ac5a2c5f1ac1b1f55e7ba6",
+  "worktreeClean": true,
+  "validationCommandId": "g7-brain-validation",
+  "validationExitCode": 0,
+  "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-brain-validation/stdout.txt",
+  "evidenceSha256": "38df7e7cc809785b2e729b0c87ab3243459195d3719a0a28ac426efbe9814f1d"
+}

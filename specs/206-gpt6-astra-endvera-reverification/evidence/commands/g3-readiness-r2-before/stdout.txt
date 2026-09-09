@@ -1,0 +1,43 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/readiness-review-r2.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m15 failed[39m[2m)[22m[32m 116[2mms[22m[39m
+[31m     [31m×[31m does not let a consumer redefine the current canonical path set[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m does not let a consumer redefine the historical canonical path set[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim signed regardless of value[39m[32m 11[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim uploaded regardless of value[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim submitted regardless of value[39m[32m 6[2mms[22m[39m
+     [32m✓[39m rejects the misplaced top-level claim deployed regardless of value[32m 11[2mms[22m[39m
+     [32m✓[39m rejects the misplaced top-level claim published regardless of value[32m 8[2mms[22m[39m
+     [32m✓[39m rejects the misplaced top-level claim productionReady regardless of value[32m 11[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim providerObserved regardless of value[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim customerObserved regardless of value[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim deviceObserved regardless of value[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim externalEffectCount regardless of value[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim observedProof regardless of value[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim currentReadiness regardless of value[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim wholeProductReadiness regardless of value[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim wholeProductClosure regardless of value[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m rejects the misplaced top-level claim externalReadiness regardless of value[39m[32m 6[2mms[22m[39m
+     [32m✓[39m accepts a structurally exact historical fixture only as historical; never updates disk hashes[32m 6[2mms[22m[39m
+[31m     [31m×[31m rejects extra report and nested boundary properties[39m[32m 5[2mms[22m[39m
+ [31m❯[39m test/construction-public-copy-boundaries.test.ts [2m([22m[2m13 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 55[2mms[22m[39m
+     [32m✓[39m keeps current availability next to the hero promise, outside collapsed footer details[32m 12[2mms[22m[39m
+     [32m✓[39m labels the multi-action scene as an unexecuted target illustration with a non-send control[32m 4[2mms[22m[39m
+     [32m✓[39m describes a prepared human-review file, not confirmed receipt by a person[32m 3[2mms[22m[39m
+[31m     [31m×[31m qualifies the walkthrough locally and disclaims receiving, sending, calendar writes and saved actions[39m[32m 6[2mms[22m[39m
+     [32m✓[39m interprets the exact simple calendar phrase rendered in the page using synthetic context[32m 4[2mms[22m[39m
+     [32m✓[39m does not treat the multi-action illustration as interpreter execution evidence[32m 3[2mms[22m[39m
+     [32m✓[39m keeps current availability next to the hero promise, outside collapsed footer details[32m 3[2mms[22m[39m
+     [32m✓[39m labels the multi-action scene as an unexecuted target illustration with a non-send control[32m 3[2mms[22m[39m
+     [32m✓[39m describes a prepared human-review file, not confirmed receipt by a person[32m 3[2mms[22m[39m
+[31m     [31m×[31m qualifies the walkthrough locally and disclaims receiving, sending, calendar writes and saved actions[39m[32m 5[2mms[22m[39m
+     [32m✓[39m interprets the exact simple calendar phrase rendered in the page using synthetic context[32m 4[2mms[22m[39m
+     [32m✓[39m does not treat the multi-action illustration as interpreter execution evidence[32m 4[2mms[22m[39m
+   [32m✓[39m keeps the illustrative page disconnected from submission and interpreter execution[32m 1[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m17 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[90m (32)[39m
+[2m   Start at [22m 10:31:32
+[2m   Duration [22m 1.22s[2m (transform 208ms, setup 0ms, import 1.07s, tests 171ms, environment 0ms)[22m
+

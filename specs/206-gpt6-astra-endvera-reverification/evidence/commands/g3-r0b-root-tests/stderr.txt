@@ -1,0 +1,25 @@
+file:///C:/dev/endvera-astra-reverification/scripts/validate-endvera-native-preflight.mjs:7
+const assert = (condition, message) => { if (!condition) throw new Error(message); };
+                                                               ^
+
+Error: NATIVE_APP_IDENTITY_INVALID
+    at assert (file:///C:/dev/endvera-astra-reverification/scripts/validate-endvera-native-preflight.mjs:7:64)
+    at file:///C:/dev/endvera-astra-reverification/scripts/validate-endvera-native-preflight.mjs:15:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:666:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.2.0
+file:///C:/dev/endvera-astra-reverification/scripts/validate-endvera-whole-product-readiness.mjs:9
+  if (!condition) throw new Error(message);
+                        ^
+
+Error: PROTECTED_INPUT_HASH_MISMATCH:release/endvera-construction-v1/product-experience-readiness.json
+    at assert (file:///C:/dev/endvera-astra-reverification/scripts/validate-endvera-whole-product-readiness.mjs:9:25)
+    at file:///C:/dev/endvera-astra-reverification/scripts/validate-endvera-whole-product-readiness.mjs:21:3
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:666:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.2.0
+PHASE_CHECK_EXECUTION_FAILURE:CHECK_SUBCOMMAND_FAILED:vitest:exit=1:timeout=false

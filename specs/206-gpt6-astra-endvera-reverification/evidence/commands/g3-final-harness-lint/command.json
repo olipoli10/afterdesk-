@@ -1,0 +1,20 @@
+{
+  "id": "g3-final-harness-lint",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/eslint/bin/eslint.js specs/206-gpt6-astra-endvera-reverification/scripts/run-final-extras.mjs specs/206-gpt6-astra-endvera-reverification/scripts/run-g7-final.mjs specs/206-gpt6-astra-endvera-reverification/scripts/collect-unsealed-evidence.mjs specs/206-gpt6-astra-endvera-reverification/scripts/assemble-local-seal.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:00:04.999Z",
+  "finishedAt": "2026-09-09T15:00:07.820Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-final-harness-lint/stdout.txt",
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-final-harness-lint/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

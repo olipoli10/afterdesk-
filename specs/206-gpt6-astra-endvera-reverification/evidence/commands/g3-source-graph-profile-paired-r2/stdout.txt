@@ -1,0 +1,153 @@
+{
+  "kind": "PAIRED_LOCAL_SOURCE_GRAPH_PROFILE",
+  "baselineCommit": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "moduleCount": 599,
+  "repetitions": 3,
+  "measurements": [
+    {
+      "repetition": 0,
+      "variant": "baseline",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 570.6259,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "baseline",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 396.9901,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "baseline",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 418.25790000000006,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "current",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 342.54420000000005,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "current",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 296.7402000000002,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "current",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 290.0087999999996,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "baseline",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 494.8326000000002,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "baseline",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 723.855,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "baseline",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 746.2088999999996,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "current",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 500.1949999999997,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "current",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 540.1884999999993,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "current",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 621.2498000000005,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "baseline",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 663.7583000000004,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "baseline",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 747.1305999999995,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "baseline",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 639.3518000000004,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "current",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 479.1836999999996,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "current",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 460.6893999999993,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "current",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 505.0023000000001,
+      "modulesParsed": 539,
+      "findingCount": 0
+    }
+  ],
+  "providerCalls": 0
+}

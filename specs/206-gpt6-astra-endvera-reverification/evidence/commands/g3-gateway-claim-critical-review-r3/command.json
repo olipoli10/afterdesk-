@@ -1,0 +1,20 @@
+{
+  "id": "g3-gateway-claim-critical-review-r3",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "3cd12bcbbb8df78f76255e9b4a48b5b47336d97a",
+  "observedTree": "66d4abfdaafb0fe5ec177de75554baf5b14b7d52",
+  "classification": "MODEL_CORRECTION_REVIEW",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-critical-review.mjs specs/206-gpt6-astra-endvera-reverification/audit-packets/gateway-claim-correction-r3.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:02:18.534Z",
+  "finishedAt": "2026-09-09T15:06:19.992Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-claim-critical-review-r3/stdout.txt",
+  "stdoutSha256": "184858c6c537a5cad95907c3ac2380a6b1dfb7e2d4634ae98807770da92f34ff",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-claim-critical-review-r3/stderr.txt",
+  "stderrSha256": "00137eb5bd664831bc05d9e84ff5b2d80b32a7947c61a1fc75767301014477e4",
+  "replay": null
+}

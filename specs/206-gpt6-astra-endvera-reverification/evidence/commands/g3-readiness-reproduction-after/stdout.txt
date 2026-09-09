@@ -1,0 +1,2 @@
+{"id":"ASTRA-R0-PRODUCT-001","observation":"STATIC_FIXTURE_ACCEPTED_WITHOUT_EXECUTION_PROOF","result":{"status":"HISTORICAL_STATIC_ATTESTATION_ONLY","historicalStatus":"LOCAL_CREDENTIAL_FREE_PRODUCT_SCOPE_CLOSED","currentReadiness":"NOT_EVALUATED","protectedInputCount":7,"externalBlockerCount":18},"behavioralRunEvidencePresent":false,"substitutedUnrelatedSet":false}
+{"id":"ASTRA-R0-PRODUCT-003","observation":"REJECTED","errorCode":"PROTECTED_INPUT_SET_INVALID"}

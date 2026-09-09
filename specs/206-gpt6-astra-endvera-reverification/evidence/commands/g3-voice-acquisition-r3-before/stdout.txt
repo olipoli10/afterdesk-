@@ -1,0 +1,28 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/gateway-voice-claim-revalidation.test.ts [2m([22m[2m18 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 16[2mms[22m[39m
+[31m     [31m×[31m cannot acquire after its AI owner is reclaimed[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m cannot acquire when the segment has already left its eligible state[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m rechecks session closure after the initial subject read[39m[32m 1[2mms[22m[39m
+     [32m✓[39m late rollout refusal cannot mutate a dispatched winner[32m 1[2mms[22m[39m
+     [32m✓[39m late actor refusal cannot mutate a dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m late session refusal cannot mutate a dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m late policy refusal cannot mutate a dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m late breaker refusal cannot mutate a dispatched winner[32m 0[2mms[22m[39m
+     [32m✓[39m legitimate refusal fences before release and AI completion[32m 1[2mms[22m[39m
+     [32m✓[39m rolls back refusal and hold release together when audit fails[32m 1[2mms[22m[39m
+     [32m✓[39m rolls back the refusal CAS if AI ownership is already superseded[32m 0[2mms[22m[39m
+     [32m✓[39m returns non-terminal superseded to the losing acquisition caller[32m 0[2mms[22m[39m
+     [32m✓[39m does not acquire a prepared row whose dispatch knowledge is already unaccounted[32m 0[2mms[22m[39m
+     [32m✓[39m retains exposure if the already-invoked adapter declares not_dispatched[32m 0[2mms[22m[39m
+     [32m✓[39m rolls back acquisition if its audit fails and invokes no adapter[32m 0[2mms[22m[39m
+     [32m✓[39m only one concurrent acquisition can invoke an adapter[32m 1[2mms[22m[39m
+     [32m✓[39m only one concurrent refusal can release and finalize[32m 0[2mms[22m[39m
+     [32m✓[39m a winning refusal prevents a stale acquisition from dispatching[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[90m (18)[39m
+[2m   Start at [22m 11:07:32
+[2m   Duration [22m 386ms[2m (transform 106ms, setup 0ms, import 201ms, tests 16ms, environment 0ms)[22m
+

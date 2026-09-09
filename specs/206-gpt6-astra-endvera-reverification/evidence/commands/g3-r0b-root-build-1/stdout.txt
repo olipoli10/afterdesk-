@@ -1,0 +1,25 @@
+CHECK_IDENTITY phase=G1 checkId=ROOT_BUILD runtimeProviderAuthorized=false claimedDeviceObservation=false
+GROUP_COMPONENT typecheck exit=0 timeout=false
+
+C:\dev\endvera-astra-reverification\specs\206-gpt6-astra-endvera-reverification\scripts\assemble-local-seal.mjs
+  167:14  warning  'metricKind' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  167:25  warning  'rubrics' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+C:\dev\endvera-astra-reverification\src\lib\construction-operating-assistant-r34\registry.ts
+  63:28  warning  '_canonicalHash' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 3 problems (0 errors, 3 warnings)
+
+GROUP_COMPONENT lint exit=0 timeout=false
+R37O_PROVIDER_BOUNDARY_PASS modules=599 violations=0
+GROUP_COMPONENT provider-boundary exit=0 timeout=false
+GROUP_COMPONENT release-package exit=1 timeout=false
+READY_FOR_EXTERNAL_COMPLIANCE_INPUTS dataClasses=9 locales=2 scenes=6 externalEffectCount=0
+GROUP_COMPONENT store-compliance exit=0 timeout=false
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+▲ Next.js 16.2.12 (webpack)
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+GROUP_COMPONENT build exit=1 timeout=false

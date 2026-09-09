@@ -1,0 +1,295 @@
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 10 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-dispatch-claim-revalidation.test.ts[2m > [22mGateway classification atomic dispatch claim[2m > [22mrechecks AI ownership atomically after its earlier lineage snapshot
+[31m[1mAssertionError[22m: expected "vi.fn()" to not be called at all, but actually been called 1 times[90m
+
+Received:
+
+[1m  1st vi.fn() call:
+
+[22m    Array [
+      Object {
+        "abortSignal": AbortSignal {
+          Symbol(kEvents): Map {},
+          Symbol(events.maxEventTargetListeners): 0,
+          Symbol(events.maxEventTargetListenersWarned): false,
+          Symbol(kHandlers): Map {},
+          Symbol(kAborted): false,
+          Symbol(kReason): undefined,
+          Symbol(kComposite): false,
+        },
+        "adapterKey": "synthetic",
+        "attemptId": "syn-attempt",
+        "billingProvider": "synthetic",
+        "boundedInput": Object {
+          "synthetic": true,
+        },
+        "endpointKey": "synthetic",
+        "intermediary": null,
+        "modelKey": "synthetic",
+        "operationId": "syn-operation",
+        "outputContractHash": "syn-output",
+        "requestEvidenceRef": "sha256:synthetic",
+        "tenantId": "syn-tenant",
+      },
+    ]
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m test/unit/gateway-dispatch-claim-revalidation.test.ts:[2m96:62[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22msettles measured spend on a response-received provider failure
+[31m[1mAssertionError[22m: expected { attempt: 'failed', …(7) } to match object { hold: 'settled', …(2) }
+(5 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "attempt": "failed",[22m
+[2m    "dispatchState": "settled",[22m
+[32m-   "hold": "settled",[39m
+[31m+   "hold": "held",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m72:130[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mkeeps unknown cost uncertain even with response unknown_failure
+[31m[1mAssertionError[22m: expected { status: 'failed', …(1) } to match object { status: 'uncertain' }
+(1 matching property omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "status": "uncertain",[39m
+[31m+   "status": "failed",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m75:83[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mkeeps unknown cost uncertain even with response null
+[31m[1mAssertionError[22m: expected { status: 'succeeded', …(4) } to match object { status: 'uncertain' }
+(4 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "status": "uncertain",[39m
+[31m+   "status": "succeeded",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m75:83[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mcallback uncertain cannot overwrite a successor's logical state
+[31m[1mAssertionError[22m: expected { status: 'uncertain', …(1) } to deeply equal { status: 'superseded', …(1) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "reasonClass": "attempt_claim_lost",[39m
+[32m-   "status": "superseded",[39m
+[31m+   "errorClass": "unknown_dispatched_outcome",[39m
+[31m+   "status": "uncertain",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m79:27[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mcallback failure cannot overwrite a successor's logical state
+[31m[1mAssertionError[22m: expected { status: 'failed', …(1) } to deeply equal { status: 'superseded', …(1) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "reasonClass": "attempt_claim_lost",[39m
+[32m-   "status": "superseded",[39m
+[31m+   "errorClass": "unknown_failure",[39m
+[31m+   "status": "failed",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m79:27[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mcallback success cannot overwrite a successor's logical state
+[31m[1mAssertionError[22m: promise rejected "Error: VOICE_AI_OPERATION_FENCE_LOST" instead of resolving[39m
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m79:27[22m[39m
+
+
+[31m[1mCaused by: Error[22m: VOICE_AI_OPERATION_FENCE_LOST[39m
+[36m [2m❯[22m src/server/model-gateway/voice/dispatch.ts:[2m547:29[22m[39m
+[90m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m49:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mcannot acquire after its AI owner is reclaimed
+[31m[1mAssertionError[22m: expected "vi.fn()" to not be called at all, but actually been called 1 times[90m
+
+Received:
+
+[1m  1st vi.fn() call:
+
+[22m    Array [
+      Object {
+        "abortSignal": AbortSignal {
+          Symbol(kEvents): Map {},
+          Symbol(events.maxEventTargetListeners): 0,
+          Symbol(events.maxEventTargetListenersWarned): false,
+          Symbol(kHandlers): Map {},
+          Symbol(kAborted): false,
+          Symbol(kReason): undefined,
+          Symbol(kComposite): false,
+        },
+        "adapterKey": "voice-synthetic-direct",
+        "attemptId": "syn-attempt",
+        "billingProvider": "synthetic",
+        "endpointKey": "synthetic",
+        "intermediary": null,
+        "modelKey": "synthetic",
+        "operationId": "syn-gateway",
+        "outputContractHash": "sha256:synthetic",
+        "projection": Object {
+          "audioFingerprint": "sha256:synthetic",
+          "ordinal": 0,
+        },
+        "requestEvidenceRef": "sha256:synthetic",
+        "segmentId": "syn-segment",
+        "sessionId": "syn-session",
+        "tenantId": "syn-client",
+      },
+    ]
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m83:56[22m[39m
+    [90m 81|[39m  [34mit[39m([32m"cannot acquire after its AI owner is reclaimed"[39m[33m,[39m[35masync[39m()[33m=>[39m{
+    [90m 82|[39m   f.state.owner="syn-successor";const snapshot=structuredClone(f.state…
+    [90m 83|[39m   const result=await dispatch();expect(f.dispatch).not.toHaveBeenCalle…
+    [90m   |[39m                                                        [31m^[39m
+    [90m 84|[39m  })[33m;[39m
+    [90m 85|[39m  it("cannot acquire when the segment has already left its eligible sta…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mcannot acquire when the segment has already left its eligible state
+[31m[1mAssertionError[22m: expected "vi.fn()" to not be called at all, but actually been called 1 times[90m
+
+Received:
+
+[1m  1st vi.fn() call:
+
+[22m    Array [
+      Object {
+        "abortSignal": AbortSignal {
+          Symbol(kEvents): Map {},
+          Symbol(events.maxEventTargetListeners): 0,
+          Symbol(events.maxEventTargetListenersWarned): false,
+          Symbol(kHandlers): Map {},
+          Symbol(kAborted): false,
+          Symbol(kReason): undefined,
+          Symbol(kComposite): false,
+        },
+        "adapterKey": "voice-synthetic-direct",
+        "attemptId": "syn-attempt",
+        "billingProvider": "synthetic",
+        "endpointKey": "synthetic",
+        "intermediary": null,
+        "modelKey": "synthetic",
+        "operationId": "syn-gateway",
+        "outputContractHash": "sha256:synthetic",
+        "projection": Object {
+          "audioFingerprint": "sha256:synthetic",
+          "ordinal": 0,
+        },
+        "requestEvidenceRef": "sha256:synthetic",
+        "segmentId": "syn-segment",
+        "sessionId": "syn-session",
+        "tenantId": "syn-client",
+      },
+    ]
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m87:56[22m[39m
+    [90m 85|[39m  it("cannot acquire when the segment has already left its eligible sta…
+    [90m 86|[39m   f[33m.[39mstate[33m.[39msegment[33m=[39m[32m"succeeded"[39m[33m;[39m[35mconst[39m snapshot[33m=[39m[34mstructuredClone[39m(f[33m.[39mstate)[33m;[39m
+    [90m 87|[39m   const result=await dispatch();expect(f.dispatch).not.toHaveBeenCalle…
+    [90m   |[39m                                                        [31m^[39m
+    [90m 88|[39m  })[33m;[39m
+    [90m 89|[39m  it("rechecks session closure after the initial subject read",async()=…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mrechecks session closure after the initial subject read
+[31m[1mAssertionError[22m: expected "vi.fn()" to not be called at all, but actually been called 1 times[90m
+
+Received:
+
+[1m  1st vi.fn() call:
+
+[22m    Array [
+      Object {
+        "abortSignal": AbortSignal {
+          Symbol(kEvents): Map {},
+          Symbol(events.maxEventTargetListeners): 0,
+          Symbol(events.maxEventTargetListenersWarned): false,
+          Symbol(kHandlers): Map {},
+          Symbol(kAborted): false,
+          Symbol(kReason): undefined,
+          Symbol(kComposite): false,
+        },
+        "adapterKey": "voice-synthetic-direct",
+        "attemptId": "syn-attempt",
+        "billingProvider": "synthetic",
+        "endpointKey": "synthetic",
+        "intermediary": null,
+        "modelKey": "synthetic",
+        "operationId": "syn-gateway",
+        "outputContractHash": "sha256:synthetic",
+        "projection": Object {
+          "audioFingerprint": "sha256:synthetic",
+          "ordinal": 0,
+        },
+        "requestEvidenceRef": "sha256:synthetic",
+        "segmentId": "syn-segment",
+        "sessionId": "syn-session",
+        "tenantId": "syn-client",
+      },
+    ]
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m94:53[22m[39m
+    [90m 92|[39m   let release!:()=>void;f.queue=new Promise<void>(resolve=>{release=re…
+    [90m 93|[39m   const pending=dispatch();await new Promise(resolve=>setTimeout(resol…
+    [90m 94|[39m   const result=await pending;expect(f.dispatch).not.toHaveBeenCalled()…
+    [90m   |[39m                                                     [31m^[39m
+    [90m 95|[39m  })[33m;[39m
+    [90m 96|[39m  it.each(["rollout","actor","session","policy","breaker"])("late %s re…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯[22m[39m
+

@@ -1,0 +1,20 @@
+{
+  "id": "g3-g7-final-preparation-r2",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-g7-final.mjs --validate-only",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:21:38.080Z",
+  "finishedAt": "2026-09-09T14:21:38.360Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-g7-final-preparation-r2/stdout.txt",
+  "stdoutSha256": "348ebc3bf40236bc7e8552a6b16f09b2f38e31a5da3d6662dcde7935881af781",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-g7-final-preparation-r2/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

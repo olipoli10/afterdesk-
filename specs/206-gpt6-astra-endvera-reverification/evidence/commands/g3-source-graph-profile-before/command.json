@@ -1,0 +1,20 @@
+{
+  "id": "g3-source-graph-profile-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "OTHER",
+  "providerAttemptRequestId": null,
+  "command": "node --require ./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs specs/206-gpt6-astra-endvera-reverification/scripts/profile-provider-reachability.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:54:48.945Z",
+  "finishedAt": "2026-09-09T13:54:51.858Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-before/stdout.txt",
+  "stdoutSha256": "79325ea24ea5922f17e7f6fed5924169d10c294a128cd0e65c2c5789c8696896",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-before/stderr.txt",
+  "stderrSha256": "0f31d0ef63597eead15a5e6c2f235a27bb5e17320bb5797e8bb5924ff9553d5b",
+  "replay": null
+}

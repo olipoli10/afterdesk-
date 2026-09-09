@@ -1,0 +1,24 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 6 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mpreserves normal Git-text CRLF checkout for check.ps1
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mpreserves normal Git-text CRLF checkout for migration.sql
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mpreserves normal Git-text CRLF checkout for schema.prisma
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mpreserves normal Git-text CRLF checkout for config.toml
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mpreserves normal Git-text CRLF checkout for .gitignore
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mpreserves normal Git-text CRLF checkout for LICENSE
+[31m[1mError[22m: RELEASE_TRACKED_CHECKOUT_SOURCE_DRIFT[39m
+[36m [2m❯[22m drift scripts/endvera-release-source-binding.mjs:[2m81:26[22m[39m
+    [90m 79|[39m   [35mconst[39m root[33m=[39mpath[33m.[39m[34mresolve[39m(options[33m.[39mrepositoryRoot)[33m;[39m
+    [90m 80|[39m   const excludedDerivedProjection='release/endvera-construction-v1/rel…
+    [90m 81|[39m   const drift=()=>{throw new Error('RELEASE_TRACKED_CHECKOUT_SOURCE_DR…
+    [90m   |[39m                          [31m^[39m
+    [90m 82|[39m   const git=(args,input)=>execFileSync('git',['-C',root,...args],{inpu…
+    [90m 83|[39m   [35mconst[39m parseEntries[33m=[39m(bytes[33m,[39mindex)[33m=>[39m{
+[90m [2m❯[22m assertReleaseSourceBinding scripts/endvera-release-source-binding.mjs:[2m128:91[22m[39m
+[90m [2m❯[22m test/unit/release-tracked-flags.test.ts:[2m106:12[22m[39m
+[90m [2m❯[22m fixture test/unit/release-tracked-flags.test.ts:[2m13:9[22m[39m
+[90m [2m❯[22m test/unit/release-tracked-flags.test.ts:[2m100:160[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+

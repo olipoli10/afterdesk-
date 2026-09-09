@@ -1,0 +1,20 @@
+{
+  "id": "g7-r0b-outcome-unknown-r2",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 OUTCOME_UNKNOWN",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:41:04.267Z",
+  "finishedAt": "2026-09-09T15:41:05.669Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-outcome-unknown-r2/stdout.txt",
+  "stdoutSha256": "73f2c8804533b4803ab3ac8d8fdb3614eaac0affb57e1be957c9eddc85b791e7",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-outcome-unknown-r2/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

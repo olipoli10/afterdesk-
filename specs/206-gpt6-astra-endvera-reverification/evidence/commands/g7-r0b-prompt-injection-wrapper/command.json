@@ -1,0 +1,34 @@
+{
+  "id": "g7-r0b-prompt-injection-wrapper",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "PHASE_CHECK",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs --revalidation-replay specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-prompt-injection.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:25:54.350Z",
+  "finishedAt": "2026-09-09T15:25:54.553Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-prompt-injection-wrapper/stdout.txt",
+  "stdoutSha256": "45f1a6f2fb27c94d1bf4ea19992daa9377c9830e2bf4c8521d9afd71b57c4241",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-prompt-injection-wrapper/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": {
+    "entrypoint": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "args": [
+      "--revalidation-replay",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-prompt-injection.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-prompt-injection.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-prompt-injection/stdout.txt",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-prompt-injection/stderr.txt"
+    ]
+  }
+}

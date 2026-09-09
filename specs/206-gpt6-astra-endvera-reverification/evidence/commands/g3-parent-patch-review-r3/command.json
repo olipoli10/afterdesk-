@@ -1,0 +1,20 @@
+{
+  "id": "g3-parent-patch-review-r3",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node --require ./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs specs/206-gpt6-astra-endvera-reverification/scripts/review-parent-patches.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:17:20.654Z",
+  "finishedAt": "2026-09-09T14:17:23.352Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review-r3/stdout.txt",
+  "stdoutSha256": "03cce49a2e19bc54b27b05a6b2d424d76884a5b5af8eb554fa1c787d16e9094d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review-r3/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

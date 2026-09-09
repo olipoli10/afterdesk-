@@ -1,0 +1,20 @@
+{
+  "id": "g3-final-test-alignment",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node --require ./specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs node_modules/vitest/vitest.mjs run test/construction-conversion-surface.test.ts test/construction-public-copy-boundaries.test.ts test/unit/release-source-r2-review.test.ts --reporter=json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:34:53.283Z",
+  "finishedAt": "2026-09-09T15:34:56.630Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-final-test-alignment/stdout.txt",
+  "stdoutSha256": "c550b26ea587a3d35433dd462d9a9d62b6f75df4ea50cd4aa9a9afa7ea1d8dd6",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-final-test-alignment/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

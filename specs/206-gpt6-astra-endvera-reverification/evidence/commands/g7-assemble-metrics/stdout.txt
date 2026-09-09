@@ -1,0 +1,112 @@
+{
+  "kind": "METRIC_REPORT",
+  "startRoadmapPercent": 22,
+  "startLocalBuildReadinessPercent": 46.75,
+  "startC2Completed": 18,
+  "startC2Total": 18,
+  "startRealProviderCustomerReadiness": "NO-GO",
+  "startVerifiedE2EPercent": 0,
+  "roadmapPercent": 22,
+  "localBuildReadinessPercent": 46.75,
+  "c2Completed": 18,
+  "c2Total": 18,
+  "realProviderCustomerReadiness": "NO-GO",
+  "verifiedE2EPercent": 0,
+  "rubrics": {
+    "roadmap": {
+      "startValue": 22,
+      "finalValue": 22,
+      "changedFromStart": false,
+      "rubricCrossed": false,
+      "rubricContractPath": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs",
+      "rubricContractSha256": "fb28bcbe78f65c393b026391724c9cfe879ba165275652871f7f5cd7a7a456bc",
+      "calculationEvidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-metric-roadmap/stdout.txt",
+      "calculationEvidenceSha256": "bcf70c7efd21d556c51a4dd5dd4f8d16cb82b0bf54c82150b4821e89287c2694",
+      "calculationCommandId": "g7-metric-roadmap",
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-roadmap-baseline.md",
+        "specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md"
+      ],
+      "evidenceSha256": [
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b",
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b"
+      ]
+    },
+    "localBuildReadiness": {
+      "startValue": 46.75,
+      "finalValue": 46.75,
+      "changedFromStart": false,
+      "rubricCrossed": false,
+      "rubricContractPath": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs",
+      "rubricContractSha256": "fb28bcbe78f65c393b026391724c9cfe879ba165275652871f7f5cd7a7a456bc",
+      "calculationEvidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-metric-localBuildReadiness/stdout.txt",
+      "calculationEvidenceSha256": "26983d149e26619d853c265dd36ee9bac6a6b2bfdda0a5493d6170244b085e91",
+      "calculationCommandId": "g7-metric-localBuildReadiness",
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-roadmap-baseline.md",
+        "specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md"
+      ],
+      "evidenceSha256": [
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b",
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b"
+      ]
+    },
+    "c2": {
+      "startValue": "18/18",
+      "finalValue": "18/18",
+      "changedFromStart": false,
+      "rubricCrossed": false,
+      "rubricContractPath": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs",
+      "rubricContractSha256": "fb28bcbe78f65c393b026391724c9cfe879ba165275652871f7f5cd7a7a456bc",
+      "calculationEvidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-metric-c2/stdout.txt",
+      "calculationEvidenceSha256": "65faebe0b9351cbcf37e83c5188898a482355e3f5e7620e0c15a10983f87b1d5",
+      "calculationCommandId": "g7-metric-c2",
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-roadmap-baseline.md",
+        "specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md"
+      ],
+      "evidenceSha256": [
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b",
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b"
+      ]
+    },
+    "realProviderCustomerReadiness": {
+      "startValue": "NO-GO",
+      "finalValue": "NO-GO",
+      "changedFromStart": false,
+      "rubricCrossed": false,
+      "rubricContractPath": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs",
+      "rubricContractSha256": "fb28bcbe78f65c393b026391724c9cfe879ba165275652871f7f5cd7a7a456bc",
+      "calculationEvidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-metric-realProviderCustomerReadiness/stdout.txt",
+      "calculationEvidenceSha256": "affbd7364aa205ce672386bd6a910f7a34904f807b7a738ed7ab57afb528f310",
+      "calculationCommandId": "g7-metric-realProviderCustomerReadiness",
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-roadmap-baseline.md",
+        "specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md"
+      ],
+      "evidenceSha256": [
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b",
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b"
+      ]
+    },
+    "verifiedE2E": {
+      "startValue": 0,
+      "finalValue": 0,
+      "changedFromStart": false,
+      "rubricCrossed": false,
+      "rubricContractPath": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs",
+      "rubricContractSha256": "fb28bcbe78f65c393b026391724c9cfe879ba165275652871f7f5cd7a7a456bc",
+      "calculationEvidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-metric-verifiedE2E/stdout.txt",
+      "calculationEvidenceSha256": "37e3ae077b7ed7160b18fffa0d98f4ef04ed8fd46553713ce4f66c6b70b8ba41",
+      "calculationCommandId": "g7-metric-verifiedE2E",
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-roadmap-baseline.md",
+        "specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md"
+      ],
+      "evidenceSha256": [
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b",
+        "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b"
+      ]
+    }
+  }
+}

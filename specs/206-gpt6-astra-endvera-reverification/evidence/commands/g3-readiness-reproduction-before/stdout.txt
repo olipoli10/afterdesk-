@@ -1,0 +1,2 @@
+{"id":"ASTRA-R0-PRODUCT-001","observation":"STATIC_FIXTURE_ACCEPTED_WITHOUT_EXECUTION_PROOF","result":{"status":"LOCAL_CREDENTIAL_FREE_PRODUCT_SCOPE_CLOSED","protectedInputCount":7,"externalBlockerCount":18},"behavioralRunEvidencePresent":false,"substitutedUnrelatedSet":false}
+{"id":"ASTRA-R0-PRODUCT-003","observation":"STATIC_FIXTURE_ACCEPTED_WITHOUT_EXECUTION_PROOF","result":{"status":"LOCAL_CREDENTIAL_FREE_PRODUCT_SCOPE_CLOSED","protectedInputCount":7,"externalBlockerCount":18},"behavioralRunEvidencePresent":false,"substitutedUnrelatedSet":true}

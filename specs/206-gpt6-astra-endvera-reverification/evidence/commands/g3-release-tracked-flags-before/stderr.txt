@@ -1,0 +1,67 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mrejects hidden non-input edit under --assume-unchanged
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mrejects hidden non-input edit under --skip-worktree
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m test/unit/release-tracked-flags.test.ts:[2m41:96[22m[39m
+    [90m 39|[39m     [34mexpect[39m(f[33m.[39m[34mgit[39m([32m"diff"[39m[33m,[39m [32m"--name-only"[39m[33m,[39m [32m"HEAD"[39m))[33m.[39m[34mtoBe[39m([32m""[39m)[33m;[39m
+    [90m 40|[39m     expect(assertReleaseInputBinding({ repositoryRoot: f.root, manifes…
+    [90m 41|[39m     expect(() => assertReleaseSourceBinding({ repositoryRoot: f.root, …
+    [90m   |[39m                                                                                                [31m^[39m
+    [90m 42|[39m   }))[33m;[39m
+    [90m 43|[39m
+[90m [2m❯[22m fixture test/unit/release-tracked-flags.test.ts:[2m13:9[22m[39m
+[90m [2m❯[22m test/unit/release-tracked-flags.test.ts:[2m36:106[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mrejects tracked/index index bytes drift
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m test/unit/release-tracked-flags.test.ts:[2m54:96[22m[39m
+    [90m 52|[39m     if (change === "index bytes") { f.write(layout, "changed\n"); f.gi…
+    [90m 53|[39m     if (change === "index mode") f.git("update-index", "--chmod=+x", l…
+    [90m 54|[39m     expect(() => assertReleaseSourceBinding({ repositoryRoot: f.root, …
+    [90m   |[39m                                                                                                [31m^[39m
+    [90m 55|[39m   }))[33m;[39m
+    [90m 56|[39m
+[90m [2m❯[22m fixture test/unit/release-tracked-flags.test.ts:[2m13:9[22m[39m
+[90m [2m❯[22m test/unit/release-tracked-flags.test.ts:[2m49:112[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/release-tracked-flags.test.ts[2m > [22mPRR2-007 whole tracked source ignores index suppression flags[2m > [22mpermits exact LF-to-CRLF checkout but not mixed or CRCRLF
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m test/unit/release-tracked-flags.test.ts:[2m70:96[22m[39m
+    [90m 68|[39m     f[33m.[39m[34mgit[39m([32m"update-index"[39m[33m,[39m [32m"--assume-unchanged"[39m[33m,[39m layout)[33m;[39m
+    [90m 69|[39m     f.write(layout, "export default function Layout() { return null; }…
+    [90m 70|[39m     expect(() => assertReleaseSourceBinding({ repositoryRoot: f.root, …
+    [90m   |[39m                                                                                                [31m^[39m
+    [90m 71|[39m   }))[33m;[39m
+    [90m 72|[39m })[33m;[39m
+[90m [2m❯[22m fixture test/unit/release-tracked-flags.test.ts:[2m13:9[22m[39m
+[90m [2m❯[22m test/unit/release-tracked-flags.test.ts:[2m64:73[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+

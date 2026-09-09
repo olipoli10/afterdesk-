@@ -1,0 +1,185 @@
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 11 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mlate rollout refusal cannot mutate a dispatched winner
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mlate actor refusal cannot mutate a dispatched winner
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mlate session refusal cannot mutate a dispatched winner
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mlate policy refusal cannot mutate a dispatched winner
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mlate breaker refusal cannot mutate a dispatched winner
+[31m[1mAssertionError[22m: expected { attempt: 'dispatched', …(7) } to deeply equal { attempt: 'dispatched', …(7) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "ai": "running",[39m
+[31m+   "ai": "failed",[39m
+[2m    "attempt": "dispatched",[22m
+[2m    "audits": [[22m
+[2m      "model_gateway.attempt.dispatched",[22m
+[31m+     "model_gateway.admission.refused",[39m
+[31m+     "model_gateway.spend.released",[39m
+[2m    ],[22m
+[2m    "dispatchState": "unaccounted",[22m
+[32m-   "gateway": "running",[39m
+[32m-   "hold": "held",[39m
+[32m-   "owner": "syn-owner",[39m
+[31m+   "gateway": "refused",[39m
+[31m+   "hold": "released",[39m
+[31m+   "owner": null,[39m
+[2m    "segment": "running",[22m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m67:24[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mlegitimate refusal fences before release and AI completion
+[31m[1mAssertionError[22m: expected 'outside-release' to be 'refusal-cas' // Object.is equality[39m
+
+Expected: [32m"[7mrefusal-c[27mas"[39m
+Received: [31m"[7moutside-rele[27mas[7me[27m"[39m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m72:24[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mrolls back refusal and hold release together when audit fails
+[31m[1mAssertionError[22m: expected { attempt: 'prepared', …(7) } to deeply equal { attempt: 'prepared', …(7) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -2,9 +2,9 @@[39m
+[2m    "ai": "running",[22m
+[2m    "attempt": "prepared",[22m
+[2m    "audits": [],[22m
+[2m    "dispatchState": "not_dispatched",[22m
+[2m    "gateway": "admitted",[22m
+[32m-   "hold": "held",[39m
+[31m+   "hold": "released",[39m
+[2m    "owner": "syn-owner",[22m
+[2m    "segment": "registered",[22m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m77:92[22m[39m
+    [90m 75|[39m  it("rolls back refusal and hold release together when audit fails",as…
+    [90m 76|[39m   [35mconst[39m snapshot[33m=[39m[34mstructuredClone[39m(f[33m.[39mstate)[33m;[39mf[33m.[39mfailAudit[33m=[39m[35mtrue[39m[33m;[39m
+    [90m 77|[39m   await expect(dispatch(false)).rejects.toThrow("SYNTHETIC_AUDIT_FAILU…
+    [90m   |[39m                                                                                            [31m^[39m
+    [90m 78|[39m  })[33m;[39m
+    [90m 79|[39m  it("rolls back the refusal CAS if AI ownership is already superseded"…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mrolls back the refusal CAS if AI ownership is already superseded
+[31m[1mAssertionError[22m: expected { …(8) } to deeply equal { attempt: 'prepared', …(7) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "ai": "running",[22m
+[32m-   "attempt": "prepared",[39m
+[32m-   "audits": [],[39m
+[31m+   "attempt": "cancelled_before_dispatch",[39m
+[31m+   "audits": [[39m
+[31m+     "model_gateway.admission.refused",[39m
+[31m+     "model_gateway.spend.released",[39m
+[31m+   ],[39m
+[2m    "dispatchState": "not_dispatched",[22m
+[32m-   "gateway": "admitted",[39m
+[32m-   "hold": "held",[39m
+[31m+   "gateway": "refused",[39m
+[31m+   "hold": "released",[39m
+[2m    "owner": "syn-successor",[22m
+[2m    "segment": "registered",[22m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m81:54[22m[39m
+    [90m 79|[39m  it("rolls back the refusal CAS if AI ownership is already superseded"…
+    [90m 80|[39m   f.state.owner="syn-successor";const snapshot=structuredClone(f.state…
+    [90m 81|[39m   const result=await dispatch(false);expect(f.state).toEqual(snapshot)…
+    [90m   |[39m                                                      [31m^[39m
+    [90m 82|[39m  })[33m;[39m
+    [90m 83|[39m  it("returns non-terminal superseded to the losing acquisition caller"…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mreturns non-terminal superseded to the losing acquisition caller
+[31m[1mAssertionError[22m: promise rejected "Error: VOICE_GATEWAY_ATTEMPT_NOT_PREPARED" instead of resolving[39m
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m85:27[22m[39m
+    [90m 83|[39m  it("returns non-terminal superseded to the losing acquisition caller"…
+    [90m 84|[39m   f.state.attempt="dispatched";f.state.dispatchState="unaccounted";con…
+    [90m 85|[39m   await expect(dispatch()).resolves.toEqual({status:"superseded",reaso…
+    [90m   |[39m                           [31m^[39m
+    [90m 86|[39m  })[33m;[39m
+    [90m 87|[39m  it("does not acquire a prepared row whose dispatch knowledge is alrea…
+
+[31m[1mCaused by: Error[22m: VOICE_GATEWAY_ATTEMPT_NOT_PREPARED[39m
+[36m [2m❯[22m src/server/model-gateway/voice/dispatch.ts:[2m436:30[22m[39m
+[90m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m40:17[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mdoes not acquire a prepared row whose dispatch knowledge is already unaccounted
+[31m[1mAssertionError[22m: expected { attempt: 'uncertain', …(7) } to deeply equal { attempt: 'prepared', …(7) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "ai": "running",[39m
+[32m-   "attempt": "prepared",[39m
+[32m-   "audits": [],[39m
+[31m+   "ai": "abandoned",[39m
+[31m+   "attempt": "uncertain",[39m
+[31m+   "audits": [[39m
+[31m+     "model_gateway.attempt.dispatched",[39m
+[31m+     "model_gateway.attempt.uncertain",[39m
+[31m+   ],[39m
+[2m    "dispatchState": "unaccounted",[22m
+[32m-   "gateway": "admitted",[39m
+[31m+   "gateway": "uncertain",[39m
+[2m    "hold": "held",[22m
+[32m-   "owner": "syn-owner",[39m
+[32m-   "segment": "registered",[39m
+[31m+   "owner": null,[39m
+[31m+   "segment": "uncertain",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m89:49[22m[39m
+    [90m 87|[39m  it("does not acquire a prepared row whose dispatch knowledge is alrea…
+    [90m 88|[39m   f.state.dispatchState="unaccounted";const snapshot=structuredClone(f…
+    [90m 89|[39m   const result=await dispatch();expect(f.state).toEqual(snapshot);expe…
+    [90m   |[39m                                                 [31m^[39m
+    [90m 90|[39m  })[33m;[39m
+    [90m 91|[39m  it("retains exposure if the already-invoked adapter declares not_disp…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/gateway-voice-claim-revalidation.test.ts[2m > [22mVoice late refusal and acquisition fencing[2m > [22mretains exposure if the already-invoked adapter declares not_dispatched
+[31m[1mAssertionError[22m: expected { status: 'failed', …(1) } to deeply equal { status: 'uncertain', …(1) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "errorClass": "unknown_dispatched_outcome",[39m
+[32m-   "status": "uncertain",[39m
+[31m+   "errorClass": "malformed_request",[39m
+[31m+   "status": "failed",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/gateway-voice-claim-revalidation.test.ts:[2m93:27[22m[39m
+    [90m 91|[39m  it("retains exposure if the already-invoked adapter declares not_disp…
+    [90m 92|[39m   f.dispatch.mockResolvedValue({...uncertain,dispatchKnowledge:"not_di…
+    [90m 93|[39m   await expect(dispatch()).resolves.toEqual({status:"uncertain",errorC…
+    [90m   |[39m                           [31m^[39m
+    [90m 94|[39m  })[33m;[39m
+    [90m 95|[39m  it("rolls back acquisition if its audit fails and invokes no adapter"…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯[22m[39m
+

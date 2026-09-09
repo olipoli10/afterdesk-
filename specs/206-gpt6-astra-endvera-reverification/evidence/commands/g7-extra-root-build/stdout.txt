@@ -1,0 +1,26 @@
+CHECK_IDENTITY phase=G1 checkId=ROOT_BUILD runtimeProviderAuthorized=false claimedDeviceObservation=false
+GROUP_COMPONENT typecheck exit=0 timeout=false
+
+C:\dev\endvera-astra-reverification\src\lib\construction-operating-assistant-r34\registry.ts
+  63:28  warning  '_canonicalHash' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+
+GROUP_COMPONENT lint exit=0 timeout=false
+R37O_PROVIDER_BOUNDARY_PASS modules=1233 violations=0
+GROUP_COMPONENT provider-boundary exit=0 timeout=false
+LOCAL_PACKAGE_VALID 65c175d6a203236367a80623108e5c1091647a09c79fa0d1839b92475fc68a6f
+{"mode":"GIT_COMMIT_INPUT_BINDING","head":"cc567a406cabfedaabc1a80b80bb1a8ec2bc0106","tree":"7070c8a82fa693ddcb3243672f3af145cb15fa71","exactInputCount":16,"crlfCheckoutEquivalence":"WORKTREE_CRLF_TO_COMMITTED_LF_ONLY_RAW_MANIFEST_HASHES_UNCHANGED","crlfCheckoutEquivalentInputPaths":["apps/mobile/app.json","apps/mobile/assets/expo.icon/Assets/expo-symbol 2.svg","apps/mobile/assets/expo.icon/icon.json","apps/mobile/eas.json","apps/mobile/src/app/(app)/settings.tsx","docs/release/endvera-construction-v1/01-environment-and-build.md","docs/release/endvera-construction-v1/02-smoke-and-evidence.md","docs/release/endvera-construction-v1/03-promotion-stop.md","docs/release/endvera-construction-v1/04-incident-and-rollback.md","package.json","release/endvera-construction-v1/environment-contract.json","release/endvera-construction-v1/mobile-build-readiness.json","release/endvera-construction-v1/privacy-disclosure.json","release/endvera-construction-v1/store/en-CA.json","release/endvera-construction-v1/store/fr-CA.json","release/endvera-construction-v1/submission-gaps.json","src/app/account-deletion/page.tsx","src/app/construction/support/page.tsx","src/app/privacy/page.tsx","src/app/security/page.tsx","src/components/comparison-table.tsx","src/components/lang-switch.tsx","src/components/logo.tsx","src/components/policy-page.tsx","src/components/trust-links.tsx","src/lib/construction-operating-assistant-r35/contracts.ts","src/lib/db.ts","src/lib/i18n/client.ts","src/lib/i18n/docs.ts","src/lib/i18n/langs.ts","src/lib/i18n/legal.ts","src/lib/settings.ts"],"trackedCheckoutMatchesSource":true,"excludedDerivedProjection":"release/endvera-construction-v1/release-manifest-v3.json"}
+GROUP_COMPONENT release-package exit=0 timeout=false
+READY_FOR_EXTERNAL_COMPLIANCE_INPUTS dataClasses=9 locales=2 scenes=6 externalEffectCount=0
+GROUP_COMPONENT store-compliance exit=0 timeout=false
+▲ Next.js 16.2.12 (webpack)
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 18.7s
+  Running TypeScript ...
+  Finished TypeScript in 41s ...
+  Collecting page data using 23 workers ...
+GROUP_COMPONENT build exit=1 timeout=false

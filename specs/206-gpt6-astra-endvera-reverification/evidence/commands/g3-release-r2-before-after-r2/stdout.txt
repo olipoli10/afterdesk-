@@ -1,0 +1,102 @@
+{
+  "kind": "RELEASE_R2_BEFORE_AFTER",
+  "sourcePacketPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-binding-correction-review-r2/stderr.txt",
+  "sourcePacketSha256": "af7d8ea6f2c205d23926504d89c778920e23f6c4300b8f15bf4b89fa58f3445b",
+  "baselinePacketVerifiedAgainstCommandRecord": true,
+  "sourceMaterializations": [
+    {
+      "path": "scripts/endvera-release-source-binding.mjs",
+      "reportedOriginalByteSha256": "f2228c275a3bb5375040719101bd3ea2f19d28c01bf120e941229a73b5190d7c",
+      "materializedSha256": "f2228c275a3bb5375040719101bd3ea2f19d28c01bf120e941229a73b5190d7c",
+      "originalBytesRecovered": true
+    },
+    {
+      "path": "scripts/endvera-release-source-contracts.mjs",
+      "reportedOriginalByteSha256": "0c6452e9673b12c12cea9493b38248a445d29ef372158d15e107a7b381c2d770",
+      "materializedSha256": "0c6452e9673b12c12cea9493b38248a445d29ef372158d15e107a7b381c2d770",
+      "originalBytesRecovered": true
+    },
+    {
+      "path": "scripts/generate-endvera-release-package.mjs",
+      "reportedOriginalByteSha256": "2f5a45cdd0e4f93d374e20dc80edbf54ca60c2dc9aef1d50ba93b6b1b5b44ba0",
+      "materializedSha256": "038e87e92f9feaaf0480f1b3fc1d8761924762e553ae27d255133d9af0d725c5",
+      "originalBytesRecovered": false
+    },
+    {
+      "path": "scripts/validate-endvera-native-preflight.mjs",
+      "reportedOriginalByteSha256": "7b9a6d23f0a006b448117b8d78f6988722c91df3408b0afefcc30fd1bcd683fb",
+      "materializedSha256": "a8ef0ba0cb294e0eeb2ff53aa57d6c1755fb09c76e7b24e4981c0fea7128720a",
+      "originalBytesRecovered": false
+    },
+    {
+      "path": "scripts/validate-endvera-mobile-build-readiness.mjs",
+      "reportedOriginalByteSha256": "73ca5099dd720dc0856b57c436665dcd82caa2520d9db54a3af1c7e16ad13a3a",
+      "materializedSha256": "8c811fa9a95a824a6ae5c075c1ecf4090732735f78f04b1056f877fdf35a99a5",
+      "originalBytesRecovered": false
+    }
+  ],
+  "results": [
+    {
+      "id": "PRR2-004",
+      "mutation": "Mutable exported metadata declaration",
+      "before": "ACCEPTED",
+      "after": "RELEASE_MOBILE_METADATA_MODULE_SHAPE_INVALID"
+    },
+    {
+      "id": "PRR2-003",
+      "mutation": "In-memory EAS founder profile drift",
+      "before": "ACCEPTED",
+      "after": "MOBILE_FOUNDER_PROFILE_INVALID"
+    },
+    {
+      "id": "PRR2-002",
+      "mutation": "Actual tracked source differences outside the single unchanged bound input versus prior source commit",
+      "before": "ACCEPTED",
+      "after": "RELEASE_TRACKED_CHECKOUT_SOURCE_DRIFT",
+      "sourceHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553"
+    },
+    {
+      "id": "PRR2-001",
+      "mutation": "Actual synthetic junction repository root",
+      "before": "ACCEPTED",
+      "after": "RELEASE_SOURCE_SYMLINK_ROOT_REFUSED"
+    },
+    {
+      "id": "PRR2-005",
+      "mutation": "Actual intermediate junction to invalid synthetic JSON",
+      "before": {
+        "exitCode": 1,
+        "rejectedBeforeJsonParse": false,
+        "parsedExternalSyntheticJson": true
+      },
+      "after": {
+        "exitCode": 1,
+        "rejectedBeforeJsonParse": true,
+        "parsedExternalSyntheticJson": false
+      }
+    },
+    {
+      "id": "PRR2-006",
+      "mutation": "Actual intermediate junction to invalid synthetic JSON",
+      "before": {
+        "exitCode": 1,
+        "rejectedBeforeJsonParse": false,
+        "parsedExternalSyntheticJson": true
+      },
+      "after": {
+        "exitCode": 1,
+        "rejectedBeforeJsonParse": true,
+        "parsedExternalSyntheticJson": false
+      }
+    }
+  ],
+  "expectedBoundaryBehaviorObserved": true,
+  "manifestWritten": false,
+  "providerCalls": 0,
+  "scope": "LOCAL_SYNTHETIC_READ_ONLY_PROBES_WITH_DISPOSABLE_FIXTURES",
+  "limitations": [
+    "Source packet normalizes presentation line endings; original mixed LF/CRLF bytes cannot always be recovered. Such source is replayed with LF endings and explicitly not claimed byte-identical.",
+    "No hostile concurrent filesystem process or malicious same-process isolation claim.",
+    "Tracked checkout gate excludes only its derived v3 manifest. Installed dependencies and untracked files are outside the Git-coherence claim."
+  ]
+}

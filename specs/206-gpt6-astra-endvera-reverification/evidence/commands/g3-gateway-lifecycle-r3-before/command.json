@@ -1,0 +1,20 @@
+{
+  "id": "g3-gateway-lifecycle-r3-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "3cd12bcbbb8df78f76255e9b4a48b5b47336d97a",
+  "observedTree": "66d4abfdaafb0fe5ec177de75554baf5b14b7d52",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/gateway-voice-claim-revalidation.test.ts test/unit/gateway-dispatch-claim-revalidation.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:09:13.367Z",
+  "finishedAt": "2026-09-09T15:09:14.322Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-lifecycle-r3-before/stdout.txt",
+  "stdoutSha256": "7c94eb4e4cfb906f34b12a19fa2d2197fa1f0f411d29650921310509655345d2",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-gateway-lifecycle-r3-before/stderr.txt",
+  "stderrSha256": "f8a2ba1eb144da5eae48d70f06fddf8ebc342734ec50019e31d9afc8e998bd61",
+  "replay": null
+}

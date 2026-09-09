@@ -1,0 +1,20 @@
+{
+  "id": "g3-release-tracked-text-after",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "3cd12bcbbb8df78f76255e9b4a48b5b47336d97a",
+  "observedTree": "66d4abfdaafb0fe5ec177de75554baf5b14b7d52",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/release-tracked-flags.test.ts test/unit/release-source-binding-review.test.ts test/unit/release-source-security-review.test.ts test/unit/release-source-r2-review.test.ts test/construction-operating-assistant-r35-release-package.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:07:02.135Z",
+  "finishedAt": "2026-09-09T15:07:31.079Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-tracked-text-after/stdout.txt",
+  "stdoutSha256": "5f17a0bbe76887ebc5852ff26813f207645cc1de9ebd6f38948b193f6bc27250",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-tracked-text-after/stderr.txt",
+  "stderrSha256": "4b73a2f29044e5e247cd567e29de9ee439c92959ea9d79cba98436b59b2d1ca5",
+  "replay": null
+}

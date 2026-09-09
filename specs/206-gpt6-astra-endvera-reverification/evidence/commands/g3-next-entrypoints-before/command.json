@@ -1,0 +1,20 @@
+{
+  "id": "g3-next-entrypoints-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/construction-operating-assistant-r37l-next-entrypoints.test.ts --maxWorkers=1",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:18:44.305Z",
+  "finishedAt": "2026-09-09T14:18:46.419Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-before/stdout.txt",
+  "stdoutSha256": "d904804bddbaad67863dc079835a4e3c0cb1f9a3fcc54cc10024df685532c849",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-before/stderr.txt",
+  "stderrSha256": "1932e5ad9e57d677f5397861972acd91538edd62823f4106c64e5ae6f270fb20",
+  "replay": null
+}

@@ -1,0 +1,20 @@
+{
+  "id": "g3-readiness-review-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/readiness-review-hardening.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:21:11.172Z",
+  "finishedAt": "2026-09-09T14:21:11.880Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-review-before/stdout.txt",
+  "stdoutSha256": "2a34e7330fc9a56a62fd8d92101bdbcde5c38002f397a4e6cee83c112fd1cf7d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-review-before/stderr.txt",
+  "stderrSha256": "9829cd434a7198cae7d14b480a83c2221a7e7072aa2485a7de620772d3f60df5",
+  "replay": null
+}

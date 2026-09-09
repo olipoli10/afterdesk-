@@ -1,0 +1,20 @@
+{
+  "id": "g3-r37f-lease-paired",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/r37f-before-after-lease.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:47:07.263Z",
+  "finishedAt": "2026-09-09T14:47:08.287Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37f-lease-paired/stdout.txt",
+  "stdoutSha256": "8c1c76bded64fc129fd78beee79f4069c2a6e1ba41acb024f34cdd1b2ac94471",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37f-lease-paired/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

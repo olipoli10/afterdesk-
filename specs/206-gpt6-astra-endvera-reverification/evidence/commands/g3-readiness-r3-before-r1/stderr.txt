@@ -1,0 +1,69 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 6 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/construction-public-copy-boundaries.test.ts[2m > [22mConstruction public-copy boundary (fr)[2m > [22mqualifies human-review preparation in the hero section as a target, not an action on this page
+[31m[1mAssertionError[22m: expected ' Aller au contenu CONSTRUCTION Commen…' to contain 'Dans le parcours visé, un dossier ser…'[39m
+
+Expected: [32m"Dans le parcours visé, un dossier serait préparé"[39m
+Received: [31m" Aller au contenu CONSTRUCTION Comment ça marche Ce que ça règle Contrôle Demander mon accès L’ASSISTANT IA DES PETITS ENTREPRENEURS Notre cible : gérer tes chantiers. À terme, par texto ou appel. Notre vision : ajouter un rendez-vous, préparer un texto, organiser un suivi ou vérifier ce qui manque avant de facturer, avec le bon chantier et ton accord avant d’agir. Voici le parcours visé. Disponibilité actuelle : Version locale de démonstration. Les vrais textos, appels et calendriers connectés ne sont pas encore activés. Voir une illustration Voir le parcours visé Objectif : contacts, calendrier et suivis au même endroit Ton accord avant tout envoi dans le parcours visé Dossier préparé pour une revue humaine <div "[39m
+
+[36m [2m❯[22m test/construction-public-copy-boundaries.test.ts:[2m50:18[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-public-copy-boundaries.test.ts[2m > [22mConstruction public-copy boundary (fr)[2m > [22mqualifies human-review preparation in the capabilities section as a target, not an action on this page
+[31m[1mAssertionError[22m: expected 'LE PRODUIT VISÉ Notre objectif : gard…' to contain 'Dans le parcours visé, un dossier ser…'[39m
+
+Expected: [32m"Dans le parcours visé, un dossier serait préparé"[39m
+Received: [31m"LE PRODUIT VISÉ Notre objectif : garder chaque chantier à jour. À terme, contacts, rendez-vous, messages, photos, approbations et prochaines étapes seraient réunis. Les actions illustrées sur cette page ne sont pas enregistrées. 01 Objectif : le bon dossier pour chaque chantier Dans le produit visé, contacts, rendez-vous, messages, preuves et décisions resteraient liés au bon chantier. 02 Objectif : savoir ce qui bloque ENDVERA montrerait ce qui manque et la prochaine étape proposée. La démonstration n’attribue aucun travail réel. 03 Objectif : vérifier chaque message Dans le parcours visé, tu verrais le destinataire, le canal et le texte avant toute autorisation. Le brouillon illustré ne peut pas être envoyé. 04 Un dossier pour la revue humaine Si une demande est ambiguë ou risquée, le dossier est préparé localement pour une revue humaine. La préparation ne confirme ni attribution ni réception par une personne. "[39m
+
+[36m [2m❯[22m test/construction-public-copy-boundaries.test.ts:[2m50:18[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-public-copy-boundaries.test.ts[2m > [22mConstruction public-copy boundary (fr)[2m > [22mqualifies human-review preparation in the control section as a target, not an action on this page
+[31m[1mAssertionError[22m: expected 'id="control" class="_controlSection_2…' to contain 'Dans le parcours visé, un dossier ser…'[39m
+
+Expected: [32m"Dans le parcours visé, un dossier serait préparé"[39m
+Received: [31m"id="control" class="_controlSection_24f477"> QUAND ENDVERA N’EST PAS CERTAIN S’il n’est pas certain, il n’invente pas. ENDVERA prépare localement le chantier, la demande et les preuves pour une revue humaine. Aucune réception ni prise en charge humaine n’est confirmée. Le soutien de production n’est pas activé; une personne doit encore être désignée pour reprendre le dossier. AI DOSSIER … TU RESTES EN CONTRÔLE Ici, rien ne part. À terme, ton accord serait requis. Dans le parcours visé, ENDVERA montrerait toute proposition de texto, de modification de rendez-vous ou de facture avant ton accord. Les permissions et les contrôles déterministes resteraient nécessaires; cette démonstration ne fait aucun de ces changements. Calendrier de démonstration Brouillon à vérifier × Aucun envoi réel, même après approbation "[39m
+
+[36m [2m❯[22m test/construction-public-copy-boundaries.test.ts:[2m50:18[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-public-copy-boundaries.test.ts[2m > [22mConstruction public-copy boundary (en)[2m > [22mqualifies human-review preparation in the hero section as a target, not an action on this page
+[31m[1mAssertionError[22m: expected ' Skip to content CONSTRUCTION How it …' to contain 'In the target workflow, a file would …'[39m
+
+Expected: [32m"In the target workflow, a file would be prepared"[39m
+Received: [31m" Skip to content CONSTRUCTION How it works What it handles Control Request private access THE AI ASSISTANT FOR SMALL CONTRACTORS Our goal: manage your jobs. Eventually, by text or phone. Our vision: add an appointment, prepare a message, organize a follow-up or check what is missing before invoicing, with the right job and your approval before acting. This is the target workflow. Available today : Local product demo. Live texting, calling and connected calendars are not enabled yet. See an illustration See the target workflow Goal: contacts, schedule and follow-ups in one place Your approval before sending in the target workflow A file prepared for human review <div "[39m
+
+[36m [2m❯[22m test/construction-public-copy-boundaries.test.ts:[2m50:18[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-public-copy-boundaries.test.ts[2m > [22mConstruction public-copy boundary (en)[2m > [22mqualifies human-review preparation in the capabilities section as a target, not an action on this page
+[31m[1mAssertionError[22m: expected 'THE TARGET PRODUCT Our goal: keep eac…' to contain 'In the target workflow, a file would …'[39m
+
+Expected: [32m"In the target workflow, a file would be prepared"[39m
+Received: [31m"THE TARGET PRODUCT Our goal: keep each job up to date. Eventually, contacts, appointments, messages, photos, approvals and next steps would stay together. Actions illustrated on this page are not saved. 01 Goal: the right file for each job In the target product, contacts, appointments, messages, proof and decisions would remain linked to the right job. 02 Goal: know what is holding things up ENDVERA would show what is missing and the proposed next step. The demo assigns no real work. 03 Goal: review each message In the target workflow, you would see the recipient, channel and full text before authorization. The illustrated draft cannot be sent. 04 A file for human review If a request is unclear or risky, a file is prepared locally for human review. Preparation confirms neither assignment nor receipt by a person. "[39m
+
+[36m [2m❯[22m test/construction-public-copy-boundaries.test.ts:[2m50:18[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-public-copy-boundaries.test.ts[2m > [22mConstruction public-copy boundary (en)[2m > [22mqualifies human-review preparation in the control section as a target, not an action on this page
+[31m[1mAssertionError[22m: expected 'id="control" class="_controlSection_2…' to contain 'In the target workflow, a file would …'[39m
+
+Expected: [32m"[7mIn the target workflow, a file would[27m be [7mp[27mre[7mpared[27m"[39m
+Received: [31m"[7mid="control" class="_controlSection_24f477"> WHEN ENDVERA IS NOT SURE If it is not sure, it does not guess. ENDVERA prepares the job, request and proof locally for human review. No human receipt or handling is confirmed. Production support is not enabled; a person still needs to be assigned to take over the file. AI FILE … YOU STAY IN CONTROL Nothing is sent here. Future actions would require approval. In the target workflow, ENDVERA would show any proposed text, appointment change or invoice before your approval. Permissions and deterministic controls would still[27m be re[7mquired; this demo makes none of those changes. Demo calendar Draft for review × No live sending, even after approval [27m"[39m
+
+[36m [2m❯[22m test/construction-public-copy-boundaries.test.ts:[2m50:18[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯[22m[39m
+

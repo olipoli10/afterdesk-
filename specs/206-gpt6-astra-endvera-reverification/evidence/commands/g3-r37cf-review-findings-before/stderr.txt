@@ -1,0 +1,67 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mrolls back evidence when its awaited write crosses the grant deadline
+[31m[1mAssertionError[22m: expected { disposition: 'SUCCEEDED', …(7) } to match object { disposition: 'FAILED', …(1) }
+(6 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "disposition": "FAILED",[39m
+[32m-   "evidence": null,[39m
+[31m+   "disposition": "SUCCEEDED",[39m
+[31m+   "evidence": {[39m
+[31m+     "certified": false,[39m
+[31m+     "costMicros": 1,[39m
+[31m+     "evidenceFingerprint": "sha256:a8cb6ef63b1343bf6b0c6d6b4f060a3735a16f21db4c83e7fa832344ed32e8df",[39m
+[31m+     "evidenceLabel": "SYNTHETIC",[39m
+[31m+     "externalDispatchPerformed": false,[39m
+[31m+     "latencyMs": 1,[39m
+[31m+     "responseFingerprint": "sha256:ffbc2dfc402782325da71132100e74ff511d1585dd80e4ea196ed4bcace3fef2",[39m
+[31m+     "schemaVersion": 1,[39m
+[31m+     "sealedAttemptFingerprint": "sha256:3203af9083cac299a8da9ded739e6ff0424b5eee6fb34e2ac7d1b4453bd37b59",[39m
+[31m+   },[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m174:21[22m[39m
+    [90m172|[39m     })[33m;[39m
+    [90m173|[39m     const outcome = await executeControlledSyntheticAttempt(f.input, f…
+    [90m174|[39m     expect(outcome).toMatchObject({ disposition: "FAILED", evidence: n…
+    [90m   |[39m                     [31m^[39m
+    [90m175|[39m     [34mexpect[39m(f[33m.[39mrow[33m.[39mevidenceSnapshot)[33m.[39m[34mtoBeNull[39m()[33m;[39m
+    [90m176|[39m     expect(mocks.settle).not.toHaveBeenCalled(); expect(mocks.release)…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mreplays immutable terminal command after SETTLED commits but run update crashes
+[31m[1mError[22m: R37B_ALTERED_REPLAY_REFUSED[39m
+[36m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m185:48[22m[39m
+    [90m183|[39m     const terminal = terminalState === "SETTLED" ? mocks.settle : mock…
+    [90m184|[39m     terminal.mockImplementation(async (command: { expectedVersion: num…
+    [90m185|[39m       if (command.expectedVersion !== 1) throw new Error("R37B_ALTERED…
+    [90m   |[39m                                                [31m^[39m
+    [90m186|[39m       version [33m=[39m [34m2[39m[33m;[39m state [33m=[39m terminalState[33m;[39m
+    [90m187|[39m     })[33m;[39m
+[90m [2m❯[22m settleRecordedEvidence src/server/construction-operating-assistant-r37c/coordinator.ts:[2m218:9[22m[39m
+[90m [2m❯[22m Module.executeControlledSyntheticAttempt src/server/construction-operating-assistant-r37c/coordinator.ts:[2m527:12[22m[39m
+[90m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m195:21[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/r37cf-current-authority.test.ts[2m > [22mR37C/F point-of-use authority, synthetic in-memory DB[2m > [22mreplays immutable terminal command after RELEASED commits but run update crashes
+[31m[1mError[22m: R37B_ALTERED_REPLAY_REFUSED[39m
+[36m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m185:48[22m[39m
+    [90m183|[39m     const terminal = terminalState === "SETTLED" ? mocks.settle : mock…
+    [90m184|[39m     terminal.mockImplementation(async (command: { expectedVersion: num…
+    [90m185|[39m       if (command.expectedVersion !== 1) throw new Error("R37B_ALTERED…
+    [90m   |[39m                                                [31m^[39m
+    [90m186|[39m       version [33m=[39m [34m2[39m[33m;[39m state [33m=[39m terminalState[33m;[39m
+    [90m187|[39m     })[33m;[39m
+[90m [2m❯[22m releaseFailedAttempt src/server/construction-operating-assistant-r37c/coordinator.ts:[2m255:9[22m[39m
+[90m [2m❯[22m Module.executeControlledSyntheticAttempt src/server/construction-operating-assistant-r37c/coordinator.ts:[2m527:12[22m[39m
+[90m [2m❯[22m test/unit/r37cf-current-authority.test.ts:[2m195:21[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+

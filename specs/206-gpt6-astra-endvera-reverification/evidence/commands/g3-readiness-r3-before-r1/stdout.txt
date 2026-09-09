@@ -1,0 +1,29 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/construction-public-copy-boundaries.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 89[2mms[22m[39m
+     [32m✓[39m keeps current availability next to the hero promise, outside collapsed footer details[32m 12[2mms[22m[39m
+     [32m✓[39m labels the multi-action scene as an unexecuted target illustration with a non-send control[32m 4[2mms[22m[39m
+     [32m✓[39m describes a prepared human-review file, not confirmed receipt by a person[32m 3[2mms[22m[39m
+[31m     [31m×[31m qualifies human-review preparation in the hero section as a target, not an action on this page[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m qualifies human-review preparation in the capabilities section as a target, not an action on this page[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m qualifies human-review preparation in the control section as a target, not an action on this page[39m[32m 4[2mms[22m[39m
+     [32m✓[39m qualifies the walkthrough locally and disclaims receiving, sending, calendar writes and saved actions[32m 3[2mms[22m[39m
+     [32m✓[39m interprets the exact simple calendar phrase rendered in the page using synthetic context[32m 6[2mms[22m[39m
+     [32m✓[39m does not treat the multi-action illustration as interpreter execution evidence[32m 4[2mms[22m[39m
+     [32m✓[39m keeps current availability next to the hero promise, outside collapsed footer details[32m 5[2mms[22m[39m
+     [32m✓[39m labels the multi-action scene as an unexecuted target illustration with a non-send control[32m 4[2mms[22m[39m
+     [32m✓[39m describes a prepared human-review file, not confirmed receipt by a person[32m 4[2mms[22m[39m
+[31m     [31m×[31m qualifies human-review preparation in the hero section as a target, not an action on this page[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m qualifies human-review preparation in the capabilities section as a target, not an action on this page[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m qualifies human-review preparation in the control section as a target, not an action on this page[39m[32m 5[2mms[22m[39m
+     [32m✓[39m qualifies the walkthrough locally and disclaims receiving, sending, calendar writes and saved actions[32m 4[2mms[22m[39m
+     [32m✓[39m interprets the exact simple calendar phrase rendered in the page using synthetic context[32m 4[2mms[22m[39m
+     [32m✓[39m does not treat the multi-action illustration as interpreter execution evidence[32m 4[2mms[22m[39m
+   [32m✓[39m keeps the illustrative page disconnected from submission and interpreter execution[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m13 passed[39m[22m[90m (19)[39m
+[2m   Start at [22m 10:39:52
+[2m   Duration [22m 1.22s[2m (transform 138ms, setup 0ms, import 975ms, tests 89ms, environment 0ms)[22m
+

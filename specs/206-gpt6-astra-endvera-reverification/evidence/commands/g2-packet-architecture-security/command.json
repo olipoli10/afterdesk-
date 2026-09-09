@@ -1,0 +1,20 @@
+{
+  "id": "g2-packet-architecture-security",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G2",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "MODEL_AUDIT",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-packet-audit.mjs architecture-security",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:51:22.209Z",
+  "finishedAt": "2026-09-09T13:53:17.722Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-architecture-security/stdout.txt",
+  "stdoutSha256": "fb42c6a53b71f9368995aff28c13974000bc85639fef8e175ebae8fa497c2ca7",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-architecture-security/stderr.txt",
+  "stderrSha256": "677dc97a264e11464fae4045fe064a7a336ebbde74a1bb83ec71e0e047ead7e6",
+  "replay": null
+}

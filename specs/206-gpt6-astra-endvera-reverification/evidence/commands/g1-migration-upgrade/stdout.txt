@@ -1,0 +1,1 @@
+CHECK_IDENTITY phase=G1 checkId=MIGRATION_UPGRADE runtimeProviderAuthorized=false claimedDeviceObservation=false

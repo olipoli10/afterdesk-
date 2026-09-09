@@ -1,0 +1,20 @@
+{
+  "id": "g3-r37cf-review-findings-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/r37cf-current-authority.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:52:29.309Z",
+  "finishedAt": "2026-09-09T14:52:30.515Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-review-findings-before/stdout.txt",
+  "stdoutSha256": "f58b1a7e2e189868dabeba26730397df73cc58692ab3ffb6306290b17d9d9c1e",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-review-findings-before/stderr.txt",
+  "stderrSha256": "7b0e8fa63f1c051b86a927ad132a8d0a99615f3c4c188f43322e2c5c054d9ac2",
+  "replay": null
+}

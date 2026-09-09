@@ -1,0 +1,34 @@
+{
+  "id": "g7-r0b-cross-workspace-isolation-wrapper",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "PHASE_CHECK",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs --revalidation-replay specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-cross-workspace-isolation.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:25:47.304Z",
+  "finishedAt": "2026-09-09T15:25:47.509Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-cross-workspace-isolation-wrapper/stdout.txt",
+  "stdoutSha256": "14fdc07ed9b59c607bc181c5ca97c21b4cee0114165f482a2bfe602728f8b587",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-cross-workspace-isolation-wrapper/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": {
+    "entrypoint": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "args": [
+      "--revalidation-replay",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-cross-workspace-isolation.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-cross-workspace-isolation.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-cross-workspace-isolation/stdout.txt",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-cross-workspace-isolation/stderr.txt"
+    ]
+  }
+}

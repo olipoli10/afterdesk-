@@ -1,0 +1,197 @@
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 6 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/unit/guarded-intent.test.ts[2m > [22mguarded intent local disabled proposal boundary[2m > [22mGI001 does not promote a canonical read request into task creation
+[31m[1mAssertionError[22m: expected { …(11) } to match object { …(2) }
+(9 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "preview": null,[39m
+[32m-   "status": "CLARIFICATION_REQUIRED",[39m
+[31m+   "preview": {[39m
+[31m+     "actions": [[39m
+[31m+       {[39m
+[31m+         "dependsOn": [],[39m
+[31m+         "evidenceIds": [[39m
+[31m+           "syn-evidence",[39m
+[31m+         ],[39m
+[31m+         "fields": [[39m
+[31m+           {[39m
+[31m+             "name": "title",[39m
+[31m+             "proposedValue": "Mesurer",[39m
+[31m+             "provenance": "MODEL_PROPOSED",[39m
+[31m+             "sourceSpans": [],[39m
+[31m+             "verification": "UNVERIFIED_PROPOSAL",[39m
+[31m+           },[39m
+[31m+         ],[39m
+[31m+         "id": "syn-action1",[39m
+[31m+         "operation": "PREPARE_TASK",[39m
+[31m+         "targetIds": [],[39m
+[31m+       },[39m
+[31m+     ],[39m
+[31m+     "approvalGranted": false,[39m
+[31m+     "baselineDecisionFingerprints": [[39m
+[31m+       "sha256:b7e4ed911de50f9962d75288e64942a69dafc29e5b292f13780d8f28c54ab5ca",[39m
+[31m+     ],[39m
+[31m+     "candidateAccess": "UNPROBED",[39m
+[31m+     "candidateModelKey": null,[39m
+[31m+     "canonicalAnswer": null,[39m
+[31m+     "checkedFactRefs": [[39m
+[31m+       {[39m
+[31m+         "consistency": "MATCHES_SERVER_SNAPSHOT",[39m
+[31m+         "evidenceId": "syn-evidence",[39m
+[31m+         "factId": "syn-fact",[39m
+[31m+       },[39m
+[31m+     ],[39m
+[31m+     "contextFingerprint": "sha256:f734c0b065aa0589b9f0d7d5a1e46afde1a6584e198ac7d673fb6ebbdb786615",[39m
+[31m+     "executionAuthorized": false,[39m
+[31m+     "externalDispatchPerformed": false,[39m
+[31m+     "providerExecutionAuthorized": false,[39m
+[31m+     "requestFingerprint": "sha256:5759640176c7c2cd6a0f6934c27508450205c5f6ebf8f6eccdf956cb376da13d",[39m
+[31m+     "requiresHumanReview": true,[39m
+[31m+     "schemaVersion": 1,[39m
+[31m+     "semanticTruthVerified": false,[39m
+[31m+     "sourceFingerprint": "sha256:21664d3fc1ce704b76cc00db59a848db2ce3fd99e1113a23f0ce59fb8fd79623",[39m
+[31m+   },[39m
+[31m+   "status": "PREPARED_NOT_EXECUTABLE",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/guarded-intent.test.ts:[2m37:63[22m[39m
+    [90m 35|[39m   it("GI001 does not promote a canonical read request into task creati…
+    [90m 36|[39m     [35mconst[39m text[33m=[39m[32m"Qu'est-ce que j'ai demain?"[39m[33m;[39m
+    [90m 37|[39m     expect(validate(proposal(context(),text),context(),text)).toMatchO…
+    [90m   |[39m                                                               [31m^[39m
+    [90m 38|[39m   })[33m;[39m
+    [90m 39|[39m   it("GI002 never emits an authorized preview from an unchanged caller…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/guarded-intent.test.ts[2m > [22mguarded intent local disabled proposal boundary[2m > [22mGI002 never emits an authorized preview from an unchanged caller-supplied cache
+[31m[1mAssertionError[22m: expected { …(11) } to match object { …(3) }
+(9 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "preview": null,[39m
+[32m-   "snapshotAuthority": "UNVERIFIED_CALLER_SNAPSHOT",[39m
+[32m-   "status": "PROPOSAL_INSPECTED_NOT_AUTHORIZED",[39m
+[31m+   "preview": {[39m
+[31m+     "actions": [[39m
+[31m+       {[39m
+[31m+         "dependsOn": [],[39m
+[31m+         "evidenceIds": [[39m
+[31m+           "syn-evidence",[39m
+[31m+         ],[39m
+[31m+         "fields": [[39m
+[31m+           {[39m
+[31m+             "name": "title",[39m
+[31m+             "proposedValue": "Mesurer",[39m
+[31m+             "provenance": "MODEL_PROPOSED",[39m
+[31m+             "sourceSpans": [],[39m
+[31m+             "verification": "UNVERIFIED_PROPOSAL",[39m
+[31m+           },[39m
+[31m+         ],[39m
+[31m+         "id": "syn-action1",[39m
+[31m+         "operation": "PREPARE_TASK",[39m
+[31m+         "targetIds": [],[39m
+[31m+       },[39m
+[31m+     ],[39m
+[31m+     "approvalGranted": false,[39m
+[31m+     "baselineDecisionFingerprints": [[39m
+[31m+       "sha256:56112a43fde9212a91ed4fab163217fb2ecdc404ad061c1ffcd2993e11af4d05",[39m
+[31m+     ],[39m
+[31m+     "candidateAccess": "UNPROBED",[39m
+[31m+     "candidateModelKey": null,[39m
+[31m+     "canonicalAnswer": null,[39m
+[31m+     "checkedFactRefs": [[39m
+[31m+       {[39m
+[31m+         "consistency": "MATCHES_SERVER_SNAPSHOT",[39m
+[31m+         "evidenceId": "syn-evidence",[39m
+[31m+         "factId": "syn-fact",[39m
+[31m+       },[39m
+[31m+     ],[39m
+[31m+     "contextFingerprint": "sha256:f734c0b065aa0589b9f0d7d5a1e46afde1a6584e198ac7d673fb6ebbdb786615",[39m
+[31m+     "executionAuthorized": false,[39m
+[31m+     "externalDispatchPerformed": false,[39m
+[31m+     "providerExecutionAuthorized": false,[39m
+[31m+     "requestFingerprint": "sha256:f11c662ee5ba7c30abe2a15944a606f6bc8b15fe16ab606909711c506faebb88",[39m
+[31m+     "requiresHumanReview": true,[39m
+[31m+     "schemaVersion": 1,[39m
+[31m+     "semanticTruthVerified": false,[39m
+[31m+     "sourceFingerprint": "sha256:50ee6fb750862021edbdf8e7acfa2232712294940936436c269d26eb70eb9bae",[39m
+[31m+   },[39m
+[31m+   "status": "PREPARED_NOT_EXECUTABLE",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/guarded-intent.test.ts:[2m42:36[22m[39m
+    [90m 40|[39m     [35mconst[39m cached[33m=[39m[34mcontext[39m()[33m;[39m[35mconst[39m value[33m=[39m[34mproposal[39m(cached)[33m;[39m
+    [90m 41|[39m     // The pure function cannot observe a permission revocation elsewh…
+    [90m 42|[39m     expect(validate(value,cached)).toMatchObject({status:"PROPOSAL_INS…
+    [90m   |[39m                                    [31m^[39m
+    [90m 43|[39m   })[33m;[39m
+    [90m 44|[39m   it("GI003 rejects financial evidence access even when its fact claim…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/guarded-intent.test.ts[2m > [22mguarded intent local disabled proposal boundary[2m > [22mGI003 rejects financial evidence access even when its fact claim is omitted
+[31m[1mAssertionError[22m: expected { …(11) } to match object { status: 'REJECTED', …(1) }
+(26 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "reason": "EVIDENCE_NOT_PERMITTED",[39m
+[32m-   "status": "REJECTED",[39m
+[31m+   "status": "PREPARED_NOT_EXECUTABLE",[39m
+[2m  }[22m
+
+[36m [2m❯[22m test/unit/guarded-intent.test.ts:[2m48:38[22m[39m
+    [90m 46|[39m     const text="Qu'est-ce que j'ai demain?";const value=proposal(ctx,t…
+    [90m 47|[39m     value.actions[0]={...value.actions[0],operation:"READ_CONTACT",tar…
+    [90m 48|[39m     expect(validate(value,ctx,text)).toMatchObject({status:"REJECTED",…
+    [90m   |[39m                                      [31m^[39m
+    [90m 49|[39m   })[33m;[39m
+    [90m 50|[39m   it("GI004 rejects multiplicative work across repeated action-target …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/guarded-intent.test.ts[2m > [22mguarded intent local disabled proposal boundary[2m > [22mGI004 rejects multiplicative work across repeated action-target pairs
+[31m[1mAssertionError[22m: expected 'PREPARED_NOT_EXECUTABLE' to be 'REJECTED' // Object.is equality[39m
+
+Expected: [32m"RE[7mJECTED[27m"[39m
+Received: [31m"[7mP[27mRE[7mPARED_NOT_EXECUTABLE[27m"[39m
+
+[36m [2m❯[22m test/unit/guarded-intent.test.ts:[2m53:45[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/guarded-intent.test.ts[2m > [22mguarded intent local disabled proposal boundary[2m > [22mGI005 hashes set-like context independently from member ordering
+[31m[1mAssertionError[22m: expected 'sha256:f631b29f964d69942665e960bf40bb…' to be 'sha256:f734c0b065aa0589b9f0d7d5a1e46a…' // Object.is equality[39m
+
+Expected: [32m"sha256:f[7m734c0b065aa0589b9f0d7d5a1e46afde1a6584e198ac7d673fb6ebbdb78661[27m5"[39m
+Received: [31m"sha256:f[7m631b29f964d69942665e960bf40bb3aace916adf2b5841c3d9aa867f192829[27m5"[39m
+
+[36m [2m❯[22m test/unit/guarded-intent.test.ts:[2m58:89[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/guarded-intent.test.ts[2m > [22mguarded intent local disabled proposal boundary[2m > [22mGI006 does not accept a caller policy downgrade or budget increase
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+[36m [2m❯[22m test/unit/guarded-intent.test.ts:[2m62:157[22m[39m
+    [90m 60|[39m   it("GI006 does not accept a caller policy downgrade or budget increa…
+    [90m 61|[39m     [35mconst[39m ctx[33m=[39m[34mcontext[39m()[33m;[39m
+    [90m 62|[39m     expect(()=>prepareGuardedIntentAdmission({...metadata,declaredData…
+    [90m   |[39m                                                                                                                                                             [31m^[39m
+    [90m 63|[39m   })[33m;[39m
+    [90m 64|[39m   it("prepares a deeply frozen non-executable preview without a candid…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯[22m[39m
+

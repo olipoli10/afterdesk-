@@ -1,0 +1,13 @@
+✔ recorder retains native stdout/stderr bytes and matches their hashes (289.8774ms)
+✔ recorder keeps launch diagnostics separate from native stderr (218.1977ms)
+✔ recorder reports the actual descriptor cwd (353.8769ms)
+✔ recorder refuses canonical synthetic key shape before writing raw streams (270.9217ms)
+✔ recorder timeout stops its owned child tree and preserves stderr (1421.8969ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2637.9559

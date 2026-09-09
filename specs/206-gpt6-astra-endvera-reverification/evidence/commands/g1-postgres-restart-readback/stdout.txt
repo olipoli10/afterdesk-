@@ -1,0 +1,1 @@
+CHECK_IDENTITY phase=G1 checkId=POSTGRES_RESTART_READBACK runtimeProviderAuthorized=false claimedDeviceObservation=false

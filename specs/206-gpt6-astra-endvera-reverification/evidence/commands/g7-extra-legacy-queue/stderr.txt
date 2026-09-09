@@ -1,0 +1,2 @@
+validate-continuation-queue.ps1: The property 'planSha256' cannot be found on this object. Verify that the property exists.
+PHASE_CHECK_EXECUTION_FAILURE:CHECK_SUBCOMMAND_FAILED:canonical-queue-validator:exit=1:timeout=false

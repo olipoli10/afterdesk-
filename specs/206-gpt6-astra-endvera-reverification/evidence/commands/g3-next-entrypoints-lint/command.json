@@ -1,0 +1,20 @@
+{
+  "id": "g3-next-entrypoints-lint",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/eslint/bin/eslint.js src/lib/construction-operating-assistant-r37l/provider-reachability.ts src/lib/construction-operating-assistant-r37o/provider-boundary-release-gate.ts scripts/validate-provider-boundary.ts test/construction-operating-assistant-r37l-next-entrypoints.test.ts specs/206-gpt6-astra-endvera-reverification/scripts/run-g7-final.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:19:57.844Z",
+  "finishedAt": "2026-09-09T14:20:02.520Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-lint/stdout.txt",
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-lint/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

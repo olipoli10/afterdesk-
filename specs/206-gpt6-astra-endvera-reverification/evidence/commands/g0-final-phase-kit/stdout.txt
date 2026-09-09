@@ -1,0 +1,1 @@
+PHASE_KIT_VALIDATED commands=29 contracts=29 phases=11/18 frozenDependencies=12 emptyOutputAccepted=false arbitraryPassAccepted=false

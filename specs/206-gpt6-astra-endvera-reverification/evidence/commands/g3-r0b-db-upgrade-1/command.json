@@ -1,0 +1,20 @@
+{
+  "id": "g3-r0b-db-upgrade-1",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 MIGRATION_UPGRADE",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:52:54.578Z",
+  "finishedAt": "2026-09-09T13:53:44.632Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-upgrade-1/stdout.txt",
+  "stdoutSha256": "500896007a1636adb62fa632f351ed5c23c839373561cbf36cb756b1460a403e",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-upgrade-1/stderr.txt",
+  "stderrSha256": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+  "replay": null
+}

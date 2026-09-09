@@ -1,0 +1,12 @@
+NETWORK_DENIED_HOST=0.0.0.0
+Error: CAMPAIGN_EXTERNAL_NETWORK_DENIED
+    at local (C:\dev\endvera-astra-reverification\specs\206-gpt6-astra-endvera-reverification\phase-checks-r0b\network-guard.cjs:10:11)
+    at dns.<computed> [as lookup] (C:\dev\endvera-astra-reverification\specs\206-gpt6-astra-endvera-reverification\phase-checks-r0b\network-guard.cjs:25:46)
+    at lookupAndListen (node:net:2264:7)
+    at Server.listen (node:net:2166:7)
+    at file:///C:/Users/oliro/AppData/Local/Temp/@prisma/cli-dev@latest-1788753600000/node_modules/get-port-please/dist/index.mjs:204:12
+    at new Promise (<anonymous>)
+    at _tryPort (file:///C:/Users/oliro/AppData/Local/Temp/@prisma/cli-dev@latest-1788753600000/node_modules/get-port-please/dist/index.mjs:198:10)
+    at checkPort (file:///C:/Users/oliro/AppData/Local/Temp/@prisma/cli-dev@latest-1788753600000/node_modules/get-port-please/dist/index.mjs:356:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async E (file:///C:/Users/oliro/AppData/Local/Temp/@prisma/cli-dev@latest-1788753600000/node_modules/@prisma/dev/dist/chunk-EDFHV3AK.js:1:3415)

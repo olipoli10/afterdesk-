@@ -1,0 +1,1 @@
+{"id":"g7-brain-validation","phase":"G7","classification":"VALIDATION","executable":"C:/Users/oliro/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe","args":["-NoProfile","-File","C:/dev/afterdesk-project-brain/scripts/validate-brain.ps1"],"timeoutMs":120000}

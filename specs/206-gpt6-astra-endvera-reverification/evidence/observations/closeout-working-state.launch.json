@@ -1,0 +1,1 @@
+{"id":"g7-closeout-working-state","phase":"G7","classification":"VALIDATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/evidence/observations/closeout-working-state.mjs"],"timeoutMs":60000}

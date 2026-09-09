@@ -1,0 +1,99 @@
+{
+  "kind": "FINAL_EXTRA_EXECUTION_INDEX",
+  "finalHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "finalTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "allChecksExecuted": true,
+  "globalPassClaimed": false,
+  "results": [
+    {
+      "id": "g7-extra-root-tests",
+      "exitCode": 1,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-root-tests/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-root-tests/stderr.txt",
+      "stdoutSha256": "8458174967bfc14b0249aec817cce01d1b2b10f18ae9f613fec12f670a3df120",
+      "stderrSha256": "bdcc8c55e7f5e3cda603048adfc6bf6e81b56923a072bd6b76137ad9bbf05fef",
+      "databaseCleanup": "NO_DATABASE_OWNERSHIP_REPORTED",
+      "runnerCleanup": null
+    },
+    {
+      "id": "g7-extra-mobile-tests",
+      "exitCode": 0,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-mobile-tests/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-mobile-tests/stderr.txt",
+      "stdoutSha256": "4a9121599a52a63aceded2a670d1f8dfb78c91fd503da5a69d5099a249c5c97e",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "databaseCleanup": "NO_DATABASE_OWNERSHIP_REPORTED",
+      "runnerCleanup": null
+    },
+    {
+      "id": "g7-extra-voice-spend",
+      "exitCode": 0,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-voice-spend/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-voice-spend/stderr.txt",
+      "stdoutSha256": "9f34cd6bd9b4d049b12b4db610292175ec682e6cafe018c657488e2af81ef332",
+      "stderrSha256": "96c0e6416f9e963d24d146ee16d9850ad7c0ef1eab28dd1562eb34335b05240b",
+      "databaseCleanup": "OWNED_DATABASE_SERVERS_CLOSED",
+      "runnerCleanup": null
+    },
+    {
+      "id": "g7-extra-root-build",
+      "exitCode": 1,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-root-build/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-root-build/stderr.txt",
+      "stdoutSha256": "0f6e903c28c44106cd7cb54340fcf1ac63ddb7b1f34b5a2eb27d418259dd8485",
+      "stderrSha256": "7107807a8acc3578fe880c01002695bdba334ea3669b70e2ac9fd2ec19c30230",
+      "databaseCleanup": "NO_DATABASE_OWNERSHIP_REPORTED",
+      "runnerCleanup": null
+    },
+    {
+      "id": "g7-extra-mobile-build",
+      "exitCode": 1,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-mobile-build/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-mobile-build/stderr.txt",
+      "stdoutSha256": "7dbf90a03848232e2c971ee5ad371f30f6e78b43d357a31583f1e56f144957e1",
+      "stderrSha256": "4c02f56caed59ddf5b01f6fb172a38afa59b43e91b4005a908f6fa8e04c817ce",
+      "databaseCleanup": "NO_DATABASE_OWNERSHIP_REPORTED",
+      "runnerCleanup": null
+    },
+    {
+      "id": "g7-extra-http-smoke",
+      "exitCode": 1,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-http-smoke/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-http-smoke/stderr.txt",
+      "stdoutSha256": "0b5d00a343fe4592991934a47f18f385c490977efa926a34472fedf6c09c5b74",
+      "stderrSha256": "d15f89ed4d6e53ef053d6156309ed79377375c88f51360b176cf8b786ff30262",
+      "databaseCleanup": "NO_DATABASE_OWNERSHIP_REPORTED",
+      "runnerCleanup": null
+    },
+    {
+      "id": "g7-extra-backlog",
+      "exitCode": 0,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-backlog/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-backlog/stderr.txt",
+      "stdoutSha256": "46e0db6e7db870b0cd382e047afa8c80d0a4a99dd18141449ada179001690e17",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "databaseCleanup": "NO_DATABASE_OWNERSHIP_REPORTED",
+      "runnerCleanup": null
+    },
+    {
+      "id": "g7-extra-legacy-queue",
+      "exitCode": 1,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-legacy-queue/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-legacy-queue/stderr.txt",
+      "stdoutSha256": "051082e7ac4cb5e2fa8659c6c25e2eda829d87cc1fa87011ab5bec17e4cb5fd0",
+      "stderrSha256": "ed9d50374f19991a27a0988e5fe27fcd430b64c8ccc0afba05e7e2dd3fce603d",
+      "databaseCleanup": "NO_DATABASE_OWNERSHIP_REPORTED",
+      "runnerCleanup": null
+    },
+    {
+      "id": "g7-extra-recorder-integrity",
+      "exitCode": 0,
+      "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-recorder-integrity/stdout.txt",
+      "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-recorder-integrity/stderr.txt",
+      "stdoutSha256": "29bb0f3afb0cdf0d0aaee871986f95cc5e64472d45716088783b7a6da924dabf",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "databaseCleanup": "NO_DATABASE_OWNERSHIP_REPORTED",
+      "runnerCleanup": null
+    }
+  ]
+}

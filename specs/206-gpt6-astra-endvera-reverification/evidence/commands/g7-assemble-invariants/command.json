@@ -1,0 +1,20 @@
+{
+  "id": "g7-assemble-invariants",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/assemble-local-seal.mjs invariant-manifest specs/206-gpt6-astra-endvera-reverification/closeout-invariants.config.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:46:18.743Z",
+  "finishedAt": "2026-09-09T15:46:19.343Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-assemble-invariants/stdout.txt",
+  "stdoutSha256": "7b0c6c12494800da2d87520cc137a84ae4bebf4733a75925df44ba6d2de0898f",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-assemble-invariants/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

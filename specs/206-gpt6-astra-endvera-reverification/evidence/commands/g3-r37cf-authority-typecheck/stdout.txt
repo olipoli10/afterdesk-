@@ -1,0 +1,12 @@
+test/unit/r37cf-current-authority.test.ts(77,34): error TS2345: Argument of type '() => Promise<{ body: {}; latencyMs: number; costMicros: number; externalTransportPerformed: false; }>' is not assignable to parameter of type '() => Promise<{ body: { fixture: boolean; }; latencyMs: number; costMicros: number; externalTransportPerformed: boolean; }>'.
+  Type 'Promise<{ body: {}; latencyMs: number; costMicros: number; externalTransportPerformed: false; }>' is not assignable to type 'Promise<{ body: { fixture: boolean; }; latencyMs: number; costMicros: number; externalTransportPerformed: boolean; }>'.
+    Type '{ body: {}; latencyMs: number; costMicros: number; externalTransportPerformed: false; }' is not assignable to type '{ body: { fixture: boolean; }; latencyMs: number; costMicros: number; externalTransportPerformed: boolean; }'.
+      Types of property 'body' are incompatible.
+        Property 'fixture' is missing in type '{}' but required in type '{ fixture: boolean; }'.
+test/unit/release-source-binding-review.test.ts(23,12): error TS2552: Cannot find name 'assertReleaseSourceBinding'. Did you mean 'assertReleaseInputBinding'?
+test/unit/release-source-binding-review.test.ts(27,18): error TS2552: Cannot find name 'assertReleaseSourceBinding'. Did you mean 'assertReleaseInputBinding'?
+test/unit/release-source-binding-review.test.ts(28,18): error TS2552: Cannot find name 'assertReleaseSourceBinding'. Did you mean 'assertReleaseInputBinding'?
+test/unit/release-source-binding-review.test.ts(32,20): error TS2552: Cannot find name 'assertReleaseSourceBinding'. Did you mean 'assertReleaseInputBinding'?
+test/unit/release-source-binding-review.test.ts(38,18): error TS2552: Cannot find name 'assertReleaseSourceBinding'. Did you mean 'assertReleaseInputBinding'?
+test/unit/release-source-binding-review.test.ts(39,18): error TS2552: Cannot find name 'assertReleaseSourceBinding'. Did you mean 'assertReleaseInputBinding'?
+test/unit/release-source-binding-review.test.ts(46,18): error TS2552: Cannot find name 'assertReleaseSourceBinding'. Did you mean 'assertReleaseInputBinding'?

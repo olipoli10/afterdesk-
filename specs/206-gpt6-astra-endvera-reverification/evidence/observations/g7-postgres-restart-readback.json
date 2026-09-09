@@ -1,0 +1,17 @@
+{
+  "kind": "PHASE_CHECK_OBSERVATION",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "checkId": "POSTGRES_RESTART_READBACK",
+  "observedCommandId": "g7-postgres-restart-readback",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 POSTGRES_RESTART_READBACK",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-postgres-restart-readback/stdout.txt",
+  "stdoutSha256": "8d54c544b7b5c01243a10be7b7a0b10ddc8c93a3edc42b7c4e7e488b1345bc51",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-postgres-restart-readback/stderr.txt",
+  "stderrSha256": "ba6edfaa60c5d90894a64f5a88691ba7c6dea447f264c8b4c2b357627543344c"
+}

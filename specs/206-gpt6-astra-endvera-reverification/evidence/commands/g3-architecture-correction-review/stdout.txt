@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "PATCH_REVIEW",
+  "requestedModel": "gpt-5.6-sol",
+  "servedModel": null,
+  "status": "CHANGES_REQUIRED",
+  "scope": [
+    "src/server/construction-operating-assistant-r38e/broadcast-preparation.ts",
+    "test/unit/broadcast-preparation-replay.test.ts",
+    "src/server/construction-operating-assistant-r37a/sealed-executor.ts",
+    "test/construction-operating-assistant-r37a-sealed-executor.test.ts",
+    "src/lib/construction-operating-assistant-r37l/provider-reachability.ts",
+    "test/construction-operating-assistant-r37l-provider-reachability-traversal.test.ts",
+    "test/helpers/sealed-git-evidence.ts",
+    "test/construction-operating-assistant-r37bb-zdr-compatibility.test.ts",
+    "test/construction-operating-assistant-r37bc-controller-contract-alignment.test.ts"
+  ],
+  "findings": [
+    {
+      "id": "R37A-001",
+      "severity": "HIGH",
+      "file": "src/server/construction-operating-assistant-r37a/sealed-executor.ts",
+      "line": 156,
+      "title": "Caller-controlled time permits execution under an authorization already expired in real time",
+      "reproduction": "After an authorization's expiresAt has passed, call runSyntheticAttempt with input.now set to a historical instant between authorizedAt and expiresAt. Admission and the computed timeout use that supplied value, so the adapter can run. sealSyntheticAttempt likewise accepts caller-supplied time and line 79 does not reject expiresAt <= input.now. The tests exercise malformed, future and explicitly expired supplied timestamps, but never establish that the clock is trusted.",
+      "proposedFix": "Remove caller-controlled now from the production interfaces. Read a trusted clock internally, or inject a trusted Clock capability that ordinary callers cannot select. Reject expiresAt <= trustedNow when sealing and again before adapter admission, and recheck trusted wall-clock expiry before emitting evidence. Tests can use fake system time instead of passing authorization time as request data."
+    },
+    {
+      "id": "R37A-002",
+      "severity": "HIGH",
+      "file": "src/server/construction-operating-assistant-r37a/sealed-executor.ts",
+      "line": 185,
+      "title": "The synthetic executor can invoke a real provider and trusts the adapter to deny it",
+      "reproduction": "Pass an adapter that performs fetch or invokes a provider SDK and then returns a schema-valid object with externalTransportPerformed:false. runSyntheticAttempt invokes it and can emit SYNTHETIC evidence because the transport assertion is entirely self-reported. The source-regex test only scans the executor and contracts, so it passes even when the adapter or its caller contains the real network operation.",
+      "proposedFix": "Do not accept an arbitrary executable callback where absence of transport is a security property. Bind execution to concrete local fixture adapters, or run adapters inside an enforced environment with network and credential access disabled. Audit all reachable adapter implementations and call sites; do not treat externalTransportPerformed:false or source regexes as proof."
+    },
+    {
+      "id": "R37L-001",
+      "severity": "HIGH",
+      "file": "src/lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "line": 31,
+      "title": "Reachability analysis omits framework runtime entrypoints",
+      "reproduction": "Provide a source map containing src/pages/api/provider.ts importing src/server/construction-operating-assistant-r37f/provider-delivery.ts. findProviderExecutionReachability returns no path because src/pages/ is not considered public. Root runtime entrypoints such as src/middleware.ts, src/proxy.ts or src/instrumentation.ts are similarly outside the four prefix checks. The new traversal tests cover only src/app and src/jobs, so they can succeed while these paths remain uninspected.",
+      "proposedFix": "Derive entrypoints from the repository's actual Next.js/runtime conventions and include at least Pages Router/API routes plus applicable middleware/proxy, instrumentation, job and worker entry files. Add table-driven tests for every supported entrypoint form, each importing a provider module and each containing unresolved or dynamic execution."
+    }
+  ],
+  "limitations": [
+    "Source-only review; no tools, shell, compilation or tests were executed.",
+    "Candidate remains UNPROBED; no runtime provider call or canonical model answer was produced.",
+    "Review was limited to the supplied packet. Referenced schemas, framework documentation, adapter call sites and repository configuration were not supplied.",
+    "The broadcast replay path appears to check current owner/admin authorization before durable replay data, preserve request-hash mismatch rejection and avoid replay writes.",
+    "The Git-evidence helper hashes the HEAD blob and detects non-CRLF worktree changes in the supplied logic; the graph builder also uses fresh per-call state rather than a persistent cache."
+  ]
+}

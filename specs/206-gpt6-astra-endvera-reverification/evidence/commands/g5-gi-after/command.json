@@ -1,0 +1,20 @@
+{
+  "id": "g5-gi-after",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G5",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/guarded-intent.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:10:56.013Z",
+  "finishedAt": "2026-09-09T14:10:56.895Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-after/stdout.txt",
+  "stdoutSha256": "d5bd0994ff327e4e09ccc94617fe10a5480bdc1f7b3be9d445def4060e2e7cf9",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-after/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

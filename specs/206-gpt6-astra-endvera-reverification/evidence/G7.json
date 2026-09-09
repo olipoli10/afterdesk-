@@ -1,0 +1,238 @@
+{
+  "kind": "PHASE_EVIDENCE",
+  "phase": "G7",
+  "status": "BLOCKED",
+  "reason": "All authorized final checks executed, original and additive R0b/R2 observations retained. Root suite restored. Canonical seal cannot be honestly assembled under immutable audit-attempt/schema/scanner contracts; native invocation records REVALIDATION_SEAL_NOT_FOUND, not a semantic PASS. No runtime provider or device evidence fabricated.",
+  "checks": [
+    {
+      "checkId": "g7-webhook-forgery-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-webhook-forgery-r2-wrapper/stdout.txt",
+      "evidenceSha256": "989ceea17958499dd09047efa98d49d4037799c019896dfb98f22391833262ef"
+    },
+    {
+      "checkId": "g7-duplicate-provider-message-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-duplicate-provider-message-r2-wrapper/stdout.txt",
+      "evidenceSha256": "03903a0673d5a9be7da23d1c63375492394775a2c9c5768e1073e5636ca36d68"
+    },
+    {
+      "checkId": "g7-double-approval-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-double-approval-r2-wrapper/stdout.txt",
+      "evidenceSha256": "4370391c120f0bc2c63c212a7e1f690a98c37282020c10c65c3c075a92223f29"
+    },
+    {
+      "checkId": "g7-stale-approval-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-stale-approval-r2-wrapper/stdout.txt",
+      "evidenceSha256": "bee7861ff2d73c0771ea8f937f4834b9b903fa5674b72e58390d9531aeb9bb36"
+    },
+    {
+      "checkId": "g7-preview-mutation-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-preview-mutation-r2-wrapper/stdout.txt",
+      "evidenceSha256": "822c460b18f5095b73a01837608c379c5eb246b35df5876b4a2cd07aea897829"
+    },
+    {
+      "checkId": "g7-recipient-cap-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-recipient-cap-r2-wrapper/stdout.txt",
+      "evidenceSha256": "72c8b409cea5dfe81edb13abfde7f90e7baba783352bfff9baad4c1da712fd05"
+    },
+    {
+      "checkId": "g7-contact-homonym-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-contact-homonym-r2-wrapper/stdout.txt",
+      "evidenceSha256": "2baaee6919200a86b3c2b4447637b7018e45974bc77d2180efcb4fc27aeb0d6b"
+    },
+    {
+      "checkId": "g7-dst-boundary-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-dst-boundary-r2-wrapper/stdout.txt",
+      "evidenceSha256": "7cb593dde64d77daead1004903d721dfb4bbc1e1c1ab5042c50a01f902ca9f50"
+    },
+    {
+      "checkId": "g7-outcome-unknown-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-outcome-unknown-r2-wrapper/stdout.txt",
+      "evidenceSha256": "93922dcea82ea9dda26c91765054be629be6f29fb7fc7394ba136c701d4ed57d"
+    },
+    {
+      "checkId": "g7-permission-revoked-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-permission-revoked-r2-wrapper/stdout.txt",
+      "evidenceSha256": "234b93ba119b3d59dcfeb9f541b29fb56aa200969ab14b033dae4e5f30de2867"
+    },
+    {
+      "checkId": "g7-native-crash-reproduction-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-native-crash-reproduction-r2-wrapper/stdout.txt",
+      "evidenceSha256": "168b00975081d7896b0ad5d3ec786c60cbbfdcbe12939175ff836c5cf5053cc5"
+    },
+    {
+      "checkId": "g7-field-worker-financial-isolation-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-field-worker-financial-isolation-r2-wrapper/stdout.txt",
+      "evidenceSha256": "071a801366474e624241bb700ab6d3854298e95e572a9e442db35796a93ad2b0"
+    },
+    {
+      "checkId": "g7-cross-workspace-isolation-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-cross-workspace-isolation-r2-wrapper/stdout.txt",
+      "evidenceSha256": "b4821521b56891633d9ce430b3774116aaea9afdb3546a564d094a289383919b"
+    },
+    {
+      "checkId": "g7-secret-scan-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-secret-scan-r2-wrapper/stdout.txt",
+      "evidenceSha256": "39b9c424a306a18b0baea6880c737842adecd6cc5f043447a766a89e0053b748"
+    },
+    {
+      "checkId": "g7-malformed-json-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-malformed-json-r2-wrapper/stdout.txt",
+      "evidenceSha256": "75d4f4fa5245b94fa1281d0ba2012571871373ce5c5b717d761375939388da82"
+    },
+    {
+      "checkId": "g7-prompt-injection-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-prompt-injection-r2-wrapper/stdout.txt",
+      "evidenceSha256": "ee7eb1bda1b18c91d8b19fb12d5b1559039da57fbc7c8f22d4784923f5147c25"
+    },
+    {
+      "checkId": "g7-postgres-restart-readback-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-postgres-restart-readback-r2-wrapper/stdout.txt",
+      "evidenceSha256": "ec0e8f0657fcb0e1e0bf39bcef49a2f16c7a56f872236de28f028e8598868d07"
+    },
+    {
+      "checkId": "g7-contract-static-validation-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-contract-static-validation-r2-wrapper/stdout.txt",
+      "evidenceSha256": "1c432f6f6382bdd0d15e2c45eaa6d894fd63ffa0920be61c7a3954ba8e924e8b"
+    },
+    {
+      "checkId": "g7-r0b-webhook-forgery-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-webhook-forgery-r2-wrapper/stdout.txt",
+      "evidenceSha256": "73c2dc272b2ea1586045c0527c42724be243bd1e2f0e1548c2f9e51332244998"
+    },
+    {
+      "checkId": "g7-r0b-duplicate-provider-message-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-duplicate-provider-message-r2-wrapper/stdout.txt",
+      "evidenceSha256": "c7cb1f3ddf2d93fb4913281a2540983f3aa0f977d907a8684a110192efa14b00"
+    },
+    {
+      "checkId": "g7-r0b-double-approval-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-double-approval-r2-wrapper/stdout.txt",
+      "evidenceSha256": "c3166ded31011f97e5875b55697954ddf0321ab9c515e52edcdb908b7cd4d819"
+    },
+    {
+      "checkId": "g7-r0b-stale-approval-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-stale-approval-r2-wrapper/stdout.txt",
+      "evidenceSha256": "9789accd04ce578ddbf165599de18d64389abc1ec52e18e2d788ce031d7ba47f"
+    },
+    {
+      "checkId": "g7-r0b-preview-mutation-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-preview-mutation-r2-wrapper/stdout.txt",
+      "evidenceSha256": "374aca327d287214d824edb2176d3328cc1b464e635794fbbc7c34591090c2b1"
+    },
+    {
+      "checkId": "g7-r0b-recipient-cap-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-recipient-cap-r2-wrapper/stdout.txt",
+      "evidenceSha256": "739c1dd933edb151108fedfebd6d8539828d13890b9c2525daf4a004f973ae08"
+    },
+    {
+      "checkId": "g7-r0b-contact-homonym-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-contact-homonym-r2-wrapper/stdout.txt",
+      "evidenceSha256": "af8e7cf4fcfe5014b8287764ca4746c2bde5e9c2c346092c11d7e1c8cc027ff8"
+    },
+    {
+      "checkId": "g7-r0b-dst-boundary-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-dst-boundary-r2-wrapper/stdout.txt",
+      "evidenceSha256": "d892362de2216597a0af7a07abff1977bcb87c149e9c79585e17c117894d4082"
+    },
+    {
+      "checkId": "g7-r0b-outcome-unknown-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-outcome-unknown-r2-wrapper/stdout.txt",
+      "evidenceSha256": "58916427c41e516598ebb6d13df9f137e8a687b62fba221bacad9c37a5a2c52f"
+    },
+    {
+      "checkId": "g7-r0b-permission-revoked-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-permission-revoked-r2-wrapper/stdout.txt",
+      "evidenceSha256": "bd9b597d080474fb19a4ae44ef6d8a96e41e316dea4369a5196c5bb429eff7ec"
+    },
+    {
+      "checkId": "g7-r0b-native-crash-reproduction-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-native-crash-reproduction-r2-wrapper/stdout.txt",
+      "evidenceSha256": "8a9ac3fd4fa686f78736717f923125bed7665ac588bf3a3c1960be520bb38d62"
+    },
+    {
+      "checkId": "g7-r0b-field-worker-financial-isolation-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-field-worker-financial-isolation-r2-wrapper/stdout.txt",
+      "evidenceSha256": "b125c4f10b2594834d09081122b371c7c768d4aa1dd37a3fbf26a126bfc8ecad"
+    },
+    {
+      "checkId": "g7-r0b-cross-workspace-isolation-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-cross-workspace-isolation-r2-wrapper/stdout.txt",
+      "evidenceSha256": "d941eb22cc6bea199759ae1ea92cddb16fdf790219917714abb33ba6db54c1cd"
+    },
+    {
+      "checkId": "g7-r0b-secret-scan-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-secret-scan-r2-wrapper/stdout.txt",
+      "evidenceSha256": "87cca2a18770a84a1f2bbcd445a75e07f68498da0762aab3ee2b5e519bfd2da3"
+    },
+    {
+      "checkId": "g7-r0b-malformed-json-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-malformed-json-r2-wrapper/stdout.txt",
+      "evidenceSha256": "7cbe413e8c97914967b7a9becaea2188d77076cf9af4a6a27ae7a28fdc98cc8a"
+    },
+    {
+      "checkId": "g7-r0b-prompt-injection-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-prompt-injection-r2-wrapper/stdout.txt",
+      "evidenceSha256": "e38046731ff6a880562cd499eda546b6e81ee3093d473e38ce960349943803af"
+    },
+    {
+      "checkId": "g7-r0b-postgres-restart-readback-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-postgres-restart-readback-r2-wrapper/stdout.txt",
+      "evidenceSha256": "1c7b2bdf33a2596ffac7b455bd3b5c8431cebd8e7dbe27126b26aac0abde6e29"
+    },
+    {
+      "checkId": "g7-r0b-contract-static-validation-r2-wrapper",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-contract-static-validation-r2-wrapper/stdout.txt",
+      "evidenceSha256": "7ac7c6783277cec52661861102ef2b026b2a4c33108d565f09725bb96def0ea0"
+    },
+    {
+      "checkId": "g7-extra-root-tests-r2",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-root-tests-r2/stdout.txt",
+      "evidenceSha256": "5a0f21e2972aafb59b83c54867bf6c9019a739bbeeeb41243cd393cadb344f2a"
+    },
+    {
+      "checkId": "g7-local-oracle-denial-r2",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-local-oracle-denial-r2/stdout.txt",
+      "evidenceSha256": "b036188c163bbd277dfd0ccbad6dd2a836928f372397845b339a2b6bfb5ff58d"
+    },
+    {
+      "checkId": "g7-local-synthetic-no-pii-r2",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-local-synthetic-no-pii-r2/stdout.txt",
+      "evidenceSha256": "fb861237145b69c52e73f44b6d1fa6b01b193b37b73ae729a81727a893193242"
+    },
+    {
+      "checkId": "g7-brain-validation",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-brain-validation/stdout.txt",
+      "evidenceSha256": "38df7e7cc809785b2e729b0c87ab3243459195d3719a0a28ac426efbe9814f1d"
+    },
+    {
+      "checkId": "g7-closeout-working-state",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-closeout-working-state/stdout.txt",
+      "evidenceSha256": "160b70c6a83b258e49a9eb681ba7baad3c6a1b93a677d08e45107666fa31196c"
+    },
+    {
+      "checkId": "g7-closeout-artifacts",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-closeout-artifacts/stdout.txt",
+      "evidenceSha256": "630077abd18f31991e39570dd5abcb47b378ed7e640ade074fe2470eea0a5ec4"
+    },
+    {
+      "checkId": "g7-final-unsealed-inventory",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-final-unsealed-inventory/stdout.txt",
+      "evidenceSha256": "bdfcd251361846ab2e57a8011b8d544d2b547b3e6908c87b8a3ab22a9e277366"
+    },
+    {
+      "checkId": "g7-assemble-metrics",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-assemble-metrics/stdout.txt",
+      "evidenceSha256": "f59686f6bf99ea4b692c7688e2cb2e26cfccb77a721f1236c2b04c495d32c756"
+    },
+    {
+      "checkId": "g7-assemble-invariants",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-assemble-invariants/stdout.txt",
+      "evidenceSha256": "7b0c6c12494800da2d87520cc137a84ae4bebf4733a75925df44ba6d2de0898f"
+    },
+    {
+      "checkId": "g7-canonical-seal-validation",
+      "evidencePath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-canonical-seal-validation/stderr.txt",
+      "evidenceSha256": "ef729fa8795960461d84dd4afdc616fa6c74af4b3672dc7157549701ba9fa9d2"
+    }
+  ]
+}

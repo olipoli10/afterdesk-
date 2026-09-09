@@ -1,0 +1,20 @@
+{
+  "id": "g7-brain-validation",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "C:/Users/oliro/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe -NoProfile -File C:/dev/afterdesk-project-brain/scripts/validate-brain.ps1",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:45:30.524Z",
+  "finishedAt": "2026-09-09T15:45:32.536Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-brain-validation/stdout.txt",
+  "stdoutSha256": "38df7e7cc809785b2e729b0c87ab3243459195d3719a0a28ac426efbe9814f1d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-brain-validation/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

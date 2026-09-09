@@ -1,0 +1,19 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [32m✓[39m test/construction-operating-assistant-r37l-next-entrypoints.test.ts [2m([22m[2m38 tests[22m[2m)[22m[33m 1721[2mms[22m[39m
+     [33m[2m✓[22m[39m the CLI inventories root Next entries and their non-src facade instead of reporting false green [33m 1678[2mms[22m[39m
+ [32m✓[39m test/construction-operating-assistant-r37o-provider-boundary-release-gate.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m test/construction-operating-assistant-r37l-provider-reachability-traversal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m test/construction-operating-assistant-r37l-provider-transitive-reachability.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 2976[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the actual public source graph detached from R37 execution modules [33m 2961[2mms[22m[39m
+ [32m✓[39m test/construction-operating-assistant-r37n-provider-dynamic-code.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 3091[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the actual public source graph free of dynamic code execution [33m 3075[2mms[22m[39m
+ [32m✓[39m test/construction-operating-assistant-r37m-provider-computed-import.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 3176[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the actual public source graph free of unresolved dynamic loads [33m 3163[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m60 passed[39m[22m[90m (60)[39m
+[2m   Start at [22m 10:20:48
+[2m   Duration [22m 3.71s[2m (transform 404ms, setup 0ms, import 1.89s, tests 11.01s, environment 1ms)[22m
+

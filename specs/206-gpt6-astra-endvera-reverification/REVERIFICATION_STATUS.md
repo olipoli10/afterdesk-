@@ -1,5 +1,8 @@
 # Reverification 206 — working scope and evidence boundaries
 
+Final disposition is in FINAL_REPORT.md: LOCAL_REVALIDATION_BLOCKED, unsealed.
+The following text is the preserved implementation-checkpoint context.
+
 This is an implementation checkpoint, not the final campaign seal. The original source checkout and G0 frozen evaluation contracts are preserved. Work is isolated in `C:\dev\endvera-astra-reverification`.
 
 ## Actual product changes under validation

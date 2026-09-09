@@ -1,0 +1,2 @@
+CHECK_IDENTITY phase=G7 checkId=SECRET_SCAN runtimeProviderAuthorized=false claimedDeviceObservation=false
+SECRET_SCAN_RESULT scanned=3212 flaggedFiles=1

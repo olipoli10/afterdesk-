@@ -112,7 +112,8 @@
         "test",
         "apps/mobile",
         "scripts",
-        "release"
+        "release",
+        "vitest.config.mts"
       ],
       "acceptanceCommands": [
         "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G3"
@@ -153,7 +154,7 @@
       "id": "G7",
       "title": "Final validation seal and Brain checkpoint",
       "objective": "Final validation seal and Brain checkpoint",
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "estimatedMinutes": 120,
       "dependencies": [
         "G5"
@@ -167,7 +168,7 @@
       "evidencePaths": [
         "evidence/G7.json"
       ],
-      "result": "",
+      "result": "Authorized local work exhausted with LOCAL_REVALIDATION_BLOCKED (unsealed). Tests and Brain checkpoint recorded; immutable proof-contract blockers require a future separately frozen revision. Not global project completion.",
       "completedAtUtc": ""
     }
   ]

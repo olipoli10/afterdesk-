@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 1,
+  "releaseKey": "ENDVERA_CONSTRUCTION_V1",
+  "releaseVersion": 1,
+  "readiness": "LOCAL_PACKAGE_READY",
+  "source": {
+    "head": "cc567a406cabfedaabc1a80b80bb1a8ec2bc0106",
+    "tree": "7070c8a82fa693ddcb3243672f3af145cb15fa71"
+  },
+  "targets": [
+    "WEB",
+    "IOS",
+    "ANDROID"
+  ],
+  "definitionHash": "dea47bd2e2214c6104a4163186ccc066ec6a224f7240899a03ab4f1c7904e207",
+  "environmentContractHash": "c6d4d6e0b352eab76cb7887dceb7820a0a45272a8e70349b614890adb62dc53b",
+  "inputs": [
+    {
+      "path": "apps/mobile/app.json",
+      "byteSize": 3822,
+      "sha256": "1173694bf287080de6b5816616dc8e873ce68af01b8d7ec8c3296360f4627b7a"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/Assets/expo-symbol 2.svg",
+      "byteSize": 611,
+      "sha256": "0aab4b9a72b495d415a7088de655829e2db36a2021b17679af6bc47a1fe363d6"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/Assets/grid.png",
+      "byteSize": 53681,
+      "sha256": "8247d79a2b31328fe4e330a973e6fae16924ed9aebd72c64d464d6856ab18c72"
+    },
+    {
+      "path": "apps/mobile/assets/expo.icon/icon.json",
+      "byteSize": 819,
+      "sha256": "1cf151ba777b142d203aa3bc595fa52ba1bd80e2f3e5b4c5a2d0192825925538"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-background.png",
+      "byteSize": 11359,
+      "sha256": "a63fe15aa0055db0b50a5cd06f6f8a1ca2439376afb9e8c401f0c082713f1c2f"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-foreground.png",
+      "byteSize": 9473,
+      "sha256": "cac6dfecfe5e91fb42d40f24b3ae579fa02576ee1ef10d9701d1fdb985323f62"
+    },
+    {
+      "path": "apps/mobile/assets/images/android-icon-monochrome.png",
+      "byteSize": 2147,
+      "sha256": "ee8d5121773450a30ec743ec765e278295bacd5703c69a428da68885cfb44bda"
+    },
+    {
+      "path": "apps/mobile/assets/images/favicon.png",
+      "byteSize": 2086,
+      "sha256": "26b999640fc51fc7cb60b7391acfbe2161e980c91d33d0af01db1f2f244f5863"
+    },
+    {
+      "path": "apps/mobile/assets/images/icon.png",
+      "byteSize": 57776,
+      "sha256": "5c9b4884ffb9065fbc62d8e5ba52d6b44086ea7036e49e19d975d0d7334b13f0"
+    },
+    {
+      "path": "apps/mobile/assets/images/splash-icon.png",
+      "byteSize": 11547,
+      "sha256": "b7998b7df1b4eb8628573a260f1f63b21567d4c8fdb0a45e13a67e915ed1ed15"
+    },
+    {
+      "path": "apps/mobile/eas.json",
+      "byteSize": 896,
+      "sha256": "8d145346c129fb75fb8ffe3d88d94f736713c974797f4efb1df1df2508f899ec"
+    },
+    {
+      "path": "apps/mobile/src/app/(app)/settings.tsx",
+      "byteSize": 1830,
+      "sha256": "47f647797765148f017da43f545aa43462c8afc089d00315f591751fd94210ce"
+    },
+    {
+      "path": "apps/mobile/src/lib/release.ts",
+      "byteSize": 1040,
+      "sha256": "55876f9b1f3aeecbcdb01b068ddad4cc62e037e1f5016d821f9c045e8ea4110e"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/01-environment-and-build.md",
+      "byteSize": 904,
+      "sha256": "0d092ba46b2216da796895ce82b56ac165599abe3e23ace200a7da69e4db6cd1"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/02-smoke-and-evidence.md",
+      "byteSize": 832,
+      "sha256": "2a173f125e6d64b0c07af5f2526e208f62ae3aa443975f5d3f666b373ba679a9"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/03-promotion-stop.md",
+      "byteSize": 781,
+      "sha256": "ea4099062b735401ae78d37ea681414d64db906156cf2f0dbbe2d81773d74333"
+    },
+    {
+      "path": "docs/release/endvera-construction-v1/04-incident-and-rollback.md",
+      "byteSize": 821,
+      "sha256": "a1cbd5ba76a9f59e31afd753429b103db8735d3703f3c08fd5973948b7f88d8e"
+    },
+    {
+      "path": "package.json",
+      "byteSize": 1753,
+      "sha256": "344d6765c217f027d7cbc379adb32acc386668458134e182070882bb10ba6548"
+    },
+    {
+      "path": "release/endvera-construction-v1/environment-contract.json",
+      "byteSize": 2512,
+      "sha256": "36535d826219aec29cad818d8a20fcafcd06113ac8a3f49c36bafcea94d42e54"
+    },
+    {
+      "path": "release/endvera-construction-v1/mobile-build-readiness.json",
+      "byteSize": 1794,
+      "sha256": "25e99e99d40e50543a0d2796bb440a964c2ddec853acd772365c8d59712e2f67"
+    },
+    {
+      "path": "release/endvera-construction-v1/privacy-disclosure.json",
+      "byteSize": 2895,
+      "sha256": "3f714c05110a4b91420eec3ea38d8a20d89a8a704410ec2d51a5a8178dd9fe32"
+    },
+    {
+      "path": "release/endvera-construction-v1/release-definition-v3.json",
+      "byteSize": 3170,
+      "sha256": "3ef53060e71a7868a9db3602e230032044b92f9531555cd6090138a9b0dc6b48"
+    },
+    {
+      "path": "release/endvera-construction-v1/store/en-CA.json",
+      "byteSize": 1055,
+      "sha256": "ea9ec9ec6089debd21b711f6a1dd33a5c82f17c726be82a2b8acea8889fa926c"
+    },
+    {
+      "path": "release/endvera-construction-v1/store/fr-CA.json",
+      "byteSize": 1114,
+      "sha256": "f8a8b416d084d21fa441ced2e1adf9040b4f365bf384930ccd8d5fd7f3744e05"
+    },
+    {
+      "path": "release/endvera-construction-v1/submission-gaps.json",
+      "byteSize": 1345,
+      "sha256": "9b44a2188e2800ca75167ee19b823d12fb41b4f2202780093a3de960d954da3f"
+    },
+    {
+      "path": "scripts/endvera-mobile-build-contract.mjs",
+      "byteSize": 2307,
+      "sha256": "aa9949460758b44e721fce41bb7503390e74dbeceadf4a9f10831dfebed5bbd1"
+    },
+    {
+      "path": "scripts/endvera-release-source-binding.mjs",
+      "byteSize": 9493,
+      "sha256": "436e078cf8d39a4413d3380da5b7344d00daea620951dbe3763a66c38b03f996"
+    },
+    {
+      "path": "scripts/endvera-release-source-contracts.mjs",
+      "byteSize": 6654,
+      "sha256": "bd9b501a24f17d19a2dcd61396e3464a81990ae684b81fe04b0fd50497ceb594"
+    },
+    {
+      "path": "scripts/generate-endvera-release-package.mjs",
+      "byteSize": 13366,
+      "sha256": "9f218787d32d741514cd2a4bb4d791b2df1aabfa9f0f422074b049893ae35438"
+    },
+    {
+      "path": "scripts/validate-endvera-mobile-build-readiness.mjs",
+      "byteSize": 790,
+      "sha256": "89116d8ec16345791f9b635b057a309684fac36ec1f7cd6c8e383bc7c73b0d9d"
+    },
+    {
+      "path": "scripts/validate-endvera-release-package.mjs",
+      "byteSize": 1733,
+      "sha256": "f5b38e56a080ac06fa5049094fd22be2be3860c18507d3a28a0feefaf25dd173"
+    },
+    {
+      "path": "src/app/account-deletion/page.tsx",
+      "byteSize": 2041,
+      "sha256": "3d0d1750547b0ce9c06a48345eeeac59d3b5c8e29c50c45448a2c5a3c063cd81"
+    },
+    {
+      "path": "src/app/construction/support/page.tsx",
+      "byteSize": 3580,
+      "sha256": "4c9990db393082fa3ae867cac0439337aad70c762fd2a723d396c3b70c18693e"
+    },
+    {
+      "path": "src/app/privacy/page.tsx",
+      "byteSize": 2164,
+      "sha256": "ff174f92a90cbf84df996f8ffb8379630a7f677faed59e3a93103d87a715c58a"
+    },
+    {
+      "path": "src/app/security/page.tsx",
+      "byteSize": 2179,
+      "sha256": "067ce6323c92b6fe986820a6a26b073043cb7bbc558f6c5ca0e6c397314cc6dd"
+    },
+    {
+      "path": "src/components/comparison-table.tsx",
+      "byteSize": 11741,
+      "sha256": "498f1e63c055dcd6f27371552dd35d2c85e7ddd5b00f41e7c1dba59919391c42"
+    },
+    {
+      "path": "src/components/lang-switch.tsx",
+      "byteSize": 5206,
+      "sha256": "8c556a11cc3a9ad9c71950b01eb315ebbb25c15589569b640c1b8c11bc53f13d"
+    },
+    {
+      "path": "src/components/logo.tsx",
+      "byteSize": 2436,
+      "sha256": "615d54e886f0679b512ae567e952e6d94c2f915eac12690a6d9a5438f0c76a22"
+    },
+    {
+      "path": "src/components/policy-page.tsx",
+      "byteSize": 2883,
+      "sha256": "eda0c6f76a1f27982f3efee0afb368cb2b60abf589154f5b054e94a7becdb319"
+    },
+    {
+      "path": "src/components/trust-links.tsx",
+      "byteSize": 3208,
+      "sha256": "0fbe99e8eaeb4c47f51b955b15521a8c1ede48c006232b51fcb758013ffe64af"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r35/contracts.ts",
+      "byteSize": 3473,
+      "sha256": "c03e9a92da3508d75b02bfdedd62a2cc24ef57d3fc81558d61e69e08a6db9d56"
+    },
+    {
+      "path": "src/lib/construction-operating-assistant-r35/registry.ts",
+      "byteSize": 2115,
+      "sha256": "8338d4530b2c3fa08476e87b70be07c381f3027776c03b40b4df7b902e4e3387"
+    },
+    {
+      "path": "src/lib/db.ts",
+      "byteSize": 344,
+      "sha256": "a91668ded0da8f67fe3e8cadcdfcfd575157ad9e01e85fc2156f425d455c201f"
+    },
+    {
+      "path": "src/lib/i18n/client.ts",
+      "byteSize": 50607,
+      "sha256": "6d422ac47e1b1c9569f29e2ed2d84230be95e378b041869479d92dc961e02dd3"
+    },
+    {
+      "path": "src/lib/i18n/docs.ts",
+      "byteSize": 40180,
+      "sha256": "64b8c4c2355d83d181d7986c421c893bde539d359a229d36b1a23ac83992b89e"
+    },
+    {
+      "path": "src/lib/i18n/langs.ts",
+      "byteSize": 2157,
+      "sha256": "2774d2b1a761c92282de256994b053d8cf6a5487bc3f43a7a3a04c1138d93511"
+    },
+    {
+      "path": "src/lib/i18n/legal.ts",
+      "byteSize": 62554,
+      "sha256": "7128bb0b41ef841097139ba8f0c96d23f77835227aecdef33d5bc2f97186c7a3"
+    },
+    {
+      "path": "src/lib/settings.ts",
+      "byteSize": 14929,
+      "sha256": "064861f57d13ac5fd4e79cf577605eec87c00dcad7eb397fcc5f30101c332574"
+    }
+  ],
+  "validationCommands": [
+    "node scripts/validate-endvera-release-package.mjs",
+    "npm test -- --run test/construction-operating-assistant-r35-release-package.test.ts",
+    "npm --prefix apps/mobile test -- --run test/release-package.test.ts"
+  ],
+  "signed": false,
+  "uploaded": false,
+  "published": false,
+  "deployed": false,
+  "providerObserved": false,
+  "externalEffectCount": 0,
+  "manifestHash": "65c175d6a203236367a80623108e5c1091647a09c79fa0d1839b92475fc68a6f"
+}

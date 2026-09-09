@@ -1,0 +1,17 @@
+{
+  "kind": "PHASE_CHECK_OBSERVATION",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "checkId": "CONTACT_HOMONYM",
+  "observedCommandId": "g7-contact-homonym-r2",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 CONTACT_HOMONYM",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-contact-homonym-r2/stdout.txt",
+  "stdoutSha256": "38bed2e2d53bf6bf27aab3937952433f19a557095cce8103a2a1535e8af5193c",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-contact-homonym-r2/stderr.txt",
+  "stderrSha256": "a3920dbc8480c4ea9c50223fe9796b26aa667eb4e80ba59b9a954df0b294a317"
+}

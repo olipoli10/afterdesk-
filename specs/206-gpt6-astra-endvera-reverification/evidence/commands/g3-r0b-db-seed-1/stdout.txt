@@ -1,0 +1,7 @@
+CHECK_IDENTITY phase=G1 checkId=SYNTHETIC_SEED runtimeProviderAuthorized=false claimedDeviceObservation=false
+DATABASE_OWNERSHIP engine=PrismaDev-PGlite name=endvera206-2478ab6b98b44c8bb2592aaa25800f1d databasePort=50540 uniqueStore=true
+Script executed successfully.
+DISPOSABLE_DATABASE_CREATE_VERIFIED
+DATABASE_OPERATION_VERIFIED operation=seed migrations=68 tables=179 chain=f5cead7190cc2d0e3b920cf41d230d4105488da5c2849634bc633cdcc2e89a00
+DATABASE_SERVER_CLOSED name=endvera206-2478ab6b98b44c8bb2592aaa25800f1d retainedSyntheticStore=true
+CHECK_VERIFIED phase=G1 checkId=SYNTHETIC_SEED

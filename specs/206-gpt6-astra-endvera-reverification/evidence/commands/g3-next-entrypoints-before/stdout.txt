@@ -1,0 +1,48 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/construction-operating-assistant-r37l-next-entrypoints.test.ts [2m([22m[2m38 tests[22m[2m | [22m[31m30 failed[39m[2m)[22m[33m 938[2mms[22m[39m
+     [32m✓[39m finds direct and transitive provider exposure at src/app/api/hello/route.ts[32m 8[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at app/api/hello/route.ts[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at app/page.tsx[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at src/pages/api/hello.ts[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at pages/api/hello.js[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at src/pages/index.tsx[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at pages/_app.jsx[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at src/middleware.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at middleware.js[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at src/proxy.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at proxy.js[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at src/instrumentation.ts[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at instrumentation.js[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at src/instrumentation-client.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds direct and transitive provider exposure at instrumentation-client.js[39m[32m 0[2mms[22m[39m
+     [32m✓[39m finds direct and transitive provider exposure at src/jobs/task.ts[32m 1[2mms[22m[39m
+     [32m✓[39m finds direct and transitive provider exposure at src/workers/task.ts[32m 1[2mms[22m[39m
+     [32m✓[39m finds direct and transitive provider exposure at src/server/actions/task.ts[32m 1[2mms[22m[39m
+     [32m✓[39m finds computed loaders and dynamic code at src/app/api/hello/route.ts[32m 1[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at app/api/hello/route.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at app/page.tsx[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at src/pages/api/hello.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at pages/api/hello.js[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at src/pages/index.tsx[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at pages/_app.jsx[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at src/middleware.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at middleware.js[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at src/proxy.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at proxy.js[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at src/instrumentation.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at instrumentation.js[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at src/instrumentation-client.ts[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m finds computed loaders and dynamic code at instrumentation-client.js[39m[32m 0[2mms[22m[39m
+     [32m✓[39m finds computed loaders and dynamic code at src/jobs/task.ts[32m 1[2mms[22m[39m
+     [32m✓[39m finds computed loaders and dynamic code at src/workers/task.ts[32m 1[2mms[22m[39m
+     [32m✓[39m finds computed loaders and dynamic code at src/server/actions/task.ts[32m 1[2mms[22m[39m
+[31m     [31m×[31m normalizes Windows paths and retains private/nonconvention controls[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m the CLI inventories root Next entries and their non-src facade instead of reporting false green[39m[33m 907[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m30 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (38)[39m
+[2m   Start at [22m 10:18:44
+[2m   Duration [22m 1.52s[2m (transform 105ms, setup 0ms, import 295ms, tests 938ms, environment 0ms)[22m
+

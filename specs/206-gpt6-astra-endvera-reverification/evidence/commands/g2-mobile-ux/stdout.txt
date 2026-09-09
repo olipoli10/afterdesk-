@@ -1,0 +1,26 @@
+{
+  "status": "INCOMPLETE",
+  "sourceProductHead": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+  "auditor": {
+    "reportedModel": null,
+    "requestedModel": "gpt-6-astra",
+    "clientVersion": "codex-cli 0.153.4",
+    "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+    "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+    "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+    "runAt": "2026-09-09T13:45:37.436Z",
+    "commandId": "g2-mobile-ux",
+    "promptPath": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/mobile-ux.md",
+    "promptSha256": "244beb3419faf935c03a0fddc4cd8339ba59f2307eab827799c734abcb01ef0c"
+  },
+  "findings": [],
+  "unknowns": [
+    "La politique d’exécution a rejeté les commandes de lecture avant leur lancement (« blocked by policy »). Aucun fichier du dépôt n’a pu être inspecté.",
+    "Le schéma finding-report.schema.json était inaccessible. La conformité de ce JSON au schéma demandé ne peut pas être attestée.",
+    "Les instructions AGENTS.md fournies dans le prompt sont disponibles, mais leur version sur disque n’a pas pu être vérifiée.",
+    "Les valeurs observedHead et observedTree sont recopiées de RUN_ENVELOPE sans vérification Git indépendante. La relation entre ce HEAD et sourceProductHead reste inconnue.",
+    "Les invariants 1 à 12 restent non vérifiés. L’absence de findings ne constitue pas une validation du produit.",
+    "NOT_RUN : aucune reproduction ni aucun test exécuté, puisque les inspections locales préalables étaient bloquées.",
+    "Aucun appareil observé. Installation, signature et hash du build, permissions réelles, Messages natif, calendrier, contacts, réseau, retries et récupération après crash restent inconnus; cette absence d’observation physique ne constitue pas un échec produit."
+  ]
+}

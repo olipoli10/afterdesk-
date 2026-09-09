@@ -1,0 +1,18 @@
+Error: R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET must all be set in production. Local-disk storage does not survive a request past a serverless invocation and must never be used for real task files.
+    at 79420 (C:\dev\endvera-astra-reverification\.next\server\chunks\5660.js:3:7133)
+    at g (C:\dev\endvera-astra-reverification\.next\server\webpack-runtime.js:1:136)
+    at 18952 (C:\dev\endvera-astra-reverification\.next\server\chunks\8952.js:3:761)
+    at g (C:\dev\endvera-astra-reverification\.next\server\webpack-runtime.js:1:136)
+    at 22939 (C:\dev\endvera-astra-reverification\.next\server\app\api\cron\maintenance\route.js:1:2369)
+    at g (C:\dev\endvera-astra-reverification\.next\server\webpack-runtime.js:1:136)
+    at <unknown> (C:\dev\endvera-astra-reverification\.next\server\app\api\cron\maintenance\route.js:5:10708)
+    at g.X (C:\dev\endvera-astra-reverification\.next\server\webpack-runtime.js:1:1189)
+    at <unknown> (C:\dev\endvera-astra-reverification\.next\server\app\api\cron\maintenance\route.js:5:10633)
+    at Object.<anonymous> (C:\dev\endvera-astra-reverification\.next\server\app\api\cron\maintenance\route.js:5:10740)
+
+> Build error occurred
+Error: Failed to collect page data for /api/cron/maintenance
+    at ignore-listed frames {
+  type: 'Error'
+}
+PHASE_CHECK_EXECUTION_FAILURE:GROUPED_CHECK_FAILED:2

@@ -1,0 +1,20 @@
+{
+  "id": "g7-malformed-json-r2",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 MALFORMED_JSON",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:38:07.008Z",
+  "finishedAt": "2026-09-09T15:38:07.348Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-malformed-json-r2/stdout.txt",
+  "stdoutSha256": "81d41fb80cbbb4bc1fbd1d6fcf0a2eb15cb80a0a2280cbda27750fa4dffa20e7",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-malformed-json-r2/stderr.txt",
+  "stderrSha256": "a3920dbc8480c4ea9c50223fe9796b26aa667eb4e80ba59b9a954df0b294a317",
+  "replay": null
+}

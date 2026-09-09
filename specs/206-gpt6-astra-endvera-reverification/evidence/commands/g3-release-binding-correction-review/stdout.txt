@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "PATCH_REVIEW",
+  "requestedModel": "gpt-5.6-sol",
+  "servedModel": null,
+  "status": "CHANGES_REQUIRED",
+  "scope": [
+    "scripts/endvera-release-source-binding.mjs",
+    "scripts/generate-endvera-release-package.mjs",
+    "scripts/validate-endvera-release-package.mjs",
+    "test/unit/release-source-binding-review.test.ts",
+    "release/endvera-construction-v1/release-definition-v3.json",
+    "src/lib/construction-operating-assistant-r35/registry.ts",
+    "apps/mobile/src/lib/release.ts",
+    "scripts/validate-endvera-native-preflight.mjs",
+    "scripts/validate-endvera-mobile-build-readiness.mjs",
+    "src/app/layout.tsx",
+    "src/lib/construction-assistant-v1/interpreter.ts",
+    "test/unit/calendar-dst-revalidation.test.ts"
+  ],
+  "findings": [
+    {
+      "id": "PR-001",
+      "severity": "HIGH",
+      "file": "scripts/endvera-release-source-binding.mjs",
+      "line": 28,
+      "title": "Lexical containment does not prevent repository inputs from resolving through symlinks",
+      "reproduction": "Source-only construction: make a listed text input a committed symlink whose target escapes the repository, such as ../../outside, and give the external target file exactly the bytes ../../outside. readFile follows the symlink, while git show returns those same bytes from the committed symlink blob. The raw hash, size, and blob-equality checks can therefore all pass even though the working input was read outside repositoryRoot.",
+      "proposedFix": "Resolve every working input with realpath and require the resulting path to remain under the real repository root. Also reject symlinks and non-regular files explicitly, including intermediate symlink components, and verify the committed tree entry mode is a regular blob rather than mode 120000."
+    },
+    {
+      "id": "PR-002",
+      "severity": "MEDIUM",
+      "file": "scripts/endvera-release-source-binding.mjs",
+      "line": 35,
+      "title": "The CRLF exception accepts transformations other than committed-LF to checkout-CRLF",
+      "reproduction": "For a .txt input, let the committed blob be the bytes \"a\\r\\n\" and the working file be \"a\\r\\r\\n\", with the manifest hashing the latter raw bytes. Replacing CRLF in the working bytes produces \"a\\r\\n\", so the exception accepts it even though the committed blob is not LF-only and the working bytes are not a normal LF-to-CRLF checkout. The test at line 28 similarly does not first establish that its committed fixture is LF-only.",
+      "proposedFix": "Require the committed blob to contain no carriage-return bytes and require every working newline to be a CRLF pair before accepting normalization. Add negative tests for committed CRLF, mixed endings, lone CR, lone LF, and CRCRLF."
+    },
+    {
+      "id": "PR-003",
+      "severity": "MEDIUM",
+      "file": "scripts/generate-endvera-release-package.mjs",
+      "line": 137,
+      "title": "Source-linked mobile release metadata is hashed but not semantically tied to the definition",
+      "reproduction": "A commit can change MOBILE_RELEASE_INFO.semanticVersion, buildNumber, versionCode, identifiers, or publicPaths in apps/mobile/src/lib/release.ts while leaving app.json and release-definition-v3.json unchanged. Regenerating the manifest records the new raw hash, and committed-blob binding succeeds, because validateDefinition never compares the exported mobile metadata with the definition or app configuration.",
+      "proposedFix": "Eliminate duplicated constants by deriving mobile release metadata from a validated shared JSON source, or add a validator that compares every identity, version, readiness boundary, and public path in release.ts against release-definition-v3.json and app.json."
+    },
+    {
+      "id": "PR-004",
+      "severity": "HIGH",
+      "file": "scripts/generate-endvera-release-package.mjs",
+      "line": 103,
+      "title": "The declared public account-deletion route is not included in source binding or validated for existence",
+      "reproduction": "The definition declares /account-deletion, but packageInputPaths includes only src/app/construction/support/page.tsx among public-route implementations. A commit can delete or replace the account-deletion page while retaining the definition literal; manifest generation, validation, and Git binding have no listed input or route-existence assertion that detects this. The native preflight only compares the definition value to the same literal.",
+      "proposedFix": "Add the actual account-deletion route implementation and any required route dependencies to the bound inputs. Validate that every declared public path maps to an existing static route, and compare RELEASE_PUBLIC_PATHS and MOBILE_RELEASE_INFO.publicPaths with definition.publicPaths instead of maintaining unchecked duplicates."
+    }
+  ],
+  "limitations": [
+    "Source-only review; no commands, tests, builds, Git queries, or application execution were performed.",
+    "Candidate behavior remained UNPROBED.",
+    "Only the supplied packet was reviewed; unchanged route implementations and repository configuration were not available for inspection.",
+    "The packet SHA-256 and individual file hashes were not independently recomputed."
+  ]
+}

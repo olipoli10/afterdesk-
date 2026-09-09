@@ -1,0 +1,20 @@
+{
+  "id": "g2-packet-mobile-ux",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G2",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "MODEL_AUDIT",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-packet-audit.mjs mobile-ux",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:51:32.659Z",
+  "finishedAt": "2026-09-09T13:52:59.975Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-mobile-ux/stdout.txt",
+  "stdoutSha256": "5e6a27289f1a8eddbc57001da6cb04cb8f1aebf55944b948216d2de3fcfb3dde",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-mobile-ux/stderr.txt",
+  "stderrSha256": "a53798107360e44e1e62c295ce6c9da816373f88f52bf895f699b3f4ad93d99c",
+  "replay": null
+}

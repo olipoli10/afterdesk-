@@ -1,0 +1,53 @@
+{
+  "kind": "INVARIANT_MANIFEST",
+  "invariants": [
+    {
+      "id": "HIDDEN_ORACLE_ACCESS_DENIED",
+      "critical": true,
+      "observed": true,
+      "passed": true,
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-local-oracle-denial-r2/stdout.txt"
+      ],
+      "evidenceSha256": [
+        "b036188c163bbd277dfd0ccbad6dd2a836928f372397845b339a2b6bfb5ff58d"
+      ]
+    },
+    {
+      "id": "SYNTHETIC_CORPUS_NO_PII",
+      "critical": true,
+      "observed": true,
+      "passed": true,
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-local-synthetic-no-pii-r2/stdout.txt"
+      ],
+      "evidenceSha256": [
+        "fb861237145b69c52e73f44b6d1fa6b01b193b37b73ae729a81727a893193242"
+      ]
+    },
+    {
+      "id": "RUNTIME_CANDIDATE_AUTHORITY_ISOLATION",
+      "critical": true,
+      "observed": false,
+      "passed": null,
+      "evidencePaths": [],
+      "evidenceSha256": []
+    },
+    {
+      "id": "RUNTIME_CANDIDATE_HIDDEN_ORACLE_DENIAL",
+      "critical": true,
+      "observed": false,
+      "passed": null,
+      "evidencePaths": [],
+      "evidenceSha256": []
+    },
+    {
+      "id": "DEVICE_INSTALL_LOGIN_PERMISSION_OBSERVATION",
+      "critical": true,
+      "observed": false,
+      "passed": null,
+      "evidencePaths": [],
+      "evidenceSha256": []
+    }
+  ]
+}

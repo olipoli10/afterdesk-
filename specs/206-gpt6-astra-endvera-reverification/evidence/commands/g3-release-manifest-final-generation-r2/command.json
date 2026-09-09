@@ -1,0 +1,20 @@
+{
+  "id": "g3-release-manifest-final-generation-r2",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "cc567a406cabfedaabc1a80b80bb1a8ec2bc0106",
+  "observedTree": "7070c8a82fa693ddcb3243672f3af145cb15fa71",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/emit-release-manifest.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:18:59.122Z",
+  "finishedAt": "2026-09-09T15:19:09.122Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-manifest-final-generation-r2/stdout.txt",
+  "stdoutSha256": "4c3e150aab8802113399ad711a3db120d7cc1844604b6daaa2686790d6212827",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-manifest-final-generation-r2/stderr.txt",
+  "stderrSha256": "02927e0fffdd6357a58d889722f854f7f233bb08b745aae78aa0d4be4bf7fcfa",
+  "replay": null
+}

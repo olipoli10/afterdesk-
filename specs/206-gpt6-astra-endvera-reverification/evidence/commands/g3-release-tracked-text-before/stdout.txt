@@ -1,0 +1,31 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/unit/release-tracked-flags.test.ts [2m([22m[2m21 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[33m 22062[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects hidden non-input edit under --assume-unchanged [33m 1086[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects hidden non-input edit under --skip-worktree [33m 1063[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts unchanged bytes with --assume-unchanged [33m 836[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts unchanged bytes with --skip-worktree [33m 798[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects tracked/index addition drift [33m 743[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects tracked/index deletion drift [33m 741[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects tracked/index index bytes drift [33m 745[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects tracked/index index mode drift [33m 763[2mms[22m[39m
+     [33m[2m✓[22m[39m excludes only the exact derived manifest [33m 1159[2mms[22m[39m
+     [33m[2m✓[22m[39m permits the exact projection in source only [33m 844[2mms[22m[39m
+     [33m[2m✓[22m[39m permits the exact projection in index only [33m 1066[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a missing skipped tracked file [33m 870[2mms[22m[39m
+     [33m[2m✓[22m[39m compares raw binary blobs correctly across batch boundaries [33m 2227[2mms[22m[39m
+     [33m[2m✓[22m[39m permits exact LF-to-CRLF checkout but not mixed or CRCRLF [33m 1234[2mms[22m[39m
+[31m     [31m×[31m preserves normal Git-text CRLF checkout for check.ps1[39m[33m 1157[2mms[22m[39m
+[31m     [31m×[31m preserves normal Git-text CRLF checkout for migration.sql[39m[33m 1116[2mms[22m[39m
+[31m     [31m×[31m preserves normal Git-text CRLF checkout for schema.prisma[39m[33m 1151[2mms[22m[39m
+[31m     [31m×[31m preserves normal Git-text CRLF checkout for config.toml[39m[33m 1144[2mms[22m[39m
+[31m     [31m×[31m preserves normal Git-text CRLF checkout for .gitignore[39m[33m 1114[2mms[22m[39m
+[31m     [31m×[31m preserves normal Git-text CRLF checkout for LICENSE[39m[33m 1178[2mms[22m[39m
+     [33m[2m✓[22m[39m does not normalize a path declared binary by Git attributes [33m 1022[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[90m (21)[39m
+[2m   Start at [22m 11:05:42
+[2m   Duration [22m 22.26s[2m (transform 31ms, setup 0ms, import 50ms, tests 22.06s, environment 0ms)[22m
+

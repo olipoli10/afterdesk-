@@ -1,0 +1,20 @@
+{
+  "id": "g3-voice-spend-integration",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "3cd12bcbbb8df78f76255e9b4a48b5b47336d97a",
+  "observedTree": "66d4abfdaafb0fe5ec177de75554baf5b14b7d52",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs LOCAL_EXTRA VOICE_SPEND_REGRESSION",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:06:14.401Z",
+  "finishedAt": "2026-09-09T15:07:13.248Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-voice-spend-integration/stdout.txt",
+  "stdoutSha256": "92aa2a6f2bbdf038bb4d8579c4a4d92ac6db59be4758b7a0f639dd4ec5a5ef28",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-voice-spend-integration/stderr.txt",
+  "stderrSha256": "96c0e6416f9e963d24d146ee16d9850ad7c0ef1eab28dd1562eb34335b05240b",
+  "replay": null
+}

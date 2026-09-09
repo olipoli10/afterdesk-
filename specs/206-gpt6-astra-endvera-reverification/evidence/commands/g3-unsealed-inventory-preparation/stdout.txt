@@ -1,0 +1,4325 @@
+{
+  "kind": "UNSEALED_LOCAL_EVIDENCE_INVENTORY",
+  "schemaVersion": "1.0",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "startedAt": "2026-09-09T14:22:45.149Z",
+  "finishedAt": "2026-09-09T14:22:47.628Z",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "expectedFinalHead": null,
+  "finalHeadClaimed": false,
+  "headStableDuringCollection": true,
+  "commandRecordsChangedDuringCollection": [],
+  "sealed": false,
+  "canonicalValidationPassed": false,
+  "alternateValidationAuthority": false,
+  "campaignOutcomeClaim": null,
+  "source": {
+    "collector": {
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/collect-unsealed-evidence.mjs",
+      "bytes": 12796,
+      "sha256": "ccff2890ee0027d04a027a7f6f3bb67fdd7360eec42dee5281ab5e6c2745c6a2"
+    },
+    "config": {
+      "path": "specs/206-gpt6-astra-endvera-reverification/closeout-inventory.config.json",
+      "bytes": 363,
+      "sha256": "bc3e17e4fbce08c035ce14c3467afcac3526e93acda4b525774ee4c8dfb46f88"
+    },
+    "canonicalValidator": {
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs",
+      "bytes": 144789,
+      "sha256": "6f68cfbe7986a2f1ca7b0e33eed8b364004cfd1f56fad4fd70184f2a7517b91a"
+    }
+  },
+  "brain": {
+    "head": "3a4e31d837ed4f53f8326d865fca43cc54eb4c3e",
+    "tree": "cc3c8f00afa0bcb75127bb085689a6d8bfc4ab22",
+    "worktreeClean": true,
+    "mutatedByCollector": false
+  },
+  "counts": {
+    "recordedCommands": 107,
+    "nativeExitMismatches": 31,
+    "canonicalDeterministicFailures": 26,
+    "incidents": 1,
+    "g2ModelAuditCommands": 8,
+    "providerClassifiedCommands": 0
+  },
+  "commands": [
+    {
+      "id": "g0-astra-probe",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-astra-probe/command.json",
+        "bytes": 1092,
+        "sha256": "0dcc669f408ef9930359ab4970e18d9a1cbbdda3da98b4ba558c6e3368481ac4"
+      },
+      "phase": "G0",
+      "classification": "SETUP",
+      "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "startedAt": "2026-09-09T13:24:31.775Z",
+      "finishedAt": "2026-09-09T13:24:37.102Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-astra-probe/stdout.txt",
+          "bytes": 29,
+          "sha256": "c9222023eeeac26f3d12080c3fd66ba5dde4c33b7074f715b7003c9aa599f906",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-astra-probe/stderr.txt",
+          "bytes": 467,
+          "sha256": "97df7b993cb1e9171d494892bbc7a4af94815c8d202ec66aa5e94ca4dd21dfd2",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-corpus-check",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-corpus-check/command.json",
+        "bytes": 962,
+        "sha256": "ab6b1f49600a768b631ed2be9054971e9eefefef42ad24b839b7cadfcfde5d26"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "startedAt": "2026-09-09T13:33:22.567Z",
+      "finishedAt": "2026-09-09T13:33:22.834Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-corpus-check/stdout.txt",
+          "bytes": 287,
+          "sha256": "148ef9cb67aa60c98ee083509736e0c556fe546fcef8fa321bc222edf4955067",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-corpus-check/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-final-contracts",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-contracts/command.json",
+        "bytes": 986,
+        "sha256": "daa86609a57a75c88edc149519541af769574c7428a49354caa8f45b90c8635e"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "1f64d86165a5eb2b41287fc1336635897058990d",
+      "observedTree": "62ed3f4f72585e8dacb0921ebd2d14f2e1839a40",
+      "startedAt": "2026-09-09T13:41:51.387Z",
+      "finishedAt": "2026-09-09T13:41:51.771Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-contracts/stdout.txt",
+          "bytes": 746,
+          "sha256": "f869a437d26a0d74c25d4be194e56530c12d24de8c43263544a85b91577a4f1e",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-contracts/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-final-corpus",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-corpus/command.json",
+        "bytes": 962,
+        "sha256": "0a138500608057dfb18edf6f3b80c6d54890743e165d09d7c4e9d0cb9bc27fb1"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "1f64d86165a5eb2b41287fc1336635897058990d",
+      "observedTree": "62ed3f4f72585e8dacb0921ebd2d14f2e1839a40",
+      "startedAt": "2026-09-09T13:41:51.116Z",
+      "finishedAt": "2026-09-09T13:41:51.325Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-corpus/stdout.txt",
+          "bytes": 560,
+          "sha256": "0b2fdac8ef6306f78deecce6461f3b60c485c86e3930f2a3e5b5421ad1c47f26",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-corpus/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-final-phase-kit",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-phase-kit/command.json",
+        "bytes": 963,
+        "sha256": "0b450149ccea38538243e33fd5adce35a986481061fade428bc7e94edbd22881"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "1f64d86165a5eb2b41287fc1336635897058990d",
+      "observedTree": "62ed3f4f72585e8dacb0921ebd2d14f2e1839a40",
+      "startedAt": "2026-09-09T13:41:51.838Z",
+      "finishedAt": "2026-09-09T13:41:52.030Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-phase-kit/stdout.txt",
+          "bytes": 134,
+          "sha256": "ce651ff80de3a67c226e0215f8992232c1ff3467359b10c47e89555fdb36a8fd",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-final-phase-kit/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-local-contracts",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-local-contracts/command.json",
+        "bytes": 986,
+        "sha256": "2276c3ed59be5b8047598d604ded773ab8e327a9995d4a72bcc17e047a72f774"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "startedAt": "2026-09-09T13:30:09.255Z",
+      "finishedAt": "2026-09-09T13:30:09.696Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-local-contracts/stdout.txt",
+          "bytes": 749,
+          "sha256": "83642ca72fde036c04f3c456e3d4fe0349fb7e141ce2e1ec03de230fb92db582",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-local-contracts/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-phase-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-phase-wrapper/command.json",
+        "bytes": 965,
+        "sha256": "4b172a9d5c015f34d6b25788157e2ad3e2d28d47c5deb0517ddefed0af399cda"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "startedAt": "2026-09-09T13:30:10.285Z",
+      "finishedAt": "2026-09-09T13:30:10.636Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-phase-wrapper/stdout.txt",
+          "bytes": 31,
+          "sha256": "9db3456f11b1df586933467f43e5739554bb8547f10b6ecf215ab41af6a704a3",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-phase-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-prisma-generate",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-prisma-generate/command.json",
+        "bytes": 928,
+        "sha256": "cc160604180f2d9c1194f05f170b550f313b0d566105d3e61e6c6b9a82a352d3"
+      },
+      "phase": "G0",
+      "classification": "SETUP",
+      "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "startedAt": "2026-09-09T13:32:06.249Z",
+      "finishedAt": "2026-09-09T13:32:09.786Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-prisma-generate/stdout.txt",
+          "bytes": 315,
+          "sha256": "67715673e71da06f720955c2af50ba33b61ecf8d1cc57a0e49107d4c6d2c9d9e",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-prisma-generate/stderr.txt",
+          "bytes": 108,
+          "sha256": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-program-admission",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-program-admission/command.json",
+        "bytes": 1097,
+        "sha256": "545600fc6aba841132a746babe6aa9633a89a407e70d5eb673e76aa700db90b9"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "startedAt": "2026-09-09T13:30:11.245Z",
+      "finishedAt": "2026-09-09T13:30:11.962Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-program-admission/stdout.txt",
+          "bytes": 146,
+          "sha256": "dcb7987a9c96132fe3dbf72a2b58e071715f46310d8fec57748d81fe43719b6d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-program-admission/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-queue-admission",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-queue-admission/command.json",
+        "bytes": 1092,
+        "sha256": "d39bf1cf6165b04017cbbf061ff0f9755aa80a6a9d0d767766fada7dc5b5071b"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "startedAt": "2026-09-09T13:30:12.561Z",
+      "finishedAt": "2026-09-09T13:30:13.328Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-queue-admission/stdout.txt",
+          "bytes": 115,
+          "sha256": "43cd0b225f34d3210fb3942ca980bbd1aa71137ee44305c466826009763f7ce3",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-queue-admission/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g0-recorder-final",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-recorder-final/command.json",
+        "bytes": 982,
+        "sha256": "faa1b7b65f7cb21e1df03a8d8a1f137dc1f179988ffaec47f7c471dccb27bc13"
+      },
+      "phase": "G0",
+      "classification": "VALIDATION",
+      "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+      "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+      "startedAt": "2026-09-09T13:36:00.073Z",
+      "finishedAt": "2026-09-09T13:36:02.929Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-recorder-final/stdout.txt",
+          "bytes": 513,
+          "sha256": "0a77dfc64aaee1ded5c51922ccea40b6ea484a098c4d67b5c91bdec75f6fb534",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-recorder-final/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-backlog-validation",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation/command.json",
+        "bytes": 991,
+        "sha256": "a86517fd82dca73601cf6dd7438c90d523cde9cb2929514a71e48969f8785c17"
+      },
+      "phase": "G1",
+      "classification": "VALIDATION",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:07.286Z",
+      "finishedAt": "2026-09-09T13:44:07.477Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation/stdout.txt",
+          "bytes": 114,
+          "sha256": "ec0866ac8a65d13c086fb0a2d2f93062e6fc2164acf12b687b26ff8157e782e5",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation/stderr.txt",
+          "bytes": 76,
+          "sha256": "2e2a424029f6bf2791f7651c6b7c1b81b3f54226fe93ad5dc6b5a365631b0413",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-backlog-validation-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation-wrapper/command.json",
+        "bytes": 2069,
+        "sha256": "30a9941a9e1ed4e0759326bc086f461ac0e2829bca96d63a160da23d8d5763b0"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:26.672Z",
+      "finishedAt": "2026-09-09T13:46:26.852Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation-wrapper/stdout.txt",
+          "bytes": 533,
+          "sha256": "ca7803ddc83ede6b0956225f1a7435bd76bf634edbb353579852a766abd93407",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-backlog-validation-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "BACKLOG_VALIDATION",
+        "result": "FAIL",
+        "observedCommandId": "g1-backlog-validation",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-critical-route-smoke",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke/command.json",
+        "bytes": 1007,
+        "sha256": "824d8a4a96adff9146e6e43ebde1f1a94a28af786af6b27145cf2f16bf375aac"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:35.412Z",
+      "finishedAt": "2026-09-09T13:44:46.165Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke/stdout.txt",
+          "bytes": 153,
+          "sha256": "1cf89323c54a77a59416231c79797b087ab7e69b6ac3816c37824002161b7e70",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke/stderr.txt",
+          "bytes": 1076,
+          "sha256": "74c9fbdd5b6fbe892279ed5b4811b1a4af930add7c9689d0d772222aab73276d",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-critical-route-smoke-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke-wrapper/command.json",
+        "bytes": 2085,
+        "sha256": "9365778d04a549f5bd3766fa30891ea8e6f2e1bf554e62ed1280e4b93a73a005"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:26.933Z",
+      "finishedAt": "2026-09-09T13:46:27.148Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke-wrapper/stdout.txt",
+          "bytes": 539,
+          "sha256": "431d052a33cb76bda22c720ff64f3cd6ae9cd844bf4d3929887be62107bc42f7",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-critical-route-smoke-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "CRITICAL_ROUTE_SMOKE",
+        "result": "FAIL",
+        "observedCommandId": "g1-critical-route-smoke",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-migration-clean",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-clean/command.json",
+        "bytes": 987,
+        "sha256": "6811df28dbc71907dada88c7a7fec78220321fe28e0a236b98f7a962cc5cdf6c"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:03.245Z",
+      "finishedAt": "2026-09-09T13:44:05.929Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-clean/stdout.txt",
+          "bytes": 111,
+          "sha256": "5c623e3224d3c2019cdb1ec86c245cd477bfed7e9cca1192b882c329728c33a8",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-clean/stderr.txt",
+          "bytes": 63,
+          "sha256": "ba6edfaa60c5d90894a64f5a88691ba7c6dea447f264c8b4c2b357627543344c",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-migration-clean-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-clean-wrapper/command.json",
+        "bytes": 2045,
+        "sha256": "00facf0a172ef8903e37001e02332f7d2770e4e2191657c047c43f367fc97284"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:27.209Z",
+      "finishedAt": "2026-09-09T13:46:27.391Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-clean-wrapper/stdout.txt",
+          "bytes": 524,
+          "sha256": "fff9acff7be1feb9c525b198ae8de419e66578d56f5b189660fef1ebab91ca92",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-clean-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "MIGRATION_CLEAN",
+        "result": "FAIL",
+        "observedCommandId": "g1-migration-clean",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-migration-upgrade",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-upgrade/command.json",
+        "bytes": 995,
+        "sha256": "86b886aff5d70530173b79560b9b1a52c8272b8e005231670367794d7a00b6ef"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:06.009Z",
+      "finishedAt": "2026-09-09T13:44:06.352Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-upgrade/stdout.txt",
+          "bytes": 113,
+          "sha256": "38158dd44a1b5ff4e95c26a0dee0e02830aa8f1a194406d9a164c1039c53c654",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-upgrade/stderr.txt",
+          "bytes": 63,
+          "sha256": "ba6edfaa60c5d90894a64f5a88691ba7c6dea447f264c8b4c2b357627543344c",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-migration-upgrade-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-upgrade-wrapper/command.json",
+        "bytes": 2061,
+        "sha256": "0ab5430ed7251c0974a030ce2a67603395d90f9fc7d93dea68f647ca6487f1d9"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:27.455Z",
+      "finishedAt": "2026-09-09T13:46:27.646Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-upgrade-wrapper/stdout.txt",
+          "bytes": 530,
+          "sha256": "310fc3d880759af46789ce86916ebd884c3afb0732d1909060c887f9cbed6517",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-migration-upgrade-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "MIGRATION_UPGRADE",
+        "result": "FAIL",
+        "observedCommandId": "g1-migration-upgrade",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-mobile-build",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-build/command.json",
+        "bytes": 975,
+        "sha256": "151cc6a7f8e59bdea302c23fa07305d86b38498edbfbcf7d7d246c3690bb2d9f"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:02.164Z",
+      "finishedAt": "2026-09-09T13:44:02.597Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-build/stdout.txt",
+          "bytes": 295,
+          "sha256": "7feef450229afa14e53331c0178d8e23fc0d07df32ca58d71e987cba974dd087",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-build/stderr.txt",
+          "bytes": 4117,
+          "sha256": "59fae5582874b18ea9f7010e0d66726361716b1df83fbf8f966aca64e82d5bb9",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-mobile-build-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-build-wrapper/command.json",
+        "bytes": 2021,
+        "sha256": "f4b4b2f8fb9c2b5c1e15283c4fd9b4b69d71d457fcfa1616457c870e9fde1d98"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:27.706Z",
+      "finishedAt": "2026-09-09T13:46:27.889Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-build-wrapper/stdout.txt",
+          "bytes": 515,
+          "sha256": "3c78c9541f0e11cb3f39a2e8408ac3068d3e5c78e8cde6253c3ee3636d355c15",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-build-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "MOBILE_BUILD",
+        "result": "FAIL",
+        "observedCommandId": "g1-mobile-build",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-mobile-tests",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-tests/command.json",
+        "bytes": 975,
+        "sha256": "2562b45c7c83db43903bf5abab05fcb510da81262182a13c07eb5245cfcd2da9"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:01.794Z",
+      "finishedAt": "2026-09-09T13:44:02.082Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-tests/stdout.txt",
+          "bytes": 108,
+          "sha256": "866a73b78b05f93336a456cf58e0010c6d7710ce520bda52c99accf0cd83ceb4",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-tests/stderr.txt",
+          "bytes": 1098,
+          "sha256": "a3920dbc8480c4ea9c50223fe9796b26aa667eb4e80ba59b9a954df0b294a317",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-mobile-tests-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-tests-wrapper/command.json",
+        "bytes": 2021,
+        "sha256": "23547bebac9d2c22a9437946b11889fc2deca2416eced97631d8593046795ad3"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:27.957Z",
+      "finishedAt": "2026-09-09T13:46:28.158Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-tests-wrapper/stdout.txt",
+          "bytes": 515,
+          "sha256": "1712a411adb6936af2b3070dd59bd14900ab99e50bcf707f412cbcceec9933a5",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-mobile-tests-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "MOBILE_TESTS",
+        "result": "FAIL",
+        "observedCommandId": "g1-mobile-tests",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-postgres-restart-readback",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback/command.json",
+        "bytes": 1027,
+        "sha256": "93655c68add9f47b538cce2b4ec608aa920e1945d5a2b3c16bb4e3b042c09391"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:06.840Z",
+      "finishedAt": "2026-09-09T13:44:07.211Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback/stdout.txt",
+          "bytes": 121,
+          "sha256": "909aa978e6cf81bdd9db99a1affe64fbee5f3b495db8e4d514f809c95a126bfa",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback/stderr.txt",
+          "bytes": 63,
+          "sha256": "ba6edfaa60c5d90894a64f5a88691ba7c6dea447f264c8b4c2b357627543344c",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-postgres-restart-readback-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback-wrapper/command.json",
+        "bytes": 2125,
+        "sha256": "1f0b34b186b13e66b804e2bc051ba71f5f6c9c2e37a79f8c3d5733b300896758"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:28.223Z",
+      "finishedAt": "2026-09-09T13:46:28.408Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback-wrapper/stdout.txt",
+          "bytes": 554,
+          "sha256": "936afb8d8a43bfc61de749e98a7d691f7cb2fc9fc4e3008d3905258a405cfe24",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-postgres-restart-readback-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "POSTGRES_RESTART_READBACK",
+        "result": "FAIL",
+        "observedCommandId": "g1-postgres-restart-readback",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-queue-validation",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation/command.json",
+        "bytes": 983,
+        "sha256": "4b3a1cf6edd3cbab26c6e260c6b7b0cdb40efe776a05ca9db748cf0eb866c366"
+      },
+      "phase": "G1",
+      "classification": "VALIDATION",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:07.554Z",
+      "finishedAt": "2026-09-09T13:44:08.602Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation/stdout.txt",
+          "bytes": 112,
+          "sha256": "051082e7ac4cb5e2fa8659c6c25e2eda829d87cc1fa87011ab5bec17e4cb5fd0",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation/stderr.txt",
+          "bytes": 226,
+          "sha256": "ed9d50374f19991a27a0988e5fe27fcd430b64c8ccc0afba05e7e2dd3fce603d",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-queue-validation-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation-wrapper/command.json",
+        "bytes": 2053,
+        "sha256": "e586703b4ef09bb57d5f074783ac0815a3460eaad02f6e00fe2b18fced643f0d"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:28.473Z",
+      "finishedAt": "2026-09-09T13:46:28.668Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation-wrapper/stdout.txt",
+          "bytes": 527,
+          "sha256": "5dc5f9f51b813cf4c4f921712679fe7786907e86125ffc54580405806986394d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "QUEUE_VALIDATION",
+        "result": "FAIL",
+        "observedCommandId": "g1-queue-validation",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-root-build",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-build/command.json",
+        "bytes": 967,
+        "sha256": "d348bd16d1f89f6dda5a2477b054bef18f84dc22e35a64965d5075ace2262fc0"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:34.752Z",
+      "finishedAt": "2026-09-09T13:44:35.344Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-build/stdout.txt",
+          "bytes": 400,
+          "sha256": "535f11afaaad465c9ab2ecdde5b052622bae30cfec7655102fa6bc5f8d7e10e5",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-build/stderr.txt",
+          "bytes": 6149,
+          "sha256": "7ea5d42877520f24f98ad090b1f150b04334b447c991d3d439e0a02227cdf278",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-root-build-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-build-wrapper/command.json",
+        "bytes": 2005,
+        "sha256": "6decf0f4737670efab6fa500ab9543b5952015acc33216c2e23bc3aadc75187c"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:28.749Z",
+      "finishedAt": "2026-09-09T13:46:28.935Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-build-wrapper/stdout.txt",
+          "bytes": 509,
+          "sha256": "8b4e0bd401b09e8284091b2160d049fd28fde61ce42170d46b04e57d1b0af4ab",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-build-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "ROOT_BUILD",
+        "result": "FAIL",
+        "observedCommandId": "g1-root-build",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-root-tests",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-tests/command.json",
+        "bytes": 967,
+        "sha256": "eec55528432795e062858af25dc6ca26d56946a9ad74e753eaede2a37736a3a7"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:43:51.950Z",
+      "finishedAt": "2026-09-09T13:43:52.223Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-tests/stdout.txt",
+          "bytes": 106,
+          "sha256": "7c2f81e6f73e3cc5cf0a1407264f998c63e682abfa637f6c97c02f803c12b7ac",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-tests/stderr.txt",
+          "bytes": 1098,
+          "sha256": "a3920dbc8480c4ea9c50223fe9796b26aa667eb4e80ba59b9a954df0b294a317",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-root-tests-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-tests-wrapper/command.json",
+        "bytes": 2005,
+        "sha256": "f6918ba9d4377e7b029ba7a40423f96c61b3758ad4efe94a84a33c5e0ae30100"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:29.001Z",
+      "finishedAt": "2026-09-09T13:46:29.209Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-tests-wrapper/stdout.txt",
+          "bytes": 509,
+          "sha256": "5c80637ce6b943a2b83244377c9b598433652fe3917edd965088b0e52b6b83ec",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-root-tests-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "ROOT_TESTS",
+        "result": "FAIL",
+        "observedCommandId": "g1-root-tests",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g1-synthetic-seed",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-synthetic-seed/command.json",
+        "bytes": 983,
+        "sha256": "443c17de67649c3770afacd99f469cb513b229f9369d9f5adc890fb4c8b3ca73"
+      },
+      "phase": "G1",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:44:06.421Z",
+      "finishedAt": "2026-09-09T13:44:06.766Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-synthetic-seed/stdout.txt",
+          "bytes": 110,
+          "sha256": "221a8fffb03f433ed9a14f5ae12c5c07073ae8cb0452d496a619848e75fa093c",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-synthetic-seed/stderr.txt",
+          "bytes": 63,
+          "sha256": "ba6edfaa60c5d90894a64f5a88691ba7c6dea447f264c8b4c2b357627543344c",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g1-synthetic-seed-wrapper",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-synthetic-seed-wrapper/command.json",
+        "bytes": 2037,
+        "sha256": "f9f21ec4864506615c51de3f59511ab89f4b46d4a86c77ef02a92d9651df79c2"
+      },
+      "phase": "G1",
+      "classification": "PHASE_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:46:29.276Z",
+      "finishedAt": "2026-09-09T13:46:29.449Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-synthetic-seed-wrapper/stdout.txt",
+          "bytes": 521,
+          "sha256": "4f3fc57e2ba48856da0fe3c7f20daae8a8ef00269ecb52872caeb392fde48144",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-synthetic-seed-wrapper/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "wrapper": {
+        "kind": "PHASE_CHECK_RESULT",
+        "phase": "G1",
+        "checkId": "SYNTHETIC_SEED",
+        "result": "FAIL",
+        "observedCommandId": "g1-synthetic-seed",
+        "contractPath": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+        "contractSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+        "variant": "CANONICAL_FROZEN",
+        "wrapperExitIsNotProductPass": true
+      }
+    },
+    {
+      "id": "g2-architecture-security",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-architecture-security/command.json",
+        "bytes": 996,
+        "sha256": "85deb872493bb2d96ff2dcfc08296205a67145d46bdc851a8cfa0786964c3ab2"
+      },
+      "phase": "G2",
+      "classification": "MODEL_AUDIT",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:45:26.327Z",
+      "finishedAt": "2026-09-09T13:46:09.752Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-architecture-security/stdout.txt",
+          "bytes": 2146,
+          "sha256": "5f7b51b700f2f95c1bfe52df610712e6d19389f493a4e04149957020d43b420e",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-architecture-security/stderr.txt",
+          "bytes": 7716,
+          "sha256": "74381d418e8f46acecf2fe252083d2b27da210f1e9b6cd52f13876f901f37114",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g2-canon-provenance",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-canon-provenance/command.json",
+        "bytes": 976,
+        "sha256": "e013d42786085976633be167f55096a888588eac7301701fdd02db08068528e5"
+      },
+      "phase": "G2",
+      "classification": "MODEL_AUDIT",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:45:15.871Z",
+      "finishedAt": "2026-09-09T13:45:57.897Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-canon-provenance/stdout.txt",
+          "bytes": 1782,
+          "sha256": "dce010f2f3a51ce53fe5115855a9fd4441352f99949c832eddbe4ceadef33a6a",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-canon-provenance/stderr.txt",
+          "bytes": 7723,
+          "sha256": "e1b1da90e468a9151b1f1d876bd2f8019068cfaf1d07233a737c013b74842646",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g2-mobile-ux",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-mobile-ux/command.json",
+        "bytes": 948,
+        "sha256": "4eac9823dd7f881dd5112680e4f6f601451f26300fc3422c43ff7a53ea9e221f"
+      },
+      "phase": "G2",
+      "classification": "MODEL_AUDIT",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:45:36.785Z",
+      "finishedAt": "2026-09-09T13:46:19.864Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-mobile-ux/stdout.txt",
+          "bytes": 1849,
+          "sha256": "1c1490f8eb97295fa7739c115fc72d27fb7f21e2aa956e7ef20a0eb98ad42c50",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-mobile-ux/stderr.txt",
+          "bytes": 8078,
+          "sha256": "4f6e509a57acc32f0f4e500ab3442b121c6e8fada65dca138c0ae3a5bd2c3d76",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g2-packet-architecture-security",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-architecture-security/command.json",
+        "bytes": 1024,
+        "sha256": "2d3c12e6cfb4def06c341e985df90342eb93d1a5377b9c6d2d4f28d57ba8ae69"
+      },
+      "phase": "G2",
+      "classification": "MODEL_AUDIT",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:51:22.209Z",
+      "finishedAt": "2026-09-09T13:53:17.722Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-architecture-security/stdout.txt",
+          "bytes": 10940,
+          "sha256": "fb42c6a53b71f9368995aff28c13974000bc85639fef8e175ebae8fa497c2ca7",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-architecture-security/stderr.txt",
+          "bytes": 133606,
+          "sha256": "677dc97a264e11464fae4045fe064a7a336ebbde74a1bb83ec71e0e047ead7e6",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g2-packet-canon-provenance-r0b",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance-r0b/command.json",
+        "bytes": 1020,
+        "sha256": "f211d9095c911d1da9e4d46968b962c3b7a78b945aba16ae45a1a8918194b0d4"
+      },
+      "phase": "G2",
+      "classification": "MODEL_AUDIT",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:55:35.113Z",
+      "finishedAt": "2026-09-09T13:57:41.112Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance-r0b/stdout.txt",
+          "bytes": 13279,
+          "sha256": "6dd1fad512edb6b0e85972beaefb12dd03dc3ad3da760a0541476ff73050240b",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance-r0b/stderr.txt",
+          "bytes": 468530,
+          "sha256": "7024c2ad11e6a50937e0d78a873e4d2a89ef225babcc41602ccf5d16cb981dda",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g2-packet-mobile-ux",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-mobile-ux/command.json",
+        "bytes": 976,
+        "sha256": "c50c1b53e6b7cbe7eb507774786841891330018b94b404645a4f00610e44087c"
+      },
+      "phase": "G2",
+      "classification": "MODEL_AUDIT",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:51:32.659Z",
+      "finishedAt": "2026-09-09T13:52:59.975Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-mobile-ux/stdout.txt",
+          "bytes": 9707,
+          "sha256": "5e6a27289f1a8eddbc57001da6cb04cb8f1aebf55944b948216d2de3fcfb3dde",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-mobile-ux/stderr.txt",
+          "bytes": 45841,
+          "sha256": "a53798107360e44e1e62c295ce6c9da816373f88f52bf895f699b3f4ad93d99c",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g2-packet-product-coverage",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-product-coverage/command.json",
+        "bytes": 1004,
+        "sha256": "8c504c730ac5e9c75c0977840d3e9a419f9fcf050883096e8e640844ecd0678f"
+      },
+      "phase": "G2",
+      "classification": "MODEL_AUDIT",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:51:43.292Z",
+      "finishedAt": "2026-09-09T13:54:29.742Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-product-coverage/stdout.txt",
+          "bytes": 19520,
+          "sha256": "34f45c3d6140edea40fbdfe5abe5fd70d49fb871e50299ddf0f356501c2111d9",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-product-coverage/stderr.txt",
+          "bytes": 168683,
+          "sha256": "0139ebf3d58539341d7b6938164a83a99350b03981fb51ec7659247df81e6357",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g2-product-coverage",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-product-coverage/command.json",
+        "bytes": 976,
+        "sha256": "82ef5c9d2e805fe598d87e5921d3dcfba79bbd08f309be191130b5da108f54cc"
+      },
+      "phase": "G2",
+      "classification": "MODEL_AUDIT",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:45:47.256Z",
+      "finishedAt": "2026-09-09T13:46:37.788Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-product-coverage/stdout.txt",
+          "bytes": 1922,
+          "sha256": "895f6d49fb86731e47ca2dce6df2b2d327f82c66a8ec132ca64f1c7b951da1b9",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-product-coverage/stderr.txt",
+          "bytes": 8276,
+          "sha256": "7107f35e28f161ce4d735e7cebafa8a6a04e9a48f0e3fa2870697dc713de8332",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-arch-after",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-after/command.json",
+        "bytes": 1031,
+        "sha256": "70adb5d77ad8195f56e1b8c61aac20a11aab3f1002490a347fc9f572814ae196"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:01:37.268Z",
+      "finishedAt": "2026-09-09T14:01:38.428Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-after/stdout.txt",
+          "bytes": 639,
+          "sha256": "3106c08f95febda22f76a0886af0d0bf529257b6e72f208d6dafd0d774845bdb",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-after/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-arch-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-before/command.json",
+        "bytes": 1034,
+        "sha256": "2f69b609a93395570ec6f5188fbf0fcc5bc4af53a3b275cc4dfe8f2c349d776c"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:58:49.553Z",
+      "finishedAt": "2026-09-09T13:58:50.711Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-before/stdout.txt",
+          "bytes": 1912,
+          "sha256": "37e8b1ae0250cee6547f913fac29f090d07dd033e1b0156a864a57130bc5cc04",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-before/stderr.txt",
+          "bytes": 5365,
+          "sha256": "be4084999b6ead45a5dd41beb3c2bc279bee1a375f9f7d8e464b0591e6133b02",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-architecture-correction-review",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-architecture-correction-review/command.json",
+        "bytes": 1103,
+        "sha256": "874bf405f1b42b78111e54f76bad0a4e3bb20949c19aab25f8bc27ce0f0df122"
+      },
+      "phase": "G3",
+      "classification": "MODEL_CORRECTION_REVIEW",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:09:10.531Z",
+      "finishedAt": "2026-09-09T14:13:33.956Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-architecture-correction-review/stdout.txt",
+          "bytes": 5004,
+          "sha256": "a9457761f900f2b3d1e8a54e5d3f3fba7a322631f1f35614b4d833311942ae42",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-architecture-correction-review/stderr.txt",
+          "bytes": 95306,
+          "sha256": "5e06eaaf0657e2b03aa7fb0b4d5b8c9e25f63b344e3e51ca7216b50c2dc67751",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-audit-packet-schema",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-audit-packet-schema/command.json",
+        "bytes": 988,
+        "sha256": "2c87d224bd503dfdb989865a08f7299102405579690e8dfc3e646f0e2808439c"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:06:46.947Z",
+      "finishedAt": "2026-09-09T14:06:48.552Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-audit-packet-schema/stdout.txt",
+          "bytes": 150,
+          "sha256": "aed90ce42a67794b74cdefeb663a781b35accaf9b15f707b200cf09b8675d73c",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-audit-packet-schema/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-dst-after",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-dst-after/command.json",
+        "bytes": 970,
+        "sha256": "1553143851a72c57474ed5e9ff8a4307cd1673bd38013f922f4118044f94e2e2"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:57:37.341Z",
+      "finishedAt": "2026-09-09T13:57:42.020Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-dst-after/stdout.txt",
+          "bytes": 2247,
+          "sha256": "ce91ee6286a05bc7b6f05ebe65e42bb36c2d7020a79a6fbc7c058487bbd6e548",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-dst-after/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-dst-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-dst-before/command.json",
+        "bytes": 973,
+        "sha256": "ec27bf43839036277f51b30725e1d3036a2caef48678f10ec6c2150bb29887f7"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:56:37.903Z",
+      "finishedAt": "2026-09-09T13:56:42.813Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-dst-before/stdout.txt",
+          "bytes": 3570,
+          "sha256": "bb2512dfa51c1069e504ef54079c95b2010514b9cb4da9259fb9680b4340368b",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-dst-before/stderr.txt",
+          "bytes": 82,
+          "sha256": "bdcc8c55e7f5e3cda603048adfc6bf6e81b56923a072bd6b76137ad9bbf05fef",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-g7-final-preparation",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-g7-final-preparation/command.json",
+        "bytes": 989,
+        "sha256": "2dda7bc5f86d694b4016a056fd90f9005d06ff87fe4752a95a8e3d1841c52749"
+      },
+      "phase": "G3",
+      "classification": "VALIDATION",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:16:07.664Z",
+      "finishedAt": "2026-09-09T14:16:08.179Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-g7-final-preparation/stdout.txt",
+          "bytes": 154,
+          "sha256": "3acd14dca681e76cfbcb46e40f556a3ce1d955c4b51d82de596454918a01463d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-g7-final-preparation/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-g7-final-preparation-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-g7-final-preparation-r2/command.json",
+        "bytes": 998,
+        "sha256": "3d32f8d571f008617d57bae5c914f3fea15f82fed06bff713868c4541fdfcb73"
+      },
+      "phase": "G3",
+      "classification": "VALIDATION",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:21:38.080Z",
+      "finishedAt": "2026-09-09T14:21:38.360Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-g7-final-preparation-r2/stdout.txt",
+          "bytes": 154,
+          "sha256": "348ebc3bf40236bc7e8552a6b16f09b2f38e31a5da3d6662dcde7935881af781",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-g7-final-preparation-r2/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-next-entrypoints-after",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-after/command.json",
+        "bytes": 1434,
+        "sha256": "1b616b9fa370340a40f19c7711a2b80bb3eb973dedfe6ccc3009fbb4a952831b"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:19:28.609Z",
+      "finishedAt": "2026-09-09T14:19:33.000Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-after/stdout.txt",
+          "bytes": 1833,
+          "sha256": "d26f6681bf84c5100b03c472af273d970bb43c62cd54ff8af305df9a7a97b57d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-after/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-next-entrypoints-after-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-after-r2/command.json",
+        "bytes": 1443,
+        "sha256": "6fdb016e65f9071463c7053e431f0b507dcd39717f0fa6a2162cf01546849956"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:20:47.687Z",
+      "finishedAt": "2026-09-09T14:20:51.947Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-after-r2/stdout.txt",
+          "bytes": 1833,
+          "sha256": "881348bedd2d05520e193bbffaa1624d3c7b24631353475c0c41067d569bff3b",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-after-r2/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-next-entrypoints-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-before/command.json",
+        "bytes": 1039,
+        "sha256": "c38067b9a91f5f8da5aa9f48ba83667e3e9617b95f658717b6bf324c1023420e"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:18:44.305Z",
+      "finishedAt": "2026-09-09T14:18:46.419Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-before/stdout.txt",
+          "bytes": 4990,
+          "sha256": "d904804bddbaad67863dc079835a4e3c0cb1f9a3fcc54cc10024df685532c849",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-before/stderr.txt",
+          "bytes": 32929,
+          "sha256": "1932e5ad9e57d677f5397861972acd91538edd62823f4106c64e5ae6f270fb20",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-next-entrypoints-cli",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli/command.json",
+        "bytes": 972,
+        "sha256": "f635945d66ec13d041242e1f500851b8cb3561cec506a066cb9d122a6310291f"
+      },
+      "phase": "G3",
+      "classification": "VALIDATION",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:19:57.808Z",
+      "finishedAt": "2026-09-09T14:20:00.717Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli/stdout.txt",
+          "bytes": 54,
+          "sha256": "04a9559288a1fb548824990ee115004e3f6b08fcb87d40e70cc700215a6dae9b",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-next-entrypoints-cli-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli-r2/command.json",
+        "bytes": 981,
+        "sha256": "bdf633388b7b5fcf408797884ce30300eb3014780ce860f7f2a8087563275719"
+      },
+      "phase": "G3",
+      "classification": "VALIDATION",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:20:52.348Z",
+      "finishedAt": "2026-09-09T14:20:54.589Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli-r2/stdout.txt",
+          "bytes": 54,
+          "sha256": "7c52bba22042cee8754c6c2709368a867e1a6c18536948b227a8cbd9e27b6b48",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli-r2/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-next-entrypoints-lint",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-lint/command.json",
+        "bytes": 1267,
+        "sha256": "0048fb180f422830b1624982de081e3410fa80b7fc861c34c9285739dc386392"
+      },
+      "phase": "G3",
+      "classification": "VALIDATION",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:19:57.844Z",
+      "finishedAt": "2026-09-09T14:20:02.520Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-lint/stdout.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-lint/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-next-entrypoints-typecheck",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-typecheck/command.json",
+        "bytes": 963,
+        "sha256": "f44d842788472001f758c3aa1b643333ef97a44b9645a76ec5b905d016adb8b7"
+      },
+      "phase": "G3",
+      "classification": "VALIDATION",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:19:57.844Z",
+      "finishedAt": "2026-09-09T14:20:09.843Z",
+      "expectedExitCode": 0,
+      "exitCode": 2,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-typecheck/stdout.txt",
+          "bytes": 2763,
+          "sha256": "4616408c97114cf5c470be5d776f406abe0f8bfa22cea87f88909cf1d6575c7c",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-typecheck/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-parent-patch-review",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review/command.json",
+        "bytes": 1074,
+        "sha256": "c96ab79c6e39a774c2387b9fb2a97899134f458666bbb6935c68a3810c00018c"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:13:09.361Z",
+      "finishedAt": "2026-09-09T14:13:12.435Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review/stdout.txt",
+          "bytes": 12563,
+          "sha256": "117e39c2fbdddd3d757de3de3abd91b015fe2c7eeb94264c2d511baaa18b3455",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-parent-patch-review-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review-r2/command.json",
+        "bytes": 1083,
+        "sha256": "db24795ec0172e9dbd069d06046c639ec7de7c0079ac0e0f25ffbfc0ef386a35"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:16:41.079Z",
+      "finishedAt": "2026-09-09T14:16:43.804Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review-r2/stdout.txt",
+          "bytes": 12390,
+          "sha256": "98f3dbcb31fc9ef18b6ef38bcd3dfc304259b0b91cd6930130b7e33b9c31da0a",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review-r2/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-parent-patch-review-r3",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review-r3/command.json",
+        "bytes": 1083,
+        "sha256": "60b76f18097283f918668524396b9702892830ef9853220b2db9a19d3b544148"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:17:20.654Z",
+      "finishedAt": "2026-09-09T14:17:23.352Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review-r3/stdout.txt",
+          "bytes": 12384,
+          "sha256": "03cce49a2e19bc54b27b05a6b2d424d76884a5b5af8eb554fa1c787d16e9094d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-patch-review-r3/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-parent-regressions",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-regressions/command.json",
+        "bytes": 1088,
+        "sha256": "0758d783748ee23d4348285940c61dadc6330e966657d8a60169ab83e78bffd2"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:06:49.204Z",
+      "finishedAt": "2026-09-09T14:06:50.638Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-regressions/stdout.txt",
+          "bytes": 636,
+          "sha256": "10ab00654111d7146e51644867f413fc32a446a01828053f811aabbbd4026eb4",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-parent-regressions/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-portability-reachability-tests",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-portability-reachability-tests/command.json",
+        "bytes": 1727,
+        "sha256": "a96f6b0045663098f3a54751b995d9243cf8233edfb5fe0d126e9881e79e1b18"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:00:51.152Z",
+      "finishedAt": "2026-09-09T14:00:56.376Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-portability-reachability-tests/stdout.txt",
+          "bytes": 20143,
+          "sha256": "e6b8fba1d5c582c236e14c0208cff145f3c48ba83a693638f9267cdcf648eb7d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-portability-reachability-tests/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-portability-reachability-tests-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-portability-reachability-tests-r2/command.json",
+        "bytes": 1736,
+        "sha256": "64d30ecc622f04874cecbeb1ba722d3741fe7d5c0231f5d598c6a6273a1ad9c1"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:01:24.939Z",
+      "finishedAt": "2026-09-09T14:01:28.871Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-portability-reachability-tests-r2/stdout.txt",
+          "bytes": 13775,
+          "sha256": "fd780b83d23ea8cd7ae10ffb32ace6a0d78b3ed6e1489e456c77e4324e4d09a5",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-portability-reachability-tests-r2/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-product-copy-after",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-after/command.json",
+        "bytes": 1108,
+        "sha256": "b18a3d401f608afc5d6b03c8aa7729d7c7b7616feb784939361dbad0125158a5"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:09:39.785Z",
+      "finishedAt": "2026-09-09T14:09:41.585Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-after/stdout.txt",
+          "bytes": 4044,
+          "sha256": "fc2eb1c3897e1f2874c0b79834a3a903f8047b333cffbd08e945fc592a6302fe",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-after/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-product-copy-after-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-after-r2/command.json",
+        "bytes": 1165,
+        "sha256": "8c3f2f40aede029d11ee2ca761a4b1deb097853932bf3cee7e31e5ac28eb5c81"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:10:18.169Z",
+      "finishedAt": "2026-09-09T14:10:20.753Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-after-r2/stdout.txt",
+          "bytes": 6981,
+          "sha256": "f96529a79d2e5bbde292bb8ea31c277394ecacb3698291ce78be6422742c949d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-after-r2/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-product-copy-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-before/command.json",
+        "bytes": 1111,
+        "sha256": "1d4c7a972a5dffe2ca8684095eba4db5d1d37af0d6fae6c3728e0b85d504077b"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:07:54.971Z",
+      "finishedAt": "2026-09-09T14:07:57.331Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-before/stdout.txt",
+          "bytes": 7668,
+          "sha256": "009108d62ffc1292920e8910f9ec2793fd29d27e9f20d3d67fa1e9763e162e08",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-product-copy-before/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-db-diagnostic-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-1/command.json",
+        "bytes": 979,
+        "sha256": "275f3085fb096701a8e873855219fea3d3592c050ce8dec876caada8bbeda15b"
+      },
+      "phase": "G3",
+      "classification": "SETUP",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:47:55.671Z",
+      "finishedAt": "2026-09-09T13:47:57.522Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-1/stdout.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-1/stderr.txt",
+          "bytes": 1142,
+          "sha256": "d26ba1c57ba138833f7212f09a35fcaf6ceba18afdffe526f6f3193b344e4b3f",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-db-diagnostic-2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-2/command.json",
+        "bytes": 979,
+        "sha256": "8fd66cd10979fe75488162c7eda8359f5c3d41f3d5c25269d18bc7effc14d4aa"
+      },
+      "phase": "G3",
+      "classification": "SETUP",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:48:45.507Z",
+      "finishedAt": "2026-09-09T13:48:45.962Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-2/stdout.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-2/stderr.txt",
+          "bytes": 1350,
+          "sha256": "3d7ff333c592cf7dc01fa72b7148174846f05682fb651fe77f824b468bc96178",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-db-diagnostic-3",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-3/command.json",
+        "bytes": 979,
+        "sha256": "2dda66a737043422211e2bed6453c23594207635e1ae2f20d95b152d44f1d895"
+      },
+      "phase": "G3",
+      "classification": "SETUP",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:49:28.794Z",
+      "finishedAt": "2026-09-09T13:49:32.154Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-3/stdout.txt",
+          "bytes": 309,
+          "sha256": "45a43b92f666f1517d5e238345ac2be71b0ee5e28bc2ee6cd59536002dc13928",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-diagnostic-3/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-db-restart-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-restart-1/command.json",
+        "bytes": 1004,
+        "sha256": "1b13594733db7af85c7226f9a51548b8507433ffd262a1ee9eb97b8f0f5ab39b"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:53:05.041Z",
+      "finishedAt": "2026-09-09T13:53:57.181Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-restart-1/stdout.txt",
+          "bytes": 746,
+          "sha256": "d1646bc46efa26bc1a906f3cf4eb37f134878af972c73caff5b760df53f20d5a",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-restart-1/stderr.txt",
+          "bytes": 108,
+          "sha256": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-db-seed-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-seed-1/command.json",
+        "bytes": 984,
+        "sha256": "c6aa86e309f29bf638b12bae8a8f12be4600cb43f5e0d4592f08ad351802f8a1"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:54:02.331Z",
+      "finishedAt": "2026-09-09T13:54:52.759Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-seed-1/stdout.txt",
+          "bytes": 590,
+          "sha256": "018bb0bb61bfce3834336fd7e8fd23671672a1ccbb4acbc24d12e88ff44acd35",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-seed-1/stderr.txt",
+          "bytes": 108,
+          "sha256": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-db-upgrade-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-upgrade-1/command.json",
+        "bytes": 996,
+        "sha256": "c6ae671e5f61c0ff16b0ef36342ad625115fa4f68025a594d40f6e987e6262a9"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:52:54.578Z",
+      "finishedAt": "2026-09-09T13:53:44.632Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-upgrade-1/stdout.txt",
+          "bytes": 777,
+          "sha256": "500896007a1636adb62fa632f351ed5c23c839373561cbf36cb756b1460a403e",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-db-upgrade-1/stderr.txt",
+          "bytes": 108,
+          "sha256": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-harness-selftest-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-harness-selftest-1/command.json",
+        "bytes": 1000,
+        "sha256": "c46e71cd59ab6c29550dda57c67dba1c2f7e2e23344c3a64ac62a4b99c939d4b"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:49:55.350Z",
+      "finishedAt": "2026-09-09T13:49:55.943Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-harness-selftest-1/stdout.txt",
+          "bytes": 524,
+          "sha256": "5ed46dfa673bdcf3e8576214a9128c7d8bbe2cebbcd2bf0829e0b12892f2ab7b",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-harness-selftest-1/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-kit",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-kit/command.json",
+        "bytes": 955,
+        "sha256": "785670c7c514912d9c0d337d51ae311233738228d2613652033364abb9170bf0"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:47:24.835Z",
+      "finishedAt": "2026-09-09T13:47:25.580Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-kit/stdout.txt",
+          "bytes": 355,
+          "sha256": "e8f64eeb5f19958ae720f23f9a166ee479a36e0b37d560555b9d4fff00fd2bde",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-kit/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-migration-clean-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-1/command.json",
+        "bytes": 1009,
+        "sha256": "13c67d9d8f1b47432d533ab0c1415e2f9c97804e3537a805e3372988f3bb3a0e"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:49:56.011Z",
+      "finishedAt": "2026-09-09T13:50:01.053Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-1/stdout.txt",
+          "bytes": 339,
+          "sha256": "a2b9098d16d18771e29bb37c9980ee89a7f11190158c661e88ebc40a29d5ad8d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-1/stderr.txt",
+          "bytes": 126,
+          "sha256": "c2e8c74da17fe0f2275f6e4cb0d1f38b9078d7a6fe2d8cb231fd604fb47c635b",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-migration-clean-2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-2/command.json",
+        "bytes": 1009,
+        "sha256": "c4fab67bd7a740a6f29ff97dace7d727da62b1923d28c6727806013867577852"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:50:36.813Z",
+      "finishedAt": "2026-09-09T13:50:41.559Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-2/stdout.txt",
+          "bytes": 339,
+          "sha256": "a03e3b57dd63d8c9363bfb68c257cf4818d149d48fd15f8b2f9d26c4fbbf6525",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-2/stderr.txt",
+          "bytes": 232,
+          "sha256": "b35f98d4c4b9d53d3e0f84864f56d93e9fc7df8b954ed83dc62c23ddc210ea3e",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-migration-clean-3",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-3/command.json",
+        "bytes": 1009,
+        "sha256": "90bf460352e05126ab5f1cf8a074bc8a8290a3c61b7e7a4dc741116de6c9564e"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:51:36.632Z",
+      "finishedAt": "2026-09-09T13:52:24.343Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-3/stdout.txt",
+          "bytes": 593,
+          "sha256": "cb93a02a7052ce82ee3ce0a474dbfbe3fd87c4713e488e3e1881913db0558906",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-migration-clean-3/stderr.txt",
+          "bytes": 108,
+          "sha256": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-mobile-build-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-mobile-build-1/command.json",
+        "bytes": 997,
+        "sha256": "9df2511581a8125885a661978f916f33f503dc27c00d5004e3db8d484c515970"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:54:47.402Z",
+      "finishedAt": "2026-09-09T13:57:53.289Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-mobile-build-1/stdout.txt",
+          "bytes": 5958,
+          "sha256": "834f67dffdd76fe121f064f7dbefebf01c320ee997a55bf2fe2b8b874064cda4",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-mobile-build-1/stderr.txt",
+          "bytes": 246,
+          "sha256": "4c02f56caed59ddf5b01f6fb172a38afa59b43e91b4005a908f6fa8e04c817ce",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-mobile-tests",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-mobile-tests/command.json",
+        "bytes": 991,
+        "sha256": "ad0b75548fe8a93a854f641183755bed517a5bf4ca0306df78faa2a6848e4dae"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:47:36.619Z",
+      "finishedAt": "2026-09-09T13:47:49.805Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-mobile-tests/stdout.txt",
+          "bytes": 73843,
+          "sha256": "7affa3576c04435f44fce2416a8cf7c2f4af7f49217ca7e0d51cb4db3c74c2ee",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-mobile-tests/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-root-build-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-build-1/command.json",
+        "bytes": 989,
+        "sha256": "e5138d4f1a39b2e89ed847ddbcb63af4150f40fd5d3d04ac5da2848301944737"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:54:36.924Z",
+      "finishedAt": "2026-09-09T13:56:58.414Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-build-1/stdout.txt",
+          "bytes": 1361,
+          "sha256": "3926876dd6b089436bd4c5d5c41744d9d634ad88d2cfbed7ccd3b12603a95a6a",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-build-1/stderr.txt",
+          "bytes": 2086,
+          "sha256": "147e8be941c7d84c880289135d69a30a4eb453889eeffdf367f0b77519513bbf",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-root-build-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-build-r2/command.json",
+        "bytes": 992,
+        "sha256": "c0dcc2132493a891144d519719e7b246cad479cc832135e56aa52b37430fea9a"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:18:28.148Z",
+      "finishedAt": "2026-09-09T14:21:04.374Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-build-r2/stdout.txt",
+          "bytes": 5497,
+          "sha256": "e2d20b526bc7a5d22d7becf369b7d7397b7309390beba037ae546f86a3270a42",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-build-r2/stderr.txt",
+          "bytes": 1257,
+          "sha256": "66f946cb957b3c2ee3a1f0fd5be4719fe3a719d1b90a83e15051317746510a4e",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-root-tests",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests/command.json",
+        "bytes": 983,
+        "sha256": "de259c7edb5e55269923a4ac41ddb2b15b4ac8436c1b791b163c0542fb06e017"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:47:25.692Z",
+      "finishedAt": "2026-09-09T13:48:00.310Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests/stdout.txt",
+          "bytes": 920429,
+          "sha256": "7b7f47fa0bb38e695766ffbf66b46c17f727ffa1860503f3e05b8be4a55145a9",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests/stderr.txt",
+          "bytes": 1540,
+          "sha256": "83e660439e8d1403e68fd98d45619f62716fc66be791fceeda259e6582a7d1f4",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-root-tests-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests-r2/command.json",
+        "bytes": 992,
+        "sha256": "ac169bcbdea7d92ed431bb56215072daf3fc4359ae5a3e77076816f9abe00ddd"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:13:37.587Z",
+      "finishedAt": "2026-09-09T14:14:02.974Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests-r2/stdout.txt",
+          "bytes": 931096,
+          "sha256": "133fa78159be4c321f24225bd6dac893b1b16ed70810ca42c3bcb874c6f73c80",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests-r2/stderr.txt",
+          "bytes": 82,
+          "sha256": "bdcc8c55e7f5e3cda603048adfc6bf6e81b56923a072bd6b76137ad9bbf05fef",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-r0b-root-tests-r3",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests-r3/command.json",
+        "bytes": 992,
+        "sha256": "fd523c2a2a53864c17344b6f7b64f3f4e7a4bdac8b5f8a00f9be54784b601204"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:15:36.465Z",
+      "finishedAt": "2026-09-09T14:16:09.304Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests-r3/stdout.txt",
+          "bytes": 929225,
+          "sha256": "fe42745ff5dfa58d342654548b66a49684b776718dd939960d2ff34ca3c99a1b",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r0b-root-tests-r3/stderr.txt",
+          "bytes": 1065,
+          "sha256": "917bbd91747f49782a93999202cdef3761ca7bcf0274ad170307c3f3200ee105",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-readiness-correction-lint-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-lint-1/command.json",
+        "bytes": 1355,
+        "sha256": "12e88167be052d4a8dc68876818a4bf900552a04c52df85e8d2c5c354dcbb741"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:11:32.693Z",
+      "finishedAt": "2026-09-09T14:11:35.376Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-lint-1/stdout.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-lint-1/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-readiness-correction-review",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-review/command.json",
+        "bytes": 1099,
+        "sha256": "f34f7fb81c68b41af6c500b099535bafdc566307dff2ea44128481a52bf2ced9"
+      },
+      "phase": "G3",
+      "classification": "MODEL_CORRECTION_REVIEW",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:13:27.400Z",
+      "finishedAt": "2026-09-09T14:17:57.250Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-review/stdout.txt",
+          "bytes": 5938,
+          "sha256": "384542a5b92fb0774fdc29849bcf5b802cd81fa8f6d9f145568669db4cabf73e",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-review/stderr.txt",
+          "bytes": 89295,
+          "sha256": "958d6523428ecc55a3a86d80478e2f08ab73578aa38a8ee1fb83156e4dc12622",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-readiness-correction-tests-1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-tests-1/command.json",
+        "bytes": 1128,
+        "sha256": "147d6fb0d531a9d753fd5be0cce91ff79b23617c50ae3adce56ebe70394f751a"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:07:05.866Z",
+      "finishedAt": "2026-09-09T14:07:06.638Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-tests-1/stdout.txt",
+          "bytes": 759,
+          "sha256": "946be6bf7ecc0041949f8a102838c3a4a357dc1c971b82160625fbfcb138ed8f",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-tests-1/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-readiness-correction-tests-2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-tests-2/command.json",
+        "bytes": 1128,
+        "sha256": "57a424494cbb3e07b580eeb9d59423164f6621a4b38ea5e9148eb5a3853d3a6c"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:10:57.717Z",
+      "finishedAt": "2026-09-09T14:10:58.693Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-tests-2/stdout.txt",
+          "bytes": 760,
+          "sha256": "ab17d272834392418c5ace8a655185cefd987d9749c81c711f7fc7ec50bd7933",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-tests-2/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-readiness-reproduction-after",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-reproduction-after/command.json",
+        "bytes": 983,
+        "sha256": "648eebe897672075582dc9fcda57a5c20fd4660499f93f665d5985e95f236cb0"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:10:59.049Z",
+      "finishedAt": "2026-09-09T14:10:59.268Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-reproduction-after/stdout.txt",
+          "bytes": 466,
+          "sha256": "1188bcf011824a2b3cdca7722df8dad9a0a65b8f551525005e89c9ad6ed785b7",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-reproduction-after/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-readiness-reproduction-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-reproduction-before/command.json",
+        "bytes": 986,
+        "sha256": "082915348bfade3b89d81bab37eae94c1bd7c6e886030ec05dfbb2a0a10746f5"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:02:29.989Z",
+      "finishedAt": "2026-09-09T14:02:30.232Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-reproduction-before/stdout.txt",
+          "bytes": 555,
+          "sha256": "304cd39208075c3c6bd73c40d24e0987cdb5ef212b72b250b69ad9c76afe6c3f",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-reproduction-before/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-readiness-review-after",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-review-after/command.json",
+        "bytes": 1204,
+        "sha256": "0fda857574decd1814a8d23a3fe37e2a3f165fc707911651b77ff80090cbfd00"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:22:16.494Z",
+      "finishedAt": "2026-09-09T14:22:18.442Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-review-after/stdout.txt",
+          "bytes": 1140,
+          "sha256": "02d70af69c6e22e32425ded3aadc879ad20f457a0acea54c233a1a2e832cddd5",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-review-after/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-readiness-review-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-review-before/command.json",
+        "bytes": 1001,
+        "sha256": "1b13e88ac6c1c85cb1aae5698b8e3253bd202425f133d2d1dbcbf2b02a65dbaa"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:21:11.172Z",
+      "finishedAt": "2026-09-09T14:21:11.880Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-review-before/stdout.txt",
+          "bytes": 1159,
+          "sha256": "2a34e7330fc9a56a62fd8d92101bdbcde5c38002f397a4e6cee83c112fd1cf7d",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-review-before/stderr.txt",
+          "bytes": 32249,
+          "sha256": "9829cd434a7198cae7d14b480a83c2221a7e7072aa2485a7de620772d3f60df5",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-release-binding-correction-review",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-binding-correction-review/command.json",
+        "bytes": 1118,
+        "sha256": "d371d273b2332ce4b3a0719d9d33a922120a7319bdfe5e51f576a035c8092286"
+      },
+      "phase": "G3",
+      "classification": "MODEL_CORRECTION_REVIEW",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:18:38.367Z",
+      "finishedAt": "2026-09-09T14:21:46.313Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-binding-correction-review/stdout.txt",
+          "bytes": 5253,
+          "sha256": "173b6383d349e009b8da69014f552adbe00a44e1d1b65236eb2d466477f5f638",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-binding-correction-review/stderr.txt",
+          "bytes": 60839,
+          "sha256": "290cd3deeb4895d692201e3bb21e65396bcf14c768a700236a46ac896f89f380",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-release-manifest-generation",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-manifest-generation/command.json",
+        "bytes": 1003,
+        "sha256": "7cb268a0f98eb2e0315b9a308d5abc8c707d26f8b40ff8652e84913a43727cc5"
+      },
+      "phase": "G3",
+      "classification": "VALIDATION",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:17:56.431Z",
+      "finishedAt": "2026-09-09T14:17:58.404Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-manifest-generation/stdout.txt",
+          "bytes": 6348,
+          "sha256": "7c6247874557721c0e2821665f2c06417a68cd92c6aaa30abef98aa98347adf8",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-manifest-generation/stderr.txt",
+          "bytes": 1281,
+          "sha256": "54e9d21a9819bf2250669d49e0e5ca42cd53848c69086287199052bb452cb542",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-release-source-binding-tests",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-source-binding-tests/command.json",
+        "bytes": 1203,
+        "sha256": "0a5ab044e3ec4f07b6e50d0d416b9e1b24aa89f974238ca0aa5315ddafa0b7d1"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:15:44.043Z",
+      "finishedAt": "2026-09-09T14:15:48.060Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-source-binding-tests/stdout.txt",
+          "bytes": 7206,
+          "sha256": "ce7d5d9cc2fd15d4147e70d527aa95d4d93dbe2c58e545399df8bfc6e260b474",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-source-binding-tests/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-runtime-clock-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-before/command.json",
+        "bytes": 1058,
+        "sha256": "ffda479e356d18db5986511420570a869f300d07560b43285f8212be0d209a75"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:22:08.661Z",
+      "finishedAt": "2026-09-09T14:22:09.816Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-before/stdout.txt",
+          "bytes": 1400,
+          "sha256": "c435697a07ca1dcf86b8d40aba3b06d8d333af039107e7bb93fc32234ada0414",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-before/stderr.txt",
+          "bytes": 6867,
+          "sha256": "2c94adcbf0bbcc8dddc2f6a8b0f0258783ad9ad59826398b49a28cabee844874",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-runtime-clock-before-r1",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-before-r1/command.json",
+        "bytes": 1067,
+        "sha256": "d2ca621e46de9f5de44861ae2163654facbc06f158cf004e444f891d36e6ce68"
+      },
+      "phase": "G3",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+      "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+      "startedAt": "2026-09-09T14:22:38.349Z",
+      "finishedAt": "2026-09-09T14:22:39.524Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-before-r1/stdout.txt",
+          "bytes": 1383,
+          "sha256": "f7530a30019b39b9cfa013357be58ce9c1c18fc2a843a411c5afc5ba7d3311e0",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-runtime-clock-before-r1/stderr.txt",
+          "bytes": 5490,
+          "sha256": "b93d0217fd4d249c2a1a754272e68371a0429b0f38b2bae668c6aa1695c7c0c6",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-source-graph-profile-after",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-after/command.json",
+        "bytes": 1090,
+        "sha256": "554f8994c5bb869931e16b3b054bd22bbc4bd0a57bc2535b6d2a1857557bdef0"
+      },
+      "phase": "G3",
+      "classification": "OTHER",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:58:25.146Z",
+      "finishedAt": "2026-09-09T13:58:30.023Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-after/stdout.txt",
+          "bytes": 3073,
+          "sha256": "7225f255e3247672cf407a1abfbe5a22f15cf0f49a5bdfcf9c52f5a4c70cbb8b",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-after/stderr.txt",
+          "bytes": 506,
+          "sha256": "a18fcd512f97a73514ab5cc7ab94fe6fb05f24d779ac602f189e409bf6c9e630",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-source-graph-profile-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-before/command.json",
+        "bytes": 1093,
+        "sha256": "2472695a5c1eb24ffa9014f2ffb5b89586248e9acd0dd5d2c4df06f4047c1319"
+      },
+      "phase": "G3",
+      "classification": "OTHER",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:54:48.945Z",
+      "finishedAt": "2026-09-09T13:54:51.858Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-before/stdout.txt",
+          "bytes": 3079,
+          "sha256": "79325ea24ea5922f17e7f6fed5924169d10c294a128cd0e65c2c5789c8696896",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-before/stderr.txt",
+          "bytes": 506,
+          "sha256": "0f31d0ef63597eead15a5e6c2f235a27bb5e17320bb5797e8bb5924ff9553d5b",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-source-graph-profile-paired",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-paired/command.json",
+        "bytes": 1141,
+        "sha256": "fafdea320ef8d4b1153f395ef1dc05d7c04a2ba9cae064adec52a1aedacf4dcf"
+      },
+      "phase": "G3",
+      "classification": "OTHER",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:59:44.812Z",
+      "finishedAt": "2026-09-09T13:59:55.824Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-paired/stdout.txt",
+          "bytes": 4012,
+          "sha256": "7929752babe2ce4230c4d9241c26e19e85054b5032bef7703509611a7cf660d5",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-paired/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g3-source-graph-profile-paired-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-paired-r2/command.json",
+        "bytes": 1150,
+        "sha256": "a6b94d38112865af062d317e05f00009b852a68d4429065d77769284758b47a4"
+      },
+      "phase": "G3",
+      "classification": "OTHER",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:01:43.105Z",
+      "finishedAt": "2026-09-09T14:01:53.144Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-paired-r2/stdout.txt",
+          "bytes": 3983,
+          "sha256": "448ef9a2fa3f0c48734e2bd58ccf13fc49b36ec1bc8c77b955c8bc47066c75e2",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-source-graph-profile-paired-r2/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g5-corpus-frozen-verification",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-corpus-frozen-verification/command.json",
+        "bytes": 1004,
+        "sha256": "00ccfac896c8b7ac79f16e9e44073a08f0f9abd5b98b9c06a12612bcc71dacbf"
+      },
+      "phase": "G5",
+      "classification": "VALIDATION",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:14:50.454Z",
+      "finishedAt": "2026-09-09T14:14:50.747Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-corpus-frozen-verification/stdout.txt",
+          "bytes": 560,
+          "sha256": "0b2fdac8ef6306f78deecce6461f3b60c485c86e3930f2a3e5b5421ad1c47f26",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-corpus-frozen-verification/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g5-gi-after",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-after/command.json",
+        "bytes": 944,
+        "sha256": "f320c4c24b1638a4f797810611f2da51091601079a3202d1bd9a130c1ca51fb5"
+      },
+      "phase": "G5",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:10:56.013Z",
+      "finishedAt": "2026-09-09T14:10:56.895Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-after/stdout.txt",
+          "bytes": 482,
+          "sha256": "d5bd0994ff327e4e09ccc94617fe10a5480bdc1f7b3be9d445def4060e2e7cf9",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-after/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g5-gi-before",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-before/command.json",
+        "bytes": 947,
+        "sha256": "9d285aedd8a687a7fbae1240440dd112e8761f881430d4219c1c3b29793323b2"
+      },
+      "phase": "G5",
+      "classification": "DETERMINISTIC_TEST",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:06:41.008Z",
+      "finishedAt": "2026-09-09T14:06:41.835Z",
+      "expectedExitCode": 0,
+      "exitCode": 1,
+      "nativeExitMatchesExpectation": false,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-before/stdout.txt",
+          "bytes": 4009,
+          "sha256": "b6c34bf3ee88404664a60b123441dea608605a75d0ceb079b2b6dcdbaa0f2e3c",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-gi-before/stderr.txt",
+          "bytes": 10117,
+          "sha256": "daa5050b8d698dfee3f11d9e491d64c1a6ce497bae960c864d107b77b11d7443",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g5-guarded-intent-critical-review",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-guarded-intent-critical-review/command.json",
+        "bytes": 1010,
+        "sha256": "5fc439754cad45c26f1b30d0afa67b4a357ca33cfa1287c9cb27aa560451fdec"
+      },
+      "phase": "G5",
+      "classification": "VALIDATION",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T13:55:45.690Z",
+      "finishedAt": "2026-09-09T14:00:25.138Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-guarded-intent-critical-review/stdout.txt",
+          "bytes": 6500,
+          "sha256": "e41a5260ba2c9eaa8a94982da626272f06be110eedea113363f216ccd73e3eea",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-guarded-intent-critical-review/stderr.txt",
+          "bytes": 46952,
+          "sha256": "44d7f190baf30feaa9a0d99f63ff1333a85ea8ea99e9db598e090feb670c8f33",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g5-guarded-intent-critical-review-r2",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-guarded-intent-critical-review-r2/command.json",
+        "bytes": 1032,
+        "sha256": "7472c58054b9ae44f069cbdac8a2484a08e55ea8132846229dcc208d2a0f163c"
+      },
+      "phase": "G5",
+      "classification": "MODEL_CORRECTION_REVIEW",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:11:38.538Z",
+      "finishedAt": "2026-09-09T14:15:36.332Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-guarded-intent-critical-review-r2/stdout.txt",
+          "bytes": 970,
+          "sha256": "ced8711bff0380286b765bee531489dde9a6854a3493966b5ab46d7ea42ef7cb",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-guarded-intent-critical-review-r2/stderr.txt",
+          "bytes": 53309,
+          "sha256": "eb5decacc8110c687988a32957d55e27a53fc41bbb40ad6053737f9e71b5f3fe",
+          "matchesRecordedHash": true
+        }
+      }
+    },
+    {
+      "id": "g5-local-oracle-denial",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-local-oracle-denial/command.json",
+        "bytes": 2267,
+        "sha256": "18e7a3a7c24b99df5f995d6c79d4b5bfd9098fc1618d1d1592b7085ba7471896"
+      },
+      "phase": "G5",
+      "classification": "INVARIANT_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:14:51.061Z",
+      "finishedAt": "2026-09-09T14:14:51.246Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-local-oracle-denial/stdout.txt",
+          "bytes": 512,
+          "sha256": "aca7f0c199edfa45010877a71c02be9ac7a2f0e15e758de6bcd769c28741ce28",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-local-oracle-denial/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "invariant": {
+        "kind": "INVARIANT_RESULT",
+        "result": "PASS",
+        "invariantId": "HIDDEN_ORACLE_ACCESS_DENIED"
+      }
+    },
+    {
+      "id": "g5-local-synthetic-no-pii",
+      "record": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-local-synthetic-no-pii/command.json",
+        "bytes": 24988,
+        "sha256": "cfca9783a55e165dc941006a2c12e409d3d35fba84189ccce385659b0b5844d3"
+      },
+      "phase": "G5",
+      "classification": "INVARIANT_CHECK",
+      "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+      "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+      "startedAt": "2026-09-09T14:14:51.594Z",
+      "finishedAt": "2026-09-09T14:14:51.820Z",
+      "expectedExitCode": 0,
+      "exitCode": 0,
+      "nativeExitMatchesExpectation": true,
+      "streams": {
+        "stdout": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-local-synthetic-no-pii/stdout.txt",
+          "bytes": 15598,
+          "sha256": "8756abe9ec228f1e29b804533e68205bcd984f3fa9961e9da8407389bf975aba",
+          "matchesRecordedHash": true
+        },
+        "stderr": {
+          "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-local-synthetic-no-pii/stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matchesRecordedHash": true
+        }
+      },
+      "invariant": {
+        "kind": "INVARIANT_RESULT",
+        "result": "PASS",
+        "invariantId": "SYNTHETIC_CORPUS_NO_PII"
+      }
+    }
+  ],
+  "incidents": [
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance/INCIDENT.json",
+      "bytes": 143,
+      "sha256": "3257fadc96b5ebf2a68d307ef63ee0fa732d0c5c765066f5e4d034d800373170",
+      "id": "g2-packet-canon-provenance",
+      "kind": "REDACTION_INCIDENT",
+      "rawStreamsPersisted": false,
+      "stdoutFileExists": false,
+      "stderrFileExists": false,
+      "commandRecordExists": false,
+      "interpretation": "RECORDER_REFUSAL_PRESERVED_NO_RECONSTRUCTED_RAW_OUTPUT"
+    }
+  ],
+  "unrecordedDirectories": [
+    {
+      "id": "g2-packet-canon-provenance",
+      "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance",
+      "state": "INCIDENT_WITHOUT_COMMAND_RECORD"
+    },
+    {
+      "id": "g3-readiness-correction-review-r2",
+      "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-correction-review-r2",
+      "state": "UNRECORDED_OR_IN_PROGRESS_NOT_A_MEASURED_EXIT"
+    },
+    {
+      "id": "g3-unsealed-inventory-preparation",
+      "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-unsealed-inventory-preparation",
+      "state": "COLLECTOR_RECORD_NOT_YET_FINALIZED"
+    }
+  ],
+  "evidenceIntegrityProblems": [],
+  "auditAttempts": [
+    {
+      "id": "g2-architecture-security",
+      "stdout": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-architecture-security/stdout.txt",
+        "bytes": 2146,
+        "sha256": "5f7b51b700f2f95c1bfe52df610712e6d19389f493a4e04149957020d43b420e",
+        "matchesRecordedHash": true
+      },
+      "stderr": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-architecture-security/stderr.txt",
+        "bytes": 7716,
+        "sha256": "74381d418e8f46acecf2fe252083d2b27da210f1e9b6cd52f13876f901f37114",
+        "matchesRecordedHash": true
+      },
+      "status": "INCOMPLETE",
+      "auditLane": null,
+      "missingRequiredTopLevelFields": [
+        "schemaVersion",
+        "auditLane",
+        "summary"
+      ],
+      "fullSchemaValidation": "NOT_PERFORMED_BY_INVENTORY",
+      "selectedAsLatestPacket": false,
+      "nativeExitCode": 0
+    },
+    {
+      "id": "g2-canon-provenance",
+      "stdout": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-canon-provenance/stdout.txt",
+        "bytes": 1782,
+        "sha256": "dce010f2f3a51ce53fe5115855a9fd4441352f99949c832eddbe4ceadef33a6a",
+        "matchesRecordedHash": true
+      },
+      "stderr": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-canon-provenance/stderr.txt",
+        "bytes": 7723,
+        "sha256": "e1b1da90e468a9151b1f1d876bd2f8019068cfaf1d07233a737c013b74842646",
+        "matchesRecordedHash": true
+      },
+      "status": "INCOMPLETE",
+      "auditLane": null,
+      "missingRequiredTopLevelFields": [
+        "schemaVersion",
+        "auditLane",
+        "summary"
+      ],
+      "fullSchemaValidation": "NOT_PERFORMED_BY_INVENTORY",
+      "selectedAsLatestPacket": false,
+      "nativeExitCode": 0
+    },
+    {
+      "id": "g2-mobile-ux",
+      "stdout": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-mobile-ux/stdout.txt",
+        "bytes": 1849,
+        "sha256": "1c1490f8eb97295fa7739c115fc72d27fb7f21e2aa956e7ef20a0eb98ad42c50",
+        "matchesRecordedHash": true
+      },
+      "stderr": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-mobile-ux/stderr.txt",
+        "bytes": 8078,
+        "sha256": "4f6e509a57acc32f0f4e500ab3442b121c6e8fada65dca138c0ae3a5bd2c3d76",
+        "matchesRecordedHash": true
+      },
+      "status": "INCOMPLETE",
+      "auditLane": null,
+      "missingRequiredTopLevelFields": [
+        "schemaVersion",
+        "auditLane",
+        "summary"
+      ],
+      "fullSchemaValidation": "NOT_PERFORMED_BY_INVENTORY",
+      "selectedAsLatestPacket": false,
+      "nativeExitCode": 0
+    },
+    {
+      "id": "g2-packet-architecture-security",
+      "stdout": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-architecture-security/stdout.txt",
+        "bytes": 10940,
+        "sha256": "fb42c6a53b71f9368995aff28c13974000bc85639fef8e175ebae8fa497c2ca7",
+        "matchesRecordedHash": true
+      },
+      "stderr": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-architecture-security/stderr.txt",
+        "bytes": 133606,
+        "sha256": "677dc97a264e11464fae4045fe064a7a336ebbde74a1bb83ec71e0e047ead7e6",
+        "matchesRecordedHash": true
+      },
+      "status": "INCOMPLETE",
+      "auditLane": "ARCHITECTURE_SECURITY",
+      "missingRequiredTopLevelFields": [],
+      "fullSchemaValidation": "NOT_PERFORMED_BY_INVENTORY",
+      "selectedAsLatestPacket": true,
+      "nativeExitCode": 0
+    },
+    {
+      "id": "g2-packet-canon-provenance-r0b",
+      "stdout": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance-r0b/stdout.txt",
+        "bytes": 13279,
+        "sha256": "6dd1fad512edb6b0e85972beaefb12dd03dc3ad3da760a0541476ff73050240b",
+        "matchesRecordedHash": true
+      },
+      "stderr": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-canon-provenance-r0b/stderr.txt",
+        "bytes": 468530,
+        "sha256": "7024c2ad11e6a50937e0d78a873e4d2a89ef225babcc41602ccf5d16cb981dda",
+        "matchesRecordedHash": true
+      },
+      "status": "INCOMPLETE",
+      "auditLane": "CANON_PROVENANCE",
+      "missingRequiredTopLevelFields": [],
+      "fullSchemaValidation": "NOT_PERFORMED_BY_INVENTORY",
+      "selectedAsLatestPacket": true,
+      "nativeExitCode": 0
+    },
+    {
+      "id": "g2-packet-mobile-ux",
+      "stdout": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-mobile-ux/stdout.txt",
+        "bytes": 9707,
+        "sha256": "5e6a27289f1a8eddbc57001da6cb04cb8f1aebf55944b948216d2de3fcfb3dde",
+        "matchesRecordedHash": true
+      },
+      "stderr": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-mobile-ux/stderr.txt",
+        "bytes": 45841,
+        "sha256": "a53798107360e44e1e62c295ce6c9da816373f88f52bf895f699b3f4ad93d99c",
+        "matchesRecordedHash": true
+      },
+      "status": "FINDINGS",
+      "auditLane": "MOBILE_UX",
+      "missingRequiredTopLevelFields": [],
+      "fullSchemaValidation": "NOT_PERFORMED_BY_INVENTORY",
+      "selectedAsLatestPacket": true,
+      "nativeExitCode": 0
+    },
+    {
+      "id": "g2-packet-product-coverage",
+      "stdout": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-product-coverage/stdout.txt",
+        "bytes": 19520,
+        "sha256": "34f45c3d6140edea40fbdfe5abe5fd70d49fb871e50299ddf0f356501c2111d9",
+        "matchesRecordedHash": true
+      },
+      "stderr": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-packet-product-coverage/stderr.txt",
+        "bytes": 168683,
+        "sha256": "0139ebf3d58539341d7b6938164a83a99350b03981fb51ec7659247df81e6357",
+        "matchesRecordedHash": true
+      },
+      "status": "INCOMPLETE",
+      "auditLane": "PRODUCT_COVERAGE",
+      "missingRequiredTopLevelFields": [],
+      "fullSchemaValidation": "NOT_PERFORMED_BY_INVENTORY",
+      "selectedAsLatestPacket": true,
+      "nativeExitCode": 0
+    },
+    {
+      "id": "g2-product-coverage",
+      "stdout": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-product-coverage/stdout.txt",
+        "bytes": 1922,
+        "sha256": "895f6d49fb86731e47ca2dce6df2b2d327f82c66a8ec132ca64f1c7b951da1b9",
+        "matchesRecordedHash": true
+      },
+      "stderr": {
+        "path": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g2-product-coverage/stderr.txt",
+        "bytes": 8276,
+        "sha256": "7107f35e28f161ce4d735e7cebafa8a6a04e9a48f0e3fa2870697dc713de8332",
+        "matchesRecordedHash": true
+      },
+      "status": "INCOMPLETE",
+      "auditLane": null,
+      "missingRequiredTopLevelFields": [
+        "schemaVersion",
+        "auditLane",
+        "summary"
+      ],
+      "fullSchemaValidation": "NOT_PERFORMED_BY_INVENTORY",
+      "selectedAsLatestPacket": false,
+      "nativeExitCode": 0
+    }
+  ],
+  "safeDigestScannerReproductions": [
+    {
+      "commandId": "g0-astra-probe",
+      "field": "stdoutSha256",
+      "digest": "c9222023eeeac26f3d12080c3fd66ba5dde4c33b7074f715b7003c9aa599f906",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g0-final-corpus",
+      "field": "stdoutSha256",
+      "digest": "0b2fdac8ef6306f78deecce6461f3b60c485c86e3930f2a3e5b5421ad1c47f26",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g0-prisma-generate",
+      "field": "stderrSha256",
+      "digest": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g1-backlog-validation",
+      "field": "stdoutSha256",
+      "digest": "ec0866ac8a65d13c086fb0a2d2f93062e6fc2164acf12b687b26ff8157e782e5",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g1-migration-clean-wrapper",
+      "field": "stdoutSha256",
+      "digest": "fff9acff7be1feb9c525b198ae8de419e66578d56f5b189660fef1ebab91ca92",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g1-mobile-build-wrapper",
+      "field": "stdoutSha256",
+      "digest": "3c78c9541f0e11cb3f39a2e8408ac3068d3e5c78e8cde6253c3ee3636d355c15",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g1-queue-validation",
+      "field": "stdoutSha256",
+      "digest": "051082e7ac4cb5e2fa8659c6c25e2eda829d87cc1fa87011ab5bec17e4cb5fd0",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g2-architecture-security",
+      "field": "stderrSha256",
+      "digest": "74381d418e8f46acecf2fe252083d2b27da210f1e9b6cd52f13876f901f37114",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g2-mobile-ux",
+      "field": "stderrSha256",
+      "digest": "4f6e509a57acc32f0f4e500ab3442b121c6e8fada65dca138c0ae3a5bd2c3d76",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-arch-before",
+      "field": "stdoutSha256",
+      "digest": "37e8b1ae0250cee6547f913fac29f090d07dd033e1b0156a864a57130bc5cc04",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-g7-final-preparation",
+      "field": "stdoutSha256",
+      "digest": "3acd14dca681e76cfbcb46e40f556a3ce1d955c4b51d82de596454918a01463d",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-next-entrypoints-before",
+      "field": "stderrSha256",
+      "digest": "1932e5ad9e57d677f5397861972acd91538edd62823f4106c64e5ae6f270fb20",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-portability-reachability-tests-r2",
+      "field": "stdoutSha256",
+      "digest": "fd780b83d23ea8cd7ae10ffb32ace6a0d78b3ed6e1489e456c77e4324e4d09a5",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-r0b-db-diagnostic-3",
+      "field": "stdoutSha256",
+      "digest": "45a43b92f666f1517d5e238345ac2be71b0ee5e28bc2ee6cd59536002dc13928",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-r0b-db-restart-1",
+      "field": "stderrSha256",
+      "digest": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-r0b-db-seed-1",
+      "field": "stderrSha256",
+      "digest": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-r0b-db-upgrade-1",
+      "field": "stderrSha256",
+      "digest": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-r0b-migration-clean-3",
+      "field": "stderrSha256",
+      "digest": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-r0b-root-tests-r2",
+      "field": "stdoutSha256",
+      "digest": "133fa78159be4c321f24225bd6dac893b1b16ed70810ca42c3bcb874c6f73c80",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g3-readiness-correction-tests-2",
+      "field": "stdoutSha256",
+      "digest": "ab17d272834392418c5ace8a655185cefd987d9749c81c711f7fc7ec50bd7933",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g5-corpus-frozen-verification",
+      "field": "stdoutSha256",
+      "digest": "0b2fdac8ef6306f78deecce6461f3b60c485c86e3930f2a3e5b5421ad1c47f26",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g5-guarded-intent-critical-review-r2",
+      "field": "stderrSha256",
+      "digest": "eb5decacc8110c687988a32957d55e27a53fc41bbb40ad6053737f9e71b5f3fe",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    },
+    {
+      "commandId": "g5-local-oracle-denial",
+      "field": "stdoutSha256",
+      "digest": "aca7f0c199edfa45010877a71c02be9ac7a2f0e15e758de6bcd769c28741ce28",
+      "originalScannerMatches": true,
+      "tokenBoundedScannerMatches": false
+    }
+  ],
+  "frozenInputs": [
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/corpus-check.mjs",
+      "campaignBlobSha256": "cfc1ca642fe15b8c5c7facf2f97df05cde817303b9549a13ec370fd9f7515d48",
+      "currentSha256": "cfc1ca642fe15b8c5c7facf2f97df05cde817303b9549a13ec370fd9f7515d48",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/corpus-grader.mjs",
+      "campaignBlobSha256": "d46428e2a3727b40530f66e00977e4c13ff4fbf19988c6649af9d9e3b3474d1a",
+      "currentSha256": "d46428e2a3727b40530f66e00977e4c13ff4fbf19988c6649af9d9e3b3474d1a",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-contracts.md",
+      "campaignBlobSha256": "039888324bf2da2180add35254628cff0a0f5e5493db28cb7a5e503a26c6e755",
+      "currentSha256": "039888324bf2da2180add35254628cff0a0f5e5493db28cb7a5e503a26c6e755",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-contracts.test.mjs",
+      "campaignBlobSha256": "2df7ab61e94c9c2f1a4825ce760d12f341203e0e8c5bbfaacf638f76278fd280",
+      "currentSha256": "2df7ab61e94c9c2f1a4825ce760d12f341203e0e8c5bbfaacf638f76278fd280",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-corpus-no-pii.mjs",
+      "campaignBlobSha256": "223e5e287d7b15acb7be8bb6d6fc6c8272bbec47aef75f7bcc73645effc5c97a",
+      "currentSha256": "223e5e287d7b15acb7be8bb6d6fc6c8272bbec47aef75f7bcc73645effc5c97a",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-metrics.mjs",
+      "campaignBlobSha256": "fb28bcbe78f65c393b026391724c9cfe879ba165275652871f7f5cd7a7a456bc",
+      "currentSha256": "fb28bcbe78f65c393b026391724c9cfe879ba165275652871f7f5cd7a7a456bc",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-oracle-denial.mjs",
+      "campaignBlobSha256": "2c1839e64f8d5bd72e9c1b74d0049a464b212b467f271ace4b6c47be655662b0",
+      "currentSha256": "2c1839e64f8d5bd72e9c1b74d0049a464b212b467f271ace4b6c47be655662b0",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-recorder.test.mjs",
+      "campaignBlobSha256": "c07fc30c9cb0f6ae75d7c1c60ddde309f6d11d1ed33a1376748da0127471f32f",
+      "currentSha256": "c07fc30c9cb0f6ae75d7c1c60ddde309f6d11d1ed33a1376748da0127471f32f",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-roadmap-baseline.md",
+      "campaignBlobSha256": "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b",
+      "currentSha256": "07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "campaignBlobSha256": "7def86e286e7ff9429190b3c488544eeea531c72afefdd76421901b6b5388246",
+      "currentSha256": "7def86e286e7ff9429190b3c488544eeea531c72afefdd76421901b6b5388246",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/PHASE_CHECK_CONTRACTS.json",
+      "campaignBlobSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+      "currentSha256": "4cc882ff309d26205cb292dc029a017025075d888883b730dbfd02463843a9f6",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/README.md",
+      "campaignBlobSha256": "7e9fb7a27af5f57e4f6b6c75d06cb54c83ef919af3e75762729b6c3a9b0a71d3",
+      "currentSha256": "7e9fb7a27af5f57e4f6b6c75d06cb54c83ef919af3e75762729b6c3a9b0a71d3",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/check-map.mjs",
+      "campaignBlobSha256": "804489840040b890f30906d3f25e297a1020e32880a014958f9aa00d74d9607d",
+      "currentSha256": "804489840040b890f30906d3f25e297a1020e32880a014958f9aa00d74d9607d",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/commands.json",
+      "campaignBlobSha256": "1ace30ef7306c6d52f2fbd9fce29088b84ec14fdec5052ff20990c874467ec6d",
+      "currentSha256": "1ace30ef7306c6d52f2fbd9fce29088b84ec14fdec5052ff20990c874467ec6d",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/database.mjs",
+      "campaignBlobSha256": "ceefcd839ac9eed6319702a0860c5099a98c86cc84c4ef091d182564c1597370",
+      "currentSha256": "ceefcd839ac9eed6319702a0860c5099a98c86cc84c4ef091d182564c1597370",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/db-worker.ts",
+      "campaignBlobSha256": "9930536f167e9c403a3b614fde25b130d02f40144b9435315af17c43e84acaaf",
+      "currentSha256": "9930536f167e9c403a3b614fde25b130d02f40144b9435315af17c43e84acaaf",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/focused.config.mts",
+      "campaignBlobSha256": "cbd0e8000c7a3ee59051cf5333b125f2b49b9732d2b814602dbda161d15039c5",
+      "currentSha256": "cbd0e8000c7a3ee59051cf5333b125f2b49b9732d2b814602dbda161d15039c5",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/focused.test.ts",
+      "campaignBlobSha256": "dade7729658b59d9dddebdbdf3a2370e4fd4b67ba6578ec7e7721ee7ddbaabb3",
+      "currentSha256": "dade7729658b59d9dddebdbdf3a2370e4fd4b67ba6578ec7e7721ee7ddbaabb3",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs",
+      "campaignBlobSha256": "674c40d288b7559c8c3916a6dea5e5f7d995361c718cdceacace5b240ab745b9",
+      "currentSha256": "674c40d288b7559c8c3916a6dea5e5f7d995361c718cdceacace5b240ab745b9",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/output-safe.mjs",
+      "campaignBlobSha256": "133bb0a44ed12dfc59d9a02369721a4d38169489566db8062d2cf3726bc3abb0",
+      "currentSha256": "133bb0a44ed12dfc59d9a02369721a4d38169489566db8062d2cf3726bc3abb0",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/route-smoke.mjs",
+      "campaignBlobSha256": "3ce3471337229c6a8bf2df9dbb67b50dc055f544100a6867e290d941d4dbd4af",
+      "currentSha256": "3ce3471337229c6a8bf2df9dbb67b50dc055f544100a6867e290d941d4dbd4af",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs",
+      "campaignBlobSha256": "771a5b168ba72e3652b68f227c19db9f8ddd3535c3f173a0e410bed7fb86b144",
+      "currentSha256": "771a5b168ba72e3652b68f227c19db9f8ddd3535c3f173a0e410bed7fb86b144",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/runtime-provenance.json",
+      "campaignBlobSha256": "f0e9321364ea3ebf118304cbd5866949a7c2376339bb1029829be8b022f77671",
+      "currentSha256": "f0e9321364ea3ebf118304cbd5866949a7c2376339bb1029829be8b022f77671",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks/validate-kit.mjs",
+      "campaignBlobSha256": "81120dc50c907de9d37ffa15c19f57d22c4711b3758879a2463daa2bee845a5f",
+      "currentSha256": "81120dc50c907de9d37ffa15c19f57d22c4711b3758879a2463daa2bee845a5f",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-contracts/campaign-identity.schema.json",
+      "campaignBlobSha256": "7aea8f493b9dc5dde2d6833408668f5e1ba6ab9b16ebeedb6333a6c9d7ac6b72",
+      "currentSha256": "7aea8f493b9dc5dde2d6833408668f5e1ba6ab9b16ebeedb6333a6c9d7ac6b72",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-contracts/evidence-record.schema.json",
+      "campaignBlobSha256": "24d33ca1847a5f4f4960155f4ae68ce898908e1e7a7692c20a6c1d183e911567",
+      "currentSha256": "24d33ca1847a5f4f4960155f4ae68ce898908e1e7a7692c20a6c1d183e911567",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-contracts/examples/README.md",
+      "campaignBlobSha256": "3da7aeaac46d81e3981cd9ebc25d2c06d5c5eb6ffe61c1d16d903ee98ff92589",
+      "currentSha256": "3da7aeaac46d81e3981cd9ebc25d2c06d5c5eb6ffe61c1d16d903ee98ff92589",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-contracts/finding-report.schema.json",
+      "campaignBlobSha256": "d7c66592fe2da4e438a8363966b1a8196e2f055f159a274e6226c03f5af8b384",
+      "currentSha256": "d7c66592fe2da4e438a8363966b1a8196e2f055f159a274e6226c03f5af8b384",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-contracts/phase-check-contracts.schema.json",
+      "campaignBlobSha256": "65ed6cdda4f320f3cbffe298084150e0bed676dacaca84e318a8ff2fc4906175",
+      "currentSha256": "65ed6cdda4f320f3cbffe298084150e0bed676dacaca84e318a8ff2fc4906175",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-contracts/revalidation-seal.schema.json",
+      "campaignBlobSha256": "1ede86a29fdb300e1d8f9f75709c599d267d0f3939587ad0452ef2efc64de5bf",
+      "currentSha256": "1ede86a29fdb300e1d8f9f75709c599d267d0f3939587ad0452ef2efc64de5bf",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/architecture-security.md",
+      "campaignBlobSha256": "976151ba3cb8b39ef9787ea2bec4a83e2f375ea6e506c935d26cc5c020f11bfc",
+      "currentSha256": "976151ba3cb8b39ef9787ea2bec4a83e2f375ea6e506c935d26cc5c020f11bfc",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/canon-provenance.md",
+      "campaignBlobSha256": "b9be67ba084c4a99e81d90fd3534292d8fa2c39e3cc5d03cbb08043241ba2c9d",
+      "currentSha256": "b9be67ba084c4a99e81d90fd3534292d8fa2c39e3cc5d03cbb08043241ba2c9d",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/mobile-ux.md",
+      "campaignBlobSha256": "244beb3419faf935c03a0fddc4cd8339ba59f2307eab827799c734abcb01ef0c",
+      "currentSha256": "244beb3419faf935c03a0fddc4cd8339ba59f2307eab827799c734abcb01ef0c",
+      "matchesCampaignBytes": true
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/product-coverage.md",
+      "campaignBlobSha256": "950712f3839c72a9763e26d0506230d2937b0c3b4e81f9703d1f4c83f15d1466",
+      "currentSha256": "950712f3839c72a9763e26d0506230d2937b0c3b4e81f9703d1f4c83f15d1466",
+      "matchesCampaignBytes": true
+    }
+  ],
+  "correctedDiagnosticArtifacts": [
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/check-map.mjs",
+      "bytes": 2878,
+      "sha256": "ca19744775beff3aaa3516cc5e09f380b8e5af60708d19fb4f2b16cfdee01649"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/commands.json",
+      "bytes": 23844,
+      "sha256": "d566c9cd503806162ee5137688ebcca56d36489490779d54bd01228c6b16fa42"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/database.mjs",
+      "bytes": 2777,
+      "sha256": "ceefcd839ac9eed6319702a0860c5099a98c86cc84c4ef091d182564c1597370"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/db-worker.ts",
+      "bytes": 5521,
+      "sha256": "e67a8c477c9aa885e31e98b6a625882a38123735e3c45a7a4a88029803a73220"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnose-database.mjs",
+      "bytes": 403,
+      "sha256": "a8148e83fa703b4827bb0f6220c6a6ea0f69b14f8f8538aaf1fa115241cec881"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnostic-database-2.json",
+      "bytes": 401,
+      "sha256": "b5599692832f6689c954c92dbc47d8bbb1de72765fd885b47b4b8decaba89227"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnostic-database-3.json",
+      "bytes": 401,
+      "sha256": "bd20ca3e1f2dec2f7445309d38d9b777ae38f7d49d92956395450dbe90ec5ce2"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/diagnostic-database.json",
+      "bytes": 401,
+      "sha256": "6f85ea4b71c678978e5ee9d3c79a936ac0e1ca8913b5a715181e2a30ee7eefe8"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/focused.config.mts",
+      "bytes": 201,
+      "sha256": "79542d3f529e10047d55fa9384b38ec778c895e22ac5ec027fb30576bde32b40"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/focused.test.ts",
+      "bytes": 2179,
+      "sha256": "dade7729658b59d9dddebdbdf3a2370e4fd4b67ba6578ec7e7721ee7ddbaabb3"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/network-guard.cjs",
+      "bytes": 2439,
+      "sha256": "f282110de2e6b4b1b876baad2014263477d6f08e2f7a3666cf3c7d2b07d86a9f"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/output-safe.mjs",
+      "bytes": 362,
+      "sha256": "133bb0a44ed12dfc59d9a02369721a4d38169489566db8062d2cf3726bc3abb0"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "bytes": 18524,
+      "sha256": "faf79e85eaa03db3fa7c830b7cf4092b77ebba314a0ec96d715cdb62b662195b"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/README.md",
+      "bytes": 4301,
+      "sha256": "c73f6307b3e86aba972d2f6e0f8c0fee8ed0e7b7b6d131c8bdbe2c984819bb65"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-migration-clean-2.json",
+      "bytes": 377,
+      "sha256": "656f41b42f5d56720ac3a54078d52d71102cf0ebe49dba72de72355362ae01ae"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-migration-clean-3.json",
+      "bytes": 377,
+      "sha256": "b9a2de641a7c8a6b859b262f6defc9031885578736950691d22c067520f995eb"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-migration-clean.json",
+      "bytes": 377,
+      "sha256": "2f3292fe107b04bfc2bcf33a9ff2b08ff618af7dfeb74d10313f5c416b1da5aa"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-mobile-build.json",
+      "bytes": 397,
+      "sha256": "bff0b38c6fcb569180efaaee57134f04f3f7210b684604ee3af4f829a21f0bbc"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-restart.json",
+      "bytes": 420,
+      "sha256": "52f1bb295984a167631e4b3db934360c2c605a7a31be2bcd2155ec76fe7e5761"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-root-build.json",
+      "bytes": 391,
+      "sha256": "00849f1bbc285f2ff8743bc7e55400253945555bf02b1b7c9cf5fd29cb0d7fc6"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-seed.json",
+      "bytes": 395,
+      "sha256": "c2e1b7a891773a95a65dad76f6ab7b51452c7744a80540614b7f6cfc570804f3"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-self-test.json",
+      "bytes": 351,
+      "sha256": "199e25a492dab37c5a2b288d42415b6c837c0749e94d3735bb573f68d5768a46"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/retest-upgrade.json",
+      "bytes": 404,
+      "sha256": "dc5d16e925978af9c45f42df8b515267c903604843e46d09ab51d15686943e50"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/route-smoke.mjs",
+      "bytes": 2773,
+      "sha256": "3ce3471337229c6a8bf2df9dbb67b50dc055f544100a6867e290d941d4dbd4af"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs",
+      "bytes": 11576,
+      "sha256": "777eb3553691897fd5c25b1d8d3c57508ab6cac5b726ddb99cea1e12ec5406ff"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/runtime-provenance.json",
+      "bytes": 336,
+      "sha256": "f0e9321364ea3ebf118304cbd5866949a7c2376339bb1029829be8b022f77671"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/self-test.mjs",
+      "bytes": 3277,
+      "sha256": "c7756bdc124ac422bee76c8a29ca83e765ec259474946412176bf5a329c956b2"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/validate-kit.mjs",
+      "bytes": 2860,
+      "sha256": "6662cfef011dd38ab70513a4dc2516c390dd1e9f96357e27e2ed4fdf40e32048"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal-r0b.mjs",
+      "bytes": 142950,
+      "sha256": "29b49588ec9fdaa8e47877f3a287e9333b9e5f439e5f09a06f2d1be66bede98c"
+    },
+    {
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/assemble-local-seal.mjs",
+      "bytes": 24211,
+      "sha256": "5b3c6ff066d29d191cd45ddbd3282ba1c84888e7c6dc6f2cd52ad78b66c4914e"
+    }
+  ],
+  "canonicalBlockers": [
+    {
+      "id": "CANONICAL_SCANNER_MATCHES_SAFE_DIGESTS",
+      "observed": true,
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs",
+      "lines": [
+        115,
+        116
+      ],
+      "safeDigestReproductionCount": 23
+    },
+    {
+      "id": "G2_ATTEMPT_CARDINALITY_CONTRADICTION",
+      "observed": true,
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs",
+      "lines": [
+        512,
+        516,
+        569
+      ],
+      "requiredReports": 8,
+      "permittedMaximum": 4,
+      "explanation": "Every retained G2 MODEL_AUDIT stdout must have FINDING_REPORT role; eight real attempts cannot fit four allowed reports. No command is omitted or reclassified."
+    },
+    {
+      "id": "INITIAL_G2_OUTPUTS_MISSING_SCHEMA_FIELDS",
+      "observed": true,
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs",
+      "lines": [
+        526
+      ],
+      "explanation": "Initial shell-blocked outputs lack mandatory fields. Exit zero is not schema validity or audit completeness."
+    },
+    {
+      "id": "CANONICAL_VALIDATOR_IS_IMMUTABLE",
+      "observed": true,
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs",
+      "lines": [
+        256,
+        282
+      ],
+      "explanation": "A corrected diagnostic validator cannot replace the SPEC/CAMPAIGN/FINAL byte-identical canonical validator."
+    },
+    {
+      "id": "HISTORICAL_FAILURES_PRECLUDE_LOCAL_COMPLETE",
+      "observed": true,
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs",
+      "lines": [
+        605,
+        1362
+      ],
+      "count": 26,
+      "explanation": "Fresh retests do not erase recorded baseline failures; preserve REWORK."
+    },
+    {
+      "id": "CORRECTED_WRAPPERS_NOT_FROZEN_CONTRACT_PROOF",
+      "observed": false,
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs",
+      "lines": [
+        651
+      ],
+      "explanation": "R0b wrappers stay separate. They cannot replace canonical frozen phase evidence."
+    },
+    {
+      "id": "CLEAN_BRAIN_REQUIRES_CHECKPOINT_NOT_PACKET",
+      "observed": true,
+      "path": "specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs",
+      "lines": [
+        1284
+      ],
+      "explanation": "Clean Brain cannot use BRAIN_PACKET. Parent must supply honest checkpoint/validation; never fabricate a dirty worktree."
+    }
+  ],
+  "remainingConditions": [
+    "Stable final HEAD and completed G7 raw commands plus frozen wrappers, retaining separate R0b retests.",
+    "Five final replayed metric rubrics and all six values; no inferred metric improvements.",
+    "Explicit local invariant scope and no claim of provider candidate isolation.",
+    "Actual clean Brain checkpoint/validation after final observations.",
+    "Canonical seal remains blocked by retained audit cardinality/schema and digest-scanner contradictions even if remaining evidence is collected."
+  ],
+  "limits": [
+    "No raw stdout/stderr text copied; only file fingerprints and selected structured fields.",
+    "All completed command records discovered are retained, including failed attempts. Directories without records are not assigned invented exits.",
+    "Selected packet reports are an index only, not replacements for original attempts.",
+    "The collector cannot include its own not-yet-finalized recorder command; that directory is explicitly marked.",
+    "This is a timestamped partial snapshot until final HEAD and G7 evidence are complete, never an alternate canonical seal."
+  ],
+  "inventoryPayloadSha256": "a0722cf4a2fcac1878282d9a1fb7d69513be14fe3151185e502ac03a5a5db001"
+}

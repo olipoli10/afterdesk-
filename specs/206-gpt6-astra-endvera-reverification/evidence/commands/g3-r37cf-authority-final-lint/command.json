@@ -1,0 +1,20 @@
+{
+  "id": "g3-r37cf-authority-final-lint",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/eslint/bin/eslint.js src/server/construction-operating-assistant-r37c/coordinator.ts src/server/construction-operating-assistant-r37f/provider-delivery.ts src/server/construction-operating-assistant-r37b/activation.ts src/lib/construction-operating-assistant-r37b/contracts.ts test/unit/r37cf-current-authority.test.ts test/unit/r37b-reservation-candidate.test.ts test/unit/r37c-admission-clock.test.ts test/construction-operating-assistant-r37b-provider-activation.test.ts test/construction-operating-assistant-r37h-provider-trusted-clock.test.ts test/integration/construction-operating-assistant-r37b-provider-activation.itest.ts test/integration/construction-operating-assistant-r37c-controlled-run.itest.ts src/server/construction-operating-assistant-r37/campaign.ts test/unit/r37f-before-after-lease.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:49:28.550Z",
+  "finishedAt": "2026-09-09T14:49:33.898Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-final-lint/stdout.txt",
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-final-lint/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

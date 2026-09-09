@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "PATCH_REVIEW",
+  "requestedModel": "gpt-5.6-sol",
+  "servedModel": null,
+  "status": "CHANGES_REQUIRED",
+  "scope": [
+    "src/server/model-gateway/dispatch.ts",
+    "src/server/ai-operations.ts",
+    "src/server/account-spend.ts",
+    "src/server/model-gateway/adapters/contract.ts",
+    "src/server/model-gateway/types.ts",
+    "src/server/model-gateway/operations.ts",
+    "src/server/model-gateway/policy.ts",
+    "src/server/model-gateway/breakers.ts",
+    "src/server/model-gateway/evidence.ts",
+    "src/server/model-gateway/voice/dispatch.ts",
+    "src/server/model-gateway/voice/adapters/contract.ts",
+    "test/unit/gateway-dispatch-claim-revalidation.test.ts",
+    "test/unit/gateway-voice-claim-revalidation.test.ts",
+    "test/integration/model-gateway-voice-spend.itest.ts",
+    "test/support/model-gateway-voice-db.ts"
+  ],
+  "findings": [
+    {
+      "id": "GW-CLAIM-001-VOICE-R3-01",
+      "severity": "HIGH",
+      "file": "src/server/model-gateway/voice/dispatch.ts",
+      "line": 447,
+      "title": "The dispatch acquisition CAS does not fence the AiOperation owner",
+      "reproduction": "Create an authorized admission with a prepared/not_dispatched attempt, then let the AiOperation lease be reclaimed so lockedBy no longer equals admission.claim.lockedBy. If rollout, actor, session, policy and breaker checks pass, the transaction only CASes ModelGatewayAttempt. It can set the attempt to dispatched and invoke the adapter even though this caller no longer owns the running AiOperation. The supplied tests cover owner loss during refusal, but not owner loss on the allowed acquisition path.",
+      "proposedFix": "Inside the same transaction as the attempt CAS, verify and lock AiOperation by id, lockedBy and status='running'. Treat a missing owner row as SupersededOperationError so the attempt CAS and all gateway/segment/audit mutations roll back, then return the typed attempt_claim_lost result before adapter invocation. Add an acquisition-owner-loss regression test."
+    },
+    {
+      "id": "GW-CLAIM-001-VOICE-R3-02",
+      "severity": "HIGH",
+      "file": "src/server/model-gateway/voice/dispatch.ts",
+      "line": 457,
+      "title": "Session and segment eligibility can change after validation without preventing dispatch",
+      "reproduction": "The session and segment are read at lines 404-412, outside the acquisition transaction. If the segment leaves registered/failed or the session closes before line 447, the conditional VoiceIntakeSegment update returns zero, but its count is ignored. The attempt CAS can still commit and the adapter is invoked for a segment that was not transitioned to running. The synthetic tests change session state before the second caller begins; they do not exercise this read-to-CAS interleaving.",
+      "proposedFix": "Revalidate or lock the voice session and segment in the acquisition transaction and require the segment transition count to equal one. Any failed eligibility fence must roll back the attempt CAS and resolve through the appropriate pre-dispatch refusal/superseded protocol without invoking the adapter."
+    },
+    {
+      "id": "GW-SPEND-001-VOICE-R3-03",
+      "severity": "HIGH",
+      "file": "src/server/model-gateway/voice/dispatch.ts",
+      "line": 515,
+      "title": "Response-received outcomes can be marked settled while their spend hold remains held",
+      "reproduction": "Return response_received with an errorClass and usage containing measuredCostMicros=25n. The failure branch writes dispatchState='settled' but never calls settleAccountSpendHold and emits no spend-settled audit, leaving the hold permanently held. Likewise, a successful transcript with a usage object whose measuredCostMicros is null is recorded as a settled successful attempt while the hold remains held. This contradicts the account-spend lifecycle, where settled dispatch requires a known cost and unknown cost must retain unaccounted exposure.",
+      "proposedFix": "Validate voice usage before terminal writes. When measured cost is known, settle the hold atomically and append the corresponding spend/attempt audit. When cost is null, keep the hold held and record dispatchState='unaccounted' with an uncertain outcome instead of claiming settlement. Add tests for provider failure with known cost, failure with unknown cost, and successful transcript with unknown cost."
+    },
+    {
+      "id": "GW-FENCE-001-VOICE-R3-04",
+      "severity": "HIGH",
+      "file": "src/server/model-gateway/voice/dispatch.ts",
+      "line": 495,
+      "title": "Post-callback uncertain and failure paths commit logical state after owner-fence loss",
+      "reproduction": "Let the AiOperation be reclaimed while the adapter is pending, then return either a non-response result or a response-received failure. Both transactions update the attempt, gateway operation and voice segment before issuing a conditional AiOperation update, and neither checks that update's affected-row count. If it returns zero, the other mutations still commit over successor-owned lifecycle state.",
+      "proposedFix": "Require the AiOperation owner/running fence before mutating gateway-operation or segment terminal state. Because the adapter was already invoked, owner loss must not release exposure: persist only the old attempt's conservative accounting/audit in a deliberately separated path, avoid overwriting successor-owned logical state, and return a typed non-terminal or uncertain result. Add callback owner-loss tests for uncertain and failure responses."
+    },
+    {
+      "id": "GW-CLAIM-001-CLASSIFICATION-R3-05",
+      "severity": "MEDIUM",
+      "file": "src/server/model-gateway/dispatch.ts",
+      "line": 374,
+      "title": "Classification acquisition has the same non-atomic owner revalidation gap",
+      "reproduction": "The lineage query verifies aiStatus and lockedBy at lines 328-351, but the later acquisition transaction CASes only ModelGatewayAttempt. A successor can reclaim the AiOperation between those operations; the stale caller can then win the attempt CAS, resolve credentials and invoke the adapter. The supplied classification tests cover attempt-CAS contention but not an AiOperation owner change between lineage read and acquisition.",
+      "proposedFix": "Fence and lock the AiOperation owner/status inside the acquisition transaction alongside the prepared/not_dispatched attempt CAS. Roll back and return attempt_claim_lost on owner mismatch before audit, credential resolution or adapter work."
+    }
+  ],
+  "limitations": [
+    "Candidate remains UNPROBED. This is a source-only review; the reviewer executed no tools, shell commands or tests.",
+    "The reported 15 voice plus 12 classification passes were not independently verified. Their rollback-capable ledgers are serialized in-memory models, not PostgreSQL concurrency, locking or durability tests.",
+    "No result is inferred for the separately scheduled voice-spend PostgreSQL integration run at final HEAD.",
+    "No provider, real audio, credentials or runtime candidate was exercised.",
+    "No public route was inferred. In the supplied context, only tests consume dispatchVoiceGatewayAttempt and the portal voice integration remains disabled.",
+    "No canonical model answer was available, and the served reviewer model is unknown."
+  ]
+}

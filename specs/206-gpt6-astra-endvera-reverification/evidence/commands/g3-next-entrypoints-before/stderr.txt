@@ -1,0 +1,745 @@
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 30 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at app/api/hello/route.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "app/api/hello/route.ts",[39m
+[32m-     "path": [[39m
+[32m-       "app/api/hello/route.ts",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at app/page.tsx
+[31m[1mAssertionError[22m: expected [] to deeply equal [ Array(1) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "app/page.tsx",[39m
+[32m-     "path": [[39m
+[32m-       "app/page.tsx",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at src/pages/api/hello.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "src/pages/api/hello.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/pages/api/hello.ts",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at pages/api/hello.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "pages/api/hello.js",[39m
+[32m-     "path": [[39m
+[32m-       "pages/api/hello.js",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at src/pages/index.tsx
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "src/pages/index.tsx",[39m
+[32m-     "path": [[39m
+[32m-       "src/pages/index.tsx",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at pages/_app.jsx
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "pages/_app.jsx",[39m
+[32m-     "path": [[39m
+[32m-       "pages/_app.jsx",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at src/middleware.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "src/middleware.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/middleware.ts",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at middleware.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "middleware.js",[39m
+[32m-     "path": [[39m
+[32m-       "middleware.js",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at src/proxy.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ Array(1) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "src/proxy.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/proxy.ts",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at proxy.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { entrypoint: 'proxy.js', …(1) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "proxy.js",[39m
+[32m-     "path": [[39m
+[32m-       "proxy.js",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at src/instrumentation.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "src/instrumentation.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/instrumentation.ts",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at instrumentation.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "instrumentation.js",[39m
+[32m-     "path": [[39m
+[32m-       "instrumentation.js",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at src/instrumentation-client.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "src/instrumentation-client.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/instrumentation-client.ts",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds direct and transitive provider exposure at instrumentation-client.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(2) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "entrypoint": "instrumentation-client.js",[39m
+[32m-     "path": [[39m
+[32m-       "instrumentation-client.js",[39m
+[32m-       "src/server/facade.ts",[39m
+[32m-       "src/server/construction-operating-assistant-r37f/provider-delivery.ts",[39m
+[32m-     ],[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m15:56[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at app/api/hello/route.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "app/api/hello/route.ts",[39m
+[32m-     "path": [[39m
+[32m-       "app/api/hello/route.ts",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "app/api/hello/route.ts",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at app/page.tsx
+[31m[1mAssertionError[22m: expected [] to deeply equal [ Array(1) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "app/page.tsx",[39m
+[32m-     "path": [[39m
+[32m-       "app/page.tsx",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "app/page.tsx",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at src/pages/api/hello.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "src/pages/api/hello.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/pages/api/hello.ts",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "src/pages/api/hello.ts",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at pages/api/hello.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "pages/api/hello.js",[39m
+[32m-     "path": [[39m
+[32m-       "pages/api/hello.js",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "pages/api/hello.js",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at src/pages/index.tsx
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "src/pages/index.tsx",[39m
+[32m-     "path": [[39m
+[32m-       "src/pages/index.tsx",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "src/pages/index.tsx",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at pages/_app.jsx
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "pages/_app.jsx",[39m
+[32m-     "path": [[39m
+[32m-       "pages/_app.jsx",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "pages/_app.jsx",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at src/middleware.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "src/middleware.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/middleware.ts",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "src/middleware.ts",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at middleware.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "middleware.js",[39m
+[32m-     "path": [[39m
+[32m-       "middleware.js",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "middleware.js",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at src/proxy.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ Array(1) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "src/proxy.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/proxy.ts",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "src/proxy.ts",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at proxy.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { entrypoint: 'proxy.js', …(3) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "proxy.js",[39m
+[32m-     "path": [[39m
+[32m-       "proxy.js",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "proxy.js",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at src/instrumentation.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "src/instrumentation.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/instrumentation.ts",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "src/instrumentation.ts",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at instrumentation.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "instrumentation.js",[39m
+[32m-     "path": [[39m
+[32m-       "instrumentation.js",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "instrumentation.js",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at src/instrumentation-client.ts
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "src/instrumentation-client.ts",[39m
+[32m-     "path": [[39m
+[32m-       "src/instrumentation-client.ts",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "src/instrumentation-client.ts",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mfinds computed loaders and dynamic code at instrumentation-client.js
+[31m[1mAssertionError[22m: expected [] to deeply equal [ { …(4) } ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   {[39m
+[32m-     "callKind": "import",[39m
+[32m-     "entrypoint": "instrumentation-client.js",[39m
+[32m-     "path": [[39m
+[32m-       "instrumentation-client.js",[39m
+[32m-     ],[39m
+[32m-     "unresolvedModule": "instrumentation-client.js",[39m
+[32m-   },[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m21:62[22m[39m
+    [90m 19|[39m   it.each(entrypoints)("finds computed loaders and dynamic code at %s"…
+    [90m 20|[39m     const modules=new Map([[entrypoint,'const target = input; import(t…
+    [90m 21|[39m     expect(findUnresolvedDynamicModuleReachability(modules)).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m 22|[39m     expect(findDynamicCodeExecutionReachability(modules)).toEqual([{en…
+    [90m 23|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mnormalizes Windows paths and retains private/nonconvention controls
+[31m[1mAssertionError[22m: expected undefined to be 'src/proxy.ts' // Object.is equality[39m
+
+[32m- Expected:[39m
+"src/proxy.ts"
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m25:112[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/30]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-operating-assistant-r37l-next-entrypoints.test.ts[2m > [22mR37L Next executable entrypoint boundary[2m > [22mthe CLI inventories root Next entries and their non-src facade instead of reporting false green
+[31m[1mAssertionError[22m: expected +0 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m test/construction-operating-assistant-r37l-next-entrypoints.test.ts:[2m35:29[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/30]⎯[22m[39m
+

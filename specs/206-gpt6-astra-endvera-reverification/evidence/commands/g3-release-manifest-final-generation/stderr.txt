@@ -1,0 +1,13 @@
+file:///C:/dev/endvera-astra-reverification/scripts/endvera-release-source-binding.mjs:73
+    } else throw new Error('RELEASE_SOURCE_INPUT_BLOB_MISMATCH');
+                 ^
+
+Error: RELEASE_SOURCE_INPUT_BLOB_MISMATCH
+    at assertReleaseInputBinding (file:///C:/dev/endvera-astra-reverification/scripts/endvera-release-source-binding.mjs:73:18)
+    at assertReleaseSourceBinding (file:///C:/dev/endvera-astra-reverification/scripts/endvera-release-source-binding.mjs:79:17)
+    at file:///C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/scripts/emit-release-manifest.mjs:6:15
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:666:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.2.0

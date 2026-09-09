@@ -1,0 +1,20 @@
+{
+  "id": "g3-arch-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/broadcast-preparation-replay.test.ts test/construction-operating-assistant-r37a-sealed-executor.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:58:49.553Z",
+  "finishedAt": "2026-09-09T13:58:50.711Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-before/stdout.txt",
+  "stdoutSha256": "37e8b1ae0250cee6547f913fac29f090d07dd033e1b0156a864a57130bc5cc04",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-arch-before/stderr.txt",
+  "stderrSha256": "be4084999b6ead45a5dd41beb3c2bc279bee1a375f9f7d8e464b0591e6133b02",
+  "replay": null
+}

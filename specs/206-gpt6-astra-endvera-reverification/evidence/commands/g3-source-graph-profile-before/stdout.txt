@@ -1,0 +1,127 @@
+{
+  "kind": "LOCAL_SOURCE_GRAPH_PROFILE",
+  "moduleCount": 599,
+  "sourceBytes": 6633617,
+  "loadMs": 138.14100000000002,
+  "measurements": [
+    {
+      "name": "provider",
+      "durationMs": 989.9956000000001,
+      "findingCount": 0
+    },
+    {
+      "name": "computed-import",
+      "durationMs": 577.9229,
+      "findingCount": 0
+    },
+    {
+      "name": "dynamic-code",
+      "durationMs": 549.1381000000001,
+      "findingCount": 0
+    }
+  ],
+  "totalCpuSamples": 1636,
+  "sampledFunctions": [
+    {
+      "function": "(garbage collector)",
+      "file": "",
+      "samples": 20
+    },
+    {
+      "function": "forEachChildRecursively",
+      "file": "typescript/lib/typescript.js",
+      "samples": 14
+    },
+    {
+      "function": "visit",
+      "file": "lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "samples": 12
+    },
+    {
+      "function": "forEachChildRecursively",
+      "file": "typescript/lib/typescript.js",
+      "samples": 11
+    },
+    {
+      "function": "visit",
+      "file": "lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "samples": 10
+    },
+    {
+      "function": "forEachChildRecursively",
+      "file": "typescript/lib/typescript.js",
+      "samples": 10
+    },
+    {
+      "function": "bindJSDoc",
+      "file": "typescript/lib/typescript.js",
+      "samples": 8
+    },
+    {
+      "function": "visit",
+      "file": "lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "samples": 8
+    },
+    {
+      "function": "visit",
+      "file": "lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "samples": 8
+    },
+    {
+      "function": "canHaveJSDoc",
+      "file": "typescript/lib/typescript.js",
+      "samples": 6
+    },
+    {
+      "function": "isArray",
+      "file": "typescript/lib/typescript.js",
+      "samples": 6
+    },
+    {
+      "function": "visit",
+      "file": "lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "samples": 6
+    },
+    {
+      "function": "resolveInternalModule",
+      "file": "lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "samples": 6
+    },
+    {
+      "function": "canHaveJSDoc",
+      "file": "typescript/lib/typescript.js",
+      "samples": 6
+    },
+    {
+      "function": "resolveInternalModule",
+      "file": "lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "samples": 6
+    },
+    {
+      "function": "(anonymous)",
+      "file": "lib/construction-operating-assistant-r37l/provider-reachability.ts",
+      "samples": 5
+    },
+    {
+      "function": "parseDeclarationWorker",
+      "file": "typescript/lib/typescript.js",
+      "samples": 5
+    },
+    {
+      "function": "setParentRecursive",
+      "file": "typescript/lib/typescript.js",
+      "samples": 5
+    },
+    {
+      "function": "forEachChild",
+      "file": "typescript/lib/typescript.js",
+      "samples": 5
+    },
+    {
+      "function": "isArray",
+      "file": "typescript/lib/typescript.js",
+      "samples": 5
+    }
+  ],
+  "providerCalls": 0
+}

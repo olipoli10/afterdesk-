@@ -1,0 +1,17 @@
+{
+  "kind": "PHASE_CHECK_OBSERVATION",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "checkId": "PERMISSION_REVOKED",
+  "observedCommandId": "g7-r0b-permission-revoked",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 PERMISSION_REVOKED",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-permission-revoked/stdout.txt",
+  "stdoutSha256": "8bda51c70f19e797f00f75f9afac3406edd2bd4d385491911f140b4205b54a17",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-permission-revoked/stderr.txt",
+  "stderrSha256": "96c0e6416f9e963d24d146ee16d9850ad7c0ef1eab28dd1562eb34335b05240b"
+}

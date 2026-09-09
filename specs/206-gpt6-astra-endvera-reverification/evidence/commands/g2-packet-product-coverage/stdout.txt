@@ -1,0 +1,203 @@
+{
+  "schemaVersion": "1.0",
+  "auditLane": "PRODUCT_COVERAGE",
+  "sourceProductHead": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+  "auditor": {
+    "requestedModel": "gpt-6-astra",
+    "reportedModel": null,
+    "clientVersion": "codex-cli 0.153.4",
+    "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+    "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+    "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+    "runAt": "2026-09-09T13:51:44.577Z",
+    "commandId": "g2-packet-product-coverage",
+    "promptPath": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/product-coverage.md",
+    "promptSha256": "950712f3839c72a9763e26d0506230d2937b0c3b4e81f9703d1f4c83f15d1466"
+  },
+  "status": "INCOMPLETE",
+  "summary": "Audit statique limité aux 13 extraits du paquet fourni, identifié par sha256 6d3e87b840b141f62cd391d678cf84ae40f9e6772d0e43363651a0bdcad96091 : 12 fichiers du dépôt attribués au commit afa edf8 sans espace, soit afaedf8e719892503a38016a8c6add55791ddc81, et un plan externe attribué au commit 3a4e31d837ed4f53f8326d865fca43cc54eb4c3e. Quatre écarts statiques sont relevés concernant les preuves de clôture, leur sélection, les exemples conversationnels et la promesse d’appui humain. Les extraits distinguent explicitement plusieurs préparations locales du transport réel, notamment dans le routage AI et les déclarations de disponibilité. Ils ne permettent toutefois pas de tracer chaque promesse jusqu’à une route accessible, une politique, un test comportemental et une observation liée au build. Aucun outil, test, accès aux secrets ou changement de fichier effectué. Les métadonnées et empreintes fournies sont recopiées, sans vérification machine indépendante.",
+  "findings": [
+    {
+      "id": "ASTRA-R0-PRODUCT-001",
+      "classification": "FACT",
+      "severity": "P1",
+      "title": "La validation de clôture ne rattache pas les résultats revendiqués à une exécution produit identifiable",
+      "invariant": "3 — Tester le résultat observable; 4 — Lier chaque preuve au bon build, run, workspace et scénario; 6 et 7 — Vérifier les comportements de sécurité et de récupération.",
+      "expected": "Une conclusion de clôture de couverture doit dépendre de preuves comportementales identifiables et vérifiées pour le build audité. Les déclarations de réussite et les nombres de tests doivent être reliés à leurs résultats, scénarios et contextes d’exécution.",
+      "actual": "Les deux validateurs fournis vérifient des valeurs déclarées, des empreintes de fichiers, des chaînes de code et l’existence de routes. Ils ne vérifient aucune liaison explicite entre build, run, workspace, scénario et résultat observable. Le rapport de readiness réutilise notamment des attestations de tests sous forme de booléens et de nombres. Le validateur de clôture retourne pourtant LOCAL_CREDENTIAL_FREE_PRODUCT_SCOPE_CLOSED. Ce constat porte sur ces validateurs; il ne démontre pas l’absence de tests comportementaux ailleurs.",
+      "evidence": [
+        {
+          "path": "release/endvera-construction-v1/whole-product-readiness.json",
+          "lineStart": 81,
+          "lineEnd": 89,
+          "observation": "attestationsReused contient rootTargetedTests:true, des nombres de tests et des comptes de routes/modules, sans référence d’exécution associée dans cet objet."
+        },
+        {
+          "path": "scripts/validate-endvera-whole-product-readiness.mjs",
+          "lineStart": 13,
+          "lineEnd": 75,
+          "observation": "La validation repose sur le rapport, des hashes, des chaînes, des fichiers présents et des valeurs déclarées. Aucun résultat de scénario ni identifiant de build/run/workspace n’est contrôlé."
+        },
+        {
+          "path": "scripts/validate-endvera-whole-product-closure.mjs",
+          "lineStart": 13,
+          "lineEnd": 66,
+          "observation": "La fonction contrôle des statuts, sept empreintes, des routes présentes, des compteurs et des frontières déclarées, puis retourne le statut de clôture sans vérifier une observation comportementale liée à l’exécution auditée."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Inspection statique des extraits seulement. L’instruction finale interdit les outils; aucune réussite ou défaillance d’exécution de ces validateurs n’a été observée pendant cet audit."
+      },
+      "impact": "Un responsable pourrait interpréter une validation documentaire comme une preuve de couverture fonctionnelle complète et engager des dépenses de distribution ou de pilote avant que les parcours et leurs récupérations soient démontrés.",
+      "confidence": "HIGH",
+      "proposedTest": "Dans un environnement local isolé, soumettre des preuves de scénario absentes, issues d’un autre build ou d’un autre workspace, puis des résultats duplicate, replay, approval, mutation-after-preview et readback manquants. Vérifier que la conclusion de couverture reste incomplète malgré des statuts et des compteurs déclarés conformes. Conserver séparément le résultat de validation documentaire.",
+      "mutationAuthorized": false
+    },
+    {
+      "id": "ASTRA-R0-PRODUCT-002",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "Les exemples publics de calendrier ne correspondent pas aux branches de l’interpréteur fourni",
+      "invariant": "3 — Prouver le résultat observable annoncé; 8 — Maintenir la cohérence des promesses et du produit; 10 — Accomplir les scénarios principaux avec les mots proposés à l’utilisateur.",
+      "expected": "Les phrases proposées publiquement doivent produire le parcours annoncé dans l’entrée conversationnelle active, avec clarification et préparation lorsque nécessaires. Leur test doit reprendre les phrases exactes en français et en anglais.",
+      "actual": "La page propose notamment « Ajoute Marc mardi à 14 h. » et illustre « Ajoute Marc au calendrier demain à 8 h pour Laval et prépare-lui un texto. » avec un rendez-vous ajouté et un texto préparé. Dans interpretConstructionMessage, la branche de création exige rendez-vous, meeting ou appointment. Ces deux phrases ne correspondent ni à cette branche ni aux autres branches du fichier et atteignent le résultat UNSUPPORTED. La divergence avec cet interpréteur est directement lisible; son utilisation effective pour ces entrées publiques et l’existence d’un autre interpréteur restent inconnues.",
+      "evidence": [
+        {
+          "path": "src/app/construction/page.tsx",
+          "lineStart": 28,
+          "lineEnd": 36,
+          "observation": "Le dialogue illustré annonce deux résultats pour une demande combinée; l’exemple de planification utilise une phrase sans les mots-clés reconnus par la branche calendrier fournie."
+        },
+        {
+          "path": "src/app/construction/page.tsx",
+          "lineStart": 76,
+          "lineEnd": 84,
+          "observation": "Les exemples anglais présentent les mêmes résultats avec Add Marc to the calendar et Add Marc Tuesday at 2 p.m."
+        },
+        {
+          "path": "src/lib/construction-assistant-v1/interpreter.ts",
+          "lineStart": 166,
+          "lineEnd": 245,
+          "observation": "Les branches reconnaissent une consultation de demain, un travail terminé, un préfixe de texto ou rendez-vous/meeting/appointment. Le résultat final est UNSUPPORTED lorsque ces conditions ne correspondent pas."
+        },
+        {
+          "path": "src/app/construction/page.tsx",
+          "lineStart": 205,
+          "lineEnd": 224,
+          "observation": "Le dialogue et son résultat sont rendus à partir de texte statique. L’étiquette de démonstration précise qu’aucun message réel n’est envoyé, mais ne constitue pas une preuve du traitement conversationnel montré."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Branches comparées statiquement aux phrases littérales. Aucun appel à l’interpréteur ou à une route n’a été exécuté; les outils sont interdits pour cette passe."
+      },
+      "impact": "Un utilisateur qui reprend les exemples peut rencontrer une impasse dès sa première demande si cette entrée utilise l’interpréteur fourni. Cela compromet le délai avant la première valeur et augmente l’assistance nécessaire.",
+      "confidence": "HIGH",
+      "proposedTest": "Exécuter chaque exemple public exact par la véritable route conversationnelle avec des contacts et un chantier synthétiques. Vérifier le résultat affiché, la clarification conservant le contexte, le calendrier canonique et le brouillon préparé sans transport. Inclure les demandes combinées et les deux langues.",
+      "mutationAuthorized": false
+    },
+    {
+      "id": "ASTRA-R0-PRODUCT-003",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "Le validateur de clôture contrôle sept fichiers protégés sans imposer leur identité",
+      "invariant": "4 — Lier chaque preuve à la bonne surface et au bon scénario.",
+      "expected": "Le validateur doit exiger l’ensemble exact des preuves requis pour la clôture, puis vérifier leurs empreintes et leur rattachement. Un nombre identique de fichiers sans rapport avec ces preuves doit être refusé.",
+      "actual": "validateWholeProductClosure accepte le rapport en argument. Pour protectedInputs, il vérifie la forme relative des chemins, leur unicité, leur existence et leur hash, puis impose uniquement paths.size === 7. Il ne compare pas ces chemins à une liste obligatoire. Des lectures fixes effectuées ensuite contrôlent certains statuts, mais ne garantissent pas que ces documents font partie des sept fichiers dont l’intégrité a été vérifiée. Le rapport fourni contient bien sept chemins nommés; la faiblesse démontrée concerne le contrôle de cet ensemble, pas une substitution observée.",
+      "evidence": [
+        {
+          "path": "scripts/validate-endvera-whole-product-closure.mjs",
+          "lineStart": 13,
+          "lineEnd": 27,
+          "observation": "Le rapport est injectable. La boucle contrôle chaque entrée, puis valide seulement une cardinalité de sept sans imposer l’ensemble des chemins attendus."
+        },
+        {
+          "path": "scripts/validate-endvera-whole-product-closure.mjs",
+          "lineStart": 38,
+          "lineEnd": 48,
+          "observation": "Les documents native-preflight, release-manifest et backend-activation sont lus séparément, sans assertion que leurs chemins figurent dans l’ensemble protégé."
+        },
+        {
+          "path": "release/endvera-construction-v1/whole-product-closure-audit.json",
+          "lineStart": 5,
+          "lineEnd": 12,
+          "observation": "Le rapport revendique un ensemble précis incluant notamment whole-product-readiness, construction-conversion-readiness et market-readiness-report; cette identité n’est pas exigée par le validateur."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Aucun rapport substitué n’a été exécuté. Le défaut de contrôle de l’ensemble est établi par lecture de la fonction; les outils sont interdits."
+      },
+      "impact": "Une erreur de génération ou une substitution de preuves pourrait conserver un verdict de clôture alors que les documents attendus ne sont plus protégés. Cela affaiblit la fiabilité du gate utilisé pour décider de la suite du produit.",
+      "confidence": "HIGH",
+      "proposedTest": "En mémoire seulement, remplacer une entrée obligatoire par un autre fichier local inoffensif ayant un hash valide, sans changer la cardinalité. Vérifier un refus signalant la preuve obligatoire manquante. Ajouter les cas de preuve omise et de document lu séparément mais absent de protectedInputs.",
+      "mutationAuthorized": false
+    },
+    {
+      "id": "ASTRA-R0-PRODUCT-004",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "L’appui humain est décrit comme une transmission effective alors que la page de soutien annonce un acheminement préparé",
+      "invariant": "1 — Rendre la disponibilité explicite; 8 — Éviter les contradictions entre surfaces; 9 — Distinguer une capacité préparée d’un service disponible.",
+      "expected": "La promesse d’appui humain doit distinguer la préparation locale du dossier, son attribution effective à une personne et un service de soutien opérationnel. La limite actuelle doit être visible avec la promesse concernée.",
+      "actual": "La page Construction affirme au présent qu’une personne reçoit le dossier complet et qu’ENDVERA lui transmet le chantier, la demande et les preuves. La page de soutien décrit plutôt une inspection locale et un acheminement humain préparé, sans canal externe ni service de production annoncé. La disponibilité locale est mentionnée sur Construction dans un détail de pied de page, dont le texte cible les textos, appels et calendriers connectés. Cette différence de formulation est démontrée; l’absence d’un consommateur humain ou d’un workflow d’attribution ailleurs dans le dépôt n’est pas démontrée.",
+      "evidence": [
+        {
+          "path": "src/app/construction/page.tsx",
+          "lineStart": 43,
+          "lineEnd": 59,
+          "observation": "Les textes affirment qu’une personne reçoit le dossier complet et qu’ENDVERA lui transmet la demande et les preuves."
+        },
+        {
+          "path": "src/app/construction/page.tsx",
+          "lineStart": 65,
+          "lineEnd": 66,
+          "observation": "La limite de disponibilité indique une démonstration locale et des transports non activés, sans préciser le statut de la prise en charge humaine."
+        },
+        {
+          "path": "src/app/construction/page.tsx",
+          "lineStart": 277,
+          "lineEnd": 283,
+          "observation": "La disponibilité actuelle est placée dans un élément details du pied de page, sans attribut open."
+        },
+        {
+          "path": "src/app/construction/support/page.tsx",
+          "lineStart": 16,
+          "lineEnd": 17,
+          "observation": "La page annonce un produit local, un acheminement humain préparé et l’indisponibilité du soutien de production."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Comparaison statique des textes et de leur structure de rendu. Aucun navigateur ni scénario d’escalade n’a été lancé."
+      },
+      "impact": "L’utilisateur peut croire qu’une personne a déjà reçu sa demande et attendre une intervention qui n’est pas établie par les preuves fournies. Les suivis bloqués peuvent alors rester sans propriétaire opérationnel confirmé.",
+      "confidence": "HIGH",
+      "proposedTest": "Déclencher localement une exception synthétique par la route utilisateur et vérifier les états distincts dossier préparé, attribué, reçu et repris. Sans destinataire humain actif, vérifier que les surfaces affichent uniquement la préparation locale et la prochaine action requise. Tester la cohérence du texte en français et en anglais.",
+      "mutationAuthorized": false
+    }
+  ],
+  "unknowns": [
+    "Périmètre exact : src/server/model-gateway/assistant-routing.ts lignes 1–63; src/lib/construction-operating-assistant-r36a/router.ts lignes 1–305; src/lib/construction-assistant-v1/interpreter.ts lignes 1–248; src/app/construction/page.tsx lignes 1–288; src/app/textassist/page.tsx lignes 1–127; src/app/construction/support/page.tsx lignes 1–23; src/lib/construction-operating-assistant-r35/registry.ts lignes 1–38; release/endvera-construction-v1/whole-product-readiness.json lignes 1–105; release/endvera-construction-v1/whole-product-closure-audit.json lignes 1–69; scripts/validate-endvera-whole-product-readiness.mjs lignes 1–82; scripts/validate-endvera-whole-product-closure.mjs lignes 1–77; apps/mobile/app.json lignes 1–122; C:/dev/afterdesk-project-brain/ENDVERA_CONSTRUCTION_OPERATING_ASSISTANT_A_TO_Z_PLAN.md lignes 1–671. Aucune couverture du reste du dépôt n’est revendiquée.",
+    "Le paquet est attribué au observedHead de l’enveloppe, différent du sourceProductHead imposé. La correspondance des fichiers produit entre ces deux commits, l’état réel du checkout, observedTree et les SHA-256 fournis ne sont pas vérifiés indépendamment.",
+    "Le fichier local du schéma n’est pas accessible dans cette passe. Le rapport suit le schéma reproduit dans le prompt; aucune validation automatique n’a été exécutée.",
+    "Aucun fichier de test ni journal brut d’exécution n’est fourni. Les comptes de tests et observations historiques du plan sont des déclarations documentaires, pas des reproductions effectuées ou authentifiées pendant cet audit.",
+    "Les routes API actives, leurs appelants, les politiques d’autorité métier et les transactions durables ne sont pas fournis. Le rattachement des interpréteurs et du routage AI aux parcours accessibles reste inconnu.",
+    "Le routeur fourni conserve ses décisions de replay dans une Map par instance et le wrapper interdit les indicateurs d’exécution externe. La persistance interprocessus, le contrôle d’accès du workspace et les protections d’un éventuel appelant ne sont pas établis.",
+    "SMS et appels : le transport réel est déclaré désactivé, mais les routes de préparation, d’approbation, de livraison et de récupération ainsi que leurs tests ne sont pas dans le paquet. Les connecteurs ne doivent pas être considérés absents pour cette seule raison.",
+    "Calendrier et contacts : app.json contient des déclarations de permissions natives, mais aucun gestionnaire de permission, import, sélection, révocation ou readback n’est fourni. Ces déclarations ne prouvent pas les comportements sur appareil.",
+    "Documents, recherche et routage AI : les registres détaillés, le classifier, les adaptateurs, les contrats de résultat, les preuves de citations et les tests ne sont pas fournis. Une décision de routage préparée ne prouve pas l’exécution du travail correspondant.",
+    "Les écrans mobiles, le portail authentifié et les textes importés publicConstructionOffer et TEXTASSIST_PUBLIC_COPY ne sont pas fournis. La parité complète des promesses, leur disponibilité réelle et l’absence de saisie d’identifiants techniques ne peuvent pas être établies.",
+    "La couverture observable de duplicate, replay, approval, mutation-after-preview, readback, refus, timeout, erreur provider et récupération reste inconnue. Aucun test sûr n’a été exécuté, conformément à l’interdiction d’outils.",
+    "Le plan externe décrit des évolutions ultérieures aux anciens rapports de readiness, notamment un APK signé et une installation Samsung. Le statut canonique actuel de chaque artefact et leur rattachement aux builds concernés nécessitent des preuves machine supplémentaires; aucune observation sur appareil n’est attestée ici."
+  ]
+}

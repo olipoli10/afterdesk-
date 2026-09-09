@@ -1,0 +1,18 @@
+Error: BETTER_AUTH_SECRET must be set in production. Refusing to start with the default development secret.
+    at 22023 (C:\dev\endvera-astra-reverification\.next\server\chunks\7473.js:1:413)
+    at g (C:\dev\endvera-astra-reverification\.next\server\webpack-runtime.js:1:136)
+    at 67473 (C:\dev\endvera-astra-reverification\.next\server\chunks\7473.js:5:1314)
+    at g (C:\dev\endvera-astra-reverification\.next\server\webpack-runtime.js:1:136)
+    at 26527 (C:\dev\endvera-astra-reverification\.next\server\app\api\payments\checkout\route.js:1:2840)
+    at g (C:\dev\endvera-astra-reverification\.next\server\webpack-runtime.js:1:136)
+    at <unknown> (C:\dev\endvera-astra-reverification\.next\server\app\api\payments\checkout\route.js:1:10828)
+    at g.X (C:\dev\endvera-astra-reverification\.next\server\webpack-runtime.js:1:1189)
+    at <unknown> (C:\dev\endvera-astra-reverification\.next\server\app\api\payments\checkout\route.js:1:10743)
+    at Object.<anonymous> (C:\dev\endvera-astra-reverification\.next\server\app\api\payments\checkout\route.js:1:10860)
+
+> Build error occurred
+Error: Failed to collect page data for /api/payments/checkout
+    at ignore-listed frames {
+  type: 'Error'
+}
+PHASE_CHECK_EXECUTION_FAILURE:GROUPED_CHECK_FAILED:2

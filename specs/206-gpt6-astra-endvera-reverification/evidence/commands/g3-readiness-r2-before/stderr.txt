@@ -1,0 +1,93 @@
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 17 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m test/construction-public-copy-boundaries.test.ts[2m > [22mConstruction public-copy boundary (fr)[2m > [22mqualifies the walkthrough locally and disclaims receiving, sending, calendar writes and saved actions
+[31m[1mAssertionError[22m: expected '' to contain 'PARCOURS VISÉ · NON EXÉCUTÉ'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- PARCOURS VISÉ · NON EXÉCUTÉ[39m
+
+[36m [2m❯[22m test/construction-public-copy-boundaries.test.ts:[2m47:25[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/construction-public-copy-boundaries.test.ts[2m > [22mConstruction public-copy boundary (en)[2m > [22mqualifies the walkthrough locally and disclaims receiving, sending, calendar writes and saved actions
+[31m[1mAssertionError[22m: expected '' to contain 'TARGET WORKFLOW · NOT EXECUTED'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- TARGET WORKFLOW · NOT EXECUTED[39m
+
+[36m [2m❯[22m test/construction-public-copy-boundaries.test.ts:[2m47:25[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mdoes not let a consumer redefine the current canonical path set
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mdoes not let a consumer redefine the historical canonical path set
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m test/unit/readiness-review-r2.test.ts:[2m14:29[22m[39m
+    [90m 12|[39m     try { paths.splice(0,1,"package.json"); } catch { mutationRefused=…
+    [90m 13|[39m     finally { if(!mutationRefused)paths.splice(0,paths.length,...origi…
+    [90m 14|[39m     expect(mutationRefused).toBe(true);expect(Object.isFrozen(paths)).…
+    [90m   |[39m                             [31m^[39m
+    [90m 15|[39m     [34mexpect[39m(paths)[33m.[39m[34mtoEqual[39m(original)[33m;[39m
+    [90m 16|[39m     expect(validateCurrentProjection(buildCurrentProjection()).status)…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim signed regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim uploaded regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim submitted regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim providerObserved regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim customerObserved regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim deviceObserved regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim externalEffectCount regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim observedProof regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim currentReadiness regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim wholeProductReadiness regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim wholeProductClosure regardless of value
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects the misplaced top-level claim externalReadiness regardless of value
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m test/unit/readiness-review-r2.test.ts:[2m20:71[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m test/unit/readiness-review-r2.test.ts[2m > [22mReadiness R2 review regressions[2m > [22mrejects extra report and nested boundary properties
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m test/unit/readiness-review-r2.test.ts:[2m28:76[22m[39m
+    [90m 26|[39m   })[33m;[39m
+    [90m 27|[39m   [34mit[39m([32m"rejects extra report and nested boundary properties"[39m[33m,[39m()[33m=>[39m{
+    [90m 28|[39m     expect(()=>validateMarketReadiness({...fixture(),otherClaim:"ready…
+    [90m   |[39m                                                                            [31m^[39m
+    [90m 29|[39m     expect(()=>validateMarketReadiness({...fixture(),boundary:{...repo…
+    [90m 30|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯[22m[39m
+

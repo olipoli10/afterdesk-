@@ -1,0 +1,20 @@
+{
+  "id": "g0-queue-admission",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G0",
+  "observedHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+  "observedTree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "pwsh -NoProfile -File C:/dev/afterdesk-project-brain/scripts/validate-continuation-queue.ps1 -QueuePath C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/CONTINUATION_QUEUE.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T13:30:12.561Z",
+  "finishedAt": "2026-09-09T13:30:13.328Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-queue-admission/stdout.txt",
+  "stdoutSha256": "43cd0b225f34d3210fb3942ca980bbd1aa71137ee44305c466826009763f7ce3",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g0-queue-admission/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

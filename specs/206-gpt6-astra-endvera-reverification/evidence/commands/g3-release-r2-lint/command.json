@@ -1,0 +1,20 @@
+{
+  "id": "g3-release-r2-lint",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node --require ./specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs node_modules/eslint/bin/eslint.js scripts/endvera-release-source-binding.mjs scripts/endvera-release-source-contracts.mjs scripts/endvera-mobile-build-contract.mjs scripts/generate-endvera-release-package.mjs scripts/validate-endvera-release-package.mjs scripts/validate-endvera-mobile-build-readiness.mjs scripts/validate-endvera-native-preflight.mjs src/lib/construction-operating-assistant-r35/registry.ts test/unit/release-source-binding-review.test.ts test/unit/release-source-security-review.test.ts test/unit/release-source-r2-review.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:49:47.879Z",
+  "finishedAt": "2026-09-09T14:49:50.538Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-r2-lint/stdout.txt",
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-r2-lint/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

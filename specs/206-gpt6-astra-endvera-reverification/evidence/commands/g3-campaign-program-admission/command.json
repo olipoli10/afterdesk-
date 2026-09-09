@@ -1,0 +1,20 @@
+{
+  "id": "g3-campaign-program-admission",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "3cd12bcbbb8df78f76255e9b4a48b5b47336d97a",
+  "observedTree": "66d4abfdaafb0fe5ec177de75554baf5b14b7d52",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "C:/Users/oliro/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe -NoProfile -File C:/dev/afterdesk-project-brain/scripts/validate-long-run-program.ps1 -ManifestPath C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/LONG_RUN_PROGRAM.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:12:08.861Z",
+  "finishedAt": "2026-09-09T15:12:09.494Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-campaign-program-admission/stdout.txt",
+  "stdoutSha256": "f9a3b30fa1a63d1f59620ce24d20aebef35f8f57ece0457278fe1ac0625298a0",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-campaign-program-admission/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

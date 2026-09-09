@@ -1,0 +1,20 @@
+{
+  "id": "g5-guarded-intent-critical-review-r2",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G5",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "MODEL_CORRECTION_REVIEW",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-critical-review.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:11:38.538Z",
+  "finishedAt": "2026-09-09T14:15:36.332Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-guarded-intent-critical-review-r2/stdout.txt",
+  "stdoutSha256": "ced8711bff0380286b765bee531489dde9a6854a3493966b5ab46d7ea42ef7cb",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g5-guarded-intent-critical-review-r2/stderr.txt",
+  "stderrSha256": "eb5decacc8110c687988a32957d55e27a53fc41bbb40ad6053737f9e71b5f3fe",
+  "replay": null
+}

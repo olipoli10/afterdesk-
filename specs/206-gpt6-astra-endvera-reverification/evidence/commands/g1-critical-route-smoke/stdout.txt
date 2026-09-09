@@ -1,0 +1,2 @@
+CHECK_IDENTITY phase=G1 checkId=CRITICAL_ROUTE_SMOKE runtimeProviderAuthorized=false claimedDeviceObservation=false
+OWNED_WEB_PROCESS_SHUTDOWN_CONFIRMED

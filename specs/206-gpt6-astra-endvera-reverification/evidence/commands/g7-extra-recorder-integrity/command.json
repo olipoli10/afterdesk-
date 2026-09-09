@@ -1,0 +1,20 @@
+{
+  "id": "g7-extra-recorder-integrity",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node --test specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/local-recorder.test.mjs specs/206-gpt6-astra-endvera-reverification/scripts/test-secret-scan-boundaries.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:33:38.806Z",
+  "finishedAt": "2026-09-09T15:33:41.931Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-recorder-integrity/stdout.txt",
+  "stdoutSha256": "29bb0f3afb0cdf0d0aaee871986f95cc5e64472d45716088783b7a6da924dabf",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-recorder-integrity/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

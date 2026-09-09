@@ -1,0 +1,11 @@
+{"copy":"specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-command-log.json","bytes":608849,"sha256":"376a674b29af1c3c04eccde43ba1ce8f5eee1a208e2068cce16465f300d3822e","byteIdentical":true}
+{"copy":"specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-metric-report.json","bytes":5786,"sha256":"f59686f6bf99ea4b692c7688e2cb2e26cfccb77a721f1236c2b04c495d32c756","byteIdentical":true}
+{"copy":"specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-invariant-manifest.json","bytes":1392,"sha256":"7b0c6c12494800da2d87520cc137a84ae4bebf4733a75925df44ba6d2de0898f","byteIdentical":true}
+{"copy":"specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-brain-roadmap.md","bytes":13609,"sha256":"07b26884f862f00a940af12b60f9ffc8715d086f012115ab14e0e6fe9aa88b7b","byteIdentical":true}
+{"file":"final-metric-report.json","schemaExit":0,"launchError":null}
+JSON_SCHEMA_VALID
+{"file":"final-invariant-manifest.json","schemaExit":0,"launchError":null}
+JSON_SCHEMA_VALID
+{"file":"brain-checkpoint.json","schemaExit":0,"launchError":null}
+JSON_SCHEMA_VALID
+{"kind":"LOCAL_CLOSEOUT_ARTIFACT_VALIDATION","copiesChecked":4,"schemaRecordsChecked":3,"failures":0,"canonicalSealValidated":false}

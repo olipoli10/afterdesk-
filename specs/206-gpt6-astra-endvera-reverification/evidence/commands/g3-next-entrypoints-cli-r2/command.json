@@ -1,0 +1,20 @@
+{
+  "id": "g3-next-entrypoints-cli-r2",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/tsx/dist/cli.mjs scripts/validate-provider-boundary.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:20:52.348Z",
+  "finishedAt": "2026-09-09T14:20:54.589Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli-r2/stdout.txt",
+  "stdoutSha256": "7c52bba22042cee8754c6c2709368a867e1a6c18536948b227a8cbd9e27b6b48",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-next-entrypoints-cli-r2/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

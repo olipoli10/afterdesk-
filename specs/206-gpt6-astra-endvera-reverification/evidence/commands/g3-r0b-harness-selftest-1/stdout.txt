@@ -1,0 +1,13 @@
+✔ forwardslash NODE_OPTIONS loads the guard and refuses external fetch before I/O (68.3447ms)
+✔ guard allows a bounded loopback socket exchange (77.899ms)
+✔ guard refuses external numeric and DNS targets before connection (61.9873ms)
+✔ wildcard listener requests are clamped to loopback, not allowed externally (72.9641ms)
+✔ non-loopback requested IP listeners remain confined to loopback (67.7239ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 412.9522

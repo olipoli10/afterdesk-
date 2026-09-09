@@ -1,0 +1,34 @@
+{
+  "id": "g7-r0b-dst-boundary-r2-wrapper",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "PHASE_CHECK",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs --revalidation-replay specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-dst-boundary-r2.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:41:03.455Z",
+  "finishedAt": "2026-09-09T15:41:03.646Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-dst-boundary-r2-wrapper/stdout.txt",
+  "stdoutSha256": "d892362de2216597a0af7a07abff1977bcb87c149e9c79585e17c117894d4082",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-dst-boundary-r2-wrapper/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": {
+    "entrypoint": "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+    "args": [
+      "--revalidation-replay",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-dst-boundary-r2.json"
+    ],
+    "readPaths": [
+      "specs/206-gpt6-astra-endvera-reverification/evaluation-contracts/phase-check.mjs",
+      "specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/PHASE_CHECK_CONTRACTS.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/observations/g7-r0b-dst-boundary-r2.json",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-dst-boundary-r2/stdout.txt",
+      "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-dst-boundary-r2/stderr.txt"
+    ]
+  }
+}

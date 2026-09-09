@@ -1,0 +1,20 @@
+{
+  "id": "g3-readiness-r2-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/readiness-review-r2.test.ts test/construction-public-copy-boundaries.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:31:32.173Z",
+  "finishedAt": "2026-09-09T14:31:33.873Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-r2-before/stdout.txt",
+  "stdoutSha256": "41bcc0590973a9ef011a545ff4fe9a44b7b5dd5dd8680af6e0b9daad2adc906f",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-r2-before/stderr.txt",
+  "stderrSha256": "4286b2e1dd762be658997b4eccdbdf0069a70053316978386395e9caa9f89dbf",
+  "replay": null
+}

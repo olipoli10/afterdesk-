@@ -1,0 +1,20 @@
+{
+  "id": "g7-extra-legacy-queue",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G1 QUEUE_VALIDATION",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:33:37.559Z",
+  "finishedAt": "2026-09-09T15:33:38.371Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-legacy-queue/stdout.txt",
+  "stdoutSha256": "051082e7ac4cb5e2fa8659c6c25e2eda829d87cc1fa87011ab5bec17e4cb5fd0",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-extra-legacy-queue/stderr.txt",
+  "stderrSha256": "ed9d50374f19991a27a0988e5fe27fcd430b64c8ccc0afba05e7e2dd3fce603d",
+  "replay": null
+}

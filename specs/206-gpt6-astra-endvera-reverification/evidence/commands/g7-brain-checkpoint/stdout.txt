@@ -1,0 +1,5 @@
+PASS=GO_STARTS_OR_RESUMES_AUTONOMOUS_PROJECT
+[main d968666] checkpoint(spec206): retain blocked local revalidation and guarded intent evidence
+ 4 files changed, 109 insertions(+), 3 deletions(-)
+ create mode 100644 session-log/2026-09-09.md
+[33;1mWARNING: Checkpoint committed locally; push intentionally skipped.[0m

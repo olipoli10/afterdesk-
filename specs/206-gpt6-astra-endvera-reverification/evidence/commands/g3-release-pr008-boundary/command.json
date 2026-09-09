@@ -1,0 +1,20 @@
+{
+  "id": "g3-release-pr008-boundary",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "3cd12bcbbb8df78f76255e9b4a48b5b47336d97a",
+  "observedTree": "66d4abfdaafb0fe5ec177de75554baf5b14b7d52",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node --input-type=module -e import{buildReleaseManifest}from'./scripts/generate-endvera-release-package.mjs';import{isExactCheckoutCrlfEquivalent}from'./scripts/endvera-release-source-binding.mjs';import{execFileSync}from'node:child_process';const g=(...a)=>execFileSync('git',a,{encoding:'utf8'}).trim();const m=buildReleaseManifest({sourceHead:g('rev-parse','HEAD'),sourceTree:g('rev-parse','HEAD^{tree}')});const unsupported=m.inputs.filter(x=>!(/\\.(?:json|[cm]?js|tsx?|md|txt|svg|css|html|ya?ml)$/i).test(x.path)).map(x=>x.path);console.log(JSON.stringify({kind:'PRR2_008_SCOPE_OBSERVATION',currentInputCount:m.inputs.length,unsupportedCurrentInputPaths:unsupported,allUnsupportedCurrentInputsArePng:unsupported.every(p=>p.endsWith('.png')),ps1InputCrlfEquivalent:isExactCheckoutCrlfEquivalent(Buffer.from('x\\r\\n'),Buffer.from('x\\n'),'check.ps1'),javascriptInputCrlfEquivalent:isExactCheckoutCrlfEquivalent(Buffer.from('x\\r\\n'),Buffer.from('x\\n'),'check.js'),findingClosed:false,disposition:'OPEN_COMPATIBILITY_LIMITATION_NO_CURRENT_PACKAGE_TEXT_INPUT_AFFECTED'}));",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:14:17.501Z",
+  "finishedAt": "2026-09-09T15:14:18.039Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-pr008-boundary/stdout.txt",
+  "stdoutSha256": "61320210667b27a105a4dc5fae0e877d208a3656115b6f11d4a9f5346b6abd31",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-release-pr008-boundary/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

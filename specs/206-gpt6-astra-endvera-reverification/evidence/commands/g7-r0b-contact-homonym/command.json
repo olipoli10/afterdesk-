@@ -1,0 +1,20 @@
+{
+  "id": "g7-r0b-contact-homonym",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 CONTACT_HOMONYM",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:22:58.484Z",
+  "finishedAt": "2026-09-09T15:23:00.210Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-contact-homonym/stdout.txt",
+  "stdoutSha256": "5c6648ca4096cb58c6c825bd831c7900afe4259838707f6e1807949c3d5faa9f",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-contact-homonym/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

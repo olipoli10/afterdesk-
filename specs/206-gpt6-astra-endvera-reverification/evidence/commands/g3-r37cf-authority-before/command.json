@@ -1,0 +1,20 @@
+{
+  "id": "g3-r37cf-authority-before",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/vitest/vitest.mjs run test/unit/r37cf-current-authority.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:37:38.119Z",
+  "finishedAt": "2026-09-09T14:37:39.423Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-before/stdout.txt",
+  "stdoutSha256": "f87b126cfea67af374bad159cfab68ea02c5c1787cdb9015e8fcc0a7af99991d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-before/stderr.txt",
+  "stderrSha256": "6ec86423beda212503f48a444936d6909164ba6775188496e77f0a6f2a6d9648",
+  "replay": null
+}

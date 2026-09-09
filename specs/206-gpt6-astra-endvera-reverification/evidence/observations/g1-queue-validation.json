@@ -1,0 +1,17 @@
+{
+  "kind": "PHASE_CHECK_OBSERVATION",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G1",
+  "checkId": "QUEUE_VALIDATION",
+  "observedCommandId": "g1-queue-validation",
+  "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+  "classification": "VALIDATION",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G1 QUEUE_VALIDATION",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation/stdout.txt",
+  "stdoutSha256": "051082e7ac4cb5e2fa8659c6c25e2eda829d87cc1fa87011ab5bec17e4cb5fd0",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g1-queue-validation/stderr.txt",
+  "stderrSha256": "ed9d50374f19991a27a0988e5fe27fcd430b64c8ccc0afba05e7e2dd3fce603d"
+}

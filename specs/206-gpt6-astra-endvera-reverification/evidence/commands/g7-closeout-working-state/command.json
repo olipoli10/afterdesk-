@@ -1,0 +1,20 @@
+{
+  "id": "g7-closeout-working-state",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evidence/observations/closeout-working-state.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:45:55.514Z",
+  "finishedAt": "2026-09-09T15:45:56.925Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-closeout-working-state/stdout.txt",
+  "stdoutSha256": "160b70c6a83b258e49a9eb681ba7baad3c6a1b93a677d08e45107666fa31196c",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-closeout-working-state/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

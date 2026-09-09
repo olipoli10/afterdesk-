@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "1.0",
+  "auditLane": "CANON_PROVENANCE",
+  "sourceProductHead": "f7bef0ae593fd9ac70a065f76655e692cad61766",
+  "auditor": {
+    "requestedModel": "gpt-6-astra",
+    "reportedModel": null,
+    "clientVersion": "codex-cli 0.153.4",
+    "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+    "observedHead": "afaedf8e719892503a38016a8c6add55791ddc81",
+    "observedTree": "e324f45808e259f7c93353c5deb8ffb2afab34c2",
+    "runAt": "2026-09-09T13:55:36.522Z",
+    "commandId": "g2-packet-canon-provenance-r0b",
+    "promptPath": "specs/206-gpt6-astra-endvera-reverification/audit-prompts/canon-provenance.md",
+    "promptSha256": "b9be67ba084c4a99e81d90fd3534292d8fa2c39e3cc5d03cbb08043241ba2c9d"
+  },
+  "status": "INCOMPLETE",
+  "summary": "Trois incohérences documentaires relevées dans les seuls extraits fournis; aucune inspection directe ni reproduction exécutée. Paquet identifié par SHA-256 5cf064f30ea2dd5415a502f23bb3cebdf56c250dd1559da13969179bc1801b90, sans vérification indépendante de cette empreinte. Périmètre exact : au commit produit déclaré afaedf8e719892503a38016a8c6add55791ddc81, specs/090-prepared-action-inspection/PROJECT_BACKLOG.json:1-205, specs/090-prepared-action-inspection/CONTINUATION_QUEUE.json:1-3310, apps/mobile/app.json:1-122, release/endvera-construction-v1/release-definition.json:1-75, release/endvera-construction-v1/market-readiness-report.json:1-62, scripts/validate-endvera-market-readiness.mjs:1-64 et scripts/validate-endvera-native-preflight.mjs:1-45; au commit Brain déclaré 3a4e31d837ed4f53f8326d865fca43cc54eb4c3e, C:/dev/afterdesk-project-brain/CURRENT_STATE.md:1-160, HANDOFF.md:1-150, ROADMAP_PROGRESS_MODEL.md:1-260 et ENDVERA_CONSTRUCTION_OPERATING_ASSISTANT_A_TO_Z_PLAN.md:1-671. Aucune conclusion de couverture complète du dépôt ou du sourceProductHead. Aucune métrique recalculée, aucune mutation autorisée.",
+  "findings": [
+    {
+      "id": "ASTRA-R0-CANON-001",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "Le rapport market readiness référence une empreinte incompatible avec celle du paquet source",
+      "invariant": "1 et 9 — Les empreintes publiées doivent correspondre aux sources identifiées des projections.",
+      "expected": "L'empreinte de release-definition.json inscrite dans sourceHashes doit correspondre aux octets de la source utilisée; une projection historique doit identifier sa version source.",
+      "actual": "Le rapport publie 10071500ed9532892e0787ed7ff007e56b00f162dd9400dfe8d42688e96888ec pour release-definition.json. Le paquet attribue au même fichier, au même sourceCommit produit, l'empreinte e6f92aba35c92c30864e56be2d3f7c0176b7f6ac1f952aadd8e2afe46b2046aa. Le validateur compare cette référence aux octets courants et prévoit MARKET_READINESS_SOURCE_HASH_MISMATCH en cas de différence. La divergence entre les deux empreintes déclarées est directement observable; les octets complets n'ont pas été hachés pendant cet audit.",
+      "evidence": [
+        {
+          "path": "release/endvera-construction-v1/market-readiness-report.json",
+          "lineStart": 11,
+          "lineEnd": 16,
+          "observation": "sourceHashes contient l'empreinte 10071500ed9532892e0787ed7ff007e56b00f162dd9400dfe8d42688e96888ec pour release-definition.json."
+        },
+        {
+          "path": "release/endvera-construction-v1/release-definition.json",
+          "lineStart": 1,
+          "lineEnd": 75,
+          "observation": "L'extrait fourni est associé par les métadonnées du paquet à l'empreinte e6f92aba35c92c30864e56be2d3f7c0176b7f6ac1f952aadd8e2afe46b2046aa. Cette empreinte provient du paquet, pas d'un calcul de l'auditeur."
+        },
+        {
+          "path": "scripts/validate-endvera-market-readiness.mjs",
+          "lineStart": 38,
+          "lineEnd": 43,
+          "observation": "Le validateur lit les sources sous root, calcule leur SHA-256 et refuse toute différence avec sourceHashes."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Outils interdits pour cette reprise sur paquet. Aucun résultat réel du validateur ni calcul indépendant des empreintes n'est fourni."
+      },
+      "impact": "La déclaration LOCAL_MARKET_PREPARATION_COMPLETE ne dispose pas d'une liaison cohérente avec la définition produit présentée dans le même paquet.",
+      "confidence": "HIGH",
+      "proposedTest": "Lors d'une inspection autorisée des octets complets, comparer les cinq empreintes référencées aux fichiers du commit source déclaré, sans régénérer le rapport, puis exécuter le validateur en lecture seule.",
+      "mutationAuthorized": false
+    },
+    {
+      "id": "ASTRA-R0-CANON-002",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "La définition de release et le contrôle natif utilisent l'ancien slug mobile",
+      "invariant": "8 — Les identités utilisées par les rapports et contrôles de readiness doivent correspondre à l'identité mobile actuelle.",
+      "expected": "La configuration Expo, les identités iOS/Android de release et le contrôle natif doivent utiliser le même slug courant, ou identifier explicitement une ancienne version distincte.",
+      "actual": "app.json déclare le slug endvera et le Brain décrit le projet endveras-team/endvera. La définition de release conserve endvera-mobile pour iOS et Android, tandis que le validateur natif exige exactement endvera-mobile. La configuration fournie ne satisfait donc pas cette assertion; aucun échec d'exécution n'est revendiqué.",
+      "evidence": [
+        {
+          "path": "apps/mobile/app.json",
+          "lineStart": 3,
+          "lineEnd": 6,
+          "observation": "La configuration Expo déclare name ENDVERA, slug endvera et owner endveras-team."
+        },
+        {
+          "path": "release/endvera-construction-v1/release-definition.json",
+          "lineStart": 15,
+          "lineEnd": 31,
+          "observation": "Les deux identités mobiles déclarent encore slug endvera-mobile."
+        },
+        {
+          "path": "scripts/validate-endvera-native-preflight.mjs",
+          "lineStart": 9,
+          "lineEnd": 16,
+          "observation": "Le script charge app.json et refuse l'identité si app.slug n'est pas endvera-mobile."
+        },
+        {
+          "path": "C:/dev/afterdesk-project-brain/ENDVERA_CONSTRUCTION_OPERATING_ASSISTANT_A_TO_Z_PLAN.md",
+          "lineStart": 622,
+          "lineEnd": 628,
+          "observation": "Le Brain enregistre le rattachement au projet endveras-team/endvera et son identifiant EAS public."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Comparaison statique des extraits seulement. L'interdiction d'invoquer les outils empêche l'exécution du contrôle natif."
+      },
+      "impact": "Le contrôle de readiness natif contient une condition incompatible avec la configuration fournie et la définition de release publie une identité divergente.",
+      "confidence": "HIGH",
+      "proposedTest": "Comparer en lecture seule le slug Expo aux deux identités du manifeste et à l'assertion native; vérifier qu'une configuration portant l'identité acceptée est admise sans modifier les attestations historiques.",
+      "mutationAuthorized": false
+    },
+    {
+      "id": "ASTRA-R0-CANON-003",
+      "classification": "FACT",
+      "severity": "P2",
+      "title": "Les entrées courantes du Brain n'intègrent pas le remplacement de R38 par la trajectoire R39C",
+      "invariant": "4 et 9 — Les projections courantes doivent refléter les décisions acceptées et distinguer les checkpoints historiques des prochaines actions.",
+      "expected": "CURRENT_STATE et l'entrée active de HANDOFF doivent désigner une trajectoire compatible avec le backlog et le dernier checkpoint du plan canonique, tout en conservant les anciennes observations comme historique.",
+      "actual": "CURRENT_STATE présente encore l'interaction R38 comme prochaine action valide. La première entrée Active handoff renvoie au checkpoint R37BC et à une décision préalable à une session R38. Pourtant, le backlog marque R38 CUT_BY_FOUNDER_DECISION, et le plan du même commit Brain déclare R38A-R38G et R39A-R39B terminés localement, puis décrit un APK R39C signé et une installation Samsung observée. Son prochain jalon est un backend HTTPS approuvé et un APK de remplacement. Les entrées de tête fournies ne signalent pas leur supersession.",
+      "evidence": [
+        {
+          "path": "C:/dev/afterdesk-project-brain/CURRENT_STATE.md",
+          "lineStart": 48,
+          "lineEnd": 55,
+          "observation": "R38 reste présenté comme incomplet avec, pour prochaine action valide, l'interaction d'Olivier dans la surface préparée."
+        },
+        {
+          "path": "C:/dev/afterdesk-project-brain/HANDOFF.md",
+          "lineStart": 3,
+          "lineEnd": 23,
+          "observation": "La première entrée explicitement active reprend R37BC et exige une nouvelle décision avant une session R38."
+        },
+        {
+          "path": "specs/090-prepared-action-inspection/PROJECT_BACKLOG.json",
+          "lineStart": 190,
+          "lineEnd": 200,
+          "observation": "R38 est CUT_BY_FOUNDER_DECISION; les travaux locaux suivants sont DONE et R39C reste PLANNED."
+        },
+        {
+          "path": "C:/dev/afterdesk-project-brain/ENDVERA_CONSTRUCTION_OPERATING_ASSISTANT_A_TO_Z_PLAN.md",
+          "lineStart": 416,
+          "lineEnd": 421,
+          "observation": "Le plan confirme l'abandon de R38 et désigne le pilote physique R39C comme prochain release."
+        },
+        {
+          "path": "C:/dev/afterdesk-project-brain/ENDVERA_CONSTRUCTION_OPERATING_ASSISTANT_A_TO_Z_PLAN.md",
+          "lineStart": 638,
+          "lineEnd": 670,
+          "observation": "Le checkpoint ultérieur décrit les preuves étroites de signature et d'installation Samsung, puis identifie le backend HTTPS et l'APK de remplacement comme prochain jalon externe."
+        }
+      ],
+      "reproduction": {
+        "status": "NOT_RUN",
+        "command": null,
+        "exitCode": null,
+        "outputExcerpt": "Contradiction documentaire observée dans les extraits seulement. Aucun routeur de continuation ni lecteur du Brain n'a été exécuté."
+      },
+      "impact": "Une reprise fondée sur les entrées présentées comme courantes peut orienter le travail vers une campagne abandonnée et ignorer les jalons R39C déjà documentés.",
+      "confidence": "HIGH",
+      "proposedTest": "Contrôler que les entrées courantes de CURRENT_STATE et HANDOFF désignent le prochain jalon du dernier checkpoint canonique et qu'aucune release CUT_BY_FOUNDER_DECISION n'est proposée comme prochaine action active.",
+      "mutationAuthorized": false
+    }
+  ],
+  "unknowns": [
+    "Le dépôt et ses objets Git ne sont pas accessibles dans cette reprise sans outils. Les HEAD, TREE, sourceCommit et empreintes de l'enveloppe et du paquet sont des valeurs fournies, non vérifiées indépendamment.",
+    "Le paquet produit porte sur afaedf8e719892503a38016a8c6add55791ddc81. Son ascendance et ses différences avec sourceProductHead f7bef0ae593fd9ac70a065f76655e692cad61766 ne sont pas fournies; les constats ne sont pas attribués automatiquement à ce dernier.",
+    "Le schéma sur disque et les octets du prompt ne sont pas accessibles. La structure du rapport suit le schéma inclus dans la demande; promptSha256 est recopié sans recalcul.",
+    "CURRENT_STATE.md et HANDOFF.md ne sont fournis que jusqu'aux lignes 160 et 150. Une éventuelle correction plus bas dans ces fichiers n'a pas été inspectée; le constat porte sur leurs entrées de tête.",
+    "Les specs acceptées complètes, le manifeste de release généré, les attestations historiques et supersédantes, ainsi que leur historique Git ne sont pas fournis. Leur conformité et leur immutabilité restent non vérifiées.",
+    "Les rapports R37 scellés et leurs octets ne sont pas fournis. Le backlog et le Brain conservent explicitement REWORK; DONE peut ici désigner la clôture d'une tentative échouée et ne suffit pas à établir un masquage.",
+    "Les journaux complets de tests et de builds ne sont pas fournis. Les nombres de réussites, les skips, les timeouts et les refus de build ne peuvent pas être rapprochés exhaustivement de chaque synthèse.",
+    "L'APK, la photo Samsung, les traces EAS et les attestations liant build, run et workspace ne sont pas accessibles. Leurs identifiants, tailles et empreintes sont uniquement rapportés par le Brain.",
+    "La rubric roadmap et ses valeurs publiées sont visibles, mais les preuves primaires des phases, des 18 gates C2 et du dénominateur Verified-E2E, ainsi que la rubric complète de real-test readiness, ne sont pas fournies. Aucune métrique n'a été recalculée ou augmentée.",
+    "Les routes mobiles actuelles, les surfaces visibles, les autres rapports de readiness et leurs sources complètes ne sont pas fournis. Leur fraîcheur et leur cohérence restent non vérifiées."
+  ]
+}

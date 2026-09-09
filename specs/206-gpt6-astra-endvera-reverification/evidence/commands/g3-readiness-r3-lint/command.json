@@ -1,0 +1,20 @@
+{
+  "id": "g3-readiness-r3-lint",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "a9c4c01fdb2fcdff3838a6966f1560832bc32553",
+  "observedTree": "1126c0bb2b8587d68652b67e8739f0d2d08a1366",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node node_modules/eslint/bin/eslint.js release/current-projection-v3.mjs scripts/validate-endvera-market-readiness.mjs src/app/construction/page.tsx test/unit/readiness-review-r2.test.ts test/construction-public-copy-boundaries.test.ts",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:40:38.068Z",
+  "finishedAt": "2026-09-09T14:40:40.857Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-r3-lint/stdout.txt",
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-readiness-r3-lint/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

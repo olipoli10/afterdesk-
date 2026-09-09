@@ -1,0 +1,20 @@
+{
+  "id": "g7-webhook-forgery",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 WEBHOOK_FORGERY",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:20:20.101Z",
+  "finishedAt": "2026-09-09T15:20:20.358Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-webhook-forgery/stdout.txt",
+  "stdoutSha256": "99f24921dc0fbc66f7b72ac0df5653dab5075da09bde6de7456f46552af275c0",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-webhook-forgery/stderr.txt",
+  "stderrSha256": "a3920dbc8480c4ea9c50223fe9796b26aa667eb4e80ba59b9a954df0b294a317",
+  "replay": null
+}

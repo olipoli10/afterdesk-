@@ -1,0 +1,20 @@
+{
+  "id": "g3-r37cf-authority-critical-review",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G3",
+  "observedHead": "56c05e270b95c93365c9a7c12c3758bce66d6eba",
+  "observedTree": "d94dca3b336d554e2fc59d283c4e98a33bdded6e",
+  "classification": "MODEL_CORRECTION_REVIEW",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/run-critical-review.mjs specs/206-gpt6-astra-endvera-reverification/audit-packets/r37cf-authority-correction.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T14:45:03.860Z",
+  "finishedAt": "2026-09-09T14:50:23.569Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-critical-review/stdout.txt",
+  "stdoutSha256": "f8edf6daf9d6374a6929310e9624c92e34c94ce28e25143482f148ca715fd15d",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g3-r37cf-authority-critical-review/stderr.txt",
+  "stderrSha256": "27d09a090a0ca83000cc21b062e614cc8c69dc9d813c0b8ba26ec6c1190acb67",
+  "replay": null
+}

@@ -1,0 +1,20 @@
+{
+  "id": "g7-preview-mutation",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 PREVIEW_MUTATION",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:20:24.473Z",
+  "finishedAt": "2026-09-09T15:20:24.736Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-preview-mutation/stdout.txt",
+  "stdoutSha256": "7f0001c3adf4800172f36182047c2da31dd8d5dd6e8b673800efce14cfb31e61",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-preview-mutation/stderr.txt",
+  "stderrSha256": "a3920dbc8480c4ea9c50223fe9796b26aa667eb4e80ba59b9a954df0b294a317",
+  "replay": null
+}

@@ -1,0 +1,20 @@
+{
+  "id": "g7-r0b-cross-workspace-isolation",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "DETERMINISTIC_TEST",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 CROSS_WORKSPACE_ISOLATION",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:24:53.925Z",
+  "finishedAt": "2026-09-09T15:25:47.161Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-cross-workspace-isolation/stdout.txt",
+  "stdoutSha256": "d872e5bf762cfca35e41b706e66e8ff9a2028a6f1a9f68a4575444a3c1caaa5f",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-r0b-cross-workspace-isolation/stderr.txt",
+  "stderrSha256": "96c0e6416f9e963d24d146ee16d9850ad7c0ef1eab28dd1562eb34335b05240b",
+  "replay": null
+}

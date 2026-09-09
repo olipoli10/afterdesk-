@@ -1,0 +1,20 @@
+{
+  "id": "g7-secret-scan",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 SECRET_SCAN",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:20:34.048Z",
+  "finishedAt": "2026-09-09T15:20:35.084Z",
+  "expectedExitCode": 0,
+  "exitCode": 1,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-secret-scan/stdout.txt",
+  "stdoutSha256": "b87e22584f5cb4471fb0905ffd35f6c645e5ee4d8edd286a6a4a1198280473ec",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-secret-scan/stderr.txt",
+  "stderrSha256": "f5c4646ce01ccef92ee43dde1ae1ab4c00f0ccd1dcd7110645bdc5e04b413506",
+  "replay": null
+}

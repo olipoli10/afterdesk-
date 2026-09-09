@@ -1,0 +1,153 @@
+{
+  "kind": "PAIRED_LOCAL_SOURCE_GRAPH_PROFILE",
+  "baselineCommit": "afaedf8e719892503a38016a8c6add55791ddc81",
+  "moduleCount": 599,
+  "repetitions": 3,
+  "measurements": [
+    {
+      "repetition": 0,
+      "variant": "baseline",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 669.1265000000001,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "baseline",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 488.28970000000004,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "baseline",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 473.50490000000013,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "current",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 465.6618000000003,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "current",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 359.10059999999976,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 0,
+      "variant": "current",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 545.9452999999999,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "baseline",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 634.8804999999998,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "baseline",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 661.5928000000004,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "baseline",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 656.9605000000001,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "current",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 557.3473999999997,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "current",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 561.6880999999994,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 1,
+      "variant": "current",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 603.7124000000003,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "baseline",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 622.1846999999998,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "baseline",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 659.1947000000009,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "baseline",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 584.4022999999997,
+      "modulesParsed": 599,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "current",
+      "method": "findProviderExecutionReachability",
+      "durationMs": 594.5608000000011,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "current",
+      "method": "findUnresolvedDynamicModuleReachability",
+      "durationMs": 630.3780000000006,
+      "modulesParsed": 539,
+      "findingCount": 0
+    },
+    {
+      "repetition": 2,
+      "variant": "current",
+      "method": "findDynamicCodeExecutionReachability",
+      "durationMs": 552.7407999999996,
+      "modulesParsed": 539,
+      "findingCount": 0
+    }
+  ],
+  "providerCalls": 0
+}

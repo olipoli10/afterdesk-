@@ -1,0 +1,20 @@
+{
+  "id": "g7-secret-flag-provenance-r2",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "2326aa6aca05859bb58a0b2e747827b364dee1fb",
+  "observedTree": "c45a4328ee0022ffe3a76f8649f01b5e1c005a4b",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/evidence/observations/secret-flag-provenance-r2.mjs",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:28:40.361Z",
+  "finishedAt": "2026-09-09T15:28:40.572Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-secret-flag-provenance-r2/stdout.txt",
+  "stdoutSha256": "78b1fd32ca0097d71cf3d9460c071f7f2a6f749e1357312634431f51d933e0bb",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-secret-flag-provenance-r2/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

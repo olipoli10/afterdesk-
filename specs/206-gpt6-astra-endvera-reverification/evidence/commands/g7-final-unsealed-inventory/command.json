@@ -1,0 +1,20 @@
+{
+  "id": "g7-final-unsealed-inventory",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "VALIDATION",
+  "providerAttemptRequestId": null,
+  "command": "node specs/206-gpt6-astra-endvera-reverification/scripts/collect-unsealed-evidence.mjs specs/206-gpt6-astra-endvera-reverification/evidence/observations/final-inventory.config.json",
+  "workingDirectory": ".",
+  "startedAt": "2026-09-09T15:46:49.523Z",
+  "finishedAt": "2026-09-09T15:46:53.362Z",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-final-unsealed-inventory/stdout.txt",
+  "stdoutSha256": "bdfcd251361846ab2e57a8011b8d544d2b547b3e6908c87b8a3ab22a9e277366",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-final-unsealed-inventory/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "replay": null
+}

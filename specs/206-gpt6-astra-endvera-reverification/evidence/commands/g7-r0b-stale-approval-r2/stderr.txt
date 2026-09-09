@@ -1,0 +1,4 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma config detected, skipping environment variable loading.
+[streams] falling back to full-row keys for public.it_schema_marker because no primary key could be resolved

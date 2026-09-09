@@ -1,0 +1,17 @@
+{
+  "kind": "PHASE_CHECK_OBSERVATION",
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "phase": "G7",
+  "checkId": "NATIVE_CRASH_REPRODUCTION",
+  "observedCommandId": "g7-native-crash-reproduction-r2",
+  "observedHead": "baa38383d590eb531ef98c584e257b73c3bff4cc",
+  "observedTree": "6fb3c42a8d27e11114690a21c873ba1605c5685c",
+  "classification": "VALIDATION",
+  "command": "node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 NATIVE_CRASH_REPRODUCTION",
+  "expectedExitCode": 0,
+  "exitCode": 0,
+  "stdoutPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-native-crash-reproduction-r2/stdout.txt",
+  "stdoutSha256": "cf4f9a06ff89cad26565374db406ded569597d1cd9c97e66105c1cf775b29198",
+  "stderrPath": "specs/206-gpt6-astra-endvera-reverification/evidence/commands/g7-native-crash-reproduction-r2/stderr.txt",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

@@ -1,0 +1,21 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90mC:/dev/endvera-astra-reverification[39m
+
+ [31m❯[39m test/construction-operating-assistant-r37a-sealed-executor.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 20[2mms[22m[39m
+[31m     [31m×[31m ARCH002 bounds a never-resolving adapter by elapsed time, not reported latency[39m[32m 11[2mms[22m[39m
+     [32m✓[39m seals current synthetic R36B controller input while retaining strict privacy[32m 1[2mms[22m[39m
+     [32m✓[39m refuses before adapter invocation when authority or privacy binding is invalid[32m 2[2mms[22m[39m
+     [32m✓[39m accepts only bounded local synthetic output and permanently labels it synthetic[32m 3[2mms[22m[39m
+     [32m✓[39m has no observed provider mode in this local release[32m 0[2mms[22m[39m
+     [32m✓[39m contains no network client, environment-secret read or automatic dispatch source[32m 1[2mms[22m[39m
+ [31m❯[39m test/unit/broadcast-preparation-replay.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 10[2mms[22m[39m
+[31m     [31m×[31m replays the persisted result when previously selected contacts are no longer active[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m replays the exact prior result even if a new homonym now exists[39m[32m 1[2mms[22m[39m
+     [32m✓[39m checks current authorization before serving persisted replay[32m 1[2mms[22m[39m
+[31m     [31m×[31m refuses changed input hash before resolving current contacts[39m[32m 2[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 09:58:50
+[2m   Duration [22m 642ms[2m (transform 534ms, setup 0ms, import 814ms, tests 30ms, environment 0ms)[22m
+
