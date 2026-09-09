@@ -122,41 +122,6 @@ export async function prepareSecretaryBroadcast(input: {
   routing: ClientAssistantRoutingProjection;
   admittedSource?: TrustedAdmittedAssistantSource;
 }): Promise<UnifiedAssistantResult> {
-  const membership = await requireActiveConstructionMember(prisma, input.userId, input.request.workspaceId);
-  if (membership.role !== "owner" && membership.role !== "admin") throw new ConstructionAccessDenied();
-
-  const contacts = await prisma.constructionContact.findMany({
-    where: { workspaceId: input.request.workspaceId, status: "active" },
-    orderBy: [{ displayName: "asc" }, { id: "asc" }],
-    select: { id: true, displayName: true, normalizedPhone: true },
-  });
-  const recipients = input.candidate.recipientNames.map((requestedName) => {
-    const matches = contacts.filter((contact) => normalizeName(contact.displayName) === normalizeName(requestedName));
-    if (matches.length === 0) {
-      throw new SecretaryBroadcastRefused(
-        "R38E_CONTACT_NOT_FOUND",
-        `Je ne trouve pas le contact « ${requestedName} ». Aucun texto de groupe n’a été préparé.`,
-      );
-    }
-    if (matches.length > 1) {
-      throw new SecretaryBroadcastRefused(
-        "R38E_AMBIGUOUS_CONTACT",
-        `Il y a plusieurs contacts nommés « ${requestedName} ». Précise lequel; rien n’a été préparé.`,
-      );
-    }
-    const contact = matches[0];
-    if (!contact.normalizedPhone) {
-      throw new SecretaryBroadcastRefused(
-        "R38E_CONTACT_PHONE_REQUIRED",
-        `Le contact « ${contact.displayName} » n’a pas de numéro de téléphone. Aucun texto de groupe n’a été préparé.`,
-      );
-    }
-    return {
-      contactId: contact.id,
-      displayName: contact.displayName,
-      normalizedRecipient: contact.normalizedPhone,
-    };
-  });
 
   const source = input.admittedSource ?? null;
   const requestHash = sha256Canonical({
@@ -172,6 +137,10 @@ export async function prepareSecretaryBroadcast(input: {
     await tx.$queryRaw(Prisma.sql`
       SELECT pg_advisory_xact_lock(hashtextextended(${`${input.request.workspaceId}:${input.request.requestId}:r38e`}, 0))::text AS acquired
     `);
+
+    // Re-read current authorization inside the same transaction before replay.
+    const membership = await requireActiveConstructionMember(tx, input.userId, input.request.workspaceId);
+    if (membership.role !== "owner" && membership.role !== "admin") throw new ConstructionAccessDenied();
 
     const existing = await tx.constructionSecretaryBroadcastDraft.findUnique({
       where: {
@@ -207,6 +176,41 @@ export async function prepareSecretaryBroadcast(input: {
         routing: input.routing,
       });
     }
+
+    // Persisted replay is historical PREPARED_UNSENT evidence, not a fresh
+    // recipient/approval check. Resolve mutable contacts only for NEW preparation.
+    const contacts = await tx.constructionContact.findMany({
+      where: { workspaceId: input.request.workspaceId, status: "active" },
+      orderBy: [{ displayName: "asc" }, { id: "asc" }],
+      select: { id: true, displayName: true, normalizedPhone: true },
+    });
+    const recipients = input.candidate.recipientNames.map((requestedName) => {
+      const matches = contacts.filter((contact) => normalizeName(contact.displayName) === normalizeName(requestedName));
+      if (matches.length === 0) {
+        throw new SecretaryBroadcastRefused(
+          "R38E_CONTACT_NOT_FOUND",
+          `Je ne trouve pas le contact « ${requestedName} ». Aucun texto de groupe n’a été préparé.`,
+        );
+      }
+      if (matches.length > 1) {
+        throw new SecretaryBroadcastRefused(
+          "R38E_AMBIGUOUS_CONTACT",
+          `Il y a plusieurs contacts nommés « ${requestedName} ». Précise lequel; rien n’a été préparé.`,
+        );
+      }
+      const contact = matches[0];
+      if (!contact.normalizedPhone) {
+        throw new SecretaryBroadcastRefused(
+          "R38E_CONTACT_PHONE_REQUIRED",
+          `Le contact « ${contact.displayName} » n’a pas de numéro de téléphone. Aucun texto de groupe n’a été préparé.`,
+        );
+      }
+      return {
+        contactId: contact.id,
+        displayName: contact.displayName,
+        normalizedRecipient: contact.normalizedPhone,
+      };
+    });
 
     const inbound = await tx.constructionMessage.create({
       data: {

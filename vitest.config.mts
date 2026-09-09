@@ -10,6 +10,10 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // Three source-graph audits parse hundreds of modules. Unbounded host-wide
+    // concurrency starves their unchanged 5s deadline (R0b full-suite evidence).
+    // Bound CPU contention, not test assertions or timeouts.
+    maxWorkers: 4,
     include: ["test/**/*.test.ts"],
     clearMocks: true,
     restoreMocks: true,

@@ -28,10 +28,13 @@ function normalizeRepositoryPath(path: string) {
   return posix.normalize(path.replaceAll("\\", "/")).replace(/^\.\//u, "");
 }
 
-function isPublicEntrypoint(path: string) {
-  return ["src/app/", "src/server/actions/", "src/jobs/", "src/workers/"].some(
-    (root) => path.startsWith(root),
-  );
+export function isProviderPublicEntrypoint(path: string) {
+  const normalized = normalizeRepositoryPath(path);
+  // Next supports root or src App/Pages routers, plus request/startup hooks
+  // alongside those directories. Keep existing action/job/worker roots.
+  return ["src/app/", "app/", "src/pages/", "pages/", "src/server/actions/", "src/jobs/", "src/workers/"].some(
+    (root) => normalized.startsWith(root),
+  ) || /^(?:src\/)?(?:middleware|proxy|instrumentation|instrumentation-client)\.(?:ts|js)$/u.test(normalized);
 }
 
 function unwrapTransparentExpression(expression: ts.Expression) {
@@ -59,8 +62,10 @@ function inspectModule(path: string, source: string) {
   const sourceFile = ts.createSourceFile(
     path,
     source,
-    ts.ScriptTarget.Latest,
-    true,
+    { languageVersion: ts.ScriptTarget.Latest, jsDocParsingMode: ts.JSDocParsingMode.ParseNone },
+    // Traversal reads children only. Parent links and JSDoc type parsing are
+    // irrelevant to executable imports/calls and needlessly duplicate work.
+    false,
     scriptKind,
   );
   const specifiers: string[] = [];
@@ -622,14 +627,25 @@ function buildModuleGraph(
     readonly ("eval" | "Function" | "node:vm")[]
   >();
 
-  for (const [path, source] of [...modules.entries()].sort(([left], [right]) =>
-    left.localeCompare(right)
-  )) {
+  // Only public-reachable modules can affect these three reachability results.
+  // Keep the complete path inventory for exact extension/index resolution, but
+  // avoid parsing detached private modules. This is per-invocation state: a
+  // changed caller Map is always freshly inspected, never served from a cache.
+  const pending = [...modulePaths].filter(isProviderPublicEntrypoint).sort();
+  const inspectedPaths = new Set<string>();
+  for (let index = 0; index < pending.length; index += 1) {
+    const path = pending[index];
+    if (inspectedPaths.has(path)) continue;
+    inspectedPaths.add(path);
+    const source = modules.get(path);
+    if (source === undefined) continue;
     const inspected = inspectModule(path, source);
     const resolved = inspected.specifiers
       .map((specifier) => resolveInternalModule(path, specifier, modulePaths))
       .filter((target): target is string => target !== null);
-    edges.set(path, [...new Set(resolved)].sort());
+    const targets = [...new Set(resolved)].sort();
+    edges.set(path, targets);
+    pending.push(...targets.filter((target) => !inspectedPaths.has(target)));
     if (inspected.unresolvedCallKinds.length > 0) {
       unresolvedByModule.set(path, inspected.unresolvedCallKinds);
     }
@@ -647,7 +663,7 @@ export function findProviderExecutionReachability(
   const { modulePaths, edges } = buildModuleGraph(sourceModules);
 
   return [...modulePaths]
-    .filter(isPublicEntrypoint)
+    .filter(isProviderPublicEntrypoint)
     .sort()
     .flatMap((entrypoint) => {
       const path = [...reachableModulePaths(entrypoint, edges).entries()]
@@ -661,7 +677,7 @@ export function findUnresolvedDynamicModuleReachability(
 ): UnresolvedDynamicModuleReachability[] {
   const { modulePaths, edges, unresolvedByModule } = buildModuleGraph(sourceModules);
   return [...modulePaths]
-    .filter(isPublicEntrypoint)
+    .filter(isProviderPublicEntrypoint)
     .sort()
     .flatMap((entrypoint) =>
       [...reachableModulePaths(entrypoint, edges).entries()].flatMap(
@@ -681,7 +697,7 @@ export function findDynamicCodeExecutionReachability(
 ): DynamicCodeExecutionReachability[] {
   const { modulePaths, edges, dynamicCodeByModule } = buildModuleGraph(sourceModules);
   return [...modulePaths]
-    .filter(isPublicEntrypoint)
+    .filter(isProviderPublicEntrypoint)
     .sort()
     .flatMap((entrypoint) =>
       [...reachableModulePaths(entrypoint, edges).entries()].flatMap(

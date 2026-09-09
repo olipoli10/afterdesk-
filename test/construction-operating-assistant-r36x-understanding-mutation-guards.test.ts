@@ -3,9 +3,10 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const root = process.cwd();
-const service = readFileSync(join(root, "src/server/construction-operating-assistant-r36x/project-brain-understanding-review.ts"), "utf8");
-const contract = readFileSync(join(root, "src/lib/construction-operating-assistant-r36x/project-brain-understanding-review.ts"), "utf8");
-const migration = readFileSync(join(root, "prisma/migrations/20260904010000_construction_assistant_r36x_project_brain_understanding/migration.sql"), "utf8");
+// These are source-substring guards, not byte-exact evidence hashes.
+const service = readFileSync(join(root, "src/server/construction-operating-assistant-r36x/project-brain-understanding-review.ts"), "utf8").replaceAll("\r\n", "\n");
+const contract = readFileSync(join(root, "src/lib/construction-operating-assistant-r36x/project-brain-understanding-review.ts"), "utf8").replaceAll("\r\n", "\n");
+const migration = readFileSync(join(root, "prisma/migrations/20260904010000_construction_assistant_r36x_project_brain_understanding/migration.sql"), "utf8").replaceAll("\r\n", "\n");
 
 describe("R36X mutation guards", () => {
   it("keeps authorization, binding, completeness, matrix and replay guards", () => {

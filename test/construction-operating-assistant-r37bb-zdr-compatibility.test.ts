@@ -11,6 +11,7 @@ import {
   openRouterEndpointSnapshotSchema,
 } from "@/lib/construction-operating-assistant-r37bb/contracts";
 import { R37_CASES } from "@/lib/construction-operating-assistant-r37/cases";
+import { assertCheckoutMatchesSealedBlob, readSealedGitEvidence } from "./helpers/sealed-git-evidence";
 
 const snapshotPath = "specs/193-openrouter-zdr-compatibility-correction/evidence/openrouter-endpoint-eligibility-2026-09-05.json";
 const reportPath = "specs/192-openrouter-provider-sandbox/evidence/observed-provider-report.json";
@@ -66,8 +67,8 @@ describe("R37B OpenRouter ZDR compatibility correction", () => {
     }
   });
 
-  it("preserves the sealed R37 REWORK report byte-exactly", () => {
-    const bytes = readFileSync(reportPath);
+  it("preserves the sealed R37 REWORK Git blob byte-exactly and checks checkout content", () => {
+    const bytes = readSealedGitEvidence(reportPath);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(
       "bc79e1416f82ff08665690b0140471111ce00abb0a026419bb503688b6797eb3",
     );
@@ -77,5 +78,16 @@ describe("R37B OpenRouter ZDR compatibility correction", () => {
       canonicalObservationCount: 0,
       settledSpendMicros: "0",
     });
+  });
+
+  it("allows checkout CRLF only and still rejects genuine sealed-evidence edits", () => {
+    const blob = Buffer.from('{"verdict":"REWORK"}\n', "utf8");
+    expect(() => assertCheckoutMatchesSealedBlob(Buffer.from('{"verdict":"REWORK"}\r\n'), blob)).not.toThrow();
+    for (const changed of [
+      Buffer.from('{"verdict":"PASS"}\n'),
+      Buffer.from('{ "verdict":"REWORK"}\n'),
+      Buffer.from('{"verdict":"REWORK"}'),
+      Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), blob]),
+    ]) expect(() => assertCheckoutMatchesSealedBlob(changed, blob)).toThrow("SEALED_EVIDENCE_CHECKOUT_CONTENT_CHANGED");
   });
 });

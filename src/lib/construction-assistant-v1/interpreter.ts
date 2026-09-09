@@ -1,5 +1,5 @@
 import { addDays } from "date-fns";
-import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 import {
   constructionInterpretationSchema,
   type ConstructionInterpretation,
@@ -146,6 +146,18 @@ function parseFrenchAppointment(
   const day = nextWeekday(context.referenceNow, context.timezone, FRENCH_WEEKDAYS[weekday]);
   const localIso = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
   const startsAt = fromZonedTime(localIso, context.timezone);
+  // A wall time in the spring gap has no matching instant. During the fall
+  // overlap it has two. Never silently choose an offset for either case.
+  const wallTime = (instant: Date) => formatInTimeZone(instant, context.timezone, "yyyy-MM-dd'T'HH:mm:ss");
+  if (!Number.isFinite(startsAt.getTime()) || wallTime(startsAt) !== localIso) {
+    return clarification(context, "AMBIGUOUS_TIME", "Cette heure n’existe pas lors du changement d’heure. Quelle autre heure dois-je inscrire?");
+  }
+  const duplicatedWallTime = [-120, -90, -60, -30, 30, 60, 90, 120].some((minutes) =>
+    wallTime(new Date(startsAt.getTime() + minutes * 60_000)) === localIso,
+  );
+  if (duplicatedWallTime) {
+    return clarification(context, "AMBIGUOUS_TIME", "Cette heure arrive deux fois lors du changement d’heure. Précise le décalage horaire ou choisis une autre heure.");
+  }
   const endsAt = new Date(startsAt.getTime() + 60 * 60 * 1000);
   const originalDatePhrase =
     text.match(new RegExp(`${weekday}\\s+à\\s+${explicit24h[1]}\\s*h(?:\\s*${explicit24h[2] ?? ""})?`, "i"))?.[0].replace(/\s+/g, " ").trim() ??

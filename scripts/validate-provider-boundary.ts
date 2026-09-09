@@ -10,6 +10,10 @@ async function listSourceFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
   const paths = await Promise.all(
     entries.map(async (entry) => {
+      // Dependency/build inventories are not application source roots. Read
+      // all other repository folders so root Next entries can reach facades
+      // outside src; parsing remains limited to the public-reachable graph.
+      if (["node_modules", ".git", ".next", ".expo"].includes(entry.name)) return [];
       const path = resolve(directory, entry.name);
       if (entry.isDirectory()) return listSourceFiles(path);
       return isProviderBoundarySourcePath(entry.name) ? [path] : [];
@@ -20,8 +24,7 @@ async function listSourceFiles(directory: string): Promise<string[]> {
 
 async function main() {
   const repositoryRoot = resolve(process.cwd());
-  const sourceRoot = resolve(repositoryRoot, "src");
-  const sourceFiles = await listSourceFiles(sourceRoot);
+  const sourceFiles = await listSourceFiles(repositoryRoot);
   const modules = new Map<string, string>();
   for (const path of sourceFiles) {
     modules.set(

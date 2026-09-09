@@ -9,6 +9,7 @@ import {
   findDynamicCodeExecutionReachability,
   findProviderExecutionReachability,
   findUnresolvedDynamicModuleReachability,
+  isProviderPublicEntrypoint,
 } from "@/lib/construction-operating-assistant-r37l/provider-reachability";
 
 export type ProviderBoundaryReleaseViolation = Readonly<{
@@ -17,7 +18,6 @@ export type ProviderBoundaryReleaseViolation = Readonly<{
   detail?: string;
 }>;
 
-const PUBLIC_ROOTS = ["src/app/", "src/server/actions/", "src/jobs/", "src/workers/"] as const;
 const LEGACY_PROVIDER_RUNTIME = /^src\/(?:lib|server)\/construction-operating-assistant-r37[a-j]\//u;
 const OBSERVED_PROVIDER_RUNTIME = /^src\/(?:lib|server)\/construction-operating-assistant-r37\//u;
 const EXECUTABLE_SOURCE_EXTENSION = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/u;
@@ -28,10 +28,6 @@ export function isProviderBoundarySourcePath(path: string) {
 
 function normalizeRepositoryPath(path: string) {
   return posix.normalize(path.replaceAll("\\", "/")).replace(/^\.\//u, "");
-}
-
-function isPublicEntrypoint(path: string) {
-  return PUBLIC_ROOTS.some((root) => path.startsWith(root));
 }
 
 function stable(
@@ -56,7 +52,7 @@ export function validateProviderBoundaryModules(
 
   const direct = stable(
     [...modules.entries()]
-      .filter(([path]) => isPublicEntrypoint(path))
+      .filter(([path]) => isProviderPublicEntrypoint(path))
       .flatMap(([path, source]) =>
         inspectPublicEntrySource(path, source).map(() => ({
           code: "R37O_DIRECT_PROVIDER_EXECUTION_EXPOSED",

@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
@@ -7,6 +6,7 @@ import { R37_CASES } from "@/lib/construction-operating-assistant-r37/cases";
 import { evaluateR37Case } from "@/lib/construction-operating-assistant-r37/oracle";
 import { buildCorrectedOpenRouterRequest } from "@/lib/construction-operating-assistant-r37bb/contracts";
 import { R37BC_CASES } from "@/lib/construction-operating-assistant-r37bc/cases";
+import { readSealedGitEvidence } from "./helpers/sealed-git-evidence";
 
 const SEALED_REPORT_PATH = "specs/194-corrected-openrouter-retest/evidence/observed-provider-report.json";
 const SEALED_REPORT_SHA256 = "0f94e15c69c32fc1ac7c2162ce0460ea93c6cc581864826d46879dd160ac5649";
@@ -40,7 +40,7 @@ describe("R37BC controller contract alignment", () => {
   });
 
   it("preserves the paid provider observation and its original REWORK adjudication", () => {
-    const bytes = readFileSync(SEALED_REPORT_PATH);
+    const bytes = readSealedGitEvidence(SEALED_REPORT_PATH);
     const report = JSON.parse(bytes.toString("utf8"));
 
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(SEALED_REPORT_SHA256);
@@ -50,7 +50,7 @@ describe("R37BC controller contract alignment", () => {
       "R37_REQUIRED_LIMITATION_MISSING",
     ]);
 
-    const originalBytes = readFileSync(ORIGINAL_REPORT_PATH);
+    const originalBytes = readSealedGitEvidence(ORIGINAL_REPORT_PATH);
     expect(createHash("sha256").update(originalBytes).digest("hex")).toBe(ORIGINAL_REPORT_SHA256);
     expect(JSON.parse(originalBytes.toString("utf8")).verdict).toBe("REWORK");
   });
