@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 2,
+  "queueMode": "PINNED_SEQUENTIAL_CAMPAIGN",
+  "queueId": "ASTRA-LOCAL-12c560ba",
+  "campaignObjective": "Execute bounded spec206 G0-G7 local revalidation; provider adoption not evaluated",
+  "authority": "LOCAL ONLY; code/tests, synthetic disposable database, Codex audits, local commits and Brain checkpoint. No runtime provider, transport, spending, customer data, push, deployment, timer or founder test.",
+  "forbiddenActions": [
+    "provider request",
+    "customer data",
+    "spending",
+    "external write",
+    "push",
+    "preview",
+    "production",
+    "timer"
+  ],
+  "stopConditions": [
+    "Unreconciled ownership mismatch",
+    "Required authority absent with no useful local work remaining",
+    "Validated G7 local verdict"
+  ],
+  "communication": {
+    "informationalLabel": "INFO — aucune réponse requise",
+    "blockingLabel": "BLOCAGE — réponse requise",
+    "authorityLabel": "AUTORITÉ — signature requise",
+    "completionLabel": "TERMINÉ — résultat",
+    "maxRoutineFounderPrompts": 0
+  },
+  "entries": [
+    {
+      "id": "ASTRA-LOCAL-001",
+      "title": "G0-G7 revalidation",
+      "objective": "Audit, bounded fixes, corpus, guarded candidate and honest local seal",
+      "role": "IMPLEMENTATION",
+      "status": "IN_PROGRESS",
+      "dependencies": [],
+      "worktree": "C:\\dev\\endvera-astra-reverification",
+      "branch": "codex/endvera-astra-reverification",
+      "baseRef": {
+        "kind": "FIXED_HEAD",
+        "head": "7f369989533f994cfb5828498d80624d4bdfcfa9"
+      },
+      "authority": "LOCAL ONLY; code/tests, synthetic disposable database, Codex audits, local commits and Brain checkpoint. No runtime provider, transport, spending, customer data, push, deployment, timer or founder test.",
+      "allowedScope": [
+        "specs/206-gpt6-astra-endvera-reverification",
+        "src",
+        "test",
+        "apps/mobile"
+      ],
+      "planPath": "plan.md",
+      "planSha256": "f733367103d04a06e27b990f6f0445cf793614b6c88ef91b3e3053967d6bfeb8",
+      "completionCommand": "node specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs specs/206-gpt6-astra-endvera-reverification/evidence/seal.json C:\\dev\\afterdesk-project-brain",
+      "evidencePaths": [
+        "evidence/seal.json"
+      ],
+      "outputHead": "",
+      "outputTree": "",
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}

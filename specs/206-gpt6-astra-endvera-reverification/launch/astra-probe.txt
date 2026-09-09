@@ -1,0 +1,1 @@
+Return exactly ASTRA_CODEX_REQUEST_ACCEPTED. Do not call tools, read files, access providers or perform any task. Do not claim your served model identity.

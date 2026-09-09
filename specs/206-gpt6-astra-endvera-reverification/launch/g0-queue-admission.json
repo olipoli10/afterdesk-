@@ -1,0 +1,14 @@
+{
+  "id": "g0-queue-admission",
+  "phase": "G0",
+  "classification": "VALIDATION",
+  "executable": "pwsh",
+  "args": [
+    "-NoProfile",
+    "-File",
+    "C:/dev/afterdesk-project-brain/scripts/validate-continuation-queue.ps1",
+    "-QueuePath",
+    "C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/CONTINUATION_QUEUE.json"
+  ],
+  "timeoutMs": 60000
+}

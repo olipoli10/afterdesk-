@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "programId": "ASTRA-REVERIFICATION-12c560ba",
+  "objective": "Local full-stack revalidation and guarded intent candidate, provider adoption not evaluated",
+  "worktree": "C:\\dev\\endvera-astra-reverification",
+  "branch": "codex/endvera-astra-reverification",
+  "baseHead": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+  "authority": "LOCAL ONLY; isolated worktree, code/tests, synthetic disposable PostgreSQL, Codex agents, local commits and final Brain checkpoint. No provider API, transport, customer data, spending, push, deployment, timer or founder test.",
+  "estimatedHours": {
+    "min": 6,
+    "max": 14
+  },
+  "referenceRuns": [
+    {
+      "id": "ccv2-runtime-r1",
+      "observedMinutes": 68,
+      "workUnits": "35 files,16 mutations,full suite/build"
+    },
+    {
+      "id": "ccv2-runtime-r2",
+      "observedMinutes": 244,
+      "workUnits": "5chapters,15tasks,12mutations,1243tests,full closeout"
+    }
+  ],
+  "completionCommand": "pwsh C:\\dev\\afterdesk-project-brain\\scripts\\validate-long-run-program.ps1 -ManifestPath C:\\dev\\endvera-astra-reverification\\specs\\206-gpt6-astra-endvera-reverification\\LONG_RUN_PROGRAM.json -RequireComplete",
+  "stopConditions": [
+    "Unreconciled overlapping user edits",
+    "No useful authorized work remains and required authority unavailable",
+    "G7 seal validated with honest local verdict"
+  ],
+  "forbidden": [
+    "Provider API or external effects",
+    "Secrets or personal data",
+    "Retrospective mutation of historical evidence",
+    "Routine GO or three-minute timer",
+    "Unsupported success claims"
+  ],
+  "chapters": [
+    {
+      "id": "G0",
+      "title": "Freeze campaign inputs",
+      "objective": "Freeze campaign inputs",
+      "status": "IN_PROGRESS",
+      "estimatedMinutes": 120,
+      "dependencies": [],
+      "allowedScope": [
+        "specs/206-gpt6-astra-endvera-reverification"
+      ],
+      "acceptanceCommands": [
+        "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G0"
+      ],
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evidence/G0.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "G1",
+      "title": "Observe deterministic baseline",
+      "objective": "Observe deterministic baseline",
+      "status": "OPEN",
+      "estimatedMinutes": 90,
+      "dependencies": [
+        "G0"
+      ],
+      "allowedScope": [
+        "specs/206-gpt6-astra-endvera-reverification"
+      ],
+      "acceptanceCommands": [
+        "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G1"
+      ],
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evidence/G1.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "G2",
+      "title": "Four evidence-linked audits",
+      "objective": "Four evidence-linked audits",
+      "status": "OPEN",
+      "estimatedMinutes": 100,
+      "dependencies": [
+        "G1"
+      ],
+      "allowedScope": [
+        "specs/206-gpt6-astra-endvera-reverification"
+      ],
+      "acceptanceCommands": [
+        "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G2"
+      ],
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evidence/G2.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "G3",
+      "title": "Reproduce and correct bounded defects",
+      "objective": "Reproduce and correct bounded defects",
+      "status": "OPEN",
+      "estimatedMinutes": 180,
+      "dependencies": [
+        "G2"
+      ],
+      "allowedScope": [
+        "specs/206-gpt6-astra-endvera-reverification",
+        "src",
+        "tests",
+        "apps/mobile"
+      ],
+      "acceptanceCommands": [
+        "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G3"
+      ],
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evidence/G3.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "G5",
+      "title": "G4-G6 mobile packet, guarded gateway, corpus and provider non-activation",
+      "objective": "G4-G6 mobile packet, guarded gateway, corpus and provider non-activation",
+      "status": "OPEN",
+      "estimatedMinutes": 185,
+      "dependencies": [
+        "G3"
+      ],
+      "allowedScope": [
+        "specs/206-gpt6-astra-endvera-reverification",
+        "src",
+        "tests",
+        "apps/mobile"
+      ],
+      "acceptanceCommands": [
+        "node specs/206-gpt6-astra-endvera-reverification/scripts/check-campaign-phase.mjs G5"
+      ],
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evidence/G5.json",
+        "specs/206-gpt6-astra-endvera-reverification/evidence/G4.json",
+        "specs/206-gpt6-astra-endvera-reverification/evidence/G6.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    },
+    {
+      "id": "G7",
+      "title": "Final validation seal and Brain checkpoint",
+      "objective": "Final validation seal and Brain checkpoint",
+      "status": "OPEN",
+      "estimatedMinutes": 120,
+      "dependencies": [
+        "G5"
+      ],
+      "allowedScope": [
+        "specs/206-gpt6-astra-endvera-reverification"
+      ],
+      "acceptanceCommands": [
+        "node specs/206-gpt6-astra-endvera-reverification/scripts/validate-revalidation-seal.mjs specs/206-gpt6-astra-endvera-reverification/evidence/seal.json C:\\dev\\afterdesk-project-brain"
+      ],
+      "evidencePaths": [
+        "specs/206-gpt6-astra-endvera-reverification/evidence/G7.json"
+      ],
+      "result": "",
+      "completedAtUtc": ""
+    }
+  ]
+}

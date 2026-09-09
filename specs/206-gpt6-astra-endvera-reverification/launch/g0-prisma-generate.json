@@ -1,0 +1,16 @@
+{
+  "id": "g0-prisma-generate",
+  "phase": "G0",
+  "classification": "SETUP",
+  "executable": "node",
+  "args": [
+    "node_modules/prisma/build/index.js",
+    "generate"
+  ],
+  "timeoutMs": 120000,
+  "environment": {
+    "CHECKPOINT_DISABLE": "1",
+    "PRISMA_HIDE_UPDATE_MESSAGE": "1",
+    "NODE_OPTIONS": "--require=\"C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/phase-checks/network-guard.cjs\""
+  }
+}

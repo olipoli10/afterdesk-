@@ -1,0 +1,10 @@
+{
+  "id": "g0-phase-wrapper",
+  "phase": "G0",
+  "classification": "VALIDATION",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/scripts/test-phase-check-contract.mjs"
+  ],
+  "timeoutMs": 60000
+}

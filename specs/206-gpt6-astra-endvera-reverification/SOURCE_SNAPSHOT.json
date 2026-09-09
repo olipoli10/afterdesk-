@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "12c560ba-12c1-4366-bc25-c71904dd139c",
+  "source": {
+    "path": "C:/dev/nightlexicon-endvera-construction-operating-assistant-r10-r12-autonomous",
+    "head": "7f369989533f994cfb5828498d80624d4bdfcfa9",
+    "tree": "e5f310b071c0a3385cc39e17f5e617da93b29f83",
+    "trackedClean": true
+  },
+  "brain": {
+    "path": "C:/dev/afterdesk-project-brain",
+    "head": "3a4e31d837ed4f53f8326d865fca43cc54eb4c3e",
+    "tree": "cc3c8f00afa0bcb75127bb085689a6d8bfc4ab22",
+    "trackedClean": true
+  },
+  "metrics": {
+    "roadmap": 22,
+    "localBuildReadiness": 46.75,
+    "c2": "18/18",
+    "realProviderCustomerReadiness": "NO-GO",
+    "verifiedE2E": 0
+  },
+  "reportedBaseline": {
+    "rootTests": "13 red of 2431 (prior study; G1 rerun pending)",
+    "mobileTests": "195/195 (reported; G1 rerun pending)",
+    "r37": "REWORK immutably preserved",
+    "samsung": "DEVICE_OBSERVATION_NOT_PERFORMED"
+  },
+  "runtime": {
+    "baseline": "UNPROBED_NO_ADOPTED_EXACT_PROFILE",
+    "candidate": "UNPROBED",
+    "externalAdaptersActivated": false,
+    "providerVerdict": null,
+    "adoptionDecision": null
+  },
+  "orchestration": {
+    "persistentGoalRegistry": "HISTORICAL_BLOCKED_GOAL_CREATE_REFUSED",
+    "durableQueue": "CONTINUATION_QUEUE.json",
+    "heartbeatEnabled": false,
+    "routineFounderPrompts": 0
+  }
+}

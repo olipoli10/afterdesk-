@@ -1,0 +1,11 @@
+{
+  "id": "g2-canon-provenance",
+  "phase": "G2",
+  "classification": "MODEL_AUDIT",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/scripts/run-audit.mjs",
+    "canon-provenance"
+  ],
+  "timeoutMs": 1800000
+}

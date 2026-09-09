@@ -1,0 +1,11 @@
+{
+  "id": "g2-architecture-security",
+  "phase": "G2",
+  "classification": "MODEL_AUDIT",
+  "executable": "node",
+  "args": [
+    "specs/206-gpt6-astra-endvera-reverification/scripts/run-audit.mjs",
+    "architecture-security"
+  ],
+  "timeoutMs": 1800000
+}

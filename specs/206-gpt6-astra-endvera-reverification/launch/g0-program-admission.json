@@ -1,0 +1,14 @@
+{
+  "id": "g0-program-admission",
+  "phase": "G0",
+  "classification": "VALIDATION",
+  "executable": "pwsh",
+  "args": [
+    "-NoProfile",
+    "-File",
+    "C:/dev/afterdesk-project-brain/scripts/validate-long-run-program.ps1",
+    "-ManifestPath",
+    "C:/dev/endvera-astra-reverification/specs/206-gpt6-astra-endvera-reverification/LONG_RUN_PROGRAM.json"
+  ],
+  "timeoutMs": 60000
+}
