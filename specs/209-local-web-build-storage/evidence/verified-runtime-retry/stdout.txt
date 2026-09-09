@@ -1,0 +1,1 @@
+{"kind":"COMPILED_RUNTIME_STORAGE_REFUSED","passed":true,"outcomes":[{"route":"/api/upload/route","refused":true},{"route":"/api/files/[id]/download/route","refused":true}],"scope":"COMPILED_MODULE_IMPORT_ONLY_NO_REQUEST_OR_DATABASE"}
