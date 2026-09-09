@@ -50,13 +50,24 @@ describe("Bounded R2 release source corrections",()=>{
   const result=spawnSync(process.execPath,[resolve(repo,"scripts",script)],{cwd:repo,encoding:"utf8",windowsHide:true,timeout:10000});
   expect(result.status).not.toBe(0);expect(result.stderr).toContain("RELEASE_SOURCE_SYMLINK_REFUSED");expect(result.stderr).not.toContain("Unexpected token");
  }));
- it("keeps input-only evidence distinct from the whole tracked checkout authority gate",()=>{
-  const git=(...args:string[])=>execFileSync("git",args,{encoding:"utf8",windowsHide:true}).trim();
-  const head=git("rev-parse","HEAD"),tree=git("rev-parse","HEAD^{tree}");const bytes=readFileSync("AGENTS.md");
-  const manifest={source:{head,tree},inputs:[{path:"AGENTS.md",byteSize:bytes.length,sha256:createHash("sha256").update(bytes).digest("hex")}]};
-  expect(assertReleaseInputBinding({repositoryRoot:root,manifest}).mode).toBe("GIT_COMMIT_INPUT_BINDING");
-  const diff=git("diff","--name-only","--no-ext-diff","--no-textconv",head,"--",".",":(exclude)release/endvera-construction-v1/release-manifest-v3.json");
-  if(diff)expect(()=>assertReleaseSourceBinding({repositoryRoot:root,manifest})).toThrow("RELEASE_TRACKED_CHECKOUT_SOURCE_DRIFT");
-  else expect(assertReleaseSourceBinding({repositoryRoot:root,manifest}).trackedCheckoutMatchesSource).toBe(true);
- });
+ it("keeps input-only evidence distinct from the whole tracked checkout authority gate",()=>temporaryFixture(directory=>{
+  const git=(...args:string[])=>execFileSync("git",[
+   "-C",directory,"-c","core.autocrlf=false","-c",`core.hooksPath=${resolve(directory,".no-hooks")}`,
+   "-c","init.templateDir=","-c","commit.gpgsign=false","-c","user.name=Local Synthetic Test",
+   "-c","user.email=synthetic@example.invalid",...args,
+  ],{encoding:"utf8",windowsHide:true}).trim();
+  git("init","--quiet");
+  writeFileSync(resolve(directory,"bound.txt"),"synthetic bound input\n");
+  writeFileSync(resolve(directory,"unbound.ts"),"export const value = 1;\n");
+  git("add","bound.txt","unbound.ts");
+  git("commit","--quiet","-m","Synthetic source-binding fixture");
+  const head=git("rev-parse","HEAD"),tree=git("rev-parse","HEAD^{tree}");
+  const bytes=readFileSync(resolve(directory,"bound.txt"));
+  const manifest={source:{head,tree},inputs:[{path:"bound.txt",byteSize:bytes.length,sha256:createHash("sha256").update(bytes).digest("hex")}]};
+  expect(assertReleaseInputBinding({repositoryRoot:directory,manifest}).mode).toBe("GIT_COMMIT_INPUT_BINDING");
+  expect(assertReleaseSourceBinding({repositoryRoot:directory,manifest}).trackedCheckoutMatchesSource).toBe(true);
+  writeFileSync(resolve(directory,"unbound.ts"),"export const value = 2;\n");
+  expect(assertReleaseInputBinding({repositoryRoot:directory,manifest}).mode).toBe("GIT_COMMIT_INPUT_BINDING");
+  expect(()=>assertReleaseSourceBinding({repositoryRoot:directory,manifest})).toThrow("RELEASE_TRACKED_CHECKOUT_SOURCE_DRIFT");
+ }));
 });

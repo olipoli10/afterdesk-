@@ -6,7 +6,7 @@ const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
 describe("ENDVERA Construction conversion surface", () => {
-  it("renders the complete accepted operating loop and concrete outcomes", () => {
+  it("renders the target operating loop without claiming live text or phone operation", () => {
     const page = read("src/app/construction/page.tsx");
     const styles = read("src/app/construction/construction.module.css");
     expect(page).not.toMatch(/TEXTASSIST_PUBLIC_COPY/);
@@ -14,20 +14,26 @@ describe("ENDVERA Construction conversion surface", () => {
     expect(page).toMatch(/copy\.steps\.map/);
     expect(page).toMatch(/copy\.humanBackupTitle/);
     expect(page).toMatch(/copy\.trustTitle/);
-    expect(page).toContain("Gère tes chantiers.");
-    expect(page).toContain("Par texto ou par appel.");
-    expect(page).toContain("Run your jobs.");
-    expect(page).toContain("By text or phone.");
+    expect(page).toContain('headlineA: "Notre cible : gérer tes chantiers."');
+    expect(page).toContain('headlineB: "À terme, par texto ou appel."');
+    expect(page).toContain('headlineA: "Our goal: manage your jobs."');
+    expect(page).toContain('headlineB: "Eventually, by text or phone."');
+    expect(page).toContain("<span>{copy.headlineA}</span>");
+    expect(page).toContain("<strong>{copy.headlineB}</strong>");
+    expect(page).not.toMatch(/Gère tes chantiers\.|Par texto ou par appel\.|Run your jobs\.|By text or phone\./);
     expect(page).toContain("productScene");
     expect(styles).toContain(".phone");
     expect(styles).toContain(".calendarCard");
     expect(styles).toContain(".memoryCard");
   });
 
-  it("uses native contractor language instead of internal product jargon", () => {
+  it("uses contractor language while distinguishing no sending now from future approval", () => {
     const page = read("src/app/construction/page.tsx");
-    expect(page).toContain("Nothing goes out without your approval.");
-    expect(page).toContain("Rien ne part sans ton accord.");
+    expect(page).toContain('trustTitle: "Nothing is sent here. Future actions would require approval."');
+    expect(page).toContain('trustTitle: "Ici, rien ne part. À terme, ton accord serait requis."');
+    expect(page).toContain("<h2>{copy.trustTitle}</h2>");
+    expect(page).toContain("<p>{copy.trustBody}</p>");
+    expect(page).not.toMatch(/Nothing goes out without your approval\.|Rien ne part sans ton accord\./);
     expect(page).not.toMatch(/You do the trade|keeps the thread|operational state|reconstructible|Bounded human support|Role-safe cockpit/);
   });
 

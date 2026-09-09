@@ -1,0 +1,1 @@
+{"id":"g7-preview-mutation-r2","phase":"G7","classification":"DETERMINISTIC_TEST","command":"node specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs G7 PREVIEW_MUTATION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks/run-check.mjs","G7","PREVIEW_MUTATION"],"cwd":".","timeoutMs":3600000}

@@ -1,0 +1,1 @@
+{"id":"g3-final-test-alignment-lint","phase":"G3","classification":"DETERMINISTIC_TEST","executable":"node","args":["node_modules/eslint/bin/eslint.js","test/construction-conversion-surface.test.ts","test/unit/release-source-r2-review.test.ts","specs/206-gpt6-astra-endvera-reverification/scripts/run-g7-final-r2.mjs"],"timeoutMs":120000}

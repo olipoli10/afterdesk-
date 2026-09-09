@@ -1,0 +1,1 @@
+{"id":"g7-extra-root-tests-r2","phase":"G7","classification":"DETERMINISTIC_TEST","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs","G1","ROOT_TESTS"],"timeoutMs":900000}

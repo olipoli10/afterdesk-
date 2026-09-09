@@ -1,0 +1,1 @@
+{"id":"g7-r0b-dst-boundary-r2","phase":"G7","classification":"DETERMINISTIC_TEST","command":"node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 DST_BOUNDARY","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs","G7","DST_BOUNDARY"],"cwd":".","timeoutMs":3600000}

@@ -1,0 +1,1 @@
+{"id":"g7-r0b-native-crash-reproduction-r2","phase":"G7","classification":"VALIDATION","command":"node specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs G7 NATIVE_CRASH_REPRODUCTION","executable":"node","args":["specs/206-gpt6-astra-endvera-reverification/phase-checks-r0b/run-check.mjs","G7","NATIVE_CRASH_REPRODUCTION"],"cwd":".","timeoutMs":3600000}
