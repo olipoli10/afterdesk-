@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://endvera.local/schemas/astra-r0-phase-check-contracts.schema.json",
+  "title": "ENDVERA G1/G7 Phase Check Contracts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kind", "checks"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "kind": { "const": "PHASE_CHECK_CONTRACTS" },
+    "checks": {
+      "type": "array",
+      "minItems": 29,
+      "maxItems": 29,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": { "properties": { "allowNotApplicable": { "const": true } }, "required": ["allowNotApplicable"] },
+            "then": {
+              "properties": {
+                "notApplicableStdoutAll": { "minItems": 1 },
+                "notApplicableReason": { "type": "string", "minLength": 1 }
+              }
+            },
+            "else": {
+              "properties": {
+                "notApplicableStdoutAll": { "maxItems": 0 },
+                "notApplicableReason": { "type": "null" }
+              }
+            }
+          }
+        ],
+        "required": ["phase", "checkId", "observedClassification", "commandSha256", "successExitCode", "stdoutAll", "stderrNone", "allowNotApplicable", "notApplicableStdoutAll", "notApplicableReason"],
+        "properties": {
+          "phase": { "enum": ["G1", "G7"] },
+          "checkId": { "type": "string", "minLength": 1 },
+          "observedClassification": { "enum": ["DETERMINISTIC_TEST", "VALIDATION"] },
+          "commandSha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+          "successExitCode": { "const": 0 },
+          "stdoutAll": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+          "stderrNone": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "allowNotApplicable": { "type": "boolean" },
+          "notApplicableStdoutAll": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "notApplicableReason": { "type": ["string", "null"], "minLength": 1 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,763 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://endvera.local/schemas/astra-r0-evidence-record.schema.json",
+  "title": "ENDVERA Advanced Model Revalidation Evidence Record",
+  "oneOf": [
+    { "$ref": "#/$defs/phaseEvidence" },
+    { "$ref": "#/$defs/phaseCheckResult" },
+    { "$ref": "#/$defs/phaseCheckObservation" },
+    { "$ref": "#/$defs/commandLog" },
+    { "$ref": "#/$defs/correctionReview" },
+    { "$ref": "#/$defs/metricReport" },
+    { "$ref": "#/$defs/metricCalculation" },
+    { "$ref": "#/$defs/requestRecord" },
+    { "$ref": "#/$defs/modelOutput" },
+    { "$ref": "#/$defs/corpusManifest" },
+    { "$ref": "#/$defs/oracleProtection" },
+    { "$ref": "#/$defs/oracleManifest" },
+    { "$ref": "#/$defs/outputManifest" },
+    { "$ref": "#/$defs/gradingManifest" },
+    { "$ref": "#/$defs/graderResult" },
+    { "$ref": "#/$defs/gradeRecord" },
+    { "$ref": "#/$defs/budgetAuthority" },
+    { "$ref": "#/$defs/pricingEvidence" },
+    { "$ref": "#/$defs/costReceipt" },
+    { "$ref": "#/$defs/transportFailure" },
+    { "$ref": "#/$defs/incidentEvidence" },
+    { "$ref": "#/$defs/brainCheckpoint" },
+    { "$ref": "#/$defs/brainPacket" },
+    { "$ref": "#/$defs/invariantManifest" },
+    { "$ref": "#/$defs/invariantResult" }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "path": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "nonNegativeInteger": { "type": "integer", "minimum": 0 },
+    "nonNegativeNumber": { "type": "number", "minimum": 0 },
+    "phaseEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "phase", "status", "checks"],
+      "properties": {
+        "kind": { "const": "PHASE_EVIDENCE" },
+        "phase": { "enum": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7"] },
+        "status": { "enum": ["PASS", "REWORK", "BLOCKED"] },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["checkId", "commandId", "result", "evidencePath", "evidenceSha256"],
+            "properties": {
+              "checkId": { "type": "string", "minLength": 1 },
+              "commandId": { "type": ["string", "null"], "minLength": 1 },
+              "result": { "enum": ["PASS", "FAIL", "NOT_APPLICABLE", "BLOCKED"] },
+              "evidencePath": { "$ref": "#/$defs/path" },
+              "evidenceSha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    },
+    "phaseCheckResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "phase", "checkId", "observedCommandId", "contractPath", "contractSha256", "observationPath", "observationSha256", "result", "reason"],
+      "properties": {
+        "kind": { "const": "PHASE_CHECK_RESULT" },
+        "phase": { "enum": ["G1", "G7"] },
+        "checkId": { "type": "string", "minLength": 1 },
+        "observedCommandId": { "type": "string", "minLength": 1 },
+        "contractPath": { "$ref": "#/$defs/path" },
+        "contractSha256": { "$ref": "#/$defs/sha256" },
+        "observationPath": { "$ref": "#/$defs/path" },
+        "observationSha256": { "$ref": "#/$defs/sha256" },
+        "result": { "enum": ["PASS", "FAIL", "NOT_APPLICABLE"] },
+        "reason": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "phaseCheckObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "campaignId", "phase", "checkId", "observedCommandId", "observedHead", "observedTree", "classification", "command", "expectedExitCode", "exitCode", "stdoutPath", "stdoutSha256", "stderrPath", "stderrSha256"],
+      "properties": {
+        "kind": { "const": "PHASE_CHECK_OBSERVATION" },
+        "campaignId": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$" },
+        "phase": { "enum": ["G1", "G7"] },
+        "checkId": { "type": "string", "minLength": 1 },
+        "observedCommandId": { "type": "string", "minLength": 1 },
+        "observedHead": { "$ref": "#/$defs/gitSha" },
+        "observedTree": { "$ref": "#/$defs/gitSha" },
+        "classification": { "enum": ["DETERMINISTIC_TEST", "VALIDATION"] },
+        "command": { "type": "string", "minLength": 1 },
+        "expectedExitCode": { "type": "integer" },
+        "exitCode": { "type": "integer" },
+        "stdoutPath": { "$ref": "#/$defs/path" },
+        "stdoutSha256": { "$ref": "#/$defs/sha256" },
+        "stderrPath": { "$ref": "#/$defs/path" },
+        "stderrSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "commandLog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "commands"],
+      "properties": {
+        "kind": { "const": "COMMAND_LOG" },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "campaignId", "phase", "observedHead", "observedTree", "classification", "providerAttemptRequestId", "command", "workingDirectory", "startedAt", "finishedAt", "expectedExitCode", "exitCode", "stdoutPath", "stdoutSha256", "stderrPath", "stderrSha256", "replay"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "campaignId": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$" },
+              "phase": { "enum": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7"] },
+              "observedHead": { "$ref": "#/$defs/gitSha" },
+              "observedTree": { "$ref": "#/$defs/gitSha" },
+              "classification": { "enum": ["SETUP", "MODEL_AUDIT", "DETERMINISTIC_TEST", "PHASE_CHECK", "INVARIANT_CHECK", "METRIC_CALCULATION", "CORRECTION", "PROVIDER_CALL", "GRADING", "VALIDATION", "OTHER"] },
+              "providerAttemptRequestId": { "type": ["string", "null"], "minLength": 1 },
+              "command": { "type": "string", "minLength": 1 },
+              "workingDirectory": { "$ref": "#/$defs/path" },
+              "startedAt": { "$ref": "#/$defs/timestamp" },
+              "finishedAt": { "$ref": "#/$defs/timestamp" },
+              "expectedExitCode": { "type": "integer" },
+              "exitCode": { "type": "integer" },
+              "stdoutPath": { "$ref": "#/$defs/path" },
+              "stdoutSha256": { "$ref": "#/$defs/sha256" },
+              "stderrPath": { "$ref": "#/$defs/path" },
+              "stderrSha256": { "$ref": "#/$defs/sha256" },
+              "replay": {
+                "anyOf": [
+                  { "type": "null" },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["runtime", "entrypointPath", "entrypointSha256", "arguments", "readPaths", "timeoutMs", "environment"],
+                    "properties": {
+                      "runtime": { "const": "NODE" },
+                      "entrypointPath": { "$ref": "#/$defs/path" },
+                      "entrypointSha256": { "$ref": "#/$defs/sha256" },
+                      "arguments": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 64,
+                        "items": { "type": "string", "maxLength": 1024 }
+                      },
+                      "readPaths": {
+                        "type": "array",
+                        "maxItems": 512,
+                        "uniqueItems": true,
+                        "items": { "$ref": "#/$defs/path" }
+                      },
+                      "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 300000 },
+                      "environment": { "const": "SANITIZED_NO_SECRETS" }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "correctionReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "corrections"],
+      "properties": {
+        "kind": { "const": "CORRECTION_REVIEW" },
+        "corrections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "findingId", "applied", "resolved", "reviewCompleted", "reviewVerdict", "reviewerType", "reviewerIdentity", "patchPath", "patchSha256", "reviewEvidencePath", "reviewEvidenceSha256"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "findingId": { "type": "string", "minLength": 1 },
+              "applied": { "type": "boolean" },
+              "resolved": { "type": "boolean" },
+              "reviewCompleted": { "type": "boolean" },
+              "reviewVerdict": { "enum": [null, "PASS", "REWORK", "REJECT"] },
+              "reviewerType": { "enum": [null, "SAME_MODEL", "DISTINCT_MODEL", "HUMAN", "DETERMINISTIC_REPRODUCER"] },
+              "reviewerIdentity": { "type": ["string", "null"], "minLength": 1 },
+              "patchPath": { "anyOf": [{ "$ref": "#/$defs/path" }, { "type": "null" }] },
+              "patchSha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+              "reviewEvidencePath": { "anyOf": [{ "$ref": "#/$defs/path" }, { "type": "null" }] },
+              "reviewEvidenceSha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] }
+            }
+          }
+        }
+      }
+    },
+    "metricReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "startRoadmapPercent", "startLocalBuildReadinessPercent", "startC2Completed", "startC2Total", "startRealProviderCustomerReadiness", "startVerifiedE2EPercent", "roadmapPercent", "localBuildReadinessPercent", "c2Completed", "c2Total", "realProviderCustomerReadiness", "verifiedE2EPercent", "rubrics"],
+      "properties": {
+        "kind": { "const": "METRIC_REPORT" },
+        "startRoadmapPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "startLocalBuildReadinessPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "startC2Completed": { "$ref": "#/$defs/nonNegativeInteger" },
+        "startC2Total": { "$ref": "#/$defs/nonNegativeInteger" },
+        "startRealProviderCustomerReadiness": { "enum": ["GO", "NO-GO", "UNKNOWN"] },
+        "startVerifiedE2EPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "roadmapPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "localBuildReadinessPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "c2Completed": { "$ref": "#/$defs/nonNegativeInteger" },
+        "c2Total": { "$ref": "#/$defs/nonNegativeInteger" },
+        "realProviderCustomerReadiness": { "enum": ["GO", "NO-GO", "UNKNOWN"] },
+        "verifiedE2EPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "rubrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["roadmap", "localBuildReadiness", "c2", "realProviderCustomerReadiness", "verifiedE2E"],
+          "properties": {
+            "roadmap": { "$ref": "#/$defs/rubric" },
+            "localBuildReadiness": { "$ref": "#/$defs/rubric" },
+            "c2": { "$ref": "#/$defs/rubric" },
+            "realProviderCustomerReadiness": { "$ref": "#/$defs/rubric" },
+            "verifiedE2E": { "$ref": "#/$defs/rubric" }
+          }
+        }
+      }
+    },
+    "rubric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startValue", "finalValue", "changedFromStart", "rubricCrossed", "rubricContractPath", "rubricContractSha256", "calculationEvidencePath", "calculationEvidenceSha256", "calculationCommandId", "evidencePaths", "evidenceSha256"],
+      "properties": {
+        "startValue": { "type": ["number", "integer", "string"] },
+        "finalValue": { "type": ["number", "integer", "string"] },
+        "changedFromStart": { "type": "boolean" },
+        "rubricCrossed": { "type": "boolean" },
+        "rubricContractPath": { "$ref": "#/$defs/path" },
+        "rubricContractSha256": { "$ref": "#/$defs/sha256" },
+        "calculationEvidencePath": { "$ref": "#/$defs/path" },
+        "calculationEvidenceSha256": { "$ref": "#/$defs/sha256" },
+        "calculationCommandId": { "type": "string", "minLength": 1 },
+        "evidencePaths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
+        "evidenceSha256": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha256" } }
+      }
+    },
+    "metricCalculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "metric", "startValue", "finalValue", "rubricCrossed", "rubricContractSha256", "calculationCommandId", "evidencePaths", "evidenceSha256"],
+      "properties": {
+        "kind": { "const": "METRIC_CALCULATION" },
+        "metric": { "enum": ["roadmap", "localBuildReadiness", "c2", "realProviderCustomerReadiness", "verifiedE2E"] },
+        "startValue": { "type": ["number", "string"] },
+        "finalValue": { "type": ["number", "string"] },
+        "rubricCrossed": { "type": "boolean" },
+        "rubricContractSha256": { "$ref": "#/$defs/sha256" },
+        "calculationCommandId": { "type": "string", "minLength": 1 },
+        "evidencePaths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
+        "evidenceSha256": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha256" } }
+      }
+    },
+    "requestRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "provider", "endpoint", "requestId", "requestNonce", "caseId", "profile", "startedAt", "timeoutMs", "headersRedacted", "body"],
+      "properties": {
+        "kind": { "const": "REQUEST_RECORD" },
+        "provider": { "const": "OPENROUTER" },
+        "endpoint": { "type": "string", "minLength": 1 },
+        "requestId": { "type": "string", "minLength": 1 },
+        "requestNonce": { "type": "string", "pattern": "^[0-9a-f]{32,128}$" },
+        "caseId": { "type": "string", "minLength": 1 },
+        "profile": { "enum": ["BASELINE", "CANDIDATE"] },
+        "startedAt": { "$ref": "#/$defs/timestamp" },
+        "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 300000 },
+        "headersRedacted": { "const": true },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model", "input", "tools", "max_output_tokens", "metadata"],
+          "properties": {
+            "model": { "type": "string", "minLength": 1 },
+            "input": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["role", "content"],
+                  "properties": { "role": { "const": "system" }, "content": { "type": "string", "minLength": 1 } }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["role", "content"],
+                  "properties": { "role": { "const": "user" }, "content": { "type": "string", "minLength": 1 } }
+                }
+              ]
+            },
+            "tools": { "type": "array" },
+            "max_output_tokens": { "type": "integer", "minimum": 1 },
+            "reasoning": { "type": "object" },
+            "temperature": { "type": "number" },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["endvera_request_nonce", "endvera_case_id", "endvera_profile"],
+              "properties": {
+                "endvera_request_nonce": { "type": "string", "pattern": "^[0-9a-f]{32,128}$" },
+                "endvera_case_id": { "type": "string", "minLength": 1 },
+                "endvera_profile": { "enum": ["BASELINE", "CANDIDATE"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "modelOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "requestId", "providerRequestId", "requestedModel", "servedModel", "requestNonce", "outcome", "completion", "error"],
+      "properties": {
+        "kind": { "const": "MODEL_OUTPUT" },
+        "requestId": { "type": "string", "minLength": 1 },
+        "providerRequestId": { "type": "string", "minLength": 1 },
+        "requestedModel": { "type": "string", "minLength": 1 },
+        "servedModel": { "type": "string", "minLength": 1 },
+        "requestNonce": { "type": "string", "pattern": "^[0-9a-f]{32,128}$" },
+        "outcome": { "enum": ["COMPLETED", "PROVIDER_ERROR"] },
+        "completion": { "type": ["string", "null"] },
+        "error": { "type": ["object", "null"] }
+      }
+    },
+    "corpusManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "developmentCaseCount", "hiddenCaseCount", "totalCaseCount", "familyCount", "promptPath", "promptSha256", "toolSchemaPath", "toolSchemaSha256", "baselineProfilePath", "baselineProfileSha256", "candidateProfilePath", "candidateProfileSha256", "cases"],
+      "properties": {
+        "kind": { "const": "CORPUS_MANIFEST" },
+        "developmentCaseCount": { "$ref": "#/$defs/nonNegativeInteger" },
+        "hiddenCaseCount": { "$ref": "#/$defs/nonNegativeInteger" },
+        "totalCaseCount": { "$ref": "#/$defs/nonNegativeInteger" },
+        "familyCount": { "$ref": "#/$defs/nonNegativeInteger" },
+        "promptPath": { "$ref": "#/$defs/path" },
+        "promptSha256": { "$ref": "#/$defs/sha256" },
+        "toolSchemaPath": { "$ref": "#/$defs/path" },
+        "toolSchemaSha256": { "$ref": "#/$defs/sha256" },
+        "baselineProfilePath": { "$ref": "#/$defs/path" },
+        "baselineProfileSha256": { "$ref": "#/$defs/sha256" },
+        "candidateProfilePath": { "$ref": "#/$defs/path" },
+        "candidateProfileSha256": { "$ref": "#/$defs/sha256" },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["caseId", "split", "family", "inputPath", "inputSha256"],
+            "properties": {
+              "caseId": { "type": "string", "minLength": 1 },
+              "split": { "enum": ["DEVELOPMENT", "HIDDEN"] },
+              "family": { "type": "string", "minLength": 1 },
+              "inputPath": { "$ref": "#/$defs/path" },
+              "inputSha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    },
+    "oracleProtection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "hiddenOraclesProtected", "candidateAccess", "oracleManifestPath", "oracleManifestSha256", "protectionEvidencePath", "protectionEvidenceSha256"],
+      "properties": {
+        "kind": { "const": "ORACLE_PROTECTION" },
+        "hiddenOraclesProtected": { "type": "boolean" },
+        "candidateAccess": { "enum": ["DENIED", "OBSERVED"] },
+        "oracleManifestPath": { "$ref": "#/$defs/path" },
+        "oracleManifestSha256": { "$ref": "#/$defs/sha256" },
+        "protectionEvidencePath": { "$ref": "#/$defs/path" },
+        "protectionEvidenceSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "oracleManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "createdAt", "entries"],
+      "properties": {
+        "kind": { "const": "ORACLE_MANIFEST" },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["caseId", "riskLevel", "oracleEntryPath", "oracleEntrySha256"],
+            "properties": {
+              "caseId": { "type": "string", "minLength": 1 },
+              "riskLevel": { "enum": ["HIGH", "STANDARD"] },
+              "oracleEntryPath": { "$ref": "#/$defs/path" },
+              "oracleEntrySha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    },
+    "outputManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "profile", "provider", "endpoint", "requestedModel", "servedModels", "developmentEvaluated", "hiddenEvaluated", "requestCount", "sealedBeforeGrading", "sealedAt", "entries"],
+      "properties": {
+        "kind": { "const": "OUTPUT_MANIFEST" },
+        "profile": { "enum": ["BASELINE", "CANDIDATE"] },
+        "provider": { "const": "OPENROUTER" },
+        "endpoint": { "type": "string", "minLength": 1 },
+        "requestedModel": { "type": "string", "minLength": 1 },
+        "servedModels": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "developmentEvaluated": { "$ref": "#/$defs/nonNegativeInteger" },
+        "hiddenEvaluated": { "$ref": "#/$defs/nonNegativeInteger" },
+        "requestCount": { "$ref": "#/$defs/nonNegativeInteger" },
+        "sealedBeforeGrading": { "type": "boolean" },
+        "sealedAt": { "$ref": "#/$defs/timestamp" },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["caseId", "split", "requestId", "providerRequestId", "requestedModel", "servedModel", "endpoint", "fallbackUsed", "startedAt", "finishedAt", "requestPath", "requestSha256", "rawResponsePath", "rawResponseSha256", "outputPath", "outputSha256", "durationMs", "settledCostCad", "costStatus", "outcome", "completed"],
+            "properties": {
+              "caseId": { "type": "string", "minLength": 1 },
+              "split": { "enum": ["DEVELOPMENT", "HIDDEN"] },
+              "requestId": { "type": "string", "minLength": 1 },
+              "providerRequestId": { "type": ["string", "null"], "minLength": 1 },
+              "requestedModel": { "type": "string", "minLength": 1 },
+              "servedModel": { "type": ["string", "null"], "minLength": 1 },
+              "endpoint": { "type": "string", "minLength": 1 },
+              "fallbackUsed": { "const": false },
+              "startedAt": { "$ref": "#/$defs/timestamp" },
+              "finishedAt": { "$ref": "#/$defs/timestamp" },
+              "requestPath": { "$ref": "#/$defs/path" },
+              "requestSha256": { "$ref": "#/$defs/sha256" },
+              "rawResponsePath": { "anyOf": [{ "$ref": "#/$defs/path" }, { "type": "null" }] },
+              "rawResponseSha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+              "outputPath": { "$ref": "#/$defs/path" },
+              "outputSha256": { "$ref": "#/$defs/sha256" },
+              "durationMs": { "$ref": "#/$defs/nonNegativeInteger" },
+              "settledCostCad": { "type": ["number", "null"], "minimum": 0 },
+              "costStatus": { "enum": ["SETTLED", "UNSETTLED_UNKNOWN"] },
+              "outcome": { "enum": ["COMPLETED", "PROVIDER_ERROR", "TRANSPORT_FAILURE"] },
+              "completed": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "gradingManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "outputsSealedBeforeOracleLoad", "baselineOutputManifestSha256", "candidateOutputManifestSha256", "oracleManifestSha256", "graderContractPath", "graderContractSha256", "graderCommandId", "graderResultPath", "graderResultSha256", "gradeRecordSetSha256", "oracleLoadedAt", "gradedAt", "baselineHiddenEvaluated", "candidateHiddenEvaluated", "baselineHiddenPassed", "candidateHiddenPassed", "highRiskRegressionCount", "grades"],
+      "properties": {
+        "kind": { "const": "GRADING_MANIFEST" },
+        "outputsSealedBeforeOracleLoad": { "type": "boolean" },
+        "baselineOutputManifestSha256": { "$ref": "#/$defs/sha256" },
+        "candidateOutputManifestSha256": { "$ref": "#/$defs/sha256" },
+        "oracleManifestSha256": { "$ref": "#/$defs/sha256" },
+        "graderContractPath": { "$ref": "#/$defs/path" },
+        "graderContractSha256": { "$ref": "#/$defs/sha256" },
+        "graderCommandId": { "type": "string", "minLength": 1 },
+        "graderResultPath": { "$ref": "#/$defs/path" },
+        "graderResultSha256": { "$ref": "#/$defs/sha256" },
+        "gradeRecordSetSha256": { "$ref": "#/$defs/sha256" },
+        "oracleLoadedAt": { "$ref": "#/$defs/timestamp" },
+        "gradedAt": { "$ref": "#/$defs/timestamp" },
+        "baselineHiddenEvaluated": { "$ref": "#/$defs/nonNegativeInteger" },
+        "candidateHiddenEvaluated": { "$ref": "#/$defs/nonNegativeInteger" },
+        "baselineHiddenPassed": { "$ref": "#/$defs/nonNegativeInteger" },
+        "candidateHiddenPassed": { "$ref": "#/$defs/nonNegativeInteger" },
+        "highRiskRegressionCount": { "$ref": "#/$defs/nonNegativeInteger" },
+        "grades": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["caseId", "baselinePassed", "candidatePassed", "highRiskRegression", "oracleEntrySha256", "gradingEvidencePath", "gradingEvidenceSha256"],
+            "properties": {
+              "caseId": { "type": "string", "minLength": 1 },
+              "baselinePassed": { "type": "boolean" },
+              "candidatePassed": { "type": "boolean" },
+              "highRiskRegression": { "type": "boolean" },
+              "oracleEntrySha256": { "$ref": "#/$defs/sha256" },
+              "gradingEvidencePath": { "$ref": "#/$defs/path" },
+              "gradingEvidenceSha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    },
+    "graderResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "graderContractSha256", "baselineOutputManifestSha256", "candidateOutputManifestSha256", "oracleManifestSha256", "gradeRecordSetSha256", "records"],
+      "properties": {
+        "kind": { "const": "GRADER_RESULT" },
+        "graderContractSha256": { "$ref": "#/$defs/sha256" },
+        "baselineOutputManifestSha256": { "$ref": "#/$defs/sha256" },
+        "candidateOutputManifestSha256": { "$ref": "#/$defs/sha256" },
+        "oracleManifestSha256": { "$ref": "#/$defs/sha256" },
+        "gradeRecordSetSha256": { "$ref": "#/$defs/sha256" },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["caseId", "gradingEvidencePath", "gradingEvidenceSha256", "baselinePassed", "candidatePassed", "highRiskRegression"],
+            "properties": {
+              "caseId": { "type": "string", "minLength": 1 },
+              "gradingEvidencePath": { "$ref": "#/$defs/path" },
+              "gradingEvidenceSha256": { "$ref": "#/$defs/sha256" },
+              "baselinePassed": { "type": "boolean" },
+              "candidatePassed": { "type": "boolean" },
+              "highRiskRegression": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "gradeRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "caseId", "oracleEntrySha256", "baselineOutputSha256", "candidateOutputSha256", "baselineRunPassed", "candidateRunPassed", "baselinePassed", "candidatePassed", "highRiskRegression", "graderContractSha256", "graderCommandId"],
+      "properties": {
+        "kind": { "const": "GRADE_RECORD" },
+        "caseId": { "type": "string", "minLength": 1 },
+        "oracleEntrySha256": { "$ref": "#/$defs/sha256" },
+        "baselineOutputSha256": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha256" } },
+        "candidateOutputSha256": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha256" } },
+        "baselineRunPassed": { "type": "array", "minItems": 1, "items": { "type": "boolean" } },
+        "candidateRunPassed": { "type": "array", "minItems": 1, "items": { "type": "boolean" } },
+        "baselinePassed": { "type": "boolean" },
+        "candidatePassed": { "type": "boolean" },
+        "highRiskRegression": { "type": "boolean" },
+        "graderContractSha256": { "$ref": "#/$defs/sha256" },
+        "graderCommandId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "budgetAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "authorizedBudgetCad", "worstCaseBudgetCad", "perCallCapCad", "authorizedBeforeFirstCall", "authorizedAt", "authorityEvidencePath", "authorityEvidenceSha256"],
+      "properties": {
+        "kind": { "const": "BUDGET_AUTHORITY" },
+        "authorizedBudgetCad": { "type": "number", "exclusiveMinimum": 0 },
+        "worstCaseBudgetCad": { "type": "number", "exclusiveMinimum": 0 },
+        "perCallCapCad": { "type": "number", "exclusiveMinimum": 0 },
+        "authorizedBeforeFirstCall": { "type": "boolean" },
+        "authorizedAt": { "$ref": "#/$defs/timestamp" },
+        "authorityEvidencePath": { "$ref": "#/$defs/path" },
+        "authorityEvidenceSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "pricingEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "capturedAt", "sourcePath", "sourceSha256", "currency", "fxUsdCad", "reserveMultiplier", "plannedStabilityRepetitions", "models"],
+      "properties": {
+        "kind": { "const": "PRICING_EVIDENCE" },
+        "capturedAt": { "$ref": "#/$defs/timestamp" },
+        "sourcePath": { "$ref": "#/$defs/path" },
+        "sourceSha256": { "$ref": "#/$defs/sha256" },
+        "currency": { "const": "USD" },
+        "fxUsdCad": { "type": "number", "exclusiveMinimum": 0 },
+        "reserveMultiplier": { "type": "number", "minimum": 1 },
+        "plannedStabilityRepetitions": { "type": "integer", "minimum": 1 },
+        "models": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["profile", "model", "maxInputTokens", "maxOutputTokens", "inputUsdPerMillionTokens", "outputUsdPerMillionTokens", "plannedCalls", "maxRetries"],
+            "properties": {
+              "profile": { "enum": ["BASELINE", "CANDIDATE"] },
+              "model": { "type": "string", "minLength": 1 },
+              "maxInputTokens": { "type": "integer", "minimum": 1 },
+              "maxOutputTokens": { "type": "integer", "minimum": 1 },
+              "inputUsdPerMillionTokens": { "$ref": "#/$defs/nonNegativeNumber" },
+              "outputUsdPerMillionTokens": { "$ref": "#/$defs/nonNegativeNumber" },
+              "plannedCalls": { "type": "integer", "minimum": 1 },
+              "maxRetries": { "$ref": "#/$defs/nonNegativeInteger" }
+            }
+          }
+        }
+      }
+    },
+    "costReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "provider", "providerCalls", "settlementStatus", "unsettledCallCount", "settledSpendCad", "maxObservedCallCad", "providerReconciliationStatus", "providerReconciledCalls", "calls"],
+      "properties": {
+        "kind": { "const": "COST_RECEIPT" },
+        "provider": { "const": "OPENROUTER" },
+        "providerCalls": { "$ref": "#/$defs/nonNegativeInteger" },
+        "settlementStatus": { "enum": ["SETTLED", "INCOMPLETE"] },
+        "unsettledCallCount": { "$ref": "#/$defs/nonNegativeInteger" },
+        "settledSpendCad": { "$ref": "#/$defs/nonNegativeNumber" },
+        "maxObservedCallCad": { "$ref": "#/$defs/nonNegativeNumber" },
+        "providerReconciliationStatus": { "enum": ["NOT_APPLICABLE", "INCOMPLETE", "VERIFIED"] },
+        "providerReconciledCalls": { "$ref": "#/$defs/nonNegativeInteger" },
+        "calls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["requestId", "profile", "caseId", "startedAt", "inputTokens", "outputTokens", "settledCostUsd", "settledCostCad", "costStatus", "usageSource", "receiptPath", "receiptSha256"],
+            "properties": {
+              "requestId": { "type": "string", "minLength": 1 },
+              "profile": { "enum": ["BASELINE", "CANDIDATE"] },
+              "caseId": { "type": "string", "minLength": 1 },
+              "startedAt": { "$ref": "#/$defs/timestamp" },
+              "inputTokens": { "type": ["integer", "null"], "minimum": 0 },
+              "outputTokens": { "type": ["integer", "null"], "minimum": 0 },
+              "settledCostUsd": { "type": ["number", "null"], "minimum": 0 },
+              "settledCostCad": { "type": ["number", "null"], "minimum": 0 },
+              "costStatus": { "enum": ["SETTLED", "UNSETTLED_UNKNOWN"] },
+              "usageSource": { "enum": ["MODEL_RESPONSE", "GENERATION_METADATA", "NO_PROVIDER_RECEIPT"] },
+              "receiptPath": { "$ref": "#/$defs/path" },
+              "receiptSha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    },
+    "transportFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "provider", "endpoint", "requestId", "commandId", "commandStdoutSha256", "commandStderrSha256", "occurredAt", "category", "redacted", "providerRequestId", "chargeStatus", "description"],
+      "properties": {
+        "kind": { "const": "TRANSPORT_FAILURE" },
+        "provider": { "const": "OPENROUTER" },
+        "endpoint": { "type": "string", "minLength": 1 },
+        "requestId": { "type": "string", "minLength": 1 },
+        "commandId": { "type": "string", "minLength": 1 },
+        "commandStdoutSha256": { "$ref": "#/$defs/sha256" },
+        "commandStderrSha256": { "$ref": "#/$defs/sha256" },
+        "occurredAt": { "$ref": "#/$defs/timestamp" },
+        "category": { "enum": ["DNS", "TLS", "TIMEOUT", "HTTP_REJECT", "CONNECTION_RESET", "OTHER"] },
+        "redacted": { "const": true },
+        "providerRequestId": { "type": "null" },
+        "chargeStatus": { "const": "UNSETTLED_UNKNOWN" },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+    "incidentEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "incidentId", "observedAt", "categories", "phase", "providerCallsCompleted", "campaignStopped", "redacted", "containsSecretMaterial", "description", "evidencePaths", "evidenceSha256"],
+      "properties": {
+        "kind": { "const": "INCIDENT_EVIDENCE" },
+        "incidentId": { "type": "string", "minLength": 1 },
+        "observedAt": { "$ref": "#/$defs/timestamp" },
+        "categories": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["UNAUTHORIZED_TRANSPORT", "CUSTOMER_DATA", "SECRET_LEAK", "MODEL_MISMATCH", "BUDGET_BREAKER", "PROVIDER_FAILURE", "SECURITY_CONTROL_FAILURE", "OTHER"] } },
+        "phase": { "enum": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7"] },
+        "providerCallsCompleted": { "$ref": "#/$defs/nonNegativeInteger" },
+        "campaignStopped": { "type": "boolean" },
+        "redacted": { "const": true },
+        "containsSecretMaterial": { "const": false },
+        "description": { "type": "string", "minLength": 1 },
+        "evidencePaths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
+        "evidenceSha256": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha256" } }
+      }
+    },
+    "brainCheckpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "checkpointAt", "startHead", "startTree", "finalHead", "finalTree", "worktreeClean", "validationCommandId", "validationExitCode", "evidencePath", "evidenceSha256"],
+      "properties": {
+        "kind": { "const": "BRAIN_CHECKPOINT" },
+        "checkpointAt": { "$ref": "#/$defs/timestamp" },
+        "startHead": { "$ref": "#/$defs/gitSha" },
+        "startTree": { "$ref": "#/$defs/gitSha" },
+        "finalHead": { "$ref": "#/$defs/gitSha" },
+        "finalTree": { "$ref": "#/$defs/gitSha" },
+        "worktreeClean": { "type": "boolean" },
+        "validationCommandId": { "type": "string", "minLength": 1 },
+        "validationExitCode": { "type": "integer" },
+        "evidencePath": { "$ref": "#/$defs/path" },
+        "evidenceSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "brainPacket": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "createdAt", "startHead", "startTree", "finalHead", "finalTree", "reason", "packetPath", "packetSha256", "includedEvidence"],
+      "properties": {
+        "kind": { "const": "BRAIN_PACKET" },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "startHead": { "$ref": "#/$defs/gitSha" },
+        "startTree": { "$ref": "#/$defs/gitSha" },
+        "finalHead": { "$ref": "#/$defs/gitSha" },
+        "finalTree": { "$ref": "#/$defs/gitSha" },
+        "reason": { "type": "string", "minLength": 1 },
+        "packetPath": { "$ref": "#/$defs/path" },
+        "packetSha256": { "$ref": "#/$defs/sha256" },
+        "includedEvidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": { "$ref": "#/$defs/path" },
+              "sha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    },
+    "invariantManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "invariants"],
+      "properties": {
+        "kind": { "const": "INVARIANT_MANIFEST" },
+        "invariants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "critical", "observed", "passed", "evidencePaths", "evidenceSha256"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "critical": { "type": "boolean" },
+              "observed": { "type": "boolean" },
+              "passed": { "type": ["boolean", "null"] },
+              "evidencePaths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
+              "evidenceSha256": { "type": "array", "items": { "$ref": "#/$defs/sha256" } }
+            }
+          }
+        }
+      }
+    },
+    "invariantResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "invariantId", "method", "commandId", "deviceEvidencePath", "deviceEvidenceSha256", "result", "evidencePaths", "evidenceSha256"],
+      "properties": {
+        "kind": { "const": "INVARIANT_RESULT" },
+        "invariantId": { "type": "string", "minLength": 1 },
+        "method": { "enum": ["AUTOMATED", "DEVICE"] },
+        "commandId": { "type": ["string", "null"], "minLength": 1 },
+        "deviceEvidencePath": { "anyOf": [{ "$ref": "#/$defs/path" }, { "type": "null" }] },
+        "deviceEvidenceSha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "result": { "enum": ["PASS", "FAIL"] },
+        "evidencePaths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
+        "evidenceSha256": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha256" } }
+      }
+    }
+  }
+}

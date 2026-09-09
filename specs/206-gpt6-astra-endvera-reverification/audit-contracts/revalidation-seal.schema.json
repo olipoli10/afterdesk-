@@ -1,0 +1,361 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://endvera.local/schemas/astra-r0-revalidation-seal.schema.json",
+  "title": "ENDVERA Advanced Model Revalidation Seal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "sealedAt",
+    "serialization",
+    "source",
+    "models",
+    "phases",
+    "localResult",
+    "orthogonalStatuses",
+    "providerVerdict",
+    "adoptionDecision",
+    "findingsSummary",
+    "evaluation",
+    "commandsSummary",
+    "correctionsSummary",
+    "metrics",
+    "artifacts"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.3" },
+    "runId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "sealedAt": { "type": "string", "format": "date-time" },
+    "serialization": { "const": "RAW_UTF8_SHA256" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["productHead", "productTree", "specHead", "specTree", "campaignHead", "campaignTree", "campaignIdentityPath", "campaignIdentitySha256", "brainStartHead", "brainStartTree", "brainFinalHead", "brainFinalTree", "finalHead", "finalTree"],
+      "properties": {
+        "productHead": { "$ref": "#/$defs/gitSha" },
+        "productTree": { "$ref": "#/$defs/gitSha" },
+        "specHead": { "$ref": "#/$defs/gitSha" },
+        "specTree": { "$ref": "#/$defs/gitSha" },
+        "campaignHead": { "$ref": "#/$defs/gitSha" },
+        "campaignTree": { "$ref": "#/$defs/gitSha" },
+        "campaignIdentityPath": { "type": "string", "minLength": 1 },
+        "campaignIdentitySha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+        "brainStartHead": { "$ref": "#/$defs/gitSha" },
+        "brainStartTree": { "$ref": "#/$defs/gitSha" },
+        "brainFinalHead": { "$ref": "#/$defs/gitSha" },
+        "brainFinalTree": { "$ref": "#/$defs/gitSha" },
+        "finalHead": { "$ref": "#/$defs/gitSha" },
+        "finalTree": { "$ref": "#/$defs/gitSha" }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["codexAstraProbe", "codexAudit", "runtimeBaseline", "runtimeCandidate"],
+      "properties": {
+        "codexAstraProbe": { "$ref": "#/$defs/modelEvidence" },
+        "codexAudit": { "$ref": "#/$defs/modelEvidence" },
+        "runtimeBaseline": { "$ref": "#/$defs/modelEvidence" },
+        "runtimeCandidate": { "$ref": "#/$defs/modelEvidence" }
+      }
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status", "evidencePath", "reasonCode"],
+        "properties": {
+          "id": { "enum": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7"] },
+          "status": { "enum": ["PASS", "REWORK", "BLOCKED", "NOT_RUN", "NOT_APPLICABLE"] },
+          "evidencePath": { "type": ["string", "null"], "minLength": 1 },
+          "reasonCode": { "type": ["string", "null"], "minLength": 1 }
+        }
+      }
+    },
+    "localResult": {
+      "enum": [
+        "LOCAL_REVALIDATION_COMPLETE_ADOPTION_NOT_EVALUATED",
+        "LOCAL_REVALIDATION_REWORK",
+        "LOCAL_REVALIDATION_BLOCKED"
+      ]
+    },
+    "orthogonalStatuses": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": ["DEVICE_OBSERVATION_NOT_PERFORMED", "NO_RUN_MODEL_UNAVAILABLE"]
+      }
+    },
+    "providerVerdict": {
+      "enum": [null, "ADVANCED_MODEL_REVALIDATION_PASS", "REWORK", "REJECT"]
+    },
+    "adoptionDecision": {
+      "enum": [null, "EVALUATE_ROUTER_POLICY", "DO_NOT_ADOPT"]
+    },
+    "findingsSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "p0", "p1", "p2", "p3", "open", "resolved", "openP0", "openP1"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "p0": { "type": "integer", "minimum": 0 },
+        "p1": { "type": "integer", "minimum": 0 },
+        "p2": { "type": "integer", "minimum": 0 },
+        "p3": { "type": "integer", "minimum": 0 },
+        "open": { "type": "integer", "minimum": 0 },
+        "resolved": { "type": "integer", "minimum": 0 },
+        "openP0": { "type": "integer", "minimum": 0 },
+        "openP1": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criticalInvariantsTotal",
+        "criticalInvariantsObserved",
+        "criticalInvariantsPassed",
+        "criticalInvariantsFailed",
+        "deterministicFailures",
+        "providerRunStatus",
+        "developmentCaseCount",
+        "hiddenCaseCount",
+        "baselineDevelopmentEvaluated",
+        "candidateDevelopmentEvaluated",
+        "baselineHiddenEvaluated",
+        "candidateHiddenEvaluated",
+        "baselineHiddenPassed",
+        "candidateHiddenPassed",
+        "hiddenOraclesProtected",
+        "highRiskRegressionCount",
+        "stabilityRepetitions",
+        "providerCalls",
+        "providerCostSettlementStatus",
+        "unsettledProviderCalls",
+        "providerReconciliationStatus",
+        "providerReconciledCalls",
+        "settledSpendCad",
+        "authorizedBudgetCad",
+        "worstCaseBudgetCad",
+        "perCallCapCad",
+        "fxUsdCad",
+        "reserveMultiplier",
+        "baselineCostPerSuccessCad",
+        "candidateCostPerSuccessCad",
+        "baselineP95DurationMs",
+        "candidateP95DurationMs",
+        "unauthorizedExternalTransportCount",
+        "customerDataUsed",
+        "secretLeakObserved",
+        "secretsSerializedInSeal",
+        "deviceObservationStatus",
+        "deviceObservationEvidencePath",
+        "corpusManifestPath",
+        "oracleProtectionEvidencePath",
+        "baselineOutputManifestPath",
+        "candidateOutputManifestPath",
+        "gradingManifestPath",
+        "budgetAuthorityEvidencePath",
+        "pricingEvidencePath",
+        "costReceiptEvidencePath"
+        ,"incidentEvidencePath"
+        ,"brainClosureMode"
+        ,"brainClosureEvidencePath"
+        ,"invariantManifestPath"
+      ],
+      "properties": {
+        "criticalInvariantsTotal": { "type": "integer", "minimum": 0 },
+        "criticalInvariantsObserved": { "type": "integer", "minimum": 0 },
+        "criticalInvariantsPassed": { "type": "integer", "minimum": 0 },
+        "criticalInvariantsFailed": { "type": "integer", "minimum": 0 },
+        "deterministicFailures": { "type": "integer", "minimum": 0 },
+        "providerRunStatus": { "enum": ["NOT_STARTED", "PILOT_STOPPED", "FULL_BAKEOFF_COMPLETED"] },
+        "developmentCaseCount": { "type": ["integer", "null"], "minimum": 0 },
+        "hiddenCaseCount": { "type": ["integer", "null"], "minimum": 0 },
+        "baselineDevelopmentEvaluated": { "type": ["integer", "null"], "minimum": 0 },
+        "candidateDevelopmentEvaluated": { "type": ["integer", "null"], "minimum": 0 },
+        "baselineHiddenEvaluated": { "type": ["integer", "null"], "minimum": 0 },
+        "candidateHiddenEvaluated": { "type": ["integer", "null"], "minimum": 0 },
+        "baselineHiddenPassed": { "type": ["integer", "null"], "minimum": 0 },
+        "candidateHiddenPassed": { "type": ["integer", "null"], "minimum": 0 },
+        "hiddenOraclesProtected": { "type": ["boolean", "null"] },
+        "highRiskRegressionCount": { "type": ["integer", "null"], "minimum": 0 },
+        "stabilityRepetitions": { "type": ["integer", "null"], "minimum": 0 },
+        "providerCalls": { "type": "integer", "minimum": 0 },
+        "providerCostSettlementStatus": { "enum": ["NOT_APPLICABLE", "SETTLED", "INCOMPLETE"] },
+        "unsettledProviderCalls": { "type": "integer", "minimum": 0 },
+        "providerReconciliationStatus": { "enum": ["NOT_APPLICABLE", "INCOMPLETE", "VERIFIED"] },
+        "providerReconciledCalls": { "type": "integer", "minimum": 0 },
+        "settledSpendCad": { "type": ["number", "null"], "minimum": 0 },
+        "authorizedBudgetCad": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "worstCaseBudgetCad": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "perCallCapCad": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "fxUsdCad": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "reserveMultiplier": { "type": ["number", "null"], "minimum": 1 },
+        "baselineCostPerSuccessCad": { "type": ["number", "null"], "minimum": 0 },
+        "candidateCostPerSuccessCad": { "type": ["number", "null"], "minimum": 0 },
+        "baselineP95DurationMs": { "type": ["number", "null"], "minimum": 0 },
+        "candidateP95DurationMs": { "type": ["number", "null"], "minimum": 0 },
+        "unauthorizedExternalTransportCount": { "type": "integer", "minimum": 0 },
+        "customerDataUsed": { "type": "boolean" },
+        "secretLeakObserved": { "type": "boolean" },
+        "secretsSerializedInSeal": { "const": false },
+        "deviceObservationStatus": { "enum": ["NOT_PERFORMED", "OBSERVED"] },
+        "deviceObservationEvidencePath": { "type": ["string", "null"], "minLength": 1 },
+        "corpusManifestPath": { "type": ["string", "null"], "minLength": 1 },
+        "oracleProtectionEvidencePath": { "type": ["string", "null"], "minLength": 1 },
+        "baselineOutputManifestPath": { "type": ["string", "null"], "minLength": 1 },
+        "candidateOutputManifestPath": { "type": ["string", "null"], "minLength": 1 },
+        "gradingManifestPath": { "type": ["string", "null"], "minLength": 1 },
+        "budgetAuthorityEvidencePath": { "type": ["string", "null"], "minLength": 1 },
+        "pricingEvidencePath": { "type": ["string", "null"], "minLength": 1 },
+        "costReceiptEvidencePath": { "type": ["string", "null"], "minLength": 1 },
+        "incidentEvidencePath": { "type": ["string", "null"], "minLength": 1 },
+        "brainClosureMode": { "enum": ["CHECKPOINT", "PACKET"] },
+        "brainClosureEvidencePath": { "type": "string", "minLength": 1 },
+        "invariantManifestPath": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "commandsSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "failed", "evidencePath"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "evidencePath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "correctionsSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applied", "reviewsCompleted", "evidencePath"],
+      "properties": {
+        "applied": { "type": "integer", "minimum": 0 },
+        "reviewsCompleted": { "type": "integer", "minimum": 0 },
+        "evidencePath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startRoadmapPercent", "startLocalBuildReadinessPercent", "startC2Completed", "startC2Total", "startRealProviderCustomerReadiness", "startVerifiedE2EPercent", "roadmapPercent", "localBuildReadinessPercent", "c2Completed", "c2Total", "realProviderCustomerReadiness", "verifiedE2EPercent", "evidencePath"],
+      "properties": {
+        "startRoadmapPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "startLocalBuildReadinessPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "startC2Completed": { "type": "integer", "minimum": 0 },
+        "startC2Total": { "type": "integer", "minimum": 0 },
+        "startRealProviderCustomerReadiness": { "enum": ["GO", "NO-GO", "UNKNOWN"] },
+        "startVerifiedE2EPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "roadmapPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "localBuildReadinessPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "c2Completed": { "type": "integer", "minimum": 0 },
+        "c2Total": { "type": "integer", "minimum": 0 },
+        "realProviderCustomerReadiness": { "enum": ["GO", "NO-GO", "UNKNOWN"] },
+        "verifiedE2EPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "evidencePath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "origin", "sourceCommit", "path", "sha256", "bytes"],
+        "properties": {
+          "role": {
+            "enum": [
+              "PHASE_EVIDENCE",
+              "PHASE_CHECK_RESULT",
+              "AUDIT_PROMPT",
+              "RAW_OUTPUT",
+              "COMMAND_LOG",
+              "MODEL_STDOUT",
+              "MODEL_STDERR",
+              "BUDGET_AUTHORITY",
+              "PRICING_EVIDENCE",
+              "COST_RECEIPT",
+              "CORPUS_MANIFEST",
+              "ORACLE_PROTECTION",
+              "ORACLE_MANIFEST",
+              "OUTPUT_MANIFEST",
+              "GRADING_MANIFEST",
+              "GRADER_RESULT",
+              "GRADE_RECORD",
+              "DEVICE_OBSERVATION",
+              "INCIDENT_EVIDENCE",
+              "BRAIN_CHECKPOINT",
+              "BRAIN_PACKET",
+              "INVARIANT_MANIFEST",
+              "INVARIANT_RESULT",
+              "METRIC_CALCULATION",
+              "CORPUS_INPUT",
+              "EVALUATION_CONTRACT",
+              "REQUEST_RECORD",
+              "MODEL_OUTPUT",
+              "TRANSPORT_FAILURE",
+              "SUPPORTING_EVIDENCE",
+              "FINDING_REPORT",
+              "CORRECTION_REVIEW",
+              "METRIC_REPORT",
+              "OTHER"
+            ]
+          },
+          "origin": { "enum": ["CAMPAIGN_HEAD_BLOB", "FINAL_HEAD_BLOB", "RUN_GENERATED"] },
+          "sourceCommit": { "anyOf": [{ "$ref": "#/$defs/gitSha" }, { "type": "null" }] },
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+          "bytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "modelEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "access",
+        "requestedModel",
+        "servedModel",
+        "endpoint",
+        "requestId",
+        "observedAt",
+        "tracePath",
+        "traceSha256",
+        "fallbackAllowed",
+        "clientVersion"
+      ],
+      "properties": {
+        "access": {
+          "enum": [
+            "REQUESTED_MODEL_OBSERVED",
+             "SERVED_MODEL_CONFIRMED",
+            "SERVED_MODEL_MISMATCH",
+            "UNAVAILABLE",
+            "UNPROBED",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "requestedModel": { "type": ["string", "null"] },
+        "servedModel": { "type": ["string", "null"] },
+        "endpoint": { "type": ["string", "null"] },
+        "requestId": { "type": ["string", "null"] },
+        "observedAt": { "type": ["string", "null"], "format": "date-time" },
+        "tracePath": { "type": ["string", "null"], "minLength": 1 },
+        "traceSha256": { "type": ["string", "null"], "pattern": "^[A-Fa-f0-9]{64}$" },
+        "fallbackAllowed": { "const": false },
+        "clientVersion": { "type": ["string", "null"], "minLength": 1 }
+      }
+    }
+  }
+}
