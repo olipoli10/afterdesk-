@@ -3,6 +3,7 @@ import "server-only";
 export const GATEWAY_OPERATION_TYPES = [
   "classification",
   "intake_voice_transcription",
+  "personal_intent_candidate_v1",
 ] as const;
 export type GatewayOperationType = (typeof GATEWAY_OPERATION_TYPES)[number];
 
@@ -66,7 +67,8 @@ export type CertifiedAdapterKey =
   | "anthropic-direct"
   | "gateway-candidate"
   | "voice-synthetic-direct"
-  | "openrouter-stt-candidate";
+  | "openrouter-stt-candidate"
+  | "openrouter-personal-intent-candidate";
 export type BillingProviderKey = string;
 export type GatewayIntermediaryKey = string;
 
@@ -76,7 +78,9 @@ export type ProtectedContentRef = {
     | "classification_input"
     | "classification_output"
     | "voice_intake_input"
-    | "voice_intake_output";
+    | "voice_intake_output"
+    | "personal_intent_input"
+    | "personal_intent_output";
   id: string;
   fingerprint: `sha256:${string}`;
 };
@@ -90,7 +94,7 @@ export type GatewayOperationSubject =
       segmentId: string;
     }>;
 
-/** Persisted personal subject only. This does not add an executable operation. */
+/** The subject is persisted separately from Task/Voice; it is never action authority. */
 export type PersonalGatewayOperationSubject = Readonly<{
   kind: "personal_assistant_operation";
   operationId: string;
@@ -128,7 +132,13 @@ export type VoiceGatewayOperationRequest = GatewayOperationRequestBase & Readonl
 
 export type GatewayOperationRequest =
   | ClassificationGatewayOperationRequest
-  | VoiceGatewayOperationRequest;
+  | VoiceGatewayOperationRequest
+  | PersonalGatewayOperationRequest;
+
+export type PersonalGatewayOperationRequest = GatewayOperationRequestBase & Readonly<{
+  operationType: "personal_intent_candidate_v1";
+  subject: PersonalGatewayOperationSubject;
+}>;
 
 export type CertifiedClassificationInput = Readonly<Record<string, unknown>>;
 

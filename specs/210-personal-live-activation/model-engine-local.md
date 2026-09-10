@@ -2,6 +2,32 @@
 
 Same accepted spec210 goal; no new GO or external activation is implied.
 
+## 2026-09-10 03:36Z — composed gateway; worker integration continues
+
+The existing gateway now supports the distinct personal subject with an explicit
+owner AI grant (not the SMS grant), one child model operation, one attempt, published
+policy/exact privacy route, breaker, current reviewed rates/envelope and atomic USD
+and CAD holds. No migration seeds an account, consent, policy, certificate or key.
+The OFF-default dispatcher rechecks authority and both financial ledgers before and
+after latency. One valid proposal remains NOT_AUTHORIZED, with billing UNSETTLED;
+unknown/expired outcomes retain exposure and never trigger a retry.
+
+Independent reviews found and fixed stale cap/day checks, postresponse budget
+checks, invalid grant dates and schema transition/set preservation. Actual disposable
+PG tests caught a removed legacy sms_pairing CHECK member before any deployment.
+The integrated fake-transport PG suite passed33 tests before the final additional
+post-latency cap withdrawal case. Final run evidence is linked in progress.md.
+
+Root2986 PASS/3 historical skips; mobile219 PASS. Mobile pairing no longer depends
+on an available outbox; exact uncertain draft retries retain their request identity
+within the screen session. This is not installed-device or provider observation.
+
+Next: source SMS lease/finalization fencing (late completion could overwrite an
+uncertain source), exclusive model orchestration, deterministic review-only proposal
+consumption and transaction-aware preparers, explicit owner AI configuration/consent.
+Do not feed model proposals back into the legacy mutating interpreter. Existing
+Twilio/key/Google/phone consent dependencies remain; no local test satisfies them.
+
 ## 2026-09-10 03:08Z — rolling implementation, not live completion
 
 Read overnight-continuation.md for current rolling sequence. Subject relation and

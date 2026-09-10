@@ -100,8 +100,9 @@ describe("personal gateway authoritative subject inspection (synthetic SQL resul
     expect(query).toHaveBeenCalledTimes(3);
   });
 
-  it("does not register a dispatchable personal operation or change legacy subject checks", () => {
-    expect(() => requireOperationDefinition("personal_intent_candidate_v1")).toThrow("UNKNOWN_GATEWAY_OPERATION");
+  it("registers only the explicit personal contract without changing legacy subject checks", () => {
+    expect(requireOperationDefinition("personal_intent_candidate_v1").outputContractKey).toBe("personal-intent-quoted-source-v1");
+    expect(() => requireOperationDefinition("personal_action_execution")).toThrow("UNKNOWN_GATEWAY_OPERATION");
     const migration = readFileSync("prisma/migrations/20260910030000_personal_gateway_subject/migration.sql", "utf8");
     expect(migration).toContain('REFERENCES "PersonalAssistantOperation"("id")');
     expect(migration).toContain('AND "taskId" IS NULL AND "voiceIntakeSegmentId" IS NULL');

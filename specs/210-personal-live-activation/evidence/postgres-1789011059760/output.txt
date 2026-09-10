@@ -1,0 +1,45 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model.postgres.test.ts (8 tests) 23574ms
+     ✓ does not reserve or admit when disabled or explicit AI consent is revoked  3624ms
+     ✓ rolls back AI, child, gateway and CAD reservation if the USD hold refuses  1796ms
+     ✓ admits once under concurrency, stores only a proposal, never settles or replays  4457ms
+     ✓ refuses transport after consent revocation and preserves held exposure  2462ms
+     ✓ refuses dispatch when the account USD cap is withdrawn after admission  2619ms
+     ✓ drops a proposal if permission changes during model latency and never retries  3197ms
+     ✓ keeps unknown callback outcomes and both reservations, without business writes  2853ms
+     ✓ records a pre-dispatch expired claim without a callback, refund or second claim  2561ms
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (6 tests) 11334ms
+     ✓ automatically replies only to the original sender with standing self-SMS consent  3486ms
+     ✓ binds proof from signed intake once, never a phone entered as a string  768ms
+     ✓ sends once after exact approval and records delivery separately  1824ms
+     ✓ serializes competing reservations and never exceeds the configured local allowance  3121ms
+     ✓ retains reservation and refuses replay after an uncertain transport  1039ms
+     ✓ revokes pending authority without sending  1089ms
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (8 tests) 15729ms
+     ✓ prepares without transport then inserts exactly once after owner approval  3678ms
+     ✓ withholds calendar success on uncertain write and never retries automatically  1683ms
+     ✓ stores encrypted tokens, scrubs one-use material and survives reconnect  3372ms
+     ✓ rejects a wrong browser correlation before any token exchange  505ms
+     ✓ lets only one concurrent callback exchange the code  2734ms
+     ✓ refuses cross-workspace access and clears credentials on local disconnect  1595ms
+     ✓ does not reconnect a connection revoked during the exchange  915ms
+     ✓ reads through granted authority and refuses a revoked read grant  1241ms
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 9391ms
+     ✓ processes through the guarded engine once and durably prepares one unsent reply  2178ms
+     ✓ holds an uncertain engine outcome without silently retrying it  304ms
+     ✓ retains exactly one durable operation across concurrent deliveries and reconnect  4178ms
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 9231ms
+     ✓ reloads the stored source, rejects cross-workspace lookup and observes revocation  2592ms
+     ✓ changes authority fingerprint when connector version changes and refuses changed source  722ms
+     ✓ enforces personal purpose, non-null unique FK and immutable binding in PostgreSQL  910ms
+     ✓ fences one personal attempt across real concurrent transactions and rejects replay  2889ms
+     ✓ rolls back account USD exposure with its parent transaction and serializes competing holds  2114ms
+
+ Test Files  5 passed (5)
+      Tests  33 passed (33)
+   Start at  23:31:31
+   Duration  74.16s (transform 1.01s, setup 0ms, import 3.98s, tests 69.26s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

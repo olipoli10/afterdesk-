@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma-client";
 import type { GatewayPolicySnapshot, GatewayRouteSnapshot } from "./policy";
 import { appendGatewayAuditEvent } from "./evidence";
 
@@ -69,13 +70,13 @@ export function resolveGatewayBreakers(input: {
 export async function loadGatewayBreakerResolution(input: {
   policy: Pick<GatewayPolicySnapshot, "policyKey">;
   route: Pick<GatewayRouteSnapshot, "routeKey" | "version" | "modelKey" | "billingProvider">;
-}): Promise<GatewayBreakerResolution> {
+}, db: Pick<Prisma.TransactionClient, "$queryRawUnsafe"> = prisma): Promise<GatewayBreakerResolution> {
   const scopes = gatewayBreakerScopes(input);
   const parameters = scopes.flatMap((scope) => [scope.scopeKind, scope.scopeKey]);
   const predicates = scopes
     .map((_, index) => `("scopeKind"=$${index * 2 + 1} AND "scopeKey"=$${index * 2 + 2})`)
     .join(" OR ");
-  const rows = await prisma.$queryRawUnsafe<GatewayBreakerDbRow[]>(
+  const rows = await db.$queryRawUnsafe<GatewayBreakerDbRow[]>(
     `SELECT id,"scopeKind","scopeKey",generation,state,"reasonClass" FROM "ModelGatewayBreaker" WHERE ${predicates}`,
     ...parameters,
   );

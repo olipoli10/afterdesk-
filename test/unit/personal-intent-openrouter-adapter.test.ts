@@ -123,4 +123,11 @@ describe("OFF-by-default personal OpenRouter transport adapter", () => {
     };
     expect(await create(transport).dispatch(input, signal())).toMatchObject({ status: "PROPOSAL_INSPECTED_NOT_AUTHORIZED" });
   });
+  it("snapshots an explicit trusted transport mode without treating the label as network proof", () => {
+    const config = { enabled: false, modelKey: "synthetic/model", providerEndpointSlug: "synthetic/provider", timeoutMs: 1000,
+      transportMode: "EXTERNAL_PROVIDER" as "EXTERNAL_PROVIDER" | "SYNTHETIC_LOCAL", transport: async () => response() };
+    const adapter = createOpenRouterPersonalIntentAdapter(config); config.transportMode = "SYNTHETIC_LOCAL";
+    expect(adapter.transportMode).toBe("EXTERNAL_PROVIDER");
+    expect(create(async () => response()).transportMode).toBe("SYNTHETIC_LOCAL");
+  });
 });

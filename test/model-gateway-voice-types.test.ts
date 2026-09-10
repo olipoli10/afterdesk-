@@ -19,6 +19,7 @@ describe("voice intake closed-world types", () => {
     expect(GATEWAY_OPERATION_TYPES).toEqual([
       "classification",
       "intake_voice_transcription",
+      "personal_intent_candidate_v1",
     ]);
     expect(isGatewayOperationType("intake_voice_transcription")).toBe(true);
     expect(isGatewayOperationType("planning")).toBe(false);

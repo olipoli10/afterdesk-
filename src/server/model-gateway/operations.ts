@@ -97,8 +97,10 @@ export async function bindGatewayOperation(
     voiceIntakeSegmentId: string | null;
     voiceClientId: string | null;
     personalAssistantOperationId: string | null;
+    personalWorkspaceId: string | null;
+    personalKind: string | null;
   }>>(
-    `SELECT ai."taskId",task."clientId" "taskClientId",ai.purpose,ai."voiceIntakeSegmentId",voice."clientId" "voiceClientId",ai."personalAssistantOperationId" FROM "AiOperation" ai LEFT JOIN "Task" task ON task.id=ai."taskId" LEFT JOIN "VoiceIntakeSegment" segment ON segment.id=ai."voiceIntakeSegmentId" LEFT JOIN "VoiceIntakeSession" voice ON voice.id=segment."sessionId" WHERE ai.id=$1`,
+    `SELECT ai."taskId",task."clientId" "taskClientId",ai.purpose,ai."voiceIntakeSegmentId",voice."clientId" "voiceClientId",ai."personalAssistantOperationId",personal."workspaceId" "personalWorkspaceId",personal.kind "personalKind" FROM "AiOperation" ai LEFT JOIN "Task" task ON task.id=ai."taskId" LEFT JOIN "VoiceIntakeSegment" segment ON segment.id=ai."voiceIntakeSegmentId" LEFT JOIN "VoiceIntakeSession" voice ON voice.id=segment."sessionId" LEFT JOIN "PersonalAssistantOperation" personal ON personal.id=ai."personalAssistantOperationId" WHERE ai.id=$1`,
     input.aiOperationId
   );
   const tenant = tenantRows[0];
@@ -108,7 +110,11 @@ export async function bindGatewayOperation(
   const voiceBinding = input.operationType === "intake_voice_transcription" &&
     tenant?.purpose === "intake_voice_transcription" && tenant.voiceIntakeSegmentId !== null &&
     tenant.taskId === null && tenant.voiceClientId === input.tenantId;
-  if (!tenant || tenant.personalAssistantOperationId != null || (!classificationBinding && !voiceBinding)) {
+  const personalBinding = input.operationType === "personal_intent_candidate_v1" &&
+    tenant?.purpose === "personal_intent_candidate_v1" && typeof tenant.personalAssistantOperationId === "string" &&
+    tenant.taskId === null && tenant.voiceIntakeSegmentId === null && tenant.personalKind === "personal_sms_inbound" &&
+    typeof tenant.personalWorkspaceId === "string" && input.tenantId === `construction-workspace:${tenant.personalWorkspaceId}`;
+  if (!tenant || !(personalBinding || (tenant.personalAssistantOperationId == null && (classificationBinding || voiceBinding)))) {
     throw new Error("GATEWAY_OPERATION_TENANT_TASK_BINDING_MISMATCH");
   }
   await tx.$executeRawUnsafe(
@@ -241,14 +247,18 @@ export async function createGatewayAttempt(
     voiceClientId: string | null;
     operationType: string;
     gatewayOperationId: string;
+    personalWorkspaceId: string | null;
+    personalKind: string | null;
+    aiPurpose: string;
   }>>(
-    `SELECT ai."operationKey" AS "aiOperationKey",h."operationKey" AS "holdOperationKey",r."billingProvider",h.provider AS "holdProvider",h."amountMicros" AS "holdAmountMicros",o."tenantId",o."operationType",o.id AS "gatewayOperationId",task."clientId" AS "taskClientId",voice."clientId" AS "voiceClientId"
+    `SELECT ai."operationKey" AS "aiOperationKey",h."operationKey" AS "holdOperationKey",r."billingProvider",h.provider AS "holdProvider",h."amountMicros" AS "holdAmountMicros",o."tenantId",o."operationType",o.id AS "gatewayOperationId",task."clientId" AS "taskClientId",voice."clientId" AS "voiceClientId",personal."workspaceId" "personalWorkspaceId",personal.kind "personalKind",ai.purpose "aiPurpose"
        FROM "ModelGatewayDecision" d
        JOIN "ModelGatewayOperation" o ON o.id=d."gatewayOperationId"
        JOIN "AiOperation" ai ON ai.id=o."aiOperationId"
        LEFT JOIN "Task" task ON task.id=ai."taskId"
        LEFT JOIN "VoiceIntakeSegment" segment ON segment.id=ai."voiceIntakeSegmentId"
        LEFT JOIN "VoiceIntakeSession" voice ON voice.id=segment."sessionId"
+       LEFT JOIN "PersonalAssistantOperation" personal ON personal.id=ai."personalAssistantOperationId"
        JOIN "ModelGatewayRouteProfile" r ON r.id=d."routeProfileId"
        JOIN "AccountProviderSpendHold" h ON h.id=$2
       WHERE d.id=$1 AND d.disposition='route_authorized'`,
@@ -264,6 +274,9 @@ export async function createGatewayAttempt(
       ? binding.tenantId !== binding.taskClientId
       : binding.operationType === "intake_voice_transcription"
         ? binding.tenantId !== binding.voiceClientId
+        : binding.operationType === "personal_intent_candidate_v1"
+          ? binding.aiPurpose !== "personal_intent_candidate_v1" || binding.personalKind !== "personal_sms_inbound" ||
+            typeof binding.personalWorkspaceId !== "string" || binding.tenantId !== `construction-workspace:${binding.personalWorkspaceId}`
         : true)
   ) {
     throw new Error("GATEWAY_ATTEMPT_SPEND_BINDING_MISMATCH");
@@ -336,8 +349,8 @@ function parseRouteOrder(value: unknown): GatewayPolicySnapshot["routeOrder"] {
   );
 }
 
-export async function loadGatewayPolicySnapshot(policyId: string): Promise<GatewayPolicySnapshot | null> {
-  const rows = await prisma.$queryRawUnsafe<PolicyDbRow[]>(
+export async function loadGatewayPolicySnapshot(policyId: string, db: Pick<Tx, "$queryRawUnsafe"> = prisma): Promise<GatewayPolicySnapshot | null> {
+  const rows = await db.$queryRawUnsafe<PolicyDbRow[]>(
     `SELECT id,"policyKey",status,"operationType","routeOrder","fallbackRules","maxAttempts","maxTotalCostMicros","requiredPrivacyPosture","canonicalHash" FROM "ModelGatewayPolicyVersion" WHERE id=$1`,
     policyId
   );
@@ -345,8 +358,8 @@ export async function loadGatewayPolicySnapshot(policyId: string): Promise<Gatew
   return row ? Object.freeze({ ...row, routeOrder: parseRouteOrder(row.routeOrder), fallbackRules: parseGatewayFallbackRules(row.fallbackRules) }) : null;
 }
 
-export async function loadGatewayRouteSnapshots(): Promise<GatewayRouteSnapshot[]> {
-  const rows = await prisma.$queryRawUnsafe<RouteDbRow[]>(
+export async function loadGatewayRouteSnapshots(db: Pick<Tx, "$queryRawUnsafe"> = prisma): Promise<GatewayRouteSnapshot[]> {
+  const rows = await db.$queryRawUnsafe<RouteDbRow[]>(
     `SELECT id,"routeKey",version,status,"pathKind","adapterKey","billingProvider",intermediary,"endpointKey","modelKey","operationTypes","allowedDataClasses","privacyPosture",residency,"privacyEvidence","maxInputTokens","maxOutputTokens","canonicalHash" FROM "ModelGatewayRouteProfile"`
   );
   return rows.map((row) => {

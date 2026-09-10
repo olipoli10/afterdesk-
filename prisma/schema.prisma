@@ -2941,6 +2941,7 @@ model ModelGatewayOperation {
 
   decisions   ModelGatewayDecision[]
   auditEvents ModelGatewayAuditEvent[]
+  personalModelOperation PersonalAssistantOperation?
 
   @@index([tenantId, status])
   @@index([policyVersionId])
@@ -5618,10 +5619,17 @@ model PersonalAssistantOperation {
   deliveryReceipts  PersonalAssistantDeliveryReceipt[]
   reservedCadMicros BigInt?
   aiOperation        AiOperation?
+  sourcePersonalOperationId String?
+  sourcePersonalOperation PersonalAssistantOperation? @relation("PersonalModelSource", fields: [sourcePersonalOperationId, workspaceId, createdByUserId], references: [id, workspaceId, createdByUserId], onDelete: Restrict)
+  modelChildren PersonalAssistantOperation[] @relation("PersonalModelSource")
+  modelGatewayOperationId String? @unique
+  modelGatewayOperation ModelGatewayOperation? @relation(fields: [modelGatewayOperationId], references: [id], onDelete: Restrict)
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
 
   @@index([workspaceId, kind, status])
+  @@unique([id, workspaceId, createdByUserId])
+  @@unique([sourcePersonalOperationId, kind])
 }
 
 model PersonalAssistantBudget {

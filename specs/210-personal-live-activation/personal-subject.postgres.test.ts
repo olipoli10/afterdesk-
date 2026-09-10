@@ -74,13 +74,15 @@ describe("personal gateway real disposable PostgreSQL subject", () => {
     const env = { NODE_ENV: "test" as const, ACCOUNT_PROVIDER_SPEND_CEILING_OPENROUTER_MICROS: "10" };
     const operationKey = `rollback:${randomUUID()}`;
     await expect(prisma.$transaction(async tx => {
-      const hold = await reserveAccountProviderSpendInTransaction(tx, { operationKey, attempt: 1, worstCaseMicros: 7n, provider: "openrouter", now: new Date("2026-09-10T00:00:00Z") }, env);
+      // Dedicated synthetic periods: the complete gateway suite uses the real
+      // current UTC day in this same disposable DB and deliberately retains holds.
+      const hold = await reserveAccountProviderSpendInTransaction(tx, { operationKey, attempt: 1, worstCaseMicros: 7n, provider: "openrouter", now: new Date("2036-01-01T00:00:00Z") }, env);
       expect(hold.ok).toBe(true); throw new Error("synthetic rollback");
     })).rejects.toThrow("synthetic rollback");
     expect(await prisma.accountProviderSpendHold.count({ where: { operationKey } })).toBe(0);
     const keys = [randomUUID(), randomUUID()];
     const competing = await Promise.allSettled(keys.map(key => prisma.$transaction(tx => reserveAccountProviderSpendInTransaction(tx,
-      { operationKey: key, attempt: 1, worstCaseMicros: 7n, provider: "openrouter", now: new Date("2026-09-11T00:00:00Z") }, env), { isolationLevel: "Serializable" })));
+      { operationKey: key, attempt: 1, worstCaseMicros: 7n, provider: "openrouter", now: new Date("2036-01-02T00:00:00Z") }, env), { isolationLevel: "Serializable" })));
     expect(competing.filter(result => result.status === "fulfilled" && result.value.ok)).toHaveLength(1);
     const held = await prisma.accountProviderSpendHold.aggregate({ where: { operationKey: { in: keys } }, _sum: { amountMicros: true } });
     expect(held._sum.amountMicros).toBe(7n);

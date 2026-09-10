@@ -1,5 +1,38 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 03:40Z — composed personal model wrapper validated locally
+
+Existing gateway admission now atomically binds owner AI consent, immutable source
+child, one attempt, exact published route/privacy/breaker and USD/CAD reservations.
+Dispatcher rechecks current subject, grants, rates, envelope and ledgers before and
+after latency. Valid model output remains a proposal with no action authority and
+unsettled billing. Expired/unknown attempts retain holds, without automatic retry.
+
+Full root2986 PASS/3 historical skips (root-1789011248517); mobile219 PASS
+(mobile-1789011259002); complete TypeScript PASS; provider-boundary3375/0 violations.
+Disposable PostgreSQL34 PASS (postgres-1789011470430), cluster removed. Fake wire
+only; no live policy/consent/provider or remote migration. Last production change
+was a Date-valued SQL expiry binding, covered by focused27 tests and full PG34.
+The latency-cap test subsequently gained an explicit fake-callback count assertion;
+the next PG wave will rerun that stronger assertion as well.
+
+Failed runs retained: initial PG14/33 failed (legacy sms_pairing set accidentally
+removed plus fixture missing connected account hash); later32/33 exposed a test
+period collision; later33/34 exposed the SQL timestamp/text mismatch. All production
+defects corrected before deployment. Independent reviews also fixed missing current
+USD cap/day checks and post-latency ledger checks. No previous failure rewritten.
+
+Mobile: outbox failure no longer blocks valid phone pairing; uncertain exact draft
+preparation retains its identity within the screen session, with no silent eviction.
+Existing APK is unchanged. The installed app has not been observed with these changes.
+
+Next wave remains active: repair source SMS timeout/finalization fencing, then
+exclusive model orchestration, authenticated review-only draft consumption and
+owner AI connector configuration/consent. Known source-worker late-completion defect
+is recorded REWORK_LOCAL in the queue; do not imply entire SMS service ready.
+Twilio access confirmation, Google consent and owner-phone binding remain separate.
+No new paid call, build, deployment, push, founder test or dashboard metric promotion.
+
 ## 2026-09-10 03:07Z — continuous agent implementation checkpoint
 
 Olivier requested continued multi-agent code, changing branch when an account/key

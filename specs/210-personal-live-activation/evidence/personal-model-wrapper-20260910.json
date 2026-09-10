@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-10T03:40:00Z",
+  "classification": "LOCAL_SYNTHETIC_TRANSPORT_WITH_DISPOSABLE_POSTGRESQL",
+  "result": "GUARDED_MODEL_WRAPPER_LOCAL_VALIDATED_WORKER_INTEGRATION_REMAINS",
+  "root": { "passed": 2986, "historicalSkipped": 3, "receipt": "root-1789011248517/result.json" },
+  "mobile": { "passed": 219, "receipt": "mobile-1789011259002/result.json" },
+  "postgres": { "passed": 34, "receipt": "postgres-1789011470430/result.json", "disposableClusterRemoved": true },
+  "types": "PASS",
+  "providerBoundary": { "modules": 3375, "violations": 0 },
+  "reviewFixes": ["Current USD cap and UTC day before dispatch", "Current USD and CAD holds after model latency", "Legacy CHECK member preservation", "Explicit Date parameter in PostgreSQL expiry comparison", "Invalid grant date refusal"],
+  "failedRunsPreserved": ["Initial 14 of 33 failures", "32 of 33 after test UTC ledger collision", "postgres-1789011238551:33 of 34 before SQL Date correction"],
+  "additionalCallbackCountAssertionPendingNextPgWave": true,
+  "externalProviderCalls": 0,
+  "remoteDatabaseMigrations": 0,
+  "newBuildsOrDeployments": 0,
+  "businessActionAuthority": false,
+  "billingSettlementProven": false,
+  "installedSamsungObservation": false,
+  "serviceComplete": false,
+  "next": ["Source SMS lease and finalization fence", "Exclusive model worker integration", "Stored proposal review-only consumer", "Owner AI configuration and consent"]
+}

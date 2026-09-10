@@ -43,6 +43,9 @@ const uncertain = (reason: "TIMEOUT" | "ABORTED" | "TRANSPORT_ERROR" | "HTTP_ERR
 export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
   enabled?: boolean; modelKey: string; providerEndpointSlug: string; timeoutMs: number;
   maxOutputTokens?: number;
+  // This is a trusted construction label, not proof that an arbitrary injected
+  // callback performs no I/O. Production wiring must explicitly declare real I/O.
+  transportMode?: "SYNTHETIC_LOCAL" | "EXTERNAL_PROVIDER";
   transport: OpenRouterPersonalIntentTransport;
 }>) {
   const maxOutputTokens = config.maxOutputTokens ?? PERSONAL_INTENT_ADAPTER_LIMITS.completionTokens;
@@ -50,15 +53,17 @@ export function createOpenRouterPersonalIntentAdapter(config: Readonly<{
     || !/^[A-Za-z0-9._:@/-]{1,200}$/.test(config.providerEndpointSlug)
     || !Number.isInteger(config.timeoutMs) || config.timeoutMs < 1 || config.timeoutMs > 120_000
     || !Number.isInteger(maxOutputTokens) || maxOutputTokens < 1 || maxOutputTokens > PERSONAL_INTENT_ADAPTER_LIMITS.completionTokens
+    || (config.transportMode !== undefined && !["SYNTHETIC_LOCAL", "EXTERNAL_PROVIDER"].includes(config.transportMode))
     || typeof config.transport !== "function") throw new Error("PERSONAL_INTENT_ADAPTER_CONFIG_INVALID");
   // Snapshot configuration: a caller cannot enable or reroute an existing adapter
   // by mutating its original config while a request is awaiting completion.
   const { modelKey, providerEndpointSlug, timeoutMs, transport } = config;
   const enabled = config.enabled === true;
+  const transportMode = config.transportMode ?? "SYNTHETIC_LOCAL";
   return Object.freeze({
     key: "openrouter-personal-intent-candidate" as const,
     promptVersion: PERSONAL_INTENT_PROMPT_VERSION,
-    modelKey, providerEndpointSlug, maxOutputTokens, limits: PERSONAL_INTENT_ADAPTER_LIMITS,
+    modelKey, providerEndpointSlug, maxOutputTokens, transportMode, limits: PERSONAL_INTENT_ADAPTER_LIMITS,
     async dispatch(untrustedInput: PersonalIntentInput, signal: AbortSignal): Promise<OpenRouterPersonalIntentResult> {
       if (!enabled) return notDispatched("DISABLED");
       let input: PersonalIntentInput;

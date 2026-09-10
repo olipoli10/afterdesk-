@@ -2,9 +2,9 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 
-// Local candidate contract only. This is NOT registered as an executable gateway
-// operation. A later authenticated store-reloading wrapper must admit the source,
-// reserve current-authority spend, validate proposals, and prepare exact approvals.
+// Pure candidate contract only. Registration/admission is handled separately by
+// the OFF-default store-reloading gateway wrapper, not by this parser. That wrapper
+// reserves current-authority spend; downstream effects still need exact approvals.
 // No recipient address, credential, calendar identifier, approval or tool executor
 // is accepted from a model. Do not reinterpret this result as permission to act.
 const id = z.string().min(1).max(191);
