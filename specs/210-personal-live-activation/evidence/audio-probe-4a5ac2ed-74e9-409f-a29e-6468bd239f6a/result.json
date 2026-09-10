@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "fixture": "FIXED_SYNTHETIC_SINE_600S",
+  "scratch": "C:\\dev\\endvera-astra-r03\\.scratch\\audio-probe-4a5ac2ed-74e9-409f-a29e-6468bd239f6a",
+  "providerCalls": 0,
+  "personalAudio": false,
+  "osSandbox": false,
+  "publisherAuthenticated": false,
+  "executablePins": {
+    "ffmpeg": {
+      "path": "C:/Users/oliro/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1.1-full_build/bin/ffmpeg.exe",
+      "sha256": "09948d4cdd0650da6ff5a87577469f2a218dc2615ae379f8f734d24c49de0f73"
+    },
+    "ffprobe": {
+      "path": "C:/Users/oliro/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1.1-full_build/bin/ffprobe.exe",
+      "sha256": "a6618e99bb58869ded3c6f37b53aa1a8d701c3591dbb7b5b317d47369c112be2"
+    }
+  },
+  "stages": [
+    {
+      "stage": "synthesize",
+      "pid": 50224,
+      "elapsedMs": 6439,
+      "stdoutBytes": 0,
+      "status": 0
+    },
+    {
+      "stage": "probe-source",
+      "pid": 43612,
+      "elapsedMs": 59,
+      "stdoutBytes": 374,
+      "status": 0
+    },
+    {
+      "stage": "decode",
+      "pid": 47532,
+      "elapsedMs": 164,
+      "stdoutBytes": 19200000,
+      "status": 0
+    },
+    {
+      "stage": "decode-repeat",
+      "pid": 56104,
+      "elapsedMs": 154,
+      "stdoutBytes": 19200000,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-0",
+      "pid": 53096,
+      "elapsedMs": 56,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-1",
+      "pid": 37252,
+      "elapsedMs": 56,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-2",
+      "pid": 55336,
+      "elapsedMs": 54,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-3",
+      "pid": 50316,
+      "elapsedMs": 52,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-4",
+      "pid": 17196,
+      "elapsedMs": 56,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-5",
+      "pid": 37420,
+      "elapsedMs": 108,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-6",
+      "pid": 51864,
+      "elapsedMs": 57,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-7",
+      "pid": 13744,
+      "elapsedMs": 53,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-8",
+      "pid": 3120,
+      "elapsedMs": 52,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-9",
+      "pid": 53652,
+      "elapsedMs": 106,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-10",
+      "pid": 51788,
+      "elapsedMs": 70,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-11",
+      "pid": 54036,
+      "elapsedMs": 61,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-12",
+      "pid": 44760,
+      "elapsedMs": 57,
+      "stdoutBytes": 293,
+      "status": 0
+    },
+    {
+      "stage": "probe-segment-13",
+      "pid": 42732,
+      "elapsedMs": 104,
+      "stdoutBytes": 293,
+      "status": 0
+    }
+  ],
+  "verdict": "SYNTHETIC_NATIVE_DECODE_AND_SEGMENT_PASS",
+  "source": {
+    "sha256": "0ab6d98b358a2486e743e25dd2dccc98d648dafea59bef9528533e9a21ca82e8",
+    "sizeBytes": 3759037,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "16000",
+          "channels": 1,
+          "duration": "600.000000"
+        }
+      ],
+      "format": {
+        "nb_streams": 1,
+        "duration": "600.000000"
+      }
+    }
+  },
+  "decodedBytes": 19200000,
+  "sampleRate": 16000,
+  "totalSamples": 9600000,
+  "decodedPcmHash": "30d9fdbc67d39da008e24479c10d62ffb71d6a67fa9a30104ecaa63f9527d4ea",
+  "segments": [
+    {
+      "ordinal": 0,
+      "startSample": 0,
+      "endSample": 720000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 0,
+      "endMs": 45000,
+      "durationMs": 45000,
+      "contentHash": "e5e9f00bfa4de09ee5e0b9c8a5c787044e4d8d8c8dd73123d2dcae28dcbb4c73",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 1,
+      "startSample": 720000,
+      "endSample": 1440000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 45000,
+      "endMs": 90000,
+      "durationMs": 45000,
+      "contentHash": "3a40b24c8f57899511f52c466a578bfeb2b29dd082b47cde0ab30d8246725e17",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 2,
+      "startSample": 1440000,
+      "endSample": 2160000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 90000,
+      "endMs": 135000,
+      "durationMs": 45000,
+      "contentHash": "5defcf7233f0cefdffcc427c78ea4257d2e3620a420a1d2815de84ccedfe0a8d",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 3,
+      "startSample": 2160000,
+      "endSample": 2880000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 135000,
+      "endMs": 180000,
+      "durationMs": 45000,
+      "contentHash": "da20641977c3567107b1499a51dfb63e96d2183dc9d34f60c8a429237041206c",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 4,
+      "startSample": 2880000,
+      "endSample": 3600000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 180000,
+      "endMs": 225000,
+      "durationMs": 45000,
+      "contentHash": "88848ae2964d015e69374fbb53b154e2e672c2ed9a83c738a79d1878a954c99e",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 5,
+      "startSample": 3600000,
+      "endSample": 4320000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 225000,
+      "endMs": 270000,
+      "durationMs": 45000,
+      "contentHash": "e11f09f0116833f81fd2ba6dedbc66569624fb021790438d2ebb2ad5100e0f70",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 6,
+      "startSample": 4320000,
+      "endSample": 5040000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 270000,
+      "endMs": 315000,
+      "durationMs": 45000,
+      "contentHash": "0bd843c96cfc0f1e140aebfd663b4d93d37ebabcaf6e9f19549a7c7456b55f64",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 7,
+      "startSample": 5040000,
+      "endSample": 5760000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 315000,
+      "endMs": 360000,
+      "durationMs": 45000,
+      "contentHash": "98900f08e4d45c39de565e623f9a137f79bdcf99b61df4485afdc8a0f3ccbd3f",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 8,
+      "startSample": 5760000,
+      "endSample": 6480000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 360000,
+      "endMs": 405000,
+      "durationMs": 45000,
+      "contentHash": "703efb255d9d71a6198ba227222e232d8247a5a1d9dbd43508caf2742105f43c",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 9,
+      "startSample": 6480000,
+      "endSample": 7200000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 405000,
+      "endMs": 450000,
+      "durationMs": 45000,
+      "contentHash": "3a40b24c8f57899511f52c466a578bfeb2b29dd082b47cde0ab30d8246725e17",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 10,
+      "startSample": 7200000,
+      "endSample": 7920000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 450000,
+      "endMs": 495000,
+      "durationMs": 45000,
+      "contentHash": "5defcf7233f0cefdffcc427c78ea4257d2e3620a420a1d2815de84ccedfe0a8d",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 11,
+      "startSample": 7920000,
+      "endSample": 8640000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 495000,
+      "endMs": 540000,
+      "durationMs": 45000,
+      "contentHash": "da20641977c3567107b1499a51dfb63e96d2183dc9d34f60c8a429237041206c",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 12,
+      "startSample": 8640000,
+      "endSample": 9360000,
+      "sampleRate": 16000,
+      "sampleCount": 720000,
+      "startMs": 540000,
+      "endMs": 585000,
+      "durationMs": 45000,
+      "contentHash": "88848ae2964d015e69374fbb53b154e2e672c2ed9a83c738a79d1878a954c99e",
+      "byteCount": 1440044
+    },
+    {
+      "ordinal": 13,
+      "startSample": 9360000,
+      "endSample": 9600000,
+      "sampleRate": 16000,
+      "sampleCount": 240000,
+      "startMs": 585000,
+      "endMs": 600000,
+      "durationMs": 15000,
+      "contentHash": "3fd6554ac458707a3225d39be43a3478b3d908e25b5561b9a76e9060c4c6a626",
+      "byteCount": 480044
+    }
+  ],
+  "limitations": [
+    "fixed local synthetic input only",
+    "not ASR or source-subject authority",
+    "not production decoder isolation",
+    "fractional-millisecond manifest adoption remains separate"
+  ],
+  "finishedAt": "2026-09-10T08:22:51.714Z"
+}
