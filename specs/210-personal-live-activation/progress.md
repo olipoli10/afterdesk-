@@ -1,5 +1,105 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 07:42Z — full native suite PASS; dictation continuation stays active
+
+Fresh evidence/postgres-native-1789025960008: **114/114 PASS across13 suites**,
+all74 migrations, simultaneous distinct native PostgreSQL17.11 backends and exact
+owned-server stop verified. Actual canonical workers/approvals, replay/refusal,
+budgets, revocation, source recovery and timezone defaults exercised with injected
+fake transports. The preceding113/114 run1789025833787 is retained: its injected
+test interpreter still compared a raw Date without UTC, so it never wrote the
+intended evidence. Fixed only that fixture and added positive pre-recovery match
+plus exact proof readback before simulated loss; production assertions unchanged.
+
+Fresh full root evidence/root-1789025997263: **3609 PASS /3 historical skips**.
+Separate-agent critical reviews cover controller6, gateway9 and confirmation5
+modules plus full forward migration/schema. Pure SQL function-equivalence tests
+show no non-datetime guard change. No native run is claimed to prove real provider
+delivery, Samsung use, Google consent or service readiness. Prior actual APK and
+deployed backend remain older than this local code.
+
+Next: finish independent600s recording/interruption journal review, mobile tests,
+and local ASR subject/adapter planning. Current OpenRouter STT docs do not honor
+provider.only/order/ignore: do not treat those request fields as endpoint/privacy
+enforcement for transcription. Candidate ASR stays OFF; no external audio sent.
+Reference: https://openrouter.ai/docs/guides/overview/multimodal/stt (checked today).
+Same unresolved external credential/owner-binding/Google-consent prerequisites,
+same100CAD ceiling, ACTIVE3min heartbeat and unchanged separate dashboard.
+
+## 2026-09-10 07:36Z — native UTC defect reproduced and targeted corrections observed
+
+Native PostgreSQL17.11 with pgvector0.8.6 applies all74 local migrations and
+verifies simultaneous distinct backends. Outbox10/10 now passes in
+evidence/postgres-native-1789025648486; Google14/14 in
+evidence/postgres-native-1789025710145. Each exact owned server stopped. These
+are injected fake transports, not Twilio/Google or personal-device observation.
+Full native suite is running; do not infer its verdict from these two suites.
+
+Earlier native Google7/11, outbox3/10 and diagnostic8/13 failures are preserved
+in postgres-native-1789024560494,1789024786393,1789024903219. The diagnosis is
+confirmed: raw Date parameters and timestamp(3) columns implicitly used the
+session TimeZone. New York shifted an inserted16:00Z instant to12:00; Tokyo to
+01:00 next day. Explicit UTC conversion preserves16:00 in all three zones and
+keeps expired/future deadlines correct. No global timezone test workaround.
+Original11 Google and10 outbox behavioral assertions remain. Normalization
+preserves all authority/lease/nonce/hash checks. The forward migration changes
+16 future defaults and two confirmation functions; no old rows or applied
+migrations are rewritten. Mixed-provenance historical dates remain uncertified.
+
+Native tooling19 static tests and focused controller159 pass. Agent gateway235
+and confirmation77 are reported pending final cross-review/full-suite integration.
+Latest prior root3580+3skips remains a pre-repair snapshot, not final proof.
+The prior PGlite inbound recovery extension now passes6/6 including actual failed
+worker proof retention (postgres-1789024364062); no native claim from that run.
+
+Long dictation is an independent600s foreground-capture/journal/upload-deadline
+wave, currently under review. It does not transcribe audio or prove Samsung
+behavior. No new product provider call, secret, paid API attempt, remote migration,
+deployment or APK in this wave. Same100CAD authorization and ACTIVE3min heartbeat.
+Dashboard unchanged22%/46.75%/C2 18of18/real-test NO-GO/Verified-E2E0%.
+
+## 2026-09-10 07:14Z — queue proof preservation and successful native extension build
+
+Fresh full root suite evidence/root-1789024334928: **3580 PASS / 3 historical
+skips**, TypeScript PASS. Focused queue source/selector/recovery91 PASS and
+preflight7 PASS. These are local tests, not delivery/device observation.
+
+The actual confirmation worker-to-Google-executor integration now passes6/6
+on Prisma dev PGlite (postgres-1789023029125), including lost provider response,
+revocation and repeat phrase without a second fake HTTP call. Confirmation
+maintenance7/7 passes (postgres-1789022906616); the prior5/7 fixture failure remains.
+The inbound recovery5/5 SQL run (postgres-1789023870648) proves max25, attempts1
+only, exact prior JSON retained, no reservation change and no automatic replay.
+A sixth failed-worker integration case is in progress. Native concurrency is
+still a separate pending proof; no PGlite run is labeled native here.
+
+Reproduced oldest-first starvation: retained expired/revoked/revised confirmation
+could suppress a newer ordinary reply. A bounded read-only selector now filters
+those known permanent invalidations before LIMIT; actual senders retain every
+canonical authority check. Store/selector22/22 PGlite passes in
+postgres-1789024161701. No deletion, new approval, automatic effect retry or global
+fairness claim for transient budget/rate/provider failures. The worker now uses
+bounded proof-preserving inbound recovery instead of a global result overwrite;
+its own uncertain cleanup also retains the exact old result.
+
+The second reviewed local pgvector0.8.6 build succeeded after adding the pinned
+Microsoft complementary CRT package: .scratch/personal-pgvector-build-18726cfe44b84ef69791bd5960df77d3,
+exit0,5733ms,owned tree stopped. DLL SHA256
+1d54ce81495fc481da3d261edf4f797c837340a51648d3456afa3d72e4431cef,
+280064bytes, AMD64; static imports only postgres.exe and KERNEL32.dll, no delayed
+imports, Pg_magic_func present. This is BUILT_NOT_LOADED. Separate CreateNew-only
+runtime copy review and all unchanged migrations/native tests are next. The
+first19-object OLDNAMES link failure and all publisher-catalog/signature caveats
+remain recorded in the toolchain documents; no network isolation is claimed.
+
+Presence-only preflight now shows exact route switches as DISABLED,
+PARTIALLY_REQUESTED or REQUESTED_UNVERIFIED and lists missing owner/model/native
+evidence. It reads no database credential, prints no values and activates nothing.
+Existing three-minute heartbeat remains ACTIVE. No product provider call, paid
+API attempt, secret access, remote migration/deployment or new APK in this wave.
+Historical dashboard unchanged: roadmap22%, local build46.75%, C2 18/18,
+real-test NO-GO, Verified-E2E0%. Continue pending native and independent local work.
+
 ## 2026-09-10 06:38Z — exact SMS confirmation wired OFF; native extension preparation continues
 
 Fresh root evidence/root-1789022027709: **3512 PASS / 3 historical skips**.

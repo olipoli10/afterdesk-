@@ -25,7 +25,7 @@ describe("personal gateway expired attempt bookkeeping (no dispatch)", () => {
     const f = fixture();
     expect(await recoverExpiredPersonalIntentAttempts({ enabled: true, batchSize: 3 })).toMatchObject({ recovered: 1, executionAuthorized: false });
     const sql = f.query.mock.calls[0][0];
-    for (const part of ["personal_intent_candidate_v1", "personal_model_candidate_v1", 'ai."leaseExpiresAt"<=now()', '"sourcePersonalOperationId"', "LIMIT $1", "FOR UPDATE OF ai,o,c,a SKIP LOCKED"]) expect(sql).toContain(part);
+    for (const part of ["personal_intent_candidate_v1", "personal_model_candidate_v1", 'ai."leaseExpiresAt"<=(now() AT TIME ZONE \'UTC\')', '"sourcePersonalOperationId"', "LIMIT $1", "FOR UPDATE OF ai,o,c,a SKIP LOCKED"]) expect(sql).toContain(part);
     expect(sql).toContain(`c."budgetId"='ENDVERA-PERSONAL-20260910-100CAD:openrouter'`);
     expect(f.query.mock.calls[0][1]).toBe(3);
     expect(f.execute).toHaveBeenCalledTimes(4);

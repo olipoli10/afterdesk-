@@ -81,7 +81,8 @@ describe("stored personal candidate review consumer (local, mocked persistence)"
     expect(shared.outbound).toHaveBeenCalledWith(f.tx, expect.objectContaining({ kind: "sms_outbound", to: "+15145550122", text: "Bonjour" }), env);
     expect(Object.isFrozen(result)).toBe(true);
     const sql = f.query.mock.calls[0][0];
-    for (const constraint of ["s.status='processing'", 's."leaseUntil">now()', "c.status='completed'", "ai.status='succeeded'", 'ai."resultId"=c.id', 'FOR UPDATE OF c,s']) expect(sql).toContain(constraint);
+    for (const constraint of ["s.status='processing'", 's."leaseUntil">(now() AT TIME ZONE \'UTC\')', "c.status='completed'", "ai.status='succeeded'", 'ai."resultId"=c.id', 'FOR UPDATE OF c,s']) expect(sql).toContain(constraint);
+    expect(sql).toContain('CURRENT_TIMESTAMP AS now'); // Real instant returned to JS must remain zoned.
   });
   it("prepares exact self call with ENDVERA disclosure only", async () => {
     const f = fixture("Appelle-moi : Bonjour", "call");

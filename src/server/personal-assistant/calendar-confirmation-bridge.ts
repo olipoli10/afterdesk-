@@ -25,8 +25,8 @@ export async function prepareCalendarConfirmationOutboundInTransaction(tx: Prism
   }
   const operationId = randomUUID();
   const inserted = await tx.$executeRawUnsafe(`INSERT INTO "PersonalAssistantOperation"(id,"workspaceId","createdByUserId","connectorAccountId",kind,status,
-    "idempotencyKey",request,"requestHash","updatedAt") SELECT $1,$2,$3,$4,'sms_outbound','pending',$5,$6::jsonb,$7,clock_timestamp()
-    FROM "PersonalCalendarSmsConfirmation" WHERE id=$8 AND phase='PREPARED' AND "expiresAt">clock_timestamp()`,
+    "idempotencyKey",request,"requestHash","updatedAt") SELECT $1,$2,$3,$4,'sms_outbound','pending',$5,$6::jsonb,$7,(clock_timestamp() AT TIME ZONE 'UTC')
+    FROM "PersonalCalendarSmsConfirmation" WHERE id=$8 AND phase='PREPARED' AND "expiresAt">(clock_timestamp() AT TIME ZONE 'UTC')`,
   operationId, checked.actor.workspaceId, checked.actor.userId, checked.connectorAccountId, checked.idempotencyKey, JSON.stringify(checked.request), checked.requestHash, checked.challengeId);
   if (inserted !== 1) throw new Error("CONFIRMATION_NOT_PREPARED");
   return Object.freeze({ status: "PREPARED_UNSENT" as const, executionAuthorized: false as const, operationId,

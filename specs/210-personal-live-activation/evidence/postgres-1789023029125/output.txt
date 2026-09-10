@@ -1,0 +1,17 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation-worker.postgres.test.ts (6 tests) 38658ms
+     ✓ commits one exact review/draft/challenge plus two distinct pending messages; only the dedicated fake-HTTP bridge reaches WAITING  9830ms
+     ✓ rolls back review/draft/challenge/messages together when the first consumer result drifts from deterministic replay  3701ms
+     ✓ preserves app-only review with no summary or challenge when the worker bridge switch is OFF  3159ms
+     ✓ reloads exact confirmation SMS and runs the existing Google executor once with synthetic confirmed outcome  7547ms
+     ✓ reloads exact confirmation SMS and runs the existing Google executor once with synthetic unknown outcome  7856ms
+     ✓ refuses a received exact confirmation after Google write consent is revoked without any Google HTTP or model fallback  6562ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  02:51:01
+   Duration  41.10s (transform 1.02s, setup 0ms, import 2.26s, tests 38.66s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

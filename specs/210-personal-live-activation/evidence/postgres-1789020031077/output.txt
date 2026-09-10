@@ -1,0 +1,324 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts (16 tests | 14 failed) 11927ms
+     ✓ is OFF without explicit switch and creates no records  2051ms
+     × creates one non-executable summary, permanently registered phrase and exact source review atomically 1164ms
+     × rolls back challenge, summary and nonce if caller omits final source CAS 715ms
+     × refuses waiting without a durable source-bound accepted outbox bridge 651ms
+     × keeps nonces immutable and permanent independently of terminal challenges 617ms
+     × rejects a second orphan summary naming an already bound challenge 579ms
+     × prevents post-commit source/draft evidence replacement without preventing revocation 624ms
+     ✓ declares same-owner composite FKs for every operation binding and permanent active uniqueness 46ms
+     × consumes the exact verified phrase and calendar claim once in one transaction without execution 631ms
+     × counts a wrong phrase once per completed source, never a write or replay 564ms
+     × rejects a queued confirmation received before the summary was durably accepted 694ms
+     × allows only one of two concurrent exact SMS sources to claim the calendar 774ms
+     × serializes app approval against SMS consumption without two calendar claims 659ms
+     × expires by the DB clock without deleting or resetting the permanent phrase registry 726ms
+     × permanently closes after five distinct wrong confirmation sources 736ms
+     × refuses another owner and independently changed Google grant epoch 694ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > creates one non-executable summary, permanently registered phrase and exact source review atomically
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d4gl000ni5u85ox5tygj, cmtv4d3on0002i5u8lm40amep, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:18.961, null, cmtv4d3lk0000i5u8r0nn4lf4, 2026-09-10 06:01:20.085, 2026-09-10 06:01:20.085)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:97:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > rolls back challenge, summary and nonce if caller omits final source CAS
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d50a001ci5u8jgwqwi41, cmtv4d4k9000ri5u8l2m5aez6, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:20.125, null, cmtv4d4hq000pi5u8igxkgjtg, 2026-09-10 06:01:20.794, 2026-09-10 06:01:20.794)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:106:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > refuses waiting without a durable source-bound accepted outbox bridge
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d5iy0021i5u88qga0r7p, cmtv4d539001gi5u8ktht99l3, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:20.839, null, cmtv4d51l001ei5u8tmclmnd6, 2026-09-10 06:01:21.467, 2026-09-10 06:01:21.467)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:111:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > keeps nonces immutable and permanent independently of terminal challenges
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d604002qi5u8scwsahnz, cmtv4d5l20025i5u8ifm98anb, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:21.49, null, cmtv4d5jo0023i5u8s6vkbvz4, 2026-09-10 06:01:22.085, 2026-09-10 06:01:22.085)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:116:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > rejects a second orphan summary naming an already bound challenge
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d6g5003fi5u8fouukxz9, cmtv4d62b002ui5u8t08v16ha, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:22.107, null, cmtv4d60s002si5u8fj7b6zmn, 2026-09-10 06:01:22.661, 2026-09-10 06:01:22.661)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:123:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > prevents post-commit source/draft evidence replacement without preventing revocation
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d6xi0044i5u8z6dvilk9, cmtv4d6ig003ji5u8zdbbq26c, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:22.686, null, cmtv4d6gv003hi5u87gjqgavb, 2026-09-10 06:01:23.287, 2026-09-10 06:01:23.287)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:131:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > consumes the exact verified phrase and calendar claim once in one transaction without execution
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d7g9004ti5u8t8zyhnj4, cmtv4d71c0048i5u8hsca27z4, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:23.356, null, cmtv4d6zi0046i5u80wsqaopq, 2026-09-10 06:01:23.962, 2026-09-10 06:01:23.962)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:153:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > counts a wrong phrase once per completed source, never a write or replay
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d7vw005ii5u8cmbd1hqm, cmtv4d7ig004xi5u8w920i17s, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:23.987, null, cmtv4d7h1004vi5u8s88mvza1, 2026-09-10 06:01:24.524, 2026-09-10 06:01:24.524)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:164:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > rejects a queued confirmation received before the summary was durably accepted
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d8f40067i5u8r00a363d, cmtv4d7yn005mi5u8lnuhup0v, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:24.552, null, cmtv4d7wp005ki5u8ki0fmnlg, 2026-09-10 06:01:25.216, 2026-09-10 06:01:25.216)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:172:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > allows only one of two concurrent exact SMS sources to claim the calendar
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d90i006wi5u8t45qjqyi, cmtv4d8hw006bi5u8m0ae92gk, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:25.246, null, cmtv4d8fz0069i5u8hdzg422i, 2026-09-10 06:01:25.987, 2026-09-10 06:01:25.987)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:182:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > serializes app approval against SMS consumption without two calendar claims
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4d9iv007li5u87uu0qtc9, cmtv4d9330070i5u8zqwbecvi, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:26.019, null, cmtv4d91h006yi5u80vx2qxer, 2026-09-10 06:01:26.648, 2026-09-10 06:01:26.648)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:194:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > expires by the DB clock without deleting or resetting the permanent phrase registry
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4da35008ai5u8j7shu5ng, cmtv4d9nj007pi5u8e46ghblu, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:26.678, null, cmtv4d9js007ni5u8nwog5alg, 2026-09-10 06:01:27.377, 2026-09-10 06:01:27.377)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:204:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > permanently closes after five distinct wrong confirmation sources
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4danf008zi5u8ow4jqrbu, cmtv4da5m008ei5u8gsu69oef, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:27.404, null, cmtv4da3y008ci5u894nl3yun, 2026-09-10 06:01:28.107, 2026-09-10 06:01:28.107)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:214:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > refuses another owner and independently changed Google grant epoch
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.create()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:30:60
+
+  27   TWILIO_ACCOUNT_SID: f.accountSid, TWILIO_PHONE_NUMBER: "+15005550006", ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED",
+  28   ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED", GOOGLE_CLIENT_ID: "synthetic-client", GOOGLE_CLIENT_SECRET: "synthetic-secret",
+  29   GOOGLE_REDIRECT_URI: "https://endvera.example/api/endvera/v1/personal/google/callback", BETTER_AUTH_URL: "https://endvera.example" };
+→ 30 const google = await prisma.constructionConnectorAccount.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_connected_refs_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4db6y009oi5u8pgeznfqs, cmtv4dapy0093i5u8tnwjnurr, google_calendar, connected, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, null, primary, 1, 2026-09-10 06:01:28.141, null, cmtv4daoe0091i5u8k1ehw2ie, 2026-09-10 06:01:28.811, 2026-09-10 06:01:28.811)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:30:18
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:224:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  14 failed | 2 passed (16)
+   Start at  02:01:15
+   Duration  12.98s (transform 584ms, setup 0ms, import 887ms, tests 11.93s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

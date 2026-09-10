@@ -28,11 +28,11 @@ export async function recoverExpiredPersonalActionClaims(input: Readonly<{ enabl
           "budgetId","reservedCadMicros",result
         FROM "PersonalAssistantOperation"
         WHERE kind IN ('calendar_write','sms_outbound','voice_outbound')
-          AND status='processing' AND attempts=1 AND "leaseUntil" IS NOT NULL AND "leaseUntil"<=clock_timestamp()
+          AND status='processing' AND attempts=1 AND "leaseUntil" IS NOT NULL AND "leaseUntil"<=(clock_timestamp() AT TIME ZONE 'UTC')
         ORDER BY "leaseUntil",id LIMIT $1 FOR UPDATE SKIP LOCKED
       )
       UPDATE "PersonalAssistantOperation" o
-      SET status='uncertain',"leaseUntil"=NULL,"updatedAt"=clock_timestamp(),
+      SET status='uncertain',"leaseUntil"=NULL,"updatedAt"=(clock_timestamp() AT TIME ZONE 'UTC'),
         result=(CASE WHEN jsonb_typeof(o.result)='object' THEN o.result ELSE '{}'::jsonb END) || jsonb_build_object(
           'schemaVersion',1,'reviewRequired',true,'automaticRetry',false,'executionAuthorized',false,
           'writeConfirmed',false,'deliveryConfirmed',false,'transportKnowledge','UNKNOWN_AFTER_PROCESS_LOSS',
@@ -42,7 +42,7 @@ export async function recoverExpiredPersonalActionClaims(input: Readonly<{ enabl
       FROM expired e
       WHERE o.id=e.id AND o."workspaceId"=e."workspaceId" AND o."createdByUserId"=e."createdByUserId"
         AND o."connectorAccountId"=e."connectorAccountId" AND o.kind=e.kind AND o."requestHash"=e."requestHash"
-        AND o.status='processing' AND o.attempts=e.attempts AND o."leaseUntil"=e."leaseUntil" AND o."leaseUntil"<=clock_timestamp()
+        AND o.status='processing' AND o.attempts=e.attempts AND o."leaseUntil"=e."leaseUntil" AND o."leaseUntil"<=(clock_timestamp() AT TIME ZONE 'UTC')
         AND o."budgetId" IS NOT DISTINCT FROM e."budgetId" AND o."reservedCadMicros" IS NOT DISTINCT FROM e."reservedCadMicros"
         AND o.result IS NOT DISTINCT FROM e.result
       RETURNING o.id`, batchSize);

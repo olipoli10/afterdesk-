@@ -12,6 +12,8 @@ import { GoogleCalendarClient, type ConnectorEnvironment } from "./google-client
 import { sendAutomaticPersonalReply } from "./outbox";
 import { processPersonalModelSms, personalModelReviewReply, type PersonalModelSmsResult } from "./model-worker";
 import { isReservedCalendarConfirmationMessage } from "./calendar-confirmation-routing";
+import { recoverExpiredPersonalSmsClaims } from "./sms-inbound-recovery";
+import { selectPersonalAutomaticOutboundCandidates } from "./outbound-queue";
 
 const receivedSchema = z.object({ schemaVersion: z.literal(1), accountSid: z.string(), messageSid: z.string(), from: z.string(), to: z.string(), body: z.string().max(10000), contentHash: z.string(), identityId: z.string() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -51,11 +53,14 @@ async function retainSourceUncertain(claim: PersonalSmsSourceClaim, deadlineExce
   let recorded = false;
   try {
     recorded = await withinDeadline(async () => (await prisma.$executeRawUnsafe(
-      `UPDATE "PersonalAssistantOperation" SET status='uncertain',"leaseUntil"=NULL,result=$6::jsonb,"updatedAt"=now()
-       WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=$5
+      `UPDATE "PersonalAssistantOperation" SET status='uncertain',"leaseUntil"=NULL,
+         result=(CASE WHEN jsonb_typeof(result)='object' THEN result ELSE '{}'::jsonb END) || $6::jsonb
+           || jsonb_build_object('priorClaimResult',result),"updatedAt"=(clock_timestamp() AT TIME ZONE 'UTC')
+       WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC')
          AND kind='personal_sms_inbound' AND status='processing'`,
       claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil),
-      JSON.stringify({ reviewRequired: true, reason: deadlineExceeded ? "WORKER_DEADLINE_EXCEEDED" : "WORKER_OUTCOME_UNKNOWN", automaticRetry: false, engineCancellationConfirmed: false }),
+      JSON.stringify({ reviewRequired: true, reason: deadlineExceeded ? "WORKER_DEADLINE_EXCEEDED" : "WORKER_OUTCOME_UNKNOWN", automaticRetry: false, engineCancellationConfirmed: false,
+        executionAuthorized: false, effectsConfirmed: false, processingOutcome: "UNKNOWN_AFTER_WORKER_LOSS" }),
     )) === 1, Date.now() + CLEANUP_BUDGET_MS);
   } catch { /* A failed/late database acknowledgement is not confirmed cleanup. The durable lease remains recoverable. */ }
   return { status: "REVIEW_REQUIRED" as const, recorded, automaticRetry: false as const, engineCancellationConfirmed: false as const };
@@ -79,9 +84,9 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
   requireLive();
   if (admission.operationId !== row.id) throw new Error("SMS_ADMISSION_CHANGED");
   const claim: PersonalSmsSourceClaim = Object.freeze({ operationId: row.id, workspaceId: row.workspaceId, userId: row.createdByUserId, attempt: 1, leaseUntil: new Date(deadlineAt).toISOString() });
-  const claimed = await prisma.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='processing',attempts=1,"leaseUntil"=$4,"updatedAt"=now()
+  const claimed = await prisma.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='processing',attempts=1,"leaseUntil"=($4::timestamptz AT TIME ZONE 'UTC'),"updatedAt"=(now() AT TIME ZONE 'UTC')
     WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "requestHash"=$5
-      AND kind='personal_sms_inbound' AND status='received' AND attempts=0 AND "leaseUntil" IS NULL AND clock_timestamp()<$4`,
+      AND kind='personal_sms_inbound' AND status='received' AND attempts=0 AND "leaseUntil" IS NULL AND clock_timestamp()<$4::timestamptz`,
     row.id, row.workspaceId, row.createdByUserId, new Date(claim.leaseUntil), row.requestHash);
   if (claimed !== 1) return { status: "NOT_PENDING" as const };
   owned = claim;
@@ -186,9 +191,9 @@ export async function processPersonalSms(operationId: string, env: ConnectorEnvi
       const request = { to: received.from, from: received.to, text: reply, sourceOperationId: row.id };
       await tx.personalAssistantOperation.create({ data: { workspaceId: row.workspaceId, connectorAccountId: row.connectorAccountId, kind: "sms_outbound", status: "pending", idempotencyKey: `reply:${row.id}`, request, requestHash: hash(JSON.stringify(request)), createdByUserId: row.createdByUserId } });
       requireLive();
-      const finished = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"leaseUntil"=NULL,result=$6::jsonb,"updatedAt"=now()
-        WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=$5
-          AND kind='personal_sms_inbound' AND status='processing' AND "leaseUntil">clock_timestamp()`,
+      const finished = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"leaseUntil"=NULL,result=$6::jsonb,"updatedAt"=(now() AT TIME ZONE 'UTC')
+        WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC')
+          AND kind='personal_sms_inbound' AND status='processing' AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')`,
         claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil), JSON.stringify({ reply, source, replyDelivery: "PREPARED_UNSENT",
           ...(source === "GOOGLE_CALENDAR" ? { googleReadAuthority, googleReadRange } : {}), ...(personalModelReview ? { personalModelReview } : {}) }));
       if (finished !== 1) throw new Error("SMS_SOURCE_CLAIM_LOST");
@@ -222,11 +227,13 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
   if (!personalSmsWorkerEnabled(env)) return { disabled: true, processed: 0 };
   const deadlineAt = Math.min(Date.now() + PERSONAL_SMS_BATCH_BUDGET_MS, deps.deadlineAt ?? Infinity);
   const batchController = new AbortController();
-  const requireBatchTime = () => { if (Date.now() >= deadlineAt) throw new SmsWorkerDeadline(); };
+  const requireBatchTime = () => { if (batchController.signal.aborted || Date.now() >= deadlineAt) throw new SmsWorkerDeadline(); };
   let processed = 0;
   const work = async () => {
   requireBatchTime();
-  await prisma.personalAssistantOperation.updateMany({ where: { kind: "personal_sms_inbound", status: "processing", leaseUntil: { lt: new Date() } }, data: { status: "uncertain", result: { reviewRequired: true, reason: "WORKER_LEASE_EXPIRED", automaticRetry: false } } });
+  try {
+    await recoverExpiredPersonalSmsClaims({ enabled: true, batchSize: 25, deadlineAt, signal: batchController.signal });
+  } catch { /* Bounded bookkeeping may be locked. Keep other received work independent; never retry the expired claim. */ }
   requireBatchTime();
   const pending = await prisma.personalAssistantOperation.findMany({ where: { kind: "personal_sms_inbound", status: "received" }, orderBy: { createdAt: "asc" }, take: batchSize, select: { id: true } });
   requireBatchTime();
@@ -239,10 +246,16 @@ export async function drainPersonalSms(env: ConnectorEnvironment = process.env, 
   if (env.ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED === "true") {
     const confirmationEnabled = env.ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED === "true"
       && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED === "true" && env.ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED === "true";
-    const sourceKinds = confirmationEnabled ? { OR: [{ idempotencyKey: { startsWith: "reply:" } }, { idempotencyKey: { startsWith: "calendar-confirmation:" } }] }
-      : { idempotencyKey: { startsWith: "reply:" } };
-    const replies = await prisma.personalAssistantOperation.findMany({ where: { kind: "sms_outbound", status: { in: ["pending", "approved"] }, ...sourceKinds }, take: batchSize, orderBy: { createdAt: "asc" }, select: { id: true, idempotencyKey: true } });
-    for (const reply of replies) {
+    let selection: Awaited<ReturnType<typeof selectPersonalAutomaticOutboundCandidates>>;
+    try {
+      selection = await selectPersonalAutomaticOutboundCandidates({ enabled: true, limit: batchSize, includeConfirmations: confirmationEnabled,
+        deadlineAt, signal: batchController.signal }, env);
+    } catch {
+      requireBatchTime();
+      return { disabled: false, processed, outboundSelection: "UNAVAILABLE" as const, deadlineReached: false };
+    }
+    // Read-only hints never bypass canonical approval, ownership and dispatch fences below.
+    for (const reply of selection.candidates) {
       requireBatchTime();
       try {
         if (confirmationEnabled && reply.idempotencyKey.startsWith("calendar-confirmation:")) {

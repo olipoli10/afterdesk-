@@ -41,7 +41,7 @@ describe("OFF bounded calendar confirmation maintenance", () => {
     const [sql, workspace, user, limit] = mock.query.mock.calls[1];
     expect([workspace, user, limit]).toEqual(["workspace", "owner", 25]);
     expect(sql).toContain('c."workspaceId"=$1 AND c."userId"=$2');
-    expect(sql).toContain("c.phase IN ('PREPARED','WAITING') AND c.\"expiresAt\"<=clock_timestamp()");
+    expect(sql).toContain("c.phase IN ('PREPARED','WAITING') AND c.\"expiresAt\"<=(clock_timestamp() AT TIME ZONE 'UTC')");
     expect(sql).toContain("c.phase='CONSUMED' AND EXISTS");
     expect(sql).toContain("d.kind='calendar_write' AND d.attempts=1 AND d.status IN ('completed','uncertain')");
     expect(sql).toContain("ORDER BY c.\"updatedAt\",c.id LIMIT $3 FOR UPDATE OF c SKIP LOCKED");
@@ -53,7 +53,7 @@ describe("OFF bounded calendar confirmation maintenance", () => {
     mock.execute.mockResolvedValueOnce(1).mockResolvedValueOnce(0);
     expect(await maintainCalendarSmsConfirmationsInTransaction(tx, input(), env())).toMatchObject({ expired: 1, completed: 0, uncertain: 0 });
     for (const call of mock.execute.mock.calls) {
-      expect(call[0]).toContain("phase='EXPIRED'"); expect(call[0]).toContain('"workspaceId"=$2 AND "userId"=$3 AND phase=$4 AND "expiresAt"<=clock_timestamp()');
+      expect(call[0]).toContain("phase='EXPIRED'"); expect(call[0]).toContain('"workspaceId"=$2 AND "userId"=$3 AND phase=$4 AND "expiresAt"<=(clock_timestamp() AT TIME ZONE \'UTC\')');
       expect(call.slice(2, 4)).toEqual(["workspace", "owner"]);
     }
   });

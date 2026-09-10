@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ find: vi.fn(), list: vi.fn(), update: vi.fn(), execute: vi.fn(), transaction: vi.fn(), workspace: vi.fn(), admission: vi.fn(), engine: vi.fn(), send: vi.fn(), calendar: vi.fn(), googleAuthority: vi.fn(), confirmation: vi.fn(), prepareConfirmation: vi.fn(), prepareBridge: vi.fn(), sendSummary: vi.fn(), maintenance: vi.fn() }));
+const mocks = vi.hoisted(() => ({ find: vi.fn(), list: vi.fn(), update: vi.fn(), execute: vi.fn(), transaction: vi.fn(), workspace: vi.fn(), admission: vi.fn(), engine: vi.fn(), send: vi.fn(), calendar: vi.fn(), googleAuthority: vi.fn(), confirmation: vi.fn(), prepareConfirmation: vi.fn(), prepareBridge: vi.fn(), sendSummary: vi.fn(), maintenance: vi.fn(), recoverInbound: vi.fn(), selectOutbound: vi.fn() }));
 vi.mock("@/lib/db", () => ({ prisma: {
   personalAssistantOperation: { findUnique: mocks.find, findMany: mocks.list, updateMany: mocks.update },
   constructionWorkspace: { findUniqueOrThrow: mocks.workspace }, $executeRawUnsafe: mocks.execute, $transaction: mocks.transaction,
@@ -13,6 +13,8 @@ vi.mock("@/server/personal-assistant/calendar-confirmation-worker", () => ({ pro
 vi.mock("@/server/personal-assistant/calendar-confirmation-preparation", () => ({ prepareCalendarConfirmationForReviewInTransaction: mocks.prepareConfirmation }));
 vi.mock("@/server/personal-assistant/calendar-confirmation-bridge", () => ({ prepareCalendarConfirmationOutboundInTransaction: mocks.prepareBridge }));
 vi.mock("@/server/personal-assistant/calendar-confirmation-maintenance", () => ({ maintainCalendarSmsConfirmations: mocks.maintenance }));
+vi.mock("@/server/personal-assistant/sms-inbound-recovery", () => ({ recoverExpiredPersonalSmsClaims: mocks.recoverInbound }));
+vi.mock("@/server/personal-assistant/outbound-queue", () => ({ selectPersonalAutomaticOutboundCandidates: mocks.selectOutbound }));
 import { drainPersonalSms, processPersonalSms } from "@/server/personal-assistant/sms-worker";
 
 const env = { ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_EXTERNAL_AUTHORITY_REF: "synthetic-authority", ENDVERA_EXTERNAL_OWNER_REF: "synthetic-owner",
@@ -31,6 +33,7 @@ beforeEach(() => {
   mocks.execute.mockResolvedValue(1); mocks.update.mockResolvedValue({ count: 1 }); mocks.workspace.mockResolvedValue({ defaultTimezone: "America/Toronto" });
   mocks.engine.mockResolvedValue({ reply: "Note préparée.", intent: "UNSUPPORTED" });
   mocks.googleAuthority.mockResolvedValue({});
+  mocks.selectOutbound.mockResolvedValue({ status: "CANDIDATES_NOT_AUTHORIZED", candidates: [], executionAuthorized: false });
   mocks.transaction.mockImplementation(async work => {
     const staged: unknown[] = [];
     const result = await work({ constructionCommunicationIdentity: { findFirst: async () => ({ id: "identity" }) },
@@ -41,6 +44,28 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 
 describe("personal SMS source deadline and exact ownership", () => {
+  it("replaces unbounded inbound cleanup with bounded proof-preserving recovery under the original deadline", async () => {
+    mocks.list.mockResolvedValue([]);
+    const deadlineAt = Date.now() + 4000;
+    await drainPersonalSms(env, 1, { deadlineAt });
+    expect(mocks.recoverInbound).toHaveBeenCalledExactlyOnceWith({ enabled: true, batchSize: 25, deadlineAt, signal: expect.any(AbortSignal) });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it("does not recover or scan while the SMS worker is disabled", async () => {
+    expect(await drainPersonalSms({ ...env, ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "false" }, 1)).toEqual({ disabled: true, processed: 0 });
+    expect(mocks.recoverInbound).not.toHaveBeenCalled(); expect(mocks.list).not.toHaveBeenCalled();
+  });
+  it("can process independent received work after a bounded recovery refusal", async () => {
+    mocks.recoverInbound.mockRejectedValue(new Error("synthetic recovery lock timeout")); mocks.list.mockResolvedValue([{ id: row.id }]);
+    expect(await drainPersonalSms(env, 1)).toMatchObject({ processed: 1 });
+    expect(mocks.engine).toHaveBeenCalledTimes(1); expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it("does not scan or interpret after recovery reaches the original deadline", async () => {
+    const deadlineAt = Date.now() + 4000;
+    mocks.recoverInbound.mockImplementation(async () => { vi.setSystemTime(deadlineAt); throw new Error("synthetic timeout"); });
+    expect(await drainPersonalSms(env, 1, { deadlineAt })).toMatchObject({ processed: 0, deadlineReached: true });
+    expect(mocks.list).not.toHaveBeenCalled(); expect(mocks.engine).not.toHaveBeenCalled();
+  });
   const maintenanceEnv = { ...env, ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED: "true", ENDVERA_CALENDAR_SMS_CONFIRMATION_MAINTENANCE_ENABLED: "true" };
   it("runs only scoped bookkeeping after verified claim and before interpretation", async () => {
     mocks.maintenance.mockImplementation(async () => { expect(mocks.execute).toHaveBeenCalledTimes(1); expect(mocks.engine).not.toHaveBeenCalled(); });
@@ -85,16 +110,33 @@ describe("personal SMS source deadline and exact ownership", () => {
     expect(JSON.parse(finish.mock.calls[0][6]).reply).toContain("avant d’approuver dans l’app");
   });
   it("routes queued summary through dedicated sender inside the original batch deadline", async () => {
-    mocks.list.mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: "summary", idempotencyKey: "calendar-confirmation:challenge" }]);
+    mocks.list.mockResolvedValue([]); mocks.selectOutbound.mockResolvedValue({ candidates: [{ id: "summary", idempotencyKey: "calendar-confirmation:challenge" }] });
     const deadlineAt = Date.now() + 4000;
     expect(await drainPersonalSms({ ...confirmationEnv, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 1, { deadlineAt })).toMatchObject({ processed: 0 });
     expect(mocks.sendSummary).toHaveBeenCalledExactlyOnceWith("summary", expect.anything(), undefined, expect.objectContaining({ deadlineAt }));
-    expect(mocks.send).not.toHaveBeenCalled(); expect(mocks.list.mock.calls[1][0].take).toBe(1);
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.selectOutbound).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ enabled: true, limit: 1, includeConfirmations: true, deadlineAt }), expect.anything());
+    expect(mocks.list).toHaveBeenCalledTimes(1);
   });
   it("does not select summary branch while store flag is off", async () => {
-    mocks.list.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+    mocks.list.mockResolvedValue([]);
     await drainPersonalSms({ ...confirmationEnv, ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED: "false", ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 1);
-    expect(mocks.list.mock.calls[1][0].where.idempotencyKey).toEqual({ startsWith: "reply:" }); expect(mocks.sendSummary).not.toHaveBeenCalled();
+    expect(mocks.selectOutbound.mock.calls[0][0].includeConfirmations).toBe(false); expect(mocks.sendSummary).not.toHaveBeenCalled();
+  });
+  it("does not select outbound work without automatic-reply consent/configuration", async () => {
+    mocks.list.mockResolvedValue([]); await drainPersonalSms(env, 1);
+    expect(mocks.selectOutbound).not.toHaveBeenCalled(); expect(mocks.send).not.toHaveBeenCalled();
+  });
+  it("never substitutes an unrestricted queue scan after selector refusal", async () => {
+    mocks.list.mockResolvedValue([]); mocks.selectOutbound.mockRejectedValue(new Error("synthetic selection refusal"));
+    expect(await drainPersonalSms({ ...env, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 1)).toMatchObject({ outboundSelection: "UNAVAILABLE", processed: 0 });
+    expect(mocks.list).toHaveBeenCalledTimes(1); expect(mocks.send).not.toHaveBeenCalled(); expect(mocks.sendSummary).not.toHaveBeenCalled();
+  });
+  it("treats selected candidates only as hints and preserves each canonical sender refusal", async () => {
+    mocks.list.mockResolvedValue([]); mocks.selectOutbound.mockResolvedValue({ candidates: [{ id: "refused", idempotencyKey: "reply:source" }] });
+    mocks.send.mockRejectedValue(new Error("synthetic authority revoked after selection"));
+    await drainPersonalSms({ ...env, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 1);
+    expect(mocks.send).toHaveBeenCalledTimes(1); expect(mocks.sendSummary).not.toHaveBeenCalled(); expect(mocks.update).not.toHaveBeenCalled();
   });
   it.each(["CONFIRMATION_HANDLED", "REFUSED"])("uses guarded confirmation %s without another final CAS or interpretation", async status => {
     mocks.find.mockResolvedValue({ ...row, request: { ...row.request, body: "CONFIRME ENDVERA AGENDA arbre lune rive sable" } });
@@ -192,7 +234,8 @@ describe("personal SMS source deadline and exact ownership", () => {
   it("completes only its exact live source claim and prepares the reply in one transaction", async () => {
     expect(await processPersonalSms(row.id, env, { engine: mocks.engine })).toMatchObject({ status: "COMPLETED_REPLY_PREPARED" });
     expect(committedReplies).toHaveLength(1);
-    expect(finish.mock.calls[0][0]).toContain('"leaseUntil">clock_timestamp()');
+    expect(finish.mock.calls[0][0]).toContain('"leaseUntil">(clock_timestamp() AT TIME ZONE \'UTC\')');
+    expect(finish.mock.calls[0][0]).toContain('"leaseUntil"=($5::timestamptz AT TIME ZONE \'UTC\')');
     for (const field of ['"workspaceId"', '"createdByUserId"', 'attempts=', '"leaseUntil"=', "status='processing'"]) expect(finish.mock.calls[0][0]).toContain(field);
     const context = mocks.engine.mock.calls[0][1];
     expect(context.claim).toMatchObject({ operationId: row.id, workspaceId: row.workspaceId, userId: row.createdByUserId, attempt: 1 });
@@ -236,6 +279,16 @@ describe("personal SMS source deadline and exact ownership", () => {
     expect(await pending).toMatchObject({ status: "REVIEW_REQUIRED", recorded: false, engineCancellationConfirmed: false });
     expect(committedReplies).toHaveLength(0);
   });
+  it("retains prior source evidence when its own failed claim is marked uncertain", async () => {
+    mocks.engine.mockRejectedValue(new Error("synthetic unknown interpretation outcome"));
+    expect(await processPersonalSms(row.id, env)).toMatchObject({ status: "REVIEW_REQUIRED", recorded: true });
+    const cleanup = mocks.execute.mock.calls.find(call => call[0].includes("status='uncertain'"))!;
+    expect(cleanup[0]).toContain("jsonb_build_object('priorClaimResult',result)");
+    expect(cleanup[0]).toContain("CASE WHEN jsonb_typeof(result)='object' THEN result");
+    expect(JSON.parse(cleanup[6])).toMatchObject({ executionAuthorized: false, effectsConfirmed: false, automaticRetry: false,
+      processingOutcome: "UNKNOWN_AFTER_WORKER_LOSS" });
+    expect(mocks.send).not.toHaveBeenCalled(); expect(finish).not.toHaveBeenCalled();
+  });
   it("does not prepare a reply when phone consent is revoked during interpretation", async () => {
     mocks.transaction.mockImplementation(async work => work({ constructionCommunicationIdentity: { findFirst: async () => null }, personalAssistantOperation: { create: vi.fn() }, $executeRawUnsafe: finish }));
     expect(await processPersonalSms(row.id, env)).toMatchObject({ status: "REVIEW_REQUIRED" });
@@ -255,7 +308,7 @@ describe("personal SMS source deadline and exact ownership", () => {
     await vi.advanceTimersByTimeAsync(30_000); expect(mocks.engine).toHaveBeenCalledTimes(3); expect(committedReplies).toHaveLength(2);
   });
   it("stops the automatic-reply loop at the same total budget without claiming an in-flight send was canceled", async () => {
-    mocks.list.mockResolvedValueOnce([]).mockResolvedValueOnce(Array.from({ length: 10 }, (_, index) => ({ id: `reply-${index}` })));
+    mocks.list.mockResolvedValue([]); mocks.selectOutbound.mockResolvedValue({ candidates: Array.from({ length: 10 }, (_, index) => ({ id: `reply-${index}`, idempotencyKey: `reply:source-${index}` })) });
     mocks.send.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({}), 20_000)));
     const pending = drainPersonalSms({ ...env, ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true" }, 10);
     await vi.advanceTimersByTimeAsync(51_000); expect(await pending).toMatchObject({ disabled: false, processed: 0, deadlineReached: true });

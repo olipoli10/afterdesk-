@@ -68,13 +68,13 @@ export async function dispatchPersonalIntent(input: Input, env: NodeJS.ProcessEn
           AND ai."personalAssistantOperationId"=$7 AND c.id=$8 AND c."budgetId"=$9 AND c."reservedCadMicros"=$10
           AND h.id=$11 AND h."amountMicros"=$12 AND b."ceilingCadMicros"=$13 AND o."requestFingerprint"=$14
           AND c."workspaceId"=$15 AND c."createdByUserId"=$16 AND h."operationKey"=ai."operationKey" AND h.attempt=1
-          AND ai.purpose='personal_intent_candidate_v1' AND ai.status='running' AND ai.attempts=1 AND ai."leaseExpiresAt">now()
+          AND ai.purpose='personal_intent_candidate_v1' AND ai.status='running' AND ai.attempts=1 AND ai."leaseExpiresAt">(now() AT TIME ZONE 'UTC')
           AND ai."taskId" IS NULL AND ai."voiceIntakeSegmentId" IS NULL
           AND o."operationType"='personal_intent_candidate_v1' AND o.status='admitted'
           AND d.disposition='route_authorized' AND d.attempt=1
           AND a.status='prepared' AND a."dispatchState"='not_dispatched'
           AND c.kind='personal_model_candidate_v1' AND c.status='received' AND c.attempts=0
-          AND h.provider='openrouter' AND h.status='held' AND b."expiresAt">now() AND b."reservedCadMicros">=c."reservedCadMicros"
+          AND h.provider='openrouter' AND h.status='held' AND b."expiresAt">(now() AT TIME ZONE 'UTC') AND b."reservedCadMicros">=c."reservedCadMicros"
         FOR UPDATE OF ai,a,o,c,h,b`,
         admission.attempt.id, admission.decision.id, admission.operation.id, admission.claim.operationId, admission.claim.operationKey,
         admission.claim.lockedBy, admission.source.subject.operationId, admission.childOperationId, admission.budgetPolicy.budgetId,
@@ -90,10 +90,10 @@ export async function dispatchPersonalIntent(input: Input, env: NodeJS.ProcessEn
       const intentRecord = { schemaVersion: 1, status: "DISPATCH_CLAIMED", executionAuthorized: false,
         accounting: "UNSETTLED", transportMode: mode, dispatchAttempted: true, outcomeKnowledge: "NOT_YET_OBSERVED", automaticRetry: false };
       const updates = [
-        await tx.$executeRawUnsafe(`UPDATE "ModelGatewayAttempt" SET status='dispatched',"dispatchState"='unaccounted',"dispatchedAt"=now()
+        await tx.$executeRawUnsafe(`UPDATE "ModelGatewayAttempt" SET status='dispatched',"dispatchState"='unaccounted',"dispatchedAt"=(now() AT TIME ZONE 'UTC')
           WHERE id=$1 AND status='prepared' AND "dispatchState"='not_dispatched'`, admission.attempt.id),
-        await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='processing',attempts=1,"leaseUntil"=$2,
-          result=$3::jsonb,"externalTransportPerformed"=$4,"updatedAt"=now() WHERE id=$1 AND status='received' AND attempts=0 AND kind='personal_model_candidate_v1'`,
+        await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='processing',attempts=1,"leaseUntil"=($2::timestamptz AT TIME ZONE 'UTC'),
+          result=$3::jsonb,"externalTransportPerformed"=$4,"updatedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1 AND status='received' AND attempts=0 AND kind='personal_model_candidate_v1'`,
           admission.childOperationId, owned[0].leaseExpiresAt, JSON.stringify(intentRecord), mode === "EXTERNAL_PROVIDER"),
         await tx.$executeRawUnsafe(`UPDATE "ModelGatewayOperation" SET status='running' WHERE id=$1 AND status='admitted' AND "operationType"='personal_intent_candidate_v1'`, admission.operation.id),
       ];
@@ -155,7 +155,7 @@ export async function dispatchPersonalIntent(input: Input, env: NodeJS.ProcessEn
         WHERE c.id=$1 AND c."modelGatewayOperationId"=$2 AND c."sourcePersonalOperationId"=$3
           AND c."workspaceId"=$4 AND c."createdByUserId"=$5 AND c.kind='personal_model_candidate_v1'
           AND c.status='processing' AND c.attempts=1 AND c."reservedCadMicros"=$6
-          AND b.id=$7 AND b."ceilingCadMicros"=$8 AND b."expiresAt"=$9 AND b."expiresAt">now()
+          AND b.id=$7 AND b."ceilingCadMicros"=$8 AND b."expiresAt"=($9::timestamptz AT TIME ZONE 'UTC') AND b."expiresAt">(now() AT TIME ZONE 'UTC')
           AND b."reservedCadMicros">=c."reservedCadMicros" AND b."reservedCadMicros"<=b."ceilingCadMicros"
         FOR UPDATE OF b,c`, admission.childOperationId, admission.operation.id, admission.source.subject.operationId,
         admission.source.subject.workspaceId, admission.source.actorUserId, admission.budgetPolicy.reservationCadMicros,
@@ -170,15 +170,15 @@ export async function dispatchPersonalIntent(input: Input, env: NodeJS.ProcessEn
       const evidence = canonicalFingerprint(stored);
       await finishPersonalAiOperation(tx, { claim: admission.claim, outcome: "PROPOSAL_INSPECTED", resultId: admission.childOperationId });
       const updates = [
-        await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',result=$2::jsonb,"leaseUntil"=NULL,"updatedAt"=now()
+        await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',result=$2::jsonb,"leaseUntil"=NULL,"updatedAt"=(now() AT TIME ZONE 'UTC')
           WHERE id=$1 AND "modelGatewayOperationId"=$3 AND status='processing' AND attempts=1 AND kind='personal_model_candidate_v1'`,
           admission.childOperationId, JSON.stringify(stored), admission.operation.id),
         // Result validity and money settlement are deliberately separate. Valid
         // proposals never cause a fake USD settlement or a CAD hold release.
         await tx.$executeRawUnsafe(`UPDATE "ModelGatewayAttempt" SET status='uncertain',"dispatchState"='unaccounted',"resultContractStatus"='valid',
-          "providerRequestRef"=$2,"responseEvidenceRef"=$3,"finishedAt"=now() WHERE id=$1 AND status='dispatched' AND "dispatchState"='unaccounted'`,
+          "providerRequestRef"=$2,"responseEvidenceRef"=$3,"finishedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1 AND status='dispatched' AND "dispatchState"='unaccounted'`,
           admission.attempt.id, providerRequestId, evidence),
-        await tx.$executeRawUnsafe(`UPDATE "ModelGatewayOperation" SET status='uncertain',"finishedAt"=now(),"finalAttemptId"=$2,"resultEvidenceRef"=$3
+        await tx.$executeRawUnsafe(`UPDATE "ModelGatewayOperation" SET status='uncertain',"finishedAt"=(now() AT TIME ZONE 'UTC'),"finalAttemptId"=$2,"resultEvidenceRef"=$3
           WHERE id=$1 AND status='running' AND "operationType"='personal_intent_candidate_v1'`, admission.operation.id, admission.attempt.id, evidence),
       ];
       if (updates.some(count => count !== 1)) throw new Error("PERSONAL_MODEL_TERMINAL_FENCE_LOST");

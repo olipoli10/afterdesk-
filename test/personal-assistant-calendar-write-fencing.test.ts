@@ -103,7 +103,11 @@ describe("personal Google write claim and late response fencing", () => {
   });
   it("uses one joined locking query for operation, workspace, member, account, credential and WRITE grant", async () => {
     const f = fixture(); await approveAndInsertPersonalCalendar(f.input, env, f.client as unknown as GoogleCalendarClient);
-    for (const [sql] of shared.query.mock.calls) { expect(sql).toContain("g.capability='calendar_write'"); expect(sql).toContain("FOR UPDATE OF o FOR SHARE OF w,m,a,c,g"); expect(sql).toContain('o."leaseUntil">clock_timestamp()'); }
+    for (const [sql] of shared.query.mock.calls) {
+      expect(sql).toContain("g.capability='calendar_write'"); expect(sql).toContain("FOR UPDATE OF o FOR SHARE OF w,m,a,c,g");
+      expect(sql).toContain('o."leaseUntil">(clock_timestamp() AT TIME ZONE \'UTC\')');
+      expect(sql).toContain('o."leaseUntil"=($6::timestamptz AT TIME ZONE \'UTC\')');
+    }
   });
   it.each(["memberUpdatedAt", "workspaceUpdatedAt", "memberRole"] as const)("rejects changed %s after claiming even if authority is active again", async field => {
     const f = fixture(); shared.tokens.mockImplementation(async () => {

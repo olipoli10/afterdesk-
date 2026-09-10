@@ -139,7 +139,7 @@ describe("full personal gateway dispatch (synthetic transaction and wire only)",
     expect(await dispatchPersonalIntent(f.input)).toMatchObject({ status: "UNCERTAIN", recorded: true });
     expect(shared.finish).not.toHaveBeenCalled(); expect(f.transport).toHaveBeenCalledTimes(1);
     const sql = f.query.mock.calls[1][0];
-    for (const check of ['b."expiresAt"=$9', 'b."expiresAt">now()', 'b."reservedCadMicros"<=b."ceilingCadMicros"', 'c."modelGatewayOperationId"=$2', 'c."reservedCadMicros"=$6', 'FOR UPDATE OF b,c']) expect(sql).toContain(check);
+    for (const check of ['b."expiresAt"=($9::timestamptz AT TIME ZONE \'UTC\')', 'b."expiresAt">(now() AT TIME ZONE \'UTC\')', 'b."reservedCadMicros"<=b."ceilingCadMicros"', 'c."modelGatewayOperationId"=$2', 'c."reservedCadMicros"=$6', 'FOR UPDATE OF b,c']) expect(sql).toContain(check);
   });
   it("refuses a failed multirow dispatch fence before obtaining the adapter", async () => {
     const f = fixture(); f.execute.mockResolvedValueOnce(0);

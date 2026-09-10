@@ -37,7 +37,8 @@ describe("exclusive personal SMS candidate orchestration", () => {
   it("requires the exact live source fence before admission", async () => {
     m.query.mockResolvedValue([]);
     await expect(processPersonalModelSms(context(), env)).rejects.toThrow("SOURCE_CLAIM_LOST");
-    expect(m.admit).not.toHaveBeenCalled(); expect(m.query.mock.calls[0][0]).toContain('"leaseUntil">clock_timestamp()');
+    expect(m.admit).not.toHaveBeenCalled(); expect(m.query.mock.calls[0][0]).toContain('"leaseUntil">(clock_timestamp() AT TIME ZONE \'UTC\')');
+    expect(m.query.mock.calls[0][0]).toContain('"leaseUntil"=($5::timestamptz AT TIME ZONE \'UTC\')');
   });
   it("rejects expired/aborted source before admission", async () => {
     const ctx = context(); ctx.deadlineAt = Date.now();

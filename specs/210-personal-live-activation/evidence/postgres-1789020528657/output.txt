@@ -1,0 +1,70 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts (16 tests | 2 failed) 67124ms
+     ✓ is OFF without explicit switch and creates no records  2068ms
+     ✓ creates one non-executable summary, permanently registered phrase and exact source review atomically  6473ms
+     ✓ rolls back challenge, summary and nonce if caller omits final source CAS  4982ms
+     ✓ refuses waiting without a durable source-bound accepted outbox bridge  3427ms
+     ✓ keeps nonces immutable and permanent independently of terminal challenges  3188ms
+     ✓ rejects a second orphan summary naming an already bound challenge  3187ms
+     × prevents post-commit source/draft evidence replacement without preventing revocation 3348ms
+     ✓ declares same-owner composite FKs for every operation binding and permanent active uniqueness 45ms
+     ✓ consumes the exact verified phrase and calendar claim once in one transaction without execution  4518ms
+     ✓ counts a wrong phrase once per completed source, never a write or replay  4321ms
+     ✓ rejects a queued confirmation received before the summary was durably accepted  4275ms
+     × allows only one of two concurrent exact SMS sources to claim the calendar 5909ms
+     ✓ serializes app approval against SMS consumption without two calendar claims  6280ms
+     ✓ expires by the DB clock without deleting or resetting the permanent phrase registry  4363ms
+     ✓ permanently closes after five distinct wrong confirmation sources  6421ms
+     ✓ refuses another owner and independently changed Google grant epoch  4314ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > prevents post-commit source/draft evidence replacement without preventing revocation
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorGrant.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation.postgres.test.ts:135:45
+
+  132 await expect(prisma.personalAssistantOperation.update({ where: { id: f.sourceOperationId }, data: { requestHash: "f".repeat(64) } })).rejects.toThrow();
+  133 await expect(prisma.personalAssistantOperation.update({ where: { id: f.sourceOperationId }, data: { result: { personalModelReview: {} } } })).rejects.toThrow();
+  134 await expect(prisma.personalAssistantOperation.update({ where: { id: row.calendarOperationId }, data: { requestHash: "f".repeat(64) } })).rejects.toThrow();
+→ 135 await prisma.constructionConnectorGrant.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorGrant\" violates check constraint \"ConstructionConnectorGrant_revoked_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv4nz6g004mi5yob223xxsq, cmtv4nz6g004li5yo9ksh4q93, calendar_write, revoked, {https://www.googleapis.com/auth/calendar.events}, {https://www.googleapis.com/auth/calendar.events}, 2, 2026-09-10 06:09:45.798, 2026-09-10 06:09:49.135, 2026-09-10 06:09:46.457, 2026-09-10 06:09:49.136)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:135:5
+    133|     await expect(prisma.personalAssistantOperation.update({ where: { i…
+    134|     await expect(prisma.personalAssistantOperation.update({ where: { i…
+    135|     await prisma.constructionConnectorGrant.update({ where: { id: f.go…
+       |     ^
+    136|     await prisma.constructionCommunicationIdentity.update({ where: { i…
+    137|     expect((await stored(prepared)).phase).toBe("PREPARED");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > allows only one of two concurrent exact SMS sources to claim the calendar
+PrismaClientKnownRequestError: Transaction API error: Unable to start a transaction in the given time.
+ ❯ Qr.transaction .prisma-client/runtime/library.js:115:11521
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8044
+ ❯ confirmation specs/210-personal-live-activation/confirmation.postgres.test.ts:87:18
+     85| async function confirmation(f: Fixture, body: string) {
+     86|   const request = { accountSid: f.accountSid, messageSid: `SM${randomU…
+     87|   const source = await enqueuePersonalSms({ ...request, contentHash: s…
+       |                  ^
+     88|   const claim = { operationId: source.operationId, workspaceId: f.work…
+     89|   await prisma.personalAssistantOperation.update({ where: { id: claim.…
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:184:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed (16)
+   Start at  02:09:21
+   Duration  68.32s (transform 669ms, setup 0ms, import 972ms, tests 67.12s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

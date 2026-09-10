@@ -19,7 +19,7 @@ export async function reservePersonalAiOperation(tx: Tx, subject: PersonalGatewa
   const key = operationKey(inspected);
   await tx.$executeRawUnsafe(
     `INSERT INTO "AiOperation" (id,"personalAssistantOperationId",purpose,"operationKey",status,attempts,"createdAt","updatedAt")
-     VALUES ($1,$2,$3,$4,'reserved',0,now(),now()) ON CONFLICT ("personalAssistantOperationId") DO NOTHING`,
+     VALUES ($1,$2,$3,$4,'reserved',0,(now() AT TIME ZONE 'UTC'),(now() AT TIME ZONE 'UTC')) ON CONFLICT ("personalAssistantOperationId") DO NOTHING`,
     `aiop_${randomUUID().replaceAll("-", "")}`, subject.operationId, PURPOSE, key,
   );
   const [row] = await tx.$queryRawUnsafe<Array<{ id: string; operationKey: string; personalAssistantOperationId: string }>>(
@@ -43,8 +43,8 @@ export async function claimPersonalAiOperation(tx: Tx, subject: PersonalGatewayO
   const key = operationKey(inspected);
   const lockedBy = randomUUID();
   const [row] = await tx.$queryRawUnsafe<Array<{ id: string }>>(
-    `UPDATE "AiOperation" SET status='running',attempts=1,"lockedAt"=now(),"lockedBy"=$3,
-       "leaseExpiresAt"=now()+interval '5 minutes',"lastError"=NULL,"updatedAt"=now()
+    `UPDATE "AiOperation" SET status='running',attempts=1,"lockedAt"=(now() AT TIME ZONE 'UTC'),"lockedBy"=$3,
+       "leaseExpiresAt"=(now() AT TIME ZONE 'UTC')+interval '5 minutes',"lastError"=NULL,"updatedAt"=(now() AT TIME ZONE 'UTC')
      WHERE "personalAssistantOperationId"=$1 AND "operationKey"=$2 AND purpose=$4
        AND "taskId" IS NULL AND "voiceIntakeSegmentId" IS NULL AND status='reserved' AND attempts=0
      RETURNING id`,
@@ -84,10 +84,10 @@ export async function finishPersonalAiOperation(tx: Tx, input: {
   const resultKind = `personal_model_${input.outcome.toLowerCase()}`;
   const changed = await tx.$executeRawUnsafe(
     `UPDATE "AiOperation" SET status=$6::"AiOperationStatus","resultKind"=$7,"resultId"=$8,
-      "lastError"=$9,"finishedAt"=now(),"lockedAt"=NULL,"lockedBy"=NULL,"leaseExpiresAt"=NULL,"nextAttemptAt"=NULL,"updatedAt"=now()
+      "lastError"=$9,"finishedAt"=(now() AT TIME ZONE 'UTC'),"lockedAt"=NULL,"lockedBy"=NULL,"leaseExpiresAt"=NULL,"nextAttemptAt"=NULL,"updatedAt"=(now() AT TIME ZONE 'UTC')
      WHERE id=$1 AND "operationKey"=$2 AND "lockedBy"=$3 AND "personalAssistantOperationId"=$4
        AND purpose=$5 AND "taskId" IS NULL AND "voiceIntakeSegmentId" IS NULL
-       AND status='running' AND attempts=1 AND "leaseExpiresAt">now()`,
+       AND status='running' AND attempts=1 AND "leaseExpiresAt">(now() AT TIME ZONE 'UTC')`,
     claim.operationId, claim.operationKey, claim.lockedBy, claim.subject.operationId, PURPOSE,
     status, resultKind, input.resultId, input.outcome === "PROPOSAL_INSPECTED" ? null : `PERSONAL_MODEL_${input.outcome}`,
   );

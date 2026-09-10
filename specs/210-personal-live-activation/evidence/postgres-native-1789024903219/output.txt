@@ -1,0 +1,182 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone UTC without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"UTC","mixedEquality":true,"explicitUtcEquality":true,"inferredDateEquality":true,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"inferredDateUpdateCount":1}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+CALENDAR_CONCURRENCY_DIAGNOSTIC {"events":["1:1:BEGIN","2:1:BEGIN","1:1:CALLBACK_ENTER","2:1:CALLBACK_ENTER","1:4:CALLBACK_RETURN","1:5:COMMITTED","3:5:BEGIN","3:5:CALLBACK_ENTER","2:8:CALLBACK_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:8:CALLBACK_ERROR_CALENDAR_APPROVAL_REFUSED_OR_ALREADY_USED","2:9:TRANSACTION_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:9:TRANSACTION_ERROR_CALENDAR_APPROVAL_REFUSED_OR_ALREADY_USED"],"outcomes":["CALENDAR_WRITE_OUTCOME_UNKNOWN","P2010_PrismaClientKnownRequestError_40001_SERIALIZATION"],"elapsedMs":9}
+
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts (13 tests | 5 failed) 776ms
+     ✓ diagnoses UTC-naive lease comparison under transaction-local timezone UTC without changing server settings 75ms
+     × diagnoses UTC-naive lease comparison under transaction-local timezone America/New_York without changing server settings 12ms
+     × prepares without transport then inserts exactly once after owner approval 130ms
+     × withholds calendar success on uncertain write and never retries automatically 44ms
+     ✓ stores encrypted tokens, scrubs one-use material and survives reconnect 202ms
+     ✓ rejects a wrong browser correlation before any token exchange 27ms
+     ✓ lets only one concurrent callback exchange the code 52ms
+     ✓ refuses cross-workspace access and clears credentials on local disconnect 66ms
+     ✓ does not reconnect a connection revoked during the exchange 27ms
+     ✓ reads through granted authority and refuses a revoked read grant 36ms
+     ✓ does not claim a Google write after the caller deadline 28ms
+     × does not overwrite a recovered Google write after a late confirmed response 36ms
+     × parallel owner approvals claim and insert a Google draft only once 37ms
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 8 passed (13)
+   Start at  03:21:57
+   Duration  1.60s (transform 277ms, setup 0ms, import 655ms, tests 776ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone America/New_York without changing server settings
+AssertionError: expected { mixedEquality: false, …(7) } to deeply equal { mixedEquality: false, …(7) }
+
+- Expected
++ Received
+
+  {
+    "explicitUtcDatabaseClockExpiredAppearsLive": false,
+    "explicitUtcEquality": true,
+    "explicitUtcExpiredAppearsLive": false,
+-   "inferredDateEquality": true,
++   "inferredDateEquality": false,
+    "inferredDateUpdateCount": 1,
+    "mixedDatabaseClockExpiredAppearsLive": true,
+    "mixedEquality": false,
+    "mixedExpiredAppearsLive": true,
+  }
+
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:73:22
+     71|       return { ...rows[0], ...clocks[0], inferredDateUpdateCount };
+     72|     });
+     73|     expect(observed).toEqual({ mixedEquality: timezone === "UTC", expl…
+       |                      ^
+     74|       mixedExpiredAppearsLive: timezone !== "UTC", explicitUtcExpiredA…
+     75|       mixedDatabaseClockExpiredAppearsLive: timezone !== "UTC", explic…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > prepares without transport then inserts exactly once after owner approval
+Error: CALENDAR_WRITE_OUTCOME_UNKNOWN
+ ❯ executeClaimedPersonalCalendarWrite src/server/personal-assistant/calendar-actions.ts:183:11
+    181|       }, txOptions).catch(() => undefined);
+    182|     }
+    183|     throw new Error("CALENDAR_WRITE_OUTCOME_UNKNOWN");
+       |           ^
+    184|   } finally { clearTimeout(timer); context.signal?.removeEventListener…
+    185| }
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:88:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > withholds calendar success on uncertain write and never retries automatically
+AssertionError: expected { …(19) } to match object { status: 'uncertain', …(2) }
+(38 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "externalTransportPerformed": true,
++   "externalTransportPerformed": false,
+    "result": {
+-     "writeConfirmed": false,
++     "approvalToken": "6150271e-2e35-43de-86a8-fb12d17330ed",
++     "approvedBy": "cmtv78the000gi5zsckceo7uv",
++     "approvedHash": "0b52a3f462c595b04c80e895914c7047c68f79c1b5358e9a81f03fa6f539a238",
++     "dispatchStarted": false,
++     "writeAuthority": {
++       "accountId": "cmtv78thn000ri5zs9ov5c7gk",
++       "accountScopes": [
++         "openid",
++         "https://www.googleapis.com/auth/calendar.events",
++       ],
++       "accountVersion": 2,
++       "credentialId": "755dcf2e-a3f2-4236-a5fa-4b63f1e83d2a",
++       "grantScopes": [
++         "openid",
++         "https://www.googleapis.com/auth/calendar.events",
++       ],
++       "memberId": "cmtv78thg000ki5zs6sq47gv8",
++       "memberRole": "owner",
++       "memberUpdatedAt": "2026-09-10T07:21:58.084Z",
++       "workspaceUpdatedAt": "2026-09-10T07:21:58.084Z",
++       "writeGrantId": "cmtv78ti2000vi5zssh7heznv",
++       "writeGrantVersion": 1,
++     },
+    },
+-   "status": "uncertain",
++   "status": "processing",
+  }
+
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:98:112
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > does not overwrite a recovered Google write after a late confirmed response
+AssertionError: expected { …(19) } to match object { status: 'uncertain', …(1) }
+(39 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "result": {
+-     "reason": "SYNTHETIC_GOOGLE_RECOVERY_WON",
++     "approvalToken": "e90f3aea-927e-41dd-a683-47a58e447e7e",
++     "approvedBy": "cmtv78tus003wi5zsbdwk7g6s",
++     "approvedHash": "07d63ad45c973f781be637aadec6c600c0ccf9f21d90569c3c7a2bd8203c559a",
++     "dispatchStarted": false,
++     "writeAuthority": {
++       "accountId": "cmtv78tux0047i5zsh5lwrf5t",
++       "accountScopes": [
++         "openid",
++         "https://www.googleapis.com/auth/calendar.events",
++       ],
++       "accountVersion": 2,
++       "credentialId": "a93dabe0-1e75-4c11-a863-2a8274bf0fef",
++       "grantScopes": [
++         "openid",
++         "https://www.googleapis.com/auth/calendar.events",
++       ],
++       "memberId": "cmtv78tut0040i5zsaf2uw9o4",
++       "memberRole": "owner",
++       "memberUpdatedAt": "2026-09-10T07:21:58.566Z",
++       "workspaceUpdatedAt": "2026-09-10T07:21:58.566Z",
++       "writeGrantId": "cmtv78tv8004bi5zsf815558i",
++       "writeGrantVersion": 1,
+      },
+-   "status": "uncertain",
++   },
++   "status": "processing",
+  }
+
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:170:112
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ specs/210-personal-live-activation/google.postgres.test.ts:210:69
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-5f3f8b542ded4a3f9821fb244701dbff

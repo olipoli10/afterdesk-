@@ -69,7 +69,7 @@ export async function prepareStoredPersonalIntentReview(tx: Prisma.TransactionCl
     JOIN "ModelGatewayDecision" d ON d.id=a."decisionId" AND d."gatewayOperationId"=o.id
     WHERE c.id=$1 AND s.id=$2 AND c."workspaceId"=$3 AND c."createdByUserId"=$4
       AND c.kind='personal_model_candidate_v1' AND c.status='completed' AND c.attempts=1
-      AND s.kind='personal_sms_inbound' AND s.status='processing' AND s.attempts=1 AND s."leaseUntil">now()
+      AND s.kind='personal_sms_inbound' AND s.status='processing' AND s.attempts=1 AND s."leaseUntil">(now() AT TIME ZONE 'UTC')
       AND o."operationType"='personal_intent_candidate_v1' AND o.status='uncertain'
       AND ai.purpose='personal_intent_candidate_v1' AND ai.status='succeeded' AND ai.attempts=1
       AND ai."taskId" IS NULL AND ai."voiceIntakeSegmentId" IS NULL AND ai."resultId"=c.id

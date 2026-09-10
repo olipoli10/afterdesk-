@@ -20,6 +20,7 @@ describe("single-use personal AiOperation primitives (synthetic transaction)", (
     expect(await reservePersonalAiOperation(f.tx, subject)).toMatchObject({ operationId: claim.operationId, operationKey: key });
     expect(shared.inspect).toHaveBeenCalledWith(f.tx, subject);
     expect(f.execute.mock.calls[0][0]).toContain('ON CONFLICT ("personalAssistantOperationId") DO NOTHING');
+    expect(f.execute.mock.calls[0][0]).toContain("'reserved',0,(now() AT TIME ZONE 'UTC'),(now() AT TIME ZONE 'UTC')");
     expect(f.execute.mock.calls[0].slice(2)).toEqual([subject.operationId, "personal_intent_candidate_v1", key]);
   });
   it("rejects changed source binding instead of reserving a second logical call", async () => {
@@ -33,6 +34,8 @@ describe("single-use personal AiOperation primitives (synthetic transaction)", (
     expect(Object.isFrozen(actual)).toBe(true);
     expect(f.query.mock.calls[0][0]).toContain("status='reserved' AND attempts=0");
     expect(f.query.mock.calls[0][0]).not.toContain("OR status");
+    expect(f.query.mock.calls[0][0]).toContain('"lockedAt"=(now() AT TIME ZONE \'UTC\')');
+    expect(f.query.mock.calls[0][0]).toContain('"leaseExpiresAt"=(now() AT TIME ZONE \'UTC\')+interval \'5 minutes\'');
     expect(await claimPersonalAiOperation(f.tx, subject)).toBeNull();
   });
   it("refuses claim before writing when subject authority was revoked", async () => {
@@ -45,7 +48,8 @@ describe("single-use personal AiOperation primitives (synthetic transaction)", (
     expect(await finishPersonalAiOperation(f.tx, { claim, outcome: "PROPOSAL_INSPECTED", resultId: "proposal_1" })).toMatchObject({ executionAuthorized: false });
     const [sql, ...args] = f.execute.mock.calls[0];
     expect(sql).toContain('"lockedBy"=$3'); expect(sql).toContain('"personalAssistantOperationId"=$4');
-    expect(sql).toContain('"leaseExpiresAt">now()'); expect(sql).toContain("AND status='running' AND attempts=1");
+    expect(sql).toContain('"leaseExpiresAt">(now() AT TIME ZONE \'UTC\')'); expect(sql).toContain("AND status='running' AND attempts=1");
+    expect(sql).toContain('"finishedAt"=(now() AT TIME ZONE \'UTC\')');
     expect(args.slice(0, 5)).toEqual([claim.operationId, key, claim.lockedBy, subject.operationId, "personal_intent_candidate_v1"]);
     expect(args[5]).toBe("succeeded");
   });

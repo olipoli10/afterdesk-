@@ -123,6 +123,6 @@ describe("OFF source-bound calendar summary preparation", () => {
   it("does not acknowledge preparation if the DB lifetime guard refused insertion", async () => {
     const f = fixture(); f.execute.mockResolvedValueOnce(0);
     await expect(prepareCalendarConfirmationOutboundInTransaction(f.tx, { actor: f.actor, challengeId: "challenge" }, f.env)).rejects.toThrow("CONFIRMATION_NOT_PREPARED");
-    expect((f.execute.mock.calls[0] as unknown as unknown[])[0]).toContain('"expiresAt">clock_timestamp()');
+    expect((f.execute.mock.calls[0] as unknown as unknown[])[0]).toContain('"expiresAt">(clock_timestamp() AT TIME ZONE \'UTC\')');
   });
 });

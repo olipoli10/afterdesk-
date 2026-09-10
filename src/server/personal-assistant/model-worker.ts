@@ -47,8 +47,8 @@ export async function processPersonalModelSms(context: PersonalSmsExecutionConte
   async function requireLiveSource() {
     requireCurrentConfiguration();
     const rows = await prisma.$queryRawUnsafe<Array<{ id: string }>>(`SELECT id FROM "PersonalAssistantOperation"
-      WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=$5
-        AND kind='personal_sms_inbound' AND status='processing' AND "leaseUntil">clock_timestamp()`,
+      WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND attempts=$4 AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC')
+        AND kind='personal_sms_inbound' AND status='processing' AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')`,
       claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil));
     live();
     if (rows.length !== 1) throw new Error("PERSONAL_MODEL_SOURCE_CLAIM_LOST");

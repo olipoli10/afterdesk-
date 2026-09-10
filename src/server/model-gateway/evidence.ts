@@ -292,7 +292,7 @@ export async function appendGatewayAuditEvent(
   const event = createGatewayAuditEvent(input);
   const eventFingerprint = canonicalFingerprint(event);
   await tx.$executeRawUnsafe(
-    `INSERT INTO "ModelGatewayAuditEvent" (id,"eventType","correlationId","gatewayOperationId","tenantId","attemptId","decisionId","policyHash","routeHash","spendHoldId","billingProvider","amountMicros","errorClass","dispatchState","resultContractStatus","evidenceRef","actorId","eventFingerprint","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,now()) ON CONFLICT ("eventFingerprint") DO NOTHING`,
+    `INSERT INTO "ModelGatewayAuditEvent" (id,"eventType","correlationId","gatewayOperationId","tenantId","attemptId","decisionId","policyHash","routeHash","spendHoldId","billingProvider","amountMicros","errorClass","dispatchState","resultContractStatus","evidenceRef","actorId","eventFingerprint","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,(now() AT TIME ZONE 'UTC')) ON CONFLICT ("eventFingerprint") DO NOTHING`,
     `gwa_${randomUUID().replaceAll("-", "")}`,
     event.eventType, event.correlationId, event.gatewayOperationId, event.tenantId, event.attemptId,
     event.decisionId, event.policyHash, event.routeHash, event.spendHoldId, event.billingProvider,

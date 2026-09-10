@@ -1,0 +1,17 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/sms-inbound-recovery.postgres.test.ts (6 tests) 13492ms
+     ✓ updates at most 25 of 31 eligible rows, drains the remainder once, then replay is zero  5717ms
+     ✓ excludes attempts 0/2, nonprocessing rows, null/future leases and other ordinary operation kinds  2444ms
+     ✓ preserves exact prior object, array, scalar, JSON null and SQL null evidence  1900ms
+     ✓ is OFF without exact enable and leaves the complete claim unchanged  816ms
+     ✓ does not let the former exact source completion CAS replace recovered uncertainty  776ms
+     ✓ the real SMS worker retains prior durable evidence after its injected interpreter loses its result  1834ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  03:13:28
+   Duration  15.89s (transform 925ms, setup 0ms, import 2.16s, tests 13.49s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

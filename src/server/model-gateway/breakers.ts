@@ -123,7 +123,7 @@ export async function transitionGatewayBreaker(input: {
         throw new StaleGatewayBreakerGenerationError();
       }
       const [created] = await tx.$queryRawUnsafe<GatewayBreakerDbRow[]>(
-        `INSERT INTO "ModelGatewayBreaker" (id,"scopeKind","scopeKey",generation,state,"reasonClass","changedBy","changedAt") VALUES ($1,$2,$3,1,'open',$4,$5,now()) RETURNING id,"scopeKind","scopeKey",generation,state,"reasonClass"`,
+        `INSERT INTO "ModelGatewayBreaker" (id,"scopeKind","scopeKey",generation,state,"reasonClass","changedBy","changedAt") VALUES ($1,$2,$3,1,'open',$4,$5,(now() AT TIME ZONE 'UTC')) RETURNING id,"scopeKind","scopeKey",generation,state,"reasonClass"`,
         `mgb_${randomUUID().replaceAll("-", "")}`,
         input.scope.scopeKind,
         input.scope.scopeKey,
@@ -131,7 +131,7 @@ export async function transitionGatewayBreaker(input: {
         input.actorId,
       );
       await tx.$executeRawUnsafe(
-        `INSERT INTO "ModelGatewayBreakerEvent" (id,"scopeKind","scopeKey","priorGeneration","newGeneration","priorState","newState","reasonClass","actorId","correlationId","createdAt") VALUES ($1,$2,$3,0,1,'closed','open',$4,$5,$6,now())`,
+        `INSERT INTO "ModelGatewayBreakerEvent" (id,"scopeKind","scopeKey","priorGeneration","newGeneration","priorState","newState","reasonClass","actorId","correlationId","createdAt") VALUES ($1,$2,$3,0,1,'closed','open',$4,$5,$6,(now() AT TIME ZONE 'UTC'))`,
         `mgbe_${randomUUID().replaceAll("-", "")}`,
         input.scope.scopeKind,
         input.scope.scopeKey,
@@ -158,7 +158,7 @@ export async function transitionGatewayBreaker(input: {
     }
     const nextGeneration = current.generation + 1n;
     const updated = await tx.$queryRawUnsafe<Array<{ id: string }>>(
-      `UPDATE "ModelGatewayBreaker" SET generation=$3,state=$4,"reasonClass"=$5,"changedBy"=$6,"changedAt"=now() WHERE id=$1 AND generation=$2 RETURNING id`,
+      `UPDATE "ModelGatewayBreaker" SET generation=$3,state=$4,"reasonClass"=$5,"changedBy"=$6,"changedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1 AND generation=$2 RETURNING id`,
       current.id,
       input.expectedGeneration,
       nextGeneration,
@@ -168,7 +168,7 @@ export async function transitionGatewayBreaker(input: {
     );
     if (updated.length !== 1) throw new StaleGatewayBreakerGenerationError();
     await tx.$executeRawUnsafe(
-      `INSERT INTO "ModelGatewayBreakerEvent" (id,"scopeKind","scopeKey","priorGeneration","newGeneration","priorState","newState","reasonClass","actorId","correlationId","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now())`,
+      `INSERT INTO "ModelGatewayBreakerEvent" (id,"scopeKind","scopeKey","priorGeneration","newGeneration","priorState","newState","reasonClass","actorId","correlationId","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,(now() AT TIME ZONE 'UTC'))`,
       `mgbe_${randomUUID().replaceAll("-", "")}`,
       input.scope.scopeKind,
       input.scope.scopeKey,

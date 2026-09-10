@@ -1,0 +1,31 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation.postgres.test.ts (22 tests) 91076ms
+     ✓ selects the newer ordinary reply ahead of a retained expired bridge without rewriting either  13088ms
+     ✓ selects the newer ordinary reply ahead of a retained revoked bridge without rewriting either  4726ms
+     ✓ selects the newer ordinary reply ahead of a retained identity-revised bridge without rewriting either  4510ms
+     ✓ prepares an exact pending bridge through the real lower authority without granting approval  4157ms
+     ✓ uses actual outbox gates with an injected synthetic HTTP response and commits accepted bridge plus WAITING atomically  5238ms
+     ✓ creates one non-executable summary, permanently registered phrase and exact source review atomically  3531ms
+     ✓ rolls back challenge, summary and nonce if caller omits final source CAS  3134ms
+     ✓ refuses waiting without a durable source-bound accepted outbox bridge  3179ms
+     ✓ keeps nonces immutable and permanent independently of terminal challenges  3132ms
+     ✓ rejects a second orphan summary naming an already bound challenge  3232ms
+     ✓ prevents post-commit source/draft evidence replacement without preventing revocation  3341ms
+     ✓ disconnects the actual phone authority without rewriting its immutable pending confirmation summary  3635ms
+     ✓ consumes the exact verified phrase and calendar claim once in one transaction without execution  3937ms
+     ✓ counts a wrong phrase once per completed source, never a write or replay  3740ms
+     ✓ rejects a queued confirmation received before the summary was durably accepted  3609ms
+     ✓ allows only one of two concurrent exact SMS sources to claim the calendar  5638ms
+     ✓ serializes app approval against SMS consumption without two calendar claims  5681ms
+     ✓ expires by the DB clock without deleting or resetting the permanent phrase registry  4211ms
+     ✓ permanently closes after five distinct wrong confirmation sources  5301ms
+     ✓ refuses another owner and independently changed Google grant epoch  3973ms
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  03:09:54
+   Duration  92.15s (transform 621ms, setup 0ms, import 902ms, tests 91.08s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

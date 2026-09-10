@@ -22,4 +22,35 @@ describe("personal live configuration projection", () => {
     expect(result.status).toBe("CONFIGURATION_PRESENT_UNVERIFIED");
     expect(result.liveReady).toBe(false);
   });
+  it("shows the confirmation path as disabled without pretending missing switches are permission grants", () => {
+    const result = personalLivePreflight({});
+    expect(result.capabilitySwitches.calendarSmsConfirmation).toMatchObject({ status: "DISABLED", executionAuthorized: false });
+    expect(result.capabilitySwitches.calendarSmsConfirmation.missingSwitches).toContain("ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED");
+    expect(result.databaseEvidenceChecked).toBe(false);
+  });
+  it("reports only partial configuration when one confirmation switch is absent", () => {
+    const env = { ENDVERA_EXTERNAL_TRANSPORT_ENABLED: "ENABLED", ENDVERA_SMS_PROVIDER_ENABLED: "ENABLED", ENDVERA_GOOGLE_OAUTH_ENABLED: "ENABLED",
+      ENDVERA_PERSONAL_SMS_WORKER_ENABLED: "true", ENDVERA_PERSONAL_OUTBOUND_ENABLED: "true", ENDVERA_PERSONAL_AUTOMATIC_REPLIES_ENABLED: "true",
+      ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED: "true", ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED: "true" };
+    expect(personalLivePreflight(env).capabilitySwitches.calendarSmsConfirmation).toMatchObject({ status: "PARTIALLY_REQUESTED",
+      missingSwitches: ["ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED"], executionAuthorized: false });
+    const result = personalLivePreflight({ ...env, ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED: "true" });
+    expect(result.capabilitySwitches.calendarSmsConfirmation.status).toBe("REQUESTED_UNVERIFIED"); expect(result.liveReady).toBe(false);
+  });
+  it("does not trim or coerce activation literals and never returns an injected value", () => {
+    const secret = "synthetic-do-not-echo";
+    const env = { ENDVERA_PERSONAL_MODEL_ENGINE_ENABLED: secret, ENDVERA_PERSONAL_MODEL_EXTERNAL_TRANSPORT_ENABLED: "TRUE",
+      ENDVERA_PERSONAL_MODEL_CONFIGURATION_JSON: secret, ENDVERA_PERSONAL_ACTION_RECOVERY_ENABLED: " true " };
+    const result = personalLivePreflight(env);
+    expect(JSON.stringify(result)).not.toContain(secret);
+    expect(result.capabilitySwitches.openRouterIntent.status).toBe("DISABLED");
+    expect(result.capabilitySwitches.uncertainActionRecovery.status).toBe("DISABLED");
+    expect(result.optionalConfiguration.model[0].present).toBe(true);
+    expect(result.unresolvedEvidence).toContain("OWNER_MODEL_CONSENT_AND_ENCRYPTED_CREDENTIAL");
+  });
+  it("does not mutate the supplied environment or claim that requested recovery authorizes an effect", () => {
+    const env = Object.freeze({ ENDVERA_PERSONAL_ACTION_RECOVERY_ENABLED: "true" });
+    expect(personalLivePreflight(env).capabilitySwitches.uncertainActionRecovery).toMatchObject({ status: "REQUESTED_UNVERIFIED", executionAuthorized: false });
+    expect(env).toEqual({ ENDVERA_PERSONAL_ACTION_RECOVERY_ENABLED: "true" });
+  });
 });

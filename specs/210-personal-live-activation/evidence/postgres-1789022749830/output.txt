@@ -1,0 +1,71 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts (7 tests | 2 failed) 51952ms
+     ✓ expires PREPARED and WAITING by DB time without touching another owner, summary or permanent nonce  19245ms
+     × mirrors only durable calendar completed, retaining operation, full reserved budget and nonce after revocation 5486ms
+     × mirrors only durable calendar uncertain, retaining operation, full reserved budget and nonce after revocation 6107ms
+     ✓ leaves nonterminal consumed calendar processing and returns no fabricated completion  5782ms
+     ✓ requires both owner and workspace, and does not mutate a different actor's terminal challenge  5531ms
+     ✓ rolls maintenance back with its caller transaction and does not claim a durable provisional result  5405ms
+     ✓ keeps future PREPARED untouched and OFF mode does no maintenance  4391ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts > actor-scoped confirmation maintenance on disposable PostgreSQL > mirrors only durable calendar completed, retaining operation, full reserved budget and nonce after revocation
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts:145:47
+
+  142   budgetId: budget.id, reservedCadMicros: 250000n, externalTransportPerformed: false,
+  143 } });
+  144 const calendar = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: consumed.calendarClaim.operationId } });
+→ 145 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_revoked_clear_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv5zp1s0029i50wwacbp0w4, cmtv5zog5001oi50wwt5u3y30, google_calendar, revoked, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, cmtv5zp4b002ci50wg1rr7a1q, null, primary, 1, 2026-09-10 06:46:51.955, 2026-09-10 06:46:57.392, cmtv5zodw001mi50w6multddm, 2026-09-10 06:46:52.816, 2026-09-10 06:46:57.393)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts:145:5
+    143|     } });
+    144|     const calendar = await prisma.personalAssistantOperation.findUniqu…
+    145|     await prisma.constructionConnectorAccount.update({ where: { id: f.…
+       |     ^
+    146|     await prisma.constructionCommunicationIdentity.update({ where: { i…
+    147|     expect(await maintainCalendarSmsConfirmations({ actor: f.actor }, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts > actor-scoped confirmation maintenance on disposable PostgreSQL > mirrors only durable calendar uncertain, retaining operation, full reserved budget and nonce after revocation
+PrismaClientUnknownRequestError: 
+Invalid `prisma.constructionConnectorAccount.update()` invocation in
+C:/dev/endvera-astra-r03/specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts:145:47
+
+  142   budgetId: budget.id, reservedCadMicros: 250000n, externalTransportPerformed: false,
+  143 } });
+  144 const calendar = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: consumed.calendarClaim.operationId } });
+→ 145 await prisma.constructionConnectorAccount.update(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"ConstructionConnectorAccount\" violates check constraint \"ConstructionConnectorAccount_revoked_clear_check\"", severity: "ERROR", detail: Some("Failing row contains (cmtv5ztb90035i50w2q6geaoa, cmtv5zsou002ki50wqcfkaspr, google_calendar, revoked, {}, {https://www.googleapis.com/auth/calendar.events}, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, cmtv5zteu0038i50w7y09p5nk, null, primary, 1, 2026-09-10 06:46:57.44, 2026-09-10 06:47:03.498, cmtv5zsm9002ii50wh5qrcj29, 2026-09-10 06:46:58.342, 2026-09-10 06:47:03.5)."), column: None, hint: None }), transient: false })
+ ❯ ei.handleRequestError .prisma-client/runtime/library.js:125:7458
+ ❯ ei.handleAndLogRequestError .prisma-client/runtime/library.js:125:6593
+ ❯ ei.request .prisma-client/runtime/library.js:125:6300
+ ❯ a .prisma-client/runtime/library.js:134:9551
+ ❯ specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts:145:5
+    143|     } });
+    144|     const calendar = await prisma.personalAssistantOperation.findUniqu…
+    145|     await prisma.constructionConnectorAccount.update({ where: { id: f.…
+       |     ^
+    146|     await prisma.constructionCommunicationIdentity.update({ where: { i…
+    147|     expect(await maintainCalendarSmsConfirmations({ actor: f.actor }, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+   Start at  02:46:31
+   Duration  53.49s (transform 815ms, setup 0ms, import 1.22s, tests 51.95s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

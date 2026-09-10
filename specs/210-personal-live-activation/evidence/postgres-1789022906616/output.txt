@@ -1,0 +1,18 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts (7 tests) 42988ms
+     ✓ expires PREPARED and WAITING by DB time without touching another owner, summary or permanent nonce  15801ms
+     ✓ mirrors only durable calendar completed, retaining operation, full reserved budget and nonce after revocation  4640ms
+     ✓ mirrors only durable calendar uncertain, retaining operation, full reserved budget and nonce after revocation  5107ms
+     ✓ leaves nonterminal consumed calendar processing and returns no fabricated completion  4279ms
+     ✓ requires both owner and workspace, and does not mutate a different actor's terminal challenge  4737ms
+     ✓ rolls maintenance back with its caller transaction and does not claim a durable provisional result  4526ms
+     ✓ keeps future PREPARED untouched and OFF mode does no maintenance  3894ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  02:48:57
+   Duration  44.07s (transform 600ms, setup 0ms, import 917ms, tests 42.99s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

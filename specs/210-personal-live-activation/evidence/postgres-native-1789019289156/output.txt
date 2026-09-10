@@ -1,0 +1,3 @@
+PERSONAL_NATIVE_VALIDATION_FAILED
+PERSONAL_NATIVE_FAILURE_DIAGNOSTIC stage=IGNORE_CHECK type=MethodInvocationException line=45 category=NotSpecified
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-baeb5e1c85e04be98f01b8c80ec0c217

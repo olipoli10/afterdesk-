@@ -1,0 +1,124 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/outbox.postgres.test.ts (10 tests | 7 failed) 791ms
+     × automatically replies only to the original sender with standing self-SMS consent 276ms
+     ✓ binds proof from signed intake once, never a phone entered as a string 34ms
+     × sends once after exact approval and records delivery separately 69ms
+     × serializes competing reservations and never exceeds the configured local allowance 121ms
+     × retains reservation and refuses replay after an uncertain transport 80ms
+     × competing dispatchers of the same approval retain exactly one claim and reservation 44ms
+     ✓ revokes pending authority without sending 40ms
+     ✓ does not reserve or dispatch after the caller deadline has already expired 35ms
+     × a late accepted response cannot overwrite an independently retained uncertain state 48ms
+     × caller cancellation after the one transport attempt retains uncertainty and the full hold 41ms
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 3 passed (10)
+   Start at  03:20:00
+   Duration  4.20s (transform 968ms, setup 0ms, import 3.25s, tests 791ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/outbox.postgres.test.ts > PostgreSQL phone pairing, immutable approval and outbound reservation > automatically replies only to the original sender with standing self-SMS consent
+Error: OUTBOUND_OUTCOME_REQUIRES_REVIEW
+ ❯ dispatchOutbound src/server/personal-assistant/outbox.ts:271:11
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  specs/210-personal-live-activation/outbox.postgres.test.ts > PostgreSQL phone pairing, immutable approval and outbound reservation > sends once after exact approval and records delivery separately
+Error: OUTBOUND_OUTCOME_REQUIRES_REVIEW
+ ❯ dispatchOutbound src/server/personal-assistant/outbox.ts:271:11
+
+ ❯ specs/210-personal-live-activation/outbox.postgres.test.ts:52:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  specs/210-personal-live-activation/outbox.postgres.test.ts > PostgreSQL phone pairing, immutable approval and outbound reservation > serializes competing reservations and never exceeds the configured local allowance
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ specs/210-personal-live-activation/outbox.postgres.test.ts:69:69
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  specs/210-personal-live-activation/outbox.postgres.test.ts > PostgreSQL phone pairing, immutable approval and outbound reservation > retains reservation and refuses replay after an uncertain transport
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ specs/210-personal-live-activation/outbox.postgres.test.ts:79:216
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  specs/210-personal-live-activation/outbox.postgres.test.ts > PostgreSQL phone pairing, immutable approval and outbound reservation > competing dispatchers of the same approval retain exactly one claim and reservation
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ specs/210-personal-live-activation/outbox.postgres.test.ts:85:69
+     83|     await approvePersonalOutbound({ userId: f.userId, workspaceId: f.w…
+     84|     const results = await Promise.allSettled([dispatchPersonalOutbound…
+     85|     expect(results.filter(result => result.status === "fulfilled")).to…
+       |                                                                     ^
+     86|     const row = await prisma.personalAssistantOperation.findUniqueOrTh…
+     87|     expect(row).toMatchObject({ status: "completed", attempts: 1, rese…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  specs/210-personal-live-activation/outbox.postgres.test.ts > PostgreSQL phone pairing, immutable approval and outbound reservation > a late accepted response cannot overwrite an independently retained uncertain state
+AssertionError: expected { …(19) } to match object { status: 'uncertain', …(1) }
+(23 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "result": {
+-     "reason": "SYNTHETIC_RECOVERY_WON",
++     "automaticRetry": false,
++     "deliveryConfirmed": false,
++     "reviewRequired": true,
+    },
+    "status": "uncertain",
+  }
+
+ ❯ specs/210-personal-live-activation/outbox.postgres.test.ts:116:17
+    114|     await expect(dispatchPersonalOutbound(prepared.operationId, f.env,…
+    115|     const row = await prisma.personalAssistantOperation.findUniqueOrTh…
+    116|     expect(row).toMatchObject({ status: "uncertain", result: { reason:…
+       |                 ^
+    117|     expect(row.reservedCadMicros).toBe(100000n);
+    118|     await expect(dispatchPersonalOutbound(row.id, f.env, transport)).r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  specs/210-personal-live-activation/outbox.postgres.test.ts > PostgreSQL phone pairing, immutable approval and outbound reservation > caller cancellation after the one transport attempt retains uncertainty and the full hold
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ specs/210-personal-live-activation/outbox.postgres.test.ts:130:106
+    128|     await expect(dispatchPersonalOutbound(prepared.operationId, f.env,…
+    129|     const row = await prisma.personalAssistantOperation.findUniqueOrTh…
+    130|     expect(row.status).toBe("uncertain"); expect(row.reservedCadMicros…
+       |                                                                                                          ^
+    131|     expect((await prisma.personalAssistantBudget.findUniqueOrThrow({ w…
+    132|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-fe6324cc06e94f69ad8eeae0a3dae8a3

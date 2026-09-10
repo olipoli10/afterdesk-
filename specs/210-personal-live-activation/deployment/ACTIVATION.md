@@ -96,6 +96,28 @@ be recalled. Signed delivery receipts remain admissible after pilot expiry.
 Run `node scripts/personal-live-preflight.mjs` for presence-only diagnostics.
 It does not validate credentials, activate capabilities, or prove live readiness.
 
+The diagnostic now lists each route's exact switch requirements separately. Its
+`REQUESTED_UNVERIFIED` label is not an authorization or a successful connection.
+OpenRouter requires the trusted server-side rate/budget configuration, the owner's
+explicit model consent and a separately provisioned encrypted database credential;
+this presence-only command reads none of those database secrets.
+
+The local SMS calendar-confirmation route additionally requires all three switches
+`ENDVERA_CALENDAR_SMS_CONFIRMATION_STORE_ENABLED`,
+`ENDVERA_CALENDAR_SMS_CONFIRMATION_BRIDGE_ENABLED` and
+`ENDVERA_CALENDAR_SMS_CONFIRMATION_WORKER_ENABLED` (exact literal `true`), alongside
+the existing SMS worker, automatic self-reply, outbound and Google gates. Apply its
+unchanged schema migration before any activation. It sends one exact summary,
+waits for the owner's matching phrase, then uses the existing one-use Google
+claim. The model cannot approve the operation, and an unknown result cannot be
+automatically retried. No switch is enabled by this document or the diagnostic.
+
+Optional `ENDVERA_CALENDAR_SMS_CONFIRMATION_MAINTENANCE_ENABLED` and
+`ENDVERA_PERSONAL_ACTION_RECOVERY_ENABLED` are bookkeeping only: expired/unknown
+claims retain their evidence and budget holds. They do not authorize transport,
+grant consent or retry an effect. Native contention proof and real-owner/provider
+observations remain separate requirements, not consequences of flag presence.
+
 Official references checked during implementation:
 - https://www.twilio.com/docs/messaging/api/message-resource
 - https://www.twilio.com/docs/voice/api/call-resource

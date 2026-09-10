@@ -1,0 +1,48 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts (19 tests | 1 failed) 76722ms
+     ✓ is OFF without explicit switch and creates no records  2059ms
+     ✓ prepares an exact pending bridge through the real lower authority without granting approval  5880ms
+     × uses actual outbox gates with an injected synthetic HTTP response and commits accepted bridge plus WAITING atomically 5474ms
+     ✓ creates one non-executable summary, permanently registered phrase and exact source review atomically  3631ms
+     ✓ rolls back challenge, summary and nonce if caller omits final source CAS  3458ms
+     ✓ refuses waiting without a durable source-bound accepted outbox bridge  3385ms
+     ✓ keeps nonces immutable and permanent independently of terminal challenges  3137ms
+     ✓ rejects a second orphan summary naming an already bound challenge  3541ms
+     ✓ prevents post-commit source/draft evidence replacement without preventing revocation  4223ms
+     ✓ declares same-owner composite FKs for every operation binding and permanent active uniqueness 69ms
+     ✓ disconnects the actual phone authority without rewriting its immutable pending confirmation summary  3727ms
+     ✓ consumes the exact verified phrase and calendar claim once in one transaction without execution  4566ms
+     ✓ counts a wrong phrase once per completed source, never a write or replay  3826ms
+     ✓ rejects a queued confirmation received before the summary was durably accepted  4331ms
+     ✓ allows only one of two concurrent exact SMS sources to claim the calendar  5680ms
+     ✓ serializes app approval against SMS consumption without two calendar claims  5517ms
+     ✓ expires by the DB clock without deleting or resetting the permanent phrase registry  4232ms
+     ✓ permanently closes after five distinct wrong confirmation sources  5852ms
+     ✓ refuses another owner and independently changed Google grant epoch  4128ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > uses actual outbox gates with an injected synthetic HTTP response and commits accepted bridge plus WAITING atomically
+Error: PERSONAL_OUTBOUND_DISABLED
+ ❯ twilioDispatchPolicy src/server/personal-assistant/twilio-outbound.ts:46:138
+     44|   const expiry = Date.parse(env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT ?? "…
+     45|   const capability = kind === "sms_outbound" ? "SMS" : "VOICE";
+     46|   if (!externalCapabilityDecision(capability, env).enabled || env.ENDV…
+       |                                                                                                                                          ^
+     47|   if (!/^AC[0-9a-f]{32}$/i.test(env.TWILIO_ACCOUNT_SID ?? "") || !/^SK…
+     48|   const reviewedAt = Date.parse(env.ENDVERA_TWILIO_RATE_REVIEWED_AT ??…
+ ❯ prisma.$transaction.isolationLevel src/server/personal-assistant/outbox.ts:178:20
+ ❯ Proxy._transactionWithCallback .prisma-client/runtime/library.js:134:8120
+ ❯ src/server/personal-assistant/outbox.ts:330:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  02:24:38
+   Duration  77.80s (transform 579ms, setup 0ms, import 913ms, tests 76.72s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

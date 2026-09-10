@@ -118,7 +118,7 @@ export async function bindGatewayOperation(
     throw new Error("GATEWAY_OPERATION_TENANT_TASK_BINDING_MISMATCH");
   }
   await tx.$executeRawUnsafe(
-    `INSERT INTO "ModelGatewayOperation" (id,"aiOperationId","tenantId","operationType","requestFingerprint","outputContractHash","dataClass","privacyRequirement","policyVersionId","maxTotalCostMicros",status,"createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'admitted',now()) ON CONFLICT ("aiOperationId") DO NOTHING`,
+    `INSERT INTO "ModelGatewayOperation" (id,"aiOperationId","tenantId","operationType","requestFingerprint","outputContractHash","dataClass","privacyRequirement","policyVersionId","maxTotalCostMicros",status,"createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'admitted',(now() AT TIME ZONE 'UTC')) ON CONFLICT ("aiOperationId") DO NOTHING`,
     uid("gwop"),
     input.aiOperationId,
     input.tenantId,
@@ -193,7 +193,7 @@ export async function persistGatewayDecision(
   }
   const decisionFingerprint = canonicalFingerprint(input);
   await tx.$executeRawUnsafe(
-    `INSERT INTO "ModelGatewayDecision" (id,"gatewayOperationId",attempt,disposition,"routeProfileId","reasonClass","policyHash","routeHash","privacyEvidenceHash","breakerGeneration","remainingCostMicros","decisionFingerprint","decidedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now()) ON CONFLICT ("gatewayOperationId",attempt) DO NOTHING`,
+    `INSERT INTO "ModelGatewayDecision" (id,"gatewayOperationId",attempt,disposition,"routeProfileId","reasonClass","policyHash","routeHash","privacyEvidenceHash","breakerGeneration","remainingCostMicros","decisionFingerprint","decidedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,(now() AT TIME ZONE 'UTC')) ON CONFLICT ("gatewayOperationId",attempt) DO NOTHING`,
     uid("decision"),
     input.gatewayOperationId,
     input.attempt,
@@ -282,7 +282,7 @@ export async function createGatewayAttempt(
     throw new Error("GATEWAY_ATTEMPT_SPEND_BINDING_MISMATCH");
   }
   await tx.$executeRawUnsafe(
-    `INSERT INTO "ModelGatewayAttempt" (id,"decisionId","accountSpendHoldId",status,"dispatchState","resultContractStatus","requestEvidenceRef","startedAt") VALUES ($1,$2,$3,'prepared','not_dispatched','not_evaluated',$4,now()) ON CONFLICT ("decisionId") DO NOTHING`,
+    `INSERT INTO "ModelGatewayAttempt" (id,"decisionId","accountSpendHoldId",status,"dispatchState","resultContractStatus","requestEvidenceRef","startedAt") VALUES ($1,$2,$3,'prepared','not_dispatched','not_evaluated',$4,(now() AT TIME ZONE 'UTC')) ON CONFLICT ("decisionId") DO NOTHING`,
     uid("attempt"),
     input.decisionId,
     input.accountSpendHoldId,
@@ -532,7 +532,7 @@ export async function admitGatewayClassification(input: {
           remainingCostMicros: request.maxTotalCostMicros,
         });
         await tx.$executeRawUnsafe(
-          `UPDATE "ModelGatewayOperation" SET status='refused',"finishedAt"=now() WHERE id=$1`,
+          `UPDATE "ModelGatewayOperation" SET status='refused',"finishedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1`,
           operation.id
         );
         await appendGatewayAuditEvent(tx, {
@@ -590,7 +590,7 @@ export async function admitGatewayClassification(input: {
           remainingCostMicros: request.maxTotalCostMicros,
         });
         await tx.$executeRawUnsafe(
-          `UPDATE "ModelGatewayOperation" SET status='refused',"finishedAt"=now() WHERE id=$1`,
+          `UPDATE "ModelGatewayOperation" SET status='refused',"finishedAt"=(now() AT TIME ZONE 'UTC') WHERE id=$1`,
           operation.id
         );
         await appendGatewayAuditEvent(tx, {

@@ -1042,7 +1042,7 @@ model AiUsage {
   cacheReadTokens Int      @default(0)
   model           String
   stopReason      String?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
 
   /// PHASE 1B — mesure des appels qui NE SONT PAS rattachés à une étape de
   /// workflow : intake, classification, planification, critique, assistant.
@@ -2551,7 +2551,7 @@ model AccountProviderSpendHold {
   /// La dépense réellement constatée à la conversion. Null tant que `held`.
   settledMicros BigInt?
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   updatedAt DateTime @updatedAt
 
   gatewayAttempt ModelGatewayAttempt?
@@ -2846,7 +2846,7 @@ model AiOperation {
   resultId   String?
 
   finishedAt DateTime?
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime  @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   updatedAt  DateTime  @updatedAt
 
   usages AiUsage[]
@@ -2875,7 +2875,7 @@ model ModelGatewayPolicyVersion {
   requiredPrivacyPosture String
   canonicalHash          String    @unique
   createdBy              String
-  createdAt              DateTime  @default(now())
+  createdAt              DateTime  @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   publishedAt            DateTime?
   retiredAt              DateTime?
 
@@ -2908,7 +2908,7 @@ model ModelGatewayRouteProfile {
   maxOutputTokens    Int
   canonicalHash      String    @unique
   createdBy          String
-  createdAt          DateTime  @default(now())
+  createdAt          DateTime  @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   publishedAt        DateTime?
   retiredAt          DateTime?
 
@@ -2936,7 +2936,7 @@ model ModelGatewayOperation {
   status             String                    @default("admitted")
   finalAttemptId     String?                   @unique
   resultEvidenceRef  String?
-  createdAt          DateTime                  @default(now())
+  createdAt          DateTime                  @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   finishedAt         DateTime?
 
   decisions   ModelGatewayDecision[]
@@ -2963,7 +2963,7 @@ model ModelGatewayDecision {
   breakerGeneration   BigInt
   remainingCostMicros BigInt
   decisionFingerprint String                    @unique
-  decidedAt           DateTime                  @default(now())
+  decidedAt           DateTime                  @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
 
   gatewayAttempt ModelGatewayAttempt?
 
@@ -2989,7 +2989,7 @@ model ModelGatewayAttempt {
   responseEvidenceRef  String?
   aiUsageId            String?                  @unique
   aiUsage              AiUsage?                 @relation(fields: [aiUsageId], references: [id], onDelete: Restrict)
-  startedAt            DateTime                 @default(now())
+  startedAt            DateTime                 @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   dispatchedAt         DateTime?
   finishedAt           DateTime?
 
@@ -3008,7 +3008,7 @@ model ModelGatewayBreaker {
   state       String   @default("closed")
   reasonClass String
   changedBy   String
-  changedAt   DateTime @default(now())
+  changedAt   DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
 
   @@unique([scopeKind, scopeKey])
   @@index([state, scopeKind])
@@ -3026,7 +3026,7 @@ model ModelGatewayBreakerEvent {
   reasonClass     String
   actorId         String
   correlationId   String
-  createdAt       DateTime @default(now())
+  createdAt       DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
 
   @@unique([scopeKind, scopeKey, newGeneration])
   @@index([correlationId])
@@ -3055,7 +3055,7 @@ model ModelGatewayAuditEvent {
   evidenceRef          String?
   actorId              String?
   eventFingerprint     String                 @unique
-  createdAt            DateTime               @default(now())
+  createdAt            DateTime               @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
 
   @@index([gatewayOperationId, createdAt])
   @@index([tenantId, createdAt])
@@ -5632,7 +5632,7 @@ model PersonalAssistantOperation {
   calendarConfirmationConsumptionSources PersonalCalendarSmsConfirmation[] @relation("CalendarConfirmationConsumptionSource")
   modelGatewayOperationId String? @unique
   modelGatewayOperation ModelGatewayOperation? @relation(fields: [modelGatewayOperationId], references: [id], onDelete: Restrict)
-  createdAt         DateTime                     @default(now())
+  createdAt         DateTime                     @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   updatedAt         DateTime                     @updatedAt
 
   @@index([workspaceId, kind, status])
@@ -5644,7 +5644,7 @@ model PersonalCalendarSmsConfirmationNonce {
   nonReuseKey String @id
   namespace   String
   phraseHash  String
-  createdAt   DateTime @default(now()) @db.Timestamp(3)
+  createdAt   DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)")) @db.Timestamp(3)
   confirmation PersonalCalendarSmsConfirmation?
 
   @@unique([namespace, phraseHash], map: "calendar_confirmation_nonce_visible_pair_key")
@@ -5678,7 +5678,7 @@ model PersonalCalendarSmsConfirmation {
   calendarClaim                 Json?
   consumedAt                    DateTime? @db.Timestamp(3)
   failedAttempts                Int @default(0)
-  createdAt                     DateTime @default(now()) @db.Timestamp(3)
+  createdAt                     DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)")) @db.Timestamp(3)
   expiresAt                     DateTime @db.Timestamp(3)
   updatedAt                     DateTime @db.Timestamp(3)
 
@@ -5705,7 +5705,7 @@ model PersonalAssistantBudget {
   ceilingCadMicros   BigInt
   reservedCadMicros  BigInt   @default(0)
   expiresAt         DateTime
-  createdAt         DateTime @default(now())
+  createdAt         DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   updatedAt         DateTime @updatedAt
   operations        PersonalAssistantOperation[]
 }
@@ -5716,7 +5716,7 @@ model PersonalAssistantDeliveryReceipt {
   operation    PersonalAssistantOperation @relation(fields: [operationId], references: [id], onDelete: Cascade)
   providerSid  String
   status       String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text)"))
   @@index([operationId, createdAt])
 }
 

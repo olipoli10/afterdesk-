@@ -1,0 +1,115 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation.postgres.test.ts (22 tests) 12414ms
+     ✓ selects the newer ordinary reply ahead of a retained expired bridge without rewriting either  5534ms
+     ✓ selects the newer ordinary reply ahead of a retained revoked bridge without rewriting either  477ms
+     ✓ selects the newer ordinary reply ahead of a retained identity-revised bridge without rewriting either  562ms
+     ✓ prepares an exact pending bridge through the real lower authority without granting approval  337ms
+     ✓ uses actual outbox gates with an injected synthetic HTTP response and commits accepted bridge plus WAITING atomically  643ms
+     ✓ serializes app approval against SMS consumption without two calendar claims  404ms
+     ✓ expires by the DB clock without deleting or resetting the permanent phrase registry  1276ms
+     ✓ permanently closes after five distinct wrong confirmation sources  433ms
+ ✓ specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts (7 tests) 5199ms
+     ✓ expires PREPARED and WAITING by DB time without touching another owner, summary or permanent nonce  3670ms
+     ✓ mirrors only durable calendar completed, retaining operation, full reserved budget and nonce after revocation  355ms
+     ✓ requires both owner and workspace, and does not mutate a different actor's terminal challenge  309ms
+ ✓ specs/210-personal-live-activation/confirmation-worker.postgres.test.ts (6 tests) 2353ms
+     ✓ commits one exact review/draft/challenge plus two distinct pending messages; only the dedicated fake-HTTP bridge reaches WAITING  576ms
+     ✓ reloads exact confirmation SMS and runs the existing Google executor once with synthetic confirmed outcome  537ms
+     ✓ reloads exact confirmation SMS and runs the existing Google executor once with synthetic unknown outcome  472ms
+ ✓ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests) 1311ms
+     ✓ finishes SMS source and stored review atomically, without pretending to fetch Google  326ms
+ ✓ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests) 503ms
+ ❯ specs/210-personal-live-activation/sms-inbound-recovery.postgres.test.ts (6 tests | 1 failed) 370ms
+     ✓ updates at most 25 of 31 eligible rows, drains the remainder once, then replay is zero 150ms
+     ✓ excludes attempts 0/2, nonprocessing rows, null/future leases and other ordinary operation kinds 90ms
+     ✓ preserves exact prior object, array, scalar, JSON null and SQL null evidence 58ms
+     ✓ is OFF without exact enable and leaves the complete claim unchanged 14ms
+     ✓ does not let the former exact source completion CAS replace recovered uncertainty 14ms
+     × the real SMS worker retains prior durable evidence after its injected interpreter loses its result 43ms
+ ✓ specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts (3 tests) 377ms
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 334ms
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 423ms
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone UTC without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"UTC","mixedEquality":true,"explicitUtcEquality":true,"inferredDateEquality":true,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":true,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-01T16:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-01T16:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone America/New_York without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"America/New_York","mixedEquality":false,"explicitUtcEquality":true,"inferredDateEquality":false,"mixedExpiredAppearsLive":true,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":true,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":true,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-01T12:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-01T12:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone Asia/Tokyo without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"Asia/Tokyo","mixedEquality":false,"explicitUtcEquality":true,"inferredDateEquality":false,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":false,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-02T01:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-02T01:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+CALENDAR_CONCURRENCY_DIAGNOSTIC {"events":["1:1:BEGIN","2:1:BEGIN","1:1:CALLBACK_ENTER","2:2:CALLBACK_ENTER","1:5:CALLBACK_RETURN","1:6:COMMITTED","3:6:BEGIN","2:8:CALLBACK_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:8:CALLBACK_ENTER","2:8:TRANSACTION_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:11:CALLBACK_RETURN","3:11:COMMITTED","4:16:BEGIN","4:18:CALLBACK_ENTER","4:23:CALLBACK_RETURN","4:23:COMMITTED","5:24:BEGIN","5:24:CALLBACK_ENTER","5:28:CALLBACK_RETURN","5:28:COMMITTED"],"outcomes":["FULFILLED","P2010_PrismaClientKnownRequestError_40001_SERIALIZATION"],"elapsedMs":28}
+
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (14 tests) 915ms
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (10 tests) 681ms
+ ✓ specs/210-personal-live-activation/recovery.postgres.test.ts (5 tests) 264ms
+ ✓ specs/210-personal-live-activation/utc-datetime.postgres.test.ts (4 tests) 68ms
+
+ Test Files  1 failed | 12 passed (13)
+      Tests  1 failed | 113 passed (114)
+   Start at  03:37:27
+   Duration  37.96s (transform 1.40s, setup 0ms, import 10.78s, tests 25.21s, environment 1ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/sms-inbound-recovery.postgres.test.ts > inbound SMS recovery SQL on a disposable database, zero transport > the real SMS worker retains prior durable evidence after its injected interpreter loses its result
+AssertionError: expected { …(8) } to match object { …(7) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "durableTraceId": "3deea3c7-e56b-4199-8d05-f95e6f82aba7",
+    "effectsConfirmed": false,
+    "executionAuthorized": false,
+-   "priorClaimResult": {
+-     "durableTraceId": "3deea3c7-e56b-4199-8d05-f95e6f82aba7",
+-     "priorClaimResult": {
+-       "earlierEvidence": "also retained",
+-     },
+-     "syntheticPreparedEvidence": {
+-       "exact": [
+-         "old",
+-         {
+-           "nested": true,
+-         },
+-       ],
+-       "executionAuthorized": false,
+-     },
+-   },
++   "priorClaimResult": null,
+    "processingOutcome": "UNKNOWN_AFTER_WORKER_LOSS",
+    "reason": "WORKER_OUTCOME_UNKNOWN",
+-   "syntheticPreparedEvidence": {
+-     "exact": [
+-       "old",
+-       {
+-         "nested": true,
+-       },
+-     ],
+-     "executionAuthorized": false,
+-   },
+  }
+
+ ❯ specs/210-personal-live-activation/sms-inbound-recovery.postgres.test.ts:122:26
+    120|     expect(await processPersonalSms(f.sourceOperationId, env, { model …
+    121|     const after = await prisma.personalAssistantOperation.findUniqueOr…
+    122|     expect(after.result).toMatchObject({ durableTraceId: proof.durable…
+       |                          ^
+    123|       priorClaimResult: proof, reason: "WORKER_OUTCOME_UNKNOWN", proce…
+    124|     expect(after).toEqual({ ...before, status: "uncertain", attempts: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-25a07299de754a0e9b627a2a67dc9ba8

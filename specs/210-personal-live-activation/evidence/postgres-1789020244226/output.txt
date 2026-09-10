@@ -1,0 +1,198 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts (16 tests | 14 failed) 16850ms
+     ✓ is OFF without explicit switch and creates no records  2062ms
+     × creates one non-executable summary, permanently registered phrase and exact source review atomically 1684ms
+     × rolls back challenge, summary and nonce if caller omits final source CAS 1088ms
+     × refuses waiting without a durable source-bound accepted outbox bridge 1173ms
+     × keeps nonces immutable and permanent independently of terminal challenges 1013ms
+     × rejects a second orphan summary naming an already bound challenge 1030ms
+     × prevents post-commit source/draft evidence replacement without preventing revocation 1127ms
+     ✓ declares same-owner composite FKs for every operation binding and permanent active uniqueness 69ms
+     × consumes the exact verified phrase and calendar claim once in one transaction without execution 1015ms
+     × counts a wrong phrase once per completed source, never a write or replay 981ms
+     × rejects a queued confirmation received before the summary was durably accepted 1009ms
+     × allows only one of two concurrent exact SMS sources to claim the calendar 1139ms
+     × serializes app approval against SMS consumption without two calendar claims 938ms
+     × expires by the DB clock without deleting or resetting the permanent phrase registry 838ms
+     × permanently closes after five distinct wrong confirmation sources 837ms
+     × refuses another owner and independently changed Google grant epoch 845ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > creates one non-executable summary, permanently registered phrase and exact source review atomically
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:97:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > rolls back challenge, summary and nonce if caller omits final source CAS
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:106:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > refuses waiting without a durable source-bound accepted outbox bridge
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:111:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > keeps nonces immutable and permanent independently of terminal challenges
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:116:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > rejects a second orphan summary naming an already bound challenge
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:123:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > prevents post-commit source/draft evidence replacement without preventing revocation
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:131:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > consumes the exact verified phrase and calendar claim once in one transaction without execution
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:153:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > counts a wrong phrase once per completed source, never a write or replay
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:164:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > rejects a queued confirmation received before the summary was durably accepted
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:172:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > allows only one of two concurrent exact SMS sources to claim the calendar
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:182:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > serializes app approval against SMS consumption without two calendar claims
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:194:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > expires by the DB clock without deleting or resetting the permanent phrase registry
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:204:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > permanently closes after five distinct wrong confirmation sources
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:214:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  specs/210-personal-live-activation/confirmation.postgres.test.ts > durable OFF SMS calendar confirmation on disposable PostgreSQL > refuses another owner and independently changed Google grant epoch
+AssertionError: expected 'DISABLED' to be 'ADMITTED_NOT_DISPATCHED' // Object.is equality
+
+Expected: "ADMITTED_NOT_DISPATCHED"
+Received: "DISABLED"
+
+ ❯ fixture specs/210-personal-live-activation/confirmation.postgres.test.ts:41:27
+
+ ❯ specs/210-personal-live-activation/confirmation.postgres.test.ts:224:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  14 failed | 2 passed (16)
+   Start at  02:04:35
+   Duration  17.93s (transform 593ms, setup 0ms, import 908ms, tests 16.85s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED

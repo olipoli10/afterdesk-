@@ -32,7 +32,7 @@ export async function processCalendarConfirmationSms(context: PersonalSmsExecuti
     // Read only here: challenge-first lock order is enforced by the consumer.
     const rows = await tx.$queryRawUnsafe<Array<{ request: unknown; requestHash: string; connectorAccountId: string }>>(`SELECT request,"requestHash","connectorAccountId"
       FROM "PersonalAssistantOperation" WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3
-      AND kind='personal_sms_inbound' AND status='processing' AND attempts=$4 AND "leaseUntil"=$5 AND "leaseUntil">clock_timestamp()`,
+      AND kind='personal_sms_inbound' AND status='processing' AND attempts=$4 AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC') AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')`,
     claim.operationId, claim.workspaceId, claim.userId, claim.attempt, new Date(claim.leaseUntil));
     live();
     if (rows.length !== 1 || claim.attempt !== 1) throw new Error("CONFIRMATION_SOURCE_CLAIM_REQUIRED");
@@ -42,7 +42,7 @@ export async function processCalendarConfirmationSms(context: PersonalSmsExecuti
     // number/account/binding/phrase/time/permissions are checked again in consume.
     const candidates = await tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT id FROM "PersonalCalendarSmsConfirmation"
       WHERE "workspaceId"=$1 AND "userId"=$2 AND "identityId"=$3 AND phase='WAITING'
-      AND "expiresAt">clock_timestamp() ORDER BY id LIMIT 2`, actor.workspaceId, actor.userId, source.identityId);
+      AND "expiresAt">(clock_timestamp() AT TIME ZONE 'UTC') ORDER BY id LIMIT 2`, actor.workspaceId, actor.userId, source.identityId);
     live();
     if (candidates.length !== 1) return { status: "NO_UNIQUE_PENDING_CONFIRMATION" as const };
     const challengeId = candidates[0].id;

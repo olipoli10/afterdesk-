@@ -6,6 +6,24 @@
   "automationId": "endvera-mise-en-service-personnelle",
   "entries": [
     {
+      "id": "LONG_DICTATION_LOCAL_600S",
+      "status": "IN_PROGRESS",
+      "dependencies": ["ANDROID_VOICE_CONTEXT_BINDING"],
+      "evidence": "LONG_DICTATION_LOCAL_PLAN.md",
+      "completed": ["Four duration boundaries harmonized at600s; bounded recording journal and upload deadlines implemented, targeted tests running"],
+      "remaining": ["Independent review, interruption/recovery regression, full mobile and backend validation; no ASR or physical observation yet"],
+      "liveObserved": false
+    },
+    {
+      "id": "PERSONAL_UTC_DATETIME_REPAIR",
+      "status": "DONE_LOCAL",
+      "dependencies": ["NATIVE_DATABASE_CONCURRENCY_TOOLING"],
+      "evidence": "UTC_DATETIME_REPAIR_PLAN.md",
+      "completed": ["Native baseline Google7/11 and outbox3/10 retained; mixed timestamp/instant timezone defect reproduced", "Explicit UTC SQL/forward migration passes nativeGoogle14/14 and outbox10/10; original behavioral assertions retained", "Full native114/114 and root3609 PASS, separate-agent reviews of20modules and forward migration/schema"],
+      "remaining": ["Historical mixed-provenance timestamps are not rewritten or certified; remote migration not performed"],
+      "liveObserved": false
+    },
+    {
       "id": "SIGNED_SMS_INGRESS",
       "status": "DONE_LOCAL",
       "dependencies": [],
@@ -14,30 +32,31 @@
     },
     {
       "id": "SMS_POSTGRES_CONCURRENCY",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": [
         "SIGNED_SMS_INGRESS"
       ],
       "evidence": "progress.md",
       "liveObserved": false,
       "completed": [
-        "PGlite inbox replay and persistence tests observed; prior native provenance corrected in progress.md"
+        "Native PostgreSQL114/114 suite includes inbox replay/persistence and genuine competing claims; PGlite evidence remains separately labeled"
       ],
       "remaining": [
-        "Native simultaneous PostgreSQL sessions and actual contention tests; PGlite is not native concurrency proof"
+        "Real provider traffic is unobserved"
       ]
     },
     {
       "id": "NATIVE_DATABASE_CONCURRENCY_TOOLING",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": [],
       "completed": [
         "Official pinned PostgreSQL17.11 starts two simultaneous distinct backends; missing vector migration failure retained and server stopped",
-        "Six Microsoft package digests verified and signed PE tools inspected; bounded pgvector build script reviewed"
+        "Seven Microsoft package digests verified and signed PE tools inspected; bounded pgvector build script reviewed",
+        "First compile19 objects failed missing OLDNAMES; second reviewed input-only build succeeded, tree stopped and static DLL imports inspected",
+        "Reviewed pinned43-file CreateNew publication, all74 migrations and first native Google14/outbox10 passes; exact owned servers stopped"
       ],
       "remaining": [
-        "One local pgvector build and separate extension import/runtime review",
-        "All unchanged migrations plus native concurrency tests with fake transports"
+        "Full native suite114/114 PASS; publisher/catalog limitations remain recorded"
       ],
       "liveObserved": false
     },
@@ -225,12 +244,12 @@
     },
     {
       "id": "OUTBOX_CURRENT_DISPATCH_FENCE",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": [
         "APPROVED_SMS_VOICE_DELIVERY"
       ],
       "remaining": [
-        "Native PostgreSQL simultaneous sessions with fake HTTP; real provider delivery separately unobserved"
+        "Native10/10 and full114/114 PASS with fake HTTP; real provider delivery separately unobserved"
       ],
       "liveObserved": false,
       "completed": [
@@ -241,12 +260,12 @@
     },
     {
       "id": "GOOGLE_CURRENT_WRITE_FENCE",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": [
         "GOOGLE_OAUTH"
       ],
       "remaining": [
-        "Native PostgreSQL contention tests blocked until reviewed pgvector extension is available"
+        "Native14/14 and full114/114 PASS after UTC normalization; no live Google account observation"
       ],
       "liveObserved": false,
       "completed": [
@@ -281,12 +300,12 @@
       "liveObserved": false,
       "completed": [
         "Recording bound to starting workspace/project/intake/version and matching native completion receipt",
-        "Failed stop retains session gate for cleanup; two-minute limit; mobile398 PASS at c1f96bfb"
+        "Failed stop retains session gate for cleanup; two-minute limit at c1f96bfb/mobile398; separate600s wave in progress"
       ]
     },
     {
       "id": "SMS_CALENDAR_EXACT_CONFIRMATION",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": [
         "GOOGLE_CURRENT_WRITE_FENCE",
         "OUTBOX_CURRENT_DISPATCH_FENCE"
@@ -294,18 +313,18 @@
       "evidence": "SMS_CALENDAR_CONFIRMATION_PLAN.md",
       "completed": [
         "OFF exact pure contract, permanent nonce, strict migration and source/calendar atomic consumption",
-        "PGlite storage/actual outbox bridge19 PASS plus original SMS worker orchestration3 PASS, fake HTTP only",
+        "PGlite storage/actual outbox bridge22 PASS including retained invalidation queue cases, fake HTTP only",
+        "Full actual SMS confirmation worker and Google executor6 PASS with fake client; unknown result/replay/revocation refused",
         "Reserved route before model; exact source finalization + pending bridge; separate acknowledgement with no summary leak"
       ],
       "remaining": [
-        "Full confirmation SMS to actual Google executor with fake client integration",
-        "Native concurrent-session proof; live activation and owner observation absent"
+        "Native22storage/6worker tests PASS in full114 suite; live activation and owner observation absent"
       ],
       "liveObserved": false
     },
     {
       "id": "PERSONAL_EXPIRED_EFFECT_RECOVERY",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": [
         "GOOGLE_CURRENT_WRITE_FENCE",
         "OUTBOX_CURRENT_DISPATCH_FENCE"
@@ -316,24 +335,39 @@
         "24 unit tests plus worker tick deadline tests and independent review"
       ],
       "remaining": [
-        "Actual SQL recovery race tests and native multi-backend proof"
+        "Native5/5 SQL recovery cases PASS in full114 suite; external observation remains absent"
       ],
       "liveObserved": false
     },
     {
       "id": "CONFIRMATION_BOOKKEEPING",
-      "status": "IN_PROGRESS",
+      "status": "DONE_LOCAL",
       "dependencies": [
         "SMS_CALENDAR_EXACT_CONFIRMATION",
         "PERSONAL_EXPIRED_EFFECT_RECOVERY"
       ],
       "completed": [
         "OFF actor-scoped max25 expiry and consumed-result reconciliation;24 unit tests and independent review",
-        "Wired before new source interpretation with original deadline; no nonce deletion or effect retry"
+        "Wired before new source interpretation with original deadline; no nonce deletion or effect retry",
+        "PGlite7/7 SQL PASS and independent review, prior5/7 fixture failure retained"
       ],
       "remaining": [
-        "Seven actual SQL tests awaiting execution and final integration review"
+        "Native multi-backend proof and live observation remain separate"
       ],
+      "liveObserved": false
+    },
+    {
+      "id": "SMS_QUEUE_PROOF_PRESERVATION",
+      "status": "DONE_LOCAL",
+      "dependencies": ["GUARDED_SMS_WORKER"],
+      "completed": [
+        "Expired inbound recovery max25 with DB clock/exact CAS, no retry, prior proof and reservation retained",
+        "Worker cleanup preserves its prior result; original deadline shared with both queue helpers",
+        "Read-only outbound hints exclude expired/revoked/revised confirmations before LIMIT without deleting proof or bypassing dispatch",
+        "Focused worker45/recovery30/selector16 PASS, independent review; PGlite recovery6/6 with failed-worker proof retention and store-selector22/22 PASS"
+      ],
+      "remaining": ["Native6/6 recovery and22/22 store-selector PASS in full114 suite; no global fairness or live delivery claim"],
+      "limitations": ["No global fairness guarantee for transient provider/rate/budget refusals"],
       "liveObserved": false
     },
     {

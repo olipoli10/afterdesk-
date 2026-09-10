@@ -71,7 +71,7 @@ async function binding(tx: DB, actor: Actor, input: { sourceOperationId: string;
     JOIN "ConstructionConnectorCredential" c ON c.id=g."credentialRef" AND c."connectorAccountId"=g.id AND c."workspaceId"=w.id
     JOIN "ConstructionConnectorGrant" r ON r."connectorAccountId"=g.id
     WHERE s.id=$1 AND s."workspaceId"=$2 AND s."createdByUserId"=$3 AND s.kind='personal_sms_inbound'
-      AND (($6::timestamptz IS NULL AND s.status='completed') OR ($6::timestamptz IS NOT NULL AND s.status='processing' AND s.attempts=1 AND s."leaseUntil"=$6 AND s."leaseUntil">clock_timestamp()))
+      AND (($6::timestamptz IS NULL AND s.status='completed') OR ($6::timestamptz IS NOT NULL AND s.status='processing' AND s.attempts=1 AND s."leaseUntil"=($6::timestamptz AT TIME ZONE 'UTC') AND s."leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')))
       AND child.kind='personal_model_candidate_v1' AND child.status='completed'
       AND d.kind='calendar_write' AND d.status='pending' AND d.attempts=0 AND d."leaseUntil" IS NULL
       AND w.status='active' AND m.status='active' AND m.role='owner'
@@ -121,8 +121,8 @@ export async function markCalendarSmsConfirmationWaitingInTransaction(tx: DB, in
   if (sha(JSON.stringify(bridgeRequestSchema.parse(rows[0].request))) !== rows[0].requestHash) throw new Error("CONFIRMATION_OUTBOX_BRIDGE_CHANGED");
   const current = await binding(tx, actor, challenge, env);
   if (canonicalFingerprint(current.current) !== canonicalFingerprint(challenge.prepared.binding)) throw new Error("CONFIRMATION_BINDING_CHANGED");
-  const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalCalendarSmsConfirmation" SET phase='WAITING',"bridgeOutboundOperationId"=$2,"acceptedProviderSid"=$3,"acceptedAt"=clock_timestamp(),"updatedAt"=clock_timestamp()
-    WHERE id=$1 AND phase='PREPARED' AND "expiresAt">clock_timestamp()`, challenge.id, input.bridgeOutboundOperationId, rows[0].providerSid);
+  const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalCalendarSmsConfirmation" SET phase='WAITING',"bridgeOutboundOperationId"=$2,"acceptedProviderSid"=$3,"acceptedAt"=(clock_timestamp() AT TIME ZONE 'UTC'),"updatedAt"=(clock_timestamp() AT TIME ZONE 'UTC')
+    WHERE id=$1 AND phase='PREPARED' AND "expiresAt">(clock_timestamp() AT TIME ZONE 'UTC')`, challenge.id, input.bridgeOutboundOperationId, rows[0].providerSid);
   if (changed !== 1) throw new Error("CONFIRMATION_NOT_PREPARED");
   return Object.freeze({ status: "WAITING_FOR_EXACT_CONFIRMATION" as const, executionAuthorized: false as const, deliveryConfirmed: false as const });
 }
@@ -213,7 +213,7 @@ export async function requireCalendarConfirmationOutboundSourceInTransaction(tx:
     WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "connectorAccountId"=$4 AND kind='sms_outbound'
       AND "idempotencyKey"=$5 AND "requestHash"=$6 AND request=$7::jsonb
       AND ((status IN ('pending','approved') AND attempts=0 AND "leaseUntil" IS NULL)
-        OR (status='processing' AND attempts=1 AND "leaseUntil">clock_timestamp()))
+        OR (status='processing' AND attempts=1 AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')))
     FOR SHARE`, id.parse(row.id), row.workspaceId, row.createdByUserId, row.connectorAccountId, row.idempotencyKey, row.requestHash, JSON.stringify(checked.request));
   if (rows.length !== 1) throw new Error("CONFIRMATION_OUTBOUND_CHANGED");
   if (!bridgeEnabled(env)) throw new Error("CONFIRMATION_BRIDGE_DISABLED");

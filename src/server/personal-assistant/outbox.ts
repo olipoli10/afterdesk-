@@ -74,6 +74,8 @@ async function withOutboundClaim<T>(claim: OutboundClaim, env: ConnectorEnvironm
       confirmationSourceDeadline(claim.source);
       requireLive();
     }
+    // Prisma stores DateTime as UTC-naive timestamp(3); raw Date parameters are
+    // instants. Normalize explicitly, never using the connection's TimeZone.
     // One locked authority snapshot; later source checks cannot let a concurrent
     // membership/grant/budget revocation slip between validation and invocation.
     const rows = await tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT p.id FROM "PersonalAssistantOperation" p
@@ -85,16 +87,16 @@ async function withOutboundClaim<T>(claim: OutboundClaim, env: ConnectorEnvironm
       JOIN "PersonalAssistantBudget" b ON b.id=p."budgetId"
       WHERE p.id=$1 AND p."workspaceId"=$2 AND p."createdByUserId"=$3 AND p."connectorAccountId"=$4
         AND p.kind=$5 AND p."idempotencyKey"=$6 AND p."requestHash"=$7 AND p.request=$8::jsonb AND p.result=$9::jsonb
-        AND p.status='processing' AND p.attempts=1 AND p."leaseUntil"=$10 AND p."leaseUntil">clock_timestamp()
+        AND p.status='processing' AND p.attempts=1 AND p."leaseUntil"=($10::timestamptz AT TIME ZONE 'UTC') AND p."leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')
         AND p."budgetId"=$11 AND p."reservedCadMicros"=$12 AND w.status='active'
-        AND m.id=$13 AND m.role::text=$14 AND m.role::text IN ('owner','admin') AND m.status='active' AND m."updatedAt"=$15
+        AND m.id=$13 AND m.role::text=$14 AND m.role::text IN ('owner','admin') AND m.status='active' AND m."updatedAt"=($15::timestamptz AT TIME ZONE 'UTC')
         AND i.id=$16 AND i.channel='sms' AND i."normalizedAddress"=$17 AND i.verified=true AND i.status='active'
-        AND 'COMMAND'=ANY(i.permissions) AND i."updatedAt"=$18 AND i.permissions @> $19::text[] AND i.permissions <@ $19::text[]
+        AND 'COMMAND'=ANY(i.permissions) AND i."updatedAt"=($18::timestamptz AT TIME ZONE 'UTC') AND i.permissions @> $19::text[] AND i.permissions <@ $19::text[]
         AND a."workspaceId"=w.id AND a.provider='endvera_sms' AND a.status='connected' AND a."revokedAt" IS NULL
         AND a."stateVersion"=$20 AND a."externalAccountKeyHash"=$21
         AND g.id=$22 AND g.capability=$23 AND g.status='active' AND g."revokedAt" IS NULL AND g."stateVersion"=$24
-        AND g."updatedAt"=$25 AND g."grantedScopes" @> $26::text[] AND g."grantedScopes" <@ $26::text[]
-        AND b."ceilingCadMicros"=$27 AND b."expiresAt"=$28 AND b."expiresAt">clock_timestamp()
+        AND g."updatedAt"=($25::timestamptz AT TIME ZONE 'UTC') AND g."grantedScopes" @> $26::text[] AND g."grantedScopes" <@ $26::text[]
+        AND b."ceilingCadMicros"=$27 AND b."expiresAt"=($28::timestamptz AT TIME ZONE 'UTC') AND b."expiresAt">(clock_timestamp() AT TIME ZONE 'UTC')
         AND b."reservedCadMicros">=$12 AND b."reservedCadMicros"<=b."ceilingCadMicros"
       FOR SHARE OF p,w,m,i,a,g,b`, claim.row.id, claim.row.workspaceId, claim.row.createdByUserId, claim.row.connectorAccountId,
     claim.row.kind, claim.row.idempotencyKey, claim.row.requestHash, JSON.stringify(claim.request), claim.approvalJson,
@@ -217,9 +219,9 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
       // millisecond leases never let a losing claimant terminalize its winner.
       authority, source, approvalJson: JSON.stringify({ ...(row.result as Prisma.JsonObject), outboundClaimToken: randomUUID() }), automatic, ceiling: policy.ceiling, budgetExpiresAt: policy.expiresAt,
       policyFingerprint, credentialFingerprint: credentialFingerprint(env), budgetId: budget.id, reservation: policy.reservation });
-    const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='processing',"budgetId"=$5,"reservedCadMicros"=$6,attempts=1,"leaseUntil"=$7,result=$8::jsonb,"updatedAt"=now()
+    const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='processing',"budgetId"=$5,"reservedCadMicros"=$6,attempts=1,"leaseUntil"=($7::timestamptz AT TIME ZONE 'UTC'),result=$8::jsonb,"updatedAt"=(now() AT TIME ZONE 'UTC')
       WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "requestHash"=$4 AND status='approved' AND attempts=0
-        AND $7>clock_timestamp() AND result=$9::jsonb`, row.id, row.workspaceId, row.createdByUserId, row.requestHash, budget.id, policy.reservation, claimed.leaseUntil, claimed.approvalJson, JSON.stringify(row.result));
+        AND $7::timestamptz>clock_timestamp() AND result=$9::jsonb`, row.id, row.workspaceId, row.createdByUserId, row.requestHash, budget.id, policy.reservation, claimed.leaseUntil, claimed.approvalJson, JSON.stringify(row.result));
     if (changed !== 1) throw new Error("APPROVAL_ALREADY_CONSUMED");
     execution.requireLive();
   }, { isolationLevel: "Serializable", maxWait: 1000, timeout: Math.max(1, Math.min(5000, execution.deadlineAt - Date.now())) }));
@@ -239,9 +241,9 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
       return outcome.value;
     }, operationId, { deadlineAt: execution.deadlineAt, signal: execution.signal });
     const finished = await execution.wait(() => withOutboundClaim(owned, env, execution, async tx => {
-      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"externalTransportPerformed"=true,"leaseUntil"=NULL,result=$9::jsonb,"updatedAt"=now()
+      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='completed',"externalTransportPerformed"=true,"leaseUntil"=NULL,result=$9::jsonb,"updatedAt"=(now() AT TIME ZONE 'UTC')
       WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "requestHash"=$4 AND status='processing' AND attempts=1
-        AND "leaseUntil"=$5 AND "leaseUntil">clock_timestamp() AND "budgetId"=$6 AND "reservedCadMicros"=$7 AND kind=$8 AND result=$10::jsonb`,
+        AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC') AND "leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC') AND "budgetId"=$6 AND "reservedCadMicros"=$7 AND kind=$8 AND result=$10::jsonb`,
     owned.row.id, owned.row.workspaceId, owned.row.createdByUserId, owned.row.requestHash, owned.leaseUntil, owned.budgetId, owned.reservation, owned.row.kind,
     JSON.stringify({ ...result, acceptedByProvider: true, approvalHash: owned.row.requestHash }), owned.approvalJson);
       if (changed !== 1) throw new Error("OUTBOUND_CLAIM_LOST");
@@ -262,9 +264,9 @@ async function dispatchOutbound(operationId: string, env: ConnectorEnvironment, 
     // Retain the whole reservation, including on timeout. No automatic retry.
     const owned = claimed;
     const cleanup = personalOutboundExecution({}, 2_000);
-    try { await cleanup.wait(() => prisma.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='uncertain',"externalTransportPerformed"=$9,"leaseUntil"=NULL,result=$10::jsonb,"updatedAt"=now()
+    try { await cleanup.wait(() => prisma.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='uncertain',"externalTransportPerformed"=$9,"leaseUntil"=NULL,result=$10::jsonb,"updatedAt"=(now() AT TIME ZONE 'UTC')
       WHERE id=$1 AND "workspaceId"=$2 AND "createdByUserId"=$3 AND "requestHash"=$4 AND status='processing' AND attempts=1
-        AND "leaseUntil"=$5 AND "budgetId"=$6 AND "reservedCadMicros"=$7 AND kind=$8 AND result=$11::jsonb`,
+        AND "leaseUntil"=($5::timestamptz AT TIME ZONE 'UTC') AND "budgetId"=$6 AND "reservedCadMicros"=$7 AND kind=$8 AND result=$11::jsonb`,
     owned.row.id, owned.row.workspaceId, owned.row.createdByUserId, owned.row.requestHash, owned.leaseUntil, owned.budgetId, owned.reservation, owned.row.kind,
     transportAttempted, JSON.stringify({ reviewRequired: true, automaticRetry: false, deliveryConfirmed: false }), owned.approvalJson)); } catch { /* No claim that uncertain bookkeeping was persisted. */ }
     finally { cleanup.dispose(); }

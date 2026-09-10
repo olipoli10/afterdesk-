@@ -37,7 +37,7 @@ export async function maintainCalendarSmsConfirmationsInTransaction(tx: Prisma.T
     SELECT c.id,c.phase,c."calendarOperationId",c.prepared#>>'{binding,calendar,requestHash}' AS "calendarHash"
     FROM "PersonalCalendarSmsConfirmation" c
     WHERE c."workspaceId"=$1 AND c."userId"=$2 AND (
-      (c.phase IN ('PREPARED','WAITING') AND c."expiresAt"<=clock_timestamp()) OR
+      (c.phase IN ('PREPARED','WAITING') AND c."expiresAt"<=(clock_timestamp() AT TIME ZONE 'UTC')) OR
       (c.phase='CONSUMED' AND EXISTS (SELECT 1 FROM "PersonalAssistantOperation" d
         WHERE d.id=c."calendarOperationId" AND d."workspaceId"=c."workspaceId" AND d."createdByUserId"=c."userId"
           AND d.kind='calendar_write' AND d.attempts=1 AND d.status IN ('completed','uncertain')
@@ -49,8 +49,8 @@ export async function maintainCalendarSmsConfirmationsInTransaction(tx: Prisma.T
   for (const row of rows) {
     c.remaining();
     if (row.phase === "PREPARED" || row.phase === "WAITING") {
-      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalCalendarSmsConfirmation" SET phase='EXPIRED',"updatedAt"=clock_timestamp()
-        WHERE id=$1 AND "workspaceId"=$2 AND "userId"=$3 AND phase=$4 AND "expiresAt"<=clock_timestamp()`,
+      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalCalendarSmsConfirmation" SET phase='EXPIRED',"updatedAt"=(clock_timestamp() AT TIME ZONE 'UTC')
+        WHERE id=$1 AND "workspaceId"=$2 AND "userId"=$3 AND phase=$4 AND "expiresAt"<=(clock_timestamp() AT TIME ZONE 'UTC')`,
       row.id, c.actor.workspaceId, c.actor.userId, row.phase);
       c.remaining(); expired += changed;
     } else if (row.phase === "CONSUMED") {
@@ -64,7 +64,7 @@ export async function maintainCalendarSmsConfirmationsInTransaction(tx: Prisma.T
       if (calendar.length === 0) continue;
       if (calendar.length !== 1 || !["completed", "uncertain"].includes(calendar[0].status)) throw new Error("CONFIRMATION_MAINTENANCE_CALENDAR_INVALID");
       const phase = calendar[0].status === "completed" ? "COMPLETED" : "UNCERTAIN";
-      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalCalendarSmsConfirmation" SET phase=$5,"updatedAt"=clock_timestamp()
+      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalCalendarSmsConfirmation" SET phase=$5,"updatedAt"=(clock_timestamp() AT TIME ZONE 'UTC')
         WHERE id=$1 AND "workspaceId"=$2 AND "userId"=$3 AND phase='CONSUMED' AND "calendarOperationId"=$4
           AND prepared#>>'{binding,calendar,requestHash}'=$6`,
       row.id, c.actor.workspaceId, c.actor.userId, row.calendarOperationId, phase, row.calendarHash);

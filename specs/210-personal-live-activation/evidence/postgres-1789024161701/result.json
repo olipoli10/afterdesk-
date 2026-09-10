@@ -1,0 +1,11 @@
+{
+  "kind": "postgres",
+  "databaseRuntime": "PRISMA_DEV_PGLITE",
+  "postgresTestFile": "confirmation.postgres.test.ts",
+  "exitCode": 0,
+  "finishedAt": "2026-09-10T07:11:28.889Z",
+  "providerCallsAuthorized": false,
+  "localOnly": true,
+  "outputPath": "C:\\dev\\endvera-astra-r03\\specs\\210-personal-live-activation\\evidence\\postgres-1789024161701",
+  "buildDirectory": null
+}

@@ -94,7 +94,9 @@ async function lockWrite(db: Prisma.TransactionClient, input: PersonalCalendarAp
       AND g.capability='calendar_write' AND g.status='active' AND g."revokedAt" IS NULL
       AND $5=ANY(a."grantedScopes") AND $5=ANY(g."grantedScopes")
       AND (($6::timestamptz IS NULL AND o.status='pending' AND o.attempts=0 AND o."leaseUntil" IS NULL)
-        OR ($6::timestamptz IS NOT NULL AND o.status='processing' AND o.attempts=1 AND o."leaseUntil"=$6 AND o."leaseUntil">clock_timestamp()))
+        OR ($6::timestamptz IS NOT NULL AND o.status='processing' AND o.attempts=1
+          AND o."leaseUntil"=($6::timestamptz AT TIME ZONE 'UTC')
+          AND o."leaseUntil">(clock_timestamp() AT TIME ZONE 'UTC')))
     ORDER BY g.id LIMIT 1 FOR UPDATE OF o FOR SHARE OF w,m,a,c,g`,
   input.operationId, input.workspaceId, input.userId, input.expectedRequestHash, GOOGLE_CALENDAR_WRITE_SCOPE, claim?.leaseUntil ?? null);
   if (rows.length !== 1) throw new Error("CALENDAR_APPROVAL_REFUSED_OR_ALREADY_USED");

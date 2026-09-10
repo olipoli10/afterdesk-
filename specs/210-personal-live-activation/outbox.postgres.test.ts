@@ -78,10 +78,56 @@ describe("PostgreSQL phone pairing, immutable approval and outbound reservation"
     await expect(dispatchPersonalOutbound(prepared.operationId, f.env, failing)).rejects.toThrow("APPROVAL_REQUIRED");
     const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } }); expect(row.status).toBe("uncertain"); expect(row.reservedCadMicros).toBe(100000n); expect(failing).toHaveBeenCalledOnce();
   });
+  it("competing dispatchers of the same approval retain exactly one claim and reservation", async () => {
+    const f = await fixture(); const prepared = await prepare(f);
+    await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
+    const results = await Promise.allSettled([dispatchPersonalOutbound(prepared.operationId, f.env, f.transport), dispatchPersonalOutbound(prepared.operationId, f.env, f.transport)]);
+    expect(results.filter(result => result.status === "fulfilled")).toHaveLength(1); expect(f.transport).toHaveBeenCalledTimes(1);
+    const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } });
+    expect(row).toMatchObject({ status: "completed", attempts: 1, reservedCadMicros: 100000n });
+    expect((await prisma.personalAssistantBudget.findUniqueOrThrow({ where: { id: row.budgetId! } })).reservedCadMicros).toBe(100000n);
+  });
   it("revokes pending authority without sending", async () => {
     const f = await fixture(); const prepared = await prepare(f);
     await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
     await disconnectPersonalPhone(f.userId, f.workspaceId);
     await expect(dispatchPersonalOutbound(prepared.operationId, f.env, f.transport)).rejects.toThrow("APPROVAL_REQUIRED"); expect(f.transport).not.toHaveBeenCalled();
+  });
+  it("does not reserve or dispatch after the caller deadline has already expired", async () => {
+    const f = await fixture(); const prepared = await prepare(f);
+    await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, f.transport, { deadlineAt: Date.now() - 1 })).rejects.toThrow();
+    const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } });
+    expect(row).toMatchObject({ status: "approved", attempts: 0, budgetId: null });
+    expect(f.transport).not.toHaveBeenCalled();
+  });
+  it("a late accepted response cannot overwrite an independently retained uncertain state", async () => {
+    const f = await fixture(); const prepared = await prepare(f);
+    await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
+    const transport = vi.fn<typeof fetch>().mockImplementation(async () => {
+      const processing = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } });
+      expect(processing.status).toBe("processing");
+      await prisma.personalAssistantOperation.update({ where: { id: processing.id }, data: { status: "uncertain", leaseUntil: null,
+        result: { reviewRequired: true, reason: "SYNTHETIC_RECOVERY_WON", automaticRetry: false } } });
+      return Response.json({ sid: `SM${"f".repeat(32)}`, account_sid: f.env.TWILIO_ACCOUNT_SID, from: f.env.TWILIO_PHONE_NUMBER, to: f.envelope.from, status: "queued" });
+    });
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, transport)).rejects.toThrow("OUTBOUND_OUTCOME_REQUIRES_REVIEW");
+    const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } });
+    expect(row).toMatchObject({ status: "uncertain", result: { reason: "SYNTHETIC_RECOVERY_WON" } });
+    expect(row.reservedCadMicros).toBe(100000n);
+    await expect(dispatchPersonalOutbound(row.id, f.env, transport)).rejects.toThrow("APPROVAL_REQUIRED");
+    expect(transport).toHaveBeenCalledTimes(1);
+  });
+  it("caller cancellation after the one transport attempt retains uncertainty and the full hold", async () => {
+    const f = await fixture(); const prepared = await prepare(f); const controller = new AbortController();
+    await approvePersonalOutbound({ userId: f.userId, workspaceId: f.workspaceId, operationId: prepared.operationId, expectedRequestHash: prepared.requestHash }, f.env);
+    const transport = vi.fn<typeof fetch>().mockImplementation(async (_url, init) => {
+      expect(init?.signal?.aborted).toBe(false); controller.abort(); expect(init?.signal?.aborted).toBe(true);
+      return Response.json({ sid: `SM${"e".repeat(32)}`, account_sid: f.env.TWILIO_ACCOUNT_SID, from: f.env.TWILIO_PHONE_NUMBER, to: f.envelope.from, status: "queued" });
+    });
+    await expect(dispatchPersonalOutbound(prepared.operationId, f.env, transport, { signal: controller.signal })).rejects.toThrow("OUTBOUND_OUTCOME_REQUIRES_REVIEW");
+    const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: prepared.operationId } });
+    expect(row.status).toBe("uncertain"); expect(row.reservedCadMicros).toBe(100000n); expect(transport).toHaveBeenCalledTimes(1);
+    expect((await prisma.personalAssistantBudget.findUniqueOrThrow({ where: { id: row.budgetId! } })).reservedCadMicros).toBe(100000n);
   });
 });

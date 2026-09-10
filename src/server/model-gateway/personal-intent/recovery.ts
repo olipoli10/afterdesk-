@@ -41,14 +41,14 @@ async function markUncertain(tx: Tx, row: Recoverable, reason: PersonalIntentUnc
   const evidence = canonicalFingerprint(record);
   const updates = [
     await tx.$executeRawUnsafe(`UPDATE "AiOperation" SET status='abandoned',"resultKind"='personal_model_uncertain',"resultId"=$4,
-      "lastError"=$5,"finishedAt"=now(),"updatedAt"=now(),"lockedAt"=NULL,"lockedBy"=NULL,"leaseExpiresAt"=NULL,"nextAttemptAt"=NULL
+      "lastError"=$5,"finishedAt"=(now() AT TIME ZONE 'UTC'),"updatedAt"=(now() AT TIME ZONE 'UTC'),"lockedAt"=NULL,"lockedBy"=NULL,"leaseExpiresAt"=NULL,"nextAttemptAt"=NULL
       WHERE id=$1 AND "operationKey"=$2 AND "lockedBy"=$3 AND status='running' AND attempts=1 AND purpose='personal_intent_candidate_v1'`,
     row.aiId, row.operationKey, row.lockedBy, row.childId, `PERSONAL_MODEL_${reason}`),
-    await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='uncertain',result=$2::jsonb,"leaseUntil"=NULL,"updatedAt"=now()
+    await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantOperation" SET status='uncertain',result=$2::jsonb,"leaseUntil"=NULL,"updatedAt"=(now() AT TIME ZONE 'UTC')
       WHERE id=$1 AND "modelGatewayOperationId"=$3 AND kind='personal_model_candidate_v1' AND status IN ('received','processing')`, row.childId, JSON.stringify(record), row.gatewayId),
-    await tx.$executeRawUnsafe(`UPDATE "ModelGatewayAttempt" SET status='uncertain',"errorClass"='unknown_dispatched_outcome',"finishedAt"=now(),"responseEvidenceRef"=$2
+    await tx.$executeRawUnsafe(`UPDATE "ModelGatewayAttempt" SET status='uncertain',"errorClass"='unknown_dispatched_outcome',"finishedAt"=(now() AT TIME ZONE 'UTC'),"responseEvidenceRef"=$2
       WHERE id=$1 AND status IN ('prepared','dispatched') AND "dispatchState" IN ('not_dispatched','unaccounted')`, row.attemptId, evidence),
-    await tx.$executeRawUnsafe(`UPDATE "ModelGatewayOperation" SET status='uncertain',"finishedAt"=now(),"finalAttemptId"=$2,"resultEvidenceRef"=$3
+    await tx.$executeRawUnsafe(`UPDATE "ModelGatewayOperation" SET status='uncertain',"finishedAt"=(now() AT TIME ZONE 'UTC'),"finalAttemptId"=$2,"resultEvidenceRef"=$3
       WHERE id=$1 AND status IN ('admitted','running') AND "operationType"='personal_intent_candidate_v1'`, row.gatewayId, row.attemptId, evidence),
   ];
   if (updates.some(count => count !== 1)) throw new Error("PERSONAL_MODEL_RECOVERY_FENCE_LOST");
@@ -88,7 +88,7 @@ export async function recoverExpiredPersonalIntentAttempts(input: Readonly<{ ena
   if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 25) throw new Error("PERSONAL_MODEL_RECOVERY_BATCH_INVALID");
   return prisma.$transaction(async tx => {
     const rows = await tx.$queryRawUnsafe<Recoverable[]>(`${lineage}
-      AND (ai."leaseExpiresAt"<=now() OR c."leaseUntil"<=now())
+      AND (ai."leaseExpiresAt"<=(now() AT TIME ZONE 'UTC') OR c."leaseUntil"<=(now() AT TIME ZONE 'UTC'))
       ORDER BY ai."leaseExpiresAt",ai.id LIMIT $1 FOR UPDATE OF ai,o,c,a SKIP LOCKED`, batchSize);
     for (const row of rows) await markUncertain(tx, row, "LEASE_EXPIRED");
     return Object.freeze({ status: "EXPIRED_ATTEMPTS_RECORDED_UNCERTAIN" as const, recovered: rows.length, executionAuthorized: false });

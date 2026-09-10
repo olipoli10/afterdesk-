@@ -26,7 +26,7 @@ describe("expired personal effect claims are retained as uncertain, never retrie
     expect(bound).toBe(25);
     expect(sql).toContain("kind IN ('calendar_write','sms_outbound','voice_outbound')");
     expect(sql).toContain("status='processing' AND attempts=1");
-    expect(sql).toContain('"leaseUntil" IS NOT NULL AND "leaseUntil"<=clock_timestamp()');
+    expect(sql).toContain('"leaseUntil" IS NOT NULL AND "leaseUntil"<=(clock_timestamp() AT TIME ZONE \'UTC\')');
     expect(sql).toContain('ORDER BY "leaseUntil",id LIMIT $1 FOR UPDATE SKIP LOCKED');
     expect(sql).not.toMatch(/'pending'|'approved'|'received'|'personal_sms_inbound'|'personal_model_candidate_v1'/);
     expect(shared.transaction.mock.calls[0][1]).toEqual({ isolationLevel: "Serializable", maxWait: 500, timeout: 2000 });

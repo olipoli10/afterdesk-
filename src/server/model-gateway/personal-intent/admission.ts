@@ -175,9 +175,9 @@ export async function admitPersonalIntent(input: PersonalIntentAdmissionInput, e
       const policy = context.budgetPolicy;
       await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))::text AS acquired', policy.budgetId);
       await tx.$executeRawUnsafe(`INSERT INTO "PersonalAssistantBudget" (id,"ceilingCadMicros","reservedCadMicros","expiresAt","createdAt","updatedAt")
-        VALUES ($1,$2,0,$3,now(),now()) ON CONFLICT (id) DO NOTHING`, policy.budgetId, policy.ceilingCadMicros, new Date(policy.expiresAt));
-      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantBudget" SET "reservedCadMicros"="reservedCadMicros"+$2,"updatedAt"=now()
-        WHERE id=$1 AND "ceilingCadMicros"=$3 AND "expiresAt"=$4 AND "expiresAt">now()
+        VALUES ($1,$2,0,($3::timestamptz AT TIME ZONE 'UTC'),(now() AT TIME ZONE 'UTC'),(now() AT TIME ZONE 'UTC')) ON CONFLICT (id) DO NOTHING`, policy.budgetId, policy.ceilingCadMicros, new Date(policy.expiresAt));
+      const changed = await tx.$executeRawUnsafe(`UPDATE "PersonalAssistantBudget" SET "reservedCadMicros"="reservedCadMicros"+$2,"updatedAt"=(now() AT TIME ZONE 'UTC')
+        WHERE id=$1 AND "ceilingCadMicros"=$3 AND "expiresAt"=($4::timestamptz AT TIME ZONE 'UTC') AND "expiresAt">(now() AT TIME ZONE 'UTC')
           AND "reservedCadMicros"+$2<="ceilingCadMicros"`, policy.budgetId, policy.reservationCadMicros, policy.ceilingCadMicros, new Date(policy.expiresAt));
       if (changed !== 1) refuse("PERSONAL_MODEL_CAD_BUDGET_REFUSED");
       const hold = await reserveAccountProviderSpendInTransaction(tx, { operationKey: claim.operationKey, attempt: 1,
@@ -186,7 +186,7 @@ export async function admitPersonalIntent(input: PersonalIntentAdmissionInput, e
       await tx.$executeRawUnsafe(
         `INSERT INTO "PersonalAssistantOperation" (id,"workspaceId","createdByUserId","connectorAccountId",kind,status,"idempotencyKey",request,"requestHash",
           "sourcePersonalOperationId","modelGatewayOperationId","budgetId","reservedCadMicros","leaseUntil","createdAt","updatedAt")
-         VALUES ($1,$2,$3,$4,'personal_model_candidate_v1','received',$5,$6::jsonb,$7,$8,$9,$10,$11,now()+interval '5 minutes',now(),now())`,
+         VALUES ($1,$2,$3,$4,'personal_model_candidate_v1','received',$5,$6::jsonb,$7,$8,$9,$10,$11,(now() AT TIME ZONE 'UTC')+interval '5 minutes',(now() AT TIME ZONE 'UTC'),(now() AT TIME ZONE 'UTC'))`,
         childOperationId, input.subject.workspaceId, context.source.actorUserId, context.modelAuthority.accountId,
         `personal-model:${input.subject.operationId}:v1`, JSON.stringify(childRequest), canonicalFingerprint(childRequest), input.subject.operationId, operation.id,
         policy.budgetId, policy.reservationCadMicros);

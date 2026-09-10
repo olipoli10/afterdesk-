@@ -1,0 +1,27 @@
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation.postgres.test.ts (17 tests) 67917ms
+     ✓ is OFF without explicit switch and creates no records  2051ms
+     ✓ creates one non-executable summary, permanently registered phrase and exact source review atomically  4788ms
+     ✓ rolls back challenge, summary and nonce if caller omits final source CAS  3292ms
+     ✓ refuses waiting without a durable source-bound accepted outbox bridge  3344ms
+     ✓ keeps nonces immutable and permanent independently of terminal challenges  3646ms
+     ✓ rejects a second orphan summary naming an already bound challenge  3839ms
+     ✓ prevents post-commit source/draft evidence replacement without preventing revocation  3978ms
+     ✓ disconnects the actual phone authority without rewriting its immutable pending confirmation summary  4367ms
+     ✓ consumes the exact verified phrase and calendar claim once in one transaction without execution  4429ms
+     ✓ counts a wrong phrase once per completed source, never a write or replay  3793ms
+     ✓ rejects a queued confirmation received before the summary was durably accepted  3615ms
+     ✓ allows only one of two concurrent exact SMS sources to claim the calendar  5774ms
+     ✓ serializes app approval against SMS consumption without two calendar claims  6006ms
+     ✓ expires by the DB clock without deleting or resetting the permanent phrase registry  4835ms
+     ✓ permanently closes after five distinct wrong confirmation sources  6101ms
+     ✓ refuses another owner and independently changed Google grant epoch  3986ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  02:13:46
+   Duration  69.07s (transform 693ms, setup 0ms, import 983ms, tests 67.92s, environment 0ms)
+
+PERSONAL_DISPOSABLE_DB_REMOVED
