@@ -1,5 +1,22 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 22:47Z — old-data native proof and source binding
+
+Native PG17 aggregate preservation PASS:183 old tables/2624 old columns match
+after actual70->79 history; one synthetic negative name change detected with
+same count and exact ConstructionWorkspace difference. Four SQL serialization
+controls pass, owned cluster stopped and PID absence independently rechecked.
+See audits/PILOT_DATA_PRESERVATION_CONTROLLER.md and content-free receipt.
+This is local synthetic data preservation, not a managed backup or live approval.
+
+Full definitions now reconcile64/64 using38 raw and26 historical whole-migration
+LF-correlated checksums; initial global-LF oracle failure retained. Extra managed
+function/ACL/environment semantics are not silently normalized. Real temporary
+Git source-binding tests8/8 PASS, combined Android guard65/65; no new APK.
+Trial-T-only Prisma preflight runner in local implementation/review; migration
+mode hard-disabled, no remote credentials/data reads in this checkpoint.
+Heartbeat remains ACTIVE, campaign IN_PROGRESS; historical metrics unchanged.
+
 ## 2026-09-10 22:27Z — real pilot fork checkpoint and Android guard
 
 Created A br-long-waterfall-ax3zhqtl from explicit pilot70, without compute;

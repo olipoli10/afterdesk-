@@ -113,6 +113,11 @@ function inspectCatalog(raw) {
   if (!hex(value.catalogSha256) || value.catalogSha256 !== hash(JSON.stringify(core))) fail('CATALOG_HASH_REFUSED');
   return { ...core, catalogSha256: value.catalogSha256 };
 }
+
+/** Pure shape/hash validation of a supplied catalog; not observed migration history or provenance. */
+export function inspectSuppliedPilotMigrationCatalog(raw) {
+  return freeze(inspectCatalog(raw));
+}
 function finished(value) {
   if (value instanceof Date && Object.getPrototypeOf(value) === Date.prototype && Reflect.ownKeys(value).length === 0) return Number.isFinite(Date.prototype.getTime.call(value));
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)

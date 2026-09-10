@@ -36,3 +36,18 @@ provisioning or migration in this implementation step.
 Reviewer distinct from author checks canonicalization, quoted identifiers,
 multiset behavior, nulls, source column binding, missing/extra table coverage and
 limits. Controller chooses any later execution in a separate pinned procedure.
+
+## Local native validation procedure
+
+After pure-module freeze and peer review, reuse only retained owned PG17.11
+cluster .scratch/personal-pg-native-15b8389313f549c8b912fde2f657acb9 on54754.
+Never unseal baseline70 or modify existing upgraded79. Read exact builder SQL
+against the prior inspection clone70 and upgraded79; actual old-column results
+must match, including original70 history and duplicate multiplicities. Create
+one fresh explicitly named synthetic negative clone from sealedbaseline70,
+update only rehearsal-workspace.name once, and require samecount/differentdigest
+without changing other tables. Retain negative clone and private captures.
+Only owned synthetic password may be consumed privately inside psql childenv,
+never values in arguments/output. Runtime, source/query/catalog/manifest pins,
+loopback/data-directory identity and closed timeout gates required before run.
+Stop exact owned server in finally; no remote connection or data access here.
