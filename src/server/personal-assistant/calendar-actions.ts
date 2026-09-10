@@ -9,6 +9,11 @@ import { googleTokensForOwner } from "./google-connection";
 import { GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/construction-operating-assistant-r3/connector-contracts";
 import { personalCorrelatedCalendarRequestId } from "@/server/model-gateway/personal-intent/correlated-calendar-id";
 import { personalCalendarDraftSchema } from "./calendar-draft-contract";
+import { PERSONAL_MODEL_AUTHORITY } from "@/server/model-gateway/personal-intent/budget-policy";
+import { lockCorrelatedCalendarApprovalWriteInTransaction } from "./correlated-calendar-approval-gate";
+import { correlatedCalendarApprovalClaimSchema, correlatedCalendarApprovalStateSchema, fingerprintCorrelatedCalendarApprovalView, inspectCorrelatedCalendarApprovalClaim,
+  inspectCorrelatedCalendarApprovalState, CORRELATED_CALENDAR_APPROVAL_STATE_VERSION,
+  type CorrelatedCalendarApprovalClaim, type CorrelatedCalendarApprovalView } from "./correlated-calendar-approval-contract";
 export { personalCalendarDraftSchema } from "./calendar-draft-contract";
 
 const storedSchema = personalCalendarDraftSchema.extend({ accountVersion: z.number().int(), requestId: z.string().uuid() }).strict();
@@ -55,7 +60,10 @@ export async function preparePersonalCalendarInTransaction(db: Prisma.Transactio
         || existing.correlatedTemporalReceiptId !== origin.receiptId || !review || review.receiptId !== origin.receiptId
         || review.calendarOperationId !== existing.id || review.workspaceId !== input.workspaceId || review.userId !== input.userId
         || review.calendarRequestHash !== requestHash) throw new Error("CALENDAR_CORRELATED_REPLAY_CONFLICT");
-    } else if (existing.correlatedTemporalReceiptId !== null || review !== null) throw new Error("CALENDAR_CORRELATED_REVIEW_UNAVAILABLE");
+    } else {
+      const approval = await db.personalSmsCorrelatedCalendarApproval.findUnique({ where: { calendarOperationId: existing.id }, select: { id: true } });
+      if (existing.correlatedTemporalReceiptId !== null || review !== null || approval !== null) throw new Error("CALENDAR_CORRELATED_REVIEW_UNAVAILABLE");
+    }
     return { operationId: existing.id, requestHash, status: existing.status };
   }
   const row = await db.personalAssistantOperation.create({ data: { id: randomUUID(), workspaceId: input.workspaceId, connectorAccountId: account.id, createdByUserId: input.userId, kind: "calendar_write", status: "pending", request, requestHash, idempotencyKey: key,
@@ -63,7 +71,7 @@ export async function preparePersonalCalendarInTransaction(db: Prisma.Transactio
   return { operationId: row.id, requestHash, status: row.status };
 }
 export type PersonalCalendarApproval = { userId: string; workspaceId: string; operationId: string; expectedRequestHash: string };
-export type PersonalCalendarExecutionContext = { deadlineAt?: number; signal?: AbortSignal };
+export type PersonalCalendarExecutionContext = { deadlineAt?: number; monotoneDeadlineAt?: number; signal?: AbortSignal };
 const writeAuthoritySchema = z.object({ accountId: z.string().min(1), accountVersion: z.number().int(), credentialId: z.string().min(1),
   writeGrantId: z.string().min(1), writeGrantVersion: z.number().int(), memberId: z.string().min(1), memberRole: z.enum(["owner", "admin"]),
   memberUpdatedAt: z.string().datetime(), workspaceUpdatedAt: z.string().datetime(), accountScopes: z.array(z.string()), grantScopes: z.array(z.string()) }).strict();
@@ -121,6 +129,7 @@ async function lockWrite(db: Prisma.TransactionClient, input: PersonalCalendarAp
     WHERE o.id=$1 AND o."workspaceId"=$2 AND o."createdByUserId"=$3 AND o.kind='calendar_write' AND o."requestHash"=$4
       AND o."correlatedTemporalReceiptId" IS NULL
       AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarReview" correlated WHERE correlated."calendarOperationId"=o.id)
+      AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarApproval" approved WHERE approved."calendarOperationId"=o.id)
       AND w.status='active' AND m.status='active' AND m.role IN ('owner','admin')
       AND a.provider='google_calendar' AND a.status='connected' AND a."revokedAt" IS NULL AND c."revokedAt" IS NULL
       AND g.capability='calendar_write' AND g.status='active' AND g."revokedAt" IS NULL
@@ -154,68 +163,132 @@ export async function claimPersonalCalendarWriteInTransaction(db: Prisma.Transac
   requireLive(deadlineAt, context.signal); return snapshotClaim(claim);
 }
 /** One-use execution; caller-supplied claims are reloaded and matched to durable approval material. No retry. */
-export async function executeClaimedPersonalCalendarWrite(suppliedClaim: PersonalCalendarWriteClaim, env: ConnectorEnvironment = process.env, suppliedClient?: GoogleCalendarClient, context: PersonalCalendarExecutionContext = {}) {
-  const claim = snapshotClaim(suppliedClaim);
-  const deadlineAt = deadline({ ...context, deadlineAt: Math.min(context.deadlineAt ?? Infinity, claim.leaseUntil.getTime()) });
+export async function executeClaimedPersonalCalendarWrite(suppliedClaim: PersonalCalendarWriteClaim | CorrelatedCalendarApprovalClaim, env: ConnectorEnvironment = process.env, suppliedClient?: GoogleCalendarClient, context: PersonalCalendarExecutionContext = {}) {
+  // A malformed typed handle never falls through to the permissive legacy shape.
+  const typed = "version" in suppliedClaim || "origin" in suppliedClaim ? correlatedCalendarApprovalClaimSchema.parse(suppliedClaim) : null;
+  const legacy = typed ? null : snapshotClaim(suppliedClaim as PersonalCalendarWriteClaim);
+  const claim = typed ?? legacy!;
+  const originalSignal = context.signal;
+  const deadlineAt = deadline({ deadlineAt: Math.min(context.deadlineAt ?? Infinity, legacy?.leaseUntil.getTime() ?? Infinity), signal: originalSignal });
+  let monotoneDeadlineAt = typed ? Math.min(context.monotoneDeadlineAt ?? Infinity, performance.now() + Math.min(WRITE_LIMIT_MS, deadlineAt - Date.now())) : Infinity;
+  if (typed && !Number.isFinite(monotoneDeadlineAt)) throw new Error("CALENDAR_WRITE_DEADLINE_EXCEEDED");
   const controller = new AbortController();
-  const signal = AbortSignal.any([controller.signal, ...(context.signal ? [context.signal] : [])]);
+  const signal = AbortSignal.any([controller.signal, ...(originalSignal ? [originalSignal] : [])]);
   const client = suppliedClient ?? new GoogleCalendarClient(env, undefined, undefined, signal);
   let ownsDispatch = false; let writeTransportStarted = false;
+  let view: CorrelatedCalendarApprovalView | undefined;
+  let knownCompleted: Awaited<ReturnType<GoogleCalendarClient["insertEvent"]>> | undefined;
+  let unknownReason: "WRITE_OUTCOME_UNKNOWN" | "DISPATCH_COMMIT_OUTCOME_UNKNOWN" | "TERMINAL_COMMIT_OUTCOME_UNKNOWN" = "DISPATCH_COMMIT_OUTCOME_UNKNOWN";
+  const remaining = () => Math.floor(Math.min(deadlineAt - Date.now(), monotoneDeadlineAt - performance.now()));
+  const live = () => {
+    requireGooglePilot(env); requireLive(deadlineAt, signal);
+    if (typed && (remaining() < 2 || env.ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_APPROVAL_ENABLED !== "true"
+      || env.ENDVERA_PERSONAL_SMS_CORRELATED_CALENDAR_REVIEW_ENABLED !== "true" || env.ENDVERA_SMS_TEMPORAL_CLARIFICATION_STORE_ENABLED !== "true"
+      || env.ENDVERA_EXTERNAL_AUTHORITY_REF !== PERSONAL_MODEL_AUTHORITY || env.ENDVERA_PERSONAL_PILOT_EXPIRES_AT !== "2026-10-10T01:18:26Z")) throw new Error("CALENDAR_WRITE_DEADLINE_EXCEEDED");
+  };
+  const owned = () => typed ? { id: typed.operationId, workspaceId: typed.workspaceId, createdByUserId: typed.userId,
+    connectorAccountId: typed.authority.accountId, kind: "calendar_write", status: "processing", attempts: 1,
+    requestHash: typed.expectedRequestHash, leaseUntil: new Date(typed.leaseUntil) } : ownedWhere(legacy!);
+  const record = (dispatchStarted: boolean) => typed ? correlatedCalendarApprovalStateSchema.parse({ version: CORRELATED_CALENDAR_APPROVAL_STATE_VERSION,
+    origin: typed.origin, phase: dispatchStarted ? "DISPATCH_CLAIMED" : "CLAIMED", approvedBy: typed.userId, approvedHash: typed.expectedRequestHash,
+    approvalToken: typed.approvalToken, writeAuthority: typed.authority, dispatchStarted }) : approvalRecord(legacy!, dispatchStarted);
   let rejectDeadline!: (reason: Error) => void;
   const stopped = new Promise<never>((_, reject) => { rejectDeadline = reject; });
   const stop = () => { controller.abort(); rejectDeadline(new Error("CALENDAR_WRITE_DEADLINE_EXCEEDED")); };
-  const timer = setTimeout(stop, Math.max(1, deadlineAt - Date.now()));
-  context.signal?.addEventListener("abort", stop, { once: true });
+  let timer = setTimeout(stop, Math.max(1, remaining()));
+  originalSignal?.addEventListener("abort", stop, { once: true });
   const txOptions = { isolationLevel: "Serializable" as const, maxWait: 1000, timeout: 2000 };
+  const executionTxOptions = () => {
+    if (!typed) return txOptions;
+    live(); const ms = Math.min(5000, remaining()), maxWait = Math.min(500, Math.max(1, Math.floor(ms / 4)));
+    return { isolationLevel: "Serializable" as const, maxWait, timeout: ms - maxWait };
+  };
+  const lock = async (db: Prisma.TransactionClient, phase: "CLAIMED" | "DISPATCH_CLAIMED") => {
+    if (!typed) return { legacy: await lockWrite(db, legacy!, legacy!), read: undefined };
+    live(); const started = performance.now();
+    const gate = await lockCorrelatedCalendarApprovalWriteInTransaction(db, typed, env,
+      { deadlineAt: Math.min(deadlineAt, Date.now() + remaining()), signal }, phase);
+    live();
+    if (gate.status !== "CORRELATED_CALENDAR_APPROVAL_GATE_INSPECTED" || gate.committed !== false || gate.executionAuthorized !== false) throw new Error("CALENDAR_APPROVAL_CHANGED");
+    view = fingerprintCorrelatedCalendarApprovalView(gate.view).view;
+    inspectCorrelatedCalendarApprovalClaim(typed, view);
+    // Gate time is DB UTC. Conservatively account for the entire gate latency;
+    // neither an app clock offset nor another invocation renews the durable lease.
+    const dbRemaining = Date.parse(typed.leaseUntil) - Date.parse(gate.inspectedAt);
+    if (!Number.isFinite(dbRemaining) || dbRemaining <= 0) throw new Error("CALENDAR_WRITE_DEADLINE_EXCEEDED");
+    monotoneDeadlineAt = Math.min(monotoneDeadlineAt, started + dbRemaining);
+    clearTimeout(timer); timer = setTimeout(stop, Math.max(1, remaining())); live();
+    return { legacy: undefined, read: { ...gate.readPrerequisite } };
+  };
   try {
     const work = (async () => {
-      requireGooglePilot(env); requireLive(deadlineAt, signal);
+      live();
       // Commit the one-use marker BEFORE network work. A duplicate executor cannot steal or close the winner.
       await prisma.$transaction(async db => {
-        await lockWrite(db, claim, claim); requireLive(deadlineAt, signal);
-        const marked = await db.personalAssistantOperation.updateMany({ where: { ...ownedWhere(claim), result: { equals: approvalRecord(claim, false) } }, data: { result: approvalRecord(claim, true) } });
+        await lock(db, "CLAIMED"); live();
+        const marked = await db.personalAssistantOperation.updateMany({ where: { ...owned(), result: { equals: record(false) } }, data: { result: record(true) } });
         if (marked.count !== 1) throw new Error("CALENDAR_DISPATCH_ALREADY_USED");
-      }, txOptions);
-      ownsDispatch = true; requireLive(deadlineAt, signal);
-      const loaded = await googleTokensForOwner(claim.userId, claim.workspaceId, env, client); requireLive(deadlineAt, signal);
+        if (typed) live();
+      }, executionTxOptions());
+      ownsDispatch = true; unknownReason = "WRITE_OUTCOME_UNKNOWN"; live();
+      const loaded = await googleTokensForOwner(claim.userId, claim.workspaceId, env, client); live();
+      const readAuthority = { ...loaded.readAuthority };
       if (loaded.accountId !== claim.authority.accountId || loaded.accountVersion !== claim.authority.accountVersion || loaded.readAuthority.credentialId !== claim.authority.credentialId) throw new Error("CALENDAR_CONNECTION_CHANGED");
+      const requireLoadedRead = (read: { readGrantId: string; readGrantVersion: number } | undefined) => {
+        if (typed && (!read || readAuthority.schemaVersion !== 1 || readAuthority.userId !== typed.userId || readAuthority.workspaceId !== typed.workspaceId
+          || readAuthority.accountId !== typed.authority.accountId || readAuthority.accountVersion !== typed.authority.accountVersion || readAuthority.credentialId !== typed.authority.credentialId
+          || readAuthority.readGrantId !== read.readGrantId || readAuthority.readGrantVersion !== read.readGrantVersion)) throw new Error("CALENDAR_CONNECTION_CHANGED");
+      };
       const dispatched = await prisma.$transaction(async db => {
-        const row = await lockWrite(db, claim, claim); requireGooglePilot(env); requireLive(deadlineAt, signal);
-        if (JSON.stringify(row.result) !== JSON.stringify(approvalRecord(claim, true))) {
+        const locked = await lock(db, "DISPATCH_CLAIMED"); live();
+        requireLoadedRead(locked.read);
+        if (!typed && JSON.stringify(locked.legacy!.result) !== JSON.stringify(record(true))) {
           // JSONB key order is not stable; use the database equality predicate below instead.
-          const recorded = await db.personalAssistantOperation.findFirst({ where: { ...ownedWhere(claim), result: { equals: approvalRecord(claim, true) } } });
+          const recorded = await db.personalAssistantOperation.findFirst({ where: { ...owned(), result: { equals: record(true) } } });
           if (!recorded) throw new Error("CALENDAR_APPROVAL_CHANGED");
         }
-        requireGooglePilot(env); requireLive(deadlineAt, signal);
+        live();
         const before = client.transportAttempts;
         // GoogleCalendarClient starts fetch synchronously before its first await. Locks cover dispatch admission,
         // NOT network latency: boxing the promise lets this transaction commit while the request is pending.
-        const pending = client.insertEvent(loaded.tokens, { ...claim.request, workspaceId: claim.workspaceId, calendarItemId: claim.request.requestId, idempotencyKey: claim.request.requestId })
-          .then(value => ({ ok: true as const, value }), () => ({ ok: false as const }));
-        writeTransportStarted = client.transportAttempts > before;
+        let pending: Promise<{ ok: true; value: Awaited<ReturnType<GoogleCalendarClient["insertEvent"]>> } | { ok: false }>;
+        try {
+          pending = client.insertEvent(loaded.tokens, { ...claim.request, workspaceId: claim.workspaceId, calendarItemId: claim.request.requestId, idempotencyKey: claim.request.requestId })
+            .then(value => ({ ok: true as const, value }), () => ({ ok: false as const }));
+        } finally { writeTransportStarted = client.transportAttempts > before; }
         return { pending };
-      }, txOptions);
-      const outcome = await dispatched.pending; requireLive(deadlineAt, signal);
+      }, executionTxOptions());
+      const outcome = await dispatched.pending; live();
       if (!outcome.ok) throw new Error("CALENDAR_WRITE_UNCONFIRMED");
+      const terminal = typed ? inspectCorrelatedCalendarApprovalState({ version: CORRELATED_CALENDAR_APPROVAL_STATE_VERSION, origin: typed.origin,
+        phase: "CONFIRMED", receipt: outcome.value, automaticRetry: false }, typed, view!).state : outcome.value;
+      if (typed && !writeTransportStarted) throw new Error("CALENDAR_WRITE_UNCONFIRMED");
+      unknownReason = "TERMINAL_COMMIT_OUTCOME_UNKNOWN";
       await prisma.$transaction(async db => {
-        await lockWrite(db, claim, claim); requireGooglePilot(env); requireLive(deadlineAt, signal);
-        const completed = await db.personalAssistantOperation.updateMany({ where: { ...ownedWhere(claim), result: { equals: approvalRecord(claim, true) } }, data: { status: "completed", result: outcome.value, externalTransportPerformed: writeTransportStarted, leaseUntil: null } });
+        const locked = await lock(db, "DISPATCH_CLAIMED"); live(); requireLoadedRead(locked.read);
+        const completed = await db.personalAssistantOperation.updateMany({ where: { ...owned(), result: { equals: record(true) } }, data: { status: "completed", result: terminal, externalTransportPerformed: writeTransportStarted, leaseUntil: null } });
         if (completed.count !== 1) throw new Error("CALENDAR_WRITE_CLAIM_LOST");
-        requireLive(deadlineAt, signal);
-      }, txOptions);
+        live();
+      }, executionTxOptions());
+      // This is a factual commit acknowledgement, not a fresh execution permit.
+      knownCompleted = outcome.value;
       return outcome.value;
     })();
     return await Promise.race([work, stopped]);
   } catch {
     controller.abort();
+    if (knownCompleted) return knownCompleted;
     if (ownsDispatch) {
       // Never overwrite recovery or another terminal state. A late continuation cannot satisfy requireLive.
       await prisma.$transaction(async db => {
-        await db.personalAssistantOperation.updateMany({ where: { ...ownedWhere(claim), result: { equals: approvalRecord(claim, true) } }, data: { status: "uncertain", externalTransportPerformed: writeTransportStarted, result: { automaticRetry: false, reviewRequired: true, writeConfirmed: false }, leaseUntil: null } });
+        const uncertain = typed ? correlatedCalendarApprovalStateSchema.parse({ version: CORRELATED_CALENDAR_APPROVAL_STATE_VERSION, origin: typed.origin,
+          phase: "UNCERTAIN", writeConfirmed: false, reviewRequired: true, automaticRetry: false, reason: unknownReason }) : { automaticRetry: false, reviewRequired: true, writeConfirmed: false };
+        await db.personalAssistantOperation.updateMany({ where: { ...owned(), result: { equals: record(true) } }, data: { status: "uncertain", externalTransportPerformed: writeTransportStarted, result: uncertain, leaseUntil: null } });
       }, txOptions).catch(() => undefined);
     }
+    if (knownCompleted) return knownCompleted;
     throw new Error("CALENDAR_WRITE_OUTCOME_UNKNOWN");
-  } finally { clearTimeout(timer); context.signal?.removeEventListener("abort", stop); }
+  } finally { clearTimeout(timer); originalSignal?.removeEventListener("abort", stop); }
 }
 export async function approveAndInsertPersonalCalendar(input: PersonalCalendarApproval, env: ConnectorEnvironment = process.env, client?: GoogleCalendarClient, context: PersonalCalendarExecutionContext = {}) {
   const deadlineAt = deadline(context);
@@ -229,6 +302,7 @@ export async function personalCalendarActions(userId: string, workspaceId: strin
     WHERE o."workspaceId"=$1 AND o."createdByUserId"=$2 AND o.kind='calendar_write'
       AND o."correlatedTemporalReceiptId" IS NULL
       AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarReview" correlated WHERE correlated."calendarOperationId"=o.id)
+      AND NOT EXISTS (SELECT 1 FROM "PersonalSmsCorrelatedCalendarApproval" approved WHERE approved."calendarOperationId"=o.id)
     ORDER BY o."createdAt" DESC LIMIT 30`, workspaceId, userId);
   return { operations: rows.map(row => { const request = storedSchema.parse(row.request); return { id: row.id, requestHash: row.requestHash, status: row.status, draft: { title: request.title, startsAt: request.startsAt, endsAt: request.endsAt, timezone: request.timezone } }; }) };
 }

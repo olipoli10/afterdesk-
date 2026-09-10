@@ -1,0 +1,211 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_366e1d7dac4a4b7282ac1c1b3604612a","template":"endvera_personal_210_e5ec286c2e4d4a5fb8a16b63fb3fbf97","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T19:57:15.2463222Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (170 tests | 1 failed) 89278ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'UTC', preserving approval and sources  1786ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'America/New_York', preserving approval and sources  1474ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'Asia/Tokyo', preserving approval and sources  1383ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'UTC', preserving approval and sources  1537ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'America/New_York', preserving approval and sources  1319ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'Asia/Tokyo', preserving approval and sources  1318ms
+     ✓ expiry recovery does not need to reopen an expired original SMS review  1873ms
+     ✓ recovers typed and ordinary expired claims in the same bounded batch without changing legacy JSON  1026ms
+     ✓ two overlapping native recovery backends close one expired approval once  1072ms
+     ✓ actually skips an expired approval held locked by another live backend, then recovers it after release  1185ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in UTC, without reopening authority  1903ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in America/New_York, without reopening authority  1949ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in Asia/Tokyo, without reopening authority  1871ms
+     ✓ reads an expired unattempted review without inventing an approval or re-enabling its offer  1174ms
+     ✓ reads expired processing as unknown without maintenance writes, then retains that outcome after actual C1 recovery  1349ms
+     ✓ keeps a recorded unknown transport outcome unknown without asserting that nothing happened  369ms
+     ✓ does not require old owner epochs, but refuses old and new owners after an actual ownership transfer  376ms
+     ✓ holds current owner read authority against a real concurrent revocation, then refuses the next history read  437ms
+     ✓ reconstructs the unchanged exact offer and authority under UTC without approving  494ms
+     ✓ reconstructs the unchanged exact offer and authority under America/New_York without approving  415ms
+     ✓ reconstructs the unchanged exact offer and authority under Asia/Tokyo without approving  419ms
+     ✓ requires actual READ consent in addition to the existing WRITE consent  465ms
+     ✓ locks and rechecks the committed immutable CLAIMED claim, then refuses current READ revocation  485ms
+     ✓ locks and rechecks the committed immutable DISPATCH_CLAIMED claim, then refuses current READ revocation  481ms
+     ✓ does not offer a calendar tuple rewritten inside its own transaction snapshot  415ms
+     ✓ commits one exact approval and claim through the real C2b path in UTC  530ms
+     ✓ commits one exact approval and claim through the real C2b path in America/New_York  536ms
+     ✓ commits one exact approval and claim through the real C2b path in Asia/Tokyo  571ms
+     ✓ replays a prior choice after actual expiry and grant revocation without another claim or active gate  1937ms
+     ✓ rolls back approval and operation together when caller fails after the real CAS  442ms
+     ✓ wrong request hash never creates an approval or changes the source chain  381ms
+     ✓ two real overlapping command transactions commit at most one immutable choice  543ms
+     ✓ a budget already exhausted before the transaction callback cannot claim  471ms
+     ✓ returns the exact selected immutable card without a claim in UTC  478ms
+     ✓ returns the exact selected immutable card without a claim in America/New_York  482ms
+     ✓ returns the exact selected immutable card without a claim in Asia/Tokyo  504ms
+     ✓ missing READ refuses, actual grant enables, and actual revocation refuses without mutation  501ms
+     ✓ foreign actor or workspace and a revoked owner cannot read or select a fallback card  351ms
+     ✓ an actual earlier claim is not offered again or executed by a read  522ms
+     ✓ expiry during the real commit acknowledgement interval prevents disclosure  1872ms
+     ✓ an injected lost acknowledgement after a real read commit does not publish the provisional offer  462ms
+     ✓ commits exact recorded result once through wrapper and existing executor in UTC  783ms
+     ✓ commits exact recorded result once through wrapper and existing executor in America/New_York  781ms
+     ✓ commits exact recorded result once through wrapper and existing executor in Asia/Tokyo  792ms
+     ✓ a failed injected transport leaves typed uncertainty and replay never dispatches again  839ms
+     ✓ lost acknowledgement after actual claim commit never starts the executor or adopts that claim  499ms
+     ✓ two concurrent explicit wrappers produce one recorded effect and one immutable choice  831ms
+     ✓ network latency does not retain authority locks and an intervening grant revocation prevents confirmation  718ms
+     × a confirmed-shaped response after original expiry is stored unknown and is never resent 1740ms
+     ✓ refuses preparing and approving in one transaction after TOP_XID  343ms
+     ✓ refuses preparing and approving in one transaction after SAVEPOINT  338ms
+     ✓ refuses preparing and approving in one transaction after RELEASED_SAVEPOINT  340ms
+     ✓ refuses preparing and approving in one transaction after OUTER_WRITE  451ms
+     ✓ refuses dispatching a SAVEPOINT claim before its parent commits  429ms
+     ✓ refuses confirming a SAVEPOINT dispatch before its parent commits  412ms
+     ✓ two native sessions cannot commit two approvals for the same review  366ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in UTC  408ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in America/Toronto  355ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in Pacific/Auckland  349ms
+     ✓ rolls back approval and leaves pending unchanged for MISSING_CLAIM  334ms
+     ✓ rolls back approval and leaves pending unchanged for NULL_AUTHORITY  339ms
+     ✓ rolls back approval and leaves pending unchanged for WRONG_ORIGIN  344ms
+     ✓ refuses an unapproved status mutation without a row or nonce  335ms
+     ✓ refuses a duplicate approval and protects its immutable nonce and scope  354ms
+     ✓ permits one dispatch transition and an exact synthetic terminal receipt, never reopening it  375ms
+     ✓ commits the accepted reply and one private draft through the production hook, not a direct test preparer  371ms
+     ✓ OFF at source processing leaves the completed reply and acknowledgement without a calendar review 292ms
+     ✓ an ambiguous refused answer remains completed but does not produce a calendar review even with preparation ON 274ms
+     ✓ preserves actual committed source and acknowledgement after revocation between consumption and preparation  303ms
+     ✓ preserves actual committed source and acknowledgement after expiry between consumption and preparation  1168ms
+     ✓ returns an authorized empty collection but refuses a foreign or revoked member 28ms
+     ✓ projects the real committed two-SMS draft without any manual review identifier  371ms
+     ✓ does not turn a damaged current authorization into an empty success  338ms
+     ✓ does not recreate expired history or reset its preparation window  1162ms
+     ✓ two actual readers preserve the same single immutable review  427ms
+     ✓ an already cancelled caller never receives even an empty list 26ms
+     ✓ a concurrently revoked owner cannot publish the old empty-list snapshot 27ms
+     ✓ commits exactly one isolated pending review and stable replay in UTC  414ms
+     ✓ commits exactly one isolated pending review and stable replay in America/New_York  396ms
+     ✓ commits exactly one isolated pending review and stable replay in Asia/Tokyo  385ms
+     ✓ remains OFF without writing a draft or changing sources 288ms
+     ✓ refuses a preexisting generic operation instead of adopting its request UUID  358ms
+     ✓ a marked operation without its review cannot commit  331ms
+     ✓ rolls back both new rows on a failure after provisional preparation  328ms
+     ✓ a committed review and marker cannot be rewritten or removed  346ms
+     ✓ current revocation refuses even a known replay without changing the saved review  371ms
+     ✓ cannot commit a just-prepared draft already claimed in that same transaction 283ms
+     ✓ refuses an expired replay while keeping the original draft and provenance  1187ms
+     ✓ serializes two actual backend preparations on the same receipt without duplicating  845ms
+     ✓ returns the two full sources and exact current draft without writes in UTC  701ms
+     ✓ returns the two full sources and exact current draft without writes in America/New_York  670ms
+     ✓ returns the two full sources and exact current draft without writes in Asia/Tokyo  742ms
+     ✓ does not prepare a review when missing or OFF and does not disclose it to a foreign owner  637ms
+     ✓ refuses expired proof without resetting the saved preparation window  1239ms
+     ✓ current revoked Google authority refuses the read without altering immutable history  408ms
+     ✓ reads a synthetic current uncertain state as uncertain, never re-preparing pending  424ms
+     ✓ bounds the first discovery against a real exclusive table lock  752ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  384ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  455ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  450ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  398ms
+     ✓ a genuine refused ambiguous answer is not recast as a consumed accepted receipt  375ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  377ms
+     ✓ current MODEL grant revocation refuses without changing the historical receipt  367ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1212ms
+     ✓ keeps a later active question intact while inspecting the earlier inactive receipt  529ms
+     ✓ holds current owner authority against a real concurrent revocation, then refuses the next read  385ms
+     ✓ ELIGIBLE preserves evidence while selecting the correct oldest candidate 257ms
+     ✓ STORE_OFF preserves evidence while selecting the correct oldest candidate 164ms
+     ✓ BRIDGE_OFF preserves evidence while selecting the correct oldest candidate 153ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1210ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1228ms
+     ✓ GOOGLE_REVOKED preserves evidence while selecting the correct oldest candidate 201ms
+     ✓ MODEL_REVOKED preserves evidence while selecting the correct oldest candidate 201ms
+     ✓ IDENTITY_REVISED preserves evidence while selecting the correct oldest candidate 204ms
+     ✓ OWNER_REVISED preserves evidence while selecting the correct oldest candidate 197ms
+     ✓ an orphan bare hour stays deterministic and never completes a source 43ms
+     ✓ a retained calendar confirmation reserves 14h without interpreting it 171ms
+     ✓ a retained calendar confirmation reserves Ajoute inspection vendredi à 14h without interpreting it 155ms
+     ✓ two distinct live reply backends commit at most one canonical receipt and acknowledgment 203ms
+     ✓ 14h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 178ms
+     ✓ 3h uses the canonical consumer once and creates exactly one matching unsent acknowledgment 175ms
+     ✓ independent or reserved message Qu’est-ce que j’ai demain? does not consume a pending answer 158ms
+     ✓ independent or reserved message Ajoute inspection vendredi à 14h does not consume a pending answer 138ms
+     ✓ independent or reserved message CONFIRME ENDVERA AGENDA bois lac lune sable does not consume a pending answer 153ms
+     ✓ OFF cannot consume or prepare an acknowledgment 138ms
+     ✓ BEFORE_ACCEPTANCE cannot consume or prepare an acknowledgment 124ms
+     ✓ REVOKED cannot consume or prepare an acknowledgment 150ms
+     ✓ AFTER_INSERT_FAILURE rolls back the real consumer/source CAS and acknowledgment insert 180ms
+     ✓ AFTER_INSERT_REVOKED rolls back the real consumer/source CAS and acknowledgment insert 191ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1169ms
+     ✓ expires WAITING once, retains source/question/budget/history  1187ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1174ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1151ms
+     ✓ existing ingress worker routes 14h without another model or source completion 195ms
+     ✓ existing ingress worker routes 3h without another model or source completion 183ms
+     ✓ existing ingress worker routes Ajoute une visite vendredi without another model or source completion 160ms
+     ✓ existing ingress worker routes OFF without another model or source completion 155ms
+     ✓ retains atomic source/question/registry with preparation ON 144ms
+     ✓ retains atomic source/question/registry with preparation OFF 83ms
+     ✓ retains atomic source/question/registry with preparation REVOKED_AFTER_SOURCE_CAS 140ms
+     ✓ prepares only START ambiguity and commits exact question plus source CAS 115ms
+     ✓ prepares only END ambiguity and commits exact question plus source CAS 94ms
+     ✓ missing-end model template requests full reformulation before any misleading question is inserted 75ms
+     ✓ current grant changed after inspection rolls back the inserted question and source state 77ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only 257ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only 220ms
+     ✓ actual outbox + registry commit under Asia/Tokyo with synthetic HTTP only 225ms
+     ✓ attached but OFF refuses the ordinary approval path 115ms
+     ✓ post-response Google revocation keeps the entire exposure and never creates WAITING 176ms
+     ✓ a failed REST status leaves the question PREPARED and cannot retry 177ms
+     ✓ OFF does not require valid input or mutate the DB 1ms
+     ✓ commits exact complete wire + shared ledger without calendar draft or additional provider work 104ms
+     ✓ rolls registry, question and shared ledger back if source completion is omitted 87ms
+     ✓ rejects lease replacement after registry insertion even if a raw UPDATE tries to complete 95ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1665ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in UTC 189ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in America/New_York 201ms
+     ✓ preserves canonical DB acceptance time and two-source resolution in Asia/Tokyo 201ms
+     ✓ missing immutable acceptedAt refuses; historical updatedAt is never substituted 114ms
+     ✓ an SMS received before the durable question receipt cannot become its answer later 146ms
+     ✓ another actor cannot load the question or consume its reply 127ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  327ms
+     ✓ revocation remains possible but prevents attaching or consuming evidence 140ms
+     ✓ rejects a minimal forged ACCEPTED packet at the actual INSERT trigger 143ms
+     ✓ competing consumption of the same SMS commits at most one permanent receipt 159ms
+     ✓ five creations across both types share one permanent hourly cap  580ms
+     ✓ keeps one visible pair namespace after re-pairing into another workspace/owner 197ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  523ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends 165ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 169 passed (170)
+   Start at  15:55:42
+   Duration  92.38s (transform 1.57s, setup 0ms, import 2.92s, tests 89.28s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/temporal-registry.postgres.test.ts > same real calendar executor from correlated explicit command, encrypted synthetic tokens and injected HTTP > a confirmed-shaped response after original expiry is stored unknown and is never resent
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ specs/210-personal-live-activation/temporal-registry.postgres.test.ts:946:28
+    944|     });
+    945|     await expect(approveSyntheticFixture(f)).rejects.toThrow("CALENDAR…
+    946|     expect(expiryObserved).toBe(true); expect(f.transport).toHaveBeenC…
+       |                            ^
+    947|     expect(await readApprovalHistory(f.x, f.review.id)).toHaveProperty…
+    948|     const before = await historicalSnapshot(f.x);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-84aded99d2d24121993be1ecc9d5b296

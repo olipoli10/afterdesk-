@@ -1,0 +1,187 @@
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+▲ Next.js 16.2.12 (webpack)
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.4min
+  Running TypeScript ...
+
+  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+  	- include was updated to add '.next-personal-210-build-1789070619221/types/**/*.ts'
+  	- include was updated to add '.next-personal-210-build-1789070619221/dev/types/**/*.ts'
+
+  Finished TypeScript in 39.0s ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/128) ...
+  Generating static pages using 23 workers (32/128) 
+  Generating static pages using 23 workers (64/128) 
+  Generating static pages using 23 workers (96/128) 
+✓ Generating static pages using 23 workers (128/128) in 1508ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /(.)login
+├ ƒ /[...catchAll]
+├ ƒ /about
+├ ƒ /academy
+├ ● /academy/[slug]
+│ ├ /academy/inbox-management
+│ ├ /academy/calendar-scheduling
+│ ├ /academy/customer-support
+│ └ [+22 more paths]
+├ ● /academy/-/opengraph-image
+│ ├ /academy/inbox-management/opengraph-image
+│ ├ /academy/calendar-scheduling/opengraph-image
+│ ├ /academy/customer-support/opengraph-image
+│ └ [+22 more paths]
+├ ○ /academy/opengraph-image
+├ ƒ /acceptable-use
+├ ƒ /account-deletion
+├ ƒ /admin
+├ ƒ /admin/assistant
+├ ƒ /admin/calibration
+├ ƒ /admin/calibration/[hash]
+├ ƒ /admin/closed-jobs
+├ ƒ /admin/closed-jobs/[id]
+├ ƒ /admin/construction-commercial
+├ ƒ /admin/construction-support
+├ ƒ /admin/pricing
+├ ƒ /admin/pricing/[id]
+├ ƒ /admin/qc
+├ ƒ /admin/qc/[id]
+├ ƒ /admin/reliability
+├ ƒ /admin/standing-capacity
+├ ƒ /admin/tasks
+├ ƒ /admin/tasks/[id]
+├ ƒ /admin/workers
+├ ƒ /api/auth/[...all]
+├ ƒ /api/cron/maintenance
+├ ƒ /api/endvera/v1/admin/construction-commercial
+├ ƒ /api/endvera/v1/commands
+├ ƒ /api/endvera/v1/connectors/communications
+├ ƒ /api/endvera/v1/connectors/communications/inbound
+├ ƒ /api/endvera/v1/connectors/google-calendar
+├ ƒ /api/endvera/v1/construction/operations
+├ ƒ /api/endvera/v1/mobile/accounting
+├ ƒ /api/endvera/v1/mobile/assistant
+├ ƒ /api/endvera/v1/mobile/assistant/project-memory
+├ ƒ /api/endvera/v1/mobile/authority-policies
+├ ƒ /api/endvera/v1/mobile/bootstrap
+├ ƒ /api/endvera/v1/mobile/calendar-connectors
+├ ƒ /api/endvera/v1/mobile/commercial-account
+├ ƒ /api/endvera/v1/mobile/communications
+├ ƒ /api/endvera/v1/mobile/email-inbox
+├ ƒ /api/endvera/v1/mobile/evidence
+├ ƒ /api/endvera/v1/mobile/follow-ups
+├ ƒ /api/endvera/v1/mobile/golden-workflow
+├ ƒ /api/endvera/v1/mobile/human-escalations
+├ ƒ /api/endvera/v1/mobile/intent
+├ ƒ /api/endvera/v1/mobile/invoices
+├ ƒ /api/endvera/v1/mobile/jobs
+├ ƒ /api/endvera/v1/mobile/onboarding
+├ ƒ /api/endvera/v1/mobile/permissions
+├ ƒ /api/endvera/v1/mobile/prepared-actions
+├ ƒ /api/endvera/v1/mobile/privacy
+├ ƒ /api/endvera/v1/mobile/project-brain-fact-candidates
+├ ƒ /api/endvera/v1/mobile/project-brain-intake
+├ ƒ /api/endvera/v1/mobile/project-brain-intake/sources
+├ ƒ /api/endvera/v1/mobile/project-brain-intake/sources/[sourceId]
+├ ƒ /api/endvera/v1/mobile/project-brain-intake/voice-review
+├ ƒ /api/endvera/v1/mobile/project-brain-understanding-review
+├ ƒ /api/endvera/v1/mobile/provenance
+├ ƒ /api/endvera/v1/mobile/reliability
+├ ƒ /api/endvera/v1/mobile/secretary-broadcasts
+├ ƒ /api/endvera/v1/mobile/text-assist-foundation
+├ ƒ /api/endvera/v1/mobile/timeline
+├ ƒ /api/endvera/v1/mobile/virtual-secretary-actions
+├ ƒ /api/endvera/v1/mobile/voice-calls
+├ ƒ /api/endvera/v1/mobile/voice-calls/notes
+├ ƒ /api/endvera/v1/personal/google/actions
+├ ƒ /api/endvera/v1/personal/google/callback
+├ ƒ /api/endvera/v1/personal/google/connect
+├ ƒ /api/endvera/v1/personal/google/events
+├ ƒ /api/endvera/v1/personal/google/launch
+├ ƒ /api/endvera/v1/personal/google/status
+├ ƒ /api/endvera/v1/personal/model/consent
+├ ƒ /api/endvera/v1/personal/model/correlated-calendar-reviews
+├ ƒ /api/endvera/v1/personal/model/correlated-calendar-reviews/approval-offer
+├ ƒ /api/endvera/v1/personal/model/correlated-calendar-reviews/approval-result
+├ ƒ /api/endvera/v1/personal/model/correlated-calendar-reviews/approve
+├ ƒ /api/endvera/v1/personal/model/disconnect
+├ ƒ /api/endvera/v1/personal/model/reviews
+├ ƒ /api/endvera/v1/personal/model/status
+├ ƒ /api/endvera/v1/personal/outbox
+├ ƒ /api/endvera/v1/personal/phone
+├ ƒ /api/endvera/v1/personal/worker/tick
+├ ƒ /api/files/[id]/download
+├ ƒ /api/health
+├ ƒ /api/payments/checkout
+├ ƒ /api/upload
+├ ƒ /api/webhooks/stripe
+├ ƒ /api/webhooks/twilio/sms
+├ ƒ /api/webhooks/twilio/status
+├ ƒ /client
+├ ƒ /client/account
+├ ƒ /client/assistant
+├ ƒ /client/calendar
+├ ƒ /client/cockpit
+├ ƒ /client/construction-retest
+├ ƒ /client/inbox
+├ ƒ /client/onboarding
+├ ƒ /client/permissions
+├ ƒ /client/privacy
+├ ƒ /client/projects
+├ ƒ /client/projects/[projectId]
+├ ƒ /client/reliability
+├ ƒ /client/standing-capacity
+├ ƒ /client/support
+├ ƒ /client/tasks/[id]
+├ ƒ /client/tasks/new
+├ ƒ /construction
+├ ƒ /construction/support
+├ ƒ /founder-full-loop
+├ ƒ /founder-full-loop/access
+├ ƒ /how-it-works
+├ ○ /icon.svg
+├ ƒ /inside
+├ ƒ /ledger
+├ ƒ /login
+├ ○ /manifest.webmanifest
+├ ƒ /notifications
+├ ○ /opengraph-image
+├ ƒ /privacy
+├ ƒ /register
+├ ƒ /register/va
+├ ○ /robots.txt
+├ ƒ /security
+├ ƒ /services
+├ ○ /sitemap.xml
+├ ƒ /terms
+├ ƒ /textassist
+├ ƒ /va
+├ ƒ /va/pool
+├ ƒ /va/pool/[id]
+├ ƒ /va/standing-capacity
+├ ƒ /va/tasks/[id]
+├ ƒ /va/training
+├ ƒ /va/training/[slug]
+├ ƒ /va/training/[slug]/exam
+├ ƒ /va/training/[slug]/guide
+├ ƒ /va/training/[slug]/lesson/[n]
+├ ƒ /verify-email
+├ ƒ /workers
+└ ○ /workers/opengraph-image
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

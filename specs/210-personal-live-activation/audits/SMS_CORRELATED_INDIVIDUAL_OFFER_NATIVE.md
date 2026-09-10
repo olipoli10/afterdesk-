@@ -27,6 +27,20 @@ native transactions, not mocked query results:
   no provisional offer, unchanged whole history. This models response loss; it
   does not claim a real network fault occurred.
 
+Post-run peer review identified an oracle gap in the expiry case: a failure of
+the bounded wait helper would also be normalized to the expected opaque error,
+while the existing sentinel only proved that commit returned. Controller added
+a post-wait actual DB `clock_timestamp >= expiresAt` readback and requires its
+true sentinel outside the rejected call. The162 receipt predates this stronger
+assertion. Its fresh run is pending C2c's next stable imported-source window.
+This is an oracle defect, not a demonstrated product expiry bypass.
+
+Follow-up: the stronger sentinel passes in native171,
+`postgres-native-1789070541270`20:04:49.833Z/STOPPED. Fresh build1789070619221
+and actual offer HTTP7 also pass20:07:52.649Z with process stopped/port closed;
+details in SMS_CORRELATED_C2C_NATIVE_CONTROLLER.md. Earlier pending statements
+below are retained as the original162 checkpoint, not current blockers.
+
 Two earlier C2b negative oracles are strengthened in this same successful run:
 wrong hash requires CORRELATED_CALENDAR_APPROVAL_BINDING_CHANGED; pre-expired
 budget requires callback entry and CORRELATED_CALENDAR_APPROVAL_CLAIM_REFUSED.

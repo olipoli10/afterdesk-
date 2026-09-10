@@ -1,5 +1,27 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 20:10Z — same executor and HTTP verified; mobile implementation active
+
+Native171 PASS20:04:49.833Z/STOPPED, receipt1789070541270; real PostgreSQL,
+encrypted synthetic tokens and injected Google HTTP. Claim/terminal commit ACK
+loss, exact one-use, current READ revocation, late expiry and three DB zones pass.
+Earlier169/1 expiry-sentinel timing failure is retained; fixture now awaits the
+deliberately late fake response after UNKNOWN without extending product budget.
+Controller audit SMS_CORRELATED_C2C_NATIVE_CONTROLLER.md records scope and limits.
+
+Root6003 PASS/3 historical skips20:05:04.850Z, receipt1789070608376. Build
+1789070619221 PASS20:06:56.129Z. Actual OFF HTTP7 offer +7 POST PASS20:07:55.780Z,
+both owned servers stopped and ports closed. POST Buffer alias peer RED fixed;
+author/reviewer106 PASS. Fresh20-clone native367/367 PASS20:10:16.995Z/STOPPED,
+receipt1789070733399; all20 immutable79 fingerprints match.
+
+Mobile code proceeds: exact returned offer, distinct approval gesture, origin/
+owner-scoped metadata marker persisted and read back before POST, no retry,
+C3 historical result after ambiguity/restart. Main author plus distinct contract
+and storage/lifecycle reviewers. No new APK/device or provider proof. ACTIVE3min
+verified20:07Z; no duplicate timer. Dashboard unchanged22%/46.75%/C2 18of18/
+real-test NO-GO/Verified-E2E0%. No external mutation, SQL change or secret access.
+
 ## 2026-09-10 19:43Z — individual offer verified; same-executor implementation continues
 
 Selected-card offer reader/GET fully reviewed,103 author+15 peer PASS. Actual

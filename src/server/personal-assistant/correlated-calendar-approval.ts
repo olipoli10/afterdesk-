@@ -8,12 +8,17 @@ import { correlatedCalendarApprovalCommandSchema, fingerprintCorrelatedCalendarA
   CORRELATED_CALENDAR_APPROVAL_STATE_VERSION, CORRELATED_CALENDAR_APPROVAL_VIEW_VERSION, type CorrelatedCalendarApprovalCommand } from "./correlated-calendar-approval-contract";
 import { temporalActorSchema, temporalRegistryClock, temporalRequireLive, type TemporalRegistryActor, type TemporalRegistryContext, type TemporalRegistryDB } from "./sms-temporal-clarification-authority";
 import { requireGooglePilot, type ConnectorEnvironment } from "./google-client";
+import { prisma } from "@/lib/db";
+import { executeClaimedPersonalCalendarWrite } from "./calendar-actions";
+import { correlatedCalendarApprovalResultSchema, readCorrelatedCalendarApprovalResult } from "./correlated-calendar-approval-result";
+import type { GoogleCalendarClient } from "./google-client";
 
 const instant = z.number().finite(), id = z.string().min(1).max(191);
 const budgetSchema = z.object({ startedAt: instant, startedMonotoneAt: instant, deadlineAt: instant, monotoneDeadlineAt: instant,
   claimDeadlineAt: instant, claimMonotoneDeadlineAt: instant, signal: z.instanceof(AbortSignal).optional(),
   transactionOptions: z.object({ isolationLevel: z.literal("Serializable"), maxWait: z.number().int().positive(), timeout: z.number().int().positive() }).strict() }).strict();
 export type CorrelatedCalendarApprovalClaimBudget = Readonly<z.infer<typeof budgetSchema>>;
+export type CorrelatedCalendarApprovalContext = TemporalRegistryContext & { monotoneDeadlineAt?: number };
 function refused(): never { throw new Error("CORRELATED_CALENDAR_APPROVAL_CLAIM_REFUSED"); }
 function freeze<T>(value: T): T {
   // AbortSignal is a live cancellation channel, not mutable request data to freeze.
@@ -22,14 +27,15 @@ function freeze<T>(value: T): T {
 }
 /** Create ONCE before opening the claim transaction. maxWait is included in the
  * five-second phase budget. C2c must retain both original total deadlines. */
-export function createCorrelatedCalendarApprovalClaimBudget(context: TemporalRegistryContext): CorrelatedCalendarApprovalClaimBudget {
+export function createCorrelatedCalendarApprovalClaimBudget(context: CorrelatedCalendarApprovalContext): CorrelatedCalendarApprovalClaimBudget {
+  const { deadlineAt, monotoneDeadlineAt, signal } = context;
   const startedAt = Date.now(), startedMonotoneAt = performance.now();
-  if (!Number.isFinite(context.deadlineAt) || context.signal?.aborted) refused();
-  const total = Math.min(25000, Math.floor(context.deadlineAt - startedAt)), phase = Math.min(5000, total);
+  if (!Number.isFinite(deadlineAt) || (monotoneDeadlineAt !== undefined && !Number.isFinite(monotoneDeadlineAt)) || signal?.aborted) refused();
+  const total = Math.floor(Math.min(25000, deadlineAt - startedAt, (monotoneDeadlineAt ?? Infinity) - startedMonotoneAt)), phase = Math.min(5000, total);
   if (phase < 2) refused();
   const maxWait = Math.min(500, Math.max(1, Math.floor(phase / 4)));
   return freeze({ startedAt, startedMonotoneAt, deadlineAt: startedAt + total, monotoneDeadlineAt: startedMonotoneAt + total,
-    claimDeadlineAt: startedAt + phase, claimMonotoneDeadlineAt: startedMonotoneAt + phase, signal: context.signal,
+    claimDeadlineAt: startedAt + phase, claimMonotoneDeadlineAt: startedMonotoneAt + phase, signal,
     transactionOptions: { isolationLevel: "Serializable" as const, maxWait, timeout: phase - maxWait } });
 }
 function snapshotBudget(raw: CorrelatedCalendarApprovalClaimBudget) {
@@ -161,4 +167,53 @@ export async function claimCorrelatedCalendarApprovalInTransaction(tx: TemporalR
   if (finalNow < Date.parse(claim.approvedAt) || finalNow >= Date.parse(claim.leaseUntil) || finalNow >= Date.parse(claim.approvalExpiresAt)) refused();
   return freeze({ status: "CLAIM_CREATED_NOT_COMMITTED" as const, committed: false as const, executionAuthorized: false as const,
     claim, view: view.view, inspectedAt: new Date(finalNow).toISOString() });
+}
+
+const responseCommon = { version: z.literal("personal-correlated-calendar-approval-response-v1"), workspaceId: id, reviewId: id,
+  expectedReviewFingerprint: z.string().regex(/^[a-f0-9]{64}$/), expectedRequestHash: z.string().regex(/^[a-f0-9]{64}$/),
+  automaticRetry: z.literal(false), executionAuthorized: z.literal(false), providerStateVerified: z.literal(false) };
+/** Closed, scoped wire shape. A confirmed receipt is a recorded outcome, not a
+ * reusable authority token or a claim about the provider's present state. */
+export const correlatedCalendarApprovalResponseSchema = z.discriminatedUnion("status", [
+  z.object({ ...responseCommon, status: z.literal("CONFIRMED"), receipt: z.object({ confirmed: z.literal(true), providerEventId: z.string().regex(/^e[a-f0-9]{31}$/) }).strict() }).strict(),
+  z.object({ ...responseCommon, status: z.literal("ALREADY_ATTEMPTED"), result: correlatedCalendarApprovalResultSchema }).strict(),
+]).superRefine((value, ctx) => {
+  if (value.status === "ALREADY_ATTEMPTED" && (value.result.workspaceId !== value.workspaceId || value.result.reviewId !== value.reviewId)) ctx.addIssue({ code: "custom", message: "Result scope mismatch" });
+});
+export type CorrelatedCalendarApprovalResponse = z.infer<typeof correlatedCalendarApprovalResponseSchema>;
+
+/** Explicit command only. The original budget includes queueing, claim, token
+ * loading and the one existing executor. No retry after any ambiguous commit. */
+export async function approveCorrelatedCalendarReview(rawCommand: CorrelatedCalendarApprovalCommand, rawActor: TemporalRegistryActor,
+  env: ConnectorEnvironment = process.env, context: CorrelatedCalendarApprovalContext = { deadlineAt: Date.now() + 25000 }, client?: GoogleCalendarClient) {
+  if (!enabled(env)) return Object.freeze({ status: "DISABLED" as const, executionAuthorized: false as const });
+  const command = correlatedCalendarApprovalCommandSchema.parse(rawCommand), actor = temporalActorSchema.parse(rawActor);
+  if (command.workspaceId !== actor.workspaceId) refused();
+  const budget = createCorrelatedCalendarApprovalClaimBudget({ deadlineAt: context.deadlineAt, monotoneDeadlineAt: context.monotoneDeadlineAt, signal: context.signal });
+  let claimed: Awaited<ReturnType<typeof claimCorrelatedCalendarApprovalInTransaction>>;
+  try {
+    claimed = await prisma.$transaction(tx => claimCorrelatedCalendarApprovalInTransaction(tx, command, actor, env, budget), budget.transactionOptions);
+  } catch {
+    // Prisma errors are not universal proof of rollback. Do not execute or retry.
+    throw new Error("CORRELATED_CALENDAR_APPROVAL_COMMIT_OUTCOME_UNKNOWN");
+  }
+  if (claimed.status === "DISABLED") return Object.freeze({ status: "DISABLED" as const, executionAuthorized: false as const });
+  const base = { version: "personal-correlated-calendar-approval-response-v1", workspaceId: actor.workspaceId, reviewId: command.reviewId,
+    expectedReviewFingerprint: command.expectedReviewFingerprint, expectedRequestHash: command.expectedRequestHash,
+    automaticRetry: false, executionAuthorized: false, providerStateVerified: false };
+  const remaining = Math.floor(Math.min(budget.deadlineAt - Date.now(), budget.monotoneDeadlineAt - performance.now()));
+  if (budget.signal?.aborted || remaining < 2) throw new Error("CORRELATED_CALENDAR_APPROVAL_OUTCOME_UNKNOWN");
+  if (claimed.status === "ALREADY_ATTEMPTED") {
+    // No locks from the claim transaction survive this boundary. C3 authorizes
+    // the current owner without restoring expired preparation/provider authority.
+    const result = await readCorrelatedCalendarApprovalResult({ enabled: true, actor, reviewId: command.reviewId }, env,
+      { deadlineAt: Math.min(budget.deadlineAt, Date.now() + remaining), signal: budget.signal });
+    return freeze(correlatedCalendarApprovalResponseSchema.parse({ ...base, status: "ALREADY_ATTEMPTED", result }));
+  }
+  inspectCorrelatedCalendarApprovalCommand(command, claimed.view);
+  const receipt = await executeClaimedPersonalCalendarWrite(claimed.claim, env, client,
+    { deadlineAt: budget.deadlineAt, monotoneDeadlineAt: budget.monotoneDeadlineAt, signal: budget.signal });
+  // No post-commit live check: a known successful terminal commit stays a fact
+  // even when the response arrives after the local timer. No fresh permit leaks.
+  return freeze(correlatedCalendarApprovalResponseSchema.parse({ ...base, status: "CONFIRMED", receipt }));
 }

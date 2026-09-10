@@ -16,8 +16,10 @@ const targets = {
   'voice-review': { path: '/api/endvera/v1/mobile/project-brain-intake/voice-review', query: '&sessionId=synthetic', kind: 'VOICE_REVIEW_OFF_HTTP', prefix: 'voice-review' },
   'correlated-calendar-reviews': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews', query: '', kind: 'CORRELATED_CALENDAR_REVIEW_OFF_HTTP', prefix: 'correlated-calendar-review' },
   'correlated-calendar-approval-result': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews/approval-result', query: '&reviewId=synthetic', kind: 'CORRELATED_CALENDAR_APPROVAL_RESULT_OFF_HTTP', prefix: 'correlated-calendar-approval-result' },
+  'correlated-calendar-approval-offer': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews/approval-offer', query: '&reviewId=synthetic', kind: 'CORRELATED_CALENDAR_APPROVAL_OFFER_OFF_HTTP', prefix: 'correlated-calendar-approval-offer' },
+  'correlated-calendar-approve': { path: '/api/endvera/v1/personal/model/correlated-calendar-reviews/approve', query: '', kind: 'CORRELATED_CALENDAR_APPROVE_OFF_HTTP', prefix: 'correlated-calendar-approve', post: true },
 };
-if (!Object.hasOwn(targets, target)) throw new Error('KNOWN_PRIVATE_READ_TARGET_REQUIRED');
+if (!Object.hasOwn(targets, target)) throw new Error('KNOWN_PRIVATE_TARGET_REQUIRED');
 const selected = targets[target];
 if (!/^build-[0-9]{13}$/.test(receipt ?? '')) throw new Error('BUILD_RECEIPT_REQUIRED');
 const build = JSON.parse(readFileSync(resolve(root, 'specs/210-personal-live-activation/evidence', receipt, 'result.json'), 'utf8'));
@@ -52,11 +54,15 @@ try {
   if (!ready || closed || startError) throw new Error('OWNED_SERVER_NOT_READY');
   const path = selected.path;
   const sessionQuery = selected.query;
-  for (const [method, query, expectedStatus] of [
+  const cases = selected.post ? [
+    ['POST', '', 404], ['POST', '?workspaceId=synthetic', 404], ['POST', '?workspaceId=one&workspaceId=two', 404],
+    ['GET', '', 405], ['HEAD', '', 405], ['OPTIONS', '', 204], ['DELETE', '', 405],
+  ] : [
     ['GET', '', 404], ['GET', `?workspaceId=synthetic${sessionQuery}`, 404],
     ['GET', `?workspaceId=one&workspaceId=two${sessionQuery}`, 404],
     ['HEAD', '', 404], ['OPTIONS', '', 204], ['POST', '', 405], ['DELETE', '', 405],
-  ]) {
+  ];
+  for (const [method, query, expectedStatus] of cases) {
     const response = await fetch(`${origin}${path}${query}`, { method, redirect: 'manual', signal: AbortSignal.timeout(10_000) });
     const body = await response.text();
     const observation = { method, query, status: response.status, cacheControl: response.headers.get('cache-control'),
@@ -64,13 +70,14 @@ try {
       bodySha256: createHash('sha256').update(body).digest('hex') };
     observations.push(observation);
     if (response.status !== expectedStatus) throw new Error('HTTP_STATUS_MISMATCH');
-    if (method === 'GET' || method === 'HEAD') {
+    const ownedResponse = selected.post ? method === 'POST' : method === 'GET' || method === 'HEAD';
+    if (ownedResponse) {
       if (!/private/.test(observation.cacheControl ?? '') || !/no-store/.test(observation.cacheControl ?? '')
         || !/Cookie/i.test(observation.vary ?? '') || !/Authorization/i.test(observation.vary ?? '')) throw new Error('PRIVATE_RESPONSE_HEADERS_REQUIRED');
-      if (method === 'GET' && body !== '{"error":"Not found."}') throw new Error('OPAQUE_OFF_RESPONSE_REQUIRED');
+      if (method !== 'HEAD' && body !== '{"error":"Not found."}') throw new Error('OPAQUE_OFF_RESPONSE_REQUIRED');
     }
-    if (method !== 'GET' && body !== '') throw new Error('EMPTY_FRAMEWORK_METHOD_BODY_REQUIRED');
-    if (method === 'OPTIONS' && observation.allow?.split(',').map(value => value.trim()).sort().join(',') !== 'GET,HEAD,OPTIONS') throw new Error('READ_ONLY_ALLOW_REQUIRED');
+    if ((!ownedResponse || method === 'HEAD') && body !== '') throw new Error('EMPTY_FRAMEWORK_METHOD_BODY_REQUIRED');
+    if (method === 'OPTIONS' && observation.allow?.split(',').map(value => value.trim()).sort().join(',') !== (selected.post ? 'OPTIONS,POST' : 'GET,HEAD,OPTIONS')) throw new Error('EXACT_METHOD_ALLOW_REQUIRED');
   }
 } catch (error) {
   errorCode = /^[A-Z_]+$/.test(error.message ?? '') ? error.message : 'LOCAL_HTTP_PROBE_FAILED';

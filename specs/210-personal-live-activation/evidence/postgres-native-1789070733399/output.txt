@@ -1,0 +1,409 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=20
+{"testFile":"confirmation-maintenance.postgres.test.ts","database":"endvera_personal_210_fc0935aa922446c580c14c33bac738ce","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:05:56.7783794Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation-maintenance.postgres.test.ts (7 tests) 5228ms
+     ✓ expires PREPARED and WAITING by DB time without touching another owner, summary or permanent nonce  3710ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  16:05:50
+   Duration  6.61s (transform 862ms, setup 0ms, import 1.19s, tests 5.23s, environment 0ms)
+
+
+{"testFile":"confirmation-worker.postgres.test.ts","database":"endvera_personal_210_481459be37194574b38479ddba3798f2","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:06:05.1296976Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation-worker.postgres.test.ts (6 tests) 2958ms
+     ✓ commits one exact review/draft/challenge plus two distinct pending messages; only the dedicated fake-HTTP bridge reaches WAITING  935ms
+     ✓ rolls back review/draft/challenge/messages together when the first consumer result drifts from deterministic replay  320ms
+     ✓ reloads exact confirmation SMS and runs the existing Google executor once with synthetic confirmed outcome  512ms
+     ✓ reloads exact confirmation SMS and runs the existing Google executor once with synthetic unknown outcome  530ms
+     ✓ refuses a received exact confirmation after Google write consent is revoked without any Google HTTP or model fallback  432ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  16:05:59
+   Duration  5.91s (transform 1.49s, setup 0ms, import 2.77s, tests 2.96s, environment 0ms)
+
+
+{"testFile":"confirmation.postgres.test.ts","database":"endvera_personal_210_a29f43d38207438eb16083eea2d3cace","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:06:20.1573986Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/confirmation.postgres.test.ts (22 tests) 11222ms
+     ✓ selects the newer ordinary reply ahead of a retained expired bridge without rewriting either  5715ms
+     ✓ selects the newer ordinary reply ahead of a retained revoked bridge without rewriting either  403ms
+     ✓ selects the newer ordinary reply ahead of a retained identity-revised bridge without rewriting either  362ms
+     ✓ serializes app approval against SMS consumption without two calendar claims  461ms
+     ✓ expires by the DB clock without deleting or resetting the permanent phrase registry  1234ms
+     ✓ permanently closes after five distinct wrong confirmation sources  374ms
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  16:06:07
+   Duration  12.98s (transform 988ms, setup 0ms, import 1.55s, tests 11.22s, environment 0ms)
+
+
+{"testFile":"correlated-calendar-serialization.postgres.test.ts","database":"endvera_personal_210_616f580501e54225b7f4163c863cc5ff","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:06:24.4225526Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/correlated-calendar-serialization.postgres.test.ts (20 tests) 438ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  16:06:22
+   Duration  1.70s (transform 761ms, setup 0ms, import 1.07s, tests 438ms, environment 0ms)
+
+
+{"testFile":"google.postgres.test.ts","database":"endvera_personal_210_1a1a8b016a0f40208e64ecfa9c470624","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:06:29.4044779Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone UTC without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"UTC","mixedEquality":true,"explicitUtcEquality":true,"inferredDateEquality":true,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":true,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-01T16:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-01T16:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone America/New_York without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"America/New_York","mixedEquality":false,"explicitUtcEquality":true,"inferredDateEquality":false,"mixedExpiredAppearsLive":true,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":true,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":true,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-01T12:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-01T12:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > diagnoses UTC-naive lease comparison under transaction-local timezone Asia/Tokyo without changing server settings
+CALENDAR_TIMESTAMP_DIAGNOSTIC {"timezone":"Asia/Tokyo","mixedEquality":false,"explicitUtcEquality":true,"inferredDateEquality":false,"mixedExpiredAppearsLive":false,"explicitUtcExpiredAppearsLive":false,"mixedDatabaseClockExpiredAppearsLive":false,"explicitUtcDatabaseClockExpiredAppearsLive":false,"mixedDatabaseClockFutureAppearsLive":false,"explicitUtcDatabaseClockFutureAppearsLive":true,"inferredDateUpdateCount":1,"inferredWall":"2030-07-02T01:00:00.123","explicitWall":"2030-07-01T16:00:00.123","inferredRoundTrip":"2030-07-02T01:00:00.123Z","explicitRoundTrip":"2030-07-01T16:00:00.123Z"}
+
+stdout | specs/210-personal-live-activation/google.postgres.test.ts > real PostgreSQL OAuth state and credential lifecycle with fake Google transport > parallel owner approvals claim and insert a Google draft only once
+CALENDAR_CONCURRENCY_DIAGNOSTIC {"events":["1:1:BEGIN","2:1:BEGIN","1:1:CALLBACK_ENTER","2:2:CALLBACK_ENTER","2:8:CALLBACK_RETURN","2:11:COMMITTED","3:11:BEGIN","1:16:CALLBACK_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:16:CALLBACK_ENTER","1:17:TRANSACTION_ERROR_P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","3:24:CALLBACK_RETURN","3:24:COMMITTED","4:31:BEGIN","4:32:CALLBACK_ENTER","4:40:CALLBACK_RETURN","4:41:COMMITTED","5:41:BEGIN","5:42:CALLBACK_ENTER","5:48:CALLBACK_RETURN","5:49:COMMITTED"],"outcomes":["P2010_PrismaClientKnownRequestError_40001_SERIALIZATION","FULFILLED"],"elapsedMs":49}
+
+ ✓ specs/210-personal-live-activation/google.postgres.test.ts (14 tests) 1096ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  16:06:26
+   Duration  2.46s (transform 825ms, setup 0ms, import 1.15s, tests 1.10s, environment 0ms)
+
+
+{"testFile":"inbox.postgres.test.ts","database":"endvera_personal_210_4c292d75078446afbf64640bc6e7f0d5","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:06:35.9243027Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/inbox.postgres.test.ts (6 tests) 552ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  16:06:32
+   Duration  3.61s (transform 1.48s, setup 0ms, import 2.83s, tests 552ms, environment 0ms)
+
+
+{"testFile":"outbox.postgres.test.ts","database":"endvera_personal_210_9102bf9649c2450eb99e9252ea6cd218","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:06:43.0992772Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/outbox.postgres.test.ts (16 tests) 1301ms
+     ✓ persists DB-observed acceptance in canonical UTC under UTC, not the provider timestamp  311ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  16:06:38
+   Duration  4.44s (transform 1.53s, setup 0ms, import 2.95s, tests 1.30s, environment 0ms)
+
+
+{"testFile":"personal-model-connection.postgres.test.ts","database":"endvera_personal_210_8096e9860a6043f6af84aa3b4d72bfcc","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:06:47.6735224Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model-connection.postgres.test.ts (12 tests) 850ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  16:06:45
+   Duration  1.92s (transform 577ms, setup 0ms, import 860ms, tests 850ms, environment 0ms)
+
+
+{"testFile":"personal-model.postgres.test.ts","database":"endvera_personal_210_45b357508b2c4d15945944f5ff3667bb","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:06:57.4377912Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-model.postgres.test.ts (14 tests) 1329ms
+     ✓ finishes SMS source and stored review atomically, without pretending to fetch Google  383ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  16:06:52
+   Duration  5.14s (transform 1.68s, setup 0ms, import 3.61s, tests 1.33s, environment 0ms)
+
+
+{"testFile":"personal-subject.postgres.test.ts","database":"endvera_personal_210_c6a1d960e9134ae7ac435e1bf1fa9bd4","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:07:00.8393748Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/personal-subject.postgres.test.ts (5 tests) 292ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  16:06:59
+   Duration  928ms (transform 310ms, setup 0ms, import 476ms, tests 292ms, environment 0ms)
+
+
+{"testFile":"project-brain-voice-gateway.postgres.test.ts","database":"endvera_personal_210_1d9320bc380b4c709b9e3bbf2b3236d0","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:07:06.7499297Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice-gateway.postgres.test.ts (12 tests) 2518ms
+     ✓ real gateway transaction lifecycle and instant round-trip under UTC  538ms
+     ✓ two concurrent admissions leave exactly one claim/hold and cannot reset source budget  307ms
+     ✓ two concurrent dispatchers can persist only one synthetic result and replay never retries  367ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  16:07:03
+   Duration  3.56s (transform 619ms, setup 0ms, import 880ms, tests 2.52s, environment 0ms)
+
+
+{"testFile":"project-brain-voice-recovery.postgres.test.ts","database":"endvera_personal_210_17a787b4a98b40369bbca3e7a8d9e4fd","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:07:23.4602598Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice-recovery.postgres.test.ts (11 tests) 13625ms
+     ✓ prepared claim expires by DB clock and cancels without budget release under UTC  610ms
+     ✓ prepared claim expires by DB clock and cancels without budget release under America/New_York  429ms
+     ✓ prepared claim expires by DB clock and cancels without budget release under Asia/Tokyo  443ms
+     ✓ a committed dispatch marker produces uncertainty, not a claimed invocation, and fences a late exact writer  392ms
+     ✓ OFF leaves an expired admitted claim completely unchanged  375ms
+     ✓ two overlapping real backends terminalize one expired claim at most once  433ms
+     ✓ an occupied canonical session advisory is skipped, then processed only after release  392ms
+     ✓ revocation does not prevent evidence-only recovery or alter the retained source  367ms
+     ✓ the bounded sweep processes 25 of 26 real independent sessions then exactly one  9479ms
+     ✓ an existing synthetic AiUsage linked by physical operationId blocks recovery even without attempt usage FK  514ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  16:07:08
+   Duration  14.68s (transform 638ms, setup 0ms, import 891ms, tests 13.63s, environment 0ms)
+
+
+{"testFile":"project-brain-voice-transcript-review.postgres.test.ts","database":"endvera_personal_210_d93eec9dd2b74b9d91cdf5c4f394eb06","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:07:36.8666691Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts (12 tests) 10345ms
+     ✓ reads exact accepted synthetic evidence and changes nothing under UTC  412ms
+     ✓ an actually expired short consent/session never renews protected content  8069ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  16:07:25
+   Duration  11.37s (transform 598ms, setup 0ms, import 844ms, tests 10.34s, environment 0ms)
+
+
+{"testFile":"project-brain-voice.postgres.test.ts","database":"endvera_personal_210_95a88412746c45d3ba565feabce8456d","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:07:46.1674039Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice.postgres.test.ts (15 tests) 6350ms
+     ✓ database-clock expiry refuses the read without extending or rewriting persisted evidence  5157ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  16:07:38
+   Duration  7.22s (transform 460ms, setup 0ms, import 688ms, tests 6.35s, environment 0ms)
+
+
+{"testFile":"recovery.postgres.test.ts","database":"endvera_personal_210_c3d3934df66b48cda5eb544685ea301b","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:07:49.6159445Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/recovery.postgres.test.ts (5 tests) 424ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  16:07:48
+   Duration  1.01s (transform 293ms, setup 0ms, import 422ms, tests 424ms, environment 0ms)
+
+
+{"testFile":"sms-calendar-read.postgres.test.ts","database":"endvera_personal_210_2a3279d1e5da4d67b3b00cb30b7dc041","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:07:56.1704197Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/sms-calendar-read.postgres.test.ts (3 tests) 604ms
+     ✓ persists exact authority with one reply, no model admission, and survives reconnect  389ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  16:07:52
+   Duration  3.99s (transform 1.69s, setup 0ms, import 3.19s, tests 604ms, environment 0ms)
+
+
+{"testFile":"sms-inbound-recovery.postgres.test.ts","database":"endvera_personal_210_c9d97aa77b604edfbc193104178df516","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:08:01.9182319Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/sms-inbound-recovery.postgres.test.ts (6 tests) 512ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  16:07:58
+   Duration  3.26s (transform 1.32s, setup 0ms, import 2.57s, tests 512ms, environment 0ms)
+
+
+{"testFile":"temporal-registry.postgres.test.ts","database":"endvera_personal_210_3d877a3a64734a568fcd4de738d49136","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:09:50.5517201Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/temporal-registry.postgres.test.ts (171 tests) 103504ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'UTC', preserving approval and sources  1755ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'America/New_York', preserving approval and sources  1446ms
+     ✓ records 'CLAIMED' once after actual lease expiry in 'Asia/Tokyo', preserving approval and sources  1605ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'UTC', preserving approval and sources  1457ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'America/New_York', preserving approval and sources  1367ms
+     ✓ records 'DISPATCH_CLAIMED' once after actual lease expiry in 'Asia/Tokyo', preserving approval and sources  1479ms
+     ✓ expiry recovery does not need to reopen an expired original SMS review  1941ms
+     ✓ recovers typed and ordinary expired claims in the same bounded batch without changing legacy JSON  1080ms
+     ✓ two overlapping native recovery backends close one expired approval once  1112ms
+     ✓ actually skips an expired approval held locked by another live backend, then recovers it after release  1318ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in UTC, without reopening authority  1909ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in America/New_York, without reopening authority  1922ms
+     ✓ reads a recorded confirmation after source expiry and Google/model revocation in Asia/Tokyo, without reopening authority  1921ms
+     ✓ reads an expired unattempted review without inventing an approval or re-enabling its offer  1184ms
+     ✓ reads expired processing as unknown without maintenance writes, then retains that outcome after actual C1 recovery  1383ms
+     ✓ keeps a recorded unknown transport outcome unknown without asserting that nothing happened  503ms
+     ✓ does not require old owner epochs, but refuses old and new owners after an actual ownership transfer  428ms
+     ✓ holds current owner read authority against a real concurrent revocation, then refuses the next history read  541ms
+     ✓ reconstructs the unchanged exact offer and authority under UTC without approving  501ms
+     ✓ reconstructs the unchanged exact offer and authority under America/New_York without approving  584ms
+     ✓ reconstructs the unchanged exact offer and authority under Asia/Tokyo without approving  732ms
+     ✓ requires actual READ consent in addition to the existing WRITE consent  697ms
+     ✓ locks and rechecks the committed immutable CLAIMED claim, then refuses current READ revocation  686ms
+     ✓ locks and rechecks the committed immutable DISPATCH_CLAIMED claim, then refuses current READ revocation  735ms
+     ✓ does not offer a calendar tuple rewritten inside its own transaction snapshot  515ms
+     ✓ commits one exact approval and claim through the real C2b path in UTC  663ms
+     ✓ commits one exact approval and claim through the real C2b path in America/New_York  643ms
+     ✓ commits one exact approval and claim through the real C2b path in Asia/Tokyo  627ms
+     ✓ replays a prior choice after actual expiry and grant revocation without another claim or active gate  1901ms
+     ✓ rolls back approval and operation together when caller fails after the real CAS  572ms
+     ✓ wrong request hash never creates an approval or changes the source chain  386ms
+     ✓ two real overlapping command transactions commit at most one immutable choice  648ms
+     ✓ a budget already exhausted before the transaction callback cannot claim  520ms
+     ✓ returns the exact selected immutable card without a claim in UTC  669ms
+     ✓ returns the exact selected immutable card without a claim in America/New_York  615ms
+     ✓ returns the exact selected immutable card without a claim in Asia/Tokyo  616ms
+     ✓ missing READ refuses, actual grant enables, and actual revocation refuses without mutation  666ms
+     ✓ foreign actor or workspace and a revoked owner cannot read or select a fallback card  596ms
+     ✓ an actual earlier claim is not offered again or executed by a read  627ms
+     ✓ expiry during the real commit acknowledgement interval prevents disclosure  1873ms
+     ✓ an injected lost acknowledgement after a real read commit does not publish the provisional offer  591ms
+     ✓ commits exact recorded result once through wrapper and existing executor in UTC  876ms
+     ✓ commits exact recorded result once through wrapper and existing executor in America/New_York  865ms
+     ✓ commits exact recorded result once through wrapper and existing executor in Asia/Tokyo  1146ms
+     ✓ a failed injected transport leaves typed uncertainty and replay never dispatches again  996ms
+     ✓ lost acknowledgement after actual claim commit never starts the executor or adopts that claim  697ms
+     ✓ two concurrent explicit wrappers produce one recorded effect and one immutable choice  1115ms
+     ✓ network latency does not retain authority locks and an intervening grant revocation prevents confirmation  833ms
+     ✓ a confirmed-shaped response after original expiry is stored unknown and is never resent  1906ms
+     ✓ a lost terminal commit acknowledgement preserves the real confirmed row and never resends  926ms
+     ✓ refuses preparing and approving in one transaction after TOP_XID  469ms
+     ✓ refuses preparing and approving in one transaction after SAVEPOINT  535ms
+     ✓ refuses preparing and approving in one transaction after RELEASED_SAVEPOINT  392ms
+     ✓ refuses preparing and approving in one transaction after OUTER_WRITE  493ms
+     ✓ refuses dispatching a SAVEPOINT claim before its parent commits  431ms
+     ✓ refuses confirming a SAVEPOINT dispatch before its parent commits  517ms
+     ✓ two native sessions cannot commit two approvals for the same review  420ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in UTC  550ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in America/Toronto  445ms
+     ✓ binds native fingerprint, DB epoch and one atomic claim in Pacific/Auckland  471ms
+     ✓ rolls back approval and leaves pending unchanged for MISSING_CLAIM  429ms
+     ✓ rolls back approval and leaves pending unchanged for NULL_AUTHORITY  397ms
+     ✓ rolls back approval and leaves pending unchanged for WRONG_ORIGIN  468ms
+     ✓ refuses an unapproved status mutation without a row or nonce  371ms
+     ✓ refuses a duplicate approval and protects its immutable nonce and scope  522ms
+     ✓ permits one dispatch transition and an exact synthetic terminal receipt, never reopening it  665ms
+     ✓ commits the accepted reply and one private draft through the production hook, not a direct test preparer  565ms
+     ✓ OFF at source processing leaves the completed reply and acknowledgement without a calendar review  389ms
+     ✓ an ambiguous refused answer remains completed but does not produce a calendar review even with preparation ON  314ms
+     ✓ preserves actual committed source and acknowledgement after revocation between consumption and preparation  337ms
+     ✓ preserves actual committed source and acknowledgement after expiry between consumption and preparation  1323ms
+     ✓ projects the real committed two-SMS draft without any manual review identifier  483ms
+     ✓ does not turn a damaged current authorization into an empty success  487ms
+     ✓ does not recreate expired history or reset its preparation window  1206ms
+     ✓ two actual readers preserve the same single immutable review  880ms
+     ✓ commits exactly one isolated pending review and stable replay in UTC  489ms
+     ✓ commits exactly one isolated pending review and stable replay in America/New_York  567ms
+     ✓ commits exactly one isolated pending review and stable replay in Asia/Tokyo  555ms
+     ✓ remains OFF without writing a draft or changing sources  353ms
+     ✓ refuses a preexisting generic operation instead of adopting its request UUID  436ms
+     ✓ a marked operation without its review cannot commit  425ms
+     ✓ rolls back both new rows on a failure after provisional preparation  442ms
+     ✓ a committed review and marker cannot be rewritten or removed  461ms
+     ✓ current revocation refuses even a known replay without changing the saved review  564ms
+     ✓ cannot commit a just-prepared draft already claimed in that same transaction  465ms
+     ✓ refuses an expired replay while keeping the original draft and provenance  1215ms
+     ✓ serializes two actual backend preparations on the same receipt without duplicating  791ms
+     ✓ returns the two full sources and exact current draft without writes in UTC  518ms
+     ✓ returns the two full sources and exact current draft without writes in America/New_York  431ms
+     ✓ returns the two full sources and exact current draft without writes in Asia/Tokyo  524ms
+     ✓ does not prepare a review when missing or OFF and does not disclose it to a foreign owner  416ms
+     ✓ refuses expired proof without resetting the saved preparation window  1175ms
+     ✓ current revoked Google authority refuses the read without altering immutable history  495ms
+     ✓ reads a synthetic current uncertain state as uncertain, never re-preparing pending  498ms
+     ✓ bounds the first discovery against a real exclusive table lock  703ms
+     ✓ recalculates the exact completed two-source packet in UTC without any write  423ms
+     ✓ recalculates the exact completed two-source packet in America/New_York without any write  413ms
+     ✓ recalculates the exact completed two-source packet in Asia/Tokyo without any write  457ms
+     ✓ does not disclose an accepted receipt to another owner or workspace  393ms
+     ✓ a genuine refused ambiguous answer is not recast as a consumed accepted receipt  369ms
+     ✓ current GOOGLE grant revocation refuses without changing the historical receipt  604ms
+     ✓ current MODEL grant revocation refuses without changing the historical receipt  483ms
+     ✓ retains but refuses an actually expired accepted receipt without inventing a fresh window  1308ms
+     ✓ keeps a later active question intact while inspecting the earlier inactive receipt  756ms
+     ✓ holds current owner authority against a real concurrent revocation, then refuses the next read  393ms
+     ✓ EXPIRED preserves evidence while selecting the correct oldest candidate  1241ms
+     ✓ TERMINAL preserves evidence while selecting the correct oldest candidate  1272ms
+     ✓ AFTER_INSERT_REVOKED rolls back the real consumer/source CAS and acknowledgment insert  376ms
+     ✓ expires PREPARED once, retains source/question/budget/history  1268ms
+     ✓ expires WAITING once, retains source/question/budget/history  1163ms
+     ✓ expires REVOKED once, retains source/question/budget/history  1178ms
+     ✓ two real backends expire the same question at most once without losing permanent history  1207ms
+     ✓ actual outbox + registry commit under UTC with synthetic HTTP only  455ms
+     ✓ actual outbox + registry commit under America/New_York with synthetic HTTP only  374ms
+     ✓ rejects a source lease expiring after insertion but before the final exact completion  1758ms
+     ✓ each rejected SMS increments once; fifth closes active question and preserves evidence  385ms
+     ✓ five creations across both types share one permanent hourly cap  1018ms
+     ✓ two native backends competing for the fifth creation commit only one even when both terminalize  833ms
+     ✓ native overlapping clarification/confirmation creation has one winner and different backends  306ms
+
+ Test Files  1 passed (1)
+      Tests  171 passed (171)
+   Start at  16:08:03
+   Duration  106.52s (transform 1.56s, setup 0ms, import 2.85s, tests 103.50s, environment 0ms)
+
+
+{"testFile":"utc-datetime.postgres.test.ts","database":"endvera_personal_210_4c15e01b728f4dd7bf2876a24dbea200","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:09:53.4789951Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/utc-datetime.postgres.test.ts (4 tests) 79ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  16:09:52
+   Duration  733ms (transform 313ms, setup 0ms, import 492ms, tests 79ms, environment 0ms)
+
+
+{"testFile":"voice-transcript-purge-utc.postgres.test.ts","database":"endvera_personal_210_a53e3202e2004e528b95f5280b2ae9bc","template":"endvera_personal_210_79be38768cb34968a9d6106dcb924e66","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:09:56.3092595Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/voice-transcript-purge-utc.postgres.test.ts (6 tests) 165ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  16:09:55
+   Duration  942ms (transform 360ms, setup 0ms, import 549ms, tests 165ms, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-503502c273994f748c5e76fdc303849b

@@ -1,0 +1,90 @@
+{
+  "kind": "CORRELATED_CALENDAR_APPROVE_OFF_HTTP",
+  "buildReceipt": "build-1789070619221",
+  "buildDirectory": ".next-personal-210-build-1789070619221",
+  "buildId": "WLptYVncl09hX0E7DBmfx",
+  "finishedAt": "2026-09-10T20:07:55.780Z",
+  "localOnly": true,
+  "ownerPid": 66896,
+  "childExitCode": null,
+  "serverStopped": true,
+  "portClosed": true,
+  "portCheck": "TCP_ECONNREFUSED_REQUIRED",
+  "providerCallsAuthorized": false,
+  "databaseConfigured": false,
+  "authenticatedReadObserved": false,
+  "observations": [
+    {
+      "method": "POST",
+      "query": "",
+      "status": 404,
+      "cacheControl": "private, no-store",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Cookie, Authorization",
+      "allow": null,
+      "bodyBytes": 22,
+      "bodySha256": "58e46b31fc6d69e3ecdb843eeff8bac8d49c9a70cdac583c73986a8a4fb5d1b0"
+    },
+    {
+      "method": "POST",
+      "query": "?workspaceId=synthetic",
+      "status": 404,
+      "cacheControl": "private, no-store",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Cookie, Authorization",
+      "allow": null,
+      "bodyBytes": 22,
+      "bodySha256": "58e46b31fc6d69e3ecdb843eeff8bac8d49c9a70cdac583c73986a8a4fb5d1b0"
+    },
+    {
+      "method": "POST",
+      "query": "?workspaceId=one&workspaceId=two",
+      "status": 404,
+      "cacheControl": "private, no-store",
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Cookie, Authorization",
+      "allow": null,
+      "bodyBytes": 22,
+      "bodySha256": "58e46b31fc6d69e3ecdb843eeff8bac8d49c9a70cdac583c73986a8a4fb5d1b0"
+    },
+    {
+      "method": "GET",
+      "query": "",
+      "status": 405,
+      "cacheControl": null,
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+      "allow": null,
+      "bodyBytes": 0,
+      "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "method": "HEAD",
+      "query": "",
+      "status": 405,
+      "cacheControl": null,
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+      "allow": null,
+      "bodyBytes": 0,
+      "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "method": "OPTIONS",
+      "query": "",
+      "status": 204,
+      "cacheControl": null,
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+      "allow": "OPTIONS, POST",
+      "bodyBytes": 0,
+      "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "method": "DELETE",
+      "query": "",
+      "status": 405,
+      "cacheControl": null,
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+      "allow": null,
+      "bodyBytes": 0,
+      "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "exitCode": 0,
+  "errorCode": null
+}

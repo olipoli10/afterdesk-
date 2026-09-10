@@ -149,6 +149,8 @@ describe("C2b transaction-only claim — simulated transactions, real A contract
     expect(s.indexOf("FOR UPDATE OF o")).toBeLessThan(s.indexOf('INSERT INTO "PersonalSmsCorrelatedCalendarApproval"'));
     expect(s).toContain("maxWait, timeout: phase - maxWait"); expect(s).toContain("performance.now()"); expect(s).toContain("sms_correlated_approval_binding(a,r,o)");
     expect(s).toContain('a."reviewId"=r.id OR a."calendarOperationId"=o.id'); expect(s).toContain("($6::timestamptz AT TIME ZONE 'UTC')");
-    expect(s).not.toMatch(/from ["'][^"']*(?:calendar-actions|approval-result)|executeClaimed|googleTokensForOwner|insertEvent\(|\bfetch\(|\$transaction\(/);
+    const claimOnly = s.slice(s.indexOf("export async function claimCorrelatedCalendarApprovalInTransaction"), s.indexOf("const responseCommon"));
+    expect(claimOnly).toContain("CLAIM_CREATED_NOT_COMMITTED"); expect(claimOnly).toContain('INSERT INTO "PersonalSmsCorrelatedCalendarApproval"'); expect(claimOnly.length).toBeGreaterThan(1000);
+    expect(claimOnly).not.toMatch(/executeClaimed|readCorrelatedCalendarApprovalResult|googleTokensForOwner|insertEvent\(|\bfetch\(|\$transaction\(/);
   });
 });

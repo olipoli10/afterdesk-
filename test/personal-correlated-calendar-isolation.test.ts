@@ -2,11 +2,12 @@ import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ member: vi.fn(), account: vi.fn(), unique: vi.fn(), many: vi.fn(), create: vi.fn(),
-  relatedUnique: vi.fn(), relatedMany: vi.fn(), update: vi.fn(), query: vi.fn(), execute: vi.fn(), transaction: vi.fn(), tokens: vi.fn() }));
+  relatedUnique: vi.fn(), approvedUnique: vi.fn(), relatedMany: vi.fn(), update: vi.fn(), query: vi.fn(), execute: vi.fn(), transaction: vi.fn(), tokens: vi.fn() }));
 vi.mock("@/lib/db", () => ({ prisma: { constructionWorkspaceMember: { findFirst: m.member },
   constructionConnectorAccount: { findUniqueOrThrow: m.account },
   personalAssistantOperation: { findUnique: m.unique, findMany: m.many, create: m.create, updateMany: m.update },
   personalSmsCorrelatedCalendarReview: { findUnique: m.relatedUnique, findMany: m.relatedMany },
+  personalSmsCorrelatedCalendarApproval: { findUnique: m.approvedUnique },
   $queryRawUnsafe: m.query, $executeRawUnsafe: m.execute, $transaction: m.transaction } }));
 vi.mock("@/server/personal-assistant/google-connection", () => ({ googleTokensForOwner: m.tokens }));
 vi.mock("@/server/personal-assistant/api-auth", () => ({ personalApiUser: vi.fn(async () => ({ user: { id: "owner" } })) }));
@@ -51,6 +52,7 @@ beforeEach(() => {
   m.account.mockResolvedValue({ id: "google", stateVersion: 1, status: "connected", revokedAt: null, grantedScopes: scopes });
   m.unique.mockResolvedValue(null); m.many.mockResolvedValue([]); m.query.mockResolvedValue([]);
   m.relatedMany.mockResolvedValue([]);
+  m.approvedUnique.mockResolvedValue(null);
   m.relatedUnique.mockImplementation(async () => (await m.unique.mock.results.at(-1)?.value)?.correlatedCalendarReview ?? null);
   m.execute.mockResolvedValue(1); m.create.mockImplementation(async ({ data }) => ({ id: "new", ...data }));
   m.transaction.mockImplementation(work => work(prisma));

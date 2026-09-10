@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it, vi } from "vitest";
 import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
@@ -33,8 +33,10 @@ import { deterministicGoogleEventId } from "@/lib/construction-operating-assista
 import { recoverExpiredPersonalActionClaims } from "@/server/personal-assistant/claim-recovery";
 import { readCorrelatedCalendarApprovalResult } from "@/server/personal-assistant/correlated-calendar-approval-result";
 import { inspectCorrelatedCalendarApprovalOfferInTransaction, lockCorrelatedCalendarApprovalWriteInTransaction } from "@/server/personal-assistant/correlated-calendar-approval-gate";
-import { createCorrelatedCalendarApprovalClaimBudget, claimCorrelatedCalendarApprovalInTransaction } from "@/server/personal-assistant/correlated-calendar-approval";
+import { createCorrelatedCalendarApprovalClaimBudget, claimCorrelatedCalendarApprovalInTransaction, approveCorrelatedCalendarReview, correlatedCalendarApprovalResponseSchema } from "@/server/personal-assistant/correlated-calendar-approval";
 import { readCorrelatedCalendarApprovalOffer, correlatedCalendarApprovalOfferSchema } from "@/server/personal-assistant/correlated-calendar-approval-offer";
+import { GoogleCalendarClient } from "@/server/personal-assistant/google-client";
+import { sealConnectorSecret } from "@/server/personal-assistant/credential-cipher";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -46,7 +48,10 @@ const calendarBody = "Ajoute inspection le 2026-09-12 à 14:00 jusqu’à 15:00.
 const span = (body: string, quote: string) => ({ quote, start: body.indexOf(quote), end: body.indexOf(quote) + quote.length });
 
 // Native SQL fixture only. Real persisted gateway chain, but injected synthetic
-// model adapter; fake credential records never decrypted. SMS acceptance below
+// model adapter; base fake credential records are never decrypted. The explicit
+// executor cases below replace only their fixture's ciphertext with locally
+// generated encrypted synthetic tokens and always inject the Google transport.
+// SMS acceptance below
 // is explicitly TEST-CREATED database evidence, never a provider/delivery claim.
 async function fixture(temporalOptions: { body?: string; start?: string; end?: string; missingEnd?: boolean } = {}) {
   const chosenTemporalBody = temporalOptions.body ?? temporalBody;
@@ -807,15 +812,18 @@ describe("selected-card public offer from actual PostgreSQL and current canonica
   it("expiry during the real commit acknowledgement interval prevents disclosure", async () => {
     const x = await actualAnsweredQuestion("14h", 1700, true); await addSyntheticReadGrant(x);
     const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
-    const before = await historicalSnapshot(x), original = prisma.$transaction.bind(prisma); let returnedFromCommit = false;
+    const before = await historicalSnapshot(x), original = prisma.$transaction.bind(prisma); let returnedFromCommit = false, expiryObserved = false;
     const wrapped = vi.spyOn(prisma, "$transaction").mockImplementationOnce((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) => {
       const result = await original(work, options); returnedFromCommit = true;
-      await waitForQuestionExpiry(x.p.id); return result;
+      await waitForQuestionExpiry(x.p.id);
+      const [clock] = await prisma.$queryRawUnsafe<Array<{ expired: boolean }>>('SELECT (clock_timestamp() AT TIME ZONE \'UTC\') >= "expiresAt" AS expired FROM "PersonalSmsTemporalClarification" WHERE id=$1', x.p.id);
+      expiryObserved = clock?.expired === true;
+      return result;
     }) as typeof prisma.$transaction);
     try { await expect(readCorrelatedCalendarApprovalOffer({ enabled: true, actor: x.f.actor, reviewId: review.id }, approvalGateEnvironment(x), context()))
       .rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE"); }
     finally { wrapped.mockRestore(); }
-    expect(returnedFromCommit).toBe(true); expect(await historicalSnapshot(x)).toEqual(before);
+    expect(returnedFromCommit).toBe(true); expect(expiryObserved).toBe(true); expect(await historicalSnapshot(x)).toEqual(before);
   });
   it("an injected lost acknowledgement after a real read commit does not publish the provisional offer", async () => {
     const x = await actualAnsweredQuestion("14h", undefined, true); await addSyntheticReadGrant(x);
@@ -828,6 +836,144 @@ describe("selected-card public offer from actual PostgreSQL and current canonica
       .rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_OFFER_UNAVAILABLE"); }
     finally { wrapped.mockRestore(); }
     expect(returnedFromCommit).toBe(true); expect(await historicalSnapshot(x)).toEqual(before);
+  });
+});
+
+async function encryptedSyntheticApprovalFixture(ttlMs?: number) {
+  const x = await actualAnsweredQuestion("14h", ttlMs, true), readGrant = await addSyntheticReadGrant(x);
+  const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+  const account = await prisma.constructionConnectorAccount.findUniqueOrThrow({ where: { id: review.connectorAccountId } });
+  if (!account.credentialRef) throw new Error("SYNTHETIC_CREDENTIAL_REQUIRED");
+  // Fresh random test-only key, never a real credential. Exercise the real vault
+  // and token loader, but the Google HTTP client ALWAYS receives injected fetch.
+  const key = randomBytes(32), env: NodeJS.ProcessEnv = { ...approvalGateEnvironment(x), ENDVERA_CONNECTOR_ENCRYPTION_KEY: key.toString("base64") };
+  const tokens = { accessToken: "synthetic-access-not-valid", refreshToken: "synthetic-refresh-not-valid", expiresAt: Date.now() + 3600000,
+    scopes: [GOOGLE_CALENDAR_WRITE_SCOPE, GOOGLE_CALENDAR_READ_SCOPE], subject: "synthetic-google-subject" };
+  const ciphertext = sealConnectorSecret(JSON.stringify(tokens), JSON.stringify([x.f.workspaceId, account.id, `tokens:${account.credentialRef}`]), key);
+  await prisma.constructionConnectorCredential.update({ where: { id: account.credentialRef }, data: { ciphertext } });
+  const command = await actualClaimCommand(x, review.id);
+  const transport = vi.fn<typeof fetch>(async (url, init) => {
+    if (!String(url).startsWith("https://www.googleapis.com/calendar/v3/calendars/primary/events?") || init?.method !== "POST") throw new Error("SYNTHETIC_CALENDAR_POST_ONLY");
+    return Response.json({ ...JSON.parse(String(init.body)), status: "confirmed" });
+  });
+  return { x, review, readGrant, env, command, transport, client: new GoogleCalendarClient(env, transport) };
+}
+const approveSyntheticFixture = (f: Awaited<ReturnType<typeof encryptedSyntheticApprovalFixture>>) =>
+  approveCorrelatedCalendarReview(f.command, f.x.f.actor, f.env, { deadlineAt: Date.now() + 25000 }, f.client);
+describe("same real calendar executor from correlated explicit command, encrypted synthetic tokens and injected HTTP", () => {
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("commits exact recorded result once through wrapper and existing executor in %s", async zone => {
+    const f = await encryptedSyntheticApprovalFixture(), before = await historicalSnapshot(f.x), original = prisma.$transaction.bind(prisma);
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) =>
+      original(async tx => { await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone); return work(tx); }, options)) as typeof prisma.$transaction);
+    let raw: Awaited<ReturnType<typeof approveSyntheticFixture>>;
+    try { raw = await approveSyntheticFixture(f); } finally { wrapped.mockRestore(); }
+    const result = correlatedCalendarApprovalResponseSchema.parse(raw);
+    expect(result).toMatchObject({ status: "CONFIRMED", workspaceId: f.x.f.workspaceId, reviewId: f.review.id,
+      expectedRequestHash: f.command.expectedRequestHash, expectedReviewFingerprint: f.command.expectedReviewFingerprint,
+      automaticRetry: false, executionAuthorized: false, providerStateVerified: false,
+      receipt: { confirmed: true, providerEventId: deterministicGoogleEventId({ workspaceId: f.x.f.workspaceId, calendarItemId: f.review.calendarRequestId, idempotencyKey: f.review.calendarRequestId }) } });
+    const after = await historicalSnapshot(f.x); expect(after.approvals).toHaveLength(1);
+    expect({ ...after, operations: before.operations, approvals: before.approvals }).toEqual(before);
+    expect(after.operations.filter(row => row.id !== f.review.calendarOperationId)).toEqual(before.operations.filter(row => row.id !== f.review.calendarOperationId));
+    const op = after.operations.find(row => row.id === f.review.calendarOperationId)!;
+    expect(op).toMatchObject({ status: "completed", attempts: 1, leaseUntil: null, externalTransportPerformed: true, result: { phase: "CONFIRMED", automaticRetry: false } });
+    expect(await readApprovalHistory(f.x, f.review.id, zone)).toMatchObject({ outcome: "CONFIRMED", providerStateVerified: false });
+    expect(await approveSyntheticFixture(f)).toMatchObject({ status: "ALREADY_ATTEMPTED", result: { outcome: "CONFIRMED" } });
+    expect(await historicalSnapshot(f.x)).toEqual(after); expect(f.transport).toHaveBeenCalledOnce(); expect(f.x.transport).toHaveBeenCalledOnce();
+  });
+  it("a failed injected transport leaves typed uncertainty and replay never dispatches again", async () => {
+    const f = await encryptedSyntheticApprovalFixture(); f.transport.mockRejectedValue(new Error("SYNTHETIC_CONNECTION_LOST"));
+    const before = await historicalSnapshot(f.x);
+    await expect(approveSyntheticFixture(f)).rejects.toThrow("CALENDAR_WRITE_OUTCOME_UNKNOWN");
+    const after = await historicalSnapshot(f.x); expect(after.approvals).toHaveLength(1);
+    expect(after.operations.find(row => row.id === f.review.calendarOperationId)).toMatchObject({ status: "uncertain", leaseUntil: null, attempts: 1,
+      externalTransportPerformed: true, result: { phase: "UNCERTAIN", reason: "WRITE_OUTCOME_UNKNOWN", automaticRetry: false } });
+    expect({ ...after, operations: before.operations, approvals: before.approvals }).toEqual(before);
+    expect(await approveSyntheticFixture(f)).toMatchObject({ status: "ALREADY_ATTEMPTED", result: { outcome: "UNKNOWN" } });
+    expect(await historicalSnapshot(f.x)).toEqual(after); expect(f.transport).toHaveBeenCalledOnce();
+  });
+  it("lost acknowledgement after actual claim commit never starts the executor or adopts that claim", async () => {
+    const f = await encryptedSyntheticApprovalFixture(), original = prisma.$transaction.bind(prisma); let claimCommitted = false;
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementationOnce((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) => {
+      await original(work, options); claimCommitted = true; throw new Error("SYNTHETIC_CLAIM_COMMIT_ACK_LOST");
+    }) as unknown as typeof prisma.$transaction);
+    try { await expect(approveSyntheticFixture(f)).rejects.toThrow("CORRELATED_CALENDAR_APPROVAL_COMMIT_OUTCOME_UNKNOWN"); }
+    finally { wrapped.mockRestore(); }
+    expect(claimCommitted).toBe(true); expect(f.transport).not.toHaveBeenCalled();
+    const before = await historicalSnapshot(f.x); expect(before.approvals).toHaveLength(1);
+    expect(before.operations.find(row => row.id === f.review.calendarOperationId)).toMatchObject({ status: "processing", attempts: 1, externalTransportPerformed: false, result: { phase: "CLAIMED" } });
+    expect(await approveSyntheticFixture(f)).toMatchObject({ status: "ALREADY_ATTEMPTED", result: { outcome: "PENDING_RESULT" } });
+    expect(await historicalSnapshot(f.x)).toEqual(before); expect(f.transport).not.toHaveBeenCalled();
+    // Legal native recovery of the orphan, not a second synthetic approval.
+    const data = await approvalFixtureData(f.x, f.review.id), [approval] = await prisma.$queryRawUnsafe<Array<{ id: string; approvalToken: string; approvedAt: Date; approvalExpiresAt: Date; leaseUntil: Date }>>('SELECT * FROM "PersonalSmsCorrelatedCalendarApproval" WHERE "reviewId"=$1', f.review.id);
+    const claim = inspectCorrelatedCalendarApprovalClaim({ version: "personal-correlated-calendar-write-claim-v1", origin: { kind: "personal_sms_temporal_receipt", approvalId: approval.id, reviewId: f.review.id, reviewFingerprint: data.inspected.fingerprint },
+      ...f.x.f.actor, operationId: data.operation.id, expectedRequestHash: data.operation.requestHash, request: data.operation.request, authority: data.authority,
+      approvalToken: approval.approvalToken, approvedAt: approval.approvedAt.toISOString(), approvalExpiresAt: approval.approvalExpiresAt.toISOString(), leaseUntil: approval.leaseUntil.toISOString() }, data.inspected.view).claim;
+    await closeTestCreatedClaim(claim);
+  });
+  it("two concurrent explicit wrappers produce one recorded effect and one immutable choice", async () => {
+    const f = await encryptedSyntheticApprovalFixture(), before = await historicalSnapshot(f.x);
+    const outcomes = await Promise.allSettled([approveSyntheticFixture(f), approveSyntheticFixture(f)]);
+    expect(outcomes.filter(r => r.status === "fulfilled" && r.value.status === "CONFIRMED")).toHaveLength(1);
+    for (const outcome of outcomes) if (outcome.status === "rejected") expect(outcome.reason).toHaveProperty("message", "CORRELATED_CALENDAR_APPROVAL_COMMIT_OUTCOME_UNKNOWN");
+    else if (outcome.value.status !== "CONFIRMED") expect(outcome.value).toHaveProperty("status", "ALREADY_ATTEMPTED");
+    const after = await historicalSnapshot(f.x); expect(after.approvals).toHaveLength(1); expect(f.transport).toHaveBeenCalledOnce();
+    expect(after.operations.find(row => row.id === f.review.calendarOperationId)).toMatchObject({ status: "completed", attempts: 1, result: { phase: "CONFIRMED" } });
+    expect({ ...after, operations: before.operations, approvals: before.approvals }).toEqual(before);
+  });
+  it("network latency does not retain authority locks and an intervening grant revocation prevents confirmation", async () => {
+    const f = await encryptedSyntheticApprovalFixture(); let revocationFinished = false;
+    f.transport.mockImplementation(async (_url, init) => {
+      // If the dispatch transaction awaited this HTTP promise while holding its
+      // SHARE locks, this real writer could not finish before that promise.
+      await prisma.constructionConnectorGrant.update({ where: { id: f.readGrant.id }, data: { status: "revoked", revokedAt: new Date(), stateVersion: { increment: 1 }, grantedScopes: [] } });
+      revocationFinished = true; return Response.json({ ...JSON.parse(String(init!.body)), status: "confirmed" });
+    });
+    await expect(approveSyntheticFixture(f)).rejects.toThrow("CALENDAR_WRITE_OUTCOME_UNKNOWN");
+    expect(revocationFinished).toBe(true); expect(f.transport).toHaveBeenCalledOnce();
+    expect(await readApprovalHistory(f.x, f.review.id)).toHaveProperty("outcome", "UNKNOWN");
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: f.review.calendarOperationId } })).toMatchObject({ status: "uncertain", externalTransportPerformed: true, result: { phase: "UNCERTAIN" } });
+  });
+  it("a confirmed-shaped response after original expiry is stored unknown and is never resent", async () => {
+    const f = await encryptedSyntheticApprovalFixture(1700); let expiryObserved = false;
+    let lateResponse: Promise<Response> | undefined;
+    f.transport.mockImplementation((_url, init) => lateResponse = (async () => {
+      await waitForQuestionExpiry(f.x.p.id);
+      const [clock] = await prisma.$queryRawUnsafe<Array<{ expired: boolean }>>('SELECT (clock_timestamp() AT TIME ZONE \'UTC\') >= "expiresAt" AS expired FROM "PersonalSmsTemporalClarification" WHERE id=$1', f.x.p.id);
+      expiryObserved = clock?.expired === true;
+      return Response.json({ ...JSON.parse(String(init!.body)), status: "confirmed" });
+    })());
+    await expect(approveSyntheticFixture(f)).rejects.toThrow("CALENDAR_WRITE_OUTCOME_UNKNOWN");
+    // The executor may abort conservatively before the DB TTL. This injected
+    // transport deliberately ignores abort; observe its actual late completion
+    // before asserting expiry, without extending the executor's effect budget.
+    expect(f.transport).toHaveBeenCalledOnce(); expect(lateResponse).toBeDefined();
+    await lateResponse;
+    expect(expiryObserved).toBe(true); expect(f.transport).toHaveBeenCalledOnce();
+    expect(await readApprovalHistory(f.x, f.review.id)).toHaveProperty("outcome", "UNKNOWN");
+    const before = await historicalSnapshot(f.x);
+    expect(await approveSyntheticFixture(f)).toMatchObject({ status: "ALREADY_ATTEMPTED", result: { outcome: "UNKNOWN" } });
+    expect(await historicalSnapshot(f.x)).toEqual(before); expect(f.transport).toHaveBeenCalledOnce();
+  });
+  it("a lost terminal commit acknowledgement preserves the real confirmed row and never resends", async () => {
+    const f = await encryptedSyntheticApprovalFixture(), original = prisma.$transaction.bind(prisma); let terminalCommitted = false;
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) => {
+      const result = await original(work, options);
+      const row = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: f.review.calendarOperationId } });
+      if (!terminalCommitted && row.status === "completed") {
+        terminalCommitted = true; throw new Error("SYNTHETIC_TERMINAL_COMMIT_ACK_LOST");
+      }
+      return result;
+    }) as typeof prisma.$transaction);
+    try { await expect(approveSyntheticFixture(f)).rejects.toThrow("CALENDAR_WRITE_OUTCOME_UNKNOWN"); }
+    finally { wrapped.mockRestore(); }
+    expect(terminalCommitted).toBe(true); expect(f.transport).toHaveBeenCalledOnce();
+    const before = await historicalSnapshot(f.x); expect(before.approvals).toHaveLength(1);
+    expect(before.operations.find(row => row.id === f.review.calendarOperationId)).toMatchObject({ status: "completed", attempts: 1,
+      leaseUntil: null, externalTransportPerformed: true, result: { phase: "CONFIRMED" } });
+    expect(await readApprovalHistory(f.x, f.review.id)).toHaveProperty("outcome", "CONFIRMED");
+    expect(await approveSyntheticFixture(f)).toMatchObject({ status: "ALREADY_ATTEMPTED", result: { outcome: "CONFIRMED" } });
+    expect(await historicalSnapshot(f.x)).toEqual(before); expect(f.transport).toHaveBeenCalledOnce();
   });
 });
 
