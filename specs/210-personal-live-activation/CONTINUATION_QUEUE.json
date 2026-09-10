@@ -6,6 +6,24 @@
   "automationId": "endvera-mise-en-service-personnelle",
   "entries": [
     {
+      "id": "VOICE_DISCLOSURE_DEADLINE_REPAIR",
+      "status": "DONE_LOCAL",
+      "dependencies": ["PROJECT_BRAIN_VOICE_SUBJECT_AND_ASR_WIRE"],
+      "evidence": "audits/PROJECT_BRAIN_VOICE_DISCLOSURE_CONTROLLER.md",
+      "completed": ["Native RED12/3 retained; corrected target17 and full372/20 clones PASS, all owned servers stopped", "Reader/GET private publication deadline reviewed;221 focused tests, build and real OFF HTTP7 PASS", "Root original6113/1 timeout retained; unchanged rerun6114 PASS/3 historical skips"],
+      "remaining": ["No live transcription, public deployment, mobile or provider observation"],
+      "liveObserved": false
+    },
+    {
+      "id": "PILOT_BACKEND_APK_COMPATIBILITY_UPGRADE",
+      "status": "IN_PROGRESS",
+      "dependencies": ["VOICE_DISCLOSURE_DEADLINE_REPAIR", "SMS_CORRELATED_EXPLICIT_APPROVAL"],
+      "evidence": "PILOT_BACKEND_APK_UPGRADE_PLAN.md",
+      "completed": ["Historical remote70/local79 mismatch identified; bootstrap68-to70 and APK builder are not sufficient upgrade gates"],
+      "remaining": ["Read-only exact migration catalog and peer review", "Fresh remote identity/checksums, backup/drift and populated rehearsal before migration", "Compatible dedicated backend before coherent signed internal APK; real owner connections remain separate"],
+      "liveObserved": false
+    },
+    {
       "id": "MOBILE_CONNECTION_CLARITY",
       "status": "DONE_LOCAL",
       "dependencies": [],

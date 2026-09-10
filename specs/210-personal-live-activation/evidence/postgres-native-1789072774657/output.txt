@@ -1,0 +1,220 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"project-brain-voice-transcript-review.postgres.test.ts","database":"endvera_personal_210_d3199603a85e45119f2ef723d8d3ec7b","template":"endvera_personal_210_c64a838b2b8c4c33aa3ebe01d6ca5586","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":1,"finishedAt":"2026-09-10T20:40:16.5846144Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts (15 tests | 3 failed) 23304ms
+     ✓ reads exact accepted synthetic evidence and changes nothing under UTC  484ms
+     ✓ reads exact accepted synthetic evidence and changes nothing under America/New_York 258ms
+     ✓ reads exact accepted synthetic evidence and changes nothing under Asia/Tokyo  317ms
+     ✓ OFF and incomplete admitted session disclose no content and change no evidence 150ms
+     ✓ an application CLIENT admin in the same workspace and a mismatched workspace are not the PB owner 158ms
+     ✓ revoke/regrant membership cannot revive the original pinned epoch 170ms
+     ✓ unknown synthetic outcome is not a readable transcript or settled exposure 151ms
+     ✓ real immutable transcript guards reject text/expiry tampering; reader does not repair evidence 250ms
+     ✓ a legal content-only purge makes the former result unreadable without changing its lineage 197ms
+     ✓ an actually expired short consent/session never renews protected content  8066ms
+     × suppresses disclosure after actual read commit followed by original DB expiry under UTC 4077ms
+     × suppresses disclosure after actual read commit followed by original DB expiry under America/New_York 4074ms
+     × suppresses disclosure after actual read commit followed by original DB expiry under Asia/Tokyo 4064ms
+     ✓ two real reader backends may share the canonical lock and return the same immutable evidence  388ms
+     ✓ the current-owner read holds a real revocation until its transaction completes; next read refuses  493ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 12 passed (15)
+   Start at  16:39:52
+   Duration  24.38s (transform 568ms, setup 0ms, import 836ms, tests 23.30s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > suppresses disclosure after actual read commit followed by original DB expiry under UTC
+AssertionError: promise resolved "{ …(29) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "assemblyFingerprint": "sha256:5a9683f2bf1ebf5ffc9b55bcafe9e2aa746e51449925e036d2b2f3bf1f6a40a2",
++   "assemblyVersion": "VOICE_TRANSCRIPT_JOIN_V1",
++   "automaticConfirmationPerformed": false,
++   "contentIntegrityVerified": true,
++   "executionAuthorized": false,
++   "expiresAt": "2026-09-10T20:40:07.452Z",
++   "externalTransportPerformed": false,
++   "intakeId": "c23fa908-9c66-406e-a0d2-eee444ea2fad",
++   "intakeStateVersion": 2,
++   "mediaDecodingVerified": false,
++   "orderedEvidence": [
++     {
++       "audioFingerprint": "sha256:1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb",
++       "gatewayAttemptId": "attempt_1597943373394948bf0302059dbe41ed",
++       "gatewayOperationId": "gwop_f1f4e113bf3e488badb3b042722eca10",
++       "ordinal": 0,
++       "responseEvidenceRef": "sha256:cfd7edc1f1bff93575e5e8c2ddb158f54ec112b3178511a8df64e448d3def4d5",
++       "segmentId": "c31ee755-b408-478d-b5f7-46d4bbe1403d",
++       "textFingerprint": "sha256:b06570f5211c66c2eae817e275928f8acab783c473a74be2f8b3a614e3088c0d",
++       "transcriptId": "vts_05c81f3a61764d20b29c080f0c5934d3",
++     },
++   ],
++   "processingMode": "SYNTHETIC_LOCAL",
++   "projectFactConfirmed": false,
++   "projectId": "cmtvzr61d0068i5b8dsyduych",
++   "realTranscriptionAvailable": false,
++   "reviewFingerprint": "sha256:f688bb4e0a10adad0b3b585fbce2a54c2c82dc1dad3ce355bb7f09956d7f431c",
++   "schemaVersion": 1,
++   "segmentManifestHash": "59b98e816b9db805c471b1349caf4d3d84ead8261e87ab27a823f95af7298b8a",
++   "semanticAccuracyVerified": false,
++   "sessionId": "bdb6c77b-7b1f-46b5-9b17-54b9a8fc619c",
++   "sourceBindingHash": "6b95247087b39316c8a7b99366d867dba39362ed31bdbb1f1b668377111484c1",
++   "sourceContentHash": "1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb",
++   "sourceId": "fcbfdfde-50e5-4871-887f-f98525e349c5",
++   "status": "SYNTHETIC_REVIEW_AVAILABLE_NOT_AUTHORIZED",
++   "syntheticReviewAvailable": true,
++   "text": "SYNTHETIC_LOCAL — no speech was transcribed. Segment 0: sha256:1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb.",
++   "textFingerprint": "sha256:b06570f5211c66c2eae817e275928f8acab783c473a74be2f8b3a614e3088c0d",
++   "transcriptionQualityVerified": false,
++   "workspaceId": "cmtvzr618005zi5b83lxmeaj8",
+  }
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts:131:35
+    129|     }) as typeof prisma.$transaction);
+    130|     try {
+    131|       await expect(readFixture(f)).rejects.toThrow("VOICE_PB_TRANSCRIP…
+       |                                   ^
+    132|       expect(committed).toBe(true); expect(expired).toBe(true); expect…
+    133|     } finally { wrapped.mockRestore(); }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > suppresses disclosure after actual read commit followed by original DB expiry under America/New_York
+AssertionError: promise resolved "{ …(29) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "assemblyFingerprint": "sha256:f143586f013a50898ad4327932a7ff181c1124c4e32d357c20ec6f03668636f3",
++   "assemblyVersion": "VOICE_TRANSCRIPT_JOIN_V1",
++   "automaticConfirmationPerformed": false,
++   "contentIntegrityVerified": true,
++   "executionAuthorized": false,
++   "expiresAt": "2026-09-10T20:40:11.524Z",
++   "externalTransportPerformed": false,
++   "intakeId": "e9aa03cf-7365-4afa-a3b7-aa7b4c421fcb",
++   "intakeStateVersion": 2,
++   "mediaDecodingVerified": false,
++   "orderedEvidence": [
++     {
++       "audioFingerprint": "sha256:1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb",
++       "gatewayAttemptId": "attempt_24c51f9eb30d4de4812a5d87cb00e861",
++       "gatewayOperationId": "gwop_c6e8daf49cda4d4ebf076be19d9d063f",
++       "ordinal": 0,
++       "responseEvidenceRef": "sha256:cfd7edc1f1bff93575e5e8c2ddb158f54ec112b3178511a8df64e448d3def4d5",
++       "segmentId": "aaeb752f-3a01-487e-a911-e17e2868c4d2",
++       "textFingerprint": "sha256:b06570f5211c66c2eae817e275928f8acab783c473a74be2f8b3a614e3088c0d",
++       "transcriptId": "vts_6892516fb65d434c83c8a5a6258cbc92",
++     },
++   ],
++   "processingMode": "SYNTHETIC_LOCAL",
++   "projectFactConfirmed": false,
++   "projectId": "cmtvzr96s006ti5b87g89i57o",
++   "realTranscriptionAvailable": false,
++   "reviewFingerprint": "sha256:4b6724b38b3b0cc369657c1f4ca2fb905ec4bf815890fc2f6ab2f420f1c70355",
++   "schemaVersion": 1,
++   "segmentManifestHash": "28391a05f07e3f8b7dcacdbe8f6b0deb39a50082c2ecd3d382909bb6e00c1fb2",
++   "semanticAccuracyVerified": false,
++   "sessionId": "de29c83a-c9fe-49b7-99b1-2e72b2321c1b",
++   "sourceBindingHash": "7dc88c266baf497d6bb133eb6b4b0839f95a34ec32532677aadd4a257a2cde03",
++   "sourceContentHash": "1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb",
++   "sourceId": "703f08ef-7d69-40d4-8aa3-d41c8a43078b",
++   "status": "SYNTHETIC_REVIEW_AVAILABLE_NOT_AUTHORIZED",
++   "syntheticReviewAvailable": true,
++   "text": "SYNTHETIC_LOCAL — no speech was transcribed. Segment 0: sha256:1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb.",
++   "textFingerprint": "sha256:b06570f5211c66c2eae817e275928f8acab783c473a74be2f8b3a614e3088c0d",
++   "transcriptionQualityVerified": false,
++   "workspaceId": "cmtvzr96j006ki5b8evjo3u5j",
+  }
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts:131:35
+    129|     }) as typeof prisma.$transaction);
+    130|     try {
+    131|       await expect(readFixture(f)).rejects.toThrow("VOICE_PB_TRANSCRIP…
+       |                                   ^
+    132|       expect(committed).toBe(true); expect(expired).toBe(true); expect…
+    133|     } finally { wrapped.mockRestore(); }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts > PB protected synthetic review on real native ledger rows, no provider > suppresses disclosure after actual read commit followed by original DB expiry under Asia/Tokyo
+AssertionError: promise resolved "{ …(29) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "assemblyFingerprint": "sha256:a83ffdd67ba2d131bd961554b39b9c5c507ae0932cfb47a59d072f142845c0fb",
++   "assemblyVersion": "VOICE_TRANSCRIPT_JOIN_V1",
++   "automaticConfirmationPerformed": false,
++   "contentIntegrityVerified": true,
++   "executionAuthorized": false,
++   "expiresAt": "2026-09-10T20:40:15.599Z",
++   "externalTransportPerformed": false,
++   "intakeId": "092c8624-9d35-4824-bf50-857a50d8006b",
++   "intakeStateVersion": 2,
++   "mediaDecodingVerified": false,
++   "orderedEvidence": [
++     {
++       "audioFingerprint": "sha256:1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb",
++       "gatewayAttemptId": "attempt_da58a1ed1b794c389cdace5d338fa99b",
++       "gatewayOperationId": "gwop_f5e0bd1a3e204e139541a79145270172",
++       "ordinal": 0,
++       "responseEvidenceRef": "sha256:cfd7edc1f1bff93575e5e8c2ddb158f54ec112b3178511a8df64e448d3def4d5",
++       "segmentId": "a8da3a0c-4eb2-4045-a908-a70e0fc1851b",
++       "textFingerprint": "sha256:b06570f5211c66c2eae817e275928f8acab783c473a74be2f8b3a614e3088c0d",
++       "transcriptId": "vts_3582abf95cfe4cb28c3f27fcf13bf396",
++     },
++   ],
++   "processingMode": "SYNTHETIC_LOCAL",
++   "projectFactConfirmed": false,
++   "projectId": "cmtvzrcbv007ei5b8wgjmq89i",
++   "realTranscriptionAvailable": false,
++   "reviewFingerprint": "sha256:048a4fdc72e193329a78bc49ae37fdaa6946507f7c89ae9fe908df04e0aa3f3e",
++   "schemaVersion": 1,
++   "segmentManifestHash": "64fdb64569d5f43ec9d707b9c991084d5d3227da4c7ce46b10c850fa31d9fbba",
++   "semanticAccuracyVerified": false,
++   "sessionId": "a319b7bd-8a86-4bea-b763-745a00b9ae88",
++   "sourceBindingHash": "1023371eb12d6342ac3b164567e70368b8bed2a90d185887fbb75da6a26e136c",
++   "sourceContentHash": "1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb",
++   "sourceId": "f3267bcd-29c3-4960-8f4b-0d787e05e317",
++   "status": "SYNTHETIC_REVIEW_AVAILABLE_NOT_AUTHORIZED",
++   "syntheticReviewAvailable": true,
++   "text": "SYNTHETIC_LOCAL — no speech was transcribed. Segment 0: sha256:1c07581d232ce200f1a386faf4fd3f94bed3fc68be243ad6076ab0c7e578f5bb.",
++   "textFingerprint": "sha256:b06570f5211c66c2eae817e275928f8acab783c473a74be2f8b3a614e3088c0d",
++   "transcriptionQualityVerified": false,
++   "workspaceId": "cmtvzrcbo0075i5b825txrecy",
+  }
+
+ ❯ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts:131:35
+    129|     }) as typeof prisma.$transaction);
+    130|     try {
+    131|       await expect(readFixture(f)).rejects.toThrow("VOICE_PB_TRANSCRIP…
+       |                                   ^
+    132|       expect(committed).toBe(true); expect(expired).toBe(true); expect…
+    133|     } finally { wrapped.mockRestore(); }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-a612c69ed28547cb855b193c049a0e03

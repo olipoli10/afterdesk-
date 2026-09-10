@@ -28,21 +28,61 @@ const labels = Object.freeze({
   processingMode: "SYNTHETIC_LOCAL" as const, mediaDecodingVerified: false as const,
 });
 function refuse(): never { throw new Error("VOICE_PB_TRANSCRIPT_REVIEW_REFUSED"); }
+// Exact in-process committed objects only. No wire token, strong registry,
+// renewed TTL or additional action authority is created by this association.
+const publicationGuards = new WeakMap<object, () => void>();
+export function assertProjectBrainVoiceTranscriptReviewPublication(value: unknown): void {
+  if (typeof value !== "object" || value === null) refuse();
+  const guard = publicationGuards.get(value);
+  if (!guard) refuse();
+  guard();
+}
+export type ProjectBrainTranscriptReviewContext = Readonly<{
+  deadlineAt: number; monotoneDeadlineAt: number; signal?: AbortSignal;
+}>;
 
 /** OFF by default. The authenticated server caller supplies actor/context. This
  * is protected local synthetic content, not speech recognition or action authority.
  * No route, source mutation, storage read, budget reservation or retry is performed. */
 export async function readProjectBrainVoiceTranscriptReview(
   input: { actorUserId: string; workspaceId: string; sessionId: string }, options: { enabled?: boolean } = {},
+  context?: ProjectBrainTranscriptReviewContext,
 ) {
   if (options.enabled !== true) return Object.freeze({ status: "DISABLED" as const, executionAuthorized: false as const });
+  const startedWall = Date.now(), startedMono = performance.now();
+  const original = context === undefined ? undefined : Object.freeze({ deadlineAt: context.deadlineAt,
+    monotoneDeadlineAt: context.monotoneDeadlineAt, signal: context.signal });
+  if (!Number.isFinite(startedWall) || !Number.isFinite(startedMono)
+    || (original && (!Number.isFinite(original.deadlineAt) || !Number.isFinite(original.monotoneDeadlineAt)))) refuse();
+  const budget = Math.floor(Math.min(7000, original ? original.deadlineAt - startedWall : 7000,
+    original ? original.monotoneDeadlineAt - startedMono : 7000));
+  if (budget < 2) refuse();
+  let lastWall = startedWall, lastMono = startedMono;
+  const live = () => {
+    const wall = Date.now(), mono = performance.now();
+    if (!Number.isFinite(wall) || !Number.isFinite(mono) || wall < lastWall || mono < lastMono
+      || wall >= startedWall + budget || mono >= startedMono + budget || original?.signal?.aborted) refuse();
+    lastWall = wall; lastMono = mono;
+    return Math.floor(Math.min(startedWall + budget - wall, startedMono + budget - mono));
+  };
+  live();
   const request = Object.freeze(requestSchema.parse(input));
-  return prisma.$transaction(async tx => {
-    await tx.$queryRawUnsafe("SELECT set_config('statement_timeout','2000',true),set_config('lock_timeout','250',true)");
+  const remaining = live();
+  if (remaining < 2) refuse();
+  const maxWait = Math.min(2000, Math.max(1, Math.floor(remaining * 2 / 7)));
+  const timeout = Math.min(5000, remaining - maxWait);
+  const committed = await prisma.$transaction(async tx => {
+    const sqlRemaining = live();
+    if (sqlRemaining < 1) refuse();
+    await tx.$queryRawUnsafe("SELECT set_config('statement_timeout',$1,true),set_config('lock_timeout',$2,true)",
+      String(Math.min(2000, sqlRemaining)), String(Math.min(250, sqlRemaining)));
+    live();
     // Shared form of the existing session namespace, acquired before session/row
     // locks. Writers use its exclusive form. No provider/day locks or upgrades.
     await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock_shared(hashtext($1))::text", `voice-session-spend:${request.sessionId}`);
+    live();
     const inspected = await inspectProjectBrainVoiceSessionInTransaction(tx, request);
+    live();
     const session = inspected.projection;
     if (session.sessionStatus !== "transcribing" || session.segments.some(segment => segment.status !== "succeeded")) refuse();
     const rows = await tx.$queryRawUnsafe<unknown[]>(`
@@ -77,6 +117,7 @@ export async function readProjectBrainVoiceTranscriptReview(
         AND NOT EXISTS (SELECT 1 FROM "AiUsage" u WHERE u."operationId"=ai.id)
       ORDER BY s.ordinal LIMIT 15 FOR SHARE OF v,s,ai,o,d,p,r,t,x,h`,
     request.sessionId, request.actorUserId, request.workspaceId, session.sourceBindingHash, session.segmentManifestHash);
+    live();
     if (rows.length !== session.segments.length) refuse();
     const accepted = rows.map((raw, ordinal) => {
       const parsed = resultRowSchema.safeParse(raw);
@@ -121,11 +162,28 @@ export async function readProjectBrainVoiceTranscriptReview(
       sourceBindingHash: session.sourceBindingHash, segmentManifestHash: session.segmentManifestHash,
       expiresAt: session.expiresAt, orderedEvidence, assemblyFingerprint: draft.assemblyFingerprint,
       textFingerprint: canonicalFingerprint(draft.text), ...labels });
+    live();
+    // Sample before the query: charging all query/commit latency against the
+    // returned DB expiry is conservative even if that query itself was delayed.
+    const clockStartedMono = lastMono;
     const [clock] = await tx.$queryRawUnsafe<Array<{ now: Date }>>("SELECT clock_timestamp() AS now");
+    live();
     if (!(clock?.now instanceof Date) || !Number.isFinite(clock.now.getTime())
       || clock.now.getTime() < new Date(inspected.databaseNow).getTime()
       || clock.now.getTime() >= new Date(core.expiresAt).getTime()) refuse();
-    return Object.freeze({ status: "SYNTHETIC_REVIEW_AVAILABLE_NOT_AUTHORIZED" as const, ...core,
-      text: draft.text, reviewFingerprint: canonicalFingerprint(core) });
-  }, { isolationLevel: "Serializable", timeout: 5000, maxWait: 2000 });
+    return Object.freeze({ databaseNowMs: clock.now.getTime(), clockStartedMono,
+      result: Object.freeze({ status: "SYNTHETIC_REVIEW_AVAILABLE_NOT_AUTHORIZED" as const, ...core,
+        text: draft.text, reviewFingerprint: canonicalFingerprint(core) }) });
+  }, { isolationLevel: "Serializable", timeout, maxWait });
+  // This is a disclosure guard after real settlement, not forced cancellation
+  // of Prisma or a claim that the protected text was never read internally.
+  const publicationDeadlineMono = committed.clockStartedMono + (Date.parse(committed.result.expiresAt) - committed.databaseNowMs);
+  const assertPublication = () => {
+    live();
+    if (!Number.isFinite(publicationDeadlineMono) || lastMono >= publicationDeadlineMono) refuse();
+  };
+  assertPublication();
+  publicationGuards.set(committed.result, assertPublication);
+  assertProjectBrainVoiceTranscriptReviewPublication(committed.result);
+  return committed.result;
 }

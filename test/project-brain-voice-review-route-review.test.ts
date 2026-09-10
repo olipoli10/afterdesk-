@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ auth: vi.fn(), limit: vi.fn(), read: vi.fn() }));
 vi.mock("@/lib/authz", () => ({ getSessionUser: m.auth, consumeRateLimit: m.limit }));
-vi.mock("@/server/model-gateway/voice/project-brain-transcript-review", () => ({ readProjectBrainVoiceTranscriptReview: m.read }));
+// Legacy route fixtures stub publication explicitly; actual DB-TTL/identity proof belongs to reader tests.
+vi.mock("@/server/model-gateway/voice/project-brain-transcript-review", () => ({ readProjectBrainVoiceTranscriptReview: m.read,
+  assertProjectBrainVoiceTranscriptReviewPublication: () => undefined }));
 import { GET } from "@/app/api/endvera/v1/mobile/project-brain-intake/voice-review/route";
 const flag = "ENDVERA_PROJECT_BRAIN_VOICE_REVIEW_ENABLED";
 const url = "https://local.example/api/endvera/v1/mobile/project-brain-intake/voice-review?workspaceId=w&sessionId=s";
@@ -40,7 +42,8 @@ describe("PB voice GET cross-review, direct handler with synthetic service mocks
     const request = { url };
     m.limit.mockImplementation(async () => { request.url = url.replace("workspaceId=w", "workspaceId=other"); return true; });
     expect((await GET(request as Request)).status).toBe(200);
-    expect(m.read).toHaveBeenCalledExactlyOnceWith({ actorUserId: "owner", workspaceId: "w", sessionId: "s" }, { enabled: true });
+    expect(m.read).toHaveBeenCalledExactlyOnceWith({ actorUserId: "owner", workspaceId: "w", sessionId: "s" }, { enabled: true },
+      { deadlineAt: expect.any(Number), monotoneDeadlineAt: expect.any(Number), signal: undefined });
   });
   it.each(["automaticConfirmationPerformed", "transcriptionQualityVerified", "semanticAccuracyVerified", "mediaDecodingVerified"])("missing %s is not a negative authority receipt", async key => {
     const result: Record<string, unknown> = projection(); delete result[key]; m.read.mockResolvedValue(result);

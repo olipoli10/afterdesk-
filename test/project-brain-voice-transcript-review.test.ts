@@ -74,7 +74,12 @@ describe("PB synthetic protected transcript owner review", () => {
     expect(Object.isFrozen(value.orderedEvidence[0])).toBe(true);
     expect(JSON.stringify(value)).not.toMatch(/storageKey|audioBytes|credential|ownerBrief|"fileId"/);
     expect(mocks.query.mock.calls.every(([sql]) => !/\b(INSERT|UPDATE|DELETE|TRUNCATE)\b/.test(sql))).toBe(true);
-    expect(mocks.transaction.mock.calls[0][1]).toEqual({ isolationLevel: "Serializable", timeout: 5000, maxWait: 2000 });
+    // Entry/parse latency now consumes the original7s budget before admission.
+    const txOptions = mocks.transaction.mock.calls[0][1];
+    expect(txOptions.isolationLevel).toBe("Serializable");
+    expect(txOptions.timeout).toBeGreaterThan(0); expect(txOptions.timeout).toBeLessThanOrEqual(5000);
+    expect(txOptions.maxWait).toBeGreaterThan(0); expect(txOptions.maxWait).toBeLessThanOrEqual(2000);
+    expect(txOptions.timeout + txOptions.maxWait).toBeLessThanOrEqual(7000);
   });
   it("repeated read is stable and does not renew TTL or write a receipt", async () => { expect(await run()).toEqual(await run()); });
   it("copies actor/context before the first await and uses exact bound SQL pins", async () => {

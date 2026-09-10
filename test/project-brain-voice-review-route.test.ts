@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ auth: vi.fn(), limit: vi.fn(), read: vi.fn() }));
 vi.mock("@/lib/authz", () => ({ getSessionUser: m.auth, consumeRateLimit: m.limit }));
-vi.mock("@/server/model-gateway/voice/project-brain-transcript-review", () => ({ readProjectBrainVoiceTranscriptReview: m.read }));
+// Legacy route fixtures stub publication explicitly; actual DB-TTL/identity proof belongs to reader tests.
+vi.mock("@/server/model-gateway/voice/project-brain-transcript-review", () => ({ readProjectBrainVoiceTranscriptReview: m.read,
+  assertProjectBrainVoiceTranscriptReviewPublication: () => undefined }));
 import * as route from "@/app/api/endvera/v1/mobile/project-brain-intake/voice-review/route";
 const flag = "ENDVERA_PROJECT_BRAIN_VOICE_REVIEW_ENABLED";
 const path = "https://local.example/api/endvera/v1/mobile/project-brain-intake/voice-review";
@@ -40,7 +42,8 @@ describe("OFF-by-default PB protected voice GET route", () => {
     const response = await get(); expect(response.status).toBe(200); expect(await response.json()).toEqual(result());
     expect(response.headers.get("cache-control")).toBe("private, no-store"); expect(response.headers.get("vary")).toBe("Cookie, Authorization");
     expect(m.limit).toHaveBeenCalledExactlyOnceWith("construction-mobile-project-brain-voice-review:owner-a", { window: 60, max: 60 });
-    expect(m.read).toHaveBeenCalledExactlyOnceWith({ actorUserId: "owner-a", workspaceId: "workspace-a", sessionId: "session-a" }, { enabled: true });
+    expect(m.read).toHaveBeenCalledExactlyOnceWith({ actorUserId: "owner-a", workspaceId: "workspace-a", sessionId: "session-a" }, { enabled: true },
+      { deadlineAt: expect.any(Number), monotoneDeadlineAt: expect.any(Number), signal: expect.any(AbortSignal) });
   });
   it("unauthenticated does not reach rate limiter or protected reader", async () => {
     m.auth.mockResolvedValue(null); await opaque(await get(), 401); expect(m.limit).not.toHaveBeenCalled(); expect(m.read).not.toHaveBeenCalled();
@@ -58,7 +61,8 @@ describe("OFF-by-default PB protected voice GET route", () => {
   it("200-character IDs remain exact, without implicit trimming", async () => {
     const workspaceId = "a".repeat(200), sessionId = "b".repeat(200); m.read.mockResolvedValue({ ...result(), workspaceId, sessionId });
     expect((await get(`?workspaceId=${workspaceId}&sessionId=${sessionId}`)).status).toBe(200);
-    expect(m.read).toHaveBeenCalledWith({ actorUserId: "owner-a", workspaceId, sessionId }, { enabled: true });
+    expect(m.read).toHaveBeenCalledWith({ actorUserId: "owner-a", workspaceId, sessionId }, { enabled: true },
+      { deadlineAt: expect.any(Number), monotoneDeadlineAt: expect.any(Number), signal: expect.any(AbortSignal) });
   });
   it("opaque malformed URL, not a thrown stack", async () => {
     await opaque(await route.GET({ url: "not a url" } as Request), 400); expect(m.read).not.toHaveBeenCalled();

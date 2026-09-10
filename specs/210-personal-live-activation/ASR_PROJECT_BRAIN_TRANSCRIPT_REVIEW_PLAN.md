@@ -186,3 +186,24 @@ Required contract:
 The source-to-session discovery gap and real ASR routing/privacy/consent remain
 separate future design/activation prerequisites. Existing protected read hardening
 is useful independently; it must not manufacture a successful transcription.
+
+### Publication boundary refinement after retained peer RED
+
+Peer direct-handler test7PASS/1FAIL16:42:26 reproduces an expiry crossed during
+JSON serialization while the route10s budget remains live. Its aligned fake clocks
+are not proof that PostgreSQL and app wall clocks agree. Do not compare wire
+expiresAt directly with Date.now or add a trusted client timestamp.
+
+Authorize one small private server-side publication guard: associate the exact
+committed immutable reader result with its DB-derived monotone expiry and original
+budget/signal in a module-private WeakMap. An exported synchronous assertion may
+check only that exact result identity and those captured guards; copied, forged,
+disabled or unregistered objects refuse. It grants no action authority, renews
+nothing and performs no DB work. No new wire field or fingerprint change.
+
+Existing GET calls this assertion before and after JSON serialization in addition
+to its original route deadline. Mocked route tests must explicitly model the guard
+and identify their limits; independent true-reader tests must prove map binding,
+original signal/clock/DB-expiry enforcement and unchanged output serialization.
+The WeakMap must not retain text/results via a separate strong-reference registry.
+No heap/cross-process or downstream network consumption timing claim is implied.

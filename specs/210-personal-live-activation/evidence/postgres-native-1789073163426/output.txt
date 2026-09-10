@@ -1,0 +1,30 @@
+PERSONAL_NATIVE_DB_STARTED_LOOPBACK
+PERSONAL_NATIVE_POSTGRES_17_11_VERIFIED
+PERSONAL_NATIVE_SIMULTANEOUS_DISTINCT_BACKENDS_VERIFIED
+PERSONAL_NATIVE_MIGRATIONS_APPLIED
+PERSONAL_NATIVE_PER_FILE_DATABASE_ISOLATION files=1
+{"testFile":"project-brain-voice-transcript-review.postgres.test.ts","database":"endvera_personal_210_2ef58fbf5a7843d5a11be25df2b5c42c","template":"endvera_personal_210_ec3aaa6aaf534a6080039e9e12d03dab","migrationFingerprint":"79:41de317b70655965d494f1c3e0ea5940","isolation":"MIGRATED_TEMPLATE_CLONE_PER_FILE","exitCode":0,"finishedAt":"2026-09-10T20:46:50.8673450Z","providerCallsAuthorized":false,"databaseRetained":true}
+
+ RUN  v4.1.10 C:/dev/endvera-astra-r03
+
+ ✓ specs/210-personal-live-activation/project-brain-voice-transcript-review.postgres.test.ts (17 tests) 29249ms
+     ✓ reads exact accepted synthetic evidence and changes nothing under UTC  553ms
+     ✓ real immutable transcript guards reject text/expiry tampering; reader does not repair evidence  398ms
+     ✓ a legal content-only purge makes the former result unreadable without changing its lineage  309ms
+     ✓ an actually expired short consent/session never renews protected content  8127ms
+     ✓ suppresses disclosure after actual read commit followed by original DB expiry under UTC  4153ms
+     ✓ suppresses disclosure after actual read commit followed by original DB expiry under America/New_York  4118ms
+     ✓ suppresses disclosure after actual read commit followed by original DB expiry under Asia/Tokyo  4122ms
+     ✓ an abort after a real successful read commit suppresses content without rewriting evidence  634ms
+     ✓ the exact returned native result loses publication eligibility at original DB expiry and copies never qualify  4144ms
+     ✓ two real reader backends may share the canonical lock and return the same immutable evidence  781ms
+     ✓ the current-owner read holds a real revocation until its transaction completes; next read refuses  559ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  16:46:20
+   Duration  30.41s (transform 703ms, setup 0ms, import 980ms, tests 29.25s, environment 0ms)
+
+
+PERSONAL_NATIVE_DISPOSABLE_SERVER_STOPPED
+PERSONAL_NATIVE_RETAINED_CLUSTER=C:\dev\endvera-astra-r03\.scratch\personal-pg-native-e30466e4b932407eb83a64018ed00fcd

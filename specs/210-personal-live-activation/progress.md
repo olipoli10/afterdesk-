@@ -1,5 +1,21 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 21:02Z — protected voice deadlines verified; prepare coherent pilot upgrade
+
+Reader and GET late-expiry/abort publication fixed and reviewed. Native baseline
+12/3 RED retained; target17 PASS20:46:56.427Z and full372/20 clones PASS
+20:53:47.214Z, owned PostgreSQL servers STOPPED. Combined author/peer221 PASS.
+Build1789073173533 PASS; actual OFF HTTP7 PASS and server/port closed. Root
+6113/1/3 skips retained (old Git test timeout); unchanged rerun alone6114 PASS/
+3 historical skips20:59:55.800Z. No timeouts enlarged. Controller audit:
+audits/PROJECT_BRAIN_VOICE_DISCLOSURE_CONTROLLER.md.
+
+Continue PILOT_BACKEND_APK_UPGRADE_PLAN.md. Historical backend70/local79 mismatch
+and bootstrap hardcoded68 mean no blind bootstrap or APK build. Local catalog and
+populated-migration review active with separate agents. Current in-app Twilio
+session logged out; owner pairing and Google consent remain unobserved. No new
+APK/provider/deploy/secret access; dashboard22%/46.75%/C2 18of18/NO-GO/0% unchanged.
+
 ## 2026-09-10 20:32Z — mobile exact approval verified locally; continue voice prerequisites
 
 Selected offered card, explicit single approval, durable metadata-before-POST and

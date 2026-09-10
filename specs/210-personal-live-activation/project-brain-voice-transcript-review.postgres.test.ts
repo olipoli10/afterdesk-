@@ -12,7 +12,7 @@ vi.mock("@/lib/storage-local", () => ({
 import { prisma } from "@/lib/db";
 import { canonicalFingerprint } from "@/server/model-gateway/evidence";
 import { dispatchVoiceGatewayAttempt } from "@/server/model-gateway/voice/dispatch";
-import { readProjectBrainVoiceTranscriptReview as read } from "@/server/model-gateway/voice/project-brain-transcript-review";
+import { readProjectBrainVoiceTranscriptReview as read, assertProjectBrainVoiceTranscriptReviewPublication as assertPublication } from "@/server/model-gateway/voice/project-brain-transcript-review";
 import { requirePersonalDisposableDatabase } from "./personal-model.fixture";
 import { projectBrainRecoveryFixture as fixture, projectBrainRecoveryRows as rows, type RecoveryFixture } from "./project-brain-voice-recovery.fixture";
 
@@ -110,6 +110,54 @@ describe("PB protected synthetic review on real native ledger rows, no provider"
     expect((await readFixture(f)).status).toBe("SYNTHETIC_REVIEW_AVAILABLE_NOT_AUTHORIZED");
     const before = await rows(f); await waitForExpiry(f);
     await expect(readFixture(f)).rejects.toThrow("EXPIRED"); expect(await rows(f)).toEqual(before);
+  });
+  it.each(["UTC", "America/New_York", "Asia/Tokyo"])("suppresses disclosure after actual read commit followed by original DB expiry under %s", async timezone => {
+    const f = await fixture(storage, { consentLifetimeMs: 4000 }); await succeed(f);
+    const before = await rows(f), native = prisma.$transaction.bind(prisma);
+    let committed = false, expired = false, databaseZone = "";
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: TxWork, options?: TxOptions) => {
+      const result = await native(async tx => {
+        await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", timezone);
+        const [setting] = await tx.$queryRawUnsafe<Array<{ timezone: string }>>("SELECT current_setting('TimeZone') AS timezone");
+        databaseZone = setting.timezone;
+        return work(tx);
+      }, options);
+      committed = true;
+      // The real read transaction has committed and released its locks. Delay
+      // only delivery of its result; do not alter expiry, DB time or product budget.
+      await waitForExpiry(f); expired = true; return result;
+    }) as typeof prisma.$transaction);
+    try {
+      await expect(readFixture(f)).rejects.toThrow("VOICE_PB_TRANSCRIPT_REVIEW_REFUSED");
+      expect(committed).toBe(true); expect(expired).toBe(true); expect(databaseZone).toBe(timezone);
+    } finally { wrapped.mockRestore(); }
+    expect(await rows(f)).toEqual(before);
+  });
+  it("an abort after a real successful read commit suppresses content without rewriting evidence", async () => {
+    const f = await fixture(storage); await succeed(f);
+    const before = await rows(f), native = prisma.$transaction.bind(prisma), controller = new AbortController();
+    let committed = false;
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: TxWork, options?: TxOptions) => {
+      const result = await native(work, options); committed = true; controller.abort(); return result;
+    }) as typeof prisma.$transaction);
+    try {
+      await expect(read(identity(f), { enabled: true }, { deadlineAt: Date.now() + 10000,
+        monotoneDeadlineAt: performance.now() + 10000, signal: controller.signal })).rejects.toThrow("VOICE_PB_TRANSCRIPT_REVIEW_REFUSED");
+      expect(committed).toBe(true); expect(controller.signal.aborted).toBe(true);
+    } finally { wrapped.mockRestore(); }
+    expect(await rows(f)).toEqual(before);
+  });
+  it("the exact returned native result loses publication eligibility at original DB expiry and copies never qualify", async () => {
+    const f = await fixture(storage, { consentLifetimeMs: 4000 }); await succeed(f);
+    const before = await rows(f), value = await readFixture(f);
+    expect(value.status).toBe("SYNTHETIC_REVIEW_AVAILABLE_NOT_AUTHORIZED");
+    expect(() => assertPublication(value)).not.toThrow();
+    const wire = JSON.stringify(value);
+    expect(wire).not.toMatch(/databaseNowMs|clockStartedMono|monotoneDeadline|publicationGuard/);
+    expect(() => assertPublication(JSON.parse(wire))).toThrow("VOICE_PB_TRANSCRIPT_REVIEW_REFUSED");
+    await waitForExpiry(f);
+    expect(() => assertPublication(value)).toThrow("VOICE_PB_TRANSCRIPT_REVIEW_REFUSED");
+    expect(await rows(f)).toEqual(before);
   });
   it("two real reader backends may share the canonical lock and return the same immutable evidence", async () => {
     const f = await fixture(storage); await succeed(f); const before = await rows(f);
