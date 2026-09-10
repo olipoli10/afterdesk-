@@ -64,6 +64,9 @@ export function buildVoiceSegmentProjection(input: {
   if (input.audioBytes.byteLength > VOICE_LIMITS.maxSegmentBytes) {
     throw new Error("voice_segment_too_large");
   }
+  // Own the exact bounded bytes being hashed. Uint8Array/Buffer/subarray inputs
+  // otherwise retain a caller-writable alias even though the outer object is frozen.
+  const audioBytes = new Uint8Array(input.audioBytes);
 
   return Object.freeze({
     operationType: "intake_voice_transcription" as const,
@@ -74,8 +77,17 @@ export function buildVoiceSegmentProjection(input: {
     mediaFormat: input.mediaFormat,
     mimeType: normalizedMime,
     durationMs: input.durationMs,
-    byteCount: input.audioBytes.byteLength,
-    audioFingerprint: `sha256:${createHash("sha256").update(input.audioBytes).digest("hex")}`,
-    audioBytes: input.audioBytes,
+    byteCount: audioBytes.byteLength,
+    audioFingerprint: `sha256:${createHash("sha256").update(audioBytes).digest("hex")}`,
+    audioBytes,
   });
+}
+
+/** Copy and rehash at point of use. The returned private byte array is still mutable,
+ * so call immediately before passing it to a trusted adapter, with no intervening await. */
+export function copyVerifiedVoiceSegmentProjection(input: VoiceSegmentProjection): VoiceSegmentProjection {
+  const copied = buildVoiceSegmentProjection(input);
+  if (input.operationType !== "intake_voice_transcription" || copied.audioFingerprint !== input.audioFingerprint
+    || copied.byteCount !== input.byteCount || copied.mimeType !== input.mimeType) throw new Error("voice_segment_conflict");
+  return copied;
 }

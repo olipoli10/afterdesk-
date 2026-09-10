@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { sha256Canonical } from "@/lib/construction-assistant-v1/canonical";
 import { voiceFixture } from "./fixtures/project-brain-voice";
+import type { Prisma } from "@prisma-client";
 const mocks = vi.hoisted(() => ({ transaction: vi.fn(), query: vi.fn(), inspect: vi.fn() }));
 vi.mock("@/lib/db", () => ({ prisma: { $transaction: mocks.transaction } }));
 vi.mock("@/server/construction-operating-assistant-r36v/project-brain-intake", () => ({ readProjectBrainSourceBytesInternally: vi.fn() }));
@@ -8,7 +9,7 @@ vi.mock("@/server/model-gateway/voice/project-brain-subject", async importOrigin
   const original = await importOriginal<typeof import("@/server/model-gateway/voice/project-brain-subject")>();
   return { ...original, inspectProjectBrainVoiceSourceInTransaction: mocks.inspect };
 });
-import { readProjectBrainVoiceSession } from "@/server/model-gateway/voice/project-brain-sessions";
+import { inspectProjectBrainVoiceSessionInTransaction, readProjectBrainVoiceSession } from "@/server/model-gateway/voice/project-brain-sessions";
 import { inspectProjectBrainSourceSegments, inspectStoredProjectBrainVoiceManifest } from "@/server/model-gateway/voice/source-segments";
 import { VOICE_LIMITS } from "@/server/model-gateway/voice/types";
 const request = { actorUserId: "owner-a", workspaceId: "workspace-a", sessionId: "session-a" };
@@ -102,6 +103,23 @@ describe("owner Project Brain voice read-only projection", () => {
     now = new Date(NaN); await expect(run()).rejects.toThrow("VOICE_PB_DATABASE_CLOCK_REFUSED");
     mocks.transaction.mockRejectedValueOnce(new Error("serialization")); await expect(run()).rejects.toThrow("serialization");
     expect(mocks.transaction).toHaveBeenCalledTimes(2);
+  });
+  it("internal inspector reuses caller transaction without nesting or extending timeouts", async () => {
+    const tx = { $queryRawUnsafe: mocks.query } as unknown as Prisma.TransactionClient;
+    const inspected = await inspectProjectBrainVoiceSessionInTransaction(tx, request);
+    expect(inspected).toMatchObject({ executionAuthorized: false, databaseNow: now.toISOString(), consent: { externalProcessingAllowed: false } });
+    expect(Object.isFrozen(inspected.consent)).toBe(true);
+    expect(inspected.projection).toEqual(await run());
+    expect(mocks.transaction).toHaveBeenCalledTimes(1); // public run only
+    expect(mocks.query.mock.calls.filter(([sql]) => sql.includes("set_config"))).toHaveLength(1);
+  });
+  it("internal inspector copies trusted actor/context before waiting", async () => {
+    const tx = { $queryRawUnsafe: mocks.query } as unknown as Prisma.TransactionClient;
+    const mutable = { ...request };
+    const result = inspectProjectBrainVoiceSessionInTransaction(tx, mutable);
+    mutable.actorUserId = "other"; mutable.workspaceId = "other"; mutable.sessionId = "other";
+    expect((await result).subject.actorUserId).toBe("owner-a");
+    expect(mocks.inspect.mock.calls[0][1]).toMatchObject({ actorUserId: "owner-a", workspaceId: "workspace-a" });
   });
 });
 

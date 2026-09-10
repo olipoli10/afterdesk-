@@ -228,7 +228,8 @@ describe("configuration: production fails closed, never silently unlimited", () 
 
   it("an unconfigured ceiling in production refuses every reservation — the check happens BEFORE any hold is created", () => {
     const fn = source.slice(source.indexOf("export async function reserveAccountProviderSpend"));
-    const ceilingCheckIndex = fn.indexOf('if (ceiling === null && (isProductionEnvironment(env) || provider === "openrouter"))');
+    expect(fn).toContain('const strict = provider === "openrouter" || provider === "synthetic";');
+    const ceilingCheckIndex = fn.indexOf('if (ceiling === null && (isProductionEnvironment(env) || strict))');
     const createIndex = fn.indexOf("tx.accountProviderSpendHold.create(");
     expect(ceilingCheckIndex).toBeGreaterThan(0);
     expect(createIndex).toBeGreaterThan(ceilingCheckIndex);

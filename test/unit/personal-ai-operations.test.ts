@@ -85,7 +85,8 @@ describe("single-use personal AiOperation primitives (synthetic transaction)", (
     shared.find.mockResolvedValue({ purpose: "personal_intent_candidate_v1", personalAssistantOperationId: subject.operationId });
     await expect(failAiOperation({ claim: { ...claim, operationKey: "caller-lied-about-key" }, taskId: "fabricated-task", purpose: "classification",
       usage: { model: "wrong-provider", inputTokens: 1, outputTokens: 1, cacheReadTokens: 0, cacheWriteTokens: 0, costMicros: 1, stopReason: null }, error: "failure" })).rejects.toThrow("PERSONAL_AI_LEGACY_USAGE_REFUSED");
-    expect(shared.find).toHaveBeenCalledWith({ where: { id: claim.operationId }, select: { purpose: true, personalAssistantOperationId: true } });
+    expect(shared.find).toHaveBeenCalledWith({ where: { id: claim.operationId }, select: { purpose: true, personalAssistantOperationId: true,
+      voiceIntakeSegmentId: true, voiceIntakeSegment: { select: { session: { select: { subjectKind: true } } } } } });
     expect(shared.usage).not.toHaveBeenCalled();
   });
   it("preserves genuine legacy superseded usage accounting after subject inspection", async () => {

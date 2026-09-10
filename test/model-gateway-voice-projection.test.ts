@@ -20,7 +20,8 @@ describe("minimum voice audio projection", () => {
     );
     expect(projection.mimeType).toBe("audio/webm");
     expect(projection.byteCount).toBe(audioBytes.byteLength);
-    expect(projection.audioBytes).toBe(audioBytes);
+    expect(projection.audioBytes).not.toBe(audioBytes);
+    expect(projection.audioBytes).toEqual(audioBytes);
     expect(Object.keys(projection).sort()).toEqual([
       "audioBytes", "audioFingerprint", "byteCount", "durationMs", "languageHint",
       "mediaFormat", "mimeType", "operationType", "ordinal", "segmentId", "sessionId",

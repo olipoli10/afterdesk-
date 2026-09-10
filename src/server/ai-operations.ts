@@ -35,6 +35,16 @@ import type { Prisma } from "@prisma-client";
 const LEASE_MS = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 2;
 
+// Only Task/no-voice or the original CLIENT voice subject belongs to this
+// legacy retry/Task-accounting runner. PB voice has its own one-attempt fence
+// in the existing voice gateway; purpose/key strings cannot bypass this FK check.
+const legacySubjectFilter = {
+  OR: [
+    { voiceIntakeSegmentId: null },
+    { voiceIntakeSegment: { is: { session: { is: { subjectKind: "voice_intake" } } } } },
+  ],
+} satisfies Prisma.AiOperationWhereInput;
+
 /** Deterministic backoff, same shape as the step runner: 1, 4 minutes. */
 const backoffMs = (attempts: number) => Math.min(attempts * attempts, 30) * 60 * 1000;
 
@@ -83,6 +93,7 @@ export async function claimAiOperation(operationKey: string): Promise<AiOperatio
       // Personal model attempts are single-use and never lease-reclaimed by
       // the legacy two-attempt Task/Voice runner.
       purpose: { not: "personal_intent_candidate_v1" },
+      AND: [legacySubjectFilter],
       attempts: { lt: MAX_ATTEMPTS },
       OR: [
         { status: "reserved" },
@@ -177,7 +188,7 @@ export async function succeedAiOperation<T>(input: {
   const { claim } = input;
   return prisma.$transaction(async (tx) => {
     const fenced = await tx.aiOperation.updateMany({
-      where: { id: claim.operationId, lockedBy: claim.lockedBy, purpose: { not: "personal_intent_candidate_v1" } },
+      where: { id: claim.operationId, lockedBy: claim.lockedBy, purpose: { not: "personal_intent_candidate_v1" }, AND: [legacySubjectFilter] },
       data: {
         status: "succeeded",
         finishedAt: new Date(),
@@ -221,7 +232,7 @@ export async function failAiOperation(input: {
   try {
     await prisma.$transaction(async (tx) => {
       const fenced = await tx.aiOperation.updateMany({
-        where: { id: claim.operationId, lockedBy: claim.lockedBy, purpose: { not: "personal_intent_candidate_v1" } },
+        where: { id: claim.operationId, lockedBy: claim.lockedBy, purpose: { not: "personal_intent_candidate_v1" }, AND: [legacySubjectFilter] },
         data: {
           status: "failed",
           lastError: input.error.slice(0, 1000),
@@ -264,10 +275,14 @@ export async function recordSupersededUsage(
   // Inspect the persisted subject, not only the caller's purpose or key string.
   const subject = await prisma.aiOperation.findUnique({
     where: { id: claim.operationId },
-    select: { purpose: true, personalAssistantOperationId: true },
+    select: { purpose: true, personalAssistantOperationId: true, voiceIntakeSegmentId: true,
+      voiceIntakeSegment: { select: { session: { select: { subjectKind: true } } } } },
   });
   if (subject?.purpose === "personal_intent_candidate_v1" || subject?.personalAssistantOperationId != null) {
     throw new Error("PERSONAL_AI_LEGACY_USAGE_REFUSED");
+  }
+  if (subject?.voiceIntakeSegmentId != null && subject.voiceIntakeSegment?.session.subjectKind !== "voice_intake") {
+    throw new Error("VOICE_PB_LEGACY_USAGE_REFUSED");
   }
   console.warn("[ai-operations] superseded invocation recording its billed attempt", {
     operationKey: claim.operationKey,

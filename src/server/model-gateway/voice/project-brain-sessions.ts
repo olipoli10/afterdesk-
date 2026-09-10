@@ -2,6 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
+import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { sha256Canonical } from "@/lib/construction-assistant-v1/canonical";
 import { inspectProjectBrainVoiceSourceInTransaction, projectBrainVoiceSourceSubjectSchema, resolveProjectBrainVoiceSource, type ProjectBrainVoiceSourceRequest } from "./project-brain-subject";
@@ -140,13 +141,10 @@ const segmentReadSchema = z.object({
   audioFingerprint: z.string(), languageHint: z.enum(VOICE_INTAKE_LANGUAGES),
 }).strict();
 
-/** Trusted authenticated caller supplies actor/context. Read-only metadata, never dispatch authority,
- * protected storage coordinates, raw media, or a claim that a usable transcript exists. */
-export async function readProjectBrainVoiceSession(input: { actorUserId: string; workspaceId: string; sessionId: string }, options: { enabled?: boolean } = {}) {
-  if (options.enabled !== true) return Object.freeze({ status: "DISABLED" as const, executionAuthorized: false as const });
+/** Internal composable inspection, not provider authority. Caller owns a bounded
+ * Serializable transaction; the public wrapper below exposes metadata only. */
+export async function inspectProjectBrainVoiceSessionInTransaction(tx: Prisma.TransactionClient, input: { actorUserId: string; workspaceId: string; sessionId: string }) {
   const request = z.object({ actorUserId: id, workspaceId: id, sessionId: id }).strict().parse(input);
-  return prisma.$transaction(async tx => {
-    await tx.$queryRawUnsafe("SELECT set_config('statement_timeout','2000',true),set_config('lock_timeout','250',true)");
     const rows = await tx.$queryRawUnsafe<unknown[]>(
       `SELECT v.id,v."clientId",v."subjectKind",v."requestedByUserId",v."workspaceId",v."projectId",v."intakeId",v."projectBrainSourceId",
        v."requestCommandId"::text,v."sourceBinding",v."sourceBindingHash",v."segmentManifest",v."segmentManifestHash",v.status::text,
@@ -203,12 +201,24 @@ export async function readProjectBrainVoiceSession(input: { actorUserId: string;
     const [clock] = await tx.$queryRawUnsafe<Array<{ now: Date }>>(`SELECT clock_timestamp() AS now`);
     if (!(clock?.now instanceof Date) || !Number.isFinite(clock.now.getTime())) throw new Error("VOICE_PB_DATABASE_CLOCK_REFUSED");
     if (clock.now.getTime() >= row.expiresAt.getTime() || clock.now.getTime() < row.consentedAt.getTime()) throw new Error("VOICE_PB_READ_EXPIRED");
-    return Object.freeze({ status: "READ_ONLY_NOT_AUTHORIZED" as const, executionAuthorized: false as const,
+    const projection = Object.freeze({ status: "READ_ONLY_NOT_AUTHORIZED" as const, executionAuthorized: false as const,
       transcriptionAvailable: false as const, processingMode: "LOCAL_SYNTHETIC" as const, mediaDecodingVerified: false as const,
       sessionId: row.id, sessionStatus: row.status, workspaceId: row.workspaceId, projectId: row.projectId, intakeId: row.intakeId,
       sourceId: row.projectBrainSourceId, sourceBindingHash: row.sourceBindingHash, segmentManifestHash: row.segmentManifestHash,
       languageHint: row.languageHint, durationMs: manifest.totalDurationMs, byteCount: manifest.totalBytes,
       expiresAt: row.expiresAt.toISOString(), segments: Object.freeze(segments),
       sessionCostBoundMicros: consent.maxTotalCostMicros, costBoundIsProviderAuthorization: false as const });
+    return Object.freeze({ projection, subject: current, consent: Object.freeze(consent), manifest,
+      databaseNow: clock.now.toISOString(), executionAuthorized: false as const });
+}
+
+/** Trusted authenticated caller supplies actor/context. Read-only metadata, never dispatch authority,
+ * protected storage coordinates, raw media, or a claim that a usable transcript exists. */
+export async function readProjectBrainVoiceSession(input: { actorUserId: string; workspaceId: string; sessionId: string }, options: { enabled?: boolean } = {}) {
+  if (options.enabled !== true) return Object.freeze({ status: "DISABLED" as const, executionAuthorized: false as const });
+  const request = z.object({ actorUserId: id, workspaceId: id, sessionId: id }).strict().parse(input);
+  return prisma.$transaction(async tx => {
+    await tx.$queryRawUnsafe("SELECT set_config('statement_timeout','2000',true),set_config('lock_timeout','250',true)");
+    return (await inspectProjectBrainVoiceSessionInTransaction(tx, request)).projection;
   }, { isolationLevel: "Serializable", timeout: 5_000, maxWait: 2_000 });
 }
