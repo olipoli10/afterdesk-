@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 import { prisma } from "@/lib/db";
 import { claimAiOperation, SupersededOperationError, type AiOperationClaim } from "@/server/ai-operations";
 import {
@@ -24,9 +24,11 @@ import { resolveGatewayPolicy, type GatewayPolicySnapshot, type GatewayRouteSnap
 import { buildVoiceGatewayRequest } from "../privacy";
 import type { GatewayDataClass, GatewayPrivacyRequirement, VoiceGatewayOperationRequest } from "../types";
 import { buildVoiceSegmentProjection, type VoiceSegmentProjection } from "./projection";
-import { reserveVoiceAiOperation } from "./operations";
+import { checkVoiceSessionSpendHeadroom, reserveVoiceAiOperation } from "./operations";
+export { checkVoiceSessionSpendHeadroom } from "./operations";
 import type { VoiceActor } from "./sessions";
 import { isBoundedVoiceUsage, type VoiceModelGatewayAdapter } from "./adapters/contract";
+import { prepareProjectBrainVoiceAdmission, type ProjectBrainVoiceAdmissionInput, type ProjectBrainVoiceAdmissionOptions } from "./project-brain-admission";
 
 export type VoiceRolloutGateInput = Readonly<{
   environment?: string;
@@ -39,33 +41,6 @@ export function resolveVoiceRolloutGate(input: VoiceRolloutGateInput) {
     return Object.freeze({ allowed: true as const });
   }
   return Object.freeze({ allowed: false as const, reasonClass: "voice_disabled" as const });
-}
-
-export function checkVoiceSessionSpendHeadroom(input: {
-  sessionCeilingMicros: bigint;
-  holds: readonly Readonly<{
-    status: string;
-    amountMicros: bigint;
-    settledMicros: bigint | null;
-  }>[];
-  requestedMicros: bigint;
-}) {
-  if (input.sessionCeilingMicros <= 0n || input.requestedMicros < 0n) {
-    throw new Error("INVALID_VOICE_SPEND_BOUND");
-  }
-  const committedMicros = input.holds.reduce((sum, hold) => {
-    if (hold.status === "held") return sum + hold.amountMicros;
-    if (hold.status === "settled") return sum + (hold.settledMicros ?? hold.amountMicros);
-    return sum;
-  }, 0n);
-  const remainingMicros = input.sessionCeilingMicros > committedMicros
-    ? input.sessionCeilingMicros - committedMicros
-    : 0n;
-  return Object.freeze({
-    allowed: committedMicros + input.requestedMicros <= input.sessionCeilingMicros,
-    committedMicros,
-    remainingMicros,
-  });
 }
 
 type VoiceAdmissionSubject = Readonly<{
@@ -114,12 +89,42 @@ async function loadVoiceAdmissionSubject(sessionId: string, segmentId: string): 
   return row ?? null;
 }
 
+async function lockLegacyVoiceAdmission(tx: Prisma.TransactionClient, admission: AuthorizedVoiceGatewayAdmission) {
+      if (!admission.policy || !admission.route || !admission.claim || !admission.operation || !admission.decision || !admission.attempt) return false;
+      // A caller-provided discriminant is not durable ownership. In particular,
+      // no legacy cleanup may release a PB hold after a forged type cast.
+      const legacyOwners = await tx.$queryRawUnsafe<Array<{ id: string; subjectKind: string; clientId: string | null }>>(
+        `SELECT ai.id,v."subjectKind",v."clientId" FROM "AiOperation" ai
+         JOIN "VoiceIntakeSegment" s ON s.id=ai."voiceIntakeSegmentId"
+         JOIN "VoiceIntakeSession" v ON v.id=s."sessionId"
+         JOIN "ModelGatewayOperation" o ON o."aiOperationId"=ai.id
+         JOIN "ModelGatewayDecision" d ON d."gatewayOperationId"=o.id
+         JOIN "ModelGatewayAttempt" t ON t."decisionId"=d.id
+         JOIN "AccountProviderSpendHold" h ON h.id=t."accountSpendHoldId"
+         WHERE ai.id=$1 AND ai."lockedBy"=$2 AND ai.status='running' AND ai."operationKey"=$3
+           AND v."subjectKind"='voice_intake' AND v."clientId"=$4 AND v.id=$5 AND s.id=$6
+           AND o.id=$7 AND d.id=$8 AND t.id=$9 AND h.id=$10
+           AND h."operationKey"=ai."operationKey" AND h.attempt=d.attempt
+           AND ai.attempts=$11 AND d.attempt=$11 AND o."requestFingerprint"=$12 AND o."tenantId"=$4
+           AND o."policyVersionId"=$13 AND d."routeHash"=$14 AND d."policyHash"=$15 AND t."requestEvidenceRef"=$16
+           AND h.provider=$17 AND o."outputContractHash"=$18
+         FOR UPDATE OF t`,
+        admission.claim.operationId, admission.claim.lockedBy, admission.claim.operationKey, admission.actorId,
+        admission.request.subject.sessionId, admission.request.subject.segmentId, admission.operation.id,
+        admission.decision.id, admission.attempt.id, admission.attempt.accountSpendHoldId,
+        admission.claim.attempt, admission.request.requestFingerprint, admission.policy.id, admission.route.canonicalHash,
+        admission.policy.canonicalHash, admission.attempt.requestEvidenceRef, admission.route.billingProvider, admission.request.outputContractHash,
+      );
+      return legacyOwners.length === 1 && legacyOwners[0].subjectKind === "voice_intake" && legacyOwners[0].clientId === admission.actorId;
+}
+
 async function closeVoiceBeforeDispatch(
   admission: AuthorizedVoiceGatewayAdmission,
   reasonClass: string
 ): Promise<boolean> {
   try {
     return await prisma.$transaction(async (tx) => {
+      if (!await lockLegacyVoiceAdmission(tx, admission)) return false;
       // Claim refusal before any release, AI/gateway terminal write or audit.
       const changed = await tx.$executeRawUnsafe(
         `UPDATE "ModelGatewayAttempt" SET status='cancelled_before_dispatch',"dispatchState"='not_dispatched',"errorClass"=$2,"finishedAt"=now() WHERE id=$1 AND status='prepared' AND "dispatchState"='not_dispatched'`,
@@ -173,7 +178,7 @@ async function closeVoiceBeforeDispatch(
   }
 }
 
-export async function admitGatewayVoiceSegment(input: {
+type LegacyVoiceAdmissionInput = {
   actor: VoiceActor;
   sessionId: string;
   segmentId: string;
@@ -183,7 +188,16 @@ export async function admitGatewayVoiceSegment(input: {
   privacyRequirement: GatewayPrivacyRequirement;
   maxSegmentCostMicros: bigint;
   now?: Date;
-}): Promise<VoiceGatewayAdmission> {
+};
+
+export function admitGatewayVoiceSegment(input: ProjectBrainVoiceAdmissionInput, options: ProjectBrainVoiceAdmissionOptions): ReturnType<typeof prepareProjectBrainVoiceAdmission>;
+export function admitGatewayVoiceSegment(input: LegacyVoiceAdmissionInput): Promise<VoiceGatewayAdmission>;
+export function admitGatewayVoiceSegment(input: ProjectBrainVoiceAdmissionInput | LegacyVoiceAdmissionInput, options?: ProjectBrainVoiceAdmissionOptions) {
+  if ("kind" in input.actor) return prepareProjectBrainVoiceAdmission(input as ProjectBrainVoiceAdmissionInput, options);
+  return admitLegacyGatewayVoiceSegment(input as LegacyVoiceAdmissionInput);
+}
+
+async function admitLegacyGatewayVoiceSegment(input: LegacyVoiceAdmissionInput): Promise<VoiceGatewayAdmission> {
   const now = input.now ?? new Date();
   const subject = await loadVoiceAdmissionSubject(input.sessionId, input.segmentId);
   if (!subject) return Object.freeze({ status: "refused", reasonClass: "voice_segment_missing" });
@@ -393,6 +407,11 @@ export async function dispatchVoiceGatewayAttempt(input: {
   abortSignal: AbortSignal;
 }) {
   const { admission } = input;
+  // PB has its own stricter branch at this same entry point (next tranche).
+  // Never let a forged legacy type release or retry its held one-use operation.
+  if (admission.request.subject.kind !== "voice_intake_segment") {
+    return Object.freeze({ status: "refused" as const, reasonClass: "voice_subject_not_supported" as const });
+  }
   const rollout = resolveVoiceRolloutGate(input.rollout ?? {});
   if (!rollout.allowed) {
     if (!await closeVoiceBeforeDispatch(admission, rollout.reasonClass)) return voiceClaimLostResult;
@@ -446,6 +465,7 @@ export async function dispatchVoiceGatewayAttempt(input: {
     abortSignal: input.abortSignal,
   });
   const claimed = await prisma.$transaction(async (tx) => {
+    if (!await lockLegacyVoiceAdmission(tx, admission)) return false;
     const changed = await tx.$executeRawUnsafe(
       `UPDATE "ModelGatewayAttempt" SET status='dispatched',"dispatchState"='unaccounted',"dispatchedAt"=now() WHERE id=$1 AND status='prepared' AND "dispatchState"='not_dispatched'`,
       admission.attempt.id

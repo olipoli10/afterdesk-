@@ -14,7 +14,7 @@ vi.mock("@/lib/db",()=>({prisma:{
    const tx={
     settle:()=>{state.hold="settled";},
     $queryRawUnsafe:async(sql:string,...args:unknown[])=>{
-     if(sql.includes('FROM "AiOperation"'))return state.owner===args[1]&&state.ai==="running"?[{id:"syn-ai"}]:[];
+     if(sql.includes('FROM "AiOperation"'))return state.owner===args[1]&&state.ai==="running"?[{id:"syn-ai",subjectKind:"voice_intake",clientId:"syn-client"}]:[];
      if(sql.includes('FROM "VoiceIntakeSegment"'))return [{clientId:"syn-client",sessionStatus:f.sessionOpen?"transcribing":"cancelled",segmentStatus:state.segment,expiresAt:new Date("2099-01-01"),consentVersion:"syn-consent",audioFingerprint:"sha256:synthetic"}];
      throw Error("UNMODELED_SYNTHETIC_QUERY");
     },
@@ -58,7 +58,7 @@ vi.mock("@/server/model-gateway/policy",()=>({resolveGatewayPolicy:()=>f.policyA
 vi.mock("@/server/model-gateway/breakers",()=>({loadGatewayBreakerResolution:async()=>({status:f.breakerOpen?"open":"closed",generation:1})}));
 vi.mock("@/server/model-gateway/voice/operations",()=>({reserveVoiceAiOperation:vi.fn()}));
 
-const admission={status:"authorized",actorId:"syn-client",claim:{operationId:"syn-ai",operationKey:"syn-operation",lockedBy:"syn-owner",attempt:1},request:{subject:{sessionId:"syn-session",segmentId:"syn-segment"},outputContractHash:"sha256:synthetic"},projection:{audioFingerprint:"sha256:synthetic",ordinal:0},policy:{id:"syn-policy"},route:f.route,operation:{id:"syn-gateway"},decision:{id:"syn-decision",breakerGeneration:1},attempt:{id:"syn-attempt",accountSpendHoldId:"syn-hold",requestEvidenceRef:"sha256:synthetic"}} as unknown as AuthorizedVoiceGatewayAdmission;
+const admission={status:"authorized",actorId:"syn-client",claim:{operationId:"syn-ai",operationKey:"syn-operation",lockedBy:"syn-owner",attempt:1},request:{subject:{kind:"voice_intake_segment",sessionId:"syn-session",segmentId:"syn-segment"},outputContractHash:"sha256:synthetic"},projection:{audioFingerprint:"sha256:synthetic",ordinal:0},policy:{id:"syn-policy"},route:f.route,operation:{id:"syn-gateway"},decision:{id:"syn-decision",breakerGeneration:1},attempt:{id:"syn-attempt",accountSpendHoldId:"syn-hold",requestEvidenceRef:"sha256:synthetic"}} as unknown as AuthorizedVoiceGatewayAdmission;
 const adapter:VoiceModelGatewayAdapter={key:"voice-synthetic-direct",dispatch:envelope=>f.dispatch(envelope)};
 const dispatch=(enabled=true,actorId="syn-client")=>dispatchVoiceGatewayAttempt({admission,actor:{id:actorId,role:"CLIENT"},adapter,rollout:{environment:"local",voiceEnabled:enabled},abortSignal:new AbortController().signal});
 const uncertain={dispatchKnowledge:"dispatched_unknown",providerRequestRef:null,errorClass:"unknown_dispatched_outcome",httpStatus:null};
@@ -139,7 +139,7 @@ describe("Voice late refusal and acquisition fencing",()=>{
  it("only one concurrent refusal can release and finalize",async()=>{
   const results=await Promise.all([dispatch(false),dispatch(false)]);
   expect(results).toEqual([{status:"refused",reasonClass:"voice_disabled"},{status:"superseded",reasonClass:"attempt_claim_lost"}]);
-  expect(f.refusalCounts).toEqual([1,0]);expect(f.effects.filter(effect=>effect==="release")).toHaveLength(1);expect(f.state.audits).toHaveLength(2);expect(f.dispatch).not.toHaveBeenCalled();
+  expect(f.refusalCounts).toEqual([1]);expect(f.effects.filter(effect=>effect==="release")).toHaveLength(1);expect(f.state.audits).toHaveLength(2);expect(f.dispatch).not.toHaveBeenCalled();
  });
  it("a winning refusal prevents a stale acquisition from dispatching",async()=>{
   const results=await Promise.all([dispatch(false),dispatch()]);

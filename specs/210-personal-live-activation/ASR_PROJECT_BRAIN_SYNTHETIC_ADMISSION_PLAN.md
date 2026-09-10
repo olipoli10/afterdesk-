@@ -209,3 +209,22 @@ heartbeat did not imply active programming during that interruption. Olivier's
 subsequent continue resumed work around13:23Z; current usage tool allowed work.
 No reset credit was consumed or purchased. B/C and native registry verification
 continue; no campaign completion or metric increase follows from checkpoint A.
+
+## Checkpoint B — 2026-09-10 13:40Z
+
+Existing admitGatewayVoiceSegment now accepts the closed Project Brain owner
+branch. One Serializable transaction binds source/session/policy/route/breakers,
+strict synthetic spend hold and the existing AiOperation's single running claim.
+It returns prepared_synthetic_not_dispatched, never execution authority.
+
+Peer counterexamples reproduced two legacy dispatcher boundary defects: forged
+subject labels could enter cleanup; a substituted CLIENT session could enter
+positive dispatch while retaining PB claim/hold IDs. Both now require the same
+durable joined CLIENT binding before any legacy mutation. The audit preserves
+the RED observations. Separate reviewer64/64 PASS at09:36:03 local; controller
+fresh64/64 PASS at09:40:48 local across the same four files, scoped lint passed.
+These are synthetic DB regressions, not native transaction or provider proof.
+
+Checkpoint B excludes project-brain-dispatch.ts and its new dispatch tests.
+The existing dispatcher still refuses PB dispatch until C is integrated/reviewed.
+Native B/C concurrency, UTC checks and protected transcript handling remain.
