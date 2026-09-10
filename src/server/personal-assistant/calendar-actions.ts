@@ -8,8 +8,9 @@ import { GoogleCalendarClient, requireGooglePilot, type ConnectorEnvironment } f
 import { googleTokensForOwner } from "./google-connection";
 import { GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/construction-operating-assistant-r3/connector-contracts";
 import { personalCorrelatedCalendarRequestId } from "@/server/model-gateway/personal-intent/correlated-calendar-id";
+import { personalCalendarDraftSchema } from "./calendar-draft-contract";
+export { personalCalendarDraftSchema } from "./calendar-draft-contract";
 
-export const personalCalendarDraftSchema = z.object({ title: z.string().trim().min(1).max(240), startsAt: z.string().datetime({ offset: true }), endsAt: z.string().datetime({ offset: true }), timezone: z.string().min(1).max(80) }).strict();
 const storedSchema = personalCalendarDraftSchema.extend({ accountVersion: z.number().int(), requestId: z.string().uuid() }).strict();
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 async function requireCalendarOwner(userId: string, workspaceId: string, db: Prisma.TransactionClient | typeof prisma = prisma) {

@@ -1,5 +1,28 @@
 # Progress — 2026-09-09
 
+## 2026-09-10 18:38Z — exact schema leaf and typed recovery verified; executor follows
+
+C0 preserves the calendar schema grammar and legacy re-export identity while
+breaking schema-only import cycles. Author232 focused PASS; source/test/audit
+fully read by controller. C1 closes expired correlated approvals with the strict79
+UNCERTAIN origin, no current Google authority, no retry/budget release. Author27
+and separate reviewer7 PASS; source and counter-tests fully reviewed.
+
+Native130 first PASS, full20 clone326 PASS18:33:10.549Z/STOPPED. Peer correctly
+identified two test coverage gaps; only fixtures were strengthened after that run.
+Fresh targeted131 PASS18:35:56.279Z proves actual held-row SKIP LOCKED on distinct
+PIDs and whole target-row preservation. Do not label this a full327 run.
+SQL79 SHA05163... and fingerprint79:41de317b70655965d494f1c3e0ea5940 unchanged.
+Root5389 PASS/3 historical skips18:37:38.462Z; types/scoped lint PASS.
+Controller audit: audits/SMS_CORRELATED_APPROVAL_CONTROLLER_C0_C1.md.
+
+Continue C2 current canonical gate/claim/same executor and C3 historical result
+reader, then private HTTP and mobile explicit approval. No new APK/provider call,
+credential access, remote migration, deploy or spending. Remote70 remains unchanged.
+ACTIVE3min rechecked14:29. Old app goal still reports blocked, not falsely resumed;
+this controller and the current queue keep working. Dashboard roadmap22%,
+localbuild46.75%, C2 18of18, real-test NO-GO, Verified-E2E0% unchanged.
+
 ## 2026-09-10 18:16Z — durable approval locally verified; runtime wiring continues
 
 Forward79 immutable approval and state guards are reviewed and applied only to

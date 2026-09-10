@@ -7,7 +7,7 @@ import { PERSONAL_MODEL_AUTHORITY } from "./budget-policy";
 import { loadCorrelatedPersonalReceiptSubject } from "./correlated-receipt-subject";
 import { inspectCorrelatedCalendarReferenceProof } from "./correlated-calendar-proof";
 import { personalCorrelatedCalendarRequestId } from "./correlated-calendar-id";
-import { personalCalendarDraftSchema } from "@/server/personal-assistant/calendar-actions";
+import { personalCalendarDraftSchema } from "@/server/personal-assistant/calendar-draft-contract";
 import { temporalActorSchema, temporalRegistryClock, temporalRegistryTransaction, temporalRequireLive, type TemporalRegistryContext, type TemporalRegistryDB } from "@/server/personal-assistant/sms-temporal-clarification-authority";
 import type { ConnectorEnvironment } from "@/server/personal-assistant/google-client";
 

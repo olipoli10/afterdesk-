@@ -4,7 +4,7 @@ import type { Prisma } from "@prisma-client";
 import { z } from "zod";
 import { GOOGLE_CALENDAR_WRITE_SCOPE } from "@/lib/construction-operating-assistant-r3/connector-contracts";
 import { canonicalFingerprint } from "@/server/model-gateway/evidence";
-import { personalCalendarDraftSchema } from "./calendar-actions";
+import { personalCalendarDraftSchema } from "./calendar-draft-contract";
 import { inspectPreparedSmsCalendarConfirmation, SMS_CALENDAR_CONFIRMATION_VERSION, type PreparedSmsCalendarConfirmation, type SmsCalendarConfirmationBinding } from "./calendar-sms-confirmation-contract";
 import type { ConnectorEnvironment } from "./google-client";
 import type { PersonalSmsSourceClaim } from "./sms-worker";

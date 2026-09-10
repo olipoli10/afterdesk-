@@ -30,6 +30,7 @@ import { readCorrelatedPersonalCalendarReviewList } from "@/server/model-gateway
 import { fingerprintCorrelatedCalendarApprovalView, inspectCorrelatedCalendarApprovalClaim, inspectCorrelatedCalendarApprovalState,
   type CorrelatedCalendarApprovalClaim, type CorrelatedCalendarApprovalState } from "@/server/personal-assistant/correlated-calendar-approval-contract";
 import { deterministicGoogleEventId } from "@/lib/construction-operating-assistant-r3/google-calendar";
+import { recoverExpiredPersonalActionClaims } from "@/server/personal-assistant/claim-recovery";
 
 requirePersonalDisposableDatabase();
 afterAll(() => prisma.$disconnect());
@@ -288,6 +289,140 @@ async function syntheticApprovalTransition(claim: CorrelatedCalendarApprovalClai
     result=$3::jsonb,"leaseUntil"=CASE WHEN $2='processing' THEN "leaseUntil" ELSE NULL END,"externalTransportPerformed"=$4 WHERE id=$1`,
   claim.operationId, status, JSON.stringify(state), transport), txOptions);
 }
+
+async function waitForApprovalLease(claim: CorrelatedCalendarApprovalClaim) {
+  const [remaining] = await prisma.$queryRawUnsafe<Array<{ ms: number }>>(`SELECT GREATEST(0,EXTRACT(EPOCH FROM
+    ("leaseUntil"-(clock_timestamp() AT TIME ZONE 'UTC')))*1000)::float8 AS ms FROM "PersonalSmsCorrelatedCalendarApproval" WHERE id=$1`, claim.origin.approvalId);
+  if (!remaining || remaining.ms > 1500) throw new Error("SYNTHETIC_SHORT_APPROVAL_LEASE_REQUIRED");
+  await prisma.$queryRawUnsafe("SELECT pg_sleep($1::double precision)::text", (remaining.ms + 30) / 1000);
+}
+const savedApproval = (claim: CorrelatedCalendarApprovalClaim) => prisma.$queryRawUnsafe('SELECT * FROM "PersonalSmsCorrelatedCalendarApproval" WHERE id=$1', claim.origin.approvalId);
+function expectRecoveredOperationPreserved(before: Awaited<ReturnType<typeof answeredSnapshot>>, after: Awaited<ReturnType<typeof answeredSnapshot>>, claim: CorrelatedCalendarApprovalClaim) {
+  const prior = before.operations.find(o => o.id === claim.operationId), current = after.operations.find(o => o.id === claim.operationId);
+  expect(prior).toBeDefined(); expect(current).toBeDefined();
+  // Only these four fields may change. This also covers every target scope,
+  // request, budget, transport and lineage field rather than excluding the row.
+  expect(current).toEqual({ ...prior, status: "uncertain", leaseUntil: null, updatedAt: current!.updatedAt,
+    result: { version: "personal-correlated-calendar-write-state-v1", origin: claim.origin,
+      phase: "UNCERTAIN", writeConfirmed: false, reviewRequired: true, automaticRetry: false, reason: "CLAIM_LEASE_EXPIRED" } });
+}
+type NativeRecoveryWork = (tx: Prisma.TransactionClient) => Promise<unknown>;
+type NativeRecoveryOptions = { isolationLevel?: Prisma.TransactionIsolationLevel; maxWait?: number; timeout?: number };
+async function recoverInZone(zone: string) {
+  const original = prisma.$transaction.bind(prisma);
+  const wrapped = vi.spyOn(prisma, "$transaction").mockImplementationOnce((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) =>
+    original(async tx => { await tx.$queryRawUnsafe("SELECT set_config('TimeZone',$1,true)", zone); return work(tx); }, options)) as typeof prisma.$transaction);
+  try { return await recoverExpiredPersonalActionClaims({ enabled: true, batchSize: 25 }); }
+  finally { wrapped.mockRestore(); }
+}
+
+describe("actual expiry recovery of synthetic typed approvals on PostgreSQL79", () => {
+  it.each(["CLAIMED", "DISPATCH_CLAIMED"].flatMap(phase => ["UTC", "America/New_York", "Asia/Tokyo"].map(zone => ({ phase, zone }))))("records $phase once after actual lease expiry in $zone, preserving approval and sources", async ({ phase, zone }) => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const { claim, state, view } = await syntheticApproval(x, review.id, { leaseMs: 900 }, zone);
+    if (phase === "DISPATCH_CLAIMED") await syntheticApprovalTransition(claim, { ...state, phase, dispatchStarted: true }, "processing");
+    // Revocation must not prevent bookkeeping. No current authority is granted by
+    // this fixture and no transport token is decrypted by the real recovery.
+    await prisma.constructionConnectorGrant.update({ where: { id: x.f.google.grants[0].id }, data: { status: "revoked", revokedAt: new Date(), stateVersion: { increment: 1 }, grantedScopes: [] } });
+    const before = await answeredSnapshot(x), approval = await savedApproval(claim);
+    await waitForApprovalLease(claim);
+    expect(await recoverInZone(zone)).toMatchObject({ recovered: 1, executionAuthorized: false, automaticRetry: false, budgetReservationReleased: false });
+    const expected = { version: "personal-correlated-calendar-write-state-v1", origin: claim.origin,
+      phase: "UNCERTAIN", writeConfirmed: false, reviewRequired: true, automaticRetry: false, reason: "CLAIM_LEASE_EXPIRED" };
+    const current = await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: claim.operationId } });
+    expect(current).toMatchObject({ status: "uncertain", attempts: 1, leaseUntil: null, result: expected, externalTransportPerformed: false });
+    expect(current.result).toEqual(expected); expect(inspectCorrelatedCalendarApprovalState(current.result, claim, view).providerConfirmationVerified).toBe(false);
+    const after = await answeredSnapshot(x);
+    expectRecoveredOperationPreserved(before, after, claim);
+    expect({ ...after, operations: after.operations.filter(o => o.id !== claim.operationId) }).toEqual({ ...before, operations: before.operations.filter(o => o.id !== claim.operationId) });
+    expect(await savedApproval(claim)).toEqual(approval);
+    expect(await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { id: review.id } })).toEqual(review);
+    expect(await recoverExpiredPersonalActionClaims({ enabled: true })).toMatchObject({ recovered: 0 });
+    expect(await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: claim.operationId } })).toEqual(current);
+    expect(x.transport).toHaveBeenCalledOnce();
+  });
+  it("expiry recovery does not need to reopen an expired original SMS review", async () => {
+    const x = await actualAnsweredQuestion("14h", 1700, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const { claim } = await syntheticApproval(x, review.id, { leaseMs: 300 });
+    await waitForQuestionExpiry(x.p.id);
+    const before = await answeredSnapshot(x), approval = await savedApproval(claim);
+    expect(await recoverExpiredPersonalActionClaims({ enabled: true })).toMatchObject({ recovered: 1 });
+    expect((await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: claim.operationId } })).result).toMatchObject({ phase: "UNCERTAIN", reason: "CLAIM_LEASE_EXPIRED", origin: claim.origin });
+    expect(await savedApproval(claim)).toEqual(approval);
+    const after = await answeredSnapshot(x);
+    expectRecoveredOperationPreserved(before, after, claim);
+    expect({ ...after, operations: after.operations.filter(o => o.id !== claim.operationId) }).toEqual({ ...before, operations: before.operations.filter(o => o.id !== claim.operationId) });
+  });
+  it("recovers typed and ordinary expired claims in the same bounded batch without changing legacy JSON", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const { claim } = await syntheticApproval(x, review.id, { leaseMs: 600 });
+    const legacy = await prisma.personalAssistantOperation.findFirstOrThrow({ where: { workspaceId: x.f.workspaceId, kind: "sms_outbound", status: "pending", attempts: 0 } });
+    const prior = { legacyFixture: "PRESERVE", nested: { arbitrary: true } };
+    await prisma.personalAssistantOperation.update({ where: { id: legacy.id }, data: { status: "processing", attempts: 1, leaseUntil: new Date(Date.now() - 100), result: prior } });
+    await waitForApprovalLease(claim);
+    expect(await recoverExpiredPersonalActionClaims({ enabled: true, batchSize: 25 })).toMatchObject({ recovered: 2 });
+    expect((await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: legacy.id } })).result).toMatchObject({ ...prior,
+      reason: "PROCESSING_LEASE_EXPIRED", priorClaimResult: prior, automaticRetry: false, recovery: { budgetReservationReleased: false } });
+    expect((await prisma.personalAssistantOperation.findUniqueOrThrow({ where: { id: claim.operationId } })).result).toMatchObject({ phase: "UNCERTAIN", reason: "CLAIM_LEASE_EXPIRED" });
+  });
+  it("two overlapping native recovery backends close one expired approval once", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const { claim } = await syntheticApproval(x, review.id, { leaseMs: 600 }); await waitForApprovalLease(claim);
+    const before = await answeredSnapshot(x), approval = await savedApproval(claim), pids: number[] = [];
+    const original = prisma.$transaction.bind(prisma); let release!: () => void, timedOut = false;
+    const ready = new Promise<void>(resolve => { release = resolve; });
+    const timer = setTimeout(() => { timedOut = true; release(); }, 700);
+    const wrapped = vi.spyOn(prisma, "$transaction").mockImplementation((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) =>
+      original(async tx => {
+        const [row] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid");
+        pids.push(row.pid); if (pids.length === 2) release(); await ready; return work(tx);
+      }, options)) as typeof prisma.$transaction);
+    try {
+      const results = await Promise.allSettled([recoverExpiredPersonalActionClaims({ enabled: true }), recoverExpiredPersonalActionClaims({ enabled: true })]);
+      expect(timedOut).toBe(false); expect(new Set(pids).size).toBe(2);
+      expect(results.reduce((sum, r) => sum + (r.status === "fulfilled" ? r.value.recovered : 0), 0)).toBe(1);
+      for (const result of results) if (result.status === "rejected") {
+        const error = result.reason as { code?: string; meta?: { code?: string } };
+        expect(error.code === "P2034" || error.code === "P2010" && error.meta?.code === "40001").toBe(true);
+      }
+    } finally { clearTimeout(timer); release(); wrapped.mockRestore(); }
+    const after = await answeredSnapshot(x);
+    expectRecoveredOperationPreserved(before, after, claim);
+    expect({ ...after, operations: after.operations.filter(o => o.id !== claim.operationId) }).toEqual({ ...before, operations: before.operations.filter(o => o.id !== claim.operationId) });
+    expect(await savedApproval(claim)).toEqual(approval);
+    expect(await recoverExpiredPersonalActionClaims({ enabled: true })).toMatchObject({ recovered: 0 });
+  });
+  it("actually skips an expired approval held locked by another live backend, then recovers it after release", async () => {
+    const x = await actualAnsweredQuestion("14h", undefined, true);
+    const review = await prisma.personalSmsCorrelatedCalendarReview.findUniqueOrThrow({ where: { receiptId: x.receipt.id } });
+    const { claim } = await syntheticApproval(x, review.id, { leaseMs: 600 }); await waitForApprovalLease(claim);
+    const before = await answeredSnapshot(x), approval = await savedApproval(claim);
+    const original = prisma.$transaction.bind(prisma); let recoveryPid = 0;
+    await original(async holder => {
+      const [held] = await holder.$queryRawUnsafe<Array<{ pid: number }>>('SELECT pg_backend_pid() AS pid FROM "PersonalAssistantOperation" WHERE id=$1 FOR UPDATE', claim.operationId);
+      const wrapped = vi.spyOn(prisma, "$transaction").mockImplementationOnce((async (work: NativeRecoveryWork, options?: NativeRecoveryOptions) => original(async tx => {
+        const [row] = await tx.$queryRawUnsafe<Array<{ pid: number }>>("SELECT pg_backend_pid() AS pid"); recoveryPid = row.pid;
+        return work(tx);
+      }, options)) as typeof prisma.$transaction);
+      try {
+        // The holder cannot commit until this actual recovery has returned. An
+        // accidental blocking lock would time out, not satisfy recovered=0.
+        expect(await recoverExpiredPersonalActionClaims({ enabled: true })).toMatchObject({ recovered: 0 });
+        expect(recoveryPid).toBeGreaterThan(0); expect(recoveryPid).not.toBe(held.pid);
+        expect(await answeredSnapshot(x)).toEqual(before);
+      } finally { wrapped.mockRestore(); }
+    }, txOptions);
+    expect(await recoverExpiredPersonalActionClaims({ enabled: true })).toMatchObject({ recovered: 1 });
+    const after = await answeredSnapshot(x); expectRecoveredOperationPreserved(before, after, claim);
+    expect({ ...after, operations: after.operations.filter(o => o.id !== claim.operationId) }).toEqual({ ...before, operations: before.operations.filter(o => o.id !== claim.operationId) });
+    expect(await savedApproval(claim)).toEqual(approval);
+    expect(await recoverExpiredPersonalActionClaims({ enabled: true })).toMatchObject({ recovered: 0 });
+  });
+});
 
 describe("durable typed calendar approval SQL protocol, synthetic choice only", () => {
   it.each(["TOP_XID", "SAVEPOINT", "RELEASED_SAVEPOINT", "OUTER_WRITE"])("refuses preparing and approving in one transaction after %s", async mode => {

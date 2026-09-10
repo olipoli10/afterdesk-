@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { canonicalJson } from "../evidence";
-import { personalCalendarDraftSchema } from "@/server/personal-assistant/calendar-actions";
+import { personalCalendarDraftSchema } from "@/server/personal-assistant/calendar-draft-contract";
 import type { DurableSmsTemporalCorrelationInput } from "@/server/personal-assistant/sms-temporal-clarification";
 import { inspectCorrelatedPersonalReceiptProof, PERSONAL_CORRELATED_RECEIPT_PROOF_VERSION } from "./correlated-receipt-proof";
 import { personalCorrelatedCalendarRequestId } from "./correlated-calendar-id";

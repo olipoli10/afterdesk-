@@ -24,26 +24,48 @@ export async function recoverExpiredPersonalActionClaims(input: Readonly<{ enabl
     requireRemaining();
     const rows = await tx.$queryRawUnsafe<Array<{ id: string }>>(`
       WITH expired AS (
-        SELECT id,"workspaceId","createdByUserId","connectorAccountId",kind,"requestHash",attempts,"leaseUntil",
-          "budgetId","reservedCadMicros",result
-        FROM "PersonalAssistantOperation"
-        WHERE kind IN ('calendar_write','sms_outbound','voice_outbound')
-          AND status='processing' AND attempts=1 AND "leaseUntil" IS NOT NULL AND "leaseUntil"<=(clock_timestamp() AT TIME ZONE 'UTC')
-        ORDER BY "leaseUntil",id LIMIT $1 FOR UPDATE SKIP LOCKED
+        SELECT p.id,p."workspaceId",p."createdByUserId",p."connectorAccountId",p.kind,p."requestHash",p.attempts,p."leaseUntil",
+          p."budgetId",p."reservedCadMicros",p.result,p."correlatedTemporalReceiptId",p."externalTransportPerformed",
+          a.id AS "approvalId",a."reviewId",a."reviewFingerprint"
+        FROM "PersonalAssistantOperation" p
+        LEFT JOIN "PersonalSmsCorrelatedCalendarReview" v ON v."calendarOperationId"=p.id
+        LEFT JOIN "PersonalSmsCorrelatedCalendarApproval" a ON a."calendarOperationId"=p.id
+        WHERE p.kind IN ('calendar_write','sms_outbound','voice_outbound')
+          AND p.status='processing' AND p.attempts=1 AND p."leaseUntil" IS NOT NULL AND p."leaseUntil"<=(clock_timestamp() AT TIME ZONE 'UTC')
+          -- Global provenance precedes LIMIT. Corrupt/orphan correlated history
+          -- is neither adopted as legacy nor allowed to starve valid claims.
+          -- CASE also keeps calendar-only serializers away from SMS/voice JSON.
+          AND CASE WHEN p."correlatedTemporalReceiptId" IS NOT NULL OR v.id IS NOT NULL OR a.id IS NOT NULL THEN
+            CASE WHEN p.kind='calendar_write' AND a.id IS NOT NULL AND v.id IS NOT NULL
+              AND a."reviewId"=v.id AND p.result->>'phase' IN ('CLAIMED','DISPATCH_CLAIMED')
+              AND p."leaseUntil"=a."leaseUntil"
+              AND sms_correlated_approval_pre_snapshot(a.xmin) IS TRUE
+            THEN sms_correlated_approval_binding(a,v,p) IS TRUE
+              AND sms_correlated_approval_state_valid(p.result,a,v) IS TRUE
+            ELSE false END
+          ELSE true END
+        ORDER BY p."leaseUntil",p.id LIMIT $1 FOR UPDATE OF p SKIP LOCKED
       )
       UPDATE "PersonalAssistantOperation" o
       SET status='uncertain',"leaseUntil"=NULL,"updatedAt"=(clock_timestamp() AT TIME ZONE 'UTC'),
-        result=(CASE WHEN jsonb_typeof(o.result)='object' THEN o.result ELSE '{}'::jsonb END) || jsonb_build_object(
+        result=CASE WHEN e."approvalId" IS NOT NULL THEN jsonb_build_object(
+          'version','personal-correlated-calendar-write-state-v1',
+          'origin',jsonb_build_object('kind','personal_sms_temporal_receipt','approvalId',e."approvalId",
+            'reviewId',e."reviewId",'reviewFingerprint',e."reviewFingerprint"),
+          'phase','UNCERTAIN','writeConfirmed',false,'reviewRequired',true,'automaticRetry',false,'reason','CLAIM_LEASE_EXPIRED')
+        ELSE (CASE WHEN jsonb_typeof(o.result)='object' THEN o.result ELSE '{}'::jsonb END) || jsonb_build_object(
           'schemaVersion',1,'reviewRequired',true,'automaticRetry',false,'executionAuthorized',false,
           'writeConfirmed',false,'deliveryConfirmed',false,'transportKnowledge','UNKNOWN_AFTER_PROCESS_LOSS',
           'reason','PROCESSING_LEASE_EXPIRED','priorClaimResult',o.result,
           'recovery',jsonb_build_object('kind','EXPIRED_PERSONAL_EFFECT_CLAIM','leaseUntil',e."leaseUntil",
-            'attempt',e.attempts,'recordedAt',clock_timestamp(),'budgetReservationReleased',false))
+            'attempt',e.attempts,'recordedAt',clock_timestamp(),'budgetReservationReleased',false)) END
       FROM expired e
       WHERE o.id=e.id AND o."workspaceId"=e."workspaceId" AND o."createdByUserId"=e."createdByUserId"
         AND o."connectorAccountId"=e."connectorAccountId" AND o.kind=e.kind AND o."requestHash"=e."requestHash"
         AND o.status='processing' AND o.attempts=e.attempts AND o."leaseUntil"=e."leaseUntil" AND o."leaseUntil"<=(clock_timestamp() AT TIME ZONE 'UTC')
         AND o."budgetId" IS NOT DISTINCT FROM e."budgetId" AND o."reservedCadMicros" IS NOT DISTINCT FROM e."reservedCadMicros"
+        AND o."correlatedTemporalReceiptId" IS NOT DISTINCT FROM e."correlatedTemporalReceiptId"
+        AND o."externalTransportPerformed" IS NOT DISTINCT FROM e."externalTransportPerformed"
         AND o.result IS NOT DISTINCT FROM e.result
       RETURNING o.id`, batchSize);
     // Throw inside the transaction if its acknowledgement exceeded the caller's deadline: rollback, no success claim.

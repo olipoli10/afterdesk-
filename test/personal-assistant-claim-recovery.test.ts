@@ -25,9 +25,9 @@ describe("expired personal effect claims are retained as uncertain, never retrie
     const [sql, bound] = shared.query.mock.calls[0];
     expect(bound).toBe(25);
     expect(sql).toContain("kind IN ('calendar_write','sms_outbound','voice_outbound')");
-    expect(sql).toContain("status='processing' AND attempts=1");
-    expect(sql).toContain('"leaseUntil" IS NOT NULL AND "leaseUntil"<=(clock_timestamp() AT TIME ZONE \'UTC\')');
-    expect(sql).toContain('ORDER BY "leaseUntil",id LIMIT $1 FOR UPDATE SKIP LOCKED');
+    expect(sql).toContain("p.status='processing' AND p.attempts=1");
+    expect(sql).toContain('p."leaseUntil" IS NOT NULL AND p."leaseUntil"<=(clock_timestamp() AT TIME ZONE \'UTC\')');
+    expect(sql).toContain('ORDER BY p."leaseUntil",p.id LIMIT $1 FOR UPDATE OF p SKIP LOCKED');
     expect(sql).not.toMatch(/'pending'|'approved'|'received'|'personal_sms_inbound'|'personal_model_candidate_v1'/);
     expect(shared.transaction.mock.calls[0][1]).toEqual({ isolationLevel: "Serializable", maxWait: 500, timeout: 2000 });
   });
@@ -62,6 +62,40 @@ describe("expired personal effect claims are retained as uncertain, never retrie
   it("never reports recovery after transaction failure", async () => {
     shared.query.mockRejectedValue(new Error("synthetic transaction failure"));
     await expect(recoverExpiredPersonalActionClaims({ enabled: true })).rejects.toThrow("synthetic transaction failure");
+  });
+  it("filters all three global correlated origins before LIMIT, never disguising orphan history as legacy", async () => {
+    await recoverExpiredPersonalActionClaims({ enabled: true });
+    const sql = shared.query.mock.calls[0][0] as string;
+    const eligibility = sql.slice(sql.indexOf('AND CASE WHEN'), sql.indexOf('ORDER BY'));
+    expect(eligibility).toContain('p."correlatedTemporalReceiptId" IS NOT NULL OR v.id IS NOT NULL OR a.id IS NOT NULL');
+    expect(eligibility).toContain("CASE WHEN p.kind='calendar_write' AND a.id IS NOT NULL AND v.id IS NOT NULL");
+    expect(eligibility).toContain('a."reviewId"=v.id');
+    expect(eligibility).toContain("ELSE false END\n          ELSE true END");
+    expect(sql).toContain('v."calendarOperationId"=p.id');
+    expect(sql).toContain('a."calendarOperationId"=p.id');
+    // No actor-scoped discovery could hide an existing foreign relation.
+    expect(sql.slice(sql.indexOf('LEFT JOIN'), sql.indexOf('WHERE p.kind'))).not.toMatch(/workspaceId|createdByUserId/);
+  });
+  it("requires an exact committed historical live claim without requiring currently active grants", async () => {
+    await recoverExpiredPersonalActionClaims({ enabled: true });
+    const sql = shared.query.mock.calls[0][0] as string;
+    const eligibility = sql.slice(sql.indexOf('AND CASE WHEN'), sql.indexOf('ORDER BY'));
+    for (const fragment of ["p.result->>'phase' IN ('CLAIMED','DISPATCH_CLAIMED')", 'p."leaseUntil"=a."leaseUntil"',
+      'sms_correlated_approval_pre_snapshot(a.xmin) IS TRUE', 'THEN sms_correlated_approval_binding(a,v,p) IS TRUE',
+      'sms_correlated_approval_state_valid(p.result,a,v) IS TRUE']) expect(eligibility).toContain(fragment);
+    expect(sql).not.toMatch(/authority_current|pg_advisory|FOR SHARE|FOR UPDATE OF [av]|ConstructionWorkspace|ConstructionConnector/);
+  });
+  it("writes only the closed79 uncertain envelope from immutable approval scalars", async () => {
+    await recoverExpiredPersonalActionClaims({ enabled: true });
+    const sql = shared.query.mock.calls[0][0] as string;
+    const terminal = sql.split('result=CASE WHEN e."approvalId" IS NOT NULL THEN ')[1].split('ELSE (CASE')[0];
+    expect(terminal).toContain("'version','personal-correlated-calendar-write-state-v1'");
+    expect(terminal).toContain("'kind','personal_sms_temporal_receipt','approvalId',e.\"approvalId\"");
+    expect(terminal).toContain("'reviewId',e.\"reviewId\",'reviewFingerprint',e.\"reviewFingerprint\"");
+    expect(terminal).toContain("'phase','UNCERTAIN','writeConfirmed',false,'reviewRequired',true,'automaticRetry',false,'reason','CLAIM_LEASE_EXPIRED'");
+    expect(terminal).not.toMatch(/priorClaimResult|PROCESS_LOSS|executionAuthorized|jsonb_typeof|o\.result/);
+    expect(sql).toContain('o."correlatedTemporalReceiptId" IS NOT DISTINCT FROM e."correlatedTemporalReceiptId"');
+    expect(sql).toContain('o."externalTransportPerformed" IS NOT DISTINCT FROM e."externalTransportPerformed"');
   });
   it.each([NaN, Infinity, -Infinity])("refuses nonfinite deadline %s before DB access", async deadlineAt => {
     await expect(recoverExpiredPersonalActionClaims({ enabled: true, deadlineAt })).rejects.toThrow("DEADLINE_INVALID");
